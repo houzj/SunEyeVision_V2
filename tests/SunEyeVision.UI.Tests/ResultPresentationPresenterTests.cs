@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
@@ -8,13 +8,15 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI.Services.Monitoring;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
 using SunEyeVision.UI.Shell.Windows;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
 [Collection("Editor commit UI")]
-public sealed class ResultPresentationPresenterTests
+public sealed class ResultPresentationPresenterTests:IDisposable
 {
     [Fact]
     public void Immutable_geometry_values_show_coordinates_frame_and_explicit_angle_units() => Sta(() =>
@@ -28,7 +30,7 @@ public sealed class ResultPresentationPresenterTests
         using var run=Success(schema,shapes.Select((shape,i)=>(shape,i)).ToDictionary(item=>"shape"+item.i,item=>(object?)item.shape));
         var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
         var previous=CultureInfo.CurrentCulture;
-        try{CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo("de-DE");presenter.ShowRun(run.Snapshot);}
+        try{CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo("de-DE");presenter.Present(run.Publication);}
         finally{CultureInfo.CurrentCulture=previous;}
         Assert.Equal(8,rows.Count);Assert.Contains("点 (1.25, 2.5)",rows[1].DisplayValue);
         Assert.All(rows.Skip(1),row=>{Assert.Contains("image:test",row.DisplayValue);Assert.Contains("Pixel",row.DisplayValue);});
@@ -44,7 +46,7 @@ public sealed class ResultPresentationPresenterTests
         var schema=Schema(new Port("polygon",TypeRef.GeometryOf(GeometryKind.Polygon,frame)));
         using var run=Success(schema,new(){["polygon"]=geometry});
         var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
-        var before=GC.GetAllocatedBytesForCurrentThread();presenter.ShowRun(run.Snapshot);
+        var before=GC.GetAllocatedBytesForCurrentThread();presenter.Present(run.Publication);
         Assert.Equal(2,rows.Count);Assert.Contains("100000 顶点",rows[1].DisplayValue);
         Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<256*1024);
         var expansionBefore=GC.GetAllocatedBytesForCurrentThread();
@@ -65,11 +67,11 @@ public sealed class ResultPresentationPresenterTests
         var schema=Schema(new Port("visible",DataType.Number),new Port("hidden",DataType.Number));
         var rows=new ObservableCollection<FlatResultRow>();bool has=false;
         using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
-        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>{"visible"});
+        SchemaPresent(presenter,schema,displayedPorts:new HashSet<string>{"visible"});
         Assert.True(has);Assert.Equal(new[]{"结果","visible"},rows.Select(row=>row.DisplayName));
-        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>{"hidden"});
+        SchemaPresent(presenter,schema,displayedPorts:new HashSet<string>{"hidden"});
         Assert.Equal(new[]{"结果","hidden"},rows.Select(row=>row.DisplayName));
-        presenter.ShowSchema(schema,displayedPorts:new HashSet<string>());
+        SchemaPresent(presenter,schema,displayedPorts:new HashSet<string>());
         Assert.Empty(rows);Assert.False(has);Assert.Equal(2,schema.Outputs.Count);
     }
     private static ToolSchema Schema(params Port[] ports) => new(Array.Empty<Port>(), ports);
@@ -84,8 +86,8 @@ public sealed class ResultPresentationPresenterTests
         using var presenter = new ResultPresentationPresenter(rows, value => has = value, 2);
         var grid = new DataGrid { ItemsSource = rows, IsReadOnly = true, AutoGenerateColumns = false };
         var binding = new ResultBindingInfo("source", "explicit.address", "String", typeof(string));
-        presenter.ShowSchema(schema, new Dictionary<string, string> { ["record"] = "显示名称" },
-            new Dictionary<string, ResultBindingInfo> { ["record"] = binding });
+        using var declaration=ToolResultViews.Declaration(schema,()=>true,new Dictionary<string,string>{["record"]="显示名称"});
+        presenter.Present(declaration,new Dictionary<string,ResultBindingInfo>{["record"]=binding});
         Assert.Same(rows, grid.ItemsSource); Assert.True(has);
         Assert.Equal(new[] { "结果", "显示名称", "scalar" }, rows.Select(row => row.DisplayName));
         Assert.Same(binding, rows[1].BindingInfo); Assert.Equal("explicit.address", rows[1].SourcePropertyName);
@@ -95,7 +97,7 @@ public sealed class ResultPresentationPresenterTests
         Assert.All(rows.Skip(2), row => Assert.Null(row.BindingInfo));
         Assert.StartsWith("加载下一页", rows[4].DisplayName);
         var recordRow = rows[1]; var fieldRow = rows[2];
-        presenter.ShowSchema(new ToolSchema(schema.Inputs, schema.Outputs));
+        presenter.Present(declaration);
         Assert.Same(recordRow, rows[1]); Assert.True(recordRow.IsExpanded); Assert.Same(fieldRow, rows[2]);
     });
 
@@ -107,7 +109,7 @@ public sealed class ResultPresentationPresenterTests
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { }, 32);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        presenter.ShowRun(run.Snapshot);
+        presenter.Present(run.Publication);
         Assert.Equal(2, rows.Count); Assert.Equal("[2000000 项]", rows[1].DisplayValue);
         rows[1].IsExpanded = true;
         Assert.Equal(35, rows.Count); Assert.Equal("[0]", rows[2].DisplayName); Assert.Equal("[31]", rows[33].DisplayName);
@@ -119,7 +121,7 @@ public sealed class ResultPresentationPresenterTests
         oldMore.IsExpanded = false; oldMore.IsExpanded = true; Assert.Equal(67, rows.Count);
         port.IsExpanded = false; Assert.Equal(2, rows.Count);
         port.IsExpanded = true; Assert.Equal(67, rows.Count); Assert.Same(first, rows[2]);
-        presenter.ShowRun(run.Snapshot); Assert.Same(port, rows[1]); Assert.True(port.IsExpanded); Assert.Same(first, rows[2]);
+        presenter.Present(run.Publication); Assert.Same(port, rows[1]); Assert.True(port.IsExpanded); Assert.Same(first, rows[2]);
     });
 
     [Fact]
@@ -133,7 +135,7 @@ public sealed class ResultPresentationPresenterTests
             new Dictionary<string, object?> { ["values"] = new[] { "a", "b", "c" } }).ToArray() });
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { }, 2);
-        presenter.ShowRun(run.Snapshot); rows[1].IsExpanded = true;
+        presenter.Present(run.Publication); rows[1].IsExpanded = true;
         Assert.Equal(5, rows.Count); Assert.DoesNotContain(rows, row => row.DisplayName == "values");
         var element = rows[2]; element.IsExpanded = true;
         var values = rows[3]; Assert.Equal("values", values.DisplayName); Assert.False(values.IsExpanded);
@@ -149,13 +151,13 @@ public sealed class ResultPresentationPresenterTests
             new Port("empty", DataType.Text), new Port("items", DataType.NumberArray));
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { });
-        presenter.ShowSchema(schema); Assert.All(rows, row => Assert.Equal("未运行", row.DisplayValue));
-        presenter.ShowRun(DeclaredOutputSnapshot.NotExecuted(schema, 2, Identity()));
+        SchemaPresent(presenter,schema); Assert.All(rows, row => Assert.Equal("未运行", row.DisplayValue));
+        using var notExecuted=ToolResultViews.FromSnapshot(DeclaredOutputSnapshot.NotExecuted(schema,2,Identity()),()=>true);presenter.Present(notExecuted);
         Assert.All(rows, row => Assert.Equal("未运行", row.DisplayValue));
-        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema, 2, Identity(), ExecutionStatus.Failed, new[] { new Diagnostic("failure", "detail") }));
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema, 2, Identity(), ExecutionStatus.Failed, new[] { new Diagnostic("failure", "detail") }));
         Assert.All(rows, row => Assert.Equal("失败: detail", row.DisplayValue));
         using var run = Success(schema, new() { ["null"] = null, ["empty"] = "", ["items"] = Array.Empty<double>() });
-        presenter.ShowRun(run.Snapshot);
+        presenter.Present(run.Publication);
         Assert.Equal(new[] { "成功", "missing", "null", "empty", "空序列 (0)" }, rows.Select(row => row.DisplayValue));
         Assert.False(rows.Last().IsGroup);
     });
@@ -169,7 +171,7 @@ public sealed class ResultPresentationPresenterTests
         var schema=Schema(new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),new Port("number",DataType.Number));
         var rows=new ObservableCollection<FlatResultRow>();
         using var presenter=new ResultPresentationPresenter(rows,_=>{});
-        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),status,new[]{new Diagnostic("test","detail")}));
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),status,new[]{new Diagnostic("test","detail")}));
         Assert.Equal(3,rows.Count);
         Assert.All(rows,row=>Assert.Equal(label+": detail",row.DisplayValue));
     });
@@ -179,8 +181,8 @@ public sealed class ResultPresentationPresenterTests
     {
         var rows=new ObservableCollection<FlatResultRow>();bool has=false;
         using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
-        presenter.ShowSchema(Schema());Assert.Empty(rows);
-        using var run=Success(Schema(),new());presenter.ShowRun(run.Snapshot);
+        SchemaPresent(presenter,Schema());Assert.Empty(rows);
+        using var run=Success(Schema(),new());presenter.Present(run.Publication);
         Assert.Equal("成功",Assert.Single(rows).DisplayValue);Assert.True(has);
     });
 
@@ -190,9 +192,9 @@ public sealed class ResultPresentationPresenterTests
         var schema=Schema(new Port("number",DataType.Number));var identity=Identity();
         var rows=new ObservableCollection<FlatResultRow>();
         using var presenter=new ResultPresentationPresenter(rows,_=>{});
-        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","first")}));
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","first")}));
         Assert.All(rows,row=>Assert.Equal("超时: first",row.DisplayValue));
-        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","second")}));
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","second")}));
         Assert.All(rows,row=>Assert.Equal("超时: second",row.DisplayValue));
     });
 
@@ -203,7 +205,7 @@ public sealed class ResultPresentationPresenterTests
         using var run=Success(schema,new(){["items"]=new[]{1d,2d,3d}});
         var rows=new ObservableCollection<FlatResultRow>();
         using var presenter=new ResultPresentationPresenter(rows,_=>{},2);
-        presenter.ShowRun(run.Snapshot);run.Dispose();
+        presenter.Present(run.Publication);run.ReleaseResult();
         var root=Assert.Single(presenter.Roots);Assert.Same(rows[0],root);
         var sequence=Assert.Single(root.Children);Assert.Same(rows[1],sequence);
         Assert.True(sequence.IsGroup);Assert.Empty(sequence.Children);
@@ -213,7 +215,7 @@ public sealed class ResultPresentationPresenterTests
         Assert.StartsWith("加载下一页",more.DisplayName);more.IsExpanded=true;
         Assert.Equal(new[]{"1","2","3"},sequence.Children.Select(row=>row.DisplayValue));
         Assert.Same(first,sequence.Children[0]);Assert.NotEmpty(sequence.Key);
-        presenter.ShowSchema(Schema(new Port("other",DataType.Boolean)));
+        SchemaPresent(presenter,Schema(new Port("other",DataType.Boolean)));
         var current=Assert.Single(presenter.Roots);more.IsExpanded=false;more.IsExpanded=true;
         Assert.False(presenter.ContainsRow(sequence));Assert.True(presenter.ContainsRow(current));
         Assert.Same(current,Assert.Single(presenter.Roots));Assert.Equal("other",Assert.Single(current.Children).DisplayName);
@@ -226,7 +228,7 @@ public sealed class ResultPresentationPresenterTests
         using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
         ((System.Collections.Specialized.INotifyCollectionChanged)presenter.Roots).CollectionChanged+=(_,args)=>
         {if(args.NewItems?.Count>0)presenter.Clear();};
-        presenter.ShowSchema(Schema(new Port("number",DataType.Number)));
+        SchemaPresent(presenter,Schema(new Port("number",DataType.Number)));
         Assert.Empty(presenter.Roots);Assert.Empty(rows);Assert.False(has);
     });
 
@@ -241,7 +243,7 @@ public sealed class ResultPresentationPresenterTests
                 new Port("single", DataType.NumberArray));
             using var run = Success(schema, new() { ["number"] = 1.25d, ["integer"] = long.MaxValue, ["flag"] = true, ["single"] = new[] { 3.5d } });
             var rows = new ObservableCollection<FlatResultRow>();
-            using var presenter = new ResultPresentationPresenter(rows, _ => { }); presenter.ShowRun(run.Snapshot);
+            using var presenter = new ResultPresentationPresenter(rows, _ => { }); presenter.Present(run.Publication);
             Assert.Equal(new[] { "成功", "1.25", "9223372036854775807", "true", "[1 项]" }, rows.Select(row => row.DisplayValue));
             rows.Last().IsExpanded = true; Assert.Equal("3.5", rows.Last().DisplayValue);
         }
@@ -256,16 +258,16 @@ public sealed class ResultPresentationPresenterTests
         using var first = Success(schema, new() { ["items"] = new[] { 1d, 2d, 3d } }, () => { released++; rowsWereEmpty = rows.Count == 0; });
         using var second = Success(schema, new() { ["items"] = new[] { 99d } });
         using var presenter = new ResultPresentationPresenter(rows, _ => { }, 1);
-        presenter.ShowRun(first.Snapshot); rows[1].IsExpanded = true;
-        first.Dispose(); Assert.Equal(0, released);
+        presenter.Present(first.Publication); rows[1].IsExpanded = true;
+        first.ReleaseResult(); Assert.Equal(0, released);
         var oldRow = rows[1]; var oldMore = rows.Last();
-        presenter.ShowRun(first.Snapshot); Assert.Same(oldRow, rows[1]); Assert.Equal(0, released);
-        presenter.ShowRun(second.Snapshot); Assert.Equal(1, released); Assert.True(rowsWereEmpty);
+        presenter.Present(first.Publication); Assert.Same(oldRow, rows[1]); Assert.Equal(0, released);
+        first.ReleasePublication();presenter.Present(second.Publication); Assert.Equal(1, released); Assert.True(rowsWereEmpty);
         Assert.False(rows[1].IsExpanded); Assert.NotSame(oldRow, rows[1]);
         oldMore.IsExpanded = true; oldRow.IsExpanded = false; oldRow.IsExpanded = true;
         Assert.Equal(2, rows.Count); Assert.Equal("[1 项]", rows[1].DisplayValue);
         rows[1].IsExpanded = true; Assert.Equal("99", rows.Last().DisplayValue);
-        presenter.ShowSchema(Schema(new Port("other", DataType.Text)));
+        SchemaPresent(presenter,Schema(new Port("other", DataType.Text)));
         Assert.Equal(new[] { "结果", "other" }, rows.Select(row => row.DisplayName));
     });
 
@@ -277,11 +279,11 @@ public sealed class ResultPresentationPresenterTests
         run.Result.ExecutionIdentity!.Owner.Retire(); Assert.False(run.Result.ExecutionIdentity.IsCurrent);
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { });
-        presenter.ShowRun(run.Snapshot); Assert.Equal("42", rows.Last().DisplayValue);
+        presenter.Present(run.Publication); Assert.Equal("42", rows.Last().DisplayValue);
     });
 
     [Fact]
-    public void Resource_roots_and_resource_aggregates_stay_pending_without_reading_borrowed_payloads() => Sta(() =>
+    public void Resource_leaves_stay_pending_while_mixed_record_scalars_remain_visible_without_reading_payloads() => Sta(() =>
     {
         var image = TypeRef.ResourceOf(ResourceKind.Image);
         var aggregate = TypeRef.RecordOf("r", new[] { new Port("image", image), new Port("label", DataType.Text) });
@@ -289,15 +291,16 @@ public sealed class ResultPresentationPresenterTests
         var poison = new PoisonImage(); int released = 0;
         using var run = Success(schema, new() { ["image"] = poison, ["record"] = new Dictionary<string, object?> { ["image"] = poison, ["label"] = "secret" } }, () => released++);
         poison.BeginPresentation();
+        var publication=run.Publication; // The publication borrows admitted values; it must not re-read resources either.
         var rows = new ObservableCollection<FlatResultRow>();
         var presenter = new ResultPresentationPresenter(rows, _ => { });
-        presenter.ShowRun(run.Snapshot); run.Dispose(); Assert.Equal(0, released);
-        Assert.All(rows.Skip(1), row => Assert.Equal("资源待接入", row.DisplayValue));
-        rows[2].IsExpanded = true;
-        Assert.DoesNotContain(rows, row => row.DisplayValue == "secret");
-        Assert.Equal("值不可用", rows.Single(row => row.DisplayName == "label").DisplayValue);
+        presenter.Present(publication);run.ReleaseResult();Assert.Equal(0,released);
+        Assert.Equal("资源待接入",rows[1].DisplayValue);Assert.Equal("记录",rows[2].DisplayValue);
+        rows[2].IsExpanded=true;
+        Assert.All(rows.Where(row=>row.DisplayName=="image"),row=>Assert.Equal("资源待接入",row.DisplayValue));
+        Assert.Equal("secret",rows.Single(row=>row.DisplayName=="label").DisplayValue);
         Assert.Equal(0, poison.Accesses); Assert.Equal(0, poison.Disposals);
-        presenter.Dispose(); presenter.Dispose(); Assert.Equal(1, released);
+        run.ReleasePublication();Assert.Equal(0,released);presenter.Dispose(); presenter.Dispose(); Assert.Equal(1, released);
         Assert.Equal(0, poison.Accesses); Assert.Equal(0, poison.Disposals);
     });
 
@@ -310,12 +313,12 @@ public sealed class ResultPresentationPresenterTests
         using var run = Success(schema, new() { ["items"] = new[] { 1d, 2d, 3d } });
         var rows = new ObservableCollection<FlatResultRow>(); bool has = false;
         using var presenter = new ResultPresentationPresenter(rows, value => has = value, 1);
-        presenter.ShowRun(run.Snapshot); rows[1].IsExpanded = true; var oldMore = rows.Last();
+        presenter.Present(run.Publication); rows[1].IsExpanded = true; var oldMore = rows.Last();
         Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => oldMore.IsExpanded = true));
         if (dispose) presenter.Dispose(); else presenter.Clear();
         Drain(); Assert.Empty(rows); Assert.False(has);
-        if (dispose) Assert.Throws<ObjectDisposedException>(() => presenter.ShowSchema(schema));
-        else { presenter.ShowSchema(schema); Assert.Equal(2, rows.Count); Assert.False(rows[1].IsExpanded); }
+        if (dispose) Assert.Throws<ObjectDisposedException>(() => SchemaPresent(presenter,schema));
+        else { SchemaPresent(presenter,schema); Assert.Equal(2, rows.Count); Assert.False(rows[1].IsExpanded); }
     });
 
     [Fact]
@@ -326,8 +329,10 @@ public sealed class ResultPresentationPresenterTests
         using var expired = Success(schema, new() { ["value"] = 2d });
         var rows = new ObservableCollection<FlatResultRow>(); bool has = false;
         using var presenter = new ResultPresentationPresenter(rows, value => has = value);
-        presenter.ShowRun(first.Snapshot); first.Dispose(); expired.Dispose();
-        Assert.Throws<ObjectDisposedException>(() => presenter.ShowRun(expired.Snapshot));
+        presenter.Present(first.Publication);first.ReleaseResult();first.ReleasePublication();
+        var expiredPublication=expired.Publication;expired.Dispose();
+        Assert.Throws<ObjectDisposedException>(()=>ToolResultViews.FromSnapshot(expired.Snapshot,()=>true));
+        Assert.Throws<ObjectDisposedException>(()=>presenter.Present(new BorrowFailure(expiredPublication)));
         Assert.Empty(rows); Assert.False(has); Assert.Equal(1, released);
     });
 
@@ -336,16 +341,110 @@ public sealed class ResultPresentationPresenterTests
     {
         var rows = new ObservableCollection<FlatResultRow>(); bool has = false;
         using var presenter = new ResultPresentationPresenter(rows, value => has = value);
-        presenter.ShowSchema(Schema()); Assert.Empty(rows); Assert.False(has);
+        SchemaPresent(presenter,Schema()); Assert.Empty(rows); Assert.False(has);
         bool armed = true;
         rows.CollectionChanged += (_, args) =>
         {
             if (armed && args.NewItems?.Count > 0) { armed = false; presenter.Clear(); }
         };
-        presenter.ShowSchema(Schema(new Port("value", DataType.Number)));
+        SchemaPresent(presenter,Schema(new Port("value", DataType.Number)));
         Assert.Empty(rows); Assert.False(has);
-        presenter.ShowSchema(Schema(new Port("value", DataType.Number))); Assert.Equal(2, rows.Count);
+        SchemaPresent(presenter,Schema(new Port("value", DataType.Number))); Assert.Equal(2, rows.Count);
     });
+
+    [Fact]
+    public void Shared_owner_is_not_disposed_and_stale_current_or_lease_stamp_cannot_supply_more_pages() => Sta(() =>
+    {
+        var schema=Schema(new Port("items",DataType.NumberArray));
+        using var actual=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint),ResultViewState.Success,
+            new InputValues(schema.Outputs,new Dictionary<string,object?>{["items"]=new[]{1d,2d,3d}}),new EmptyOwner(),()=>true);
+        var publication=new TrackedPublication(actual);var current=true;publication.Current=()=>current;
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{},1);
+        presenter.Present(publication);var sequence=rows[1];sequence.IsExpanded=true;var oldMore=rows.Last();
+        presenter.Present(publication);Assert.Same(sequence,rows[1]);Assert.Equal(1,publication.Borrows);
+        current=false;presenter.RefreshRows();Assert.Empty(rows);Assert.Equal(1,publication.LeaseDisposals);Assert.Equal(0,publication.OwnerDisposals);
+        oldMore.IsExpanded=true;Assert.Empty(rows);
+        current=true;publication.OverrideStamp=new ResultPublicationStamp(Guid.NewGuid(),actual.Stamp.Invocation,actual.Stamp.SchemaRevision,schema.Fingerprint);
+        presenter.Present(publication);Assert.Empty(rows);Assert.Equal(2,publication.Borrows);Assert.Equal(2,publication.LeaseDisposals);
+        Assert.Equal(0,publication.OwnerDisposals);
+    });
+
+    [Fact]
+    public void Reentrant_borrow_keeps_new_publication_and_releases_only_the_abandoned_lease() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));
+        using var first=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint),ResultViewState.Success,
+            new InputValues(schema.Outputs,new Dictionary<string,object?>{["number"]=1d}),new EmptyOwner(),()=>true);
+        using var next=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint),ResultViewState.Success,
+            new InputValues(schema.Outputs,new Dictionary<string,object?>{["number"]=22d}),new EmptyOwner(),()=>true);
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        var publication=new TrackedPublication(first){AfterBorrow=()=>presenter.Present(next)};
+        presenter.Present(publication);Assert.Equal(new[]{"成功","22"},rows.Select(row=>row.DisplayValue));
+        Assert.Equal(1,publication.Borrows);Assert.Equal(1,publication.LeaseDisposals);Assert.Equal(0,publication.OwnerDisposals);
+        presenter.Clear();Assert.Empty(rows);Assert.True(next.IsCurrent()); // borrowed reader only, not the host owner.
+    });
+
+    [Fact]
+    public void Declaration_null_invocation_and_new_publication_same_invocation_keep_distinct_diagnostics() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));var invocation=Identity();
+        using var declaration=ToolResultViews.Declaration(schema,()=>true);
+        Assert.Null(declaration.Stamp.Invocation);Assert.Equal(ResultViewState.Declaration,declaration.State);
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.Present(declaration);Assert.Equal("未运行",rows[0].DisplayValue);
+        using var first=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),invocation,1,schema.Fingerprint),ResultViewState.Timeout,
+            null,new EmptyOwner(),()=>true,new[]{new Diagnostic("timeout","first")});
+        using var second=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),invocation,1,schema.Fingerprint),ResultViewState.Timeout,
+            null,new EmptyOwner(),()=>true,new[]{new Diagnostic("timeout","second")});
+        presenter.Present(first);var old=rows[0];presenter.Present(second);
+        Assert.NotSame(old,rows[0]);Assert.All(rows,row=>Assert.Equal("超时: second",row.DisplayValue));
+    });
+
+    [Fact]
+    public void Publication_replacement_during_lazy_page_guard_cannot_append_retired_children() => Sta(() =>
+    {
+        var schema=Schema(new Port("items",DataType.NumberArray));
+        using var first=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint),ResultViewState.Success,
+            new InputValues(schema.Outputs,new Dictionary<string,object?>{["items"]=new[]{1d,2d,3d}}),new EmptyOwner(),()=>true);
+        using var next=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint),ResultViewState.Success,
+            new InputValues(schema.Outputs,new Dictionary<string,object?>{["items"]=new[]{99d}}),new EmptyOwner(),()=>true);
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{},1);
+        var publication=new TrackedPublication(first);presenter.Present(publication);var old=rows[1];var checks=0;
+        publication.Current=()=>{if(++checks==3)presenter.Present(next);return true;};
+        old.IsExpanded=true;
+        Assert.Equal(2,rows.Count);Assert.NotSame(old,rows[1]);Assert.Equal("[1 项]",rows[1].DisplayValue);
+        rows[1].IsExpanded=true;Assert.Equal("99",rows.Last().DisplayValue);
+        Assert.Equal(1,publication.LeaseDisposals);Assert.Equal(0,publication.OwnerDisposals);
+    });
+
+    [Fact]
+    public void Helper_publication_owners_remain_current_until_the_fixture_finishes_and_then_retire() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        SchemaPresent(presenter,schema);var declaration=Assert.Single(_helperPublications);
+        presenter.Clear();Assert.True(declaration.IsCurrent());
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),ExecutionStatus.Failed,new[]{new Diagnostic("failure","detail")}));
+        var failed=_helperPublications[1];Assert.True(declaration.IsCurrent());Assert.True(failed.IsCurrent());
+        Dispose();Assert.False(declaration.IsCurrent());Assert.False(failed.IsCurrent());Assert.Empty(_helperPublications);
+        presenter.Clear();Dispose();Assert.Empty(rows);
+    });
+
+    private sealed class EmptyOwner:IDisposable{public void Dispose(){}}
+    private sealed class TrackedPublication(IResultPublication inner):IResultPublication
+    {
+        public int Borrows,LeaseDisposals,OwnerDisposals;public Func<bool>? Current;public Action? AfterBorrow;public ResultPublicationStamp? OverrideStamp;
+        public ResultPublicationStamp Stamp=>OverrideStamp??inner.Stamp;public ToolSchema Schema=>inner.Schema;public ResultViewState State=>inner.State;
+        public IReadOnlyList<Diagnostic> Diagnostics=>inner.Diagnostics;public IReadOnlyDictionary<string,string> DisplayNames=>inner.DisplayNames;
+        public IReadOnlySet<string>? DisplayedPorts=>inner.DisplayedPorts;public bool IsCurrent()=>(Current?.Invoke()??true)&&inner.IsCurrent();
+        public IResultValueLease Borrow(){Borrows++;var lease=inner.Borrow();AfterBorrow?.Invoke();return new TrackedLease(lease,()=>LeaseDisposals++);}
+        public void Dispose(){OwnerDisposals++;inner.Dispose();}
+        private sealed class TrackedLease(IResultValueLease inner,Action disposed):IResultValueLease
+        {
+            private bool _disposed;public ResultPublicationStamp Stamp=>inner.Stamp;public InputValues? Values=>inner.Values;
+            public void Dispose(){if(_disposed)return;_disposed=true;inner.Dispose();disposed();}
+        }
+    }
 
     private static RunFixture Success(ToolSchema schema, Dictionary<string, object?> values, Action? release = null)
     {
@@ -362,11 +461,40 @@ public sealed class ResultPresentationPresenterTests
     }
     private sealed class Probe(Action release) : IToolPlugin<Parameters, Results>
     { public Results Run(Parameters parameters) => new(release); }
-    private sealed class RunFixture(Results result, DeclaredOutputSnapshot snapshot) : IDisposable
+    private sealed class RunFixture(Results result,DeclaredOutputSnapshot snapshot):IDisposable
     {
-        internal Results Result { get; } = result;
-        internal DeclaredOutputSnapshot Snapshot { get; } = snapshot;
-        public void Dispose() => Result.Resources!.Dispose();
+        internal Results Result{get;}=result;
+        internal DeclaredOutputSnapshot Snapshot{get;}=snapshot;
+        private IResultPublication? _publication;
+        internal IResultPublication Publication=>_publication??=ToolResultViews.FromSnapshot(Snapshot,()=>true);
+        internal void ReleaseResult()=>Result.Resources!.Dispose();
+        internal void ReleasePublication()=>_publication?.Dispose();
+        public void Dispose(){ReleasePublication();ReleaseResult();}
+    }
+    private readonly List<IResultPublication> _helperPublications=new();
+    private void HoldAndPresent(ResultPresentationPresenter presenter,IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)
+    {
+        _helperPublications.Add(publication); // register before Present, including its failure path.
+        presenter.Present(publication,bindings);
+    }
+    private void SchemaPresent(ResultPresentationPresenter presenter,ToolSchema schema,IReadOnlyDictionary<string,string>? displayNames=null,
+        IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null,IReadOnlySet<string>? displayedPorts=null)
+        =>HoldAndPresent(presenter,ToolResultViews.Declaration(schema,()=>true,displayNames,displayedPorts),bindings);
+    private void SnapshotPresent(ResultPresentationPresenter presenter,DeclaredOutputSnapshot snapshot)
+        =>HoldAndPresent(presenter,ToolResultViews.FromSnapshot(snapshot,()=>true));
+    public void Dispose()
+    {
+        var failures=new List<Exception>();
+        foreach(var publication in _helperPublications)try{publication.Dispose();}catch(Exception error){failures.Add(error);}
+        _helperPublications.Clear();
+        if(failures.Count!=0)throw new AggregateException("结果测试发布owner释放失败。",failures);
+    }
+    private sealed class BorrowFailure(IResultPublication inner):IResultPublication
+    {
+        public ResultPublicationStamp Stamp=>inner.Stamp;public ToolSchema Schema=>inner.Schema;public ResultViewState State=>inner.State;
+        public IReadOnlyList<Diagnostic> Diagnostics=>inner.Diagnostics;public IReadOnlyDictionary<string,string> DisplayNames=>inner.DisplayNames;
+        public IReadOnlySet<string>? DisplayedPorts=>inner.DisplayedPorts;
+        public bool IsCurrent()=>true;public IResultValueLease Borrow()=>inner.Borrow();public void Dispose(){}
     }
     private sealed class PoisonImage : IReadOnlyImage, IDisposable
     {

@@ -1,7 +1,18 @@
+## 2026-10-28 固定结果消费者9f197fbe集中集成
+
+- Root共享惰性/测试检查点72d1e9db，工作流固定9f197fbe（含ba45ea96/a920cd9f）已合工作区，仅CURRENT_TASK冲突，双方记录保留。下一按projection.Kind补缺Wpf fallback，然后使用本地cache源restore、规定UI/full构建及新轨；当前尚未本批构建回归，不套旧成绩。无live句柄，用户参数页保持。
+
 ## 2026-10-28 共享发布惰性借阅修正与正式用例准备
 
 - 3cf10837后修正InputValues公开只读Declarations、Publication只核冻结声明而借同InputValues，避免CopyValues触发Poison资源/数组复制；原表比实际image Domain/reader Domain并聚合当前性异常通知。PluginWpf层003=0错5352警告35.25秒。脚本已同步Present/Clear与真实SourceFrame/stamp/owner退休；新增六组共享publication、真实来源双组及保留原1205实际滚动。当前仅源审未跑本批新回归。
 - 工作流已交ba45ea96消费者及a920cd9f等fixture收尾最新候选，待固定HEAD整批合入；无本线live，95785终态0。下一先本地保存本批（排除用户参数页），合UI消费者/后续设计tests与依赖固定，再恢复依赖/规定UI全量及正式关联新轨。原C13非法输入case补显式Enter后重开/聚焦再输入并增强诊断，尚待验证，不能直接称修复。
+﻿## 2026-10-28 结果发布消费者整批候选（待正式验证）
+
+树、工具表、正式完成事件、调试回调、选节点声明及历史结果统一到宿主拥有的同一IResultPublication；树表各借自己的lease，不重复查询latest，历史按完整RunIdentity从选定run取唯一snapshot且仅发布处Acquire。换选择先退休publication，再清树表；独立选择intent及逐次epoch门禁防清理、属性通知同步重入覆盖新选择。表首次或重复呈现失败均退休两面并释放借用，重绑保留字段绑定元数据。异步正式事件在UI线程按实际方案节点实例定位所属工作流；调试核session/editor/tab/context/node，旧回调不串流程。
+
+D05混合记录现在按稳定字段/索引路径及弱publication/lease按128分页，标量、几何可展开，仅资源叶明确待接入，不读取像素或延长资源寿命。公共publication重复冻结问题已交主线修复声明校验并借原InputValues。无同帧viewport证明的结果选择只清高亮并明确诊断，不伪造当前图像来源。D06正式变量端口绑定、D07中立图像视口及完整Shell消费者迁移仍未完成；无result的调试异常状态、真实VS/硬件/人工验收继续单列，A01–E07完整范围不缩减。
+
+本批新增同一发布/最后租约释放、表呈现失败、清理重入选择的真实宿主回归源码；四个主要C#纯语法0错及diff检查通过，仅为静态结果。尚未规定UI/全量构建或运行新回归，不引用旧成绩。Group冻结，主线唯一正式Release构建，当前无本线live构建。
 
 ## 2026-10-28 结果公共publication真实API候选
 
@@ -60,6 +71,8 @@
 - D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
 - root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
 - 主线授权本线仅新增Results/PropertyList及Results/ResultShell对应Controls/Themes/Assets/Design子目录；native已从988a34f5独立分支迁原三列树/结果shell，不动StandardTable/C14/context/中立图像适配/C17。纯视觉DP/命令只回传实际投影对象，UI负责正式owner/publication校验，未造旧IToolResultView实现。
+- 主线35a7960b已集中合固定30e快照；首次restore001终态失败，尚未UI/full：新增Runtime.Tests浮动测试包在nuget.org不可达时NU1101。root核主仓现有UI.Tests资产实际使用17.14.1/2.9.3/3.1.5/6.0.4/5.3.0，新增测试项目固定同版本，保测试依赖及覆盖，不改公共NuGet源或删除测试，交主线重新restore。尚无本批编译或回归通过主张。
+- 同组装公开入口回归c4f0bd6e已合dc8f776d并纳ImageSources轨：local/camera两态、真实DeclaredFieldEditor改变同draft并刷新组合、公开Bind旧回调拒绝/旧Changed退订/同输入重读不释放/替换与最终各一次Dispose，共4执行例；仅静态核验未运行。主线本次集成已冻结30e05a51，本后续测试不篡改该历史，另交下一集中批。
 - B09设计链审计确认旧附加样例绕过外层Bind、相机态仍留本地源条；已集中统一ImageSourceParameterEditor.Bind，设计/运行都走source回调及Changed，重绑/关闭以同代次拒旧回调。指定ImageSources新增ImageSourceInputView承接原已有条/Native枚举/状态/管理按钮纯视觉，UI宿主保草稿/设备/计时器/管理动作；设计以同Runtime draft及只读session消费同一视觉，相机管理明确禁用，无第二模型/假帧。新增实际相机态DesignView，未以HTML替代。五C#语法、两XML/diff通过，尚未语义构建、真实VS或运行。
 - 原树Focusable=False并非错误：native沿原moduleviewstyle.xaml:432–436核到漏迁行Grid左键→实际row命令。root专用目录补原普通冒泡事件，重复同一行亦更新路径，右键/子按钮handled/程序恢复不执行，不靠TreeViewItem焦点改变；外调前后核当前视觉row。真实组合回归按RowContent路由输入补重复/右键/handled，三C#语法及两XML过，未运行。
 - 根参数整链057e8365已合cbf98caf：正式Runtime目录、强设置/引用/Unset/移除恢复接原根事务与实际视图；原根资源Fact保取消、接纳、历史、保存重开及sourceInputs真实图像/区域执行，未改Blob业务。原视觉6项真实WPF组合f8a7d2e5已合eeb1a1e4，纳正式ImageSources轨，未运行。

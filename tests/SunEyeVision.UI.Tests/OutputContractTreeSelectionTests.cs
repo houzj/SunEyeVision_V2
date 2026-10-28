@@ -1,7 +1,9 @@
-using System.IO;
+﻿using System.IO;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Contracts;
 using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Threading;
@@ -47,6 +49,75 @@ public sealed class OutputContractTreeSelectionTests
         f.Model.CloseResultPresentation(); Assert.Equal(1, released);
     });
 
+    [Fact]
+    public void Tree_and_table_share_the_same_publication_and_retire_before_releasing_the_last_lease()=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView();Set(f.Model,"_activeResultView",table);
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d,2d}});
+        try
+        {
+            f.Model.UpdateModuleResults(result,"A",nodeId:"a");
+            var publication=f.Model.CurrentResultPublication!;var row=Assert.Single(f.Model.ResultTreeRoots);
+            Assert.Same(publication,table.Publication);Assert.True(publication.IsCurrent());
+            f.Model.UpdateModuleResults(result,"A",nodeId:"a");
+            Assert.Same(publication,table.Publication);Assert.Same(row,Assert.Single(f.Model.ResultTreeRoots));
+            result.Resources!.Dispose();Assert.Equal(0,releases);
+            f.Select(f.B);
+            Assert.False(publication.IsCurrent());Assert.Null(f.Model.CurrentResultPublication);Assert.Null(table.Publication);
+            Assert.Empty(f.Model.ResultTreeRoots);Assert.Empty(f.Model.FlatResultRows);Assert.Equal(1,releases);
+        }
+        finally{result.Resources!.Dispose();}
+    });
+
+    [Fact]
+    public void Table_failure_retires_both_surfaces_and_does_not_leave_a_borrowed_publication()=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView{Fail=true};Set(f.Model,"_activeResultView",table);
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}});
+        try
+        {
+            Assert.Throws<InvalidOperationException>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));
+            Assert.Null(f.Model.CurrentResultPublication);Assert.Null(table.Publication);
+            Assert.Empty(f.Model.ResultTreeRoots);Assert.Empty(f.Model.FlatResultRows);
+            result.Resources!.Dispose();Assert.Equal(1,releases);
+        }
+        finally{result.Resources!.Dispose();}
+    });
+
+    [Fact]
+    public void Selection_cleanup_reentry_keeps_the_last_selection_intent()=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView();
+        Set(f.Model,"_activeResultView",table);
+        table.OnClear=()=>f.Model.SetSelectedNodeIdentity(null);
+        f.Select(f.B);
+        Assert.Null(f.Model.SelectedNode);
+    });
+
+    private sealed class RecordingResultView:IToolResultView
+    {
+        private IResultValueLease? _lease;
+        public IResultPublication? Publication {get;private set;}
+        public bool Fail {get;set;}
+        public Action? OnClear {get;set;}
+        public FrameworkElement View {get;}=new System.Windows.Controls.Border();
+        public IReadOnlyList<Port> Sources=>Array.Empty<Port>();
+        public event EventHandler<ResultSelection>? SelectionHighlightChanged {add{} remove{}}
+        public void Present(IResultPublication publication)
+        {
+            Clear();Publication=publication;_lease=publication.Borrow();
+            if(Fail)throw new InvalidOperationException("table prepare failed");
+        }
+        public void Clear(){Publication=null;var lease=_lease;_lease=null;lease?.Dispose();var callback=OnClear;OnClear=null;callback?.Invoke();}
+        public void Dispose()=>Clear();
+    }
+
     private sealed class FrozenResults : ToolResults
     {
         public FrozenResults() { }
@@ -61,9 +132,9 @@ public sealed class OutputContractTreeSelectionTests
     {
         using var f = new Fixture();
         f.Parameters.Raise(); Drain();
-        Assert.NotEmpty(f.Model.ModuleResultTree);
+        Assert.NotEmpty(f.Model.ResultTreeRoots);
         f.Parameters.Empty = true; f.Parameters.Raise(); Drain();
-        Assert.Empty(f.Model.ModuleResultTree);
+        Assert.Empty(f.Model.ModuleResultTree);Assert.Empty(f.Model.ResultTreeRoots);
         Assert.Empty(f.Model.FlatResultRows);
     });
 
@@ -76,7 +147,7 @@ public sealed class OutputContractTreeSelectionTests
         Assert.Equal(0, f.Parameters.ReadCount); // The production subscription really queued Background work.
         Drain();
         Assert.Equal(1, f.Parameters.ReadCount);
-        var root = Assert.Single(f.Model.ModuleResultTree);
+        var root = Assert.Single(f.Model.ResultTreeRoots);
         Assert.Equal("A", root.DisplayName);
         Assert.Contains(f.Model.FlatResultRows, row => row.SourcePropertyName == "latest" && row.SourceNodeId == f.A.Id);
     });
@@ -105,7 +176,7 @@ public sealed class OutputContractTreeSelectionTests
         Drain(); f.Unchanged(sentinel);
         Assert.Equal(new[] { nameof(MainWindowViewModel.SelectedNode), nameof(MainWindowViewModel.SelectedNode) }, notifications);
         f.Parameters.Raise(); Drain(); Assert.Equal(1, f.Parameters.ReadCount);
-        Assert.Equal("A", Assert.Single(f.Model.ModuleResultTree).DisplayName);
+        Assert.Equal("A", Assert.Single(f.Model.ResultTreeRoots).DisplayName);
     });
 
     [Fact]
@@ -178,7 +249,7 @@ public sealed class OutputContractTreeSelectionTests
     public void A_notification_during_provider_read_supersedes_that_read_before_tree_publication() => Sta(() =>
     {
         using var f = new Fixture(); var published = 0;
-        f.Model.ModuleResultTree.CollectionChanged += (_, args) => { if (args.NewItems?.Count > 0) published++; };
+        ((System.Collections.Specialized.INotifyCollectionChanged)f.Model.ResultTreeRoots).CollectionChanged += (_, args) => { if (args.NewItems?.Count > 0) published++; };
         f.Parameters.Name = "old";
         f.Parameters.BeforeRead = () => { f.Parameters.BeforeRead = null; f.Parameters.Name = "new"; f.Parameters.Raise(); };
         f.Parameters.Raise(); Drain();
@@ -238,6 +309,9 @@ public sealed class OutputContractTreeSelectionTests
             Set(Model, "<WorkflowTabViewModel>k__BackingField", tabs);
             Set(Model, "<ModuleResultTree>k__BackingField", new ObservableCollection<ModuleResultNode>());
             Set(Model, "_flatResultRows", flat); Set(Model, "_imageResult", image); Set(Model, "_openDebugWindow", Window);
+            Set(Model,"_workflowContextService",new SunEyeVision.UI.Services.WorkflowContextService());
+            Set(Model,"_productionEditors",new HashSet<SunEyeVision.UI.Services.Editing.ProductionEditorContext>());
+            Set(Model,"<CalculationResults>k__BackingField",new ObservableCollection<ResultItem>());
             Select(A); Window.Show(); Drain(); Assert.True(Window.IsLoaded);
             Model.SubscribeOutputContractRefresh(Window, A);
             Assert.Equal(1, Parameters.SubscriberCount);
@@ -252,7 +326,7 @@ public sealed class OutputContractTreeSelectionTests
         { Assert.Equal(0, Parameters.ReadCount); Assert.Same(root, Assert.Single(Model.ModuleResultTree)); }
         public void Dispose()
         {
-            Window.Close(); Drain(); _managerField.SetValue(null, _previousManager);
+            Model.CloseResultPresentation();Window.Close();Drain();_managerField.SetValue(null,_previousManager);
         }
     }
     private static void Set(object target, string name, object value) =>

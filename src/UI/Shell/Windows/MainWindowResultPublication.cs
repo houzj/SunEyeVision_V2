@@ -70,7 +70,17 @@ public partial class MainWindowViewModel
         bool Owner()=>viewOwner()&&(sourceIsCurrent?.Invoke()!=false)&&viewOwner();
         if(!Owner())return;
         var publication=ToolResultViews.FromSnapshot(snapshot,Owner);
-        PresentResultPublication(publication,snapshot,nodeName,DeclaredBindings(snapshot.Fields,snapshot.Identity.NodeId));
+        PresentResultPublication(publication,snapshot,nodeName,DeclaredBindings(publication.Schema,snapshot.Identity.NodeId));
+    }
+    private void RefreshCurrentResultBindings()
+    {
+        var publication=_resultPublication;var epoch=_resultPublicationEpoch;
+        if(publication is null||!publication.IsCurrent())return;
+        var nodeId=publication.Stamp.Invocation?.NodeId??SelectedNode?.Id;
+        var bindings=DeclaredBindings(publication.Schema,nodeId);
+        if(epoch!=_resultPublicationEpoch||!ReferenceEquals(_resultPublication,publication)||!publication.IsCurrent())return;
+        _resultPublicationBindings=bindings;
+        DeclaredResultPresenter.Present(publication,bindings);
     }
     private void PresentDeclaration(ToolSchema schema,string? nodeName,
         IReadOnlyDictionary<string,string> names,IReadOnlyDictionary<string,ResultBindingInfo>? bindings,

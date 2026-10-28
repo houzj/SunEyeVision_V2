@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -266,33 +266,44 @@ public class CommunicationReceiveDataToolTests
     {
         var service = Store();
         service.VariableCatalog = () => new[] { new ReceiveVariableSource("v", "code", "group", "String", true, "producer", ProtocolAssembleParameters.TextOutput.BindingKey) };
-        service.VariableReader = _ => throw new InvalidOperationException("No producer result");
+        service.VariableReader = _ => throw new InvalidOperationException("No admitted producer value");
         var p = new ReceiveDataParameters { SourceKind = "Variable", Variables = new() { new() { VariableId = "v" } } };
-        var produced = new ProtocolAssembleTool().Run(new ProtocolAssembleParameters { Parts = new() { new() { InputText = "CURRENT" } } });
+        var sourceParameters = new ProtocolAssembleParameters { Parts = new() { new() { InputText = "CURRENT" } } };
+        var produced = new ProtocolAssembleTool().Run(sourceParameters);
+        using var producedResources = produced.Resources;
         var result = await new ReceiveDataTool().ExecuteAsync(new ToolExecutionRequest(p) { CommunicationInputs = service,
             GlobalVariables = new Dictionary<string, object?> { ["code"] = "DESIGN" }, NodeResults = new Dictionary<string, ToolResults> { ["producer"] = produced } });
-        Assert.True(result.IsSuccess, result.ErrorMessage);
-        Assert.Equal("CURRENT", Assert.Single(Assert.IsType<string[]>(Value((CommunicationToolResults)result, p.Variables[0].Definition()))));
-        result = await new ReceiveDataTool().ExecuteAsync(new ToolExecutionRequest(p) { CommunicationInputs = service,
-            GlobalVariables = new Dictionary<string, object?> { ["code"] = "DESIGN" } }); Assert.False(result.IsSuccess);
+        Assert.False(result.IsSuccess); // Bare last results and design values have no production authority.
         var flow = new WorkflowEngine(VisionLogger.Instance).CreateWorkflow("flow", "variables");
-        flow.Nodes.Add(new WorkflowNodeBase("producer", "组装", "组装", "ProtocolAssemble") { Parameters = new ProtocolAssembleParameters() });
+        flow.Nodes.Add(new WorkflowNodeBase("producer", "组装", "组装", "ProtocolAssemble") { Parameters = sourceParameters });
         flow.Nodes.Add(new WorkflowNodeBase("receiver", "接收", "接收", "ReceiveData") { Parameters = p });
-        var variable = new GlobalVariable("code", "DESIGN", "String") { Id = "v", ProducerBinding = new() { WorkflowId = flow.Id, NodeId = "producer", ResultName = ProtocolAssembleParameters.TextOutput.BindingKey } };
-        var plan = SolutionExecutionDependencyGraph.Compile(new Solution { Workflows = new() { flow }, GlobalVariables = new() { variable } });
+        var variable = new GlobalVariable("code", "DESIGN", "String") { Id = "v", ProducerBinding = BindingAdaptationB2Tests.Producer(flow.Id,"producer",sourceParameters,ProtocolAssembleParameters.TextOutput.BindingKey) };
+        var solution = new Solution { Workflows = new() { flow }, GlobalVariables = new() { variable } };
+        var plan = SolutionExecutionDependencyGraph.Compile(solution);
         Assert.Contains(plan.Dependencies, edge => edge.Kind == SolutionDependencyKind.GlobalVariable && edge.GlobalVariableName == "code");
-        // No canvas edge: the receive variable itself must order the local producer before its consumer.
-        flow.Nodes.Move(1, 0);
+        flow.Nodes.Move(1, 0); // No canvas edge: the typed variable source orders its consumer.
         ToolRegistry.RegisterTool(typeof(ReceiveDataTool)); ToolRegistry.RegisterTool(typeof(ProtocolAssembleTool));
         var engine = new WorkflowEngine(VisionLogger.Instance); engine.RegisterWorkflow(flow);
         var runner = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
-        var run = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: service), default);
+        var capture = new NodeConfigurationEditHost(solution).Capture();
+        Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason),reason);
+        using var values = new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        var receive = new WorkflowGlobalVariableReceiveService(service,values,GlobalVariable.CaptureDefinitions(solution.GlobalVariables));
+        using var run = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: receive)
+        {
+            Configuration=WorkflowRunConfiguration.Capture(solution.Workflows,capture.Version),ExecutionOwner=solution.ExecutionOwner,
+            GlobalProducers=new[]{new WorkflowGlobalProducerOperation(variable.Id,variable.Name,variable.ProducerBinding.SourceReference,target,clr)},
+            ProducedGlobals=values
+        }, default);
         Assert.True(run.Success, string.Join(";", run.Errors));
-        service.VariableCatalog = () => new[] { new ReceiveVariableSource("v", "code", "group", "String", true, "producer", ProtocolAssembleParameters.TextOutput.BindingKey, "foreign-flow") };
-        var scoped = new RuntimeVariableReceiveService(service, null, workflowId: flow.Id);
+        Assert.Equal("CURRENT",Assert.Single(Assert.IsType<string[]>(Value(Assert.IsType<CommunicationToolResults>(run.NodeResults["receiver"].Result),p.Variables[0].Definition()))));
+        Assert.Equal("DESIGN",variable.Value);
+        using var unrelatedValues = new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        var scoped = new RuntimeVariableReceiveService(new WorkflowGlobalVariableReceiveService(service,unrelatedValues,
+            GlobalVariable.CaptureDefinitions(solution.GlobalVariables)),workflowId:"foreign-flow");
         result = await new ReceiveDataTool().ExecuteAsync(new ToolExecutionRequest(p) { CommunicationInputs = scoped,
-            NodeResults = new Dictionary<string, ToolResults> { ["producer"] = produced } });
-        Assert.False(result.IsSuccess); // Same node id from a different workflow must not supply this variable.
+            NodeResults = new Dictionary<string, ToolResults> { ["producer"] = produced },GlobalVariables=new Dictionary<string,object?>{{"code","DESIGN"}} });
+        Assert.False(result.IsSuccess); // Another invocation's same node id cannot manufacture a batch value.
     }
     [Fact]
     public void Receive_schema_serialization_and_notifications_keep_row_identity_and_remove_runtime_settings()

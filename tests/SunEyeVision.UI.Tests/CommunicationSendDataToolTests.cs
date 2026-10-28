@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -243,7 +243,7 @@ public sealed class CommunicationSendDataToolTests
         var solution = new Solution { Workflows = new() { flow }, GlobalVariables = new() { variable } }; await using var runtime = new CommunicationRuntimeManager();
         var service = new WorkflowCommunicationSendService(() => solution, runtime);
         service.ConfigureVariablePublications(sender.Id, new[] { new SendVariablePublication(variable.Id, p.VariableFields()[0].BindingKey, "String") });
-        Assert.Equal(sender.Id, variable.ProducerBinding!.NodeId);
+        Assert.Equal(sender.Id, variable.ProducerBinding!.SourceReference.NodeId);
         var reader = new CommunicationReceiveService { VariableCatalog = () => new[] { new ReceiveVariableSource(variable.Id, variable.Name, variable.Group, variable.Type, true, sender.Id, p.VariableFields()[0].BindingKey, flow.Id) } };
         ToolRegistry.RegisterTool(typeof(SendDataTool)); ToolRegistry.RegisterTool(typeof(ReceiveDataTool));
         var runner = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
@@ -251,7 +251,7 @@ public sealed class CommunicationSendDataToolTests
         Assert.True(result.Success, string.Join(";", result.Errors)); Assert.Equal("DESIGN", variable.Value);
         var output = result.NodeResults[receiver.Id].Result!.GetOutputVariables().Single(v => v.Name == receive.Variables[0].Definition().BindingKey);
         Assert.Equal("CURRENT", Assert.Single(Assert.IsType<string[]>(output.RuntimeValue)));
-        variable.ProducerBinding = new() { WorkflowId = flow.Id, NodeId = "other", ResultName = "x" };
+        variable.ProducerBinding = BindingAdaptationB2Tests.Producer(flow.Id,"other",p,p.VariableFields()[0].BindingKey);
         Assert.Throws<InvalidOperationException>(() => service.ConfigureVariablePublications(sender.Id, new[] { new SendVariablePublication(variable.Id, p.VariableFields()[0].BindingKey, "String") }));
     }
     [Fact]

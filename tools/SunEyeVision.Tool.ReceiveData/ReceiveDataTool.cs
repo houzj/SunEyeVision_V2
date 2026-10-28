@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -24,14 +24,14 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
     public System.Windows.FrameworkElement CreateDataAnalysisControl() => new CommunicationDataAnalysisControl();
     private static ICommunicationReceiveService? Scoped(ICommunicationReceiveService? service, string? workflowId) =>
         service == null || service is RuntimeVariableReceiveService || string.IsNullOrEmpty(workflowId) ? service :
-            new RuntimeVariableReceiveService(service, null, workflowId: workflowId);
+            new RuntimeVariableReceiveService(service, workflowId: workflowId);
     public CommunicationToolResults Run(ReceiveDataParameters p) => ReadAsync(p, Scoped(p.Context?.CommunicationInputs, p.Context?.WorkflowId),
-        p.Context?.CancellationToken ?? default, p.NodeResults, p.Context?.NodeId ?? p.FieldId.ToString("N")).GetAwaiter().GetResult();
+        p.Context?.CancellationToken ?? default, p.Context?.NodeId ?? p.FieldId.ToString("N")).GetAwaiter().GetResult();
     public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request) =>
-        await ReadAsync((ReceiveDataParameters)request.Parameters, Scoped(request.Context?.CommunicationInputs ?? request.CommunicationInputs, request.WorkflowId), request.CancellationToken, request.NodeResults,
+        await ReadAsync((ReceiveDataParameters)request.Parameters, Scoped(request.Context?.CommunicationInputs ?? request.CommunicationInputs, request.WorkflowId), request.CancellationToken,
             request.NodeId ?? ((ReceiveDataParameters)request.Parameters).FieldId.ToString("N")).ConfigureAwait(false);
     private static async Task<CommunicationToolResults> ReadAsync(ReceiveDataParameters p, ICommunicationReceiveService? service, CancellationToken token,
-        IDictionary<string, ToolResults>? nodeResults, string consumerId)
+        string consumerId)
     {
         var result = new CommunicationToolResults(); var watch = Stopwatch.StartNew(); var analysis = new List<CommunicationAnalysisRow>();
         try
@@ -66,8 +66,7 @@ public sealed class ReceiveDataTool : IToolPlugin<ReceiveDataParameters, Communi
             else if (p.SourceKind == "Variable")
             {
                 if (p.Variables.Count == 0 || p.Variables.Any(v => string.IsNullOrWhiteSpace(v.VariableId))) throw new InvalidOperationException("请选择每行对应的变量。");
-                var current = new RuntimeVariableReceiveService(service, null, nodeResults, (service as RuntimeVariableReceiveService)?.WorkflowId)
-                    .ReadVariables(p.Variables.Select(v => v.VariableId).ToArray());
+                var current = service.ReadVariables(p.Variables.Select(v => v.VariableId).ToArray());
                 foreach (var row in p.Variables)
                 {
                     if (!current.TryGetValue(row.VariableId, out var value)) throw new InvalidOperationException("所选变量已失效。");

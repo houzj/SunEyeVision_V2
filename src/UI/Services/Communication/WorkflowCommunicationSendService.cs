@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.Plugin.SDK.Models.Communication;
 using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.UI.Services.Communication;
 
@@ -68,17 +71,34 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
         if (mappings.Select(m => m.VariableId).Distinct().Count() != mappings.Count) throw new InvalidOperationException("同一变量不能重复配置。");
         var pending = mappings.Select(m => (Mapping: m, Variable: solution.GlobalVariables.FirstOrDefault(v => v.Id == m.VariableId)
             ?? throw new InvalidOperationException("目标变量不存在。"))).ToArray();
-        foreach (var (mapping, variable) in pending)
+        var owner = owners[0];
+        var node = owner.Nodes.Single(n => n.Id == nodeId);
+        var outputs = new OutputBindingChangeService().ReadContract(node)
+            ?? throw new InvalidOperationException("发送节点尚无正式输出声明。");
+        var assignments = pending.Select(item =>
         {
+            var (mapping, variable) = item;
             if (variable.Type != mapping.DataType) throw new InvalidOperationException("目标变量类型已变化。");
-            if (variable.ProducerBinding is { } producer && (producer.NodeId != nodeId || producer.WorkflowId != owners[0].Id))
+            if (variable.ProducerBinding is { } existing &&
+                (existing.SourceReference.NodeId != nodeId || existing.SourceReference.ScopeId != owner.Id))
                 throw new InvalidOperationException("目标变量已有其他生产来源。");
-        }
-        foreach (var v in solution.GlobalVariables.Where(v => v.ProducerBinding?.NodeId == nodeId && v.ProducerBinding.WorkflowId == owners[0].Id))
-            v.ProducerBinding = null;
-        foreach (var (mapping, variable) in pending)
-            variable.ProducerBinding = new() { WorkflowId = owners[0].Id, WorkflowName = owners[0].Name, NodeId = nodeId,
-                NodeName = owners[0].Nodes.First(n => n.Id == nodeId).Name, ResultName = mapping.OutputKey, ResultDisplayName = variable.Name };
+            var output = outputs.SingleOrDefault(o => o.Name == mapping.OutputKey)
+                ?? throw new InvalidOperationException("发送字段不属于节点的正式输出声明。");
+            var port = BindingClrAdapter.DescribeOutput(output);
+            var producer = new ProducerBinding
+            {
+                ReferenceExpression = BindingReferenceSerializer.Serialize(new OutputReference(nodeId, port.Id, port.Type,
+                    scopeId: owner.Id, storage: port.Storage)),
+                WorkflowName = owner.Name, NodeName = node.Name, ResultDisplayName = output.DisplayName
+            };
+            var validation = GlobalProducerBindingRules.Validate(solution, producer, variable);
+            if (validation.State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional)) throw new InvalidOperationException(validation.Reason);
+            return (Variable: variable, Producer: producer);
+        }).ToArray();
+        foreach (var variable in solution.GlobalVariables.Where(v => v.ProducerBinding is { } producer &&
+            producer.SourceReference.NodeId == nodeId && producer.SourceReference.ScopeId == owner.Id))
+            variable.ProducerBinding = null;
+        foreach (var assignment in assignments) assignment.Variable.ProducerBinding = assignment.Producer;
     }
 
     public async Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default)
@@ -98,7 +118,12 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
             var producer = variable.ProducerBinding;
             var owners = solution.Workflows.Where(w => w.Nodes.Any(n => n.Id == request.NodeId)).ToArray();
             var workflowId = request.WorkflowId ?? (owners.Length == 1 ? owners[0].Id : null);
-            if (producer == null || producer.NodeId != request.NodeId || producer.WorkflowId != workflowId || producer.ResultName != new CommunicationOutputField(input.FieldId, variable.Name, variable.Type).BindingKey)
+            var node = solution.Workflows.FirstOrDefault(w => w.Id == workflowId)?.Nodes.FirstOrDefault(n => n.Id == request.NodeId);
+            var output = node == null ? null : new OutputBindingChangeService().ReadContract(node)?.SingleOrDefault(o => o.FieldId == input.FieldId);
+            var source = producer?.SourceReference;
+            if (source == null || output == null || source.NodeId != request.NodeId || source.ScopeId != workflowId ||
+                source.PortId != BindingClrAdapter.OutputPortId(output) || source.MemberFieldPath.Count != 0 ||
+                source.Selection is not BindingSelection.AllItems || GlobalProducerBindingRules.Validate(solution, producer!, variable).State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional))
                 throw new InvalidOperationException("请重新确认发送变量绑定；发送节点不是目标变量生产者。");
             return new(variable.Name, value, ct =>
             {

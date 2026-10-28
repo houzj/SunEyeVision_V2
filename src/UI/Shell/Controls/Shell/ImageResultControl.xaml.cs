@@ -70,7 +70,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
             ModuleResultTreeView.BindVariableCommand=new RelayCommand(
                 value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
-                value=>EditingAllowed&&value is FlatResultRow {BindingInfo:not null} row&&_viewModel?.IsCurrentResultRow(row)==true);
+                value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);
+            ModuleResultTreeView.UnbindVariableCommand=new RelayCommand(
+                value=>{if(value is FlatResultRow row)EditResultVariable(row,true);},
+                value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);
             ModuleResultTreeView.CopyPathCommand=new RelayCommand(value=>
             {
                 if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
@@ -138,30 +141,38 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 从真实模块结果直接绑定全局变量。该入口与“全局变量管理器 → 输入来源”写入同一 ProducerBinding，
         /// 因而不会产生两套依赖配置。
         /// </summary>
-        private void BindResultToGlobalVariable(FlatResultRow row)
+        private void BindResultToGlobalVariable(FlatResultRow row)=>EditResultVariable(row,false);
+        private void EditResultVariable(FlatResultRow row,bool remove)
         {
-            if (!EditingAllowed||_viewModel?.IsCurrentResultRow(row)!=true||row.BindingInfo == null)
+            var main=_viewModel;
+            if(!EditingAllowed||main?.IsCurrentResultRow(row)!=true||row.BindingInfo is not {} endpoint||!row.IsBindable)return;
+            var solutionManager=ServiceInitializer.SolutionManager;
+            var expected=solutionManager.Session;var publication=main.CurrentResultPublication;
+            if(expected is null||publication is null||!publication.IsCurrent())return;
+            var reference=endpoint.Reference;
+            var root=expected.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Id==reference.ScopeId);
+            var node=root?.Nodes.SingleOrDefault(item=>item.Id==reference.NodeId);
+            if(root is null||node is null)return;
+            var binding=new ProducerBinding{ReferenceExpression=endpoint.ReferenceExpression,
+                WorkflowName=root.Name,NodeName=node.DispName,ResultDisplayName=endpoint.ResultPath};
+            var choices=expected.Document.GlobalVariables.Where(variable=>
+                (!remove||variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression)
+                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable).State is
+                    SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
+            if(choices.Count==0)
             {
+                ThemeMessageDialog.Show(remove?"该结果没有可解除的变量绑定。":"没有可承载该正式声明及存储的全局变量。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
                 return;
             }
-
-            var solutionManager=ServiceInitializer.SolutionManager;
-            var expected=solutionManager.Session;
-            var tab=_viewModel.WorkflowTabViewModel.SelectedTab;
-            if(expected is null||tab is null)return;
-            // Freeze schema identity before the modal picker. A switched document cannot reuse this row.
-            var binding=new ProducerBinding
-            {
-                WorkflowId=tab.RootWorkflowId,NodeId=row.BindingInfo.SourceNodeId,
-                ResultName=row.BindingInfo.ResultPath,SourceFieldId=row.BindingInfo.SourceFieldId,
-                ResultDisplayName=row.DisplayName
-            };
-            var variable=GlobalVariableSelectDialog.ShowSelect(solutionManager,row.BindingInfo.ValueVocabulary);
+            var variable=GlobalVariableSelectDialog.ShowSelect(choices);
             if(variable is null)return;
-            if(!EditingAllowed||!_viewModel.IsCurrentResultRow(row))return;
-            if(!_viewModel.TryBindResultVariable(expected,binding,variable.Id,out var error))
-                ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
-
+            // The modal window may run arbitrary editing/navigation before it returns.
+            if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.Session,expected)
+                ||!ReferenceEquals(main.CurrentResultPublication,publication)||!publication.IsCurrent()
+                ||!main.IsCurrentResultRow(row)||!ReferenceEquals(row.BindingInfo,endpoint))return;
+            var accepted=remove?main.TryUnbindResultVariable(expected,binding,variable.Id,out var error)
+                :main.TryBindResultVariable(expected,binding,variable.Id,out error);
+            if(!accepted)ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
         }
 
         /// <summary>先正式接纳明确选择，再由本轮配置快照执行。</summary>

@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Models.Communication;
+﻿using SunEyeVision.Plugin.SDK.Models.Communication;
 using SunEyeVision.Workflow;
 using Xunit;
 
@@ -17,7 +17,7 @@ public class CommunicationReceiveConsumptionTests
         Assert.True(first.IsSuccess);
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var waiting = tool.ExecuteAsync(new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(p)
-            { WorkflowId = "flow", NodeId = "node", CommunicationInputs = new RuntimeVariableReceiveService(store, null, workflowId: "flow"), CancellationToken = stop.Token }).AsTask();
+            { WorkflowId = "flow", NodeId = "node", CommunicationInputs = new RuntimeVariableReceiveService(store, workflowId: "flow"), CancellationToken = stop.Token }).AsTask();
         Assert.False(waiting.IsCompleted);
         var other = await tool.ExecuteAsync(new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(p)
             { WorkflowId = "other", NodeId = "node", CommunicationInputs = store });
@@ -102,12 +102,12 @@ public class CommunicationReceiveConsumptionTests
         var same = second.CreateChildScope("child", second.RootScope.RunId, "caller-a");
         var b = second.CreateChildScope("child", second.RootScope.RunId, "caller-b");
         Assert.Equal(a.ConsumerScope, same.ConsumerScope); Assert.NotEqual(a.ConsumerScope, b.ConsumerScope);
-        var service = new RuntimeVariableReceiveService(store, null) { ConsumerScope = a.ConsumerScope };
+        var service = new RuntimeVariableReceiveService(store) { ConsumerScope = a.ConsumerScope };
         await service.ConsumeAsync("d", "", "node", _ => { });
-        var other = new RuntimeVariableReceiveService(store, null) { ConsumerScope = b.ConsumerScope };
+        var other = new RuntimeVariableReceiveService(store) { ConsumerScope = b.ConsumerScope };
         await other.ConsumeAsync("d", "", "node", s => Assert.Equal(1, s.Sequence));
         using var stop = new CancellationTokenSource();
-        var rerun = new RuntimeVariableReceiveService(store, null) { ConsumerScope = same.ConsumerScope }
+        var rerun = new RuntimeVariableReceiveService(store) { ConsumerScope = same.ConsumerScope }
             .ConsumeAsync("d", "", "node", _ => Assert.Fail("reused"), stop.Token);
         Assert.False(rerun.IsCompleted); stop.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => rerun);

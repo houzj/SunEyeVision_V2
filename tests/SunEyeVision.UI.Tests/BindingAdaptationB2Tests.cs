@@ -1,5 +1,7 @@
-using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
+﻿using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System.Text.Json;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -63,6 +65,15 @@ public sealed class BindingAdaptationB2Tests
         OutputBindingChangeService.EnsureExecutable(frozen, "design");
         Assert.NotNull(new OutputBindingChangeService().ReadContract(source));
     }
+    public static ProducerBinding Producer(string scope,string node,ToolParameters parameters,string? outputName=null)
+    {
+        var output=new OutputBindingChangeService().ReadContract(Node(node,parameters))!
+            .Single(item=>item.Kind==OutputVariableKind.Data&&(outputName is null||item.Name==outputName));
+        return ProducerFromPort(scope,node,BindingClrAdapter.DescribeOutput(output));
+    }
+    public static ProducerBinding ProducerFromPort(string scope,string node,Port port)
+        =>new(){ReferenceExpression=BindingReferenceSerializer.Serialize(
+            new OutputReference(node,port.Id,port.Type,scopeId:scope,storage:port.Storage))};
     private static WorkflowNodeBase Node(string id, ToolParameters p) => new(id, id, id, "B2Test") { Parameters = p };
     private static SunEyeVision.Workflow.Workflow Flow(string id, params WorkflowNodeBase[] nodes)
     { var f = new SunEyeVision.Workflow.Workflow(id, id); foreach (var n in nodes) f.Nodes.Add(n); return f; }
@@ -170,7 +181,7 @@ public sealed class BindingAdaptationB2Tests
         target.ParamSettings.SetSetting(ParamSetting.CreateBinding("Value", "__GlobalVars__", "v"));
         var receive = new ReceiveDataParameters { SourceKind = "Variable" }; receive.Variables[0].VariableId = "id"; receive.Variables[0].DataType = "Double";
         var (solution, service) = Setup(Flow("a", Node("source", source)), Flow("b", target, Node("receive", receive)));
-        solution.GlobalVariables.Add(new() { Id = "id", Name = "v", Type = "Double", ProducerBinding = new() { WorkflowId = "a", NodeId = "source", ResultName = "value" } }); service.Reset(solution);
+        solution.GlobalVariables.Add(new() { Id = "id", Name = "v", Type = "Double", ProducerBinding = Producer("a", "source", source) }); service.Reset(solution);
         var graph = SolutionExecutionDependencyGraph.Compile(solution);
         Assert.Contains("a/source", graph.GetPredecessors("b/target")); Assert.Contains("a/source", graph.GetPredecessors("b/receive"));
     }
@@ -203,10 +214,10 @@ public sealed class BindingAdaptationB2Tests
         var flow = Flow("f", Node("a", new SourceParameters()), Node("returned", new SourceParameters()), Node("free", new SourceParameters()));
         var (solution, service) = Setup(flow, Flow("other", Node("bridge", new SourceParameters())));
         solution.GlobalVariables.Add(new() { Id = "out", Name = "out", Type = "String",
-            ProducerBinding = new() { WorkflowId = "f", NodeId = "a", ResultName = "value" },
+            ProducerBinding = Producer("f", "a", flow.Nodes[0].Parameters),
             ConsumerBindings = new() { new() { WorkflowId = "other", NodeId = "bridge", ParameterName = "Value" } } });
         solution.GlobalVariables.Add(new() { Id = "back", Name = "back", Type = "String",
-            ProducerBinding = new() { WorkflowId = "other", NodeId = "bridge", ResultName = "value" },
+            ProducerBinding = Producer("other", "bridge", solution.Workflows[1].Nodes[0].Parameters),
             ConsumerBindings = new() { new() { WorkflowId = "f", NodeId = "returned", ParameterName = "Value" } } });
         service.Reset(solution);
         Assert.Equal(new[] { "free" }, service.GetCandidateNodeIds("f", "a"));
@@ -286,7 +297,7 @@ public sealed class BindingAdaptationB2Tests
     {
         var parse = new ProtocolParseParameters { InputText = "__GlobalVars__.v" };
         var (solution, service) = Setup(Flow("f", Node("source", new GenericToolParameters()), Node("parse", parse)));
-        solution.GlobalVariables.Add(new() { Id = "id", Name = "v", Type = "String", ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } }); service.Reset(solution);
+        solution.GlobalVariables.Add(new() { Id = "id", Name = "v", Type = "String", ProducerBinding = ProducerFromPort("f", "source", new Port("output.value",TypeRef.ScalarOf(ScalarKind.Text))) }); service.Reset(solution);
         service.ReconcileAll(); Assert.NotEmpty(solution.GlobalVariables[0].BindingValidationPending); Assert.Single(parse.BindingValidationPending); Assert.NotEmpty(parse.InputText);
         var issues = OutputBindingChangeService.GetExecutionInputIssues(solution.Workflows[0]);
         Assert.Contains("parse", issues.Keys);
@@ -299,9 +310,10 @@ public sealed class BindingAdaptationB2Tests
     public void Global_producer_rename_preserves_stable_output_and_deletion_blocks_initial_fallback()
     {
         var source = new SourceParameters(); var (solution, service) = Setup(Flow("f", Node("source", source)));
-        var variable = new GlobalVariable { Id = "id", Name = "v", Type = "String", ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } };
+        var variable = new GlobalVariable { Id = "id", Name = "v", Type = "String", ProducerBinding = Producer("f", "source", source) };
         solution.GlobalVariables.Add(variable); service.Reset(solution); source.Name = "renamed";
-        service.Commit("f", "source"); Assert.Equal("renamed", variable.ProducerBinding!.ResultName); Assert.Equal(source.FieldId, variable.ProducerBinding.SourceFieldId);
+        service.Commit("f", "source"); Assert.Equal("field:"+source.FieldId.ToString("N"), variable.ProducerBinding!.SourceReference.PortId);
+        Assert.Equal("source",variable.ProducerBinding.SourceReference.NodeId);
         source.FieldId = Guid.NewGuid(); service.Commit("f", "source"); Assert.Null(variable.ProducerBinding); Assert.NotEmpty(variable.RebindingReason);
     }
 

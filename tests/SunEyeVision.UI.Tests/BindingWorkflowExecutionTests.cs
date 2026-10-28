@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using NSubstitute;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -157,7 +157,8 @@ public sealed class BindingWorkflowExecutionTests
         var target=fixture.Add("target",false,777);fixture.Add("independent",true,99);
         target.ParamSettings.SetSetting(ParamSetting.CreateBinding("Input","__GlobalVars__","v"));
         fixture.Solution.GlobalVariables.Add(new GlobalVariable {Id="v-id",Name="v",Type="Double",Value=999d,
-            ProducerBinding=new(){WorkflowId=fixture.Flow.Id,NodeId="missing",ResultName="Value"}});
+            ProducerBinding=BindingAdaptationB2Tests.ProducerFromPort(fixture.Flow.Id,"missing",
+                new SunEyeVision.Plugin.Contracts.Port("name:Value",SunEyeVision.Plugin.Contracts.TypeRef.ScalarOf(SunEyeVision.Plugin.Contracts.ScalarKind.Float64)))});
         var service=new OutputBindingChangeService();service.Reset(fixture.Solution);service.ReconcileAll();
         Assert.NotEmpty(target.Parameters.BindingValidationPending);
         using var result=await fixture.Run(new Dictionary<string,object?>{{"v",999d}});

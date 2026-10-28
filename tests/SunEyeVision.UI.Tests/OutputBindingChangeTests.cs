@@ -1,4 +1,6 @@
-using System.Text.Json;
+﻿using System.Text.Json;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -20,6 +22,12 @@ public sealed class OutputBindingChangeTests
         foreach (var n in nodes) flow.Nodes.Add(n);
         var solution = new Solution { Workflows = new() { flow } };
         var service = new OutputBindingChangeService(); service.Reset(solution); return (solution, service);
+    }
+    private static ProducerBinding Producer(string workflow,string node,OutputVariable output)
+    {
+        var port=BindingClrAdapter.DescribeOutput(output);
+        return new() { ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(node,port.Id,port.Type,
+            scopeId:workflow,storage:port.Storage)) };
     }
     private static string Expression(ReceiveDataParameters p) => "source." + p.OutputDefinition().BindingKey;
 
@@ -86,7 +94,7 @@ public sealed class OutputBindingChangeTests
         var p = new ProtocolParseParameters { InputText = "__GlobalVars__.v" };
         var (solution, service) = Setup(Node("source", source), Node("receive", receive), Node("parse", p));
         var variable = new GlobalVariable { Id = "v", Name = "v", Type = "String", Value = "INITIAL",
-            ProducerBinding = new() { WorkflowId = "flow", NodeId = "source", ResultName = source.OutputDefinition().BindingKey },
+            ProducerBinding = Producer("flow", "source", new OutputBindingChangeService().ReadContract(solution.Workflows[0].Nodes[0])!.Single(output => output.Kind == OutputVariableKind.Data)),
             ConsumerBindings = new() { new() { WorkflowId = "flow", NodeId = "parse", ParameterName = "InputText" } } };
         solution.GlobalVariables.Add(variable); service.Reset(solution); solution.Workflows[0].Nodes.RemoveAt(0);
         service.Commit("source"); Assert.Null(variable.ProducerBinding); Assert.NotEmpty(variable.RebindingReason);
@@ -96,7 +104,7 @@ public sealed class OutputBindingChangeTests
         Assert.DoesNotContain(graph.Dependencies, d => d.Kind == SolutionDependencyKind.GlobalVariable);
         Assert.Throws<InvalidOperationException>(() => OutputBindingChangeService.EnsureExecutable(solution.Workflows[0]));
         var copy = JsonSerializer.Deserialize<GlobalVariable>(JsonSerializer.Serialize(variable))!; Assert.Equal(variable.RebindingReason, copy.RebindingReason);
-        variable.ProducerBinding = new() { NodeId = "new" }; Assert.Empty(variable.RebindingReason);
+        variable.ProducerBinding = Producer("flow", "new", new OutputBindingChangeService().ReadContract(Node("new", source))!.Single(output => output.Kind == OutputVariableKind.Data)); Assert.Empty(variable.RebindingReason);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +43,6 @@ public partial class MainWindowViewModel
                 var solution = ServiceInitializer.SolutionManager.CurrentSolution
                     ?? throw new InvalidOperationException("当前没有解决方案。");
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
-                _executionManager.SetGlobalVariables(solution.GlobalVariables.ToDictionary(v => v.Name, v => v.Value));
                 var tabs = WorkflowTabViewModel.Tabs.Where(t => solution.Workflows.Any(w => !w.IsSubroutine && w.Id == t.RootWorkflowId)).ToArray();
                 foreach (var assignment in request.Assignments)
                 {

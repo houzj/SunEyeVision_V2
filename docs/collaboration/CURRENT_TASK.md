@@ -4,6 +4,15 @@
 - 早期库层001已0错5354警告30.96秒；其后生命周期修复/Design/9组实际Window case未新编验，不套早期成绩。当前无live（69545终态0）。这只是D07必要依赖，不是完整geometry/text/selection/ROI单owner，也非主图生产接入。Blob业务及用户参数页不改。
 - C09/C17及D07三路只读核证已实派；C09缺真正FIXTURE native编码/角单位/顺序，不能拼10float矩阵；C17原四模板及*/Auto/Auto固定底栏已精确核证，尚未实施。本线不将静态证据当原样式全部运行验收。
 - 工作流D06完整候选24615965（50文件）已交，基线c2；其自述只语法检查，未私有构建。下一先封存本线候选（排除用户页），合D06，集中规定UI/full及正式EXE，再优先新GlobalBinding15组/图像源和原结果视口9组，按真实错误回原线修，不套旧173/18矩阵。
+﻿## 2026-10-28 D06 完整类型生产者批已收齐，等待正式集成验证
+
+用户明确授权“授权按完整批实施”。本线已同步主线 c2aeebb2 为 1d1e229c（仅双方任务/视口文档冲突，证据均保留）；此前 b6 正式产品与 a9 夹具的 ImageSources173/0、Host1/0属于上一批，不计本次D06通过。
+
+本批一次贯通：ProducerBinding仅ReferenceExpression持久身份；根端口/声明成员/集合All的UI绑定及解除、正式草稿/历史/保存；同Host版本的配置/global定义、真实owner/资源基目录；源节点完成且scope尚有效时，以独立_expected和真实admission解析，再写纯值batch；同流/跨流/单模块通信/连续/取消排空。SDK消费者作用域代理及ReceiveData退出nodeResults/点路径二次解析，Manager退出释放后回填和旧全局值setter。源模型/通信/依赖/历史全部消费者同批切换，无旧Producer字段兼容入口。
+
+值槽初值和产值只接纯标量及一维纯标量数组，拒资源、组合、嵌套/未知对象。通信现行Normalize/编辑器仅支持单项，数组通信明确拒绝并保依赖；资源/几何/组合全局存储仍未实现，不能当本批已交付。Group不扩展，内部单模块通讯明确拒绝错误scope搬运。
+
+新增真实引擎、Manager生产、WPF选择器及保存重开回归源码，并集中迁移全部旧producer测试；GlobalBinding正式轨与原ImageSources定向回归准备。43个C#纯语法0错、diff检查通过；未语义编译、未运行D06、未VS/人工，不交付验收。本线无私有Release/无live构建；主仓唯一正式窗口待固定候选后统一UI/full及关联轨。完整A01–E07仍保，D07及整个目标未完成。
 
 ## 2026-10-28 结果树表同源数据链本批核收通过
 
@@ -27,6 +36,12 @@
 - 用户已对持久合同+正式global赋值具体授权“授权按完整批实施”；两次被自动审批拒绝的脚本此前均未执行。D06仍整批预备，UI/helper候选独立未交付；仅全部消费者/生命周期测试齐后切换，不做破坏性半迁移提交、不保旧桥。当前先把上述既有真实失败交主线同源验证；Group冻结。
 
 ## 2026-10-28 图像源真实回归失败集中修复候选
+
+- 已同步主线固定检查点d8cca20e为536520b3。新关联DesignTime91、Components9及RuntimeEditor10/FullChain8/Theme1/RootResource实际Fact1由主线报告通过，各范围单列；ImageSources001真实失败并被async void夹具异常终止，WorkflowHost001缺ImageLoad失败，不能称整链通过。EXE探针身份校验失败不计通过，待新整批后重验。
+- 已按完整日志归因并集中修：7133cbe3保根关闭后拒读/独立像素及Domain reader存活并最终失效；非法input.*设置覆盖在准入精确抛异常，补合法下一轮证明槽位排空。670d47ef修原树容器重建不可覆盖host child；交互夹具真实RoutedEvent及ContextIdle排空DataBind，明确初始选择核重复导入身份/版本不变；旧冻结执行仍用旧图，但后接纳的正式选择2须保留，显示游标独立原断言另保；WorkflowHost真实加载正式组件后才MarkLoaded。3ec63d5c修原Shell六态旧Apps.Style URI为实际打包路径。
+- 四主要C#纯语法0错、XML/资源存在/diff检查通过，均非新运行成绩。主线另修按Dispatcher弱实例颜色字典及DeclaredPropertyList分页异常事务，双方不同文件，下一一次集成构建/重跑；当前本线工作树源码已提交，无live构建、不写私有Release。
+- D06新产品暂停于整体设计，D07闭包证据保留。Arc只读可候选复用原IAnnularSector等半径，负sweep规范同点集、整圈用原Circle避免0.01缺口；双向重复描边/线帽和透明度仍须实际核验，不把ROI缺手势当显示缺能力。Group冻结，A01–E07完整保留。
+
 ## 2026-10-28 同源结果发布已接入；真实关联失败集中修复
 
 - 固定产品基线d8cca20e，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。UI003=0错6579警告147.40秒，全量004=0错6606警告84.64秒；publication8/origins2/table1/style2均过，真实表500→1000→1205。Design91、Components9（真HALCON+owner）、RuntimeEditor10、FullChain8、Resources、Theme1及RootResource真实Fact1过。
@@ -43,6 +58,32 @@
 - 3cf10837后修正InputValues公开只读Declarations、Publication只核冻结声明而借同InputValues，避免CopyValues触发Poison资源/数组复制；原表比实际image Domain/reader Domain并聚合当前性异常通知。PluginWpf层003=0错5352警告35.25秒。脚本已同步Present/Clear与真实SourceFrame/stamp/owner退休；新增六组共享publication、真实来源双组及保留原1205实际滚动。当前仅源审未跑本批新回归。
 - 工作流已交ba45ea96消费者及a920cd9f等fixture收尾最新候选，待固定HEAD整批合入；无本线live，95785终态0。下一先本地保存本批（排除用户参数页），合UI消费者/后续设计tests与依赖固定，再恢复依赖/规定UI全量及正式关联新轨。原C13非法输入case补显式Enter后重开/聚焦再输入并增强诊断，尚待验证，不能直接称修复。
 ﻿## 2026-10-28 结果发布消费者整批候选（待正式验证）
+
+﻿## 2026-10-28 正式构建均过；首批发布/来源/树表回归已核日志
+
+- 主线UI003=0错误；全量004日志末尾0错误/6606警告84.64秒（10bdab41测试接缝修正已由主线合入）。本线只读主仓实际日志，不重复构建，不把未提交产品修正套成本分支已验证。
+- artifacts/result-publication-window-publication-20261028-001.log为8过0败（共享借阅/owner退休/错声明/状态/当前性/原树重入及异常清理）；origins001为2过0败（实际Domain坐标、同尺寸双Frame和租约重入）；table001为1过0败（原表10列/500增量）；style001为2过0败。以上仅各自自动范围，不代图像源整链/真实VS/人工。
+- D07补核原只读点线圆椭圆矩形多边形现成显示与ROI手势分开；ShapeConvertMatrix非统一投影；NativeRoiImageFrame没有Domain显示，原ClipToBounds非有效域。已补D07交接完整坐标/Domain/RLE/10000静默截断风险与实施约束，尚未写产品。待主线固定修复检查点后继续成片落地。
+
+## 2026-10-28 正式UI003已过；全量测试编译修正与D06/D07设计集中交接
+
+- 主线UI003=0错6579警告147.40秒；全量003终态1/26错误/6504警告91.54秒，均测试编译接缝。10bdab41集中修5文件缺引用/局部重名/ResultItem歧义，保全部断言，已交主线仅重试full，未重复改产品或本线构建。
+- D07完整设计99a5e390及D06实际准入补定已统一原主方案：复用已有Frame/lease/原视口；独立结果epoch/viewport epoch/图层revision，背景与结果pub可不同但物理Frame须完整匹配，12条SDK消费者整片迁；D06解析移到源scope资源释放前，真实expected/版本贯通、运行变量槽owner不裸资源。均未产品实施，不记完成。
+- 目标A01–E07全清单继续；真实VS/硬件/人工仍未验，Group冻结。下一取得主线固定产品检查点后依整体设计成片实施，不抢共享层。
+
+## 2026-10-28 正式UI002错误已交增量修复；清单同步真实候选
+
+- 主线UI002终态1/full未启动，实际3错误为FileImport Path命名冲突及WorkflowExecutionManager两处nodeParameterOverrides遗失。本线c1fd3b9b修System.IO.Path，并恢复通讯专属覆盖字典及runRequest传递，保留binding覆盖共同作用；源选择仍独立SourceInputs，未恢复旧源配置。两文件纯语法0错，工作树干净，未本线构建；主线集中合入/重建。
+- 主线独占修MissingUsing、Main通知setter门禁及DeclaredPropertyList新组件三项重入/聚合清理，不在87f4重复改。A08/D01/D04/D05/D06/D08/D09/E05逐项更新原方案候选/失败/未完，全部39项仍保留。
+- 下一D06全局producer真实admission/expected来源与资源排空设计、D07完整视口消费者只读设计并行；关键合同未定不先造接口。Group继续冻结。
+
+## 2026-10-28 D06完整绑定设计已取证；主线进入正式构建
+
+- 独立文档5060c0d4已核原件子IO/组合All，不缩成根字符串；推荐复用OutputReference/serializer/ParameterBindingService唯一身份，完整UI/Workflow/通信/历史/运行资源链列于HANDOFF_D06_BINDING_DESIGN_20261028.md，原主方案已同步。全局consumer真实admission及资源存储基础须实施前确定，尚未开产品批；单[n]证据不足不冒称原件支持。
+- 主线合9f197fbe为共同候选0185b2e7，首轮UI失败缺System.ComponentModel using；主线集中修该处和UpdateDataAnalysisControl通知setter门禁，全量尚未运行。Host重入fixture一行修正46cce5cc已交主线，非产品变更。当前本线无live构建，不写私有Release；新成绩待主线实际回传。
+- D07只读设计接续核现NativeTextViewport/NativeRoiImageFrame、原Shell/ImageViewBox及SDK消费者整片替换；主线共享层唯一写、Group暂停、A01–E07目标保持完整。
+
+## 2026-10-28 结果发布消费者整批候选（待正式验证）
 
 树、工具表、正式完成事件、调试回调、选节点声明及历史结果统一到宿主拥有的同一IResultPublication；树表各借自己的lease，不重复查询latest，历史按完整RunIdentity从选定run取唯一snapshot且仅发布处Acquire。换选择先退休publication，再清树表；独立选择intent及逐次epoch门禁防清理、属性通知同步重入覆盖新选择。表首次或重复呈现失败均退休两面并释放借用，重绑保留字段绑定元数据。异步正式事件在UI线程按实际方案节点实例定位所属工作流；调试核session/editor/tab/context/node，旧回调不串流程。
 

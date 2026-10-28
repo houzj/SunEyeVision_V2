@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -91,11 +91,6 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         private Dictionary<string, object> _runtimeParameters = new();
 
-        /// <summary>
-        /// 当前全局变量（从 SolutionManager 获取，用于 __GlobalVars__ 绑定解析）
-        /// </summary>
-        private IDictionary<string, object?>? _globalVariables;
-
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionStarted;
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionCompleted;
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionStopped;
@@ -163,18 +158,10 @@ namespace SunEyeVision.UI.Services.Workflow
             _runtimeParameters = parameters ?? new Dictionary<string, object>();
         }
 
-        /// <summary>
-        /// 设置全局变量（用于 __GlobalVars__ 绑定解析）
-        /// </summary>
-        /// <param name="globalVariables">全局变量字典（变量名 -> 变量值）</param>
-        public void SetGlobalVariables(IDictionary<string, object?>? globalVariables)
-        {
-            _globalVariables = globalVariables;
-        }
-        private sealed record PublishedRunInputs(WorkflowRunConfiguration Configuration, IDictionary<string, object?> Globals, PreparedLocalImages LocalImages, IReadOnlyList<GlobalVariable> GlobalDefinitions, IReadOnlyDictionary<string, object> RuntimeParameters,
-            SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths);
+        private sealed record PublishedRunInputs(WorkflowRunConfiguration Configuration, WorkflowGlobalRunValues ProducedGlobals, PreparedLocalImages LocalImages, IReadOnlyList<GlobalVariable> GlobalDefinitions, IReadOnlyDictionary<string, object> RuntimeParameters,
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths,ToolExecutionOwner ExecutionOwner,IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers,string SolutionId,string SolutionName);
         private readonly Dictionary<string, PublishedRunInputs> _preparedRunInputs = new(StringComparer.Ordinal);
-        internal Action? CapturePublishedConfiguration { get; set; }
+        internal Func<WorkflowPublishedConfiguration>? CapturePublishedConfiguration { get; set; }
         internal bool AllowUnhostedRunForTests { get; set; }
 
         /// <summary>
@@ -494,13 +481,10 @@ namespace SunEyeVision.UI.Services.Workflow
             var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
             PublishedRunInputs? admitted;
             lock (_lock) admitted = tabs.Count == 0 ? null : _preparedRunInputs.GetValueOrDefault(tabs[0].RootWorkflowId);
-            var executionDefinition = new Solution { Id = solution.Id, Name = solution.Name,
+            var executionDefinition = new Solution { Id = admitted?.SolutionId??solution.Id, Name = admitted?.SolutionName??solution.Name,
                 Workflows = admitted?.Configuration.CopyWorkflows().ToList() ?? new(),
                 GlobalVariables = admitted?.GlobalDefinitions.ToList() ?? new() };
             var plan = SolutionExecutionDependencyGraph.Compile(executionDefinition);
-            var globalDefinitions = executionDefinition.GlobalVariables;
-            var runtimeGlobals = globalDefinitions.Where(variable => variable.ProducerBinding == null && string.IsNullOrEmpty(variable.RebindingReason) && string.IsNullOrEmpty(variable.BindingValidationPending))
-                .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
             var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
             var completed = new HashSet<string>(StringComparer.Ordinal);
             var failed = new HashSet<string>(StringComparer.Ordinal);
@@ -531,10 +515,11 @@ namespace SunEyeVision.UI.Services.Workflow
                     tab.IsRunning = true;
                     using var localImages = await BeginLocalImagesAsync(tab, cancellationToken);
                     OnWorkflowExecutionStarted(workflowId);
-                    using var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, runtimeGlobals, localImages: localImages);
+                    using var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, localImages: localImages);
                     if (executionResult.Status != ExecutionStatus.Cancelled)
                         await CompleteLocalImagesAsync(localImages, executionResult.Success, false, cancellationToken);
-                    ApplyProducedGlobalValues(executionDefinition, workflowId, executionResult, runtimeGlobals);
+                    if(executionResult.Status==ExecutionStatus.Cancelled)
+                    {OnWorkflowExecutionStopped(workflowId);throw new OperationCanceledException(cancellationToken);}
                     if (executionResult.Success)
                     {
                         completed.Add(workflowId);
@@ -554,7 +539,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
             }
             }
-            finally { lock (_lock) { _solutionRunCts = null; if (!_communicationOwner.Value) _preparedRunInputs.Clear(); } }
+            finally { lock (_lock) { _solutionRunCts = null; if (!_communicationOwner.Value) RemovePreparedLocked(_preparedRunInputs.Keys.ToArray()); } }
         }
 
         /// <summary>
@@ -650,7 +635,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     _communicationOperation = false;
                     _communicationRunCts = null;
-                    _preparedRunInputs.Clear();
+                    RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());
                 }
             }
         }
@@ -667,57 +652,51 @@ namespace SunEyeVision.UI.Services.Workflow
             lock (_lock) inputs = _preparedRunInputs.TryGetValue(workflowId, out var prepared) ? prepared
                 : throw new InvalidOperationException("通讯触发缺少本轮正式配置快照。");
             var workflow = inputs.Configuration.CopyWorkflow(workflowId) ?? throw new InvalidOperationException("触发流程已删除。");
-            var node = FindNodeRecursive(workflow, nodeId, configuration: inputs.Configuration) ?? throw new InvalidOperationException("触发模块已删除。");
-            if (!node.IsEnabled) throw new InvalidOperationException("触发模块已禁用，未执行。");
-            var parameters = ToolParameterSnapshot.Create(node.Parameters);
-            var overrides = inputs.LocalImages.Overrides;
-            if (overrides.TryGetValue(node.Id, out var nodeOverrides))
-                foreach (var item in nodeOverrides)
-                {
-                    var property = parameters.GetType().GetProperty(item.Key);
-                    if (property?.CanWrite != true) throw new InvalidOperationException($"模块输入快照无效：{item.Key}。");
-                    property.SetValue(parameters, item.Value);
-                }
-            var bindings = ParameterBindingSet.FromSettings(node.ParamSettings);
-            var assigned = (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).Where(a => a.NodeId == node.Id).ToArray();
-            foreach (var assignment in assigned)
+            var node=workflow.Nodes.SingleOrDefault(item=>item.Id==nodeId);
+            if(node is null)
             {
-                CommunicationTriggerEvaluation.ValidateTarget(node, assignment);
-                parameters.GetType().GetProperty(assignment.Property)!.SetValue(parameters, assignment.Value);
+                if(FindNodeRecursive(workflow,nodeId,configuration:inputs.Configuration) is not null)
+                    throw new InvalidOperationException("Group 内部单模块执行尚未接入正式作用域，未执行。");
+                throw new InvalidOperationException("触发模块已删除。");
             }
-            bindings = new ParameterBindingSet(bindings.Bindings.Where(b => !assigned.Any(a => a.Property == b.ParameterName)));
-            if (bindings.Bindings.Any(binding => binding.BindingType != BindingType.Constant &&
-                    !string.IsNullOrWhiteSpace(binding.SourceNodeId) && binding.SourceNodeId != "__GlobalVars__"))
+            if (!node.IsEnabled) throw new InvalidOperationException("触发模块已禁用，未执行。");
+            var assigned=(_communicationAssignments.Value??Array.Empty<CommunicationParameterAssignment>()).Where(item=>item.NodeId==node.Id).ToArray();
+            foreach(var assignment in assigned)CommunicationTriggerEvaluation.ValidateTarget(node,assignment);
+            var bindings=ParameterBindingSet.FromSettings(node.ParamSettings);
+            if(bindings.Bindings.Any(binding=>!assigned.Any(item=>item.Property==binding.ParameterName)
+                &&binding.BindingType!=BindingType.Constant&&!string.IsNullOrWhiteSpace(binding.SourceNodeId)&&binding.SourceNodeId!="__GlobalVars__"))
                 throw new InvalidOperationException("单模块执行缺少上游节点结果，请执行完整流程；不使用上一次的缓存结果。");
-            var globals = new Dictionary<string, object?>(inputs.Globals);
-            var image = await _inputProvider.GetInputImageAsync() as IVisionImage;
-            token.ThrowIfCancellationRequested();
-            var receiveInputs = _communicationInputs.Value ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
-            var tool = ToolRegistry.CreateToolInstance(node.ToolType) ?? throw new InvalidOperationException("触发模块的工具尚未加载。");
+            // Execute only this module, using the same engine's declared output and producer completion path.
+            var frozenFlows=inputs.Configuration.CopyWorkflows();
+            var singleRoot=frozenFlows.Single(flow=>flow.Id==workflowId);
+            singleRoot.Nodes=new(){node};singleRoot.Connections=new();
+            var configuration=WorkflowRunConfiguration.Capture(frozenFlows,inputs.Configuration.DocumentRevision);
+            var overrides=assigned.ToDictionary(item=>item.Property,item=>(object?)item.Value);
+            var nodeOverrides=new Dictionary<string,IReadOnlyDictionary<string,object?>>{{node.Id,overrides}};
+            var sourceInputs=inputs.LocalImages.Overrides.Where(pair=>pair.Key==node.Id).ToDictionary(pair=>pair.Key,pair=>new ImageSourceRunInput(
+                pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,(long)pair.Value["input.sequence"]!),StringComparer.Ordinal);
+            var image=await _inputProvider.GetInputImageAsync() as IVisionImage;token.ThrowIfCancellationRequested();
+            var inner=_communicationInputs.Value??SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
+            var receiveInputs=new WorkflowGlobalVariableReceiveService(inner,inputs.ProducedGlobals,inputs.GlobalDefinitions);
             try
             {
                 OnWorkflowExecutionStarted(workflowId);
-                var executor = new ToolExecutor(new ParameterResolver(), VisionLogger.Instance);
-                var result = await executor.ExecuteAsync(tool, new ToolExecutionRequest(parameters)
-                {
-                    ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution),
-                    NodeId = node.Id, NodeName = node.Name, ParameterBindings = bindings,
-                    WorkflowId = workflowId,
-                    ExecutionOwner = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.ExecutionOwner,
-                    RunId = Guid.NewGuid(),
-                    GlobalVariables = globals, ResolvedInputImage = image, CancellationToken = token,
-                    CameraCaptureService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
-                    CommunicationInputs = receiveInputs,
-                    CommunicationOutputs = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends
-                });
-                using var resultResources = result.Resources;
-                if (result.IsCancelled) throw new OperationCanceledException(token);
-                if (!result.IsSuccess) throw new InvalidOperationException(result.ErrorMessage ?? "触发模块执行失败。");
+                var logger=VisionLogger.Instance.ForSource(workflow.Name);
+                var engine=new WorkflowExecutionEngine(_workflowEngine,new PluginManager(logger),logger);
+                var request=new WorkflowRunRequest(workflowId,image,inputs.ProducedGlobals.Capture().ToDictionary(pair=>pair.Key,pair=>pair.Value),
+                    inputs.RuntimeParameters.ToDictionary(pair=>pair.Key,pair=>pair.Value),nodeParameterOverrides:nodeOverrides,nodeBindingOverrides:nodeOverrides,
+                    sourceInputs:sourceInputs,communicationInputs:receiveInputs,
+                    communicationOutputs:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,
+                    cameraCaptureService:sourceInputs.Count>0?SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime:null)
+                {Configuration=configuration,ExecutionOwner=inputs.ExecutionOwner,ResourcePaths=inputs.ResourcePaths,
+                    ProducedGlobals=inputs.ProducedGlobals,GlobalProducers=inputs.GlobalProducers.Where(operation=>operation.Source.ScopeId==workflowId&&operation.Source.NodeId==node.Id).ToArray()};
+                using var result=await engine.ExecuteWorkflowAsync(request,token);
+                if(result.Status==ExecutionStatus.Cancelled)throw new OperationCanceledException(token);
+                if(!result.Success)throw new InvalidOperationException(string.Join("; ",result.Errors));
                 OnWorkflowExecutionCompleted(workflowId);
             }
-            catch (OperationCanceledException) { OnWorkflowExecutionStopped(workflowId); throw; }
-            catch (Exception ex) { OnWorkflowExecutionError(workflowId, ex.Message); throw; }
-            finally { if (tool is IDisposable disposable) disposable.Dispose(); }
+            catch(OperationCanceledException){OnWorkflowExecutionStopped(workflowId);throw;}
+            catch(Exception error){OnWorkflowExecutionError(workflowId,error.Message);throw;}
         }
 
         private void ReleaseExecution(string workflowId)
@@ -725,7 +704,7 @@ namespace SunEyeVision.UI.Services.Workflow
             lock (_lock)
             {
                 _activeWorkflowIds.Remove(workflowId);
-                if (_solutionRunCts is null && !_communicationOwner.Value) _preparedRunInputs.Remove(workflowId);
+                if (_solutionRunCts is null && !_communicationOwner.Value) RemovePreparedLocked(new[]{workflowId});
             }
         }
 
@@ -744,7 +723,6 @@ namespace SunEyeVision.UI.Services.Workflow
         private async Task<ExecutionResult> ExecuteWorkflowInternal(
             WorkflowTabViewModel workflow,
             CancellationToken cancellationToken,
-            IDictionary<string, object?>? globalVariablesOverride = null,
             CameraFrame? cameraFrame = null,
             string? cameraNodeId = null,
             Dictionary<string, long>? sequenceNumbers = null,
@@ -755,7 +733,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 runInputs = _preparedRunInputs.TryGetValue(workflow.RootWorkflowId, out var prepared) ? prepared
                     : throw new InvalidOperationException("本轮缺少已发布的配置快照。");
             var runConfiguration = runInputs.Configuration;
-            var runGlobals = globalVariablesOverride ?? runInputs.Globals;
+            var runGlobals = runInputs.ProducedGlobals.Capture().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
             var frozenImageOverrides = localImages?.CaptureIteration();
             var snapshot = GetOrCreateExecutionSnapshot(workflow.RootWorkflowId, workflow.Name);
             await InvokeOnUIAsync(() =>
@@ -772,8 +750,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 var inputImage = cameraFrame is null ? await _inputProvider.GetInputImageAsync() : null;
                 cancellationToken.ThrowIfCancellationRequested();
                 var receiveInputs = _communicationInputs.Value ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
-                if (globalVariablesOverride != null)
-                    receiveInputs = new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(receiveInputs, globalVariablesOverride);
+                receiveInputs = new WorkflowGlobalVariableReceiveService(receiveInputs,runInputs.ProducedGlobals,runInputs.GlobalDefinitions);
 
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 正在创建日志器...")));
                 // 使用全局日志器（自动转发到UILogWriter）
@@ -960,7 +937,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     cameraFrames: cameraFrame is not null && cameraNodeId is not null
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
                         : null) { Configuration = runConfiguration, ResourcePaths = runInputs.ResourcePaths,
-                            ExecutionOwner = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.ExecutionOwner };
+                            ExecutionOwner = runInputs.ExecutionOwner,GlobalProducers=runInputs.GlobalProducers,ProducedGlobals=runInputs.ProducedGlobals };
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
                 if (sequenceNumbers is not null)
                 {
@@ -1057,7 +1034,7 @@ namespace SunEyeVision.UI.Services.Workflow
             lock(_lock)
             {
                 if(_activeWorkflowIds.Contains(workflowId))throw new InvalidOperationException("运行中的流程不能移除工作区快照。");
-                _executionSnapshots.Remove(workflowId);_preparedRunInputs.Remove(workflowId);_localImageCursors.Remove(workflowId);
+                _executionSnapshots.Remove(workflowId);RemovePreparedLocked(new[]{workflowId});_localImageCursors.Remove(workflowId);
             }
         }
 
@@ -1185,64 +1162,41 @@ namespace SunEyeVision.UI.Services.Workflow
             return separatorIndex > 0 ? scopedNodeId[..separatorIndex] : scopedNodeId;
         }
 
-        /// <summary>
-        /// 把生产节点的结果写入当前解决方案运行的变量快照。这里刻意不修改 Solution.GlobalVariables.Value，
-        /// 防止一次运行把设计期初值污染到方案文件；下一消费者流程只读取 runtimeGlobals。
-        /// </summary>
-        private void ApplyProducedGlobalValues(
-            Solution solution,
-            string workflowId,
-            ExecutionResult executionResult,
-            IDictionary<string, object?> runtimeGlobals)
-        {
-            foreach (var variable in solution.GlobalVariables.Where(variable =>
-                         string.Equals(variable.ProducerBinding?.WorkflowId, workflowId, StringComparison.Ordinal)))
-            {
-                var producer = variable.ProducerBinding!;
-                runtimeGlobals.Remove(variable.Name);
-                if (!string.IsNullOrEmpty(variable.RebindingReason) || !string.IsNullOrEmpty(variable.BindingValidationPending)) continue;
-                if (!executionResult.NodeResults.TryGetValue(producer.NodeId, out var nodeResult) ||
-                    !nodeResult.Success || nodeResult.Result?.IsSuccess != true)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    runtimeGlobals[variable.Name] = OutputVariableResolver.Resolve(
-                        nodeResult.Result, producer.ResultName, producer.NodeId);
-                }
-                catch (Exception ex)
-                {
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,
-                        new WorkflowExecutionProgressEventArgs(workflowId, $"变量 {variable.Name} 本轮不可用：{ex.Message}")));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 创建测试用的Mat — 已废弃，工作流不再提供默认输入图像
-        /// </summary>
-        // 已删除：工作流不再提供默认输入图像，缺少输入图像的节点将直接报错
-
         private readonly record struct CameraSourceBinding(string NodeId, string CameraId, int TimeoutMs);
 
         private void PreparePublishedRun(string? workflowId, Solution? solutionDefinition = null)
         {
             // Run has no authority to accept editor drafts. Capture once at the complete-run boundary,
             // before local-image/camera waits; child workflows use the same frozen configuration.
-            if (CapturePublishedConfiguration is { } capture) capture();
-            else if (!AllowUnhostedRunForTests)
-                throw new InvalidOperationException("运行准备缺少当前文档的正式配置快照入口。");
-            var flows = _workflowEngine.GetAllWorkflows();
-            var configuration = workflowId is null ? WorkflowRunConfiguration.Capture(flows)
-                : WorkflowRunConfiguration.Capture(workflowId, _workflowEngine.GetWorkflow);
-            var globals = (_globalVariables ?? new Dictionary<string, object?>()).ToDictionary(
-                p => p.Key, p => p.Value is Array array ? array.Clone() : p.Value, StringComparer.Ordinal);
+            WorkflowPublishedConfiguration publication;
+            if(CapturePublishedConfiguration is {} capture)publication=capture()??throw new InvalidOperationException("正式配置快照入口返回空值。");
+            else if(AllowUnhostedRunForTests)
+            {
+                var fixture=solutionDefinition??new Solution{Workflows=_workflowEngine.GetAllWorkflows().ToList()};
+                publication=WorkflowPublishedConfiguration.Capture(new NodeConfigurationEditHost(fixture).Capture(),fixture);
+            }
+            else throw new InvalidOperationException("运行准备缺少当前文档的正式配置快照入口。");
+            var configuration=publication.Configuration;
+            var flows=_workflowEngine.GetAllWorkflows(); // UI cursor ownership only; never a second execution definition.
+            var definitions=GlobalVariable.CaptureDefinitions(publication.GlobalDefinitions.ToArray());
+            var definition=new Solution{Id=publication.SolutionId,Name=publication.SolutionName,
+                Workflows=configuration.CopyWorkflows().ToList(),GlobalVariables=definitions.ToList()};
+            var operations=new List<WorkflowGlobalProducerOperation>();
+            foreach(var variable in definitions.Where(variable=>variable.ProducerBinding is not null))
+            {
+                var validation=GlobalProducerBindingRules.Validate(definition,variable.ProducerBinding!,variable);
+                if(validation.State is not (SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional))
+                {variable.BindingValidationPending=validation.Reason;continue;}
+                if(!GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason))
+                {variable.BindingValidationPending=reason;continue;}
+                operations.Add(new(variable.Id,variable.Name,variable.ProducerBinding!.SourceReference!,target,clr));
+            }
+            var initial=definitions.Where(variable=>variable.ProducerBinding is null&&string.IsNullOrEmpty(variable.RebindingReason)
+                &&string.IsNullOrEmpty(variable.BindingValidationPending)&&GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out _,out _,out _))
+                .Select(variable=>new KeyValuePair<string,object?>(variable.Name,variable.Value)).ToArray();
+            var globals=new WorkflowGlobalRunValues(initial);
             var runtime = _runtimeParameters.ToDictionary(p => p.Key,
                 p => p.Value is Array array ? array.Clone() : p.Value, StringComparer.Ordinal);
-            var definitionSource = solutionDefinition ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
-            var definitions = definitionSource is null ? Array.Empty<GlobalVariable>() : GlobalVariable.CaptureDefinitions(definitionSource.GlobalVariables);
             lock (_lock)
             {
                 var owners = flows.ToDictionary(flow => flow.Id, StringComparer.Ordinal);
@@ -1258,26 +1212,39 @@ namespace SunEyeVision.UI.Services.Workflow
                     }
                 }
             }
-            var resourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(definitionSource);
-            var captured = (workflowId is null ? flows.Select(f => f.Id) : new[] { workflowId }).ToDictionary(
-                id => id, id => new PublishedRunInputs(configuration, globals, CaptureLocalImageInputs(id, configuration, resourcePaths), definitions, runtime,resourcePaths), StringComparer.Ordinal);
-            lock (_lock)
+            var resourcePaths=publication.ResourcePaths;
+            try
             {
-                if (workflowId is null) _preparedRunInputs.Clear();
-                foreach (var entry in captured) _preparedRunInputs[entry.Key] = entry.Value;
+                var ids=workflowId is null?configuration.CopyWorkflows().Select(flow=>flow.Id).ToArray():new[]{workflowId};
+                var captured=ids.ToDictionary(id=>id,id=>new PublishedRunInputs(configuration,globals,
+                    CaptureLocalImageInputs(id,configuration,resourcePaths),definitions,runtime,resourcePaths,
+                    publication.ExecutionOwner,Array.AsReadOnly(operations.ToArray()),publication.SolutionId,publication.SolutionName),StringComparer.Ordinal);
+                if(captured.Count==0)globals.Dispose();
+                lock(_lock)
+                {
+                    RemovePreparedLocked(workflowId is null?_preparedRunInputs.Keys.ToArray():ids);
+                    foreach(var entry in captured)_preparedRunInputs[entry.Key]=entry.Value;
+                }
             }
+            catch{globals.Dispose();throw;}
+        }
+
+        private void RemovePreparedLocked(IEnumerable<string> ids)
+        {
+            var retired=new HashSet<WorkflowGlobalRunValues>();
+            foreach(var id in ids)if(_preparedRunInputs.Remove(id,out var input))retired.Add(input.ProducedGlobals);
+            foreach(var values in retired)if(!_preparedRunInputs.Values.Any(input=>ReferenceEquals(input.ProducedGlobals,values)))values.Dispose();
         }
 
         private async Task<ExecutionResult> ExecuteSingleTriggeredAsync(
             WorkflowTabViewModel workflow,
             CancellationToken cancellationToken,
-            IDictionary<string, object?>? globalVariablesOverride = null,
             Dictionary<string, long>? sequenceNumbers = null,
             LocalImageExecution? localImages = null)
         {
             var cameraSource = ResolveSingleCameraSource(workflow, localImages?.BaseOverrides);
             if (cameraSource is null)
-                return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,
+                return await ExecuteWorkflowInternal(workflow, cancellationToken,
                     sequenceNumbers: sequenceNumbers, localImages: localImages);
 
             // 单次执行可从 WPF 命令直接进入；SDK 参数读取、启动取流、软件触发及
@@ -1290,7 +1257,7 @@ namespace SunEyeVision.UI.Services.Workflow
             try
             {
                 using var frame = await Task.Run(() => feed.NextFrameAsync(cancellationToken), cancellationToken);
-                return await ExecuteWorkflowInternal(workflow, cancellationToken, globalVariablesOverride,
+                return await ExecuteWorkflowInternal(workflow, cancellationToken,
                     frame, cameraSource.Value.NodeId, sequenceNumbers, localImages);
             }
             finally
@@ -1518,8 +1485,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     cts.Dispose();
                 }
-                _cancellationTokens.Clear();
-                _preparedRunInputs.Clear();
+                _cancellationTokens.Clear();_transitionBlocked=true;
+                if(_activeWorkflowIds.Count==0&&_solutionRunCts is null&&!_communicationOperation)
+                    RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());
                 _localImageCursors.Clear();
             }
         }

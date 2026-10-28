@@ -29,7 +29,7 @@ public sealed class ResultPresentationModel
             // their navigation path keeps weak publication/lease identities, not a parent reader.
             var reader=hasValues&&port.Type.Shape!=ValueShape.Resource?values!.Read(port.Id):null;
             outputs[index]=new ResultPresentationNode(PortKey(port.Id),port.Type,port,null,pageSize,reader,
-                isCurrent:isCurrent,path:access.Root(port.Id));
+                isCurrent:isCurrent,path:access.Root(port.Id),address:new ResultDeclarationAddress(port));
         }
         Outputs = Array.AsReadOnly(outputs);
     }
@@ -63,6 +63,21 @@ public sealed class ResultPresentationModel
     };
 }
 
+/// <summary>Immutable declaration identity, independent of a value lease or a UI display key.</summary>
+public sealed class ResultDeclarationAddress
+{
+    public ResultDeclarationAddress(Port rootPort):this(rootPort,Array.Empty<string>(),false,false){}
+    private ResultDeclarationAddress(Port rootPort,IEnumerable<string> members,bool sample,bool sampleRow)
+    {RootPort=rootPort;MemberFieldPath=Array.AsReadOnly(members.ToArray());ThroughSequence=sample;IsSampleRow=sampleRow;}
+    public Port RootPort {get;}
+    public IReadOnlyList<string> MemberFieldPath {get;}
+    public bool ThroughSequence {get;}
+    public bool IsSampleRow {get;}
+    internal ResultDeclarationAddress Field(string id)=>new(RootPort,MemberFieldPath.Append(id),ThroughSequence,IsSampleRow);
+    internal ResultDeclarationAddress Sample()=>new(RootPort,MemberFieldPath,true,true);
+    public OutputReference Reference(string nodeId,string scopeId)=>new(nodeId,RootPort.Id,RootPort.Type,MemberFieldPath,BindingSelection.All,scopeId,RootPort.Storage);
+}
+
 /// <summary>Children are materialized only for requested pages; cached nodes retain expansion state.</summary>
 public sealed class ResultPresentationNode
 {
@@ -75,9 +90,9 @@ public sealed class ResultPresentationNode
     private readonly GeometryValue? _geometry;
     private readonly Dictionary<int, ResultPresentationNode> _children = new();
 
-    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null,ResultValuePath? path=null)
+    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null,ResultValuePath? path=null,ResultDeclarationAddress? address=null,bool allProjection=false)
     {
-        _isCurrent=isCurrent;_path=path;
+        _isCurrent=isCurrent;_path=path;DeclarationAddress=address;IsAllProjection=allProjection;
         Key = key;
         Declaration = declaration;
         DeclaredPort = port;
@@ -94,6 +109,11 @@ public sealed class ResultPresentationNode
         _geometry=geometry??(_reader is not null&&declaration.Shape==ValueShape.Geometry?_reader.GetGeometry():null);
     }
 
+    public bool IsAllProjection {get;}
+    public bool HasAllMembers=>Declaration.Shape==ValueShape.Sequence&&Declaration.Element!.Shape==ValueShape.Record;
+    public ResultPresentationNode? CreateAllMembers()
+        =>!Current||!HasAllMembers||IsAllProjection?null:new(Key+"/all",Declaration,null,null,_pageSize,isCurrent:_isCurrent,path:_path,address:DeclarationAddress,allProjection:true);
+    public ResultDeclarationAddress? DeclarationAddress {get;}
     public string Key { get; }
     public TypeRef Declaration { get; }
     public Port? DeclaredPort { get; }
@@ -112,7 +132,7 @@ public sealed class ResultPresentationNode
         } : null;
     public GeometryValue? GeometryValue => Current?_geometry:null;
     // A declared count range is not an observed element count, including Exactly(0/1/N).
-    public int? ChildCount => !Current?null:Declaration.Shape switch
+    public int? ChildCount => !Current?null:IsAllProjection?(HasAllMembers?Declaration.Element!.Fields.Count:0):Declaration.Shape switch
     {
         ValueShape.Record => Declaration.Fields.Count,
         ValueShape.Sequence => SequenceCount(),
@@ -149,7 +169,13 @@ public sealed class ResultPresentationNode
             var index = offset + position;
             if (!_children.TryGetValue(index, out var child))
             {
-                if (_geometry is PolygonGeometry polygon)
+                if(IsAllProjection&&HasAllMembers)
+                {
+                    var field=Declaration.Element!.Fields[index];
+                    child=new ResultPresentationNode(Key+"/f"+field.Id.Length+":"+field.Id,TypeRef.SequenceOf(field.Type,Declaration.Count),field,null,_pageSize,
+                        isCurrent:_isCurrent,path:_path,address:DeclarationAddress?.Field(field.Id),allProjection:true);
+                }
+                else if (_geometry is PolygonGeometry polygon)
                 {
                     var key=Key+"/vertex"+index.ToString(CultureInfo.InvariantCulture);
                     child=new ResultPresentationNode(key,TypeRef.GeometryOf(GeometryKind.Point,polygon.Frame),null,index,_pageSize,
@@ -159,12 +185,12 @@ public sealed class ResultPresentationNode
                 {
                     var field = Declaration.Fields[index];
                     var key = Key + "/f" + field.Id.Length.ToString(CultureInfo.InvariantCulture) + ":" + field.Id;
-                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, ChildReader(field.Id,null,field.Type),isCurrent:_isCurrent,path:_path?.Field(field.Id));
+                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, ChildReader(field.Id,null,field.Type),isCurrent:_isCurrent,path:_path?.Field(field.Id),address:DeclarationAddress?.Field(field.Id));
                 }
                 else
                 {
                     var key = Key + "/i" + index.ToString(CultureInfo.InvariantCulture);
-                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, ChildReader(null,index,Declaration.Element!),isCurrent:_isCurrent,path:_path?.Element(index));
+                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, ChildReader(null,index,Declaration.Element!),isCurrent:_isCurrent,path:_path?.Element(index),address:DeclarationAddress?.Sample());
                 }
                 if(!Current)return Array.Empty<ResultPresentationNode>();
                 _children.Add(index, child);

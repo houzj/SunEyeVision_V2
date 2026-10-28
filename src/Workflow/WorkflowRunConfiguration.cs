@@ -8,16 +8,19 @@ namespace SunEyeVision.Workflow;
 public sealed class WorkflowRunConfiguration
 {
     private readonly IReadOnlyDictionary<string, Workflow> _workflows;
-    private WorkflowRunConfiguration(IEnumerable<Workflow> workflows)
+    private WorkflowRunConfiguration(IEnumerable<Workflow> workflows,long documentRevision)
     {
+        if(documentRevision<0)throw new ArgumentOutOfRangeException(nameof(documentRevision));
+        DocumentRevision=documentRevision;
         var shell = new Solution { Workflows = workflows.ToList() };
         var copied = BindingConfigurationStore.Copy(shell).Workflows;
         var originals = shell.Workflows.ToDictionary(w => w.Id, StringComparer.Ordinal);
         foreach (var flow in copied) flow.ExecutionOwner = originals[flow.Id].ExecutionOwner;
         _workflows = copied.ToDictionary(w => w.Id, StringComparer.Ordinal);
     }
-    public static WorkflowRunConfiguration Capture(IEnumerable<Workflow> workflows) => new(workflows);
-    public static WorkflowRunConfiguration Capture(string rootWorkflowId, Func<string, Workflow?> resolve)
+    public long DocumentRevision {get;}
+    public static WorkflowRunConfiguration Capture(IEnumerable<Workflow> workflows,long documentRevision=0) => new(workflows,documentRevision);
+    public static WorkflowRunConfiguration Capture(string rootWorkflowId, Func<string, Workflow?> resolve,long documentRevision=0)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var sources = new List<Workflow>();
@@ -30,7 +33,7 @@ public sealed class WorkflowRunConfiguration
             foreach (var child in flow.Nodes.Select(n => n.SubroutineId).Where(id => !string.IsNullOrWhiteSpace(id))) Visit(child!);
         }
         Visit(rootWorkflowId);
-        return new(sources);
+        return new(sources,documentRevision);
     }
     public RootWorkspaceSettings GetRootSettings(string id)
     {

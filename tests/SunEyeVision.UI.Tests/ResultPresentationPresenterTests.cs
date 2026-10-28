@@ -16,7 +16,7 @@ using Xunit;
 namespace SunEyeVision.UI.Tests;
 
 [Collection("Editor commit UI")]
-public sealed class ResultPresentationPresenterTests
+public sealed class ResultPresentationPresenterTests:IDisposable
 {
     [Fact]
     public void Immutable_geometry_values_show_coordinates_frame_and_explicit_angle_units() => Sta(() =>
@@ -283,21 +283,22 @@ public sealed class ResultPresentationPresenterTests
     });
 
     [Fact]
-    public void Resource_roots_and_resource_aggregates_stay_pending_without_reading_borrowed_payloads() => Sta(() =>
+    public void Resource_leaves_stay_pending_while_mixed_record_scalars_remain_visible_without_reading_payloads() => Sta(() =>
     {
         var image = TypeRef.ResourceOf(ResourceKind.Image);
         var aggregate = TypeRef.RecordOf("r", new[] { new Port("image", image), new Port("label", DataType.Text) });
         var schema = Schema(new Port("image", image), new Port("record", aggregate));
         var poison = new PoisonImage(); int released = 0;
         using var run = Success(schema, new() { ["image"] = poison, ["record"] = new Dictionary<string, object?> { ["image"] = poison, ["label"] = "secret" } }, () => released++);
+        var publication=run.Publication; // formal publication/freeze precedes presentation-only access checks.
         poison.BeginPresentation();
         var rows = new ObservableCollection<FlatResultRow>();
         var presenter = new ResultPresentationPresenter(rows, _ => { });
-        presenter.Present(run.Publication); run.ReleaseResult(); Assert.Equal(0, released);
-        Assert.All(rows.Skip(1), row => Assert.Equal("资源待接入", row.DisplayValue));
-        rows[2].IsExpanded = true;
-        Assert.DoesNotContain(rows, row => row.DisplayValue == "secret");
-        Assert.Equal("值不可用", rows.Single(row => row.DisplayName == "label").DisplayValue);
+        presenter.Present(publication);run.ReleaseResult();Assert.Equal(0,released);
+        Assert.Equal("资源待接入",rows[1].DisplayValue);Assert.Equal("记录",rows[2].DisplayValue);
+        rows[2].IsExpanded=true;
+        Assert.All(rows.Where(row=>row.DisplayName=="image"),row=>Assert.Equal("资源待接入",row.DisplayValue));
+        Assert.Equal("secret",rows.Single(row=>row.DisplayName=="label").DisplayValue);
         Assert.Equal(0, poison.Accesses); Assert.Equal(0, poison.Disposals);
         run.ReleasePublication();Assert.Equal(0,released);presenter.Dispose(); presenter.Dispose(); Assert.Equal(1, released);
         Assert.Equal(0, poison.Accesses); Assert.Equal(0, poison.Disposals);
@@ -416,6 +417,19 @@ public sealed class ResultPresentationPresenterTests
         Assert.Equal(1,publication.LeaseDisposals);Assert.Equal(0,publication.OwnerDisposals);
     });
 
+    [Fact]
+    public void Helper_publication_owners_remain_current_until_the_fixture_finishes_and_then_retire() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        SchemaPresent(presenter,schema);var declaration=Assert.Single(_helperPublications);
+        presenter.Clear();Assert.True(declaration.IsCurrent());
+        SnapshotPresent(presenter,DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),ExecutionStatus.Failed,new[]{new Diagnostic("failure","detail")}));
+        var failed=_helperPublications[1];Assert.True(declaration.IsCurrent());Assert.True(failed.IsCurrent());
+        Dispose();Assert.False(declaration.IsCurrent());Assert.False(failed.IsCurrent());Assert.Empty(_helperPublications);
+        presenter.Clear();Dispose();Assert.Empty(rows);
+    });
+
     private sealed class EmptyOwner:IDisposable{public void Dispose(){}}
     private sealed class TrackedPublication(IResultPublication inner):IResultPublication
     {
@@ -457,11 +471,24 @@ public sealed class ResultPresentationPresenterTests
         internal void ReleasePublication()=>_publication?.Dispose();
         public void Dispose(){ReleasePublication();ReleaseResult();}
     }
-    private static void SchemaPresent(ResultPresentationPresenter presenter,ToolSchema schema,IReadOnlyDictionary<string,string>? displayNames=null,
+    private readonly List<IResultPublication> _helperPublications=new();
+    private void HoldAndPresent(ResultPresentationPresenter presenter,IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)
+    {
+        _helperPublications.Add(publication); // register before Present, including its failure path.
+        presenter.Present(publication,bindings);
+    }
+    private void SchemaPresent(ResultPresentationPresenter presenter,ToolSchema schema,IReadOnlyDictionary<string,string>? displayNames=null,
         IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null,IReadOnlySet<string>? displayedPorts=null)
-        =>presenter.Present(ToolResultViews.Declaration(schema,()=>true,displayNames,displayedPorts),bindings);
-    private static void SnapshotPresent(ResultPresentationPresenter presenter,DeclaredOutputSnapshot snapshot)
-        =>presenter.Present(ToolResultViews.FromSnapshot(snapshot,()=>true));
+        =>HoldAndPresent(presenter,ToolResultViews.Declaration(schema,()=>true,displayNames,displayedPorts),bindings);
+    private void SnapshotPresent(ResultPresentationPresenter presenter,DeclaredOutputSnapshot snapshot)
+        =>HoldAndPresent(presenter,ToolResultViews.FromSnapshot(snapshot,()=>true));
+    public void Dispose()
+    {
+        var failures=new List<Exception>();
+        foreach(var publication in _helperPublications)try{publication.Dispose();}catch(Exception error){failures.Add(error);}
+        _helperPublications.Clear();
+        if(failures.Count!=0)throw new AggregateException("结果测试发布owner释放失败。",failures);
+    }
     private sealed class BorrowFailure(IResultPublication inner):IResultPublication
     {
         public ResultPublicationStamp Stamp=>inner.Stamp;public ToolSchema Schema=>inner.Schema;public ResultViewState State=>inner.State;

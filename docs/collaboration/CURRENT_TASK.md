@@ -1,3 +1,10 @@
+## 2026-10-28 VM同源树表继续推进：本轮180/0与真实分页通过
+
+- 用户明确继续VM设计，树表只能共用SDK声明和指定同次运行快照。仅提取4f8efb06结果发布SourceMatches的实时无捕获循环，保session/正式或调试owner/workflow/真实node实例，额外拒同scope重复nodeId；不合其余Global变量形状批，不改Blob业务及用户XAML。
+- 基线f591a40c工作区候选包含先前ROI未提交增量，逐文件SHA固定于evidence/O06_RESULT_CHAIN_UNIFIED_20261028.json，不能冒称干净提交产物。UI零错6547警告158.62秒/full零错6584警告70.55秒，正式EXE28596 exit0。ImageSources008=180/0（此前大数组门禁修复），publication10/0、原表500→1000→1205=1/0；795发布条目/26加载记录SHA核。真实VS/人工、ROI专项、Global本轮未跑。
+- 原方案moduleResultsPlan同步P0同源树表→P1真实入口/历史→P2同帧图像联动→P3集中核收，719锚点幂等。ShowDeclaredRun仍无真实历史调用，生产D07仍待完整制品与合同；工作流线已收职责通知并只读盘点实际历史链，不重放被拒补丁。原Global283/1保留，7d130460/4f8efb06其余批待后续整体合。
+- 当前35235/69082/48870/65438/34597均终态，无live。本轮未推送，用户参数页SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持；不将树表通过称整个阶段或Blob完成。下一先固定ROI共享候选与专项，再接消费者完整历史/D07链。
+
 ## 2026-10-28 C15正式6过；完整Global与图像源各剩1真实失败
 
 - 固定正式dfb7b053：UI001零错6569警告91.66秒/full001零错6504警告77.76秒，EXE探针74284 exit0。Global005完整284项283过1败（SendData保存重开DESIGN与["DESIGN"]形态），ImageSources007完整180项179过1败（2百万项惰性展开分配量门禁）；均原断言保留交原写者，不套前批源轨180/0。C15新Window226=6/0、Design061=96/0、RuntimeEditor10/0、FullChain8/0；795发布条目/95加载记录SHA核，证据evidence/O06_FOOTER_GLOBAL_REPAIR_INTEGRATION_20261028.json。

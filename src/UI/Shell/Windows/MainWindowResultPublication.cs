@@ -63,16 +63,35 @@ public partial class MainWindowViewModel
         var session=DocumentManager.Session;
         var node=SelectedNode;
         var workflowId=WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
-        bool ExecutionOwnerMatches()=>session is not null&&(snapshot.Identity.DocumentSessionId==session.Document.ExecutionOwner.Id
-            ||_productionEditors?.Any(editor=>editor.DebugOwner.Id==snapshot.Identity.DocumentSessionId&&editor.IsValid
-                &&editor.Identity.WorkflowId==workflowId&&editor.Identity.NodeId==snapshot.Identity.NodeId)==true);
-        bool SourceMatches()=>session is not null&&ReferenceEquals(DocumentManager.Session,session)
-            &&ReferenceEquals(SelectedNode,node)&&node?.Id==snapshot.Identity.NodeId
-            &&ExecutionOwnerMatches()
-            &&!string.IsNullOrEmpty(workflowId)&&snapshot.SourceWorkflowId==workflowId
-            &&WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId==workflowId
-            &&session.Document.Workflows.Count(flow=>flow.Id==workflowId
-                &&flow.Nodes.Count(candidate=>ReferenceEquals(candidate,node))==1)==1;
+        bool ExecutionOwnerMatches()
+        {
+            if(session is null)return false;
+            if(snapshot.Identity.DocumentSessionId==session.Document.ExecutionOwner.Id)return true;
+            if(_productionEditors is null)return false;
+            foreach(var editor in _productionEditors)
+                if(editor.DebugOwner.Id==snapshot.Identity.DocumentSessionId&&editor.IsValid
+                    &&editor.Identity.WorkflowId==workflowId&&editor.Identity.NodeId==snapshot.Identity.NodeId)return true;
+            return false;
+        }
+        bool SourceMatches()
+        {
+            if(session is null||!ReferenceEquals(DocumentManager.Session,session)
+                ||!ReferenceEquals(SelectedNode,node)||node?.Id!=snapshot.Identity.NodeId||!ExecutionOwnerMatches()
+                ||string.IsNullOrEmpty(workflowId)||snapshot.SourceWorkflowId!=workflowId
+                ||WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId!=workflowId)return false;
+            // 分页逐项复核真实归属，避免捕获谓词分配，也不缓存过期授权。
+            var flows=session.Document.Workflows;var scopeCount=0;var ownsNode=false;
+            for(var i=0;i<flows.Count;i++)
+            {
+                var flow=flows[i];if(flow.Id!=workflowId)continue;
+                scopeCount++;var localCount=0;
+                for(var j=0;j<flow.Nodes.Count;j++)
+                    if(flow.Nodes[j].Id==snapshot.Identity.NodeId)
+                    {localCount++;ownsNode=ReferenceEquals(flow.Nodes[j],node);}
+                if(localCount!=1)ownsNode=false;
+            }
+            return scopeCount==1&&ownsNode;
+        }
         if(!SourceMatches())return;
         if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)
         {

@@ -49,6 +49,7 @@ public partial class MainWindowViewModel
     private void DocumentHistoryChanged(object? sender, EventArgs args)
     {
         RefreshAcceptedImageSourceViews();
+        RefreshCurrentResultBindings();
         RefreshRootTabReadiness(); UpdateCurrentSolutionInfo(); UpdateUndoRedoCommands();
         OnPropertyChanged(nameof(CanUndoRootWorkspace)); OnPropertyChanged(nameof(CanRedoRootWorkspace));
     }

@@ -1,4 +1,14 @@
-﻿## 2026-10-28 结果树表同源数据链本批核收通过
+﻿## 2026-10-28 D06 完整类型生产者批已收齐，等待正式集成验证
+
+用户明确授权“授权按完整批实施”。本线已同步主线 c2aeebb2 为 1d1e229c（仅双方任务/视口文档冲突，证据均保留）；此前 b6 正式产品与 a9 夹具的 ImageSources173/0、Host1/0属于上一批，不计本次D06通过。
+
+本批一次贯通：ProducerBinding仅ReferenceExpression持久身份；根端口/声明成员/集合All的UI绑定及解除、正式草稿/历史/保存；同Host版本的配置/global定义、真实owner/资源基目录；源节点完成且scope尚有效时，以独立_expected和真实admission解析，再写纯值batch；同流/跨流/单模块通信/连续/取消排空。SDK消费者作用域代理及ReceiveData退出nodeResults/点路径二次解析，Manager退出释放后回填和旧全局值setter。源模型/通信/依赖/历史全部消费者同批切换，无旧Producer字段兼容入口。
+
+值槽初值和产值只接纯标量及一维纯标量数组，拒资源、组合、嵌套/未知对象。通信现行Normalize/编辑器仅支持单项，数组通信明确拒绝并保依赖；资源/几何/组合全局存储仍未实现，不能当本批已交付。Group不扩展，内部单模块通讯明确拒绝错误scope搬运。
+
+新增真实引擎、Manager生产、WPF选择器及保存重开回归源码，并集中迁移全部旧producer测试；GlobalBinding正式轨与原ImageSources定向回归准备。43个C#纯语法0错、diff检查通过；未语义编译、未运行D06、未VS/人工，不交付验收。本线无私有Release/无live构建；主仓唯一正式窗口待固定候选后统一UI/full及关联轨。完整A01–E07仍保，D07及整个目标未完成。
+
+## 2026-10-28 结果树表同源数据链本批核收通过
 
 - 正式产品固定b6f77679，UI006=0错6579警告111.26秒，full006=0错6579警告61.45秒。173图像源/原树、publication9、来源2、原表1、原样式2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1均过；宿主夹具只顺序修正a9cf86b0，单编helper0错21警告6.71秒后Host004=1过0败。src/tools提交差分为空，不冒称产品和测试同一commit。
 - RootResource真实Fact1及完整部署18项过；795正式发布条目/142加载记录SHA全核，临时移动3文件和清单原身份还原。权威证据evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json（12条同源receipt，含真实表500→1000→1205、300项树分页异常后继续、owner退休与末借阅释放）。所有原失败日志保留。

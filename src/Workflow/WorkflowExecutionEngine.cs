@@ -381,6 +381,7 @@ namespace SunEyeVision.Workflow
                         var nodeResult = await completed.Task;
                         context.CancellationToken.ThrowIfCancellationRequested();
                         context.SetNodeResult(completed.Node.Id, nodeResult);
+                    if(completed.Node is AlgorithmNode producer)producer.BindingContext?.CompleteGlobalProducers(producer.Id,context);
                         NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
                         var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
                         context.UpdateNodeStatus(completed.Node.Id, status);
@@ -494,6 +495,7 @@ namespace SunEyeVision.Workflow
                     var nodeResult = await completed.Task;
                     context.CancellationToken.ThrowIfCancellationRequested();
                     context.SetNodeResult(completed.Node.Id, nodeResult);
+                    if(completed.Node is AlgorithmNode producer)producer.BindingContext?.CompleteGlobalProducers(producer.Id,context);
                     NodeExecutionFinished?.Invoke(completed.Node, nodeResult);
                     var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
                     context.UpdateNodeStatus(completed.Node.Id, status);
@@ -892,7 +894,7 @@ namespace SunEyeVision.Workflow
             }
             try
             {
-                var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph,variableDefinitions);
+                var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph,variableDefinitions,request);
                 return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles,bindings,frozenImage);
             }
             catch{frozenImage?.Dispose();throw;}
@@ -1004,7 +1006,7 @@ namespace SunEyeVision.Workflow
                 executionNode.ExecutionRunId = scope.RunId;
                 executionNode.ExecutionRootRunId = session.RunId;
                 executionNode.CommunicationInputs = request?.CommunicationInputs == null ? null :
-                    new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, null, workflowId: source.Id) { ConsumerScope = scope.ConsumerScope };
+                    new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(request.CommunicationInputs, workflowId: source.Id) { ConsumerScope = scope.ConsumerScope };
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame
                     : null;

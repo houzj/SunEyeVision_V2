@@ -354,7 +354,7 @@ public sealed class GlobalVariableConfigurationEditHostTests
         var variable = new GlobalVariable("name", new long[] { 1 }, "Integer", "station")
         {
             Id = "id", Index = 8, Description = "description", RebindingReason = "reason", BindingValidationPending = "pending",
-            ProducerBinding = new() { WorkflowId = "f", NodeId = "source", SourceFieldId = Guid.NewGuid(), ResultName = "value" },
+            ProducerBinding = BindingAdaptationB2Tests.Producer("f","source",new BindingAdaptationB2Tests.SourceParameters{TypeName="Integer"}),
             ConsumerBindings = new() { new() { WorkflowId = "f", NodeId = "parse", InputKey = "InputText", ParameterName = "InputText" } }
         };
         var notifications = 0; variable.PropertyChanged += (_, _) => notifications++;
@@ -362,9 +362,12 @@ public sealed class GlobalVariableConfigurationEditHostTests
         Assert.Equal(0, notifications); Assert.Equal(variable.Id, copy.Id); Assert.Equal(variable.ValueRevision, copy.ValueRevision);
         Assert.Equal((variable.Name, variable.Type, variable.Group, variable.Index, variable.Description), (copy.Name, copy.Type, copy.Group, copy.Index, copy.Description));
         Assert.NotSame(variable.ProducerBinding, copy.ProducerBinding); Assert.NotSame(variable.ConsumerBindings[0], copy.ConsumerBindings[0]);
-        Assert.Equal(variable.ProducerBinding!.SourceFieldId, copy.ProducerBinding!.SourceFieldId);
-        copy.ProducerBinding.NodeId = "private"; copy.ConsumerBindings[0].ParameterName = "private";
-        Assert.Equal("source", variable.ProducerBinding.NodeId); Assert.Equal("InputText", variable.ConsumerBindings[0].ParameterName);
+        Assert.Equal(variable.ProducerBinding!.ReferenceExpression, copy.ProducerBinding!.ReferenceExpression);
+        var reference=copy.ProducerBinding.SourceReference;
+        copy.ProducerBinding.ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+            new SunEyeVision.Plugin.Contracts.OutputReference("private",reference.PortId,reference.Type,reference.MemberFieldPath,reference.Selection,reference.ScopeId,reference.Storage));
+        copy.ConsumerBindings[0].ParameterName = "private";
+        Assert.Equal("source", variable.ProducerBinding.SourceReference.NodeId); Assert.Equal("InputText", variable.ConsumerBindings[0].ParameterName);
     }
     [Fact]
     public void Concurrent_definition_capture_never_pairs_a_new_name_with_an_old_value()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -261,8 +261,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     {
         lock (_gate) lock (GlobalVariable.ValueGate)
             return (_activeSolution?.GlobalVariables ?? new()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
-                .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id, v.Name, v.Group, v.Type,
-                    v.ProducerBinding != null || !string.IsNullOrEmpty(v.RebindingReason) || !string.IsNullOrEmpty(v.BindingValidationPending), v.ProducerBinding?.NodeId ?? "", v.ProducerBinding?.ResultName ?? "", v.ProducerBinding?.WorkflowId ?? "")).ToArray();
+                .Select(WorkflowGlobalVariableReceiveService.Describe).ToArray();
     }
     private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
     {

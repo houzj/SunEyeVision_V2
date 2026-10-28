@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -857,8 +857,12 @@ SplitterPosition = position;
             _executionManager.CapturePublishedConfiguration = () =>
             {
                 // Production execution never accepts a pending editor draft.
-                _executionManager.SetGlobalVariables(DocumentManager.CurrentSolution is { } document
-                    ? CaptureGlobalVariables(document) : null);
+                var session=DocumentManager.Session??throw new InvalidOperationException("运行准备没有当前方案会话。");
+                var accepted=session.Editing.Host.Capture();
+                var publication=WorkflowPublishedConfiguration.Capture(accepted,session.Document);
+                if(!ReferenceEquals(DocumentManager.Session,session)||!ReferenceEquals(session.Editing.Host.Capture(),accepted))
+                    throw new InvalidOperationException("正式配置在运行快照采集期间改变，请重新执行。");
+                return publication;
             };
             WorkflowTabViewModel.StartContinuousExecution = StartContinuousWorkflow;
             WorkflowTabViewModel.StopContinuousExecution = StopContinuousWorkflow;
@@ -2052,12 +2056,6 @@ SplitterPosition = position;
                 if(!Current())return;
                 // ★ 传递运行时参数到执行管理器
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
-
-                // ★ 传递全局变量到执行管理器（用于 __GlobalVars__ 绑定解析）
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                var globalVars = solutionManager.CurrentSolution is { } globalsDocument
-                    ? CaptureGlobalVariables(globalsDocument) : null;
-                _executionManager.SetGlobalVariables(globalVars);
 
                 if(!Current())return;
                 await _executionManager.RunSingleAsync(selectedTab, advanceLocalImage: advanceLocalImage);
@@ -4117,11 +4115,6 @@ SplitterPosition = position;
             // 连续运行也必须使用与单次运行相同的运行时输入和全局变量。
             _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
-            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            var globalVars = solutionManager.CurrentSolution is { } globalsDocument
-                ? CaptureGlobalVariables(globalsDocument) : null;
-            _executionManager.SetGlobalVariables(globalVars);
-
             var accepted = _executionManager.StartContinuousRun(workflow);
             if (accepted)
             {
@@ -4568,12 +4561,18 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             var metadata=fields.ToDictionary(BindingClrAdapter.OutputPortId,output=>new DeclaredOutputField(output.Name,output.DisplayName,
                 output.VariableType,output.DeclaredType,output.FieldId,output.Group,output.DisplayInResultPanel),StringComparer.Ordinal);
             PresentDeclaration(schema,nodeName,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
-                DeclaredBindings(metadata,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
+                DeclaredBindings(schema,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
             return true;
         }
-        private static IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(IReadOnlyDictionary<string,DeclaredOutputField> fields,string? nodeId)
-            =>fields.Where(field=>nodeId is not null&&SdkTypeVocabulary.ToSystemType(field.Value.VariableType) is not null)
-                .ToDictionary(field=>field.Key,field=>new ResultBindingInfo(nodeId!,field.Value.Name,field.Value.VariableType,field.Value.ClrType,field.Value.FieldId),StringComparer.Ordinal);
+        private IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(SunEyeVision.Plugin.Contracts.ToolSchema schema,string? nodeId)
+        {
+            var root=DocumentManager.Session?.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Nodes.Any(node=>node.Id==nodeId));
+            return root is null||nodeId is null?new Dictionary<string,ResultBindingInfo>():schema.Outputs.ToDictionary(
+                port=>port.Id,port=>new ResultBindingInfo(new SunEyeVision.Plugin.Contracts.OutputReference(nodeId,port.Id,port.Type,scopeId:root.Id,storage:port.Storage),port.Id,
+                    DocumentManager.Session!.Document.GlobalVariables.Where(variable=>variable.ProducerBinding is not null)
+                        .GroupBy(variable=>variable.ProducerBinding!.ReferenceExpression,StringComparer.Ordinal)
+                        .ToDictionary(group=>group.Key,group=>string.Join("、",group.Select(variable=>variable.Name)),StringComparer.Ordinal)),StringComparer.Ordinal);
+        }
         private void ShowDeclaredSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName)=>PresentSnapshot(snapshot,nodeName);
         internal void ShowDeclaredRun(ExecutionResult run,SunEyeVision.Plugin.Contracts.RunIdentity identity,string? nodeName=null)
         {
@@ -4885,36 +4884,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
         }
 
-        private static ResultBindingInfo? CreateShapeBindingInfo(ResultBindingInfo? parent, ShapeType type)
-        {
-            if (parent == null)
-                return null;
-
-            var geometry = RoiShape.CreateDefaultGeometry(type);
-            var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(geometry?.GetType());
-            return string.IsNullOrWhiteSpace(vocabulary)
-                ? null
-                : new ResultBindingInfo(
-                    parent.SourceNodeId,
-                    $"{parent.ResultPath}[Type={type}]",
-                    vocabulary!,
-                    geometry?.GetType());
-        }
-
-        private static ResultBindingInfo? CreateFieldBindingInfo(ResultBindingInfo? parent, RoiFieldDef field)
-        {
-            if (parent == null)
-                return null;
-
-            var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(field.ValueType);
-            return string.IsNullOrWhiteSpace(vocabulary)
-                ? null
-                : new ResultBindingInfo(
-                    parent.SourceNodeId,
-                    $"{parent.ResultPath}[].Geometry.{field.Path}",
-                    vocabulary!,
-                    field.ValueType);
-        }
+        // Geometry reflection fields are display-only: they have no formal record-member declaration.
+        private static ResultBindingInfo? CreateShapeBindingInfo(ResultBindingInfo? parent,ShapeType type)=>null;
+        private static ResultBindingInfo? CreateFieldBindingInfo(ResultBindingInfo? parent,RoiFieldDef field)=>null;
 
         /// <summary>
         /// 设计态 RoI 契约变量回退：从工具参数读取检测区/屏蔽区结构。
@@ -5691,28 +5663,43 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 OnPropertyChanged(nameof(BindingUnavailableReason));
             }
         }
-        public bool IsBindable => BindingInfo != null;
+        public bool IsBindable => BindingInfo?.CanBind==true;
         public bool CanBindVariable=>IsBindable;
-        public string? BindingDisplayName {get;internal set;}
-        public string BindingUnavailableReason=>IsBindable?string.Empty:"该项没有正式变量绑定端点";
+        private string? _bindingDisplayName;
+        public string? BindingDisplayName {get=>_bindingDisplayName;internal set=>SetProperty(ref _bindingDisplayName,value);}
+        public string BindingUnavailableReason=>IsBindable?string.Empty:"该项没有可承载的正式变量类型或资源存储；样本索引不支持绑定";
     }
 
     /// <summary>模块结果可绑定终点的运行时寻址信息。</summary>
     public sealed class ResultBindingInfo
     {
-        public ResultBindingInfo(string sourceNodeId, string resultPath, string valueVocabulary, Type? valueType,Guid? sourceFieldId=null)
+        public ResultBindingInfo(SunEyeVision.Plugin.Contracts.OutputReference reference,string resultPath,IReadOnlyDictionary<string,string>? bindingNames=null)
+        {Reference=reference;ResultPath=resultPath;_referenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference);
+            BindingNames=bindingNames is null?null:bindingNames is ReadOnlyDictionary<string,string>?bindingNames:new ReadOnlyDictionary<string,string>(bindingNames.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));}
+        public IReadOnlyDictionary<string,string>? BindingNames {get;}
+        public string? BoundVariableNames=>BindingNames?.TryGetValue(ReferenceExpression,out var names)==true?names:null;
+        public SunEyeVision.Plugin.Contracts.OutputReference Reference {get;}
+        private readonly string _referenceExpression;
+        public string ReferenceExpression=>_referenceExpression;
+        public string SourceNodeId=>Reference.NodeId;
+        public string ResultPath {get;}
+        public bool CanBind
         {
-            SourceNodeId = sourceNodeId;
-            ResultPath = resultPath;
-            ValueVocabulary = valueVocabulary;
-            ValueType = valueType;
-            SourceFieldId=sourceFieldId;
+            get
+            {
+                var type=Reference.Type;
+                foreach(var member in Reference.MemberFieldPath)type=Project(type,member);
+                var element=type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?type.Element!:type;
+                if(element.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Scalar)return false;
+                return SdkTypeVocabulary.ChineseNames.Keys.SelectMany(name=>new[]{name,name+"[]"}).Any(vocabulary=>GlobalProducerBindingRules.TryDescribeTarget(vocabulary,out var target,out _,out _)
+                    &&target.Type.Shape==type.Shape&&(target.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?target.Type.Element:target.Type)==element);
+            }
         }
-        public string SourceNodeId { get; }
-        public string ResultPath { get; }
-        public string ValueVocabulary { get; }
-        public Type? ValueType { get; }
-        public Guid? SourceFieldId {get;}
+        private static SunEyeVision.Plugin.Contracts.TypeRef Project(SunEyeVision.Plugin.Contracts.TypeRef type,string member)
+        {
+            if(type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence)return SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(Project(type.Element!,member),type.Count);
+            return type.Fields.Single(field=>field.Id==member).Type;
+        }
     }
 
     /// <summary>

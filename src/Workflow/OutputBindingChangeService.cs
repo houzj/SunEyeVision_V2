@@ -1,4 +1,4 @@
-using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
+﻿using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -195,27 +195,11 @@ public sealed class OutputBindingChangeService
         foreach (var variable in _solution.GlobalVariables)
         {
             if (variable.ProducerBinding is not { } producer) continue;
-            var owners = nodes.Keys.Where(k => k.NodeId == producer.NodeId && (string.IsNullOrEmpty(producer.WorkflowId) || k.WorkflowId == producer.WorkflowId)).ToArray();
-            BindingValidation validation;
-            if (owners.Length > 1) validation = new(BindingCompatibility.Unresolved, "变量生产来源缺少工作流作用域，等待重新确认");
-            else if (owners.Length == 0) validation = new(BindingCompatibility.Incompatible, "全局变量生产节点已删除，请重新绑定");
-            else
+            var validation = GlobalProducerBindingRules.Validate(_solution, producer, variable, source =>
             {
-                var oldName = PropertyPathParser.ExtractPropertyName(producer.ResultName.Split('.')[0]);
-                var field = producer.SourceFieldId.HasValue ? current[owners[0]]?.FirstOrDefault(o => o.FieldId == producer.SourceFieldId)
-                    : current[owners[0]]?.FirstOrDefault(o => o.Name == oldName);
-                var path = field == null ? producer.ResultName : field.Name + producer.ResultName[oldName.Length..];
-                if (field != null && path != producer.ResultName)
-                {
-                    var originalPath = producer.ResultName; var originalLabel = producer.ResultDisplayName;
-                    plan.Add((() => { producer.ResultName = path; producer.ResultDisplayName = field.DisplayName; },
-                        () => { producer.ResultName = originalPath; producer.ResultDisplayName = originalLabel; }));
-                }
-                validation = producer.SourceFieldId.HasValue && field == null && current[owners[0]] != null
-                    ? new(BindingCompatibility.Incompatible, "全局变量原输出身份已删除，请重新绑定")
-                    : BindingContractValidator.Validate(current[owners[0]], path,
-                        SdkTypeVocabulary.ToSystemType(variable.Type) is { } type ? new[] { type } : Array.Empty<Type>());
-            }
+                var reference = producer.SourceReference;
+                return current.GetValueOrDefault(new ScopedNodeIdentity(reference.ScopeId!, source.Id));
+            });
             var priorPending = variable.BindingValidationPending;
             if (validation.State == BindingCompatibility.Unresolved)
             {
@@ -399,11 +383,6 @@ public sealed class OutputBindingChangeService
         if (_solution == null) return;
         foreach (var variable in _solution.GlobalVariables)
         {
-            if (variable.ProducerBinding is { SourceFieldId: null } producer)
-            {
-                var matches = _contracts.Where(p => p.Key.NodeId == producer.NodeId && (string.IsNullOrEmpty(producer.WorkflowId) || p.Key.WorkflowId == producer.WorkflowId)).ToArray();
-                if (matches.Length == 1) producer.SourceFieldId = matches[0].Value?.FirstOrDefault(o => o.Name == PropertyPathParser.ExtractPropertyName(producer.ResultName.Split('.')[0]))?.FieldId;
-            }
             foreach (var consumer in variable.ConsumerBindings)
             {
                 var targets = _solution.Workflows.Where(w => string.IsNullOrEmpty(consumer.WorkflowId) || w.Id == consumer.WorkflowId)

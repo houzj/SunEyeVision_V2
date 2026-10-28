@@ -20,6 +20,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         internal readonly ResultPresentationNode Node = node;
         internal readonly FlatResultRow Row = row;
         internal readonly List<Entry> Children = new();
+        internal Entry? AllMembers;
         internal FlatResultRow? More;
         internal PropertyChangedEventHandler? MoreHandler;
     }
@@ -34,6 +35,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
     private readonly List<(FlatResultRow Row, PropertyChangedEventHandler Handler)> _subscriptions = new();
     private readonly List<Entry> _outputs = new();
+    private IReadOnlyDictionary<string,ResultBindingInfo>? _bindingRoots;
     private ResultPresentationModel? _model;
     private IResultPublication? _publication;
     private ResultPublicationStamp? _stamp;
@@ -110,7 +112,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         // Hierarchy projection never reads another value page.
         foreach(var entry in _entries.Values.ToArray())
         {
-            var children=entry.Children.Select(child=>child.Row)
+            var children=(entry.AllMembers is {} all?new[]{all}:Array.Empty<Entry>()).Concat(entry.Children).Select(child=>child.Row)
                 .Concat(entry.More is {} more?new[]{more}:Array.Empty<FlatResultRow>()).ToArray();
             if(!Synchronize(entry.Row.MutableChildren,children,generation))return;
         }
@@ -171,7 +173,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         _outputs.Clear();
         _root = null;
         _publication = null;_stamp=null;_diagnostics=Array.Empty<Diagnostic>();
-        _model = null;
+        _model = null;_bindingRoots=null;
         try { try{_roots.Clear();}finally{if(generation==_generation)_rows.Clear();} }
         finally
         {
@@ -185,7 +187,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts,int generation)
     {
         if(!Current(generation)){Abandon(generation);return;}
-        _model = model;
+        _model = model;_bindingRoots=bindings;
         var root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
         if(!Current(generation)){Abandon(generation);return;}_root=root;
         Subscribe(root, () => RefreshRows());
@@ -198,20 +200,18 @@ public sealed class ResultPresentationPresenter : IDisposable
 
     private void UpdateRootMetadata(IReadOnlyDictionary<string, string>? names, IReadOnlyDictionary<string, ResultBindingInfo>? bindings,int generation)
     {
+        _bindingRoots=bindings;
         foreach (var entry in _outputs.ToArray())
         {
             if(!Current(generation)){Abandon(generation);return;}
             var id = entry.Node.DeclaredPort!.Id;
             entry.Row.DisplayName = names != null && names.TryGetValue(id, out var name) ? name : id;
             if(!Current(generation)){Abandon(generation);return;}
-            var binding = bindings != null && bindings.TryGetValue(id, out var supplied) ? supplied : null;
-            entry.Row.BindingInfo = binding;
+        }
+        foreach(var entry in _entries.Values.ToArray())
+        {
             if(!Current(generation)){Abandon(generation);return;}
-            entry.Row.SourceNodeId = binding?.SourceNodeId;
-            if(!Current(generation)){Abandon(generation);return;}
-            entry.Row.SourcePropertyName = binding?.ResultPath;
-            if(!Current(generation)){Abandon(generation);return;}
-            entry.Row.PropertyClrType = binding?.ValueType;
+            if(!ApplyBinding(entry,generation))return;
         }
     }
 
@@ -225,12 +225,13 @@ public sealed class ResultPresentationPresenter : IDisposable
         var row = new FlatResultRow
         {
             Key=node.Key,
-            DisplayName = node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
+            DisplayName = node.IsAllProjection?(node.DeclaredPort?.Id is {} field?field+" [All]":"All · 全部元素成员"):node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
             DisplayValue = value, Level = level,
-            IsGroup = childCount is > 0, IsExpanded = node.IsExpanded
+            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = node.IsExpanded
         };
         var entry = new Entry(node, row);
         _entries.Add(node.Key, entry);
+        if(!ApplyBinding(entry,generation))return null;
         Subscribe(row, () =>
         {
             node.IsExpanded = row.IsExpanded;
@@ -238,6 +239,29 @@ public sealed class ResultPresentationPresenter : IDisposable
             RefreshRows();
         });
         return entry;
+    }
+
+    private bool ApplyBinding(Entry entry,int generation)
+    {
+        if(!Current(generation)){Abandon(generation);return false;}
+        var address=entry.Node.DeclarationAddress;
+        ResultBindingInfo? binding=null;
+        if(address is not null&&!address.IsSampleRow&&_bindingRoots?.TryGetValue(address.RootPort.Id,out var root)==true)
+        {
+            var reference=address.Reference(root.Reference.NodeId,root.Reference.ScopeId!);
+            var path=address.RootPort.Id+string.Concat(address.MemberFieldPath.Select(member=>" / "+member));
+            if(reference.Type.Shape==ValueShape.Sequence||address.ThroughSequence)path+=" [All]";
+            binding=new ResultBindingInfo(reference,path,root.BindingNames);
+            if(!binding.CanBind)binding=null;
+        }
+        entry.Row.BindingInfo=binding;
+        if(!Current(generation)){Abandon(generation);return false;}
+        entry.Row.BindingDisplayName=binding?.BoundVariableNames;
+        if(!Current(generation)){Abandon(generation);return false;}
+        entry.Row.SourceNodeId=binding?.SourceNodeId;
+        entry.Row.SourcePropertyName=binding?.ResultPath;
+        entry.Row.PropertyClrType=null;
+        return Current(generation);
     }
 
     private void Subscribe(FlatResultRow row, Action changed)
@@ -257,6 +281,8 @@ public sealed class ResultPresentationPresenter : IDisposable
         var generation=_generation;
         if(!Current(generation)){Abandon(generation);return;}
         DetachMore(entry);
+        if(entry.AllMembers is null&&entry.Node.DeclarationAddress is {IsSampleRow:false} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true&&entry.Node.CreateAllMembers() is {} all)
+        {entry.AllMembers=GetEntry(all,entry.Row.Level+1);if(!Current(generation)){Abandon(generation);return;}}
         var page = entry.Node.GetChildrenPage(entry.Children.Count, _pageSize);
         if(!Current(generation)){Abandon(generation);return;}
         foreach (var child in page){if(!Current(generation)){Abandon(generation);return;}var childEntry=GetEntry(child,entry.Row.Level+1);if(childEntry is null||!Current(generation))return;entry.Children.Add(childEntry);}
@@ -294,6 +320,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         visible.Add(entry.Row);
         if (!entry.Row.IsExpanded) return;
+        if(entry.AllMembers is {} all)AppendVisible(all,visible);
         foreach (var child in entry.Children) AppendVisible(child, visible);
         if (entry.More != null) visible.Add(entry.More);
     }
@@ -310,7 +337,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         return _diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
     }
 
-    private string ValueText(ResultPresentationNode node) => node.ValueState switch
+    private string ValueText(ResultPresentationNode node) => node.IsAllProjection?"All · 按声明绑定全部元素，不是样本索引值":node.ValueState switch
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",

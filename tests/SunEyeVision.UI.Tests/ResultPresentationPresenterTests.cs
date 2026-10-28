@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
@@ -85,20 +85,58 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         var rows = new ObservableCollection<FlatResultRow>(); bool has = false;
         using var presenter = new ResultPresentationPresenter(rows, value => has = value, 2);
         var grid = new DataGrid { ItemsSource = rows, IsReadOnly = true, AutoGenerateColumns = false };
-        var binding = new ResultBindingInfo("source", "explicit.address", "String", typeof(string));
+        var binding = new ResultBindingInfo(new OutputReference("source","record",record,scopeId:"flow"),"record");
         using var declaration=ToolResultViews.Declaration(schema,()=>true,new Dictionary<string,string>{["record"]="显示名称"});
         presenter.Present(declaration,new Dictionary<string,ResultBindingInfo>{["record"]=binding});
         Assert.Same(rows, grid.ItemsSource); Assert.True(has);
         Assert.Equal(new[] { "结果", "显示名称", "scalar" }, rows.Select(row => row.DisplayName));
-        Assert.Same(binding, rows[1].BindingInfo); Assert.Equal("explicit.address", rows[1].SourcePropertyName);
+        Assert.Null(rows[1].BindingInfo); // A record has no variable storage; its declared scalar members do.
         Assert.Null(rows[2].BindingInfo); Assert.Null(rows[1].SourceNode);
         rows[1].IsExpanded = true; // Same property changed by the existing control click handler.
         Assert.Equal(new[] { "z", "a" }, rows.Skip(2).Take(2).Select(row => row.DisplayName));
-        Assert.All(rows.Skip(2), row => Assert.Null(row.BindingInfo));
+        Assert.Equal(new[]{"z"},rows[2].BindingInfo!.Reference.MemberFieldPath);
+        Assert.Equal(new[]{"a"},rows[3].BindingInfo!.Reference.MemberFieldPath);
+        Assert.Null(rows[4].BindingInfo);
         Assert.StartsWith("加载下一页", rows[4].DisplayName);
         var recordRow = rows[1]; var fieldRow = rows[2];
         presenter.Present(declaration);
         Assert.Same(recordRow, rows[1]); Assert.True(recordRow.IsExpanded); Assert.Same(fieldRow, rows[2]);
+    });
+
+    [Fact]
+    public void Empty_and_declaration_record_sequences_expose_explicit_All_members_but_never_sample_indices() => Sta(() =>
+    {
+        var record=TypeRef.RecordOf("record",new[]{new Port("name",DataType.Text),new Port("image",TypeRef.ResourceOf(ResourceKind.Image))});
+        var type=TypeRef.SequenceOf(record);var schema=Schema(new Port("records",type));
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        using var publication=ToolResultViews.Declaration(schema,()=>true);
+        var endpoint=new ResultBindingInfo(new OutputReference("source","records",type,scopeId:"flow"),"records");
+        presenter.Present(publication,new Dictionary<string,ResultBindingInfo>{{"records",endpoint}});
+        var records=rows[1];Assert.Null(records.BindingInfo);Assert.True(records.IsGroup);
+        records.IsExpanded=true;var all=Assert.Single(rows.Where(row=>row.DisplayName=="All · 全部元素成员"));
+        all.IsExpanded=true;var member=Assert.Single(rows.Where(row=>row.DisplayName=="name [All]"));
+        Assert.NotNull(member.BindingInfo);Assert.Equal(new[]{"name"},member.BindingInfo.Reference.MemberFieldPath);
+        Assert.Equal(type,member.BindingInfo.Reference.Type);Assert.IsType<BindingSelection.AllItems>(member.BindingInfo.Reference.Selection);
+        Assert.Contains("All",member.DisplayValue);Assert.Null(Assert.Single(rows.Where(row=>row.DisplayName=="image [All]")).BindingInfo);
+        Assert.DoesNotContain(rows,row=>row.DisplayName=="[0]");
+        var retained=member;presenter.Clear();Assert.False(presenter.ContainsRow(retained));
+    });
+
+    [Fact]
+    public void Observed_record_samples_and_their_fields_never_masquerade_as_single_index_bindings() => Sta(() =>
+    {
+        var record=TypeRef.RecordOf("record",new[]{new Port("name",DataType.Text)});var type=TypeRef.SequenceOf(record);
+        var schema=Schema(new Port("records",type));using var run=Success(schema,new(){["records"]=new[]{new Dictionary<string,object?>{{"name","first"}}}});
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        var endpoint=new ResultBindingInfo(new OutputReference("source","records",type,scopeId:"flow"),"records");
+        presenter.Present(run.Publication,new Dictionary<string,ResultBindingInfo>{{"records",endpoint}});
+        rows[1].IsExpanded=true;var sample=Assert.Single(rows.Where(row=>row.DisplayName=="[0]"));Assert.Null(sample.BindingInfo);
+        sample.IsExpanded=true;var value=Assert.Single(rows.Where(row=>row.DisplayName=="name"));
+        Assert.Equal("first",value.DisplayValue);Assert.Null(value.BindingInfo);Assert.False(value.CanBindVariable);
+        var all=Assert.Single(rows.Where(row=>row.DisplayName=="All · 全部元素成员"));all.IsExpanded=true;
+        var declared=Assert.Single(rows.Where(row=>row.DisplayName=="name [All]"));Assert.NotNull(declared.BindingInfo);
+        var reference=declared.BindingInfo!.Reference;Assert.IsType<BindingSelection.AllItems>(reference.Selection);
+        Assert.Equal(new[]{"name"},reference.MemberFieldPath);Assert.Equal(type,reference.Type);
     });
 
     [Fact]

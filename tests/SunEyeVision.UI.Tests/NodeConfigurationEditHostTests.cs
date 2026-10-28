@@ -18,7 +18,7 @@ public sealed class NodeConfigurationEditHostTests
     public void Host_commits_source_and_detachment_preserving_live_node_identity_and_runtime_values()
     {
         var model = Model(); var source = model.Workflows[0].Nodes[0]; var parse = model.Workflows[0].Nodes[1];
-        var variable = new GlobalVariable("v", "initial", "String") { ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } };
+        var variable = new GlobalVariable("v", "initial", "String") { ProducerBinding = BindingAdaptationB2Tests.Producer("f", "source", model.Workflows[0].Nodes[0].Parameters) };
         model.GlobalVariables.Add(variable); var host = new NodeConfigurationEditHost(model); var edit = host.BeginEdit("f", "source");
         ((BindingAdaptationB2Tests.SourceParameters)edit.Node.Parameters).TypeName = "Double"; variable.Value = "runtime";
         Assert.Equal("String", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).TypeName);
@@ -170,7 +170,7 @@ public sealed class NodeConfigurationEditHostTests
     public void Throwing_binding_notifications_report_refresh_error_after_final_publication_without_replay()
     {
         var model = Model(); var variable = new GlobalVariable("v", "runtime", "String")
-        { ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } };
+        { ProducerBinding = BindingAdaptationB2Tests.Producer("f", "source", model.Workflows[0].Nodes[0].Parameters) };
         model.GlobalVariables.Add(variable); var host = new NodeConfigurationEditHost(model); var before = host.Capture();
         var producer = variable.ProducerBinding; var consumers = variable.ConsumerBindings;
         var edit = host.BeginEdit("f", "source"); ((BindingAdaptationB2Tests.SourceParameters)edit.Node.Parameters).TypeName = "Double";

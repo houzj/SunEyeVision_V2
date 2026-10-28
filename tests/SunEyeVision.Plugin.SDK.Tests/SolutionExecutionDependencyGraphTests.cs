@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Linq;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Workflow;
 using Xunit;
 
@@ -13,17 +17,16 @@ public class SolutionExecutionDependencyGraphTests
         var solution = new Solution();
         var sourceWorkflow = CreateWorkflow("source-workflow", "采集流程", "source");
         var targetWorkflow = CreateWorkflow("target-workflow", "检测流程", "target");
+        sourceWorkflow.Nodes[0].Parameters=new GraphSourceParameters();
         solution.Workflows.Add(sourceWorkflow);
         solution.Workflows.Add(targetWorkflow);
         solution.GlobalVariables.Add(new GlobalVariable("共享阈值", 0d, "Double")
         {
             ProducerBinding = new ProducerBinding
             {
-                WorkflowId = sourceWorkflow.Id,
+                ReferenceExpression = Reference(sourceWorkflow.Id,"source",ScalarKind.Float64),
                 WorkflowName = sourceWorkflow.Name,
-                NodeId = "source",
                 NodeName = "源节点",
-                ResultName = "Value",
                 ResultDisplayName = "值"
             },
             ConsumerBindings =
@@ -58,12 +61,13 @@ public class SolutionExecutionDependencyGraphTests
         var sourceWorkflow = CreateWorkflow("source-workflow", "来源", "source");
         var firstTarget = CreateWorkflow("target-a", "目标A", "target");
         var secondTarget = CreateWorkflow("target-b", "目标B", "target");
+        sourceWorkflow.Nodes[0].Parameters=new GraphSourceParameters{Kind=ScalarKind.Int64};
         solution.Workflows.Add(sourceWorkflow);
         solution.Workflows.Add(firstTarget);
         solution.Workflows.Add(secondTarget);
         solution.GlobalVariables.Add(new GlobalVariable("共享值", 0, "Integer")
         {
-            ProducerBinding = new ProducerBinding { WorkflowId = sourceWorkflow.Id, NodeId = "source", ResultName = "Value" },
+            ProducerBinding = new ProducerBinding { ReferenceExpression=Reference(sourceWorkflow.Id,"source",ScalarKind.Int64) },
             ConsumerBindings = { new ConsumerBinding { NodeId = "target", ParameterName = "Value" } }
         });
 
@@ -82,6 +86,14 @@ public class SolutionExecutionDependencyGraphTests
         Assert.Equal(new[]{"source-workflow/source"},graph.GetPredecessors("target-a/target"));
     }
 
+    private sealed class GraphSourceParameters:ToolParameters,IOutputContractProvider
+    {
+        public ScalarKind Kind{get;set;}=ScalarKind.Float64;
+        public System.Collections.Generic.IReadOnlyList<OutputVariable> GetOutputContract()=>new[]{new OutputVariable{
+            PortId="output.value",Name="Value",ValueDeclaration=TypeRef.ScalarOf(Kind),Kind=OutputVariableKind.Data}};
+    }
+    private static string Reference(string scope,string node,ScalarKind kind)=>BindingReferenceSerializer.Serialize(
+        new OutputReference(node,"output.value",TypeRef.ScalarOf(kind),scopeId:scope));
     private static SunEyeVision.Workflow.Workflow CreateWorkflow(string id, string name, string nodeId)
     {
         var workflow = new SunEyeVision.Workflow.Workflow(id, name);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -118,7 +118,8 @@ public sealed class SolutionExecutionDependencyGraph
             if (variable.ProducerBinding == null)
                 continue;
 
-            var producer = ResolveNode(variable.ProducerBinding.WorkflowId, variable.ProducerBinding.NodeId,
+            var source = variable.ProducerBinding.SourceReference;
+            var producer = ResolveNode(source.ScopeId!, source.NodeId,
                 $"全局变量 {variable.Name} 的输入来源");
             if (producer == null) continue;
 

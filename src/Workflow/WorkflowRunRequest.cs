@@ -31,7 +31,8 @@ public sealed class WorkflowRunRequest
         CommunicationInputs = communicationInputs;
         CommunicationOutputs = communicationOutputs;
         InputImage = inputImage;
-        GlobalVariables = new Dictionary<string, object?>(globalVariables ?? new Dictionary<string, object?>());
+        GlobalVariables = (globalVariables ?? new Dictionary<string, object?>()).ToDictionary(
+            pair => pair.Key, pair => GlobalVariable.CopyEditableValue(pair.Value), StringComparer.Ordinal);
         RuntimeParameters = new Dictionary<string, object>(runtimeParameters ?? new Dictionary<string, object>());
         ContextVariables = new Dictionary<string, object>(contextVariables ?? new Dictionary<string, object>());
         NodeParameterOverrides = (nodeParameterOverrides ?? new Dictionary<string, IReadOnlyDictionary<string, object?>>())
@@ -51,6 +52,22 @@ public sealed class WorkflowRunRequest
         SourceInputs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,ImageSourceRunInput>(sources);
     }
 
+    private IReadOnlyList<WorkflowGlobalProducerOperation> _globalProducers=Array.Empty<WorkflowGlobalProducerOperation>();
+    public IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers
+    {
+        get=>_globalProducers;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            var operations=value.ToArray();
+            if(operations.Any(item=>item is null)
+                ||operations.Select(item=>item.VariableId).Distinct(StringComparer.Ordinal).Count()!=operations.Length
+                ||operations.Select(item=>item.VariableName).Distinct(StringComparer.Ordinal).Count()!=operations.Length)
+                throw new ArgumentException("本批运行的每个全局变量必须有且仅有一个明确生产来源。",nameof(value));
+            _globalProducers=Array.AsReadOnly(operations);
+        }
+    }
+    public WorkflowGlobalRunValues? ProducedGlobals {get;init;}
     public string WorkflowId { get; }
     public WorkflowRunConfiguration? Configuration { get; init; }
     public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; init; }

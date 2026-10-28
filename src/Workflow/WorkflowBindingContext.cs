@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -19,6 +19,11 @@ internal sealed class WorkflowBindingContext : IDisposable
     private readonly IReadOnlyDictionary<BindingNodeId,RunIdentity> _expected;
     private readonly string _scope;
     private readonly long _documentRevision;
+    private readonly WorkflowRunSession _session;
+    private readonly WorkflowRunScope _executionScope;
+    private readonly IReadOnlyList<WorkflowGlobalProducerOperation> _globalProducers;
+    private readonly WorkflowGlobalRunValues? _producedGlobals;
+
 
     private static Dictionary<string,Declaration> CaptureDeclarations(Workflow workflow,string scope,Guid executionScope)
     {
@@ -121,12 +126,14 @@ internal sealed class WorkflowBindingContext : IDisposable
     }
 
     internal WorkflowBindingContext(WorkflowRunSession session,WorkflowRunScope scope,Workflow workflow,WorkflowExecutionDependencyGraph graph,
-        IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables=null)
+        IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables=null,WorkflowRunRequest? request=null)
     {
-        _scope=scope.WorkflowId;
-        // Plans are recreated for every actual scope; no document-level plan cache or invented revision counter.
-        // Structural schema fingerprints and original admission identities provide the immutable generation boundary.
-        _documentRevision=0;
+        _scope=scope.WorkflowId;_session=session;_executionScope=scope;
+        _globalProducers=Array.AsReadOnly((request?.GlobalProducers??Array.Empty<WorkflowGlobalProducerOperation>()).Where(item=>item.Source.ScopeId==_scope).ToArray());
+        _producedGlobals=request?.ProducedGlobals;
+        if(_globalProducers.Count>0&&_producedGlobals is null)
+            throw new InvalidOperationException("已声明全局生产操作但缺少本批运行值槽。");
+        _documentRevision=session.Configuration?.DocumentRevision??0;
         _declarations=CaptureDeclarations(workflow,_scope,scope.RunId);
         _nodes=workflow.Nodes.OfType<AlgorithmNode>().ToDictionary(n=>n.Id,StringComparer.Ordinal);
         var owner=session.ExecutionOwner??throw new InvalidOperationException("Root execution owner is not activated.");
@@ -175,13 +182,18 @@ internal sealed class WorkflowBindingContext : IDisposable
         // algorithm node reads this port. Only the admitted configuration/catalog supplies demand.
         foreach(var variable in variables??Array.Empty<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>())
             if(variable.HasProducer&&(variable.ProducerWorkflowId==_scope||string.IsNullOrEmpty(variable.ProducerWorkflowId)))
-                CollectDeclaredDemand(variable.ProducerNodeId,variable.ProducerField);
+                if(demands.TryGetValue(variable.ProducerNodeId,out var variableDemand)
+                    &&_declarations.TryGetValue(variable.ProducerNodeId,out var variableSource)
+                    &&variableSource.Outputs.ContainsKey(variable.ProducerField))
+                    variableDemand.Add(new(variable.ProducerField));
         foreach(var caller in session.Configuration?.Definitions??Array.Empty<Workflow>())
             foreach(var consumer in caller.Nodes.Where(n=>n.IsEnabled))
                 foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&i.InternalProjection))
                     if(BindingRelationCatalog.SourceWorkflowId(consumer,input,caller.Id)==_scope
                         &&BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
                         CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());
+        foreach(var producer in _globalProducers)
+            if(demands.TryGetValue(producer.Source.NodeId,out var requested))requested.Add(new(producer.Source.PortId,producer.Source.MemberFieldPath));
         foreach(var node in _nodes.Values)
             node.OutputRequests=Array.AsReadOnly(demands[node.Id]
                 .DistinctBy(d=>System.Text.Json.JsonSerializer.Serialize(new {d.PortId,d.FieldPath})).ToArray());
@@ -277,6 +289,61 @@ internal sealed class WorkflowBindingContext : IDisposable
             item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
         return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,
             node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete);
+    }
+    internal void CompleteGlobalProducers(string completedNode,WorkflowContext context)
+    {
+        if(_producedGlobals is null)return;
+        var operations=_globalProducers.Where(item=>item.Source.NodeId==completedNode).ToArray();
+        if(operations.Length==0)return;
+        var values=ResolveGlobalProducers(_session,_executionScope,operations);
+        _producedGlobals.Publish(values,_session.CancellationToken);
+        // Replace a pure-value snapshot. Already running consumers retain their own generation.
+        context.GlobalVariables=new Dictionary<string,object?>(_producedGlobals.Capture(),StringComparer.Ordinal);
+    }
+    internal IReadOnlyList<WorkflowGlobalProducedValue> ResolveGlobalProducers(WorkflowRunSession session,WorkflowRunScope scope,
+        IReadOnlyList<WorkflowGlobalProducerOperation> operations)
+    {
+        var output=new List<WorkflowGlobalProducedValue>();
+        var owner=session.ExecutionOwner??throw new InvalidOperationException("Execution owner is not active.");
+        foreach(var operation in operations.Where(item=>item.Source.ScopeId==_scope))
+        {
+            session.CancellationToken.ThrowIfCancellationRequested();
+            if(_documentRevision<=0)throw new InvalidOperationException("Global production requires the captured published configuration revision.");
+            if(_nodes.ContainsKey(operation.OperationId))throw new InvalidOperationException("Global operation identity conflicts with a workflow node.");
+            var consumer=new BindingNodeId(_scope,operation.OperationId);
+            var admission=owner.Begin(_scope+"/"+operation.OperationId,scope.RunId,ToolContract.Version,session.CancellationToken,rootRunId:session.RunId);
+            try
+            {
+                using var executing=owner.EnterRun(admission);
+                var compilationScope=new BindingScopeSnapshot(consumer,owner.Id,_documentRevision,
+                    _declarations.Values.Select(d=>d.Source),_declarations.Values.Select(d=>d.Source.Node),
+                    Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+                var service=new ParameterBindingService();
+                var compiled=service.CompileBinding(operation.Source,operation.Target,compilationScope);
+                if(compiled.Plan is null)
+                {output.Add(new(operation.VariableId,operation.VariableName,null,compiled.Diagnostic??new("global-binding","Producer declaration is unavailable.")));continue;}
+                var sourceId=new BindingNodeId(_scope,operation.Source.NodeId);
+                var candidates=new List<BindingNodeResult>();
+                using var reader=_nodes.GetValueOrDefault(operation.Source.NodeId)?.LastToolResult?.DeclaredOutput?.AcquireReader();
+                if(reader?.Values is {} values)
+                {
+                    var snapshot=reader.Snapshot;
+                    candidates.Add(new(sourceId,snapshot.Identity,snapshot.SchemaRevision,snapshot.Schema.Fingerprint,
+                        snapshot.Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess,values));
+                }
+                var run=new BindingRunSnapshot(consumer,admission.ToInvocationIdentity(operation.OperationId),_documentRevision,candidates,_expected);
+                var resolved=service.ResolveBinding(compiled.Plan,run);
+                if(!resolved.Success)
+                {output.Add(new(operation.VariableId,operation.VariableName,null,resolved.Diagnostic??new("global-value","Producer value is unavailable.")));continue;}
+                var value=BindingClrAdapter.Materialize(operation.Target,operation.ValueType,resolved.Value);
+                session.CancellationToken.ThrowIfCancellationRequested();
+                output.Add(new(operation.VariableId,operation.VariableName,value,null));
+            }
+            catch(Exception error) when(error is ArgumentException or InvalidOperationException or OverflowException)
+            {output.Add(new(operation.VariableId,operation.VariableName,null,new("global-production",error.Message)));}
+            finally{admission.CompleteCallbacks();}
+        }
+        return output.AsReadOnly();
     }
     public void Dispose()
     {foreach(var node in _nodes.Values)node.AdmittedIdentity?.CompleteCallbacks();}

@@ -28,6 +28,24 @@ public sealed class ResultPresentationModelTests:IDisposable
         Assert.Empty(fields[1].GetChildrenPage(0, 2)); Assert.Null(fields[0].ScalarValue);
     }
 
+    [Fact]
+    public void Declaration_addresses_preserve_root_contract_and_all_members_without_sample_identity()
+    {
+        var record=TypeRef.RecordOf("record",new[]{new Port("name.with/slash",DataType.Text),new Port("count",DataType.Integer,Storage:NumericStorage.UInt8)});
+        var root=new Port("output.with/slash",TypeRef.SequenceOf(record));
+        var model=Declaration(Schema(root));var output=model.Outputs[0];
+        var all=Assert.IsType<ResultPresentationNode>(output.CreateAllMembers());
+        Assert.True(all.IsAllProjection);Assert.Equal(2,all.ChildCount);
+        var member=all.GetChildrenPage(0,128)[0];
+        Assert.Equal(new[]{"name.with/slash"},member.DeclarationAddress!.MemberFieldPath);
+        var reference=member.DeclarationAddress.Reference("source","flow");
+        Assert.Same(root.Type,reference.Type);Assert.Equal(root.Storage,reference.Storage);
+        Assert.Equal(root.Id,reference.PortId);Assert.Equal("flow",reference.ScopeId);
+        Assert.IsType<BindingSelection.AllItems>(reference.Selection);Assert.False(member.DeclarationAddress.IsSampleRow);
+        Assert.Equal(ResultPresentationValueState.Unavailable,member.ValueState);Assert.Equal(0,member.ChildCount);
+        Assert.Null(member.ScalarValue);
+    }
+
     [Theory]
     [InlineData(ResultViewState.Success)]
     [InlineData(ResultViewState.PartialSuccess)]

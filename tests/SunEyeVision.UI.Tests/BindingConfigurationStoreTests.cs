@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+﻿using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.ProtocolParse;
 using SunEyeVision.Workflow;
 using Xunit;
@@ -76,7 +76,7 @@ public sealed class BindingConfigurationStoreTests
     public void Deleted_node_and_its_global_producer_consumer_state_restore_as_one_payload()
     {
         var model = Model(); var variable = new GlobalVariable("v", "initial", "String")
-        { ProducerBinding = new() { WorkflowId = "f", NodeId = "source", ResultName = "value" } };
+        { ProducerBinding = BindingAdaptationB2Tests.Producer("f", "source", model.Workflows[0].Nodes[0].Parameters) };
         model.GlobalVariables.Add(variable); var store = new BindingConfigurationStore(model); var draft = store.BeginEdit();
         draft.Configuration.Workflows[0].Nodes.RemoveAt(0); var next = store.Publish(draft).Snapshot;
         var changed = next.CopyConfiguration(); Assert.Null(changed.GlobalVariables[0].ProducerBinding);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -47,27 +47,16 @@ public class ConsumerBinding
 /// 全局变量的唯一生产者：某工作流节点的一个结果字段。
 /// 一个变量只允许一个生产者，避免并发写入时出现“最后写入者获胜”的不确定结果。
 /// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public class ProducerBinding
 {
-    public Guid? SourceFieldId { get; set; }
-    /// <summary>生产者所属工作流 ID。</summary>
-    public string WorkflowId { get; set; } = string.Empty;
-
-    /// <summary>生产者所属工作流名称，仅用于显示与旧方案可读性。</summary>
+    public string ReferenceExpression { get; set; } = string.Empty;
+    [JsonIgnore]
+    public SunEyeVision.Plugin.Contracts.OutputReference SourceReference =>
+        SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(ReferenceExpression);
     public string WorkflowName { get; set; } = string.Empty;
-
-    /// <summary>生产者节点 ID。</summary>
-    public string NodeId { get; set; } = string.Empty;
-
-    /// <summary>生产者节点名称。</summary>
     public string NodeName { get; set; } = string.Empty;
-
-    /// <summary>节点结果中的字段名。</summary>
-    public string ResultName { get; set; } = string.Empty;
-
-    /// <summary>结果字段显示名。</summary>
     public string ResultDisplayName { get; set; } = string.Empty;
-
     [JsonIgnore]
     public string DisplayPath => $"{WorkflowName}.{NodeName}.{ResultDisplayName}";
 }
@@ -225,9 +214,9 @@ public class GlobalVariable : ObservableObject
         var copy = new GlobalVariable { Id = Id, CreatedTime = CreatedTime };
         var producer = _producerBinding == null ? null : new ProducerBinding
         {
-            SourceFieldId = _producerBinding.SourceFieldId, WorkflowId = _producerBinding.WorkflowId,
-            WorkflowName = _producerBinding.WorkflowName, NodeId = _producerBinding.NodeId, NodeName = _producerBinding.NodeName,
-            ResultName = _producerBinding.ResultName, ResultDisplayName = _producerBinding.ResultDisplayName
+            ReferenceExpression = _producerBinding.ReferenceExpression,
+            WorkflowName = _producerBinding.WorkflowName, NodeName = _producerBinding.NodeName,
+            ResultDisplayName = _producerBinding.ResultDisplayName
         };
         var consumers = _consumerBindings.Select(c => new ConsumerBinding
         {
@@ -456,12 +445,9 @@ public class GlobalVariable : ObservableObject
             }).ToList(),
             ProducerBinding = ProducerBinding == null ? null : new ProducerBinding
             {
-                WorkflowId = ProducerBinding.WorkflowId,
+                ReferenceExpression = ProducerBinding.ReferenceExpression,
                 WorkflowName = ProducerBinding.WorkflowName,
-                NodeId = ProducerBinding.NodeId,
                 NodeName = ProducerBinding.NodeName,
-                ResultName = ProducerBinding.ResultName,
-                SourceFieldId = ProducerBinding.SourceFieldId,
                 ResultDisplayName = ProducerBinding.ResultDisplayName
             },
             IsInitialized = IsInitialized,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -180,7 +180,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         {
             var service = request.CommunicationInputs;
             return service == null || service is SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService || string.IsNullOrEmpty(request.WorkflowId)
-                ? service : new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(service, null, workflowId: request.WorkflowId);
+                ? service : new SunEyeVision.Plugin.SDK.Models.Communication.RuntimeVariableReceiveService(service, workflowId: request.WorkflowId);
         }
         private ToolExecutionContext CreateExecutionContext(IToolPlugin tool, ToolExecutionRequest request)
         {

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
@@ -290,8 +290,8 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         var schema = Schema(new Port("image", image), new Port("record", aggregate));
         var poison = new PoisonImage(); int released = 0;
         using var run = Success(schema, new() { ["image"] = poison, ["record"] = new Dictionary<string, object?> { ["image"] = poison, ["label"] = "secret" } }, () => released++);
-        var publication=run.Publication; // formal publication/freeze precedes presentation-only access checks.
         poison.BeginPresentation();
+        var publication=run.Publication; // The publication borrows admitted values; it must not re-read resources either.
         var rows = new ObservableCollection<FlatResultRow>();
         var presenter = new ResultPresentationPresenter(rows, _ => { });
         presenter.Present(publication);run.ReleaseResult();Assert.Equal(0,released);

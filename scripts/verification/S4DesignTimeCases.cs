@@ -276,7 +276,7 @@ internal static class S2DocumentEditingCases
             Check(result.FilteredBlobs.Count==2&&result.FilteredTotalArea==336&&Descendants<DataGrid>(result).Single().Columns.Count>0
                 &&result.TryFindResource("O06.PanelBackgroundBrush") is Brush,
                 "真实结果视图有独立示例行、XML列及正式资源");
-            result.Update(null);
+            result.Clear();
             Check(result.FilteredBlobs.Count==0&&result.FilteredBlobCount==0,"真实结果视图可切换为空结果");
             Check(Application.Current is null&&!AppDomain.CurrentDomain.GetAssemblies().Any(assembly=>
                 assembly.GetName().Name is "SunEyeVision.UI" or "SunEyeVision.Workflow" or "halcondotnetxl" or "halcondotnet"),

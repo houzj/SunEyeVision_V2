@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
@@ -209,6 +211,172 @@ internal static class S2DocumentEditingCases
   var args=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(target)!,Environment.TickCount,key){RoutedEvent=preview?Keyboard.PreviewKeyDownEvent:Keyboard.KeyDownEvent};
   target.RaiseEvent(args);Pump();return args;
  }
+ sealed class ResultOwnerProbe(bool fail=false):IDisposable
+ {
+  public int Releases;public void Dispose(){Releases++;if(fail)throw new InvalidOperationException("owner释放异常");}
+ }
+ static void PublicationThrows<T>(Action action) where T:Exception
+ {var caught=false;try{action();}catch(T){caught=true;}Require(caught,"未发生预期异常："+typeof(T).Name);}
+ static void VerifyResultPublication()
+ {
+  var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer),new Port("optional",DataType.Text,Required:false)});
+  var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"result-fixture",Guid.NewGuid());
+  InputValues Values(long value)=>new(schema.Outputs,new Dictionary<string,object?>{{"value",value}});
+  ResultPublicationStamp Stamp()=>new(Guid.NewGuid(),run,7,schema.Fingerprint);
+  Test("结果publication共享借阅与owner退休最后释放",()=>
+  {
+   var release=new ResultOwnerProbe();var values=Values(11);var publication=new ResultPublication(schema,Stamp(),ResultViewState.Success,values,release,()=>true);
+   var first=publication.Borrow();var second=publication.Borrow();
+   Require(first.Stamp==publication.Stamp&&second.Stamp==publication.Stamp&&ReferenceEquals(first.Values,values)&&ReferenceEquals(second.Values,values),"借阅不是同publication/重新复制了冻结值");
+   publication.Dispose();Require(!publication.IsCurrent()&&release.Releases==0,"退休提前释放借阅");
+   PublicationThrows<ObjectDisposedException>(()=>{using var rejected=publication.Borrow();});
+   Require(first.Values!.Get<long>("value")==11&&second.Values!.Get<long>("value")==11,"退休破坏现有借阅");
+   first.Dispose();first.Dispose();Require(release.Releases==0,"首借阅释放共享owner");
+   PublicationThrows<ObjectDisposedException>(()=>{_=first.Values;});
+   second.Dispose();publication.Dispose();Require(release.Releases==1,"owner未恰好释放一次");
+  });
+  Test("结果publication最终释放异常不重复归还",()=>
+  {
+   var release=new ResultOwnerProbe(true);var publication=new ResultPublication(schema,Stamp(),ResultViewState.Success,Values(12),release,()=>true);
+   var lease=publication.Borrow();publication.Dispose();Require(release.Releases==0,"有借阅时释放owner");
+   PublicationThrows<InvalidOperationException>(lease.Dispose);lease.Dispose();publication.Dispose();
+   Require(release.Releases==1&&!publication.IsCurrent(),"释放异常后重放或复活");
+   PublicationThrows<ObjectDisposedException>(()=>{_=lease.Values;});
+   var immediate=new ResultOwnerProbe(true);var plain=new ResultPublication(schema,Stamp(),ResultViewState.Success,Values(13),immediate,()=>true);
+   PublicationThrows<InvalidOperationException>(plain.Dispose);plain.Dispose();Require(immediate.Releases==1,"零借阅释放异常重放");
+  });
+  Test("结果publication错声明拒绝不转移owner",()=>
+  {
+   var release=new ResultOwnerProbe();var wrong=new InputValues(new[]{new Port("value",DataType.Text)},new Dictionary<string,object?>{{"value","wrong"}});
+   PublicationThrows<ArgumentException>(()=>{using var bad=new ResultPublication(schema,Stamp(),ResultViewState.Success,wrong,release,()=>true);});
+   var full=new ToolSchema(new[]{new Port("input",DataType.Integer)},schema.Outputs);
+   PublicationThrows<ArgumentException>(()=>{using var bad=new ResultPublication(full,new(Guid.NewGuid(),run,7,full.Fingerprint),ResultViewState.Success,Values(1),release,()=>true);});
+   PublicationThrows<ArgumentException>(()=>{using var bad=new ResultPublication(schema,new(Guid.NewGuid(),run,7,"wrong"),ResultViewState.Success,Values(1),release,()=>true);});
+   Require(release.Releases==0,"失败构造接管owner");release.Dispose();Require(release.Releases==1,"调用方不能释放owner");
+  });
+  Test("结果publication完整状态及元数据冻结",()=>
+  {
+   var issues=new List<Diagnostic>{new("original","原诊断")};var names=new Dictionary<string,string>{{"value","原名称"}};var displayed=new HashSet<string>{"value"};
+   using var pub=new ResultPublication(schema,Stamp(),ResultViewState.Success,Values(14),null,()=>true,issues,names,displayed);
+   issues.Clear();names["value"]="改名";displayed.Add("optional");
+   Require(pub.Diagnostics.Count==1&&pub.DisplayNames["value"]=="原名称"&&!pub.DisplayedPorts.Contains("optional"),"元数据容器未冻结");
+   foreach(var state in Enum.GetValues<ResultViewState>())
+   {
+    var declaration=state==ResultViewState.Declaration;var success=state is ResultViewState.Success or ResultViewState.PartialSuccess;
+    using var item=new ResultPublication(schema,declaration?new(Guid.NewGuid(),null,null,schema.Fingerprint):Stamp(),state,success?Values(15):null,null,()=>true);
+    using var borrow=item.Borrow();Require(item.State==state&&(borrow.Values is not null)==success,"状态/值语义合并："+state);
+   }
+   PublicationThrows<ArgumentException>(()=>{using var bad=new ResultPublication(schema,Stamp(),ResultViewState.Failed,Values(1),null,()=>true);});
+   PublicationThrows<ArgumentException>(()=>{using var bad=new ResultPublication(schema,Stamp(),ResultViewState.Success,null,null,()=>true);});
+  });
+  Test("结果publication当前性重入退休不会复活",()=>
+  {
+   var release=new ResultOwnerProbe();var calls=0;ResultPublication? publication=null;
+   publication=new(schema,Stamp(),ResultViewState.Success,Values(16),release,()=>{calls++;publication!.Dispose();return true;});
+   var lease=publication.Borrow();Require(!publication.IsCurrent()&&calls==1&&release.Releases==0,"重入退休返回当前或提前释放");
+   Require(lease.Values!.Get<long>("value")==16&&!publication.IsCurrent()&&calls==1,"借阅失效或重复当前性外调");
+   lease.Dispose();publication.Dispose();Require(release.Releases==1,"重入退休释放错误");
+  });
+  Test("结果publication同run不同发布替换真实行和选择",()=>
+  {
+   var a=Stamp();var b=Stamp();var active=a.PublicationId;
+   using var first=new ResultPublication(schema,a,ResultViewState.Success,Values(21),null,()=>active==a.PublicationId);
+   using var second=new ResultPublication(schema,b,ResultViewState.Success,Values(22),null,()=>active==b.PublicationId);
+   var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,new[]{new ResultColumnDescriptor("value","值",new("value"))});
+   using var view=new DeclaredResultTable(schema,projection);view.Height=160;host.Children.Add(view);
+   try
+   {
+    ResultSelection? selected=null;view.SelectionHighlightChanged+=(_,value)=>selected=value;
+    view.Present(first);owner.UpdateLayout();Pump();var grid=(DataGrid)view.Content;grid.SelectedIndex=0;Pump();
+    Require(selected?.Publication==a,"初次选择无publication");var old=grid.Items[0];var command=view.CurResultScrollCommand;
+    object? Cell(object row)=>row.GetType().GetProperty("Item")!.GetValue(row,new object[]{"value"});
+    Require(Equals(Cell(old),21L),"首次行不是实际值21");
+    active=b.PublicationId;view.Present(second);Pump();
+    Require(grid.Items.Count==1&&!ReferenceEquals(old,grid.Items[0])&&grid.SelectedItem is null&&selected?.Publication==b&&selected.Targets.Count==0,"同run不同snapshot未换行/清选择");
+    Require(Equals(Cell(grid.Items[0]),22L),"新publication仍投影旧值");
+    command.Execute(10000d);Require(grid.Items.Count==1,"旧命令改新结果");grid.SelectedIndex=0;Pump();Require(selected?.Publication==b,"新行发旧发布身份");
+   }
+   finally{host.Children.Remove(view);}
+  });
+ }
+ sealed class ResultRegionProbe(IReadOnlyRegion inner):IReadOnlyRegion
+ {
+  public int Acquired,Released,Active;public bool FailFrame;public Action? BeforeFrame;
+  public CoordinateFrame Frame=>inner.Frame;public ImageFrameAddress SourceFrame=>inner.SourceFrame;
+  public IRegionReadLease AcquireReader(){var lease=inner.AcquireReader();Acquired++;Active++;return new Reader(this,lease);}
+  sealed class Reader(ResultRegionProbe probe,IRegionReadLease lease):IRegionReadLease
+  {
+   bool closed;
+   public CoordinateFrame Frame {get{var callback=probe.BeforeFrame;probe.BeforeFrame=null;callback?.Invoke();if(probe.FailFrame)throw new InvalidOperationException("预期来源读取异常");return lease.Frame;}}
+   public ImageFrameAddress SourceFrame=>lease.SourceFrame;public bool IsEmpty=>lease.IsEmpty;public int RunCount=>lease.RunCount;
+   public ReadOnlyMemory<RegionRun> ReadRuns(int offset,int count)=>lease.ReadRuns(offset,count);
+   public void Dispose(){if(closed)return;closed=true;try{lease.Dispose();}finally{probe.Active--;probe.Released++;}}
+  }
+ }
+ static void VerifyResultOrigins()
+ {
+  Test("结果来源实际图像Domain坐标正负向",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(64,32,new byte[2048]);
+   var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"frame-fixture",Guid.NewGuid());
+   void Check(CoordinateFrame coordinates,bool accepted)
+   {
+    var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("id",DataType.Integer),new Port("point",TypeRef.GeometryOf(GeometryKind.Point,coordinates)),new Port("image",TypeRef.ResourceOf(ResourceKind.Image))});
+    var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,new[]{new ResultColumnDescriptor("id","标识",new("id"),Geometry:new("point"),GeometrySource:new("image"))});
+    var values=new InputValues(schema.Outputs,new Dictionary<string,object?>{{"id",17L},{"point",new PointGeometry(coordinates,new(10,12))},{"image",image}});
+    using var pub=new ResultPublication(schema,new(Guid.NewGuid(),run,1,schema.Fingerprint),ResultViewState.Success,values,null,()=>true);
+    using var view=new DeclaredResultTable(schema,projection);view.Height=140;Show(view);
+    if(!accepted){PublicationThrows<ArgumentException>(()=>view.Present(pub));Require(((DataGrid)view.Content).Items.Count==0,"错误Domain候选装入表");return;}
+    ResultSelection? selected=null;view.SelectionHighlightChanged+=(_,value)=>selected=value;
+    view.Present(pub);owner.UpdateLayout();Pump();var grid=(DataGrid)view.Content;grid.SelectedIndex=0;Pump();
+    Require(selected is not null&&selected.Targets.Count==1&&selected.Targets[0].ImageFrame==image.Frame&&selected.Targets[0].Coordinates==image.EffectiveDomain.Frame,"来源被硬编码默认逻辑帧或丢失实际Domain");
+   }
+   Require(image.EffectiveDomain.Frame!=RoiDeclarations.ImageFrame,"fixture未覆盖非默认实际Domain");
+   Check(image.EffectiveDomain.Frame,true);Check(RoiDeclarations.ImageFrame,false);
+  });
+  Test("结果来源同尺寸双物理帧分组和租约异常及重入",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(64,32,new byte[2048]);var b=resources.CreateGray8(64,32,new byte[2048]);
+   Require(a.Frame!=b.Frame&&a.Width==b.Width&&a.Height==b.Height,"没有同尺寸不同物理帧");
+   var ra=new ResultRegionProbe(resources.CreateRegion(RoiDeclarations.ImageFrame,a.Frame,new[]{new RegionRun(5,4,20)}));
+   var rb=new ResultRegionProbe(resources.CreateRegion(RoiDeclarations.ImageFrame,b.Frame,new[]{new RegionRun(7,6,22)}));
+   var point=TypeRef.GeometryOf(GeometryKind.Point,RoiDeclarations.ImageFrame);var polygon=TypeRef.SequenceOf(point,CountConstraint.Exactly(4));
+   var rowType=TypeRef.RecordOf("design.result-frame-row",new[]{new Port("id",DataType.Integer),new Port("point",point),new Port("polygon",polygon),new Port("source-a",TypeRef.ResourceOf(ResourceKind.Region)),new Port("source-b",TypeRef.ResourceOf(ResourceKind.Region))});
+   var rowsType=TypeRef.SequenceOf(rowType);var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("rows",rowsType)});
+   ResultFieldPath P(string member)=>new("rows",new[]{member});
+   var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.Many,new[]{
+    new ResultColumnDescriptor("a","点",P("id"),Geometry:P("point"),GeometrySource:P("source-a")),
+    new ResultColumnDescriptor("b","多边形",P("id"),Geometry:P("polygon"),GeometrySource:P("source-b"))},new("rows"),"id");
+   var row=new RecordValue(rowType,new Dictionary<string,object?>{{"id",17L},{"point",new PointGeometry(RoiDeclarations.ImageFrame,new(10,12))},
+    {"polygon",new SequenceValue(polygon,new object?[]{new PointGeometry(RoiDeclarations.ImageFrame,new(4,5)),new PointGeometry(RoiDeclarations.ImageFrame,new(20,5)),new PointGeometry(RoiDeclarations.ImageFrame,new(20,18)),new PointGeometry(RoiDeclarations.ImageFrame,new(4,18))})},{"source-a",ra},{"source-b",rb}});
+   var values=new InputValues(schema.Outputs,new Dictionary<string,object?>{{"rows",new SequenceValue(rowsType,new[]{row})}});
+   var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"multi-fixture",Guid.NewGuid());
+   using var pub=new ResultPublication(schema,new(Guid.NewGuid(),run,1,schema.Fingerprint),ResultViewState.Success,values,null,()=>true);
+   using var view=new DeclaredResultTable(schema,projection);view.Height=150;Show(view);view.Present(pub);owner.UpdateLayout();Pump();
+   ResultSelection? selected=null;view.SelectionHighlightChanged+=(_,value)=>selected=value;var grid=(DataGrid)view.Content;grid.SelectedIndex=0;Pump();
+   Require(selected?.ElementIdentity is 17L&&selected.Targets.Count==2,"多物理source未分组");
+   Require(selected!.Targets.Single(target=>target.ImageFrame==a.Frame).Geometry.Single() is PointGeometry&&selected.Targets.Single(target=>target.ImageFrame==b.Frame).Geometry.Single() is PolygonGeometry,"按尺寸或全局帧覆盖来源");
+   Require(ra.Active==0&&rb.Active==0&&ra.Acquired>0&&ra.Acquired==ra.Released&&rb.Acquired==rb.Released,"来源读取租约未归还");
+   var old=grid.Items[0];ra.FailFrame=true;
+   try{PublicationThrows<InvalidOperationException>(()=>view.Present(pub));}finally{ra.FailFrame=false;}
+   Require(ReferenceEquals(old,grid.Items[0])&&ra.Active==0&&ra.Acquired==ra.Released,"读取异常半装结果或漏lease");
+   ra.BeforeFrame=()=>view.Clear();view.Present(pub);Require(grid.Items.Count==0&&ra.Active==0&&ra.Acquired==ra.Released,"来源回调Clear后旧结果回装");
+   var emptyType=TypeRef.SequenceOf(point,CountConstraint.Any);
+   var emptySchema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("metric",DataType.Integer),new Port("geometry",emptyType),new Port("source",TypeRef.ResourceOf(ResourceKind.Region))});
+   var emptyProjection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,new[]{new ResultColumnDescriptor("metric","值",new("metric"),Geometry:new("geometry"),GeometrySource:new("source"))});
+   var emptyValues=new InputValues(emptySchema.Outputs,new Dictionary<string,object?>{{"metric",1L},{"geometry",new SequenceValue(emptyType,Array.Empty<object?>())},{"source",ra}});
+   using var emptyPublication=new ResultPublication(emptySchema,new(Guid.NewGuid(),run,1,emptySchema.Fingerprint),ResultViewState.Success,emptyValues,null,()=>true);
+   using var emptyView=new DeclaredResultTable(emptySchema,emptyProjection);emptyView.Height=150;Show(emptyView);
+   var beforeEmpty=ra.Acquired;emptyView.Present(emptyPublication);owner.UpdateLayout();Pump();ResultSelection? emptySelection=null;
+   emptyView.SelectionHighlightChanged+=(_,value)=>emptySelection=value;((DataGrid)emptyView.Content).SelectedIndex=0;Pump();
+   Require(((DataGrid)emptyView.Content).Items.Count==1&&emptySelection is {Targets.Count:0}&&ra.Acquired==beforeEmpty,"合法空几何未保行/错误读取物理来源");
+   var before=ra.Acquired+rb.Acquired;
+   var plainProjection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.Many,new[]{new ResultColumnDescriptor("plain","点",P("id"),Geometry:P("point"))},new("rows"),"id");
+   using var plain=new DeclaredResultTable(schema,plainProjection);plain.Height=150;Show(plain);plain.Present(pub);owner.UpdateLayout();Pump();
+   ResultSelection? noProof=null;plain.SelectionHighlightChanged+=(_,value)=>noProof=value;((DataGrid)plain.Content).SelectedIndex=0;Pump();
+   Require(noProof?.ElementIdentity is 17L&&noProof.Targets.Count==0&&ra.Acquired+rb.Acquired==before,"无source纯geometry猜测了来源");
+  });
+ }
  static void VerifyNativeResultTable()
  {
   Test("原结果表十列500增量、有效性、旧命令和失败准备",()=>
@@ -232,14 +400,20 @@ internal static class S2DocumentEditingCases
     return new RecordValue(rowType,data);
    }))}});
    using var view=new SunEyeVision.Plugin.Wpf.Presenters.Results.DeclaredResultTable(schema,projection);
-   view.Height=320;view.Width=700;view.Update(Values());host.Children.Add(view);owner.UpdateLayout();Pump();
+   var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"table-fixture",Guid.NewGuid());
+   ResultPublication Publication(InputValues values)=>new(schema,new(Guid.NewGuid(),run,1,schema.Fingerprint),ResultViewState.Success,values,null,()=>true);
+   using var firstPublication=Publication(Values());
+   view.Height=320;view.Width=700;view.Present(firstPublication);host.Children.Add(view);
+   try
+   {
+   owner.UpdateLayout();Pump();
    var grid=Visuals<DataGrid>(view).Single();
    Require(grid.Columns.Count==10&&grid.Items.Count==500&&grid.MinRowHeight==38,"未使用完整原十列/38行高或初批500");
    Require(!grid.CanUserSortColumns&&!grid.CanUserReorderColumns&&grid.ClipboardCopyMode==DataGridClipboardCopyMode.None,"原列表只读交互丢失");
    var invalid=grid.Items[17];var indexer=invalid.GetType().GetProperty("Item")!;
    Require(metrics.All(key=>indexer.GetValue(invalid,new object[]{key}) is null),"无效指标仍显示数值");
    var stale=view.CurResultScrollCommand;
-   view.Update(Values());stale.Execute(401d);Require(grid.Items.Count==500,"旧滚动命令分页新publication");
+   using var secondPublication=Publication(Values());view.Present(secondPublication);stale.Execute(401d);Require(grid.Items.Count==500,"旧滚动命令分页新publication");
    var current=view.CurResultScrollCommand;
    grid.ApplyTemplate();grid.UpdateLayout();Pump();
    var scroll=Visuals<ScrollViewer>(grid).Single(item=>item.Name=="DG_ScrollViewer");
@@ -248,14 +422,16 @@ internal static class S2DocumentEditingCases
    scroll.ScrollToVerticalOffset(901);grid.UpdateLayout();Pump();
    Require(scroll.VerticalOffset>=901&&grid.Items.Count==1205,"原滚动第三批未完整到1205");
    var last=grid.Items[1204];Require((long)last.GetType().GetProperty("Item")!.GetValue(last,new object[]{"number"})! ==1204L,"尾行内容不对应");
-   var rejected=false;try{view.Update(Values(true));}catch(ArgumentException){rejected=true;}
+   using var badPublication=Publication(Values(true));
+   var rejected=false;try{view.Present(badPublication);}catch(ArgumentException){rejected=true;}
    Require(rejected&&grid.Items.Count==1205,"非法候选半清当前结果");
    System.Collections.Specialized.NotifyCollectionChangedEventHandler bad=(_,_)=>throw new InvalidOperationException("观察异常");
    var source=(System.Collections.Specialized.INotifyCollectionChanged)grid.ItemsSource;source.CollectionChanged+=bad;
-   try{view.Update(null);}catch(AggregateException){}finally{source.CollectionChanged-=bad;}
+   try{view.Clear();}catch(AggregateException){}finally{source.CollectionChanged-=bad;}
    Require(grid.Items.Count==0,"观察者异常留下旧批");
    current.Execute(901d);Require(grid.Items.Count==0,"清空后旧命令复活行");
-   host.Children.Remove(view);
+   }
+   finally{host.Children.Remove(view);}
   });
  }
  static void VerifyBetween()
@@ -2327,6 +2503,8 @@ internal static class S2DocumentEditingCases
    VerifyNativeTextExpressions();
    VerifyNativeTextPixels();
    VerifyNativeParameterHost();
+   VerifyResultPublication();
+   VerifyResultOrigins();
    VerifyNativeResultTable();
    VerifyBetween();
    VerifyExpandedReference();
@@ -2478,7 +2656,9 @@ internal static class S2DocumentEditingCases
      reject=true;((TextBox)line.InputElement!).Text="9";Require(!line.TryCommitPending()&&line.HasInvalidText&&((ConstantSetting)line.Setting).Value.Equals(7d),"拒绝未保原文和accepted");
      Require(draft.Writes==2&&draft.ReadFields().Get<double>("width")==7d&&((TextBox)line.InputElement!).Text=="9",$"拒绝污染真实草稿或丢原文：writes={draft.Writes},width={draft.ReadFields().Get<double>("width")},raw={((TextBox)line.InputElement!).Text}");
      reject=false;var corrected=(TextBox)line.InputElement!;corrected.Focus();corrected.Text="7";SendKey(corrected,Key.Enter,true);Require(!line.HasInvalidText,"纠正未清错误");
-     ((TextBox)line.InputElement!).Text="bad";Require(line.HasInvalidText&&((ConstantSetting)line.Setting).Value.Equals(7d),"非法输入写入草稿");((TextBox)line.InputElement!).Text="7";
+     var reopened=OpenStyle(settings);var invalid=(TextBox)line.InputElement!;invalid.Focus();Pump();
+     Require(reopened.IsDropDownOpen&&invalid.IsVisible,"Enter后没有重新打开可编辑原样式叶");
+     invalid.Text="bad";Require(line.HasInvalidText&&((ConstantSetting)line.Setting).Value.Equals(7d),$"非法输入未拒绝：invalid={line.HasInvalidText},accepted={((ConstantSetting)line.Setting).Value},raw={invalid.Text},visible={invalid.IsVisible},focus={invalid.IsKeyboardFocused}");invalid.Text="7";
      Require(draft.Writes==2&&draft.ReadFields().Get<double>("width")==7d,"同值纠正或非法输入重复写真实草稿");
     });
     var popup=OpenStyle(settings);Show(new TextBlock{Text="卸载"});Require(!popup.IsDropDownOpen,"卸载原样式未关闭");

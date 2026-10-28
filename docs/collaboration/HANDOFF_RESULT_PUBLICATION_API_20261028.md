@@ -11,3 +11,5 @@
 - 本批编译：Plugin.Wpf独立层002=0错5340警告27.39秒；Blob.Wpf001=0错5352警告43.05秒。主UI尚未同步新接口、未全量最终构建/回归，不能作为正式交付。集成发现的ResultShell原IsEnabled误改11处及外层x:Name字段已修；保留首次MC4109及CS0103失败日志。
 - 接收方：工作流线负责ToolResultViews/ResultPresentationPresenter/Main全部真实消费者和专属PropertyList适配/图像源工厂；同publication对象驱动树表、声明/生产/调试/历史唯一入口、Dispatcher内复核context/node/generation与失败清理。Root负责S3/Design/Window脚本测试同步并最后集成。
 - 当前无本线live构建。未推送；用户BlobParameterEditor.xaml不暂存。真实VS/VM/图像viewport旧SDK退出仍待完成，不套旧测试。
+
+- 后续审查修正：InputValues公开只读Declarations元数据，Publication只校声明身份而直接借值，保Poison资源惰性和数组不重复复制；原表图像来源再比像素Domain与image.EffectiveDomain；新回归脚本尚待UI消费者整合后正式运行。

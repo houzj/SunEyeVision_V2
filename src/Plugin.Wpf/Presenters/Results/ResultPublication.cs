@@ -67,13 +67,20 @@ public sealed class ResultPublication : IResultPublication
             throw new ArgumentException("Display metadata must reference declared output identities.");
         var issues=(diagnostics??Array.Empty<Diagnostic>()).ToArray();
         if(issues.Any(issue=>issue is null))throw new ArgumentException("Diagnostics cannot contain null.");
-        var frozen=values is null?null:new InputValues(schema.Outputs,values.CopyValues());
+        if(values is not null)
+        {
+            if(values.Declarations.Count!=schema.Outputs.Count)throw new ArgumentException("Result values use another output declaration.");
+            var declared=new ToolSchema(Array.Empty<Port>(),schema.Outputs.Select(port=>
+                values.Declarations.TryGetValue(port.Id,out var actual)?actual:
+                    throw new ArgumentException("Result values omit a declared output.")));
+            if(declared.Fingerprint!=schema.Fingerprint)throw new ArgumentException("Result values use another output declaration.");
+        }
         Schema=schema;Stamp=stamp;State=state;
         Diagnostics=Array.AsReadOnly(issues);
         DisplayNames=new ReadOnlyDictionary<string,string>((displayNames??new Dictionary<string,string>())
             .ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal));
         DisplayedPorts=(displayedPorts??ids).ToFrozenSet(StringComparer.Ordinal);
-        _isCurrent=isCurrent;_values=frozen;_owner=owner;
+        _isCurrent=isCurrent;_values=values;_owner=owner;
     }
 
     public ResultPublicationStamp Stamp {get;}

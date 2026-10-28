@@ -58,6 +58,8 @@ public sealed class InputValues
 {
     private readonly Dictionary<string,object?> _values;
     private readonly IReadOnlyDictionary<string,Port> _ports;
+    /// <summary>Frozen declarations only. Inspecting them does not read/copy values or touch resources.</summary>
+    public IReadOnlyDictionary<string,Port> Declarations=>_ports;
     public InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values)
     {
         var specs=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal);

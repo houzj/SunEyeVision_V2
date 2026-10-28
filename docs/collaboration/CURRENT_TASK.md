@@ -1,3 +1,8 @@
+## 2026-10-28 共享发布惰性借阅修正与正式用例准备
+
+- 3cf10837后修正InputValues公开只读Declarations、Publication只核冻结声明而借同InputValues，避免CopyValues触发Poison资源/数组复制；原表比实际image Domain/reader Domain并聚合当前性异常通知。PluginWpf层003=0错5352警告35.25秒。脚本已同步Present/Clear与真实SourceFrame/stamp/owner退休；新增六组共享publication、真实来源双组及保留原1205实际滚动。当前仅源审未跑本批新回归。
+- 工作流已交ba45ea96消费者及a920cd9f等fixture收尾最新候选，待固定HEAD整批合入；无本线live，95785终态0。下一先本地保存本批（排除用户参数页），合UI消费者/后续设计tests与依赖固定，再恢复依赖/规定UI全量及正式关联新轨。原C13非法输入case补显式Enter后重开/聚焦再输入并增强诊断，尚待验证，不能直接称修复。
+
 ## 2026-10-28 结果公共publication真实API候选
 
 - 共同基线35a7960b已合固定30e；离线restore001失败，临时本地cache源restore002成功（不改NuGet.config）。集成UI002报原shell CanOverlayd MC4109；恢复原IsEnabled11处后PluginWpf层001报4处名称字段，改原ImageViewBox外层x:Name后002=0错5340警告27.39秒。新API/Borrow/多帧选择、原表及Blob必要机械同步已落；BlobWpf001=0错5352警告43.05秒。完整UI/full因消费者待同步仍未通过，不能套先前C14成绩。

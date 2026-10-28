@@ -7735,7 +7735,7 @@
           "标准结果表 / StandardTable（C14）",
           "本聊天：控件库与Blob主线",
           "原DataGrid完整模板/滚条/主题，10列示例、500行增量、稳定行身份、有效性、选择与复制投影；统一保留在现Plugin.Wpf，当前由主线唯一写。",
-          "原StandardTable模板/滚条/十列夹具、ValidWhen、500增量及每代scroll命令已落源码；真实滚动1205行定向过，最终UI/全量0错。公共运行上下文、物理帧与主界面整链仍待替换，不能称迁完。"
+          "原完整模板/500增量已落；当前已接共享publication、只读行及显式GeometrySource/多帧目标。公共库层0错，新API后的UI/full及真实整链回归待集中，不套旧原表成绩。"
         ],
         [
           "结果区外壳 / ResultShell",
@@ -7747,7 +7747,7 @@
           "共享展示合同 / 图像帧与选择事件",
           "本聊天统一接口；工作流线改UI消费者",
           "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
-          "内容与边界已定，精确接口及全部消费者尚未成片落地；不保旧Update(null)重载或两套正式入口。"
+          "精确API及现有Blob机械消费已落，UI/专属PropertyList适配候选已交；物理来源按已有Region/实际Image Domain取证，多帧选择携stamp。中立视口/完整Shell与原SDK退出仍未完。"
         ],
         [
           "集成、正式Release及验收",
@@ -7763,7 +7763,7 @@
         ],
         [
           "统一结果入口",
-          "选节点、私有调试、正式执行都投影同一类结果展示上下文：工具/节点/运行与publication身份、schema版本/指纹、状态/诊断、借入值、真实来源帧及current回执。库只依赖Contracts，不引用SDK/UI宿主业务；宿主负责明确转换。"
+          "公共IResultPublication/ResultPublicationStamp/IResultValueLease与Present/Clear已落Plugin.Wpf（3cf10837及后续惰性声明修复）。同一次SDK快照只AcquireReader一次，多视图Borrow；Declaration不造run/revision。InputValues只核Declarations身份，不CopyValues或预读资源，保留数组与图像惰性。选节点/调试/正式执行/历史的UI唯一入口已由工作流线提交候选，主仓集中整合验收中，不把层编译当整链完成。"
         ],
         [
           "同一次发布的唯一事实来源",
@@ -7834,7 +7834,15 @@
         ],
         "currentState": "实际原表候选已过本批定向与构建；整链未完成，详细边界见candidateEvidence，不套工作流候选或人工验收。"
       },
-      "candidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json"
+      "candidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json",
+      "apiImplementation": {
+        "checkpoint": "3cf10837",
+        "file": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
+        "contract": "IResultPublication/ResultPublicationStamp/IResultValueLease；IToolResultView仅Present/Clear，无旧Update入口；ResultSelection清理携stamp、多ResultHighlightTarget携真实帧",
+        "lifetime": "一次SDK reader owner转移，多Borrow引用计数；退休即拒新借阅和旧选择，末借阅锁外释放reader。元数据冻结；InputValues仅只读Declarations核对，直接借原已冻结值，不重复读payload/复制数组。",
+        "physicalOrigin": "ResultColumnDescriptor.GeometrySource显式关联同记录Region或顶层单项Image；校reader/元数据/真实Domain，不以默认逻辑坐标或选图补Frame。纯Geometry无来源不高亮。",
+        "stage": "已落公共库及Blob必要机械同步，工作流独立同步UI/PropertyList，尚未完整UI/full构建验收。"
+      }
     }
   },
   "vmFrameworkArchitectureReference": {

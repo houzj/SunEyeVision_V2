@@ -1,4 +1,10 @@
-﻿## 2026-10-28 D06完整绑定设计已取证；主线进入正式构建
+﻿## 2026-10-28 正式UI002错误已交增量修复；清单同步真实候选
+
+- 主线UI002终态1/full未启动，实际3错误为FileImport Path命名冲突及WorkflowExecutionManager两处nodeParameterOverrides遗失。本线c1fd3b9b修System.IO.Path，并恢复通讯专属覆盖字典及runRequest传递，保留binding覆盖共同作用；源选择仍独立SourceInputs，未恢复旧源配置。两文件纯语法0错，工作树干净，未本线构建；主线集中合入/重建。
+- 主线独占修MissingUsing、Main通知setter门禁及DeclaredPropertyList新组件三项重入/聚合清理，不在87f4重复改。A08/D01/D04/D05/D06/D08/D09/E05逐项更新原方案候选/失败/未完，全部39项仍保留。
+- 下一D06全局producer真实admission/expected来源与资源排空设计、D07完整视口消费者只读设计并行；关键合同未定不先造接口。Group继续冻结。
+
+## 2026-10-28 D06完整绑定设计已取证；主线进入正式构建
 
 - 独立文档5060c0d4已核原件子IO/组合All，不缩成根字符串；推荐复用OutputReference/serializer/ParameterBindingService唯一身份，完整UI/Workflow/通信/历史/运行资源链列于HANDOFF_D06_BINDING_DESIGN_20261028.md，原主方案已同步。全局consumer真实admission及资源存储基础须实施前确定，尚未开产品批；单[n]证据不足不冒称原件支持。
 - 主线合9f197fbe为共同候选0185b2e7，首轮UI失败缺System.ComponentModel using；主线集中修该处和UpdateDataAnalysisControl通知setter门禁，全量尚未运行。Host重入fixture一行修正46cce5cc已交主线，非产品变更。当前本线无live构建，不写私有Release；新成绩待主线实际回传。

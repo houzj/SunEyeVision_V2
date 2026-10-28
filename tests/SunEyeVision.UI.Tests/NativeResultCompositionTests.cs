@@ -45,8 +45,13 @@ public sealed class NativeResultCompositionTests
         fullscreen.ApplyTemplate();
         Assert.Contains(Descendants<Image>(fullscreen), image => image.Source is not null);
         Assert.False(fullscreen.IsEnabled); // No real host fullscreen command was supplied by this design scene.
-        Assert.Same(shell.OutputImage, Assert.IsType<ImageViewBox>(shell.FindName("imageView")).ImageDataSource);
-        Assert.Same(shell.InputImage, Assert.IsType<ImageViewBox>(shell.FindName("imageViewIn")).ImageDataSource);
+        Assert.Same(shell.OutputViewport, design.OutputViewportOwner!.View);
+        Assert.Equal(design.OutputRaster!.Frame, design.OutputViewportOwner.CurrentFrame!.Frame);
+        Assert.Equal(new byte[] { 45 }, design.OutputViewportOwner.ReadPixel(0, 0));
+        Assert.Same(shell.InputViewport, design.InputViewportOwner!.View);
+        Assert.Equal(design.InputRaster!.Frame, design.InputViewportOwner.CurrentFrame!.Frame);
+        Assert.NotEqual(design.InputRaster.Frame, design.OutputRaster.Frame);
+        Assert.Equal(new byte[] { 45 }, design.InputViewportOwner.ReadPixel(0, 0));
     });
 
     [Fact]
@@ -189,14 +194,30 @@ public sealed class NativeResultCompositionTests
         Assert.Equal(235d, infoRow.Height.Value);
         Assert.Same(inputChoice, shell.SelectedInputItem);
         Assert.Same(outputChoice, shell.SelectedOutputItem);
+        var oldInput = design.InputRaster!; var oldInputOwner = design.InputViewportOwner!;
+        var oldOutput = design.OutputRaster!; var oldOutputOwner = design.OutputViewportOwner!;
+        using var retainedInput = oldInput.AcquirePixels(); using var retainedOutput = oldOutput.AcquirePixels();
+        var oldInputFrame = retainedInput.Frame; var oldOutputFrame = retainedOutput.Frame;
         host.Detach();
         Assert.False(shell.IsLoaded);
+        Assert.Null(design.InputViewportOwner); Assert.Null(design.OutputViewportOwner);
+        Assert.Null(design.InputRaster); Assert.Null(design.OutputRaster);
+        Assert.Null(oldInputOwner.CurrentFrame); Assert.Null(oldOutputOwner.CurrentFrame);
+        Assert.Throws<ObjectDisposedException>(() => oldInput.CopyPixels());
+        Assert.Throws<ObjectDisposedException>(() => oldOutput.CopyPixels());
+        Assert.Equal(45, retainedInput.GetRow(0)[0]); Assert.Equal(45, retainedOutput.GetRow(0)[0]);
         host.Attach(design);
         Assert.True(shell.IsLoaded);
         Assert.Same(input, shell.FindName("imageViewIn"));
         Assert.Same(output, shell.FindName("imageView"));
-        Assert.Same(shell.InputImage, input.ImageDataSource);
-        Assert.Same(shell.OutputImage, output.ImageDataSource);
+        Assert.Same(shell.InputViewport, design.InputViewportOwner!.View); Assert.Same(input, design.InputViewportOwner.View);
+        Assert.Equal(design.InputRaster!.Frame, design.InputViewportOwner.CurrentFrame!.Frame);
+        Assert.NotEqual(oldInputFrame, design.InputRaster.Frame); Assert.NotSame(oldInputOwner, design.InputViewportOwner);
+        Assert.Equal(new byte[] { 45 }, design.InputViewportOwner.ReadPixel(0, 0));
+        Assert.Same(shell.OutputViewport, design.OutputViewportOwner!.View); Assert.Same(output, design.OutputViewportOwner.View);
+        Assert.Equal(design.OutputRaster!.Frame, design.OutputViewportOwner.CurrentFrame!.Frame);
+        Assert.NotEqual(oldOutputFrame, design.OutputRaster.Frame); Assert.NotSame(oldOutputOwner, design.OutputViewportOwner);
+        Assert.Equal(new byte[] { 45 }, design.OutputViewportOwner.ReadPixel(0, 0));
         Assert.Contains(Descendants<TabItem>(shell), tab => Equals(tab.Header, "历史结果") && !tab.IsEnabled);
     });
 

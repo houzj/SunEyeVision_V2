@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
-public sealed class ResultPresentationModelTests
+public sealed class ResultPresentationModelTests:IDisposable
 {
     private static ToolSchema Schema(params Port[] outputs) => new(Array.Empty<Port>(), outputs);
 
@@ -77,13 +77,21 @@ public sealed class ResultPresentationModelTests
         Assert.Empty(node.GetChildrenPage(int.MaxValue, 2)); Assert.Empty(node.GetChildrenPage(0, 0));
         Assert.Single(node.GetChildrenPage(0, 2));
     }
-    private static ResultPresentationModel Declaration(ToolSchema schema,int pageSize=128)=>Published(schema,null,ResultViewState.Declaration,null,pageSize);
-    private static ResultPresentationModel Published(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values,int pageSize=128)
+    private ResultPresentationModel Declaration(ToolSchema schema,int pageSize=128)=>Published(schema,null,ResultViewState.Declaration,null,pageSize);
+    private ResultPresentationModel Published(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values,int pageSize=128)
     {
-        using var publication=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),identity,identity is null?null:1,schema.Fingerprint),
-            state,state is ResultViewState.Success or ResultViewState.PartialSuccess?values:null,new EmptyOwner(),()=>true);
-        using var lease=publication.Borrow();return ResultPresentationModel.ForPublication(publication,lease,pageSize);
+        var context=Hold(schema,identity,state,values);
+        return ResultPresentationModel.ForPublication(context.Publication,context.Lease,pageSize);
     }
+    private readonly List<IResultPublication> _publications=new();
+    private readonly List<IResultValueLease> _leases=new();
+    private (IResultPublication Publication,IResultValueLease Lease) Hold(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values)
+    {
+        var publication=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),identity,identity is null?null:1,schema.Fingerprint),
+            state,state is ResultViewState.Success or ResultViewState.PartialSuccess?values:null,new EmptyOwner(),()=>true);
+        var lease=publication.Borrow();_publications.Add(publication);_leases.Add(lease);return(publication,lease);
+    }
+    public void Dispose(){foreach(var lease in _leases)lease.Dispose();foreach(var publication in _publications)publication.Dispose();}
     private sealed class EmptyOwner:IDisposable{public void Dispose(){}}
     private static RunIdentity Run() => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "node", Guid.NewGuid());
     private static InputValues Values(ToolSchema schema, params (string Id, object? Value)[] values) =>
@@ -179,8 +187,9 @@ public sealed class ResultPresentationModelTests
         var source = new double[length]; source[length - 1] = 17.25;
         var schema = Schema(new Port("large", DataType.NumberArray)); var values = Values(schema, ("large", source));
         // Construction/freeze is outside the measurement: presentation must not clone that frozen 16 MB array.
+        var context=Hold(schema,Run(),ResultViewState.Success,values);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var model = Published(schema, Run(), ResultViewState.Success, values, 32);
+        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease,32);
         var root = model.Outputs[0]; var tail = root.GetChildrenPage(length - 32, 32);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.True(allocated < 1024 * 1024, $"Presentation copied beyond its page: {allocated} bytes");
@@ -199,8 +208,9 @@ public sealed class ResultPresentationModelTests
         var inner = TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)); var outer = TypeRef.SequenceOf(inner);
         var schema = Schema(new Port("nested", outer)); var large = new double[500_000]; large[^1] = 6.25;
         var values = Values(schema, ("nested", new SequenceValue(outer, new object?[] { large })));
+        var context=Hold(schema,Run(),ResultViewState.Success,values);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var model = Published(schema, Run(), ResultViewState.Success, values, 4);
+        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease,4);
         var child = model.Outputs[0].GetChildrenPage(0, 1)[0]; var last = child.GetChildrenPage(large.Length - 1, 1)[0];
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.True(allocated < 256 * 1024, $"Nested presentation cloned an array: {allocated} bytes");
@@ -213,7 +223,7 @@ public sealed class ResultPresentationModelTests
         var schema = Schema(new Port("value", DataType.Number));
         var wrong = Values(Schema(new Port("value", DataType.Text)), ("value", "wrong"));
         Assert.Throws<ArgumentException>(() => Published(schema, Run(), ResultViewState.Success, wrong));
-        Assert.Throws<ArgumentNullException>(() => Published(schema, Run(), ResultViewState.Success, null));
+        Assert.Throws<ArgumentException>(() => Published(schema, Run(), ResultViewState.Success, null));
         Assert.Throws<ArgumentOutOfRangeException>(() => Published(schema, Run(), (ResultViewState)99, null));
         var failed = Published(schema, Run(), ResultViewState.Failed, wrong);
         Assert.Null(failed.Outputs[0].ScalarValue); // Failed runs do not inspect or reuse unrelated supplied values.
@@ -228,6 +238,86 @@ public sealed class ResultPresentationModelTests
         var model=ResultPresentationModel.ForPublication(publication,lease,1,()=>current);
         Assert.Equal(stamp,model.Stamp);var root=Assert.Single(model.Outputs);var child=Assert.Single(root.GetChildrenPage(0,1));Assert.Equal(1d,child.ScalarValue);
         current=false;Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(1,1));Assert.Null(child.ScalarValue);
+    }
+
+    [Fact]
+    public void Blob_style_mixed_records_page_nested_scalars_and_geometry_without_reading_resource_leaves()
+    {
+        const int count=8193;
+        var frame=new CoordinateFrame("image:mixed",CoordinateDomain.Image,CoordinateUnit.Pixel);
+        var region=new BorrowedRegion(frame);var regionType=TypeRef.ResourceOf(ResourceKind.Region);
+        var pointType=TypeRef.GeometryOf(GeometryKind.Point,frame);
+        var part=TypeRef.RecordOf("part",new[]{new Port("number",DataType.Integer),new Port("region",regionType),new Port("point",pointType)});
+        var parts=TypeRef.SequenceOf(part);
+        var bounds=TypeRef.RecordOf("bounds",new[]{new Port("x",DataType.Number),new Port("y",DataType.Number)});
+        var blob=TypeRef.RecordOf("blob",new[]{new Port("element-id",DataType.Integer),new Port("area",DataType.Number),new Port("region",regionType),new Port("bounds",bounds),new Port("parts",parts)});
+        var blobs=TypeRef.SequenceOf(blob);var schema=Schema(new Port("blobs",blobs));
+        var sharedParts=new SequenceValue(parts,new object?[]{new Dictionary<string,object?>{["number"]=7L,["region"]=region,["point"]=new PointGeometry(frame,new(3,4))}});
+        var values=Values(schema,("blobs",new SequenceValue(blobs,Enumerable.Range(0,count).Select(index=>(object?)new Dictionary<string,object?>{
+            ["element-id"]=(long)index,["area"]=(double)index,["region"]=region,
+            ["bounds"]=new Dictionary<string,object?>{["x"]=1.5d,["y"]=2.5d},["parts"]=sharedParts}))));
+        using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,values,new EmptyOwner(),()=>true);
+        using var lease=publication.Borrow();region.BeginPresentation();
+        var before=GC.GetAllocatedBytesForCurrentThread();
+        var model=ResultPresentationModel.ForPublication(publication,lease);
+        var root=Assert.Single(model.Outputs);Assert.Equal(ResultPresentationValueState.Available,root.ValueState);Assert.Equal(count,root.ChildCount);
+        var first=root.GetChildrenPage(0,128);Assert.Equal(128,first.Count);
+        var fields=first[127].GetChildrenPage(0,5);Assert.Equal(127L,fields[0].ScalarValue);Assert.Equal(127d,fields[1].ScalarValue);
+        Assert.Equal(ResultPresentationValueState.ResourcePending,fields[2].ValueState);Assert.Null(fields[2].ScalarValue);Assert.Empty(fields[2].GetChildrenPage(0,1));
+        Assert.Equal(1.5d,fields[3].GetChildrenPage(0,2)[0].ScalarValue);
+        var nested=fields[4].GetChildrenPage(0,1)[0].GetChildrenPage(0,3);Assert.Equal(7L,nested[0].ScalarValue);
+        Assert.Equal(ResultPresentationValueState.ResourcePending,nested[1].ValueState);Assert.Equal(new Point2(3,4),Assert.IsType<PointGeometry>(nested[2].GeometryValue).Point);
+        var tail=Assert.Single(root.GetChildrenPage(count-1,128));Assert.Equal((double)(count-1),tail.GetChildrenPage(0,2)[1].ScalarValue);
+        Assert.Same(first[127],Assert.Single(root.GetChildrenPage(127,1)));Assert.Equal(0,region.Accesses);
+        Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<2*1024*1024,"Mixed records copied beyond the requested pages.");
+        Assert.Throws<ArgumentOutOfRangeException>(()=>root.GetChildrenPage(0,129));
+        lease.Dispose();Assert.True(publication.IsCurrent());Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(128,128));Assert.Null(fields[1].ScalarValue);Assert.Null(nested[2].GeometryValue);
+        Assert.Equal(0,region.Accesses);Assert.Equal(0,region.Disposals);
+    }
+
+    [Fact]
+    public void Closing_publication_invalidates_cached_mixed_pages_even_while_the_lease_keeps_owner_alive()
+    {
+        var region=new BorrowedRegion(new("image:closed",CoordinateDomain.Image,CoordinateUnit.Pixel));
+        var record=TypeRef.RecordOf("mixed",new[]{new Port("area",DataType.Number),new Port("region",TypeRef.ResourceOf(ResourceKind.Region))});
+        var schema=Schema(new Port("mixed",record));var released=0;
+        using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,
+            Values(schema,("mixed",new Dictionary<string,object?>{["area"]=16d,["region"]=region})),new CountOwner(()=>released++),()=>true);
+        using var lease=publication.Borrow();region.BeginPresentation();
+        var model=ResultPresentationModel.ForPublication(publication,lease);var root=Assert.Single(model.Outputs);var area=root.GetChildrenPage(0,2)[0];Assert.Equal(16d,area.ScalarValue);
+        publication.Dispose();Assert.Equal(0,released);Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(0,2));Assert.Null(area.ScalarValue);
+        lease.Dispose();Assert.Equal(1,released);Assert.Equal(0,region.Accesses);Assert.Equal(0,region.Disposals);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static (ResultPresentationModel Model,ResultPresentationNode Area,WeakReference Region,WeakReference Publication,WeakReference Lease) ClosedMixedModel()
+    {
+        var region=new BorrowedRegion(new("image:weak",CoordinateDomain.Image,CoordinateUnit.Pixel));
+        var record=TypeRef.RecordOf("weak-mixed",new[]{new Port("area",DataType.Number),new Port("region",TypeRef.ResourceOf(ResourceKind.Region))});
+        var sequence=TypeRef.SequenceOf(record);var schema=Schema(new Port("blobs",sequence));
+        using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,
+            Values(schema,("blobs",new SequenceValue(sequence,new object?[]{new Dictionary<string,object?>{["area"]=16d,["region"]=region}}))),new EmptyOwner(),()=>true);
+        using var lease=publication.Borrow();region.BeginPresentation();var model=ResultPresentationModel.ForPublication(publication,lease);
+        var fields=model.Outputs[0].GetChildrenPage(0,1)[0].GetChildrenPage(0,2);Assert.Equal(16d,fields[0].ScalarValue);
+        return(model,fields[0],new(region),new(publication),new(lease));
+    }
+    [Fact]
+    public void Cached_mixed_paths_do_not_extend_resource_publication_or_lease_lifetimes()
+    {
+        var result=ClosedMixedModel();GC.Collect();GC.WaitForPendingFinalizers();GC.Collect();
+        Assert.False(result.Region.IsAlive);Assert.False(result.Publication.IsAlive);Assert.False(result.Lease.IsAlive);
+        Assert.Null(result.Model.Outputs[0].ChildCount);Assert.Empty(result.Model.Outputs[0].GetChildrenPage(0,128));Assert.Null(result.Area.ScalarValue);
+        GC.KeepAlive(result.Model);GC.KeepAlive(result.Area);
+    }
+    private sealed class CountOwner(Action released):IDisposable{public void Dispose()=>released();}
+    private sealed class BorrowedRegion(CoordinateFrame frame):IReadOnlyRegion,IDisposable
+    {
+        private readonly SunEyeVision.Plugin.Runtime.FrozenRegionResource _region=new(frame,new(Guid.NewGuid(),"mixed-test"),new[]{new RegionRun(0,0,0)});
+        private bool _presentation;internal int Accesses,Disposals;
+        internal void BeginPresentation(){_presentation=true;Accesses=0;}
+        private T Read<T>(Func<T> read){if(_presentation){Accesses++;throw new InvalidOperationException("Presentation touched region metadata or payload.");}return read();}
+        public CoordinateFrame Frame=>Read(()=>_region.Frame);public ImageFrameAddress SourceFrame=>Read(()=>_region.SourceFrame);
+        public IRegionReadLease AcquireReader()=>Read(()=>_region.AcquireReader());public void Dispose()=>Disposals++;
     }
 
     private sealed class BorrowedImage : IReadOnlyImage, IDisposable
@@ -262,21 +352,26 @@ public sealed class ResultPresentationModelTests
         var schema = Schema(new Port("direct", imageType), new Port("mixed", record), new Port("images", sequence), new Port("plain", DataType.Integer));
         var values = Values(schema, ("direct", image), ("mixed", new Dictionary<string, object?> { { "image", image }, { "number", 7L } }),
             ("images", new SequenceValue(sequence, new object?[] { image })), ("plain", 5L));
-        image.BeginPresentation();
-        return (Published(schema, Run(), ResultViewState.Success, values), new WeakReference(image));
+        using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,values,new EmptyOwner(),()=>true);
+        using var lease=publication.Borrow();image.BeginPresentation();
+        var model=ResultPresentationModel.ForPublication(publication,lease);
+        Assert.Equal(7L,model.Outputs[1].GetChildrenPage(0,2)[1].ScalarValue);
+        Assert.Equal(5L,model.Outputs[3].ScalarValue);
+        return (model,new WeakReference(image));
     }
 
     [Fact]
-    public void Resource_roots_and_containing_aggregates_remain_declarations_without_retaining_borrowed_images()
+    public void Resource_leaves_and_weak_mixed_containers_do_not_retain_borrowed_images_after_close()
     {
         var disposals = BorrowedImage.Disposals;
         var result = ResourceModel();
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         Assert.False(result.Image.IsAlive);
-        Assert.All(result.Model.Outputs.Take(3), node => Assert.Equal(ResultPresentationValueState.ResourcePending, node.ValueState));
+        Assert.Equal(ResultPresentationValueState.ResourcePending,result.Model.Outputs[0].ValueState);
+        Assert.All(result.Model.Outputs.Skip(1).Take(2),node=>Assert.Equal(ResultPresentationValueState.Available,node.ValueState));
         Assert.Null(result.Model.Outputs[2].ChildCount);
         Assert.All(result.Model.Outputs[1].GetChildrenPage(0, 2), node => Assert.Null(node.ScalarValue));
-        Assert.Equal(5L, result.Model.Outputs[3].ScalarValue);
+        Assert.Null(result.Model.Outputs[3].ScalarValue); // closed weak lease never supplies an old value.
         Assert.Equal(disposals, BorrowedImage.Disposals); Assert.False((object)result.Model is IDisposable);
         GC.KeepAlive(result.Model);
     }    [Fact]

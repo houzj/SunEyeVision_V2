@@ -9,7 +9,7 @@ public enum ResultPresentationValueState { Unavailable, Missing, Null, Available
 /// <summary>A declaration or one explicitly identified run; it never reads a latest-result cache.</summary>
 public sealed class ResultPresentationModel
 {
-    private ResultPresentationModel(ToolSchema schema, ResultPublicationStamp stamp, ResultViewState state, int pageSize, InputValues? values, Func<bool>? isCurrent)
+    private ResultPresentationModel(ToolSchema schema, ResultPublicationStamp stamp, ResultViewState state, int pageSize, InputValues? values, Func<bool>? isCurrent,ResultValueAccess access)
     {
         ArgumentNullException.ThrowIfNull(schema);
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
@@ -25,10 +25,11 @@ public sealed class ResultPresentationModel
         for (var index = 0; index < outputs.Length; index++)
         {
             var port = schema.Outputs[index];
-            // Do not retain InputValues or readers for aggregates that may contain borrowed resources.
-            var reader = hasValues && !ContainsResource(port.Type)
-                ? values!.Read(port.Id) : null;
-            outputs[index] = new ResultPresentationNode(PortKey(port.Id), port.Type, port, null, pageSize, reader,isCurrent:isCurrent);
+            // A resource leaf is never read. Mixed containers are observed only transiently;
+            // their navigation path keeps weak publication/lease identities, not a parent reader.
+            var reader=hasValues&&port.Type.Shape!=ValueShape.Resource?values!.Read(port.Id):null;
+            outputs[index]=new ResultPresentationNode(PortKey(port.Id),port.Type,port,null,pageSize,reader,
+                isCurrent:isCurrent,path:access.Root(port.Id));
         }
         Outputs = Array.AsReadOnly(outputs);
     }
@@ -46,7 +47,7 @@ public sealed class ResultPresentationModel
         var stamp=publication.Stamp;
         if(!publication.IsCurrent()||stamp!=lease.Stamp||stamp.SchemaFingerprint!=publication.Schema.Fingerprint)
             throw new InvalidOperationException("Result publication lease is stale or has a different identity.");
-        var model=new ResultPresentationModel(publication.Schema,stamp,publication.State,pageSize,lease.Values,isCurrent);
+        var model=new ResultPresentationModel(publication.Schema,stamp,publication.State,pageSize,lease.Values,isCurrent,new ResultValueAccess(publication,lease,stamp));
         if(!publication.IsCurrent()||publication.Stamp!=stamp||lease.Stamp!=stamp||isCurrent?.Invoke()==false)
             throw new InvalidOperationException("Result publication changed while reading declared values.");
         return model;
@@ -66,15 +67,17 @@ public sealed class ResultPresentationModel
 public sealed class ResultPresentationNode
 {
     private readonly Func<bool>? _isCurrent;
-    private bool Current=>_isCurrent?.Invoke()!=false;
+    private readonly ResultValuePath? _path;
+    private bool Current=>_isCurrent?.Invoke()!=false&&(_path?.IsCurrent??true)&&_isCurrent?.Invoke()!=false;
+    private DeclaredValueReader? Reader=>_reader??_path?.Read();
     private readonly int _pageSize;
     private readonly DeclaredValueReader? _reader;
     private readonly GeometryValue? _geometry;
     private readonly Dictionary<int, ResultPresentationNode> _children = new();
 
-    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null)
+    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null,ResultValuePath? path=null)
     {
-        _isCurrent=isCurrent;
+        _isCurrent=isCurrent;_path=path;
         Key = key;
         Declaration = declaration;
         DeclaredPort = port;
@@ -82,12 +85,12 @@ public sealed class ResultPresentationNode
         _pageSize = pageSize;
         if (reader != null && reader.Declaration != declaration)
             throw new ArgumentException("The supplied run value does not match the declared field type.", nameof(reader));
-        ValueState = ResultPresentationModel.ContainsResource(declaration) ? ResultPresentationValueState.ResourcePending
+        ValueState = declaration.Shape==ValueShape.Resource ? ResultPresentationValueState.ResourcePending
             : reader == null ? geometry is null?ResultPresentationValueState.Unavailable:ResultPresentationValueState.Available
             : reader.IsMissing ? ResultPresentationValueState.Missing
             : reader.IsNull ? ResultPresentationValueState.Null
             : ResultPresentationValueState.Available;
-        _reader = ValueState == ResultPresentationValueState.Available ? reader : null;
+        _reader=ValueState==ResultPresentationValueState.Available&&!ResultPresentationModel.ContainsResource(declaration)?reader:null;
         _geometry=geometry??(_reader is not null&&declaration.Shape==ValueShape.Geometry?_reader.GetGeometry():null);
     }
 
@@ -112,10 +115,24 @@ public sealed class ResultPresentationNode
     public int? ChildCount => !Current?null:Declaration.Shape switch
     {
         ValueShape.Record => Declaration.Fields.Count,
-        ValueShape.Sequence => _reader?.Count,
+        ValueShape.Sequence => SequenceCount(),
         ValueShape.Geometry => _geometry is PolygonGeometry polygon?polygon.Vertices.Count:0,
         _ => 0
     };
+
+    private int? SequenceCount()
+    {
+        var reader=Reader;
+        var count=reader is null||reader.IsMissing||reader.IsNull?(int?)null:reader.Count;
+        return Current?count:null;
+    }
+    private DeclaredValueReader? ChildReader(string? field,int? index,TypeRef type)
+    {
+        if(type.Shape==ValueShape.Resource)return null;
+        var reader=Reader;
+        if(reader is null||reader.IsMissing||reader.IsNull)return null;
+        return field is not null?reader.GetField(field):reader.GetElement(index!.Value);
+    }
 
     public IReadOnlyList<ResultPresentationNode> GetChildrenPage(int offset, int count)
     {
@@ -136,23 +153,73 @@ public sealed class ResultPresentationNode
                 {
                     var key=Key+"/vertex"+index.ToString(CultureInfo.InvariantCulture);
                     child=new ResultPresentationNode(key,TypeRef.GeometryOf(GeometryKind.Point,polygon.Frame),null,index,_pageSize,
-                        geometry:new PointGeometry(polygon.Frame,polygon.Vertices[index]),isCurrent:_isCurrent);
+                        geometry:new PointGeometry(polygon.Frame,polygon.Vertices[index]),isCurrent:_isCurrent,path:_path);
                 }
                 else if (Declaration.Shape == ValueShape.Record)
                 {
                     var field = Declaration.Fields[index];
                     var key = Key + "/f" + field.Id.Length.ToString(CultureInfo.InvariantCulture) + ":" + field.Id;
-                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, _reader?.GetField(field.Id),isCurrent:_isCurrent);
+                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, ChildReader(field.Id,null,field.Type),isCurrent:_isCurrent,path:_path?.Field(field.Id));
                 }
                 else
                 {
                     var key = Key + "/i" + index.ToString(CultureInfo.InvariantCulture);
-                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, _reader!.GetElement(index),isCurrent:_isCurrent);
+                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, ChildReader(null,index,Declaration.Element!),isCurrent:_isCurrent,path:_path?.Element(index));
                 }
+                if(!Current)return Array.Empty<ResultPresentationNode>();
                 _children.Add(index, child);
             }
             page[position] = child;
         }
         return Array.AsReadOnly(page);
+    }
+}
+
+/// <summary>Only weak access to the consumer-owned lease. Never captures values or resource readers.</summary>
+internal sealed class ResultValueAccess
+{
+    private readonly WeakReference<IResultPublication> _publication;
+    private readonly WeakReference<IResultValueLease> _lease;
+    private readonly ResultPublicationStamp _stamp;
+    internal ResultValueAccess(IResultPublication publication,IResultValueLease lease,ResultPublicationStamp stamp)
+    {_publication=new(publication);_lease=new(lease);_stamp=stamp;}
+    internal bool IsCurrent=>TryValues(out _);
+    internal ResultValuePath Root(string id)=>new(this,id);
+    internal bool TryValues(out InputValues? values)
+    {
+        values=null;
+        if(!_publication.TryGetTarget(out var publication)||!_lease.TryGetTarget(out var lease))return false;
+        try
+        {
+            if(publication.Stamp!=_stamp||lease.Stamp!=_stamp||!publication.IsCurrent())return false;
+            var current=lease.Values;
+            if(publication.Stamp!=_stamp||lease.Stamp!=_stamp||!publication.IsCurrent())return false;
+            values=current;return true;
+        }
+        catch(ObjectDisposedException){return false;}
+    }
+}
+
+/// <summary>Stable output/field/index path; no parent value or reader is retained.</summary>
+internal sealed class ResultValuePath(ResultValueAccess access,string output,ResultValuePath? parent=null,string? field=null,int? index=null)
+{
+    private readonly ResultValuePath? _parent=parent;
+    private readonly string? _field=field;
+    private readonly int? _index=index;
+    internal bool IsCurrent=>access.IsCurrent;
+    internal ResultValuePath Field(string id)=>new(access,output,this,field:id);
+    internal ResultValuePath Element(int position)=>new(access,output,this,index:position);
+    internal DeclaredValueReader? Read()
+    {
+        if(!access.TryValues(out var values)||values is null)return null;
+        var reader=values.Read(output);
+        var steps=new Stack<ResultValuePath>();
+        for(var path=this;path._parent is not null;path=path._parent)steps.Push(path);
+        while(steps.TryPop(out var step))
+        {
+            if(reader.IsMissing||reader.IsNull)return null;
+            reader=step._field is not null?reader.GetField(step._field):reader.GetElement(step._index!.Value);
+        }
+        return access.IsCurrent?reader:null;
     }
 }

@@ -1,7 +1,7 @@
 ﻿<UserControl x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources" x:Name="ImagePanel" Loaded="OnLoaded" Unloaded="OnUnloaded" Focusable="False" ClipToBounds="True" ToolTip="{Binding Status, ElementName=ImagePanel}" Height="125" Background="{DynamicResource ImageSources.Background}">
 <UserControl.Resources>
     <ResourceDictionary>
-<ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
+<ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceMenu.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
 
   <Style x:Key="SmallCheckBoxStyle" TargetType="{x:Type CheckBox}">
     <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
@@ -281,7 +281,7 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <Grid Background="#FF000000" Width="72" Height="52" Margin="2" Tag="{Binding ElementName=BtnDelete}" MouseEnter="Grid_MouseEnter" MouseLeave="Grid_MouseLeave" MouseDown="Grid_MouseDown"><Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0} {1}"><Binding Path="Name"/><Binding Path="ResourceError"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
-            <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu><MenuItem Header="打开所在目录" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
+            <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu Style="{StaticResource ImageSources.ContextMenuStyle}"><MenuItem Header="打开所在目录" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
             <Button Name="BtnDelete" Margin="0,1,1,0" VerticalAlignment="Top" HorizontalAlignment="Right" Content="×" Height="16" Width="16" Visibility="Collapsed" Tag="{Binding}" Click="BtnDelete_Click">
               <Control.Template>
                 <ControlTemplate TargetType="{x:Type Button}">

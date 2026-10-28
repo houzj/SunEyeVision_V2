@@ -65,7 +65,7 @@
 ## 设计时与验证
 
 - `Design/ImageSources/ImageSourceStripDesignView.xaml/.cs` 在正常、资源失败、只读运行选择和空折叠场景使用同一 ImageSourceStrip，不复制预览UI或Runtime业务默认值。样例只构造冻结视觉投影并显示接收意图，不读取方案/设备，不执行工具。
-- 必要静态核对：4份XAML可XML解析；23个事件名均有处理器；23个唯一直接组件URI均有目标文件；21PNG逐项与原来源SHA一致；C# Roslyn ParseText核四文件无syntax Error。首次尝试显式载入SDK10.0.401 Roslyn提示已载入版本不匹配，后实际使用当前PowerShell已载入Roslyn解析；不将该行为写作语义编译。
+- 必要静态核对：5份XAML可XML解析；23个事件名均有处理器；24个唯一直接组件URI均有目标文件；21PNG逐项与原来源SHA一致；C# Roslyn ParseText核四文件无syntax Error。首次尝试显式载入SDK10.0.401 Roslyn提示已载入版本不匹配，后实际使用当前PowerShell已载入Roslyn解析；不将该行为写作语义编译。
 - 未执行：WPF markup编译/完整程序集语义编译、主仓正式Release、实际宿主生命周期/导入/运行、两主题宽窄DPI、真实VS设计器、VM同状态截图及人工验收。XML/语法/资源存在不替代这些验收。
 
 ## 主线整合事项
@@ -75,3 +75,7 @@
 3. 由共享资源唯一写者补Catalog来源/依赖/主题映射；无需改Generic入口才能显式实例化源条。不要把缺省深色当作已通过浅色验收。
 4. 独立设计视图在真实VS打开；原父MaxHeight110与125内高度的底部滚动条/折叠裁剪须结合真实宿主比对，不靠单项尺寸宣称外观完成。
 5. 原.pending文件未写/未删：它们是原件查源材料，现产品消费者应只接新中立组合；最终旧视觉消费退出由root整批实施。
+
+## 上下文菜单闭包补齐
+
+- 原 `HikContextMenu` 类型自身仅提供未使用的 OpenCommand 和默认样式键；不是只用系统默认菜单替代。现 `ImageSourceMenu.xaml`从既有原 `menuitemstyle.xaml`提取完整 ContextMenu 原模板及箭头/滚动按钮/MenuScrollViewer/MenuScrollingVisibilityConverter闭包，以显式中立样式套到ContextMenu。原HikColors固定画刷映射到本组合主题资源，不引入ColorThemesResourceDictionary全局实例。菜单项仍与原ImageListPanel相同为普通MenuItem。该闭包亦只做静态核查，需实际WPF popup开关/键盘/主题验收。

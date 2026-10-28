@@ -91,7 +91,9 @@ public sealed class NodeConfigurationEditHostTests
             var runtimeHost=new NodeConfigurationEditHost(runtimeModel);var runtimeBefore=runtimeHost.Capture();
             var old=runtimeHost.BeginEdit("f",source.Id);
             ImageSourceTestRuntime.Edit(old.Node,config=>config.SNInitialValue=19);
-            ImageSourceTestRuntime.Edit(source,config=>config.AutoSwitchEnabled=false);
+            var accepted=runtimeHost.BeginEdit("f",source.Id);
+            ImageSourceTestRuntime.Edit(accepted.Node,config=>config.AutoSwitchEnabled=false);
+            runtimeHost.Commit(accepted);
             runtimeHost.SynchronizeStructure();Assert.True(runtimeHost.Capture().Version>runtimeBefore.Version);
             Assert.Throws<InvalidOperationException>(()=>runtimeHost.Validate(old));
             Assert.Throws<InvalidOperationException>(()=>runtimeHost.Commit(old));

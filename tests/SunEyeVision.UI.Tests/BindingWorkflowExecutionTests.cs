@@ -224,7 +224,7 @@ public sealed class BindingWorkflowExecutionTests
         public IReadOnlyList<OutputVariable> GetOutputContract()=>new[]{new OutputVariable{Name="Value",DeclaredType=typeof(object),VariableType="",IsCollection=false,FixedCount=1}};
     }
     public sealed class MissingSchemaResults:ToolResults
-    {public object Value {get;set;}=123d;public override List<PropertyMapEntry> GetPropertyMap()=>new(){new("Value","Value")};}
+    {public double Value {get;set;}=123d;public override List<PropertyMapEntry> GetPropertyMap()=>new(){new("Value","Value")};}
     [Tool(id:MissingSchemaId,displayName:"Binding incomplete schema probe")]
     public sealed class MissingSchemaTool:IToolPlugin<MissingSchemaParameters,MissingSchemaResults>
     {public MissingSchemaResults Run(MissingSchemaParameters parameters){var result=new MissingSchemaResults();result.SetSuccess();return result;}}

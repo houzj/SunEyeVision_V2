@@ -108,6 +108,7 @@ public sealed partial class NativeResultViewport : IDisposable
                 previous = _frame; epoch = ++_epoch; _frame = candidate; _imageCurrent = isCurrent; attached = true;
                 foreach (var layer in _layers.ToArray())
                 { if (!Owns(epoch, candidate)) break; layer.RetireFrame(); }
+                if (Owns(epoch, candidate)) RetireRoi();
                 if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
             }
@@ -166,6 +167,7 @@ public sealed partial class NativeResultViewport : IDisposable
                 try { layer.Install(); } catch (Exception failure) { failures.Add(failure); }
             }
             if (Current(receipt)) try { InstallShapes(true); } catch (Exception failure) { failures.Add(failure); }
+            if (Current(receipt)) try { _roiAttachment?.RefreshProjection(); } catch (Exception failure) { failures.Add(failure); }
             if (failures.Count != 0) throw new AggregateException("结果图层重装失败。", failures);
         }));
         _refresh = operation;
@@ -177,6 +179,7 @@ public sealed partial class NativeResultViewport : IDisposable
         if (receipt is not null && !Current(receipt)) { if (receipt == CurrentFrame) Clear(); return; }
         foreach (var layer in _layers.ToArray()) layer.RefreshCurrentness();
         RefreshShapes();
+        if (_roiAttachment is {} editing && !editing.IsCurrent) DetachRoi(editing);
     }
     public void Clear()
     {
@@ -187,6 +190,7 @@ public sealed partial class NativeResultViewport : IDisposable
         ++_request; var epoch = ++_epoch; var frame = _frame; _frame = null; _imageCurrent = null;
         var refresh = _refresh; _refresh = null;
         var actions = new List<Action> { () => refresh?.Abort() };
+        actions.Add(() => { if (epoch == _epoch) RetireRoi(); });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => () => { if (epoch == _epoch) layer.RetireFrame(); }));
         actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });
         actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageDataSource = null; });
@@ -290,6 +294,10 @@ public sealed partial class NativeResultViewport : IDisposable
             var owner = _owner; var parent = _image.Parent as Panel ?? _installedParent; _installedParent = null;
             ParameterCleanup.Run(new Action[] { () => _image.Source = null,
                 () => { if (attempt == _attempt && ReferenceEquals(owner, _owner)) parent?.Children.Remove(_image); } });
+        }
+        public void Clear()
+        {
+            var owner = _owner; if (owner is null) return; owner._view.Dispatcher.VerifyAccess(); RetireFrame();
         }
         public void Dispose()
         {

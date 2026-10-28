@@ -1,0 +1,135 @@
+{
+  "generatedUtc": "2026-10-28T10:08:17.773398+00:00",
+  "scope": "D07单owner ROI编辑租约与两个standalone薄包装候选；不作正式同源Release/生产接入验收",
+  "previousCheckpoint": "e4fe8bbd",
+  "coherentReleaseValidated": false,
+  "files": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.RoiEditing.cs",
+      "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+      "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+      "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+      "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+      "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+      "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+    }
+  ],
+  "removedParallelFiles": [
+    "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
+    "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs"
+  ],
+  "library005": {
+    "path": "artifacts/native-result-roi-library-build-20261028-005.log",
+    "errors": 0,
+    "warnings": 5330,
+    "elapsed": "00:00:14.67"
+  },
+  "candidateResults": {
+    "resultViewport": {
+      "passed": 27,
+      "failed": 0,
+      "log": "artifacts/native-result-roi-related-candidate-20261028-014.log"
+    },
+    "box": {
+      "passed": 3,
+      "failed": 0,
+      "log": "artifacts/native-result-roi-related-candidate-20261028-011.log"
+    },
+    "inheritedAnnulus": {
+      "passed": 7,
+      "failed": 0,
+      "log": "artifacts/native-result-roi-related-candidate-20261028-012.log"
+    },
+    "textPixels": {
+      "passed": 1,
+      "failed": 0,
+      "log": "artifacts/native-result-roi-related-candidate-20261028-013.log"
+    }
+  },
+  "receipts": [
+    {
+      "stage": "S4",
+      "attempt": 212,
+      "pid": 41964,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "O06WindowPresentationCases.cs",
+      "caseSourceSha256": "B6EB6F75A58A7DFC8F4A423E6ACBA2E280C14799B36110707995A91D50AE382B",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-212"
+    },
+    {
+      "stage": "S4",
+      "attempt": 213,
+      "pid": 73660,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "O06WindowPresentationCases.cs",
+      "caseSourceSha256": "B6EB6F75A58A7DFC8F4A423E6ACBA2E280C14799B36110707995A91D50AE382B",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-213"
+    },
+    {
+      "stage": "S4",
+      "attempt": 214,
+      "pid": 62152,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "O06WindowPresentationCases.cs",
+      "caseSourceSha256": "B6EB6F75A58A7DFC8F4A423E6ACBA2E280C14799B36110707995A91D50AE382B",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-214"
+    },
+    {
+      "stage": "S4",
+      "attempt": 215,
+      "pid": 51692,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "O06WindowPresentationCases.cs",
+      "caseSourceSha256": "5CD7A3EA63C41DD6DB93644EC7B636FBD1BAADA032F43877DB59386235CC4FC3",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-215"
+    }
+  ],
+  "failedHistory": [
+    "artifacts/native-result-roi-related-candidate-20261028-001.log",
+    "artifacts/native-result-roi-related-candidate-20261028-005.log",
+    "artifacts/native-result-roi-related-candidate-20261028-006.log",
+    "artifacts/native-result-roi-related-candidate-20261028-007.log",
+    "artifacts/native-result-roi-related-candidate-20261028-008.log",
+    "artifacts/native-result-roi-related-candidate-20261028-010.log"
+  ],
+  "failureResolution": [
+    "显示统一BGRA但保原RGB/alpha和ReadPixel原format，不改规范像素；空ShapeList为null且实际原视觉必须不存在",
+    "真实重绑过期使用特定RetiredException，wrapper仅旧目标已变时处理，不吞普通准入/清理错误",
+    "删除错误的逻辑槽位image:input==实际Domain ID条件；保同Session图像/Stamp.Frame/实际Domain/尺寸全配对，不改域ID，不泛化任意Geometry映射",
+    "同Session待定字段负测先真实Select；Prepare迟到回调负测取真实事件delegate，避免在BeginDraw的_requesting门禁内伪造新请求"
+  ],
+  "publicContract": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
+  "remaining": [
+    "合D06固定完整批后规定UI/full、正式EXE与全部相关新同源轨",
+    "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
+    "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
+    "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
+  ]
+}

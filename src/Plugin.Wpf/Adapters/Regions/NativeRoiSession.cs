@@ -42,6 +42,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     public RoiDrawRequest? ActiveDraw=>_drawRequest;
     public RoiEditStamp Stamp=>_stamp??throw new InvalidOperationException("区域范围尚未装载。");
     public ImageFrameAddress Frame {get;}
+    public CoordinateFrame Coordinates {get;}
     public int ImageWidth {get;}
     public int ImageHeight {get;}
     public IReadOnlyImage Image {get;}
@@ -83,7 +84,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         ResourceContractRules.ValidateImage(image);
         if(string.IsNullOrWhiteSpace(drawingGroup))throw new ArgumentException("绘制组必须由宿主明确提供。",nameof(drawingGroup));
         DrawingGroup=drawingGroup;_canDraw=canDraw;
-        IsAvoid=isAvoid;Image=image;Frame=image.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
+        IsAvoid=isAvoid;Image=image;Frame=image.Frame;Coordinates=image.EffectiveDomain.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
         _read=read;_accept=accept;_isCurrent=isCurrent;_history=history;
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
         ValueChangedCommand=new EditCommand(value=>
@@ -213,6 +214,12 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         finally{_selecting=false;}
     }
     public void CancelPending()=>NativeRoiCallbacks.Run(new Action[]{CancelDraw}.Concat(_rows.ToArray().Select(item=>(Action)item.Cancel)));
+    internal void CancelPending(Func<bool> stillOwns)
+    {
+        var request=ActiveDraw;var rows=_rows.ToArray();
+        NativeRoiCallbacks.Run(new Action[]{()=>{if(stillOwns()&&ReferenceEquals(ActiveDraw,request))CancelDraw();}}
+            .Concat(rows.Select(item=>(Action)(()=>{if(stillOwns())item.Cancel();}))));
+    }
     public void SetDrawingGroup(string group)
     {
         if(string.IsNullOrWhiteSpace(group))throw new ArgumentException("绘制组必须非空。",nameof(group));

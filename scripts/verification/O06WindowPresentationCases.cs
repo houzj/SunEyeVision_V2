@@ -339,6 +339,66 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyNativeResultRaster()
  {
+  Test("原结果视口ROI借帧与结果文字共存并独立退场",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var probe=new RasterPixelsProbe(image);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(40,40),new(160,140))));using var session=model.Open();
+   using var viewport=new NativeResultViewport();viewport.View.Width=500;viewport.View.Height=380;Show(viewport.View);Require(viewport.BindImage(probe,()=>true),"背景未接纳");Pump();var receipt=viewport.CurrentFrame!;using var text=viewport.CreateTextLayer();using var geometry=viewport.CreateGeometryLayer();
+   Require(text.Present(receipt,1,new[]{new NativeTextOverlay("Blob",new(10,10),18,Colors.Lime,1)},()=>true)&&geometry.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(200,100),20),Colors.Red)},()=>true),"结果层未接纳");
+   var lease=viewport.BeginRoiEditing(receipt,session,()=>true);try
+   {
+    session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(native).Single(x=>ReferenceEquals(x.DataContext,session.CurROIData));
+    Require(probe.Active==1&&ReferenceEquals(native.ROIList![0],session.Items[0])&&native.ShapeList!.Count==2&&roi.Template is not null&&roi.ContainerWidth>1,"ROI新借像素、复制投影或丢结果层/原手柄");
+    roi.SetCurrentValue(Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectWidthProperty,150d);BindingOperations.GetMultiBindingExpression(roi,Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectWidthProperty)!.UpdateSource();typeof(Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase).GetMethod("NotifyROIParamChanged",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(roi,null);Pump();
+    Require(model.Writes==1&&model.Rows[0].Geometry.Get<double>("width")==150&&ReferenceEquals(native.ROIList[0],session.CurROIData),"原手柄未单次写同稳定对象");
+   }finally{lease.Dispose();}Pump();var view=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(view.ROIList is null&&view.ShapeList!.Count==2&&view.ImageDataSource is not null&&probe.Active==1&&session.IsCurrent,"ROI退场越权清结果/文字/背景或Dispose借用session");viewport.Dispose();Require(probe.Active==0&&probe.Released==1,"唯一像素lease未最终释放一次");
+  });
+  Test("原结果视口ROI退休回调重入保新会话绘制",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var a=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));var b=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"B",RoiGeometryEditing.Create("rectangle",new(120,30),new(220,130))));using var sa=a.Open();using var sb=b.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;var old=viewport.BeginRoiEditing(r,sa,()=>true);Require(sa.BeginDraw("rectangle") is not null,"旧绘制未准备");IDisposable? next=null;var fired=false;
+   Action<RoiDrawRequest> reenter=_=>{if(fired)return;fired=true;next=viewport.BeginRoiEditing(r,sb,()=>true);Require(sb.BeginDraw("rectangle") is not null,"新绘制未准备");};sa.DrawCancelled+=reenter;
+   try{PublicationThrows<InvalidOperationException>(()=>viewport.BeginRoiEditing(r,sa,()=>true));Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(fired&&sb.ActiveDraw is not null&&native.RoiDrawingCaptureEnabled&&ReferenceEquals(native.ROIList![0],sb.Items[0]),"旧Begin/清理覆盖新会话或取消新绘制");old.Dispose();Require(sb.ActiveDraw is not null&&native.RoiDrawingCaptureEnabled,"重复旧Dispose清新绘制");}
+   finally{sa.DrawCancelled-=reenter;old.Dispose();next?.Dispose();}
+  });
+  Test("原结果视口ROI初始化通知重入不覆盖新命令",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var a=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));var b=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"B",RoiGeometryEditing.Create("rectangle",new(120,30),new(220,130))));using var sa=a.Open();using var sb=b.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;IDisposable? next=null;ICommand? oldCommand=null;var fired=false;
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.ImageViewBox.RoiSelectedCommandProperty,typeof(Native.Display.VMBaseControls.ImageViewBox))!;EventHandler reenter=(_,_)=>{if(fired||native.RoiSelectedCommand is null)return;fired=true;oldCommand=native.RoiSelectedCommand;next=viewport.BeginRoiEditing(r,sb,()=>true);Require(sb.BeginDraw("rectangle") is not null,"B绘制未准备");};descriptor.AddValueChanged(native,reenter);
+   try{PublicationThrows<InvalidOperationException>(()=>viewport.BeginRoiEditing(r,sa,()=>true));Pump();Require(fired&&native.RoiSelectedCommand is not null&&!ReferenceEquals(oldCommand,native.RoiSelectedCommand)&&oldCommand?.CanExecute(null)==false&&native.RoiDrawingCaptureEnabled&&ReferenceEquals(native.ROIList![0],sb.Items[0]),"初始化旧回调覆盖新命令/绘制");}
+   finally{descriptor.RemoveValueChanged(native,reenter);next?.Dispose();}
+  });
+  Test("原结果视口ROI同Session新租约不被旧取消清草稿",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));using var session=model.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;using var old=viewport.BeginRoiEditing(r,session,()=>true);Require(session.BeginDraw("rectangle") is not null,"旧绘制未准备");IDisposable? next=null;var fired=false;
+   Action<RoiDrawRequest> reenter=_=>{if(fired)return;fired=true;next=viewport.BeginRoiEditing(r,session,()=>true);Require(session.Select("detect",model.Rows[0].Id),"新租约选中失败");Require(session.BeginDraw("rectangle") is not null,"新绘制未准备");((NativeBoxRoiProjection)session.Items[0]).Width=.7;};session.DrawCancelled+=reenter;
+   try{PublicationThrows<InvalidOperationException>(()=>viewport.BeginRoiEditing(r,session,()=>true));Require(fired&&session.ActiveDraw is not null&&session.Items[0].HasPending&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).RoiDrawingCaptureEnabled,"旧CancelPending取消同Session新绘制或待定参数");}finally{session.DrawCancelled-=reenter;next?.Dispose();}
+  });
+  Test("原结果视口ROI准备proof重入不取消新请求",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image);using var session=model.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;var armed=false;IDisposable? next=null;RoiDrawRequest? newer=null;
+   bool Proof(){if(armed){armed=false;next=viewport.BeginRoiEditing(r,session,()=>true);newer=session.BeginDraw("rectangle");}return true;}
+   using var old=viewport.BeginRoiEditing(r,session,Proof);var retained=(Action<RoiDrawRequest>)typeof(NativeRoiSession).GetField("DrawRequested",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(session)!;var stale=session.BeginDraw("rectangle")!;Require(stale is not null,"原请求未准备");try{armed=true;retained(stale);Require(!armed&&newer is not null&&ReferenceEquals(session.ActiveDraw,newer)&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).RoiDrawingCaptureEnabled,"旧Prepare拒绝分支取消新draw请求");}finally{next?.Dispose();}
+  });
+  Test("原结果视口ROI原Polygon取消通知不清同Session新绘制",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var viewport=new NativeResultViewport();viewport.View.Width=500;viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;using var old=viewport.BeginRoiEditing(r,session,()=>true);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var polygon=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROI>(native).Single();native.IsDragROI=true;var fired=false;IDisposable? next=null;
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.ImageViewBox.IsDragROIProperty,typeof(Native.Display.VMBaseControls.ImageViewBox))!;EventHandler reenter=(_,_)=>{if(fired||native.IsDragROI)return;fired=true;next=viewport.BeginRoiEditing(r,session,()=>true);Require(session.BeginDraw("rectangle") is not null,"新绘制未准备");};descriptor.AddValueChanged(native,reenter);
+   try{polygon.RaiseEvent(new RoutedEventArgs(Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROI.InteractionCancelledEvent,polygon));Require(fired&&session.ActiveDraw is not null&&native.RoiDrawingCaptureEnabled,"旧Polygon取消通知清了新租约draw");}finally{descriptor.RemoveValueChanged(native,reenter);next?.Dispose();}
+  });
+  Test("原结果视口ROI同物理Frame但不同实际域坐标仍拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var domain=resources.CreateRegion(new("other-image-pixels",CoordinateDomain.Image,CoordinateUnit.Pixel),image.Frame,Enumerable.Range(0,240).Select(y=>new RegionRun(y,0,319)).ToArray());var wrong=resources.CreateImage(image.Layout,image.Frame,domain,image.CopyPixels());var model=new RoiHost(image);var other=new RoiHost(wrong);using var session=model.Open();using var otherSession=other.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;using var lease=viewport.BeginRoiEditing(r,session,()=>true);var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var command=native.RoiSelectedCommand;
+   PublicationThrows<InvalidOperationException>(()=>viewport.BeginRoiEditing(r,otherSession,()=>true));Require(ReferenceEquals(command,native.RoiSelectedCommand)&&viewport.CurrentFrame==r&&session.IsCurrent,"同物理Frame的不同Domain被猜配对或拒绝破坏原租约");
+  });
+  Test("原结果视口ROI公开未完手势与取消租约不暴露画布",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image);using var session=model.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var r=viewport.CurrentFrame!;using var lease=viewport.BeginRoiEditing(r,session,()=>true);Require(lease.IsCurrent&&!lease.HasPendingGesture,"初始租约状态错误");Require(session.BeginDraw("rectangle") is not null&&lease.HasPendingGesture,"未完成原绘制未阻断Apply准入");lease.CancelGesture();Require(lease.IsCurrent&&!lease.HasPendingGesture&&session.ActiveDraw is null&&viewport.CurrentFrame==r&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ImageDataSource is not null,"取消手势未退请求或越权清背景");
+  });
+  Test("原结果视口ROI仅租约proof撤销即拒提交保背景",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image);using var session=model.Open();using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");Pump();var valid=true;using var lease=viewport.BeginRoiEditing(viewport.CurrentFrame!,session,()=>valid);var request=session.BeginDraw("rectangle")!;Require(request is not null,"绘制未准备");var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;valid=false;
+   var completionType=typeof(NativeRoiViewport).Assembly.GetType("SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiDrawCompletion",true)!;var completion=Activator.CreateInstance(completionType,request,RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100)))!;var command=(Delegate)native.GetType().GetProperty("NativeDrawComplete",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(native)!;
+   Require(command.DynamicInvoke(completion) is false&&model.Writes==0&&session.IsCurrent,"已撤销视口租约仍提交ROI或误关闭借用Session");viewport.RefreshCurrentness();Require(native.ROIList is null&&session.ActiveDraw is null&&native.ImageDataSource is not null,"租约失效未取消编辑或越权清背景");
+  });
   Test("原结果视口单owner组合几何文字选择与栅格",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,160,new byte[320*160]);
@@ -939,8 +999,13 @@ internal static class S2DocumentEditingCases
     using var session=CreateRoiSession(image,()=>Array.Empty<RoiEditItem>(),(_,_)=>throw new Exception("显示不应写几何"),()=>true);
     using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();viewport.Bind(session);Show(viewport);Pump();
     var source=viewport.NativeView.Source as BitmapSource;Require(source is not null&&source.PixelWidth==2&&source.PixelHeight==2,"实际彩色位图缺失");
-    Require(source!.Format==(bpp==3?PixelFormats.Bgr24:PixelFormats.Bgra32),"像素格式被替换");
-    var actual=new byte[expected.Length];source.CopyPixels(actual,2*bpp,0);Require(actual.SequenceEqual(expected),"行padding进入画面或BGRA通道丢失");
+    Require(source!.Format==PixelFormats.Bgra32,"统一Domain显示没有使用BGRA");
+    var actual=new byte[16];source.CopyPixels(actual,8,0);
+    for(var row=0;row<2;row++)for(var x=0;x<2;x++)
+    {
+     var original=expected.AsSpan((row*2+x)*bpp,bpp).ToArray();Require(viewport.ReadPixel(x,row)!.SequenceEqual(original),"原格式读取或行padding不正确");
+     Require(actual.AsSpan((row*2+x)*4,3).SequenceEqual(original.AsSpan(0,3))&&actual[(row*2+x)*4+3]==(bpp==4?original[3]:255),"原RGB/alpha显示被丢弃或padding入画");
+    }
     Require(image.CopyPixels().SequenceEqual(bytes),"显示修改了算法冻结像素");
    }
    Show(new TextBlock{Text="彩色显示卸载"});
@@ -1146,7 +1211,7 @@ internal static class S2DocumentEditingCases
  static void VerifyNativeRoiDrawingViewport()
  {
   const BindingFlags hidden=BindingFlags.Instance|BindingFlags.NonPublic;
-  object Drawing(NativeRoiViewport view)=>typeof(NativeRoiViewport).GetField("_drawing",hidden)!.GetValue(view)!;
+  object Drawing(NativeRoiViewport view){var attachment=typeof(NativeRoiViewport).GetField("_attachment",hidden)!.GetValue(view)!;return attachment.GetType().GetField("_drawing",hidden)!.GetValue(attachment)!;}
   void Step(object drawing,string method,params object[] args)=>drawing.GetType().GetMethod(method,hidden)!.Invoke(drawing,args);
   void Prime(Window window,FrameworkElement element,Point point)
   {
@@ -2222,7 +2287,7 @@ internal static class S2DocumentEditingCases
    Require(session.Stamp==before&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Count()==1&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Single().RenderedGeometry.Bounds.Width>20,"同修订重新Init或布局后原图形丢失");
    viewport.NativeView.ImageScale=1.5;Pump();var zoomed=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Single();
    Require(Math.Abs(zoomed.StrokeThickness*viewport.NativeView.ThicknessScale-1)<1e-8,"原样式缩放粗细没有同步");viewport.NativeView.ImageScale=1;Pump();
-   model.Rows[0]=row with{Visible=false};model.Revision++;session.Refresh();Pump();Require(viewport.NativeView.ShapeList.Count==0&&!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Any(),"隐藏仍残影");
+   model.Rows[0]=row with{Visible=false};model.Revision++;session.Refresh();Pump();Require((viewport.NativeView.ShapeList?.Count??0)==0&&!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Any(),"隐藏仍残影");
    old.Add(source);Pump();Require(!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Any(),"旧集合仍订阅原页面");
    model.Rows[0]=row with{Geometry=Shape(-40,-80)};model.Revision++;session.Refresh();Pump();Require(Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Count()==1,"替换来源残影或未重绘");
    Show(new TextBlock{Text="卸载"});Require(viewport.NativeView.ShapeList is null&&viewport.NativeView.ROIList is null,"卸载未释放两条图形链");

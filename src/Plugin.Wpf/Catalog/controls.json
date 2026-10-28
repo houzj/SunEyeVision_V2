@@ -2416,11 +2416,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
+          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
         },
         {
-          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
-          "sha256": "5292830c0bccba344c0440fb3ac20dc9be4558d845a37564c5025c5eac58cead"
+          "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
@@ -2428,7 +2428,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
+          "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
@@ -2479,8 +2479,8 @@
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
-          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
-          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+          "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481",
           "kind": "中立菜单与宿主历史同根组合"
         }
       ],
@@ -2574,6 +2574,47 @@
         "sourceEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_SOURCE_AUDIT_20261028.json",
         "formalEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json",
         "validation": "UI005/全量Release002零错误；Window175=151，Design050=85，Field085=31，RuntimeEditor067=10，FullChain125=8，Components207=9，ThemeStartup010=1，Resources019=22，共317组；EXE018 exit0/22工具15分类。"
+      },
+      "roiOwnerCandidate": {
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.RoiEditing.cs",
+            "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+            "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+            "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+            "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481"
+          },
+          {
+            "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+            "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          }
+        ],
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
+        "contract": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
+        "status": "同一背景lease/原绘制菜单交互已移动到attachment；库005过，候选原视口27/0、Box3/0、继承7/0、文字1/0；未规定集中UI/full/生产接入核收",
+        "remaining": [
+          "合D06固定完整批后规定UI/full、正式EXE与全部相关新同源轨",
+          "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
+          "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
+          "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
+        ]
       }
     },
     {
@@ -2763,7 +2804,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
+          "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
@@ -2944,7 +2985,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
+          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiSamples.cs",
@@ -2995,8 +3036,8 @@
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
-          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
-          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+          "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481",
           "kind": "中立菜单与宿主历史同根组合"
         }
       ],
@@ -3215,15 +3256,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
+          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
         },
         {
-          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
-          "sha256": "5292830c0bccba344c0440fb3ac20dc9be4558d845a37564c5025c5eac58cead"
+          "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
+          "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiScene.cs",
@@ -3282,8 +3323,8 @@
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
-          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
-          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+          "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481",
           "kind": "中立菜单与宿主历史同根组合"
         }
       ],
@@ -3326,6 +3367,47 @@
         "sourceEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_SOURCE_AUDIT_20261028.json",
         "formalEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json",
         "validation": "UI005/全量Release002零错误；Window175=151，Design050=85，Field085=31，RuntimeEditor067=10，FullChain125=8，Components207=9，ThemeStartup010=1，Resources019=22，共317组；EXE018 exit0/22工具15分类。"
+      },
+      "roiOwnerCandidate": {
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.RoiEditing.cs",
+            "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+            "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+            "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+            "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481"
+          },
+          {
+            "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+            "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          }
+        ],
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
+        "contract": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
+        "status": "同一背景lease/原绘制菜单交互已移动到attachment；库005过，候选原视口27/0、Box3/0、继承7/0、文字1/0；未规定集中UI/full/生产接入核收",
+        "remaining": [
+          "合D06固定完整批后规定UI/full、正式EXE与全部相关新同源轨",
+          "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
+          "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
+          "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
+        ]
       }
     },
     {
@@ -3887,8 +3969,8 @@
           "sha256": "255c1b430173d826cf07e86d0f9634ef1c78f50b5b8b65ce1ba6fdf2d04d43a9"
         },
         {
-          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
-          "sha256": "5292830c0bccba344c0440fb3ac20dc9be4558d845a37564c5025c5eac58cead"
+          "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
@@ -4124,7 +4206,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
-          "sha256": "1ffdf6792586eb3f31e40c3ddfb922a8042ce05963c1c37b999a3791c4ea9af9"
+          "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
@@ -4264,7 +4346,48 @@
           "sha256": "155b8f275eed98c35fa2f7da6652f9b5c46fbc5f7f5d26c24fd9e03a86de2149",
           "usage": "仅正式绘字导出验证，实际视口另用RenderTargetBitmap检查"
         }
-      ]
+      ],
+      "roiOwnerCandidate": {
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.RoiEditing.cs",
+            "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+            "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+            "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+            "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481"
+          },
+          {
+            "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+            "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          }
+        ],
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
+        "contract": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
+        "status": "同一背景lease/原绘制菜单交互已移动到attachment；库005过，候选原视口27/0、Box3/0、继承7/0、文字1/0；未规定集中UI/full/生产接入核收",
+        "remaining": [
+          "合D06固定完整批后规定UI/full、正式EXE与全部相关新同源轨",
+          "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
+          "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
+          "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
+        ]
+      }
     },
     {
       "id": "C13.original-graphic-style-composition",
@@ -5446,7 +5569,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
-            "sha256": "466c23231799f60fe1c66bcdd2a47733533f7937fbc17c9f1115d57e8bdad93d"
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterScene.xaml",
@@ -5454,7 +5577,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
-            "sha256": "292c84a59e0568465233e962bb7ca56921b09fc56baa4f753911608ffe86c6f7"
+            "sha256": "4e3ba83cbcfd932adab00b1d90d85c249261a24079242c67accaa257f02c9876"
           }
         ],
         "sourceEvidence": "docs/collaboration/evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json",
@@ -5474,11 +5597,11 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
-            "sha256": "e39f1809e44ab2ff5b57ab51e3f48d514a599bf28d5646fb5fec730cd7be7b38"
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
-            "sha256": "ebedec469979f21e9657796df79f0eabc818548c82fa5c27b71e289330348f8a"
+            "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
@@ -5493,6 +5616,47 @@
           "原Shell双ImageDataSource入口及SDK主图生产消费者尚未退出",
           "D06完整绑定22项失败修复待工作流固定批，不能套前批通过",
           "规定UI/full、同源正式产物新验证及真实VS/VM人工待完成"
+        ]
+      },
+      "roiOwnerCandidate": {
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.RoiEditing.cs",
+            "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "569a049b2c06430d33a3d1141a6d4270960a811a501826e4f2d076711c101072"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+            "sha256": "44a84dda3b4f3b599fb0305cb3bbd86e7a258e639f5ba85cc445c52c45e4bc9c"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+            "sha256": "6dcd5135fe591d3fd7082ff71349689910542cff4e3c3b66d3a7c3257930255d"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
+            "sha256": "0805721afd4684b4c8d2590ce89998e3aa8e734426a26c79f38fe7dacbda3481"
+          },
+          {
+            "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+            "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          }
+        ],
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
+        "contract": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
+        "status": "同一背景lease/原绘制菜单交互已移动到attachment；库005过，候选原视口27/0、Box3/0、继承7/0、文字1/0；未规定集中UI/full/生产接入核收",
+        "remaining": [
+          "合D06固定完整批后规定UI/full、正式EXE与全部相关新同源轨",
+          "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
+          "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
+          "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
         ]
       }
     }

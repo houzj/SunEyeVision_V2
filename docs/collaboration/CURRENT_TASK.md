@@ -1,3 +1,11 @@
+## 2026-10-28 原ROI attachment与公共接入API候选固定，待合D06整批
+
+- root移动实际原NativeRoiViewport绘制/选择/菜单/四类手柄到内部NativeRoiAttachment，两个独立ROI/文字viewport均薄包装同NativeResultViewport；删除旧NativeRoiImageFrame及旧Commands平行实现。ROI借同一像素lease，同一Session投影，不Dispose借用Session，不清其他层。
+- Begin在所有外调前固定独立request；先安装候选再Initialize，逐共享DP复核；旧菜单/手柄/Unprepare/逐Session取消均核当前slot，draw持续proof及提交前后同帧守卫。公开INativeRoiEditLease.IsCurrent/HasPendingGesture/CancelGesture，见HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md。签名供宿主整批接入，非完整D07验收。
+- 坐标纠正：image:input是ROI参数逻辑槽位，Session构造的真实图像+Capture Stamp.Frame+尺寸归一化建立该输入实例绑定。保实际Session.Coordinates/Frame/Stamp/尺寸与receipt一致，不要求Domain ID改名，也不泛化任意GeometryValue转换。错误的额外ID限制及原失败全部保日志。
+- 库005=0错5330警告14.67秒，候选Window原视口27/0、Box3/0、继承圆环7/0、原文字真实绘字1/0；初轮显示格式/空层断言及真实重入修复保失败。证据evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json。未规定UI/full，正式目录目前为局部库候选，不套旧5780正式成绩。
+- 工作流固定完整修复HEAD275be4f4（产品6e5cfc40）已交，下一先存本公共候选再完整合入，规定UI/full/正式EXE及新GlobalBinding/ImageSources/视口/设计/编辑等集中验。当前18109/61596/61003/37175/32767/82823/82662等全部终态，无live。Blob业务/用户参数页不动，完整两阶段goal active，原圈/点线/弧/生产主图等未完保留。
+
 ## 2026-10-28 D07同owner形状候选：库编译过，候选窗口18/0
 
 - Root已实现NativeShapeProjection及NativeResultViewport.Shapes，原六类几何/整圆Arc、原文字opacity分组、独立选择层共用同owner与ShapeList；独立NativeTextViewport复用同非视觉helper。未支持非整圆Arc明确拒绝，不Bounds/折线/薄圆环近似。

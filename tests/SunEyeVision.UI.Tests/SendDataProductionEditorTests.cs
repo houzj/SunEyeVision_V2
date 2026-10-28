@@ -51,12 +51,21 @@ public sealed class SendDataProductionEditorTests
             Document = new Solution { Workflows = new() { flow } }; Document.GlobalVariables.Add(Variable);
             ServiceInitializer.SolutionManager.SetCurrentSolution(Document, false);
             Main = new MainWindowViewModel(); Session = ServiceInitializer.SolutionManager.Session!;
+            // The real startup path must load the already-open document, not only a default empty tab.
+            // Do not call private loaders or mark a scope loaded to conceal a missing engine definition.
+            Assert.Same(Document, Session.Document);
+            var actualTab = Assert.Single(Main.WorkflowTabViewModel.Tabs);
+            Assert.Equal(flow.Id, actualTab.RootWorkflowId); Assert.Equal(flow.Id, actualTab.CurrentWorkflowId);
+            Assert.Same(actualTab, Main.WorkflowTabViewModel.SelectedTab);
+            Assert.Same(flow.Nodes, actualTab.WorkflowNodes);
+            Assert.Same(Node, Assert.Single(actualTab.WorkflowNodes));
             var tool = new SendDataTool(); Editor = Assert.IsType<SendDataEditor>(tool.CreateDebugControl(tool));
             Window = new DefaultDebugWindow(Editor) { Left = -10000, Top = -10000, ShowActivated = false };
             // Exercise the production Main factory, not a hand-written substitute for its service wiring.
             var args = new object?[] { Window, Node, null };
             Context = Assert.IsType<ProductionEditorContext>(typeof(MainWindowViewModel).GetMethod("CreateProductionEditorContext", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(Main, args));
             Query = Assert.IsType<DataSourceQueryService>(args[2]);
+            Assert.Equal(flow.Id, Query.WorkflowId); Assert.Same(Node, Context.FormalNode);
             var initializer = (IToolControlInitializer)Window;
             initializer.SetCurrentNode(Context.DraftNode); initializer.SetParameters(Draft); initializer.SetDataProvider(Query);
             Window.Show(); Window.UpdateLayout();

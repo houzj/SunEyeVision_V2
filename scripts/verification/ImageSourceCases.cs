@@ -20,6 +20,7 @@ internal static class S2DocumentEditingCases
             ["ResultPresentationModelTests"]=null,
             ["ResultPresentationPresenterTests"]=null,
             ["NativeResultCompositionTests"]=null,
+            ["ImageSourceDesignCompositionTests"]=null,
             ["ImageSourceConfigurationHistoryTests"]=null,
             ["LocalImageConfigurationSnapshotTests"]=null,
             ["ImageSourceSavePersistenceTests"]=null,

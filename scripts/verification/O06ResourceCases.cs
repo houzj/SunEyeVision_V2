@@ -53,8 +53,8 @@ internal static class S2DocumentEditingCases
         try
         {
             Require(run.Success,string.Join(";",run.Errors??new()));
-            Require(run.NodeResults["blob"].Result is RuntimeToolResults{Output:BlobOutput{GrayImage:not null}},"第四节点未执行正式Runtime Blob或未产生灰图");
-            var blobOutput=(BlobOutput)((RuntimeToolResults)run.NodeResults["blob"].Result!).Output!;
+            Require(run.NodeResults["blob"].Result is DeclaredOutputSnapshot{Output:BlobOutput{GrayImage:not null}},"第四节点未执行正式Runtime Blob或未产生灰图");
+            var blobOutput=(BlobOutput)((DeclaredOutputSnapshot)run.NodeResults["blob"].Result!).Output!;
             foreach(var id in new[]{"filter","threshold","morphology","blob"})
             {
                 native.AddRange(run.NodeResults[id].Result!.GetDisplayImages().Values.Where(i=>i is not null).Cast<IVisionImage>());
@@ -90,12 +90,12 @@ internal static class S2DocumentEditingCases
         var gray=(IVisionImage?)result.GetType().GetProperty("GrayImage")!.GetValue(result);
         try
         {
-            Require(!result.IsSuccess&&gray is not null,"未到创建灰度后失败的真实路径");result.Resources?.Dispose();
+            Require(!result.IsSuccess&&gray is not null,"未到创建灰度后失败的真实路径");result.Dispose();
             var alive=true;try{_=gray!.Width;}catch(ObjectDisposedException){alive=false;}
             Console.WriteLine(id+"失败后原灰度仍可访问="+alive);Require(!alive,"PARTIAL_NATIVE_OWNER_LEAK: "+id);
             Require(input.Width==8,"失败清理释放了输入");
         }
-        finally{result.Resources?.Dispose();gray?.Dispose();}
+        finally{result.Dispose();gray?.Dispose();}
     }
     private static void RejectedOwnedResult(bool async,bool expired,bool failedCleanup)
     {
@@ -119,7 +119,7 @@ internal static class S2DocumentEditingCases
             if(failedCleanup)Require(returned.ErrorMessage?.Contains("OWNED_RELEASE_FAILURE")==true,"清理真实失败消息丢失");
             Require(owner.ActiveRuns==0,"执行owner未排空");
         }
-        finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.Resources?.Dispose();}returned.Resources?.Dispose();}
+        finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.Dispose();}returned.Dispose();}
     }
     public sealed class ProbeParameters:ToolParameters { }
     // This is an ownership-boundary proxy, not a substitute algorithm/native execution.
@@ -140,7 +140,7 @@ internal static class S2DocumentEditingCases
         using var callerInput=HalImage.CreateFromBytes(new byte[]{128},1,1,1);var values=new List<CountingImage>();
         if(!throwOnDispose){var same=new CountingImage(id+"shared");values.Add(same);foreach(var slot in slots)slot.SetValue(result,same);}
         else for(var i=0;i<slots.Length;i++){var value=new CountingImage(id+i,i<slots.Length-1);values.Add(value);slots[i].SetValue(result,value);}
-        var first=result.Resources!.Retain();var last=result.Resources.Retain();result.Resources.Dispose();Require(values.All(v=>v.DisposeCount==0),"owner释放提前清理仍有租约输出");first.Dispose();Require(values.All(v=>v.DisposeCount==0),"倒数第二lease提前清理");
+        var first=result.Retain();var last=result.Resources.Retain();result.Resources.Dispose();Require(values.All(v=>v.DisposeCount==0),"owner释放提前清理仍有租约输出");first.Dispose();Require(values.All(v=>v.DisposeCount==0),"倒数第二lease提前清理");
         AggregateException? failure=null;try{last.Dispose();}catch(AggregateException error){failure=error;}
         Require(values.All(v=>v.DisposeCount==1&&v.Released),"同引用多次Dispose或不同引用误合并/后图未清理");
         foreach(var value in values)Disposed(()=>value.Width.ToString());Require(callerInput.GetPixelData().Single()==128,"输出owner释放了未拥有的输入");
@@ -153,7 +153,7 @@ internal static class S2DocumentEditingCases
         OwnedResults Body(){produced=new OwnedResults{Status=ExecutionStatus.Success,ThrowOnOwnerRelease=true,ThrowOnLegacyRelease=true};if(expired)owner.RetireNode("dual-flow/owned");else cancellation.Cancel();return produced;}
         IToolPlugin tool=async?new AsyncOwnedTool(Body):new OwnedTool(Body);var request=new ToolExecutionRequest(new ProbeParameters()){ExecutionOwner=owner,WorkflowId="dual-flow",NodeId="owned",CancellationToken=cancellation.Token};var executor=new ToolExecutor(new ParameterResolver());var returned=async?executor.ExecuteAsync(tool,request).GetAwaiter().GetResult():executor.Run(tool,request);
         try{Require(produced is not null&&produced.OwnerReleaseCount==1&&produced.LegacyDisposeCount==1,"owner异常跳过legacy或重复清理");Disposed(()=>produced!.Image.Width.ToString());Require(returned.Status==ExecutionStatus.Failed&&returned.ErrorMessage?.Contains("OWNED_RELEASE_FAILURE")==true&&returned.ErrorMessage.Contains("LEGACY_RELEASE_FAILURE"),"双清理异常被吞/降级取消");Require(owner.ActiveRuns==0,"异常后执行owner未排空");var diagnostics=returned.ErrorMessage+"\n"+returned.ErrorStackTrace;File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,$"dual-cleanup-async{async}-expired{expired}.txt"),diagnostics);Require(new[]{"System.InvalidOperationException","System.IO.IOException","OWNER_INNER_DETAILS","System.ArgumentException","System.FormatException","LEGACY_INNER_DETAILS"}.All(diagnostics.Contains),"清理Failed保留顶层消息但丢失异常类型/完整inner链");}
-        finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.ThrowOnLegacyRelease=false;produced.Resources?.Dispose();}returned.Resources?.Dispose();}
+        finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.ThrowOnLegacyRelease=false;produced.Dispose();}returned.Dispose();}
     }
     public sealed class OwnedResults:ToolResults,IDisposable
     {

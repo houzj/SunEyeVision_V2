@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace SunEyeVision.Plugin.SDK.Execution.Results;
+namespace SunEyeVision.Plugin.Runtime;
 
 /// <summary>仅供显式拥有资源的结果使用。每个长期持有者取得租约，最后一个释放者回收。</summary>
 public sealed class ResultResourceOwner : IDisposable

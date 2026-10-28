@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
 using SunEyeVision.Workflow;
@@ -253,7 +254,7 @@ internal static class S2DocumentEditingCases
                 f.Editing.Host, "flow", f.A, () => true, _ => { }, documentEdits: f.Editing);
             var production = new WorkflowContext();
             var previous = new SunEyeVision.Plugin.SDK.Execution.Results.GenericToolResults();
-            production.SetNodeResult("a", new SunEyeVision.Plugin.SDK.Execution.Results.NodeExecutionResult { NodeId = "a", Result = previous });
+            production.SetNodeResult("a", new SunEyeVision.Plugin.Runtime.NodeExecutionResult { NodeId = "a", Result = previous });
             int releases = 0;
             var preview = new SunEyeVision.Plugin.SDK.Execution.Results.GenericToolResults {
                 ExecutionIdentity = editor.DebugOwner.Begin("flow/a", Guid.NewGuid(), "test", editor.DebugCancellation)

@@ -1,3 +1,27 @@
+## 2026-10-29 I2唯一冻结结果主链候选已成片实施并核验，完整阶段仍未关
+
+- 按前轮109文件整体设计集中迁移：RuntimeToolResults源删除；准入身份/一次捕获、冻结Snapshot/Reader、结果Owner、状态和纯Node/Run租约数据归现有Plugin.Runtime（聚合不含调度），不新增工程/基类/兼容转发。正式/私有调试/绑定/Context/树表/双图与Root窗口直接传同一快照，去隐式SDK图像副本、日志转换、ContractToolResults和全局值合成旧结果。Blob算法/参数页未改。
+- 实际通知路径两处同步Dispatcher.Invoke改异步投递+ResultDispatchLease；取消/Owner退役释放未认领通知，已认领者自己持租约；Owner退役逐订阅者清理并聚合异常，原准入共享Attempt只能捕获一次结果。真实业务NG直接取本次BusinessJudgment。多轮UI排队有界性仍须专项，不能只凭这些路径称所有生命周期完成。
+- 候选UI011=0错728警告23.33秒/full002=0错6453警告38.63秒；UI001—007原类型调用错、ResultChain001/RuntimeWorkflow001/RuntimeDebug001夹具编译错均保日志。RuntimeEditor001六组后真实超时为本线漏接路由object Results里的新快照；补实际消费者并读真实终态后RuntimeEditor002十组全过，未延长等待。
+- 当前同源正式产物CAF...FEF54，ResultChain12/0、真实HALCON调度10/0/调试7/0、真实参数窗口10/0、独立设计101/0，Runtime图像源21/0/Blob9/0，组件准入attempt004八项过；五轨48条实际加载程序集SHA与正式路径全核。权威I2_RESULT_CHAIN_IMPLEMENTATION_20261029.json逐源SHA/删源/失败和未完分列，非真实VS/人工验收。
+- SDK旧ToolDebugResultSnapshot生产抓取退出编译，旧可视调试执行/卡尺拒绝未准入入口；对应3项旧调试测试及6项SDK图像副本/位姿桥测试源码保留、暂不编译，不记通过、不恢复旧接口。DeclaredOutputReaderTests直接改新快照保读者/身份/不可重复捕获断言。完整位姿仍在阶段一，不据此删功能。原UI249项228过21败未迁新宿主重跑，Runtime21/0不是原UI21失败清零。
+- 17699/13823/33332/69489/34467/1415/84395/81696/23431/83934、48813/21356所有构建均终态；64052/40487/61854/82785所有回归终态，无live。主仓唯一写，不启子智能体。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。下一固定中文源码检查点及提交身份产物，再继续原21失败/新UI宿主、SDK剩余隔离、历史及C01—C17/人工门禁。目标active、不推送。
+
+## 2026-10-29 I2结果链整体迁移设计与实际编译消费者证据固定
+
+- 上一轮70d8032a隔离代码及正式核收是实际进展；本轮未再改产品或构建，按AGENTS先完整设计后成片实施。新增audit_result_chain.py对默认19个非测试工程只求MSBuild Compile项，实查1918个源文件，109个结果/状态/Owner相关文件；精确SHA及引用行归I2_RESULT_CHAIN_INVENTORY_20261029.json。符号上界含注释/未触发分支，不冒充运行时可达图或性能证据。
+- 原S4 architectureIsolationPlan.resultChainCutover已固定18项职责与完整消费者、7步所有权和6条切换门禁；核心决定为复用DeclaredOutputSnapshot做唯一冻结结果，身份/资源Owner纯机制归Runtime；直接退出RuntimeToolResults，不另新增结果基类/包装，不让新结果继续绕旧ToolResults。执行/私有调试/绑定/Node/RunContext/UI通知/树表/双图与Root窗口同批，保现有IResultPublication借阅和分页正确机制。
+- 源码已证AlgorithmNode结果转换、WorkflowExecutionEngine末图汇总及诊断日志计数会调用RuntimeToolResults.GetDisplayImages→GetImageView→SDK CopyImage；后续移除这些隐式复制入口，算法输入冻结与必要后端转换保持。未修改算法/参数页，不扩展Group/循环/显示插件合同。
+- 原ImageSources013的21个失败逐项保原名/完整错误/源码SHA和承接决定，归I2_RESULT_CHAIN_FAILED_CASES_20261029.json：13个Dispatcher宿主、文件alpha证据待核、选择/preview/上下文与帧身份真实链、两个重入/底图断言时机；全部仍标未在新链重跑，不因旧UI.Tests隔离归零。新测试宿主须承接原断言目的，不能加载共享目录旧测试程序集。
+- 原O06同步新结果链设计和证据链接；70d8032a正式产物与本轮前的验证不变，本轮设计不算I2实施或两阶段完成。7752分析进程已终态，无live构建/测试；Blob业务冻结、用户XAML SHA保持，主仓唯一写，不启子智能体，不推送。下一按固定设计成片实施和核收，不继续造局部接口/备用模型。
+
+## 2026-10-29 隔离源码70d8032a及同提交正式Release集中核收
+
+- 完整隔离批已中文本地提交70d8032a，未推送；用户BlobParameterEditor.xaml排除且SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed不变。默认25工程/零旧工具反向引用、四组件清单/schema2、旧源码索引及产品入口退出均在该提交。
+- 提交后重绑源码身份并串行UI002=0错6474警告42.07秒、full004=0错6476警告36.29秒；正式Core/载荷/probe均70d8032a。新载荷SHA65F22E3CE0E6ADAAAE68CFC5D1A3994C6DDA8E0B1870F29E715A23D5B3162454、569文件；ProductIsolation attempt003八项通过/所有原SHA还原。
+- 固定提交新跑Design101/0、RuntimeEditor10/0及真实HALCON RuntimeWorkflow10/0（无UI消息泵），图像源Runtime21/0、Blob9/0。正式加载路径/源SHA核归PRODUCT_ISOLATION_RELEASE_20261028.json；本次未用提交前成绩冒充新产物，旧编译及测试宿主失败均保留。非真实VS/人工验收，不算旧结果包装退出。
+- 62472/47617构建、7386准入、69365五轨集中验证均真实终态，无live。当前只补最终证据/原O06/任务记录，不再逐条生成提交。下一按当前已隔离基线整体替换RuntimeToolResults/ToolResults旧包装及全部执行/调试/引用/树表/图像/资源消费者，承接原ImageSources21失败；控件C01—C17剩余、视觉及人工门禁不删，Blob业务仍冻结，目标active。
+
 ## 2026-10-28 I1产品边界集中切换并正式准入验证，完整新结果链仍待迁移
 
 - 本轮在I0源码图和整体设计上成片落实隔离：product/ToolComponents.props唯一准入四组件；UI显式引用、Release封包校验工程/PE、schema2产品清单同源。默认63→25工程，20旧工具+18旧依赖/加载合同测试留SunEyeVision.Legacy.slnx源码索引；旧SDK主动构建拒绝。退出SDK目录/ALC桥/ToolItemInfo扫描及工具箱VM占位，Core未用旧扫描器退出编译。正确共享非视觉能力保留，不称旧SDK/结果模型已全部退出。

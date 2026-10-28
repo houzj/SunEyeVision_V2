@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -100,7 +101,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 最近执行结果
         /// </summary>
-        public ToolResults? LastResult { get; set; }
+        public DeclaredOutputSnapshot? LastResult { get; set; }
 
         /// <summary>
         /// 错误信息

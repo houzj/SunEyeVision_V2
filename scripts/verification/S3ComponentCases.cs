@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using System.IO;
 using System.Windows;
@@ -111,7 +112,7 @@ internal static class S2DocumentEditingCases
             using var execution=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image)));
             Require(execution.Success&&execution.NodeResults.TryGetValue("blob",out var nodeResult),"正式工作流失败："+string.Join(";",execution.Errors??new()));
             var result=execution.NodeResults["blob"].Result??throw new Exception("工作流没有Blob结果");
-            var runtimeResult=(RuntimeToolResults)result;
+            var runtimeResult=(DeclaredOutputSnapshot)result;
             Require(runtimeResult.Output is not null,"缺少实际Runtime输出");
             var resultValues=new InputValues(runtimeResult.BindingOutputSchema!.Outputs,runtimeResult.Output!.ToValues());
             var rowPort=((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)ToolRegistry.CreateRuntime("BlobAnalysis")).ResultProjection.Rows!.PortId;
@@ -121,7 +122,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
             {
                 var grid=Find<System.Windows.Controls.DataGrid>(resultView.View).Single();
-                var snapshot=result.DeclaredOutput??throw new Exception("真实运行没有发布声明值");
+                var snapshot=result??throw new Exception("真实运行没有发布声明值");
                 var record=(RecordValue)resultRows[0]!;
                 var region=record.Get<IReadOnlyRegion>("region");
                 ImageFrameAddress expectedFrame;CoordinateFrame expectedCoordinates;

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -184,8 +185,8 @@ internal static class S2DocumentEditingCases
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
             Threshold(first).Text="255";Pump();
             SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.Execute(null,first);
-            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result is RuntimeToolResults);
-            var preview=(RuntimeToolResults)context.DebugResults.GetNodeResult(node.Id)!.Result!;
+            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result is DeclaredOutputSnapshot);
+            var preview=(DeclaredOutputSnapshot)context.DebugResults.GetNodeResult(node.Id)!.Result!;
             Require(preview.Output is BlobOutput{Count:0}&&Formal()==73,"调试未采用私有阈值或污染正式设置");
             Require(ReferenceEquals(source,Context().GetNodeResult(sourceNodeId!)!.Result)&&ReferenceEquals(production,Context().GetNodeResult(node.Id)!.Result),"调试重跑或替换正式结果");
             Require(table.Items.Count==0,"私有调试结果未刷新实际结果表");Capture(first,"runtime-editor-debug.png");

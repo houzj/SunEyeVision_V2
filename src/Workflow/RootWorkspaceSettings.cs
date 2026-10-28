@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 namespace SunEyeVision.Workflow;
@@ -17,5 +18,5 @@ public sealed record RootWorkspaceSettings
             ||OverviewY is {} y&&(!double.IsFinite(y)||y<0||y>4880))throw new ArgumentException("流程总览位置必须成对位于5000画布内。");
     }
     public bool ShouldStopAfter(ExecutionResult result)
-        => StopOnNg && result.NodeResults.Values.Any(node=>string.Equals(node.Result?.JudgmentStatus,"NG",StringComparison.OrdinalIgnoreCase));
+        => StopOnNg && result.NodeResults.Values.Any(node=>node.Result?.Judgment==SunEyeVision.Plugin.Contracts.BusinessJudgment.Fail);
 }

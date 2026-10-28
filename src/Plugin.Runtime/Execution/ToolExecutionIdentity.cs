@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SunEyeVision.Plugin.SDK.Core;
+namespace SunEyeVision.Plugin.Runtime;
 
 /// <summary>方案/节点的运行准入Owner；退役与受控发布共享同一临界区。</summary>
 public sealed class ToolExecutionOwner
@@ -115,7 +115,11 @@ public sealed class ToolExecutionOwner
         lock (_gate)
             if (_domains.Remove(nodeId, out var generation))
             { _latest.Remove(nodeId); domain = Domain(nodeId, generation); }
-        if (domain != null) DomainRetired?.Invoke(domain);
+        if (domain != null)
+        {
+            var errors=new List<Exception>();NotifyRetired(domain,errors);
+            if(errors.Count>0)throw new AggregateException("节点域退役通知失败，所有订阅者均已尝试清理。",errors);
+        }
     }
 
     public void Retire()
@@ -129,7 +133,14 @@ public sealed class ToolExecutionOwner
             foreach (var domain in _domains) domains.Add(Domain(domain.Key, domain.Value));
             _domains.Clear(); _latest.Clear();
         }
-        foreach (var domain in domains) DomainRetired?.Invoke(domain);
+        var errors=new List<Exception>();
+        foreach (var domain in domains)NotifyRetired(domain,errors);
+        if(errors.Count>0)throw new AggregateException("运行域退役通知失败，所有域均已尝试清理。",errors);
+    }
+    private void NotifyRetired(string domain,List<Exception> errors)
+    {
+        foreach(var callback in DomainRetired?.GetInvocationList()??Array.Empty<Delegate>())
+            try{((Action<string>)callback)(domain);}catch(Exception error){errors.Add(error);}
     }
     internal string Domain(string nodeId, Guid generation) => $"{Id:N}/{nodeId}/{generation:N}";
 }
@@ -141,6 +152,7 @@ public sealed class ToolExecutionIdentity
         internal string ContractIdentity = contractIdentity;
         internal bool CallbacksOpen = true;
         internal bool ExecutionStarted;
+        internal int ResultCaptured;
     }
     private readonly AttemptState _attempt;
     internal ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,
@@ -159,13 +171,18 @@ public sealed class ToolExecutionIdentity
     public CancellationToken CancellationToken { get; }
     internal Func<bool>? Admission { get; }
     internal bool CallbacksOpen => _attempt.CallbacksOpen;
-    internal bool HasStartedExecution => _attempt.ExecutionStarted;
+    public bool HasStartedExecution => _attempt.ExecutionStarted;
     internal bool TryStartExecution()
     { if(_attempt.ExecutionStarted)return false;_attempt.ExecutionStarted=true;return true; }
     internal void CloseCallbacks() => _attempt.CallbacksOpen=false;
     internal void SetContractIdentity(string value) => Volatile.Write(ref _attempt.ContractIdentity,value);
     public string Domain => Owner.Domain(NodeId, NodeGeneration);
     public bool IsCurrent => Owner.Publish(this, null);
+    internal bool TryCaptureResult()
+    {
+        var captured=false;
+        return Owner.Publish(this,()=>captured=Interlocked.CompareExchange(ref _attempt.ResultCaptured,1,0)==0)&&captured;
+    }
     public bool TryPublish(Action publish) => Owner.Publish(this, publish);
     public bool TryInvokeCallback(Action callback) => Owner.Publish(this, callback, callback: true);
     public void CompleteCallbacks() => Owner.CompleteCallbacks(this);

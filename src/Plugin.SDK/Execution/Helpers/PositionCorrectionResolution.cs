@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -52,18 +53,18 @@ public sealed class PositionCorrectionResolution
         Guid? expectedFrame = null;
         try
         {
-            ToolResults? sourceResult = query?.GetNodeContext(node)?.Result;
-            if (query == null && p.NodeResults != null) p.NodeResults.TryGetValue(node, out sourceResult);
-            if (sourceResult is { IsSuccess: false })
+            object? sourceResult = query?.GetNodeContext(node)?.Result;
+            if (query == null && p.NodeResults?.TryGetValue(node,out var legacy)==true) sourceResult=legacy;
+            if (sourceResult is DeclaredOutputSnapshot { IsSuccess: false } or ToolResults { IsSuccess:false })
                 return new(PositionCorrectionState.WaitingForSource, path, "位置修正来源本次执行未成功。");
             // Execution reads its result snapshot, never an editor's preview value. An explicit
             // snapshot without this source must not silently reuse a previous run's matrix.
             value = query != null
                 ? query.GetPropertyValue(node, field)
                 : sourceResult != null
-                    ? OutputVariableResolver.Resolve(sourceResult, field, node)
+                    ? sourceResult is DeclaredOutputSnapshot frozen ? OutputVariableResolver.Resolve(frozen,field,node) : OutputVariableResolver.Resolve((ToolResults)sourceResult, field, node)
                     : p.NodeResults == null ? (p.GetType().GetProperty("PositionCorrectionBindingSource")?.GetValue(p) as AvailableDataSource)?.CurrentValue : null;
-            expectedFrame = ImageFrameProvenance.GetInputFrame(sourceResult);
+            expectedFrame = sourceResult is ToolResults legacyResult ? ImageFrameProvenance.GetInputFrame(legacyResult) : null;
             if (expectedFrame.HasValue)
             {
                 var input = ToolExecutionPreparation.ReadReference(p, "ImageSource");

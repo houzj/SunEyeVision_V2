@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Results;
 
-namespace SunEyeVision.Plugin.SDK.Execution.Results
+
+namespace SunEyeVision.Plugin.Runtime
 {
     public class ExecutionResult : IDisposable
     {
@@ -140,8 +140,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public DateTime? EndTime { get; set; }
         public TimeSpan? Duration => EndTime.HasValue ? EndTime.Value - StartTime : null;
         public List<string> ErrorMessages { get; set; }
-        public IReadOnlyList<ResultItem>? ResultItems { get; set; }
-        public ToolResults? Result { get; set; }
+        public DeclaredOutputSnapshot? Result { get; set; }
 
         public NodeExecutionResult() { ErrorMessages = new List<string>(); }
     }

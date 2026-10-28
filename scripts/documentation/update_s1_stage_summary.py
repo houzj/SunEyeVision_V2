@@ -449,6 +449,15 @@ def render_s4_stage(page):
                    if s4['architectureIsolationPlan'].get('sourceAudit') else '')
                 + (table(['本批落地项','实际结果及范围'], s4['architectureIsolationPlan']['currentBatch']['results'])
                    if s4['architectureIsolationPlan'].get('currentBatch') else '')
+                + ('<section id="o06-result-chain-cutover"><h5>新结果链：唯一冻结快照与完整消费者切换</h5>'
+                   + '<p>' + escape(s4['architectureIsolationPlan']['resultChainCutover']['status']) + '</p>'
+                   + (table(['主链实施项','当前证据及边界'], s4['architectureIsolationPlan']['resultChainCutover']['implementationResults'])
+                      if s4['architectureIsolationPlan']['resultChainCutover'].get('implementationResults') else '')
+                   + table(['链路/职责','复用与迁移决定','验收出口'], s4['architectureIsolationPlan']['resultChainCutover']['decisions'])
+                   + '<p><b>切换门禁：</b>' + escape('；'.join(s4['architectureIsolationPlan']['resultChainCutover']['cutoverGate'])) + '</p>'
+                   + '<p>原21项失败逐项保留：<a href="' + escape(os.path.relpath(ROOT / 'docs/collaboration/evidence/I2_RESULT_CHAIN_FAILED_CASES_20261029.json', PAGE.parent).replace('\\', '/'), quote=True) + '">失败来源与承接决定</a>；'
+                   + '<a href="' + escape(os.path.relpath(ROOT / s4['architectureIsolationPlan']['resultChainCutover']['evidence'], PAGE.parent).replace('\\', '/'), quote=True) + '">实际编译消费者/源码SHA清单</a>。源图和设计不计作结果链已实施。</p></section>'
+                   if s4['architectureIsolationPlan'].get('resultChainCutover') else '')
                 + table(['现有能力','源码位置','归属','调整决定','全部消费者/影响','验收出口'], s4['architectureIsolationPlan']['inventory'])
                 + table(['实施批','整链要求'], s4['architectureIsolationPlan']['batches'])
                 + '<p><b>下一步：</b>' + escape(s4['architectureIsolationPlan']['nextAction']) + '</p></section>'

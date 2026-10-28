@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -70,7 +71,7 @@ public sealed class WorkflowRunRequest
     public WorkflowGlobalRunValues? ProducedGlobals {get;init;}
     public string WorkflowId { get; }
     public WorkflowRunConfiguration? Configuration { get; init; }
-    public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; init; }
+    public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; init; }
     public SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? ResourcePaths { get; init; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; }

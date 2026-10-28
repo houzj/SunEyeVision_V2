@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.IO;
 using System.Reflection;
@@ -66,7 +67,7 @@ internal static class S2DocumentEditingCases
         var flow=document.Workflows.Single(w=>w.Id==tab.CurrentWorkflowId);
         void Select(WorkflowNodeBase n){foreach(var item in vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes)item.IsSelected=ReferenceEquals(item,n);vm.SelectedNode=n;Pump();}
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
-        RuntimeToolResults Result(string id)=>Context().GetNodeResult(id)?.Result as RuntimeToolResults??throw new Exception("缺少Runtime结果："+id);
+        DeclaredOutputSnapshot Result(string id)=>Context().GetNodeResult(id)?.Result as DeclaredOutputSnapshot??throw new Exception("缺少Runtime结果："+id);
         int Count(string id)=>((BlobOutput)Result(id).Output!).Count;
         void Execute(){var task=vm.RunSelectedImageAsync();Await(task);}
         DefaultDebugWindow Open(SunEyeVision.UI.Shared.WorkflowNode n){Select(n);vm.OpenDebugWindowCommand.Execute(n);Pump();return app.Windows.OfType<DefaultDebugWindow>().Single(w=>w.IsVisible);}
@@ -145,7 +146,7 @@ internal static class S2DocumentEditingCases
             var production=Result(blob.Id);var window=Open(blob);Field(window,"Threshold").Text="255";Pump();
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;ToolCommands.Execute.Execute(null,window);
             Until(()=>context.DebugResults.GetNodeResult(blob.Id)?.Result is not null);
-            Require(context.DebugResults.GetNodeResult(blob.Id)!.Result is RuntimeToolResults {Output:BlobOutput {Count:0}}&&ReferenceEquals(production,Result(blob.Id)),"私有调试污染正式结果");
+            Require(context.DebugResults.GetNodeResult(blob.Id)!.Result is DeclaredOutputSnapshot {Output:BlobOutput {Count:0}}&&ReferenceEquals(production,Result(blob.Id)),"私有调试污染正式结果");
             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==0,"实际结果表未显示私有结果");
             window.Close();Pump();Require(solutions.Session!.Editing.RegisteredScopeCount==0&&((BlobSettings)blob.RuntimeConfiguration!.CaptureSettings()).Threshold==128,"关闭污染正式值或遗留范围");
         });
@@ -154,7 +155,7 @@ internal static class S2DocumentEditingCases
             var copy=blob.Clone();Require(ConnectionBindingPolicy.RemoveAutomaticImageBinding(copy,"input-blob"),"自动来源未识别");
             var marked=copy.ParamSettings.GetSetting(BlobTool.ImageInput)!;Require(marked.RebindingReason is not null&&marked.AutomaticConnectionId is null,"未保留重选状态");
             var copied=ParameterBindingDefinition.FromSetting(marked).ToSetting();Require(copied.RebindingReason==marked.RebindingReason&&!copied.IsValid&&copied.Clone().RebindingReason==marked.RebindingReason,"绑定快照/复制丢失重选状态");
-            try{using var request=RuntimeDebugInvocation.Capture(flow,copy,new SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner(),1,id=>Context().GetNodeResult(id)?.Result,default,publishedOwner:document.ExecutionOwner);throw new Exception("删除自动连线后仍执行");}
+            try{using var request=RuntimeDebugInvocation.Capture(flow,copy,new SunEyeVision.Plugin.Runtime.ToolExecutionOwner(),1,id=>Context().GetNodeResult(id)?.Result,default,publishedOwner:document.ExecutionOwner);throw new Exception("删除自动连线后仍执行");}
             catch(InvalidOperationException){}
             var manual=blob.Clone();var explicitSource=manual.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();explicitSource.AutomaticConnectionId=null;manual.ParamSettings.SetSetting(explicitSource);
             Require(!ConnectionBindingPolicy.RemoveAutomaticImageBinding(manual,"input-blob")&&manual.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==explicitSource.ReferenceExpression,"删除旧连线清除了显式来源");

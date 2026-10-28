@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Workflow;
 using WorkflowCore=SunEyeVision.Workflow;
@@ -11,7 +12,7 @@ public sealed class NodeResultManager
     private readonly INodeResultSink _viewModel;
     public NodeResultManager(Func<WorkflowContext?> getContext,INodeResultSink viewModel)
     {_getContext=getContext??throw new ArgumentNullException(nameof(getContext));_viewModel=viewModel??throw new ArgumentNullException(nameof(viewModel));}
-        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true, WorkflowCore.WorkflowContext? targetContext = null)
+        public void UpdateNodeResult(WorkflowNodeBase node, DeclaredOutputSnapshot result, bool refreshDisplay = true, WorkflowCore.WorkflowContext? targetContext = null)
         {
             if (node == null || result == null)
                 return;
@@ -23,6 +24,7 @@ public sealed class NodeResultManager
                 NodeId = node.Id,
                 // ★ 状态取自结果本身，不得硬编码成功（否则失败态被覆盖为成功，状态显示失真）
                 Success = result.IsSuccess,
+                Status = result.Status,
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now,
                 Result = result
@@ -43,15 +45,15 @@ public sealed class NodeResultManager
         }
 
 
-    public void RefreshResultDisplay(WorkflowNodeBase node,ToolResults result)
+    public void RefreshResultDisplay(WorkflowNodeBase node,DeclaredOutputSnapshot result)
     {
-        using var lease=result.Resources?.Retain();
+        using var lease=result.Retain();
         if(result.ExecutionIdentity?.IsCurrent==false)return;
         _viewModel.UpdateModuleResults(result,node.Name,node.ToolType,node.Id,node.Parameters);
     }
-    public void RefreshDebugPreview(WorkflowNodeBase draft,ToolResults result)
+    public void RefreshDebugPreview(WorkflowNodeBase draft,DeclaredOutputSnapshot result)
     {
-        using var lease=result.Resources?.Retain();
+        using var lease=result.Retain();
         if(result.ExecutionIdentity?.IsCurrent==false)return;
         _viewModel.UpdateModuleResults(result,draft.Name,draft.ToolType,draft.Id,draft.Parameters);
     }

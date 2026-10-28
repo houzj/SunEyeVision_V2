@@ -1,4 +1,5 @@
-﻿using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
+using SunEyeVision.Plugin.Contracts;
+using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,9 +169,17 @@ public sealed class OutputBindingChangeService
             .OfType<string>().Distinct().ToArray();
     }
 
+    private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema)=>schema.Outputs.Select(port=>new OutputVariable
+    {
+        PortId=port.Id,Name=port.Id,DisplayName=port.Id,ValueDeclaration=port.Type,AllowsNull=port.Nullable,
+        DeclaredType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?typeof(IReadOnlyImage):null,
+        VariableType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?"Image":"",
+        IsCollection=port.Type.Shape==ValueShape.Sequence,Kind=OutputVariableKind.Data
+    }).ToArray();
+
     public IReadOnlyList<OutputVariable>? ReadContract(WorkflowNodeBase node)
     {
-        if(node.RuntimeConfiguration is { } runtime)return RuntimeToolResults.Describe(runtime.Schema);
+        if(node.RuntimeConfiguration is { } runtime)return DescribeRuntimeOutputs(runtime.Schema);
         var contract = node.Parameters is IOutputContractProvider provider ? provider.GetOutputContract() : StaticContractReader?.Invoke(node);
         if (contract == null && ToolRegistry.ToolExists(node.ToolType))
             contract = ToolRegistry.GetAllPropertyMetadata(node.ToolType).Select(m => new OutputVariable

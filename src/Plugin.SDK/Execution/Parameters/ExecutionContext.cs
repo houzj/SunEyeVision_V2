@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using SunEyeVision.Plugin.Runtime;
+using System.Collections.Generic;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -37,7 +38,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class ExecutionContext
     {
-        public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; internal set; }
+        public SunEyeVision.Plugin.Runtime.ToolExecutionIdentity? ExecutionIdentity { get; internal set; }
         public IResourcePathResolver? ResourcePaths { get; init; }
         /// <summary>来自已冻结工作流计划的下游输出需求；单工具调用默认无需求。</summary>
         public IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputValueRequest> OutputRequests { get; init; }

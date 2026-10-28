@@ -27,7 +27,7 @@ public partial class MainWindowViewModel
             {
                 RefreshProductionPublication(session,publication,query);
                 if(node.Parameters is IOutputContractProvider outputs)
-                    UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()),node.Name,node.ToolType,node.Id,node.Parameters);
+                    UpdateModuleResults(null,node.Name,node.ToolType,node.Id,node.Parameters);
             },session.Editing,allowRelated:(workflowId,related)=>WorkflowOwnership.IsInternalNode(session.Document,child,parentId,workflowId,related));
         // 绑定选择器确认只校验当前候选，确定/保存由文档宿主统一发布。
         query.CommitOutputConfiguration=id=>

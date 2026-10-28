@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -251,24 +252,6 @@ namespace SunEyeVision.Workflow
                 }
             }
 
-            // 合并成功节点的输出
-            if (result.Success && allResults.Any(r => r.Value.Result != null))
-            {
-                var lastSuccessful = allResults.Values
-                    .LastOrDefault(r => r.Success && r.Result != null);
-                if (lastSuccessful != null)
-                {
-                    var images = lastSuccessful.Result.GetDisplayImages();
-                    var firstImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-                    if (firstImage != null)
-                    {
-                        result.Outputs = new Dictionary<string, object>
-                        {
-                            { "FinalResult", firstImage }
-                        };
-                    }
-                }
-            }
 
             _logger.LogInfo($"");
             _logger.LogInfo($"========== 工作流执行总结 ==========");
@@ -700,36 +683,9 @@ namespace SunEyeVision.Workflow
                         parentNodeId = pnIdStr;
                     }
 
-                    var syntheticResults = new GenericToolResults { Status = ExecutionStatus.Success };
-                    foreach (var kvp in contextVariables)
-                    {
-                        // 排除 __SubroutineParentNodeId__ 元数据键
-                        if (string.Equals(kvp.Key, SubroutineContextKeys.ParentNodeId, StringComparison.Ordinal)) continue;
+                    foreach (var pair in contextVariables)
+                        if(pair.Key!=SubroutineContextKeys.ParentNodeId)subContext.SetVariable(pair.Key,pair.Value);
 
-                        subContext.SetVariable(kvp.Key, kvp.Value);
-                        syntheticResults.AddResultItem(kvp.Key, kvp.Value);
-                    }
-                    subContext.SetNodeResult("__SubroutineInputs__", new NodeExecutionResult
-                    {
-                        NodeId = "__SubroutineInputs__",
-                        Success = true,
-                        Status = ExecutionStatus.Success,
-                        Result = syntheticResults
-                    });
-
-                    // ★ 架构核心：同时以父节点 ID 为 key 注入合成结果
-                    // 使子程序内部节点通过绑定 SourceNodeId=父节点ID 即可正确解析输入值
-                    if (!string.IsNullOrEmpty(parentNodeId))
-                    {
-                        subContext.SetNodeResult(parentNodeId, new NodeExecutionResult
-                        {
-                            NodeId = parentNodeId,
-                            Success = true,
-                            Status = ExecutionStatus.Success,
-                            Result = syntheticResults
-                        });
-                        _logger.LogInfo($"注入子程序输入合成结果到父节点ID: {parentNodeId}");
-                    }
                 }
 
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
@@ -839,7 +795,7 @@ namespace SunEyeVision.Workflow
         {
             result.CaptureDeclaredOutputs(workflow.Nodes.OfType<AlgorithmNode>()
                 .Where(node=>node.AdmittedIdentity is not null&&node.BindingOutputSchema is not null)
-                .Select(node=>node.LastToolResult?.DeclaredOutput??(result.NodeResults.TryGetValue(node.Id,out var outcome)
+                .Select(node=>node.LastToolResult??(result.NodeResults.TryGetValue(node.Id,out var outcome)
                     ?node.BindingContext!.WithoutResult(node,
                         outcome.Success?ExecutionStatus.NotExecuted:outcome.Status is ExecutionStatus.NotExecuted?ExecutionStatus.Failed:outcome.Status,
                         outcome.ErrorMessages.Select(message=>new SunEyeVision.Plugin.Contracts.Diagnostic("execution",message)))
@@ -1077,7 +1033,7 @@ namespace SunEyeVision.Workflow
                 if (nodeResult?.Result == null) continue;
 
                 // 强类型读取流程控制信号：HasControlSignal 为 true 才视为控制节点
-                if (nodeResult.Result is IControlFlowResult cfr && cfr.HasControlSignal)
+                if (nodeResult.Result.Output is IControlFlowResult cfr && cfr.HasControlSignal)
                 {
                     var targets = cfr.NextNodeIds?.ToList() ?? new List<string>();
                     _logger.LogInfo(targets.Count > 0
@@ -1180,9 +1136,6 @@ namespace SunEyeVision.Workflow
                 if (inputIssues?.Count > 0)
                 {
                     var message = string.Join("\n", inputIssues.Select(issue => issue.Message));
-                    var diagnostics = new GenericToolResults { ToolId = node.ToolType, ToolName = node.Name };
-                    diagnostics.SetError(message);
-                    nodeResult.Result = diagnostics;
                     throw new InvalidOperationException(message);
                 }
                 // 所有节点统一为 AlgorithmNode 执行
@@ -1204,6 +1157,8 @@ namespace SunEyeVision.Workflow
                 nodeResult.Success = false;
                 nodeResult.Status = ExecutionStatus.Failed;
                 nodeResult.ErrorMessages = new List<string> { ex.Message };
+                if(node is AlgorithmNode { BindingContext: { } bindings } admitted)
+                    nodeResult.Result=bindings.WithoutResult(admitted,ExecutionStatus.Failed,new[]{new SunEyeVision.Plugin.Contracts.Diagnostic("execution",ex.Message)});
 
                 _logger.LogError($"节点 {node.Name} 执行失败: {ex.Message}", ex);
                 return nodeResult;
@@ -1229,28 +1184,7 @@ namespace SunEyeVision.Workflow
                 .Where(kvp => kvp.Value.Success && kvp.Value.Result?.IsSuccess == true)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
 
-            // [DIAG] 记录 toolResultsDict 的内容，便于排查参数绑定问题
-            var toolResultKeys = string.Join(", ", toolResultsDict.Select(kvp =>
-            {
-                var res = kvp.Value;
-                // 尝试获取 ToolResults 的 DisplayName 或 Image 相关内容
-                var imageCount = res?.GetDisplayImages()?.Count ?? 0;
-                var resultType = res?.GetType().Name ?? "null";
-                return $"{kvp.Key}({resultType}, images={imageCount})";
-            }));
-            _logger.LogInfo($"[DIAG ExecuteAlgorithmNode] node={node.Name}({node.Id}), toolResultsDict keys=[{toolResultKeys}]",
-                "诊断.执行引擎");
-
-            // 注入全局变量作为合成节点结果（使 __GlobalVars__.变量名 绑定可解析）
-            if (context.GlobalVariables != null && context.GlobalVariables.Count > 0)
-            {
-                var globalVarResults = new GenericToolResults { Status = ExecutionStatus.Success };
-                foreach (var kvp in context.GlobalVariables)
-                {
-                    globalVarResults.AddResultItem(kvp.Key, kvp.Value);
-                }
-                toolResultsDict["__GlobalVars__"] = globalVarResults;
-            }
+            _logger.LogInfo($"Runtime已完成来源：{string.Join(", ",toolResultsDict.Keys)}", "执行引擎");
 
             // 调用异步节点入口；旧同步工具由 ToolExecutor 兼容，新工具可真正异步执行。
             var algorithmResult = await node.ExecuteAsync(
@@ -1265,11 +1199,11 @@ namespace SunEyeVision.Workflow
                     context.CancellationToken);
             }
 
-            if (algorithmResult.Success && algorithmResult.ToolResults != null)
+            if (algorithmResult.Success && algorithmResult.Result != null)
             {
                 result.Success = true;
                 result.Status = ExecutionStatus.Success;
-                result.Result = algorithmResult.ToolResults;
+                result.Result = algorithmResult.Result;
             }
             else if (!algorithmResult.Success)
             {
@@ -1277,7 +1211,7 @@ namespace SunEyeVision.Workflow
                 result.Success = false;
                 result.Status = ExecutionStatus.Failed;
                 // Diagnostics are visible on failed nodes; scheduling still follows Failed.
-                result.Result = algorithmResult.ToolResults;
+                result.Result = algorithmResult.Result;
             }
 
             return result;

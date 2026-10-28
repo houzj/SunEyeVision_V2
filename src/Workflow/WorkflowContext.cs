@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -588,7 +589,7 @@ namespace SunEyeVision.Workflow
             IDisposable? previous;
             lock (_nodeResultsGate)
             {
-                var lease = result.Result?.Resources?.Retain();
+                var lease = result.Result?.Retain();
                 _resultLeases.Remove(nodeId, out previous);
                 _resultLeases[nodeId] = lease;
                 _executionResults[nodeId] = result;
@@ -608,7 +609,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 获取节点执行结果（指定类型）
         /// </summary>
-        public T? GetNodeResult<T>(string nodeId) where T : ToolResults
+        public T? GetNodeResult<T>(string nodeId) where T : class
         {
             var result = GetNodeResult(nodeId);
             if (result?.Result is T typedResult)

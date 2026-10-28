@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
@@ -31,11 +32,11 @@ public partial class RootWorkflowConfigurationWindow
   {
    var node=ImageNodes.SelectedItem as WorkflowNodeBase;
    var result=node is null?null:_readResult(node.Id);
-   var snapshot=result?.DeclaredOutput;
+   var snapshot=result;
    bool Proven()=>!_closedImages&&_context.IsValid&&node is not null&&result is not null&&snapshot is not null
     &&ReferenceEquals(ImageNodes.SelectedItem,node)
     &&_context.Root.Nodes.Count(n=>n.Id==node.Id)==1&&_context.Root.Nodes.Any(n=>ReferenceEquals(n,node))
-    &&ReferenceEquals(_readResult(node.Id),result)&&ReferenceEquals(result.DeclaredOutput,snapshot)
+    &&ReferenceEquals(_readResult(node.Id),result)&&ReferenceEquals(result,snapshot)
     &&result.ExecutionIdentity is {} identity&&ReferenceEquals(identity.Owner,_context.ExecutionOwner)&&identity.IsCurrent
     &&identity.ToInvocationIdentity(node.Id)==snapshot.Identity&&snapshot.Identity.DocumentSessionId==_context.ExecutionOwner.Id
     &&snapshot.Identity.NodeId==node.Id&&snapshot.SourceWorkflowId==_context.Root.Id&&snapshot.IsComplete;

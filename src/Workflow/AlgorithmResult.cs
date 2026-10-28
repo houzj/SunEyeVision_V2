@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -47,7 +48,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 原始工具结果引用（用于保留完整结果信息）
         /// </summary>
-        public ToolResults? ToolResults { get; set; }
+        public DeclaredOutputSnapshot? Result { get; set; }
 
         /// <summary>
         /// 创建成功结果

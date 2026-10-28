@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.ComponentModel;
 using System;
 using System.Windows.Input;
@@ -135,7 +136,7 @@ namespace SunEyeVision.UI.Shell.Controls
 
         private void RefreshExecutionElapsed()
         {
-            if (ExecutionSnapshot?.Status != SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Running)
+            if (ExecutionSnapshot?.Status != SunEyeVision.Plugin.Runtime.ExecutionStatus.Running)
                 return;
 
             ExecutionSnapshot.Tick();

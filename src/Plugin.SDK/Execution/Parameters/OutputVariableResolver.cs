@@ -1,4 +1,5 @@
 using System;
+using SunEyeVision.Plugin.Runtime;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -40,14 +41,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="propertyPath">属性路径</param>
         /// <param name="nodeId">节点 ID（仅用于错误信息）</param>
         /// <returns>解析到的值</returns>
+        public static object? Resolve(DeclaredOutputSnapshot result,string propertyPath,string? nodeId=null,Guid? sourceFieldId=null)
+        {
+            using var reader=result.AcquireReader();
+            if(!result.IsSuccess||reader.Values is null)throw new InvalidOperationException("Source has no completed frozen values.");
+            var fields=result.Fields.Where(f=>sourceFieldId.HasValue?f.Value.FieldId==sourceFieldId:
+                propertyPath==f.Key||propertyPath==f.Value.Name||propertyPath.StartsWith(f.Key+".",StringComparison.Ordinal)).ToArray();
+            if(fields.Length!=1)throw new InvalidOperationException("Source output identity is absent or ambiguous.");
+            var field=fields[0];
+            var value=reader.Values.Contains(field.Key)?reader.Values.Get<object?>(field.Key):null;
+            var suffix=propertyPath.StartsWith(field.Key+".",StringComparison.Ordinal)?propertyPath[(field.Key.Length+1)..]:"";
+            foreach(var member in suffix.Split('.',StringSplitOptions.RemoveEmptyEntries))
+                value=value is SunEyeVision.Plugin.Contracts.RecordValue record?record.Get<object?>(member):
+                    throw new InvalidOperationException("Only explicitly declared record members may be traversed.");
+            return value;
+        }
+
         public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null, Guid? sourceFieldId = null)
         {
-            if(result is RuntimeToolResults runtime&&runtime.BindingOutputSchema!.Outputs.Any(port=>port.Id==propertyPath&&
-                port.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Resource&&port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Image))
-            {
-                if(sourceFieldId.HasValue)throw new InvalidOperationException($"Runtime输出 '{propertyPath}' 使用Port身份，不接受不存在的字段身份 '{sourceFieldId}'。");
-                return runtime.GetImageView(propertyPath);
-            }
             var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             if (parsedPath.Count == 0)
                 throw new InvalidOperationException($"属性路径为空: '{propertyPath}'");

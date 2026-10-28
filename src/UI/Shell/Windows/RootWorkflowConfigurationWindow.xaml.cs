@@ -17,12 +17,12 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
 {
  private readonly RootWorkflowConfigurationContext _context;
  private readonly Func<Task> _run;private readonly Action _repeat,_stop;private readonly Func<bool> _running;
- private readonly Func<string,ToolResults?> _readResult;
+ private readonly Func<string,DeclaredOutputSnapshot?> _readResult;
  private readonly List<DeclaredFieldEditor> _fields=new();
  private readonly DispatcherTimer _refresh=new(){Interval=TimeSpan.FromMilliseconds(160)};
  private bool _rebuilding;
  internal RootWorkflowConfigurationContext Context=>_context;
- internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task> run,Action repeat,Action stop,Func<bool> running,Func<string,ToolResults?> readResult)
+ internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task> run,Action repeat,Action stop,Func<bool> running,Func<string,DeclaredOutputSnapshot?> readResult)
  {
   _context=context;_run=run;_repeat=repeat;_stop=stop;_running=running;_readResult=readResult;
   InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Create());Heading.Text=Title=context.Root.Name+" · 流程配置";
@@ -121,11 +121,12 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
   foreach(var node in _context.Root.Nodes)
   {
    var result=_readResult(node.Id);if(result==null)continue;
+   using var reader=result.AcquireReader();
    foreach(var output in _context.Query.FormalOutputContractReader?.Invoke(node.Id)??Array.Empty<OutputVariable>())
    {
     if(output.Kind!=OutputVariableKind.Data)continue;Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
     if(port.Type.Shape!=ValueShape.Scalar)continue;
-    object? value;if(!result.TryGetDeclaredOutputValue(port.Id,out value))value=result.GetOutputValue<object>(output.Name);
+    object? value=reader.Values?.Contains(port.Id)==true?reader.Values.Get<object?>(port.Id):null;
     var text=value switch{null=>"",string str=>str.Length>1024?str[..1024]+"…":str,bool or byte or short or int or long or float or double or decimal=>Convert.ToString(value,CultureInfo.InvariantCulture)??"",_=>"非标量运行值"};
     rows.Add(new(node.DispName+" · "+(output.DisplayName??output.Name),text));
    }

@@ -74,7 +74,7 @@ public partial class MainWindowViewModel
                 DeclaredOutputSnapshot? snapshot=null;
                 if(node.Id==selected.Id&&_resultPublicationSnapshot is {} shown&&_resultPublication?.IsCurrent()==true)
                     snapshot=shown;
-                else if(!historical&&captured?.Results.TryGetValue(node.Id,out var execution)==true)snapshot=execution.Result?.DeclaredOutput;
+                else if(!historical&&captured?.Results.TryGetValue(node.Id,out var execution)==true)snapshot=execution.Result;
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||!OwnsUniqueNode(node)||snapshot is null||snapshot.SourceWorkflowId!=scope
@@ -84,7 +84,7 @@ public partial class MainWindowViewModel
                         &&editor.IsValid&&editor.Identity.WorkflowId==scope&&editor.Identity.NodeId==node.Id)!=true)return false;
                     if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)return Owner();
                     var live=context?.GetNodeResult(node.Id)?.Result;
-                    return !historical&&ReferenceEquals(live?.DeclaredOutput,snapshot)
+                    return !historical&&ReferenceEquals(live,snapshot)
                         &&live?.ExecutionIdentity?.IsCurrent==true&&Owner();
                 }
                 ToolSchema schema;

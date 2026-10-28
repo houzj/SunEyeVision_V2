@@ -33,4 +33,5 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup><Compile Remove="ToolDebugResultSnapshotTests.cs;ImageFrameProvenanceTests.cs" /></ItemGroup>
 </Project>

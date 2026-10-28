@@ -44,7 +44,7 @@ internal static class S2DocumentEditingCases
         var factory=new CopyFactory();VisionImageFactoryLocator.Current=factory;
         Case("稳定图像端口按精确声明准入，拒绝伪造路径、集合目标和数值转换",()=>
         {
-            var declared=RuntimeToolResults.Describe(new BlobTool().ResultSchema);
+            var declared=DeclaredOutputSnapshot.Describe(new BlobTool().ResultSchema);
             var allowed=new[]{typeof(IVisionImage)};
             Require(BindingContractValidator.Validate(declared,BlobSchema.Field(5),allowed).State==BindingCompatibility.Conditional,"可空图像端口未保留条件准入");
             Require(BindingContractValidator.Validate(declared,BlobSchema.Field(5)+".Unknown",allowed).State==BindingCompatibility.Incompatible,"伪造图像路径被准入");
@@ -52,7 +52,7 @@ internal static class S2DocumentEditingCases
             Require(BindingContractValidator.Validate(declared,BlobSchema.Field(5),allowed,BindingConversion.Float64ToInt64Checked).State==BindingCompatibility.Incompatible,"图像接受了数值转换");
         });
         ExecutionResult Run(Workflow current)=>WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(current.Id,input)));
-        var execution=Run(flow);RuntimeToolResults Source()=>execution.NodeResults[first.Id].Result as RuntimeToolResults??throw new Exception("没有规范Runtime源结果");
+        var execution=Run(flow);DeclaredOutputSnapshot Source()=>execution.NodeResults[first.Id].Result as DeclaredOutputSnapshot??throw new Exception("没有规范Runtime源结果");
         Case("Runtime图像端口拒绝伪造GUID且正常Port读取保留原资源",()=>
         {
             bool rejected=false;
@@ -64,9 +64,9 @@ internal static class S2DocumentEditingCases
         Case("实际Runtime→现行SDK二值化→Runtime且复用源Region，保留原始帧及实际Domain，无UI回调",()=>
         {
             Require(execution.Success,string.Join(";",execution.Errors));
-            var source=(BlobOutput)Source().Output!;var target=(BlobOutput)((RuntimeToolResults)execution.NodeResults[last.Id].Result!).Output!;
+            var source=(BlobOutput)Source().Output!;var target=(BlobOutput)((DeclaredOutputSnapshot)execution.NodeResults[last.Id].Result!).Output!;
             Require(source.TotalArea==16&&target.TotalArea==16,"丢失输入Domain或下游Region");
-            using var published=execution.NodeResults[sdk.Id].Result!.DeclaredOutput!.AcquireReader();var sdkImage=published.Values!.Get<IReadOnlyImage>(grayPort.Id);
+            using var published=execution.NodeResults[sdk.Id].Result!!.AcquireReader();var sdkImage=published.Values!.Get<IReadOnlyImage>(grayPort.Id);
             using var sdkDomain=sdkImage.EffectiveDomain.AcquireReader();using var sourceRegion=source.Region.AcquireReader();
             Require(sdkImage.Frame==source.GrayImage!.Frame&&sdkImage.Frame==sourceRegion.SourceFrame&&Area(sdkDomain)==100,"复制或保坐标算法重标记了帧/丢失Domain");
         });
@@ -78,18 +78,18 @@ internal static class S2DocumentEditingCases
         });
         Case("发布读者保留已缓存副本，最后读者退出后释放，输入原图不受影响",()=>
         {
-            var source=Source();var reader=source.DeclaredOutput!.AcquireReader();var native=source.GetImageView(BlobSchema.Field(5))!;var second=source.DeclaredOutput.AcquireReader();
+            var source=Source();var reader=source!.AcquireReader();var native=source.GetImageView(BlobSchema.Field(5))!;var second=source.AcquireReader();
             execution.Dispose();reader.Dispose();Require(native.GetPixelData().Length==1024,"结果所有者释放后读者失去副本");second.Dispose();
             RejectDisposed(()=>native.GetPixelData());Require(input.GetPixelData().Length==1024,"释放借用结果损坏原输入");
         });
         var solo=engine.CreateWorkflow("headless-image","不消费SDK视图");var headless=new WorkflowNodeBase("headless","headless","无视图",BlobTool.Id){RuntimeConfiguration=configuration.WithOverrides(new Dictionary<string,object?>{{"OutputGrayImage",true}})};solo.Nodes.Add(headless);
-        VisionImageFactoryLocator.Current=null;using var pure=Run(solo);var pureResult=(RuntimeToolResults)pure.NodeResults[headless.Id].Result!;
+        VisionImageFactoryLocator.Current=null;using var pure=Run(solo);var pureResult=(DeclaredOutputSnapshot)pure.NodeResults[headless.Id].Result!;
         Case("无SDK图像工厂仍可执行纯Runtime，SDK读取明确拒绝且不会伪造默认图像",()=>
         {
             Require(pure.Success&&pureResult.Values[BlobSchema.Field(5)] is IReadOnlyImage,"无视图宿主丢失规范输出");
             Reject(()=>pureResult.GetImageView(BlobSchema.Field(5)));Require(pureResult.GetDisplayImages().Count==0,"无视图能力时生成假显示图像");
         });
-        using var beforeCopy=pureResult.DeclaredOutput!.AcquireReader();
+        using var beforeCopy=pureResult!.AcquireReader();
         Case("副本工厂失败和验证/释放同时失败保留错误，随后可恢复，不污染规范结果",()=>
         {
             VisionImageFactoryLocator.Current=new BrokenFactory(false);Reject(()=>pureResult.GetImageView(BlobSchema.Field(5)));

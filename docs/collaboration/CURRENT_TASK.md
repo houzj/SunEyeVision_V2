@@ -1,3 +1,10 @@
+## 2026-10-28 按VM同源树表继续整链，依赖正式核收与D07闭包在途
+
+- 用户明确树表统一SDK输出声明与指定同次运行结果；原方案moduleResultsPlan新增currentExecution并渲染原O06。已有f33树表数据链不重复做；完整D07生产接线cb3fe8cc必须取齐19源码+13依赖及两个runner，不能只提提交差分。
+- 7828d01d本批规定UI零错6551警告174.76秒/full零错6588警告80.17秒，EXE80092 exit0。完整Global attempt009=368/0，Assist245=8/0、Design064=101/0、Editor077=10/0、真实HALCON FullChain136=8/0、ImageSources012=187/0；795发布文件/95加载记录SHA全核。权威evidence/O06_ASSIST_GLOBAL_FORMAL_20261028.json。原006=349/12、007/008=367/1保留；最后仅测试误比BindingKey与SDK稳定PortId，测试单编0错31警告8.49秒后完整通过，正式产品未替换。
+- 只读复核D07发现树分页故障退休publication后两原视口物理图及lease可能残留，已交工作流独立线随根配置窗口旧OutputCache消费者迁移同批修复并加真实窗口回归；该线固定全部源码后本主线统一集成/规定构建，不多写其相交文件。真实历史ShowDeclaredRun无生产入口，历史与图形/文本显示合同仍缺，未称完整链路完成。
+- 当前66778/65824/27386/99554全部终态，无live构建/测试。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持不改不暂存；Blob业务冻结，两阶段目标active，不推送。下一收齐工作流根窗口+退休清图完整固定提交后集成，继续真实历史/显示链，不套旧通过成绩。
+
 ## 2026-10-28 C09 Assist独立原组合八组通过，合D06五文件准备集中核收
 
 - 前轮结果树表核收为实际进展；本轮主仓唯一写Assist十五角色、原三选/十三来源、Float32、清十二来源保基准点、一次宿主事务、完整accepted回放。原SetValueNull实际解订阅调用链核到VM.Core，不把显示null冒充证明、不重置算法默认或冒称VM原子。

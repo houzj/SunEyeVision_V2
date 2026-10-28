@@ -62,7 +62,7 @@ public sealed class GlobalVariableValueShapeTests
         Assert.Equal(binding.ReferenceExpression, stored.ProducerBinding!.ReferenceExpression);
         Assert.Equal(flow.Id, stored.ProducerBinding.SourceReference.ScopeId);
         Assert.Equal("producer", stored.ProducerBinding.SourceReference.NodeId);
-        Assert.Equal(ProtocolAssembleParameters.TextOutput.BindingKey, stored.ProducerBinding.SourceReference.PortId);
+        Assert.Equal("field:" + ProtocolAssembleParameters.TextOutput.FieldId.ToString("N"), stored.ProducerBinding.SourceReference.PortId);
         var capture = new NodeConfigurationEditHost(reopened).Capture();
         var frozen = capture.CopyConfiguration(); var frozenVariable = Assert.Single(frozen.GlobalVariables);
         var validation = GlobalProducerBindingRules.Validate(frozen, frozenVariable.ProducerBinding!, frozenVariable);

@@ -8110,7 +8110,20 @@
           "scope": "同工作区另有先前未提交ROI候选，本次构建包含它们；本次结果热路径修正不等于ROI验收，也不改用户Blob参数XAML。",
           "evidence": "docs/collaboration/evidence/O06_RESULT_CHAIN_UNIFIED_20261028.json"
         }
-      ]
+      ],
+      "currentExecution": {
+        "authority": "用户2026-10-28再次明确：按VM设计，结果树和结果表统一读取SDK输出声明和同一次运行结果，完整链路做通并同步原方案。",
+        "dataPath": "SDK输出声明 → 指定同次DeclaredOutputSnapshot → 唯一ResultPublication/Reader → PropertyList及StandardTable分别借阅；不扫描磁盘输出目录，不由两面分别查询latest。",
+        "existingAcceptance": "f33f7f6f同源树表数据链已核收，历史证据与本次待验生产接线分开。",
+        "productionCandidate": "工作流独立线cb3fe8cc已应用完整D07接线。集成必须取齐review清单files与dependencies、ImageSourceCases和S4FullChainCases，不只提取该提交差分；根配置窗口旧OutputCache取图消费者由该线补齐后集中集成。",
+        "owner": "本聊天唯一主仓集成、公共控件及正式Release写者；工作流聊天仅在独立worktree补齐UI消费者与真实测试，固定完整提交后交接。",
+        "acceptance": "同次身份/声明版本/状态/诊断一致；换节点/运行/方案/关闭统一退休；旧回调不能清新结果；真实分页与运行/调试入口、两侧独立借阅、失效释放及已注册四组生产测试必须实际通过。",
+        "remaining": "指定RunIdentity的真实历史入口、正式图形/文本显示声明及图像联动、根配置消费者、VS设计时及人工验收逐项记录；未实施或未验证不记完成。",
+        "latestDependencyBuild": "7828d01d：UI 0错误/6551警告174.76秒，全量0错误/6588警告80.17秒；正式EXE探针80092退出0。这些不代替尚未集成D07的验证。",
+        "globalRegression": "7828d01d正式产品的GlobalBinding attempt-009完整368项全过(fullTrack=true)。仅测试夹具比较SDK稳定field:端口ID后单编测试0错误31警告8.49秒，不重编或替换产品；attempt-007/008各367过1败及此前006=349/12保留。",
+        "retirementAudit": "cb3fe8cc只读审核发现树分页projectionFailed退休Main publication后可能未主动清两侧物理图像源/像素lease；已交工作流线随根配置窗口闭包修复并加真实原视图回归。只清失效侧，仍有效上游/文件预览保留，旧退休回调不得清同步新发布。",
+        "formalEvidence": "docs/collaboration/evidence/O06_ASSIST_GLOBAL_FORMAL_20261028.json：7828d01d的Global368/0、Assist8/0、Design101/0、Editor10/0、真实HALCON FullChain8/0、ImageSources187/0；795发布文件/95加载记录SHA全核。不是D07新生产包或历史验收。"
+      }
     },
     "nativeBottomCommandsCandidate": {
       "compositionIds": [

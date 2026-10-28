@@ -373,6 +373,9 @@ def render_blob_control_plan(plan):
                if plan.get('roiMenuHistoryDesign') else '')
             + ('<h4 id="o06-module-results-plan">模块结果：任务归属与统一优化方案</h4>'
                + '<p>' + escape(plan['moduleResultsPlan']['summary']) + '</p>'
+               + ('<h5>当前完整链路推进</h5>'
+                  + table(['项目','实施与验收边界'], list(plan['moduleResultsPlan']['currentExecution'].items()))
+                  if plan['moduleResultsPlan'].get('currentExecution') else '')
                + '<h5>谁负责</h5>'
                + table(['对象','唯一负责方','范围','当前状态'], plan['moduleResultsPlan']['ownership'])
                + '<h5>已确定的方案</h5>'

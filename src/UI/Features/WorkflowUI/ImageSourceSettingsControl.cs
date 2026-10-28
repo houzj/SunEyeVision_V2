@@ -27,7 +27,8 @@ public sealed class ImageSourceSettingsControl : UserControl
     private bool _refreshing;
     private bool _observing;
     private ImageInputSource? _observedInput;
-    private ImageSourceConfig Configuration => _node.ImageSourceConfig ?? new ImageSourceConfig { NodeId = _node.Id };
+    private ImageSourcePolicy Configuration => ImageSourcePolicy.Read(_node)
+        ?? throw new InvalidOperationException("图像源缺少正式Runtime设置。");
     private readonly TextBlock _localSummary = new();
     private readonly TextBlock _cameraStatus = new();
     private readonly StackPanel _localPanel = new() { Margin = new Thickness(0, 12, 0, 0) };
@@ -217,7 +218,7 @@ public sealed class ImageSourceSettingsControl : UserControl
     private void OnImageCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args) => RefreshLocalSummary();
 
     private void SetAutoSwitch(bool enabled) => Edit(configuration => configuration.AutoSwitchEnabled = enabled);
-    private void Edit(Action<ImageSourceConfig> change)
+    private void Edit(Action<ImageSourcePolicy> change)
     {
         if (_refreshing) return;
         _editStatus.Text = _main.TryEditImageSourceSettings(_session, _node, this, change, out var error) ? string.Empty : error;

@@ -39,6 +39,12 @@ public sealed class RuntimeToolConfiguration
     public ToolSchema Schema => _definition.Describe(CaptureSettings());
     public ToolCapabilities Capabilities => _definition.Capabilities(CaptureSettings());
     public ToolSchema? SettingsSchema => (_definition as IToolSettingsFields)?.SettingsSchema;
+    public InputValues ReadFieldValues()
+    {
+        var fields = _definition as IToolSettingsFields
+            ?? throw new InvalidOperationException("Runtime has no settings field declaration.");
+        return new InputValues(fields.SettingsSchema.Inputs, fields.ReadSettings(CaptureSettings()).CopyValues());
+    }
     public IReadOnlyList<Port> BindingTargets => Schema.Inputs.Concat(SettingsSchema?.Inputs??Array.Empty<Port>()).ToArray();
     public RuntimeToolConfiguration WithFieldValues(IReadOnlyDictionary<string,object?> changes)
     {

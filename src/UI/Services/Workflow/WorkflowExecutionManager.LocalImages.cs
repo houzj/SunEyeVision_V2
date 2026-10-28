@@ -54,7 +54,8 @@ public partial class WorkflowExecutionManager
                 if (!node.IsEnabled) continue;
                 if (!string.IsNullOrEmpty(node.SubroutineId)) Capture(node.SubroutineId);
                 if (!ImageSourceResolver.IsImageSource(node.ToolType)) continue;
-                var config = node.ImageSourceConfig;
+                var config = SunEyeVision.Workflow.ImageSourcePolicy.Read(node)
+                    ?? throw new InvalidOperationException("图像源缺少正式Runtime设置。");
                 if (config?.SourceKind == ImageSourceKind.Camera)
                 {
                     overrides[node.Id] = new Dictionary<string, object?> {
@@ -91,7 +92,7 @@ public partial class WorkflowExecutionManager
         return new(plans, overrides, presentations, signature, owner,resets);
     }
 
-    internal static LocalImageSourcePlan CaptureLocalImagePlan(string nodeId, SunEyeVision.Workflow.ImageSourceConfig? config,
+    internal static LocalImageSourcePlan CaptureLocalImagePlan(string nodeId, SunEyeVision.Workflow.ImageSourcePolicy? config,
         SunEyeVision.Workflow.Persistence.SolutionResourceResolver resourcePaths)
     {
         config ??= new() { NodeId = nodeId };
@@ -103,7 +104,7 @@ public partial class WorkflowExecutionManager
         // Stable within an unchanged frozen list, including repeated references. A view's
         // generated item IDs and runtime cursor never define a run's input or generation.
         var all = config.FilePaths.Select((reference, index) => new LocalImageSequenceEntry(
-            $"{index}:{reference}", reference, resourcePaths.ResolveAddress("ImageSourceConfig.FilePaths", reference), index)).ToArray();
+            $"{index}:{reference}", reference, resourcePaths.ResolveAddress("ImageSourceSettings.FileReferences", reference), index)).ToArray();
         var entries = all.Where(entry => config.RunMode == 0 || selected.Contains(entry.ResourceReference)).ToArray();
         return new(nodeId, Array.AsReadOnly(entries), config.CurrentIndex < 0 ? null : all[config.CurrentIndex].EntryId,
             config.AutoSwitchEnabled, config.StopAtLastImage);

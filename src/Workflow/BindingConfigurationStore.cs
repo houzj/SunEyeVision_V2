@@ -148,7 +148,6 @@ public sealed class BindingConfigurationStore
                             node.Parameters = saved.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(saved.Parameters)
                                 : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
                             node.ParamSettings = CopySettings(saved.ParamSettings);
-                            node.ImageSourceConfig = JsonCopy(saved.ImageSourceConfig);
                         }
                 foreach(var flow in projected.Workflows.Where(w=>!w.IsSubroutine))
                     if(old.Workflows.FirstOrDefault(w=>w.Id==flow.Id&&!w.IsSubroutine) is {} oldRoot)flow.RootConfiguration=oldRoot.RootConfiguration;
@@ -274,7 +273,7 @@ public sealed class BindingConfigurationStore
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
-        node.ParamSettings, node.SelectedDisplaySource, node.ImageSourceConfig
+        node.ParamSettings, node.SelectedDisplaySource
     }, WorkflowSerializationOptions.Compact);
 
     // Runtime initialization timestamps are not binding changes. Initial values are configuration.
@@ -348,8 +347,7 @@ public sealed class BindingConfigurationStore
                     RuntimeConfiguration = node.RuntimeConfiguration?.Copy(),
                     Parameters = node.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(node.Parameters)
                         : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters(),
-                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource),
-                    ImageSourceConfig = JsonCopy(node.ImageSourceConfig)
+                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource)
                 });
             }
             foreach (var connection in workflow.Connections)

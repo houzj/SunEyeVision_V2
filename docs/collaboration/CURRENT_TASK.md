@@ -1,4 +1,18 @@
-﻿## 2026-10-28 新目标已建；基础候选同源正式回归终态
+﻿## 2026-10-28 用户授权独立worktree并行；仍按完整工具批交付
+
+- 用户明确要求“设计并行 提高效率”“需要每路独立worktree”，并回复“好吧”。三个原worktree状态均干净，保原分支历史后从e81a6e84切本次专用分支：workflow-timing-footer/codex/image-source-native仅Plugin.Wpf专用ImageSources目录；workflow-overview/codex/image-source-editor仅新工具Wpf；workflow-review/codex/image-source-audit只读核验。87f4唯一写者继续Runtime/Workflow/UI主链，不在同一目录多AI写入。
+- 源条已冻结只读视觉session与封闭不可变请求合同；编辑器用既有draft/InputContent/AcceptCandidate，不复制配置。root统一冻结合同、集成各路，整批接通后才交主线集中同源构建。子路不得写共享合同/主题/Catalog/项目入口，不运行私有Release。主线C13及公共合同继续独占。
+- 本轮唯一设置迁移已接声明字段读取、非持久ImageSourcePolicy、UI编辑/加载与正式接纳，以及历史/复制的Runtime所有权；生产输入字典、保存资源路径、调试、旧类型/测试退出仍在途。此前批量替换脚本被自动审批拒绝且未执行，已改逐文件明确patch；无构建或运行通过主张，旧45项仅原基线成绩。
+- 进一步已将资源Inspect/RebaseCopy切为RuntimeConfiguration.Settings.FileReferences/SelectedReferences；编辑Host移除旧源配置特判，沿Runtime签名/回放/回滚；源单次相机输入补完整ResourceContractRules校验。Runtime SettingsSchema已按原件单“基本参数”页补展示声明；宿主InputContent实际Page定位限制由编辑器路记录，不能伪称原顺序已达标。
+- root本批19个C#候选用已加载Roslyn5.0语法检查0错、项目XML可解析；首次显式加载SDK Roslyn程序集版本冲突后已改核实际解析器并重跑。只是语法，不是语义编译/正式构建。准备中文在途保存点供并行代码整合，未接通的输入/调试/旧工具/测试与新源条适配仍须同批完成，不作为发布或阶段完成。
+
+## 2026-10-28 图像源新架构集中工具批实施中（未接通/未验证）
+
+- 原主方案已补本批完整实现合同：Runtime唯一持久ImageSourceSettings，声明字段供宿主非持久投影，保现三游标/序列，原ImageSourceConfig/旧参数/旧入口消费者同批退出；单次本地地址/SN/标准相机图像和实际设备元数据作为冻结输入，不向Runtime注入宿主服务，也不吸默认图。
+- 在tools/SunEyeVision.ImageSource/Runtime开始5个C#及项目候选：设置深Freeze/结构校验、SettingsFields读写、组件准入声明、单次原图/灰度及元数据输出、HAL实际Domain和子Scope清理。尚未接Solution/发布/宿主/新Wpf，不可达、不部署，不构建另一套Release；候选不单独提交为阶段交付，继续同一工具批。
+- 目录Runtime受已有.gitignore runtime/匹配，已对确切6源码路径使用git add -N -f使候选可review，未改全局忽略规则。下一继续新源条/编辑器/所有正式与调试消费者，成片接通后协调主线同源构建；共享合同/Catalog/主题/项目入口仍归主线。Group不动，未验证项继续保留。
+
+## 2026-10-28 新目标已建；基础候选同源正式回归终态
 
 - 新目标A01–E07完整39项已归原主方案当前权威节，按用户要求合并为完整功能链集中实施，保原历史清单。ImageLoad仍旧SDK单工具，Runtime/Wpf角色及全部消费者是下一集中工具批的核心，不把现有45项通过写作新架构完成。
 - 6ae86393主仓Release006=0错6608警告119.22秒；ImageSources004=45过0败；WorkflowHost006=1过0败；正式EXE48152 exit0且commit一致、22可用工具。两个轨道loaded-product全部正式路径/当前SHA已核一致，归evidence/IMAGE_SOURCE_FOUNDATION_RELEASE_20261028.json。自有进程全终态，正式窗口已通知主线释放；没有私有Release、未复制DLL。

@@ -60,8 +60,7 @@ public static class WorkflowFragmentCopy
                     clone.ParamSettings.NodeId = clone.Id;
                     clone.AdditionalData = original.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone());
                     clone.SelectedDisplaySource = Copy(original.SelectedDisplaySource);
-                    clone.ImageSourceConfig = Copy(original.ImageSourceConfig);
-                    if (clone.ImageSourceConfig != null) clone.ImageSourceConfig.NodeId = clone.Id;
+                    clone.RuntimeConfiguration = original.RuntimeConfiguration?.Copy();
                     scope.Nodes.Add(original.Id, clone);
                     if (!string.IsNullOrEmpty(original.SubroutineId))
                     {

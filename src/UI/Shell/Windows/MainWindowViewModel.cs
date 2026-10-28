@@ -5464,7 +5464,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
 
             // 上方结果画布独立显示；这里仅控制下方本地文件预览器。
-            if (sourceNode.ImageSourceConfig?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
+            if (ImageSourcePolicy.Read(sourceNode)?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
             {
                 HideLocalImagePreview();
                 return;
@@ -5475,7 +5475,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             if (source == null)
             {
                 source = new ImageInputSource(sourceNode.Id);
-                if (sourceNode.ImageSourceConfig != null) source.LoadFromConfig(sourceNode.ImageSourceConfig);
+                if (ImageSourcePolicy.Read(sourceNode) is { } policy) source.LoadFromPolicy(policy);
                 sourceNode.InputSource = source;
             }
             BindLocalImageSourceEditor(sourceNode,source);

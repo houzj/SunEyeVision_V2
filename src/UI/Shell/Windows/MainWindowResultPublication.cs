@@ -40,16 +40,20 @@ public partial class MainWindowViewModel
     private void PresentResultPublication(IResultPublication publication,DeclaredOutputSnapshot? snapshot,
         string? nodeName,IReadOnlyDictionary<string,ResultBindingInfo>? bindings)
     {
-        bool Current()=>ReferenceEquals(_resultPublication,publication)&&publication.IsCurrent();
+        var epoch=_resultPublicationEpoch;
+        bool Owns()=>epoch==_resultPublicationEpoch&&ReferenceEquals(_resultPublication,publication);
+        bool Current()=>Owns()&&publication.IsCurrent()&&Owns();
+        bool EnsureCurrent(){if(Current())return true;if(Owns())RetireResultPublication();return false;}
         try
         {
             if(!publication.IsCurrent()){publication.Dispose();return;}
             _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
             DeclaredResultPresenter.Present(publication,bindings);
-            if(!Current())return;
+            if(!EnsureCurrent())return;
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
-            if(!Current())return;
+            if(!EnsureCurrent())return;
             _activeResultView?.Present(publication);
+            EnsureCurrent();
         }
         catch
         {
@@ -117,12 +121,16 @@ public partial class MainWindowViewModel
     private void RefreshCurrentResultBindings()
     {
         var publication=_resultPublication;var epoch=_resultPublicationEpoch;
-        if(publication is null||!publication.IsCurrent())return;
+        if(publication is null)return;
+        bool Owns()=>epoch==_resultPublicationEpoch&&ReferenceEquals(_resultPublication,publication);
+        bool EnsureCurrent(){if(Owns()&&publication.IsCurrent()&&Owns())return true;if(Owns())RetireResultPublication();return false;}
+        if(!EnsureCurrent())return;
         var nodeId=publication.Stamp.Invocation?.NodeId??SelectedNode?.Id;
         var bindings=DeclaredBindings(publication.Schema,nodeId,_resultPublicationSnapshot?.SourceWorkflowId);
-        if(epoch!=_resultPublicationEpoch||!ReferenceEquals(_resultPublication,publication)||!publication.IsCurrent())return;
+        if(!EnsureCurrent())return;
         _resultPublicationBindings=bindings;
         DeclaredResultPresenter.Present(publication,bindings);
+        EnsureCurrent();
     }
     private void PresentDeclaration(ToolSchema schema,string? nodeName,
         IReadOnlyDictionary<string,string> names,IReadOnlyDictionary<string,ResultBindingInfo>? bindings,

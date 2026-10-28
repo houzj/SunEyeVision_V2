@@ -4,6 +4,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -18,6 +19,42 @@ namespace SunEyeVision.UI.Tests;
 [Collection("Editor commit UI")]
 public sealed class ResultPresentationPresenterTests:IDisposable
 {
+    [Fact]
+    public void Sdk_snapshot_drives_tree_and_table_together_and_retired_run_cannot_replace_either() => Sta(() =>
+    {
+        var schema=Schema(new Port("value",DataType.Integer));
+        var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,
+            new[]{new ResultColumnDescriptor("value","值",new("value"))});
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var tree=new ResultPresentationPresenter(rows,_=>{});
+        using var table=new DeclaredResultTable(schema,projection);
+        var grid=Assert.IsType<DataGrid>(table.Content);
+        object? Cell()=>grid.Items[0].GetType().GetProperty("Item")!.GetValue(grid.Items[0],new object[]{"value"});
+        using var declaration=ToolResultViews.Declaration(schema,()=>true);
+        tree.Present(declaration);table.Present(declaration);
+        Assert.Equal("未运行",rows[1].DisplayValue);Assert.Empty(grid.Items);
+
+        using var first=Success(schema,new(){["value"]=11L});
+        using var second=Success(schema,new(){["value"]=22L});
+        var a=new TrackedPublication(first.Publication);var b=new TrackedPublication(second.Publication);
+        tree.Present(a);table.Present(a);
+        Assert.Equal("11",rows[1].DisplayValue);Assert.Equal(11L,Cell());
+        Assert.Equal(first.Snapshot.Identity,a.Stamp.Invocation);
+        Assert.Equal(2,a.Borrows);Assert.Equal(1,a.LeaseDisposals); // 表已复制，树保留惰性借阅。
+        var oldRow=rows[1];var oldTableRow=grid.Items[0];
+        a.Dispose();tree.Present(b);table.Present(b);
+        Assert.NotEqual(a.Stamp.Invocation,b.Stamp.Invocation);
+        Assert.Equal(second.Snapshot.Identity,b.Stamp.Invocation);
+        Assert.Equal("22",rows[1].DisplayValue);Assert.Equal(22L,Cell());
+        Assert.NotSame(oldRow,rows[1]);Assert.NotSame(oldTableRow,grid.Items[0]);
+        Assert.Equal(2,a.LeaseDisposals);
+        // 晚到的旧运行不得把任一消费端回退到11；也不能再借旧reader。
+        tree.Present(a);table.Present(a);
+        Assert.Equal("22",rows[1].DisplayValue);Assert.Equal(22L,Cell());Assert.Equal(2,a.Borrows);
+        tree.Clear();table.Clear();Assert.Empty(rows);Assert.Empty(grid.Items);
+        Assert.Equal(2,b.LeaseDisposals);
+    });
+
     [Fact]
     public void Immutable_geometry_values_show_coordinates_frame_and_explicit_angle_units() => Sta(() =>
     {

@@ -22,6 +22,110 @@ namespace SunEyeVision.UI.Tests;
 [Collection("Editor commit UI")]
 public sealed class OutputContractTreeSelectionTests
 {
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Expired_tree_expansion_or_initial_projection_failure_retires_the_whole_publication(bool initialFailure)=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView();Set(f.Model,"_activeResultView",table);
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+            {NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new double[300]},sourceWorkflowId:f.Flow.Id);
+        var fired=false;
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler observer=(_,e)=>
+        {if(!fired&&e.NewItems?.Count>0){fired=true;throw new InvalidOperationException("initial-projection-failed");}};
+        try
+        {
+            if(initialFailure)
+            {
+                f.Model.FlatResultRows.CollectionChanged+=observer;
+                Assert.ThrowsAny<Exception>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));Assert.True(fired);
+            }
+            else
+            {
+                f.Model.UpdateModuleResults(result,"A",nodeId:"a");Assert.Same(f.Model.CurrentResultPublication,table.Publication);
+                f.Document.ExecutionOwner.RetireNode("a");
+                f.Model.FlatResultRows[1].IsExpanded=true;
+            }
+            Assert.Null(f.Model.CurrentResultPublication);Assert.Null(table.Publication);
+            Assert.Empty(f.Model.FlatResultRows);Assert.Empty(f.Model.ResultTreeRoots);
+            result.Resources!.Dispose();Assert.Equal(1,releases);
+        }
+        finally{f.Model.FlatResultRows.CollectionChanged-=observer;result.Resources!.Dispose();}
+    });
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Tree_paging_observer_failure_retires_both_surfaces_but_never_a_reentrant_new_run(bool replace)=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView();Set(f.Model,"_activeResultView",table);
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        FrozenResults Run(double value)
+        {
+            var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+                {NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
+            var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>{}),request);
+            DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=Enumerable.Repeat(value,300).ToArray()},sourceWorkflowId:f.Flow.Id);
+            return result;
+        }
+        var a=Run(1);FrozenResults? b=null;
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler? observer=null;
+        try
+        {
+            f.Model.UpdateModuleResults(a,"A",nodeId:"a");var old=f.Model.CurrentResultPublication;
+            var fired=false;
+            Assert.NotNull(old);
+            observer=(_,_)=>
+            {
+                if(fired)return;fired=true;
+                if(replace){b=Run(2);f.Model.UpdateModuleResults(b,"B",nodeId:"a");}
+                throw new InvalidOperationException("paging-observer-failed");
+            };
+            f.Model.FlatResultRows.CollectionChanged+=observer;
+            Assert.ThrowsAny<Exception>(()=>f.Model.FlatResultRows[1].IsExpanded=true);
+            if(replace)
+            {
+                Assert.NotSame(old,f.Model.CurrentResultPublication);Assert.Same(f.Model.CurrentResultPublication,table.Publication);
+                Assert.True(table.Publication!.IsCurrent());Assert.NotEmpty(f.Model.FlatResultRows);
+            }
+            else
+            {
+                Assert.Null(f.Model.CurrentResultPublication);Assert.Null(table.Publication);
+                Assert.Empty(f.Model.FlatResultRows);Assert.Empty(f.Model.ResultTreeRoots);
+            }
+        }
+        finally{if(observer is not null)f.Model.FlatResultRows.CollectionChanged-=observer;a.Resources!.Dispose();b?.Resources!.Dispose();}
+    });
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Same_snapshot_refresh_losing_admission_clears_tree_and_table_together(bool fromTable)=>Sta(()=>
+    {
+        using var f=new Fixture();using var table=new RecordingResultView();Set(f.Model,"_activeResultView",table);
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+            {NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        var snapshot=DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}},sourceWorkflowId:f.Flow.Id);
+        var current=true;
+        void Present(string name)=>typeof(MainWindowViewModel).GetMethod("PresentSnapshot",BindingFlags.Instance|BindingFlags.NonPublic)!
+            .Invoke(f.Model,new object?[]{snapshot,name,(Func<bool>)(()=>current)});
+        try
+        {
+            Present("A");var publication=f.Model.CurrentResultPublication!;
+            Assert.Same(publication,table.Publication);Assert.NotEmpty(f.Model.FlatResultRows);
+            result.Resources!.Dispose();Assert.Equal(0,releases);
+            if(fromTable)table.OnPresent=()=>current=false;
+            else f.Model.FlatResultRows[0].PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(FlatResultRow.DisplayName))current=false;};
+            Present("A changed");
+            Assert.False(publication.IsCurrent());Assert.Null(f.Model.CurrentResultPublication);
+            Assert.Null(table.Publication);Assert.Empty(f.Model.FlatResultRows);Assert.Empty(f.Model.ResultTreeRoots);
+            Assert.Equal(1,releases);
+        }
+        finally{result.Resources!.Dispose();}
+    });
+
     [Fact]
     public void Declared_run_uses_frozen_values_pages_and_releases_owner_on_selection() => Sta(() =>
     {
@@ -148,6 +252,7 @@ public sealed class OutputContractTreeSelectionTests
         public IResultPublication? Publication {get;private set;}
         public bool Fail {get;set;}
         public Action? OnClear {get;set;}
+        public Action? OnPresent {get;set;}
         public FrameworkElement View {get;}=new System.Windows.Controls.Border();
         public IReadOnlyList<Port> Sources=>Array.Empty<Port>();
         public event EventHandler<ResultSelection>? SelectionHighlightChanged {add{} remove{}}
@@ -155,6 +260,7 @@ public sealed class OutputContractTreeSelectionTests
         {
             Clear();Publication=publication;_lease=publication.Borrow();
             if(Fail)throw new InvalidOperationException("table prepare failed");
+            OnPresent?.Invoke();
         }
         public void Clear(){Publication=null;var lease=_lease;_lease=null;lease?.Dispose();var callback=OnClear;OnClear=null;callback?.Invoke();}
         public void Dispose()=>Clear();

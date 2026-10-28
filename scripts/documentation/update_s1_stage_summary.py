@@ -379,6 +379,9 @@ def render_blob_control_plan(plan):
                + table(['事项','实施决定'], plan['moduleResultsPlan']['decisions'])
                + '<h5>顺序与验收</h5>'
                + table(['阶段','交付要求'], plan['moduleResultsPlan']['delivery'])
+               + ('<h5>同一次运行的链路验收</h5>'
+                  + table(['场景','验收标准'], plan['moduleResultsPlan']['sameRunAcceptance'])
+                  if plan['moduleResultsPlan'].get('sameRunAcceptance') else '')
                + '<p><a href="references/module-result-chain-20261028/module-result-chain-vm-comparison.html">模块结果完整链路与VM对照原文</a> · '
                + '<a href="references/module-result-chain-20261028/reference-manifest.json">16条源码身份及证据边界</a></p>'
                if plan.get('moduleResultsPlan') else '')

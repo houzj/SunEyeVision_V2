@@ -7745,7 +7745,7 @@
       "C15原固定底栏与C01三页组合正式核验": "最新dfb7b053两规定构建0错误、原底栏6/0（含订阅/归还双异常聚合及样例异常清理）、Design96/0、RuntimeEditor10/0、FullChain8/0。库组件正式新验已过，实际Blob工具窗口宿主消费与人工仍待；Global剩1失败、源轨剩分配量1失败分别保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计统一SDK声明→指定同次运行快照→唯一publication→原结果树/原表分别Borrow。本轮工作区候选UI/full零错误，正式EXE探针0，ImageSources008=180/0、publication10/0、真实表500→1000→1205=1/0；分配量失败已修。实际历史入口和生产D07仍未接通，完整链路未验收。",
+      "summary": "按VM设计推进：SDK输出声明 → 指定同次运行快照 → 唯一ResultPublication → 结果树、结果表分别借阅。正式执行/私有调试/声明入口已接；当前集中补同快照刷新中途失效时的两面同步退休及分页异常边界，并用实际SDK执行结果同时驱动原树和原表验证。既有180/0与10/0是历史成绩，本轮修改须重新核验；历史入口、生产D07和人工验收仍未完成。",
       "ownership": [
         [
           "结果树 / PropertyList",
@@ -7785,7 +7785,7 @@
         ],
         [
           "统一结果入口",
-          "公共IResultPublication/ResultPublicationStamp/IResultValueLease和Present/Clear已实际实施；正式执行、调试、历史和选节点声明统一宿主入口。同SDK快照只AcquireReader一次，树表分别Borrow；同run不同snapshot取得新publication。只核冻结Declarations，不预读payload或复制已有数组。资源owner只在最后借阅释放，退休立即拒绝新借阅及旧事件。"
+          "公共IResultPublication/ResultPublicationStamp/IResultValueLease和Present/Clear已实施；正式执行、调试、选节点声明经宿主同一发布入口。历史ShowDeclaredRun仅有方法，实际历史列表与生命周期尚未接入，不记完成。同SDK快照只AcquireReader一次，树表分别Borrow；同run不同snapshot取得不同publication，不预读payload或复制已有数组。"
         ],
         [
           "同一次发布的唯一事实来源",
@@ -7822,12 +7822,16 @@
         [
           "本轮明确执行顺序",
           "先收齐同源树表与真实运行入口，再接历史和同帧图像联动；树表只能借同一publication，禁止各查latest。P0–P3依序核收，公共组件通过不代生产完整链路通过。"
+        ],
+        [
+          "同源一致性退出条件",
+          "不仅开始时共用publication：树刷新、节点名称/绑定通知、表Present返回后都复核本次epoch/publication。运行授权失效时统一退休树表并归还reader；若回调已安装新publication，旧回调不能清新结果。分页观察异常不得留下半份树与仍有效的表。"
         ]
       ],
       "delivery": [
         [
           "当前集中批",
-          "按VM设计统一SDK声明→指定同次运行快照→唯一publication→原结果树/原表分别Borrow。本轮工作区候选UI/full零错误，正式EXE探针0，ImageSources008=180/0、publication10/0、真实表500→1000→1205=1/0；分配量失败已修。实际历史入口和生产D07仍未接通，完整链路未验收。"
+          "按VM设计推进：SDK输出声明 → 指定同次运行快照 → 唯一ResultPublication → 结果树、结果表分别借阅。正式执行/私有调试/声明入口已接；当前集中补同快照刷新中途失效时的两面同步退休及分页异常边界，并用实际SDK执行结果同时驱动原树和原表验证。既有180/0与10/0是历史成绩，本轮修改须重新核验；历史入口、生产D07和人工验收仍未完成。"
         ],
         [
           "接口与接入",
@@ -8065,7 +8069,33 @@
         "productCommit": "fd70886a337e7f8c6a3f289e8732fb7eaf97df59",
         "report": "docs/collaboration/evidence/O06_ROI_GESTURE_INTEGRATION_20261028.json",
         "scope": "本批只核原ROI公共依赖及关联链；树表180/0为前批，生产D07和真实历史未接，不套成绩。"
-      }
+      },
+      "sameRunAcceptance": [
+        [
+          "声明态",
+          "SDK声明决定字段和类型；无运行不伪造值，表无数据行。"
+        ],
+        [
+          "正式与调试",
+          "两面同一个PublicationId、RunIdentity、SchemaRevision与声明指纹，禁止分别查latest。"
+        ],
+        [
+          "新运行与重刷",
+          "新运行替换两面；同snapshot重刷保同publication；中途授权失效统一清理。"
+        ],
+        [
+          "大结果",
+          "原树128项按需展开、表500行增量，支持超过500；分页不读取新运行。"
+        ],
+        [
+          "旧事件与资源",
+          "换节点/流程、关闭、异常后，旧行/旧滚动/旧选择不能影响新publication；最后借阅退出才释放reader。"
+        ],
+        [
+          "完整链路边界",
+          "SDK实际执行→冻结快照→宿主发布→原树及原表；真实历史入口和同帧图像联动另列未完成，不以控件测试代签。"
+        ]
+      ]
     },
     "nativeBottomCommandsCandidate": {
       "compositionIds": [

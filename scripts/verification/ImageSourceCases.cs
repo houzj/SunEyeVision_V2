@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
@@ -17,6 +17,8 @@ internal static class S2DocumentEditingCases
             ["ImageSourceRuntimeTests"]=null,
             ["ImageSourceDeclarationAndFormatTests"]=null,
             ["ImageSourceDebugInvocationTests"]=null,
+            ["ResultPresentationModelTests"]=null,
+            ["ResultPresentationPresenterTests"]=null,
             ["ImageSourceConfigurationHistoryTests"]=null,
             ["LocalImageConfigurationSnapshotTests"]=null,
             ["ImageSourceSavePersistenceTests"]=null,
@@ -63,7 +65,7 @@ internal static class S2DocumentEditingCases
                 {
                     var values=(IReadOnlyCollection<CustomAttributeTypedArgument>)inline.ConstructorArguments[0].Value!;
                     arguments.Add(values.Select(value=>value.Value).ToArray());theoryCount++;
-                    if(type.Assembly==assembly)uiTheoryCount++;
+                    if(name is "ImageSourceConfigurationHistoryTests" or "ImageSourceDebugInvocationTests")uiTheoryCount++;
                 }
                 if(attributes.Any(attribute=>attribute.AttributeType.FullName=="Xunit.TheoryAttribute")&&arguments.Count==0)
                     throw new Exception("图像源Theory未被展开："+method.Name);
@@ -88,7 +90,7 @@ internal static class S2DocumentEditingCases
         }
         if(uiTheoryCount!=14)throw new Exception("图像源非法候选7项与调试拒绝7项应完整展开，实际"+uiTheoryCount);
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-report.json"),
-            JsonSerializer.Serialize(new{scope="正式Release图像源编辑、历史、持久化、Runtime像素资源与正式调试实际执行定向回归；不代真实VS/VM或人工验收",count=results.Count,failures,theoryCount,uiTheoryCount,results},new JsonSerializerOptions{WriteIndented=true}));
+            JsonSerializer.Serialize(new{scope="正式Release图像源编辑、历史、持久化、Runtime像素资源与正式调试、结果状态及同Reader层级分页回归；不代真实VS/VM或人工验收",count=results.Count,failures,theoryCount,uiTheoryCount,results},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"图像源检查：{results.Count-failures}通过，{failures}失败。");
         return failures==0?0:1;
     }

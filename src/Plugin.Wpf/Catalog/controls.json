@@ -5659,6 +5659,102 @@
           "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
         ]
       }
+    },
+    {
+      "id": "C15.original-tool-editor-footer",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceAssemblies": [
+        {
+          "name": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+          "evidence": "O06_RING_CIRCLE_ICON_SOURCE_20261027.json and VM_BLOB_UI_STATIC_SUPPLEMENT_20261026.json"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "Orange_ButtonStyle/BottomButtonStyle",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+          "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+          "localSha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef",
+          "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "BottomCommand/ContinuousExecuteBottomCommand/ExecuteOnceBottomCommand/StopExecuteBottomCommand",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+          "localSha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef",
+          "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "ParamsTabUserControl */Auto/Auto body/external/footer",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+          "originalSha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
+          "localSha256": "09a38d615282f7817a753d9876c5ed4a50dea4e8b8dcc849a37c8bdd15146b27",
+          "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
+        }
+      ],
+      "localFiles": [
+        {
+          "path": "src/Plugin.Wpf/Presenters/Commands/NativeToolCommandPresenter.cs",
+          "sha256": "c13f3dbfb8186e4bd3528d362e0fd9ae08835920ab205ad6fd81b9a048bce18c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
+          "sha256": "09a38d615282f7817a753d9876c5ed4a50dea4e8b8dcc849a37c8bdd15146b27"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml.cs",
+          "sha256": "82afd75bdcc089cae5d2d3bfc98d955bf9058c5e1127c1a3d40ece212f2d773e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+          "sha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeToolEditorScene.xaml",
+          "sha256": "bab824ee593570feb381ae36e194cc8705199f47ea6ba61c4f1b88930d0ad0f0"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeToolEditorSample.cs",
+          "sha256": "a51b57abfd5e7d8ae63d6fa9f15edde20af5097ff554fe3fa73f2bb33f67568e"
+        }
+      ],
+      "dependencies": [
+        "Themes/Native/OriginalTheme.xaml",
+        "DeclaredFieldsView existing original page/group/scroll composition",
+        "WPF ICommand, Dispatcher; borrowed INativeToolCommands only"
+      ],
+      "composition": [
+        "原Orange/BottomButtonStyle与四模板切片，不激活全套pending",
+        "原*/Auto/Auto、外部槽、32高右侧固定底栏；三页沿DeclaredFieldsView单一原页链",
+        "借用宿主状态和四命令；不复制VM循环/调度/全局模型",
+        "代次拒绝旧命令/队列/回调，命令替换同步退订/订阅，全部清理聚合",
+        "卸载退命令，不停止/处置宿主；Dispose归还内容父关系，不Dispose借视图",
+        "独立真实XAML设计场景，样例Loaded重借命令，不执行算法/重复业务默认"
+      ],
+      "adaptation": [
+        "Only label/state/command paths and local lease/cleanup adapted; original templates/layout retained",
+        "EditorContent/ExternalContent borrowed; host owns execution/continuous scope/confirm/close"
+      ],
+      "consumers": [
+        "NativeToolEditorPreview/NativeToolEditorSample independent same real composition",
+        "Production tool host pending; Blob business frozen"
+      ],
+      "validation": {
+        "status": "CANDIDATE_FORMAL_AND_MANUAL_PENDING",
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json",
+        "candidateWindowPassed": 5,
+        "formalAccepted": false
+      }
     }
   ],
   "currentIntegration": {

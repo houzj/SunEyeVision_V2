@@ -1,3 +1,9 @@
+## 2026-10-28 C15原固定底栏与C01三页容器候选已实现
+
+- root提取原Orange/BottomButtonStyle和四BottomCommand模板，保24高/Auto宽Min66、Margin2.5/Padding10、32高右侧固定底栏及*/Auto/Auto。NativeToolEditorFrame借既有DeclaredFieldsView原三页，不造第二tabs/外层滚动；INativeToolCommands只借宿主命令/状态，不复制VM循环/调度/CTS。
+- 借用lease拒旧命令/异步通知/CanExecute重入，替换命令重齐订阅，异常全部清理，Dispose清两个内容槽而不Dispose借视图。独立NativeToolEditorScene沿同真实链；样例Loaded重借命令，不执行算法。原编号底栏是C15、容器C01；此前只读消息误称C17已纠正，C17仍图像承载。
+- 库003零错5330警告15.92秒；候选Window002=5/0覆盖状态/切页/固定布局/长文字、旧命令/卸载、命令替换、异常退订、同内容归还。最后样例Loaded补丁未新编，规定UI/full/正式EXE/设计/实际宿主/人工仍待。来源/hash/Catalog见evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json；不将候选当阶段通过。
+- 当前54863/57488/57998均终态，无live。下一先保存公共候选，独立合工作流ba095a01、910d0786、b64af5b3（修夹具漏sourceWorkflowId，保定向scope门禁），再集中两规定构建和Global/设计/底栏等新验；be742a71/64a37e6a及D07整批消费者仍在工作流独立线，不合半批。Blob业务与用户参数XAML不改/不暂存，两阶段目标继续active。
 ## 2026-10-28 公共结果表缺值修复正式核验通过，完整生产链仍在推进
 
 - 固定正式产品52beb99b：规定UI001零错6569警告99.32秒，全量001零错6491警告60.36秒；EXE探针PID66928 exit0。Window220 publication10/0、221原表真实500→1000→1205=1/0、222实际来源2/0；GlobalBinding003仅SDK终态组22/0，report明确fullTrack=false，不代完整Global通过。

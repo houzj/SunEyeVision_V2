@@ -7720,7 +7720,8 @@
       "C09独立原组合实施收紧": "15稳定字段assist.enabled/mode/fixture/base-point/base-x/base-y/base-angle/base-scale-x/base-scale-y/run-point/run-x/run-y/run-angle/run-scale-x/run-scale-y；原三选用RadioSelecter3五槽前三，13引用用原ButtonSelecter。mode0 fixture、mode1两POINT+六angle/scale、mode2十float；共享六行用FieldCondition(mode,0,Negate:true)，全部叠enabled父条件。FIXTURE仅design record不冒称原ABI/矩阵。ResolveDefinition由普通编辑与history复用，完整成功必须Frame当前且proof非空true；历史只15字段Accepted/backup/mode+scope/frame，TryReplayAccepted installOwner无通知后必须publish，再同代绘原PointShape。",
       "C14独立原列表实施收紧": "原CurResultDataGridStyle+ModuleViewDataGridStyle+dgCellCenterAlignmentStyle+复用RecScrollBarStyle，完整原10列与500增量；先prepare所有复制scalar/不可变Geometry/ValidWhen/唯一row-id，不缓存reader/资源。Prepared/Rows/Cells为只读副本，500批底层全装后单Reset避免观察异常半批。每次Install重建持generation/publication的原CurResultScrollCommand（原行为直接Execute不调用CanExecute），Scroll内部外调后再核身份。Select要求当前行实例+publication，更新清选择，几何带context身份。正式IToolResultView/context及PropertyList与UI同批统一，不能样例假冒生产接入。",
       "C17固定底栏与命令生命周期实施收紧": "只抽原Orange_ButtonStyle7-42/BottomButtonStyle79-82、四模板159-167/171-224及ParamsTabUserControl底栏93-142，固定Auto行外于三页滚动。原连续/单次continuous时隐藏、running禁用、RunEnable=false隐藏；Stop仅continuous控制显隐，Stopping/Closing保continuous至真实结束。库仅状态投影/租约命令，无循环Task/CTS；Actions部分构造立即登记各inner订阅，失败/Dispose聚合逐项摘，先失效租约，通知与CanExecute每外调核State版本/生命周期。宿主每run令牌链接编辑scope；Stop仅停止run且context存活，Confirm成功发布才关，X/关闭最终丢弃。Esc原行为未证，不冒称VM。",
-      "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
+      "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。",
+      "C15原固定底栏与C01三页组合实际候选": "原Orange/BottomButtonStyle和连续/停止/执行/确定四模板已提取，Height24/WidthAuto/Min66、原Margin/Padding、32高固定底栏；NativeToolEditorFrame借现真实三页字段，不套第二tabs/外层Scroll。宿主ICommand及状态借用、旧回调/命令拒绝、替换命令订阅、异常聚合、内容归还与独立XAML已实施，候选Window5/0。规定UI/full及设计、实际工具宿主和人工尚未验；C17仍图像承载，不重编号。"
     },
     "moduleResultsPlan": {
       "summary": "按VM设计继续：树表共用SDK输出声明及同次运行快照/唯一publication。最新正式52beb99b UI/full零错误，publication10/0、真实原表分页1/0、实际来源2/0；可选字段省略导致整表异常已真实复现并修复。SDK取消终态定向22/0不代表完整变量绑定轨通过；完整GlobalBinding仍有加载超时和缺失生产者断言失败。9065e86a的ImageSources176/0单列历史。生产D07、跨scope绑定与实际历史入口仍继续实施。",
@@ -7995,6 +7996,23 @@
           "fullGlobalBindingAccepted": false
         }
       }
+    },
+    "nativeBottomCommandsCandidate": {
+      "compositionIds": [
+        "C15",
+        "C01"
+      ],
+      "evidence": "docs/collaboration/evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json",
+      "status": "真实原模板/借用命令/三页固定组合已实施，库候选5/0；规定整批与设计/人工待验",
+      "designEntry": "src/Plugin.Wpf/Design/NativeToolEditorScene.xaml",
+      "publicEntry": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
+      "hostBoundary": "宿主提供INativeToolCommands；库不循环执行、不持宿主CTS、不把关闭当Stop；卸载退订，重载重新Bind",
+      "remaining": [
+        "同源规定UI/full及正式EXE、独立设计/运行新轨",
+        "宿主真实工具窗口消费/Capture/Commit/连续取消与退出；Blob第二阶段接入",
+        "实际VS/VM同态/高DPI及用户外观验收",
+        "第一阶段其余原清单及D07生产消费者仍未完成"
+      ]
     }
   },
   "vmFrameworkArchitectureReference": {

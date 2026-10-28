@@ -37,7 +37,9 @@ public sealed class ResultVariableBindingProductionTests
             Stage("加载正式工具组件");
             Assert.True(PluginLoader.LoadPlugins(Path.Combine(host,"plugins")));
             var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"result-variable-binding-"+Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(directory);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(directory);
+            Directory.CreateDirectory(directory);Stage("初始化正式宿主服务");
+            ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(directory);
+            Stage("创建正式文档与图像源配置");
             var source=new SunEyeVision.UI.Shared.WorkflowNode("source","图像源","图像源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
             var root=new SunEyeVision.Workflow.Workflow("root","正式根流程");root.Nodes.Add(source);
             var variable=new GlobalVariable("宽度",0L,"Integer"){Id="width"};

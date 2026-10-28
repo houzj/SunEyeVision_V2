@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
@@ -165,13 +165,19 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 初始化所有服务。
         /// </summary>
+        private static readonly object ServicesInitializationGate = new();
+        private static bool _servicesInitialized;
         public static void InitializeServices()
         {
-            // 初始化显示适配器配置。
-            NodeDisplayAdapterConfig.Initialize();
-
-            // 初始化插件日志器 - 让工具项目可以访问全局日志器
-            InitializePluginLogger();
+            lock (ServicesInitializationGate)
+            {
+                if (_servicesInitialized) return;
+                // Application services have one lifetime. Re-entering from an editor must
+                // not replace a log writer while a background batch awaits the UI owner.
+                NodeDisplayAdapterConfig.Initialize();
+                InitializePluginLogger();
+                _servicesInitialized = true;
+            }
         }
 
         /// <summary>

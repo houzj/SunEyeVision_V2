@@ -1,3 +1,10 @@
+## 2026-10-28 结果树表同源数据链本批核收通过
+
+- 正式产品固定b6f77679，UI006=0错6579警告111.26秒，full006=0错6579警告61.45秒。173图像源/原树、publication9、来源2、原表1、原样式2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1均过；宿主夹具只顺序修正a9cf86b0，单编helper0错21警告6.71秒后Host004=1过0败。src/tools提交差分为空，不冒称产品和测试同一commit。
+- RootResource真实Fact1及完整部署18项过；795正式发布条目/142加载记录SHA全核，临时移动3文件和清单原身份还原。权威证据evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json（12条同源receipt，含真实表500→1000→1205、300项树分页异常后继续、owner退休与末借阅释放）。所有原失败日志保留。
+- 当前50769/80363/19830/2197/98599全部终态，无live构建/测试。仅原方案/Catalog/交接归档，不需重编产品；用户Blob参数XAML仍SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed，不改、不暂存。
+- D06完整正式变量绑定仍在工作流独立线，D07同帧viewport/Domain/精确Region显示及SDK主图退出仍未实施完；无proof当前明确不绘高亮。C09/C17等原阶段一未完项、真实VS/VM同态与人工仍全保，不关闭整个目标，不进入Blob业务重组。下一先冻结D07公共接口/owner及全部消费者再集中实施，不造第二图像路径。
+
 ## 2026-10-28 最后两项真实失败修复已合；下一集中核收
 
 - 主线已合工作流199688aa为38122b70，以及7b38cf17为55b7a8d8。原树真实Loaded/Expanded恢复、null清选和同步换目标门禁及实际窗口实例授权/Apply前复核已落；原断言保留并加重入/重挂用例。下一统一UI006/full006及正式EXE先probe后新回归，尚未验收这批源。

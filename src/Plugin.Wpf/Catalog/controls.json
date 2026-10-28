@@ -4897,8 +4897,9 @@
         "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs"
       ],
       "validation": {
-        "status": "d8cca20e对应产品UI003/full004零错误，publication8/origins2/table1/style2通过；后续修复待集中重验",
-        "manual": "真实VS/VM同态未验"
+        "status": "b6f77679规定UI/full零错误及本批同源自动回归通过；PropertyList/表数据链实接，Shell完整生产视口D07未完成",
+        "evidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
+        "manual": "真实VS/VM同态及用户人工尚未代签"
       }
     },
     {
@@ -5048,8 +5049,9 @@
       "composition": "原三列结果树及展开、绑定、主题组合",
       "adaptation": "原样式切片、namespace与本地资源URI适配；中立组装、声明模型和publication所有权代码为自研适配，不声称厂商原业务type。",
       "validation": {
-        "status": "原图标来源hash逐项核；实际UI/full及新关联修复待集中验证",
-        "manual": "真实VS/VM同态及用户人工未验"
+        "status": "b6f77679规定UI/full零错误及本批同源自动回归通过；PropertyList/表数据链实接，Shell完整生产视口D07未完成",
+        "evidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
+        "manual": "真实VS/VM同态及用户人工尚未代签"
       },
       "dependencies": [
         {
@@ -5385,8 +5387,9 @@
       "composition": "原双视口工具栏及结果工作区视觉组合",
       "adaptation": "原样式切片、namespace与本地资源URI适配；中立组装、声明模型和publication所有权代码为自研适配，不声称厂商原业务type。",
       "validation": {
-        "status": "原图标来源hash逐项核；实际UI/full及新关联修复待集中验证",
-        "manual": "真实VS/VM同态及用户人工未验"
+        "status": "b6f77679规定UI/full零错误及本批同源自动回归通过；PropertyList/表数据链实接，Shell完整生产视口D07未完成",
+        "evidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
+        "manual": "真实VS/VM同态及用户人工尚未代签"
       },
       "dependencies": [
         {

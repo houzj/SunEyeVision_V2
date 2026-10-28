@@ -7723,37 +7723,37 @@
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计实施结果树与结果表：统一读取SDK正式输出声明和同一次运行快照，主仓已接通正式执行、调试、历史及声明入口；共享发布与借阅、状态及原表滚动已验证。结果绑定D06及同帧视口D07仍未完成，不能称完整图形链路已交付。",
+      "summary": "按VM设计的结果树/结果表统一数据链已落主仓并通过本批集中自动回归：SDK正式输出声明与同一次运行快照只创建一份publication，树表各自借阅；正式执行、调试、历史及选节点声明共用入口。D06正式变量绑定和D07同帧图形视口仍未完成，完整阶段及人工验收不据此关闭。",
       "ownership": [
         [
           "结果树 / PropertyList",
           "工作流、工具箱与数据流优化",
           "原三列树、层级/展开/128项分页、字段导航/复制/绑定、主界面Presenter与状态/主题/卸载；独立分支写Results/PropertyList专用Controls/Themes/Assets/Design子目录。",
-          "原树与同一publication消费者已合主仓；声明/状态/分页模型及退休重入用例通过。新发现分页观察异常半页问题已修源码、待集中回归；原树恢复选择问题由工作流线修复。"
+          "原树已接主仓同一publication；层级/128分页、真实行身份、原选择/复制及清理接入。分页通知异常仍可继续、重挂视觉恢复/null清选/恢复通知重入均过；ImageSources173过0败。正式变量绑定D06仍待完整批。"
         ],
         [
           "标准结果表 / StandardTable（C14）",
           "本聊天：控件库与Blob主线",
           "原DataGrid完整模板/滚条/主题，10列示例、500行增量、稳定行身份、有效性、选择与复制投影；统一保留在现Plugin.Wpf，当前由主线唯一写。",
-          "原表已接统一publication、冻结声明、真实GeometrySource与多帧目标；新原滚动用例500→1000→1205通过，同run不同publication实际行替换与旧事件拒绝通过。"
+          "原表统一消费同一publication，正式声明列/稳定行身份、有效性、真实GeometrySource/多帧选择均接入；原ScrollViewer实际500→1000→1205及同run不同发布替换、旧事件拒绝均过。"
         ],
         [
           "结果区外壳 / ResultShell",
           "工作流、工具箱与数据流优化",
           "原双视口header/工具栏/结果面板底部shell，主界面图像与节点切换、局部主题；仅Results/ResultShell专用目录。",
-          "原双视口Shell已合主仓，完整生产viewport消费者尚未迁完；残留Apps.Style资源URI由原实现线修复，不把原视觉存在当全交互完成。"
+          "原Shell视觉和39张原图标已合并，缺失原资源URI已修；完整生产viewport及SDK主图退出属D07，尚未完成，不把设计样例当生产图形闭环。"
         ],
         [
           "共享展示合同 / 图像帧与选择事件",
           "本聊天统一接口；工作流线改UI消费者",
           "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
-          "公共API及UI消费者已合主仓，单SDK Reader由publication持有，树表各Borrow。真实物理来源正负向通过；主视口同帧桥未接时明确禁止高亮，不伪造来源。"
+          "公共publication/lease/stamp及UI唯一入口已合主仓并过规定构建；唯一SDK reader归publication，树表独立借阅；真实物理来源正负向已过。没有同帧视口proof时明确禁止高亮；D07仍待。"
         ],
         [
           "集成、正式Release及验收",
           "本聊天统筹，两线交实际证据",
           "主仓唯一Release集中构建；合并来源/程序集/发布清单SHA，设计/交互/资源/关联工具及VM同态逐项核。真实VS和用户验收不代签。",
-          "固定产品检查点d8cca20e。对应产品源码UI003/全量004零错误；定向13例通过，关联ImageSources/WorkflowHost存在真实失败待修。用户XAML不改、不代签VS/人工。"
+          "正式产品源码b6f77679；UI006/full006均0错误，795发布文件及142加载记录SHA同源，12轨receipt通过，RootResource真实Fact1及部署18项通过。a9cf86b0只改宿主夹具顺序并单编helper，未改产品。真实VS/VM同态及用户人工未代签。"
         ]
       ],
       "decisions": [
@@ -7801,7 +7801,7 @@
       "delivery": [
         [
           "当前集中批",
-          "共享API、原树/原表及UI入口已集中合入；补修真实回归暴露的图像源/原树选择/共享颜色跨Dispatcher问题后集中构建验收。C13完整样式新定向2例通过，不抹除旧失败；真实鼠标首捕获环境error5仍独立保留。"
+          "本批统一数据链与真实失败修复已完成集中自动验证。正式产品b6f77679，测试夹具单独a9cf86b0；原历史失败保留，不再把实现候选或旧成绩混为本批通过。D06/D07及阶段一其他未完项继续按完整范围推进。"
         ],
         [
           "接口与接入",
@@ -7813,7 +7813,7 @@
         ],
         [
           "集中核收",
-          "只用主仓正式Release：两规定构建0错，树/表/图状态联动，1205行500→1000→1205、旧事件拒绝、资源释放、成功空/失败/取消、换节点/换帧/关闭以及设计/VM同态核收。保留失败，不以HTML或模板导入代验。"
+          "本批两规定构建0错，12条正式receipt、RootResource真实Fact1及部署18项均过；795发布条目/142加载记录SHA复核。同publication/状态、128树分页、原表1205行及退休/通知重入已验证；尚未核收生产同帧图形、正式变量绑定与真实VS/人工外观。"
         ],
         [
           "Blob后续",
@@ -7836,50 +7836,64 @@
           "选中几何须证明实际物理来源帧，否则不绘制",
           "设计器与运行时复用真实模板及组合"
         ],
-        "currentState": "共享发布/来源/原表定向已通过；UI003/全量004零错误；设计91、组件9、RuntimeEditor10、FullChain8、资源、主题1及RootResource真实Fact1通过。ImageSources与WorkflowHost失败保留待修；完整生产图形链、D06/D07、真实VS及用户验收未完成。"
+        "currentState": "统一数据链本批自动核收通过；完整结果图形/变量绑定/人工及第一阶段总清单仍未完成。当前证据为同源正式产物，不把HTML或原样式导入当验收。"
       },
-      "candidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json",
+      "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
-        "checkpoint": "d8cca20e",
+        "checkpoint": "b6f77679",
         "file": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
         "contract": "IResultPublication/ResultPublicationStamp/IResultValueLease；IToolResultView仅Present/Clear，无旧Update入口；ResultSelection清理携stamp、多ResultHighlightTarget携真实帧",
         "lifetime": "一次SDK reader owner转移，多Borrow引用计数；退休即拒新借阅和旧选择，末借阅锁外释放reader。元数据冻结；InputValues仅只读Declarations核对，直接借原已冻结值，不重复读payload/复制数组。",
         "physicalOrigin": "ResultColumnDescriptor.GeometrySource显式关联同记录Region或顶层单项Image；校reader/元数据/真实Domain，不以默认逻辑坐标或选图补Frame。纯Geometry无来源不高亮。",
-        "stage": "主仓已接实际UI消费者并通过规定UI/full构建及共享发布/借阅/物理来源/原表定向回归；尚有相关轨失败和D06/D07缺口。"
+        "stage": "主仓正式产品与实际UI消费者已过规定UI/full及12轨同源回归；唯一数据链完成本批核收。D06/D07、真实VS/VM同态和用户验收仍未完成。"
       },
       "implementationEvidence": {
-        "baseline": "d8cca20e",
-        "uiBuild": "artifacts/result-publication-ui-build-20261028-003.log",
-        "releaseBuild": "artifacts/result-publication-release-build-20261028-004.log",
+        "report": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
+        "productCommit": "b6f77679",
+        "fixtureCommit": "a9cf86b0",
+        "uiBuild": "artifacts/result-publication-ui-build-20261028-006.log",
+        "releaseBuild": "artifacts/result-publication-release-build-20261028-006.log",
         "passed": {
-          "publication": 8,
+          "publication": 9,
           "origins": 2,
           "table": 1,
           "style": 2,
+          "imageSources": 173,
+          "workflowHost": 1,
           "designTime": 91,
           "components": 9,
           "runtimeEditor": 10,
           "fullChain": 8,
+          "resources": 22,
           "themeStartup": 1,
-          "rootResourceFact": 1
+          "rootResourceFact": 1,
+          "deployment": 18
         },
-        "failed": [
+        "verifiedPayloadEntries": 795,
+        "loadedProductRecords": 142,
+        "fixtureBoundary": "仅RootWorkspaceHostTests顺序修正，先合法编辑再替换错误窗口，保拒编辑/拒提交及正式值/历史不变；BuildProjectReferences=false单编测试，产品hash保持原发布清单。",
+        "failedHistory": [
           "artifacts/result-publication-imagesources-20261028-001.log",
+          "artifacts/result-publication-imagesources-20261028-002.log",
           "artifacts/result-publication-workflowhost-20261028-001.log",
+          "artifacts/result-publication-workflowhost-20261028-002.log",
+          "artifacts/result-publication-workflowhost-20261028-003.log",
+          "artifacts/result-publication-ui-build-20261028-004.log",
           "artifacts/result-publication-toolbox-20261028-001.log"
         ],
-        "toolboxBoundary": "正式EXE启动exit0，但保存检查点后HEAD变化导致严格commit门禁不符，不计本候选通过，下一构建后先探针再提交。",
-        "pendingFixes": [
-          "DeclaredPropertyList先完整安装分页及More再聚合通知",
-          "颜色资源按Dispatcher弱实例，保动态主题",
-          "工作流线原树恢复/资源URI/源交互/fixture真实失败"
-        ],
-        "manual": "真实VS/VM同态、桌面首次真实捕获及用户人工尚未代签"
+        "remaining": [
+          "D06正式变量绑定完整批在工作流线实施",
+          "D07中立同帧视口、Domain/精确Region绘制及SDK主图消费者退出未完成",
+          "C09/C17及阶段一其他未完项仍按原全清单保留",
+          "真实VS、VM同态及用户人工验收未代签",
+          "Blob业务仍冻结，未以机械接口同步开始第二阶段"
+        ]
       },
       "designReferences": [
         "docs/collaboration/HANDOFF_D06_BINDING_DESIGN_20261028.md",
         "docs/collaboration/HANDOFF_D07_VIEWPORT_DESIGN_20261028.md"
-      ]
+      ],
+      "previousCandidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json"
     }
   },
   "vmFrameworkArchitectureReference": {

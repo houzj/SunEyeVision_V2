@@ -1,3 +1,10 @@
+## 2026-10-28 原ROI手势正式集成核收：40组及关联链通过
+
+- 固定产品fd70886a：规定UI002零错6551警告103.18秒/full002零错6588警告66.11秒，正式EXE39176 exit0。正式Window235 ROI40/0、236 Box3/0、237 Polygon2/0、238圆环6/0；有重叠不能相加，六组新增真实捕获事务已含ROI40。Design062=96/0、RuntimeEditor076=10/0、真实HALCON FullChain134=8/0。
+- 795发布文件和七receipt76加载记录SHA全核；证据evidence/O06_ROI_GESTURE_INTEGRATION_20261028.json。实际查看Design062/native-roi-scene-3.png六参数栈/扇环图标/实际图形，仅自动渲染观察，不代真实VS或VM逐态/人工验收。原候选点集重入异常、2a509正式39/1均保日志。
+- 原O06/Catalog统一本批状态，719锚点幂等；Catalog仅非编译/非发布元数据，核收后标证据不改固定程序集。三只读线收齐下一批具体代码与依赖，见HANDOFF_NEXT_BLOB_LIBRARY_CONTROLS_20261028.md：P0普通CircleMes、P1 Assist15角色、P2 CrossConfig/两CrossData及受管image overlay/模态导出租约；不能拿圆环/布尔十字开关代替。ABI/位姿正反转换缺口保留，不阻挡可实施UI，不推迟完整目标。
+- 37167/7979/59564/61484全部终态，无live；用户Blob参数页原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。Blob业务仍冻结，阶段一/目标active、不推送。Global283/1的完整5文件仍待后续集中合验，ImageSources180/0属09f前批不套本批；生产D07/实际历史入口仍未接。
+
 ## 2026-10-28 原ROI扩大核验39/1后修复并候选40/0
 
 - 固定2a509cd0第一轮UI零错6551警告129.38秒/full零错6588警告82.70秒，正式EXE72256 exit0；正式ROI过滤组39/1，唯一失败为原Polygon取消路由在无token但IsDragROI=true时未清旧标志，未触发同步换租约。原日志artifacts/roi-gesture-formal-window-20261028-001.log保留，不算全过。

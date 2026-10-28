@@ -1,3 +1,7 @@
+## 正式集成补记
+
+fd70886a已经规定UI/full零错误、正式EXE0、ROI40/Box3/Polygon2/圆环6、Design96/Editor10/真实HALCON FullChain8通过。七条receipt与795发布文件/76加载记录SHA核，详evidence/O06_ROI_GESTURE_INTEGRATION_20261028.json；过滤组有重叠。候选6过不再替代正式结果，但整体阶段、实际指针全姿态、VS/VM外观/用户验收仍未完成。下一批见HANDOFF_NEXT_BLOB_LIBRARY_CONTROLS_20261028.md。以下候选历史保持。
+
 # 原ROI手势完整候选交接
 
 - 基线：09f9739a；main唯一产品写者Codex，三路只读评审。

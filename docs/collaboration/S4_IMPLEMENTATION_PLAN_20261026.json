@@ -5412,14 +5412,14 @@
         "input.inspection.region、input.mask.region及本地ROI；屏蔽区按用户最终预览支持与检测ROI一致的多形状结构/图标/顺序/布局（明确自研扩展）",
         "RoiSelectControl→RoiSelectDataTemplate→ROIStackStyle(CurROIData→ROIData、IsDraging反向→CanUpDateROI)→BoxROIStack/SectorRingROIStack/SectorROIStack/PolygonROIStack；ROIListStyle按真实类型选模板",
         "复用所需原控件/图标/几何交互闭包；重做本方/SDK ROI编辑视觉；沿用正确规范区域/帧身份合同",
-        "E01/E02/E04/E10；原声明四种形状、多ROI最多16；GAP04本方表达能力与所有权需核；四形状原源码已具备，本方仍.pending属于未贯通，不是缺原件证据",
+        "E01/E02/E04/E10；四类原参数栈/手柄已活动，fd70886a手势取消与派生布局重入修复正式ROI40/0等；普通CircleMes仍需完整接入，实际指针全姿态/VM外观/真实VS/人工未验。",
         "图像绘制↔参数联动，形状切换/增删/撤销重做；引用与本地互斥；检测/屏蔽独立；坐标帧、取消/关闭/异常释放正确；不暗删VM已声明形状 屏蔽区各启用形状并集扣除，位姿同步；与检测区同组件/可视结构，独立数据；非仅多边形。 选中图形与原参数栈以同一稳定ROI身份双向绑定；图形移动/缩放/旋转/顶点变化同步参数，参数修改同步原图形；展开收起、多对象选中、撤销与切帧均验收。"
       ],
       [
         "C09 位置来源、继承方式与坐标编辑",
         "input.pose、IsPositionCorrectionEnabled、ROI继承",
         "InheritWayGroup/ExternROITypeGroup→RadioSelecter3/原单选样式+位姿/引用组合",
-        "原两槽/五槽基础已按nativeIntegerRadioCandidate自动验证；完整继承/位姿组合仍待实施。复用C07正式类型来源，不引入第二Pose模型或用像素Region资源代结构化ROI。",
+        "原单选叶已活动；Assist三方式15角色整体组合未实施，已收齐原字段/条件/12来源清空触发。复用正式字段/引用和唯一状态，不另造Pose模型，不以未知nativeABI阻挡可实施UI。",
         "E01/E02/E04/E10；GAP04分量继承与本方合同映射",
         "来源/分量/本地常量按真实能力编辑；关闭修正不改原数据；帧不一致明确拒绝；保存重开与执行快照一致"
       ],
@@ -5484,7 +5484,7 @@
         "Blob输入图/输出图/二值图、图形/文本绘制",
         "原ImageViewBox/Shape/ROI图层及实际Display映射→中立图像/显示适配",
         "复用所需原图像控件/图层；退出SDK ImageControl可视消费。正确的非视觉图像生命周期可提取承接，不能搬旧控件改名",
-        "E03/E10；GAP04/05：原像素/Domain/帧与原绘图层接合",
+        "E03/E10；唯一owner/精确Domain与多结果图层已有；CrossConfig/CrossData仍pending、原Cross手势生命周期未齐；受管输出1背景+至多3图像叠层与模态导出换帧租约未贯通。",
         "实际像素/Domain/坐标帧保持；原图缩放平移时叠加一致；ROI编辑与结果层隔离；显示不驱动执行；读者租约、换帧、关闭释放无悬挂"
       ]
     ],
@@ -6995,6 +6995,26 @@
         "C08原展开链核收",
         "expand与ROIListStyle同模板名称域；BoxROIStack.IsShow无展开消费者，LeftRight只做左右布局；同Group+Guid投影与真实ImageSize连接参数栈。",
         "资源按钮样式/缺失局部键与间距需随原件激活闭合；不是SDK旧ROI或Runtime Blob本地ROI已完成。"
+      ],
+      [
+        "C08原ROI手势正式修复",
+        "四类共享token、真实捕获、逐回调proof与原stamp取消；点集通知退出后同步。",
+        "fd70886a规定两构建零错、ROI40/Box3/Polygon2/圆环6，Design96/Editor10/FullChain8通过；有重叠不相加。"
+      ],
+      [
+        "下一普通圆CircleMes",
+        "激活原三参数栈、原单圆图标/手柄/绘制与第5设计样例；按原W/H动态范围，不能拿圆环替代。",
+        "只读证据齐，待主线完整实施，见HANDOFF_NEXT_BLOB_LIBRARY_CONTROLS_20261028.md。"
+      ],
+      [
+        "下一Assist15角色",
+        "原mode0/1/2+正式FIXTURE/POINT/十float；关闭原子清12编辑来源，历史不重复触发清空。",
+        "UI可实施；ABI/位姿正反变换仍需真实合同，不冒称解算完成。"
+      ],
+      [
+        "下一C17十字及图层",
+        "原两CrossData非模态CrossConfig，唯一owner辅助层；原放缩Init、受管多图叠层与导出生命周期。",
+        "不是bool开关；三pending入口及CrossControl生命周期需完整迁，生产与库职责已交工作流线。"
       ]
     ],
     "candidateCheckpoint": {
@@ -8040,6 +8060,11 @@
         "verification": "UI零错6547警告158.62秒；full零错6584警告70.55秒；EXE28596 exit0；ImageSources008=180/0，publication10/0，真实原表500→1000→1205=1/0；795发布文件逐项SHA核。工作区包含先前ROI未提交候选，证据逐文件固定，不宣称干净提交或完整链路通过。",
         "scope": "同工作区另有先前未提交ROI候选，本次构建包含它们；本次结果热路径修正不等于ROI验收，也不改用户Blob参数XAML。",
         "evidence": "docs/collaboration/evidence/O06_RESULT_CHAIN_UNIFIED_20261028.json"
+      },
+      "adjacentRoiIntegration": {
+        "productCommit": "fd70886a337e7f8c6a3f289e8732fb7eaf97df59",
+        "report": "docs/collaboration/evidence/O06_ROI_GESTURE_INTEGRATION_20261028.json",
+        "scope": "本批只核原ROI公共依赖及关联链；树表180/0为前批，生产D07和真实历史未接，不套成绩。"
       }
     },
     "nativeBottomCommandsCandidate": {
@@ -8079,6 +8104,146 @@
         "productionHostAccepted": false,
         "manualAccepted": false
       }
+    },
+    "nativeRoiGestureIntegration": {
+      "productCommit": "fd70886a337e7f8c6a3f289e8732fb7eaf97df59",
+      "sourceFiles": {
+        "scripts/verification/O06WindowPresentationCases.cs": "df697638d368dfa61e3cb539bed2bbd0ab1b0b4b1a99c7250a105e458a78936e",
+        "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs": "ef870ab29fb9bad9173e0e2cfbfaca33c324889d9ee633628833abcd593bdee8",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs": "dea53e61c08b783d75420e893064bd8efc5719f549fcfff8e0de7a5f9cee5735",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs": "7655a283fd8f5225db93996b63d06bf80cc140c594bf737cb84f95b63a2c1e51",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.Gestures.cs": "5a21860b0bfbaeaf0436bc4bfb6c67479e8fadcc31fb6e2646866f6328abc0c5",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs": "b40f67935c38a795f90c7f4b927864afb5111fb717d1b0c011b3195d3677a026",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs": "30ffdf5a06873d3869d8000dcf9bf58a4dff82e1cb9c2d04088f76d160d40bd8",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs": "3b67d3203d9501b591d8b1ad9f6c41a6e87c9583efb44c853cb037a4f0d22586",
+        "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145",
+        "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
+      },
+      "preexistingUserFile": {
+        "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+        "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+        "modifiedByThisBatch": false
+      },
+      "builds": {
+        "ui": {
+          "log": "artifacts/roi-gesture-ui-20261028-002.log",
+          "errors": 0,
+          "warnings": 6551,
+          "seconds": 103.18
+        },
+        "full": {
+          "log": "artifacts/roi-gesture-full-20261028-002.log",
+          "errors": 0,
+          "warnings": 6588,
+          "seconds": 66.11
+        }
+      },
+      "probe": {
+        "log": "artifacts/roi-gesture-probe-20261028-002.log",
+        "pid": 39176,
+        "exit": 0
+      },
+      "windows": [
+        {
+          "filter": "ROI",
+          "passed": 40,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-235/receipt.json",
+            "sha256": "6bf0191bad2b86fc03ca698f545d3ee7346a133c1050029b1877ce6cc56ab6e1",
+            "runLogSha256": "0e3e1a7568016ea84d4b72d902ee15f446a434b1f19615f397df16bb2e8a649e"
+          }
+        },
+        {
+          "filter": "原Box",
+          "passed": 3,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-236/receipt.json",
+            "sha256": "6e723d3f7af5ee5ca9cf10d496a9d20b27a99f24b1f7c3e86ab2dcb9d26f0614",
+            "runLogSha256": "233a6ef9b7a4177320af56ce8acd2c379c3b985710120d3f7af3b1121d61f1f5"
+          }
+        },
+        {
+          "filter": "原Polygon",
+          "passed": 2,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-237/receipt.json",
+            "sha256": "b69f3d0bf53d03802bef7d8ab4caeb3b9b831eb8e2b1c4c00e74e5c966aa5236",
+            "runLogSha256": "3248ee9425e4596fe094fa3ded6b3c52e835757b1dc07512c42a511278938c90"
+          }
+        },
+        {
+          "filter": "圆环",
+          "passed": 6,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-238/receipt.json",
+            "sha256": "a0d5852a4a798b2f7f1c615ecccde8f56b68374731f765d91db537b9d778d5da",
+            "runLogSha256": "e32f856c7d400eb012297d33fe1f0cdd17a445f0e2adf3f26491f0b794f5ff99"
+          }
+        }
+      ],
+      "overlap": "过滤组覆盖有重叠，不相加为独立用例总数；六组新手势事务已含于ROI40组。",
+      "tracks": {
+        "DesignTime": {
+          "passed": 96,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/DesignTime/attempt-062/receipt.json",
+            "sha256": "cded154ecef6d127b8ebf4c930e7c96d2b8dc30599c1b6558c5c0d7e8af00fe2",
+            "runLogSha256": "97d62657d0767d5ada774d74e257e869345607aee4c0c8eb5ed761ded06800c7"
+          }
+        },
+        "RuntimeEditor": {
+          "passed": 10,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-076/receipt.json",
+            "sha256": "f8c18d2a639e75b6003b014fe515b366ac367c2654b0569cd18dfb5601690ca6",
+            "runLogSha256": "571a2ae4399e4fd086c31a89b181339ed557db50f926af823ecf7bc8c534f140"
+          }
+        },
+        "FullChain": {
+          "passed": 8,
+          "failed": 0,
+          "receipt": {
+            "path": "Release/_validation/S4-20261025/FullChain/attempt-134/receipt.json",
+            "sha256": "dfa4f6c0f938f3bbf71627b84fe993f048d913ba15e438c4005b42025ff7f5b6",
+            "runLogSha256": "ee94fe9485da8751534e8fe73efc1a74d1eb5b1df2c0bfc278862c736450ceea"
+          }
+        }
+      },
+      "payloadEntriesVerified": 795,
+      "loadedRecordsVerified": 76,
+      "payloadSha256": "c604b6a695e54a772384e5680a1d417cb55f80c222037e86a31e8c102e333b8a",
+      "visualInspection": {
+        "path": "Release/_validation/S4-20261025/DesignTime/attempt-062/native-roi-scene-3.png",
+        "sha256": "e01df8508d7fb8e965eec0869f2ed61e0204e285cdf45d7801bf1ba3d269ee64",
+        "scope": "实际查看自动渲染：六参数栈文字/原扇环图标与同帧图形可见；不是VM逐态比对或真实VS/人工验收。"
+      },
+      "failuresPreserved": [
+        {
+          "log": "artifacts/roi-gesture-window-20261028-002.log",
+          "fact": "候选4/1且点集通知内同步导致ObservableCollection重入异常；随后修复，原断言保留。"
+        },
+        {
+          "log": "artifacts/roi-gesture-formal-window-20261028-001.log",
+          "fact": "2a509cd0正式ROI39/1，旧无token拖动态取消路由；fd70886a修复后新正式40/0。"
+        }
+      ],
+      "notAccepted": [
+        "第一阶段全控件准入与整个目标",
+        "普通CircleMes三参数/手柄/绘制及真实设计完整接入",
+        "C09 Assist15角色及位姿/ROI修正链",
+        "C17 CrossConfig/受管多图层/模态导出换帧生命周期",
+        "生产D07图文/历史消费者链",
+        "真实指针Move全姿态、真实VS、VM同状态视觉、用户人工验收",
+        "Global末1失败与其五文件修复尚未本批合；ImageSources180/0属09f前批，不套fd本批"
+      ],
+      "catalogAtBuildSha256": "8b0ef7070a3be6ccde12697f5b0ac6d30b934e761eac2144740ea12ea0293630",
+      "metadataAfterValidation": "Catalog仅来源/验收元数据，不是本工程编译/发布输入；本轮核收后更新其结果，不重建已固定正式程序集。"
     }
   },
   "vmFrameworkArchitectureReference": {

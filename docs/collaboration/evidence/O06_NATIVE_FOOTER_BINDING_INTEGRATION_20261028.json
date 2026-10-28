@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "generatedUtc": "2026-10-28T11:00:01.878360+00:00",
+  "productCommit": "67ce328de6e730c0a7d2ee0c034b72810fb2c4ca",
+  "scope": "C15原固定底栏/C01三页独立组装及D06真实绑定、文档流程身份与reader清理整批；不代表D07/阶段一完成",
+  "payload": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/release-payload.json",
+    "sha256": "d429ad21186801386bf0ad04f1c10aa1f9e150c4de1b8d804eff06b9631f8801",
+    "buildId": "development-1cb37ed319c54ae7b4fee5b3998fe8de",
+    "verifiedEntries": 795
+  },
+  "verifiedLoadedRecords": 95,
+  "builds": [
+    {
+      "path": "artifacts/native-footer-binding-ui-build-20261028-001.log",
+      "sha256": "3e2e55b4b531aec58462aa838efa011f2108b767fdc5fec027bf3d7ff8e9f83c",
+      "errors": 0,
+      "warnings": 6569,
+      "elapsed": "00:02:01.43"
+    },
+    {
+      "path": "artifacts/native-footer-binding-release-build-20261028-001.log",
+      "sha256": "2b9c58219a61f330cd9ad7b7e7ecfd0ad6535f6e9d93239329bab263c89ee0d9",
+      "errors": 0,
+      "warnings": 6606,
+      "elapsed": "00:01:17.23"
+    }
+  ],
+  "formalExeProbe": {
+    "pid": 45604,
+    "exit": 0,
+    "log": {
+      "path": "artifacts/native-footer-binding-toolbox-20261028-001.log",
+      "sha256": "adce2a68c32b56cbc4f8e3213c1999c077ad1d0259fbf68c5ce6777e5fabadce"
+    }
+  },
+  "tests": {
+    "GlobalBinding": {
+      "passed": 277,
+      "failed": 7,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 4,
+        "pid": 61956,
+        "exit": 1,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "GlobalBindingCases.cs",
+        "caseSourceSha256": "CF5CA40262A5D7CC68C02BACFA6CD8813F6B828CE5CED857375A63156A4A33B5",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\GlobalBinding\\attempt-004"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/receipt.json",
+          "sha256": "cf35b2cc5fbae255c831dc6c61faaf218e0d9addcc61efba7b5a3ad1949731bd"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/run.log",
+          "sha256": "5fe3f30c9f86e89dbe3027c3154c4929626017f04d5b67749db8d9e8c775eb4d"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/run-error.log",
+          "sha256": "1a3de724aef2ad1449e8d7c75ca8b9ab897703c754cc26c8ebd55687756de9c1"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/cases.cs.txt",
+          "sha256": "cf5ca40262a5d7cc68c02bacfa6cd8813f6b828ce5ced857375a63156a4a33b5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/loaded-product.tsv",
+          "sha256": "9b49cf12fba83e76e302d31016a79c9ee4b1a67559b936faac744c2cacf27b86"
+        }
+      ],
+      "fullTrack": true,
+      "report": {
+        "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-004/global-binding-report.json",
+        "sha256": "9e46a55476bdaf305091386b2eaea40f8937d9cd332108985a930cdd957e4a2f"
+      },
+      "failedCases": [
+        {
+          "name": "ResultVariableBindingProductionTests.Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint()",
+          "error": "Xunit.Sdk.IsAssignableFromException: Assert.IsAssignableFrom() Failure: Value is null\r\nExpected: typeof(SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication)\r\nActual:   null\r\n   at Xunit.Assert.IsAssignableFrom(Type expectedType, Object object) in /_/src/xunit.assert/Asserts/TypeAsserts.cs:line 68\r\n   at Xunit.Assert.IsAssignableFrom[T](Object object) in /_/src/xunit.assert/Asserts/TypeAsserts.cs:line 46\r\n   at SunEyeVision.UI.Tests.ResultVariableBindingProductionTests.<>c.<Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint>b__0_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ResultVariableBindingProductionTests.cs:line 60\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.ResultVariableBindingProductionTests.<>c__DisplayClass7_0.<Sta>b__0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ResultVariableBindingProductionTests.cs:line 154\r\n   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)\r\n--- End of stack trace from previous location ---\r\n   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)\r\n   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)\r\n--- End of stack trace from previous location ---\r\n   at SunEyeVision.UI.Tests.ResultVariableBindingProductionTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ResultVariableBindingProductionTests.cs:line 155\r\n   at SunEyeVision.UI.Tests.ResultVariableBindingProductionTests.Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ResultVariableBindingProductionTests.cs:line 25\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        },
+        {
+          "name": "CommunicationReceiveDataToolTests.Editor_reuses_host_selector_groups_devices_filters_targets_and_renders_themes()",
+          "error": "System.Windows.Markup.XamlParseException: 初始化“System.Windows.Controls.TextBlock”时引发了异常。\r\n ---> System.InvalidOperationException: 调用线程无法访问此对象，因为另一个线程拥有该对象。\r\n   at System.Windows.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|7_0()\r\n   at System.Windows.Freezable.get_IsFrozen()\r\n   at System.Windows.ResourceReferenceExpression.ListenForFreezableChanges(Object resource)\r\n   at System.Windows.DeferredResourceReference.OnInflated()\r\n   at System.Windows.DeferredResourceReference.GetValue(BaseValueSourceInternal valueSource)\r\n   at System.Windows.DeferredAppResourceReference.GetValue(BaseValueSourceInternal valueSource)\r\n   at System.Windows.DependencyObject.GetEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, RequestFlags requests)\r\n   at System.Windows.DependencyObject.GetValueEntry(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, RequestFlags requests)\r\n   at System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)\r\n   at System.Windows.StyleHelper.ApplyStyleOrTemplateValue(FrameworkObject fo, DependencyProperty dp)\r\n   at System.Windows.StyleHelper.InvalidateContainerDependents(DependencyObject container, FrugalStructList`1& exclusionContainerDependents, FrugalStructList`1& oldContainerDependents, FrugalStructList`1& newContainerDependents)\r\n   at System.Windows.StyleHelper.DoStyleInvalidations(FrameworkElement fe, FrameworkContentElement fce, Style oldStyle, Style newStyle)\r\n   at System.Windows.StyleHelper.UpdateStyleCache(FrameworkElement fe, FrameworkContentElement fce, Style oldStyle, Style newStyle, Style& styleCache)\r\n   at System.Windows.FrameworkElement.OnStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)\r\n   at System.Windows.FrameworkElement.OnPropertyChanged(DependencyPropertyChangedEventArgs e)\r\n   at System.Windows.Controls.TextBlock.OnPropertyChanged(DependencyPropertyChangedEventArgs e)\r\n   at System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)\r\n   at System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)\r\n   at System.Windows.DependencyObject.InvalidateProperty(DependencyProperty dp, Boolean preserveCurrentValue)\r\n   at System.Windows.FrameworkElement.UpdateStyleProperty()\r\n   at System.Windows.FrameworkElement.OnInitialized(EventArgs e)\r\n   at MS.Internal.Xaml.Runtime.ClrObjectRuntime.InitializationGuard(XamlType xamlType, Object obj, Boolean begin)\r\n   --- End of inner exception stack trace ---\r\n   at System.Windows.Markup.XamlReader.RewrapException(Exception e, IXamlLineInfo lineInfo, Uri baseUri)\r\n   at System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)\r\n   at System.Windows.Markup.WpfXamlLoader.LoadBaml(XamlReader xamlReader, Boolean skipJournaledProperties, Object rootObject, XamlAccessLevel accessLevel, Uri baseUri)\r\n   at System.Windows.Markup.XamlReader.LoadBaml(Stream stream, ParserContext parserContext, Object parent, Boolean closeStream)\r\n   at System.Windows.Application.LoadComponent(Object component, Uri resourceLocator)\r\n   at SunEyeVision.Tool.ReceiveData.Views.ReceiveDataEditor.InitializeComponent() in D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.ReceiveData\\Views\\ReceiveDataEditor.xaml:line 1\r\n   at SunEyeVision.Tool.ReceiveData.Views.ReceiveDataEditor..ctor() in D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.ReceiveData\\Views\\ReceiveDataEditor.xaml.cs:line 18\r\n   at SunEyeVision.UI.Tests.CommunicationReceiveDataToolTests.<>c__DisplayClass14_0.<Editor_reuses_host_selector_groups_devices_filters_targets_and_renders_themes>b__0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\CommunicationReceiveDataToolTests.cs:line 332\r\n--- End of stack trace from previous location ---\r\n   at SunEyeVision.UI.Tests.CommunicationReceiveDataToolTests.Editor_reuses_host_selector_groups_devices_filters_targets_and_renders_themes() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\CommunicationReceiveDataToolTests.cs:line 356\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        },
+        {
+          "name": "CommunicationSendDataToolTests.Variables_register_single_producer_and_publish_without_changing_design_value()",
+          "error": "Xunit.Sdk.TrueException: Global production requires the captured published configuration revision.\n   at SunEyeVision.Workflow.WorkflowBindingContext.ResolveGlobalProducers(WorkflowRunSession session, WorkflowRunScope scope, IReadOnlyList`1 operations) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowBindingContext.cs:line 311\r\n   at SunEyeVision.Workflow.WorkflowBindingContext.CompleteGlobalProducers(String completedNode, WorkflowContext context) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowBindingContext.cs:line 298\r\n   at SunEyeVision.Workflow.WorkflowExecutionEngine.ExecuteWorkflowWithReadyQueue(WorkflowRunSession session, Workflow workflow, WorkflowContext context, WorkflowExecutionDependencyGraph dependencyGraph, IReadOnlyDictionary`2 nodeExecutionProfiles) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowExecutionEngine.cs:line 384\r\n   at SunEyeVision.Workflow.WorkflowExecutionEngine.ExecuteWorkflowWithReadyQueue(WorkflowRunSession session, Workflow workflow, WorkflowContext context, WorkflowExecutionDependencyGraph dependencyGraph, IReadOnlyDictionary`2 nodeExecutionProfiles) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowExecutionEngine.cs:line 403\r\n   at SunEyeVision.Workflow.WorkflowExecutionEngine.ExecuteWorkflowWithParallelGroups(WorkflowRunSession session, Workflow workflow, WorkflowContext context, WorkflowExecutionDependencyGraph dependencyGraph, IReadOnlyDictionary`2 nodeExecutionProfiles) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowExecutionEngine.cs:line 116\r\n   at SunEyeVision.Workflow.WorkflowExecutionEngine.ExecuteWorkflowCore(WorkflowRunSession session, WorkflowRunScope scope, String workflowId, IVisionImage inputImage, IDictionary`2 globalVariables, Dictionary`2 contextVariables, WorkflowRunRequest request, Boolean isSubworkflow) in D:\\MyWork\\SunEyeVision_V2\\Src\\Workflow\\WorkflowExecutionEngine.cs:line 794\r\n   at Xunit.Assert.True(Nullable`1 condition, String userMessage) in /_/src/xunit.assert/Asserts/BooleanAsserts.cs:line 141\r\n   at Xunit.Assert.True(Boolean condition, String userMessage) in /_/src/xunit.assert/Asserts/BooleanAsserts.cs:line 123\r\n   at SunEyeVision.UI.Tests.CommunicationSendDataToolTests.Variables_register_single_producer_and_publish_without_changing_design_value() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\CommunicationSendDataToolTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.CommunicationSendDataToolTests.Variables_register_single_producer_and_publish_without_changing_design_value() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\CommunicationSendDataToolTests.cs:line 274\r\n   at S2DocumentEditingCases.Main() in D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\GlobalBinding\\Cases.cs:line 75"
+        },
+        {
+          "name": "SendDataProductionEditorTests.Accepted_variable_notification_preserves_newer_private_rows_and_mapping_for_next_atomic_apply()",
+          "error": "System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.\r\n ---> System.InvalidOperationException: 子程序工作流未找到: send-flow\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateDataSourceQueryService(String scopeWorkflowId) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowViewModel.cs:line 3549\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateProductionEditorContext(Object target, WorkflowNode node, DataSourceQueryService& provider) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs:line 47\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   --- End of inner exception stack trace ---\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Fixture..ctor() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 58\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.<>c.<Accepted_variable_notification_preserves_newer_private_rows_and_mapping_for_next_atomic_apply>b__4_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 151\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Accepted_variable_notification_preserves_newer_private_rows_and_mapping_for_next_atomic_apply() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 149\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        },
+        {
+          "name": "SendDataProductionEditorTests.Closing_real_send_window_cancels_private_mapping_and_rejects_old_debug_plan()",
+          "error": "System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.\r\n ---> System.InvalidOperationException: 子程序工作流未找到: send-flow\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateDataSourceQueryService(String scopeWorkflowId) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowViewModel.cs:line 3549\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateProductionEditorContext(Object target, WorkflowNode node, DataSourceQueryService& provider) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs:line 47\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   --- End of inner exception stack trace ---\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Fixture..ctor() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 58\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.<>c.<Closing_real_send_window_cancels_private_mapping_and_rejects_old_debug_plan>b__3_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 137\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Closing_real_send_window_cancels_private_mapping_and_rejects_old_debug_plan() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 135\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        },
+        {
+          "name": "SendDataProductionEditorTests.Invalid_private_rows_do_not_partially_publish_and_mode_change_unbinds_in_the_same_history()",
+          "error": "System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.\r\n ---> System.InvalidOperationException: 子程序工作流未找到: send-flow\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateDataSourceQueryService(String scopeWorkflowId) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowViewModel.cs:line 3549\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateProductionEditorContext(Object target, WorkflowNode node, DataSourceQueryService& provider) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs:line 47\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   --- End of inner exception stack trace ---\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Fixture..ctor() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 58\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.<>c.<Invalid_private_rows_do_not_partially_publish_and_mode_change_unbinds_in_the_same_history>b__2_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 113\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Invalid_private_rows_do_not_partially_publish_and_mode_change_unbinds_in_the_same_history() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 111\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        },
+        {
+          "name": "SendDataProductionEditorTests.Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint()",
+          "error": "System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.\r\n ---> System.InvalidOperationException: 子程序工作流未找到: send-flow\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateDataSourceQueryService(String scopeWorkflowId) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowViewModel.cs:line 3549\r\n   at SunEyeVision.UI.Shell.Windows.MainWindowViewModel.CreateProductionEditorContext(Object target, WorkflowNode node, DataSourceQueryService& provider) in D:\\MyWork\\SunEyeVision_V2\\Src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs:line 47\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   --- End of inner exception stack trace ---\r\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\r\n   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Fixture..ctor() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 58\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.<>c.<Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint>b__1_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 79\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 77\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        }
+      ]
+    },
+    "ImageSources": {
+      "passed": 180,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 6,
+        "pid": 77852,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "ImageSourceCases.cs",
+        "caseSourceSha256": "46B32ECEA4B1C04C67B0CB0B90B4B36F5E7B16BE9D5C8625065D72ABA4EC408D",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSources\\attempt-006"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-006/receipt.json",
+          "sha256": "3c5fb9d5bc0d387be0e3f8a8913aacef8513bbb58b197bca79165a2ecd5c6e1c"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-006/run.log",
+          "sha256": "72f7062e93976c5ac87faae7cb7cc9fadf0d159a30caeef9a3429569ebcdcda6"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-006/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-006/cases.cs.txt",
+          "sha256": "46b32ecea4b1c04c67b0cb0b90b4b36f5e7b16be9d5c8625065d72aba4ec408d"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-006/loaded-product.tsv",
+          "sha256": "351af5d7dc5c003384c22dd15f1867d33a5f0c5d8f6268cd72e513ee700759f8"
+        }
+      ]
+    },
+    "WindowPresentation": {
+      "passed": 5,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 225,
+        "pid": 22568,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "C8EECA93E5F2A20B96E3DDE96AF1A8898529ECF64C017D166330DA7408467E9C",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-225"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-225/receipt.json",
+          "sha256": "fbe89748c8488149c51a1e4d054f6bfe44d2c07b328e12fdc44c292ffae99c78"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-225/run.log",
+          "sha256": "b25ce438484aa513c6f5e0d35c89d22904e8162a2b68070b411921202e2b2e4a"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-225/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-225/cases.cs.txt",
+          "sha256": "c8eeca93e5f2a20b96e3dde96af1a8898529ecf64c017d166330da7408467e9c"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-225/loaded-product.tsv",
+          "sha256": "a95de8f3de9549f3c258b90dc54cdd3a0ad251e288f7ea09670375fa61bf938b"
+        }
+      ]
+    },
+    "DesignTime": {
+      "passed": 96,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 60,
+        "pid": 42812,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4DesignTimeCases.cs",
+        "caseSourceSha256": "A507EC841D2A1812559C37E6217D854126FB1D2F6AE26CF61CFAD4853EF4C33F",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-060"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/receipt.json",
+          "sha256": "5da19e6d8634b63cd032ecf187c2d596e753c33fe18c85b9feb2d47091584996"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/run.log",
+          "sha256": "97d62657d0767d5ada774d74e257e869345607aee4c0c8eb5ed761ded06800c7"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/cases.cs.txt",
+          "sha256": "a507ec841d2a1812559c37e6217d854126fb1d2f6ae26cf61cfad4853ef4c33f"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/loaded-product.tsv",
+          "sha256": "02897724971861a00b8fae0596f098a85433501f5ffa1535a3aa03d9b8f5cdfd"
+        }
+      ]
+    },
+    "RuntimeEditor": {
+      "passed": 10,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 74,
+        "pid": 73668,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4RuntimeEditorCases.cs",
+        "caseSourceSha256": "9EB9081EFE0DBF4EA7FD7388F8971EFD59070948378E6927FB00B3AC47F7426D",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditor\\attempt-074"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-074/receipt.json",
+          "sha256": "adfe10788392f7387f040aec13f40819dad8239d414461a718ffc68c4c71d021"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-074/run.log",
+          "sha256": "571a2ae4399e4fd086c31a89b181339ed557db50f926af823ecf7bc8c534f140"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-074/run-error.log",
+          "sha256": "d93d669f04d444105219408ba16537211af16b5d0a6ad2115da8255a4aadc020"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-074/cases.cs.txt",
+          "sha256": "9eb9081efe0dbf4ea7fd7388f8971efd59070948378e6927fb00b3ac47f7426d"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-074/loaded-product.tsv",
+          "sha256": "f8c32f77a6e75f43070d36887cedb6c2df32d1e93b7f494099536f18be91992c"
+        }
+      ]
+    },
+    "FullChain": {
+      "passed": 8,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 132,
+        "pid": 46876,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FullChainCases.cs",
+        "caseSourceSha256": "D30A934D38CAD90034A8675059A64C97356F5E98BDF1DDD7628D55B4D2761F99",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FullChain\\attempt-132"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-132/receipt.json",
+          "sha256": "64f9710224067e07c36f6d8ebc2687d15982e54130ddc12bb4efdd4677adf112"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-132/run.log",
+          "sha256": "8881f3a1336685d0e9fdf40e30d3430f5627315827a42750d7fa3da33ee19e70"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-132/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-132/cases.cs.txt",
+          "sha256": "d30a934d38cad90034a8675059a64c97356f5e98bdf1ddd7628d55b4d2761f99"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-132/loaded-product.tsv",
+          "sha256": "7fd0c648de3f9f5039cc63bdd6720855df3d2bf8bd0fd549bbef6215958cf065"
+        }
+      ]
+    }
+  },
+  "visualInspection": {
+    "image": {
+      "path": "Release/_validation/S4-20261025/DesignTime/attempt-060/native-tool-editor-xaml-entry.png",
+      "sha256": "49b56f9642a8720686cacbd204d2ea72dfb50e8d239b738dff88fe8f874d64fa"
+    },
+    "result": "已实际查看自动渲染，原单套三页/控件/32固定底栏可见；不是VM同态或真实VS/用户验收"
+  },
+  "remaining": [
+    "完整GlobalBinding284项277过7败，超时已消除，7项由原写者修复",
+    "C15异常订阅及清理双异常诊断聚合、设计样例异常清理仍需补小增量",
+    "原四类ROI旧MouseUp/Cancel在Release/Notify回调中新手势被尾部清旗，已只读确证待修",
+    "C09 Assist公共组合和普通圆等原清单未完成",
+    "D07 Shell唯一view公开API及生产消费者/SDK主图退出未完成",
+    "实际历史入口及Blob专属表迁移仍未完成，Blob业务冻结",
+    "真实VS/VM同态、高DPI、实际指针及用户人工未代签"
+  ],
+  "candidateEvidence": "docs/collaboration/evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json",
+  "previousEvidence": "docs/collaboration/evidence/O06_RESULT_OPTIONAL_FIELDS_INTEGRATION_20261028.json"
+}

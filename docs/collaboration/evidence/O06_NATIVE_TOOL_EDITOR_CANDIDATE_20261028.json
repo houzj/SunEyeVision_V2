@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "generatedUtc": "2026-10-28T10:49:35.592845+00:00",
+  "scope": "C15原四按钮及C01三页固定组合；C17是图像承载，纠正此前只读消息中的编号误称",
+  "sourceFiles": [
+    {
+      "assembly": "Apps.Style",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+      "sha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc"
+    },
+    {
+      "assembly": "Apps.XmlUI",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "assembly": "Apps.XmlUI",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+      "sha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7"
+    }
+  ],
+  "localFiles": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Commands/NativeToolCommandPresenter.cs",
+      "sha256": "c13f3dbfb8186e4bd3528d362e0fd9ae08835920ab205ad6fd81b9a048bce18c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
+      "sha256": "09a38d615282f7817a753d9876c5ed4a50dea4e8b8dcc849a37c8bdd15146b27"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml.cs",
+      "sha256": "82afd75bdcc089cae5d2d3bfc98d955bf9058c5e1127c1a3d40ece212f2d773e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "sha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeToolEditorScene.xaml",
+      "sha256": "bab824ee593570feb381ae36e194cc8705199f47ea6ba61c4f1b88930d0ad0f0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeToolEditorSample.cs",
+      "sha256": "a51b57abfd5e7d8ae63d6fa9f15edde20af5097ff554fe3fa73f2bb33f67568e"
+    }
+  ],
+  "implementation": [
+    "原Orange/BottomButtonStyle与四模板切片，不激活全套pending",
+    "原*/Auto/Auto、外部槽、32高右侧固定底栏；三页沿DeclaredFieldsView单一原页链",
+    "借用宿主状态和四命令；不复制VM循环/调度/全局模型",
+    "代次拒绝旧命令/队列/回调，命令替换同步退订/订阅，全部清理聚合",
+    "卸载退命令，不停止/处置宿主；Dispose归还内容父关系，不Dispose借视图",
+    "独立真实XAML设计场景，样例Loaded重借命令，不执行算法/重复业务默认"
+  ],
+  "candidateChecks": {
+    "library003": {
+      "path": "artifacts/native-tool-editor-library-build-20261028-003.log",
+      "sha256": "9ec115739d267d45ba242cbe0fe6665f30fc20447fcb776ffa53ae1d27a5f8be",
+      "errors": 0,
+      "warnings": 5330,
+      "elapsed": "00:00:15.92"
+    },
+    "window002": {
+      "path": "artifacts/native-tool-editor-candidate-window-20261028-002.log",
+      "sha256": "0d658fe1e6dddd1eb6cf6f69df26fea07eaaad5fbe6ef6d6b1ecfc302054708e",
+      "passed": 5,
+      "failed": 0
+    },
+    "boundary": "仅局部库候选，不是同源规定UI/full核收；最后样例Loaded重借增量尚未新编",
+    "failuresRetained": []
+  },
+  "remaining": [
+    "同源规定UI/full及正式EXE、独立设计/运行新轨",
+    "宿主真实工具窗口消费/Capture/Commit/连续取消与退出；Blob第二阶段接入",
+    "实际VS/VM同态/高DPI及用户外观验收",
+    "第一阶段其余原清单及D07生产消费者仍未完成"
+  ]
+}

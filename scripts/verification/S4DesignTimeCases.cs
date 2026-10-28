@@ -27,6 +27,18 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorPreview())
+            {
+                Render(entry,"native-tool-editor-xaml-entry.png",600,700);
+                var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample>(entry).Single();
+                Check(Application.Current is null&&Descendants<TabItem>(entry).Count()==3,"原固定底栏真实XAML入口无宿主显示单套三页");
+                for(var page=0;page<3;page++)
+                {
+                    sample.Fields.SelectedPageIndex=page;Render(entry,"native-tool-editor-page-"+page+".png",600,700);
+                    Check(sample.Fields.SelectedPageIndex==page&&Descendants<ItemsControl>(entry).Single(control=>control.Name=="BottomCommands").ActualHeight==32,"设计器切原页并固定32底栏："+page);
+                }
+                Check(sample.Commands.ContinuousCalls==0&&sample.Commands.OnceCalls==0&&sample.Commands.ConfirmCalls==0,"独立设计创建切页不执行命令");
+            }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritancePreview())
             {
                 Render(entry,"native-roi-inheritance-xaml-entry.png",1020,800);

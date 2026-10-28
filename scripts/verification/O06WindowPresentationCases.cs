@@ -218,12 +218,127 @@ internal static class S2DocumentEditingCases
  }
  static void PublicationThrows<T>(Action action) where T:Exception
  {var caught=false;try{action();}catch(T){caught=true;}Require(caught,"未发生预期异常："+typeof(T).Name);}
+ sealed class MutableEditorCommands:SunEyeVision.Plugin.Wpf.Presenters.Commands.INativeToolCommands
+ {
+  public SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommands Inner {get;}=new();
+  public ICommand? OnceOverride;
+  public bool ThrowRemove,ThrowConfirm;
+  public SunEyeVision.Plugin.Wpf.Presenters.Commands.NativeToolCommandState State=>Inner.State;
+  public bool IsCurrent=>Inner.IsCurrent;
+  public ICommand StartContinuous=>Inner.StartContinuous;public ICommand Stop=>Inner.Stop;
+  public ICommand ExecuteOnce=>OnceOverride??Inner.ExecuteOnce;
+  public ICommand Confirm=>ThrowConfirm?throw new InvalidOperationException("fixture-confirm-getter"):Inner.Confirm;
+  private EventHandler? _changed;
+  public int Subscribers=>_changed?.GetInvocationList().Length??0;
+  public event EventHandler Changed{add=>_changed+=value;remove{_changed-=value;if(ThrowRemove)throw new InvalidOperationException("fixture-detach");}}
+  public void Notify()=>_changed?.Invoke(this,EventArgs.Empty);
+ }
+ sealed class BrokenEditorCommand:ICommand
+ {
+  public bool CanExecute(object? parameter)=>true;
+  public void Execute(object? parameter)=>throw new Exception("不得执行故障命令");
+  public event EventHandler CanExecuteChanged{add=>throw new InvalidOperationException("fixture-add-failed");remove=>throw new InvalidOperationException("fixture-remove-failed");}
+ }
+ static void VerifyNativeToolEditor()
+ {
+  Test("原固定底栏三页同链与四命令状态矩阵",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample();sample.Width=490;sample.Height=450;Show(sample);
+   Button Button(string text)=>Visuals<Button>(sample).Single(button=>Equals(button.Content,text));
+   var footer=Visuals<ItemsControl>(sample.Frame).Single(control=>control.Name=="BottomCommands");
+   var y=footer.TransformToAncestor(sample).Transform(new Point()).Y;
+   Require(footer.ActualHeight==32&&Math.Abs(y-418)<.5,"底栏不是独立固定32行："+y);
+   for(var page=0;page<3;page++){sample.Fields.SelectedPageIndex=page;owner.UpdateLayout();Pump();Require(Visuals<TabItem>(sample).Count()==3&&Math.Abs(footer.TransformToAncestor(sample).Transform(new Point()).Y-y)<.5,"切页改变固定底栏或造第二套页签");}
+   Require(Button("连续执行").Visibility==Visibility.Visible&&Button("执行").Visibility==Visibility.Visible&&Button("停止").Visibility==Visibility.Collapsed,"空闲按钮状态错误");
+   foreach(var text in new[]{"连续执行","执行","确定"}){var button=Button(text);Require(button.Height==24&&button.MinWidth==66&&double.IsNaN(button.Width)&&button.Margin==new Thickness(2.5,0,2.5,0)&&button.Padding==new Thickness(10,0,10,0),"原按钮尺寸被改："+text);}
+   Button("执行").Command.Execute(null);Require(sample.Commands.OnceCalls==1,"单次命令未到借用宿主");
+   Button("连续执行").Command.Execute(null);owner.UpdateLayout();Pump();
+   Require(Button("停止").Visibility==Visibility.Visible&&Button("连续执行").Visibility==Visibility.Collapsed&&Button("执行").Visibility==Visibility.Collapsed,"连续未切换到停止");
+   sample.Commands.SetState(new(true,true,false,false));owner.UpdateLayout();Pump();
+   Require(Button("停止").IsEnabled&&Button("确定").Visibility==Visibility.Collapsed,"运行禁用错误地禁用了停止或确认未隐藏");
+   Button("停止").Command.Execute(null);owner.UpdateLayout();Pump();Require(sample.Commands.StopCalls==1,"停止没有到宿主");
+   sample.Commands.SetState(new(false,true,true,true));owner.UpdateLayout();Pump();Require(!Button("连续执行").IsEnabled&&!Button("执行").IsEnabled&&Button("停止").Visibility==Visibility.Collapsed,"单次运行态被误当连续");
+   sample.Commands.SetState(new(false,false,true,true));sample.Commands.OnceCommand.Enabled=false;sample.Commands.OnceCommand.Notify();owner.UpdateLayout();Pump();Require(!Button("执行").IsEnabled,"宿主CanExecuteChanged没有同步原按钮");
+  });
+  Test("原固定底栏旧命令异步通知与卸载不触发宿主",()=>
+  {
+   using var frame=new Native.Composition.Parameters.NativeToolEditorFrame{Width=490,Height=180};
+   var first=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommands();var second=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommands();
+   using var lease=frame.BindCommands(first);Show(frame);
+   var old=Visuals<Button>(frame).Single(button=>Equals(button.Content,"执行")).Command;
+   Task.Run(first.Notify).GetAwaiter().GetResult();using var current=frame.BindCommands(second);Pump();
+   old.Execute(null);Require(!old.CanExecute(null)&&first.OnceCalls==0&&second.OnceCalls==0,"旧命令或排队通知执行宿主");
+   lease.Dispose();owner.UpdateLayout();Pump();var once=Visuals<Button>(frame).Single(button=>Equals(button.Content,"执行"));once.Command.Execute(null);Require(second.OnceCalls==1,"旧lease退场清了新命令");
+   host.Children.Remove(frame);Pump();once.Command.Execute(null);Require(second.OnceCalls==1&&first.IsCurrent&&second.IsCurrent,"卸载执行旧命令或处置借用宿主");
+  });
+  Test("原固定底栏CanExecute重入换宿主与长文字原宽度",()=>
+  {
+   using var frame=new Native.Composition.Parameters.NativeToolEditorFrame{Width=490,Height=180};
+   var first=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommands();var second=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommands();
+   using var initial=frame.BindCommands(first);Show(frame);
+   var old=Visuals<Button>(frame).Single(button=>Equals(button.Content,"执行")).Command;
+   first.OnceCommand.BeforeCanExecute=()=>{first.OnceCommand.BeforeCanExecute=null;frame.BindCommands(second,new(Confirm:"确定并保存当前编辑参数"));};
+   old.Execute(null);owner.UpdateLayout();Pump();Require(first.OnceCalls==0&&second.OnceCalls==0,"CanExecute重入后旧操作仍执行");
+   var confirm=Visuals<Button>(frame).Single(button=>Equals(button.Content,"确定并保存当前编辑参数"));Require(confirm.ActualWidth>66&&confirm.IsEnabled,"长文字被固定66截断");
+   confirm.Command.Execute(null);Require(second.ConfirmCalls==1,"重入后的新确认不可用");
+   second.IsCurrent=false;second.Notify();owner.UpdateLayout();Pump();Require(Visuals<Button>(frame).All(button=>button.Visibility==Visibility.Collapsed),"失效宿主仍显示可操作按钮");
+  });
+  Test("原固定底栏命令替换后观察新实例与归还借用内容",()=>
+  {
+   using var first=new Native.Composition.Parameters.NativeToolEditorFrame{Width=490,Height=180};
+   var source=new MutableEditorCommands();using var lease=first.BindCommands(source);var body=new TextBlock{Text="同一借用内容"};first.EditorContent=body;Show(first);
+   var replacement=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample.SampleCommand{Run=()=>source.Inner.OnceCalls++};source.OnceOverride=replacement;source.Notify();owner.UpdateLayout();Pump();
+   replacement.Enabled=false;replacement.Notify();owner.UpdateLayout();Pump();Require(!Visuals<Button>(first).Single(button=>Equals(button.Content,"执行")).IsEnabled,"替换后没订阅新命令");
+   first.Dispose();owner.UpdateLayout();Pump();Require(source.Subscribers==0&&first.EditorContent is null&&first.ExternalContent is null,"已释放frame仍占借用视图或订阅");
+   using var second=new Native.Composition.Parameters.NativeToolEditorFrame{Width=490,Height=180,EditorContent=body};second.BindCommands(source);Show(second);Require(Visuals<TextBlock>(second).Contains(body),"同一真实内容不能移入新frame");
+  });
+  Test("原固定底栏退订及初始化异常仍清视图归还订阅",()=>
+  {
+   using var frame=new Native.Composition.Parameters.NativeToolEditorFrame{Width=490,Height=180};var old=new MutableEditorCommands();frame.BindCommands(old);Show(frame);old.ThrowRemove=true;
+   var rejected=new MutableEditorCommands();PublicationThrows<AggregateException>(()=>frame.BindCommands(rejected));owner.UpdateLayout();Pump();
+   Require(old.Subscribers==0&&rejected.Subscribers==0&&Visuals<ItemsControl>(frame).Single(control=>control.Name=="BottomCommands").ItemsSource is null,"退订异常仍留下旧底栏或新订阅");
+   var faulty=new MutableEditorCommands{ThrowConfirm=true};PublicationThrows<InvalidOperationException>(()=>frame.BindCommands(faulty));
+   Require(faulty.Subscribers==0&&Visuals<ItemsControl>(frame).Single(control=>control.Name=="BottomCommands").ItemsSource is null,"初始化异常未清订阅/视图");
+   frame.BindCommands(rejected);owner.UpdateLayout();Pump();Require(Visuals<Button>(frame).Any(button=>Equals(button.Content,"执行")&&button.IsEnabled),"失败后不能接新宿主");
+  });
+  Test("原固定底栏订阅与归还双异常均保留且样例仍清树",()=>
+  {
+   using var frame=new Native.Composition.Parameters.NativeToolEditorFrame();var source=new MutableEditorCommands{OnceOverride=new BrokenEditorCommand()};
+   AggregateException? observed=null;try{frame.BindCommands(source);}catch(AggregateException error){observed=error;}
+   Require(observed is not null&&observed.Flatten().InnerExceptions.Any(error=>error.Message=="fixture-add-failed")
+    &&observed.Flatten().InnerExceptions.Any(error=>error.Message=="fixture-remove-failed")&&source.Subscribers==0,"双异常被覆盖或source未退订");
+   var sample=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample();var faulty=new MutableEditorCommands();sample.Frame.BindCommands(faulty);faulty.ThrowRemove=true;
+   PublicationThrows<AggregateException>(sample.Dispose);Require(sample.Child is null&&sample.Frame.EditorContent is null&&faulty.Subscribers==0,"样例Dispose异常跳过真实子树归还");sample.Dispose();
+  });
+ }
  static void VerifyResultPublication()
  {
   var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer),new Port("optional",DataType.Text,Required:false)});
   var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"result-fixture",Guid.NewGuid());
   InputValues Values(long value)=>new(schema.Outputs,new Dictionary<string,object?>{{"value",value}});
   ResultPublicationStamp Stamp()=>new(Guid.NewGuid(),run,7,schema.Fingerprint);
+  Test("结果publication可选输出省略及空父记录保留真实表行",()=>
+  {
+   var recordType=TypeRef.RecordOf("result.optional-parent",new[]{new Port("count",DataType.Integer)});
+   var declaration=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer),
+    new Port("optional",DataType.Text,Required:false),new Port("missing",recordType,Required:false),new Port("nullable",recordType,Nullable:true)});
+   var values=new InputValues(declaration.Outputs,new Dictionary<string,object?>{{"value",21L},{"nullable",null}});
+   using var publication=new ResultPublication(declaration,new(Guid.NewGuid(),run,7,declaration.Fingerprint),ResultViewState.Success,values,null,()=>true);
+   var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,new[]{
+    new ResultColumnDescriptor("value","值",new("value")),new ResultColumnDescriptor("optional","可选",new("optional")),
+    new ResultColumnDescriptor("missing","省略父记录",new("missing",new[]{"count"})),
+    new ResultColumnDescriptor("nullable","空父记录",new("nullable",new[]{"count"}))});
+   using var view=new DeclaredResultTable(declaration,projection);host.Children.Add(view);
+   try
+   {
+    view.Present(publication);owner.UpdateLayout();Pump();var grid=(DataGrid)view.Content;
+    Require(grid.Items.Count==1,"合法省略字段导致整行消失");var row=grid.Items[0];
+    object? Cell(string key)=>row.GetType().GetProperty("Item")!.GetValue(row,new object[]{key});
+    Require(Equals(Cell("value"),21L)&&Cell("optional") is null&&Cell("missing") is null&&Cell("nullable") is null,
+     "可选/空父记录未显示空单元格或破坏必填值");
+   }
+   finally{host.Children.Remove(view);}
+  });
   Test("结果publication共享借阅与owner退休最后释放",()=>
   {
    var release=new ResultOwnerProbe();var values=Values(11);var publication=new ResultPublication(schema,Stamp(),ResultViewState.Success,values,release,()=>true);
@@ -2807,6 +2922,7 @@ internal static class S2DocumentEditingCases
    VerifyNativeTextExpressions();
    VerifyNativeTextPixels();
    VerifyNativeParameterHost();
+   VerifyNativeToolEditor();
    VerifyResultPublication();
    VerifyPropertyPublication();
    VerifyNativeResultRaster();

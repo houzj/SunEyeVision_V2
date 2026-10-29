@@ -192,8 +192,7 @@ public sealed class ImageSourceRuntimeTests
         using var cancellation=new CancellationTokenSource();
         var resources=Substitute.For<IOutputResources>();
         resources.CreateScope().Returns(_=>{cancellation.Cancel();return partial;});
-        var context=Substitute.For<IToolExecutionContext,ILocalImageReadContext>();
-        ((ILocalImageReadContext)context).AcceptLocalImage().Returns(_=>localAddress??throw new InvalidOperationException("测试缺少读取接纳地址。"));
+        var context=Substitute.For<IToolExecutionContext>();
         context.Identity.Returns(new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"source",Guid.NewGuid()));
         context.Resources.Returns(resources);context.Cancellation.Returns(cancellation.Token);
         var image=inputsOwner.CreateGray8(1,1,new byte[]{80});

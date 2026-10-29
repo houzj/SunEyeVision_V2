@@ -25,6 +25,12 @@ public interface IDocumentHistoryReplayGuard
     bool CanReplay(DocumentHistoryDirection direction);
 }
 
+/// <summary>Effects of one successfully replayed configuration operation, never runtime values.</summary>
+internal interface IDocumentHistoryReplayEffects
+{
+    IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; }
+}
+
 /// <summary>One owner-thread cursor for one document session. No WPF or execution dependency.</summary>
 public sealed class DocumentHistoryCoordinator : IDisposable
 {
@@ -38,6 +44,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     public Guid SessionId { get; }
     public long Revision { get; private set; }
     public DocumentHistoryEntry? LastAppliedEntry { get; private set; }
+    public IReadOnlyList<ScopedNodeIdentity> LastInvalidatedNodes { get; private set; } = Array.Empty<ScopedNodeIdentity>();
     public int Position => _position;
     public bool IsClosed => _closed;
     public bool IsApplying => _busy;
@@ -80,6 +87,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         _position++;
         _sequence = entry.Sequence;
         LastAppliedEntry = entry;
+        LastInvalidatedNodes = operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         Revision++;
         Item? trimmed = null;
         if (_items.Count > _capacity) { trimmed = _items[0]; _items.RemoveAt(0); _position--; }
@@ -95,6 +103,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         var item=_items[_position-1];
         Apply(item.Operation, DocumentHistoryDirection.Backward);
         LastAppliedEntry=item.Entry;
+        LastInvalidatedNodes = item.Operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         _position--; Revision++; Notify(); return true;
     }
 
@@ -105,6 +114,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         var item=_items[_position];
         Apply(item.Operation, DocumentHistoryDirection.Forward);
         LastAppliedEntry=item.Entry;
+        LastInvalidatedNodes = item.Operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         _position++; Revision++; Notify(); return true;
     }
 
@@ -146,7 +156,13 @@ public sealed class DocumentHistoryCoordinator : IDisposable
                 throw;
             }
         }
-        finally { _busy = false; if (Fault is not null) Notify(); }
+        finally
+        {
+            _busy = false;
+            // A fault notification is not a successfully committed replay. Never
+            // expose effects left by an earlier successful history step.
+            if (Fault is not null) { LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>(); Notify(); }
+        }
     }
 
     private void EnsureMutationAllowed(bool allowFault = false)
@@ -187,7 +203,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         if (_closed) return;
         EnsureMutationAllowed(allowFault: true);
-        _closed = true;
+        _closed = true; LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
         var discarded = _items.ToArray(); _items.Clear(); _position = 0; Revision++;
         Release(discarded); Notify(); Changed = null;
     }

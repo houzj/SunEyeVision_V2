@@ -106,7 +106,7 @@ public sealed class BindingConfigurationStore
 
     // A session journal replays the exact accepted configuration, not whichever item happens
     // to be on this store's standalone history. Structure is restored by its preceding operation.
-    internal BindingConfigurationSnapshot ReplayAccepted(BindingConfigurationSnapshot target,
+    internal BindingConfigurationPublication ReplayAccepted(BindingConfigurationSnapshot target,
         Action<BindingConfigurationSnapshot> accept)
     {
         lock(_gate)
@@ -117,8 +117,16 @@ public sealed class BindingConfigurationStore
             var graph=SolutionExecutionDependencyGraph.Compile(configuration,checkReadiness:false);
             var validator=new OutputBindingChangeService();validator.Reset(configuration);
             var next=new BindingConfigurationSnapshot(checked(_published.Version+1),configuration,graph);
+            // History never restores live values. Compare definition changes only, otherwise
+            // a snapshot with cleared live values would invalidate unrelated consumers.
+            var previous=_published.CopyConfiguration();
+            var replayed=next.CopyConfiguration();
+            foreach(var variable in previous.GlobalVariables)variable.Value=null;
+            foreach(var variable in replayed.GlobalVariables)variable.Value=null;
+            var invalidated=ChangedNodes(previous,replayed,_published.Dependencies,graph.Dependencies,Array.Empty<ScopedNodeIdentity>());
+            var publication=new BindingConfigurationPublication(next,Array.Empty<OutputBindingChange>(),Array.AsReadOnly(invalidated));
             Accept(next,accept);_validator=validator;_published=next;
-            return next;
+            return publication;
         }
     }
 

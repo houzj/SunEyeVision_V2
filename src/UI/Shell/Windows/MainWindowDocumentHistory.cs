@@ -48,9 +48,50 @@ public partial class MainWindowViewModel
     }
     private void DocumentHistoryChanged(object? sender, EventArgs args)
     {
-        RefreshAcceptedImageSourceViews();
-        RefreshCurrentResultBindings();
-        RefreshRootTabReadiness(); UpdateCurrentSolutionInfo(); UpdateUndoRedoCommands();
-        OnPropertyChanged(nameof(CanUndoRootWorkspace)); OnPropertyChanged(nameof(CanRedoRootWorkspace));
+        var failures = new List<Exception>();
+        void Refresh(Action action) { try { action(); } catch (Exception error) { failures.Add(error); } }
+        if (sender is DocumentHistoryCoordinator history && !history.IsClosed
+            && DocumentManager.Session is {} session && ReferenceEquals(session.History, history)
+            && !IsRunning && !_executionManager.IsAnyRunning() && history.LastInvalidatedNodes.Count != 0)
+            Refresh(() => RefreshReplayedResults(session, history));
+        Refresh(RefreshAcceptedImageSourceViews);
+        Refresh(RefreshCurrentResultBindings);
+        Refresh(RefreshRootTabReadiness); Refresh(UpdateCurrentSolutionInfo); Refresh(UpdateUndoRedoCommands);
+        Refresh(() => OnPropertyChanged(nameof(CanUndoRootWorkspace)));
+        Refresh(() => OnPropertyChanged(nameof(CanRedoRootWorkspace)));
+        if (failures.Count != 0) throw new AggregateException("历史已更新，部分界面刷新失败。", failures);
+    }
+
+    private void RefreshReplayedResults(SolutionSession session, DocumentHistoryCoordinator history)
+    {
+        var revision = history.Revision;
+        var affected = history.LastInvalidatedNodes.ToArray();
+        var failures = new List<Exception>();
+        bool Current() => ReferenceEquals(DocumentManager.Session, session)
+            && ReferenceEquals(session.History, history) && !history.IsClosed && history.Revision == revision
+            && !IsRunning && !_executionManager.IsAnyRunning();
+        foreach (var node in affected)
+        {
+            if (!Current()) break;
+            var context = _workflowContextService.Get(node.WorkflowId);
+            var oldResult = context?.GetNodeResult(node.NodeId);
+            // Invalidate queued completions before dropping the cached reader. A retirement
+            // observer may reenter and install a newer result; never remove that new result.
+            try { session.Document.ExecutionOwner.RetireNode(node.WorkflowId + "/" + node.NodeId); }
+            catch (Exception error) { failures.Add(error); }
+            if (!Current()) break;
+            try { if (oldResult is not null && ReferenceEquals(context?.GetNodeResult(node.NodeId), oldResult)) context!.RemoveNodeResult(node.NodeId); }
+            catch (Exception error) { failures.Add(error); }
+        }
+        if (Current() && SelectedNode is {} selected && WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId is {} workflowId
+            && affected.Any(node => node.WorkflowId == workflowId && node.NodeId == selected.Id)
+            && session.Document.Workflows.Any(flow => flow.Id == workflowId && flow.Nodes.Any(node => ReferenceEquals(node, selected))))
+        {
+            // If retirement reentered and published a new generation, its presentation wins.
+            var currentResult = _workflowContextService.Get(workflowId)?.GetNodeResult(selected.Id)?.Result;
+            try { if (currentResult?.ExecutionIdentity?.IsCurrent != true) UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters); }
+            catch (Exception error) { failures.Add(error); }
+        }
+        if (failures.Count != 0) throw new AggregateException("历史已回放，部分结果清理或刷新失败。", failures);
     }
 }

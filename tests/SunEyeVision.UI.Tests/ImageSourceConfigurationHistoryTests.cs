@@ -68,6 +68,42 @@ public sealed class ImageSourceConfigurationHistoryTests
     }
 
     [Fact]
+    public void Replay_reports_only_successful_configuration_changes_and_their_downstream_scope()
+    {
+        var (model,node,_)=Create();
+        var downstream=ImageSourceTestRuntime.Node("downstream");
+        var unrelated=ImageSourceTestRuntime.Node("unrelated");
+        model.Workflows[0].Nodes.Add(downstream);model.Workflows[0].Nodes.Add(unrelated);
+        model.Workflows[0].Connections.Add(new WorkflowConnection("link",node.Id,downstream.Id));
+        var other=new SunEyeVision.Workflow.Workflow("other","另一流程");
+        other.Nodes.Add(ImageSourceTestRuntime.Node(node.Id));model.Workflows.Add(other);
+        var session=(SolutionSession)Activator.CreateInstance(typeof(SolutionSession),BindingFlags.Instance|BindingFlags.NonPublic,
+            null,new object[]{model},null)!;
+        var host=session.Editing.Host;var edit=host.BeginEdit("root",node.Id);
+        ImageSourceTestRuntime.Edit(edit.Node,config=>config.AutoSwitchEnabled=false);
+        host.Commit(edit);
+        Assert.Empty(session.History.LastInvalidatedNodes); // Initial acceptance has its own publication.
+        var observed=new List<ScopedNodeIdentity[]>();
+        session.History.Changed+=(_,_)=>observed.Add(session.History.LastInvalidatedNodes.ToArray());
+        Assert.True(session.History.Undo());
+        Assert.Contains(new ScopedNodeIdentity("root",node.Id),session.History.LastInvalidatedNodes);
+        Assert.Contains(new ScopedNodeIdentity("root",downstream.Id),session.History.LastInvalidatedNodes);
+        Assert.DoesNotContain(new ScopedNodeIdentity("root",unrelated.Id),session.History.LastInvalidatedNodes);
+        Assert.DoesNotContain(new ScopedNodeIdentity("other",node.Id),session.History.LastInvalidatedNodes);
+        Assert.True(session.History.Redo());
+        Assert.Equal(observed[0],observed[1]);
+        var revision=session.History.Revision;
+        var injection=typeof(NodeConfigurationEditHost).GetField("_acceptanceFailureAfterRawMutation",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        injection.SetValue(host,1);
+        try { Assert.Throws<InvalidOperationException>(()=>session.History.Undo()); }
+        finally { injection.SetValue(host,-1); }
+        Assert.Equal(revision,session.History.Revision);Assert.Equal(2,observed.Count);
+        Assert.False(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
+        session.History.NavigateTo(session.History.SessionId,null);
+        Assert.Equal(3,observed.Count);Assert.Equal(observed[0],observed[2]);
+    }
+
+    [Fact]
     public void Unrelated_structure_sync_preserves_source_history_and_the_added_node()
     {
         var (model,node,host)=Create();

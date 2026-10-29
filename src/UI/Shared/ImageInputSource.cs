@@ -35,6 +35,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     public ReadOnlyObservableCollection<ImageInfo> Images { get; }
     /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
     public Action<ImageSourceEditProposal>? ConfigurationWriter { get; set; }
+    internal Func<IDisposable>? ConfigurationLeaseProvider { get; set; }
     public event EventHandler<int>? CurrentImageChanged;
     public event EventHandler? ConfigurationEdited;
     public event EventHandler<ImageSourceSelectionEventArgs>? ExplicitSelectionAccepted;
@@ -44,8 +45,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nodeId); NodeId = nodeId; Images = new(_entries);
     }
-    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
-    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
+    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
+    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
     public int Count => _entries.Count;
     public bool HasImages => Count != 0;
     public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
@@ -91,8 +92,10 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         if (_committing) throw new InvalidOperationException("图像源编辑不能重入。");
         if (_readOnly) throw new InvalidOperationException("图像输入源已锁定。");
         if (_requiresWriter && ConfigurationWriter is null) throw new InvalidOperationException("图像源尚未连接当前方案的正式编辑会话。");
+        if (_requiresWriter && ConfigurationLeaseProvider is null) throw new InvalidOperationException("图像源尚未连接正式执行门禁。");
         if (index < -1 || index >= rows.Length || !Enum.IsDefined(mode) || rows.Any(row=>row is null||string.IsNullOrWhiteSpace(row.Id)) || rows.Select(row=>row.Id).Distinct(StringComparer.Ordinal).Count()!=rows.Length)
             throw new InvalidOperationException("图像源条目身份、选择或模式无效。");
+        using var configurationLease = ConfigurationLeaseProvider?.Invoke();
         var configuration=Configuration(rows,index,mode,auto,selected);
         var displayIndex=selectStart?index:RemapDisplay(rows,index);
         var version=EditVersion;

@@ -56,6 +56,7 @@ public partial class MainWindowViewModel
         var session=DocumentManager.Session??throw new InvalidOperationException("图像源缺少当前方案编辑会话。");
         var root=session.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Nodes.Any(item=>ReferenceEquals(item,node)));
         source.AttachFormalOwner();
+        source.ConfigurationLeaseProvider=_executionManager.BeginHistoryMutation;
         // Root source editing only; Group source editing requires its deferred ownership contract.
         source.ConfigurationWriter=proposal=>
         {
@@ -78,7 +79,10 @@ public partial class MainWindowViewModel
                 // from the last runtime cursor. Reset only this source, never other sources.
                 if(proposal.SelectStart)_executionManager.ResetLocalImageCursor(root.Id,node.Id);
                 // Acceptance is final; observer failure cannot make the source roll back its accepted state.
-                try { RefreshProductionPublication(session,publication); }
+                try { InvalidatePublishedResults(session,publication.InvalidatedNodes,
+                    ()=>_acceptingImageSource&&ReferenceEquals(DocumentManager.Session,session)&&!IsRunning&&!_executionManager.IsAnyRunning()); }
+                catch(Exception error) { try { _logger?.LogError("图像源已接纳，结果失效失败", "MainWindowViewModel",error); } catch { } }
+                try { RefreshProductionPublication(session,publication,resultsAlreadyRefreshed:true); }
                 catch(Exception error) { try { _logger?.LogError("图像源已接纳，显示刷新失败", "MainWindowViewModel",error); } catch { } }
             }
             finally { _acceptingImageSource=false; }

@@ -378,6 +378,7 @@ public sealed class ResultWorkspaceProductionTests
         source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
         Pump();
         Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(previous.IsCurrent());
+        Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
         var declaration=Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication);
         Assert.Equal(ResultViewState.Declaration,declaration.State);Assert.Null(declaration.Stamp.Invocation);
         Assert.Contains(declaration.Schema.Outputs,port=>port.Id=="output.image");
@@ -497,6 +498,9 @@ public sealed class ResultWorkspaceProductionTests
         try
         {
             Assert.Throws<InvalidOperationException>(()=>history.Undo());
+            var version=f.Main.ActiveInputSource!.EditVersion;
+            Assert.Throws<InvalidOperationException>(()=>f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}}));
+            Assert.Equal(version,f.Main.ActiveInputSource!.EditVersion);Assert.Single(f.Main.ActiveInputSource.Images);
             Assert.Equal(revision,history.Revision);Assert.Equal(position,history.Position);
             Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
             Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
@@ -504,6 +508,60 @@ public sealed class ResultWorkspaceProductionTests
         }
         finally { release.TrySetResult();Until(()=>active.IsCompleted);active.GetAwaiter().GetResult(); }
         Assert.True(history.Undo());Pump();Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
+    });
+    [Fact]
+    public void Source_acceptance_holds_the_same_execution_gate_through_history_and_visible_list_notifications()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"source-acceptance-gate.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{10,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        var source=f.Main.ActiveInputSource!;var history=ServiceInitializer.SolutionManager.Session!.History;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;var attempts=new List<(string Phase,bool Accepted)>();
+        void Attempt(string phase)
+        {
+            attempts.Add((phase+"-continuous",manager.StartContinuousRun(tab)));
+            attempts.Add((phase+"-communication",manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult()));
+            attempts.Add((phase+"-other-thread",Task.Run(()=>
+            {
+                try { using var lease=manager.BeginHistoryMutation();return true; }
+                catch(InvalidOperationException) { return false; }
+            }).GetAwaiter().GetResult()));
+        }
+        EventHandler historyChanged=(_,_)=>Attempt("history");
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler collectionChanged=(_,_)=>Attempt("collection");
+        EventHandler configurationChanged=(_,_)=>Attempt("configuration");
+        history.Changed+=historyChanged;source.CollectionChanged+=collectionChanged;source.ConfigurationEdited+=configurationChanged;
+        try { source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true); }
+        finally { history.Changed-=historyChanged;source.CollectionChanged-=collectionChanged;source.ConfigurationEdited-=configurationChanged; }
+        Assert.Null(history.LastObserverError);Assert.Null(source.LastNotificationError);
+        Assert.Equal(9,attempts.Count);Assert.All(attempts,attempt=>Assert.False(attempt.Accepted,attempt.Phase));
+        Assert.Equal(path,Assert.Single(source.CapturePolicy().FilePaths));Assert.Equal(0,source.CurrentIndex);
+        Assert.False(manager.IsAnyRunning());
+        Assert.True(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult());
+    });
+    [Fact]
+    public void Source_acceptance_retires_old_queued_runs_without_overwriting_a_reentrant_new_result()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var old=f.Publish(f.Source,90);Results? next=null;
+        var path=Path.Combine(f.Directory,"accepted-reentrant.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{11,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        void Reenter(string domain)
+        {
+            if(next is null&&domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))next=f.Publish(f.Source,91);
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Reenter;
+        try { f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Reenter; }
+        Assert.NotNull(next);Assert.False(old.Snapshot.ExecutionIdentity!.IsCurrent);Assert.True(next!.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Same(next.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+        Assert.Equal(next.Snapshot.Identity,f.Main.CurrentResultPublication!.Stamp.Invocation);
     });
     [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()

@@ -60,6 +60,7 @@ public sealed partial class SolutionManagerUiTests
             (owner ?? Root).AddNode(node);
             // This unhosted fixture explicitly publishes its configuration before runs.
             // Production uses NodeConfigurationEditHost rather than this fixture callback.
+            source.ConfigurationLeaseProvider = Manager.BeginHistoryMutation;
             source.ConfigurationWriter = configuration =>
             {
                 ImageSourceTestRuntime.Edit(node,policy=>policy.UpdateLocalInput(configuration.Configuration));

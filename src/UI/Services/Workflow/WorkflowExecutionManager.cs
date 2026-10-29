@@ -45,6 +45,8 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly HashSet<string> _activeWorkflowIds = new();
         private readonly object _lock = new object();
         private bool _transitionBlocked;
+        private int _historyLeaseDepth;
+        private int _historyLeaseOwnerThread;
         private CancellationTokenSource? _solutionRunCts;
         private CancellationTokenSource? _communicationRunCts;
 
@@ -63,11 +65,26 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
+                var thread = Environment.CurrentManagedThreadId;
+                if (_historyLeaseDepth != 0)
+                {
+                    if (_historyLeaseOwnerThread != thread) throw new InvalidOperationException("另一线程正在修改编辑历史。");
+                    _historyLeaseDepth = checked(_historyLeaseDepth + 1);
+                    return new TransitionLease(ReleaseHistoryMutation);
+                }
                 if (_transitionBlocked || _solutionRunCts is not null || _communicationOperation || _activeWorkflowIds.Count != 0)
                     throw new InvalidOperationException("工作流或方案切换正在进行，不能修改编辑历史。");
-                _transitionBlocked = true;
+                _transitionBlocked = true; _historyLeaseOwnerThread = thread; _historyLeaseDepth = 1;
             }
-            return new TransitionLease(() => { lock (_lock) _transitionBlocked = false; });
+            return new TransitionLease(ReleaseHistoryMutation);
+        }
+        private void ReleaseHistoryMutation()
+        {
+            lock (_lock)
+            {
+                if (_historyLeaseDepth <= 0) throw new InvalidOperationException("历史租约已经释放。");
+                if (--_historyLeaseDepth == 0) { _historyLeaseOwnerThread = 0; _transitionBlocked = false; }
+            }
         }
         private sealed class TransitionLease(Action release) : IDisposable
         {

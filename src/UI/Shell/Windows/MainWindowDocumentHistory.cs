@@ -73,25 +73,30 @@ public partial class MainWindowViewModel
     private void RefreshReplayedResults(SolutionSession session, DocumentHistoryCoordinator history)
     {
         var revision = history.Revision;
-        var affected = history.LastInvalidatedNodes.ToArray();
-        var failures = new List<Exception>();
         bool Current() => ReferenceEquals(DocumentManager.Session, session)
             && ReferenceEquals(session.History, history) && !history.IsClosed && history.Revision == revision
             && !IsRunning && !_executionManager.IsAnyRunning();
+        InvalidatePublishedResults(session, history.LastInvalidatedNodes, Current);
+    }
+
+    private void InvalidatePublishedResults(SolutionSession session, IReadOnlyList<ScopedNodeIdentity> nodes, Func<bool> current)
+    {
+        var affected = nodes.ToArray();
+        var failures = new List<Exception>();
         foreach (var node in affected)
         {
-            if (!Current()) break;
+            if (!current()) break;
             var context = _workflowContextService.Get(node.WorkflowId);
             var oldResult = context?.GetNodeResult(node.NodeId);
             // Invalidate queued completions before dropping the cached reader. A retirement
             // observer may reenter and install a newer result; never remove that new result.
             try { session.Document.ExecutionOwner.RetireNode(node.WorkflowId + "/" + node.NodeId); }
             catch (Exception error) { failures.Add(error); }
-            if (!Current()) break;
+            if (!current()) break;
             try { if (oldResult is not null && ReferenceEquals(context?.GetNodeResult(node.NodeId), oldResult)) context!.RemoveNodeResult(node.NodeId); }
             catch (Exception error) { failures.Add(error); }
         }
-        if (Current() && SelectedNode is {} selected && WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId is {} workflowId
+        if (current() && SelectedNode is {} selected && WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId is {} workflowId
             && affected.Any(node => node.WorkflowId == workflowId && node.NodeId == selected.Id)
             && session.Document.Workflows.Any(flow => flow.Id == workflowId && flow.Nodes.Any(node => ReferenceEquals(node, selected))))
         {
@@ -100,6 +105,6 @@ public partial class MainWindowViewModel
             try { if (currentResult?.ExecutionIdentity?.IsCurrent != true) UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters); }
             catch (Exception error) { failures.Add(error); }
         }
-        if (failures.Count != 0) throw new AggregateException("历史已回放，部分结果清理或刷新失败。", failures);
+        if (failures.Count != 0) throw new AggregateException("配置已接纳，部分结果清理或刷新失败。", failures);
     }
 }

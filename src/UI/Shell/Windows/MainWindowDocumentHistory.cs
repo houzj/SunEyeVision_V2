@@ -37,9 +37,17 @@ public partial class MainWindowViewModel
         var history = session?.History;
         if (!ReferenceEquals(history, _observedDocumentHistory))
         {
-            if (_observedDocumentHistory != null) _observedDocumentHistory.Changed -= DocumentHistoryChanged;
+            if (_observedDocumentHistory != null)
+            {
+                _observedDocumentHistory.Changed -= DocumentHistoryChanged;
+                _observedDocumentHistory.SetMutationLeaseProvider(null);
+            }
             _observedDocumentHistory = history;
-            if (history != null) history.Changed += DocumentHistoryChanged;
+            if (history != null)
+            {
+                history.SetMutationLeaseProvider(_executionManager.BeginHistoryMutation);
+                history.Changed += DocumentHistoryChanged;
+            }
         }
         if (session != null)
             foreach (var tab in WorkflowTabViewModel.Tabs)

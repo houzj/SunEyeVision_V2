@@ -57,6 +57,18 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             return new TransitionLease(() => { lock (_lock) _transitionBlocked = false; });
         }
+        /// <summary>Hold the same admission gate used by manual, continuous, solution and
+        /// communication execution through a complete document history transaction.</summary>
+        internal IDisposable BeginHistoryMutation()
+        {
+            lock (_lock)
+            {
+                if (_transitionBlocked || _solutionRunCts is not null || _communicationOperation || _activeWorkflowIds.Count != 0)
+                    throw new InvalidOperationException("工作流或方案切换正在进行，不能修改编辑历史。");
+                _transitionBlocked = true;
+            }
+            return new TransitionLease(() => { lock (_lock) _transitionBlocked = false; });
+        }
         private sealed class TransitionLease(Action release) : IDisposable
         {
             private Action? _release = release;

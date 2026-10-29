@@ -326,6 +326,44 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Null(f.Presenter.OutputPane.CurrentFrame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table!.IsCurrent());
     });
     [Fact]
+    public void Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"large-strip.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        var source=f.Main.ActiveInputSource!;
+        source.AddImages(Enumerable.Range(0,1051).Select(index=>new SunEyeVision.UI.Shared.ImageInfo
+            {FilePath=path,SourceReference=path,Name="图像 "+index}),selectFirstAdded:true);
+        var strip=f.View.ImagePreviewContent;
+        Until(()=>strip.IsLoaded&&strip.Items.Count==1051);
+        f.Host.UpdateLayout();Pump();
+        var list=Assert.IsType<ListBox>(strip.FindName("lst"));
+        var scroll=Assert.Single(VisualDescendants<ScrollViewer>(list));scroll.ApplyTemplate();scroll.UpdateLayout();
+        var bar=Assert.IsType<System.Windows.Controls.Primitives.ScrollBar>(scroll.Template.FindName("PART_HorizontalScrollBar",scroll));
+        Assert.Equal(Visibility.Visible,scroll.ComputedHorizontalScrollBarVisibility);Assert.True(bar.IsVisible);
+        Assert.True(scroll.ScrollableWidth>0);Assert.True(bar.ActualHeight>0);
+        var bounds=bar.TransformToAncestor(f.Shell).TransformBounds(new Rect(bar.RenderSize));
+        var visible=bounds;
+        for(DependencyObject? ancestor=VisualTreeHelper.GetParent(bar);ancestor is not null&&!ReferenceEquals(ancestor,f.Shell);ancestor=VisualTreeHelper.GetParent(ancestor))
+            if(ancestor is FrameworkElement element)
+                visible.Intersect(element.TransformToAncestor(f.Shell).TransformBounds(new Rect(element.RenderSize)));
+        Assert.True(visible.Height>=bounds.Height-0.5,"水平滚动条被结果区某级宿主裁切。");
+        scroll.ScrollToHorizontalOffset(scroll.ScrollableWidth);Until(()=>scroll.HorizontalOffset>0);Pump();
+        Assert.InRange(Enumerable.Range(0,list.Items.Count).Count(index=>list.ItemContainerGenerator.ContainerFromIndex(index) is not null),1,200);
+        var session=Assert.IsType<ImageSourceStripSession>(strip.Session);var last=source.Images.Last();
+        session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None).GetAwaiter().GetResult();
+        Pump();Assert.Same(last,source.CurrentImage);Assert.Equal(1050,source.CapturePolicy().CurrentIndex);
+        strip.IsExpanded=false;Pump();Assert.Equal(40,strip.ActualHeight);Assert.False(bar.IsVisible);
+        var visibleIds=typeof(ImageSourceStripSession).GetField("_visibleIds",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        Until(()=>Assert.IsType<HashSet<string>>(visibleIds.GetValue(session)).Count==0);
+        strip.IsExpanded=true;Pump();Assert.Equal(125,strip.ActualHeight);
+        f.Host.Content=null;Pump();Assert.Null(strip.Session);Assert.True(session.IsReadOnly);Assert.Empty(session.Items);
+        f.Host.Content=f.View;Pump();Until(()=>strip.Session?.Items.Count==1051);
+        Assert.NotSame(session,strip.Session);Assert.Same(last,source.CurrentImage);
+    });
+    [Fact]
     public void Accepted_image_source_edit_retires_its_run_and_restores_formal_output_declaration()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {
@@ -406,6 +444,66 @@ public sealed class ResultWorkspaceProductionTests
         Assert.True(replacement!.Snapshot.ExecutionIdentity!.IsCurrent);
         Assert.Same(replacement.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
         Assert.Equal(ResultViewState.Success,f.Main.CurrentResultPublication!.State);
+    });
+    [Fact]
+    public void History_retirement_excludes_all_real_execution_admission_paths_until_every_node_is_invalidated()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"admission-history.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{7,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var source=f.Publish(f.Source,71);var downstream=f.Publish(f.Selected,72);
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;var attempted=false;var invoked=false;
+        void Reenter(string domain)
+        {
+            if(attempted||!domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))return;
+            attempted=true;
+            manager.RunSingleAsync(tab).GetAwaiter().GetResult();Assert.False(manager.IsAnyRunning());
+            Assert.False(manager.StartContinuousRun(tab));Assert.False(manager.IsAnyRunning());
+            Assert.Throws<InvalidOperationException>(()=>manager.RunSolutionAsync(f.Main.WorkflowTabViewModel.Tabs,f.Document).GetAwaiter().GetResult());
+            Assert.False(manager.RunCommunicationOperationAsync(_=>{invoked=true;return Task.CompletedTask;},CancellationToken.None).GetAwaiter().GetResult());
+            Assert.False(manager.IsAnyRunning());
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Reenter;
+        try { Assert.True(ServiceInitializer.SolutionManager.Session!.History.Undo());Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Reenter; }
+        Assert.True(attempted);Assert.False(invoked);Assert.Null(ServiceInitializer.SolutionManager.Session!.History.LastObserverError);
+        Assert.False(source.Snapshot.ExecutionIdentity!.IsCurrent);Assert.False(downstream.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.Null(f.Context.GetNodeResult(f.Selected.Id));
+        Assert.True(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult());
+        Assert.False(manager.IsAnyRunning());
+    });
+
+    [Fact]
+    public void Active_communication_prevents_history_mutation_without_advancing_or_losing_the_result()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"active-history.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{9,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var run=f.Publish(f.Source,81);var publication=f.Main.CurrentResultPublication!;
+        var history=ServiceInitializer.SolutionManager.Session!.History;var revision=history.Revision;var position=history.Position;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var release=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var active=manager.RunCommunicationOperationAsync(_=>release.Task,CancellationToken.None);
+        Assert.True(manager.IsAnyRunning());
+        try
+        {
+            Assert.Throws<InvalidOperationException>(()=>history.Undo());
+            Assert.Equal(revision,history.Revision);Assert.Equal(position,history.Position);
+            Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+            Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+            Assert.True(run.Snapshot.ExecutionIdentity!.IsCurrent);Assert.Same(publication,f.Main.CurrentResultPublication);
+        }
+        finally { release.TrySetResult();Until(()=>active.IsCompleted);active.GetAwaiter().GetResult(); }
+        Assert.True(history.Undo());Pump();Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
     });
     [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
@@ -603,6 +701,15 @@ public sealed class ResultWorkspaceProductionTests
         var panel=Assert.IsAssignableFrom<Panel>(view.Template.FindName("ImageLayers",view));
         var baseImage=Assert.IsType<Image>(view.Template.FindName("sImage",view));Assert.Contains(baseImage,panel.Children.Cast<object>());
         return panel.Children.Cast<object>().Where(layer=>!ReferenceEquals(layer,baseImage)).ToArray();
+    }
+    private static IEnumerable<T> VisualDescendants<T>(DependencyObject parent) where T:DependencyObject
+    {
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
+        {
+            var child=VisualTreeHelper.GetChild(parent,index);
+            if(child is T match)yield return match;
+            foreach(var nested in VisualDescendants<T>(child))yield return nested;
+        }
     }
     private static void Pump()
     { var frame = new DispatcherFrame(); Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() => frame.Continue = false)); Dispatcher.PushFrame(frame); }

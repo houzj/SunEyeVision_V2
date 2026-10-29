@@ -6,6 +6,11 @@ namespace SunEyeVision.UI.Tests;
 public sealed class DocumentHistoryCoordinatorTests
 {
     private sealed class State { public int A, B; }
+    private sealed class Lease(Action release) : IDisposable
+    {
+        private Action? _release=release;
+        public void Dispose()=>Interlocked.Exchange(ref _release,null)?.Invoke();
+    }
     private sealed class Change(State state, bool second, int next) : IDocumentHistoryOperation
     {
         private int? _before;
@@ -113,5 +118,21 @@ public sealed class DocumentHistoryCoordinatorTests
         var change = new Change(state, false, 2) { DuringApply = () => Assert.Throws<InvalidOperationException>(() => history.Undo()) };
         history.Changed += (_, _) => { Assert.True(history.CanUndo); Assert.Throws<InvalidOperationException>(() => history.Undo()); throw new Exception("观察者失败"); };
         history.Execute(change); Assert.Equal(2, state.A); Assert.Equal(1, history.Position); Assert.NotNull(history.LastObserverError);
+    }
+
+    [Fact]
+    public void Host_mutation_lease_covers_apply_and_observers_and_is_released_on_failure()
+    {
+        using var history=new DocumentHistoryCoordinator(Guid.NewGuid());var active=0;var state=new State();
+        history.SetMutationLeaseProvider(()=>{Assert.Equal(0,active);active++;return new Lease(()=>active--);});
+        var change=new Change(state,false,3){DuringApply=()=>Assert.Equal(1,active)};
+        EventHandler observer=(_,_)=>{Assert.Equal(1,active);throw new InvalidOperationException("observer failure");};
+        history.Changed+=observer;
+        history.Execute(change);Assert.Equal(0,active);Assert.Contains("observer failure",history.LastObserverError!.ToString());
+        change.FailApply=true;
+        Assert.Throws<InvalidOperationException>(()=>history.Undo());
+        Assert.Equal(0,active);Assert.Equal(3,state.A);Assert.Equal(1,history.Position);
+        change.FailApply=false;Assert.True(history.Undo());Assert.Equal(0,active);Assert.Equal(0,state.A);
+        history.Changed-=observer;history.SetMutationLeaseProvider(null);
     }
 }

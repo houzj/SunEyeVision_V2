@@ -41,6 +41,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     private int _position;
     private long _sequence;
     private bool _busy, _notifying, _closed;
+    private Func<IDisposable>? _mutationLeaseProvider;
     public Guid SessionId { get; }
     public long Revision { get; private set; }
     public DocumentHistoryEntry? LastAppliedEntry { get; private set; }
@@ -64,11 +65,29 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         _capacity = capacity;
     }
 
+    /// <summary>The document host supplies its shared execution exclusion lease. History itself
+    /// stays independent of the UI and does not own the host or a running workflow.</summary>
+    public void SetMutationLeaseProvider(Func<IDisposable>? provider)
+    {
+        if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if (_closed && provider is not null) throw new ObjectDisposedException(nameof(DocumentHistoryCoordinator));
+        if (provider is not null && _mutationLeaseProvider is not null && _mutationLeaseProvider != provider)
+            throw new InvalidOperationException("历史已有另一个执行门禁宿主。");
+        _mutationLeaseProvider = provider;
+    }
+
+    private IDisposable? AcquireMutationLease()
+    {
+        var provider = _mutationLeaseProvider;
+        return provider is null ? null : provider() ?? throw new InvalidOperationException("历史执行门禁没有返回租约。");
+    }
+
     /// <summary>Ownership transfers only after successful application. A failed preparation/application
     /// leaves ownership with the caller and does not clear redo or advance the sequence.</summary>
     public DocumentHistoryEntry Execute(IDocumentHistoryOperation operation)
     {
         EnsureMutationAllowed();
+        using var mutationLease = AcquireMutationLease();
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(operation.Scopes);
         if (_items.Any(x => ReferenceEquals(x.Operation, operation))) throw new ArgumentException("同一历史载荷不能重复登记。");
@@ -100,6 +119,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         EnsureMutationAllowed();
         if (!CanUndo) return false;
+        using var mutationLease = AcquireMutationLease();
         var item=_items[_position-1];
         Apply(item.Operation, DocumentHistoryDirection.Backward);
         LastAppliedEntry=item.Entry;
@@ -111,6 +131,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         EnsureMutationAllowed();
         if (!CanRedo) return false;
+        using var mutationLease = AcquireMutationLease();
         var item=_items[_position];
         Apply(item.Operation, DocumentHistoryDirection.Forward);
         LastAppliedEntry=item.Entry;
@@ -205,6 +226,6 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         EnsureMutationAllowed(allowFault: true);
         _closed = true; LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
         var discarded = _items.ToArray(); _items.Clear(); _position = 0; Revision++;
-        Release(discarded); Notify(); Changed = null;
+        Release(discarded); Notify(); Changed = null; _mutationLeaseProvider = null;
     }
 }

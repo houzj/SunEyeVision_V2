@@ -1,3 +1,7 @@
+## 2026-10-29 整批只读语义定位及根流程测试修正
+
+内存引用主线冻结试用DLL、10.0.12引用包及主线中立probe，解析Recovery全部引用源与入口共26源码；先发现RootResultImagePreviewTests误用Plugin.SDK.Core导致ToolExecutionOwner找不到，已改Plugin.Runtime。复核后余37诊断来自ImageSourceDesignComposition 14处旧字段合同及CameraStreamOwnership 23处本分支相机候选未集入主线DLL的接口差异；必须随主线固定合同与生产相机代码整批适配验证，不把混版诊断当产品失败。无emit/测试，非正式构建；主线已通知，试用版未动，原主方案同步。
+
 ## 2026-10-29 主线合同分叉的只读语义核查
 
 共同祖先36bcd14f后主线ddc59a9d将IToolDefinition.Describe/Capabilities改为无参并同步Workflow/图像源/测试声明；独立分支仍为带settings版本，不能直接混编或整支覆盖。内存Roslyn只读引用主线试用DLL及10.0.12引用包，选本分支7个结果/调试/工作区测试源：本分支中立声明产生两处CS0535；单次改读主线已有声明后该有限组合零语义错误。无程序集输出、无测试执行；引用包非正式目标，且未包含全部源码，不能当正式编译或同源验收。主线已收到合同风险，试用版冻结；整合需先选主线固定合同并同步所有消费者，原249/回放/导航/硬件/VS/人工仍未完成，主方案同步。

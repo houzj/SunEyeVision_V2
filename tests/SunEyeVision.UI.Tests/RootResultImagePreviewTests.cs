@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.UI.Shell.Windows;
 using Xunit;
 

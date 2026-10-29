@@ -117,7 +117,7 @@ public sealed partial class SolutionManagerUiTests
             using var fixture=FixtureWithSynchronousNotifications();
             var source=fixture.AddSource("source",3);
             var missing=source.Images[1].FilePath;
-            File.Delete(missing);
+            System.IO.File.Delete(missing);
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.NotEmpty(fixture.Errors);
             Assert.Equal(1,source.CurrentIndex);

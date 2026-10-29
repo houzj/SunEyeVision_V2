@@ -88,9 +88,14 @@ internal sealed class ImageSourceInvocationInputs : IDisposable
             if(ownsFrame){ownsFrame=false;frame.Dispose();}
             var lease=new ImageSourceInvocationInputs(values,image);image=null;return lease;
         }
-        finally
+        catch(Exception failure)
         {
-            try{image?.Dispose();}finally{if(ownsFrame)frame?.Dispose();}
+            var cleanup=new List<Exception>();
+            try{image?.Dispose();}catch(Exception error){cleanup.Add(error);}
+            if(ownsFrame)try{frame?.Dispose();}catch(Exception error){cleanup.Add(error);}
+            if(cleanup.Count!=0)
+                throw new AggregateException("图像源输入获取及资源清理均失败。",new[]{failure}.Concat(cleanup));
+            throw;
         }
     }
     public void Dispose()=>Interlocked.Exchange(ref _imageOwner,null)?.Dispose();

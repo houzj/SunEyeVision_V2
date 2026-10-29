@@ -224,6 +224,28 @@ public sealed class ImageSourceDebugInvocationTests
         Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Camera_debug_retains_original_failure_and_frame_cleanup_failure(bool cancelled)
+    {
+        using var f=new Fixture();f.Camera();using var cancellation=new CancellationTokenSource();
+        var image=Substitute.For<IVisionImage>();
+        image.When(value=>value.Dispose()).Do(_=>throw new InvalidOperationException("frame-release-failed"));
+        var frame=new CameraFrame(new(cancelled?"camera":"other"),42,DateTimeOffset.UtcNow,image);
+        var service=Substitute.For<ICameraCaptureService>();
+        service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>
+        {if(cancelled)cancellation.Cancel();return Task.FromResult(frame);});
+        using var invocation=f.Capture(cancellation:cancellation.Token,camera:service);
+        var error=await Assert.ThrowsAsync<AggregateException>(()=>invocation.ExecuteAsync());
+        if(cancelled)Assert.Contains(error.InnerExceptions,item=>item is OperationCanceledException);
+        else Assert.Contains(error.InnerExceptions,item=>item.Message.Contains("设备身份不匹配"));
+        Assert.Contains(error.InnerExceptions,item=>item.Message=="frame-release-failed");
+        Assert.True(frame.IsDisposed);image.Received(1).Dispose();
+        Assert.Equal(0,invocation.Identity.Owner.ActiveRuns);
+        Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
+    }
+
     [Fact]
     public async Task Direct_formal_borrowed_camera_frame_remains_host_owned_after_run_disposal()
     {

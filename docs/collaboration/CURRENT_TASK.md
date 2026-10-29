@@ -1,3 +1,7 @@
+## 2026-10-29 结果视口/全屏/原组合/根窗口原49项回归候选
+
+在ad60f9b7原50项基础上整组纳入ResultImagePane 22、FullscreenScope 17、NativeResultComposition 7、RootResultImagePreview 3，原清单逐名门禁扩至99。真实发布/资源及窗口断言保留，三组每例独立STA及根窗口旧编辑器helper改走共享WPF Application Dispatcher；原单例Join超时不再单独生效，外层正式runner进程90秒超时仍保留。只读核查源码依赖、原99名称/Theory与当前合同一致；C#/PowerShell语法与diff通过，未正式编译/运行，原249剩余、HALCON/VM/VS/人工未验。
+
 ## 2026-10-29 图像源运行与格式原21项同源回归候选
 
 在ddba6577的29项基础上整组纳入ImageSourceRuntime 11及DeclarationAndFormat 10，原清单逐名门禁现核50名称；直接编译原新架构测试和ProductRuntimeTestHost，启动按正式Release schema2 manifest逐SHA绑定工具组件，样本只放Release/test-data下并清理。只读复核确认public类型、50名称/Theory格式和本机正式manifest形态；C#/PowerShell语法及diff检查通过，尚未构建或运行。模块初始化发生在SafeEntry之前，若manifest或装载失败会由进程日志报告而非伪造逐项通过；HALCON许可、正式产物同源、原249总体及人工验收未证。

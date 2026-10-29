@@ -10,7 +10,7 @@ public sealed class RootResultImagePreviewTests
 {
  [Fact]
  public void Actual_root_window_requires_explicit_port_reuses_snapshot_and_releases_on_close()
-  =>ImageThresholdProductionEditorTests.Sta(()=>
+  =>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
  {
   using var f=new ResultWorkspaceProductionTests.Fixture();
   var window=f.Main.OpenRootConfiguration(f.Main.WorkflowTabViewModel.SelectedTab!,f.Host)!;
@@ -34,7 +34,7 @@ public sealed class RootResultImagePreviewTests
  });
  [Fact]
  public void Actual_root_window_replaces_new_run_and_rejects_wrong_scope_and_document()
-  =>ImageThresholdProductionEditorTests.Sta(()=>
+  =>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
  {
   using var f=new ResultWorkspaceProductionTests.Fixture();
   var window=f.Main.OpenRootConfiguration(f.Main.WorkflowTabViewModel.SelectedTab!,f.Host)!;
@@ -54,7 +54,7 @@ public sealed class RootResultImagePreviewTests
  });
  [Fact]
  public void Actual_node_selection_contract_failure_clears_old_physical_image_and_reports_the_error()
-  =>ImageThresholdProductionEditorTests.Sta(()=>
+  =>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
  {
   using var f=new ResultWorkspaceProductionTests.Fixture();
   var window=f.Main.OpenRootConfiguration(f.Main.WorkflowTabViewModel.SelectedTab!,f.Host)!;

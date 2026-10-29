@@ -19,6 +19,7 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
     private CameraFrame? _pending;
     private TaskCompletionSource<bool>? _waiter;
     private Task? _streamTask;
+    private Task? _disposeTask;
     private Exception? _streamError;
     private bool _disposed;
     private long _replacedFrames;
@@ -88,9 +89,10 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
             if (streamTask.IsFaulted)
                 await streamTask.ConfigureAwait(false);
         }
-        catch
+        catch (Exception failure)
         {
-            await feed.DisposeAsync().ConfigureAwait(false);
+            try { await feed.DisposeAsync().ConfigureAwait(false); }
+            catch (Exception cleanup) { throw new AggregateException("相机取流启动及清理均失败。", failure, cleanup); }
             throw;
         }
         return feed;
@@ -184,36 +186,46 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
         waiter?.TrySetResult(true);
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         CameraFrame? pending;
         TaskCompletionSource<bool>? waiter;
+        TaskCompletionSource<bool> completion;
         lock (_gate)
         {
-            if (_disposed) return;
+            if (_disposeTask is not null) return new ValueTask(_disposeTask);
             _disposed = true;
             pending = _pending;
             _pending = null;
             waiter = _waiter;
             _waiter = null;
+            completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _disposeTask = completion.Task;
         }
         waiter?.TrySetResult(true);
-        _streamCancellation.Cancel();
-        try
+        _ = DrainAsync(pending, completion);
+        return new ValueTask(completion.Task);
+    }
+
+    private async Task DrainAsync(CameraFrame? pending, TaskCompletionSource<bool> completion)
+    {
+        var failures = new System.Collections.Generic.List<Exception>();
+        try { _streamCancellation.Cancel(); } catch (Exception error) { failures.Add(error); }
+        if (_streamTask is { } stream)
         {
-            if (_streamTask is not null)
-            {
-                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
-                catch (OperationCanceledException) { }
-                try { await _streamTask.ConfigureAwait(false); }
-                catch (OperationCanceledException) { }
-            }
+            try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
+            catch (OperationCanceledException) when (_streamCancellation.IsCancellationRequested) { }
+            catch (Exception error) { failures.Add(error); }
+            // The driver may throw before its producer exits. Keep acquisition ownership
+            // until the actual stream has ended, including when stop reported an error.
+            try { await stream.ConfigureAwait(false); }
+            catch (OperationCanceledException) when (_streamCancellation.IsCancellationRequested) { }
+            catch (Exception error) { failures.Add(error); }
         }
-        finally
-        {
-            pending?.Dispose();
-            _streamCancellation.Dispose();
-            _captureLease.Dispose();
-        }
+        try { pending?.Dispose(); } catch (Exception error) { failures.Add(error); }
+        try { _streamCancellation.Dispose(); } catch (Exception error) { failures.Add(error); }
+        try { _captureLease.Dispose(); } catch (Exception error) { failures.Add(error); }
+        if (failures.Count == 0) completion.TrySetResult(true);
+        else completion.TrySetException(new AggregateException("相机取流排空或清理失败。", failures));
     }
 }

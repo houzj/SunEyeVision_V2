@@ -18,7 +18,7 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = viewModel;
-        _host = new CameraPreviewHost(runtime ?? throw new ArgumentNullException(nameof(runtime)), cameraRef, existingSession);
+        _host = new CameraPreviewHost((runtime ?? throw new ArgumentNullException(nameof(runtime))).Runtime, cameraRef, existingSession);
         _host.CaptureStateChanged += OnCaptureStateChanged;
         PreviewHostContainer.Content = _host;
         Loaded += (_, _) => UpdateCaptureControls();
@@ -125,8 +125,16 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
     protected override async void OnClosed(EventArgs e)
     {
         _host.CaptureStateChanged -= OnCaptureStateChanged;
-        await _host.DisposeAsync();
-        await _viewModel.ClosePreviewSessionAsync();
-        base.OnClosed(e);
+        var failures = new System.Collections.Generic.List<Exception>();
+        try { await _host.DisposeAsync(); } catch (Exception error) { failures.Add(error); }
+        try { await _viewModel.ClosePreviewSessionAsync(); } catch (Exception error) { failures.Add(error); }
+        try { base.OnClosed(e); } catch (Exception error) { failures.Add(error); }
+        if (failures.Count != 0)
+        {
+            var failure = new AggregateException("相机预览关闭清理失败。", failures);
+            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
+                failure.Message, "CameraPreviewTrace", failure, SunEyeVision.Plugin.SDK.Logging.LogTarget.All);
+            _viewModel.ReportOperationStatus(failure.Message + " " + string.Join("；", System.Linq.Enumerable.Select(failures, error => error.Message)));
+        }
     }
 }

@@ -1275,15 +1275,28 @@ namespace SunEyeVision.UI.Services.Workflow
                 new CameraDeviceRef(cameraSource.Value.CameraId),
                 TimeSpan.FromMilliseconds(cameraSource.Value.TimeoutMs),
                 cancellationToken), cancellationToken);
+            ExecutionResult? result = null;
+            Exception? failure = null;
             try
             {
                 using var frame = await Task.Run(() => feed.NextFrameAsync(cancellationToken), cancellationToken);
-                return await ExecuteWorkflowInternal(workflow, cancellationToken,
+                result = await ExecuteWorkflowInternal(workflow, cancellationToken,
                     frame, cameraSource.Value.NodeId, sequenceNumbers, localImages);
+                return result;
             }
+            catch (Exception error) { failure = error; throw; }
             finally
             {
-                await Task.Run(async () => await feed.DisposeAsync());
+                try { await Task.Run(async () => await feed.DisposeAsync()); }
+                catch (Exception cleanup)
+                {
+                    var failures = new List<Exception>();
+                    if (failure is not null) failures.Add(failure);
+                    failures.Add(cleanup);
+                    // A completed result would otherwise be lost if cleanup aborts the return.
+                    if (result is not null) try { result.Dispose(); } catch (Exception error) { failures.Add(error); }
+                    throw new AggregateException("相机单次运行或取流清理失败。", failures);
+                }
             }
         }
 

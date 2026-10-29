@@ -111,9 +111,23 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     {
         if(_disposed||_draft is null)return;
         var id=ImageSourcePolicy.ReadFields(_nodeId,_draft.ReadFields()).CameraDeviceId;
-        _cameraStatus.Text=string.IsNullOrWhiteSpace(id)?"设备状态：未选择相机":
-            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime.TryGetSession(
-                new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id),out _)?"设备状态：已连接":"设备状态：未连接";
+        if(string.IsNullOrWhiteSpace(id)){_cameraStatus.Text="设备状态：未选择相机";return;}
+        if(!SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime.TryGetSession(
+            new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id),out var session))
+        {_cameraStatus.Text="设备状态：未连接";return;}
+        _cameraStatus.Text="设备状态："+(session.Adapter.State switch
+        {
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Offline=>"离线",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connecting=>"连接中",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connected=>"已连接",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.StartingCapture=>"正在启动采集",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Capturing=>"采集中",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.StoppingCapture=>"正在停止采集",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Reconnecting=>"重连中",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Faulted=>"故障",
+            SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Disposed=>"已释放",
+            _=>"未知"
+        });
     }
     private void OpenCameraManager(object sender,RoutedEventArgs args)
     {

@@ -14,7 +14,7 @@ internal static class S2DocumentEditingCases
         using var original=JsonDocument.Parse(File.ReadAllText(failedSource));
         var originals=original.RootElement.GetProperty("cases").EnumerateArray().Select(c=>c.GetProperty("originalName").GetString()!).ToHashSet(StringComparer.Ordinal);
         var results=new List<object>();int failures=0,covered=0;
-        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ImageSourceAcceptanceTests"})
+        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ImageSourceAcceptanceTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests"})
         {
             var type=assembly.GetType("SunEyeVision.UI.Tests."+name,true)!;
             foreach(var method in type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly).OrderBy(m=>m.Name))

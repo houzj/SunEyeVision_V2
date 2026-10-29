@@ -29,10 +29,12 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         if (cameraRef.IsEmpty || string.IsNullOrWhiteSpace(owner))
             throw new ArgumentException("相机引用和采集用途不能为空。");
         var lease = new CaptureOwner(Guid.NewGuid(), owner);
-        if (!_captureOwners.TryAdd(cameraRef.Value, lease))
+        while (!_captureOwners.TryAdd(cameraRef.Value, lease))
         {
-            var current = _captureOwners[cameraRef.Value];
-            throw new InvalidOperationException($"相机 {cameraRef.Value} 正由{current.Name}采集，请先停止该采集。");
+            // The previous owner can release between TryAdd and the lookup.
+            // Retry that transition instead of reporting a spurious missing key.
+            if (_captureOwners.TryGetValue(cameraRef.Value, out var current))
+                throw new InvalidOperationException($"相机 {cameraRef.Value} 正由{current.Name}采集，请先停止该采集。");
         }
         return new CaptureLease(() =>
         {
@@ -168,6 +170,9 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            // Single-frame acquisition shares the same exclusivity as preview and workflow streams.
+            // Keep the existing gate so concurrent single-frame requests still serialize.
+            using var lease = AcquireCaptureLease(request.CameraRef, "单帧采集");
             // 已由设备列表连接的会话归应用所有；本次取帧绝不能关闭它。
             if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))
                 return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);

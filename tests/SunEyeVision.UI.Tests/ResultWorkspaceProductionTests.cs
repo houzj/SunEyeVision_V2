@@ -383,7 +383,7 @@ public sealed class ResultWorkspaceProductionTests
         var stripSession=f.View.ImagePreviewContent.Session!;
         var selected=f.Main.ActiveInputSource!.Images.Single(image=>image.FilePath==file);
         var selection=stripSession.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,stripSession.Version,selected.Id),CancellationToken.None);
-        Until(()=>selection.IsCompleted);selection.GetAwaiter().GetResult();
+        Until(()=>selection.IsCompleted);AwaitWorkspace(selection);
         Until(() => f.Presenter.OutputPane.CurrentFrame?.Frame.SourceId.StartsWith("local-preview:", StringComparison.Ordinal) == true);
         Assert.Equal(new byte[] { 91 }, f.Presenter.OutputPane.Viewport.ReadPixel(0, 0)); Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
         var table = f.Main.CurrentResultPublication; f.Main.ClearImageCommand.Execute(null); Pump();
@@ -410,13 +410,13 @@ public sealed class ResultWorkspaceProductionTests
         Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
         Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
         var errors=new List<string>();manager.WorkflowExecutionError+=(_,e)=>errors.Add(e.ErrorMessage);
-        var run=manager.RunSingleAsync(tab);Until(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+        var run=manager.RunSingleAsync(tab);Until(()=>run.IsCompleted);AwaitWorkspace(run);
         Assert.Contains(errors,error=>error.Contains("运行游标不可用"));
         counter.SetValue(manager,0L);
         var repaired=source.SelectImage(1);
         Assert.True(repaired.FormalAccepted);Assert.True(repaired.RuntimeReady);
         errors.Clear();var retry=manager.RunSingleAsync(tab,advanceLocalImage:false,explicitSourceId:source.NodeId);
-        Until(()=>retry.IsCompleted);retry.GetAwaiter().GetResult();
+        Until(()=>retry.IsCompleted);AwaitWorkspace(retry);
         Assert.DoesNotContain(errors,error=>error.Contains("运行游标不可用"));
     });
     [Fact]
@@ -468,7 +468,7 @@ public sealed class ResultWorkspaceProductionTests
         var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;
         var request=strip.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportDirectory,
             strip.Version,paths:new[]{folder}),CancellationToken.None);
-        Until(()=>request.IsCompleted);request.GetAwaiter().GetResult();Pump();
+        Until(()=>request.IsCompleted);AwaitWorkspace(request);Pump();
         Assert.Equal(position+1,history.Position);Assert.Equal(2,ImageSourcePolicy.Read(f.Source)!.FilePaths.Count);
         Assert.Equal(2,source.Count);Assert.Contains(source.Images,image=>image.FilePath==first);Assert.Contains(source.Images,image=>image.FilePath==second);
         history.Undo();Pump();Assert.Empty(ImageSourcePolicy.Read(f.Source)!.FilePaths);Assert.Empty(source.Images);
@@ -503,7 +503,7 @@ public sealed class ResultWorkspaceProductionTests
         scroll.ScrollToHorizontalOffset(scroll.ScrollableWidth);Until(()=>scroll.HorizontalOffset>0);Pump();
         Assert.InRange(Enumerable.Range(0,list.Items.Count).Count(index=>list.ItemContainerGenerator.ContainerFromIndex(index) is not null),1,200);
         var session=Assert.IsType<ImageSourceStripSession>(strip.Session);var last=source.Images.Last();
-        session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None).GetAwaiter().GetResult();
+        AwaitWorkspace(session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None));
         Pump();Assert.Same(last,source.CurrentImage);Assert.Equal(1050,source.CapturePolicy().CurrentIndex);
         strip.IsExpanded=false;Pump();Assert.Equal(40,strip.ActualHeight);Assert.False(bar.IsVisible);
         var visibleIds=typeof(ImageSourceStripSession).GetField("_visibleIds",BindingFlags.Instance|BindingFlags.NonPublic)!;
@@ -613,10 +613,10 @@ public sealed class ResultWorkspaceProductionTests
         {
             if(attempted||!domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))return;
             attempted=true;
-            manager.RunSingleAsync(tab).GetAwaiter().GetResult();Assert.False(manager.IsAnyRunning());
+            AwaitWorkspace(manager.RunSingleAsync(tab));Assert.False(manager.IsAnyRunning());
             Assert.False(manager.StartContinuousRun(tab));Assert.False(manager.IsAnyRunning());
-            Assert.Throws<InvalidOperationException>(()=>manager.RunSolutionAsync(f.Main.WorkflowTabViewModel.Tabs,f.Document).GetAwaiter().GetResult());
-            Assert.False(manager.RunCommunicationOperationAsync(_=>{invoked=true;return Task.CompletedTask;},CancellationToken.None).GetAwaiter().GetResult());
+            Assert.Throws<InvalidOperationException>(()=>AwaitWorkspace(manager.RunSolutionAsync(f.Main.WorkflowTabViewModel.Tabs,f.Document)));
+            Assert.False(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>{invoked=true;return Task.CompletedTask;},CancellationToken.None)));
             Assert.False(manager.IsAnyRunning());
         }
         f.Document.ExecutionOwner.DomainRetired+=Reenter;
@@ -625,7 +625,7 @@ public sealed class ResultWorkspaceProductionTests
         Assert.True(attempted);Assert.False(invoked);Assert.Null(ServiceInitializer.SolutionManager.Session!.History.LastObserverError);
         Assert.False(source.Snapshot.ExecutionIdentity!.IsCurrent);Assert.False(downstream.Snapshot.ExecutionIdentity!.IsCurrent);
         Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.Null(f.Context.GetNodeResult(f.Selected.Id));
-        Assert.True(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult());
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None)));
         Assert.False(manager.IsAnyRunning());
     });
 
@@ -652,7 +652,7 @@ public sealed class ResultWorkspaceProductionTests
         var revision = history.Revision;
         var attempts = new List<(string Phase, bool Accepted)>();
         void Attempt(string phase) => attempts.Add((phase,
-            manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult()));
+            AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None))));
         EventHandler changed = (_, _) => Attempt("history");
         history.Changed += changed;
         try
@@ -674,7 +674,7 @@ public sealed class ResultWorkspaceProductionTests
         Assert.All(attempts, item => Assert.False(item.Accepted, item.Phase));
         Assert.Equal(commit ? after : before, f.Source.Position);
         Assert.Equal(revision + (commit ? 1 : 0), history.Revision);
-        Assert.True(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
     });
 
     [Theory]
@@ -702,7 +702,7 @@ public sealed class ResultWorkspaceProductionTests
             var relevant = undo ? args.OldItems?.Contains(node) == true : args.NewItems?.Contains(node) == true;
             if (!relevant) return;
             attempts++;
-            Assert.False(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+            Assert.False(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
             throw new InvalidOperationException("受控节点集合通知失败");
         };
         f.Flow.Nodes.CollectionChanged += observer;
@@ -710,7 +710,7 @@ public sealed class ResultWorkspaceProductionTests
         finally { f.Flow.Nodes.CollectionChanged -= observer; }
         Assert.Equal(1, attempts); Assert.Equal(undo, f.Flow.Nodes.Contains(node));
         Assert.Equal(revision, history.Revision); Assert.Equal(position, history.Position);
-        Assert.True(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
     });
     [Fact]
     public void Active_execution_rejects_composite_canvas_edit_before_its_first_mutation()
@@ -730,7 +730,7 @@ public sealed class ResultWorkspaceProductionTests
             Assert.Throws<InvalidOperationException>(() => tab.CommandManager.BeginTransaction());
             Assert.Equal(before, f.Source.Position); Assert.Equal(revision, history.Revision);
         }
-        finally { release.TrySetResult(); Until(() => active.IsCompleted); active.GetAwaiter().GetResult(); }
+        finally { release.TrySetResult(); Until(() => active.IsCompleted); AwaitWorkspace(active); }
         using (tab.CommandManager.BeginTransaction()) { }
     });
     [Fact]
@@ -760,7 +760,7 @@ public sealed class ResultWorkspaceProductionTests
             Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
             Assert.True(run.Snapshot.ExecutionIdentity!.IsCurrent);Assert.Same(publication,f.Main.CurrentResultPublication);
         }
-        finally { release.TrySetResult();Until(()=>active.IsCompleted);active.GetAwaiter().GetResult(); }
+        finally { release.TrySetResult();Until(()=>active.IsCompleted);AwaitWorkspace(active); }
         Assert.True(history.Undo());Pump();Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
     });
     [Fact]
@@ -778,12 +778,12 @@ public sealed class ResultWorkspaceProductionTests
         void Attempt(string phase)
         {
             attempts.Add((phase+"-continuous",manager.StartContinuousRun(tab)));
-            attempts.Add((phase+"-communication",manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult()));
-            attempts.Add((phase+"-other-thread",Task.Run(()=>
+            attempts.Add((phase+"-communication",AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None))));
+            attempts.Add((phase+"-other-thread",AwaitWorkspace(Task.Run(()=>
             {
                 try { using var lease=manager.BeginHistoryMutation();return true; }
                 catch(InvalidOperationException) { return false; }
-            }).GetAwaiter().GetResult()));
+            }))));
         }
         EventHandler historyChanged=(_,_)=>Attempt("history");
         System.Collections.Specialized.NotifyCollectionChangedEventHandler collectionChanged=(_,_)=>Attempt("collection");
@@ -795,7 +795,7 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Equal(9,attempts.Count);Assert.All(attempts,attempt=>Assert.False(attempt.Accepted,attempt.Phase));
         Assert.Equal(path,Assert.Single(source.CapturePolicy().FilePaths));Assert.Equal(0,source.CurrentIndex);
         Assert.False(manager.IsAnyRunning());
-        Assert.True(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None).GetAwaiter().GetResult());
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None)));
     });
     [Fact]
     public void Source_acceptance_retires_old_queued_runs_without_overwriting_a_reentrant_new_result()
@@ -1047,6 +1047,16 @@ public sealed class ResultWorkspaceProductionTests
             if(child is T match)yield return match;
             foreach(var nested in VisualDescendants<T>(child))yield return nested;
         }
+    }
+    private static void AwaitWorkspace(Task task)
+    {
+        Until(()=>task.IsCompleted);
+        try{task.GetAwaiter().GetResult();}
+        finally{Pump();}
+    }
+    private static T AwaitWorkspace<T>(Task<T> task)
+    {
+        AwaitWorkspace((Task)task);return task.GetAwaiter().GetResult();
     }
     private static void Pump()
     { var frame = new DispatcherFrame(); Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() => frame.Continue = false)); Dispatcher.PushFrame(frame); }

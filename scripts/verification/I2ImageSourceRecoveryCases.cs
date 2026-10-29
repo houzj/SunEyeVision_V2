@@ -107,17 +107,18 @@ internal static class S2DocumentEditingCases
                     var label=name+"."+method.Name+"("+string.Join(",",values)+")";
                     if(!executed.Add(label))throw new InvalidOperationException("重复图像源用例："+label);
                     bool wasFailed=originals.Contains(label);if(wasFailed)covered++;
+                    Console.WriteLine("START "+label);Console.Out.Flush();
                     try
                     {
                         var instance=Activator.CreateInstance(type)!;
                         try{if(method.Invoke(instance,values) is Task task)task.GetAwaiter().GetResult();}
                         finally{(instance as IDisposable)?.Dispose();}
-                        results.Add(new{name=label,passed=true,originalFailure=wasFailed});Console.WriteLine("PASS "+label);
+                        results.Add(new{name=label,passed=true,originalFailure=wasFailed});Console.WriteLine("PASS "+label);Console.Out.Flush();
                     }
                     catch(Exception error)
                     {
                         failures++;var cause=error.InnerException??error;
-                        results.Add(new{name=label,passed=false,originalFailure=wasFailed,error=cause.ToString()});Console.WriteLine("FAIL "+label+"\n"+cause);
+                        results.Add(new{name=label,passed=false,originalFailure=wasFailed,error=cause.ToString()});Console.WriteLine("FAIL "+label+"\n"+cause);Console.Out.Flush();
                     }
                 }
             }

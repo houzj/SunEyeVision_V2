@@ -78,12 +78,20 @@ public sealed partial class SolutionManagerUiTests
 
     private static void PumpLocalExecution(Func<Task> action)
     {
+        var dispatcher=System.Windows.Application.Current?.Dispatcher
+            ??System.Windows.Threading.Dispatcher.CurrentDispatcher;
         var frame=new System.Windows.Threading.DispatcherFrame();Exception? failure=null;
         _=Invoke();System.Windows.Threading.Dispatcher.PushFrame(frame);
         if(failure is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         async Task Invoke()
         {
-            try{await action();}
+            try
+            {
+                await action();
+                // ResultDispatchQueue posts normal-priority presentation separately
+                // from execution completion. Observe that queue before asserting UI results.
+                await dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
+            }
             catch(Exception error){failure=error;}
             finally{frame.Continue=false;}
         }

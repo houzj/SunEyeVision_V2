@@ -575,6 +575,10 @@ namespace SunEyeVision.UI.Services.Workflow
                     {
                         OnWorkflowExecutionStarted(workflowId);
                         using var executionResult = await ExecuteSingleTriggeredAsync(tab, cancellationToken, localImages: localImages);
+                        // The next root activation retires this root's publication identities.
+                        // Deliver its already queued node notifications before advancing roots.
+                        if(_resultDispatcher is not null)
+                            await _resultDispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Background,cancellationToken);
                         if(localImages.RoundStarted)
                             await CompleteLocalImagesAsync(localImages, cancellationToken);
                         if(executionResult.Status==ExecutionStatus.Cancelled)

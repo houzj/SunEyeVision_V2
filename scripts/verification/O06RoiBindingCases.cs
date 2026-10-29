@@ -228,7 +228,8 @@ internal static class S2DocumentEditingCases
         return flow.Nodes.Where(node=>node.ToolType=="ImageLoad").ToDictionary(node=>node.Id,node=>
         {
             var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源不是正式Runtime配置。");
-            return new ImageSourceRunInput(resolver.ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]),policy.SNInitialValue);
+            var address=resolver.ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
+            return new ImageSourceRunInput(address,policy.SNInitialValue) { LocalReadAdmission=_=>address };
         },StringComparer.Ordinal);
     }
     private static void Source(WorkflowNodeBase node,string producer,string output)=>node.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(node.Parameters,new ImageSourceReference(producer,output,producer,output));

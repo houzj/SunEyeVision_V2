@@ -1,4 +1,4 @@
-﻿using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.Workflow;
 using SunEyeVision.Workflow.Persistence;
@@ -8,6 +8,16 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class LocalImageConfigurationSnapshotTests
 {
+    [Theory]
+    [InlineData(-2)]
+    [InlineData(1)]
+    public void Shared_plan_rejects_out_of_range_start_before_sequence_admission(int start)
+    {
+        var policy=new ImageSourcePolicy { NodeId="source",FilePaths=new(){"a.bmp"},CurrentIndex=start };
+        Assert.Throws<InvalidOperationException>(()=>ImageSourcePolicy.CreateLocalPlan("source",policy,
+            new SolutionResourceResolver(System.IO.Path.GetTempPath())));
+    }
+
     [Fact]
     public void Plan_uses_formal_references_and_captured_base_without_any_preview_projection()
     {
@@ -16,12 +26,12 @@ public sealed class LocalImageConfigurationSnapshotTests
         ImageSourceTestRuntime.Edit(node,config=>{config.FilePaths=new(){"a.bmp","b.bmp","a.bmp"};config.CurrentIndex=2;});
         var config=ImageSourceTestRuntime.Read(node);
         var resolver = new SolutionResourceResolver(directory);
-        var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
+        var plan = ImageSourcePolicy.CreateLocalPlan("source", config, resolver);
         Assert.Equal(3, plan.Entries.Count);
         Assert.Equal(3, plan.Entries.Select(entry => entry.EntryId).Distinct().Count());
         Assert.Equal(plan.Entries[2].EntryId, plan.SelectedEntryId);
         Assert.Equal(System.IO.Path.Combine(directory, "a.bmp"), plan.Entries[0].Address);
-        var repeated = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
+        var repeated = ImageSourcePolicy.CreateLocalPlan("source", config, resolver);
         Assert.Equal(plan.Entries, repeated.Entries);
         config.FilePaths.Clear(); config.CurrentIndex = -1; config.AutoSwitchEnabled = false;
         Assert.Equal(3, plan.Entries.Count); Assert.True(plan.AutoAdvance);
@@ -35,14 +45,14 @@ public sealed class LocalImageConfigurationSnapshotTests
             config.RunMode=1;config.CurrentIndex=2;config.AutoSwitchEnabled=false;config.StopAtLastImage=true;});
         var config=ImageSourceTestRuntime.Read(node);
         var resolver = new SolutionResourceResolver(System.IO.Path.GetTempPath());
-        var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
+        var plan = ImageSourcePolicy.CreateLocalPlan("source", config, resolver);
         Assert.Equal(new[] { 0, 2 }, plan.Entries.Select(entry => entry.OriginalIndex));
         Assert.False(plan.AutoAdvance); Assert.True(plan.StopAtLast);
         var sequences = new LocalImageSequenceService();
         var generation = sequences.Begin("root", new[] { plan });
         Assert.Equal(2, sequences.GetInputs("root", generation).Single().Entry!.OriginalIndex);
         config.CurrentIndex = 1;
-        var excluded = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
+        var excluded = ImageSourcePolicy.CreateLocalPlan("source", config, resolver);
         Assert.Throws<InvalidOperationException>(() => sequences.Begin("root", new[] { excluded }));
     }
 
@@ -50,7 +60,7 @@ public sealed class LocalImageConfigurationSnapshotTests
     public void Viewless_empty_source_remains_editable_but_not_ready_for_execution()
     {
         var config = ImageSourceTestRuntime.Read(ImageSourceTestRuntime.Node());
-        var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, new SolutionResourceResolver(null));
+        var plan = ImageSourcePolicy.CreateLocalPlan("source", config, new SolutionResourceResolver(null));
         Assert.Empty(plan.Entries); Assert.Null(plan.SelectedEntryId);
         Assert.NotEmpty(RootWorkflowReadiness.EvaluateImageSource("source", config));
         config.SourceKind = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera;

@@ -384,6 +384,92 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Null(f.Presenter.OutputPane.CurrentFrame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table!.IsCurrent());
     });
     [Fact]
+    public void Accepted_source_edit_with_failed_cursor_reset_is_visible_but_cannot_run_until_repaired()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
+        var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var counter=typeof(WorkflowExecutionManager).GetField("_nextLocalImageReset",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        counter.SetValue(manager,long.MaxValue);
+        var receipt=source.SelectImage(1);
+        Assert.True(receipt.FormalAccepted);Assert.False(receipt.RuntimeReady);Assert.NotNull(receipt.ExecutionError);
+        Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        Assert.Contains("运行游标不可用",f.Main.StatusText);
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
+        Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
+        Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        var errors=new List<string>();manager.WorkflowExecutionError+=(_,e)=>errors.Add(e.ErrorMessage);
+        var run=manager.RunSingleAsync(tab);Until(()=>run.IsCompleted);run.GetAwaiter().GetResult();
+        Assert.Contains(errors,error=>error.Contains("运行游标不可用"));
+        counter.SetValue(manager,0L);
+        var repaired=source.SelectImage(1);
+        Assert.True(repaired.FormalAccepted);Assert.True(repaired.RuntimeReady);
+        errors.Clear();var retry=manager.RunSingleAsync(tab,advanceLocalImage:false,explicitSourceId:source.NodeId);
+        Until(()=>retry.IsCompleted);retry.GetAwaiter().GetResult();
+        Assert.DoesNotContain(errors,error=>error.Contains("运行游标不可用"));
+    });
+    [Fact]
+    public void Actual_source_selection_reentry_retains_the_committed_new_choice_and_rejects_the_stale_run()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
+        var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
+        EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
+        {if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
+        source.ExplicitSelectionAccepted+=selectAgain;
+        try
+        {
+            var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
+            Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
+            Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        }
+        finally{source.ExplicitSelectionAccepted-=selectAgain;}
+    });
+    [Fact]
+    public void Actual_result_workspace_navigation_commands_follow_formal_source_availability()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var previous=Assert.IsAssignableFrom<System.Windows.Input.ICommand>(f.Shell.PreviousImageCommand);
+        var next=Assert.IsAssignableFrom<System.Windows.Input.ICommand>(f.Shell.NextImageCommand);
+        Assert.False(previous.CanExecute(null));Assert.False(next.CanExecute(null));
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var path=Path.Combine(f.Directory,"navigation.png");
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var file=File.Create(path))encoder.Save(file);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}},selectFirstAdded:true);Pump();
+        Assert.True(previous.CanExecute(null));Assert.True(next.CanExecute(null));
+    });
+    [Fact]
+    public void Actual_folder_import_commits_once_and_round_trips_through_document_history()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var folder=Path.Combine(f.Directory,"folder");var child=Path.Combine(folder,"sub");System.IO.Directory.CreateDirectory(child);
+        var first=Path.Combine(folder,"a.png");var second=Path.Combine(child,"b.png");
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var file=File.Create(first))encoder.Save(file);File.Copy(first,second);
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var strip=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;
+        var request=strip.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportDirectory,
+            strip.Version,paths:new[]{folder}),CancellationToken.None);
+        Until(()=>request.IsCompleted);request.GetAwaiter().GetResult();Pump();
+        Assert.Equal(position+1,history.Position);Assert.Equal(2,ImageSourcePolicy.Read(f.Source)!.FilePaths.Count);
+        Assert.Equal(2,source.Count);Assert.Contains(source.Images,image=>image.FilePath==first);Assert.Contains(source.Images,image=>image.FilePath==second);
+        history.Undo();Pump();Assert.Empty(ImageSourcePolicy.Read(f.Source)!.FilePaths);Assert.Empty(source.Images);
+        history.Redo();Pump();Assert.Equal(2,ImageSourcePolicy.Read(f.Source)!.FilePaths.Count);Assert.Equal(2,source.Count);
+        Assert.True(File.Exists(first));Assert.True(File.Exists(second));
+    });
+    [Fact]
     public void Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
@@ -85,7 +85,7 @@ public sealed class RootResourceProductionTests
     foreach(var proxy in reopened.Configuration.RunParameters){Assert.Equal(proxy.FieldId,reopened.Resolve(proxy).FieldId);Assert.IsType<ReferenceSetting>(reopened.Read(proxy));}
    var engine=new WorkflowEngine(VisionLogger.Instance);engine.RegisterWorkflow(restoredRoot);
    var runner=new WorkflowExecutionEngine(engine,plugins,VisionLogger.Instance);
-   using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(restoredRoot.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{["image"]=new(imagePath,1)})).WaitAsync(TimeSpan.FromSeconds(30));
+   using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(restoredRoot.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{["image"]=new(imagePath,1){LocalReadAdmission=_=>imagePath}})).WaitAsync(TimeSpan.FromSeconds(30));
    Assert.True(run.Success,string.Join(";",run.Errors.Concat(run.NodeResults.Values.SelectMany(n=>n.ErrorMessages))));Assert.Equal(3,run.NodeResults.Count);
    var publication=run.DeclaredOutputs.Single(output=>output.Identity.NodeId=="blob-b");
    using var consumer=run.AcquireDeclaredOutput(publication.Identity);

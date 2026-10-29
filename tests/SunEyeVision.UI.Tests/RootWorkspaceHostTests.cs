@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -272,6 +272,16 @@ public sealed class RootWorkspaceHostTests
    var position=history.Position;
    Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
    Assert.Equal(position,history.Position); // Explicit same-value selection resets execution, without another history entry.
+   var first=source.Images[0];var second=source.Images[1];
+   EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
+   {if(ReferenceEquals(e.Image,first))source.SelectImage(1);};
+   source.ExplicitSelectionAccepted+=selectAgain;
+   try
+   {
+    Assert.False(main.TrySelectPreviewImage(tab,source,first,0,source.EditVersion));
+    Assert.Same(second,source.CurrentImage);Assert.Equal(1,ImageSourceTestRuntime.Read(node).CurrentIndex);
+   }
+   finally{source.ExplicitSelectionAccepted-=selectAgain;}
    EventHandler switchSource=(_,_)=>SetActiveSource(previousSource);
    source.ConfigurationEdited+=switchSource;
    try{Assert.False(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));}
@@ -304,7 +314,7 @@ public sealed class RootWorkspaceHostTests
   typeof(MainWindowViewModel).GetMethod("RefreshAcceptedImageSourceViews",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,null);
   var old=Assert.Single(source.Images);var version=source.EditVersion;
   Assert.Equal(Path.Combine(a,"pixel.png"),old.FilePath);
-  var frozen=SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager.CaptureLocalImagePlan(node.Id,ImageSourceTestRuntime.Read(node),
+  var frozen=SunEyeVision.Workflow.ImageSourcePolicy.CreateLocalPlan(node.Id,ImageSourceTestRuntime.Read(node),
    SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));
   var position=session.History.Position;
   var saved=manager.SaveCurrentDocument(Path.Combine(b,"source-base.json"));Assert.True(saved.FileWritten,saved.Error);
@@ -313,7 +323,7 @@ public sealed class RootWorkspaceHostTests
   Assert.Equal(new[]{"pixel.png"},ImageSourceTestRuntime.Read(node).FilePaths);
   Assert.False(source.TryPresentRuntimeCursor(version,old.Id,"pixel.png",old.FilePath));
   Assert.Equal(Path.Combine(a,"pixel.png"),Assert.Single(frozen.Entries).Address);
-  var latest=SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager.CaptureLocalImagePlan(node.Id,ImageSourceTestRuntime.Read(node),
+  var latest=SunEyeVision.Workflow.ImageSourcePolicy.CreateLocalPlan(node.Id,ImageSourceTestRuntime.Read(node),
    SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));
   Assert.Equal(current.FilePath,Assert.Single(latest.Entries).Address);
  }

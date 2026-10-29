@@ -116,7 +116,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             var invocation=new RuntimeDebugInvocation(workflow.Id,node,new InputValues(configuration.Schema.Inputs,inputs),identity,readers,values.Select(v=>v.Identity));
             if(node.ToolType=="ImageLoad")
             {
-                invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths);
+                invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths,owner,workflow.Id);
                 invocation._cameraService=cameraService;
             }
             return invocation;
@@ -149,7 +149,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     if(!values.TryAdd(pair.Key,pair.Value))throw new InvalidOperationException("图像源冻结输入与节点绑定冲突："+pair.Key);
                 inputs=new InputValues(_node.RuntimeConfiguration!.Schema.Inputs,values);
             }
-            outcome=await _node.ExecuteRuntimeAsync(inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources)).ConfigureAwait(false);
+            outcome=await _node.ExecuteRuntimeAsync(inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources,_sourceInput is null ? null : () => _sourceInput.AcceptLocalImage(Identity))).ConfigureAwait(false);
             transferred=true;result=DeclaredOutputSnapshot.Capture(resultSchema,0,Identity,resultNodeId,outcome,resources,timer.Elapsed.TotalMilliseconds,sourceWorkflowId:_workflowId);
             return result;
         }
@@ -158,6 +158,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         {
             Identity.CompleteCallbacks();_disposed=true;var cleanup=Release(_readers);
             try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
+            try{_sourceInput?.FinishRead();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}}
             if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Dispose();}catch(Exception error){cleanup.Add(error);}
@@ -168,10 +169,12 @@ public sealed class RuntimeDebugInvocation : IDisposable
     {
         if(_disposed)return;
         if(Volatile.Read(ref _started)!=0)throw new InvalidOperationException("正在执行的调试快照必须等待执行排空。");
-        _disposed=true;Identity.CompleteCallbacks();var errors=Release(_readers);if(errors.Count>0)throw new AggregateException(errors);
+        _disposed=true;Identity.CompleteCallbacks();var errors=Release(_readers);
+        try{_sourceInput?.FinishRead();}catch(Exception error){errors.Add(error);}if(errors.Count>0)throw new AggregateException(errors);
     }
     private static List<Exception> Release(List<IDisposable> readers)
     {var errors=new List<Exception>();foreach(var reader in readers)try{reader.Dispose();}catch(Exception error){errors.Add(error);}readers.Clear();return errors;}
-    private sealed record Context(RunIdentity Identity,CancellationToken Cancellation,IOutputResources Resources):IToolExecutionContext
-    {public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime调试");}
+    private sealed record Context(RunIdentity Identity,CancellationToken Cancellation,IOutputResources Resources,Func<string>? LocalRead):IToolExecutionContext,ILocalImageReadContext
+    {public string AcceptLocalImage()=>LocalRead?.Invoke()??throw new InvalidOperationException("当前调试不提供本地图像读取接纳。");
+     public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime调试");}
 }

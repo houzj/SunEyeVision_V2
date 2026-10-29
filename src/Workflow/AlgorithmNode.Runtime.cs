@@ -82,7 +82,7 @@ public partial class AlgorithmNode
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources),OutputRequests).ConfigureAwait(false);
+            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests).ConfigureAwait(false);
             transferred=true; // The envelope also disposes both owners when its constructor fails.
             prepared=captureResult(outcome,resources,timer.Elapsed.TotalMilliseconds);
             return prepared;
@@ -105,11 +105,12 @@ public partial class AlgorithmNode
             }
         }
     }
-    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources):IToolExecutionContext
+    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources,Func<string>? localRead):IToolExecutionContext,ILocalImageReadContext
     {
         public RunIdentity Identity=>identity;
         public CancellationToken Cancellation=>cancellation;
         public IOutputResources Resources=>resources;
+        public string AcceptLocalImage()=>localRead?.Invoke()??throw new InvalidOperationException("当前执行不提供本地图像读取接纳。");
         public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(
             SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime:"+identity.NodeId);
     }

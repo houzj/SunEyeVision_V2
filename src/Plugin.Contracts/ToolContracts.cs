@@ -97,6 +97,12 @@ public sealed class OutputValueRequest
         return type;
     }
 }
+/// <summary>Host-provided, single-invocation capability for committing an actual
+/// frozen local-image read. The returned address is the admitted entry, not a UI selection.</summary>
+public interface ILocalImageReadContext
+{
+    string AcceptLocalImage();
+}
 /// <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
 public interface IToolExecutionContext
 {

@@ -220,6 +220,72 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
+    public void Manual_folder_import_expands_one_level_in_vm_entry_order_as_one_edit()
+    {
+        Sta(()=>
+        {
+            var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing validation root"),"folder-order",Guid.NewGuid().ToString("N"));
+            var child=Path.Combine(root,"bb");var nested=Path.Combine(child,"nested");Directory.CreateDirectory(nested);
+            var childImage=Path.Combine(child,"x.jpg");var first=Path.Combine(root,"a.png");var last=Path.Combine(root,"cccc.bmp");
+            File.WriteAllBytes(childImage,new byte[]{1});File.WriteAllBytes(first,new byte[]{1});File.WriteAllBytes(last,new byte[]{1});
+            File.WriteAllBytes(Path.Combine(root,"skip.txt"),new byte[]{1});File.WriteAllBytes(Path.Combine(nested,"ignored.png"),new byte[]{1});
+            try
+            {
+                var source=new ImageInputSource("source");var writes=0;source.ConfigurationWriter=_=>writes++;
+                using var fixture=new NativeSourceFixture(source);
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportDirectory,paths:new[]{root}));
+                Assert.Equal(new[]{childImage,first,last},source.Images.Select(image=>image.FilePath));
+                Assert.Equal(1,writes);Assert.Equal(childImage,source.CurrentImage!.FilePath);
+            }
+            finally{Directory.Delete(root,true);}
+        });
+    }
+
+    [Fact]
+    public void Folder_import_failure_after_an_earlier_directory_does_not_accept_a_partial_batch()
+    {
+        Sta(()=>
+        {
+            var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing validation root"),"folder-failure",Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);var file=Path.Combine(root,"first.png");File.WriteAllBytes(file,new byte[]{1});
+            try
+            {
+                var source=new ImageInputSource("source");var existing=new ImageInfo{FilePath="existing.png"};
+                source.AddImages(new[]{existing},selectFirstAdded:true);var initialVersion=source.EditVersion;
+                var writes=0;source.ConfigurationWriter=_=>writes++;
+                using var fixture=new NativeSourceFixture(source);
+                Assert.Throws<DirectoryNotFoundException>(()=>PumpPreviewTask(fixture.Control,
+                    fixture.Request(ImageSourceStripRequestKind.ImportDirectory,paths:new[]{root,Path.Combine(root,"missing")})));
+                Assert.Equal(0,writes);Assert.Single(source.Images);Assert.Same(existing,source.CurrentImage);
+                Assert.Equal(initialVersion,source.EditVersion);Assert.False(fixture.Session.IsImporting);
+                Assert.True(File.Exists(file));
+            }
+            finally{Directory.Delete(root,true);}
+        });
+    }
+
+    [Fact]
+    public void Import_reentrant_selection_keeps_formal_batch_without_reporting_the_old_projection()
+    {
+        Sta(()=>
+        {
+            var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing validation root"),"import-reentrant",Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);var path=Path.Combine(root,"new.png");File.WriteAllBytes(path,new byte[]{1});
+            try
+            {
+                var source=new ImageInputSource("source");var original=new ImageInfo{FilePath="existing.png"};
+                source.AddImages(new[]{original},selectFirstAdded:true);var writes=0;source.ConfigurationWriter=_=>writes++;
+                using var fixture=new NativeSourceFixture(source);
+                source.ExplicitSelectionAccepted+=(_,e)=>{if(!ReferenceEquals(e.Image,original))source.SelectImage(0);};
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportFiles,paths:new[]{path}));
+                Assert.Equal(2,writes);Assert.Equal(2,source.Count);Assert.Same(original,source.CurrentImage);
+                Assert.DoesNotContain("已导入",fixture.Session.Status??string.Empty);
+            }
+            finally{Directory.Delete(root,true);}
+        });
+    }
+
+    [Fact]
     public void Import_cancel_before_acceptance_does_not_publish_or_change_selection()
     {
         Sta(() =>
@@ -236,6 +302,7 @@ public sealed partial class SolutionManagerUiTests
             Assert.Equal(0, writes); Assert.Single(source.Images);
             Assert.Equal("existing.png", source.CurrentImage!.FilePath);
             Assert.False(fixture.Session.IsImporting);
+            Assert.Contains("取消",fixture.Session.Status);Assert.DoesNotContain("已正式接纳",fixture.Session.Status);
         });
     }
 
@@ -314,7 +381,8 @@ public sealed partial class SolutionManagerUiTests
     // This execution test needs a temporary manager, not the retired manager window/card fixture.
     private sealed class PreviewSolutionFixture : IDisposable
     {
-        private readonly string _root = Path.Combine(Path.GetTempPath(), "SunEyeVision-PreviewPolicy", Guid.NewGuid().ToString("N"));
+        private readonly string _root = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")
+            ?? throw new InvalidOperationException("Missing validation root"), "preview-policy", Guid.NewGuid().ToString("N"));
         public SolutionManager Manager { get; }
         public string CreateImage(string name)
         {

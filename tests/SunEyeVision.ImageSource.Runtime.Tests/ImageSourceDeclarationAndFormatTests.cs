@@ -72,7 +72,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
     [InlineData("original")]
     [InlineData("mono8")]
     [InlineData("rgb24")]
-    public async Task Color_input_converts_real_pixels_without_changing_device_metadata_or_actual_domain(string format)
+    public async Task Camera_color_input_ignores_local_format_without_changing_metadata_or_domain(string format)
     {
         using var resources = new FrozenOutputResources();
         var sourceFrame = new ImageFrameAddress(Guid.NewGuid(), "camera:color-fixture");
@@ -92,25 +92,17 @@ public sealed class ImageSourceDeclarationAndFormatTests
         var values = output.ToValues();
         var image = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
         var gray = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
-        Assert.Equal(format == "mono8" ? PixelLayout.Gray8 : PixelLayout.Bgr24, image.Layout.Format);
+        Assert.Equal(PixelLayout.Bgr24, image.Layout.Format);
         Assert.Equal(PixelLayout.Gray8, gray.Layout.Format);
         using var imagePixels = image.AcquirePixels();
         using var grayPixels = gray.AcquirePixels();
         Assert.Equal(new byte[] { 47, 208 }, grayPixels.GetRow(0)[..2].ToArray());
         Assert.Equal((byte)80, grayPixels.GetRow(1)[1]);
-        if (format == "mono8")
-        {
-            Assert.Same(image, gray);
-            Assert.Equal(new byte[] { 47, 208 }, imagePixels.GetRow(0)[..2].ToArray());
-        }
-        else
-        {
-            Assert.NotSame(image, gray);
-            Assert.Equal(new byte[] { 150, 0, 100, 105, 255, 155 }, imagePixels.GetRow(0)[..6].ToArray());
-            Assert.Equal(new byte[] { 80, 80, 80 }, imagePixels.GetRow(1).Slice(3, 3).ToArray());
-        }
+        Assert.NotSame(image, gray);
+        Assert.Equal(new byte[] { 150, 0, 100, 105, 255, 155 }, imagePixels.GetRow(0)[..6].ToArray());
+        Assert.Equal(new byte[] { 80, 80, 80 }, imagePixels.GetRow(1).Slice(3, 3).ToArray());
         AssertImageIdentityAndDomain(image, context.Identity, ImageSourceOutput.Image);
-        AssertImageIdentityAndDomain(gray, context.Identity, format == "mono8" ? ImageSourceOutput.Image : ImageSourceOutput.GrayImage);
+        AssertImageIdentityAndDomain(gray, context.Identity, ImageSourceOutput.GrayImage);
         Assert.NotEqual(sourceFrame, image.Frame);
         Assert.Equal(original, borrowed.CopyPixels());
         Assert.Equal(sourceFrame, borrowed.Frame);
@@ -129,7 +121,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
     [InlineData("original")]
     [InlineData("mono8")]
     [InlineData("rgb24")]
-    public async Task Gray_input_supports_all_three_formats_and_rgb_replication_preserves_actual_domain(string format)
+    public async Task Camera_gray_input_ignores_local_format_and_preserves_actual_domain(string format)
     {
         using var resources = new FrozenOutputResources();
         var sourceFrame = new ImageFrameAddress(Guid.NewGuid(), "camera:gray-fixture");
@@ -145,23 +137,69 @@ public sealed class ImageSourceDeclarationAndFormatTests
         var values = output.ToValues();
         var image = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
         var gray = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
-        Assert.Equal(format == "rgb24" ? PixelLayout.Bgr24 : PixelLayout.Gray8, image.Layout.Format);
+        Assert.Equal(PixelLayout.Gray8, image.Layout.Format);
         using var pixels = image.AcquirePixels();
         using var grayPixels = gray.AcquirePixels();
         Assert.Equal(new byte[] { 10, 30 }, grayPixels.GetRow(0)[..2].ToArray());
         Assert.Equal((byte)80, grayPixels.GetRow(1)[1]);
-        if (format == "rgb24")
-        {
-            Assert.NotSame(image, gray);
-            Assert.Equal(new byte[] { 10, 10, 10, 30, 30, 30 }, pixels.GetRow(0)[..6].ToArray());
-            Assert.Equal(new byte[] { 80, 80, 80 }, pixels.GetRow(1).Slice(3, 3).ToArray());
-        }
-        else Assert.Same(image, gray);
+        Assert.Same(image, gray);
+        Assert.Equal(new byte[] { 10, 30 }, pixels.GetRow(0)[..2].ToArray());
         AssertImageIdentityAndDomain(image, context.Identity, ImageSourceOutput.Image);
-        AssertImageIdentityAndDomain(gray, context.Identity, format == "rgb24" ? ImageSourceOutput.GrayImage : ImageSourceOutput.Image);
+        AssertImageIdentityAndDomain(gray, context.Identity, ImageSourceOutput.Image);
         Assert.Equal(new byte[] { 10, 30, 99, 201, 77, 80, 88, 202 }, borrowed.CopyPixels());
         Assert.Equal("frame-123", values[ImageSourceOutput.FrameId]);
         Assert.Equal("2026-10-28T01:02:03.4560000+00:00", values[ImageSourceOutput.Timestamp]);
+    }
+
+    [Theory]
+    [InlineData(true,"original")]
+    [InlineData(true,"mono8")]
+    [InlineData(true,"rgb24")]
+    [InlineData(false,"original")]
+    [InlineData(false,"mono8")]
+    [InlineData(false,"rgb24")]
+    public async Task Local_file_formats_preserve_pixels_frame_and_decoded_domain(bool grayInput,string format)
+    {
+        var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")
+            ??throw new InvalidOperationException("Missing validation root"),"local-formats",Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path=Path.Combine(directory,"source.png");
+            var encoder=new PngBitmapEncoder();
+            var pixels=grayInput?new byte[]{20,90}:new byte[]{20,20,20,90,90,90};
+            encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(2,1,96,96,
+                grayInput?PixelFormats.Gray8:PixelFormats.Bgr24,null,pixels,grayInput?2:6)));
+            using(var file=File.Create(path))encoder.Save(file);
+            using var resources=new FrozenOutputResources();
+            var context=Context(resources,path);
+            var input=new InputValues(ImageSourceTool.Schema.Inputs,new Dictionary<string,object?> {
+                [ImageSourceTool.LocalAddress]=path,[ImageSourceTool.Sequence]=7L });
+            await using var session=new ImageSourceTool().CreateSession();
+            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {OutputFormat=format},input,context));
+            Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
+            using var output=outcome.Output!;
+            var values=output.ToValues();
+            var image=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
+            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
+            var expectGray=format=="mono8"||(format=="original"&&grayInput);
+            Assert.Equal(expectGray?PixelLayout.Gray8:PixelLayout.Bgr24,image.Layout.Format);
+            Assert.Equal(expectGray?new byte[]{20,90}:new byte[]{20,20,20,90,90,90},image.CopyPixels());
+            Assert.Equal(new byte[]{20,90},gray.CopyPixels());
+            Assert.Equal(context.Identity,image.Frame.ProducerRun);
+            Assert.Equal(context.Identity,gray.Frame.ProducerRun);
+            Assert.Equal(ImageSourceOutput.Image,image.Frame.SourcePortId);
+            Assert.Equal(expectGray?ImageSourceOutput.Image:ImageSourceOutput.GrayImage,gray.Frame.SourcePortId);
+            Assert.Equal(expectGray,ReferenceEquals(image,gray));
+            foreach(var result in new[]{image,gray})
+            {
+                Assert.Equal(result.Frame,result.EffectiveDomain.SourceFrame);
+                using var domain=result.EffectiveDomain.AcquireReader();
+                Assert.Equal(result.Frame,domain.SourceFrame);
+                Assert.Equal(new[]{new RegionRun(0,0,1)},domain.ReadRuns(0,4096).ToArray());
+            }
+        }
+        finally{Directory.Delete(directory,true);}
     }
 
     [Theory]
@@ -178,7 +216,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
             encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(2, 1, 96, 96, PixelFormats.Gray8, null, new byte[] { 17, 29 }, 2)));
             using (var file = File.Create(path)) encoder.Save(file);
             using var resources = new FrozenOutputResources();
-            var context = Context(resources);
+            var context = Context(resources,path);
             var arguments = new Dictionary<string, object?> { [ImageSourceTool.LocalAddress] = path, [ImageSourceTool.Sequence] = 21L };
             if (staleMetadata)
             {
@@ -207,9 +245,10 @@ public sealed class ImageSourceDeclarationAndFormatTests
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    private static IToolExecutionContext Context(FrozenOutputResources resources)
+    private static IToolExecutionContext Context(FrozenOutputResources resources,string? localAddress=null)
     {
-        var context = Substitute.For<IToolExecutionContext>();
+        var context = Substitute.For<IToolExecutionContext, ILocalImageReadContext>();
+        ((ILocalImageReadContext)context).AcceptLocalImage().Returns(_=>localAddress??throw new InvalidOperationException("测试缺少读取接纳地址。"));
         context.Identity.Returns(new RunIdentity(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "source", Guid.NewGuid()));
         context.Cancellation.Returns(CancellationToken.None); context.Resources.Returns(resources);
         return context;

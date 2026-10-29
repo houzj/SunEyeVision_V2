@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using SunEyeVision.UI.Shared;
 using Xunit;
 
@@ -6,6 +6,7 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class ImageSourceAcceptanceTests
 {
+    private sealed class Lease : IDisposable { public void Dispose() { } }
     [Fact]
     public void Explicit_selection_notice_excludes_mode_runtime_cursor_and_rejected_edits()
     {
@@ -24,10 +25,30 @@ public sealed class ImageSourceAcceptanceTests
     {
         var source=new ImageInputSource("source");var a=new ImageInfo{FilePath="a"};var b=new ImageInfo{FilePath="b"};
         source.AddImages(new[]{a,b},selectFirstAdded:true);var observed=new List<string>();
+        source.AttachFormalOwner();source.ConfigurationLeaseProvider=()=>new Lease();source.ConfigurationWriter=_=>{};
         source.ExplicitSelectionAccepted+=(_,e)=>{if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
         source.ExplicitSelectionAccepted+=(_,e)=>observed.Add(e.Image.Id);
-        source.SelectImage(0);
+        var outerReceipt=source.SelectImage(0);
+        Assert.True(outerReceipt.FormalAccepted);
+        Assert.Null(outerReceipt.ProjectionVersion); // The first formal edit committed, but its projection was superseded.
         Assert.Equal(new[]{b.Id},observed);Assert.Same(b,source.CurrentImage);Assert.Equal(1,source.CapturePolicy().CurrentIndex);
+    }
+    [Fact]
+    public void Selection_receipt_identifies_the_live_projection_and_rejection_preserves_it()
+    {
+        var source=new ImageInputSource("source");var a=new ImageInfo{FilePath="a"};var b=new ImageInfo{FilePath="b"};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);
+        var privateReceipt=source.SelectImage(0);
+        Assert.False(privateReceipt.FormalAccepted);Assert.Equal(source.EditVersion,privateReceipt.ProjectionVersion);
+        source.ConfigurationWriter=_=>{};
+        var draftReceipt=source.SelectImage(0);Assert.False(draftReceipt.FormalAccepted);
+        source.AttachFormalOwner();source.ConfigurationLeaseProvider=()=>new Lease();source.ConfigurationWriter=_=>{};
+        var receipt=source.SelectImage(1);
+        Assert.True(receipt.FormalAccepted);
+        Assert.Equal(source.EditVersion,receipt.ProjectionVersion);Assert.Same(b,source.CurrentImage);
+        source.ConfigurationWriter=_=>throw new InvalidOperationException("reject");
+        Assert.Throws<InvalidOperationException>(()=>source.SelectImage(0));
+        Assert.Equal(receipt.ProjectionVersion,source.EditVersion);Assert.Same(b,source.CurrentImage);
     }
     [Fact]
     public void Rejected_add_does_not_change_entries_selection_or_edit_version()

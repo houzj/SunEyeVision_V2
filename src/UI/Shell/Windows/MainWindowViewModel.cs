@@ -1969,10 +1969,29 @@ SplitterPosition = position;
             LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");
         }
 
-        public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow(advanceLocalImage: false);
+        internal bool CanNavigateLocalImages()
+        {
+            var tab=WorkflowTabViewModel?.SelectedTab;var session=DocumentManager.Session;
+            if(!CanEditRootWorkspace||tab is null||tab.IsInSubroutine||session is null)return false;
+            var root=session.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Id==tab.RootWorkflowId);
+            if(root is null)return false;
+            try
+            {
+                return root.Nodes.Where(node=>node.IsEnabled&&node.ToolType=="ImageLoad")
+                    .Select(ImageSourcePolicy.Read).Any(policy=>policy is {SourceKind:SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local}
+                        &&(policy.RunMode==0?policy.FilePaths.Count>0:policy.ForRunPaths.Count>0));
+            }
+            catch(Exception){return false;}
+        }
+        internal System.Threading.Tasks.Task NavigateLocalImagesAsync(int direction)
+        {
+            if(direction is not (-1 or 1))throw new ArgumentOutOfRangeException(nameof(direction));
+            return CanNavigateLocalImages()?ExecuteRunWorkflow(navigationDirection:direction):System.Threading.Tasks.Task.CompletedTask;
+        }
+        public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow(advanceLocalImage: false,explicitSourceId:ActiveInputSource?.NodeId);
 
         private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true,
-            WorkflowTabViewModel? expectedTab=null,Func<bool>? isCurrent=null)
+            WorkflowTabViewModel? expectedTab=null,Func<bool>? isCurrent=null,string? explicitSourceId=null,int navigationDirection=0)
         {
             var selectedTab=expectedTab??WorkflowTabViewModel?.SelectedTab;
             var session=DocumentManager.Session;
@@ -2030,7 +2049,7 @@ SplitterPosition = position;
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
                 if(!Current())return;
-                await _executionManager.RunSingleAsync(selectedTab, advanceLocalImage: advanceLocalImage);
+                await _executionManager.RunSingleAsync(selectedTab, advanceLocalImage: advanceLocalImage, explicitSourceId:explicitSourceId, navigationDirection:navigationDirection);
                 // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。
             }
             catch (Exception ex)

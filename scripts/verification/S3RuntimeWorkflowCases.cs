@@ -207,7 +207,7 @@ internal static class S2DocumentEditingCases
         {
             var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源没有正式Runtime配置。");
             var address=new SolutionResourceResolver(Environment.GetEnvironmentVariable("S2_CASE_ROOT")).ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
-            return new ImageSourceRunInput(address,policy.SNInitialValue);
+            return new ImageSourceRunInput(address,policy.SNInitialValue) { LocalReadAdmission=_=>address };
         },StringComparer.Ordinal);
     private static DeclaredOutputSnapshot Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as DeclaredOutputSnapshot??throw new Exception("没有中立宿主结果："+id);
     private static string Setting(string property)

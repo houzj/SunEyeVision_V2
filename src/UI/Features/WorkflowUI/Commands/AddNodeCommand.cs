@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SunEyeVision.UI.Shared;
@@ -28,12 +28,27 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 
         public void Execute(object? parameter)
         {
-            _nodes.Add(_node);
+            if (_nodes.Contains(_node)) throw new InvalidOperationException("节点已存在，不能重复添加。");
+            try { _nodes.Add(_node); }
+            catch (Exception failure)
+            {
+                try { if (_nodes.Contains(_node)) _nodes.Remove(_node); }
+                catch (Exception rollback) { throw new AggregateException("添加节点失败且回滚通知失败。", failure, rollback); }
+                throw;
+            }
         }
 
         public void Undo()
         {
-            _nodes.Remove(_node);
+            var index = _nodes.IndexOf(_node);
+            if (index < 0) throw new InvalidOperationException("待撤销的节点已不存在。");
+            try { _nodes.RemoveAt(index); }
+            catch (Exception failure)
+            {
+                try { if (!_nodes.Contains(_node)) _nodes.Insert(Math.Min(index, _nodes.Count), _node); }
+                catch (Exception rollback) { throw new AggregateException("撤销节点失败且恢复通知失败。", failure, rollback); }
+                throw;
+            }
         }
     }
 }

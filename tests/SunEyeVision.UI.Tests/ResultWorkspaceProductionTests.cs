@@ -585,6 +585,41 @@ public sealed class ResultWorkspaceProductionTests
         Assert.True(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
     });
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Canvas_node_collection_observer_failure_restores_the_node_and_history(bool undo)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var node = new SunEyeVision.UI.Shared.WorkflowNode("observer-target", "节点", "节点", "ResultWorkspaceProbe")
+            { RuntimeConfiguration = RuntimeToolConfiguration.Create("ResultWorkspaceProbe") };
+        void AddNode()
+        {
+            using var transaction = tab.CommandManager.BeginTransaction();
+            tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.AddNodeCommand(f.Flow.Nodes, node));
+            transaction.Complete();
+        }
+        if (undo) AddNode();
+        var revision = history.Revision; var position = history.Position; var attempts = 0;
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler observer = (_, args) =>
+        {
+            var relevant = undo ? args.OldItems?.Contains(node) == true : args.NewItems?.Contains(node) == true;
+            if (!relevant) return;
+            attempts++;
+            Assert.False(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+            throw new InvalidOperationException("受控节点集合通知失败");
+        };
+        f.Flow.Nodes.CollectionChanged += observer;
+        try { Assert.ThrowsAny<Exception>(() => { if (undo) history.Undo(); else AddNode(); }); }
+        finally { f.Flow.Nodes.CollectionChanged -= observer; }
+        Assert.Equal(1, attempts); Assert.Equal(undo, f.Flow.Nodes.Contains(node));
+        Assert.Equal(revision, history.Revision); Assert.Equal(position, history.Position);
+        Assert.True(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+    });
     [Fact]
     public void Active_execution_rejects_composite_canvas_edit_before_its_first_mutation()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>

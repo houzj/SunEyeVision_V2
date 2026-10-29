@@ -15,11 +15,11 @@ internal static class S2DocumentEditingCases
         var originals=original.RootElement.GetProperty("cases").EnumerateArray().Select(c=>c.GetProperty("originalName").GetString()!).ToHashSet(StringComparer.Ordinal);
         var auditSource=Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"../../../docs/collaboration/evidence/D07_FULL_IMAGESOURCE_TRACK_MIGRATION_AUDIT_20261029.json");
         using var audit=JsonDocument.Parse(File.ReadAllText(auditSource));
-        var originalGroups=new[]{"ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","ResultWorkspaceProductionTests"}.ToHashSet(StringComparer.Ordinal);
+        var originalGroups=new[]{"ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","ResultWorkspaceProductionTests","SolutionManagerUiTests"}.ToHashSet(StringComparer.Ordinal);
         var expectedOriginalCases=audit.RootElement.GetProperty("groups").EnumerateArray()
             .Where(g=>originalGroups.Contains(g.GetProperty("class").GetString()!))
             .SelectMany(g=>g.GetProperty("cases").EnumerateArray().Select(c=>c.GetProperty("name").GetString()!)).ToHashSet(StringComparer.Ordinal);
-        if(expectedOriginalCases.Count!=199)throw new InvalidOperationException("原配置、接纳、运行、调试、预览、设计组合、工作区、结果模型、展示器与视口清单必须包含199项。");
+        if(expectedOriginalCases.Count!=222)throw new InvalidOperationException("原配置、接纳、运行、调试、预览、设计组合、工作区、结果模型、展示器与视口清单必须包含222项。");
         var executed=new HashSet<string>(StringComparer.Ordinal);
         var results=new List<object>();int failures=0,covered=0;
         foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ImageSourceConfigurationHistoryTests","DocumentHistoryCoordinatorTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests"})
@@ -28,7 +28,7 @@ internal static class S2DocumentEditingCases
                 ?? assembly.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
             foreach(var method in type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly).OrderBy(m=>m.Name))
             {
-                if(name=="SolutionManagerUiTests"&&!originals.Contains(name+"."+method.Name+"()"))continue;
+                if(name=="SolutionManagerUiTests"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()"))continue;
                 var args=new List<object?[]>();
                 var attributes=method.GetCustomAttributesData();
                 if(attributes.Any(a=>a.AttributeType.FullName=="Xunit.FactAttribute"))args.Add(Array.Empty<object?>());
@@ -63,7 +63,7 @@ internal static class S2DocumentEditingCases
                 testAssemblyPath=assembly.Location,testAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location))),
                 runtimeProbeAssemblyPath=probeAssembly.Location,runtimeProbeAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(probeAssembly.Location))),
                 originalAuditedCasesCovered=expectedOriginalCases.Count,
-                scope="原21失败、配置/保存/历史/接纳/来源、图像源运行/调试/格式、真实本地预览、设计组合与结果工作区、结果模型/展示器及结果视口/根窗口原199项与相关相机和工作区用例；展示器与调试夹具已切现行快照，历史展示断言不代表历史存储产品已实现。原249整体未重跑。直接编译测试源码、正式产品引用及共享实际Dispatcher。",results},new JsonSerializerOptions{WriteIndented=true}));
+                scope="原21失败、配置/保存/历史/接纳/来源、图像源运行/调试/格式、真实本地预览、设计组合与结果工作区、结果模型/展示器及结果视口/根窗口、方案交互原222项与相关相机和工作区用例；展示器与调试夹具已切现行快照，历史展示断言不代表历史存储产品已实现。原249整体未重跑。直接编译测试源码、正式产品引用及共享实际Dispatcher。",results},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"图像源失败承接：{results.Count-failures}通过，{failures}失败；覆盖原失败{covered}项。");
         return failures==0?0:1;
     }

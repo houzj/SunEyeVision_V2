@@ -87,6 +87,9 @@ internal static class S2DocumentEditingCases
             "SolutionTransitionTests.Stop_all_requests_cancellation_for_remaining_runs_when_one_callback_fails()"
         }.ToHashSet(StringComparer.Ordinal);
         var executed=new HashSet<string>(StringComparer.Ordinal);
+        var diagnosticCase=Environment.GetEnvironmentVariable("S2_DIAGNOSTIC_CASE");
+        if(!string.IsNullOrEmpty(diagnosticCase)&&diagnosticCase!="ResultWorkspaceProductionTests.Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()")
+            throw new InvalidOperationException("未批准的单例诊断入口。");
         var results=new List<object>();int failures=0,covered=0;
         foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ImageSourceConfigurationHistoryTests","DocumentHistoryCoordinatorTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","LocalImageSequenceTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests","SolutionTransitionTests"})
         {
@@ -105,6 +108,7 @@ internal static class S2DocumentEditingCases
                 foreach(var values in args)
                 {
                     var label=name+"."+method.Name+"("+string.Join(",",values)+")";
+                    if(!string.IsNullOrEmpty(diagnosticCase)&&label!=diagnosticCase)continue;
                     if(!executed.Add(label))throw new InvalidOperationException("重复图像源用例："+label);
                     bool wasFailed=originals.Contains(label);if(wasFailed)covered++;
                     Console.WriteLine("START "+label);Console.Out.Flush();
@@ -122,6 +126,13 @@ internal static class S2DocumentEditingCases
                     }
                 }
             }
+        }
+        if(!string.IsNullOrEmpty(diagnosticCase))
+        {
+            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-single-case-diagnostic.json"),
+                JsonSerializer.Serialize(new{diagnosticOnly=true,fullAcceptance=false,count=results.Count,failures,results},new JsonSerializerOptions{WriteIndented=true}));
+            Console.WriteLine("仅单例诊断，不构成完整回归通过。");Console.Out.Flush();
+            return 2;
         }
         // Four design theories are serialized with Boolean.ToString in the original evidence.
         if(covered!=21)throw new InvalidOperationException("本批必须逐项承接21个原失败，实际："+covered);

@@ -1,3 +1,7 @@
+## 2026-10-29 配置/保存/历史原29项同源回归候选
+
+将ImageSourceConfigurationHistory 15、ImageSourceSavePersistence 6、LocalImageConfigurationSnapshot 4、ImageSourceResolver 4整组原测试源码加入ImageSourceRecovery，按D07_FULL_IMAGESOURCE_TRACK_MIGRATION_AUDIT原29个完整名称逐项校验，不改旧测试结论。结构历史中的旧SDK B2测试夹具改为实际注册的独立图像源节点，保结构变化及同节点Undo/Redo断言；清单文件纳来源SHA，需随候选一起提供给主线。C#/PowerShell语法、原29唯一名称及diff检查通过；尚未编译或执行，原249全轨和主目标门禁仍待。
+
 ## 2026-10-29 相机回归本身的异步校验修正
 
 复核发现部分NSubstitute调用计数断言对模拟返回Task做了await，可能重等故意挂起或失败的驱动任务；统一改为同步验证调用次数、不等待被模拟任务。保留真实操作的等待和异常断言；仅语法/diff，仍须正式Release实际执行。

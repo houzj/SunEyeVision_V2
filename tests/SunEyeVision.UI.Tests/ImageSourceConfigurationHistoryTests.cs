@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text.Json;
 using SunEyeVision.Workflow;
 using Xunit;
@@ -74,8 +74,9 @@ public sealed class ImageSourceConfigurationHistoryTests
         var edit=host.BeginEdit("root",node.Id);
         ImageSourceTestRuntime.Edit(edit.Node, config=>{config.AutoSwitchEnabled=false;config.FilePaths.Add("assets/b.bmp");});
         host.Commit(edit);
-        var added=new WorkflowNodeBase("other","其他节点","其他节点","Probe")
-        {Parameters=new BindingAdaptationB2Tests.SourceParameters()};
+        // The unrelated node uses a real registered tool; structure/history does not
+        // require the removed legacy SDK parameter/output fixture.
+        var added=ImageSourceTestRuntime.Node("other");
         model.Workflows[0].Nodes.Add(added);
         host.SynchronizeStructure();
         host.Undo();

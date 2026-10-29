@@ -38,7 +38,7 @@ public sealed class NodeResultManager
             else context?.SetNodeResult(node.Id, executionResult);
 
             // 2. 如果当前节点被选中，立即刷新UI（图像显示由 ViewModel 统一解析）
-            if (refreshDisplay && node.IsSelected)
+            if (refreshDisplay)
             {
                 RefreshResultDisplay(node, result);
             }

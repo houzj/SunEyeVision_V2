@@ -636,6 +636,56 @@ public sealed class CameraStreamOwnershipTests
         await vm.DisposeAsync();
     }));
 
+    [Fact]
+    public void Preview_close_drains_its_inflight_configuration_read_before_releasing_owned_session()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var configuration = new TaskCompletionSource<CameraCaptureConfiguration>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>()).Returns(_ => configuration.Task);
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference);
+        var read = host.RefreshConfigurationAsync();
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var session));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CloseAsync(camera.Reference));
+        var close = host.DisposeAsync().AsTask();
+        Assert.False(close.IsCompleted);
+        _ = camera.Adapter.DidNotReceive().DisposeAsync();
+        configuration.SetResult(new CameraCaptureConfiguration());
+        await read.WaitAsync(TimeSpan.FromSeconds(5));
+        await close.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        _ = camera.Adapter.Received(1).DisposeAsync();
+    }));
+
+    [Fact]
+    public void Parameter_command_inflight_blocks_disconnect_until_the_actual_driver_call_returns()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var commandDone = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ExecuteCommandAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(_ => commandDone.Task);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var selected = new CameraDevice { DeviceId = camera.Reference.Value };
+        await vm.SetConnectionAsync(selected, true);
+        var finished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        vm.PropertyChanged += (_, change) =>
+        {
+            if (change.PropertyName == nameof(vm.ParameterStatus) && vm.ParameterStatus.StartsWith("命令已执行"))
+                finished.TrySetResult(true);
+        };
+        var command = new CameraParameterItemViewModel(new CameraParameterDescriptor
+        { Name = "UserSetLoad", Kind = CameraParameterKind.Command }, null);
+        vm.ExecuteParameterCommand.Execute(command);
+        _ = camera.Adapter.Received(1).ExecuteCommandAsync("UserSetLoad", Arg.Any<CancellationToken>());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Session.DisposeAsync().AsTask());
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var live)); Assert.Same(camera.Session, live);
+        commandDone.SetResult(true);
+        await finished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await camera.Session.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        await vm.DisposeAsync();
+    }));
+
     private static void Pump(Func<Task> action)
     {
         var frame = new DispatcherFrame(); Exception? failure = null;

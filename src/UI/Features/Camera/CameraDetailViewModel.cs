@@ -280,6 +280,7 @@ namespace SunEyeVision.UI.Features.Camera
                     reference, CameraAccessMode.Diagnostic, cancellationToken: cancellationToken).ConfigureAwait(true);
                 try
                 {
+                    using var operation = _runtime.AcquireSessionOperationLease(session, "读取设备参数");
                     var schema = await session.Adapter.GetParameterSchemaAsync(cancellationToken).ConfigureAwait(true);
                     var names = schema.Parameters
                         .Where(item => item.Value is null && item.IsReadable && item.Kind != CameraParameterKind.Command)
@@ -516,6 +517,7 @@ namespace SunEyeVision.UI.Features.Camera
                     temporarySession = await _runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                     session = temporarySession;
                 }
+                using var operation = _runtime.AcquireSessionOperationLease(session, "执行设备命令");
                 EnsureParameterSessionCurrent(camera, session);
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[camera-trace={traceId}] 相机命令开始 camera={cameraId} adapter={session.Adapter.AdapterId} node={item.Name}",
@@ -941,6 +943,7 @@ namespace SunEyeVision.UI.Features.Camera
                     temporarySession = await _runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                     session = temporarySession;
                 }
+                using var operation = _runtime.AcquireSessionOperationLease(session, "应用设备参数");
                 EnsureParameterSessionCurrent(camera, session);
                 if (_previewWindow is { } currentPreview && currentPreview.Matches(camera, session))
                     preview = currentPreview;
@@ -1109,6 +1112,7 @@ namespace SunEyeVision.UI.Features.Camera
         private async Task<IReadOnlyDictionary<string, object?>> RefreshParameterSchemaAsync(
             CameraSession session, CameraDevice camera, string? preferredViewKind, string? preferredCategoryPath)
         {
+            using var operation = _runtime.AcquireSessionOperationLease(session, "刷新设备参数");
             EnsureParameterSessionCurrent(camera, session);
             var adapter = session.Adapter;
             var schema = await adapter.GetParameterSchemaAsync(CancellationToken.None);

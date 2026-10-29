@@ -66,6 +66,20 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
     public bool TryGetSession(CameraDeviceRef cameraRef, out CameraSession session)
         => _sessions.TryGetValue(cameraRef.Value, out session!);
 
+    /// <summary>Keep the exact connected session alive for an in-flight non-capture device operation.</summary>
+    public IDisposable AcquireSessionOperationLease(CameraSession session, string purpose)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        if (string.IsNullOrWhiteSpace(purpose)) throw new ArgumentException("设备操作用途不能为空。", nameof(purpose));
+        if (!_sessions.TryGetValue(session.CameraRef.Value, out var before) || !ReferenceEquals(before, session))
+            throw new InvalidOperationException("相机会话已关闭或重连。");
+        var lease = session.AcquireOperation(purpose);
+        if (_sessions.TryGetValue(session.CameraRef.Value, out var after) && ReferenceEquals(after, session))
+            return lease;
+        lease.Dispose();
+        throw new InvalidOperationException("相机会话已关闭或重连。");
+    }
+
     public void RegisterDevice(CameraDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);

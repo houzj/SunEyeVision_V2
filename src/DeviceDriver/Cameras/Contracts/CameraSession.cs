@@ -21,6 +21,7 @@ public sealed class CameraSession : IAsyncDisposable
     private readonly object _disposeGate = new();
     private Task? _disposeTask;
     private TaskCompletionSource<bool>? _closeCompletion;
+    private int _activeOperations;
 
     public CameraDeviceRef CameraRef { get; }
     public CameraAccessMode AccessMode { get; }
@@ -34,10 +35,36 @@ public sealed class CameraSession : IAsyncDisposable
         get { lock (_disposeGate) return _closeCompletion?.Task; }
     }
 
+    internal IDisposable AcquireOperation(string purpose)
+    {
+        lock (_disposeGate)
+        {
+            if (_closeCompletion is not null)
+                throw new InvalidOperationException($"相机 {CameraRef.Value} 正在关闭，不能开始{purpose}。");
+            ++_activeOperations;
+            return new OperationLease(this);
+        }
+    }
+
     internal TaskCompletionSource<bool> BeginClose()
     {
         lock (_disposeGate)
-            return _closeCompletion ??= new(TaskCreationOptions.RunContinuationsAsynchronously);
+        {
+            if (_closeCompletion is not null) return _closeCompletion;
+            if (_activeOperations != 0)
+                throw new InvalidOperationException($"相机 {CameraRef.Value} 存在进行中的参数或设备操作，请等待完成后关闭。");
+            return _closeCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+    }
+
+    private sealed class OperationLease(CameraSession owner) : IDisposable
+    {
+        private int _released;
+        public void Dispose()
+        {
+            if (System.Threading.Interlocked.Exchange(ref _released, 1) != 0) return;
+            lock (owner._disposeGate) --owner._activeOperations;
+        }
     }
 
     internal Task DisposeCoreAsync()

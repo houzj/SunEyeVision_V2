@@ -29,6 +29,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private CancellationTokenSource? _streamCancellation;
     private Task<CameraSession>? _opening;
     private Task? _drainTask;
+    private int _activeConfigurations;
+    private TaskCompletionSource<bool>? _configurationsDrained;
     private int _activeTriggers;
     private TaskCompletionSource<bool>? _triggersDrained;
     private Task? _disposeTask;
@@ -111,10 +113,16 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
 
     public async Task RefreshConfigurationAsync(string? correlationId = null)
     {
+        if (!Dispatcher.CheckAccess())
+        { await Dispatcher.InvokeAsync(() => RefreshConfigurationAsync(correlationId)).Task.Unwrap().ConfigureAwait(false); return; }
+        if (Volatile.Read(ref _stopped) != 0) throw new OperationCanceledException("相机预览窗口已关闭。");
+        ++_activeConfigurations;
         try
         {
             await EnsureSessionAsync().ConfigureAwait(true);
-            var configuration = await _session!.Adapter.ReadCaptureConfigurationAsync(_lifetime.Token).ConfigureAwait(true);
+            var session = _session!;
+            using var operation = _runtime.AcquireSessionOperationLease(session, "读取预览采集配置");
+            var configuration = await session.Adapter.ReadCaptureConfigurationAsync(_lifetime.Token).ConfigureAwait(true);
             if (Volatile.Read(ref _stopped) != 0) return;
             var generation = Interlocked.Increment(ref _previewGeneration);
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -169,6 +177,14 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             {
                 CaptureStatus = ex.Message;
                 RaiseCaptureStateChanged();
+            }
+        }
+        finally
+        {
+            if (--_activeConfigurations == 0)
+            {
+                var drained = _configurationsDrained; _configurationsDrained = null;
+                drained?.TrySetResult(true);
             }
         }
     }
@@ -558,6 +574,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             try { await DrainStreamAsync(stream).ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         else if (_drainTask is { } draining)
             try { await draining.ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
+        if (_activeConfigurations != 0)
+        {
+            _configurationsDrained ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try { await _configurationsDrained.Task.ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
+        }
         if (_ownsSession)
         {
             var session = _session;

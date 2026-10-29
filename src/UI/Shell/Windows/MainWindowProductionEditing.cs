@@ -111,6 +111,13 @@ public partial class MainWindowViewModel
                 CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
         if (SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
             UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters);
+        else if (!IsRunning && ReferenceEquals(DocumentManager.Session, session)
+            && SelectedNode is { RuntimeConfiguration: not null } runtimeNode
+            && publication.InvalidatedNodes.Any(affected => affected.NodeId == runtimeNode.Id
+                && affected.WorkflowId == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId)
+            && session.Document.Workflows.Any(flow => flow.Id == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId
+                && flow.Nodes.Any(node => ReferenceEquals(node, runtimeNode))))
+            UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
         RefreshCurrentResultBindings();
         RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));

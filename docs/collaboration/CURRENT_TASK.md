@@ -1,3 +1,7 @@
+## 2026-10-29 新架构源编辑后结果声明恢复候选
+
+核出根源条正式writer接纳后，RefreshProductionPublication虽移除失效旧运行，但仅SDK参数提供者恢复声明，Runtime源被遗漏。现对停止态、当前session/流程的真实选中Runtime节点且该次受影响时，复用正式输出声明入口；同组增真实ResultWorkspace源条AddImages/正式接纳/旧结果失效/声明恢复测试。语法/diff静态核，尚未正式构建/运行；主线同文件待整合，ID显示、A03/249/VS/硬件/人工不计完成。原主方案同步。
+
 ## 2026-10-29 图像源调试原15项现行快照回归候选
 
 ImageSourceDebugInvocationTests原15项整组改用DeclaredOutputSnapshot/reader消费调试和正式结果；保冻结、帧身份、错误取消、在途排空、相机所有权及像素/domain生命周期断言。原名称及Theory逐项15/15，纳入Recovery后原逐名门禁168；C#/PowerShell语法和diff核，未正式编译或运行，HALCON/设备硬件/VS/人工未验。原输出树旧夹具、A03和249总体继续待办；主方案同步，主线独占正式Release。

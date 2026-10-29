@@ -324,6 +324,26 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Null(f.Presenter.OutputPane.CurrentFrame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table!.IsCurrent());
     });
     [Fact]
+    public void Accepted_image_source_edit_retires_its_run_and_restores_formal_output_declaration()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var run=f.Publish(f.Source,33);var previous=f.Main.CurrentResultPublication;
+        Assert.NotNull(previous);Assert.Equal(ResultViewState.Success,previous!.State);
+        Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+        var source=f.Main.ActiveInputSource!;
+        var path=Path.Combine(f.Directory,"accepted-image.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{5,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        Pump();
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(previous.IsCurrent());
+        var declaration=Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication);
+        Assert.Equal(ResultViewState.Declaration,declaration.State);Assert.Null(declaration.Stamp.Invocation);
+        Assert.Contains(declaration.Schema.Outputs,port=>port.Id=="output.image");
+        Assert.NotEmpty(f.Main.FlatResultRows);
+    });
+    [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

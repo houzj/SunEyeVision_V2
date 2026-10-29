@@ -344,6 +344,36 @@ public sealed class ResultWorkspaceProductionTests
         Assert.NotEmpty(f.Main.FlatResultRows);
     });
     [Fact]
+    public void Image_source_undo_and_redo_retire_the_affected_run_and_restore_its_declaration()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;
+        var path=Path.Combine(f.Directory,"history-image.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{8,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var history=ServiceInitializer.SolutionManager.Session!.History;
+        Assert.True(history.CanUndo);
+        var beforeUndo=f.Publish(f.Source,42);var undoPublication=f.Main.CurrentResultPublication!;
+        Assert.Equal(ResultViewState.Success,undoPublication.State);
+        beforeUndo.Snapshot.Dispose();Assert.Equal(0,beforeUndo.Releases);
+        Assert.True(history.Undo());Pump();Assert.Null(history.LastObserverError);
+        Assert.Empty(ImageSourcePolicy.Read(f.Source)!.FilePaths);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(undoPublication.IsCurrent());
+        Assert.Equal(ResultViewState.Declaration,Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication).State);
+        Assert.Equal(1,beforeUndo.Releases);
+
+        var beforeRedo=f.Publish(f.Source,43);var redoPublication=f.Main.CurrentResultPublication!;
+        Assert.Equal(ResultViewState.Success,redoPublication.State);
+        beforeRedo.Snapshot.Dispose();Assert.Equal(0,beforeRedo.Releases);
+        Assert.True(history.Redo());Pump();Assert.Null(history.LastObserverError);
+        Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(redoPublication.IsCurrent());
+        Assert.Equal(ResultViewState.Declaration,Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication).State);
+        Assert.Equal(1,beforeRedo.Releases);
+    });
+    [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

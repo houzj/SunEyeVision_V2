@@ -1,3 +1,7 @@
+## 2026-10-29 图像源历史回放的旧结果失效缺口
+
+静态完整核对Commit与Undo/Redo/Navigate：前者发布InvalidatedNodes并移除相关结果，后者ReplayAccepted无等价失效集合，DocumentHistoryChanged仅刷新源条及绑定，未见运行身份退役；回放前重新运行可能遗留旧值。新增真实ResultWorkspace测试，Undo/Redo前各发布新结果并释放外部owner，要求配置恢复、受影响结果和借阅退役及声明恢复；现产品未修、测试未运行，预期需修复后才能通过，不列为通过。历史变量绑定本身应保同一publication，不能全清；精确新旧依赖计算与会话/历史代次、回滚/重入和跨项跳转须整链处理。已交主线协调共享工作流合同，正式试用版冻结不动；原主方案同步。
+
 ## 2026-10-29 新架构源编辑后结果声明恢复候选
 
 核出根源条正式writer接纳后，RefreshProductionPublication虽移除失效旧运行，但仅SDK参数提供者恢复声明，Runtime源被遗漏。现对停止态、当前session/流程的真实选中Runtime节点且该次受影响时，复用正式输出声明入口；同组增真实ResultWorkspace源条AddImages/正式接纳/旧结果失效/声明恢复测试。语法/diff静态核，尚未正式构建/运行；主线同文件待整合，ID显示、A03/249/VS/硬件/人工不计完成。原主方案同步。

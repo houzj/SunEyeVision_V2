@@ -102,10 +102,10 @@ public sealed class ResultWorkspaceProductionTests
             Assert.Same(Shell.OutputViewport, Presenter.OutputPane.Viewport.View);
             Assert.NotNull(Main.CurrentResultPublication);
         }
-        internal Results Publish(SunEyeVision.UI.Shared.WorkflowNode node, byte first, string? scope = null, ToolExecutionOwner? owner = null,bool updateContext=true)
+        internal Results Publish(SunEyeVision.UI.Shared.WorkflowNode node, byte first, string? scope = null, ToolExecutionOwner? owner = null,bool updateContext=true,Func<bool>? admission=null)
         {
             var schema = node.RuntimeConfiguration is {} runtime ? new ToolSchema(Array.Empty<Port>(), runtime.Schema.Outputs) : ProbeSchema;
-            var identity=(owner??Document.ExecutionOwner).Begin((scope??Flow.Id)+"/"+node.Id,Guid.NewGuid(),"5.0");
+            var identity=(owner??Document.ExecutionOwner).Begin((scope??Flow.Id)+"/"+node.Id,Guid.NewGuid(),"5.0",admission:admission);
             var resources=new FrozenOutputResources();
             Results result;
             try
@@ -256,6 +256,38 @@ public sealed class ResultWorkspaceProductionTests
             Assert.True(f.Main.CurrentResultPublication.IsCurrent());
         }
         finally{f.Main.ResultWorkspaceChanged-=changed;}
+    });
+    [Fact]
+    public void New_run_notified_during_failed_capture_is_eventually_presented_after_the_exception()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();var before=f.Presenter.OutputPane.CurrentFrame!.Frame;
+        var previous=f.LatestSelected;previous.Snapshot.Dispose();
+        var armed=false;var enteredCapture=false;var calls=0;Results? next=null;
+        bool Admission()
+        {
+            if(!armed)return true;
+            // This is the real upstream invocation gate, not a ResultWorkspaceChanged observer.
+            // Only inject while the actual source-capture stack owns the admission check.
+            if(!Environment.StackTrace.Contains("CaptureNativeImageSources",StringComparison.Ordinal))return true;
+            armed=false;enteredCapture=true;calls++;
+            next=f.Publish(f.Selected,82);
+            throw new FormatException("受控上游身份读取失败；新运行已在真实来源捕获期间发布。");
+        }
+        var source=f.Publish(f.Source,22,admission:Admission);source.Snapshot.Dispose();
+        armed=true;
+        try
+        {
+            f.Main.RefreshNativeResultImages();
+            Until(()=>next is not null&&f.Presenter.OutputPane.CurrentFrame?.Frame==next.Image.Frame);
+            Assert.True(enteredCapture);Assert.Equal(1,calls);Assert.NotNull(next);
+            Assert.NotEqual(before,next!.Image.Frame);Assert.Equal(new byte[]{82},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+            Assert.Equal(next.Snapshot.Identity,f.Main.CurrentResultPublication!.Stamp.Invocation);
+            Assert.True(f.Main.CurrentResultPublication.IsCurrent());
+            Assert.Equal(1,previous.Releases);Assert.Equal(0,source.Releases);
+            f.Dispose();Assert.All(f.Runs,run=>Assert.Equal(1,run.Releases));
+        }
+        finally{armed=false;}
     });
     [Fact]
     public void Foreign_workflow_or_document_results_never_supply_display_images()

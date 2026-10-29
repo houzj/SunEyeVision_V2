@@ -117,7 +117,11 @@ public partial class MainWindowViewModel
                 && affected.WorkflowId == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId)
             && session.Document.Workflows.Any(flow => flow.Id == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId
                 && flow.Nodes.Any(node => ReferenceEquals(node, runtimeNode))))
-            UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
+        {
+            var current=CurrentWorkflowContext?.GetNodeResult(runtimeNode.Id)?.Result;
+            if(current?.ExecutionIdentity?.IsCurrent!=true)
+                UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
+        }
         RefreshCurrentResultBindings();
         RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));

@@ -97,7 +97,7 @@ internal static class S2DocumentEditingCases
                 ?? assembly.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
             foreach(var method in type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly).OrderBy(m=>m.Name))
             {
-                if(name=="SolutionManagerUiTests"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
+                if(name=="SolutionManagerUiTests"&&method.Name!="Source_items_reentry_stops_refresh_after_release_or_owner_change"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
                     &&!addedImportCases.Contains(name+"."+method.Name+"()")&&name+"."+method.Name+"()"!=explicitSourceCase&&name+"."+method.Name+"()"!=navigationCase&&name+"."+method.Name+"()"!=replacedRootCase&&name+"."+method.Name+"()"!=cleanupFailureCase&&name+"."+method.Name+"()"!=settlementFailureCase&&name+"."+method.Name+"()"!=missingFrameCase)continue;
                 if(name=="SolutionTransitionTests"&&!addedStopMethods.Contains(method.Name))continue;
                 var args=new List<object?[]>();

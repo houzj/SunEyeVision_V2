@@ -44,6 +44,29 @@ public sealed partial class SolutionManagerUiTests
         task.GetAwaiter().GetResult();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Source_items_reentry_stops_refresh_after_release_or_owner_change(bool release)
+    {
+        Sta(()=>
+        {
+            var source=new ImageInputSource("reentrant-items");var current=true;var invoked=false;
+            using var session=new ImageSourceStripSession(source,()=>current);
+            var notifications=0;session.PropertyChanged+=(_,_)=>notifications++;
+            var collection=Assert.IsAssignableFrom<System.Collections.Specialized.INotifyCollectionChanged>(session.Items);
+            collection.CollectionChanged+=(_,_)=>
+            {
+                if(invoked)return;invoked=true;
+                if(release)session.Dispose();else current=false;
+            };
+            source.AddImages(Enumerable.Range(0,3).Select(index=>new ImageInfo{FilePath="reentry-"+index+".png"}));
+            typeof(ImageSourceStripSession).GetMethod("Refresh",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(session,null);
+            Assert.True(invoked);Assert.True(session.IsReadOnly);Assert.Equal(0,notifications);
+            Assert.Equal(release?0:1,session.Items.Count);
+        });
+    }
+
     private sealed class NativeSourceFixture : IDisposable
     {
         public ImageInputSource Source {get;}

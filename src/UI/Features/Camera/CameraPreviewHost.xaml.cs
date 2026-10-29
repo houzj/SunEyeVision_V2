@@ -25,6 +25,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private readonly CancellationTokenSource _lifetime = new();
     private CameraSession? _session;
     private Task? _streamTask;
+    private TaskCompletionSource<bool>? _startingStream;
     private CancellationTokenSource? _streamCancellation;
     private Task<CameraSession>? _opening;
     private Task? _drainTask;
@@ -195,6 +196,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     {
         if (!Dispatcher.CheckAccess())
         { await Dispatcher.InvokeAsync(StopAcquisitionAsync).Task.Unwrap().ConfigureAwait(false); return; }
+        if (_startingStream is { } starting)
+            await starting.Task.ConfigureAwait(true);
         var stream = _streamTask;
         if (stream is null) { if (_drainTask is not null) await _drainTask.ConfigureAwait(true); return; }
         Interlocked.Exchange(ref _singleShotRequested, 0);
@@ -296,16 +299,24 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         string description,
         string? correlationId)
     {
+        await EnsureSessionAsync().ConfigureAwait(true);
+        if (Volatile.Read(ref _stopped) != 0)
+            throw new OperationCanceledException("相机预览已关闭。");
+        if (_streamTask is not null || _startingStream is not null)
+            throw new InvalidOperationException("采集任务状态不一致：已有取流任务。");
+
+        // Publish before calling the driver: it may synchronously reenter DisposeAsync.
+        var starting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _startingStream = starting;
         IDisposable? acquired = null;
         Task? started = null;
+        Exception? cleanupFailure = null;
         try
         {
-            await EnsureSessionAsync().ConfigureAwait(true);
-            if (_streamTask is not null)
-                throw new InvalidOperationException("采集任务状态不一致：已有取流任务。");
-
             acquired = _runtime.AcquireCaptureLease(_cameraRef, "相机设置预览");
             _captureLease = acquired;
+            if (Volatile.Read(ref _stopped) != 0)
+                throw new OperationCanceledException("相机预览已关闭。");
 
             _activeMode = mode;
             _activeDescription = description;
@@ -330,6 +341,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             started = _session!.Adapter.StartStreamAsync(request, this, _streamCancellation.Token);
             _streamTask = started;
             _ = ObserveStreamAsync(started);
+            if (Volatile.Read(ref _stopped) != 0)
+                throw new OperationCanceledException("相机预览已关闭。");
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[camera-trace={_activeCorrelationId}] 用户启动相机取流 camera={_cameraRef.Value} generation={_previewGeneration} requestMode={mode} description={description}",
                 "CameraPreviewTrace", target: LogTarget.All);
@@ -346,8 +359,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                 else if (started is null && ReferenceEquals(_captureLease, acquired))
                 { _streamCancellation?.Dispose(); _streamCancellation = null; _captureLease = null; acquired.Dispose(); }
             }
-            catch (Exception error) { cleanup = error; }
-            if (_streamTask is null && _captureLease is null)
+            catch (Exception error) { cleanup = error; cleanupFailure = error; }
+            if (Volatile.Read(ref _stopped) == 0 && _streamTask is null && _captureLease is null)
             {
                 IsAcquiring = false;
                 CaptureStatus = "启动采集失败，请检查相机日志";
@@ -355,6 +368,12 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             }
             if (cleanup is not null) throw new AggregateException("相机启动和清理均失败。", failure, cleanup);
             throw;
+        }
+        finally
+        {
+            if (ReferenceEquals(_startingStream, starting)) _startingStream = null;
+            if (cleanupFailure is null) starting.TrySetResult(true);
+            else starting.TrySetException(cleanupFailure);
         }
     }
 
@@ -408,8 +427,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                 VisionLogger.Instance.Log(LogLevel.Error,
                     $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 图像转换器返回空图像 camera={_cameraRef.Value} frame={frame.FrameId} size={frame.Image.Width}x{frame.Image.Height} channels={frame.Image.Channels}",
                     "CameraPreviewTrace", target: LogTarget.All);
-                if (IsLoaded)
-                    StatusText.Text = "预览失败：当前帧无法转换为显示图像";
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    if (Volatile.Read(ref _stopped) == 0 && !cancellationToken.IsCancellationRequested && IsLoaded)
+                        StatusText.Text = "预览失败：当前帧无法转换为显示图像";
+                });
                 return;
             }
 
@@ -489,6 +511,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     {
         var failures = new List<Exception>();
         try { _lifetime.Cancel(); } catch (Exception error) { failures.Add(error); }
+        if (_startingStream is { } starting)
+            try { await starting.Task.ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         if (_streamTask is { } stream)
             try { await DrainStreamAsync(stream).ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         else if (_drainTask is { } draining)

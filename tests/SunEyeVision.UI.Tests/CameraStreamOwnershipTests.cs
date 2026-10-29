@@ -1,6 +1,9 @@
 using NSubstitute;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using System.Windows;
 using SunEyeVision.TestShared;
 using SunEyeVision.UI.Features.Camera;
 using SunEyeVision.UI.Services.Workflow;
@@ -114,6 +117,87 @@ public sealed class CameraStreamOwnershipTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => refresh);
         Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
         _ = camera.Adapter.Received(1).DisposeAsync();
+    }));
+
+    [Fact]
+    public async Task Software_trigger_after_close_is_rejected_without_touching_the_adapter()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
+        var feed = await CameraWorkflowFrameFeed.StartAsync(camera.Runtime, camera.Reference, TimeSpan.FromSeconds(1), CancellationToken.None);
+        camera.Stream.SetResult(true);
+        await Assert.ThrowsAsync<AggregateException>(() => feed.DisposeAsync().AsTask());
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集");
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => feed.NextFrameAsync(CancellationToken.None));
+        await camera.Adapter.DidNotReceive().ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Close_waits_for_inflight_software_trigger_before_releasing_capture_ownership()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
+        var trigger = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>()).Returns(_ => trigger.Task);
+        var feed = await CameraWorkflowFrameFeed.StartAsync(camera.Runtime, camera.Reference, TimeSpan.FromSeconds(1), CancellationToken.None);
+        var read = feed.NextFrameAsync(CancellationToken.None);
+        var close = feed.DisposeAsync().AsTask();
+        Assert.False(close.IsCompleted);
+        Assert.Throws<InvalidOperationException>(() => camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集"));
+        camera.Stream.SetResult(true);
+        Assert.False(close.IsCompleted);
+        trigger.SetResult(true);
+        var readFailure = await Record.ExceptionAsync(() => read.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.True(readFailure is OperationCanceledException or ObjectDisposedException);
+        await Assert.ThrowsAsync<AggregateException>(() => close.WaitAsync(TimeSpan.FromSeconds(5)));
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集");
+    }
+
+    [Fact]
+    public void Preview_close_reentered_by_start_waits_for_the_returned_stream()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.StopStreamAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference, camera.Session);
+        await host.RefreshConfigurationAsync();
+        Task? close = null;
+        camera.Adapter.StartStreamAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<ICameraFrameSink>(), Arg.Any<CancellationToken>())
+            .Returns(_ => { close = host.DisposeAsync().AsTask(); return camera.Stream.Task; });
+        var start = host.StartAcquisitionAsync();
+        Assert.NotNull(close); Assert.False(close!.IsCompleted);
+        Assert.Throws<InvalidOperationException>(() => camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流"));
+        camera.Stream.SetResult(true);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start.WaitAsync(TimeSpan.FromSeconds(5)));
+        await close.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(camera.Session, retained);
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流");
+    }));
+
+    [Fact]
+    public void Preview_null_conversion_from_driver_thread_is_marshaled_and_releases_frame()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var previous = VisionImageConverterLocator.Current;
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference, camera.Session);
+        var window = new Window { Content = host, ShowActivated = false };
+        try
+        {
+            VisionImageConverterLocator.Current = null;
+            window.Show();
+            var image = Substitute.For<IVisionImage>();
+            var frame = new CameraFrame(camera.Reference, 1, DateTimeOffset.UtcNow, image);
+            await Task.Run(async () => await host.OnFrameAsync(frame, CancellationToken.None));
+            Assert.True(frame.IsDisposed);
+            image.Received(1).Dispose();
+        }
+        finally
+        {
+            await host.DisposeAsync(); window.Close(); VisionImageConverterLocator.Current = previous;
+        }
     }));
 
     private static void Pump(Func<Task> action)

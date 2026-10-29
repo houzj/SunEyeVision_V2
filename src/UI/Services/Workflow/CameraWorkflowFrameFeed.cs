@@ -20,6 +20,8 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
     private TaskCompletionSource<bool>? _waiter;
     private Task? _streamTask;
     private Task? _disposeTask;
+    private int _activeReads;
+    private TaskCompletionSource<bool>? _readsDrained;
     private Exception? _streamError;
     private bool _disposed;
     private long _replacedFrames;
@@ -102,27 +104,40 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
     public async Task<CameraFrame> NextFrameAsync(CancellationToken cancellationToken, bool continuous = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_mode == CameraTriggerMode.Software)
+        lock (_gate)
         {
-            CameraFrame? stale;
-            lock (_gate)
-            {
-                stale = _pending;
-                _pending = null;
-            }
-            stale?.Dispose();
-            await _session.Adapter.ExecuteSoftwareTriggerAsync(cancellationToken).ConfigureAwait(false);
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_streamError is not null) throw new InvalidOperationException("相机工作流取流中断", _streamError);
+            ++_activeReads;
         }
-
-        if (continuous && _mode != CameraTriggerMode.Software)
-            return await WaitForFrameAsync(cancellationToken).ConfigureAwait(false);
-
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(_timeout);
-        try { return await WaitForFrameAsync(timeout.Token).ConfigureAwait(false); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        try
         {
-            throw new TimeoutException($"等待相机 {_cameraRef.Value} 新帧超时（{_timeout.TotalMilliseconds:F0} ms）");
+            using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _streamCancellation.Token);
+            var token = lifetime.Token;
+            if (_mode == CameraTriggerMode.Software)
+            {
+                CameraFrame? stale;
+                lock (_gate)
+                {
+                    ObjectDisposedException.ThrowIf(_disposed, this);
+                    stale = _pending; _pending = null;
+                }
+                stale?.Dispose();
+                await _session.Adapter.ExecuteSoftwareTriggerAsync(token).ConfigureAwait(false);
+            }
+            if (continuous && _mode != CameraTriggerMode.Software)
+                return await WaitForFrameAsync(token).ConfigureAwait(false);
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            timeout.CancelAfter(_timeout);
+            try { return await WaitForFrameAsync(timeout.Token).ConfigureAwait(false); }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            { throw new TimeoutException($"等待相机 {_cameraRef.Value} 新帧超时（{_timeout.TotalMilliseconds:F0} ms）"); }
+        }
+        finally
+        {
+            TaskCompletionSource<bool>? drained = null;
+            lock (_gate) { if (--_activeReads == 0) { drained = _readsDrained; _readsDrained = null; } }
+            drained?.TrySetResult(true);
         }
     }
 
@@ -191,6 +206,7 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
         CameraFrame? pending;
         TaskCompletionSource<bool>? waiter;
         TaskCompletionSource<bool> completion;
+        Task readsDrained;
         lock (_gate)
         {
             if (_disposeTask is not null) return new ValueTask(_disposeTask);
@@ -201,16 +217,19 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
             _waiter = null;
             completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _disposeTask = completion.Task;
+            readsDrained = _activeReads == 0 ? Task.CompletedTask :
+                (_readsDrained ??= new(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
         }
         waiter?.TrySetResult(true);
-        _ = DrainAsync(pending, completion);
+        _ = DrainAsync(pending, readsDrained, completion);
         return new ValueTask(completion.Task);
     }
 
-    private async Task DrainAsync(CameraFrame? pending, TaskCompletionSource<bool> completion)
+    private async Task DrainAsync(CameraFrame? pending, Task readsDrained, TaskCompletionSource<bool> completion)
     {
         var failures = new System.Collections.Generic.List<Exception>();
         try { _streamCancellation.Cancel(); } catch (Exception error) { failures.Add(error); }
+        try { await readsDrained.ConfigureAwait(false); } catch (Exception error) { failures.Add(error); }
         if (_streamTask is { } stream)
         {
             try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }

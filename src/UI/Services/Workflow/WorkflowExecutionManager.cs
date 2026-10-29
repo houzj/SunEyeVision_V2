@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,6 +86,8 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();
         private readonly AsyncLocal<SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService?> _communicationInputs = new();
         private SynchronizationContext? _synchronizationContext;
+        private readonly ResultDispatchQueue _resultNotifications;
+        private readonly System.Windows.Threading.Dispatcher? _resultDispatcher;
 
         /// <summary>
         /// 当前运行时参数（从 MainWindowViewModel 设置）
@@ -147,7 +150,25 @@ namespace SunEyeVision.UI.Services.Workflow
             _cancellationTokens = new Dictionary<string, CancellationTokenSource>();
             _runningTasks = new Dictionary<string, Task>();
             _synchronizationContext = SynchronizationContext.Current;
+            _resultDispatcher=System.Windows.Application.Current?.Dispatcher;
+            _resultNotifications=new ResultDispatchQueue(action=>
+            {
+                if(_resultDispatcher is not null)
+                {
+                    if(_resultDispatcher.HasShutdownStarted||_resultDispatcher.HasShutdownFinished)
+                        throw new InvalidOperationException("界面调度器已关闭，不能继续投递结果。");
+                    var operation=_resultDispatcher.BeginInvoke(action);
+                    operation.Aborted+=ResultNotificationAborted;
+                    if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)_resultNotifications.Dispose();
+                }
+                else if(_synchronizationContext is not null)_synchronizationContext.Post(_=>action(),null);
+                else action();
+            });
+            if(_resultDispatcher is not null)_resultDispatcher.ShutdownStarted+=ResultDispatcherShutdown;
         }
+
+        private void ResultNotificationAborted(object? sender,EventArgs e)=>_resultNotifications.Dispose();
+        private void ResultDispatcherShutdown(object? sender,EventArgs e)=>_resultNotifications.Dispose();
 
         /// <summary>
         /// 设置运行时参数
@@ -972,21 +993,21 @@ namespace SunEyeVision.UI.Services.Workflow
                         var node = PresentationNode(nodeResult.Key);
                         if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                         {
-                            // 创建一个包含结果的 ToolResults
+                            // 创建一个包含结果的 DeclaredOutputSnapshot
                             var toolResults = CreateToolResultsFromNodeResult(nodeResult.Value);
                             // 方案 §6 画布三态：流程控制结果 → node.Status（OK=命中/NG=未命中）。
                             // 用 SDK 层 IControlFlowResult 接口判断（UI 不直接引用工具项目），
                             // NextNodeIds 非空 = 命中 → OK；空 = 未命中 → NG。
-                            if (toolResults is IControlFlowResult flowResult)
+                            if (toolResults?.Output is IControlFlowResult flowResult)
                             {
                                 uiNode.Status = flowResult.NextNodeIds != null && flowResult.NextNodeIds.Count > 0 ? "OK" : "NG";
                             }
-                            else if (toolResults.IsSuccess)
+                            else if (toolResults?.IsSuccess==true)
                             {
-                                uiNode.Status = toolResults.JudgmentStatus switch
+                                uiNode.Status = toolResults.Judgment switch
                                 {
-                                    "OK" => "OK",
-                                    "NG" => "NG",
+                                    SunEyeVision.Plugin.Contracts.BusinessJudgment.Pass => "OK",
+                                    SunEyeVision.Plugin.Contracts.BusinessJudgment.Fail => "NG",
                                     _ => "成功"
                                 };
                             }
@@ -1367,63 +1388,25 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 触发节点执行完成事件
         /// </summary>
-        private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result, bool isCameraDriven)
+        private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, DeclaredOutputSnapshot? result, bool isCameraDriven)
         {
-            if (result.ExecutionIdentity?.IsCurrent == false) return;
-            var lease = result.Resources?.Retain();
+            if (result is null || result.ExecutionIdentity?.IsCurrent == false) return;
             var queuedAt = Stopwatch.GetTimestamp();
             var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
             void Publish()
             {
-                try
-                {
                     if (!token.IsCancellationRequested && result.ExecutionIdentity?.IsCurrent != false)
                         NodeExecutionCompleted?.Invoke(this, new NodeExecutionResultEventArgs(node, result, isCameraDriven,
                             Stopwatch.GetElapsedTime(queuedAt).TotalMilliseconds));
-                }
-                finally { lease?.Dispose(); }
             }
-            try
-            {
-                if (_synchronizationContext != null) _synchronizationContext.Post(_ => Publish(), null);
-                else Publish();
-            }
-            catch { lease?.Dispose(); throw; }
+            _resultNotifications.Enqueue(result.ExecutionIdentity?.Domain??node.Id,result,Publish);
         }
 
         /// <summary>
-        /// 从节点执行结果创建 ToolResults
+        /// 从节点执行结果创建 DeclaredOutputSnapshot
         /// </summary>
-        private ToolResults CreateToolResultsFromNodeResult(NodeExecutionResult nodeResult)
-        {
-            // 优先使用原始工具结果
-            if (nodeResult.Result != null)
-            {
-                return nodeResult.Result;
-            }
-
-            var results = new GenericToolResults
-            {
-                Status = nodeResult.Success ? ExecutionStatus.Success : ExecutionStatus.Failed,
-                ExecutionTimeMs = (long)(nodeResult.Duration?.TotalMilliseconds ?? 0),
-                Timestamp = DateTime.Now
-            };
-
-            // 添加错误消息
-            if (nodeResult.ErrorMessages != null)
-            {
-                foreach (var error in nodeResult.ErrorMessages)
-                {
-                    results.AddWarning(error);
-                }
-                if (nodeResult.ErrorMessages.Count > 0)
-                {
-                    results.ErrorMessage = string.Join("; ", nodeResult.ErrorMessages);
-                }
-            }
-
-            return results;
-        }
+        private DeclaredOutputSnapshot? CreateToolResultsFromNodeResult(NodeExecutionResult nodeResult)
+            => nodeResult.Result;
 
         private void InvokeOnUI(Action action)
         {
@@ -1477,19 +1460,23 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public void Dispose()
         {
-            StopAllContinuousRun();
+            if(_resultDispatcher is not null)_resultDispatcher.ShutdownStarted-=ResultDispatcherShutdown;
+            var errors=new List<Exception>();
+            try{_resultNotifications.Dispose();}catch(Exception error){errors.Add(error);}
+            try{StopAllContinuousRun();}catch(Exception error){errors.Add(error);}
 
             lock (_lock)
             {
                 foreach (var cts in _cancellationTokens.Values)
                 {
-                    cts.Dispose();
+                    try{cts.Dispose();}catch(Exception error){errors.Add(error);}
                 }
                 _cancellationTokens.Clear();_transitionBlocked=true;
                 if(_activeWorkflowIds.Count==0&&_solutionRunCts is null&&!_communicationOperation)
-                    RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());
+                    try{RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());}catch(Exception error){errors.Add(error);}
                 _localImageCursors.Clear();
             }
+            if(errors.Count>0)throw new AggregateException("执行管理器关闭时发生错误，已尝试释放结果通知及其余运行资源。",errors);
         }
     }
 
@@ -1540,14 +1527,14 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 执行结果
         /// </summary>
-        public ToolResults Result { get; }
+        public DeclaredOutputSnapshot Result { get; }
 
         /// <summary>
         /// 时间戳
         /// </summary>
         public DateTime Timestamp { get; }
 
-        public NodeExecutionResultEventArgs(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result,
+        public NodeExecutionResultEventArgs(SunEyeVision.UI.Shared.WorkflowNode node, DeclaredOutputSnapshot result,
             bool isCameraDriven = false, double uiQueueDelayMs = 0)
         {
             Node = node;

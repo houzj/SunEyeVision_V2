@@ -55,7 +55,12 @@ public partial class ColorPickerControlView : UserControl, IComponentConnector
 
 	private void SelectColorCommandExecute(object sender, ExecutedRoutedEventArgs e)
 	{
-		CurrentColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(e.Parameter.ToString()));
+		var binding = GetBindingExpression(CurrentColorProperty);
+		var context = DataContext;
+		var source = binding?.DataItem;
+		SetCurrentValue(CurrentColorProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(e.Parameter.ToString())));
+		if (ReferenceEquals(context, DataContext) && ReferenceEquals(source, binding?.DataItem)
+			&& ReferenceEquals(binding, GetBindingExpression(CurrentColorProperty))) binding?.UpdateSource();
 	}
 
 }

@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -35,43 +36,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// <summary>
     /// 执行状态枚举
     /// </summary>
-    public enum ExecutionStatus
-    {
-        /// <summary>
-        /// 未执行
-        /// </summary>
-        NotExecuted = 0,
 
-        /// <summary>
-        /// 执行中
-        /// </summary>
-        Running = 1,
-
-        /// <summary>
-        /// 执行成功
-        /// </summary>
-        Success = 2,
-
-        /// <summary>
-        /// 执行失败
-        /// </summary>
-        Failed = 3,
-
-        /// <summary>
-        /// 执行超时
-        /// </summary>
-        Timeout = 4,
-
-        /// <summary>
-        /// 已取消
-        /// </summary>
-        Cancelled = 5,
-
-        /// <summary>
-        /// 部分成功
-        /// </summary>
-        PartialSuccess = 6
-    }
 
     /// <summary>
     /// 结果项类型
@@ -282,7 +247,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public virtual bool TryGetDeclaredOutputValue(string portId, out object? value)
         { value = null; return false; }
         [System.Text.Json.Serialization.JsonIgnore]
-        public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }
+        public SunEyeVision.Plugin.Runtime.ToolExecutionIdentity? ExecutionIdentity { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public SunEyeVision.Plugin.Contracts.ToolSchema? BindingOutputSchema { get; internal set; }
         [System.Text.Json.Serialization.JsonIgnore]

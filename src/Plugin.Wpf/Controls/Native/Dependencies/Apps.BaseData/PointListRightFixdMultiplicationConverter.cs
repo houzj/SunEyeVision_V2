@@ -18,6 +18,20 @@ public sealed class PointListRightFixdMultiplicationConverter : IMultiValueConve
     private bool _pending,_pendingTopology;
     private sealed class ProjectedPoints:ObservableCollection<Point>
     {
+        private int _notifications;
+        internal bool IsNotifying=>_notifications!=0;
+        internal Action? NotificationCompleted;
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs args)
+        {
+            _notifications++;
+            Exception? failure=null;
+            try{base.OnCollectionChanged(args);}
+            catch(Exception error){failure=error;}
+            finally{_notifications--;}
+            try{if(_notifications==0)NotificationCompleted?.Invoke();}
+            catch(Exception cleanup){if(failure is not null)throw new AggregateException(failure,cleanup);throw;}
+            if(failure is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        }
         internal void ReplaceAll(IReadOnlyList<Point> points)
         {
             Items.Clear();foreach(var point in points)Items.Add(point);
@@ -38,6 +52,7 @@ public sealed class PointListRightFixdMultiplicationConverter : IMultiValueConve
         if(changed)
         {
             Disconnect();_left=source;_right=new();_right.CollectionChanged+=RightChanged;
+            _right.NotificationCompleted=()=>{if(_pending)Synchronize(false);};
             if(source is INotifyCollectionChanged notifier)CollectionChangedEventManager.AddHandler(notifier,LeftChanged);
         }
         if(_width!=width||_height!=height){_generation++;_revision++;}
@@ -52,7 +67,7 @@ public sealed class PointListRightFixdMultiplicationConverter : IMultiValueConve
     private void Synchronize(bool topology)
     {
         _pending=true;_pendingTopology|=topology;
-        if(_projecting||_writing)return;
+        if(_projecting||_writing||_right?.IsNotifying==true)return;
         _projecting=true;
         try
         {
@@ -110,7 +125,7 @@ public sealed class PointListRightFixdMultiplicationConverter : IMultiValueConve
         _generation++;_revision++;_topology++;
         _pending=false;_pendingTopology=false;
         if(_left is INotifyCollectionChanged notifier)CollectionChangedEventManager.RemoveHandler(notifier,LeftChanged);
-        if(_right is not null)_right.CollectionChanged-=RightChanged;
+        if(_right is not null){_right.CollectionChanged-=RightChanged;_right.NotificationCompleted=null;}
         _left=null;_right=null;
     }
     public void Dispose(){if(_disposed)return;_disposed=true;Disconnect();}

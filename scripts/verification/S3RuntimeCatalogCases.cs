@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Text.Json.Nodes;
 using SunEyeVision.HalAdapter;
@@ -17,7 +18,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            var manager=new PluginManager();manager.LoadPlugins(Path.Combine(product,"plugins"));
+            var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(m=>m.Id));PluginLoader.MarkAsLoaded();
             var definition=ToolRegistry.CreateRuntime(BlobTool.Id);
             var metadata=ToolRegistry.GetToolMetadata(BlobTool.Id)??throw new Exception("Runtime没有工具目录");
@@ -42,7 +43,7 @@ internal static class S2DocumentEditingCases
                 Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)
                     &&node.Parameters.GetType().FullName!="SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters","节点仍默认SDK Blob参数");
                 using var run=Run(flow);
-                Require(run.Success&&run.NodeResults[node.Id].Result is RuntimeToolResults {Output:BlobOutput {Count:1,TotalArea:64}},"默认创建未进入Runtime执行");
+                Require(run.Success&&run.NodeResults[node.Id].Result is DeclaredOutputSnapshot {Output:BlobOutput {Count:1,TotalArea:64}},"默认创建未进入Runtime执行");
             });
             Case("Runtime目录节点修改强类型值后保存重开仍直接执行",()=>
             {
@@ -55,7 +56,7 @@ internal static class S2DocumentEditingCases
                 var restored=repository.LoadCandidate(file).Candidate?.Workflows.Single()??throw new Exception(repository.LastError);
                 Require(((BlobSettings)restored.Nodes.Single().RuntimeConfiguration!.CaptureSettings()).Threshold==201,"重开覆盖用户值");
                 engine.RegisterWorkflow(restored);
-                try{using var run=Run(restored);Require(run.Success&&run.NodeResults[node.Id].Result is RuntimeToolResults {Output:BlobOutput {Count:0}},"重开未按201阈值执行");}
+                try{using var run=Run(restored);Require(run.Success&&run.NodeResults[node.Id].Result is DeclaredOutputSnapshot {Output:BlobOutput {Count:0}},"重开未按201阈值执行");}
                 finally{engine.RegisterWorkflow(flow);}
             });
             Case("目录重复登记幂等，冲突组件拒绝且不污染已发布目录",()=>

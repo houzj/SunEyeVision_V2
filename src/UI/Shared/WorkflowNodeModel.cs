@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -60,9 +61,9 @@ namespace SunEyeVision.UI.Shared
         /// 基类属性已 [JsonIgnore]，此处 new 隐藏属性必须显式 [JsonIgnore]。
         /// </summary>
         [JsonIgnore]
-        public new ToolResults? LastResult
+        public new DeclaredOutputSnapshot? LastResult
         {
-            get => base.LastResult as ToolResults;
+            get => base.LastResult as DeclaredOutputSnapshot;
             set => base.LastResult = value;
         }
 

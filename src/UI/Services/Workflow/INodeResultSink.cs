@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -15,7 +16,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 更新模块结果树（分组可折叠显示）
         /// </summary>
-        void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
+        void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
 
         void ClearResultGraphics();
         void ClearResultHighlight();

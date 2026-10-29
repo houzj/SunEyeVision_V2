@@ -9,6 +9,28 @@ public sealed record RoiGeometryClipboard(Guid ScopeId,ImageFrameAddress Frame,s
 public sealed partial class NativeRoiSession
 {
     private bool _queryingHistory;
+    private bool _queryingCoverage;
+    private bool CanSetGroupCoverage(string group)
+    {
+        if(_queryingCoverage||!IsCurrent||_canSetCoverage is null||!_groups.Any(state=>state.Group==group))return false;
+        var stamp=_stamp;var generation=_groupGeneration;_queryingCoverage=true;
+        try{return _canSetCoverage(group)&&IsCurrent&&stamp==_stamp&&generation==_groupGeneration&&DrawingGroup==group;}
+        finally{_queryingCoverage=false;}
+    }
+    public bool TrySetCoverage(RoiCoverage coverage)
+    {
+        if(coverage is not (RoiCoverage.None or RoiCoverage.FullDomain))throw new ArgumentOutOfRangeException(nameof(coverage));
+        if(!CommandReady||!CanSetGroupCoverage(DrawingGroup))return false;
+        var group=DrawingGroup;var generation=_groupGeneration;_requesting=true;
+        try
+        {
+            if(!PrepareCommand(out var current)||generation!=_groupGeneration||!CanSetGroupCoverage(group)||current.Stamp!=Stamp)return false;
+            if(current.Groups.Single(state=>state.Group==group).Coverage==coverage)
+            {Error="";Notify();return true;}
+            return AcceptCommand(current,new RoiEditProposal.SetCoverage(group,coverage));
+        }
+        finally{_requesting=false;}
+    }
     private bool CommandReady=>IsCurrent&&!_committing&&!_reading&&!_refreshing&&!_selecting&&!_requesting;
     public bool CanCopy(NativeRoiProjection item)=>CommandReady&&Owns(item);
     public bool CanDelete(IReadOnlyList<NativeRoiProjection> items)=>CommandReady&&items.Count>0&&items.Distinct().Count()==items.Count&&items.All(Owns);
@@ -38,7 +60,7 @@ public sealed partial class NativeRoiSession
         var after=Capture(ReadCurrent());
         if(!IsCurrent)return false;
         if(after.Stamp!=stamp){Install(after);return false;}
-        if(!SameItems(current.Items,after.Items))
+        if(!SameItems(current.Items,after.Items)||!SameGroups(current.Groups,after.Groups))
         {_invalid=true;Error="取消回调改变区域内容时未递增宿主版本。";NativeRoiCallbacks.Run([CancelPending,Notify]);return false;}
         snapshot=after;return true;
     }

@@ -159,7 +159,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：重绘关闭旧弹层，旧选择及释放后回调不写当前字段");
 
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            var manager=new PluginManager();manager.LoadPlugins(Path.Combine(product,"plugins"));
+            var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
             var definition=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");var settings=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings();
             var access=definition.SettingsSchema;Require(access.Inputs.Count==54&&access.Inputs.Select(p=>p.Id).Distinct().Count()==54,"XML设置字段不完整或重复");

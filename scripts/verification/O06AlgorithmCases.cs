@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Reflection;
 using System.IO;
 using SunEyeVision.Core.Services.Serialization;
@@ -33,7 +33,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            var plugins=new PluginManager();plugins.LoadPlugins(Path.Combine(product,"plugins"));PluginLoader.MarkAsLoaded();
+            var plugins=new PluginManager();plugins.LoadPlugins();PluginLoader.MarkAsLoaded();
             Case("单/双阈值闭区间端点、等阈值、反向和实际值",()=>{
                 using var resources=new FrozenOutputResources();using var input=Gray(new byte[]{0,99,100,101,199,200,201,255});
                 using var single=new BlobSession().Execute(Basic with{Threshold=100},input,resources);
@@ -67,7 +67,7 @@ internal static class S2DocumentEditingCases
             Case("Runtime规范值可空阈值和最终集合统计",()=>{
                 using var image=HalImage.CreateFromBytes(new byte[]{0,255,255,0},4,1,1);
                 using var invocation=ExecuteBlob(image,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,OutputGrayImage=true});
-                var result=(RuntimeToolResults)invocation.NodeResults["blob"].Result!;var output=(BlobOutput)result.Output!;
+                var result=(DeclaredOutputSnapshot)invocation.NodeResults["blob"].Result!;var output=(BlobOutput)result.Output!;
                 Require(invocation.Success&&output.ThresholdMinUsed is null&&output.ThresholdMaxUsed is null,"None阈值不应伪造");
                 foreach(var id in new[]{BlobSchema.Field(8),BlobSchema.Field(9)})
                     Require(result.GetOutputVariables().Single(v=>v.PortId==id).AllowsNull&&result.Values[id] is null,"可空正式声明丢失");
@@ -75,7 +75,7 @@ internal static class S2DocumentEditingCases
                 var many=new byte[16*16];many[2*16+2]=255;for(var y=8;y<10;y++)for(var x=8;x<10;x++)many[y*16+x]=255;
                 using var multiple=HalImage.CreateFromBytes(many,16,16,1);
                 using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc});
-                var limited=(BlobOutput)((RuntimeToolResults)final.NodeResults["blob"].Result!).Output!;
+                var limited=(BlobOutput)((DeclaredOutputSnapshot)final.NodeResults["blob"].Result!).Output!;
                 Require(final.Success&&limited.Count==1&&limited.MinimumArea==4&&limited.MaximumArea==4,"统计未来自最终限数集合");
             });
             Case("拒绝缺失Runtime配置和SDK双模型，不补默认配置",()=>{
@@ -102,25 +102,25 @@ internal static class S2DocumentEditingCases
                 }
             });
             Case("严格形态学拒绝隐式128、非byte和彩色，保全部操作及Circle",()=>{
-                using var bad=HalImage.CreateFromBytes(new byte[]{0,200,255,0},4,1,1);var rejected=Run("Morphology",bad);try{Require(!rejected.IsSuccess&&rejected.ErrorMessage!.Contains("BINARY_INPUT_VALUES"),"形态学仍按128接受灰度");}finally{rejected.Resources?.Dispose();}
+                using var bad=HalImage.CreateFromBytes(new byte[]{0,200,255,0},4,1,1);var rejected=Run("Morphology",bad);try{Require(!rejected.IsSuccess&&rejected.ErrorMessage!.Contains("BINARY_INPUT_VALUES"),"形态学仍按128接受灰度");}finally{rejected.Dispose();}
                 using var raw16=new HImage();raw16.GenImageConst("uint2",4,4);Throws(()=>HalconImageAdmission.RequireBinary(raw16),"BINARY_INPUT_FORMAT");
-                using var color=HalImage.CreateFromBytes(Enumerable.Repeat((byte)255,48).ToArray(),4,4,3);var rgb=Run("Morphology",color);try{Require(!rgb.IsSuccess&&rgb.ErrorMessage!.Contains("BINARY_INPUT_FORMAT"),"形态学先转灰接受彩色");}finally{rgb.Resources?.Dispose();}
+                using var color=HalImage.CreateFromBytes(Enumerable.Repeat((byte)255,48).ToArray(),4,4,3);var rgb=Run("Morphology",color);try{Require(!rgb.IsSuccess&&rgb.ErrorMessage!.Contains("BINARY_INPUT_FORMAT"),"形态学先转灰接受彩色");}finally{rgb.Dispose();}
                 using var thresholdInput=HalImage.CreateFromBytes(new byte[]{0,200,255,0},4,1,1);
                 var thresholdResult=Run("ImageThreshold",thresholdInput,p=>{Set(p,"Method","Binary");Set(p,"MaxValue",200);});
                 try{
                     var rendered=(HalImage)thresholdResult.GetType().GetProperty("OutputImage")!.GetValue(thresholdResult)!;
                     var mask=(HalImage)thresholdResult.GetType().GetProperty("BinaryMask")!.GetValue(thresholdResult)!;
                     Throws(()=>HalconImageAdmission.RequireBinary(rendered.Unwrap()),"BINARY_INPUT_VALUES");HalconImageAdmission.RequireBinary(mask.Unwrap());
-                }finally{thresholdResult.Resources?.Dispose();}
+                }finally{thresholdResult.Dispose();}
                 var pixels=new byte[32*32];for(int y=4;y<28;y++)for(int x=4;x<28;x++)pixels[y*32+x]=255;
                 using var binary=HalImage.CreateFromBytes(pixels,32,32,1);
                 foreach(var operation in new[]{"Erode","Dilate","Open","Close","Gradient","TopHat","BlackHat"}){
-                    var result=Run("Morphology",binary,p=>{Set(p,"Operation",operation);Set(p,"KernelShape","Circle");});try{Require(result.IsSuccess,result.ErrorMessage??operation);var output=(IVisionImage)result.GetType().GetProperty("BinaryMask")!.GetValue(result)!;using var snap=HalImageSnapshotSource.Capture(((HalImage)output).Unwrap(),new(Guid.NewGuid(),"morph"));HalconImageAdmission.RequireBinary(snap);}finally{result.Resources?.Dispose();}
+                    var result=Run("Morphology",binary,p=>{Set(p,"Operation",operation);Set(p,"KernelShape","Circle");});try{Require(result.IsSuccess,result.ErrorMessage??operation);var output=(IVisionImage)result.GetType().GetProperty("BinaryMask")!.GetValue(result)!;using var snap=HalImageSnapshotSource.Capture(((HalImage)output).Unwrap(),new(Guid.NewGuid(),"morph"));HalconImageAdmission.RequireBinary(snap);}finally{result.Dispose();}
                 }
                 var seed=new byte[256*256];seed[128*256+128]=255;using var point=HalImage.CreateFromBytes(seed,256,256,1);
                 foreach(var (width,height) in new[]{(2,2),(100,2),(101,2),(2,100),(2,101),(100,101),(101,100)}){
                     var result=Run("Morphology",point,p=>{Set(p,"Operation","Dilate");Set(p,"KernelShape","Rect");Set(p,"KernelWidth",width);Set(p,"KernelHeight",height);});
-                    try{Require(result.IsSuccess,result.ErrorMessage??"尺寸被错误拒绝");Require(Convert.ToInt64(result.GetType().GetProperty("TotalArea")!.GetValue(result))==width*height,"偶轴被取整或尺寸被截断");}finally{result.Resources?.Dispose();}
+                    try{Require(result.IsSuccess,result.ErrorMessage??"尺寸被错误拒绝");Require(Convert.ToInt64(result.GetType().GetProperty("TotalArea")!.GetValue(result))==width*height,"偶轴被取整或尺寸被截断");}finally{result.Dispose();}
                 }
                 var evenCircle=Run("Morphology",point,p=>{Set(p,"Operation","Dilate");Set(p,"KernelShape","Circle");Set(p,"KernelWidth",2);Set(p,"KernelHeight",2);});
                 try{
@@ -128,12 +128,12 @@ internal static class S2DocumentEditingCases
                         Console.WriteLine("HALCON原Circle半径1实际离散面积="+expectedArea.D);
                         Require(evenCircle.IsSuccess&&Convert.ToInt64(evenCircle.GetType().GetProperty("TotalArea")!.GetValue(evenCircle))==expectedArea.D,"Circle偶数尺寸未按原native半径1语义承接");
                     }
-                }finally{evenCircle.Resources?.Dispose();}
+                }finally{evenCircle.Dispose();}
             });
             Case("ImageFilter均衡化有效域统计与其他滤波承接",()=>{
                 var bytes=Enumerable.Range(0,64).Select(i=>(byte)(i*4)).ToArray();using var image=HalImage.CreateFromBytes(bytes,8,8,1);
                 foreach(var filter in new[]{"Blur","Gaussian","MedianBlur","HistogramEqualization"}){
-                    var result=Run("ImageFilter",image,p=>Set(p,"FilterTypeValue",filter));try{Require(result.IsSuccess,result.ErrorMessage??filter);Require(result.GetType().GetProperty("OutputImage")!.GetValue(result) is IVisionImage,"滤波无图像");}finally{result.Resources?.Dispose();}
+                    var result=Run("ImageFilter",image,p=>Set(p,"FilterTypeValue",filter));try{Require(result.IsSuccess,result.ErrorMessage??filter);Require(result.GetType().GetProperty("OutputImage")!.GetValue(result) is IVisionImage,"滤波无图像");}finally{result.Dispose();}
                 }
                 var scoped=Run("ImageFilter",image,p=>{Set(p,"FilterTypeValue","HistogramEqualization");((RoiParameters)p).InspectionRois.AddInput(Roi.CreateLocal("small",new RotatedRect2d(3.5,3.5,3,3,0)));});
                 try{
@@ -142,7 +142,7 @@ internal static class S2DocumentEditingCases
                     HOperatorSet.EquHistoImage(image.Unwrap(),out var fullObj);using(fullObj)using(var full=new HImage(fullObj)){
                         using var actual=native.GetGrayval(2,2);using var unrestricted=full.GetGrayval(2,2);Require(actual.D!=unrestricted.D,"均衡化错误地使用全图直方图");
                     }
-                }finally{scoped.Resources?.Dispose();}
+                }finally{scoped.Dispose();}
             });
             Case("有限不等条件、三模式字段显示与模式常量约束",()=>{
                 if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -190,7 +190,7 @@ internal static class S2DocumentEditingCases
         using var input=HalImage.CreateFromBytes(bytes,32,32,1);var executor=new WorkflowExecutionEngine(engine,plugins,new CheckLogger());
         using var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
         Require(run.Success,string.Join(";",run.Errors??new()));var result=run.NodeResults["blob"].Result!;
-        Require(((RuntimeToolResults)result).Output is BlobOutput{Count:1,ThresholdMinUsed:null,SegmentationModeUsed:"None"},"真实链未消费严格二值");
+        Require(((DeclaredOutputSnapshot)result).Output is BlobOutput{Count:1,ThresholdMinUsed:null,SegmentationModeUsed:"None"},"真实链未消费严格二值");
         using var read=run.DeclaredOutputs.Single(o=>o.Identity.NodeId=="blob").AcquireReader();
         Require(read.Values!.Get<long?>(BlobSchema.Field(8)) is null,"Workflow nullable阈值丢失");
         var image=read.Values.Get<IReadOnlyImage>(BlobSchema.Field(6));var region=read.Values.Get<IReadOnlyRegion>(BlobSchema.RegionPort);Require(image.Frame==region.SourceFrame,"二值图/Region错帧");

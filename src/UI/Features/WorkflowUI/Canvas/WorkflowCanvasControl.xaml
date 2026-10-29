@@ -24,7 +24,7 @@
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersPath:PointOffsetConverter x:Key="PointOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
-        <convertersNode:VmNodeIconConverter x:Key="VmNodeIcon"/>
+        <convertersNode:ToolNodeIconConverter x:Key="ToolNodeIcon"/>
         <convertersNode:VmGroupBackgroundConverter x:Key="VmGroupBackground"/>
 
         <!-- 使用缓存的节点转换器（性能优化） -->
@@ -262,7 +262,17 @@
                                 <Grid Grid.Column="0">
                                     <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="24"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <Image Source="{Binding ToolType, Converter={StaticResource VmNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center"><Image.Style><Style TargetType="Image"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
+                                    <Image Source="{Binding ToolType, Converter={StaticResource ToolNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
 
                                     <!-- 原GROUP参数按钮：24px原图、左边距7，标题不显示全局ID。 -->
                                     <Button x:Name="GroupSettingsButton" Width="24" Height="24" Margin="7,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Cursor="Hand" ToolTip="子程序参数设置" Click="SubroutineNodeSettings_Click">

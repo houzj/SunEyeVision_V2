@@ -1,0 +1,88 @@
+{
+  "status": "INDEPENDENT_COMPONENT_CANDIDATE_PASSED_FORMAL_INTEGRATION_PENDING",
+  "sourceFiles": {
+    "src/Plugin.Wpf/Presenters/Parameters/NativeAssistOptions.cs": "b67927bc6b4f96895369e609369373e7c404e50695009bb0fd0fbb5acd64112a",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Assist.cs": "eee52dca2af7983d8f27ecfd985d3ad43ba864cdd0ecfd7da0e69a9c9bfd889d",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549",
+    "src/Plugin.Wpf/Design/NativeAssistSample.cs": "50b3eff2a4ccbcf221c1eaa4ff07feab67e9977819b88afa251376a93823193f",
+    "src/Plugin.Wpf/Design/NativeAssistScene.xaml": "150c17a2b78ba73e3e25741c4af1805f6d263bb9fa4acec9a46e878fefa23f73"
+  },
+  "originalSources": {
+    "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetValueNullOperaion.cs": "c9d3fb14793256a5acd7150d43e45174ac942d20e782d1b5f4fc2f40a263faea",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs": "a04c04dc557328269a06d67c194f6c3a64b68659acc1f76e4de778f5da858931",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/NameValueItem.cs": "90b4742e79243f46c46fd6b38187ee7f5be49d4c6677f994133215a3796fed46",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Trigger.cs": "8d0e50fb8d51ed11f9e0199ea7e03a22d7dbf6e364bb2212b0fce3c297b064e9",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetFilterSourceOperation.cs": "197ec3eb19974776db4dc9ab293cababed6319ef2a5a1c0da6a8a9bfd5eb0401",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetCombinationSourceOperation.cs": "7ce50140df9bc50b1e954a3c604b5fa294f91db1318a22253feebb9811be9444",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedFilterOperation.cs": "1cf28c8b2adcf10e2a6cebdd8afdfd2295aacb7e3faf750f61a7325fec8cf1cd",
+    "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedCombinationOperation.cs": "2e284885b38f2fab0d93fd74c64db482a25255de4dec14136cfbad9bd888d86c"
+  },
+  "behaviorEvidence": {
+    "close": "Group.xml282–356 → SetValueNullOperaion21–32 → ButtonSelecter90–122 → NameValueItem538–566/659–686 → Trigger114–164 → SetFilterSourceOperation33–111/207–258或SetCombinationSourceOperation33–101 → VmIO.RelateIO159–208 → VmModule.UnSubscribe1853–1891。正常已初始化有选择路径实际解除订阅，不只清显示。",
+    "clears": [
+      "BaseX",
+      "BaseY",
+      "Angle",
+      "ScaleX",
+      "ScaleY",
+      "RunPointBaseX",
+      "RunPointBaseY",
+      "RunAngle",
+      "RunScaleX",
+      "RunScaleY",
+      "CorrectInfo",
+      "RunPoint"
+    ],
+    "retains": [
+      "OriginPoint",
+      "selection mode"
+    ],
+    "notProven": [
+      "VM保存重开/异常关闭/真实撤销行为",
+      "位姿native ABI、角单位/顺序和正反变换公式"
+    ],
+    "adaptation": "本方enabled+12来源的一次原子提案是宿主事务保证；VM原XML按顺序触发，不冒称原VM原子。Unset保留原常量backup，不复位算法默认值。"
+  },
+  "candidateValidation": {
+    "library": {
+      "log": "artifacts/assist-library-20261028-003.log",
+      "errors": 0,
+      "warnings": 5312,
+      "seconds": 20.59
+    },
+    "window": {
+      "attempt": 244,
+      "passed": 8,
+      "failed": 0
+    },
+    "design": {
+      "attempt": 63,
+      "passed": 101,
+      "scope": "无Application、主程序、工作流或算法的真实XAML组装/渲染，不代真实Visual Studio或人工"
+    }
+  },
+  "failedHistory": [
+    {
+      "attempt": 241,
+      "passed": 4,
+      "failed": 3,
+      "cause": "测试直接读取包装InputElement、以新建引用对象Equals比较身份、把非数值字段精度设null；已改实际TextBox/全身份/合法元数据。"
+    },
+    {
+      "attempt": 243,
+      "passed": 7,
+      "failed": 1,
+      "cause": "合法条件夹具误用Int32；Contracts明确只接受Int64，已保正式类型拒绝并改合法long1。"
+    }
+  ],
+  "remaining": [
+    "SettingsView/Draft/Host/保存重开完整Unset权威合同",
+    "真实来源执行绑定与Frame/有效期",
+    "实际位姿转换及图像原点显示/ROI联动",
+    "VS设计器与用户VM同态人工验收"
+  ],
+  "blobBusinessModified": false
+}

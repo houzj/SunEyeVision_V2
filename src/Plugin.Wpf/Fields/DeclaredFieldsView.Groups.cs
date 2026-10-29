@@ -108,7 +108,7 @@ public sealed partial class DeclaredFieldsView
         public void Dispose(){var value=_owner;_owner=null;if(value is not null)value._submitting=false;}
     }
     private bool SubmitCore(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,bool validateReferences,bool replacePending,Action? installed=null)
-        =>DeclaredFieldState.TrySetGroup(proposals,_writeGroup,changes=>ValidatePrepared(changes,validateReferences,true),CurrentGroup,replacePending,installed);
+        =>DeclaredFieldState.TrySetGroup(ExpandAssistProposals(proposals),_writeGroup,changes=>ValidatePrepared(changes,validateReferences,true),CurrentGroup,replacePending,installed);
     private void ValidatePrepared(IReadOnlyDictionary<string,ParameterSetting> changes,bool validateReferences,bool validateComposition)
         {
             foreach(var change in changes)

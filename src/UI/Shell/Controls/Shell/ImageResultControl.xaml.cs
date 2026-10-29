@@ -24,6 +24,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     /// </summary>
     public partial class ImageResultControl : UserControl
     {
+        internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView ModuleResultTreeView;
+        internal readonly TextBlock SourceStatusMessage;
+        internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip ImagePreviewContent;
         private MainWindowViewModel _viewModel = null!;
         private bool _shutdown;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
@@ -71,6 +74,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ImageResultControl()
         {
             InitializeComponent();
+            ModuleResultTreeView=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)Workspace.PropertyListContent;
+            var sourceStrip=(Panel)Workspace.SourceStripContent;
+            SourceStatusMessage=sourceStrip.Children.OfType<TextBlock>().Single();
+            ImagePreviewContent=sourceStrip.Children.OfType<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip>().Single();
+            RegisterName(nameof(ModuleResultTreeView),ModuleResultTreeView);
+            RegisterName(nameof(SourceStatusMessage),SourceStatusMessage);
+            RegisterName(nameof(ImagePreviewContent),ImagePreviewContent);
             _sourceTheme=new(ImagePreviewContent);
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
             _shellTheme=new(Workspace,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.ResultShell);

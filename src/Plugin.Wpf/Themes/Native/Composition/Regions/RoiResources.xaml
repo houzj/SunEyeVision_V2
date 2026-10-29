@@ -2,6 +2,33 @@
 <!-- Original Box, SectorRing and Sector branches with expand styles; remaining shape branches are not substitutes. -->
 <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ExpandResources.xaml"/><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/><x:StaticExtension Member="vm_port_0___:LocalizationResourceDictionary.Instance"/></ResourceDictionary.MergedDictionaries><vm_port_0:NegateConverter x:Key="negateConverter"/>
 
+<Style x:Key="fullscreenRoiBtnStyle" TargetType="{x:Type ToggleButton}">
+    <Setter Property="Height" Value="34" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Margin" Value="0,0,27,0" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Grid Background="#00FFFFFF">
+            <Image Name="bg" Width="36" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_选中但未绘制_bg.png" />
+            <Image Name="icon" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_full-screen_normal.png" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="True" Binding="{Binding FullScreen_ModuleEnableA}">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_full-screen_click.png" />
+            </DataTrigger>
+            <DataTrigger Value="True" Binding="{Binding FullScreenA}">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
 <Style x:Key="BoxRoiBtnStyle" TargetType="{x:Type ToggleButton}">
     <Setter Property="Height" Value="34" />
     <Setter Property="Width" Value="36" />

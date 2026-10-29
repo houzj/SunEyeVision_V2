@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -61,7 +62,7 @@ namespace SunEyeVision.UI.Core
         /// <summary>
         /// 更新模块结果树（分组可折叠显示）
         /// </summary>
-        void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
+        void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
 
         /// <summary>
         /// 图像显示源索引变化回调（由图像结果子 VM 触发，根 VM 据此刷新显示图像）

@@ -1,0 +1,5462 @@
+{
+  "sourceCommit": "70d8032aa81cfc5652a95b92601e6c5f8039c9c2",
+  "method": "对默认解决方案非测试工程执行MSBuild -getItem:Compile；逐文件保存源码SHA与精确符号行，不执行构建。",
+  "limitation": "符号引用是编译消费者上界，包含注释与未触发分支；不冒称运行时可达图、资源正确性或性能测试。",
+  "evaluatedProjects": [
+    "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+    "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+    "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj",
+    "Src/CommonControl/CommonControl.csproj",
+    "Src/Core/SunEyeVision.Core.csproj",
+    "Src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+    "Src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj",
+    "Src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj",
+    "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+    "Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+    "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+    "Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+    "Src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+    "Src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+    "Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+    "Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+    "Src/UI/SunEyeVision.UI.csproj",
+    "Src/Workflow/SunEyeVision.Workflow.csproj"
+  ],
+  "evaluatedProductSourceFiles": 1918,
+  "matchedFiles": 109,
+  "summary": {
+    "RuntimeToolResults": {
+      "files": 8,
+      "lines": 11
+    },
+    "ToolResults": {
+      "files": 66,
+      "lines": 196
+    },
+    "DeclaredOutputSnapshot": {
+      "files": 10,
+      "lines": 29
+    },
+    "DeclaredOutputReader": {
+      "files": 2,
+      "lines": 4
+    },
+    "ResultResourceOwner": {
+      "files": 4,
+      "lines": 10
+    },
+    "ToolResultSnapshot": {
+      "files": 3,
+      "lines": 7
+    },
+    "NodeResultSnapshot": {
+      "files": 3,
+      "lines": 8
+    },
+    "ExecutionResult": {
+      "files": 11,
+      "lines": 45
+    },
+    "NodeExecutionResult": {
+      "files": 8,
+      "lines": 29
+    },
+    "AlgorithmResult": {
+      "files": 5,
+      "lines": 32
+    },
+    "IResultPublication": {
+      "files": 14,
+      "lines": 33
+    },
+    "IResultValueLease": {
+      "files": 5,
+      "lines": 17
+    },
+    "GetDisplayImages": {
+      "files": 8,
+      "lines": 10
+    },
+    "GetImageView": {
+      "files": 3,
+      "lines": 4
+    },
+    "CopyImage": {
+      "files": 7,
+      "lines": 9
+    },
+    "FreezeResult": {
+      "files": 2,
+      "lines": 3
+    },
+    "ToolExecutionIdentity": {
+      "files": 8,
+      "lines": 20
+    },
+    "ToolExecutionOwner": {
+      "files": 14,
+      "lines": 23
+    },
+    "ExecutionStatus": {
+      "files": 23,
+      "lines": 157
+    }
+  },
+  "files": [
+    {
+      "file": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs",
+      "sha256": "fce07bff697cd60d1b2d9dc8a1304f79365bd3d3e626c5c9a54bd7279b544c40",
+      "compiledBy": [
+        "Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj"
+      ],
+      "hits": [
+        {
+          "line": 119,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if(plugin.ResultType is null||plugin.ResultType.IsAbstract||!typeof(ToolResults).IsAssignableFrom(plugin.ResultType))throw new InvalidOperationException(\"Invalid plugin result type.\");"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/IAsyncToolPlugin.cs",
+      "sha256": "84b6f94915c5692ca2e6a682cf1f116bda1a5813b40c029579ee038ae6d53082",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 12,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/IToolInputReader.cs",
+      "sha256": "31eb442c06f474f9887a94962b21ef54facc301867e05533e06b11967829917c",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 14,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "bool TryGetNodeResult(string nodeId, out ToolResults? result);"
+        },
+        {
+          "line": 21,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private readonly IDictionary<string, ToolResults>? _nodeResults;"
+        },
+        {
+          "line": 26,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults,"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public bool TryGetNodeResult(string nodeId, out ToolResults? result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/IToolPlugin.cs",
+      "sha256": "03df7cc8b68f544af4474994a2cedda6ce139f92f666b87de73b3e921df8b23c",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 95,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults Run(ToolParameters parameters);"
+        },
+        {
+          "line": 116,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 136,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults IToolPlugin.Run(ToolParameters parameters)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/IWorkflowResultCommitter.cs",
+      "sha256": "8faa0877bfd893fe9cd8740c6f4ff6414bdac4cc89e1e7ac403c1a38f48279b4",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "bool TryCommit(ToolResults result, out string? error);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/RunResult.cs",
+      "sha256": "a8c460fe0256a5366200d333c70c75a3a5bdf2266f42e45a23af74e699bb8a42",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 29,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; }"
+        },
+        {
+          "line": 34,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? ToolResult { get; set; }"
+        },
+        {
+          "line": 69,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static RunResult Success(ToolResults toolResult, double executionTimeMs)"
+        },
+        {
+          "line": 74,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success,"
+        },
+        {
+          "line": 89,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed,"
+        },
+        {
+          "line": 104,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Cancelled,"
+        },
+        {
+          "line": 111,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 从 ToolResults 创建 RunResult"
+        },
+        {
+          "line": 113,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static RunResult FromToolResults(ToolResults toolResult)"
+        },
+        {
+          "line": 142,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public class RunResult<TResult> where TResult : ToolResults, new()"
+        },
+        {
+          "line": 152,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; }"
+        },
+        {
+          "line": 197,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success,"
+        },
+        {
+          "line": 212,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed,"
+        },
+        {
+          "line": 227,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Cancelled,"
+        },
+        {
+          "line": 234,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 从 ToolResults 转换"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolExecutionIdentity.cs",
+      "sha256": "2757a8e1a7c4bfaf1e45b1decccc158412e4e7a68dd16d2079c75744ab8ac9d8",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 8,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public sealed class ToolExecutionOwner"
+        },
+        {
+          "line": 48,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public ToolExecutionIdentity Begin(string nodeId, Guid runId, string contractIdentity,"
+        },
+        {
+          "line": 62,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "return new ToolExecutionIdentity(this, nodeId, generation, runId, requestId, contractIdentity, cancellationToken, admission, rootRunId);"
+        },
+        {
+          "line": 66,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "internal bool Publish(ToolExecutionIdentity identity, Action? publish, bool callback = false)"
+        },
+        {
+          "line": 79,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "internal void CompleteCallbacks(ToolExecutionIdentity identity)"
+        },
+        {
+          "line": 83,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "internal void RefineContract(ToolExecutionIdentity identity, string contractIdentity)"
+        },
+        {
+          "line": 92,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public IDisposable EnterRun(ToolExecutionIdentity identity)"
+        },
+        {
+          "line": 102,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "private sealed class RunLease(ToolExecutionOwner owner) : IDisposable"
+        },
+        {
+          "line": 104,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "private ToolExecutionOwner? _owner = owner;"
+        },
+        {
+          "line": 137,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public sealed class ToolExecutionIdentity"
+        },
+        {
+          "line": 146,
+          "symbols": [
+            "ToolExecutionIdentity",
+            "ToolExecutionOwner"
+          ],
+          "text": "internal ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,"
+        },
+        {
+          "line": 149,
+          "symbols": [
+            "ToolExecutionIdentity",
+            "ToolExecutionOwner"
+          ],
+          "text": "private ToolExecutionIdentity(ToolExecutionOwner owner, string nodeId, Guid generation, Guid runId, Guid requestId,"
+        },
+        {
+          "line": 152,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner Owner { get; }"
+        },
+        {
+          "line": 172,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public ToolExecutionIdentity WithContractIdentity(string contractIdentity)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolExecutionRequest.cs",
+      "sha256": "47d92a908b562f5b5d48164e759db6d3f9eeae27eebfc2abaaab504575aca40a",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 24,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "private ToolExecutionIdentity? _executionIdentity;"
+        },
+        {
+          "line": 25,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public ToolExecutionIdentity? ExecutionIdentity"
+        },
+        {
+          "line": 34,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner? ExecutionOwner { get; init; }"
+        },
+        {
+          "line": 76,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "internal ToolExecutionOwner? DefaultExecutionOwner { get; }"
+        },
+        {
+          "line": 80,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public IDictionary<string, ToolResults>? NodeResults { get; init; }"
+        },
+        {
+          "line": 128,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "internal void AttachResultMetadata(ToolResults result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolExecutor.Admission.cs",
+      "sha256": "5c60eaec9a4dcaf7ce4ba34de6e8a531918543336df324e1502524d28828a974",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 15,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "ToolExecutionOwner? RuntimeExecutionOwner => null;"
+        },
+        {
+          "line": 33,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string,ToolResults>? results,string? nodeName,string? nodeId,CancellationToken cancellation,"
+        },
+        {
+          "line": 52,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "var owner=request.ExecutionOwner??request.DefaultExecutionOwner??new ToolExecutionOwner();"
+        },
+        {
+          "line": 71,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "private sealed class AdmissionLease(ToolExecutionRequest request,ToolExecutionIdentity identity,IDisposable lease):IDisposable"
+        },
+        {
+          "line": 81,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private static void ReleaseRejectedResult(ToolResults result)"
+        },
+        {
+          "line": 90,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private static ToolResults RejectResult(Type resultType, ToolResults rejected, ToolExecutionRequest request)"
+        },
+        {
+          "line": 101,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults? candidate = null;"
+        },
+        {
+          "line": 104,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "candidate = CreateTerminalResult(resultType, ExecutionStatus.Cancelled, \"运行已取消或身份失效；已发生的发送不能撤回。\");"
+        },
+        {
+          "line": 107,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var images = candidate.GetDisplayImages().ToArray();"
+        },
+        {
+          "line": 125,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults SdkTerminal(string message)"
+        },
+        {
+          "line": 130,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = failures.Count == 0 ? ExecutionStatus.Cancelled : ExecutionStatus.Failed,"
+        },
+        {
+          "line": 139,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private ToolResults RunSynchronousCore(IToolPlugin tool,ToolExecutionRequest request)"
+        },
+        {
+          "line": 142,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "parameters.NodeResults=request.NodeResults??new Dictionary<string,ToolResults>();"
+        },
+        {
+          "line": 159,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "{return Terminal(ExecutionStatus.Cancelled,fault.Message);}"
+        },
+        {
+          "line": 160,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "catch(Exception fault){return Terminal(ExecutionStatus.Failed,fault.Message,fault);}"
+        },
+        {
+          "line": 161,
+          "symbols": [
+            "ExecutionStatus",
+            "ToolResults"
+          ],
+          "text": "ToolResults Terminal(ExecutionStatus status,string message,Exception? fault=null)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolExecutor.cs",
+      "sha256": "0bea43937aef13c58e25359bde807366dadfca69f4a2dbc3dacbd4dd93b8117f",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 66,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Run(IToolPlugin tool, ToolExecutionRequest request)"
+        },
+        {
+          "line": 92,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 108,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public async ValueTask<ToolResults> ExecuteAsync(IToolPlugin tool, ToolExecutionRequest request)"
+        },
+        {
+          "line": 136,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolExecutionPreparation.Apply(parameters, request.NodeResults ?? new Dictionary<string, ToolResults>(), attachNodeResults: false);"
+        },
+        {
+          "line": 159,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, ex.Message);"
+        },
+        {
+          "line": 170,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "var failed = CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);"
+        },
+        {
+          "line": 196,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private static ToolResults CreateTerminalResult("
+        },
+        {
+          "line": 198,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus status,"
+        },
+        {
+          "line": 202,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if (Activator.CreateInstance(resultType) is not ToolResults result)"
+        },
+        {
+          "line": 228,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? context = null,"
+        },
+        {
+          "line": 233,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 249,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Run("
+        },
+        {
+          "line": 252,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? context = null,"
+        },
+        {
+          "line": 277,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? context = null,"
+        },
+        {
+          "line": 283,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 374,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "request.NodeResults ?? new Dictionary<string, ToolResults>(),"
+        },
+        {
+          "line": 415,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 不把 ToolResults.IsPass 的默认 true 误显示为 OK。"
+        },
+        {
+          "line": 417,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private static void ApplyJudgmentStatus(ToolParameters parameters, ToolResults result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolHelpers.cs",
+      "sha256": "29766565a1ab65ae9ab1ccee37464c4959b543d5086774f28ab33a1c6b3d2a62",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 108,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where T : ToolResults, new()"
+        },
+        {
+          "line": 110,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "return ToolResults.CreateError<T>(message, exception);"
+        },
+        {
+          "line": 120,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where T : ToolResults, new()"
+        },
+        {
+          "line": 132,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void Success(ToolResults result, double executionTimeMs = 0)"
+        },
+        {
+          "line": 143,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void Error(ToolResults result, string message, Exception? exception = null)"
+        },
+        {
+          "line": 168,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void StopTimer(Stopwatch stopwatch, ToolResults result)"
+        },
+        {
+          "line": 199,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Core/ToolRunner.cs",
+      "sha256": "42fb409d8bdd5ada09d65eb17b656760695ca0990da9392e5f5c7fe8e2036a38",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 162,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 203,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Helpers/ImageFrameProvenance.cs",
+      "sha256": "4c50c223ac0fd18089cabae792f499f4feeccbb0c206f6c452d5a6f5c2b1757f",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 22,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private static readonly ConditionalWeakTable<ToolResults, Input> Results = new();"
+        },
+        {
+          "line": 39,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static Guid? GetInputFrame(ToolResults? result)"
+        },
+        {
+          "line": 44,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void RecordResult(ToolResults result, Guid? input, ImageFramePolicy policy = ImageFramePolicy.Unknown,"
+        },
+        {
+          "line": 48,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var outputs = policy == ImageFramePolicy.Unknown ? null : result.GetDisplayImages();"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Helpers/PositionCorrectionResolution.cs",
+      "sha256": "8f709df59cb2594acb6cd8a7d0827398e1f7182e5126adfc296c572bf0982313",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 55,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults? sourceResult = query?.GetNodeContext(node)?.Result;"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "sha256": "3bfef0f69f671dc119a079deab6a102ae7618ecafd46f90e927534349dc8b0e2",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 32,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }"
+        },
+        {
+          "line": 46,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private Func<string, ToolResults?>? _ssotReader;"
+        },
+        {
+          "line": 199,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// <param name=\"reader\">给定节点ID返回 ToolResults 的委托</param>"
+        },
+        {
+          "line": 200,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void SetSootReader(Func<string, ToolResults?> reader)"
+        },
+        {
+          "line": 644,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private ToolResults? GetNodeResult(string nodeId)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ExecutionContext.cs",
+      "sha256": "fd5320cab248b794d217b49ada6566e371d0a0124ed1465e432cd4c67e517d21",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 40,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; internal set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/IDataSourceQueryService.cs",
+      "sha256": "699652a8c1ed3f8e27be615ff924b814620a43ad3ddbc4b6fbf3d080441e0aac",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 44,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? Result { get; set; }"
+        },
+        {
+          "line": 59,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus ExecutionStatus => Result?.Status ?? ExecutionStatus.NotExecuted;"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/IParameterResolver.cs",
+      "sha256": "c315652d4389a9244e4e0d5c81c12ebc5eddd2a9de2a3c980e73bcfe8e9a5440",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 50,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults);"
+        },
+        {
+          "line": 61,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults,"
+        },
+        {
+          "line": 72,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults);"
+        },
+        {
+          "line": 82,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ISubWorkflowExecutor.cs",
+      "sha256": "7ddbda1bbbd9237b9b201c82c9a150708ee519ff6bfbd2ac89ff2078c408fbcb",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 12,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "Func<string, IVisionImage?, Dictionary<string, object>?, Task<ExecutionResult>>? ExecuteSubWorkflowAsync { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/NodeResultsParameterContext.cs",
+      "sha256": "348cd4d47b488bea55da956e09055e1bf187d3e85c602cc807d73001fd82624c",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 10,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 将节点执行结果字典（IDictionary&lt;string, ToolResults&gt;）适配为订阅解析上下文，"
+        },
+        {
+          "line": 27,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private readonly IDictionary<string, ToolResults> _nodeResults;"
+        },
+        {
+          "line": 32,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// <param name=\"nodeResults\">节点执行结果字典（nodeId → ToolResults）</param>"
+        },
+        {
+          "line": 33,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public NodeResultsParameterContext(IDictionary<string, ToolResults> nodeResults)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs",
+      "sha256": "4e19297cfd78406983e8c84d208467c7010d2f1784fa3c97ae289102b7e4a04e",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 25,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults,"
+        },
+        {
+          "line": 43,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null, Guid? sourceFieldId = null)"
+        },
+        {
+          "line": 45,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "if(result is RuntimeToolResults runtime&&runtime.BindingOutputSchema!.Outputs.Any(port=>port.Id==propertyPath&&"
+        },
+        {
+          "line": 49,
+          "symbols": [
+            "GetImageView"
+          ],
+          "text": "return runtime.GetImageView(propertyPath);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ParameterResolver.cs",
+      "sha256": "7e6c5b54ecbe93a67a2130457fc276281843d37bf462a6b7e0600c0aa0ee8377",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 61,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults)"
+        },
+        {
+          "line": 75,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults,"
+        },
+        {
+          "line": 118,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults)"
+        },
+        {
+          "line": 135,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults)"
+        },
+        {
+          "line": 190,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ParentNodeInfo.cs",
+      "sha256": "d045c2644dadab0739a182dc144bbbe36a5ecb80fa6d7418ea414f3c594324b3",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 28,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "///     // 访问父节点信息: parent.NodeName, parent.NodeType, parent.ExecutionStatus"
+        },
+        {
+          "line": 73,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus ExecutionStatus { get; set; } = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 78,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public bool HasExecuted => ExecutionStatus == ExecutionStatus.Success || ExecutionStatus == ExecutionStatus.PartialSuccess;"
+        },
+        {
+          "line": 103,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? LastResult { get; set; }"
+        },
+        {
+          "line": 199,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "return ExecutionStatus switch"
+        },
+        {
+          "line": 201,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted => \"未执行\","
+        },
+        {
+          "line": 202,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"执行中...\","
+        },
+        {
+          "line": 203,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"执行成功\","
+        },
+        {
+          "line": 204,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => $\"执行失败: {ErrorMessage}\","
+        },
+        {
+          "line": 205,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"执行超时\","
+        },
+        {
+          "line": 206,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 207,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.PartialSuccess => \"部分成功\","
+        },
+        {
+          "line": 227,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus status = ExecutionStatus.NotExecuted)"
+        },
+        {
+          "line": 234,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus = status"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/RoiComposeResolver.cs",
+      "sha256": "bd1aed9d4fbe743bd52c4ad55f30afd865a1d63c536d6c7e29c878d57d85ae06",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 25,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static IReadOnlyList<object?> ResolveComposedGeometries(Roi roi, IDictionary<string, ToolResults> nodeResults)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshotResolver.cs",
+      "sha256": "6cf873f1234a2313e62703689aa789114d3cff001cf2987d6a51511c354ab22b",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 23,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> nodeResults,"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/SubroutineParameters.cs",
+      "sha256": "bd2e2f4e5db1a5130a308b35ad43f04626679093e7a004ddeb30fc763fb8ea20",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 80,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public Func<string, IVisionImage?, Dictionary<string, object>?, Task<ExecutionResult>>? ExecuteSubWorkflowAsync { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ToolDebugResultSnapshot.cs",
+      "sha256": "09c809a7579614305ae29315156a5c3684918cd3361b8da122f92e3714316096",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 14,
+          "symbols": [
+            "ToolResultSnapshot"
+          ],
+          "text": "public static ToolResultSnapshot Capture("
+        },
+        {
+          "line": 27,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "var results = new Dictionary<string, ToolResults>(StringComparer.Ordinal);"
+        },
+        {
+          "line": 28,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "var observed = new Dictionary<string, ToolResults?>(StringComparer.Ordinal);"
+        },
+        {
+          "line": 58,
+          "symbols": [
+            "ToolResultSnapshot"
+          ],
+          "text": "return new ToolResultSnapshot(results, leases);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ToolExecutionPreparation.cs",
+      "sha256": "f015f211be8ac6f4a76bde5463c549bfcc68eef84b0e28db16ba606495b85c79",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 39,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults> results, IVisionImage? fallback)"
+        },
+        {
+          "line": 45,
+          "symbols": [
+            "GetImageView",
+            "RuntimeToolResults"
+          ],
+          "text": "var image = result is RuntimeToolResults runtime?runtime.GetImageView(reference.PropertyName):"
+        },
+        {
+          "line": 55,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void Apply(ToolParameters parameters, IDictionary<string, ToolResults> results, bool attachNodeResults = true)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Parameters/ToolParameters.cs",
+      "sha256": "55af51bbc16e9a17fd190e8bd3f827007562d8d138bd5133668358415eb0fe8a",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 95,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public IDictionary<string, ToolResults>? NodeResults { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/CommunicationToolResults.cs",
+      "sha256": "d5305a5d4e7b5f58e191c1be4a0e81f629ce68b77f81b16ab179b4327b977919",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public class CommunicationToolResults : ToolResults"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/DeclaredOutputSnapshot.cs",
+      "sha256": "cd7a790bbd65c189a9482d3a7981431a20ac1835b7b09d8b1226a70e397ef405",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public sealed class DeclaredOutputSnapshot"
+        },
+        {
+          "line": 14,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "private readonly ResultResourceOwner? _resources;"
+        },
+        {
+          "line": 15,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "ExecutionStatus"
+          ],
+          "text": "private DeclaredOutputSnapshot(ToolSchema schema,long revision,RunIdentity identity,ExecutionStatus status,"
+        },
+        {
+          "line": 16,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "InputValues? values,ResultResourceOwner? resources,IEnumerable<Diagnostic> diagnostics,"
+        },
+        {
+          "line": 29,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status {get;}"
+        },
+        {
+          "line": 34,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public static DeclaredOutputSnapshot NotExecuted(ToolSchema schema,long revision,RunIdentity identity,"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "=>new(schema,revision,identity,ExecutionStatus.NotExecuted,null,null,Array.Empty<Diagnostic>(),fields,sourceWorkflowId,complete);"
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "ExecutionStatus"
+          ],
+          "text": "public static DeclaredOutputSnapshot WithoutValues(ToolSchema schema,long revision,RunIdentity identity,ExecutionStatus status,IEnumerable<Diagnostic> diagnostics,"
+        },
+        {
+          "line": 40,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if(status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess or ExecutionStatus.Running)"
+        },
+        {
+          "line": 44,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "ToolResults"
+          ],
+          "text": "public static DeclaredOutputSnapshot Publish(ToolResults result,RunIdentity identity,IReadOnlyDictionary<string,object?>? values,"
+        },
+        {
+          "line": 54,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "var output=new DeclaredOutputSnapshot(schema,result.BindingSchemaRevision,identity,result.Status,frozen,result.Resources,diagnostics,fields,sourceWorkflowId,complete);"
+        },
+        {
+          "line": 58,
+          "symbols": [
+            "DeclaredOutputReader"
+          ],
+          "text": "public DeclaredOutputReader AcquireReader()"
+        },
+        {
+          "line": 63,
+          "symbols": [
+            "DeclaredOutputReader"
+          ],
+          "text": "public sealed class DeclaredOutputReader : IDisposable"
+        },
+        {
+          "line": 69,
+          "symbols": [
+            "DeclaredOutputReader",
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "internal DeclaredOutputReader(DeclaredOutputSnapshot snapshot,InputValues? values,IDisposable? lease)"
+        },
+        {
+          "line": 71,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public DeclaredOutputSnapshot Snapshot {get;}"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/ExecutionResult.cs",
+      "sha256": "4eb6abca9056db05fa31328cd1f299c87bc28c1a0708bed669f6667fedad986e",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 8,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public class ExecutionResult : IDisposable"
+        },
+        {
+          "line": 13,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private IReadOnlyDictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot> _declaredOutputs"
+        },
+        {
+          "line": 14,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "= new Dictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>();"
+        },
+        {
+          "line": 15,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public IReadOnlyList<DeclaredOutputSnapshot> DeclaredOutputs"
+        },
+        {
+          "line": 17,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public void CaptureDeclaredOutputs(IEnumerable<DeclaredOutputSnapshot> outputs)"
+        },
+        {
+          "line": 24,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "_declaredOutputs=new System.Collections.ObjectModel.ReadOnlyDictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>(frozen);"
+        },
+        {
+          "line": 28,
+          "symbols": [
+            "DeclaredOutputReader"
+          ],
+          "text": "public DeclaredOutputReader AcquireDeclaredOutput(SunEyeVision.Plugin.Contracts.RunIdentity identity)"
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 42,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "private IReadOnlyDictionary<string, NodeExecutionResult> _nodeResults = new Dictionary<string, NodeExecutionResult>();"
+        },
+        {
+          "line": 43,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "private NodeResultSnapshot? _resultSnapshot;"
+        },
+        {
+          "line": 44,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public IReadOnlyDictionary<string, NodeExecutionResult> NodeResults"
+        },
+        {
+          "line": 49,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "var snapshot = new NodeResultSnapshot(value);"
+        },
+        {
+          "line": 50,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "NodeResultSnapshot? previous;"
+        },
+        {
+          "line": 62,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public void SetNodeResult(string nodeId, NodeExecutionResult result)"
+        },
+        {
+          "line": 64,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var values = new Dictionary<string, NodeExecutionResult>(_nodeResults) { [nodeId] = result };"
+        },
+        {
+          "line": 69,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "NodeResultSnapshot? snapshot;"
+        },
+        {
+          "line": 76,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "_nodeResults = new Dictionary<string, NodeExecutionResult>();"
+        },
+        {
+          "line": 77,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "_declaredOutputs=new Dictionary<SunEyeVision.Plugin.Contracts.RunIdentity,DeclaredOutputSnapshot>();"
+        },
+        {
+          "line": 82,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public ExecutionResult()"
+        },
+        {
+          "line": 86,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "NodeResults = new Dictionary<string, NodeExecutionResult>();"
+        },
+        {
+          "line": 89,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public static ExecutionResult CreateSuccess()"
+        },
+        {
+          "line": 90,
+          "symbols": [
+            "ExecutionResult",
+            "ExecutionStatus"
+          ],
+          "text": "=> new ExecutionResult { Success = true, Status = ExecutionStatus.Success };"
+        },
+        {
+          "line": 91,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public static ExecutionResult CreateFailure(string errorMessage)"
+        },
+        {
+          "line": 92,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "=> new ExecutionResult"
+        },
+        {
+          "line": 95,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed,"
+        },
+        {
+          "line": 99,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public static ExecutionResult CreateCancelled(string message = \"工作流执行被取消\")"
+        },
+        {
+          "line": 100,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "=> new ExecutionResult"
+        },
+        {
+          "line": 103,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Cancelled,"
+        },
+        {
+          "line": 113,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (Status != ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 114,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed;"
+        },
+        {
+          "line": 118,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public void Merge(ExecutionResult other)"
+        },
+        {
+          "line": 122,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = Status == ExecutionStatus.Cancelled || other.Status == ExecutionStatus.Cancelled"
+        },
+        {
+          "line": 123,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "? ExecutionStatus.Cancelled"
+        },
+        {
+          "line": 124,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": ": Success ? ExecutionStatus.Success : ExecutionStatus.Failed;"
+        },
+        {
+          "line": 134,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public class NodeExecutionResult"
+        },
+        {
+          "line": 138,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 144,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? Result { get; set; }"
+        },
+        {
+          "line": 146,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public NodeExecutionResult() { ErrorMessages = new List<string>(); }"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/FrameworkContractSchema.cs",
+      "sha256": "9de83194d509c13d464c5d6fe3934f888119648e29daf65d1cfb4ca4a8918d7b",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 28,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "///   运行期 <c>ToolResults.GetOutputVariables()</c>、设计期 <c>ToolRegistry.RegisterRoiContractMetadata</c>，"
+        },
+        {
+          "line": 32,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// <item>运行期：<c>ToolResults.GetOutputVariables()</c> 遍历 <see cref=\"Resolve\"/>；</item>"
+        },
+        {
+          "line": 41,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nameof(ToolResults.InspectionGeometries),"
+        },
+        {
+          "line": 49,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nameof(ToolResults.MaskGeometries),"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/NodeResultSnapshot.cs",
+      "sha256": "7358c6b069103200e9e821435cb5a1867d0a6af29ebc25a7a7bcd8c931b60896",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 7,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "public sealed class NodeResultSnapshot : IDisposable"
+        },
+        {
+          "line": 9,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public IReadOnlyDictionary<string, NodeExecutionResult> Results { get; }"
+        },
+        {
+          "line": 11,
+          "symbols": [
+            "NodeExecutionResult",
+            "NodeResultSnapshot"
+          ],
+          "text": "public NodeResultSnapshot(IReadOnlyDictionary<string, NodeExecutionResult> results)"
+        },
+        {
+          "line": 17,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "Results = new Dictionary<string, NodeExecutionResult>(results);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/ResultResourceOwner.cs",
+      "sha256": "29756aa5805529189d48e1c0b785187e36ed4020cb3897d12300f758186824bf",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 7,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "public sealed class ResultResourceOwner : IDisposable"
+        },
+        {
+          "line": 13,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "public ResultResourceOwner(Action release) => _release = release ?? throw new ArgumentNullException(nameof(release));"
+        },
+        {
+          "line": 18,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "if (_references == 0) throw new ObjectDisposedException(nameof(ResultResourceOwner));"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "private sealed class Lease(ResultResourceOwner owner) : IDisposable"
+        },
+        {
+          "line": 38,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "private ResultResourceOwner? _owner = owner;"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/RuntimeToolResults.cs",
+      "sha256": "9bb03a6d02c84fdbc378bd8c28f4c93c97af6dcb448c5a6901f7340a393621f4",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 14,
+          "symbols": [
+            "RuntimeToolResults",
+            "ToolResults"
+          ],
+          "text": "public sealed class RuntimeToolResults : ToolResults"
+        },
+        {
+          "line": 22,
+          "symbols": [
+            "RuntimeToolResults",
+            "ToolExecutionIdentity"
+          ],
+          "text": "public RuntimeToolResults(string toolId, ToolSchema schema, ToolExecutionIdentity identity,"
+        },
+        {
+          "line": 26,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "Resources=new ResultResourceOwner(()=>ReleaseViewsAndOutput(Output as IDisposable,resources));"
+        },
+        {
+          "line": 32,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status=outcome.Success?ExecutionStatus.Success:"
+        },
+        {
+          "line": 33,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "identity.CancellationToken.IsCancellationRequested?ExecutionStatus.Cancelled:ExecutionStatus.Failed;"
+        },
+        {
+          "line": 71,
+          "symbols": [
+            "GetImageView"
+          ],
+          "text": "public IVisionImage? GetImageView(string portId)"
+        },
+        {
+          "line": 84,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "var source=(IReadOnlyImage)value;var image=factory.CopyImage(source)??throw new InvalidOperationException(\"Image copy factory returned null.\");"
+        },
+        {
+          "line": 94,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "public override Dictionary<string,IVisionImage?> GetDisplayImages()"
+        },
+        {
+          "line": 99,
+          "symbols": [
+            "GetImageView"
+          ],
+          "text": "if(GetImageView(port.Id) is { } image)images.Add(port.Id,image);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/SubroutineResults.cs",
+      "sha256": "15c91517973bdd588d49b98bf4481aa5ce8012b01bf48931747ea2daaaa05e3e",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public class SubroutineResults : ToolResults"
+        },
+        {
+          "line": 30,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "public override Dictionary<string, IVisionImage?> GetDisplayImages()"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/ToolCapabilities.cs",
+      "sha256": "c8edb76ba2e8565cb1a147b13f3db9b8161d72f1187dd03190c209785e4c54d3",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 36,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 工具能力声明 —— 标注在<b>结果类</b>（<see cref=\"ToolResults\"/> 派生类）上。"
+        },
+        {
+          "line": 41,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// <item>运行期：<c>ToolResults.GetOutputVariables()</c> 有 <c>this</c>，直接读特性；</item>"
+        },
+        {
+          "line": 51,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 与 <see cref=\"ToolResults\"/> / <see cref=\"FrameworkContractSchema\"/> 同处一层；"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/ToolResultSnapshot.cs",
+      "sha256": "bb4f42aef8f8fd1d1a0809d7d48685935c62f8785ce6d4fa5dfe434479e33396",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 7,
+          "symbols": [
+            "ToolResultSnapshot",
+            "ToolResults"
+          ],
+          "text": "public sealed class ToolResultSnapshot : ReadOnlyDictionary<string, ToolResults>, IDisposable"
+        },
+        {
+          "line": 10,
+          "symbols": [
+            "ToolResultSnapshot",
+            "ToolResults"
+          ],
+          "text": "internal ToolResultSnapshot(IDictionary<string, ToolResults> results, List<IDisposable> leases) : base(results) => _leases = leases;"
+        },
+        {
+          "line": 11,
+          "symbols": [
+            "ToolResultSnapshot",
+            "ToolResults"
+          ],
+          "text": "public ToolResultSnapshot(IDictionary<string, ToolResults> results) : base(results)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+      "sha256": "0da2e81f85c7de12d767c81b2df5f0922f6c194949ddc3801373e601e650e652",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 38,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public enum ExecutionStatus"
+        },
+        {
+          "line": 276,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public abstract class ToolResults"
+        },
+        {
+          "line": 285,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public SunEyeVision.Plugin.SDK.Core.ToolExecutionIdentity? ExecutionIdentity { get; set; }"
+        },
+        {
+          "line": 291,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "public DeclaredOutputSnapshot? DeclaredOutput => _declaredOutput;"
+        },
+        {
+          "line": 292,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private DeclaredOutputSnapshot? _declaredOutput;"
+        },
+        {
+          "line": 296,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "internal void PublishDeclaredOutput(DeclaredOutputSnapshot output)"
+        },
+        {
+          "line": 300,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if(_outputResourcesReleased)throw new ObjectDisposedException(nameof(ToolResults));"
+        },
+        {
+          "line": 312,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if(_outputResourcesReleased)throw new ObjectDisposedException(nameof(ToolResults));"
+        },
+        {
+          "line": 318,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "Resources=new ResultResourceOwner(()=>"
+        },
+        {
+          "line": 339,
+          "symbols": [
+            "ResultResourceOwner"
+          ],
+          "text": "public ResultResourceOwner? Resources { get; protected set; }"
+        },
+        {
+          "line": 343,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 348,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public bool IsSuccess => Status == ExecutionStatus.Success || Status == ExecutionStatus.PartialSuccess;"
+        },
+        {
+          "line": 353,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public bool IsCancelled => Status == ExecutionStatus.Cancelled;"
+        },
+        {
+          "line": 367,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted => \"未执行\","
+        },
+        {
+          "line": 368,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"执行中\","
+        },
+        {
+          "line": 369,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"成功\","
+        },
+        {
+          "line": 370,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.PartialSuccess => \"部分成功\","
+        },
+        {
+          "line": 371,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"失败\","
+        },
+        {
+          "line": 372,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"超时\","
+        },
+        {
+          "line": 373,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 452,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "public virtual Dictionary<string, IVisionImage?> GetDisplayImages() => new();"
+        },
+        {
+          "line": 467,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed;"
+        },
+        {
+          "line": 481,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success;"
+        },
+        {
+          "line": 488,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static T CreateError<T>(string errorMessage, Exception? exception = null) where T : ToolResults, new()"
+        },
+        {
+          "line": 492,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed,"
+        },
+        {
+          "line": 507,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static T CreateCancelled<T>(string message = \"执行被取消\") where T : ToolResults, new()"
+        },
+        {
+          "line": 511,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Cancelled,"
+        },
+        {
+          "line": 545,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": ".Where(p => !typeof(ToolResults).IsAssignableFrom(p.PropertyType)) // 排除结果本身的属性"
+        },
+        {
+          "line": 741,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public class GenericToolResults : ToolResults"
+        },
+        {
+          "line": 791,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "public override Dictionary<string, IVisionImage?> GetDisplayImages()"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Models/Communication/ProtocolBindingInput.cs",
+      "sha256": "f12d964a68743714880ed7a05d72a168ab37ed071f93775224f2714fc5e1d297",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static object Resolve(string expression, IDictionary<string, ToolResults>? results,"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Models/Visualization/DeclaredElementAddress.cs",
+      "sha256": "998717d9b6250ef384ab47ef3eaca329089f68dc85fe81b25ed84dae80a5bc66",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 7,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// An explicit source address local to one ToolResults instance. FieldId is the declared"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Models/Visualization/TextStyle.cs",
+      "sha256": "3eb2cd25208e1215c2d1c80afa589b1a7d9c4d5cf1653a2392d7f0a3803d7bb1",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 195,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void ResolveBindings(IDictionary<string, ToolResults> nodeResults, IParameterResolver? resolver = null)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/UI/Controls/Communication/CommunicationDataAnalysisControl.xaml.cs",
+      "sha256": "0c352d39321ee7cc6e2de07c7680e1d64e6d795f5dfcca8dad709af74dee05ed",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 22,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void OnResultUpdated(ToolResults result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/UI/Controls/IToolControlDataAnalysis.cs",
+      "sha256": "b5c1ec66fb7357f49bbce183fa357c6984b55c5da30a483806d166bba47161d1",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 29,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "void OnResultUpdated(ToolResults result);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+      "sha256": "437d0aba043f3b67c4d00e78040830d42bd310dea37e356bada15ff63e1bc7dc",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 324,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if ((results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ExecutionIdentity?.IsCurrent == false)"
+        },
+        {
+          "line": 335,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "finally { (results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.Resources?.Dispose(); }"
+        },
+        {
+          "line": 337,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if(results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults {IsSuccess:false} failed)"
+        },
+        {
+          "line": 809,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "protected ToolResults ExecuteWithLiveContext("
+        },
+        {
+          "line": 831,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResult : ToolResults, new()"
+        },
+        {
+          "line": 888,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "new Dictionary<string, ToolResults> { [reference.SourceNodeId] = result }, null)!;"
+        },
+        {
+          "line": 930,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IReadOnlyDictionary<string, ToolResults>? nodeResultsSnapshot = null,"
+        },
+        {
+          "line": 943,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "? new Dictionary<string, ToolResults>(parameters.NodeResults)"
+        },
+        {
+          "line": 944,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": ": new Dictionary<string, ToolResults>();"
+        },
+        {
+          "line": 945,
+          "symbols": [
+            "ToolResultSnapshot"
+          ],
+          "text": "ToolResultSnapshot? capturedResults = null;"
+        },
+        {
+          "line": 980,
+          "symbols": [
+            "ToolResultSnapshot"
+          ],
+          "text": "InputResources = capturedResults ?? new ToolResultSnapshot(nodeResults),"
+        },
+        {
+          "line": 1001,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "var globalResults = new GenericToolResults { Status = ExecutionStatus.Success };"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/UI/Events/ToolExecutionCompletedEvent.cs",
+      "sha256": "b95a7bfca341d36a94f4ce1744b839f6906a974f41ed4e0d09a80c25e3042de6",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 78,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IsSuccess = results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult?toolResult.IsSuccess:results is not null;"
+        },
+        {
+          "line": 79,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ErrorMessage??\"执行未返回有效结果。\";"
+        },
+        {
+          "line": 97,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IsSuccess = results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult?toolResult.IsSuccess:results is not null;"
+        },
+        {
+          "line": 98,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ErrorMessage??\"执行未返回有效结果。\";"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+      "sha256": "8248e81f632499f9a67733530a76bbb1dabbec20f2bfdfc39b4a938c142cda46",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 277,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if ((e.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ExecutionIdentity?.IsCurrent == false)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/ViewModels/ToolViewModelBase.cs",
+      "sha256": "1dc560a3420b1ebe06f3a2a62a2281b98aa69627311da9056c8bb4b6ebe18a6e",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 454,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var displayImages = result.ToolResult?.GetDisplayImages();"
+        },
+        {
+          "line": 482,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private List<ResultItem> GenerateResultItems(ToolResults result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.SDK/Vision/Hosting/IVisionImageFactory.cs",
+      "sha256": "2a37d6406bbdc7ce9190756ed306ae712a71b91ff46b241baa657504e3f36687",
+      "compiledBy": [
+        "Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "hits": [
+        {
+          "line": 9,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "IVisionImage CopyImage(SunEyeVision.Plugin.Contracts.IReadOnlyImage source);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/DeclaredPropertyList.cs",
+      "sha256": "3663cd16036e9fe6d13273f4a15459412ca017072fab2c3f618c3077d9989c68",
+      "compiledBy": [
+        "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 22,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _publication;"
+        },
+        {
+          "line": 23,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "private IResultValueLease? _lease;"
+        },
+        {
+          "line": 44,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public void Present(IResultPublication publication)"
+        },
+        {
+          "line": 52,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "IResultValueLease? lease = null;"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
+      "sha256": "66011886b5d1ee28f24e74b8265ab18f26bb095fbe73df55ceb1581f18cbd3ed",
+      "compiledBy": [
+        "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 44,
+          "symbols": [
+            "IResultPublication",
+            "IResultValueLease"
+          ],
+          "text": "public static ResultPresentationModel ForPublication(IResultPublication publication,IResultValueLease lease,int pageSize=128,Func<bool>? isCurrent=null)"
+        },
+        {
+          "line": 207,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private readonly WeakReference<IResultPublication> _publication;"
+        },
+        {
+          "line": 208,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "private readonly WeakReference<IResultValueLease> _lease;"
+        },
+        {
+          "line": 210,
+          "symbols": [
+            "IResultPublication",
+            "IResultValueLease"
+          ],
+          "text": "internal ResultValueAccess(IResultPublication publication,IResultValueLease lease,ResultPublicationStamp stamp)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
+      "sha256": "54d124ffc806f99b462dd0798ec7a97ab878b62e80e0be7ce4d15e9a0d47b00e",
+      "compiledBy": [
+        "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 20,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _publication;"
+        },
+        {
+          "line": 73,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public void Present(IResultPublication publication)"
+        },
+        {
+          "line": 121,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private void Install(IReadOnlyList<Row> rows,long expected,IResultPublication? publication)"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
+      "sha256": "6531d7c648e0f666e8697d2a3fbc1a5b01e67e90758bf8c27e196c0581b13b34",
+      "compiledBy": [
+        "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 13,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "void Present(IResultPublication publication);"
+        }
+      ]
+    },
+    {
+      "file": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
+      "sha256": "c182868fe151774d5d13b6f645d22d58d93af07f0117a051103d94cbf0bc6342",
+      "compiledBy": [
+        "Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 17,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "public interface IResultValueLease : IDisposable"
+        },
+        {
+          "line": 23,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public interface IResultPublication : IDisposable"
+        },
+        {
+          "line": 32,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "IResultValueLease Borrow();"
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public sealed class ResultPublication : IResultPublication"
+        },
+        {
+          "line": 98,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "public IResultValueLease Borrow()"
+        },
+        {
+          "line": 123,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "private sealed class Lease(ResultPublication publication) : IResultValueLease"
+        }
+      ]
+    },
+    {
+      "file": "src/SunEyeVision.HalAdapter/HalImage.cs",
+      "sha256": "311ac73489ea59822ca5c05f8f28477d55b181788b48e5af5ddcc163ce438320",
+      "compiledBy": [
+        "Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj"
+      ],
+      "hits": [
+        {
+          "line": 23,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "captured=_image.CopyImage();"
+        },
+        {
+          "line": 231,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "if(channels==1)return source.CopyImage();"
+        }
+      ]
+    },
+    {
+      "file": "src/SunEyeVision.HalAdapter/HalImageFactory.cs",
+      "sha256": "98f8155f00bc377c6d86d82895e1f5c294d35dd83f1a091dff6afd727dd9c11a",
+      "compiledBy": [
+        "Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj"
+      ],
+      "hits": [
+        {
+          "line": 15,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "public IVisionImage CopyImage(SunEyeVision.Plugin.Contracts.IReadOnlyImage source)"
+        },
+        {
+          "line": 16,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "=>new HalImage(HalconResourceBridge.CopyImage(source));"
+        }
+      ]
+    },
+    {
+      "file": "src/SunEyeVision.HalAdapter/HalconRegionPipeline.cs",
+      "sha256": "c7a953afa4e64eb63a072a5b26748bf76acf7892239dec0ac941220f33c94a9b",
+      "compiledBy": [
+        "Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj"
+      ],
+      "hits": [
+        {
+          "line": 82,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults = null,"
+        }
+      ]
+    },
+    {
+      "file": "src/SunEyeVision.HalAdapter/Runtime/HalconResourceBridge.cs",
+      "sha256": "3c0b1c3156599276d85d6acc85dab4f6c5bd82a46f7fddbf5da8061841597eb9",
+      "compiledBy": [
+        "Src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj"
+      ],
+      "hits": [
+        {
+          "line": 25,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "public static HImage CopyImage(IReadOnlyImage source)"
+        }
+      ]
+    },
+    {
+      "file": "src/SunEyeVision.HalAdapter/ToolRegionHelper.cs",
+      "sha256": "3973157d5f0ad32377d0a0ab062ca99352bb5b01f0e5415d670eb2efc6507af9",
+      "compiledBy": [
+        "Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj"
+      ],
+      "hits": [
+        {
+          "line": 49,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults = null)"
+        },
+        {
+          "line": 240,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults = null,"
+        },
+        {
+          "line": 304,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults)"
+        },
+        {
+          "line": 452,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void ExtractInspectionGeometries(ToolResults result,"
+        },
+        {
+          "line": 454,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults = null,"
+        },
+        {
+          "line": 464,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public static void ExtractMaskGeometries(ToolResults result,"
+        },
+        {
+          "line": 466,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults = null,"
+        },
+        {
+          "line": 475,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults,"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Core/IRootCoordinator.cs",
+      "sha256": "7a2be51aa0bf48ef0c78850e379eccc4a07dc13c8b1351025d7b9a92e7d25041",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 64,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Features/ParameterSetting/DataSourcePickerViewModel.cs",
+      "sha256": "0ea4b01a55a14e009f36f3cccf7faa55116c37d26f703eaf0d7f44893844a316",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 281,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus = parent.ExecutionStatus,"
+        },
+        {
+          "line": 332,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus = group.ExecutionStatus,"
+        },
+        {
+          "line": 422,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus ExecutionStatus { get; set; }"
+        },
+        {
+          "line": 451,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public string StatusIcon => ExecutionStatus switch"
+        },
+        {
+          "line": 453,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"✓\","
+        },
+        {
+          "line": 454,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"✗\","
+        },
+        {
+          "line": 455,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"⟳\","
+        },
+        {
+          "line": 462,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public string StatusColor => ExecutionStatus switch"
+        },
+        {
+          "line": 464,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"Green\","
+        },
+        {
+          "line": 465,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"Red\","
+        },
+        {
+          "line": 466,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"Orange\","
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Features/ParameterSetting/ToolViewModelBase.cs",
+      "sha256": "11dbcec7390c7e247e6d29b970eed3b677fc527a9baeddaa2acdc9fb3a91c83e",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 55,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "private ExecutionStatus _executionStatus = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 90,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus ExecutionStatus"
+        },
+        {
+          "line": 108,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public string StatusText => ExecutionStatus switch"
+        },
+        {
+          "line": 110,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted => \"未执行\","
+        },
+        {
+          "line": 111,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"执行中...\","
+        },
+        {
+          "line": 112,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"执行成功\","
+        },
+        {
+          "line": 113,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => $\"执行失败: {ErrorMessage}\","
+        },
+        {
+          "line": 114,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"执行超时\","
+        },
+        {
+          "line": 115,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 116,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.PartialSuccess => \"部分成功\","
+        },
+        {
+          "line": 123,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public string StatusIcon => ExecutionStatus switch"
+        },
+        {
+          "line": 125,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted => \"○\","
+        },
+        {
+          "line": 126,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"⟳\","
+        },
+        {
+          "line": 127,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"✓\","
+        },
+        {
+          "line": 128,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"✗\","
+        },
+        {
+          "line": 129,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"⏱\","
+        },
+        {
+          "line": 130,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"⏹\","
+        },
+        {
+          "line": 131,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.PartialSuccess => \"◐\","
+        },
+        {
+          "line": 138,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public string StatusColor => ExecutionStatus switch"
+        },
+        {
+          "line": 140,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted => \"Gray\","
+        },
+        {
+          "line": 141,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"Orange\","
+        },
+        {
+          "line": 142,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"Green\","
+        },
+        {
+          "line": 143,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"Red\","
+        },
+        {
+          "line": 144,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"OrangeRed\","
+        },
+        {
+          "line": 145,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"Gray\","
+        },
+        {
+          "line": 146,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.PartialSuccess => \"Goldenrod\","
+        },
+        {
+          "line": 188,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus != ExecutionStatus.Running &&"
+        },
+        {
+          "line": 376,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public virtual void SetExecutionResult(ToolResults results)"
+        },
+        {
+          "line": 378,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus = results.Status;"
+        },
+        {
+          "line": 481,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "where TResults : ToolResults, new()"
+        },
+        {
+          "line": 517,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public override void SetExecutionResult(ToolResults results)"
+        },
+        {
+          "line": 596,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Results { get; }"
+        },
+        {
+          "line": 597,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public bool Success => Results.Status == ExecutionStatus.Success;"
+        },
+        {
+          "line": 599,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolExecutionCompletedEventArgs(ToolResults results)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Features/WorkflowUI/ToolDebugWindowFactory.cs",
+      "sha256": "372be6cdd5e68143728b7ad777a2a62d1479625cc9a717cbe98b37da5f50bbd8",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 155,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Run(ToolParameters parameters)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "712d785fed5ed82d04429ee9cefe3db23f73960d4a03134a13ba4b47cdc28a1d",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 56,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "_running=true;RuntimeToolResults? result=null;var generation=_generation;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Editing/ProductionEditorContext.cs",
+      "sha256": "3042f0862f682bef5b7e83d91d525e9283c3081e6be739e1ac2791692636227e",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 94,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner DebugOwner { get; } = new();"
+        },
+        {
+          "line": 135,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public bool TryAcceptDebugResult(ToolResults result)"
+        },
+        {
+          "line": 142,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "new NodeExecutionResult { NodeId = Identity.NodeId, Result = result, Success = result.IsSuccess }));"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs",
+      "sha256": "1ec206b5bd35c509e290b2ee5b105d37f98c928cc70eb088a923dc15d6b562d8",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 21,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner {get;}"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Images/ResultImagePane.cs",
+      "sha256": "a5ede11f89a050ff7584a772cdd1e6d3c5b256cb0afbde60575e0f0097cd2fbd",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 11,
+          "symbols": [
+            "IResultPublication",
+            "IResultValueLease"
+          ],
+          "text": "private sealed class Presentation(IResultPublication publication, IResultValueLease lease, IReadOnlyImage image,"
+        },
+        {
+          "line": 14,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "internal readonly IResultPublication Publication = publication;"
+        },
+        {
+          "line": 15,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "internal readonly IResultValueLease Lease = lease;"
+        },
+        {
+          "line": 46,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "internal bool TryPresent(IResultPublication publication, OutputReference reference, string actualWorkflowId,"
+        },
+        {
+          "line": 54,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "IResultValueLease? candidate = null;"
+        },
+        {
+          "line": 184,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "IResultValueLease? borrowed = null;"
+        },
+        {
+          "line": 271,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "private IResultValueLease? _lease;"
+        },
+        {
+          "line": 275,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "NativeResultFrameReceipt receipt, IResultValueLease lease, Func<bool> current)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Images/ResultWorkspaceImagePlan.cs",
+      "sha256": "fe0b998264a1d9c43537e5843ac7d7d6539cfb79b3bba97242648edf4494e98e",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 8,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "IResultPublication? Publication,Func<bool> Current,int NavigationIndex,bool IsUpstream)"
+        },
+        {
+          "line": 20,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private readonly List<IResultPublication> _publications=new();"
+        },
+        {
+          "line": 22,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "internal void Own(IResultPublication publication)=>_publications.Add(publication);"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "sha256": "1526663aed3be816459024862e95f0967716b97e6fc3ed1f32eb84992f7ea1e7",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 37,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _displayDefinitionNotice;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+      "sha256": "ab7be365f67aab13af3e97bd842fbab81d5321f6f6ddc9367ff0c731d9fab46b",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 34,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private readonly Action<IResultPublication>? _projectionFailed;"
+        },
+        {
+          "line": 41,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _publication;"
+        },
+        {
+          "line": 43,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "private IResultValueLease? _reader;"
+        },
+        {
+          "line": 50,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "Action<IResultPublication>? projectionFailed=null)"
+        },
+        {
+          "line": 60,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)"
+        },
+        {
+          "line": 63,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private void PresentCore(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings)"
+        },
+        {
+          "line": 79,
+          "symbols": [
+            "IResultValueLease"
+          ],
+          "text": "IResultValueLease? lease=null;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Monitoring/ToolResultViews.cs",
+      "sha256": "6cfb00ea77606807894f4a851f3220c989944813b7db86e00da5f0652a012eb5",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 12,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private static readonly ConditionalWeakTable<DeclaredOutputSnapshot,SnapshotIdentity> Identities=new();"
+        },
+        {
+          "line": 14,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "IResultPublication"
+          ],
+          "text": "public static IResultPublication FromSnapshot(DeclaredOutputSnapshot snapshot,Func<bool> isCurrent)"
+        },
+        {
+          "line": 23,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.NotExecuted=>ResultViewState.NotExecuted,ExecutionStatus.Running=>ResultViewState.Running,"
+        },
+        {
+          "line": 24,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success=>ResultViewState.Success,ExecutionStatus.PartialSuccess=>ResultViewState.PartialSuccess,"
+        },
+        {
+          "line": 25,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed=>ResultViewState.Failed,ExecutionStatus.Timeout=>ResultViewState.Timeout,"
+        },
+        {
+          "line": 26,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled=>ResultViewState.Cancelled,_=>throw new ArgumentOutOfRangeException(nameof(snapshot))"
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public static IResultPublication Declaration(ToolSchema schema,Func<bool> isCurrent,"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/ParameterSetting/ImageDataSourceService.cs",
+      "sha256": "ead94c1b2cdd5b1c2168b4f99b08267df63a550c13c77e32ab2c874297eacb2a",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 68,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus = parent.ExecutionStatus,"
+        },
+        {
+          "line": 137,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus ExecutionStatus { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Workflow/INodeResultSink.cs",
+      "sha256": "8b81638d69125862abc5e9aff3a19e84c1e22665bf8bd89ef046f3ca9753a5c0",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 18,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Workflow/NodeResultManager.cs",
+      "sha256": "b8d68cd0fa210aa5be5d03a7ed09a2fa8c0c0580cbdceee5a7d25f6891ccbc41",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 14,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true, WorkflowCore.WorkflowContext? targetContext = null)"
+        },
+        {
+          "line": 21,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var executionResult = new NodeExecutionResult"
+        },
+        {
+          "line": 46,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void RefreshResultDisplay(WorkflowNodeBase node,ToolResults result)"
+        },
+        {
+          "line": 52,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void RefreshDebugPreview(WorkflowNodeBase draft,ToolResults result)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "040b4f9c3a2ffe10e079a62269a9606b9aa428d7ab8a01b3cf5b9fef48263e83",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 162,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths,ToolExecutionOwner ExecutionOwner,IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers,string SolutionId,string SolutionName);"
+        },
+        {
+          "line": 201,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (execution.Status == ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 311,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "ExecutionResult? execution = null;"
+        },
+        {
+          "line": 519,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (executionResult.Status != ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 521,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if(executionResult.Status==ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 694,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if(result.Status==ExecutionStatus.Cancelled)throw new OperationCanceledException(token);"
+        },
+        {
+          "line": 723,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteWorkflowInternal("
+        },
+        {
+          "line": 769,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var missingResult = ExecutionResult.CreateFailure($\"根工作流未找到: {workflow.RootWorkflowId}\");"
+        },
+        {
+          "line": 786,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var consistencyResult = ExecutionResult.CreateFailure(definitionConsistencyError);"
+        },
+        {
+          "line": 960,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 961,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"成功\","
+        },
+        {
+          "line": 975,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "// 创建一个包含结果的 ToolResults"
+        },
+        {
+          "line": 998,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (result.Status == ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 1024,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "snapshot.Complete(ExecutionResult.CreateFailure(ex.Message), _ => \"工作流\");"
+        },
+        {
+          "line": 1239,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteSingleTriggeredAsync("
+        },
+        {
+          "line": 1370,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result, bool isCameraDriven)"
+        },
+        {
+          "line": 1395,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 从节点执行结果创建 ToolResults"
+        },
+        {
+          "line": 1397,
+          "symbols": [
+            "NodeExecutionResult",
+            "ToolResults"
+          ],
+          "text": "private ToolResults CreateToolResultsFromNodeResult(NodeExecutionResult nodeResult)"
+        },
+        {
+          "line": 1407,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = nodeResult.Success ? ExecutionStatus.Success : ExecutionStatus.Failed,"
+        },
+        {
+          "line": 1543,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Result { get; }"
+        },
+        {
+          "line": 1550,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public NodeExecutionResultEventArgs(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result,"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Services/Workflow/WorkflowExecutionSnapshot.cs",
+      "sha256": "e00acec10f212e5a75f452462e79c28216b13c815b72b70e0a69b93f0c6bd2d5",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 14,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "private ExecutionStatus _status = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 28,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get => _status; private set => SetProperty(ref _status, value); }"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => \"运行中…\","
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"成功\","
+        },
+        {
+          "line": 38,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 39,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed or ExecutionStatus.Timeout => \"失败\","
+        },
+        {
+          "line": 46,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => $\"{Elapsed.TotalMilliseconds:F2} ms\","
+        },
+        {
+          "line": 47,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Running => $\"运行中 {Elapsed.TotalMilliseconds:F2} ms\","
+        },
+        {
+          "line": 54,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Running;"
+        },
+        {
+          "line": 100,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "internal void UpdateNodeResult(string nodeId, string nodeName, NodeExecutionResult result)"
+        },
+        {
+          "line": 107,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Success => \"成功\","
+        },
+        {
+          "line": 108,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Cancelled => \"已取消\","
+        },
+        {
+          "line": 109,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Timeout => \"超时\","
+        },
+        {
+          "line": 110,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "ExecutionStatus.Failed => \"失败\","
+        },
+        {
+          "line": 129,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "internal void Complete(ExecutionResult result, Func<string, string> nodeNameResolver)"
+        },
+        {
+          "line": 146,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (Status == ExecutionStatus.Running && StartedAt.HasValue)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shared/NodeOutputCache.cs",
+      "sha256": "e037a5827fece0a92c997a419e5941a2292f62021fc72d1252f7961988134a79",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 32,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private ToolResults? _lastResult;"
+        },
+        {
+          "line": 90,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? LastResult"
+        },
+        {
+          "line": 130,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public event EventHandler<ToolResults?>? LastResultChanged;"
+        },
+        {
+          "line": 159,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void Update(ToolResults result, BitmapSource? outputImage, string? sourceFilePath = null)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shared/WorkflowNodeModel.cs",
+      "sha256": "94ba090bf70f0c376bb0c37181e73082a57924827d0287ca281cee4547efc465",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 63,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public new ToolResults? LastResult"
+        },
+        {
+          "line": 65,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "get => base.LastResult as ToolResults;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+      "sha256": "562705d2099159f57d9c7e9ed489de8dcc559a0affc77c9a9051d32a7a1b98ac",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 114,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Controls/Shell/StatusBarViewModel.cs",
+      "sha256": "e5f9d4c62464b9a002481561dfc5f4b6f37e820a423f9b5445f5bc44502ead29",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 138,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (ExecutionSnapshot?.Status != SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Running)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowResultPublication.cs",
+      "sha256": "40a6a2513d150745350908a67ebbca900cbbfa831667100d82e76ab863568143",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 10,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _resultPublication;"
+        },
+        {
+          "line": 11,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private DeclaredOutputSnapshot? _resultPublicationSnapshot;"
+        },
+        {
+          "line": 14,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "internal IResultPublication? CurrentResultPublication=>_resultPublication;"
+        },
+        {
+          "line": 41,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "IResultPublication"
+          ],
+          "text": "private void PresentResultPublication(IResultPublication publication,DeclaredOutputSnapshot? snapshot,"
+        },
+        {
+          "line": 67,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private void PresentSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName,Func<bool>? sourceIsCurrent=null)"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.NativeResults.cs",
+      "sha256": "2f77ec6d955aa2cbea6de0bf1797313f2a8436cdb5ec9f2adef2944941e88148",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 74,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "DeclaredOutputSnapshot? snapshot=null;"
+        },
+        {
+          "line": 99,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "IResultPublication? publication=null;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "cdf327b91eb591ddf77e5f66b4c254a1f0eff18e0f84156d1b70e2b72d6f5578",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 149,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, ToolResults Result, IDisposable? Lease)>"
+        },
+        {
+          "line": 389,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults? tempResult = null;"
+        },
+        {
+          "line": 439,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "_nodeResultManager.RefreshResultDisplay((SunEyeVision.UI.Shared.WorkflowNode?)node, (Plugin.SDK.Execution.Results.ToolResults?)node.LastResult);"
+        },
+        {
+          "line": 3702,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "ToolResults direct=>direct,"
+        },
+        {
+          "line": 3703,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as ToolResults,"
+        },
+        {
+          "line": 4195,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private void OnNodeExecutionPostProcess(SunEyeVision.UI.Shared.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)"
+        },
+        {
+          "line": 4354,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private void ShowDeclaredSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName)=>PresentSnapshot(snapshot,nodeName);"
+        },
+        {
+          "line": 4355,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "internal void ShowDeclaredRun(ExecutionResult run,SunEyeVision.Plugin.Contracts.RunIdentity identity,string? nodeName=null)"
+        },
+        {
+          "line": 4380,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public void UpdateModuleResults(ToolResults? result,string? nodeName,string? toolId=null,string? nodeId=null,"
+        },
+        {
+          "line": 4391,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "&&(snapshot.Status is not (ExecutionStatus.Success or ExecutionStatus.PartialSuccess)||identity?.IsCurrent!=false));"
+        },
+        {
+          "line": 4680,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nameof(ToolResults.InspectionGeometries) => roiParams.InspectionRois?.Rois,"
+        },
+        {
+          "line": 4681,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nameof(ToolResults.MaskGeometries) => roiParams.MaskRois?.Rois,"
+        },
+        {
+          "line": 5252,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults Run(ToolParameters parameters)"
+        },
+        {
+          "line": 5485,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "/// 将 IOutputContractProvider 返回的 OutputVariable 列表包装为 ToolResults，"
+        },
+        {
+          "line": 5488,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "internal sealed class ContractToolResults : ToolResults"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.Images.cs",
+      "sha256": "8087205f87e2f4f9b3fe3d172b0c557dbb8fa7d87e208df0d153854aa1ed8fed",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 15,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _imagePublication;"
+        },
+        {
+          "line": 16,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "private DeclaredOutputSnapshot? _imageSnapshot;"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+      "sha256": "113d86ad261754aadd5734f0db639a1b87a13c940b0701d258dd3c3a8f545286",
+      "compiledBy": [
+        "Src/UI/SunEyeVision.UI.csproj"
+      ],
+      "hits": [
+        {
+          "line": 20,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private readonly Func<string,ToolResults?> _readResult;"
+        },
+        {
+          "line": 25,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task> run,Action repeat,Action stop,Func<bool> running,Func<string,ToolResults?> readResult)"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "61c0172a854395a408c1221f379edfc6432c33d61e8a46b15f377dda757b74ce",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 20,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private async Task<ToolResults> ExecuteRuntimeNodeAsync(IDictionary<string,ToolResults>? results,CancellationToken cancellation)"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "RuntimeToolResults? prepared=null;"
+        },
+        {
+          "line": 86,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "prepared=new RuntimeToolResults(ToolType,schema,identity,outcome,resources,timer.Elapsed.TotalMilliseconds);"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/AlgorithmNode.cs",
+      "sha256": "3abfc25779fa8e9f65768aa92a5cc4a8074485ba861af64278c025b6dca27877",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 34,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner? ExecutionOwner { get; set; }"
+        },
+        {
+          "line": 39,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "internal ToolExecutionIdentity? AdmittedIdentity { get; set; }"
+        },
+        {
+          "line": 54,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public AlgorithmResult LastResult { get; private set; }"
+        },
+        {
+          "line": 59,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? LastToolResult { get; private set; }"
+        },
+        {
+          "line": 76,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public AlgorithmResult Execute("
+        },
+        {
+          "line": 77,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults,"
+        },
+        {
+          "line": 85,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public async Task<AlgorithmResult> ExecuteAsync("
+        },
+        {
+          "line": 86,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "IDictionary<string, ToolResults>? nodeResults,"
+        },
+        {
+          "line": 92,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return AlgorithmResult.CreateSuccess("
+        },
+        {
+          "line": 106,
+          "symbols": [
+            "FreezeResult"
+          ],
+          "text": "try{BindingContext!.FreezeResult(this,result);}"
+        },
+        {
+          "line": 118,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nodeResults ?? new Dictionary<string, ToolResults>(), WorkflowInputImage);"
+        },
+        {
+          "line": 162,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "&& toolResult.Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess"
+        },
+        {
+          "line": 168,
+          "symbols": [
+            "FreezeResult"
+          ],
+          "text": "BindingContext?.FreezeResult(this,toolResult);"
+        },
+        {
+          "line": 169,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))"
+        },
+        {
+          "line": 182,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "LastResult = AlgorithmResult.CreateError(\"节点未配置工具实例\");"
+        },
+        {
+          "line": 190,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var result = AlgorithmResult.CreateCancelled();"
+        },
+        {
+          "line": 196,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var result = AlgorithmResult.CreateError($\"节点 {Name} 执行失败: {ex.Message}\");"
+        },
+        {
+          "line": 235,
+          "symbols": [
+            "AlgorithmResult",
+            "ToolResults"
+          ],
+          "text": "/// 将 ToolResults 转换为 AlgorithmResult"
+        },
+        {
+          "line": 237,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "private void StoreLastToolResult(ToolResults result)"
+        },
+        {
+          "line": 249,
+          "symbols": [
+            "AlgorithmResult",
+            "ToolResults"
+          ],
+          "text": "private AlgorithmResult ConvertToAlgorithmResult(ToolResults result)"
+        },
+        {
+          "line": 251,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (result.Status == ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 253,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var cancelled = AlgorithmResult.CreateCancelled(result.ErrorMessage ?? \"执行被取消\");"
+        },
+        {
+          "line": 254,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "cancelled.ToolResults = result;"
+        },
+        {
+          "line": 260,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var failed = AlgorithmResult.CreateError(result.ErrorMessage ?? \"处理失败\");"
+        },
+        {
+          "line": 262,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "failed.ToolResults = result;"
+        },
+        {
+          "line": 267,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var displayImages = result.GetDisplayImages();"
+        },
+        {
+          "line": 273,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var nullResult = AlgorithmResult.CreateSuccess(null, result.ExecutionTimeMs);"
+        },
+        {
+          "line": 274,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "nullResult.ToolResults = result;"
+        },
+        {
+          "line": 278,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var algorithmResult = AlgorithmResult.CreateSuccess(primaryImage, result.ExecutionTimeMs);"
+        },
+        {
+          "line": 281,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "algorithmResult.ToolResults = result;"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/AlgorithmResult.cs",
+      "sha256": "0d8b307ede29db3563ff2e7d713d744df50eefef59e54910b056fa6b51d6d3dd",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 10,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public class AlgorithmResult"
+        },
+        {
+          "line": 25,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;"
+        },
+        {
+          "line": 50,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public ToolResults? ToolResults { get; set; }"
+        },
+        {
+          "line": 55,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public static AlgorithmResult CreateSuccess(IVisionImage? resultImage, double durationMs, string algorithmName = \"\")"
+        },
+        {
+          "line": 57,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new AlgorithmResult"
+        },
+        {
+          "line": 61,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success,"
+        },
+        {
+          "line": 71,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public static AlgorithmResult CreateFailure(string errorMessage, string algorithmName = \"\")"
+        },
+        {
+          "line": 73,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new AlgorithmResult"
+        },
+        {
+          "line": 77,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Failed,"
+        },
+        {
+          "line": 86,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public static AlgorithmResult CreateError(string errorMessage, string algorithmName = \"\")"
+        },
+        {
+          "line": 94,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public static AlgorithmResult CreateCancelled(string message = \"执行被取消\", string algorithmName = \"\")"
+        },
+        {
+          "line": 96,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new AlgorithmResult"
+        },
+        {
+          "line": 100,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Cancelled,"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/BindingRelationCatalog.cs",
+      "sha256": "6bf9ce03a6ed5f5cbe890de2626a824c3638666e93388a9dd9c44de3670d4691",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 46,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "var resolved = new ParameterResolver().Resolve(setting, new Dictionary<string, SunEyeVision.Plugin.SDK.Execution.Results.ToolResults>(), type);"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/EventBusIntegration.cs",
+      "sha256": "e3b92463e370e15825226f494dcac926a16ecaccfb4dd0783748c4db27978cbd",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 115,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public List<AlgorithmResult> ExecuteWithEvents(Mat inputImage)"
+        },
+        {
+          "line": 151,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public AlgorithmResult ExecuteNode(WorkflowNodeBase node, IVisionImage? inputImage)"
+        },
+        {
+          "line": 182,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new AlgorithmResult"
+        },
+        {
+          "line": 198,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new AlgorithmResult"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/EventDrivenExecutor.cs",
+      "sha256": "ad1dddc952363e85c8d73aa9f3e2de840c448e01c5c99bf07e0e41d1c1ac9249",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 295,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "Result = ExecutionResult.CreateFailure(ex.Message),"
+        },
+        {
+          "line": 367,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public ExecutionResult Result { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/OutputBindingChangeService.cs",
+      "sha256": "005432a74ad29bfb9ec5fa9dbc52b12e9ebc523d526e9947c86fb33a162ad1d7",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 173,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "if(node.RuntimeConfiguration is { } runtime)return RuntimeToolResults.Describe(runtime.Schema);"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/RootWorkspaceSettings.cs",
+      "sha256": "c3858cad15250bb41707c61fef61bb4e0e3179a455b7c70831c98686d8d9f7df",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 19,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public bool ShouldStopAfter(ExecutionResult result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "6e2c3cf6a4e554f4d475226af7d389713bd7b55b959e04a4ec8d65190ef6801d",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 29,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "public ToolExecutionIdentity Identity {get;}"
+        },
+        {
+          "line": 31,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "private RuntimeDebugInvocation(string workflowId,WorkflowNodeBase node,InputValues inputs,ToolExecutionIdentity identity,List<IDisposable> readers,IEnumerable<RunIdentity> sources)"
+        },
+        {
+          "line": 36,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public static RuntimeDebugInvocation Capture(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,"
+        },
+        {
+          "line": 37,
+          "symbols": [
+            "ToolExecutionOwner",
+            "ToolResults"
+          ],
+          "text": "Func<string,ToolResults?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,"
+        },
+        {
+          "line": 50,
+          "symbols": [
+            "ToolExecutionIdentity"
+          ],
+          "text": "var readers=new List<IDisposable>();ToolExecutionIdentity? identity=null;"
+        },
+        {
+          "line": 53,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "var observed=new Dictionary<string,ToolResults>(StringComparer.Ordinal);"
+        },
+        {
+          "line": 62,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if(!result.IsSuccess||published.Status!=ExecutionStatus.Success&&published.Status!=ExecutionStatus.PartialSuccess||!published.IsComplete||"
+        },
+        {
+          "line": 130,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "public async Task<RuntimeToolResults> ExecuteAsync()"
+        },
+        {
+          "line": 136,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "var resources=new FrozenOutputResources();ToolOutcome? outcome=null;RuntimeToolResults? result=null;bool transferred=false;Exception? failure=null;"
+        },
+        {
+          "line": 153,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "DeclaredOutputSnapshot.Publish(result,Identity.ToInvocationIdentity(_node.Id),result.Values,sourceWorkflowId:_workflowId);"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/Solution.cs",
+      "sha256": "657e0df6f12b75a434c2ded5459df552c0939283439f82f8b3e3585ff5c73460",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 41,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner { get; } = new();"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/VisionEvents.cs",
+      "sha256": "e74ff311a2fe32e1bf9361e678f3660ecbd08752ed7e472482e5dc5029edc9ba",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 145,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public ExecutionResult Result { get; set; }"
+        },
+        {
+          "line": 147,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public WorkflowExecutionCompletedEvent(string source, string workflowId, string workflowName, string executionId, ExecutionResult result)"
+        },
+        {
+          "line": 180,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public ExecutionResult Result { get; set; }"
+        },
+        {
+          "line": 187,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public ProcessingCompletedEvent(string source, string workflowId, string executionId, IVisionImage inputImage, ExecutionResult result, long durationMs)"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/Workflow.cs",
+      "sha256": "a99c75078f4c430c09a069ebdb0af9905cf6e7a5071955b2877a41d2d8658a49",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 30,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner ExecutionOwner { get; internal set; } = new();"
+        },
+        {
+          "line": 31,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public void AttachExecutionOwner(ToolExecutionOwner owner)"
+        },
+        {
+          "line": 404,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if (prop.DeclaringType == typeof(ToolResults) ||"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowBindingContext.cs",
+      "sha256": "4f5843bda429411bafadbd07a498fc762d2dceb763b0af263c014c3954f1df47",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 226,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "internal IBindingRunSnapshot Capture(AlgorithmNode consumer,IDictionary<string,ToolResults>? results)"
+        },
+        {
+          "line": 245,
+          "symbols": [
+            "FreezeResult",
+            "ToolResults"
+          ],
+          "text": "internal void FreezeResult(AlgorithmNode node,ToolResults result)"
+        },
+        {
+          "line": 249,
+          "symbols": [
+            "RuntimeToolResults"
+          ],
+          "text": "if(result is RuntimeToolResults runtime)"
+        },
+        {
+          "line": 283,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null,fields,_scope,declaration.Complete);"
+        },
+        {
+          "line": 285,
+          "symbols": [
+            "DeclaredOutputSnapshot",
+            "ExecutionStatus"
+          ],
+          "text": "internal DeclaredOutputSnapshot WithoutResult(AlgorithmNode node,ExecutionStatus status,IEnumerable<Diagnostic> diagnostics)"
+        },
+        {
+          "line": 290,
+          "symbols": [
+            "DeclaredOutputSnapshot"
+          ],
+          "text": "return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,"
+        },
+        {
+          "line": 332,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "snapshot.Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess,values));"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowContext.cs",
+      "sha256": "67d716932fdcada4ed590105b063536ee08bc95606ac208460ed72de9f2069ff",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 204,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "private readonly Dictionary<string, NodeExecutionResult> _executionResults = new();"
+        },
+        {
+          "line": 390,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public void UpdateNodeStatus(string nodeId, NodeStatus status, ExecutionResult result = null)"
+        },
+        {
+          "line": 586,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public void SetNodeResult(string nodeId, NodeExecutionResult result)"
+        },
+        {
+          "line": 602,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public NodeExecutionResult? GetNodeResult(string nodeId)"
+        },
+        {
+          "line": 611,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "public T? GetNodeResult<T>(string nodeId) where T : ToolResults"
+        },
+        {
+          "line": 662,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "public NodeResultSnapshot CaptureNodeResults()"
+        },
+        {
+          "line": 664,
+          "symbols": [
+            "NodeResultSnapshot"
+          ],
+          "text": "lock (_nodeResultsGate) return new NodeResultSnapshot(_executionResults);"
+        },
+        {
+          "line": 670,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public IReadOnlyDictionary<string, NodeExecutionResult> GetAllNodeResults()"
+        },
+        {
+          "line": 673,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "return new Dictionary<string, NodeExecutionResult>(_executionResults);"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowEngine.cs",
+      "sha256": "b5cfc5e019d693e268dd94fc49952841f8d37c41f62a0d76b7490ae98faee583",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 166,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public List<AlgorithmResult> ExecuteWorkflow(string workflowId, Mat inputImage)"
+        },
+        {
+          "line": 171,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new List<AlgorithmResult>();"
+        },
+        {
+          "line": 179,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "var results = new List<AlgorithmResult>();"
+        },
+        {
+          "line": 187,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public List<AlgorithmResult> ExecuteCurrentWorkflow(Mat inputImage)"
+        },
+        {
+          "line": 192,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "return new List<AlgorithmResult>();"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "941766459225d1d25e00966009b79b71859d129bf9d4b824a79d4a83477c6eef",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 77,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "public event Action<WorkflowNodeBase, NodeExecutionResult>? NodeExecutionFinished;"
+        },
+        {
+          "line": 82,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public event EventHandler<ExecutionResult>? ExecutionCompleted;"
+        },
+        {
+          "line": 109,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups("
+        },
+        {
+          "line": 122,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var result = new ExecutionResult();"
+        },
+        {
+          "line": 238,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;"
+        },
+        {
+          "line": 261,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var images = lastSuccessful.Result.GetDisplayImages();"
+        },
+        {
+          "line": 292,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteWorkflowWithReadyQueue("
+        },
+        {
+          "line": 299,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var result = new ExecutionResult();"
+        },
+        {
+          "line": 302,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var running = new List<(WorkflowNodeBase Node, IDisposable Lease, Task<NodeExecutionResult> Task)>();"
+        },
+        {
+          "line": 415,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;"
+        },
+        {
+          "line": 429,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteNodesInParallel("
+        },
+        {
+          "line": 436,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var result = new ExecutionResult();"
+        },
+        {
+          "line": 442,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var running = new List<(WorkflowNodeBase Node, IDisposable Lease, Task<NodeExecutionResult> Task)>();"
+        },
+        {
+          "line": 520,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;"
+        },
+        {
+          "line": 611,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,"
+        },
+        {
+          "line": 616,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private async Task<ExecutionResult> ExecuteWorkflowCore("
+        },
+        {
+          "line": 630,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "return ExecutionResult.CreateFailure($\"工作流不存在: {workflowId}\");"
+        },
+        {
+          "line": 642,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "return ExecutionResult.CreateFailure(definitionError);"
+        },
+        {
+          "line": 703,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "var syntheticResults = new GenericToolResults { Status = ExecutionStatus.Success };"
+        },
+        {
+          "line": 712,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "subContext.SetNodeResult(\"__SubroutineInputs__\", new NodeExecutionResult"
+        },
+        {
+          "line": 716,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success,"
+        },
+        {
+          "line": 724,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "subContext.SetNodeResult(parentNodeId, new NodeExecutionResult"
+        },
+        {
+          "line": 728,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "Status = ExecutionStatus.Success,"
+        },
+        {
+          "line": 744,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "scope.State = subResult.Status == ExecutionStatus.Cancelled"
+        },
+        {
+          "line": 810,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var cancelled=ExecutionResult.CreateCancelled();"
+        },
+        {
+          "line": 820,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "var failed=ExecutionResult.CreateFailure($\"{ex.Message}\\n{ex.StackTrace}\");"
+        },
+        {
+          "line": 838,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "private static void CaptureDeclaredRunOutputs(ExecutionResult result,Workflow workflow)"
+        },
+        {
+          "line": 844,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "outcome.Success?ExecutionStatus.NotExecuted:outcome.Status is ExecutionStatus.NotExecuted?ExecutionStatus.Failed:outcome.Status,"
+        },
+        {
+          "line": 846,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": ":node.BindingContext!.WithoutResult(node,ExecutionStatus.NotExecuted,Array.Empty<SunEyeVision.Plugin.Contracts.Diagnostic>()))));"
+        },
+        {
+          "line": 1167,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "private async Task<NodeExecutionResult> ExecuteNode("
+        },
+        {
+          "line": 1172,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var nodeResult = new NodeExecutionResult"
+        },
+        {
+          "line": 1205,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "nodeResult.Status = ExecutionStatus.Failed;"
+        },
+        {
+          "line": 1222,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "private async Task<NodeExecutionResult> ExecuteAlgorithmNode(AlgorithmNode node, WorkflowContext context)"
+        },
+        {
+          "line": 1224,
+          "symbols": [
+            "NodeExecutionResult"
+          ],
+          "text": "var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };"
+        },
+        {
+          "line": 1236,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "// 尝试获取 ToolResults 的 DisplayName 或 Image 相关内容"
+        },
+        {
+          "line": 1237,
+          "symbols": [
+            "GetDisplayImages"
+          ],
+          "text": "var imageCount = res?.GetDisplayImages()?.Count ?? 0;"
+        },
+        {
+          "line": 1247,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "var globalVarResults = new GenericToolResults { Status = ExecutionStatus.Success };"
+        },
+        {
+          "line": 1261,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "if (algorithmResult.Status == ExecutionStatus.Cancelled)"
+        },
+        {
+          "line": 1268,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "if (algorithmResult.Success && algorithmResult.ToolResults != null)"
+        },
+        {
+          "line": 1271,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "result.Status = ExecutionStatus.Success;"
+        },
+        {
+          "line": 1272,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "result.Result = algorithmResult.ToolResults;"
+        },
+        {
+          "line": 1278,
+          "symbols": [
+            "ExecutionStatus"
+          ],
+          "text": "result.Status = ExecutionStatus.Failed;"
+        },
+        {
+          "line": 1280,
+          "symbols": [
+            "ToolResults"
+          ],
+          "text": "result.Result = algorithmResult.ToolResults;"
+        },
+        {
+          "line": 1296,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,"
+        },
+        {
+          "line": 1306,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "public async Task<ExecutionResult> ExecuteWorkflowAsync("
+        },
+        {
+          "line": 1317,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "return ExecutionResult.CreateFailure(\"已有工作流正在执行；请先停止或等待当前运行完成。\");"
+        },
+        {
+          "line": 1331,
+          "symbols": [
+            "ExecutionResult"
+          ],
+          "text": "// 令牌检测取消并返回标准 ExecutionResult。"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowNode.cs",
+      "sha256": "428a6479d514ba3df9648f84ffff0005b72355be38e11b218d7f7eae8ab5f2c4",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 525,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "public event Action<WorkflowNodeBase, AlgorithmResult> AfterExecute;"
+        },
+        {
+          "line": 565,
+          "symbols": [
+            "AlgorithmResult"
+          ],
+          "text": "protected virtual void OnAfterExecute(AlgorithmResult result)"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowPublishedConfiguration.cs",
+      "sha256": "b2f0e736c3c82336d3df52b9e5b23c8fb997a410e4a6ba039f6179a5dfda80b5",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 40,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public ToolExecutionOwner ExecutionOwner {get;}"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "5fb0001cbd1246fa56b956919dd70522080589327ee64926dcb67f4794b29e47",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 73,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; init; }"
+        }
+      ]
+    },
+    {
+      "file": "src/Workflow/WorkflowRunSession.cs",
+      "sha256": "b9bdeaf9aaa7f9b4fc78410307ef9f16d6161def6defb31115265b17b19894a3",
+      "compiledBy": [
+        "Src/Workflow/SunEyeVision.Workflow.csproj"
+      ],
+      "hits": [
+        {
+          "line": 40,
+          "symbols": [
+            "ToolExecutionOwner"
+          ],
+          "text": "internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }"
+        }
+      ]
+    },
+    {
+      "file": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+      "sha256": "3d2ecc4533edeb4b7755825d7b0daf3e99856304e42c104ff43f46f0f3458eea",
+      "compiledBy": [
+        "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj"
+      ],
+      "hits": [
+        {
+          "line": 59,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "using var image = HalconResourceBridge.CopyImage(input);"
+        }
+      ]
+    },
+    {
+      "file": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobResultView.xaml.cs",
+      "sha256": "57d13a9859600e86f9ee64ff84a251478902e7de08f7ecadd58ab1153db65d69",
+      "compiledBy": [
+        "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj"
+      ],
+      "hits": [
+        {
+          "line": 18,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private IResultPublication? _publication;"
+        },
+        {
+          "line": 65,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "public void Present(IResultPublication publication)"
+        },
+        {
+          "line": 98,
+          "symbols": [
+            "IResultPublication"
+          ],
+          "text": "private void InstallEmpty(IResultPublication? publication)"
+        }
+      ]
+    },
+    {
+      "file": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceSession.cs",
+      "sha256": "3e2c122f367f70603054d1a3c8440c3ad34e234c7becb1e7451d536edb903fde",
+      "compiledBy": [
+        "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj"
+      ],
+      "hits": [
+        {
+          "line": 46,
+          "symbols": [
+            "CopyImage"
+          ],
+          "text": "HalconResourceBridge.CopyImage(invocation.Inputs.Get<IReadOnlyImage>(ImageSourceTool.CameraImage));"
+        }
+      ]
+    }
+  ]
+}

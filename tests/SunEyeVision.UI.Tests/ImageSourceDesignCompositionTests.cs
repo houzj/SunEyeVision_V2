@@ -129,7 +129,7 @@ public sealed class ImageSourceDesignCompositionTests
         try
         {
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
-            Assert.True(PluginLoader.LoadPlugins(Path.Combine(host,"plugins")));
+            Assert.True(PluginLoader.LoadPlugins());
             var runtime=ToolRegistry.CreateRuntime("ImageLoad");
             using var registered=ToolRegistry.CreateSettingsView("ImageLoad",runtime.CreateSettings());
             Assert.Equal("SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor",registered.GetType().FullName);
@@ -149,9 +149,7 @@ public sealed class ImageSourceDesignCompositionTests
     }
     private static void Sta(Action action)
     {
-        Exception? failure=null;var thread=new Thread(()=>{try{action();}catch(Exception error){failure=error;}});
-        thread.SetApartmentState(ApartmentState.STA);thread.IsBackground=true;thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)),"设计组合验证超时");
-        if(failure is not null)ExceptionDispatchInfo.Capture(failure).Throw();
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
     }
     private sealed class CallbackSource:UserControl,IImageSourceSettingsContent,IDisposable
     {

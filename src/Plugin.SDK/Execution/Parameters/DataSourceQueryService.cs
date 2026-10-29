@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
         public Action<string>? CommitOutputConfiguration { get; set; }
         public string? WorkflowId { get; set; }
-        public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
+        public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; set; }
         /// <summary>Optional private editor lifetime; production queries leave this unset.</summary>
         public System.Threading.CancellationToken EditScopeCancellation { get; set; }
         /// <summary>Editor run boundary captures published values, never another scope's pending variables.</summary>
@@ -43,7 +44,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
         /// </summary>
-        private Func<string, ToolResults?>? _ssotReader;
+        private Func<string, DeclaredOutputSnapshot?>? _ssotReader;
 
         /// <summary>
         /// Logger
@@ -196,8 +197,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 设置 SSOT 读取器，使 DSQS 能回退到外部持久化结果
         /// </summary>
-        /// <param name="reader">给定节点ID返回 ToolResults 的委托</param>
-        public void SetSootReader(Func<string, ToolResults?> reader)
+        /// <param name="reader">给定节点ID返回 DeclaredOutputSnapshot 的委托</param>
+        public void SetSootReader(Func<string, DeclaredOutputSnapshot?> reader)
         {
             _ssotReader = reader;
         }
@@ -641,7 +642,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 从 SSOT 读取器获取节点执行结果（无本地缓存，实时读取 WorkflowContext）
         /// </summary>
-        private ToolResults? GetNodeResult(string nodeId)
+        private DeclaredOutputSnapshot? GetNodeResult(string nodeId)
         {
             return _ssotReader?.Invoke(nodeId);
         }

@@ -58,7 +58,7 @@ function Invoke-Probe([string]$name,[bool]$reject,[string]$reason='') {
     $data=Get-Content -LiteralPath $output -Raw|ConvertFrom-Json -AsHashtable -Depth 100
     if($reject) {
         if($process.ExitCode -eq 0 -or $data.status -ne 'Rejected' -or $data.error -notmatch $reason){throw ('应明确拒绝 '+$name+'，实际：'+($data|ConvertTo-Json -Compress))}
-    } elseif($process.ExitCode -ne 0 -or @($data.toolboxTools|Where-Object {$_.id -notlike 'vm:*'}).Count -ne 22){throw ('正式工具准入失败：'+$name)}
+    } elseif($process.ExitCode -ne 0 -or @($data.toolboxTools).Count -ne @($baseline.productComponents|Where-Object role -eq 'Runtime').Count){throw ('正式工具准入失败：'+$name)}
     $results.Add([ordered]@{name=$name;pid=$process.Id;exit=$process.ExitCode;expectedRejection=$reject;passed=$true})
 }
 function Reject-Metadata([string]$name,[scriptblock]$change,[string]$reason) {
@@ -71,7 +71,7 @@ function Reject-Metadata([string]$name,[scriptblock]$change,[string]$reason) {
 
 try {
     if(Test-Path -LiteralPath (Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis')){throw '退出的SDK Blob目录仍在正式发布中'}
-    if($baseline.expectedPluginAssemblies -contains 'SunEyeVision.Tool.BlobAnalysis'){throw '清单仍要求退出的SDK Blob'}
+    if($baseline.payloadSchemaVersion -ne 2){throw '清单未切换至组件产品合同'}
     $results.Add([ordered]@{name='retired-sdk-absent-in-clean-release';passed=$true})
     Invoke-Probe 'baseline-present' $false
     $env:S3_USE_GLOBAL_LOADER='1';$env:S3_EXPECT_REJECTION='0'
@@ -138,7 +138,7 @@ try {
         param($p)
         $target=Get-BlobComponent $p 'Editor'
         $target.Component.entryType='System.String'
-    } 'PE declarations differ'
+    } 'Product component differs|PE declarations differ'
     $env:S3_EXPECT_EDITOR='1'
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track Components
     if($LASTEXITCODE -ne 0){throw '还原后正式组件消费失败'}

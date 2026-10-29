@@ -53,7 +53,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     {
         Dispatcher.VerifyAccess();
         if(_running)throw new InvalidOperationException("调试正在执行。");
-        _running=true;RuntimeToolResults? result=null;var generation=_generation;
+        _running=true;DeclaredOutputSnapshot? result=null;var generation=_generation;
         FrameworkElement? lockedView=null;bool previousEnabled=true;
         try
         {
@@ -76,7 +76,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         finally
         {
-            try{result?.Resources?.Dispose();}
+            try{result?.Dispose();}
             finally
             {
                 if(!_disposed&&generation==_generation&&ReferenceEquals(_view?.View,lockedView)&&lockedView is not null)

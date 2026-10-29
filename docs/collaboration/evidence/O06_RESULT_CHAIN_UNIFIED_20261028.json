@@ -1,0 +1,65 @@
+{
+  "baseCommit": "f591a40cfd216d04cbfd99ff86d3fb01de78e2d0",
+  "sourceState": "工作区候选；包含先前ROI未提交增量。以逐文件SHA固定，不冒称干净提交产物。",
+  "dirtyProductFiles": {
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs": "5B2BBD3B7D86E8A9D3BF6B8EF18B83D6AFC97FB03014F7084A6FD33277E8BCC0",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs": "A3F735674AEB50B7D6BDF44263E851BA77F18ECB4175CFF02DBF08F09B614E36",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs": "79D05339963ED0FEADED9B78B93CC438D6DF8AE6E39BCBBB505608A6D3DD1AE9",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs": "297579B6CF67161C2DFFF6E7C4A6B4FD5F7555E684E43C84DF79A114267C0CA4",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs": "88A79DDB64549285A7AC4540669898A8F2BD9F2F7A631046332E10B7D9B3B1FC",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs": "23840AFB420DF6951BE9AA9A34B96B6F3B25CE6332304A33AE973AF4C6799FA4",
+    "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs": "4308CFAFC0EBBCD286FF3D3E5065DD769C07A5B9C4C07335C5609C71E7D3EF74",
+    "src/UI/Shell/Windows/MainWindowResultPublication.cs": "40AA68F7F50524F628003137E89168F6561D7D5E836E3CAF16D1BD17DEDC64CF",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml": "118128FB08EA3163B353620A91359B08B4D5CB1D36A58E37EAA9BF5C83DA67ED",
+    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.Gestures.cs": "3BEA97ADD5F685BB546BE06881DE86BAE55CF3E7B2484D41746D0C779C3EA41D"
+  },
+  "ui": {
+    "log": "artifacts/result-chain-unified-ui-20261028.log",
+    "errors": 0,
+    "warnings": 6547,
+    "seconds": 158.62
+  },
+  "full": {
+    "log": "artifacts/result-chain-unified-full-20261028.log",
+    "errors": 0,
+    "warnings": 6584,
+    "seconds": 70.55
+  },
+  "probe": {
+    "log": "artifacts/result-chain-unified-probe-20261028.log",
+    "pid": 28596,
+    "exit": 0
+  },
+  "imageSources": {
+    "attempt": "Release\\_validation\\S4-20261025\\ImageSources\\attempt-008",
+    "passed": 180,
+    "failed": 0
+  },
+  "windows": [
+    "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-227",
+    "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-228"
+  ],
+  "publication": {
+    "passed": 10,
+    "failed": 0
+  },
+  "table": {
+    "passed": 1,
+    "failed": 0,
+    "rows": [
+      500,
+      1000,
+      1205
+    ]
+  },
+  "payloadEntriesVerified": 795,
+  "loadedRecordsVerified": 26,
+  "payloadSha256": "79ED4C390145318C93D1B0ABF2C1E8E93DE36452B8B52D5CF39BE51F10BB8228",
+  "notAccepted": [
+    "真实VS设计时与人工验收",
+    "生产D07图形/文本/ROI整链",
+    "实际历史列表/命令接线",
+    "本批未重跑GlobalBinding，上一正式283/1仍保留",
+    "先前ROI手势候选未专门验收"
+  ]
+}

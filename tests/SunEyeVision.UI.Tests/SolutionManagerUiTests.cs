@@ -21,11 +21,7 @@ public sealed partial class SolutionManagerUiTests
 {
     private static void Sta(Action action)
     {
-        Exception? failure = null;
-        var thread = new Thread(() => { try { action(); } catch (Exception ex) { failure = ex; } });
-        thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "方案界面测试超时");
-        if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
     }
     private static ResourceDictionary Theme(string name) => new() { Source = new Uri($"pack://application:,,,/SunEyeVision.UI;component/Themes/{name}/{name}Theme.xaml") };
     private static void Render(Window window, string name, int width, int height)

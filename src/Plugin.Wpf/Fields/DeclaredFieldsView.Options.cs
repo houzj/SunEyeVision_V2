@@ -16,7 +16,7 @@ public sealed partial class DeclaredFieldsView
         IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? images,
         IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parents,
         IReadOnlyDictionary<string,NativeIntegerRadioOptions> radios,IReadOnlySet<string> paired,IReadOnlySet<string>? inlineConstants,
-        IReadOnlySet<string>? textCoordinates=null)
+        IReadOnlySet<string>? textCoordinates=null,IReadOnlySet<string>? rawReferences=null)
     {
         var providers=images?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
         foreach(var id in inlineConstants?.ToArray()??[])
@@ -30,7 +30,7 @@ public sealed partial class DeclaredFieldsView
             _inlineConstants.Add(id);
         }
         foreach(var field in declarations.Values)
-            if(!_inlineConstants.Contains(field.Port.Id)&&textCoordinates?.Contains(field.Port.Id)!=true&&field.Presentation.Layout is {DecimalPlaces:null})
+            if(!_inlineConstants.Contains(field.Port.Id)&&textCoordinates?.Contains(field.Port.Id)!=true&&rawReferences?.Contains(field.Port.Id)!=true&&field.Presentation.Layout is {DecimalPlaces:null})
                 throw new ArgumentException("不限固定小数位仅适用于原订阅同槽数值文本。");
         foreach(var id in textCoordinates??new HashSet<string>())
         {

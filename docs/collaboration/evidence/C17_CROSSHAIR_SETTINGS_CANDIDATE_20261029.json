@@ -1,0 +1,1128 @@
+{
+  "status": "CANDIDATE_COMPLETE_CROSSHAIR_COMPOSITION_MANUAL_GATES_PENDING",
+  "baselineCommit": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
+  "sourceIdentity": "基线加本批未提交源码SHA，保留用户XAML；发布标签不代称纯净提交树产物。",
+  "originalSources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossData.cs",
+      "sha256": "3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml",
+      "sha256": "e0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs",
+      "sha256": "5be350a0fd91b5301f0af41b9c91432947d0a8733d3e6a9e0d8e5fd6b251b2f2"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeBase.cs",
+      "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+      "sha256": "a09059167052071a3bcdced56258a3f1bd547d08812b18193a7537d01af90e51"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Controls/styles/basewindowstyle.xaml",
+      "sha256": "46989e854d2dc8f66c9e05b06aad8f48995a0d8f963566371efaab0dd71a1e27"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml",
+      "sha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/buttonstyle/togglebuttonstyle.xaml",
+      "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml",
+      "sha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "2abb24c7d4a1a90c99e7b26cd1251eda749799b99601f5779c8eb3eb6bca7f96"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "be98445766cadb872ab88ecb86595247706405fd2c5a223710e8dd9400b952be"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettings.cs",
+      "sha256": "d58f7d90d24271357e4be5b745e543ced55144bc1a219fdcfe29ae324fe8c520"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml",
+      "sha256": "a7c474b8f9293aea1d9e005604b55126c874a9e8eb41b2050a3a10314f34c7e6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml.cs",
+      "sha256": "efd7e6a3b44f2302938c26685d4c7c1c97356e42ca7e560d0382d0394a01dea5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml",
+      "sha256": "a2255c53079d888295f54e9af7581e4941cd85ef49c7f6faf96e3f8f78139140"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml.cs",
+      "sha256": "e5e73f3e4ed952d0f1bed53a3760d6017eded67cf90b377a9f77ad2d7cad9707"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+      "sha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml",
+      "sha256": "ac8377055aa8ac1bbdab2b69471c346c7adb40f743b0e98da6a1d12736773f80"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+      "sha256": "b1caab9c11f703253cf1e9ccaa1fc4cfee5bfd254d84036f66d9ee26f06583a0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossShape.cs",
+      "sha256": "df6710b6de5c44f267ddab0237cbaa963f89a03a411c1765900428b947064566"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml",
+      "sha256": "4be2b797be2745d2aa3aab923e65b0e654414a5fa2aedc0c58a18d52e7de0c36"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
+      "sha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
+      "sha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+      "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
+      "sha256": "e21fd7e9579b8ae65506b601147ac9b83b31db4a6e3e736b0dd291d569431008"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml.cs",
+      "sha256": "5043873a25062edf6b0e72dba7a74add367804257274cfafef9c450ff230e131"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
+      "sha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
+      "sha256": "5dee5b3d01d0faeff3ffd185f64cd83721576faf2613da95e4086b7755e53b2b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml",
+      "sha256": "483798f31b271a11779da6992aaec57325ae32842cafe1a7c0c21602a34dcffe"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+      "sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+      "sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml",
+      "sha256": "96dc7d22c19f7aae5b81930c3014c54cecfc20197c8076e34db20f6d6f588e8c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml.cs",
+      "sha256": "4526c6696c9d45c144bd5c04f623c5ac52fc29971201143e66afc05db1fe2e0f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+      "sha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
+      "sha256": "9242aab5609ec29f7ad882746e7d84bb198ae27aa718f77baeecaf1ebb76612b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml",
+      "sha256": "b06d34eef6b5f98a418c6e40b557120e0348c074e3a294c3f94c25a8e3fb4f6a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
+      "sha256": "b63b9c4ac5ca0f8c6a0576c9f4978f399012a121aad36c4b727b45e8ce555313"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeType.cs",
+      "sha256": "541f83f36fcf7e70b1c7d2dad3de0f92a8219644b9ccbca0a4161765b6cac3e3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SymbolType.cs",
+      "sha256": "2754ebfb250b0c5da6f4193aaf48a3799fcc43435478fa9075bcff3520acbbe3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairDesignData.cs",
+      "sha256": "4359c244d49b1967ab3bf77a68a8583f6df56e7b6273dbd6d6bbaf6adb58a4bb"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairSample.cs",
+      "sha256": "1c349e2660fa41794dcaba7303463a7ae092b670cbec9ffd8ea4fe25af10c336"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairScene.xaml",
+      "sha256": "8bdc05ec8b3a13457791e01f31d2d8d38d51becfb53b1c0535ecfb91ba36ef23"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Cross.cs",
+      "sha256": "2d508fa926ee44a995714facd67a83aa37fea7afdf7076616834c45f53b8dcec"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "9571fbcb093c435b5822e84c8b954fbb2d59ad0ee410cbec0a88e805e3c4f600"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+      "sha256": "bda8ea54883b4f4e9743fcb9af707ed3e27d61c6a9e763ec43ce25f9a84c40b0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+      "sha256": "cf814431d2c0a178aa3ac49d45df149438f6f1b70ce2f3765a8b4dae75452fab"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",
+      "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_disable.png",
+      "sha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_normal.png",
+      "sha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_click.png",
+      "sha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_disable.png",
+      "sha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_normal.png",
+      "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off.png",
+      "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off_dark.png",
+      "sha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on.png",
+      "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on_dark.png",
+      "sha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_click.png",
+      "sha256": "a212f228cdc4884ddafcb3e080afc39e430e628c2059a4e6a5428a1e15db5dbd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_hover.png",
+      "sha256": "c519d84f60507e99a4c2bde44fca676134e020865d1caba73469405fe282465d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+      "sha256": "216ecc027b94d9d136d836a9126f0cb18f74e4ab4f7288dbd7193cb7ef7a0a40"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+      "sha256": "cdf32474ed06bb4e1781d7bb85c001827d470db5a76ab94cbbbea30daab68150"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+      "sha256": "303c4dc69ea1459e3bd19719a6f91f9634dccc7e74bc9312238076eeba7def3c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+      "sha256": "1d7bb61823dd336c0da0f470f61e058cca8618e6f0bc05d3071a9192e4d7e0c4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png",
+      "sha256": "86169298f16ca824208e030e67bacb24cedeb9c150f8f450aaf6cffaf7e6f993"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_normal.png",
+      "sha256": "c4c2008512fae8debcdfbc0c48b069e934b8ae699b63727712d023bf55a6a319"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/滑块_normal.png",
+      "sha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Display/CrosshairSettingsResources.xaml",
+      "sha256": "76f75691c698ab5076815f95735885bbb7febeea873d14bc048ce5f2426981dd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+      "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+      "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml",
+      "sha256": "abfb8f8fbbddc50fb0d0ad25aa317c57b31268c14dcd6780040caa1dd7ac0515"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml",
+      "sha256": "071dcf6085610d260d0d1b0eaa08b94b4fadebafcfde7940163f54a9fdcc103b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+      "sha256": "644e0853747fbe516a0c7b51205e9099c2d4a4aec0e2981946c9c92b280ffc17"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml",
+      "sha256": "3437bc43530c35dbe8c5ffcc8b5074362b067c8148083c7459beacbccb065ead"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Numeric/Shared/CommomDictionary.xaml",
+      "sha256": "60454e2f6b841e667c15ebfc4df5902959c9a60141e6f77cab77f5f75b4dad61"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+      "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
+    }
+  ],
+  "protectedUncommittedUserFile": {
+    "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+    "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+  },
+  "removedFiles": [
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.pending",
+      "baselineGitContentSha256": "2f83c751cecf16c8cc692d476e700aa451fbc4293fb0a6696ffcf343b9afd9d8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending",
+      "baselineGitContentSha256": "565177b04e33384d247e197cb1ddacb016af567517732a5f64bef6455211dfe2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossData.cs.pending",
+      "baselineGitContentSha256": "96f3c4a45b33ba2ba7007bbc63570cb154619dd95cb86b225d5776a65877ffc4"
+    }
+  ],
+  "implementation": [
+    "CrosshairSettings双模型、原CrossConfig布局与原BaseWindow非模态窗，以中立文件名归现有公共库；关闭不回滚、重开保留。",
+    "受管CrosshairLayer消费当前同帧坐标，经原ShapeItemsPage/CrossShape/CrossControl渲染；同尺寸换帧/卸载/关闭退役旧手势。",
+    "图像/图层proof错误保原异常，命令可用性查询记录错误并禁用；旧清理不覆盖回调接纳的新帧或其他图层场景。",
+    "Enter核三层BindingExpression、DataContext、模板与实际数值叶身份；合法提交原整数Math.Round取整后失焦，非法保原文。共享内部取整用SetCurrentValue保绑定，Float不取整。",
+    "真实View测量调用既有EnsureTemplateInputs，使无Loaded设计视图显示实际数值；六标签显式消费原ParamsTabForeground，原标题ModuleForeground保留。",
+    "导出复制ICross标量到独立冻结快照；完整场景预算超额明确拒绝，不截断辅助线。"
+  ],
+  "integerSourceBoundary": "原SliderArrangeBase对整数Math.Round，原CrossData坐标仍double；静态SetValue有绑定风险，不宣称已复现VM实机缺陷。本方回归证明保绑定往返。",
+  "pointerTestBoundary": "实际WPF捕获及路由事件；只为确定像素增量注入前一指针位置，非物理鼠标/VM/VS人工验收。",
+  "payload": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/release-payload.json",
+    "sha256": "298c54aa47b28799d7f22dd3513a623e56a72bfe9e1d3d85300b83ade13a1daa",
+    "sourceCommitLabel": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
+    "entriesVerified": 569
+  },
+  "builds": [
+    {
+      "scope": "UI",
+      "path": "artifacts/c17-window-ui-build-20261029-013.log",
+      "sha256": "32f779cfe10f5314f72f5a0a725e46afc241e54e87820e42b16b9645671ca6b4",
+      "tail": [
+        "    6329 个警告",
+        "    0 个错误",
+        "",
+        "已用时间 00:00:37.78"
+      ]
+    },
+    {
+      "scope": "full",
+      "path": "artifacts/c17-window-full-build-20261029-011.log",
+      "sha256": "54da31adeec0f196098fbb4b17728ced90d0f598ace01df0b4a0af73ef025e8d",
+      "tail": [
+        "    6339 个警告",
+        "    0 个错误",
+        "",
+        "已用时间 00:00:33.01"
+      ]
+    }
+  ],
+  "formalTracks": [
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-282",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 282,
+        "pid": 74632,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-282"
+      },
+      "summary": "O06独立窗口检查：18组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "af03eb6a575428d44f45ec8757ad03c239902b726c8360e4cc3442d4404e9efd",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-283",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 283,
+        "pid": 30300,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-283"
+      },
+      "summary": "O06独立窗口检查：16组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "0fda118abe781c053931f4df1c78e5e6fac1635d4cf103e5b964df8e4bf9d2bd",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-284",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 284,
+        "pid": 7784,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-284"
+      },
+      "summary": "O06独立窗口检查：57组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "51b357872358ec8261d519219a84e8de044776d3f24752e3bcf515b5d3e78900",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-285",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 285,
+        "pid": 68152,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-285"
+      },
+      "summary": "O06独立窗口检查：3组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "14ccf7cf759594fed4a2344bf363eabf9e7803adc1dab1e00021a900b64728c8",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-286",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 286,
+        "pid": 58760,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-286"
+      },
+      "summary": "O06独立窗口检查：11组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "c0fb5c81956cfea0e112f1cabcf38cfc2557cef06b4b6bfcb62c362d89e6817d",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-287",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 287,
+        "pid": 61956,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-287"
+      },
+      "summary": "O06独立窗口检查：10组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "a008e325e37ef6e24f72fdcef674f4ee2278a31f272a5a198948006d807e5740",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-288",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 288,
+        "pid": 44144,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-288"
+      },
+      "summary": "O06独立窗口检查：3组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "aa88d60667da77edf4835083ed96d9794fac30f690d934ae7bd9e3e64712bb65",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-289",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 289,
+        "pid": 68668,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-289"
+      },
+      "summary": "O06独立窗口检查：2组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "9a8cc742f3a143cd38f45ebe6f8c83e3eb736765ff5d5355d8204f5c0c5d3d83",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-290",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 290,
+        "pid": 68800,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-290"
+      },
+      "summary": "O06独立窗口检查：3组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "6d7994169f8d830dd092f2b9716e576a46e076ecfa8f38a54307862a4370636d",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-291",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 291,
+        "pid": 24236,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "2ABB24C7D4A1A90C99E7B26CD1251EDA749799B99601F5779C8EB3EB6BCA7F96",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-291"
+      },
+      "summary": "O06独立窗口检查：1组通过，0组失败。仅自动交互，不代人工外观验收。",
+      "runLogSha256": "1c969f354ce80252985613223455db0621ae347ee6623ba7701ab0abca7b6cb9",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        }
+      ]
+    },
+    {
+      "track": "DesignTime",
+      "folder": "Release/_validation/S4-20261025/DesignTime/attempt-076",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 76,
+        "pid": 71776,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4DesignTimeCases.cs",
+        "caseSourceSha256": "BE98445766CADB872AB88ECB86595247706405FD2C5A223710E8DD9400B952BE",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-076"
+      },
+      "summary": "设计时独立组装检查：108组通过；不代替Visual Studio实际设计器与用户视觉验收。",
+      "runLogSha256": "0960d86d0b7f0881255a3fdba36531052c83e2fcd17ab1fb3ba595b9d07e289a",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "aade4decc4a3c5412d3928ab99b701f6a48df54a4c65d506963737a6c0721c36"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "758889ad4ba020cf2042d50274f239889ceee4964ca96a697788735eaad24a9f"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeEditor",
+      "folder": "Release/_validation/S4-20261025/RuntimeEditor/attempt-091",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 91,
+        "pid": 13924,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4RuntimeEditorCases.cs",
+        "caseSourceSha256": "2895D94E5F10173725C32D6D76650243B1B6B191F8B6DBE2B354B072DD40B97A",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditor\\attempt-091"
+      },
+      "summary": "S4 Runtime窗口：10组通过；SDK入口=缺席，Wpf=存在；真实打开/编辑/保存/确定取消/调试命令与连续停止；未验证本地ROI、全部VM外观或人工验收。",
+      "runLogSha256": "571a2ae4399e4fd086c31a89b181339ed557db50f926af823ecf7bc8c534f140",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "bc7ba5b13ecb789604b035aca50f47e4e0eb144498bd59b0606bb284811ed0a2"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "7829697d0846e5da0c4a0be39be5cdec72961adcc1d60fe72d0153cf61bc46d9"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "0b9d8be33d6e89654044b34c1c7975edb766e54fe50f98393e944d0af59ea57a"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "758889ad4ba020cf2042d50274f239889ceee4964ca96a697788735eaad24a9f"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "7aebbc40262149e873386019ee26c831076d19482d3c55b2f57f8267453faa89"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "aade4decc4a3c5412d3928ab99b701f6a48df54a4c65d506963737a6c0721c36"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "5b8d17e9062595aaf9a3ed954e04d26cb2467c1fe92179c84415e3a56fb42be2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "e5d87943af68fb8f08acf194091bdea271cfb5d2aa7f5536fb4f3b3d32457003"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "f9ce051cf95a9705d0d6b33c1de821c5638e0a8a7f828a20ef3955f7de00b188"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "b2a4bc69ac5b218bd2a1254c3c28aefe99d7dc88dfab3f8aca97935728705b3e"
+        }
+      ]
+    },
+    {
+      "track": "FullChain",
+      "folder": "Release/_validation/S4-20261025/FullChain/attempt-148",
+      "receipt": {
+        "stage": "S4",
+        "attempt": 148,
+        "pid": 46072,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FullChainCases.cs",
+        "caseSourceSha256": "53440394726C2C652E75FB01D208DA37C6AA54586957B53D9347F6B26F583FFE",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FullChain\\attempt-148"
+      },
+      "summary": "S4真实Runtime宿主连续链：9组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。",
+      "runLogSha256": "cd39a621e3968a44b12ce745dcacd00d39620400b84689e95ac7b55791798915",
+      "loadedProduct": [
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1bf03ed17d47d53cbbd07fd466b3a51abd045d10dd3fbc015c178fa45ff5ac52"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "5e7e4359626ab868cc897ce3f008be5060fafa10a8ff011962462acbe4cea85f"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "0b9d8be33d6e89654044b34c1c7975edb766e54fe50f98393e944d0af59ea57a"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "973df93e07af23dd6e891624e604344e077bffcfc20edd954315faf216920155"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "bc7ba5b13ecb789604b035aca50f47e4e0eb144498bd59b0606bb284811ed0a2"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "dc353a33c618804ba3f7d1eac3008b852c463b6d0de83cbbe1be95e0a6e795ce"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "7829697d0846e5da0c4a0be39be5cdec72961adcc1d60fe72d0153cf61bc46d9"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "a05732bc6135255c7a99fa9392b95665e9b0c1a9cecd13f4319fdde3d739d451"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "7aebbc40262149e873386019ee26c831076d19482d3c55b2f57f8267453faa89"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "758889ad4ba020cf2042d50274f239889ceee4964ca96a697788735eaad24a9f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "aade4decc4a3c5412d3928ab99b701f6a48df54a4c65d506963737a6c0721c36"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "5b8d17e9062595aaf9a3ed954e04d26cb2467c1fe92179c84415e3a56fb42be2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "e5d87943af68fb8f08acf194091bdea271cfb5d2aa7f5536fb4f3b3d32457003"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "f9ce051cf95a9705d0d6b33c1de821c5638e0a8a7f828a20ef3955f7de00b188"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "b2a4bc69ac5b218bd2a1254c3c28aefe99d7dc88dfab3f8aca97935728705b3e"
+        }
+      ]
+    }
+  ],
+  "loadedProductRecordsVerified": 78,
+  "admission": {
+    "folder": "Release/_validation/ProductIsolation-20261028/attempt-014",
+    "probes": [
+      {
+        "name": "baseline-two-tools-four-components",
+        "pid": 49756,
+        "exit": 0,
+        "expectedRejection": false,
+        "passed": true
+      },
+      {
+        "name": "both-editors-absent",
+        "pid": 55132,
+        "exit": 0,
+        "expectedRejection": false,
+        "passed": true
+      },
+      {
+        "name": "required-runtime-absent-ImageLoad",
+        "pid": 4156,
+        "exit": 1,
+        "expectedRejection": true,
+        "passed": true
+      },
+      {
+        "name": "required-runtime-absent-BlobAnalysis",
+        "pid": 81512,
+        "exit": 1,
+        "expectedRejection": true,
+        "passed": true
+      },
+      {
+        "name": "schema1-rejected",
+        "pid": 27300,
+        "exit": 1,
+        "expectedRejection": true,
+        "passed": true
+      },
+      {
+        "name": "unapproved-component-entry-rejected",
+        "pid": 46188,
+        "exit": 1,
+        "expectedRejection": true,
+        "passed": true
+      },
+      {
+        "name": "old-sdk-producer-field-rejected",
+        "pid": 75348,
+        "exit": 1,
+        "expectedRejection": true,
+        "passed": true
+      },
+      {
+        "name": "restored-two-tools-four-components",
+        "pid": 79000,
+        "exit": 0,
+        "expectedRejection": false,
+        "passed": true
+      }
+    ],
+    "resultsSha256": "69cef8eec5db738ad485cda97fb75fc83c48be05421189b1ad708d38e52a56c5",
+    "allPayloadEntriesVerifiedAfterRestore": true
+  },
+  "failuresPreserved": [
+    {
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-267",
+      "runLogSha256": "7539fdb577383e4298016b51a42066599760aca46ce5ceaee4ef67b1ea3afbbc"
+    },
+    {
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-269",
+      "runLogSha256": "88645c87d28fe6dd76fa74477a45da0f4a7d84c3cfa66281299e31b4d0681c30"
+    },
+    {
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-270",
+      "runLogSha256": "3a965a1f1bcae86ddd1872a91e1d84e73dc34adcc251ff1270b0d12894e4db69"
+    },
+    {
+      "folder": "Release/_validation/S4-20261025/WindowPresentation/attempt-281",
+      "runLogSha256": "b63073fa5f60a43c7035e4d963fd290b8fb931b3ad75849c4ece5f1e85e522c1"
+    }
+  ],
+  "failureResolution": [
+    "267原样式与模板命名域及浮点夹具失败已修。",
+    "269保原整数取整并修绑定，不伪称应保小数。",
+    "270旧Clear重建新场景取消捕获，修代次/已安装场景身份。",
+    "Design074虽105过但实看短横占位，新增实际值断言后108过。",
+    "281隐式样式未挡宿主前景，六标签显式原资源后18过。"
+  ],
+  "manualAcceptance": {
+    "visualStudio": false,
+    "vmSameState": false,
+    "physicalPointer": false,
+    "user": false
+  },
+  "remaining": [
+    "C17实际VM逐态/物理鼠标/VS真实设计器与用户验收未完成，当前不是完整C17或阶段一通过。",
+    "原导出OpenCV渲染公式尚未迁移；当前辅助线导出是独立冻结的正式WPF场景，不冒称VM原导出算法同态。",
+    "C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。",
+    "位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。",
+    "Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
+  ]
+}

@@ -17,7 +17,8 @@ public sealed class DeclaredBlobResultTests
 {
     private static WorkflowExecutionEngine Engine(BlobSettings settings,out SunEyeVision.Workflow.Workflow flow,out WorkflowNodeBase node)
     {
-        Assert.True(PluginLoader.LoadPlugins(System.IO.Path.Combine(SunEyeVision.TestShared.ToolPluginTestLoader.HostDebugRoot,"plugins")));
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot);
+        Assert.True(PluginLoader.LoadPlugins());
         var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger);
         flow=workflows.CreateWorkflow("blob-"+Guid.NewGuid().ToString("N"),"blob");
         node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(settings)};
@@ -33,7 +34,7 @@ public sealed class DeclaredBlobResultTests
         var executor=Engine(new BlobSettings{IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSort.AreaDesc,OutputBoundary=true},out var flow,out _);
         using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
         Assert.True(run.Success,string.Join(";",run.Errors));
-        var output=(BlobOutput)((RuntimeToolResults)run.NodeResults["blob"].Result!).Output!;
+        var output=(BlobOutput)((DeclaredOutputSnapshot)run.NodeResults["blob"].Result!).Output!;
         using var reader=run.AcquireDeclaredOutput(Assert.Single(run.DeclaredOutputs).Identity);
         var records=reader.Values!.Read(BlobSchema.BlobsPort);
         Assert.Equal(new[]{42d,20d},Enumerable.Range(0,records.Count).Select(i=>records.GetElement(i).GetField("area").GetScalar<double>()));

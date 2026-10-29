@@ -1,0 +1,1607 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "b535472fd8a817defce686b17ce869dc3b768b22",
+  "scope": "源码项目引用上界；保留条件边；不包含MSBuild导入求值、动态程序集加载或运行时证明",
+  "status": "当前源码引用盘点，不代表正式产物已通过验收",
+  "defaultSolutionProjectCount": 25,
+  "legacyToolProjectsInDefaultSolution": [],
+  "componentProjects": [
+    "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
+    "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+    "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj"
+  ],
+  "defaultSolutionReversePathsToLegacyTools": {},
+  "admissionMechanismsOutsideProjectReferences": [
+    {
+      "file": "installer/Release.Payload.targets",
+      "sha256": "4c02e26d9280284f2f473197a113350855fd6ebbbae224f0cf355dabd5ab664f",
+      "hits": [
+        {
+          "line": 17,
+          "text": "<Target Name=\"SealDevelopmentReleasePayload\" AfterTargets=\"Build\""
+        }
+      ]
+    },
+    {
+      "file": "installer/Seal-ReleasePayload.ps1",
+      "sha256": "c504cc2581bd9ab6f81ee0d7dc036d43a6a09bc1556c457bc6e75f42cc5fe7d0",
+      "hits": [
+        {
+          "line": 18,
+          "text": "-ArtifactVersion $identity.ArtifactVersion -ProductComponents $components -FrameworkOriginPath $FrameworkOriginPath"
+        }
+      ]
+    },
+    {
+      "file": "installer/Pack-Release.ps1",
+      "sha256": "e51dc7d8501446bdada892bbbaa9f7796953ebf6ae5a641653ab862576680764",
+      "hits": [
+        {
+          "line": 115,
+          "text": "$payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion -ProductComponents $components -FrameworkOriginPath $frameworkOriginPath"
+        }
+      ]
+    },
+    {
+      "file": "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs",
+      "sha256": "047efc95e6e0eca6250ac0dfcfe2a928d2ac8aef22623133e4d408a2f51138b0",
+      "hits": [
+        {
+          "line": 86,
+          "text": "foreach(var declaration in _directory?.GetCategory(name) ?? Array.Empty<DirectoryTool>())"
+        }
+      ]
+    },
+    {
+      "file": "Directory.Build.targets",
+      "sha256": "fc9c276c77af34f93f24b9c47234c6179ae61c065eb8aa97c777915322019ff6",
+      "hits": [
+        {
+          "line": 3,
+          "text": "Condition=\"'$(IsToolPlugin)'=='true' And '$(DesignTimeBuild)'!='true'\">"
+        },
+        {
+          "line": 56,
+          "text": "<ItemGroup Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 65,
+          "text": "<!-- 工具插件拦截: 6 步清理 plugins/ 输出目录污染"
+        },
+        {
+          "line": 66,
+          "text": "适用条件: csproj 设置 <IsToolPlugin>true</IsToolPlugin>。"
+        },
+        {
+          "line": 76,
+          "text": "工具输出到 <worktree>/dev/Debug/plugins/<ToolName>/ 子目录。"
+        },
+        {
+          "line": 83,
+          "text": "<!-- 工具插件: OutDir 统一覆盖到 plugins/<ToolName>/ 子目录"
+        },
+        {
+          "line": 84,
+          "text": "不区分特例,所有 IsToolPlugin=true 的 csproj 一律输出到独立子目录,"
+        },
+        {
+          "line": 85,
+          "text": "避免 AvalonEdit/Roslyn 等重型 NuGet 依赖污染 plugins/ 根。"
+        },
+        {
+          "line": 90,
+          "text": "<PropertyGroup Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 91,
+          "text": "<OutDir Condition=\"'$(Configuration)'=='Debug'\">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)dev\\Debug\\plugins\\$(MSBuildProjectName)\\'))</OutDir>"
+        },
+        {
+          "line": 92,
+          "text": "<OutDir Condition=\"'$(Configuration)'=='Release'\">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\$(MSBuildProjectName)\\'))</OutDir>"
+        },
+        {
+          "line": 96,
+          "text": "而实际产物在 plugins\\<Tool>\\ ⇒ 两者分叉。VS 的设计器按 **TargetPath** 找项目输出程序集，"
+        },
+        {
+          "line": 100,
+          "text": "同时 OutDir 已是 plugins\\SunEyeVision.Tool.PointLineMeasure\\）"
+        },
+        {
+          "line": 102,
+          "text": "<OutDir Condition=\"'$(PackagingRoot)'!=''\">$(PackagingRoot)\\app\\plugins\\$(MSBuildProjectName)\\</OutDir>"
+        },
+        {
+          "line": 119,
+          "text": "<Target Name=\"RemoveHostProvidedAssembliesFromCopyLocal\" AfterTargets=\"ResolveAssemblyReferences\" Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 135,
+          "text": "Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 145,
+          "text": "<Target Name=\"SuppressNativeRuntimesForToolPlugins\" BeforeTargets=\"PrepareForBuild\" Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 170,
+          "text": "<Target Name=\"RemoveToolLanguageResources\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 200,
+          "text": "<Target Name=\"RemoveToolEmptyRuntimesTree\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 206,
+          "text": "编译完成后该目录被 SDK 留作缓存,实际为空但污染 plugins/ 目录。"
+        },
+        {
+          "line": 207,
+          "text": "关键: SDK 把 wpftmp 放在项目 OutDir 的**父目录**(即 plugins/ 根),而非 OutDir 自身子目录。"
+        },
+        {
+          "line": 208,
+          "text": "例如 OutDir=plugins\\SunEyeVision.Tool.Script\\, wpftmp 实际在 plugins\\SunEyeVision.Tool.Script_xxx_wpftmp\\。"
+        },
+        {
+          "line": 214,
+          "text": "<Target Name=\"RemoveToolWpfTempDir\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'=='true'\">"
+        },
+        {
+          "line": 228,
+          "text": "工具插件宿主根 dev/Debug(工具 dll 唯一部署在 plugins\\<Tool>\\, 由主程序加载语义)。 -->"
+        },
+        {
+          "line": 244,
+          "text": "- 主程序/框架项目(IsToolPlugin!=true): 复制到 dev/Debug 根(宿主统一提供);"
+        },
+        {
+          "line": 248,
+          "text": "工具插件(IsToolPlugin=true)不复制: 工具目录纯净, native 由宿主/测试根提供。"
+        },
+        {
+          "line": 253,
+          "text": "<Target Name=\"CopyHalconNativeRuntimes\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'!='true'\">"
+        },
+        {
+          "line": 269,
+          "text": "<Target Name=\"CopyHalconManagedAssembly\" AfterTargets=\"Build\" Condition=\"'$(IsToolPlugin)'!='true'\">"
+        }
+      ]
+    }
+  ],
+  "projects": {
+    "PluginDevKit/samples/SamplePlugin/SamplePlugin.csproj": {
+      "sourceSha256": "70dfa6a0ba289deba5cda14a40f053c624baa05937143c3571d9aa0f1088b5d8",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "PluginDevKit/templates/MyPlugin.Template.csproj": {
+      "sourceSha256": "1d63bbbc6197252e06b51afd01620337ec9e481de7eb28424159ee4fb551e425",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "samples/PluginFoundation/HalconSample/SunEyeVision.Plugin.Foundation.HalconSample.csproj": {
+      "sourceSha256": "ed6ad27eaff71395f5fd3222c8c66fa30f12ed650f057d318525adedcc1f813c",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "samples/PluginFoundation/Host/SunEyeVision.Plugin.Foundation.Host.csproj": {
+      "sourceSha256": "3ed01bbebeb6215a4acad68ed64570a9a4b7173444632dca411ddc888399b039",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "samples/PluginFoundation/Samples/SunEyeVision.Plugin.Foundation.Samples.csproj": {
+      "sourceSha256": "e9b6dc09337b78bd02b2c97198113c0bca629db362e8d1cc10457bfba764a439",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "samples/PluginFoundation/Verification/SunEyeVision.Plugin.Foundation.Verification.csproj": {
+      "sourceSha256": "c408856ef909bc4f355a4bd88051a60b37a9dbf7b8084789b2a9a080360cad77",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "samples/PluginFoundation/Samples/SunEyeVision.Plugin.Foundation.Samples.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "samples/PluginFoundation/Host/SunEyeVision.Plugin.Foundation.Host.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "samples/PluginFoundation/HalconSample/SunEyeVision.Plugin.Foundation.HalconSample.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/CommonControl/CommonControl.csproj": {
+      "sourceSha256": "19ed672bf59b91656a30e50a9c44d5f6758e8c88e6d73b1880a32b0b0db5bfa8",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Core/SunEyeVision.Core.csproj": {
+      "sourceSha256": "a6b1d46567b1672ec2307c62d7594a9db6a90135cc0f4a96bb1f2ebdcb5e8a4d",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj": {
+      "sourceSha256": "6a0e7abd744bde060b9863850fb7fc573aa09bdeb91871d30ed060944064bf2e",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj": {
+      "sourceSha256": "77d5c048eb430818dd609fa02b7127e14becd3e196464c76aab9225c850d1834",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj": {
+      "sourceSha256": "d57bfbb2882179223426412dc942580dfa2b12afda5d2e426f9e29ab849464c3",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj": {
+      "sourceSha256": "f47acd37c494e68eb266dbd1d45aee607417c47a7d13a0930a04db5b0c799543",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj": {
+      "sourceSha256": "e1e45087022b4e1e10336f73c6abbd7d78e755b66552e166f39ebf2a0508c7f5",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj": {
+      "sourceSha256": "497ce4ab0ab9aa7e91e13057815c5de4c67b2de5129375c89578444407107bab",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj": {
+      "sourceSha256": "45eda188954af49db2c7702c90b16a0461d4a61e4cd372f0a2fee3710bfff655",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj": {
+      "sourceSha256": "a7f3170c0595bebb60e22850549b4babc1b8955056c8e0195a07024df47ba9bd",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj": {
+      "sourceSha256": "792e3129ffe600fffc123f4ec834240235c8641f27c27f3a31427e99f1627aa1",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj": {
+      "sourceSha256": "006b209ba08c01052bfb6b573a34675a8e6c3717c1c3144d10502c32cd298c15",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj": {
+      "sourceSha256": "174fb2bf403c288476511398a2af8700e945dd327a1b998e54023f70815c9fc1",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "src/UI/SunEyeVision.UI.csproj": {
+      "sourceSha256": "dc834493f1da1bd03f651be5ec466e26458890ff954fe4db612405efa062c51b",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "false",
+          "source": "product/ToolComponents.props（明确展开，不代替MSBuild求值）"
+        },
+        {
+          "project": "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "false",
+          "source": "product/ToolComponents.props（明确展开，不代替MSBuild求值）"
+        },
+        {
+          "project": "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "false",
+          "source": "product/ToolComponents.props（明确展开，不代替MSBuild求值）"
+        },
+        {
+          "project": "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "false",
+          "source": "product/ToolComponents.props（明确展开，不代替MSBuild求值）"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/CommonControl/CommonControl.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "src/Workflow/SunEyeVision.Workflow.csproj": {
+      "sourceSha256": "e791ce019b1eb76f5e06cb202c94488049c93c4fca4c3edc9f510e437c0cecaf",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj": {
+      "sourceSha256": "27c8bfdb9cbfb289f01b556f526b05c51deb5a2700bdab7b9b55322e1f7aaff1",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.CvEngine.Tests/SunEyeVision.CvEngine.Tests.csproj": {
+      "sourceSha256": "ac4b2f0efea8a2b716f9e28f94208c992a0b56b3d35e77866abc3662e1afdf8a",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj": {
+      "sourceSha256": "d4fd69d51152af76acd5334eca836c0be4bfbdbe3ed997c91393bbb182191bd3",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/DeviceDriver/SunEyeVision.DeviceDriver.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.ImageSource.Runtime.Tests/SunEyeVision.ImageSource.Runtime.Tests.csproj": {
+      "sourceSha256": "94653aef720c4fee7d231d61d2a038304703406417807dd99e38a41cae8d1a4c",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Plugin.Infrastructure.Tests/SunEyeVision.Plugin.Infrastructure.Tests.csproj": {
+      "sourceSha256": "aa4abe5d6507d760b98d995620d6b82aa98ccc1168b4afadbed6cf9d737a9c6a",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Plugin.SDK.Tests/SunEyeVision.Plugin.SDK.Tests.csproj": {
+      "sourceSha256": "b59f187999d36e3c627d1c78b2f53f540c7b0b673b0905b080d192081fbb137e",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.BlobAnalysis.Tests/SunEyeVision.Tool.BlobAnalysis.Tests.csproj": {
+      "sourceSha256": "edcec06fe85c99f446929175ce6d57bfe9fee82f752fa846c86f385261bbe770",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.CircleCircleMeasure.Tests/SunEyeVision.Tool.CircleCircleMeasure.Tests.csproj": {
+      "sourceSha256": "7f638e1feb8cea5e741f04bf779846d98a844fdf231f572c085f6e3f8328c2ab",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.CircleDetect.Tests/SunEyeVision.Tool.CircleDetect.Tests.csproj": {
+      "sourceSha256": "339e84fe61abb720d41b0a6b5797131ce25130f817d8bbe18e650c4340ecd9a8",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.Condition.Tests/SunEyeVision.Tool.Condition.Tests.csproj": {
+      "sourceSha256": "8e314738366eef06d238f96139bd06d1a1fd3054d5083c7736ac0844c29dbb8f",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.ImageFilter.Tests/SunEyeVision.Tool.ImageFilter.Tests.csproj": {
+      "sourceSha256": "81bc091896d433ab11fb152fd2f6029e75e98a6ed97b1f3599166053b6401b5d",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.ImageThreshold.Tests/SunEyeVision.Tool.ImageThreshold.Tests.csproj": {
+      "sourceSha256": "06cc007377933b27a0df765950a6a31fa57e962c86b43aaefe18d25b26dda9c2",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.LineCircleMeasure.Tests/SunEyeVision.Tool.LineCircleMeasure.Tests.csproj": {
+      "sourceSha256": "84f388f2c881326f1de1e1667a39ba7115cf39944ab0cbf94e94f72876f646df",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.LineDetect.Tests/SunEyeVision.Tool.LineDetect.Tests.csproj": {
+      "sourceSha256": "e07af058d4959fffb2b80086578d8bb57fe2b83d68382a445ce6fc49462f798d",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.LineLineMeasure.Tests/SunEyeVision.Tool.LineLineMeasure.Tests.csproj": {
+      "sourceSha256": "b5b8ca48802c54d29f680a1ac746a7fc9cab6b9643373c116aae7aef45475795",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.Morphology.Tests/SunEyeVision.Tool.Morphology.Tests.csproj": {
+      "sourceSha256": "bd4f1bc80e82b6672aa7a53b594c866089bc60392b052d83df2883771cad1a33",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.NPointCalibration.Tests/SunEyeVision.Tool.NPointCalibration.Tests.csproj": {
+      "sourceSha256": "f33b8aa38fa65fb7187061870bd26b8d6950c73664c68c6c58a1decd75004b8f",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.PointCircleMeasure.Tests/SunEyeVision.Tool.PointCircleMeasure.Tests.csproj": {
+      "sourceSha256": "c369f800dc90f8d7ca1dd34f4f48fac93ed36d46a17fc470c8cfba1314c0a45e",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.PointLineMeasure.Tests/SunEyeVision.Tool.PointLineMeasure.Tests.csproj": {
+      "sourceSha256": "6446a805d687b401c59c696d12e50d13a97299a3127cbb42141d268575e90189",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.PointPointMeasure.Tests/SunEyeVision.Tool.PointPointMeasure.Tests.csproj": {
+      "sourceSha256": "60bb3c786a4af9d05153624886890bf044848ecf5a49646b0460a5fc4a56718b",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Core/SunEyeVision.Core.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.Script.Tests/SunEyeVision.Tool.Script.Tests.csproj": {
+      "sourceSha256": "0b36e688a9099b97efc06e89e3c9ffa1f21a6a1c6a12e31c201536c24414c363",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Workflow/SunEyeVision.Workflow.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.ShapeMatch.Tests/SunEyeVision.Tool.ShapeMatch.Tests.csproj": {
+      "sourceSha256": "d9227931ecada5798b00d296425a38aa0912698e8f2fa0dc895f0a50964d63c8",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.Tool.Subroutine.Tests/SunEyeVision.Tool.Subroutine.Tests.csproj": {
+      "sourceSha256": "faae38cab4f0787ed441dd9fb1250b13b1b552f380f6549a278e36302f4aee6f",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj": {
+      "sourceSha256": "b6a66aea785d4ad521af8de5f771535c3948fd9204bee664e2fdfc1b855c93ee",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/UI/SunEyeVision.UI.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/FixEncoding/FixEncoding.csproj": {
+      "sourceSha256": "214c2e293f8349e71e237f536365de64b3167a4ae632301ddfc10d244e80c05b",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj": {
+      "sourceSha256": "7a5950f7fed5aff90d22cf4b35bf384846ad364b011ee8dfb2177f4c9d2bf063",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {
+        "ToolComponentId": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+        "ToolComponentToolId": "BlobAnalysis",
+        "ToolComponentRole": "Runtime",
+        "ToolComponentEntryType": "SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool"
+      },
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj": {
+      "sourceSha256": "3bac3e9c60ba92d0fa7b5e50142adb1a257694f0e673bc8568aff641c5d25419",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {
+        "ToolComponentId": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+        "ToolComponentToolId": "BlobAnalysis",
+        "ToolComponentRole": "Editor",
+        "ToolComponentEntryType": "SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory",
+        "ToolComponentCompanionToolId": "BlobAnalysis"
+      },
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj": {
+      "sourceSha256": "279eba6f6d7f7935ccf40fee2b203b52349a14e936370ccec23773bdd6df5bf5",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {
+        "ToolComponentId": "SunEyeVision.Tool.ImageSource.Runtime",
+        "ToolComponentToolId": "ImageLoad",
+        "ToolComponentRole": "Runtime",
+        "ToolComponentEntryType": "SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool"
+      },
+      "projectReferences": [
+        {
+          "project": "src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj": {
+      "sourceSha256": "b698ad2414d487060da32b5c753353f458d517814fe6bcd7141e0b277f668e71",
+      "inDefaultSolution": true,
+      "legacyToolProducer": false,
+      "component": {
+        "ToolComponentId": "SunEyeVision.Tool.ImageSource.Wpf",
+        "ToolComponentToolId": "ImageLoad",
+        "ToolComponentRole": "Editor",
+        "ToolComponentEntryType": "SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory",
+        "ToolComponentCompanionToolId": "ImageLoad"
+      },
+      "projectReferences": [
+        {
+          "project": "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj": {
+      "sourceSha256": "8808d4b7a2208397676322b95c6306c179725d47a7e72f51a3fd1d3244e64611",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure_oxsx0veq_wpftmp.csproj": {
+      "sourceSha256": "e940a95f6ed727cd31c4f65d09bb51856962a0d66f5d4bdd4d3c7cfa3256b458",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj": {
+      "sourceSha256": "e88a14e5d5f53be02bd312759f56496ae6eddfcc65230bc4e44ce1ba0c321c92",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect_lbv1bjtf_wpftmp.csproj": {
+      "sourceSha256": "d9e91c5e8c28d26e37f6ecc8d691a37db139cf28e221cdd1cb54beeaa8546951",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj": {
+      "sourceSha256": "6b46dc71b2df348680ad34ad88a26db2061d69d1868c155bd074d431b63476cc",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj": {
+      "sourceSha256": "2b80649d5c20dfff321e51ba89f9cec92bc83d0fa67ae8aa46c276a01da31ce6",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj": {
+      "sourceSha256": "3c2bc9827885a0bfe5eec4b9c999593d8dddd4fb936f3e9423f7e6d0d3642af2",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold_tgfmxgp1_wpftmp.csproj": {
+      "sourceSha256": "13eb75951f62fd01047f3d4e46015474e3857e00870645a7f65eabd2a790d1ed",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj": {
+      "sourceSha256": "32352a88c9a4cbb58d4a07dd213b5f888158423de2d345e194400778d62b4277",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure_wkfwfrgl_wpftmp.csproj": {
+      "sourceSha256": "bbc2a84d60e7aa6dd2091ff75bb5133f62123bde31a1bcc4f105d7a1cff6e279",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj": {
+      "sourceSha256": "4b54db4574d94a26ddeb37ffae29e8e20b04c272953153676e3863736d0fb21a",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect_srcnqs32_wpftmp.csproj": {
+      "sourceSha256": "32b44471c623a65b14875ae58083c64e2b567b4efd4db07401e0ae3a3de7bea5",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj": {
+      "sourceSha256": "acb233642f906be1417e2d1ef9a241570704c0591b8197b2dac53d3945d81d85",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj": {
+      "sourceSha256": "6015a6e84e8fca46f5648a61f44582aac7dd6228183e2515cdaa5bdfc108b761",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj": {
+      "sourceSha256": "5fea9822cb9cdb9338cf4cd413c8bc31453b7ddd6dafc37174d8c049b156f38b",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj": {
+      "sourceSha256": "9a55e93e4b1097c455bffdb34d55b7ccdf1c68fea7243c2513c9a46c4653f0f6",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure_iybhih0i_wpftmp.csproj": {
+      "sourceSha256": "8fd0e5fded7e6ade685488226445e09feb05c9feb1f50d74b950265e06eae850",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj": {
+      "sourceSha256": "8bef33da5efbcbf77ece2f0fbe9f92373523b4997d8bcca6dc4f3f78ca8ac3ed",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure_0vgbb1pi_wpftmp.csproj": {
+      "sourceSha256": "1d3d30395770b0189d117ae1034afc68476db94b3b2f6f38c30032348b2c6983",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj": {
+      "sourceSha256": "487429e152faca021cf00dff97d25efd57f85d52081ddea7a9544f24e0922643",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure_wsmslij3_wpftmp.csproj": {
+      "sourceSha256": "1b0b5b6e9b7e6cd5523c6f09b078f729c8d1b4963080a05a6b03241ba084af34",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj": {
+      "sourceSha256": "2962e41cba632bb9ef18a0a1ade3fdbc37b4bcef85154db18c2fd749c4ada386",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj": {
+      "sourceSha256": "d250b5b6ee490edab2e2b3e0af7e8eaff5889a8ba461533fd08808d45b38f2b7",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj": {
+      "sourceSha256": "7f27d494a82c3e2ee3b8207d5ae64004918f65710250778544d20ea0205a0f34",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj": {
+      "sourceSha256": "21806c447b904717b207d308294e6a3cb5e3f468b7f20368a82189785a302172",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/CommonControl/CommonControl.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj": {
+      "sourceSha256": "261352fefb4cd8a136644062f428083a88d6a11e5bfab45723c80c1a4a033858",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj": {
+      "sourceSha256": "4b28cc744412066ac43406b4d8cae22923cea8caa9324a408fbb0b5e3ae447dc",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch_wjhpmxzs_wpftmp.csproj": {
+      "sourceSha256": "c481dd1a044db3742c7977f1d0f045082a04b3eed6383d645c07eda5477a6bd3",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        },
+        {
+          "project": "src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj": {
+      "sourceSha256": "74b341f0d9390cc9b6f39cacb6aebbbf01c9ed8bad359f4ae334662f6cacb914",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine_2kdbqcgm_wpftmp.csproj": {
+      "sourceSha256": "6e80fbb9f56fee7ac79062971ed5f1b375eb50aa8a149296c234def4b9f3317c",
+      "inDefaultSolution": false,
+      "legacyToolProducer": true,
+      "component": {},
+      "projectReferences": [
+        {
+          "project": "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj",
+          "condition": "",
+          "referenceOutputAssembly": "true"
+        }
+      ]
+    },
+    "utilities/ApiDocGenerator/ApiDocGenerator.csproj": {
+      "sourceSha256": "e9932ede2e1e41c089ff0dc5ba94a9a71a62efba9824a46f289f180f6df40116",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    },
+    "utilities/DispatcherAnalyzer/DispatcherAnalyzer.csproj": {
+      "sourceSha256": "5fd406189838c935421c9b7adf92bd263192dc552ce21bf12cb4963f331f5e59",
+      "inDefaultSolution": false,
+      "legacyToolProducer": false,
+      "component": {},
+      "projectReferences": []
+    }
+  }
+}

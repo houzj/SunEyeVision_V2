@@ -1,0 +1,236 @@
+{
+  "status": "STATIC_ORIGINAL_POINT_DISPLAY_CHAIN_FORMULA_AND_VIEWPORT_LIFECYCLE_NOT_PROVED",
+  "sourceFiles": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "excerpt": {
+        "start": 2602,
+        "end": 2647,
+        "lines": [
+          "            <ImageViewConfig Name=\"FixtureInitPoint\">",
+          "              <Description>Fixtured Point</Description>",
+          "              <DisplayName>Fixtured Point</DisplayName>",
+          "              <AccessMode>O</AccessMode>",
+          "              <CustomVisible>False</CustomVisible>",
+          "              <BrigdgeSetter>",
+          "                <TargetName>BridgeObj</TargetName>",
+          "                <OperationName>GetDisplayObjectOperation</OperationName>",
+          "                <OperationParams>Fixtured Point</OperationParams>",
+          "              </BrigdgeSetter>",
+          "              <Triggers>",
+          "                <Trigger>",
+          "                  <Property>CustomVisible</Property>",
+          "                  <!--<Value>False</Value>-->",
+          "                  <Setters>",
+          "                    <Setter>",
+          "                      <OperationName>SetDisplayObjectPropertyOperation</OperationName>",
+          "                      <OperationParams>Fixtured Point;IsDisplay</OperationParams>",
+          "                    </Setter>",
+          "                  </Setters>",
+          "                </Trigger>",
+          "              </Triggers>",
+          "            </ImageViewConfig>",
+          "            <ImageViewConfig Name=\"FixtureRunPoint\">",
+          "              <Description>Unfixtured Point</Description>",
+          "              <DisplayName>Unfixtured Point</DisplayName>",
+          "              <AccessMode>O</AccessMode>",
+          "              <CustomVisible>False</CustomVisible>",
+          "              <BrigdgeSetter>",
+          "                <TargetName>BridgeObj</TargetName>",
+          "                <OperationName>GetDisplayObjectOperation</OperationName>",
+          "                <OperationParams>Unfixtured Point</OperationParams>",
+          "              </BrigdgeSetter>",
+          "              <Triggers>",
+          "                <Trigger>",
+          "                  <Property>CustomVisible</Property>",
+          "                  <!--<Value>False</Value>-->",
+          "                  <Setters>",
+          "                    <Setter>",
+          "                      <OperationName>SetDisplayObjectPropertyOperation</OperationName>",
+          "                      <OperationParams>Unfixtured Point;IsDisplay</OperationParams>",
+          "                    </Setter>",
+          "                  </Setters>",
+          "                </Trigger>",
+          "              </Triggers>",
+          "            </ImageViewConfig>"
+        ]
+      }
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuDisplay.xml",
+      "sha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112",
+      "excerpt": {
+        "start": 70,
+        "end": 85,
+        "lines": [
+          "        </Object>",
+          "        <Object Name=\"Fixtured Point\" Type=\"point\" okcolor=\"#66ff00\" ngcolor=\"#ff0000\" hotcolor=\"#66ff00\" opacity=\"1\" linetype=\"1\" linewidth=\"1\" IsDisplay=\"true\">",
+          "          <Features>",
+          "            <Feature Name=\"CenterX\" Mapping=\"OutputFixtureInitPointX\" Value=\"0\" />",
+          "            <Feature Name=\"CenterY\" Mapping=\"OutputFixtureInitPointY\" Value=\"0\" />",
+          "            <Feature Name=\"Tips\" Value=\"Fixture BasePoint:({0},{1}) \" Mapping=\"OutputFixtureInitPointX,OutputFixtureInitPointY\" />",
+          "            <Feature Name=\"Status\" Mapping=\"NULL\" Value=\"1\" />",
+          "          </Features>",
+          "        </Object>",
+          "        <Object Name=\"Unfixtured Point\" Type=\"point\" okcolor=\"#ff0000\" ngcolor=\"#ff0000\" hotcolor=\"#66ff00\" opacity=\"1\" linetype=\"1\" linewidth=\"1\" IsDisplay=\"true\">",
+          "          <Features>",
+          "            <Feature Name=\"CenterX\" Mapping=\"OutputFixtureRunPointX\" Value=\"0\" />",
+          "            <Feature Name=\"CenterY\" Mapping=\"OutputFixtureRunPointY\" Value=\"0\" />",
+          "            <Feature Name=\"Tips\" Value=\"Fixture RunPoint:({0},{1}) \" Mapping=\"OutputFixtureRunPointX,OutputFixtureRunPointY\" />",
+          "            <Feature Name=\"Status\" Value=\"1\" Mapping=\"NULL\" />",
+          "          </Features>"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\BridgeItemBase.cs",
+      "sha256": "1755641dbcdece3df9375b3882dc1c77ad756cc2919cc9739daba6c053f627e5",
+      "excerpt": {
+        "start": 29,
+        "end": 44,
+        "lines": [
+          "\t\t{",
+          "\t\t\tif (_BridgeObj == null && BrigdgeSetter != null)",
+          "\t\t\t{",
+          "\t\t\t\tif (BrigdgeSetter.Operation == null)",
+          "\t\t\t\t{",
+          "\t\t\t\t\tBrigdgeSetter.CreatOperateInstance();",
+          "\t\t\t\t}",
+          "\t\t\t\tif (BrigdgeSetter.Operation != null)",
+          "\t\t\t\t{",
+          "\t\t\t\t\tBrigdgeSetter.Operate(null);",
+          "\t\t\t\t}",
+          "\t\t\t}",
+          "\t\t\treturn _BridgeObj;",
+          "\t\t}",
+          "\t\tset",
+          "\t\t{"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\GetDisplayObjectOperation.cs",
+      "sha256": "69505e65f1510cef10eb2f133f4d36336b505f4ca15c7b07ea599621591539f8",
+      "excerpt": {
+        "start": 48,
+        "end": 57,
+        "lines": [
+          "",
+          "\tpublic object GetDisplayObject(IVmModule node, string objectName)",
+          "\t{",
+          "\t\tif (node == null)",
+          "\t\t{",
+          "\t\t\treturn null;",
+          "\t\t}",
+          "\t\tif (VmSolution.Instance[(node as IVmFullPath).FullPath + \".[Display]\"] is ParamRoot paramRoot)",
+          "\t\t{",
+          "\t\t\treturn paramRoot.GetDisplayList().OfType<Object>().Single((Object p) => p.NameA == objectName);"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\SetDisplayObjectPropertyOperation.cs",
+      "sha256": "d500ce63367ec03a129f72c986085507863ef81c9a11a2c70971e7b5bd0439e9",
+      "excerpt": {
+        "start": 17,
+        "end": 35,
+        "lines": [
+          "\tpublic SetDisplayObjectPropertyOperation(string TName)",
+          "\t{",
+          "\t\tTargetName = TName;",
+          "\t}",
+          "",
+          "\tpublic void Operate(object[] Params, string[] ExtraParams)",
+          "\t{",
+          "\t}",
+          "",
+          "\tpublic void SetDisplayObjectProperty(IVmModule node, string objectName, string propertyName, object value)",
+          "\t{",
+          "\t\tif (node != null && VmSolution.Instance[(node as IVmFullPath).FullPath + \".[Display]\"] is ParamRoot paramRoot)",
+          "\t\t{",
+          "\t\t\tparamRoot.GetDisplayList().OfType<Object>().Single((Object p) => p.NameA == objectName)?.SetPropertyValueByName(propertyName + \"A\", value);",
+          "\t\t}",
+          "\t}",
+          "",
+          "\tpublic void ReOperate()",
+          "\t{"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\Object.cs",
+      "sha256": "feed3ecc1a21de9e05092b5895a7dc369a947c20ca2b3cf63b5d8e7b125ce0c1",
+      "excerpt": {
+        "start": 934,
+        "end": 940,
+        "lines": [
+          "\t\t\treturn;",
+          "\t\t}",
+          "\t\tshape.Tips = (string)getValueByType(\"Tips\", index, typeof(string));",
+          "\t\tshape.CenterX = (float)getValueByType(\"CenterX\", index, typeof(float));",
+          "\t\tshape.CenterY = (float)getValueByType(\"CenterY\", index, typeof(float));",
+          "\t\tshape.HighLightIndex = GetStringFromStruct(getValueByType(\"HighLightIndex\", index, typeof(string)));",
+          "\t\tshape.Opacity = opacityA;"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\ObjectBase.cs",
+      "sha256": "73168438e06dfd74cae70f910db9aecdabf313db0c376753652180c5bc35d006",
+      "excerpt": {
+        "start": 234,
+        "end": 248,
+        "lines": [
+          "\tpublic virtual bool IsDisplayA",
+          "\t{",
+          "\t\tget",
+          "\t\t{",
+          "\t\t\treturn IsDisplay;",
+          "\t\t}",
+          "\t\tset",
+          "\t\t{",
+          "\t\t\tif (IsDisplay != value)",
+          "\t\t\t{",
+          "\t\t\t\tIsDisplay = value;",
+          "\t\t\t\tOnPropertyChanged(\"IsDisplayA\");",
+          "\t\t\t\tSaveIsDisplay(IsDisplay, NameA);",
+          "\t\t\t\tClearTempValue();",
+          "\t\t\t\tOnValueChanged(new EventArgs());"
+        ]
+      }
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+      "excerpt": {
+        "start": 2544,
+        "end": 2552,
+        "lines": [
+          "  <DataTemplate x:Key=\"ImageViewConfig\">",
+          "    <localParamTab:LeftRightControl Height=\"32\" HorizontalAlignment=\"Left\">",
+          "      <localParamTab:LeftRightControl.LeftContent>",
+          "        <Control Template=\"{StaticResource TextLeft}\" />",
+          "      </localParamTab:LeftRightControl.LeftContent>",
+          "      <localParamTab:LeftRightControl.RightContent>",
+          "        <UniformGrid Width=\"100\" Columns=\"2\">",
+          "          <ToggleButton Style=\"{StaticResource eyeToggleButton}\" IsChecked=\"{Binding BridgeObjA.IsDisplayA, Mode=TwoWay}\" />",
+          "          <PControl:PopupButton HorizontalOffsetVal=\"-90\" SubContent=\"{StaticResource ImageViewConfig_subContent}\" Visibility=\"{Binding PanVisibleA, Converter={StaticResource bool2VisibilityConverter}}\" />"
+        ]
+      }
+    }
+  ],
+  "proven": [
+    "Blob AlgorithmTab.xml2602–2647定义FixtureInitPoint/FixtureRunPoint的ImageViewConfig，BridgeSetter取得Fixtured Point/Unfixtured Point。",
+    "GetDisplayObjectOperation按模块[Display]与NameA.Single取得同一对象；眼睛TwoWay绑定BridgeObjA.IsDisplayA。",
+    "Display.xml70–85声明point结果图元并映射OutputFixtureInit/RunPointX/Y；Object.cs937–938读中心。",
+    "这些是结果显示点/样式入口，不是可编辑ROI或位姿控制柄。"
+  ],
+  "notProven": [
+    "SetDisplayObjectPropertyOperation.Operate反编译体为空，不能以XML触发声明代签显隐执行。",
+    "最终viewport订阅、换帧、关闭清理尚未核完。",
+    "角单位/方向/缩放顺序/零尺度/正反公式、检测与屏蔽联动未证。"
+  ],
+  "correction": "此前仅Group.xml未找到对象定义的缺口已由安装件AlgorithmTab/Display补强；保留原证据，并以本记录修正当前认识。",
+  "manualAccepted": false
+}

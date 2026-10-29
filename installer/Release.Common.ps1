@@ -1,3 +1,5 @@
+. "$PSScriptRoot/Product.Components.ps1"
+
 function Get-ReleaseIdentity {
     param([Parameter(Mandatory)]$Source, [switch]$Next)
     if ($Source.version -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') { throw '产品版本必须为三段数字且无前导零。' }
@@ -50,7 +52,7 @@ function Assert-ReleaseFileVersionAdvance {
 }
 
 function Assert-ReleasePayload {
-    param([string]$Path, [string]$FileVersion, [string[]]$Plugins, [string]$IconSourceRoot)
+    param([string]$Path, [string]$FileVersion, [object[]]$ProductComponents, [string]$IconSourceRoot)
     foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
         if (!(Test-Path (Join-Path $Path $file))) { throw "载荷缺失：$file" }
     }
@@ -62,9 +64,10 @@ function Assert-ReleasePayload {
             }
         }
     }
-    foreach ($plugin in $Plugins) {
-        if (!(Test-Path "$Path/plugins/$plugin/$plugin.dll")) { throw "插件缺失：$plugin" }
+    foreach ($component in $ProductComponents) {
+        if (!(Test-Path -LiteralPath (Join-Path $Path $component.path))) { throw "组件缺失：$($component.componentId)" }
     }
+    if(Test-Path -LiteralPath (Join-Path $Path 'plugins')) {throw '旧SDK插件目录不得进入当前产品'}
     foreach ($file in Get-ChildItem $Path -Recurse -File) {
         if ($file.Name -match '\.Tests\.(dll|exe)$') { throw "测试程序集混入载荷：$($file.Name)" }
         if ($file.Name -like 'SunEyeVision*.dll' -or $file.Name -eq 'SunEyeVision.UI.exe') {
@@ -259,7 +262,7 @@ function New-ReleasePayload {
     param([Parameter(Mandatory)][string]$AppPath,
         [Parameter(Mandatory)][string]$BuildId,
         [Parameter(Mandatory)][string]$SourceCommit,
-        [Parameter(Mandatory)][string]$ArtifactVersion,[string[]]$ExpectedPluginAssemblies=@(),[string]$FrameworkOriginPath)
+        [Parameter(Mandatory)][string]$ArtifactVersion,[Parameter(Mandatory)][object[]]$ProductComponents,[string]$FrameworkOriginPath)
     Initialize-ReleaseToolMetadataReader
     $productIdentity=[SunEyeVision.ReleaseToolMetadataReader]::ReadProductIdentity((Join-Path $AppPath 'SunEyeVision.Core.dll'))
     $actualArtifact=$productIdentity['Product']
@@ -267,30 +270,12 @@ function New-ReleasePayload {
     if($SourceCommit -cne $productIdentity['Commit']){throw 'Payload sourceCommit differs from the Core PE product identity.'}
     if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Core PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
-    if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins/SunEyeVision.Tool.BlobAnalysis')){throw 'Retired Blob SDK deployment must not enter a release payload.'}
+    if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins')){throw 'Retired SDK deployment directories must not enter a release payload.'}
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
     $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
     [xml]$directoryGroups=Get-Content (Join-Path $PSScriptRoot '../src/Plugin.SDK/Metadata/ToolGroups.xml') -Raw
-    # 与工具PE声明同源生成分类索引和目录清单；均先于逐文件SHA封存。
-    foreach($name in $ExpectedPluginAssemblies) {
-        $main=Join-Path $appRoot "plugins/$name/$name.dll"
-        $declarations=@([SunEyeVision.ReleaseToolMetadataReader]::Read($main,$sdkIdentity))
-        if($declarations.Count -eq 0){throw "工具目录没有Tool声明：$name"}
-        $document=[Xml.XmlDocument]::new()
-        $catalog=$document.CreateElement('ToolItems');$catalog.SetAttribute('SchemaVersion','1');$catalog.SetAttribute('Assembly',"$name.dll")
-        $null=$document.AppendChild($catalog)
-        foreach($tool in $declarations) {
-            $item=$document.CreateElement('Tool')
-            foreach($field in @('Id','DisplayName','Description','Icon','Category','Order')) {$item.SetAttribute($field,[string]$tool.$field)}
-            $item.SetAttribute('EntryType',$tool.TypeName);$item.SetAttribute('IsVisible',$tool.IsVisible.ToString().ToLowerInvariant());$null=$catalog.AppendChild($item)
-        }
-        foreach($tool in $declarations) {
-            $index=$directoryGroups.CreateElement('Tool');$index.SetAttribute('Id',$tool.Id)
-            $index.SetAttribute('Category',$tool.Category);$index.SetAttribute('Directory',$name)
-            $index.SetAttribute('IsVisible',$tool.IsVisible.ToString().ToLowerInvariant());$null=$directoryGroups.ToolGroups.AppendChild($index)
-        }
-        $document.Save((Join-Path (Split-Path $main) 'ToolItemInfo.xml'))
-    }
+    # 分类只描述共享分组，工具生产者只由产品组件清单和PE声明确定。
+    if(@($directoryGroups.SelectNodes('/ToolGroups/Tool')).Count){throw '分类资源包含旧工具生产者'}
     $directoryGroups.Save((Join-Path $appRoot 'ToolGroups.xml'))
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
         $relative=[IO.Path]::GetRelativePath($appRoot,$_.FullName).Replace('\','/')
@@ -300,7 +285,7 @@ function New-ReleasePayload {
                 try {
                     $entry.assemblyIdentity=[Reflection.AssemblyName]::GetAssemblyName($_.FullName).FullName
                     $entry.components=@([SunEyeVision.ReleaseToolMetadataReader]::ReadComponents($_.FullName,$contractsIdentity)|ForEach-Object{[ordered]@{componentId=$_.ComponentId;toolId=$_.ToolId;role=$_.Role;contractMajor=$_.ContractMajor;contractMinor=$_.ContractMinor;entryType=$_.EntryType;companionToolId=$_.CompanionToolId}})
-                    $entry.tools=@([SunEyeVision.ReleaseToolMetadataReader]::Read($_.FullName,$sdkIdentity)|ForEach-Object{[ordered]@{id=$_.Id;typeName=$_.TypeName;runtimeComponentId=$_.RuntimeComponentId}})
+                    if(@([SunEyeVision.ReleaseToolMetadataReader]::Read($_.FullName,$sdkIdentity)).Count){throw ('Retired SDK tool producer in payload: '+$relative)}
                 }
                 catch [BadImageFormatException] { } # Native binaries have hashes, not managed identities.
             }
@@ -323,27 +308,21 @@ function New-ReleasePayload {
             foreach($entry in $entries){if($entry.path.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){$entry.optionalComponentId=$owner.components[0].componentId}}
         }
     }
-    foreach($name in $ExpectedPluginAssemblies) {
-        $main="plugins/$name/$name.dll"
-        $declared=@($entries|Where-Object path -eq $main)
-        if($declared.Count -ne 1 -or $declared[0].tools.Count -eq 0){throw "Expected plugin has no managed tool declaration: $main"}
-        foreach($tool in $declared[0].tools) {
-            if(-not [string]::IsNullOrWhiteSpace($tool.runtimeComponentId)) {
-                $producer=@($components|Where-Object{$_.componentId -ceq $tool.runtimeComponentId -and $_.toolId -ceq $tool.id -and $_.role -eq 'Runtime'})
-                if($producer.Count -ne 1){throw "Tool has no unique required runtime: $($tool.id)"}
-            }
+    if($ProductComponents.Count -eq 0 -or $components.Count -ne $ProductComponents.Count){throw 'Product component set is missing or incomplete.'}
+    $admitted=@{}
+    foreach($expected in $ProductComponents) {
+        if($admitted.ContainsKey($expected.componentId)){throw 'Duplicate admitted component.'}
+        $admitted[$expected.componentId]=$true
+        $owner=@($componentEntries|Where-Object {$_.path -ceq $expected.path})
+        if($owner.Count -ne 1 -or $owner[0].components.Count -ne 1){throw "Product component assembly mismatch: $($expected.componentId)"}
+        $actual=$owner[0].components[0]
+        foreach($field in 'componentId','toolId','role','entryType') {
+            if($actual[$field] -cne $expected.$field){throw "Product component declaration mismatch: $($expected.componentId)/$field"}
         }
-    }
-    $toolIds=@($entries|Where-Object{$ExpectedPluginAssemblies -contains [IO.Path]::GetFileNameWithoutExtension($_.path) -and $_.path -eq ('plugins/'+[IO.Path]::GetFileNameWithoutExtension($_.path)+'/'+[IO.Path]::GetFileName($_.path))}|ForEach-Object{$_.tools}|ForEach-Object{$_.id})
-    if(@($toolIds|Sort-Object -Unique).Count -ne $toolIds.Count){throw 'Release contains duplicate declared ToolIds.'}
-    foreach($runtime in @($components|Where-Object role -eq 'Runtime')) {
-        $sdk=@($entries|ForEach-Object{if($_.Contains('tools')){$_.tools}}|Where-Object id -CEQ $runtime.toolId)
-        if($sdk.Count -gt 1 -or ($sdk.Count -eq 1 -and $sdk[0].runtimeComponentId -cne $runtime.componentId)) {
-            throw 'SDK producer conflicts with the required Runtime ToolId.'
-        }
+        if([string]$actual.companionToolId -cne [string]$expected.companionToolId){throw 'Product companion mismatch.'}
     }
     $frameworks=Get-ReleaseRuntimeFrameworks -AppPath $appRoot -Entries $entries -FrameworkOriginPath $FrameworkOriginPath
-    [ordered]@{payloadSchemaVersion=1;buildId=$BuildId;sourceCommit=$SourceCommit;artifactVersion=$ArtifactVersion;expectedPluginAssemblies=@($ExpectedPluginAssemblies);runtimeFrameworks=$frameworks;entries=$entries}
+    [ordered]@{payloadSchemaVersion=2;buildId=$BuildId;sourceCommit=$SourceCommit;artifactVersion=$ArtifactVersion;productComponents=@($ProductComponents);runtimeFrameworks=$frameworks;entries=$entries}
 }
 
 function Get-ReleaseRuntimeFrameworks {
@@ -385,7 +364,7 @@ function Get-ReleaseRuntimeFrameworks {
 
 function Write-ReleasePayload {
     param([Parameter(Mandatory)][string]$AppPath,[Parameter(Mandatory)][System.Collections.IDictionary]$Payload)
-    if($Payload.payloadSchemaVersion -ne 1){throw 'Unsupported payload schema.'}
+    if($Payload.payloadSchemaVersion -ne 2){throw 'Unsupported payload schema.'}
     $path=Join-Path $AppPath 'release-payload.json'
     [IO.File]::WriteAllText($path,($Payload|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
     (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash

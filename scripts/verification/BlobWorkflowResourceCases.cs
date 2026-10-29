@@ -17,7 +17,7 @@ internal static class WorkflowCases
   try {
    var pixels=new byte[32*32];for(int y=4;y<8;y++)for(int x=3;x<7;x++)pixels[y*32+x]=255;
    using var input=HalImage.CreateFromBytes(pixels,32,32,1);
-   if(!PluginLoader.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S1_PRODUCT_ROOT")!,"plugins")))throw new Exception("Runtime registration failed");
+   if(!PluginLoader.LoadPlugins())throw new Exception("Runtime registration failed");
    var logger=new FixtureLogger();var engine=new WorkflowEngine(logger);var flow=engine.CreateWorkflow("s1-fixed-native-chain","Blob actual native chain");
    flow.AddNode(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true})});
    var runner=new WorkflowExecutionEngine(engine,new UnusedPluginManager(),logger);

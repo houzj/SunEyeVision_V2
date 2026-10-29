@@ -38,7 +38,7 @@ public static class PluginLoader
     /// <summary>
     /// 默认插件目录名
     /// </summary>
-    private const string DefaultPluginDirectoryName = "plugins";
+
 
     /// <summary>
     /// 插件是否已加载
@@ -86,55 +86,22 @@ public static class PluginLoader
     /// 使用默认路径加载插件
     /// </summary>
     /// <returns>是否成功加载</returns>
-    public static bool LoadPlugins()
-    {
-        return LoadPlugins(GetDefaultPluginPath());
-    }
-
-    /// <summary>
-    /// 从指定路径加载插件
-    /// </summary>
-    /// <param name="pluginDirectory">插件目录路径</param>
-    /// <returns>是否成功加载</returns>
-    public static bool LoadPlugins(string pluginDirectory)
-    {
-        // 第一次检查（无锁）
-        if (_isLoaded)
-        {
-            VisionLogger.Instance.Log(LogLevel.Info, "插件已加载，跳过重复加载", "PluginLoader");
-            return true;
-        }
-
-        lock (_lock)
-        {
-            // 第二次检查（有锁）
-            if (_isLoaded) return true;
-
-            return LoadPluginsInternal(pluginDirectory);
-        }
-    }
+    public static bool LoadPlugins() => EnsureLoaded();
 
     /// <summary>
     /// 内部加载实现（调用前必须已获取锁）
     /// </summary>
-    private static bool LoadPluginsInternal(string? pluginDirectory = null)
+    private static bool LoadPluginsInternal()
     {
         var logger = VisionLogger.Instance;
-        pluginDirectory ??= GetDefaultPluginPath();
 
         try
         {
-            logger.Log(LogLevel.Info, $"开始加载插件: {pluginDirectory}", "PluginLoader");
-
-            if (!Directory.Exists(pluginDirectory))
-            {
-                logger.Log(LogLevel.Warning, $"插件目录不存在: {pluginDirectory}", "PluginLoader");
-                return false;
-            }
+            logger.Log(LogLevel.Info, "开始校验并加载当前产品组件", "PluginLoader");
 
             // 使用 PluginManager 加载插件（传入 VisionLogger 以便输出日志）
             var pluginManager = new PluginManager(logger);
-            pluginManager.LoadPlugins(pluginDirectory);
+            pluginManager.LoadPlugins();
             pluginManager.AssertCompleteReleaseToolSet(ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
 
             // 验证加载结果
@@ -158,14 +125,6 @@ public static class PluginLoader
             logger.Log(LogLevel.Error, $"插件加载失败: {ex.Message}", "PluginLoader", ex);
             return false;
         }
-    }
-
-    /// <summary>
-    /// 获取默认插件路径
-    /// </summary>
-    private static string GetDefaultPluginPath()
-    {
-        return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultPluginDirectoryName);
     }
 
     /// <summary>

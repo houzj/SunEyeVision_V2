@@ -7,6 +7,19 @@ namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
     private bool _acceptingImageSource;
+    private void OnExplicitImageSelectionAccepted(object? sender,ImageSourceSelectionEventArgs selection)
+    {
+        if(sender is not ImageInputSource source||!ReferenceEquals(ActiveInputSource,source)
+            ||source.EditVersion!=selection.Version||!ReferenceEquals(source.CurrentImage,selection.Image)
+            ||source.CurrentIndex!=selection.Index||!CanEditRootWorkspace||DocumentManager.Session is not {} session
+            ||WorkflowTabViewModel.SelectedTab is not {} tab)return;
+        var roots=session.Document.Workflows.Where(flow=>!flow.IsSubroutine&&flow.Id==tab.RootWorkflowId).ToArray();
+        if(roots.Length!=1)return;
+        var nodes=roots[0].Nodes.Where(node=>node.Id==source.NodeId&&ReferenceEquals(node.InputSource,source)).ToArray();
+        if(nodes.Length!=1||ImageSourcePolicy.Read(nodes[0])?.SourceKind!=SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local)return;
+        _nativePreviewPath=selection.Image.FilePath;_nativeImagesSuppressed=false;
+        ResultWorkspaceChanged?.Invoke();
+    }
     internal bool TrySelectPreviewImage(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab,
         ImageInputSource source,ImageInfo image,int index,long editVersion)
     {
@@ -80,6 +93,12 @@ public partial class MainWindowViewModel
         {
             if(node.InputSource is not ImageInputSource source)continue;
             var formal=ImageSourcePolicy.Read(node)??throw new InvalidOperationException("图像源缺少正式Runtime设置。");
+            RefreshAcceptedImageSourceView(node,source,formal,resolver);
+        }
+    }
+    private void RefreshAcceptedImageSourceView(WorkflowNodeBase node,ImageInputSource source,ImageSourcePolicy formal,
+        SunEyeVision.Workflow.Persistence.SolutionResourceResolver resolver)
+    {
             var displayed=source.CapturePolicy();
             var local=new ImageSourcePolicy{NodeId=node.Id};local.UpdateLocalInput(formal);
             bool addressesMatch;
@@ -93,6 +112,5 @@ public partial class MainWindowViewModel
             if(JsonSerializer.Serialize(displayed)!=JsonSerializer.Serialize(local)||!addressesMatch)
                 source.LoadFromPolicy(formal,resolver);
             BindLocalImageSourceEditor(node,source);
-        }
     }
 }

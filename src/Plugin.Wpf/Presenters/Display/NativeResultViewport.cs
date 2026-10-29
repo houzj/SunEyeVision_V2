@@ -30,6 +30,7 @@ public sealed partial class NativeResultViewport : IDisposable
     private bool _disposed;
     private DispatcherOperation? _refresh;
     private readonly DependencyPropertyDescriptor _templateDescriptor;
+    private readonly Func<bool, BitmapSource> _prepareExport;
     public FrameworkElement View => _view;
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
@@ -39,18 +40,20 @@ public sealed partial class NativeResultViewport : IDisposable
     private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits, NativeResultShapeLimits shapeLimits)
     {
         view.Dispatcher.VerifyAccess(); limits.Validate();
-        if (Owners.TryGetValue(view, out _) || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
+        if (Owners.TryGetValue(view, out _) || view.NativePrepareExport is not null || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
             || BindingOperations.IsDataBound(view, ImageViewBox.ImageDataSourceProperty)
             || BindingOperations.IsDataBound(view, ImageViewBox.ShapeListProperty)
             || BindingOperations.IsDataBound(view, ImageViewBox.ROIListProperty))
             throw new InvalidOperationException("原图像视口仍有显示所有者或绑定，不能并存第二条图像路径。");
         shapeLimits.Validate(); _shapeLimits = shapeLimits;
-        _view = view; _limits = limits;
+        _view = view; _limits = limits; _prepareExport = PrepareExport;
         _templateDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TemplateProperty, typeof(ImageViewBox));
         Owners.Add(view, this);
         try
         {
-            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml" })
+            view.NativePrepareExport = _prepareExport;
+            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+                "Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml" })
             {
                 var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/" + path, UriKind.Relative) };
                 _resources.Add(resource); view.Resources.MergedDictionaries.Add(resource);
@@ -67,6 +70,7 @@ public sealed partial class NativeResultViewport : IDisposable
             cleanup.Add(() => view.Loaded -= Loaded); cleanup.Add(() => view.SizeChanged -= SizeChanged);
             cleanup.Add(() => view.PropertyChanged -= ViewChanged);
             cleanup.Add(() => _templateDescriptor.RemoveValueChanged(view, TemplateChanged)); cleanup.Add(() => Owners.Remove(view));
+            cleanup.Add(() => { if (ReferenceEquals(view.NativePrepareExport, _prepareExport)) view.NativePrepareExport = null!; });
             try { ParameterCleanup.Run(cleanup); } catch (Exception error) { throw new AggregateException(failure, error); }
             throw;
         }
@@ -82,7 +86,16 @@ public sealed partial class NativeResultViewport : IDisposable
     {
         var frame = _frame; var proof = _imageCurrent;
         if (frame is null || receipt != CurrentFrame || !Owns(receipt.Epoch, frame)) return false;
-        var valid = proof?.Invoke() == true;
+        bool valid;
+        try { valid = proof?.Invoke() == true; }
+        catch (Exception failure)
+        {
+            // This proof owns the image, so failure invalidates this frame and all
+            // its borrowers. Never retire a newer frame installed by the callback.
+            if (Owns(receipt.Epoch, frame) && ReferenceEquals(proof, _imageCurrent) && receipt == CurrentFrame)
+                try { Retire(); } catch (Exception cleanup) { throw new AggregateException(failure, cleanup); }
+            throw;
+        }
         return valid && Owns(receipt.Epoch, frame) && ReferenceEquals(proof, _imageCurrent) && receipt == CurrentFrame;
     }
 
@@ -111,6 +124,9 @@ public sealed partial class NativeResultViewport : IDisposable
                 if (Owns(epoch, candidate)) RetireRoi();
                 if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
+                if (Owns(epoch, candidate))
+                    foreach (var cross in _shapeLayers.OfType<CrosshairLayer>().ToArray())
+                    { if (!Owns(epoch, candidate)) break; cross.AttachFrame(new(_ownerId, epoch, candidate.Frame, candidate.Coordinates)); }
             }
         }
         catch (Exception error)
@@ -167,6 +183,14 @@ public sealed partial class NativeResultViewport : IDisposable
                 try { layer.Install(); } catch (Exception failure) { failures.Add(failure); }
             }
             if (Current(receipt)) try { InstallShapes(true); } catch (Exception failure) { failures.Add(failure); }
+            if (Current(receipt))
+                try
+                {
+                    _view.UpdateLayout();
+                    foreach (var cross in _shapeLayers.OfType<CrosshairLayer>().ToArray())
+                    { if (!Current(receipt)) break; cross.RefreshInteractions(); }
+                }
+                catch (Exception failure) { failures.Add(failure); }
             if (Current(receipt)) try { _roiAttachment?.RefreshProjection(); } catch (Exception failure) { failures.Add(failure); }
             if (failures.Count != 0) throw new AggregateException("结果图层重装失败。", failures);
         }));
@@ -202,6 +226,7 @@ public sealed partial class NativeResultViewport : IDisposable
         _view.Loaded -= Loaded;
         _view.SizeChanged -= SizeChanged; _view.PropertyChanged -= ViewChanged;
         var actions = new List<Action> { () => _templateDescriptor.RemoveValueChanged(_view, TemplateChanged), Retire };
+        actions.Add(() => { if (ReferenceEquals(_view.NativePrepareExport, _prepareExport)) _view.NativePrepareExport = null!; });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_resources.Select<ResourceDictionary, Action>(resource => () => _view.Resources.MergedDictionaries.Remove(resource)));

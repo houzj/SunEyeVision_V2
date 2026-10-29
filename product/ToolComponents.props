@@ -1,0 +1,27 @@
+<Project>
+  <!-- 当前产品唯一工具集合；项目PE声明由封包校验，不从旧工具目录推断。 -->
+  <ItemGroup>
+    <ProductToolComponent Include="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.ImageSource.Runtime</ComponentId>
+      <ToolId>ImageLoad</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.ImageSource.Wpf</ComponentId>
+      <ToolId>ImageLoad</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory</EntryType>
+      <CompanionToolId>ImageLoad</CompanionToolId>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ComponentId>
+      <ToolId>BlobAnalysis</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.BlobAnalysis.Wpf</ComponentId>
+      <ToolId>BlobAnalysis</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</EntryType>
+      <CompanionToolId>BlobAnalysis</CompanionToolId>
+    </ProductToolComponent>
+  </ItemGroup>
+</Project>

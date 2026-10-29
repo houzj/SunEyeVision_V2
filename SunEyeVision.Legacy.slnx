@@ -1,0 +1,42 @@
+<Solution>
+  <Folder Name="/旧体系源码索引（不构建发布）/">
+    <Project Path="tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj" />
+    <Project Path="tests/SunEyeVision.Plugin.Infrastructure.Tests/SunEyeVision.Plugin.Infrastructure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.Condition.Tests/SunEyeVision.Tool.Condition.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.ImageFilter.Tests/SunEyeVision.Tool.ImageFilter.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.ImageThreshold.Tests/SunEyeVision.Tool.ImageThreshold.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.Morphology.Tests/SunEyeVision.Tool.Morphology.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.Script.Tests/SunEyeVision.Tool.Script.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.ShapeMatch.Tests/SunEyeVision.Tool.ShapeMatch.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.Subroutine.Tests/SunEyeVision.Tool.Subroutine.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.LineLineMeasure.Tests/SunEyeVision.Tool.LineLineMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.LineCircleMeasure.Tests/SunEyeVision.Tool.LineCircleMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.CircleCircleMeasure.Tests/SunEyeVision.Tool.CircleCircleMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.PointLineMeasure.Tests/SunEyeVision.Tool.PointLineMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.PointCircleMeasure.Tests/SunEyeVision.Tool.PointCircleMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.PointPointMeasure.Tests/SunEyeVision.Tool.PointPointMeasure.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.NPointCalibration.Tests/SunEyeVision.Tool.NPointCalibration.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.CircleDetect.Tests/SunEyeVision.Tool.CircleDetect.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.Tool.LineDetect.Tests/SunEyeVision.Tool.LineDetect.Tests.csproj" />
+    <Project Path="tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj" />
+  </Folder>
+</Solution>

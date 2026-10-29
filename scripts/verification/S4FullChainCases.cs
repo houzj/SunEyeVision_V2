@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.IO;
 using System.Reflection;
@@ -38,8 +39,22 @@ internal static class S2DocumentEditingCases
             app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
         var dialogs=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(100)};
         dialogs.Tick+=(_,_)=>{foreach(var dialog in app.Windows.OfType<Window>().Where(w=>w.GetType().Name.Contains("MessageDialog")).ToArray()){Console.Error.WriteLine("本进程产品提示："+string.Join(" | ",Logical(dialog).OfType<TextBlock>().Select(t=>t.Text)));dialog.Close();}};dialogs.Start();
-        var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;var plugins=new PluginManager();plugins.LoadPlugins(Path.Combine(product,"plugins"));
+        var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;var plugins=new PluginManager();plugins.LoadPlugins();
         plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));PluginLoader.MarkAsLoaded();
+        Case("画布图标与工具箱读取同一正式目录且不恢复旧VM工具目录",()=>
+        {
+            var converter=new SunEyeVision.UI.Converters.Node.ToolNodeIconConverter();
+            foreach(var id in new[]{"ImageLoad","BlobAnalysis"})
+            {
+                var declaration=ToolRegistry.DirectoryCatalog!.Find(id)!;
+                var toolbox=new SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem(declaration.DisplayName,declaration.Category,declaration.Icon,declaration.Description,id);
+                var uri=(string)converter.Convert(id,typeof(string),null!,System.Globalization.CultureInfo.InvariantCulture);
+                Require(uri==toolbox.IconSource,"画布与工具箱图标声明分叉："+id);
+                using var stream=Application.GetResourceStream(new Uri(uri))!.Stream;
+                Require(stream.Length>0,"正式图标资源缺失："+id);
+            }
+            Require(ReferenceEquals(converter.Convert("unapproved-tool",typeof(string),null!,System.Globalization.CultureInfo.InvariantCulture),DependencyProperty.UnsetValue),"未准入工具被旧目录补回");
+        });
         var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"document");Directory.CreateDirectory(folder);
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(folder);
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();var document=solutions.CreateUntitledSolution();
@@ -66,7 +81,7 @@ internal static class S2DocumentEditingCases
         var flow=document.Workflows.Single(w=>w.Id==tab.CurrentWorkflowId);
         void Select(WorkflowNodeBase n){foreach(var item in vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes)item.IsSelected=ReferenceEquals(item,n);vm.SelectedNode=n;Pump();}
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
-        RuntimeToolResults Result(string id)=>Context().GetNodeResult(id)?.Result as RuntimeToolResults??throw new Exception("缺少Runtime结果："+id);
+        DeclaredOutputSnapshot Result(string id)=>Context().GetNodeResult(id)?.Result as DeclaredOutputSnapshot??throw new Exception("缺少Runtime结果："+id);
         int Count(string id)=>((BlobOutput)Result(id).Output!).Count;
         void Execute(){var task=vm.RunSelectedImageAsync();Await(task);}
         DefaultDebugWindow Open(SunEyeVision.UI.Shared.WorkflowNode n){Select(n);vm.OpenDebugWindowCommand.Execute(n);Pump();return app.Windows.OfType<DefaultDebugWindow>().Single(w=>w.IsVisible);}
@@ -145,7 +160,7 @@ internal static class S2DocumentEditingCases
             var production=Result(blob.Id);var window=Open(blob);Field(window,"Threshold").Text="255";Pump();
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;ToolCommands.Execute.Execute(null,window);
             Until(()=>context.DebugResults.GetNodeResult(blob.Id)?.Result is not null);
-            Require(context.DebugResults.GetNodeResult(blob.Id)!.Result is RuntimeToolResults {Output:BlobOutput {Count:0}}&&ReferenceEquals(production,Result(blob.Id)),"私有调试污染正式结果");
+            Require(context.DebugResults.GetNodeResult(blob.Id)!.Result is DeclaredOutputSnapshot {Output:BlobOutput {Count:0}}&&ReferenceEquals(production,Result(blob.Id)),"私有调试污染正式结果");
             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==0,"实际结果表未显示私有结果");
             window.Close();Pump();Require(solutions.Session!.Editing.RegisteredScopeCount==0&&((BlobSettings)blob.RuntimeConfiguration!.CaptureSettings()).Threshold==128,"关闭污染正式值或遗留范围");
         });
@@ -154,7 +169,7 @@ internal static class S2DocumentEditingCases
             var copy=blob.Clone();Require(ConnectionBindingPolicy.RemoveAutomaticImageBinding(copy,"input-blob"),"自动来源未识别");
             var marked=copy.ParamSettings.GetSetting(BlobTool.ImageInput)!;Require(marked.RebindingReason is not null&&marked.AutomaticConnectionId is null,"未保留重选状态");
             var copied=ParameterBindingDefinition.FromSetting(marked).ToSetting();Require(copied.RebindingReason==marked.RebindingReason&&!copied.IsValid&&copied.Clone().RebindingReason==marked.RebindingReason,"绑定快照/复制丢失重选状态");
-            try{using var request=RuntimeDebugInvocation.Capture(flow,copy,new SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner(),1,id=>Context().GetNodeResult(id)?.Result,default,publishedOwner:document.ExecutionOwner);throw new Exception("删除自动连线后仍执行");}
+            try{using var request=RuntimeDebugInvocation.Capture(flow,copy,new SunEyeVision.Plugin.Runtime.ToolExecutionOwner(),1,id=>Context().GetNodeResult(id)?.Result,default,publishedOwner:document.ExecutionOwner);throw new Exception("删除自动连线后仍执行");}
             catch(InvalidOperationException){}
             var manual=blob.Clone();var explicitSource=manual.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();explicitSource.AutomaticConnectionId=null;manual.ParamSettings.SetSetting(explicitSource);
             Require(!ConnectionBindingPolicy.RemoveAutomaticImageBinding(manual,"input-blob")&&manual.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==explicitSource.ReferenceExpression,"删除旧连线清除了显式来源");

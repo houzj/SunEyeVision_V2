@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,14 +133,14 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
             documentEdits.Register(this);
         }
     }
-    public bool TryAcceptDebugResult(ToolResults result)
+    public bool TryAcceptDebugResult(DeclaredOutputSnapshot result)
     {
         EnsureCurrent();
         var identity = result.ExecutionIdentity;
         if (identity is null || !ReferenceEquals(identity.Owner, DebugOwner) ||
             identity.NodeId != Identity.WorkflowId + "/" + Identity.NodeId) return false;
         return identity.TryPublish(() => DebugResults.SetNodeResult(Identity.NodeId,
-            new NodeExecutionResult { NodeId = Identity.NodeId, Result = result, Success = result.IsSuccess }));
+            new NodeExecutionResult { NodeId = Identity.NodeId, Result = result, Success = result.IsSuccess, Status = result.Status }));
     }
 
     public DocumentEditProposal Prepare(NodeConfigurationEditHost host)

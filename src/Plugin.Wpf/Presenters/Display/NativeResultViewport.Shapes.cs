@@ -24,9 +24,23 @@ public sealed partial class NativeResultViewport
     private readonly List<ShapeLayer> _shapeLayers = new();
     private long _shapeVersion, _installedShapeVersion = -1;
     private bool _installingShapes, _shapeDirty;
+    private object? _installedShapeCollection;
     private ShapeItemsPage? _shapePage;
     private (int Width, int Height, double Ratio, double Thickness, double ViewWidth, double ViewHeight)? _shapeContext;
     private int ShapeBudget => Math.Min(_shapeLimits.MaximumShapes, GlobalRenderVariable.ShapeRenderingMaxNumber);
+    private void ValidateShapeBudget(IEnumerable<PreparedNativeShapes> shapes)
+    {
+        var snapshot = shapes.ToArray();
+        if (snapshot.Sum(shape => (long)shape.Count) > ShapeBudget
+            || snapshot.Sum(shape => (long)shape.Vertices) > _shapeLimits.MaximumPolygonVertices)
+            throw new ArgumentException("shape-budget: 完整合成场景超过原绘制或顶点预算。");
+    }
+    private void ValidateExportShapeBudget(NativeResultFrameReceipt receipt)
+    {
+        var active = new List<PreparedNativeShapes>();
+        foreach (var layer in _shapeLayers.ToArray()) if (layer.Read(receipt) is {} prepared) active.Add(prepared);
+        ValidateShapeBudget(active);
+    }
 
     public GeometryLayer CreateGeometryLayer(int order = 0)
     {
@@ -50,6 +64,15 @@ public sealed partial class NativeResultViewport
     }
     private void ShapesChanged()
     { ++_shapeVersion; InstallShapes(false); QueueRefresh(); }
+    private void MutableShapeChanged()
+    {
+        var previous = _shapeVersion++;
+        // Original CrossControl binds the same mutable object. Replacing the item
+        // collection on every coordinate notification would unload its drag handle.
+        if (!_installingShapes && _installedShapeVersion == previous
+            && ReferenceEquals(_installedShapeCollection, _view.ShapeList)) _installedShapeVersion = _shapeVersion;
+        else QueueRefresh();
+    }
     private void InstallShapes(bool layoutRefresh)
     {
         if (_installingShapes) { _shapeDirty = true; return; }
@@ -72,9 +95,7 @@ public sealed partial class NativeResultViewport
             }
             if (failures.Count != 0) throw new AggregateException("结果几何层失效检查失败。", failures);
             if (!Still()) return;
-            if (active.Sum(shape => (long)shape.Count) > ShapeBudget
-                || active.Sum(shape => (long)shape.Vertices) > _shapeLimits.MaximumPolygonVertices)
-                throw new ArgumentException("shape-budget: 完整合成场景超过原绘制或顶点预算。");
+            ValidateShapeBudget(active);
             var page = Descendants<ShapeItemsPage>(_view).SingleOrDefault();
             var context = (Width: page?.ImageSourceWidth ?? 0, Height: page?.ImageSourceHeight ?? 0,
                 Ratio: page?.ControlToImageRadio ?? 0, Thickness: page?.ThicknessScale ?? 0,
@@ -83,6 +104,7 @@ public sealed partial class NativeResultViewport
             var values = active.SelectMany(shape => shape.Items).ToArray();
             _view.ShapeList = values.Length == 0 ? null : new ObservableCollection<object>(values);
             if (!Still()) return;
+            _installedShapeCollection = _view.ShapeList;
             _shapePage = page; _shapeContext = context; _installedShapeVersion = version;
         }
         finally
@@ -100,9 +122,9 @@ public sealed partial class NativeResultViewport
     }
     private void RetireShapes(Func<bool> stillOwns)
     {
-        ++_shapeVersion; _shapePage = null; _shapeContext = null; _installedShapeVersion = -1;
-        foreach (var layer in _shapeLayers.ToArray()) { if (!stillOwns()) return; layer.Invalidate(); }
-        if (stillOwns()) _view.ShapeList = null;
+        ++_shapeVersion; _shapePage = null; _shapeContext = null; _installedShapeVersion = -1; _installedShapeCollection = null;
+        var cleanup = _shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => () => { if (stillOwns()) layer.Invalidate(); }).ToList();
+        cleanup.Add(() => { if (stillOwns()) _view.ShapeList = null; }); ParameterCleanup.Run(cleanup);
     }
 
     public abstract class ShapeLayer : IDisposable
@@ -113,6 +135,7 @@ public sealed partial class NativeResultViewport
         private Func<bool>? _proof;
         private long _revision = -1, _attempt;
         internal int Order { get; }
+        private protected NativeResultViewport? Owner => _owner;
         private protected ShapeLayer(NativeResultViewport owner, int order) { _owner = owner; Order = order; }
         private protected bool Present(NativeResultFrameReceipt receipt, long revision, Func<bool> proof,
             Func<NativeResultViewport, Func<bool>, PreparedNativeShapes> prepare)
@@ -141,9 +164,7 @@ public sealed partial class NativeResultViewport
                     if (!Current()) return false;
                     if (existing is not null) others.Add(existing);
                 }
-                if (others.Sum(value => (long)value!.Count) + prepared.Count > owner.ShapeBudget
-                    || others.Sum(value => (long)value!.Vertices) + prepared.Vertices > owner._shapeLimits.MaximumPolygonVertices)
-                    throw new ArgumentException("shape-budget: 完整合成场景超过预算。");
+                owner.ValidateShapeBudget(others.Append(prepared));
                 _prepared = prepared; _proof = proof; _receipt = receipt; _revision = revision;
                 owner.ShapesChanged();
                 if (Current()) return true;
@@ -179,13 +200,30 @@ public sealed partial class NativeResultViewport
             }
         }
         internal void Refresh() { if (_receipt is {} receipt) Read(receipt); }
-        internal void Invalidate() { ++_attempt; _revision = -1; _prepared = null; _proof = null; _receipt = null; }
+        protected virtual void OnInvalidated() { }
+        protected virtual void OnDisposed() { }
+        internal void Invalidate() { ++_attempt; _revision = -1; _prepared = null; _proof = null; _receipt = null; OnInvalidated(); }
         public void Clear()
-        { var owner = _owner; if (owner is null) return; owner._view.Dispatcher.VerifyAccess(); Invalidate(); owner.ShapesChanged(); }
+        {
+            var owner = _owner; if (owner is null) return; owner._view.Dispatcher.VerifyAccess();
+            var attempt = _attempt + 1;
+            var installed = owner._installedShapeCollection;
+            ParameterCleanup.Run(new Action[] { Invalidate,
+                () =>
+                {
+                    if (!ReferenceEquals(owner, _owner) || attempt != _attempt) return;
+                    // A callback may already have installed the complete scene without this layer.
+                    // Replacing that scene again would unload another layer's new drag handle.
+                    if (!ReferenceEquals(installed, owner._installedShapeCollection)
+                        && ReferenceEquals(owner._installedShapeCollection, owner._view.ShapeList)
+                        && owner._installedShapeVersion == owner._shapeVersion) return;
+                    owner.ShapesChanged();
+                } });
+        }
         public void Dispose()
         {
             var owner = _owner; if (owner is null) return; owner._view.Dispatcher.VerifyAccess();
-            _owner = null; Invalidate(); owner._shapeLayers.Remove(this); owner.ShapesChanged();
+            _owner = null; ParameterCleanup.Run(new Action[] { Invalidate, () => owner._shapeLayers.Remove(this), owner.ShapesChanged, OnDisposed });
         }
     }
     public sealed class GeometryLayer : ShapeLayer

@@ -11,7 +11,7 @@ using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI;
 
-public class ROIControlBase : ROIControlFrame
+public partial class ROIControlBase : ROIControlFrame
 {
 	public static readonly DependencyProperty DataChangedCommandProperty = DependencyProperty.Register("DataChangedCommand", typeof(ICommand), typeof(ROIControlBase), new PropertyMetadata(null));
 
@@ -174,8 +174,9 @@ public class ROIControlBase : ROIControlFrame
 
 	protected void NotifyROIParamChanged()
 	{
-		DataChangedCommand?.Execute(DataContext);
-		this.GetParent<ImageViewBox>()?.NotifyROIParamChanged(DataContext);
+        var current=CaptureRoiUpdateProof();var context=DataContext;var command=DataChangedCommand;var view=this.GetParent<ImageViewBox>();
+        command?.Execute(context);
+        if(current())view?.NotifyROIParamChanged(context,current);
 	}
 
 	public override void OnApplyTemplate()
@@ -186,7 +187,8 @@ public class ROIControlBase : ROIControlFrame
 
 	private void MoveCommandExcute(object obj)
 	{
-		if (Move((ROIMoveDirection)obj))
+        var current=CaptureRoiUpdateProof();
+		if (Move((ROIMoveDirection)obj)&&current())
 		{
 			NotifyROIParamChanged();
 		}

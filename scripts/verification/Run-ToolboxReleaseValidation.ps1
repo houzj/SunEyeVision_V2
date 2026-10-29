@@ -29,14 +29,16 @@ try {
     $probe=Get-Content $info -Raw|ConvertFrom-Json
     if($probe.commit -cne $expectedCommit){throw '正式产物源码提交与当前主仓不一致，不能计作本候选通过。'}
     [xml]$index=Get-Content (Join-Path $product 'ToolGroups.xml') -Raw
-    $expected=@($index.ToolGroups.Tool|Where-Object {$_.IsVisible -ne 'false'}|ForEach-Object {$_.Id}|Sort-Object)
+    . (Join-Path $root 'installer/Product.Components.ps1')
+    $components=@(Get-ProductToolComponents)
+    $expected=@($components|Where-Object role -eq 'Runtime'|ForEach-Object toolId|Sort-Object)
     $payload=Get-Content (Join-Path $product 'release-payload.json') -Raw | ConvertFrom-Json
-    $runtimeIds=@($payload.entries | ForEach-Object {$_.components} | Where-Object {$_.role -eq 'Runtime'} | ForEach-Object {$_.toolId})
-    $expected=@(@($expected)+@($runtimeIds) | Sort-Object -Unique)
-    $actual=@($probe.toolboxTools|Where-Object {$_.id -notlike 'vm:*'}|ForEach-Object {$_.id}|Sort-Object)
-    if(($expected -join "`n") -cne ($actual -join "`n")){throw '探针工具身份与部署目录索引不一致。'}
-    if(@($probe.toolboxCategories).Count -ne @($index.ToolGroups.Group).Count){throw '分类数量与随包目录定义不一致。'}
-    if(@($probe.toolboxTools|Where-Object {$_.id -like 'vm:*' -and $_.available}).Count -ne 0){throw '未实现的VM目录条目错误地处于可用状态。'}
+    if($payload.payloadSchemaVersion -ne 2){throw '正式产物未使用组件产品清单'}
+    $actual=@($probe.toolboxTools|ForEach-Object id|Sort-Object)
+    if(($expected -join "`n") -cne ($actual -join "`n")){throw '探针工具身份与唯一产品组件清单不一致。'}
+    if(@($probe.toolboxTools|Where-Object {-not $_.available}).Count){throw '产品准入工具不可用'}
+    if(@($probe.toolboxCategories|Where-Object {$_.count -eq 0}).Count){throw '产品工具箱包含无实际工具的分类'}
+    if(Test-Path -LiteralPath (Join-Path $product 'plugins')){throw '旧SDK插件目录仍进入产品'}
     $receipt=[ordered]@{sourceCommit=$expectedCommit;productRoot=$product;toolCount=$actual.Count;categoryCount=@($probe.toolboxCategories).Count;loadedToolAssemblies=@($probe.loadedDirectoryToolAssemblies);probePid=$process.Id;exit=$process.ExitCode;payloadSha256=(Get-FileHash (Join-Path $product 'release-payload.json')).Hash;scope='正式完整目录与组件加载探针；不代表拖入/保存重开/鼠标/设计器/人工验收通过'}
     $receipt|ConvertTo-Json -Depth 5|Set-Content (Join-Path $run 'receipt.json') -Encoding utf8
     $receipt|ConvertTo-Json -Depth 5

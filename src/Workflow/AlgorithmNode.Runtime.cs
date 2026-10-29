@@ -17,7 +17,7 @@ public partial class AlgorithmNode
     internal string? RuntimeInputError { get; set; }
     internal ImageSourceRunInput? SourceRunInput { get; set; }
 
-    private async Task<ToolResults> ExecuteRuntimeNodeAsync(IDictionary<string,ToolResults>? results,CancellationToken cancellation)
+    private async Task<DeclaredOutputSnapshot> ExecuteRuntimeNodeAsync(IDictionary<string,DeclaredOutputSnapshot>? results,CancellationToken cancellation)
     {
         var identity=AdmittedIdentity??throw new InvalidOperationException("Runtime node has no admitted workflow identity.");
         using var admission=identity.Owner.EnterRun(identity);
@@ -30,16 +30,17 @@ public partial class AlgorithmNode
         var values=new Dictionary<string,object?>(StringComparer.Ordinal);
         var settingValues=new Dictionary<string,object?>(StringComparer.Ordinal);
         var leases=new List<IDisposable>();
+        var captureResult=BindingContext!.PrepareResult(this);
         var resources=new FrozenOutputResources();
         bool transferred=false;
         ToolOutcome? outcome=null;
-        RuntimeToolResults? prepared=null;
+        DeclaredOutputSnapshot? prepared=null;
         Exception? failure=null;
         var timer=Stopwatch.StartNew();
         try
         {
             foreach(var dependency in CompiledBindings.Values.SelectMany(plan=>plan.Dependencies).Distinct())
-                if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source.DeclaredOutput is { } published)
+                if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source is { } published)
                     leases.Add(published.AcquireReader());
             var snapshot=BindingContext!.Capture(this,results);
             foreach(var setting in ParamSettings.Settings)
@@ -83,7 +84,7 @@ public partial class AlgorithmNode
             var inputs=new InputValues(schema.Inputs,values);
             outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources),OutputRequests).ConfigureAwait(false);
             transferred=true; // The envelope also disposes both owners when its constructor fails.
-            prepared=new RuntimeToolResults(ToolType,schema,identity,outcome,resources,timer.Elapsed.TotalMilliseconds);
+            prepared=captureResult(outcome,resources,timer.Elapsed.TotalMilliseconds);
             return prepared;
         }
         catch(Exception error){failure=error;throw;}
@@ -98,7 +99,7 @@ public partial class AlgorithmNode
             foreach(var lease in leases)try{lease.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0)
             {
-                if(prepared is not null)try{prepared.Resources?.Dispose();}catch(Exception error){cleanup.Add(error);}
+                if(prepared is not null)try{prepared.Dispose();}catch(Exception error){cleanup.Add(error);}
                 if(failure is not null)cleanup.Insert(0,failure);
                 throw new AggregateException("Runtime invocation resource cleanup failed.",cleanup);
             }

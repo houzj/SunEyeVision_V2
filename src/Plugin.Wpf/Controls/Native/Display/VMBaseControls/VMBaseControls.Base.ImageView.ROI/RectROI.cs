@@ -20,8 +20,8 @@ namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.R
 public class RectROI : ROIControlBase
 {
 	protected static RectROISubstitute ROISubstitute;
-    private FrameworkElement? _interactionHandle;
-    internal FrameworkElement? InteractionHandle=>_interactionHandle;
+
+    internal FrameworkElement? InteractionHandle=>RoiInteractionHandle;
 
 	protected static Func<Rect, double, ROIItemsPage, object> GetDataFunc;
 
@@ -303,10 +303,14 @@ public class RectROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-        CancelInteraction();
+        var templateVersion=BeginRoiTemplate();
+        try
+        {
+        if(!CurrentRoiTemplate(templateVersion))return;
         foreach(var element in new FrameworkElement?[]{move,rect1,rect2,rect3,rect4,left,top,right,bottom,topLeftRotate,topRightRotate,bottomLeftRotate,bottomRightRotate})
             if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
         base.OnApplyTemplate();
+        if(!CurrentRoiTemplate(templateVersion))return;
 		if (!IsFullScreen)
 		{
 			move = Template.FindName("move", this) as Grid;
@@ -339,7 +343,10 @@ public class RectROI : ROIControlBase
 		line = Template.FindName("line", this) as Line;
 		eRect = Template.FindName("eRect", this) as RectangleGeometry;
 		parent = this.GetParent<ImageViewItemsPage>();
-	}
+
+        }
+        finally{EndRoiTemplate(templateVersion);}
+    }
 
 	public static Bitmap GetBiArrowImage()
 	{
@@ -382,29 +389,26 @@ public class RectROI : ROIControlBase
 	}
 
 	protected void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-	{
-		CancelInteraction();
-        FrameworkElement frameworkElement = sender as FrameworkElement;
-        _interactionHandle=frameworkElement;
-		clickPoint = e.GetPosition(parent);
-		this.GetParent<ListViewItem>().RaiseEvent(e);
-		if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
-		ImageViewBox imageViewBox = this.GetParent<ImageViewBox>();
-		if (imageViewBox != null)
-		{
-			imageViewBox.IsDragROI = true;
-			frameworkElement.MouseMove += Move_MouseMove;
-			frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
-			if (frameworkElement.Name == "move")
-			{
-				frameworkElement.MouseWheel += userControl_MouseWheel;
-			}
-			e.Handled = true;
-		}
-	}
+    {
+        if(sender is not FrameworkElement frameworkElement)return;
+        var gesture=PrepareRoiGesture(frameworkElement,()=>_isMove=false);
+        if(gesture is null)return;
+        try
+        {
+            clickPoint=e.GetPosition(parent);
+            this.GetParent<ListViewItem>()?.RaiseEvent(e);
+            if(!gesture.IsCurrent||!gesture.Capture()){CancelRoiGesture(gesture);return;}
+            if(!gesture.Attach((s,args)=>{if(gesture.IsActive)Move_MouseMove(s,args);},
+                (s,args)=>{if(gesture.IsActive)Move_MouseLeftButtonUp(s,args);}, frameworkElement.Name=="move"?(s,args)=>{if(gesture.IsActive)userControl_MouseWheel(s,args);}:null)){CancelRoiGesture(gesture);return;}
+            e.Handled=true;
+        }
+        catch(Exception error){try{CancelRoiGesture(gesture);}catch(Exception cleanup){throw new AggregateException(error,cleanup);}throw;}
+    }
 
 	private void Move_MouseMove(object sender, MouseEventArgs e)
 	{
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive!=true||!ReferenceEquals(sender,gesture.Handle))return;
 		if (e.LeftButton != MouseButtonState.Pressed)
 		{
 			return;
@@ -423,73 +427,82 @@ public class RectROI : ROIControlBase
 		case "left":
 		{
 			rectWidth -= newOffSet.X;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: true);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: true))return;
 			System.Windows.Point point4 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, 0.0));
 			RectCenterPoint += new Vector(point4.X, point4.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "top":
 		{
 			rectHeight -= newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true))return;
 			System.Windows.Point point3 = rotateTransform.Transform(new System.Windows.Point(0.0, newOffSet.Y));
 			RectCenterPoint += new Vector(point3.X, point3.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "right":
 		{
 			rectWidth += newOffSet.X;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true))return;
 			System.Windows.Point point2 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, 0.0));
 			RectCenterPoint += new Vector(point2.X, point2.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "bottom":
 		{
 			rectHeight += newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: false);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: false))return;
 			System.Windows.Point point5 = rotateTransform.Transform(new System.Windows.Point(0.0, newOffSet.Y));
 			RectCenterPoint += new Vector(point5.X, point5.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "move":
 			RectCenterPoint += vector;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		case "rect1":
 		{
 			rectWidth -= newOffSet.X;
 			rectHeight -= newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: true);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: true))return;
 			System.Windows.Point point9 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, newOffSet.Y));
 			RectCenterPoint += new Vector(point9.X, point9.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "rect2":
 		{
 			rectWidth += newOffSet.X;
 			rectHeight -= newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: true))return;
 			System.Windows.Point point8 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, newOffSet.Y));
 			RectCenterPoint += new Vector(point8.X, point8.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "rect3":
 		{
 			rectWidth += newOffSet.X;
 			rectHeight += newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: false);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: false, isTop: false))return;
 			System.Windows.Point point7 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, newOffSet.Y));
 			RectCenterPoint += new Vector(point7.X, point7.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "rect4":
 		{
 			rectWidth -= newOffSet.X;
 			rectHeight += newOffSet.Y;
-			AdjustRect(position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: false);
+			if(!AdjustRect(gesture,position, rectWidth, rectHeight, ref newOffSet, isLeft: true, isTop: false))return;
 			System.Windows.Point point6 = rotateTransform.Transform(new System.Windows.Point(newOffSet.X, newOffSet.Y));
 			RectCenterPoint += new Vector(point6.X, point6.Y) / 2.0;
+            if(!gesture.IsActive)return;
 			break;
 		}
 		case "bottomRightRotate":
@@ -510,11 +523,14 @@ public class RectROI : ROIControlBase
 				num2 += 360.0;
 			}
 			RectAngle = num2;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		}
 		default:
-			ExternMouseMove(frameworkElement.Name, position, vector, ref clickPoint);
+			var externalPoint=clickPoint;
+            ExternMouseMove(frameworkElement.Name, position, vector, ref externalPoint);
+            if(gesture.IsActive)clickPoint=externalPoint;
 			break;
 		}
 	}
@@ -523,28 +539,32 @@ public class RectROI : ROIControlBase
 	{
 	}
 
-	private void AdjustRect(System.Windows.Point curPoint, double tempRectWidth, double tempRectHeight, ref Vector newOffSet, bool isLeft, bool isTop)
+	private bool AdjustRect(RoiGesture gesture,System.Windows.Point curPoint, double tempRectWidth, double tempRectHeight, ref Vector newOffSet, bool isLeft, bool isTop)
 	{
 		bool flag = false;
 		if (tempRectWidth < 0.0)
 		{
 			newOffSet.X = (double)(isLeft ? 1 : (-1)) * RectWidth;
 			RectWidth = 0.0;
+            if(!gesture.IsActive)return false;
 			flag = true;
 		}
 		else
 		{
 			RectWidth = tempRectWidth;
+            if(!gesture.IsActive)return false;
 		}
 		if (tempRectHeight < 0.0)
 		{
 			newOffSet.Y = (double)(isTop ? 1 : (-1)) * RectHeight;
 			RectHeight = 0.0;
+            if(!gesture.IsActive)return false;
 			flag = true;
 		}
 		else
 		{
 			RectHeight = tempRectHeight;
+            if(!gesture.IsActive)return false;
 		}
 		if (flag)
 		{
@@ -556,22 +576,14 @@ public class RectROI : ROIControlBase
 		{
 			clickPoint = curPoint;
 		}
-	}
+	    return gesture.IsActive;
+    }
 
 	private void Move_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		frameworkElement.MouseMove -= Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		_interactionHandle=null;
-        frameworkElement.ReleaseMouseCapture();
-		if (frameworkElement.Name == "move")
-		{
-			frameworkElement.MouseWheel -= userControl_MouseWheel;
-		}
-        try{if(_isMove)NotifyROIParamChanged();}
-        finally{_isMove=false;AfterMouseUp();}
-	}
+    {
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive==true&&ReferenceEquals(sender,gesture.Handle))FinishRoiGesture(gesture,_isMove);
+    }
 
     // Re-run the original layout projection after a consumer attaches the original style off-theme.
     internal void RefreshGeometryLayout()
@@ -579,17 +591,7 @@ public class RectROI : ROIControlBase
         ChangeContainerWidth();ChangeContainerHeight();ChangeContainerPosition();ContainerAngle=RectAngle;
     }
     // A host cancellation must detach the gesture without executing the native mouse-up commit.
-    internal void CancelInteraction()
-    {
-        var handle=_interactionHandle;_interactionHandle=null;
-        if(handle is not null)
-        {
-            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
-            handle.MouseWheel-=userControl_MouseWheel;
-            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
-        }
-        _isMove=false;AfterMouseUp();
-    }
+    internal void CancelInteraction()=>CancelRoiGesture();
 	private void ChangeContainerWidth()
 	{
 		ContainerWidth = RectWidth * ControlToImageRadio;
@@ -616,8 +618,13 @@ public class RectROI : ROIControlBase
 
 	private void userControl_MouseWheel(object sender, MouseWheelEventArgs e)
 	{
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive!=true||!ReferenceEquals(sender,gesture.Handle))return;
+        var before=RectAngle;
 		double deltastep = Math.Round((double)e.Delta / 120.0, MidpointRounding.AwayFromZero) * 0.5;
 		AddAngle(deltastep);
+        if(!gesture.IsActive)return;
+        if(RectAngle!=before)_isMove=true;
 		e.Handled = true;
 	}
 

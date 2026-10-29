@@ -23,7 +23,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            Require(PluginLoader.LoadPlugins(Path.Combine(product,"plugins")),"正式插件加载失败");
+            Require(PluginLoader.LoadPlugins(),"正式插件加载失败");
             var manager=new PluginManager();
             var engine=new WorkflowEngine(new CheckLogger());
             var flow=engine.CreateWorkflow("runtime-scheduled","Runtime调度");
@@ -49,7 +49,7 @@ internal static class S2DocumentEditingCases
                 Require(left.Count==1&&right.TotalArea==16&&left.GrayImage is not null&&right.GrayImage is null,
                     "新配置/ROI/输出需求未进入实际算法");
                 using var region=right.Region.AcquireReader();Require(region.SourceFrame==left.GrayImage.Frame,"资源被重标记为另一个物理帧");
-                Require(a.DeclaredOutput is not null&&b.DeclaredOutput is not null&&run.DeclaredOutputs.Count==2,"中立输出未发布进实际运行快照");
+                Require(a is not null&&b is not null&&run.DeclaredOutputs.Count==2,"中立输出未发布进实际运行快照");
             });
             Case("运行开始后修改设计设置仅影响下一次运行，覆盖参数也只修改本次快照",()=>
             {
@@ -168,7 +168,7 @@ internal static class S2DocumentEditingCases
             Case("已取得的结果读取租约独立于运行结果所有者，最后租约释放后关闭Runtime输出",()=>
             {
                 var run=Run(flow);Require(run.Success,"租约用例执行失败");var result=Result(run,second.Id);var output=(BlobOutput)result.Output!;
-                var reader=result.DeclaredOutput!.AcquireReader();run.Dispose();
+                var reader=result!.AcquireReader();run.Dispose();
                 Require(reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort).Count==1,"运行结果释放过早销毁显示/绑定读者");
                 using(var region=output.Region.AcquireReader())Require(region.RunCount>0,"租约未保留原生输出");
                 reader.Dispose();
@@ -190,7 +190,7 @@ internal static class S2DocumentEditingCases
                 var identity=owner.Begin("broken",Guid.NewGuid(),ToolContract.Version);
                 try
                 {
-                    new RuntimeToolResults("broken",new ToolSchema(Array.Empty<Port>(),Array.Empty<Port>()),identity,
+                    DeclaredOutputSnapshot.Capture(new ToolSchema(Array.Empty<Port>(),Array.Empty<Port>()),0,identity,"broken",
                         new ToolOutcome(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),resources,0);
                     throw new Exception("预期捕获/清理失败");
                 }
@@ -209,7 +209,7 @@ internal static class S2DocumentEditingCases
             var address=new SolutionResourceResolver(Environment.GetEnvironmentVariable("S2_CASE_ROOT")).ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
             return new ImageSourceRunInput(address,policy.SNInitialValue);
         },StringComparer.Ordinal);
-    private static RuntimeToolResults Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as RuntimeToolResults??throw new Exception("没有中立宿主结果："+id);
+    private static DeclaredOutputSnapshot Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as DeclaredOutputSnapshot??throw new Exception("没有中立宿主结果："+id);
     private static string Setting(string property)
     {
         var label=BlobParameterDefinition.Instance.Label(property);

@@ -55,6 +55,13 @@ public partial class CrossControl : Control, INotifyPropertyChanged, IComponentC
 	private Grid move;
 
 	private Point clickPoint;
+	private FrameworkElement dragHandle;
+	private ImageViewItemsPage dragParent;
+	private object dragContext;
+	private long gestureVersion;
+	private bool replacingTemplate;
+	private ControlTemplate appliedTemplate;
+	private System.Func<bool> interactionCurrent;
 
 	public double Line1Point1X
 	{
@@ -314,12 +321,14 @@ public partial class CrossControl : Control, INotifyPropertyChanged, IComponentC
 	private static void PositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		CrossControl crossControl = d as CrossControl;
+		if (e.Property != CenterPointProperty) crossControl.CancelGesture();
 		crossControl.ChangedPosition();
 	}
 
 	private static void OnIsCheckChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		CrossControl crossControl = d as CrossControl;
+		if (crossControl.IsLocked) crossControl.CancelGesture();
 		crossControl.OnPropertyChanged("LockVisibility");
 		crossControl.OnPropertyChanged("UnLockVisibility");
 	}
@@ -332,15 +341,36 @@ public partial class CrossControl : Control, INotifyPropertyChanged, IComponentC
 
 	public override void OnApplyTemplate()
 	{
-		base.OnApplyTemplate();
-		move = Template.FindName("move", this) as Grid;
-		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
-		parent = this.GetParent<ImageViewItemsPage>();
+		replacingTemplate = true;
+		try
+		{
+			CancelGesture();
+			if (move != null) move.MouseLeftButtonDown -= Move_MouseLeftButtonDown;
+			base.OnApplyTemplate();
+			appliedTemplate = Template;
+			move = GetTemplateChild("move") as Grid;
+			if (move != null) move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
+			parent = this.GetParent<ImageViewItemsPage>();
+		}
+		finally { replacingTemplate = false; }
+	}
+
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		if (e.Property == TemplateProperty) CancelGesture();
+		base.OnPropertyChanged(e);
 	}
 
 	public CrossControl()
 	{
 		InitializeComponent();
+		Unloaded += (_, _) => CancelGesture();
+		DataContextChanged += (_, _) =>
+		{
+			CancelGesture();
+			interactionCurrent = DataContext is SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettings ? () => false : null;
+		};
+		IsEnabledChanged += (_, _) => { if (!IsEnabled) CancelGesture(); };
 	}
 
 	private void ChangedPosition()
@@ -361,38 +391,101 @@ public partial class CrossControl : Control, INotifyPropertyChanged, IComponentC
 
 	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
-		if (!IsLocked)
+		if (replacingTemplate) return;
+		if (!CheckInteraction()) return;
+		var expected = gestureVersion + 1;
+		CancelGesture();
+		if (gestureVersion != expected) return;
+		parent = this.GetParent<ImageViewItemsPage>();
+		if (IsLocked || !IsEnabled || !IsVisible || !IsLoaded || !IsHitTestVisible || parent == null || sender != move
+			|| !ReferenceEquals(appliedTemplate, Template)
+			|| move.TemplatedParent != this
+			|| !double.IsFinite(ControlToImageRadio) || ControlToImageRadio <= 0
+			|| ImageSourceWidth <= 0 || ImageSourceHeight <= 0) return;
+		var handle = (FrameworkElement)sender;
+		var version = gestureVersion;
+		dragHandle = handle; dragParent = parent; dragContext = DataContext;
+		handle.LostMouseCapture += Move_LostMouseCapture;
+		try
 		{
-			FrameworkElement frameworkElement = sender as FrameworkElement;
+			if (!handle.CaptureMouse() || version != gestureVersion || dragHandle != handle
+				|| !handle.IsMouseCaptured) { if (version == gestureVersion) CancelGesture(); return; }
+			// Capture can synchronously route pointer events. Start deltas only after
+			// the capture has been accepted and its coordinate context is stable.
 			clickPoint = e.GetPosition(parent);
-			frameworkElement.CaptureMouse();
-			frameworkElement.MouseMove += Move_MouseMove;
-			frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
+			handle.MouseMove += Move_MouseMove;
+			handle.MouseLeftButtonUp += Move_MouseLeftButtonUp;
 			e.Handled = true;
+		}
+		catch (System.Exception failure)
+		{
+			try { if (version == gestureVersion) CancelGesture(); }
+			catch (System.Exception cleanup) { throw new System.AggregateException(failure, cleanup); }
+			throw;
 		}
 	}
 
 	private void Move_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
-		if (!IsLocked)
+		if (sender == dragHandle) CancelGesture();
+	}
+
+	private void Move_LostMouseCapture(object sender, MouseEventArgs e)
+	{ if (sender == dragHandle) CancelGesture(); }
+
+	private void CancelGesture()
+	{
+		++gestureVersion;
+		var handle = dragHandle;
+		dragHandle = null; dragParent = null; dragContext = null;
+		if (handle == null) return;
+		handle.MouseMove -= Move_MouseMove;
+		handle.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
+		handle.LostMouseCapture -= Move_LostMouseCapture;
+		if (handle.IsMouseCaptured) handle.ReleaseMouseCapture();
+	}
+	internal void RetireInteraction() { interactionCurrent = () => false; CancelGesture(); }
+	internal void BindInteraction(System.Func<bool> current) => interactionCurrent = current;
+	private bool CheckInteraction()
+	{
+		var version = gestureVersion; var proof = interactionCurrent;
+		try
 		{
-			FrameworkElement frameworkElement = sender as FrameworkElement;
-			frameworkElement.MouseMove -= Move_MouseMove;
-			frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-			frameworkElement.ReleaseMouseCapture();
+			var valid = proof?.Invoke() != false;
+			if (version != gestureVersion || !ReferenceEquals(proof, interactionCurrent)) return false;
+			if (!valid) CancelGesture();
+			return valid;
+		}
+		catch (System.Exception failure)
+		{
+			try { if (version == gestureVersion) CancelGesture(); }
+			catch (System.Exception cleanup) { throw new System.AggregateException(failure, cleanup); }
+			throw;
 		}
 	}
 
 	private void Move_MouseMove(object sender, MouseEventArgs e)
 	{
-		if (!IsLocked)
+		if (sender != dragHandle) return;
+		var handle = dragHandle; var startVersion = gestureVersion;
+		if (!CheckInteraction() || handle == null || !ReferenceEquals(handle, dragHandle) || startVersion != gestureVersion) return;
+		if (IsLocked || !IsEnabled || !IsVisible || !dragHandle.IsMouseCaptured
+			|| !ReferenceEquals(dragContext, DataContext) || dragParent != this.GetParent<ImageViewItemsPage>())
+		{ CancelGesture(); return; }
+		var version = gestureVersion;
+		Point position = e.GetPosition(dragParent);
+		Vector vector = (position - clickPoint) / ControlToImageRadio;
+		var next = CenterPoint + vector;
+		if (!double.IsFinite(next.X) || !double.IsFinite(next.Y)) { CancelGesture(); return; }
+		try
 		{
-			FrameworkElement frameworkElement = sender as FrameworkElement;
-			Point position = e.GetPosition(parent);
-			Vector vector = (position - clickPoint) / ControlToImageRadio;
-			CenterPoint += vector;
-			clickPoint = position;
+			// User interaction must retain the model's TwoWay binding.
+			var binding = GetBindingExpression(CenterPointProperty);
+			SetCurrentValue(CenterPointProperty, next);
+			if (version == gestureVersion && ReferenceEquals(binding, GetBindingExpression(CenterPointProperty))) binding?.UpdateSource();
+			if (version == gestureVersion) clickPoint = position;
 		}
+		catch { if (version == gestureVersion) CancelGesture(); throw; }
 	}
 
 	private void ChangeThickness()
@@ -406,6 +499,7 @@ public partial class CrossControl : Control, INotifyPropertyChanged, IComponentC
 	private void Control_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
 	{
 		CrossControl crossControl = sender as CrossControl;
+		if (!crossControl.IsVisible) crossControl.CancelGesture();
 		crossControl.ChangedPosition();
 	}
 }

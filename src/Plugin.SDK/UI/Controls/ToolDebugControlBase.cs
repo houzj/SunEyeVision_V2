@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -872,37 +873,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 parameters.CaliperSizing.Preserve(element);
             };
             editor.DrawingAvailabilityCheck = () =>
-            {
-                try
-                {
-                    if (_caliperImageControl?.SourceImage is not { } preview)
-                        throw new InvalidOperationException("当前没有可绘制的图像，请先显示工具绑定的输入图像。");
-                    if (DataProvider is not IDataSourceQueryService query)
-                        throw new InvalidOperationException("图像数据来源尚未就绪。");
-                    var reference = ToolExecutionPreparation.ReadReference(parameters, "ImageSource")
-                        ?? throw new InvalidOperationException("请先绑定工具的输入图像。");
-                    var result = query.GetNodeContext(reference.SourceNodeId)?.Result;
-                    if (result == null)
-                        throw new InvalidOperationException("绑定的输入图像暂无结果，请先执行图像来源节点。");
-                    var image = ToolExecutionPreparation.ResolveInputImage(parameters,
-                        new Dictionary<string, ToolResults> { [reference.SourceNodeId] = result }, null)!;
-                    if (!ReferenceEquals(result, query.GetNodeContext(reference.SourceNodeId)?.Result))
-                        throw new InvalidOperationException("输入图像正在更新，请稍后重新绘制。");
-                    var frame = ImageFrameProvenance.CaptureInput(image);
-                    var displayedFrame = PreviewFrameProvenance.Read(preview);
-                    if (preview.PixelWidth != image.Width || preview.PixelHeight != image.Height ||
-                        (frame.HasValue && displayedFrame.HasValue && frame != displayedFrame))
-                        throw new InvalidOperationException("预览与工具绑定的输入图像不一致，请先显示绑定图像再绘制。");
-                    validatedSize = (image.Width, image.Height);
-                    return true;
-                }
-                catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
-                {
-                    MessageBox.Show(Window.GetWindow(this), ex.Message, "无法绘制卡尺",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return false;
-                }
-            };
+            { throw new NotSupportedException("旧SDK卡尺调试未迁入当前产品。"); };
         }
 
         protected void ApplyPositionCorrectionPreview(ToolParameters parameters,
@@ -930,87 +901,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             IReadOnlyDictionary<string, ToolResults>? nodeResultsSnapshot = null,
             System.Threading.CancellationToken cancellationToken = default)
         {
-
-            if (DataProvider is DataSourceQueryService query && query.CapturePublishedGlobals is { } captureGlobals)
-                query.SetGlobalVariables(captureGlobals());
-            var provider = DataProvider as IDataSourceQueryService;
-            var bindings = ParameterBindingSet.FromSettings(
-                CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
-                    as ParamSettingContainer);
-            var nodeResults = nodeResultsSnapshot != null
-                ? nodeResultsSnapshot.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
-                : provider == null && parameters.NodeResults != null
-                ? new Dictionary<string, ToolResults>(parameters.NodeResults)
-                : new Dictionary<string, ToolResults>();
-            ToolResultSnapshot? capturedResults = null;
-            try
-            {
-
-            if (provider != null)
-            {
-                var currentNodeId = GetCurrentNodeStringProperty("Id") ?? _currentNodeId;
-                var sourceIds = provider.GetAvailableDataSources(currentNodeId ?? string.Empty)
-                    .Select(source => source.SourceNodeId)
-                    .Concat(BindingInputCatalog.Describe(parameters).Where(input => input.Active)
-                        .Select(input => input.Read()).Where(path => !string.IsNullOrWhiteSpace(path) && path.Contains('.'))
-                        .Select(path => path[..path.IndexOf('.')]))
-                    .Concat(bindings.Bindings.Where(binding => binding.BindingType == BindingType.Binding)
-                        .Select(binding => binding.SourceNodeId)).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToArray();
-                if (!string.IsNullOrEmpty(currentNodeId))
-                {
-                    var upstream = provider.GetParentNodes(currentNodeId).Select(n => n.NodeId).ToHashSet();
-                    if (sourceIds.Any(id => !id.StartsWith("__", StringComparison.Ordinal) && !upstream.Contains(id)))
-                        throw new InvalidOperationException("绑定来源不是画布连接的上游节点，请先建立执行连接或改用全局变量。");
-                }
-                // Never seed a new debug run with runtime fields left on an editable parameter
-                // object by an earlier run. The query provider is the current workflow SSOT.
-                if (nodeResultsSnapshot == null)
-                {
-                    capturedResults = ToolDebugResultSnapshot.Capture(provider, sourceIds, requireAll: false);
-                    nodeResults = capturedResults.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-                }
-            }
-
-            resolvedInputImage = ToolExecutionPreparation.ResolveInputImage(parameters, nodeResults,
-                resolvedInputImage ?? parameters.ResolvedInputImage);
-            var executionParameters = (DataProvider as DataSourceQueryService)?.CreateParameterSnapshot?.Invoke(parameters)
-                ?? ToolExecutionPreparation.CopyParameters(parameters);
-            var request = new ToolExecutionRequest(executionParameters)
-            {
-                InputResources = capturedResults ?? new ToolResultSnapshot(nodeResults),
-                NodeResults = nodeResults,
-                ResolvedInputImage = resolvedInputImage,
-                NodeId = GetCurrentNodeStringProperty("Id") ?? _currentNodeId,
-                CancellationToken = cancellationToken.CanBeCanceled ? cancellationToken
-                    : (DataProvider as DataSourceQueryService)?.EditScopeCancellation ?? default,
-                WorkflowId = (DataProvider as DataSourceQueryService)?.WorkflowId,
-                ExecutionOwner = (DataProvider as DataSourceQueryService)?.ExecutionOwner,
-                RunId = Guid.NewGuid(),
-                ResourcePaths = (DataProvider as DataSourceQueryService)?.ResourcePaths,
-                NodeName = GetCurrentNodeStringProperty("DisplayName")
-                    ?? GetCurrentNodeStringProperty("Name"),
-                ParameterBindings = bindings,
-                GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,
-                CommunicationInputs = (DataProvider as DataSourceQueryService)?.CommunicationReceiveService,
-                CommunicationOutputs = (DataProvider as DataSourceQueryService)?.CommunicationSendService,
-            };
-
-            if (DataProvider is DataSourceQueryService sourceService
-                && sourceService.GlobalVariables.Count > 0)
-            {
-                var globalResults = new GenericToolResults { Status = ExecutionStatus.Success };
-                foreach (var variable in sourceService.GlobalVariables)
-                    globalResults.AddResultItem(variable.Key, variable.Value);
-                nodeResults["__GlobalVars__"] = globalResults;
-            }
-
-            return request;
-            }
-            catch
-            {
-                capturedResults?.Dispose();
-                throw;
-            }
+            throw new NotSupportedException("旧SDK调试执行已退出当前产品，请使用Runtime编辑事务与RuntimeDebugInvocation。");
         }
 
         private string? GetCurrentNodeStringProperty(string propertyName)

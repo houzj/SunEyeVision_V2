@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.Contracts;
@@ -72,11 +72,13 @@ public sealed class RoiViewportEditScope : IRoiEditViewport, IDisposable
         if (request.Kind is "rectangle" or "annulus" or "polygon") return;
         _session?.CancelDraw(); StatusChanged?.Invoke("该形状没有可无损回写的正式参数模型；当前不开放绘制。");
     }
+    // This producer currently edits only explicit geometry; it does not declare full-domain support.
+    private IReadOnlyList<RoiGroupState> ReadGroupStates()=>Array.AsReadOnly(_groups.Concat(_scene.Select(row=>row.Group)).Distinct(StringComparer.Ordinal).Select(group=>new RoiGroupState(group,RoiCoverage.Explicit,RoiCoverage.Explicit)).ToArray());
     private RoiEditSnapshot ReadSnapshot()
     {
         if (_image is null || !Current(_image)) throw new InvalidOperationException("区域输入帧或编辑草稿已失效。");
         UpdateScene(_read());
-        return new(new(_scope, _revision, _image.Image.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()));
+        return new(new(_scope, _revision, _image.Image.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()),ReadGroupStates());
     }
     private RoiEditAcceptance Accept(RoiEditStamp expected, RoiEditProposal proposal)
     {
@@ -89,7 +91,7 @@ public sealed class RoiViewportEditScope : IRoiEditViewport, IDisposable
         {
             var accepted = _accept(proposal);
             UpdateScene(accepted.Items); ++_revision;
-            var after = new RoiEditSnapshot(new(_scope, _revision, before.Stamp.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()));
+            var after = new RoiEditSnapshot(new(_scope, _revision, before.Stamp.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()),ReadGroupStates());
             IReadOnlyList<RoiEditTarget> targets = proposal switch
             {
                 RoiEditProposal.Create when accepted.Selection is RoiEditSelection.Select select => new[] { select.Target },
@@ -126,7 +128,14 @@ public sealed class RoiViewportEditScope : IRoiEditViewport, IDisposable
         if (omitted > 0) StatusChanged?.Invoke($"{omitted}项区域保留在完整参数草稿；原件尚无对应编辑入口，未投影到手势层。");
     }
     public void SetEditableGroups(IEnumerable<string> groups)
-    { _groups = groups.ToHashSet(StringComparer.Ordinal); if (!_groups.Contains(_group)) CancelGesture(); }
+    {
+        var next=groups.ToHashSet(StringComparer.Ordinal);
+        if(next.Any(string.IsNullOrWhiteSpace))throw new ArgumentException("可编辑ROI组名称不能为空。",nameof(groups));
+        if(_groups.SetEquals(next))return;
+        _groups=next;++_revision;
+        if(!_groups.Contains(_group))CancelGesture();
+        if(!_accepting&&_image is not null&&Current(_image))_session?.Refresh();
+    }
     public bool BeginDraw(string group, string kind, out string error)
     {
         error = "";

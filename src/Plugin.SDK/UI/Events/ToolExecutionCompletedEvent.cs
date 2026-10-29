@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.UI.Events
@@ -75,8 +75,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Events
             : base(routedEvent, source)
         {
             Results = results;
-            IsSuccess = results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult?toolResult.IsSuccess:results is not null;
-            ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ErrorMessage??"执行未返回有效结果。";
+            IsSuccess = results is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot snapshot&&snapshot.IsSuccess;
+            ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot)?.ErrorMessage??"执行未返回有效结果。";
         }
 
         /// <summary>
@@ -94,8 +94,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Events
             : base(routedEvent, source)
         {
             Results = results;
-            IsSuccess = results is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult?toolResult.IsSuccess:results is not null;
-            ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)?.ErrorMessage??"执行未返回有效结果。";
+            IsSuccess = results is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot snapshot&&snapshot.IsSuccess;
+            ErrorMessage=IsSuccess?null:(results as SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot)?.ErrorMessage??"执行未返回有效结果。";
             ExecutionTime = executionTime;
         }
 

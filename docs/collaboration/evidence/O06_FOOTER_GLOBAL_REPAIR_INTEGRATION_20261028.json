@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "generatedUtc": "2026-10-28T11:16:20.146954+00:00",
+  "productCommit": "dfb7b053ca3d4b990b589bb469926ef9fcf85ccc",
+  "scope": "C15/C01原底栏完整局部组件、原Shell唯一视口公共入口及D06后续修复；生产D07仍未接，阶段一未完成",
+  "payload": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/release-payload.json",
+    "sha256": "fb4ca2379ca9a100a487a13355f06ac2e52181367d31bd0018e2c213d5376a78",
+    "buildId": "development-4ad014bba50a43a1a4a0072c133d183b",
+    "verifiedEntries": 795
+  },
+  "verifiedLoadedRecords": 95,
+  "builds": [
+    {
+      "path": "artifacts/footer-global-repair-ui-build-20261028-001.log",
+      "sha256": "08b01ef80a185c7b2c2e349f268253e0072f58c31f715dd1d0ee127baac6f630",
+      "errors": 0,
+      "warnings": 6569,
+      "elapsed": "00:01:31.66"
+    },
+    {
+      "path": "artifacts/footer-global-repair-release-build-20261028-001.log",
+      "sha256": "81ec5e321db710335b1e385b59a583bd7f34aa2be0d51c9c1eb4b4a48231bf53",
+      "errors": 0,
+      "warnings": 6504,
+      "elapsed": "00:01:17.76"
+    }
+  ],
+  "formalExeProbe": {
+    "pid": 74284,
+    "exit": 0,
+    "log": {
+      "path": "artifacts/footer-global-repair-toolbox-20261028-001.log",
+      "sha256": "314a2eb6b6a9f7c68ac5d685e060c7f6d96b1b378319a88c4a63e0a7103b3ca6"
+    }
+  },
+  "tests": {
+    "GlobalBinding": {
+      "passed": 283,
+      "failed": 1,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 5,
+        "pid": 74476,
+        "exit": 1,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "GlobalBindingCases.cs",
+        "caseSourceSha256": "CF5CA40262A5D7CC68C02BACFA6CD8813F6B828CE5CED857375A63156A4A33B5",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\GlobalBinding\\attempt-005"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/receipt.json",
+          "sha256": "758840272c79ed1ba1d0f71fa63118c33cd8542b44f057bb5f2b35762e8356ee"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/run.log",
+          "sha256": "de42bb65caed079a280ac5e216e58bff6f9452f7f51a5f8fe013013ab3b5db7c"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/run-error.log",
+          "sha256": "53dcf8b9cc907f151b97444d932139c429dc187b7b3be4a26dcbd8256a46a435"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/cases.cs.txt",
+          "sha256": "cf5ca40262a5d7cc68c02bacfa6cd8813f6b828ce5ced857375a63156a4a33b5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/loaded-product.tsv",
+          "sha256": "26a7856e7756631bdc0327ca43b767eaf0c90faafee5b37ffc0e75d13ee878b0"
+        }
+      ],
+      "fullTrack": true,
+      "report": {
+        "path": "Release/_validation/S4-20261025/GlobalBinding/attempt-005/global-binding-report.json",
+        "sha256": "cd3f1a43c8ba216b87acf4ff7ea4ae4859854e2031fef60fec2f4f22c94f1bca"
+      },
+      "failedCases": [
+        {
+          "name": "SendDataProductionEditorTests.Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint()",
+          "passed": false,
+          "error": "Xunit.Sdk.EqualException: Assert.Equal() Failure: Values differ\r\nExpected: DESIGN\r\nActual:   [\"DESIGN\"]\r\n   at Xunit.Assert.Equal[T](T expected, T actual, IEqualityComparer`1 comparer) in /_/src/xunit.assert/Asserts/EqualityAsserts.cs:line 154\r\n   at Xunit.Assert.Equal[T](T expected, T actual) in /_/src/xunit.assert/Asserts/EqualityAsserts.cs:line 89\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.<>c.<Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint>b__1_0() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 115\r\n   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()\r\n   at System.Windows.Threading.DispatcherOperation.InvokeImpl()\r\n--- End of stack trace from previous location ---\r\n   at System.Windows.Threading.DispatcherOperation.Wait(TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherOperation operation, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback, DispatcherPriority priority, CancellationToken cancellationToken, TimeSpan timeout)\r\n   at System.Windows.Threading.Dispatcher.Invoke(Action callback)\r\n   at SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests.Sta(Action action) in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs:line 269\r\n   at SunEyeVision.UI.Tests.SendDataProductionEditorTests.Real_send_window_uses_one_private_source_and_variable_candidate_then_one_history_and_saved_endpoint() in D:\\MyWork\\SunEyeVision_V2\\tests\\SunEyeVision.UI.Tests\\SendDataProductionEditorTests.cs:line 86\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+        }
+      ]
+    },
+    "ImageSources": {
+      "passed": 179,
+      "failed": 1,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 7,
+        "pid": 38568,
+        "exit": 1,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "ImageSourceCases.cs",
+        "caseSourceSha256": "46B32ECEA4B1C04C67B0CB0B90B4B36F5E7B16BE9D5C8625065D72ABA4EC408D",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSources\\attempt-007"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-007/receipt.json",
+          "sha256": "055f88f52327869d6afb877b246cfbae1ac266446721d546cdde778e162019f5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-007/run.log",
+          "sha256": "102f4acc9522cebb62e8a1c95bde5ae6e5112f98abf6e5a249fe7338121bb65a"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-007/run-error.log",
+          "sha256": "1c855b22ce9fe81732441c204762164f178dc7fc75d48d3bf83ae9c3e489ba84"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-007/cases.cs.txt",
+          "sha256": "46b32ecea4b1c04c67b0cb0b90b4b36f5e7b16be9d5c8625065d72aba4ec408d"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ImageSources/attempt-007/loaded-product.tsv",
+          "sha256": "78f22d390c0fa231b2e49eed4f951dce5e373edb544e37a768c8db59d533efa6"
+        }
+      ]
+    },
+    "WindowPresentation": {
+      "passed": 6,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 226,
+        "pid": 79776,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "980D4D871E93C6DFA095B8254C4130CC7B9E089CD717B336E62ABB9CEEEAF60A",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-226"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-226/receipt.json",
+          "sha256": "53a31835766b2a65d60ba1fbb4bff0017b8b99888c31f23ebc18d4e05b4b6124"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-226/run.log",
+          "sha256": "f2dfbd299066c7ba2c1ba51a93845f405e6688f6d18045e075074564526069ad"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-226/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-226/cases.cs.txt",
+          "sha256": "980d4d871e93c6dfa095b8254c4130cc7b9e089cd717b336e62abb9ceeeaf60a"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-226/loaded-product.tsv",
+          "sha256": "20a8987b7dd43bfe3ec48219a00db5c34fea0814a8cbe99282dd7a4f4a816c36"
+        }
+      ]
+    },
+    "DesignTime": {
+      "passed": 96,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 61,
+        "pid": 13224,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4DesignTimeCases.cs",
+        "caseSourceSha256": "A507EC841D2A1812559C37E6217D854126FB1D2F6AE26CF61CFAD4853EF4C33F",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-061"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-061/receipt.json",
+          "sha256": "8c0bc2a9c597a2124b4db70678794e390008d0c9e19bce6a5680d82c0d09a5a3"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-061/run.log",
+          "sha256": "97d62657d0767d5ada774d74e257e869345607aee4c0c8eb5ed761ded06800c7"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-061/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-061/cases.cs.txt",
+          "sha256": "a507ec841d2a1812559c37e6217d854126fb1d2f6ae26cf61cfad4853ef4c33f"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/DesignTime/attempt-061/loaded-product.tsv",
+          "sha256": "63b1eb8cebc6576cb6c98fd0bd2f3a874dccaf06daaaf16669b1be8a384c7a74"
+        }
+      ]
+    },
+    "RuntimeEditor": {
+      "passed": 10,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 75,
+        "pid": 10544,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4RuntimeEditorCases.cs",
+        "caseSourceSha256": "9EB9081EFE0DBF4EA7FD7388F8971EFD59070948378E6927FB00B3AC47F7426D",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditor\\attempt-075"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-075/receipt.json",
+          "sha256": "6d316721e02ac228dfbb6bb7e7286c49b84790df6a1b211e62249a771c98bb5a"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-075/run.log",
+          "sha256": "571a2ae4399e4fd086c31a89b181339ed557db50f926af823ecf7bc8c534f140"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-075/run-error.log",
+          "sha256": "d93d669f04d444105219408ba16537211af16b5d0a6ad2115da8255a4aadc020"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-075/cases.cs.txt",
+          "sha256": "9eb9081efe0dbf4ea7fd7388f8971efd59070948378e6927fb00b3ac47f7426d"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RuntimeEditor/attempt-075/loaded-product.tsv",
+          "sha256": "b04ec7fa12a107ea42936cd73bb5c0d55a4c371ecebda8047b21ba33f364de20"
+        }
+      ]
+    },
+    "FullChain": {
+      "passed": 8,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "attempt": 133,
+        "pid": 47712,
+        "exit": 0,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FullChainCases.cs",
+        "caseSourceSha256": "D30A934D38CAD90034A8675059A64C97356F5E98BDF1DDD7628D55B4D2761F99",
+        "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FullChain\\attempt-133"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-133/receipt.json",
+          "sha256": "1e577561028033e86319ac83e44ab5f66bd6cfeddb01f0736641c0a39bab2afc"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-133/run.log",
+          "sha256": "4b178eb626e5b8a44aa98b2633349defe3e102f3f14dc02daf7a301b194e634f"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-133/run-error.log",
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-133/cases.cs.txt",
+          "sha256": "d30a934d38cad90034a8675059a64c97356f5e98bdf1ddd7628d55b4d2761f99"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FullChain/attempt-133/loaded-product.tsv",
+          "sha256": "382401b820d901770cc69a16685c165c889e681596c38560e8bcbe20a9687e9f"
+        }
+      ]
+    }
+  },
+  "remaining": [
+    "GlobalBinding005最后SendData真实编辑保存重开断言：DESIGN与[\"DESIGN\"]形态差异，保原断言定位",
+    "ImageSources007最后2百万结果惰性展开分配量断言，保小于1MiB门禁定位",
+    "四类原ROI手势旧尾部清新令牌、Rect纯滚轮角度未提交通道待修",
+    "普通圆/C09与原全清单未完，真实VS/VM同态/用户未代签",
+    "生产D07消费者切换自动审批拒绝；只读候选尚缺三依赖文件且重复AcquireReader，先修完整审阅包，不重放被拒写操作",
+    "实际历史入口、Blob专属原表/显示及整个第二阶段未完成，Blob业务仍冻结"
+  ],
+  "previousEvidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json"
+}

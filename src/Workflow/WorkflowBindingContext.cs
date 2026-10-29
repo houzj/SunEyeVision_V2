@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -214,7 +214,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         var expected=new Dictionary<BindingNodeId,RunIdentity>();
         foreach(var node in _nodes.Values)
         {
-            node.AdmittedIdentity=owner.Begin(_scope+"/"+node.Id,scope.RunId,ToolContract.Version,session.CancellationToken,
+            node.AdmittedIdentity=owner.Begin(_scope+"/"+node.Id,scope.RunId,FoundationContract.Major+"."+FoundationContract.Minor,session.CancellationToken,
                 (node.Parameters as IExecutionAdmissionProvider)?.ExecutionAdmission,session.RunId);
             node.BindingContext=this;
             node.BindingOutputSchema=_declarations[node.Id].Source.Schema;
@@ -223,64 +223,33 @@ internal sealed class WorkflowBindingContext : IDisposable
         _expected=new ReadOnlyDictionary<BindingNodeId,RunIdentity>(expected);
     }
 
-    internal IBindingRunSnapshot Capture(AlgorithmNode consumer,IDictionary<string,ToolResults>? results)
+    internal IBindingRunSnapshot Capture(AlgorithmNode consumer,IDictionary<string,DeclaredOutputSnapshot>? results)
     {
         var candidates=new List<BindingNodeResult>();
         foreach(var dependency in consumer.CompiledBindings.Values.SelectMany(p=>p.Dependencies).Distinct())
         {
             if(dependency.ScopeId!=_scope||results?.TryGetValue(dependency.NodeId,out var result)!=true||
-                result.ExecutionIdentity is null||result.BindingOutputSchema is null||result.DeclaredOutput is null)continue;
+                result.ExecutionIdentity is null||result.Schema is null||result is null)continue;
             try
             {
-                using var reader=result.DeclaredOutput.AcquireReader();
+                using var reader=result.AcquireReader();
                 if(reader.Values is not { } values)continue;
-                candidates.Add(new(dependency,result.ExecutionIdentity.ToInvocationIdentity(dependency.NodeId),result.BindingSchemaRevision,
-                    result.BindingOutputSchema.Fingerprint,result.IsSuccess,values));
+                candidates.Add(new(dependency,result.ExecutionIdentity.ToInvocationIdentity(dependency.NodeId),result.SchemaRevision,
+                    result.Schema.Fingerprint,result.IsSuccess,values));
             }
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
             { /* A malformed source is unavailable; never fall back to old or inferred values. */ }
         }
         return new BindingRunSnapshot(new(_scope,consumer.Id),consumer.AdmittedIdentity!.ToInvocationIdentity(consumer.Id),_documentRevision,candidates,_expected);
     }
-    internal void FreezeResult(AlgorithmNode node,ToolResults result)
+    internal Func<ToolOutcome,IDisposable,double,DeclaredOutputSnapshot> PrepareResult(AlgorithmNode node)
     {
         var declaration=_declarations[node.Id];
-        var values=new Dictionary<string,object?>(StringComparer.Ordinal);
-        if(result is RuntimeToolResults runtime)
-        {
-            if(result.IsSuccess)
-                foreach(var item in new InputValues(declaration.Source.Schema.Outputs,runtime.Values).CopyValues())values.Add(item.Key,item.Value);
-        }
-        else if(result.IsSuccess&&declaration.Source.Schema.Outputs.Count>0)
-        {
-            try
-            {
-                var actual=result.GetOutputVariables().Where(v=>v.Kind==OutputVariableKind.Data).ToDictionary(v=>v.Name,StringComparer.Ordinal);
-                foreach(var port in declaration.Source.Schema.Outputs)
-                {
-                    var output=declaration.Outputs[port.Id];
-                    if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation: "+output.Name+" ("+port.Id+").");
-                    // This identity labels the actual immutable output capture, not an inferred camera frame.
-                    // Physical source provenance comes from this admitted invocation and its stable output port.
-                    var actualValue=result.TryGetDeclaredOutputValue(port.Id,out var canonical)?canonical:value.RuntimeValue;
-                    var frame = port.Type.Shape == ValueShape.Resource && port.Type.Resource == ResourceKind.Image
-                        ? new ImageFrameAddress(Guid.NewGuid(), node.Id, node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
-                            port.Id, declaration.Source.SchemaRevision) : null;
-                    if(frame is not null&&actualValue is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage native)
-                    {
-                        if((node.Tool as SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider)?.ImageFramePolicy==SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates)
-                            frame=SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureAddress(native)??frame;
-                        else SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.ForgetAddress(native);
-                    }
-                    values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,actualValue,frame,result.RegisterOutputResource));
-                }
-            }
-            catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
-            {result.SetError("输出不符合冻结声明："+fault.Message);values.Clear();}
-        }
         var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
             item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
-        DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null,fields,_scope,declaration.Complete);
+        var identity=node.AdmittedIdentity!;var nodeId=node.Id;
+        return (outcome,resources,elapsed)=>DeclaredOutputSnapshot.Capture(declaration.Source.Schema,declaration.Source.SchemaRevision,
+            identity,nodeId,outcome,resources,elapsed,fields,_scope,declaration.Complete);
     }
     internal DeclaredOutputSnapshot WithoutResult(AlgorithmNode node,ExecutionStatus status,IEnumerable<Diagnostic> diagnostics)
     {
@@ -288,7 +257,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
             item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
         return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,
-            node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete);
+            node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete,node.AdmittedIdentity);
     }
     internal void CompleteGlobalProducers(string completedNode,WorkflowContext context)
     {
@@ -311,7 +280,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             if(_documentRevision<=0)throw new InvalidOperationException("Global production requires the captured published configuration revision.");
             if(_nodes.ContainsKey(operation.OperationId))throw new InvalidOperationException("Global operation identity conflicts with a workflow node.");
             var consumer=new BindingNodeId(_scope,operation.OperationId);
-            var admission=owner.Begin(_scope+"/"+operation.OperationId,scope.RunId,ToolContract.Version,session.CancellationToken,rootRunId:session.RunId);
+            var admission=owner.Begin(_scope+"/"+operation.OperationId,scope.RunId,FoundationContract.Major+"."+FoundationContract.Minor,session.CancellationToken,rootRunId:session.RunId);
             try
             {
                 using var executing=owner.EnterRun(admission);
@@ -324,7 +293,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                 {output.Add(new(operation.VariableId,operation.VariableName,null,compiled.Diagnostic??new("global-binding","Producer declaration is unavailable.")));continue;}
                 var sourceId=new BindingNodeId(_scope,operation.Source.NodeId);
                 var candidates=new List<BindingNodeResult>();
-                using var reader=_nodes.GetValueOrDefault(operation.Source.NodeId)?.LastToolResult?.DeclaredOutput?.AcquireReader();
+                using var reader=_nodes.GetValueOrDefault(operation.Source.NodeId)?.LastToolResult?.AcquireReader();
                 if(reader?.Values is {} values)
                 {
                     var snapshot=reader.Snapshot;

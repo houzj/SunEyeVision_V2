@@ -43,12 +43,14 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {
         Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiEditor));
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
-        if(_session is not null)_session.Changed-=Project;
+        if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
         _session=session;_projectedSession=null;_projectedItem=null;_projectedStamp=null;
-        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;}
+        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;}
         Project();
     }
     private void Project()=>Project(false);
+    private void OnDrawStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
+    {if(!_disposed&&args.PropertyName==nameof(NativeRoiSession.ActiveDraw)&&ReferenceEquals(sender,_session)&&NativeView.DataContext is Context context)context.RefreshTools();}
     private void Project(bool force)
     {
         if(_disposed)return;
@@ -238,7 +240,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_generation++;_resume?.Abort();_resume=null;_savedRaw=null;
-        _registration?.Dispose();_registration=null;if(_session is not null)_session.Changed-=Project;
+        _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
         _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
         _inputs.Clear();_polygon.Dispose();NativeView.DataContext=null;Child=null;
@@ -248,15 +250,25 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
         {var child=VisualTreeHelper.GetChild(root,i);if(child is T match)yield return match;foreach(var nested in Descendants<T>(child))yield return nested;}
     }
-    private sealed class Context
+    private sealed class Context : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly NativeRoiSession _session;
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        internal void RefreshTools()
+        {
+            foreach(var name in new[]{nameof(FullScreenA),nameof(BoxA),nameof(SectorRingA),nameof(PolygonA),nameof(SectorA)})
+                PropertyChanged?.Invoke(this,new(name));
+        }
         public Context(NativeRoiEditor owner,NativeRoiSession session,long generation,NativeRoiProjection? item)
         {
             _session=session;var uiGeneration=owner._uiGeneration;
             ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded
                 &&uiGeneration==owner._uiGeneration&&generation==owner._generation&&ReferenceEquals(owner._session,session)&&session.IsCurrent,
-                value=>session.ValueChangedCommand.Execute(value));
+                value=>
+                {
+                    try{session.ValueChangedCommand.Execute(value);}
+                    finally{RefreshTools();}
+                });
             ROIValueChangedCommand=new CommitCommand(()=>
             {if(!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded&&uiGeneration==owner._uiGeneration&&owner._generation==generation&&ReferenceEquals(owner._session,session)&&ReferenceEquals(session.CurROIData,item))owner.TryCommitPending();});
         }
@@ -270,6 +282,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool SectorRingA {get=>_session.SectorRingA;set=>_session.SectorRingA=value;}
         public bool PolygonEnable_ModuleEnableA=>_session.PolygonEnable_ModuleEnableA;
         public bool PolygonA {get=>_session.PolygonA;set=>_session.PolygonA=value;}
+        public bool FullScreenEnableA=>_session.FullScreenEnableA;
+        public bool FullScreen_ModuleEnableA=>_session.FullScreen_ModuleEnableA;
+        public bool FullScreenA {get=>_session.FullScreenA;set=>_session.FullScreenA=value;}
         public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
         public string ROISelectionA=>_session.ROISelectionA;

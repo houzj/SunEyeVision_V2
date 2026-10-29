@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -93,7 +94,6 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 图像预览
         private bool _autoSwitchEnabled = true;
-        private int _currentImageIndex = -1;
 
         // 参数选择状态（用于 TreeView 事件处理）
         private string? _selectedParameterName;
@@ -146,7 +146,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
-        private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, ToolResults Result, IDisposable? Lease)>
+        private readonly Dictionary<string, (SunEyeVision.UI.Shared.WorkflowNode Node, DeclaredOutputSnapshot Result, IDisposable? Lease)>
             _pendingCameraPresentations = new();
         private System.Windows.Threading.DispatcherTimer? _cameraPresentationTimer;
         private DateTime _lastCameraPerfWarningUtc;
@@ -240,9 +240,17 @@ namespace SunEyeVision.UI.Shell.Windows
             private set
             {
                 if (ReferenceEquals(_imageResult.ActiveInputSource, value)) return;
-                if (_imageResult.ActiveInputSource is { } old) old.ConfigurationEdited -= OnImageInputConfigurationEdited;
+                if (_imageResult.ActiveInputSource is { } old)
+                {
+                    old.ConfigurationEdited -= OnImageInputConfigurationEdited;
+                    old.ExplicitSelectionAccepted-=OnExplicitImageSelectionAccepted;
+                }
                 _imageResult.ActiveInputSource = value;
-                if (value != null) value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                if (value != null)
+                {
+                    value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                    value.ExplicitSelectionAccepted+=OnExplicitImageSelectionAccepted;
+                }
                 OnPropertyChanged(nameof(ActiveInputSource));
             }
         }
@@ -314,8 +322,22 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 图像显示源索引变化回调（实现 IRootCoordinator，由图像结果子 VM 触发）
         /// </summary>
+        private bool _acceptingWorkspaceNavigation;
+        internal void AcceptWorkspaceImageSourceIndex(int index,bool persist=false)
+        {
+            var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
+            var source=index>=0&&index<DisplayImageSources.Count?DisplayImageSources[index]:null;
+            var previous=_acceptingWorkspaceNavigation;_acceptingWorkspaceNavigation=true;
+            try{SelectedDisplayImageSourceIndex=index;}
+            finally{_acceptingWorkspaceNavigation=previous;}
+            if(persist&&node is not null&&source is not null&&ReferenceEquals(SelectedNode,node)
+                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&index<DisplayImageSources.Count
+                &&ReferenceEquals(DisplayImageSources[index],source))
+                node.SelectedDisplaySource=ImageSourceReference.FromDataSource(source);
+        }
         public void OnSelectedImageSourceIndexChanged(int index)
         {
+            if(_acceptingWorkspaceNavigation)return;
             var sourceInfo = (index >= 0 && index < DisplayImageSources.Count)
                 ? DisplayImageSources[index].ToString()
                 : "无效索引/空集合";
@@ -386,14 +408,14 @@ namespace SunEyeVision.UI.Shell.Windows
                     else if (value != null)
                     {
                         // 未运行也从 _typeCache 显示属性表结构
-                        ToolResults? tempResult = null;
+                        DeclaredOutputSnapshot? tempResult = null;
 
                         // 动态工具：从 Parameters 输出契约构造临时结果（设计态）
                         if (value.Parameters is IOutputContractProvider provider)
                         {
                             var contract = provider.GetOutputContract();
                             if (contract.Count > 0)
-                                tempResult = new ContractToolResults(contract);
+                                tempResult = null;
                         }
 
                         UpdateModuleResults(tempResult, value.Name, toolId, value.Id, value.Parameters);
@@ -436,7 +458,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 // ★ 优化：即使引用相同，也只刷新结果，不清空（防止闪烁）
                 if (node?.LastResult != null)
                 {
-                    _nodeResultManager.RefreshResultDisplay((SunEyeVision.UI.Shared.WorkflowNode?)node, (Plugin.SDK.Execution.Results.ToolResults?)node.LastResult);
+                    _nodeResultManager.RefreshResultDisplay((SunEyeVision.UI.Shared.WorkflowNode?)node, (DeclaredOutputSnapshot?)node.LastResult);
                 }
                 UpdateDisplayImageSources((SunEyeVision.UI.Shared.WorkflowNode?)node);
                 UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)node);
@@ -625,10 +647,6 @@ SplitterPosition = position;
             set => SetProperty(ref _allWorkflowsRunButtonText, value);
         }
 
-        /// <summary>
-        /// 图像集合，使用优化集合
-        /// </summary>
-        public BatchObservableCollection<ImageInfo> ImageCollection { get; }
 
         /// <summary>
         /// 是否自动切换
@@ -637,21 +655,6 @@ SplitterPosition = position;
         {
             get => _autoSwitchEnabled;
             set => SetProperty(ref _autoSwitchEnabled, value);
-        }
-
-        /// <summary>
-        /// 当前显示图像索引
-        /// </summary>
-        public int CurrentImageIndex
-        {
-            get => _currentImageIndex;
-            set
-            {
-                if (SetProperty(ref _currentImageIndex, value))
-                {
-                    UpdateCurrentImageDisplay();
-                }
-            }
         }
 
         /// <summary>
@@ -801,7 +804,6 @@ SplitterPosition = position;
             CalculationResults = new ObservableCollection<ResultItem>();
 
             // 初始化图像集合（优化版）
-            ImageCollection = new BatchObservableCollection<ImageInfo>();
 
             // 初始化共享基础设施服务
             _runtimeParameterService = new SunEyeVision.UI.Services.RuntimeParameterService();
@@ -2562,7 +2564,7 @@ SplitterPosition = position;
                     var contract = provider.GetOutputContract();
                     // A provider can notify again or reenter selection/document/window changes while reading.
                     if (IsCurrent())
-                        UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
+                        UpdateModuleResults(null, node.Name, node.ToolType, node.Id);
                 }), System.Windows.Threading.DispatcherPriority.Background);
             };
             notifier.OutputContractChanged += refreshContract;
@@ -2639,7 +2641,7 @@ SplitterPosition = position;
                             var contract = provider.GetOutputContract();
                             if (contract.Count > 0)
                             {
-                                var tempResult = new ContractToolResults(contract);
+                                DeclaredOutputSnapshot? tempResult = null;
                                 UpdateModuleResults(tempResult, SelectedNode.Name, SelectedNode.ToolType, SelectedNode.Id);
                             }
                         }
@@ -3162,9 +3164,8 @@ SplitterPosition = position;
         /// （Clear + Add × N）后再设置 SelectedIndex，避免 ComboBox 内部因竞态条件选中项丢失
         /// 
         /// 使用两阶段策略：
-        ///   阶段1: 先设 Property = -1（确保 WPF 绑定真正传播到 DP）
-        ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
-        /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
+        /// 原控件工作区自行维护稳定选择；这里只同步导航索引，
+        /// 不再用临时-1触发清图，也不把列表重建当成用户选择写入方案。
         /// </summary>
         private long _displaySourceSelectionGeneration;
         private void SetSelectedDisplayImageSourceIndexDeferred(int index)
@@ -3176,9 +3177,11 @@ SplitterPosition = position;
             {
                 if(generation!=_displaySourceSelectionGeneration||!ReferenceEquals(SelectedNode,node)
                     ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return;
-                _selectedDisplayImageSourceIndex=-1;SelectedDisplayImageSourceIndex=-1;
-                SelectedDisplayImageSourceIndex=index;
-                if(index<0)RefreshNativeResultImages();
+                // Source-list reconciliation is a mirror update, not a fresh user
+                // navigation. The native workspace reconciles its own stable choices.
+                // In particular it must not erase an explicitly selected file preview.
+                AcceptWorkspaceImageSourceIndex(index);
+                ResultWorkspaceChanged?.Invoke();
             }));
         }
 
@@ -3699,13 +3702,13 @@ SplitterPosition = position;
                 {
                     var toolResult=result switch
                     {
-                        ToolResults direct=>direct,
-                        Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as ToolResults,
+                        DeclaredOutputSnapshot direct=>direct,
+                        Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as DeclaredOutputSnapshot,
                         _=>null
                     };
                     try
                     {
-                        using var dispatchLease=toolResult?.Resources?.Retain();
+                        using var dispatchLease=toolResult?.Retain();
                         void Apply()
                         {
                             if(!OwnerCurrent())return;
@@ -3733,7 +3736,23 @@ SplitterPosition = position;
                             // UpdateModuleResults is the sole tree/table publication entrance.
                             if(OwnerCurrent())AddLog($"✅ 调试窗口执行完成: {node.Name}");
                         }
-                        if(debugWindow.Dispatcher.CheckAccess())Apply();else debugWindow.Dispatcher.Invoke(Apply);
+                        if(debugWindow.Dispatcher.CheckAccess())Apply();
+                        else if(toolResult is null)debugWindow.Dispatcher.BeginInvoke(new Action(Apply));
+                        else
+                        {
+                            var pending=new ResultDispatchLease(toolResult);
+                            try
+                            {
+                                var operation=debugWindow.Dispatcher.BeginInvoke(new Action(()=>
+                                {
+                                    using var lease=pending.Claim();
+                                    if(lease is not null)Apply();
+                                }));
+                                operation.Aborted+=(_,_)=>pending.Dispose();
+                                if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)pending.Dispose();
+                            }
+                            catch{pending.Dispose();throw;}
+                        }
                     }
                     catch(Exception error){AddLog($"⚠️ 处理执行结果失败: {error.Message}");}
                 };
@@ -4100,8 +4119,19 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
             var dispatcher=Application.Current?.Dispatcher;
             if(dispatcher is not null&&!dispatcher.CheckAccess())
             {
-                using var dispatchLease=e.Result.Resources?.Retain();
-                dispatcher.Invoke(()=>OnNodeExecutionCompleted(sender,e));return;
+                var pending=new ResultDispatchLease(e.Result);
+                try
+                {
+                    var operation=dispatcher.BeginInvoke(new Action(()=>
+                    {
+                        using var lease=pending.Claim();
+                        if(lease is not null)OnNodeExecutionCompleted(sender,e);
+                    }));
+                    operation.Aborted+=(_,_)=>pending.Dispose();
+                    if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)pending.Dispose();
+                }
+                catch{pending.Dispose();throw;}
+                return;
             }
             try
             {
@@ -4124,7 +4154,7 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                     // 工作流结果逐轮入缓存；图像/结果树/调试窗口的展示按 UI 节奏合并。
                     // 不读取全部反射属性，避免在 UI 线程触发整幅图像的懒统计。
                     _nodeResultManager.UpdateNodeResult(e.Node,e.Result,refreshDisplay:false,targetContext:targetContext);
-                    var presentationLease = e.Result.Resources?.Retain();
+                    var presentationLease = e.Result.Retain();
                     if (_pendingCameraPresentations.Remove(e.Node.Id, out var previous)) previous.Lease?.Dispose();
                     _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result, presentationLease);
                     if (_cameraPresentationTimer is null)
@@ -4141,22 +4171,11 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                     return;
                 }
 
-                // ★ 关键日志：节点执行完成 - 记录节点类型和顺序
-                var outputValues = e.Result?.GetOutputValues();
-                bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;
-                AddLog($"✅ 节点执行完成: {e.Node.Name}({e.Node.ToolType}), ID={e.Node.Id}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
-
-                // ★ 诊断：检查 ShapeMatch 结果中包含的 BestPositionCorrection 属性
-                if (outputValues != null)
-                {
-                    var hasPositionCorrection = outputValues.Any(kv =>
-                        kv.Key.Contains("PositionCorrection", StringComparison.Ordinal) ||
-                        kv.Key.Contains("BestPosition", StringComparison.Ordinal));
-                    if (hasPositionCorrection)
-                    {
-                        AddLog($"📐 [位置修正] 节点 {e.Node.Name} 输出包含位置修正属性");
-                    }
-                }
+                using var outputReader=e.Result.AcquireReader();
+                var hasImageOutput=e.Result.Schema.Outputs.Any(port=>port.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Resource
+                    &&port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Image&&outputReader.Values?.Contains(port.Id)==true
+                    &&outputReader.Values.Get<object?>(port.Id) is not null);
+                AddLog($"节点执行完成：{e.Node.Name}({e.Node.ToolType})，成功={e.Result.IsSuccess}，有图像输出={hasImageOutput}");
 
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
                 _nodeResultManager.UpdateNodeResult(e.Node,e.Result,
@@ -4192,7 +4211,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 节点执行完成后的后处理（DSQS 已通过 _ssotReader 委托自动读取 SSOT，无需推送）
         /// </summary>
-        private void OnNodeExecutionPostProcess(SunEyeVision.UI.Shared.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
+        private void OnNodeExecutionPostProcess(SunEyeVision.UI.Shared.WorkflowNode node, DeclaredOutputSnapshot? result)
         {
             if (result == null || !result.IsSuccess) return;
 
@@ -4201,7 +4220,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 // ★ DSQS 已通过 _ssotReader 委托自动读取 WorkflowContext，无需手动推送
                 //    删除旧的 UpdateNodeOutput / SetNodeResult 遍历代码
 
-                var outputValues = result.GetOutputValues();
+                using var outputReader=result.AcquireReader();
+                var outputValues = outputReader.Values?.CopyValues();
                 if (outputValues == null || outputValues.Count == 0)
                 {
                     AddLog($"⚠️ 节点 {node.Name} 无输出值");
@@ -4260,19 +4280,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         #endregion
 
-        #region 图像预览
 
-        /// <summary>
-        /// 更新当前图像显示
-        /// </summary>
-        private void UpdateCurrentImageDisplay()
-        {
-            if(CurrentImageIndex<0||CurrentImageIndex>=ImageCollection.Count){ClearNativeImagePresentation();return;}
-            _nativePreviewPath=ImageCollection[CurrentImageIndex].FilePath;_nativeImagesSuppressed=false;
-            ResultWorkspaceChanged?.Invoke();
-        }
-
-        #endregion
 
         #region 结果更新
 
@@ -4377,13 +4385,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             if(epoch!=_resultPublicationEpoch)return;
             _declaredResultActive=false;_declaredHistoricalResult=false;
         }
-        public void UpdateModuleResults(ToolResults? result,string? nodeName,string? toolId=null,string? nodeId=null,
+        public void UpdateModuleResults(DeclaredOutputSnapshot? result,string? nodeName,string? toolId=null,string? nodeId=null,
             ToolParameters? parameters=null)
         {
             if(_declaredHistoricalResult)return;
             if(nodeId is not null&&SelectedNode?.Id!=nodeId)return;
             var owner=CaptureResultViewOwner(_resultPublicationEpoch);
-            if(result?.DeclaredOutput is {IsComplete:true} snapshot)
+            if(result is {IsComplete:true} snapshot)
             {
                 var identity=result.ExecutionIdentity;
                 var debugScope=identity is null?null:_productionEditors.FirstOrDefault(context=>ReferenceEquals(context.DebugOwner,identity.Owner));
@@ -4391,8 +4399,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     &&(snapshot.Status is not (ExecutionStatus.Success or ExecutionStatus.PartialSuccess)||identity?.IsCurrent!=false));
                 return;
             }
-            IReadOnlyList<OutputVariable>? contract=result is ContractToolResults declared?declared.GetOutputVariables():
-                parameters is IOutputContractProvider provider?provider.GetOutputContract():null;
+            IReadOnlyList<OutputVariable>? contract=parameters is IOutputContractProvider provider?provider.GetOutputContract():null;
             if(contract is null&&SelectedNode is SunEyeVision.UI.Shared.WorkflowNode selected)
             {
                 if(selected.Parameters is IOutputContractProvider selectedProvider)contract=selectedProvider.GetOutputContract();
@@ -4402,7 +4409,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             if(!owner())return;
             if(contract is not null&&TryShowDeclaredSchema(contract,nodeName,nodeId))
             {
-                if(result is not null&&result is not ContractToolResults)
+                if(result is not null)
                     AddLog("该运行未发布完整声明快照，结果仅显示正式字段声明，不读取或转换未准入值。");
                 return;
             }
@@ -4909,7 +4916,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if (ImageSourcePolicy.Read(sourceNode) is { } policy) source.LoadFromPolicy(policy);
                 sourceNode.InputSource = source;
             }
-            BindLocalImageSourceEditor(sourceNode,source);
+            if(!_acceptingImageSource&&DocumentManager.Session is {} sourceSession&&ImageSourcePolicy.Read(sourceNode) is {} acceptedPolicy)
+                RefreshAcceptedImageSourceView(sourceNode,source,acceptedPolicy,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(sourceSession.Document));
+            else BindLocalImageSourceEditor(sourceNode,source);
             ImagePreviewSourceMessage = source.Count == 0 ? "请添加本地图像" : string.Empty;
             if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {
@@ -5480,15 +5489,4 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
     }
 
-    /// <summary>
-    /// 输出契约包装器 — 动态工具设计态结果展示。
-    /// 将 IOutputContractProvider 返回的 OutputVariable 列表包装为 ToolResults，
-    /// 供 UpdateModuleResults 读取并建树。
-    /// </summary>
-    internal sealed class ContractToolResults : ToolResults
-    {
-        private readonly IReadOnlyList<OutputVariable> _contract;
-        public ContractToolResults(IReadOnlyList<OutputVariable> contract) => _contract = contract;
-        public override IReadOnlyList<OutputVariable> GetOutputVariables() => _contract;
-    }
 }

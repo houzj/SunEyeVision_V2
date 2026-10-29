@@ -7,6 +7,29 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ImageSourceAcceptanceTests
 {
     [Fact]
+    public void Explicit_selection_notice_excludes_mode_runtime_cursor_and_rejected_edits()
+    {
+        var source=new ImageInputSource("source");var a=new ImageInfo{FilePath="a"};var b=new ImageInfo{FilePath="b"};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);var notices=new List<ImageSourceSelectionEventArgs>();
+        source.ExplicitSelectionAccepted+=(_,e)=>notices.Add(e);
+        source.AutoSwitchEnabled=false;source.SetRunSelection(new[]{a.Id});
+        Assert.True(source.TryPresentRuntimeCursor(source.EditVersion,b.Id,"b","b"));Assert.Empty(notices);
+        source.SelectImage(1);var notice=Assert.Single(notices);
+        Assert.Same(b,notice.Image);Assert.Equal(source.EditVersion,notice.Version);Assert.Equal(1,notice.Index);
+        source.ConfigurationWriter=_=>throw new InvalidOperationException("reject");
+        Assert.Throws<InvalidOperationException>(()=>source.SelectImage(0));Assert.Single(notices);Assert.Same(b,source.CurrentImage);
+    }
+    [Fact]
+    public void Reentrant_accepted_selection_does_not_deliver_the_obsolete_outer_notice()
+    {
+        var source=new ImageInputSource("source");var a=new ImageInfo{FilePath="a"};var b=new ImageInfo{FilePath="b"};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);var observed=new List<string>();
+        source.ExplicitSelectionAccepted+=(_,e)=>{if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
+        source.ExplicitSelectionAccepted+=(_,e)=>observed.Add(e.Image.Id);
+        source.SelectImage(0);
+        Assert.Equal(new[]{b.Id},observed);Assert.Same(b,source.CurrentImage);Assert.Equal(1,source.CapturePolicy().CurrentIndex);
+    }
+    [Fact]
     public void Rejected_add_does_not_change_entries_selection_or_edit_version()
     {
         var source=new ImageInputSource("source");
@@ -96,8 +119,7 @@ internal static class ImageSourceTestRuntime
 {
     internal static SunEyeVision.Workflow.RuntimeToolConfiguration Configuration()
     {
-        Assert.True(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.LoadPlugins(
-            System.IO.Path.Combine(typeof(ImageSourceAcceptanceTests).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!,"plugins")));
+        Assert.True(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.LoadPlugins());
         return SunEyeVision.Workflow.RuntimeToolConfiguration.Create("ImageLoad");
     }
     internal static SunEyeVision.Workflow.WorkflowNodeBase Node(string id="source")

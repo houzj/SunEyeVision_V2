@@ -42,8 +42,8 @@ public sealed partial class SolutionManagerUiTests
             Manager.WorkflowExecutionError += (_, e) => Errors.Add(e.ErrorMessage);
             Manager.NodeExecutionCompleted += (_, e) =>
             {
-                if(e.Result is SunEyeVision.Plugin.SDK.Execution.Results.RuntimeToolResults {Output: {} output})
-                    OnResult?.Invoke((string)output.ToValues()["output.file"]!);
+                using var reader=e.Result.AcquireReader();
+                if(reader.Values is {} values)OnResult?.Invoke(values.Get<string>("output.file"));
             };
         }
         public ImageInputSource AddSource(string id, int images, SunEyeVision.Workflow.Workflow? owner = null)

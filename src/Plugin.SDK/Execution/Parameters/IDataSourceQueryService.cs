@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -41,7 +42,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 执行结果（运行时）
         /// </summary>
-        public ToolResults? Result { get; set; }
+        public DeclaredOutputSnapshot? Result { get; set; }
 
         /// <summary>
         /// 结果类型（设计时）

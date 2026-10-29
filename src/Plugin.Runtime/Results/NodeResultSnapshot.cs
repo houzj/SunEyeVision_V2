@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SunEyeVision.Plugin.SDK.Execution.Results;
+namespace SunEyeVision.Plugin.Runtime;
 
 public sealed class NodeResultSnapshot : IDisposable
 {
@@ -13,7 +13,7 @@ public sealed class NodeResultSnapshot : IDisposable
         try
         {
             foreach (var result in results.Values.Select(value => value.Result).Distinct())
-                if (result?.Resources != null) _leases.Add(result.Resources.Retain());
+                if (result != null) _leases.Add(result.Retain());
             Results = new Dictionary<string, NodeExecutionResult>(results);
         }
         catch { Dispose(); throw; }

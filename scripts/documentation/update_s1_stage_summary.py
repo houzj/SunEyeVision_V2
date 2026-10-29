@@ -373,6 +373,9 @@ def render_blob_control_plan(plan):
                if plan.get('roiMenuHistoryDesign') else '')
             + ('<h4 id="o06-module-results-plan">模块结果：任务归属与统一优化方案</h4>'
                + '<p>' + escape(plan['moduleResultsPlan']['summary']) + '</p>'
+               + ('<h5>当前完整链路推进</h5>'
+                  + table(['项目','实施与验收边界'], list(plan['moduleResultsPlan']['currentExecution'].items()))
+                  if plan['moduleResultsPlan'].get('currentExecution') else '')
                + '<h5>谁负责</h5>'
                + table(['对象','唯一负责方','范围','当前状态'], plan['moduleResultsPlan']['ownership'])
                + '<h5>已确定的方案</h5>'
@@ -385,6 +388,29 @@ def render_blob_control_plan(plan):
                + '<p><a href="references/module-result-chain-20261028/module-result-chain-vm-comparison.html">模块结果完整链路与VM对照原文</a> · '
                + '<a href="references/module-result-chain-20261028/reference-manifest.json">16条源码身份及证据边界</a></p>'
                if plan.get('moduleResultsPlan') else '')
+            + ('<h5 id="o06-native-assist-composition">C09 Assist十五角色原组合</h5>'
+               + table(['项目','原件、实施与证据边界'], list(plan['nativeAssistCandidate'].items()))
+               if plan.get('nativeAssistCandidate') else '')
+            + ('<h5 id="o06-native-export-snapshot">C17图像导出快照与原算法边界</h5>'
+               + table(['项目','实施、验证与剩余'], list(plan['nativeExportSnapshotCandidate'].items()))
+               if plan.get('nativeExportSnapshotCandidate') else '')
+            + ('<h5 id="o06-roi-group-coverage-snapshot">C08覆盖组：三态快照基础</h5>'
+               + table(['项目','候选实施与验证边界'], [(key, '；'.join(value) if isinstance(value, list) else value)
+                       for key, value in plan['fullDomainSnapshotCandidate'].items()])
+               if plan.get('fullDomainSnapshotCandidate') else '')
+            + ('<h5 id="o06-roi-group-coverage-commands">C08原全域模板与覆盖组编辑历史</h5>'
+               + table(['项目','原件、同源验证及剩余'], [(key, '；'.join(value) if isinstance(value, list) else value)
+                       for key, value in plan['fullDomainCommandsCandidate'].items()])
+               if plan.get('fullDomainCommandsCandidate') else '')
+            + ('<h5 id="o06-cross-binding-lifecycle">C17原十字与色板：绑定及指针生命周期候选</h5>'
+               + table(['项目','同源验证与未完成边界'], list(plan['crossBindingLifecycleCandidate'].items()))
+               if plan.get('crossBindingLifecycleCandidate') else '')
+            + ('<h5 id="o06-assist-state-cutover-audit">C09三态权威整体切换及位姿显示补证</h5>'
+               + table(['项目','整体设计与证据边界'], list(plan['assistStateCutoverAudit'].items()))
+               if plan.get('assistStateCutoverAudit') else '')
+              + ('<h5 id="o06-crosshair-settings-composition">C17十字辅助线完整配置组合候选</h5>'
+                 + table(['项目','原组合、正式验证及剩余'], list(plan['crosshairSettingsCompositionCandidate'].items()))
+                 if plan.get('crosshairSettingsCompositionCandidate') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')
@@ -431,6 +457,28 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
+             + ('<section id="o06-architecture-isolation-plan"><h4>最新决定：隔离旧体系，逐工具迁入新架构</h4>'
+                + '<p><b>' + escape(s4['architectureIsolationPlan']['decision']) + '</b></p>'
+                + '<p>' + escape(s4['architectureIsolationPlan']['status']) + '</p>'
+                + (table(['隔离前源码盘点项','实际结果与实施约束'], s4['architectureIsolationPlan']['sourceAudit']['findings'])
+                   + '<p>可重跑证据：<a href="' + escape(os.path.relpath(ROOT / s4['architectureIsolationPlan']['sourceAudit']['evidence'], PAGE.parent).replace('\\', '/'), quote=True) + '">工程引用及产品准入路径完整清单</a>。'
+                   + escape(s4['architectureIsolationPlan']['sourceAudit']['limitation']) + '</p>'
+                   if s4['architectureIsolationPlan'].get('sourceAudit') else '')
+                + (table(['本批落地项','实际结果及范围'], s4['architectureIsolationPlan']['currentBatch']['results'])
+                   if s4['architectureIsolationPlan'].get('currentBatch') else '')
+                + ('<section id="o06-result-chain-cutover"><h5>新结果链：唯一冻结快照与完整消费者切换</h5>'
+                   + '<p>' + escape(s4['architectureIsolationPlan']['resultChainCutover']['status']) + '</p>'
+                   + (table(['主链实施项','当前证据及边界'], s4['architectureIsolationPlan']['resultChainCutover']['implementationResults'])
+                      if s4['architectureIsolationPlan']['resultChainCutover'].get('implementationResults') else '')
+                   + table(['链路/职责','复用与迁移决定','验收出口'], s4['architectureIsolationPlan']['resultChainCutover']['decisions'])
+                   + '<p><b>切换门禁：</b>' + escape('；'.join(s4['architectureIsolationPlan']['resultChainCutover']['cutoverGate'])) + '</p>'
+                   + '<p>原21项失败逐项保留：<a href="' + escape(os.path.relpath(ROOT / 'docs/collaboration/evidence/I2_RESULT_CHAIN_FAILED_CASES_20261029.json', PAGE.parent).replace('\\', '/'), quote=True) + '">失败来源与承接决定</a>；'
+                   + '<a href="' + escape(os.path.relpath(ROOT / s4['architectureIsolationPlan']['resultChainCutover']['evidence'], PAGE.parent).replace('\\', '/'), quote=True) + '">实际编译消费者/源码SHA清单</a>。源图和设计不计作结果链已实施。</p></section>'
+                   if s4['architectureIsolationPlan'].get('resultChainCutover') else '')
+                + table(['现有能力','源码位置','归属','调整决定','全部消费者/影响','验收出口'], s4['architectureIsolationPlan']['inventory'])
+                + table(['实施批','整链要求'], s4['architectureIsolationPlan']['batches'])
+                + '<p><b>下一步：</b>' + escape(s4['architectureIsolationPlan']['nextAction']) + '</p></section>'
+                if s4.get('architectureIsolationPlan') else '')
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if 'preview' in s4.get('uiReview', {}) else '')
              + ('<p><a href="#o06-blob-control-prototype-plan"><b>审核Blob所需控件、组合与接入条件</b></a> · 原31类仅作历史功能追踪；不要求先迁完整个VM控件库。</p>' if s4.get('blobControlPrototypePlan') else '')
              + render_blob_control_plan(s4.get('blobControlPrototypePlan'))

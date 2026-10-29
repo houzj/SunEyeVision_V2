@@ -1,4 +1,8 @@
 <Project>
+  <Target Name="RejectRetiredSdkToolBuild" BeforeTargets="PrepareForBuild"
+          Condition="'$(IsToolPlugin)'=='true' And '$(DesignTimeBuild)'!='true'">
+    <Error Text="旧SDK工具已退出当前产品构建。源码仅供查阅；完成新Runtime/Wpf整链迁移并加入product/ToolComponents.props后方可准入。" />
+  </Target>
   <!-- 角色组件不另建工具目录；打包时也须部署到实际宿主根，尤其是无静态引用的可选编辑器。 -->
   <PropertyGroup Condition="'$(ToolComponentId)'!='' And '$(PackagingRoot)'!=''">
     <OutDir>$(PackagingRoot)\app\</OutDir>

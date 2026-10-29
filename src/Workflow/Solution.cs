@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace SunEyeVision.Workflow;
 public class Solution : ObservableObject
 {
     [System.Text.Json.Serialization.JsonIgnore]
-    public SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner { get; } = new();
+    public SunEyeVision.Plugin.Runtime.ToolExecutionOwner ExecutionOwner { get; } = new();
     /// <summary>
     /// 解决方案ID（不可变，与 SolutionMetadata 关联）
     /// </summary>

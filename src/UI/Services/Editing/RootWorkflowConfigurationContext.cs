@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -18,7 +18,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  private bool _active=true;private int _undoCount,_redoCount;private long _historyVersion;
  private readonly Dictionary<string,WorkflowNodeBase> _formalNodes=new(StringComparer.Ordinal);
  internal Flow Root {get;}
- internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner {get;}
+ internal SunEyeVision.Plugin.Runtime.ToolExecutionOwner ExecutionOwner {get;}
  internal DataSourceQueryService Query {get;}
  internal Func<string?>? PrepareView {get;set;}
  internal Func<bool>? HasPendingView {get;set;}

@@ -61,10 +61,12 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     }
     public void CancelGesture()
     {
-        Dispatcher.VerifyAccess();if(_disposed||!_owner.OwnsRoi(this))return;var session=_session;
+        Dispatcher.VerifyAccess();if(_disposed||!_owner.OwnsRoi(this))return;
+        var session=_session;var generation=ROIControlBase.GestureGeneration(NativeView);var cancel=CaptureInteractionCancellation();
+        bool Current()=>!_disposed&&ReferenceEquals(session,_session)&&generation==ROIControlBase.GestureGeneration(NativeView)
+            &&_owner.OwnsRoi(this)&&_owner.MayCancelRoiSession(this,session);
         NativeRoiCallbacks.Run(new Action[]{()=>{if(_owner.OwnsRoi(this))CancelDrawing(true);},
-            ()=>{if(_owner.OwnsRoi(this))CancelInteraction();},
-            ()=>session?.CancelPending(()=>_owner.OwnsRoi(this)&&_owner.MayCancelRoiSession(this,session))});
+            cancel,()=>{if(Current())session?.CancelPending(Current);}});
     }
     internal NativeRoiAttachment(NativeResultViewport owner,NativeResultFrameReceipt receipt,Func<bool> current)
     { _owner=owner;Receipt=receipt;_current=current; }
@@ -84,6 +86,19 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         EnsureCurrent();
         NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=()=>CancelDrawing(true);
         NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelDrawing(true);};
+        NativeView.NativeRoiCaptureCancelEdit=context=>
+        {
+            if(context is not NativeRoiProjection item||_session is not {} session)return ()=>{};
+            var stamp=session.Stamp;
+            return ()=>
+            {
+                var generation=ROIControlBase.GestureGeneration(NativeView);
+                bool Current()=>ReferenceEquals(session,_session)&&session.Stamp==stamp
+                    &&generation==ROIControlBase.GestureGeneration(NativeView);
+                if(!Current()||!session.Owns(item)||!Current()||!_owner.MayCancelRoiSession(this,session)||!Current())return;
+                if(item.HasPending&&item.PendingStamp==stamp)item.Cancel();
+            };
+        };
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
         NativeView.AddHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled),true);
         NativeView.PreviewMouseDown+=OnPreviewMouse;NativeView.PreviewKeyDown+=OnKey;
@@ -286,31 +301,38 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     }
     private void OnKey(object sender,KeyEventArgs args)
     {
-        if(args.Key==Key.Escape){CancelInteraction();_session?.CancelPending();args.Handled=true;return;}
+        if(args.Key==Key.Escape){CancelGesture();args.Handled=true;return;}
         if(Keyboard.Modifiers==ModifierKeys.Control&&args.Key is Key.Z or Key.Y
             &&Keyboard.FocusedElement is not System.Windows.Controls.Primitives.TextBoxBase&&TryCaptureMenu(out var lease))
         {if(args.Key==Key.Z)lease.Owner.TryUndo(()=>Still(lease,false));else lease.Owner.TryRedo(()=>Still(lease,false));args.Handled=true;}
     }
-    private void CancelInteraction()
+    private void CancelInteraction()=>CaptureInteractionCancellation()();
+    private Action CaptureInteractionCancellation()
     {
-        NativeRoiCallbacks.Run(Descendants<RectROI>(NativeView).ToArray().Select(roi=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))roi.CancelInteraction();}))
-            .Concat(Descendants<SectorROI>(NativeView).ToArray().Select(roi=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))roi.CancelInteraction();})))
-            .Concat(Descendants<CircleROI>(NativeView).ToArray().Select(roi=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))roi.CancelInteraction();})))
-            .Concat(Descendants<PolygonROI>(NativeView).ToArray().Select(roi=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))roi.CancelInteraction();}))));
+        var generation=ROIControlBase.GestureGeneration(NativeView);var wasDragging=NativeView.IsDragROI;
+        var cancellations=Descendants<ROIControlBase>(NativeView)
+            .Where(roi=>roi is RectROI or SectorROI or CircleROI or PolygonROI)
+            .Select(roi=>roi.CaptureGestureCancellation()).ToArray();
+        return ()=>NativeRoiCallbacks.Run(cancellations.Select(cancel=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))cancel();}))
+            .Append(()=>{if(wasDragging&&generation==ROIControlBase.GestureGeneration(NativeView)&&_owner.MayClearRoiCallbacks(this))NativeView.IsDragROI=false;}));
     }
     private void OnPreviewMouse(object sender,MouseButtonEventArgs args)
     {if(!IsCurrent||_session?.PrepareEditor()!=true||!IsCurrent)args.Handled=true;}
     private void OnPolygonCancelled(object sender,RoutedEventArgs args)
     {if(!_disposed&&args.OriginalSource is PolygonROI {DataContext:NativePolygonRoiProjection item}&&_session is {} session&&session.Owns(item))
-        NativeRoiCallbacks.Run([CancelInteraction,()=>session.CancelPending(()=>_owner.MayCancelRoiSession(this,session))]);}
+        CancelGesture();}
     private void OnLostCapture(object sender,MouseEventArgs args)
     {
         if(_disposed)return;
+        if(ReferenceEquals(Mouse.Captured,args.OriginalSource))return;
         if(!Descendants<RectROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<CircleROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<PolygonROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
-        NativeRoiCallbacks.Run([CancelInteraction,()=>_session?.CancelPending()]);
+        var session=_session;var generation=ROIControlBase.GestureGeneration(NativeView);
+        bool Current()=>!_disposed&&ReferenceEquals(session,_session)&&generation==ROIControlBase.GestureGeneration(NativeView)
+            &&_owner.MayCancelRoiSession(this,session);
+        NativeRoiCallbacks.Run([CancelInteraction,()=>{if(Current())session?.CancelPending(Current);}]);
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
@@ -346,7 +368,7 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
         NativeRoiCallbacks.Run([RetireMenus,()=>previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous)),ReleaseFrame,()=>{if(_owner.MayClearRoiCallbacks(this))NativeView.RoiSelectedCommand=null;},
-            ()=>{if(_owner.MayClearRoiCallbacks(this)){NativeView.NativeDrawStart=(_,_)=>false;NativeView.NativeDrawComplete=_=>false;NativeView.NativeDrawCancel=()=>{};NativeView.NativeDrawCaptureLost=_=>{};}},()=>_owner.DetachRoi(this)]);
+            ()=>{if(_owner.MayClearRoiCallbacks(this)){NativeView.NativeDrawStart=(_,_)=>false;NativeView.NativeDrawComplete=_=>false;NativeView.NativeDrawCancel=()=>{};NativeView.NativeDrawCaptureLost=_=>{};NativeView.NativeRoiCaptureCancelEdit=null;}},()=>_owner.DetachRoi(this)]);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject
     {

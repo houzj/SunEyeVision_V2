@@ -102,26 +102,121 @@ internal static class S2DocumentEditingCases
    if(!view.Resources.Contains(key))view.Resources.Add(key,new DataTemplate{VisualTree=new FrameworkElementFactory(typeof(Grid))});
   }
  }
+ static void SaveExport(string path, BitmapSource prepared)
+ {
+  var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
+  Require(prepared.IsFrozen,"导出快照未冻结");
+  exporter.GetMethod("SavePrepared")!.Invoke(null,new object[]{path,prepared});
+ }
  static void NativeImageExports()
  {
   var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
   var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-export");Directory.CreateDirectory(folder);
   var bytes=new byte[]{255,0,0,0,0,255};var image=new ExportImage{Width=2,Height=1,Buffer=bytes};
-  var raw=Path.Combine(folder,"rgb.png");exporter.GetMethod("SaveRaw")!.Invoke(null,new object[]{raw,image});
+  var raw=Path.Combine(folder,"rgb.png");SaveExport(raw, (BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{image})!);
   var decoded=BitmapDecoder.Create(new Uri(raw),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   var rgb=new FormatConvertedBitmap(decoded,PixelFormats.Rgb24,null,0);var actual=new byte[6];rgb.CopyPixels(actual,6,0);
   Require(actual.SequenceEqual(bytes)&&ReferenceEquals(image.Buffer,bytes),"原图导出改变像素、通道或借入缓冲引用");
   var depthBytes=new byte[]{0,0,255,127};var depth=new ExportImage{Width=2,Height=1,PixelFormat="Gray16",Buffer=depthBytes,RangeBuffer=depthBytes,DetailedPixelFormat=17825976u};
-  var gray=Path.Combine(folder,"gray16.png");exporter.GetMethod("SaveRaw")!.Invoke(null,new object[]{gray,depth});
+  var gray=Path.Combine(folder,"gray16.png");SaveExport(gray, (BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{depth})!);
   var grayFrame=BitmapDecoder.Create(new Uri(gray),BitmapCreateOptions.IgnoreImageCache|BitmapCreateOptions.PreservePixelFormat,BitmapCacheOption.OnLoad).Frames[0];
   var stored=new byte[4];grayFrame.CopyPixels(stored,4,0);Require(grayFrame.Format==PixelFormats.Gray16&&stored.SequenceEqual(depthBytes)&&ReferenceEquals(depth.RangeBuffer,depthBytes),"16位原图丢失位深/像素或改变输入");
   var ownerView=new Native.Display.VMBaseControls.ImageViewBox();Show(ownerView);
   var rendered=Path.Combine(folder,"rectangle.png");var black=new ExportImage{Width=8,Height=8,Buffer=new byte[8*8*3]};
-  exporter.GetMethod("SaveRendered")!.Invoke(null,new object[]{rendered,black,new object[]{new ExportRectangle()},ownerView});
+  SaveExport(rendered, (BitmapSource)exporter.GetMethod("PrepareRendered")!.Invoke(null,new object[]{black,new object[]{new ExportRectangle()},ownerView})!);
   var frame=BitmapDecoder.Create(new Uri(rendered),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   var renderedRgb=new FormatConvertedBitmap(frame,PixelFormats.Rgb24,null,0);var pixels=new byte[8*8*3];renderedRgb.CopyPixels(pixels,24,0);
   Require(frame.PixelWidth==8&&frame.PixelHeight==8&&Enumerable.Range(0,64).Any(i=>pixels[i*3+1]>pixels[i*3]&&pixels[i*3+1]>pixels[i*3+2]),"原ShapeItemsPage未按原图尺寸输出绿色图形");
   Require(black.Buffer.All(value=>value==0),"带图形导出污染了原图缓冲");
+ }
+ static void VerifyNativeExportSnapshots()
+ {
+  BitmapSource Prepare(NativeResultViewport viewport,bool rendered)
+  {
+   var view=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var prepare=(Func<bool,BitmapSource>)view.GetType().GetProperty("NativePrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view)!;
+   return prepare(rendered);
+  }
+  byte[] Pixels(BitmapSource source)
+  {var converted=new FormatConvertedBitmap(source,PixelFormats.Bgra32,null,0);var bytes=new byte[converted.PixelWidth*converted.PixelHeight*4];converted.CopyPixels(bytes,converted.PixelWidth*4,0);return bytes;}
+  BitmapSource Save(BitmapSource prepared,string name)
+  {
+   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");SaveExport(path,prepared);
+   return BitmapDecoder.Create(new Uri(path),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
+  }
+  Test("原图导出冻结后换帧及关闭仍保存点击时像素",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var a=resources.CreateGray8(3,2,Enumerable.Repeat((byte)17,6).ToArray());var b=resources.CreateGray8(2,1,new byte[]{90,91});
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(a,()=>true),"A未接纳");
+   var prepared=Prepare(viewport,false);Require(prepared.IsFrozen,"原图未冻结");
+   Require(viewport.BindImage(b,()=>true),"B未接纳");viewport.Clear();viewport.Dispose();resources.Dispose();
+   var stored=Save(prepared,"export-retired-raw");var pixels=Pixels(stored);
+   Require(stored.PixelWidth==3&&stored.PixelHeight==2&&Enumerable.Range(0,6).All(i=>pixels[i*4]==17&&pixels[i*4+1]==17&&pixels[i*4+2]==17&&pixels[i*4+3]==255),"导出读取了新图或已释放旧adapter");
+  });
+  foreach(var format in Enum.GetValues<PixelLayout>())Test("原图导出保原格式及Domain外规范像素 "+format,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,format,out _,out var original);var probe=new RasterPixelsProbe(image);
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(probe,()=>true),"未接图");
+   var prepared=Prepare(viewport,false);var expected=format switch{PixelLayout.Gray8=>PixelFormats.Gray8,PixelLayout.Bgr24=>PixelFormats.Bgr24,_=>PixelFormats.Bgra32};
+   Require(prepared.IsFrozen&&prepared.Format==expected,"原图导出被强制成显示BGRA");
+   var layout=image.Layout;var channels=format==PixelLayout.Gray8?1:format==PixelLayout.Bgr24?3:4;
+   viewport.Dispose();resources.Dispose();Require(probe.Active==0&&probe.Released==1,"原图导出跨弹窗保留像素reader");
+   var decoded=Save(prepared,"export-original-"+format);var converted=new FormatConvertedBitmap(decoded,expected,null,0);var actual=new byte[layout.RowStrideBytes*layout.Height];converted.CopyPixels(actual,layout.RowStrideBytes,0);
+   for(var row=0;row<layout.Height;row++)Require(actual.AsSpan(row*layout.RowStrideBytes,layout.Width*channels).SequenceEqual(original.AsSpan(row*layout.RowStrideBytes,layout.Width*channels)),"原图通道/alpha/Domain外像素改变 "+format);
+  });
+  Test("图形导出冻结后图层主题尺寸及owner退场不改变结果",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");var receipt=viewport.CurrentFrame!;
+   using var layer=viewport.CreateGeometryLayer();Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(30,25),10),Colors.Lime,2)},()=>true),"原圆未接纳");Pump();
+   var prepared=Prepare(viewport,true);var original=Pixels(prepared);Require(Enumerable.Range(0,4800).Any(i=>original[i*4+1]>100&&original[i*4+2]<30),"原ShapeItemsPage未画绿色圆");
+   Require(layer.Present(receipt,2,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(5,5)),Colors.Red)},()=>true),"新图层未接纳");
+   viewport.View.Width=111;viewport.View.Height=70;viewport.Dispose();viewport.View.Resources.Clear();resources.Dispose();
+   Require(Pixels(Save(prepared,"export-retired-rendered")).SequenceEqual(original),"冻结后仍读取图形/主题/尺寸或owner");
+  });
+  Test("导出准备proof重入换帧拒旧快照且不清新图",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(3,2,new byte[6]);var b=resources.CreateGray8(2,1,new byte[]{80,81});
+   using var viewport=new NativeResultViewport();Show(viewport.View);var armed=false;
+   bool Current(){if(armed){armed=false;Require(viewport.BindImage(b,()=>true),"重入B未接纳");}return true;}
+   Require(viewport.BindImage(a,Current),"A未接纳");armed=true;
+   PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,false));
+   Require(!armed&&viewport.CurrentFrame!.Frame==b.Frame&&viewport.ReadPixel(0,0)![0]==80&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ImageDataSource is not null,"旧准备拒绝时清了新B");
+  });
+  Test("图形导出准备同帧proof重入换层拒混合快照",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");var receipt=viewport.CurrentFrame!;
+   using var layer=viewport.CreateGeometryLayer();var armed=false;
+   bool Current(){if(armed){armed=false;Require(layer.Present(receipt,2,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(20,30)),Colors.Blue)},()=>true),"新层未接纳");}return true;}
+   Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(3,4)),Colors.Red)},Current),"旧层未接纳");Pump();armed=true;
+   PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,true));
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Require(!armed&&viewport.CurrentFrame==receipt&&native.ShapeList!.Count==1&&((Native.Dependencies.VMControls.RenderInterface.IPoint)native.ShapeList[0]).Point==new Point(20,30),"旧准备清新图层或帧");
+  });
+  Test("图形导出交付前消费独立图层来源失效不返回旧图",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);using var viewport=new NativeResultViewport();Show(viewport.View);
+   var armed=false;var calls=0;var layerValid=true;
+   bool ImageCurrent(){if(armed&&++calls==5)layerValid=false;return true;}
+   Require(viewport.BindImage(image,ImageCurrent),"未接图");var receipt=viewport.CurrentFrame!;using var layer=viewport.CreateGeometryLayer();
+   Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(30,25),10),Colors.Lime)},()=>layerValid),"图层未接纳");Pump();
+   calls=0;armed=true;PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,true));armed=false;
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Require(!layerValid&&viewport.CurrentFrame==receipt&&native.ImageDataSource is not null&&native.ShapeList is null,"失效图层未清或越权清健康背景");
+   var retry=Prepare(viewport,true);Require(retry.IsFrozen,"失效层退出后不能重试导出背景");
+  });
+  Test("导出拒绝未冻结位图且取消准备不创建文件",()=>
+  {
+   var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
+   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"export-cancelled.png");
+   var mutable=BitmapSource.Create(1,1,96,96,PixelFormats.Bgra32,null,new byte[]{0,0,0,255},4);
+   try {exporter.GetMethod("SavePrepared")!.Invoke(null,new object[]{path,mutable});throw new Exception("未拒绝未冻结快照");}
+   catch(TargetInvocationException error){Require(error.InnerException is ArgumentException&&!File.Exists(path),"未冻结快照创建文件");}
+   var image=new ExportImage{Width=1,Height=1,Buffer=new byte[]{0,0,0}};
+   var prepared=(BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{image})!;
+   Require(prepared.IsFrozen&&!File.Exists(path),"仅准备（取消保存）创建文件");
+  });
  }
  static void NativeSessionLifetime()
  {
@@ -1029,10 +1124,184 @@ internal static class S2DocumentEditingCases
    finally{window.Close();}
   });
  }
+ static void VerifyRoiGroupSnapshots()
+ {
+  Test("ROI覆盖快照：空集合三态分别保留，不生成全图矩形",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var image=resources.CreateGray8(32,24,new byte[768]);
+   foreach(var coverage in new[]{RoiCoverage.None,RoiCoverage.FullDomain,RoiCoverage.Explicit})
+   {
+    var model=new RoiHost(image);model.Groups[0]=new("detect",coverage,RoiCoverage.Explicit);
+    using var session=model.Open();
+    Require(session.Items.Count==0&&session.Groups.Single(group=>group.Group=="detect").Coverage==coverage&&model.Writes==0,"空集合被推断为其他覆盖状态或生成伪几何");
+   }
+  });
+  Test("ROI覆盖快照：捕获隔离宿主可变集合，同版变更明确拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();model.Groups[0]=new("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit);
+   Require(session.Groups[0].Coverage==RoiCoverage.Explicit,"宿主集合可回写已安装快照");
+   var rejected=false;try{session.Refresh();}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&session.Groups[0].Coverage==RoiCoverage.Explicit&&model.Writes==0,"同版覆盖变更未拒绝或污染原快照");
+  });
+  Test("ROI覆盖快照：新版本切换取消旧绘制，检测与屏蔽独立",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();var cancelled=0;session.DrawRequested+=_=>{};session.DrawCancelled+=_=>cancelled++;
+   var request=session.BeginDraw("rectangle")!;Require(request is not null,"未建立原绘制请求");
+   model.Groups[0]=new("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit);model.Groups[1]=new("mask",RoiCoverage.None,RoiCoverage.Explicit);model.Revision++;session.Refresh();
+   Require(cancelled==1&&session.ActiveDraw is null&&session.Items.Count==0&&session.Groups[0].Coverage==RoiCoverage.FullDomain&&session.Groups[1].Coverage==RoiCoverage.None,"覆盖切换未原子安装或遗留旧绘制");
+   Require(!session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)))&&model.Attempts==0,"旧绘制越过覆盖版本进入宿主");
+  });
+  Test("ROI覆盖快照：未知重复组和非显式夹带几何拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,24,new byte[768]);
+   var row=new RoiEditItem("detect",Guid.NewGuid(),"矩形",RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)));
+   var cases=new[]{
+    (Array.Empty<RoiEditItem>(),new[]{new RoiGroupState("detect",(RoiCoverage)99,RoiCoverage.Explicit)}),
+    (Array.Empty<RoiEditItem>(),new[]{new RoiGroupState("detect",RoiCoverage.None,RoiCoverage.Explicit),new RoiGroupState("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("mask",RoiCoverage.Explicit,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("detect",RoiCoverage.None,RoiCoverage.Explicit)})};
+   foreach(var (items,groups) in cases)
+   {
+    var snapshot=new RoiEditSnapshot(new(Guid.NewGuid(),0,image.Frame),items,groups);var rejected=false;
+    try{using var session=new NativeRoiSession(image,()=>snapshot,(_,_)=>throw new Exception("禁止写宿主"),()=>true,()=>new(false,false),"detect");}
+    catch(ArgumentException){rejected=true;}
+    Require(rejected,"不完整或矛盾覆盖快照被接纳");
+   }
+  });
+  Test("ROI覆盖快照：普通几何回执不得夹带另一组覆盖变更",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;
+   model.AfterAccept=result=>result with{Snapshot=result.Snapshot with{Groups=new[]{new RoiGroupState("detect",RoiCoverage.Explicit,RoiCoverage.Explicit),new RoiGroupState("mask",RoiCoverage.FullDomain,RoiCoverage.Explicit)}}};
+   var rejected=false;try{session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)));}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&!session.IsCurrent&&model.Attempts==1,"宿主越权覆盖回执未使租约失效");
+  });
+ }
+ static void VerifyRoiCoverageCommands()
+ {
+  RoiCoverage Coverage(NativeRoiSession session,string group)=>session.Groups.Single(state=>state.Group==group).Coverage;
+  ToggleButton Full(NativeRoiEditor editor)=>Visuals<ToggleButton>(editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen);
+  void RequireFullBitmap(ToggleButton button)
+  {
+   button.ApplyTemplate();var icon=(Image)button.Template.FindName("icon",button);
+   Require(icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&bitmap.PixelHeight>0,"原全域图标资源未真实加载");
+  }
+  void NativeClick(ToggleButton button){typeof(ToggleButton).GetMethod("OnClick",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(button,null);Pump();}
+  Test("ROI覆盖交互：原五模板顺序与真实全域按钮、重复点击及历史",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();
+   var session=sample.Session;var original=session.Items.Single(row=>row.Group=="detect").Id;var mask=session.Items.Single(row=>row.Group=="mask").Id;
+   var types=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Where(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType).Select(button=>button.CommandParameter!.ToString()).ToArray();
+   Require(types.SequenceEqual(new[]{"FullScreen","Box","SectorRing","Polygon","Sector"}),"原形状模板顺序错误或圆形与圆环混用");
+   RequireFullBitmap(Full(sample.Scene.Editor));
+   NativeClick(Full(sample.Scene.Editor));
+   RequireFullBitmap(Full(sample.Scene.Editor));
+   Require(Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect")&&session.Items.Single().Id==mask&&session.CurROIData is null&&Full(sample.Scene.Editor).IsChecked==true,"原全域按钮未原子清目标组或波及屏蔽区");
+   var revision=sample.Revision;NativeClick(Full(sample.Scene.Editor));Require(sample.Revision==revision&&Full(sample.Scene.Editor).IsChecked==true,"重复全域点击额外写入或错误取消选中");
+   var box=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);
+   NativeClick(box);Require(session.ActiveDraw?.Kind=="rectangle"&&box.IsChecked==true&&Full(sample.Scene.Editor).IsChecked==false&&sample.Revision==revision,"原绘制开始未退全域选中或提前写根");
+   session.CancelDraw();Pump();Require(session.ActiveDraw is null&&Full(sample.Scene.Editor).IsChecked==true&&sample.Revision==revision,"取消原绘制后全域按钮未恢复或改变业务覆盖");
+   var ring=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing);
+   Require(session.BeginDraw("annulus") is not null&&ring.IsChecked==true&&Full(sample.Scene.Editor).IsChecked==false,"直接绘制请求未同步原按钮选中态");
+   session.CancelDraw();Require(ring.IsChecked==false&&Full(sample.Scene.Editor).IsChecked==true,"直接取消后按钮状态未恢复");
+   CaptureInline(sample.Scene.Editor,"c08-original-fullscreen.png");
+   Require(session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.CurROIData?.Id==original&&session.Items.Single(row=>row.Group=="mask").Id==mask,"撤销全域未恢复同一稳定对象与选择");
+   Require(session.TryRedo()&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"重做未恢复组状态");
+   var command=Full(sample.Scene.Editor).Command!;var parameter=Full(sample.Scene.Editor).CommandParameter;revision=sample.Revision;sample.Dispose();command.Execute(parameter);Require(sample.Revision==revision,"关闭后旧原按钮命令仍写入");
+  });
+  Test("ROI覆盖交互：屏蔽原清空语义独立于显式全域，不改检测组",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   var detect=session.Items.Single(row=>row.Group=="detect").Id;session.SetDrawingGroup("mask");Pump();NativeClick(Full(sample.Scene.Editor));
+   Require(Coverage(session,"mask")==RoiCoverage.None&&session.Items.Single().Id==detect&&Coverage(session,"detect")==RoiCoverage.Explicit,"屏蔽清空错误变成全图屏蔽或改动检测区");
+   Require(session.TrySetCoverage(RoiCoverage.FullDomain)&&Coverage(session,"mask")==RoiCoverage.FullDomain&&session.Items.Single().Id==detect,"明确的屏蔽全域被混同为无屏蔽");
+   NativeClick(Full(sample.Scene.Editor));Require(Coverage(session,"mask")==RoiCoverage.None,"原空集合按钮未沿宿主策略复位");
+  });
+  Test("ROI覆盖交互：图像原选择命令切换活动组，按钮只清选中屏蔽组",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   var detect=session.Items.Single(row=>row.Group=="detect").Id;var mask=session.Items.Single(row=>row.Group=="mask");var view=sample.Scene.Viewport.NativeView;
+   view.RoiSelectedCommand.Execute(new Native.Dependencies.VMControls.RenderInterface.RoiWithTagEventArgs(mask,view.ROIList!));Pump();
+   Require(session.CurROIData?.Id==mask.Id&&session.DrawingGroup=="mask"&&session.SectorRingA&&!session.BoxA,"图像选择与活动组/原按钮身份未一致");
+   NativeClick(Full(sample.Scene.Editor));Require(Coverage(session,"mask")==RoiCoverage.None&&session.Items.Single().Id==detect&&Coverage(session,"detect")==RoiCoverage.Explicit,"选中屏蔽后原按钮清错检测组");
+  });
+  Test("ROI覆盖交互：选择取消回调切组后不覆盖新活动组",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var shape=RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10));
+   var a=new RoiEditItem("detect",Guid.NewGuid(),"A",shape);var b=new RoiEditItem("detect",Guid.NewGuid(),"B",shape);var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]),a,b);
+   using var session=model.Open();Require(session.Select(a.Group,a.Id),"预备选择失败");session.DrawRequested+=_=>{};session.BeginDraw("rectangle");session.DrawCancelled+=_=>session.SetDrawingGroup("mask");
+   Require(!session.Select(b.Group,b.Id)&&session.DrawingGroup=="mask"&&session.CurROIData?.Id==a.Id&&model.Attempts==0,"旧选择覆盖取消回调的新组或进入宿主");
+  });
+  Test("ROI覆盖交互：全域后创建原几何原子进入Explicit，历史恢复同ID",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   Require(session.TrySetCoverage(RoiCoverage.FullDomain),"全域失败");var request=session.BeginDraw("rectangle")!;
+   Require(request is not null&&session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(15,20),new(90,110))),"全域后无法创建原几何");
+   var id=session.CurROIData!.Id;Require(Coverage(session,"detect")==RoiCoverage.Explicit,"创建没有切为显式覆盖");
+   Require(session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"撤销创建未恢复全域");
+   Require(session.TryRedo()&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.CurROIData?.Id==id,"重做创建分配了另一身份");
+  });
+  Test("ROI覆盖交互：删除末项按显式组策略处理并可整体撤销",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;var ids=session.Items.Select(row=>row.Id).ToArray();
+   Require(session.TryDelete(session.Items.Where(row=>row.Group=="detect").ToArray())&&Coverage(session,"detect")==RoiCoverage.FullDomain,"删除末检测项未恢复全域");
+   Require(session.TryDelete(session.Items.Where(row=>row.Group=="mask").ToArray())&&Coverage(session,"mask")==RoiCoverage.None&&session.Items.Count==0,"删除末屏蔽项错误成为全域");
+   Require(session.TryUndo()&&session.TryUndo()&&session.Items.Select(row=>row.Id).SequenceEqual(ids)&&session.Groups.All(state=>state.Coverage==RoiCoverage.Explicit),"组策略和原几何未被同次历史恢复");
+  });
+  Test("ROI覆盖交互：非法参数原文拒绝全域且原按钮复位",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();
+   ((ToggleButton)sample.Scene.Editor.NativeView.Template.FindName("expand",sample.Scene.Editor.NativeView)).IsChecked=true;Pump();
+   var numeric=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(sample.Scene.Editor.NativeView).First();var text=RoiText(numeric);text.Focus();text.Text="bad";Pump();var revision=sample.Revision;
+   NativeClick(Full(sample.Scene.Editor));
+   Require(sample.Revision==revision&&Coverage(sample.Session,"detect")==RoiCoverage.Explicit&&text.Text=="bad"&&sample.Scene.Editor.HasInvalidText&&Full(sample.Scene.Editor).IsChecked==false,"非法原文被清掉、组被改动或失败按钮仍选中");
+  });
+  Test("ROI覆盖交互：继承组禁止清空，返回本地恢复原全域状态",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;Require(session.TrySetCoverage(RoiCoverage.FullDomain),"预备全域失败");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{["detect.mode"]=new ConstantSetting(1L),["detect.source"]=new ReferenceSetting(sample.Reference("detect"))}),"无法进入整体继承");
+   var revision=sample.Revision;Require(!session.FullScreenEnableA&&!session.TrySetCoverage(RoiCoverage.None)&&sample.Revision==revision&&session.Items.Any(row=>row.Group=="detect"&&!row.Enabled),"继承组能被本地覆盖命令清空");
+   Require(sample.Fields.Fields.Single(field=>field.FieldId=="detect.mode").TrySetConstant(0L)&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"返回本地丢失私有全域状态");
+  });
+  Test("ROI覆盖交互：宿主拒绝不改覆盖和几何，旧绘制不复活",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768])){CoverageEnabled=true,Reject=true};model.Groups[0]=new("detect",RoiCoverage.Explicit,RoiCoverage.FullDomain);
+   using var session=model.Open();session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;
+   Require(!session.TrySetCoverage(RoiCoverage.FullDomain)&&model.Attempts==1&&model.Writes==0&&session.IsCurrent&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.ActiveDraw is null,"拒绝被当作接纳或遗留绘制");
+   Require(!session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)))&&model.Attempts==1,"覆盖拒绝后旧请求可重放");
+  });
+  Test("ROI覆盖交互：取消回调切组或关闭阻断旧覆盖提案",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,24,new byte[768]);
+   foreach(var close in new[]{false,true})
+   {
+    var model=new RoiHost(image){CoverageEnabled=true};using var session=model.Open();session.DrawRequested+=_=>{};session.BeginDraw("rectangle");
+    session.DrawCancelled+=_=>{if(close)session.Dispose();else session.SetDrawingGroup("mask");};
+    Require(!session.TrySetCoverage(RoiCoverage.FullDomain)&&model.Attempts==0&&model.Writes==0,"取消回调后旧组命令仍写宿主");
+   }
+  });
+  Test("ROI覆盖交互：错误回执退役租约且完成宿主发布清理",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768])){CoverageEnabled=true};using var session=model.Open();var published=0;
+   model.AfterAccept=result=>result with{Snapshot=result.Snapshot with{Groups=result.Snapshot.Groups.Select(state=>state.Group=="mask"?state with{Coverage=RoiCoverage.FullDomain}:state).ToArray()},Publish=()=>published++};
+   var rejected=false;try{session.TrySetCoverage(RoiCoverage.FullDomain);}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&!session.IsCurrent&&model.Writes==1&&published==1,"错误组回执未退役或跳过已接纳发布");
+  });
+  Test("ROI覆盖交互：观察者失败不回滚已接纳覆盖并允许历史恢复",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;Action fail=()=>throw new InvalidOperationException("预期覆盖观察失败");session.Changed+=fail;
+   var reported=false;try{session.TrySetCoverage(RoiCoverage.FullDomain);}catch(Exception){reported=true;}finally{session.Changed-=fail;}
+   Require(reported&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect")&&session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.Explicit,"观察失败破坏原子接纳或历史");
+  });
+ }
  static SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession CreateRoiSession(IReadOnlyImage image,Func<IReadOnlyList<RoiEditItem>> read,Func<ImageFrameAddress,RoiEditProposal.Replace,bool> accept,Func<bool> current)
  {
   var scope=Guid.NewGuid();long revision=0;
-  SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read());
+  SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read(),Array.AsReadOnly(new[]{"detect","mask"}.Select(group=>new RoiGroupState(group,RoiCoverage.Explicit,RoiCoverage.Explicit)).ToArray()));
   return new(image,Snapshot,(expected,change)=>
   {
    if(expected.ScopeId!=scope||expected.Revision!=revision||expected.Frame!=image.Frame)return RoiEditAcceptance.Reject(Snapshot(),"过期候选");
@@ -1204,30 +1473,40 @@ internal static class S2DocumentEditingCases
  sealed class RoiHost(IReadOnlyImage image,params RoiEditItem[] rows)
  {
   internal readonly List<RoiEditItem> Rows=rows.ToList();internal long Revision;internal int Writes,Reads,Attempts;
-  internal bool Alive=true,Reject;internal Action? OnRead,BeforeAccept;
+  internal bool Alive=true,Reject,CoverageEnabled;internal Action? OnRead,BeforeAccept;
   internal Guid ScopeId=Guid.NewGuid();internal Func<RoiEditAcceptance,RoiEditAcceptance>? AfterAccept;
+  internal readonly List<RoiGroupState> Groups=new[]{"detect","mask"}.Concat(rows.Select(row=>row.Group)).Distinct().Select(group=>new RoiGroupState(group,RoiCoverage.Explicit,RoiCoverage.Explicit)).ToList();
+  void UpdateGroups(Func<RoiGroupState,RoiGroupState> update){for(var i=0;i<Groups.Count;i++)Groups[i]=update(Groups[i]);}
   internal RoiEditStamp Stamp=>new(ScopeId,Revision,image.Frame);
-  internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray());}
+  internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray(),Groups.ToArray());}
   internal RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
   {
    Attempts++;var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
-   if(expected!=Stamp||Reject)return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"宿主拒绝或旧根");
+   if(expected!=Stamp||Reject)return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray(),Groups.ToArray()),"宿主拒绝或旧根");
    RoiEditTarget target;
    switch(change)
    {
     case RoiEditProposal.Create create:
+     UpdateGroups(group=>group.Group==create.Group?group with{Coverage=RoiCoverage.Explicit}:group);
      target=new(create.Group,Guid.NewGuid());Rows.Add(new(create.Group,target.Id,"新区域",create.Geometry));break;
     case RoiEditProposal.Replace replace:
      var index=Rows.FindIndex(row=>row.Group==replace.Target.Group&&row.Id==replace.Target.Id);Require(index>=0,"提交身份丢失");
      target=replace.Target;Rows[index]=Rows[index] with{Geometry=replace.Geometry};break;
     case RoiEditProposal.Delete delete:
-     Rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));Revision++;Writes++;
-     return new(true,new(Stamp,Rows.ToArray()),delete.Targets,new RoiEditSelection.Clear());
-    default:return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"该检查宿主不提供历史");
+     Rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));
+     UpdateGroups(group=>delete.Targets.Any(target=>target.Group==group.Group)&&!Rows.Any(row=>row.Group==group.Group)?group with{Coverage=group.EmptyCoverage}:group);
+     Revision++;Writes++;
+     return new(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),delete.Targets,new RoiEditSelection.Clear());
+    case RoiEditProposal.SetCoverage coverage:
+     var affected=Rows.Where(row=>row.Group==coverage.Group).Select(row=>new RoiEditTarget(row.Group,row.Id)).ToArray();
+     Rows.RemoveAll(row=>row.Group==coverage.Group);UpdateGroups(group=>group.Group==coverage.Group?group with{Coverage=coverage.Coverage}:group);
+     Revision++;Writes++;var accepted=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),affected,new RoiEditSelection.Clear());
+     return AfterAccept?.Invoke(accepted)??accepted;
+    default:return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray(),Groups.ToArray()),"该检查宿主不提供历史");
    }
-   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray()),new[]{target},change is RoiEditProposal.Create?new RoiEditSelection.Select(target):new RoiEditSelection.Keep());return AfterAccept?.Invoke(result)??result;
+   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),new[]{target},change is RoiEditProposal.Create?new RoiEditSelection.Select(target):new RoiEditSelection.Keep());return AfterAccept?.Invoke(result)??result;
   }
-  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,()=>new(false,false),"detect");
+  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,()=>new(false,false),"detect",canSetCoverage:group=>CoverageEnabled);
  }
  static TextBox RoiText(Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat field)
  {
@@ -1753,6 +2032,86 @@ internal static class S2DocumentEditingCases
   Require(BindingOperations.GetBinding(leaf,Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl.TextProperty)?.Source==field,"产品未初始化真实Point绑定");
   return (TextBox)leaf.FindName("ValueText");
  }
+ sealed class RoiGestureActionCommand(Action<object?> action):ICommand
+ {
+  public bool CanExecute(object? parameter)=>true;public void Execute(object? parameter)=>action(parameter);
+  public event EventHandler? CanExecuteChanged{add{}remove{}}
+ }
+ static void RoiHandleDown(FrameworkElement part)=>part.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+ static void RoiHandleUp(FrameworkElement part)=>part.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonUpEvent});
+ static void RoiHandleWheel(FrameworkElement part)=>part.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});
+ static void VerifyRoiGestureTransactions()
+ {
+  foreach(var mode in new[]{"滚轮单次接纳","释放重入保新手势","观察异常退休","接纳后新版本暂存保留"})
+  Test("原ROI手势矩形"+mode,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));
+   using var session=model.Open();using var viewport=new NativeResultViewport();viewport.View.Width=420;viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");using var lease=viewport.BeginRoiEditing(viewport.CurrentFrame!,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(viewport.View).Single();var part=(FrameworkElement)roi.Template.FindName("move",roi);
+   var angle=roi.RectAngle;MouseEventHandler? lost=null;System.ComponentModel.DependencyPropertyDescriptor? descriptor=null;EventHandler? observer=null;
+   try
+   {
+    RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"环境未取得真实WPF capture，不能计为手势通过；foreground="+GetForegroundWindow()+";capture="+GetCapture());
+    Require(native.IsDragROI,"真实手势未置drag");
+    if(mode=="观察异常退休")
+    {
+     descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectAngleProperty,roi.GetType());
+     var sentinel=new InvalidOperationException("ROI观察异常");observer=(_,_)=>throw sentinel;descriptor.AddValueChanged(roi,observer);
+     var threw=false;try{RoiHandleWheel(part);}catch(Exception error){threw=error.ToString().Contains("ROI观察异常",StringComparison.Ordinal);}
+     Require(threw&&!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI,"观察异常未传播或未退休捕获");
+     Require(!lease.HasPendingGesture&&!session.Items.Any(item=>item.HasPending),"异常取消残留投影暂存");descriptor.RemoveValueChanged(roi,observer);observer=null;var after=roi.RectAngle;RoiHandleWheel(part);Require(roi.RectAngle==after&&model.Writes==0,"旧wheel监听残留或异常仍提交");return;
+    }
+    RoiHandleWheel(part);Require(model.Writes==0&&Math.Abs(roi.RectAngle-angle-.5)<1e-8,"纯滚轮未暂存原角度或提前提交");
+    if(mode=="接纳后新版本暂存保留")
+    {
+     var original=roi.DataChangedCommand;var projection=(NativeBoxRoiProjection)session.CurROIData!;
+     roi.DataChangedCommand=new RoiGestureActionCommand(context=>{original.Execute(context);projection.Angle+=5;throw new InvalidOperationException("接纳后观察异常");});
+     var threw=false;try{RoiHandleUp(part);}catch(Exception error){threw=error.ToString().Contains("接纳后观察异常",StringComparison.Ordinal);}
+     Require(threw&&model.Writes==1&&projection.HasPending&&Math.Abs(projection.Angle-angle-5.5)<1e-8,"旧异常取消误清新版本暂存或回滚接纳");
+     Require(!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI&&lease.HasPendingGesture,"异常后真实手势未退或新暂存被忽略");return;
+    }
+    var reentered=false;
+    if(mode=="释放重入保新手势")
+    {lost=(_,_)=>{if(reentered)return;reentered=true;RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"新手势未真实捕获");};part.AddHandler(Mouse.LostMouseCaptureEvent,lost,true);}
+    RoiHandleUp(part);
+    if(mode=="释放重入保新手势")Require(reentered&&ReferenceEquals(Mouse.Captured,part)&&native.IsDragROI&&model.Writes==0,"旧Release清新手势或旧提交仍被接纳");
+    else Require(model.Writes==1&&!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI,"纯wheel结束未一次提交/释放");
+    if(reentered){RoiHandleUp(part);Pump();Require(!lease.HasPendingGesture&&!session.Items.Any(item=>item.HasPending)&&Math.Abs(roi.RectAngle-angle)<1e-8&&model.Writes==0,"重入新手势空结束后残留旧投影暂存");}
+   }
+   finally{if(lost is not null)part.RemoveHandler(Mouse.LostMouseCaptureEvent,lost);if(observer is not null)descriptor!.RemoveValueChanged(roi,observer);Mouse.Capture(null);}
+  });
+  Test("原ROI手势多边形首点通知重入停止旧循环",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var viewport=new NativeRoiViewport();
+   viewport.Bind(session);viewport.Width=500;viewport.Height=300;Show(viewport);session.Select("detect",model.Rows[0].Id);Pump();
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI>(viewport).Single();var part=(FrameworkElement)roi.Template.FindName("move",roi);
+   var points=roi.PolygonPoints;var before=points.ToArray();var replacedIndices=new List<int>();var reentered=false;
+   System.Collections.Specialized.NotifyCollectionChangedEventHandler observer=(_,args)=>
+   {
+    if(args.Action!=System.Collections.Specialized.NotifyCollectionChangedAction.Replace)return;replacedIndices.Add(args.NewStartingIndex);
+    if(reentered)return;reentered=true;roi.CancelInteraction();RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"首点重入未真实捕获");
+   };
+   try
+   {
+    RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"环境未取得真实多边形capture，不能计为通过");points.CollectionChanged+=observer;
+    roi.MoveCommand.Execute(Native.Display.VMBaseControls.Base.ImageView.ROIMoveDirection.Right);
+    Require(reentered&&replacedIndices.Count is >=1 and <=2&&replacedIndices.All(index=>index==0)&&points.Skip(1).SequenceEqual(before.Skip(1))&&model.Writes==0,"旧循环继续改后续顶点或仍提交");
+    Require(ReferenceEquals(Mouse.Captured,part)&&viewport.NativeView.IsDragROI,"旧循环尾部清新多边形手势");
+   }
+   finally{points.CollectionChanged-=observer;Mouse.Capture(null);}
+  });
+  Test("原ROI手势扇环布局观察重入不写旧尾部",()=>
+  {
+   var roi=new Native.Display.VMBaseControls.Base.ImageView.ROI.SectorROI{DataContext=new object()};Show(roi);
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.Base.ImageView.ROI.SectorROI.ContainerWidthProperty,roi.GetType());
+   var replaced=false;EventHandler observer=(_,_)=>{if(replaced)return;replaced=true;roi.DataContext=new object();roi.ContainerHeight=777;};
+   descriptor.AddValueChanged(roi,observer);
+   try{roi.CircleRadius+=17;Require(replaced&&roi.ContainerHeight==777,"旧布局继续写入新上下文高度");}
+   finally{descriptor.RemoveValueChanged(roi,observer);}
+  });
+ }
  static void VerifyNativePolygon()
  {
   Test("原Polygon有序重复点、真实参数栈与同帧图像双向一次接纳",()=>
@@ -2030,6 +2389,167 @@ internal static class S2DocumentEditingCases
    rejected=false;try{fields.Dispose();}catch(Exception){rejected=true;}
    Require(rejected&&notified&&list.ItemsSource is null&&rows.All(row=>row.View is null)&&accesses.All(access=>!access.TrySetConstant(2L))&&writes==0,"清理异常跳过剩余状态或源解除");
    Show(new TextBlock{Text="完成"});
+  });
+ }
+ static void VerifyNativeAssist()
+ {
+  DeclaredFieldAccess Field(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample,string id)=>sample.Fields.Fields.Single(field=>field.FieldId==id);
+  ReferenceSetting Source(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample,string id)
+  {
+   var port=sample.Ports.Single(port=>port.Id==id);
+   return new(new OutputReference("design-producer","out."+id,port.Type,scopeId:"design-scope",storage:port.Storage));
+  }
+  Dictionary<string,ParameterSetting> Filled(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample)
+   =>sample.Ports.Skip(2).ToDictionary(port=>port.Id,port=>(ParameterSetting)Source(sample,port.Id),StringComparer.Ordinal);
+  void Same(IReadOnlyDictionary<string,AcceptedFieldValue> a,IReadOnlyDictionary<string,AcceptedFieldValue> b)
+   =>Require(a.Count==b.Count&&a.All(entry=>b.TryGetValue(entry.Key,out var value)&&Equals(entry.Value,value)),"完整accepted/常量backup发生部分写入");
+  Test("原Assist十五角色三方式复用原五槽及十三来源并保实际行序",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample{Width=510};Show(sample);
+   Require(sample.Fields.Fields.Count==15&&sample.Ports.Count==15,"Assist未提供完整十五角色");
+   Require(!sample.Ports.Skip(2).Any(port=>Field(sample,port.Id).View.IsVisible),"初始关闭仍显示来源");
+   var seen=new HashSet<string>();
+   for(var mode=0;mode<3;mode++)
+   {
+    if(mode==0)sample.PreviewMode=0;
+    else Visuals<RadioButton>(Field(sample,sample.Assist.ModeFieldId).View).ElementAt(mode).SetCurrentValue(ToggleButton.IsCheckedProperty,true);
+    owner.UpdateLayout();Pump();
+    var buttons=Visuals<RadioButton>(Field(sample,sample.Assist.ModeFieldId).View).ToArray();
+    Require(buttons.Length==5&&buttons.Count(button=>button.IsVisible)==3,"未使用原五槽三选模板");
+    var visible=sample.Ports.Skip(2).Where(port=>Field(sample,port.Id).View.IsVisible).ToArray();
+    Require(visible.Length==new[]{1,8,10}[mode],"方式活动来源数错误："+mode+"/"+visible.Length);
+    var previous=double.NegativeInfinity;
+    foreach(var port in visible)
+    {
+     var field=Field(sample,port.Id);seen.Add(port.Id);
+     Require(Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Any(popup=>popup.Name=="rt"),"未消费原订阅槽："+port.Id);
+     Require(!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Any(),"Assist错误生成滑条："+port.Id);
+     var y=field.View.TransformToAncestor(sample).Transform(new Point()).Y;
+     Require(y>previous,"原角色行序或布局重叠："+port.Id);previous=y;
+    }
+    Require(!sample.Fields.TryValidate(out var missing)&&!string.IsNullOrEmpty(missing),"空来源被捕获为完整修正");
+    CaptureInline(sample,"native-assist-mode-"+mode+".png");
+   }
+   Require(seen.Count==13&&sample.Ports.Count(port=>port.Storage==NumericStorage.Float32)==10,"十三订阅槽或十Float32声明缺失");Show(new TextBlock());
+  });
+  Test("原Assist关闭态同批启用与来源仅一次接纳且拒绝不半写",()=>
+  {
+   foreach(var reject in new[]{false,true})
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+    var before=sample.Fields.CaptureAccepted();sample.RejectNext=reject;
+    var changes=new Dictionary<string,ParameterSetting>{{sample.Assist.EnabledFieldId,new ConstantSetting(true)},
+     {sample.Assist.ModeFieldId,new ConstantSetting(0L)},{sample.Assist.FixturePort.Id,Source(sample,sample.Assist.FixturePort.Id)}};
+    var accepted=sample.Fields.TrySetFields(changes);
+    Require(accepted!=reject&&sample.Writes==(reject?0:1),"同批启用使用旧false门禁或重复writer");
+    if(reject)Same(before,sample.Fields.CaptureAccepted());
+    else Require(Field(sample,sample.Assist.FixturePort.Id).Setting.Equals(changes[sample.Assist.FixturePort.Id])&&sample.Fields.TryValidate(out _),"启用后来源或完整性未同时安装");
+    Show(new TextBlock());
+   }
+  });
+  Test("原Assist关闭清十二来源保基准点且宿主拒绝保持十五状态",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+   var changes=Filled(sample);changes[sample.Assist.EnabledFieldId]=new ConstantSetting(true);changes[sample.Assist.ModeFieldId]=new ConstantSetting(1L);
+   Require(sample.Fields.TrySetFields(changes),"无法安装完整十三来源");var saved=sample.Fields.CaptureAccepted();var writes=sample.Writes;
+   sample.RejectNext=true;Require(!Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false),"拒绝关闭仍安装");
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==writes,"拒绝仍写宿主");
+   Require(Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false)&&sample.Writes==writes+1,"关闭不是一次组writer");
+   var cleared=sample.Ports.Skip(2).Where(port=>port.Id!=sample.Assist.BasePointFieldId).ToArray();
+   Require(sample.LastProposal!.Count==13&&cleared.All(port=>sample.LastProposal[port.Id] is UnsetSetting&&Field(sample,port.Id).Setting is UnsetSetting),"未准确清十二来源");
+   Require(Field(sample,sample.Assist.BasePointFieldId).Setting.Equals(saved[sample.Assist.BasePointFieldId].Setting)
+    &&Field(sample,sample.Assist.ModeFieldId).Setting.Equals(saved[sample.Assist.ModeFieldId].Setting),"关闭误清基准点或方式");
+   Require(sample.Fields.TryValidate(out _),"关闭仍要求隐藏来源完整");Show(new TextBlock());
+  });
+  Test("原Assist公开完整回放不触发关闭展开并保拒绝与发布幂等",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+   var changes=Filled(sample);changes[sample.Assist.EnabledFieldId]=new ConstantSetting(true);changes[sample.Assist.ModeFieldId]=new ConstantSetting(2L);
+   Require(sample.Fields.TrySetFields(changes),"安装失败");var saved=sample.Fields.CaptureAccepted();
+   Require(Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false),"关闭失败");var closed=sample.Fields.CaptureAccepted();var writes=sample.Writes;
+   Require(!sample.Fields.TryReplayAccepted(saved,()=>false,()=>true,out _),"owner拒绝仍回放");Same(closed,sample.Fields.CaptureAccepted());
+   Require(!sample.Fields.TryReplayAccepted(saved,()=>true,()=>false,out _),"过期仍回放");Same(closed,sample.Fields.CaptureAccepted());
+   Require(sample.Fields.TryReplayAccepted(saved,()=>true,()=>true,out var publish),"完整回放拒绝");publish();publish();
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==writes,"回放重复经过writer");Show(new TextBlock());
+  });
+  Test("原Assist Float32同槽原文Enter提交失焦且切方式保引用",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);sample.PreviewMode=2;Pump();
+   var field=Field(sample,sample.Assist.Run.XFieldId);
+   Require(field.TrySetConstant(0d),"无法选择Float32常量");owner.UpdateLayout();Pump();
+   foreach(var raw in new[]{"1.23456789","0","1.25e-3"})
+   {
+    var text=Visuals<TextBox>(field.View).SingleOrDefault(text=>text.IsVisible&&!text.IsReadOnly)??throw new Exception("原Float32同槽无文本输入");
+    text.Focus();Pump();text.Text=raw;var before=sample.Writes;SendKey(text,Key.Enter,true);
+    var expected=(double)(float)double.Parse(raw,System.Globalization.CultureInfo.InvariantCulture);
+    Require(field.Setting is ConstantSetting value&&Equals(value.Value,expected)&&sample.Writes==before+1&&!text.IsKeyboardFocused,"Float32未单次Enter提交失焦："+raw+"/"+field.Error);
+   }
+   var source=Source(sample,sample.Assist.BasePointFieldId);Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.BasePointFieldId,source}}),"基准点来源拒绝");
+   sample.PreviewMode=0;Pump();sample.PreviewMode=1;Pump();Require(Field(sample,sample.Assist.BasePointFieldId).Setting.Equals(source),"切方式误清引用");Show(new TextBlock());
+  });
+  Test("原Assist原来源树保声明身份且切方式拒旧叶",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);sample.PreviewMode=0;Pump();
+   var field=Field(sample,sample.Assist.FixturePort.Id);
+   var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");
+   popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+   var content=(Popup)popup.Template.FindName("PART_Popup",popup);
+   var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
+   TreeViewItem? Find(ItemsControl parent)
+   {
+    for(var i=0;i<parent.Items.Count;i++)
+    {
+     if(parent.ItemContainerGenerator.ContainerFromIndex(i) is not TreeViewItem row)continue;
+     if(row.DataContext?.GetType().GetProperty("Candidate")?.GetValue(row.DataContext) is DeclaredReferenceCandidate candidate
+       &&candidate.Output.Id=="out."+sample.Assist.FixturePort.Id)return row;
+     row.IsExpanded=true;row.UpdateLayout();Pump();var found=Find(row);if(found is not null)return found;
+    }
+    return null;
+   }
+   var leaf=Find(actual)??throw new Exception("原树无修正信息正式候选");
+   void Select()=>leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});
+   Select();Pump();var expected=Source(sample,sample.Assist.FixturePort.Id);
+   bool Matches()=>field.Setting is ReferenceSetting selected&&selected.Reference.NodeId==expected.Reference.NodeId
+    &&selected.Reference.ScopeId==expected.Reference.ScopeId&&selected.Reference.PortId==expected.Reference.PortId
+    &&selected.Reference.Type==expected.Reference.Type&&selected.Reference.Storage==expected.Reference.Storage
+    &&selected.Reference.MemberFieldPath.SequenceEqual(expected.Reference.MemberFieldPath)&&Equals(selected.Reference.Selection,expected.Reference.Selection);
+   Require(Matches()&&!popup.IsDropDownOpen,"正式Scope/Node/Port/Type/Storage身份未完整保存");
+   popup.IsDropDownOpen=true;Pump();sample.PreviewMode=1;Pump();var writes=sample.Writes;
+   Require(!popup.IsDropDownOpen&&!content.IsOpen,"隐藏来源未关闭原弹层");Select();Pump();Require(sample.Writes==writes&&Matches(),"旧来源叶污染切换后的草稿");Show(new TextBlock());
+  });
+  Test("原Assist条件AND预检及外部范围消费角色严格拒绝",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();var option=sample.Assist;var writes=0;
+   (Port Port,FieldPresentation Presentation,ParameterSetting Value)[] Rows(bool referenceOnly=false)
+    =>sample.Ports.Select((port,i)=>(referenceOnly&&port.Id==option.Run.XFieldId?port with{EditModes=FieldEditModes.Reference}:port,
+     new FieldPresentation(port.Id,port.Id,"位置修正",i,FieldEditorKind.Scalar){Layout=new("基本参数","位置修正",DecimalPlaces:port.Type==DataType.Number?null:2)},
+     (ParameterSetting)(i==0?new ConstantSetting(false):i==1?new ConstantSetting(0L):new UnsetSetting()))).ToArray();
+   var parents=new Dictionary<string,IReadOnlyList<FieldCondition>>{{option.Base.AngleFieldId,new[]{new FieldCondition(option.ModeFieldId,1L)}}};
+   using(var valid=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option}))
+   {
+    Show(valid);Require(valid.TrySetFields(new Dictionary<string,ParameterSetting>{{option.EnabledFieldId,new ConstantSetting(true)},{option.ModeFieldId,new ConstantSetting(1L)}}),"合法AND组合不能进入按点方式");Pump();
+    Require(valid.Fields.Single(field=>field.FieldId==option.Base.AngleFieldId).View.IsVisible,"Mode==1与Mode!=0被误判冲突或隐藏");
+   }
+   parents[option.Base.AngleFieldId]=new[]{new FieldCondition(option.ModeFieldId,1)};
+   PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option});});
+   parents[option.Base.AngleFieldId]=new[]{new FieldCondition(option.ModeFieldId,0L)};
+   PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option});});
+   var rows=Rows(true).ToList();rows.Add((new Port("external",DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Reference),
+    new FieldPresentation("external","外部范围","位置修正",20,FieldEditorKind.Scalar){Layout=new("基本参数","位置修正",DecimalPlaces:null,PairWith:option.Run.XFieldId)},new UnsetSetting()));
+   var before=writes;PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(rows,_=>writes++,assistCompositions:new[]{option});});Require(writes==before,"元数据拒绝仍写writer");Show(new TextBlock());
+  });
+  Test("原Assist关闭来源矛盾与非法模式不写入，角色重复前置拒绝",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);var saved=sample.Fields.CaptureAccepted();
+   var source=Source(sample,sample.Assist.Run.XFieldId);
+   PublicationThrows<ArgumentException>(()=>sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.Run.XFieldId,source}}));
+   PublicationThrows<ArgumentException>(()=>sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.EnabledFieldId,new ConstantSetting(false)},{sample.Assist.Run.XFieldId,source}}));
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==0,"关闭来源矛盾仍调用writer");
+   Require(!sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.ModeFieldId,new ConstantSetting(3L)}}),"非法第四模式被接纳");Same(saved,sample.Fields.CaptureAccepted());
+   var rows=sample.Ports.Select((port,i)=>(port,new FieldPresentation(port.Id,port.Id,"位置修正",i,FieldEditorKind.Scalar)
+    {Layout=new("基本参数","位置修正",DecimalPlaces:port.Type==DataType.Number?null:2)},saved[port.Id].Setting)).ToArray();
+   PublicationThrows<ArgumentException>(()=>{using var bad=new DeclaredFieldsView(rows,_=>throw new Exception("非法组合不得写入"),assistCompositions:new[]{sample.Assist with{EnabledFieldId=sample.Assist.ModeFieldId}});});
+   Show(new TextBlock());
   });
  }
  static void VerifyNativeIntegerRadio()
@@ -2749,7 +3269,8 @@ internal static class S2DocumentEditingCases
   {
    var type=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
    var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");
-   type.GetMethod("SaveRendered")!.Invoke(null,new object?[]{path,view.NativeView.ImageDataSource,view.NativeView.ShapeList?.Cast<object>().ToArray(),view.NativeView});
+   var prepared=(BitmapSource)type.GetMethod("PrepareRendered")!.Invoke(null,new object?[]{view.NativeView.ImageDataSource,view.NativeView.ShapeList?.Cast<object>().ToArray(),view.NativeView})!;
+   SaveExport(path,prepared);
    return BitmapDecoder.Create(new Uri(path),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   }
   BitmapSource Actual(NativeTextViewport view)
@@ -2896,6 +3417,233 @@ internal static class S2DocumentEditingCases
    Require(field.TryCommitPending()&&writes==1,"已接纳原文重复写入");
   });
  }
+ sealed class CrosshairCommitReentry : IValueConverter
+ {
+  public Action? BeforeBack;
+  public object Convert(object value,Type targetType,object parameter,CultureInfo culture)=>value;
+  public object ConvertBack(object value,Type targetType,object parameter,CultureInfo culture)
+  {var action=BeforeBack;BeforeBack=null;action?.Invoke();return Binding.DoNothing;}
+ }
+ static void VerifyCrosshairWindows()
+ {
+  Test("c17-window 无尺寸首开与首次有效图像初始化原两条线",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);
+   var one=layer.CrossDatas[0];var two=layer.CrossDatas[1];var window=layer.OpenSettings(owner);Pump();
+   Require(window.Owner==owner&&window.IsVisible&&one.IsVisible&&!two.IsVisible&&one.NeedsInitialization&&two.NeedsInitialization,"无图首开状态或非模态owner不符");
+   Require(Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).Count()==6&&Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).Count()==2,"原窗口未完整组装两条线");
+   var label=Visuals<TextBlock>(window).First(text=>text.Text=="坐标X");Require(((SolidColorBrush)label.Foreground).Color==((SolidColorBrush)label.FindResource("ParamsTabForeground")).Color,"宿主样式污染原标签前景");
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(101,81,new byte[101*81]);Require(viewport.BindImage(image,()=>true),"图像拒绝");Pump();
+   Require(!window.IsVisible&&(one.CenterPoint-new Point(40.4,32.4)).Length<1e-9&&(two.CenterPoint-new Point(60.6,48.6)).Length<1e-9&&one.Stroke=="#FFF76900"&&two.Stroke=="#FFFFFF00"&&!one.NeedsInitialization,"有效尺寸未一次初始化或旧窗未关闭");
+   one.CenterCommand.Execute(null);Require(one.CenterPoint==new Point(50,40),"原整数居中变成浮点除法");
+  });
+  Test("c17-window 首开前换图按最新尺寸初始化且之后不重置",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(40,30,new byte[1200]);var b=resources.CreateGray8(100,80,new byte[8000]);var c=resources.CreateGray8(120,90,new byte[10800]);
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);Require(viewport.BindImage(a,()=>true)&&layer.CrossDatas.All(x=>x.NeedsInitialization),"隐藏时过早初始化");
+   Require(viewport.BindImage(b,()=>true),"换图失败");Pump();var window=layer.OpenSettings(owner);Pump();var model=layer.CrossDatas[0];Require(model.CenterPoint==new Point(40,32),"首次打开未按最新图初始化");
+   model.CenterPoint=new(17,19);model.IsLocked=true;model.CenterCommand.Execute(null);Require(model.CenterPoint==new Point(50,40),"锁定错误禁止居中");model.CenterPoint=new(17,19);
+   Require(viewport.BindImage(c,()=>true),"再换图失败");Pump();Require(!window.IsVisible&&model.CenterPoint==new Point(17,19),"换图重置坐标");model.CenterCommand.Execute(null);Require(model.CenterPoint==new Point(60,45),"尺寸未更新居中所需尺寸");
+  });
+  Test("c17-window 数值Enter失焦原色板双向绑定与关闭重开保留",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();
+   var controls=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).ToArray();var box=(ComboBox)controls[0].FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");text.Focus();text.Text="123.25";SendKey(text,Key.Enter,true);Pump();
+   Require(layer.CrossDatas[0].CenterX==123&&!text.IsKeyboardFocusWithin&&controls[0].GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)?.Status==BindingStatus.Active,"Enter未按原整数控件取整/回写/失焦或丢绑定");text.Focus();text.Text="bad";SendKey(text,Key.Enter,true);Require(layer.CrossDatas[0].CenterX==123&&text.Text=="bad"&&text.IsKeyboardFocusWithin,"非法原文未保留拒绝");text.Text="124.5";SendKey(text,Key.Enter,true);Pump();
+   var picker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).First();var binding=picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty);
+   Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#7B123456",picker);Require(layer.CrossDatas[0].Stroke=="#7B123456"&&ReferenceEquals(binding,picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty)),"string/Brush回写或绑定失效");
+   layer.CrossDatas[0].Stroke="#FF0000FF";Pump();Require(picker.CurrentColor.Color==Colors.Blue,"模型改色不回显");
+   var capture=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);capture.Render(window);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(capture));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-crosshair-settings-window.png")))encoder.Save(file);
+   window.Close();Pump();Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);
+   Require(layer.CrossDatas[0].CenterX==124&&layer.CrossDatas[0].Stroke=="#FF0000FF","旧关闭色板写入模型或关闭回滚/未保原中点取整");var reopened=layer.OpenSettings(owner);Pump();Require(!ReferenceEquals(window,reopened)&&layer.CrossDatas[0].CenterX==124,"重开复用旧窗或重置");
+   var current=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(reopened).First();var original=current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty);layer.CrossDatas[0].CenterX=125.5;Pump();
+   Require(current.StartValue==126&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty))&&original?.Status==BindingStatus.Active,"模型推小数后取整替换原绑定");
+   var currentBox=(ComboBox)current.FindName("CBox");var currentLeaf=(Native.Numeric.HikPcUI.ListView.NumericControl)currentBox.Template.FindName("T1",currentBox);var currentText=(TextBox)currentLeaf.FindName("ValueText");currentText.Focus();currentText.Text="127.5";SendKey(currentText,Key.Enter,true);Pump();Require(layer.CrossDatas[0].CenterX==128&&!currentText.IsKeyboardFocusWithin&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)),"模型小数刷新后不能再次提交");reopened.Close();
+  });
+  Test("c17-window 实际原十字拖动保持控件身份且同尺寸换帧退役",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var model=sample.Crosshairs.CrossDatas[0];
+   var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));var handle=(Grid)cross.Template.FindName("move",cross);
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"受管原十字未捕获");
+   var parent=Visuals<Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage>(viewport.View).Single(x=>x.GetType().Name=="ShapeItemsPage");var args=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};var previous=model.CenterPoint;
+   cross.GetType().GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(cross,args.GetPosition(parent)-new Vector(5,7));handle.RaiseEvent(args);Pump();
+   Require(handle.IsMouseCaptured&&ReferenceEquals(cross,Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model)))&&model.CenterPoint!=previous,"位移重建控件或没有回写");
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);Require(viewport.BindImage(image,()=>true),"同尺寸换帧失败");Require(!handle.IsMouseCaptured,"换帧未立即取消捕获");var accepted=model.CenterPoint;
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});handle.RaiseEvent(args);Require(!handle.IsMouseCaptured&&model.CenterPoint==accepted,"旧帧句柄重启写新图");
+  });
+  Test("c17-window 重开关闭回调重入仅保留接管新窗",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var first=layer.OpenSettings(owner);Pump();SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsWindow? nested=null;
+   first.Closed+=(_,_)=>nested=layer.OpenSettings(owner);var outer=layer.OpenSettings(owner);Pump();Require(nested is not null&&ReferenceEquals(outer,nested)&&ReferenceEquals(layer.CurrentWindow,nested)&&!first.IsVisible,"重入窗口被覆盖或泄漏");outer.Close();
+  });
+  Test("c17-window 首次启用观察者重入仅保留新窗",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);Require(viewport.BindImage(image,()=>true),"图像拒绝");var once=true;SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsWindow? nested=null;
+   layer.CrossDatas[0].PropertyChanged+=(_,args)=>{if(once&&args.PropertyName=="IsVisible"){once=false;nested=layer.OpenSettings(owner);}};
+   var outer=layer.OpenSettings(owner);Pump();Require(nested is not null&&ReferenceEquals(outer,nested)&&ReferenceEquals(layer.CurrentWindow,nested),"启用回调重入窗口被覆盖");outer.Close();
+  });
+  Test("c17-window 原窗口模板重装退订旧按钮只关闭一次",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var window=sample.Crosshairs.OpenSettings(owner);Pump();var old=(Button)window.Template.FindName("CloseWinButton",window);
+   var resources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",UriKind.Relative)};window.Template=(ControlTemplate)resources["MetroWindowTemplate"];window.ApplyTemplate();Pump();
+   old.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(window.IsVisible,"旧模板按钮仍关闭新窗");var calls=0;window.Closed+=(_,_)=>calls++;var current=(Button)window.Template.FindName("CloseWinButton",window);current.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(!window.IsVisible&&calls==1,"新模板关闭重复或失效");
+  });
+  Test("c17-window 来源proof抛错退役本层并保留错误",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var fail=false;
+   Require(viewport.BindImage(image,()=>fail?throw new InvalidOperationException("来源核对失败"):true),"图像拒绝");var window=layer.OpenSettings(owner);var model=layer.CrossDatas[0];var point=model.CenterPoint;fail=true;var threw=false;
+   try{model.CenterX=99;}catch(Exception error){threw=error.ToString().Contains("来源核对失败");}finally{fail=false;}
+   Require(threw&&!window.IsVisible&&model.CenterPoint==point&&layer.CurrentWindow is null,"来源异常未退役或修改模型");
+  });
+  Test("c17-window 命令可用性查询记录来源异常且不冒泡桌面",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var fail=false;
+   Require(viewport.BindImage(image,()=>fail?throw new InvalidOperationException("命令来源异常"):true),"图像拒绝");var window=layer.OpenSettings(owner);fail=true;var enabled=layer.CrossDatas[0].CenterCommand.CanExecute(null);fail=false;
+   Require(!enabled&&layer.LastSourceError is not null&&!window.IsVisible&&viewport.CurrentFrame is null,"命令查询未记录/退役来源或仍可用");
+  });
+  Test("c17-window 独立图层清理及观察失败不清其他图形",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var viewport=sample.Viewport;using var geometry=viewport.CreateGeometryLayer();var receipt=viewport.CurrentFrame!;
+   Require(geometry.Present(receipt,0,new[]{new NativeGeometryOverlay(receipt.Frame,new PointGeometry(receipt.Coordinates,new(10,10)),Colors.Lime)},()=>true),"几何未接纳");
+   var window=sample.Crosshairs.OpenSettings(owner);window.Closed+=(_,_)=>throw new InvalidOperationException("关闭观察失败");var failed=false;
+   try{sample.Crosshairs.Dispose();}catch(Exception error){failed=error.ToString().Contains("关闭观察失败");}Pump();
+   Require(failed&&sample.Crosshairs.LastWindowError is not null&&!window.IsVisible&&viewport.CurrentFrame==receipt&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ShapeList!.Count==1,"异常清理未记录或清其他层");var model=sample.Crosshairs.CrossDatas[0];var point=model.CenterPoint;model.CenterX=500;model.CenterCommand.Execute(null);Require(model.CenterPoint==point,"退役模型/命令仍写入");
+  });
+  Test("c17-window 导出含可见辅助线且冻结不借模型并拒绝降额截断",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var model=sample.Crosshairs.CrossDatas[0];model.Stroke="#FFFF0000";
+   var method=typeof(NativeResultViewport).GetMethod("PrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!;var rendered=(BitmapSource)method.Invoke(viewport,new object[]{true})!;var before=new byte[rendered.PixelHeight*rendered.PixelWidth*4];rendered.CopyPixels(before,rendered.PixelWidth*4,0);model.CenterX+=15;var after=new byte[before.Length];rendered.CopyPixels(after,rendered.PixelWidth*4,0);
+   Require(rendered.IsFrozen&&before.SequenceEqual(after)&&Enumerable.Range(0,before.Length/4).Any(i=>before[i*4+2]>200&&before[i*4+1]<40),"辅助线未导出或导出仍借可变模型");
+   var max=Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber;var rejected=false;
+   try{Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber=1;try{method.Invoke(viewport,new object[]{true});}catch(TargetInvocationException error){rejected=error.InnerException?.Message.Contains("shape-budget")==true;}}
+   finally{Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber=max;}
+   Require(rejected,"辅助线总预算降额静默截断");
+  });
+  Test("c17-window 来源proof同步退役十字层不退役有效图像",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var armed=true;
+   bool Proof(){if(armed&&viewport.CurrentFrame?.Frame==image.Frame&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ImageDataSource is not null){armed=false;layer.Dispose();}return true;}
+   Require(viewport.BindImage(image,Proof),"十字层退役错误地退役图像");Pump();Require(!armed&&viewport.CurrentFrame?.Frame==image.Frame,"未触发真实重入或丢图像");var point=layer.CrossDatas[0].CenterPoint;layer.CrossDatas[0].CenterX=90;Require(layer.CrossDatas[0].CenterPoint==point,"退役模型仍写");
+  });
+  Test("c17-window 拖动来源proof同步释放捕获不解引用旧手柄",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);Grid? handle=null;var armed=false;
+   bool Proof(){if(armed){armed=false;handle!.ReleaseMouseCapture();}return true;}
+   Require(viewport.BindImage(image,Proof),"图像拒绝");var window=layer.OpenSettings(owner);window.Close();Pump();var model=layer.CrossDatas[0];
+   var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));handle=(Grid)cross.Template.FindName("move",cross);handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"未捕获");var accepted=model.CenterPoint;armed=true;
+   handle.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent});Require(!armed&&!handle.IsMouseCaptured&&model.CenterPoint==accepted,"proof失捕仍写或未触发");
+  });
+  Test("c17-window 清理关闭重入换帧不退役新控件捕获",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(100,80,new byte[8000]);var b=resources.CreateGray8(100,80,new byte[8000]);var valid=true;
+   Require(viewport.BindImage(a,()=>valid),"图像A拒绝");var window=layer.OpenSettings(owner);Pump();Grid? newHandle=null;Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl? newCross=null;var model=layer.CrossDatas[0];
+   window.Closed+=(_,_)=>{Require(viewport.BindImage(b,()=>true),"回调图像B拒绝");Pump();newCross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));newHandle=(Grid)newCross.Template.FindName("move",newCross);newHandle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(newHandle.IsMouseCaptured,"新帧未捕获");};
+   valid=false;model.CenterX=99;Require(viewport.CurrentFrame?.Frame==b.Frame&&newHandle?.IsMouseCaptured==true,"旧清理退役新帧捕获");
+   var page=Visuals<Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage>(viewport.View).Single(x=>x.GetType().Name=="ShapeItemsPage");var move=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};var before=model.CenterPoint;newCross!.GetType().GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(newCross,move.GetPosition(page)-new Vector(2,3));newHandle!.RaiseEvent(move);Require(model.CenterPoint!=before&&newHandle.IsMouseCaptured,"新控件交互已被旧清理撤销");newHandle.ReleaseMouseCapture();
+  });
+  Test("c17-window 失效清理异常可查询且不清回调新帧",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(100,80,new byte[8000]);var b=resources.CreateGray8(100,80,new byte[8000]);var valid=true;
+   Require(viewport.BindImage(a,()=>valid),"图像A拒绝");var window=layer.OpenSettings(owner);window.Closed+=(_,_)=>{Require(viewport.BindImage(b,()=>true),"回调图像B拒绝");throw new InvalidOperationException("失效关闭观察标记");};valid=false;
+   Require(!layer.CrossDatas[0].CenterCommand.CanExecute(null)&&layer.LastSourceError?.ToString().Contains("失效关闭观察标记")==true&&viewport.CurrentFrame?.Frame==b.Frame,"查询吞清理异常或退役新帧");
+  });
+  Test("c17-window 同帧清理回调重装其他层不取消其新捕获",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var retiring=viewport.CreateCrosshairLayer();var window=retiring.OpenSettings(owner);Pump();using var geometry=viewport.CreateGeometryLayer();var receipt=viewport.CurrentFrame!;var model=sample.Crosshairs.CrossDatas[0];Grid? handle=null;
+   window.Closed+=(_,_)=>{Require(geometry.Present(receipt,0,new[]{new NativeGeometryOverlay(receipt.Frame,new PointGeometry(receipt.Coordinates,new(10,10)),Colors.Lime)},()=>true),"同帧新层拒绝");Pump();var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));handle=(Grid)cross.Template.FindName("move",cross);handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"其他层未捕获");};
+   retiring.Clear();Require(viewport.CurrentFrame==receipt&&handle?.IsMouseCaptured==true,"旧Clear重复重建同帧新组合");handle!.ReleaseMouseCapture();retiring.Dispose();
+  });
+  Test("c17-window Enter中间绑定被接管立即停止旧提交",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();var field=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).First();var box=(ComboBox)field.FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");var converter=new CrosshairCommitReentry();
+   BindingOperations.SetBinding(text,TextBox.TextProperty,new Binding("Text"){Source=leaf,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit,Converter=converter});var before=layer.CrossDatas[0].CenterX;var fired=false;
+   converter.BeforeBack=()=>{fired=true;BindingOperations.SetBinding(leaf,Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty,new Binding("StartValue"){Source=field,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});};text.Focus();text.Text="199";SendKey(text,Key.Enter,true);
+   Require(fired&&layer.CrossDatas[0].CenterX==before,"中间绑定替换后旧Enter仍写模型");window.Close();
+  });
+  Test("c17-window 原整数双端取整保绑定浮点不取整",()=>
+  {
+   var source=new Border{Tag=125.5};var integer=new Native.Numeric.HikPcUI.ListView.SliderArrange{Minimum=0,Maximum=1000};BindingOperations.SetBinding(integer,Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,new Binding("Tag"){Source=source,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});var binding=integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty);Show(integer);Pump();Require(integer.EndValue==126&&binding?.Status==BindingStatus.Active,"原整数末端取整或绑定不符");source.Tag=128.5;Pump();Require(integer.EndValue==128&&ReferenceEquals(binding,integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty)),"原整数末端模型刷新断绑定");integer.SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,129.5);binding!.UpdateSource();Require((double)source.Tag==130,"末端取整后不能回写");
+   var floating=new Native.Numeric.HikPcUI.ListView.SliderArrangeFloat{Minimum=0,Maximum=1000,DecimalDigits=2,StartValue=125.5,EndValue=127.5};Show(floating);Pump();Require(floating.StartValue==125.5&&floating.EndValue==127.5,"浮点控件误取整");
+  });
+ }
+ static void VerifyCrossBindingLifetime()
+ {
+  (Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl Cross,Grid Handle,Border Model) Open()
+  {
+   var model=new Border{Tag=new Point(20,30)};
+   var cross=new Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl{Width=300,Height=200,ImageSourceWidth=300,ImageSourceHeight=200,DataContext=model};
+   BindingOperations.SetBinding(cross,Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty,new Binding("Tag"){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});
+   var page=new Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage{Width=350,Height=250};cross.Tag=page;page.Items.Add(cross);Show(page);cross.ApplyTemplate();Pump();
+   var handle=(Grid)cross.Template.FindName("move",cross);
+   Require((Point)model.Tag==new Point(20,30)&&cross.CenterPoint==new Point(20,30),$"十字初值异常：model={model.Tag},cross={cross.CenterPoint}");
+   Require(cross.IsLoaded&&cross.IsVisible&&cross.IsHitTestVisible&&ReferenceEquals(handle.TemplatedParent,cross),$"十字夹具未真实挂载：loaded={cross.IsLoaded},visible={cross.IsVisible},hit={cross.IsHitTestVisible},part={ReferenceEquals(handle.TemplatedParent,cross)},parent={VisualTreeHelper.GetParent(cross)?.GetType().FullName}");
+   return(cross,handle,model);
+  }
+  void Down(Grid handle)=>handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+  void Move(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl cross,Grid handle)
+  {
+   // Route the real handler with a deterministic previous pointer position. This is
+   // a WPF binding/capture test, not a claim of physical mouse verification.
+   var page=(Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage)cross.Tag;
+   var args=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};
+   typeof(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl).GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(cross,args.GetPosition(page)-new Vector(7,9));
+   handle.RaiseEvent(args);
+  }
+  Test("c17-cross 拖动保双向绑定且后续模型编辑更新图形",()=>
+  {
+   var (cross,handle,model)=Open();var binding=cross.GetBindingExpression(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty);Down(handle);
+   Require(handle.IsMouseCaptured,$"原十字手柄未捕获：ratio={cross.ControlToImageRadio},size={cross.ImageSourceWidth}/{cross.ImageSourceHeight},locked={cross.IsLocked},enabled={cross.IsEnabled},handleEnabled={handle.IsEnabled},version={cross.GetType().GetField("gestureVersion",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)},parent={cross.GetType().GetField("parent",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)},captured={Mouse.Captured},replacing={cross.GetType().GetField("replacingTemplate",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)}");Move(cross,handle);
+   Require(model.Tag is Point p&&p==new Point(27,39)&&ReferenceEquals(binding,cross.GetBindingExpression(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty))&&binding!.Status==BindingStatus.Active,$"拖动未回写或破坏绑定：model={model.Tag},cross={cross.CenterPoint},status={binding?.Status}");
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonUpEvent});Require(!handle.IsMouseCaptured,"结束拖动未释放");
+   model.Tag=new Point(70,80);Pump();Require(cross.CenterPoint==new Point(70,80)&&cross.Line1Point1X==70&&cross.Line2Point1Y==80,"模型编辑未更新原图形");Show(new TextBlock());Require(!handle.IsMouseCaptured,"卸载未释放");
+  });
+  foreach(var reason in new[]{"锁定","隐藏","禁用","换数据","换尺寸","换比例","卸载","换模板","仅换模板"}) Test("c17-cross "+reason+"退役旧手势不再写入",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未取得捕获");
+   switch(reason){case "锁定":cross.IsLocked=true;break;case "隐藏":cross.Visibility=Visibility.Hidden;break;case "禁用":cross.IsEnabled=false;break;case "换数据":cross.DataContext=new object();break;case "换尺寸":cross.ImageSourceWidth=400;break;case "换比例":cross.ControlToImageRadio=2;break;case "卸载":Show(new TextBlock());break;case "换模板":cross.Template=new ControlTemplate(typeof(Control)){VisualTree=new FrameworkElementFactory(typeof(Grid),"move")};cross.ApplyTemplate();break;case "仅换模板":cross.Template=new ControlTemplate(typeof(Control));break;}
+   Require(!handle.IsMouseCaptured,"旧捕获未释放");if(reason=="仅换模板")Down(handle);Require(!handle.IsMouseCaptured,"待应用新模板时旧手柄重启");Move(cross,handle);Require((Point)model.Tag==new Point(20,30),$"退役句柄仍回写：model={model.Tag},cross={cross.CenterPoint}");Show(new TextBlock());
+  });
+  Test("c17-cross 捕获失败不留下写入且原手柄恢复可用",()=>
+  {
+   var (cross,handle,model)=Open();handle.IsEnabled=false;Down(handle);Require(!handle.IsMouseCaptured,"禁用手柄取得捕获");handle.IsEnabled=true;Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"失败捕获仍写入");Down(handle);Require(handle.IsMouseCaptured,"失败后无法重新捕获");Move(cross,handle);Require((Point)model.Tag==new Point(27,39),"恢复手势未回写");Show(new TextBlock());
+  });
+  Test("c17-cross 捕获观察者抛错仍释放且卸载旧句柄不能重启",()=>
+  {
+   var (cross,handle,model)=Open();MouseEventHandler broken=(_,_)=>throw new InvalidOperationException("捕获观察失败");handle.GotMouseCapture+=broken;var threw=false;
+   try{Down(handle);}catch(InvalidOperationException failure){threw=failure.Message.Contains("捕获观察失败");}finally{handle.GotMouseCapture-=broken;}
+   Require(threw&&!handle.IsMouseCaptured,"捕获异常未传播或遗留捕获");Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"异常后旧手势仍写");
+   Show(new TextBlock());Down(handle);Move(cross,handle);Require(!handle.IsMouseCaptured&&(Point)model.Tag==new Point(20,30),"卸载旧手柄重启");
+  });
+  Test("c17-cross 外部失捕后旧Move不写且可重新开始",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未捕获");handle.ReleaseMouseCapture();Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"失捕后仍写入");Down(handle);Require(handle.IsMouseCaptured,"失捕后无法重新启动");Show(new TextBlock());
+  });
+  Test("c17-cross 旧捕获清理回调启动的新手势保留",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未捕获");var once=true;
+   MouseEventHandler restart=(_,_)=>{if(once){once=false;Down(handle);}};handle.LostMouseCapture+=restart;
+   try{handle.ReleaseMouseCapture();Require(!once&&handle.IsMouseCaptured,"旧清理释放了重入的新捕获");Move(cross,handle);Require((Point)model.Tag==new Point(27,39),"重入的新手势不可用");}
+   finally{handle.LostMouseCapture-=restart;Show(new TextBlock());}
+  });
+  Test("c17-cross 颜色原命令保绑定并显式回写",()=>
+  {
+   var model=new Border{Background=Brushes.Black};var picker=new Native.Input.HikPcUI.ListView.ColorPickerControlView();
+   BindingOperations.SetBinding(picker,Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,new Binding("Background"){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});Show(picker);
+   var binding=picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty);
+   Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FF123456",picker);
+   Require(((SolidColorBrush)model.Background).Color==Color.FromRgb(0x12,0x34,0x56)&&ReferenceEquals(binding,picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty))&&binding!.Status==BindingStatus.Active,"颜色未回写或丢绑定");
+   model.Background=Brushes.Blue;Pump();Require(picker.CurrentColor.Color==Colors.Blue,"外部颜色未回显");
+  });
+  Test("c17-cross 颜色接纳中切DataContext不把旧颜色回写新源",()=>
+  {
+   var first=new Border{Background=Brushes.Black};var second=new Border{Background=Brushes.Blue};var picker=new Native.Input.HikPcUI.ListView.ColorPickerControlView{DataContext=first};
+   BindingOperations.SetBinding(picker,Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,new Binding("Background"){Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});Show(picker);
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,typeof(Native.Input.HikPcUI.ListView.ColorPickerControlView));var once=true;
+   EventHandler change=(_,_)=>{if(once){once=false;picker.DataContext=second;}};descriptor.AddValueChanged(picker,change);
+   try{Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);}finally{descriptor.RemoveValueChanged(picker,change);}
+   Pump();Require(((SolidColorBrush)second.Background).Color==Colors.Blue&&picker.CurrentColor.Color==Colors.Blue,"旧颜色污染新源");
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -2918,6 +3666,9 @@ internal static class S2DocumentEditingCases
    VerifyInheritedAnnulus();
    VerifyFieldGroups();
    VerifyNativeIntegerRadio();
+   VerifyNativeAssist();
+   VerifyCrossBindingLifetime();
+   VerifyCrosshairWindows();
    VerifyNativeAdvanced();
    VerifyNativeTextExpressions();
    VerifyNativeTextPixels();
@@ -2930,6 +3681,8 @@ internal static class S2DocumentEditingCases
    VerifyNativeResultTable();
    VerifyBetween();
    VerifyExpandedReference();
+   VerifyRoiGroupSnapshots();
+   VerifyRoiCoverageCommands();
    VerifyNativeBox();
    VerifyNativeRoiCreationContract();
    VerifyRoiMenusHistory();
@@ -2943,9 +3696,11 @@ internal static class S2DocumentEditingCases
    VerifyNativeSector();
    VerifyNativeRing();
    VerifyNativePolygon();
+   VerifyRoiGestureTransactions();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);
+   VerifyNativeExportSnapshots();
    Test("Native视图扩展会话更换卸载释放",NativeSessionLifetime);
    Test("浮点已保存值只聚焦离开保真",()=>
    {var value=.12345;var writes=0;var field=new DeclaredFieldEditor(new("float",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;});Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();var button=new Button{Content="离开"};host.Children.Add(button);button.Focus();Pump();Require(value==.12345,"仅焦点变化将0.12345改成"+value.ToString("R")+"；写入"+writes+"次");});
@@ -3146,7 +3901,7 @@ internal static class S2DocumentEditingCases
    });
    Test("正式Runtime三页与XML数值布局，旧SDK入口缺席",()=>
    {
-    var manager=new PluginManager();var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;manager.LoadPlugins(Path.Combine(product,"plugins"));manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));
+    var manager=new PluginManager();var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;manager.LoadPlugins();manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));
     Require(!Directory.Exists(Path.Combine(product,"plugins/SunEyeVision.Tool.BlobAnalysis")),"正式目录仍含旧Blob SDK");
     var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
     var flow=new SunEyeVision.Workflow.Workflow("flow","Runtime窗口");flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);

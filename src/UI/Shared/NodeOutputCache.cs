@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -29,7 +30,7 @@ namespace SunEyeVision.UI.Shared
     {
         private readonly BatchObservableCollection<OutputImageInfo> _outputImages;
         private int _currentIndex = -1;
-        private ToolResults? _lastResult;
+        private DeclaredOutputSnapshot? _lastResult;
         private DateTime? _lastExecutionTime;
         private bool _hasOutput;
         private string? _executionError;
@@ -87,7 +88,7 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 最近一次执行结果
         /// </summary>
-        public ToolResults? LastResult
+        public DeclaredOutputSnapshot? LastResult
         {
             get => _lastResult;
             private set
@@ -127,7 +128,7 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 结果变化事件
         /// </summary>
-        public event EventHandler<ToolResults?>? LastResultChanged;
+        public event EventHandler<DeclaredOutputSnapshot?>? LastResultChanged;
 
         /// <summary>
         /// 集合变化事件
@@ -156,7 +157,7 @@ namespace SunEyeVision.UI.Shared
         /// <param name="result">执行结果</param>
         /// <param name="outputImage">输出图像</param>
         /// <param name="sourceFilePath">源文件路径（可选）</param>
-        public void Update(ToolResults result, BitmapSource? outputImage, string? sourceFilePath = null)
+        public void Update(DeclaredOutputSnapshot result, BitmapSource? outputImage, string? sourceFilePath = null)
         {
             if (result == null) return;
 

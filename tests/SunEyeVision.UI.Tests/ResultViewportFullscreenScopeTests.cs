@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -67,7 +67,7 @@ public sealed class ResultViewportFullscreenScopeTests
     {
         using var fixture = new Scene("panel");
         using var image = Assert.IsType<ResultViewportImageLease>(fixture.Pane.BorrowCurrentImage());
-        var snapshot = new RoiEditSnapshot(new RoiEditStamp(Guid.NewGuid(), 0, image.Image.Frame), Array.Empty<RoiEditItem>());
+        var snapshot = new RoiEditSnapshot(new RoiEditStamp(Guid.NewGuid(), 0, image.Image.Frame), Array.Empty<RoiEditItem>(), new[]{new RoiGroupState("region",RoiCoverage.Explicit,RoiCoverage.Explicit)});
         using var session = new NativeRoiSession(image.Image, () => snapshot,
             (_, _) => RoiEditAcceptance.Reject(snapshot, "本用例不提交编辑。"), () => image.IsCurrent,
             () => new RoiHistoryAvailability(false, false), "region");

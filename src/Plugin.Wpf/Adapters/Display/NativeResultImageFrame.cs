@@ -1,4 +1,6 @@
 using SunEyeVision.Plugin.Contracts;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Display;
@@ -78,12 +80,41 @@ internal sealed class NativeResultImageFrame : IImageData, IDisposable
     internal byte[] ReadPixel(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height) throw new ArgumentOutOfRangeException(nameof(x));
+        return ReadOriginal(pixels =>
+        {
+            var channels = OriginalLayout.Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgr24 => 3, _ => 4 };
+            return pixels.GetRow(y).Slice(x * channels, channels).ToArray();
+        });
+    }
+
+    internal BitmapSource PrepareOriginalBitmap() => ReadOriginal(pixels =>
+    {
+        var layout = OriginalLayout;
+        var format = layout.Format switch
+        {
+            PixelLayout.Gray8 => PixelFormats.Gray8,
+            PixelLayout.Bgr24 => PixelFormats.Bgr24,
+            PixelLayout.Bgra32 => PixelFormats.Bgra32,
+            _ => throw new NotSupportedException("原图像素格式无法导出。")
+        };
+        var bytes = new byte[checked(layout.RowStrideBytes * layout.Height)];
+        for (var row = 0; row < layout.Height; row++)
+        {
+            var source = pixels.GetRow(row);
+            if (source.Length != layout.RowStrideBytes) throw new InvalidOperationException("原图像素行长度已改变。");
+            source.CopyTo(bytes.AsSpan(row * layout.RowStrideBytes, layout.RowStrideBytes));
+        }
+        var result = BitmapSource.Create(layout.Width, layout.Height, 96, 96, format, null, bytes, layout.RowStrideBytes);
+        result.Freeze(); return result;
+    });
+
+    private T ReadOriginal<T>(Func<IImagePixelReadLease, T> read)
+    {
         IImagePixelReadLease pixels;
         lock (_gate)
         { pixels = !_retired && _pixels is not null ? _pixels : throw new ObjectDisposedException(nameof(NativeResultImageFrame)); _reads++; }
-        var channels = OriginalLayout.Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgr24 => 3, _ => 4 };
-        byte[]? result = null; Exception? failure = null;
-        try { result = pixels.GetRow(y).Slice(x * channels, channels).ToArray(); }
+        T? result = default; Exception? failure = null;
+        try { result = read(pixels); }
         catch (Exception error) { failure = error; }
         IImagePixelReadLease? release = null;
         lock (_gate) { --_reads; if (_retired && _reads == 0) { release = _pixels; _pixels = null; } }

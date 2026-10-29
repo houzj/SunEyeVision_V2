@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -37,7 +38,7 @@ public sealed class WorkflowRunSession : IDisposable
     }
 
     public Guid RunId { get; }
-    internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner? ExecutionOwner { get; set; }
+    internal SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; set; }
 
     public string RootWorkflowId { get; }
     internal WorkflowRunConfiguration? Configuration { get; set; }

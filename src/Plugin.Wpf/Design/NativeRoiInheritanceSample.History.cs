@@ -8,11 +8,11 @@ namespace SunEyeVision.Plugin.Wpf.Design;
 
 public sealed partial class NativeRoiInheritanceSample
 {
-    private sealed record HistoryState(IReadOnlyDictionary<string,AcceptedFieldValue> Fields,IReadOnlyList<RoiEditItem> LocalItems,
+    private sealed record HistoryState(IReadOnlyDictionary<string,AcceptedFieldValue> Fields,IReadOnlyList<RoiEditItem> LocalItems,IReadOnlyList<RoiGroupState> LocalGroups,
         RoiEditTarget? Selection,RoiEditTarget? LastLocalSelection);
     private readonly Stack<HistoryState> _undo=new(),_redo=new();
     private bool _restoring;
-    private HistoryState CaptureHistory()=>new(Fields.CaptureAccepted(),Array.AsReadOnly(_root.LocalItems.ToArray()),
+    private HistoryState CaptureHistory()=>new(Fields.CaptureAccepted(),Array.AsReadOnly(_root.LocalItems.ToArray()),_root.LocalGroups,
         Session.CurROIData is {} selected?new(selected.Group,selected.Id):null,_lastLocalSelection);
     private RoiEditAcceptance RestoreHistory(RoiEditSnapshot current,bool redo)
     {
@@ -38,7 +38,7 @@ public sealed partial class NativeRoiInheritanceSample
             bool Current()=>!_disposed&&ReferenceEquals(expected,_root)&&ComponentsCurrent()&&proof?.Invoke()!=false&&!_disposed&&ReferenceEquals(expected,_root);
             if(!Current())return RoiEditAcceptance.Reject(Read(),"当前来源或编辑根已改变，不能恢复旧历史。");
             var before=CaptureHistory();
-            var restored=new Root(expected.Revision+1,fields,state.LocalItems,detection,detectionError,proof);
+            var restored=new Root(expected.Revision+1,fields,state.LocalItems,state.LocalGroups,detection,detectionError,proof);
             Action publish;
             bool installed;
             try

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 上次工具执行结果（保留原始完整结果）
         /// </summary>
-        public ToolResults? LastToolResult { get; private set; }
+        public DeclaredOutputSnapshot? LastToolResult { get; private set; }
 
         public AlgorithmNode(string id, string name, string dispName, IToolPlugin tool)
             : base(id, name, dispName, "Algorithm")
@@ -74,7 +75,7 @@ namespace SunEyeVision.Workflow
         /// <param name="globalVariables">本次工作流运行的全局变量</param>
         /// <param name="cancellationToken">本次工作流运行的取消令牌</param>
         public AlgorithmResult Execute(
-            IDictionary<string, ToolResults>? nodeResults,
+            IDictionary<string, DeclaredOutputSnapshot>? nodeResults,
             IDictionary<string, object?>? globalVariables = null,
             CancellationToken cancellationToken = default)
             => ExecuteAsync(nodeResults, globalVariables, cancellationToken).GetAwaiter().GetResult();
@@ -83,7 +84,7 @@ namespace SunEyeVision.Workflow
         /// 异步执行节点。工作流主链使用此入口，使异步工具不会被同步阻塞。
         /// </summary>
         public async Task<AlgorithmResult> ExecuteAsync(
-            IDictionary<string, ToolResults>? nodeResults,
+            IDictionary<string, DeclaredOutputSnapshot>? nodeResults,
             IDictionary<string, object?>? globalVariables = null,
             CancellationToken cancellationToken = default)
         {
@@ -102,84 +103,13 @@ namespace SunEyeVision.Workflow
                 {
                     var result=await ExecuteRuntimeNodeAsync(nodeResults,cancellationToken).ConfigureAwait(false);
                     if(cancellationToken.IsCancellationRequested||AdmittedIdentity?.IsCurrent==false)
-                    {result.Resources?.Dispose();cancellationToken.ThrowIfCancellationRequested();throw new InvalidOperationException("Runtime节点身份已失效，拒绝发布结果。");}
-                    try{BindingContext!.FreezeResult(this,result);}
-                    catch{result.Resources?.Dispose();throw;}
+                    {result.Dispose();cancellationToken.ThrowIfCancellationRequested();throw new InvalidOperationException("Runtime节点身份已失效，拒绝发布结果。");}
                     StoreLastToolResult(result);
                     LastResult=ConvertToAlgorithmResult(result);
                 }
-                else if (Tool != null)
-                {
-                    var typedParams = GetTypedParameters();
-
-                    // Shared executor prepares image, source values, correction and text bindings.
-                    var executionParams = CreateExecutionParameters(typedParams);
-                    var inputImage = ToolExecutionPreparation.ResolveInputImage(executionParams,
-                        nodeResults ?? new Dictionary<string, ToolResults>(), WorkflowInputImage);
-                    var resolver = new ParameterResolver(VisionLogger.Instance);
-
-                    // ★ 通过 ToolExecutor 统一执行路径（与工具调试共享同一执行器）
-                    // ToolExecutor 负责：注入 ExecutionContext（含 WorkflowName/GlobalVariables）、
-                    // 强制 NodeResults 非空、捕获异常、设置 ExecutionTimeMs
-                    var executor = new ToolExecutor(resolver, VisionLogger.Instance);
-                    var toolResult = await executor.ExecuteAsync(
-                        Tool,
-                        new ToolExecutionRequest(executionParams)
-                        {
-                            NodeResults = nodeResults,
-                            ResolvedInputImage = inputImage,
-                            NodeName = Name,
-                            NodeId = Id,
-                            WorkflowId = ExecutionWorkflowId,
-                            ExecutionOwner = ExecutionOwner,
-                            ExecutionIdentity = AdmittedIdentity,
-                            RunId = ExecutionRunId,
-                            RootRunId = ExecutionRootRunId,
-                            CancellationToken = cancellationToken,
-                            CameraCaptureService = CameraCaptureService,
-                            ResourcePaths = ResourcePaths,
-                            CommunicationInputs = CommunicationInputs,
-                            CommunicationOutputs = CommunicationOutputs,
-                            CameraFrame = CameraFrame,
-                            GlobalVariables = globalVariables,
-                            BindingPlans = CompiledBindings,
-                            BindingSnapshot = BindingContext?.Capture(this,nodeResults),
-                            BindingOutputSchema = BindingOutputSchema,
-                            OutputRequests = OutputRequests,
-                            ParameterBindings = ParameterBindingSet.FromSettings(ParamSettings)
-                        }).ConfigureAwait(false);
-
-                    if (cancellationToken.IsCancellationRequested || toolResult.ExecutionIdentity?.IsCurrent == false)
-                    {
-                        toolResult.Resources?.Dispose();
-                        cancellationToken.ThrowIfCancellationRequested();
-                        throw new InvalidOperationException("节点运行身份已失效，拒绝提交结果。");
-                    }
-                    // Stateful calibration points are committed only after execution, never
-                    // by mutating the parameter snapshot seen by the tool. A stale concurrent
-                    // capture is rejected by the parameter implementation.
-                    if (typedParams is IWorkflowResultCommitter committer
-                        && toolResult.Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess
-                        && !committer.TryCommit(toolResult, out var commitError))
-                    {
-                        toolResult.SetError(commitError ?? "标定点保存失败");
-                    }
-
-                    BindingContext?.FreezeResult(this,toolResult);
-                    if (toolResult.Status == ExecutionStatus.Failed && !string.IsNullOrWhiteSpace(toolResult.ErrorMessage))
-                    {
-                        StoreLastToolResult(toolResult);
-                        LastResult = ConvertToAlgorithmResult(toolResult);
-                        OnAfterExecute(LastResult);
-                        return LastResult;
-                    }
-
-                    StoreLastToolResult(toolResult);
-                    LastResult = ConvertToAlgorithmResult(toolResult);
-                }
                 else
                 {
-                    LastResult = AlgorithmResult.CreateError("节点未配置工具实例");
+                    throw new InvalidOperationException("节点没有已准入的Runtime配置；旧SDK工具执行已隔离。");
                 }
 
                 OnAfterExecute(LastResult);
@@ -232,26 +162,26 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 将 ToolResults 转换为 AlgorithmResult
+        /// 将 DeclaredOutputSnapshot 转换为 AlgorithmResult
         /// </summary>
-        private void StoreLastToolResult(ToolResults result)
+        private void StoreLastToolResult(DeclaredOutputSnapshot result)
         {
             var previous = LastToolResult;
             LastToolResult = result;
-            if (!ReferenceEquals(previous, result)) previous?.Resources?.Dispose();
+            if (!ReferenceEquals(previous, result)) previous?.Dispose();
         }
         internal void ReleaseLastResult()
         {
-            LastToolResult?.Resources?.Dispose();
+            LastToolResult?.Dispose();
             LastToolResult = null;
         }
 
-        private AlgorithmResult ConvertToAlgorithmResult(ToolResults result)
+        private AlgorithmResult ConvertToAlgorithmResult(DeclaredOutputSnapshot result)
         {
             if (result.Status == ExecutionStatus.Cancelled)
             {
                 var cancelled = AlgorithmResult.CreateCancelled(result.ErrorMessage ?? "执行被取消");
-                cancelled.ToolResults = result;
+                cancelled.Result = result;
                 return cancelled;
             }
 
@@ -259,27 +189,12 @@ namespace SunEyeVision.Workflow
             {
                 var failed = AlgorithmResult.CreateError(result.ErrorMessage ?? "处理失败");
                 // Retain this execution's diagnostic payload without changing failure semantics.
-                failed.ToolResults = result;
+                failed.Result = result;
                 return failed;
             }
 
-            // 获取第一张可显示图像作为主输出
-            var displayImages = result.GetDisplayImages();
-            var primaryImage = displayImages.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-
-            // 如果没有输出图像，返回成功（无主图像的结果仍然可以包含结构化数据）
-            if (primaryImage == null)
-            {
-                var nullResult = AlgorithmResult.CreateSuccess(null, result.ExecutionTimeMs);
-                nullResult.ToolResults = result;
-                return nullResult;
-            }
-
-            var algorithmResult = AlgorithmResult.CreateSuccess(primaryImage, result.ExecutionTimeMs);
-
-            // 保留原始工具结果引用
-            algorithmResult.ToolResults = result;
-
+            var algorithmResult = AlgorithmResult.CreateSuccess(null, result.ExecutionTimeMs);
+            algorithmResult.Result = result;
             return algorithmResult;
         }
 

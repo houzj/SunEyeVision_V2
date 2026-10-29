@@ -34,7 +34,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
     /// <summary>Call on the document owner before dispatching execution. The double
     /// read rejects replacement during capture; retained readers survive later replacement.</summary>
     public static RuntimeDebugInvocation Capture(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
-        Func<string,ToolResults?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
+        Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null)
     {
         ArgumentNullException.ThrowIfNull(workflow);ArgumentNullException.ThrowIfNull(draft);ArgumentNullException.ThrowIfNull(owner);
@@ -50,14 +50,14 @@ public sealed class RuntimeDebugInvocation : IDisposable
         var readers=new List<IDisposable>();ToolExecutionIdentity? identity=null;
         try
         {
-            var observed=new Dictionary<string,ToolResults>(StringComparer.Ordinal);
+            var observed=new Dictionary<string,DeclaredOutputSnapshot>(StringComparer.Ordinal);
             var sources=new List<BindingSource>();var values=new List<BindingNodeResult>();
             foreach(var dependency in dependencies)
             {
                 if(dependency.ScopeId!=workflow.Id||dependency.NodeId==node.Id)throw new InvalidOperationException("调试来源不在当前工作流或引用了自身。");
                 var sourceNode=workflow.Nodes.Single(n=>n.Id==dependency.NodeId);
                 var result=readPublished(dependency.NodeId)??throw new InvalidOperationException("来源尚无已发布结果，请先运行上游节点或工作流："+sourceNode.Name);
-                var published=result.DeclaredOutput??throw new InvalidOperationException("来源没有正式冻结输出。");
+                var published=result??throw new InvalidOperationException("来源没有正式冻结输出。");
                 var admitted=result.ExecutionIdentity??throw new InvalidOperationException("来源没有原始执行身份。");
                 if(!result.IsSuccess||published.Status!=ExecutionStatus.Success&&published.Status!=ExecutionStatus.PartialSuccess||!published.IsComplete||
                     !ReferenceEquals(admitted.Owner,publishedOwner??workflow.ExecutionOwner)||admitted.NodeId!=workflow.Id+"/"+dependency.NodeId||published.SourceWorkflowId!=workflow.Id||
@@ -75,7 +75,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             foreach(var pair in observed)
                 if(!ReferenceEquals(pair.Value,readPublished(pair.Key)))throw new InvalidOperationException("捕获期间来源结果已更新，请重新执行调试。");
             cancellation.ThrowIfCancellationRequested();
-            identity=owner.Begin(workflow.Id+"/"+node.Id,Guid.NewGuid(),ToolContract.Version,cancellation);
+            identity=owner.Begin(workflow.Id+"/"+node.Id,Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor,cancellation);
             var consumer=new BindingNodeId(workflow.Id,node.Id);
             var scope=new BindingScopeSnapshot(consumer,owner.Id,revision,sources,sources.Select(s=>s.Node),
                 workflow.Nodes.Select(n=>new KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>(new(workflow.Id,n.Id),
@@ -127,13 +127,14 @@ public sealed class RuntimeDebugInvocation : IDisposable
             if(cleanup.Count>0)throw new AggregateException(new[]{failure}.Concat(cleanup));throw;
         }
     }
-    public async Task<RuntimeToolResults> ExecuteAsync()
+    public async Task<DeclaredOutputSnapshot> ExecuteAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(Interlocked.Exchange(ref _started,1)!=0)throw new InvalidOperationException("调试输入快照只能执行一次。");
         IDisposable? admission=null;
         ImageSourceInvocationInputs? sourceLease=null;
-        var resources=new FrozenOutputResources();ToolOutcome? outcome=null;RuntimeToolResults? result=null;bool transferred=false;Exception? failure=null;
+        var resultSchema=_node.RuntimeConfiguration!.Schema;var resultNodeId=_node.Id;
+        var resources=new FrozenOutputResources();ToolOutcome? outcome=null;DeclaredOutputSnapshot? result=null;bool transferred=false;Exception? failure=null;
         var timer=Stopwatch.StartNew();
         try
         {
@@ -149,8 +150,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 inputs=new InputValues(_node.RuntimeConfiguration!.Schema.Inputs,values);
             }
             outcome=await _node.ExecuteRuntimeAsync(inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources)).ConfigureAwait(false);
-            transferred=true;result=new(_node.ToolType,_node.RuntimeConfiguration!.Schema,Identity,outcome,resources,timer.Elapsed.TotalMilliseconds);
-            DeclaredOutputSnapshot.Publish(result,Identity.ToInvocationIdentity(_node.Id),result.Values,sourceWorkflowId:_workflowId);
+            transferred=true;result=DeclaredOutputSnapshot.Capture(resultSchema,0,Identity,resultNodeId,outcome,resources,timer.Elapsed.TotalMilliseconds,sourceWorkflowId:_workflowId);
             return result;
         }
         catch(Exception error){failure=error;throw;}
@@ -160,7 +160,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}}
-            if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Resources?.Dispose();}catch(Exception error){cleanup.Add(error);}
+            if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0){if(failure is not null)cleanup.Insert(0,failure);throw new AggregateException(cleanup);}
         }
     }

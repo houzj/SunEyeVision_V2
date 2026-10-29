@@ -33,18 +33,15 @@ public sealed class ImageSourceDesignCompositionTests
             var window=Show(view.View);
             try
             {
-                var input=Assert.Single(Visuals<ImageSourceInputView>(view.View));
+                var input=Assert.IsType<ImageSourceInputView>(Assert.IsAssignableFrom<ContentControl>(context.Options.InputContent).Content);
                 Assert.Equal(camera,input.IsCamera);
-                Assert.Equal(camera?Visibility.Collapsed:Visibility.Visible,input.SourceStrip.Visibility);
+                Assert.Empty(Visuals<ImageSourceStrip>(view.View));
                 Assert.False(input.CameraPicker.IsEnabled);Assert.False(input.OpenCameraButton.IsEnabled);
                 Assert.Equal("设计态：未连接设备",input.CameraStatus.Text);
-                Assert.Single(input.CameraPicker.Items);Assert.Empty(input.SourceStrip.Session!.Items);
-                Assert.True(input.SourceStrip.Session.IsReadOnly);
-                Assert.Throws<InvalidOperationException>(()=>input.SourceStrip.Session.RequestAsync(
-                    new ImageSourceStripRequest(ImageSourceStripRequestKind.Clear,input.SourceStrip.Session.Version),CancellationToken.None).GetAwaiter().GetResult());
-                Assert.Equal(camera?"camera":"local",context.Draft.ReadFields().Get<string>("source.kind"));
-                Assert.True(view.TryCapture(out _,out var references,out var error),error);Assert.Empty(references);
-                view.Dispose();Assert.Null(input.SourceStrip.Session);
+                Assert.Single(input.CameraPicker.Items);
+                Assert.Equal(camera?"camera":"local",context.Draft.CaptureFields().Get<string>("source.kind"));
+                Assert.True(view.TryCapture(out var fields,out var error),error);Assert.DoesNotContain(fields.Capture().Values,value=>value is ReferenceSetting);
+                view.Dispose();
             }
             finally{window.Content=null;window.Close();view.Dispose();}
         });
@@ -60,18 +57,16 @@ public sealed class ImageSourceDesignCompositionTests
             try
             {
                 var changed=0;view.Changed+=()=>changed++;
-                var input=Assert.Single(Visuals<ImageSourceInputView>(view.View));
-                var oldSession=input.SourceStrip.Session;
+                var input=Assert.IsType<ImageSourceInputView>(Assert.IsAssignableFrom<ContentControl>(context.Options.InputContent).Content);
                 Assert.True(Field(view,"local.auto-switch").TrySetConstant(false));
-                Assert.False(context.Draft.ReadFields().Get<bool>("local.auto-switch"));
-                Assert.False(input.SourceStrip.Session!.AutoSwitchEnabled);Assert.NotSame(oldSession,input.SourceStrip.Session);
+                Assert.False(context.Draft.CaptureFields().Get<bool>("local.auto-switch"));
                 Assert.True(Field(view,"source.kind").TrySetConstant("camera"));
-                Assert.Equal("camera",context.Draft.ReadFields().Get<string>("source.kind"));Assert.True(input.IsCamera);
-                Assert.Equal(Visibility.Collapsed,input.SourceStrip.Visibility);
+                Assert.Equal("camera",context.Draft.CaptureFields().Get<string>("source.kind"));Assert.True(input.IsCamera);
+                Assert.Empty(Visuals<ImageSourceStrip>(view.View));
                 Assert.True(Field(view,"source.kind").TrySetConstant("local"));
-                Assert.False(input.IsCamera);Assert.Equal(Visibility.Visible,input.SourceStrip.Visibility);
-                Assert.False(input.SourceStrip.Session!.AutoSwitchEnabled);Assert.True(changed>=3);
-                Assert.True(view.TryCapture(out _,out _,out var error),error);
+                Assert.False(input.IsCamera);
+                Assert.False(context.Draft.CaptureFields().Get<bool>("local.auto-switch"));Assert.True(changed>=3);
+                Assert.True(view.TryCapture(out _,out var error),error);
             }
             finally{window.Content=null;window.Close();}
         });
@@ -86,26 +81,26 @@ public sealed class ImageSourceDesignCompositionTests
             // These contexts own disposable design input even when our callback probe replaces it.
             ((IDisposable)first.Options.InputContent!).Dispose();((IDisposable)second.Options.InputContent!).Dispose();
             var source=new CallbackSource();var next=new CallbackSource();var accepts=0;var nextAccepts=0;
-            var view=factory.CreateSettingsView(first.Draft,new(InputContent:source,AcceptCandidate:(_,_)=>accepts++));
+            var view=factory.CreateSettingsView(first.Draft,new(InputContent:source,AcceptCandidate:_=>accepts++));
             var window=Show(view.View);
             try
             {
                 var oldPrepare=source.Prepare!;var oldAccept=source.Accept!;
-                oldPrepare();oldAccept(first.Draft.CaptureSettings());Assert.Equal(1,accepts);
+                oldPrepare();oldAccept(first.Draft.CaptureFields());Assert.Equal(1,accepts);
                 var changed=0;view.Changed+=()=>changed++;
                 source.Notify();Assert.Equal(1,changed);Assert.Equal(0,source.DisposeCount);
-                Bind(view,second.Draft,new(InputContent:next,AcceptCandidate:(_,_)=>nextAccepts++));window.UpdateLayout();
+                Bind(view,second.Draft,new(InputContent:next,AcceptCandidate:_=>nextAccepts++));window.UpdateLayout();
                 Assert.Equal(1,source.DisposeCount);Assert.Equal(0,next.DisposeCount);
                 Assert.Throws<InvalidOperationException>(oldPrepare);
-                Assert.Throws<InvalidOperationException>(()=>oldAccept(first.Draft.CaptureSettings()));
+                Assert.Throws<InvalidOperationException>(()=>oldAccept(first.Draft.CaptureFields()));
                 Assert.Equal(1,accepts);Assert.Equal(0,nextAccepts);
                 source.Notify();Assert.Equal(1,changed); // previous Changed subscription was removed.
-                Assert.Equal("camera",second.Draft.ReadFields().Get<string>("source.kind"));
+                Assert.Equal("camera",second.Draft.CaptureFields().Get<string>("source.kind"));
                 var currentPrepare=next.Prepare!;var currentAccept=next.Accept!;
-                currentPrepare();currentAccept(second.Draft.CaptureSettings());Assert.Equal(1,nextAccepts);
+                currentPrepare();currentAccept(second.Draft.CaptureFields());Assert.Equal(1,nextAccepts);
                 view.Dispose();view.Dispose();Assert.Equal(1,next.DisposeCount);Assert.Equal(1,source.DisposeCount);
                 Assert.Throws<InvalidOperationException>(currentPrepare);
-                Assert.Throws<InvalidOperationException>(()=>currentAccept(second.Draft.CaptureSettings()));
+                Assert.Throws<InvalidOperationException>(()=>currentAccept(second.Draft.CaptureFields()));
                 Assert.Throws<ObjectDisposedException>(()=>Bind(view,second.Draft,new()));
                 Assert.Equal(1,nextAccepts);
             }
@@ -131,7 +126,10 @@ public sealed class ImageSourceDesignCompositionTests
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
             Assert.True(PluginLoader.LoadPlugins());
             var runtime=ToolRegistry.CreateRuntime("ImageLoad");
-            using var registered=ToolRegistry.CreateSettingsView("ImageLoad",runtime.CreateSettings());
+            var settingsFields=Assert.IsAssignableFrom<IToolSettingsFields>(runtime);
+            var defaults=settingsFields.ReadSettings(runtime.CreateSettings()).CopyValues()
+                .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
+            using var registered=ToolRegistry.CreateSettingsView("ImageLoad",new FieldSettings(settingsFields.SettingsSchema.Inputs,defaults));
             Assert.Equal("SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor",registered.GetType().FullName);
             var assembly=registered.GetType().Assembly;
             var factory=Assert.IsAssignableFrom<IToolPresentationFactory>(Activator.CreateInstance(assembly.GetType("SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory",true)!));
@@ -153,10 +151,10 @@ public sealed class ImageSourceDesignCompositionTests
     }
     private sealed class CallbackSource:UserControl,IImageSourceSettingsContent,IDisposable
     {
-        public Action? Prepare{get;private set;}public Action<object>? Accept{get;private set;}
+        public Action? Prepare{get;private set;}public Action<FieldSettings>? Accept{get;private set;}
         public int DisposeCount{get;private set;}
         public event Action? Changed;
-        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<object> acceptCandidate){Prepare=prepareEdit;Accept=acceptCandidate;}
+        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<FieldSettings> acceptCandidate){Prepare=prepareEdit;Accept=acceptCandidate;}
         public void RefreshSourceDraft(){}
         public void Notify()=>Changed?.Invoke();
         public void Dispose(){DisposeCount++;}

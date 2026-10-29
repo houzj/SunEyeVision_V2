@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -65,6 +65,167 @@ public sealed partial class SolutionManagerUiTests
         public Task Request(ImageSourceStripRequestKind kind,string? itemId=null,IEnumerable<string>? paths=null)
             =>Session.RequestAsync(new(kind,Session.Version,itemId,paths:paths),CancellationToken.None);
         public void Dispose(){_window.Close();Control.Session=null;Session.Dispose();}
+    }
+
+    [Fact]
+    public void Viewport_release_failure_still_detaches_session_and_cancels_requests()
+    {
+        Sta(()=>
+        {
+            var session=new ThrowingViewportSession();
+            var control=new ImageSourceStrip {Session=session};
+            var window=new Window {Content=control,Width=600,Height=180,Left=-10000,ShowActivated=false};
+            try
+            {
+                window.Show();window.UpdateLayout();
+                var field=typeof(ImageSourceStrip).GetField("_lifetime",BindingFlags.NonPublic|BindingFlags.Instance)!;
+                var lifetime=(CancellationTokenSource)field.GetValue(control)!;
+                Assert.Equal(1,session.Subscribers);
+                session.ThrowOnRelease=true;
+                var error=Assert.Throws<TargetInvocationException>(()=>PreviewCall(control,"Detach"));
+                Assert.IsType<AggregateException>(error.InnerException);
+                Assert.True(lifetime.IsCancellationRequested);
+                Assert.Equal(0,session.Subscribers);
+                Assert.Null(field.GetValue(control));
+            }
+            finally { window.Close();control.Session=null; }
+        });
+    }
+
+    [Fact]
+    public void Viewport_release_reentry_keeps_the_new_session_attached()
+    {
+        Sta(()=>
+        {
+            var oldSession=new ThrowingViewportSession();
+            var newSession=new ThrowingViewportSession();
+            var control=new ImageSourceStrip {Session=oldSession};
+            var window=new Window {Content=control,Width=600,Height=180,Left=-10000,ShowActivated=false};
+            try
+            {
+                window.Show();window.UpdateLayout();
+                oldSession.OnRelease=()=>control.Session=newSession;
+                control.Session=null;
+                Assert.Same(newSession,control.Session);
+                Assert.Equal(0,oldSession.Subscribers);
+                Assert.Equal(1,newSession.Subscribers);
+                Assert.NotNull(typeof(ImageSourceStrip).GetField("_lifetime",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(control));
+            }
+            finally {window.Close();control.Session=null;}
+        });
+    }
+
+    [Fact]
+    public void Refresh_reentry_stops_old_notifications_after_session_replacement()
+    {
+        Sta(()=>
+        {
+            var oldSession=new ThrowingViewportSession();
+            var newSession=new ThrowingViewportSession();
+            var control=new ImageSourceStrip {Session=oldSession};
+            var window=new Window {Content=control,Width=600,Height=180,Left=-10000,ShowActivated=false};
+            try
+            {
+                window.Show();window.UpdateLayout();
+                var changed=false;var statusNotifications=0;
+                control.PropertyChanged+=(_,args)=>
+                {
+                    if(args.PropertyName==nameof(ImageSourceStrip.Items)&&!changed)
+                    {changed=true;control.Session=newSession;}
+                    if(args.PropertyName==nameof(ImageSourceStrip.Status))statusNotifications++;
+                };
+                PreviewCall(control,"Refresh");
+                Assert.Same(newSession,control.Session);
+                Assert.Equal(1,statusNotifications);
+                Assert.Equal(0,oldSession.Subscribers);
+                Assert.Equal(1,newSession.Subscribers);
+            }
+            finally {window.Close();control.Session=null;}
+        });
+    }
+
+    [Fact]
+    public void Late_first_request_does_not_scroll_the_replacement_session()
+    {
+        Sta(()=>
+        {
+            var pending=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var oldSession=Substitute.For<IImageSourceStripSession>();
+            var newSession=Substitute.For<IImageSourceStripSession>();
+            var oldItems=new[]{new ImageSourceStripItem("old","旧图",null,true)};
+            var newItems=System.Linq.Enumerable.Range(0,40)
+                .Select(index=>new ImageSourceStripItem("new-"+index,"图"+index,null,true)).ToArray();
+            oldSession.Items.Returns(oldItems);oldSession.DisplayIndex.Returns(-1);oldSession.ConfiguredStartIndex.Returns(0);
+            oldSession.RequestAsync(Arg.Any<ImageSourceStripRequest>(),Arg.Any<CancellationToken>()).Returns(pending.Task);
+            newSession.Items.Returns(newItems);newSession.DisplayIndex.Returns(-1);newSession.ConfiguredStartIndex.Returns(0);
+            var control=new ImageSourceStrip {Session=oldSession};
+            var window=new Window {Content=control,Width=500,Height=180,Left=-10000,ShowActivated=false};
+            try
+            {
+                window.Show();window.UpdateLayout();
+                var select=(Task)typeof(ImageSourceStrip).GetMethod("SelectFirstAsync",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(control,null)!;
+                Assert.False(select.IsCompleted);
+                control.Session=newSession;window.UpdateLayout();
+                var list=(ListBox)control.FindName("lst");list.UpdateLayout();
+                var scroll=(ScrollViewer)typeof(ImageSourceStrip).GetMethod("FindScrollViewer",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,new object[]{list})!;
+                scroll.ScrollToHorizontalOffset(10);scroll.UpdateLayout();
+                var offset=scroll.HorizontalOffset;Assert.True(offset>0,"测试需要可横向滚动的缩略图列表");
+                pending.SetResult();PumpPreviewTask(control,select);scroll.UpdateLayout();
+                Assert.Equal(offset,scroll.HorizontalOffset);
+            }
+            finally {window.Close();control.Session=null;}
+        });
+    }
+
+    private sealed class ThrowingViewportSession : IImageSourceStripSession,IImageSourceStripViewportSession
+    {
+        private System.ComponentModel.PropertyChangedEventHandler? _changed;
+        public int Subscribers {get;private set;}
+        public bool ThrowOnRelease {get;set;}
+        public Action? OnRelease {get;set;}
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged
+        { add {_changed+=value;Subscribers++;} remove {_changed-=value;Subscribers--;} }
+        public IReadOnlyList<ImageSourceStripItem> Items=>Array.Empty<ImageSourceStripItem>();
+        public long Version=>0;
+        public int DisplayIndex=>-1;
+        public int ConfiguredStartIndex=>-1;
+        public bool IsReadOnly=>false;
+        public bool IsSelectMode=>false;
+        public bool AutoSwitchEnabled=>false;
+        public bool IsImporting=>false;
+        public string? Status=>null;
+        public Task RequestAsync(ImageSourceStripRequest request,CancellationToken cancellationToken)=>Task.CompletedTask;
+        public void UpdateVisibleItems(IReadOnlyList<string> itemIds)
+        {
+            if(itemIds.Count!=0)return;
+            if(ThrowOnRelease)throw new InvalidOperationException("release observer failed");
+            OnRelease?.Invoke();
+        }
+    }
+
+    [Fact]
+    public void Local_import_buttons_dispatch_directly_without_a_source_menu()
+    {
+        Sta(()=>
+        {
+            var session=Substitute.For<IImageSourceStripSession>();
+            session.Items.Returns(Array.Empty<ImageSourceStripItem>());
+            session.DisplayIndex.Returns(-1);
+            session.Version.Returns(42);
+            session.RequestAsync(Arg.Any<ImageSourceStripRequest>(),Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            var control=new ImageSourceStrip {Session=session};
+            var window=new Window {Content=control,Width=600,Height=180,Left=-10000,ShowActivated=false};
+            try
+            {
+                window.Show();window.UpdateLayout();
+                ((Button)control.FindName("BtnImageAdd")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                ((Button)control.FindName("BtnImageAddFolder")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                session.Received(1).RequestAsync(Arg.Is<ImageSourceStripRequest>(request=>request.Kind==ImageSourceStripRequestKind.ImportFiles&&request.ExpectedVersion==42),Arg.Any<CancellationToken>());
+                session.Received(1).RequestAsync(Arg.Is<ImageSourceStripRequest>(request=>request.Kind==ImageSourceStripRequestKind.ImportDirectory&&request.ExpectedVersion==42),Arg.Any<CancellationToken>());
+                Assert.Null(control.FindName("Pop1"));Assert.Null(control.FindName("Pop2"));
+            }
+            finally {window.Close();control.Session=null;}
+        });
     }
 
     [Fact]

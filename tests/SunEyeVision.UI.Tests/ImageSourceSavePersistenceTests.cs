@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.Workflow;
@@ -45,6 +45,11 @@ public class ImageSourceSavePersistenceTests
     {
         var node = new WorkflowNode("checks", "图像源", "图像源", "ImageLoad"){RuntimeConfiguration=ImageSourceTestRuntime.Configuration()};
         var input = node.EnsureInputSource();
+        var editGate = new SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager(
+            NSubstitute.Substitute.For<SunEyeVision.UI.Services.Interaction.IInputProvider>(),
+            new WorkflowEngine(NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Logging.ILogger>()),
+            new SunEyeVision.UI.Services.RuntimeInputSnapshotService());
+        input.ConfigurationLeaseProvider = editGate.BeginHistoryMutation;
         input.ConfigurationWriter = candidate => ImageSourceTestRuntime.Edit(node,config=>config.UpdateLocalInput(candidate.Configuration));
         var image = new ImageInfo { FilePath = @"C:\samples\a.bmp", SourceReference = "assets/a.bmp" };
         input.AddImage(image);
@@ -93,6 +98,11 @@ public class ImageSourceSavePersistenceTests
             config.OutputFormat=ImageOutputFormat.Rgb24;config.SNInitialValue=25;config.StopAtLastImage=true;
         });
         var input = node.EnsureInputSource();
+        var editGate = new SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager(
+            NSubstitute.Substitute.For<SunEyeVision.UI.Services.Interaction.IInputProvider>(),
+            new WorkflowEngine(NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Logging.ILogger>()),
+            new SunEyeVision.UI.Services.RuntimeInputSnapshotService());
+        input.ConfigurationLeaseProvider = editGate.BeginHistoryMutation;
         input.ConfigurationWriter = candidate => ImageSourceTestRuntime.Edit(node,config=>config.UpdateLocalInput(candidate.Configuration));
         input.AddImage(new ImageInfo { FilePath = @"C:\samples\a.bmp", Name = "a" });
         input.CurrentIndex = 0;

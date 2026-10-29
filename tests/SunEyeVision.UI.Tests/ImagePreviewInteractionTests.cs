@@ -526,16 +526,16 @@ public sealed partial class SolutionManagerUiTests
         {
             using var fixture=new LocalImageExecutionFixture();var source=fixture.AddSource("source",2);
             var completed=0;fixture.Manager.WorkflowExecutionCompleted+=(_,_)=>completed++;
-            fixture.Manager.RunSingleAsync(fixture.Tab,advanceLocalImage:false).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,advanceLocalImage:false));
             Assert.Empty(fixture.Errors);Assert.Equal(1,completed);Assert.Equal(0,source.CurrentIndex);
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);Assert.Equal(2,completed);Assert.Equal(1,source.CurrentIndex);
             // Existing file with invalid bytes passes path readiness and fails in the actual Runtime decoder.
             File.WriteAllBytes(source.CurrentImage!.FilePath,new byte[]{1});
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.NotEmpty(fixture.Errors);Assert.Equal(1,source.CurrentIndex);
             using var cancel=new CancellationTokenSource();cancel.Cancel();
-            fixture.Manager.RunSingleAsync(fixture.Tab,cancel.Token).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,cancel.Token));
             Assert.Equal(1,source.CurrentIndex);
         });
     }

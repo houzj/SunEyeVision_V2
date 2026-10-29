@@ -404,9 +404,11 @@ public sealed partial class SolutionManagerUiTests
             using var fixture = new LocalImageExecutionFixture();
             var source = fixture.AddSource("source", 3);
             var expectedPath = source.Images[1].FilePath;
+            Exception? rejectedEdit=null;
             fixture.Input.GetInputImageAsync().Returns(_ =>
             {
-                source.SelectImage(2); // A new explicit user choice is a formal edit after this run captured its input.
+                // Formal edits are excluded while a run owns the document.
+                rejectedEdit=Assert.Throws<InvalidOperationException>(()=>source.SelectImage(2));
                 fixture.Snapshots.Publish("another-workflow", "unrelated.png", 9);
                 return Task.FromResult<object?>(null);
             });
@@ -415,6 +417,10 @@ public sealed partial class SolutionManagerUiTests
             PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(expectedPath, observedPath);
+            Assert.NotNull(rejectedEdit);
+            Assert.Equal(1,source.CurrentIndex);
+            Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
+            source.SelectImage(2); // The same edit is admitted after execution and notifications drain.
             Assert.Equal(2, source.CurrentIndex);
             Assert.Equal(2,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex); // The frozen old invocation must not overwrite the newer accepted formal choice.
         });

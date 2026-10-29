@@ -1,0 +1,14 @@
+{
+  "originalAudit": "D07_FULL_IMAGESOURCE_TRACK_MIGRATION_AUDIT_20261029.json",
+  "originalCaseCountUnchanged": 222,
+  "cases": [
+    {
+      "name": "SolutionManagerUiTests.Frozen_execution_ignores_other_preview_and_does_not_overwrite_a_new_user_selection()",
+      "originalAssumption": "运行中允许接纳新的正式图像选择，旧执行不得覆盖它",
+      "currentContract": "运行持有执行门禁时拒绝正式编辑；执行及通知排空后允许新的正式选择",
+      "replacementAssertions": "运行中选择抛出InvalidOperationException；无关预览不改变冻结取图；本轮成功并显示原冻结路径；正式起点未被执行游标覆盖；排空后新选择正常接纳",
+      "evidence": "WorkflowExecutionManager.BeginHistoryMutation检查_activeWorkflowIds并拒绝编辑；夹具ConfigurationLeaseProvider绑定该门禁",
+      "validation": "待主仓正式Recovery运行；原历史audit不重写"
+    }
+  ]
+}

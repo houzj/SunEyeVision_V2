@@ -76,6 +76,18 @@ public sealed partial class SolutionManagerUiTests
         }
     }
 
+    private static void PumpLocalExecution(Func<Task> action)
+    {
+        var frame=new System.Windows.Threading.DispatcherFrame();Exception? failure=null;
+        _=Invoke();System.Windows.Threading.Dispatcher.PushFrame(frame);
+        if(failure is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        async Task Invoke()
+        {
+            try{await action();}
+            catch(Exception error){failure=error;}
+            finally{frame.Continue=false;}
+        }
+    }
     private static LocalImageExecutionFixture FixtureWithSynchronousNotifications()
     {
         var previous=SynchronizationContext.Current;
@@ -100,8 +112,8 @@ public sealed partial class SolutionManagerUiTests
             var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             fixture.Manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
             Assert.True(fixture.Manager.StartContinuousRun(fixture.Tab));
-            try { stopped.Task.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult(); }
-            finally { fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult(); }
+            try { PumpLocalExecution(()=>stopped.Task.WaitAsync(TimeSpan.FromSeconds(10))); }
+            finally { PumpLocalExecution(()=>fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5))); }
             Assert.Contains(a.Images[1].FilePath, paths);
             Assert.DoesNotContain(missing, paths);
             Assert.Equal(2, a.CurrentIndex);
@@ -118,12 +130,12 @@ public sealed partial class SolutionManagerUiTests
             var source=fixture.AddSource("source",3);
             var missing=source.Images[1].FilePath;
             System.IO.File.Delete(missing);
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.NotEmpty(fixture.Errors);
             Assert.Equal(1,source.CurrentIndex);
             Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
             fixture.Errors.Clear();
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(2,source.CurrentIndex);
             Assert.Equal(source.Images[2].FilePath,source.CurrentImage!.FilePath);
@@ -146,8 +158,8 @@ public sealed partial class SolutionManagerUiTests
                 throw new InvalidOperationException("注入错误通知失败");
             };
             Assert.True(fixture.Manager.StartContinuousRun(fixture.Tab));
-            errorObserved.Task.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
-            fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>errorObserved.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+            PumpLocalExecution(()=>fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)));
             Assert.False(fixture.Manager.IsAnyRunning());
             using var editLease=fixture.Manager.BeginHistoryMutation();
         });
@@ -177,8 +189,8 @@ public sealed partial class SolutionManagerUiTests
                 throw new InvalidOperationException("注入错误通知失败");
             };
             Assert.True(fixture.Manager.StartContinuousRun(fixture.Tab));
-            errorObserved.Task.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
-            fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>errorObserved.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+            PumpLocalExecution(()=>fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)));
             Assert.Equal(1,injected);
             Assert.False(fixture.Manager.IsAnyRunning());
             using var editLease=fixture.Manager.BeginHistoryMutation();
@@ -198,10 +210,10 @@ public sealed partial class SolutionManagerUiTests
             fixture.Manager.BlockLocalImageCursor(fixture.Root.Id,"a","根流程实例已替换");
             var tab=new WorkflowTabViewModel{Id=replacement.Id,Name=replacement.Name};
             tab.SetNodes(replacement.Nodes);tab.SetConnections(replacement.Connections);
-            fixture.Manager.RunSingleAsync(tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(tab));
             Assert.Contains(fixture.Errors,error=>error.Contains("运行游标不可用"));
             fixture.Errors.Clear();fixture.Manager.ResetLocalImageCursor(replacement.Id,"a",replacement);
-            fixture.Manager.RunSingleAsync(tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(tab));
             Assert.DoesNotContain(fixture.Errors,error=>error.Contains("运行游标不可用"));
         });
     }
@@ -213,9 +225,9 @@ public sealed partial class SolutionManagerUiTests
             using var fixture=new LocalImageExecutionFixture();
             var a=fixture.AddSource("a",3);var b=fixture.AddSource("b",3);
             var seen=new List<string>();fixture.OnResult=path=>seen.Add(path);
-            fixture.Manager.RunSingleAsync(fixture.Tab,navigationDirection:-1).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,navigationDirection:-1));
             Assert.Empty(fixture.Errors);Assert.Equal(new[]{a.Images[2].FilePath,b.Images[2].FilePath},seen);
-            seen.Clear();fixture.Manager.RunSingleAsync(fixture.Tab,navigationDirection:1).GetAwaiter().GetResult();
+            seen.Clear();PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,navigationDirection:1));
             Assert.Empty(fixture.Errors);Assert.Equal(new[]{a.Images[0].FilePath,b.Images[0].FilePath},seen);
         });
     }
@@ -227,7 +239,7 @@ public sealed partial class SolutionManagerUiTests
             using var fixture=new LocalImageExecutionFixture();
             var a=fixture.AddSource("a",3);var b=fixture.AddSource("b",3);
             var seen=new List<string>();fixture.OnResult=path=>seen.Add(path);
-            fixture.Manager.RunSingleAsync(fixture.Tab,advanceLocalImage:false,explicitSourceId:"a").GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,advanceLocalImage:false,explicitSourceId:"a"));
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[]{a.Images[0].FilePath,b.Images[1].FilePath},seen);
             Assert.Equal(0,a.CurrentIndex);Assert.Equal(1,b.CurrentIndex);
@@ -241,15 +253,15 @@ public sealed partial class SolutionManagerUiTests
             using var fixture=new LocalImageExecutionFixture();
             var a=fixture.AddSource("a",3);var b=fixture.AddSource("b",3);
             var seen=new List<string>();fixture.OnResult=path=>seen.Add(path);
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.CapturePolicy().CurrentIndex);
             foreach(var image in a.Images)image.IsForRun=true;
             a.AutoSwitchEnabled=false;a.RunMode=ImageRunMode.运行选择;
             Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.CapturePolicy().CurrentIndex);
-            seen.Clear();fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            seen.Clear();PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);Assert.Equal(new[]{a.Images[1].FilePath,b.Images[2].FilePath},seen);
             a.SelectImage(0);
-            seen.Clear();fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            seen.Clear();PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);Assert.Equal(new[]{a.Images[0].FilePath,b.Images[0].FilePath},seen);
         });
     }
@@ -273,8 +285,8 @@ public sealed partial class SolutionManagerUiTests
             var stopped=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             fixture.Manager.WorkflowExecutionStopped+=(_,_)=>stopped.TrySetResult();
             Assert.True(fixture.Manager.StartContinuousRun(fixture.Tab));
-            try{stopped.Task.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();}
-            finally{fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();}
+            try{PumpLocalExecution(()=>stopped.Task.WaitAsync(TimeSpan.FromSeconds(10)));}
+            finally{PumpLocalExecution(()=>fixture.Manager.StopAndWaitAsync(TimeSpan.FromSeconds(5)));}
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[]{a.Images[1].FilePath,b.Images[1].FilePath,a.Images[1].FilePath,b.Images[2].FilePath},seen);
             Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
@@ -293,14 +305,14 @@ public sealed partial class SolutionManagerUiTests
             fixture.OnResult = path => seen.Add(path);
             fixture.Root.Nodes[0].InputSource = null;
             fixture.Root.Nodes[1].InputSource = null;
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[] { a.Images[1].FilePath, b.Images[1].FilePath, a.Images[2].FilePath, b.Images[2].FilePath }, seen);
             Assert.Equal(0, ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
             fixture.Manager.ResetLocalImageCursor(fixture.Root.Id, "a");
             seen.Clear();
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[] { a.Images[1].FilePath, b.Images[0].FilePath }, seen);
         });
@@ -318,7 +330,7 @@ public sealed partial class SolutionManagerUiTests
             fixture.Root.Nodes[0].InputSource = stale;
             string? seen = null;
             fixture.OnResult = path => seen = path;
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(original.Images[1].FilePath, seen);
             Assert.Equal(0, stale.CurrentIndex);
@@ -341,11 +353,14 @@ public sealed partial class SolutionManagerUiTests
             var run = fixture.Manager.RunSingleAsync(fixture.Tab, cancellation.Token);
             try
             {
-                entered.Task.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+                PumpLocalExecution(()=>entered.Task.WaitAsync(TimeSpan.FromSeconds(10)));
                 cancellation.Cancel();
             }
-            finally { release.Set(); }
-            run.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+            finally
+            {
+                cancellation.Cancel();release.Set();
+                PumpLocalExecution(()=>run.WaitAsync(TimeSpan.FromSeconds(10)));
+            }
             Assert.Equal(0, source.CurrentIndex);
             Assert.False(fixture.Manager.IsRunning(fixture.Root.Id));
         });
@@ -366,7 +381,7 @@ public sealed partial class SolutionManagerUiTests
             var paths = new System.Collections.Concurrent.ConcurrentQueue<string>();
             fixture.OnResult = path => paths.Enqueue(path);
             fixture.Snapshots.Publish(other.Id, "wrong-preview.png", 99);
-            fixture.Manager.RunSolutionAsync(new[] { fixture.Tab, tab }, solution).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSolutionAsync(new[] { fixture.Tab, tab }, solution));
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[] { a.Images[1].FilePath, b.Images[0].FilePath }, paths.ToArray());
             Assert.Equal(1, a.CurrentIndex); Assert.Equal(0, b.CurrentIndex);
@@ -389,7 +404,7 @@ public sealed partial class SolutionManagerUiTests
             });
             string? observedPath = null;
             fixture.OnResult = path => observedPath = path;
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);
             Assert.Equal(expectedPath, observedPath);
             Assert.Equal(2, source.CurrentIndex);
@@ -407,16 +422,16 @@ public sealed partial class SolutionManagerUiTests
             var missing=source.Images[1].FilePath+".missing";
             source.ReplaceImage(source.Images[1],missing);
             var paths=new List<string>();fixture.OnResult=path=>paths.Add(path);
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.DoesNotContain(missing,paths);
             Assert.Equal(1,source.CurrentIndex);
             fixture.Errors.Clear();paths.Clear();
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Contains(source.Images[2].FilePath,paths);
             Assert.Equal(2,source.CurrentIndex);
             source.ClearImages();fixture.Errors.Clear();paths.Clear();
             source.RunMode=ImageRunMode.运行选择;
-            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(paths);
         });
     }

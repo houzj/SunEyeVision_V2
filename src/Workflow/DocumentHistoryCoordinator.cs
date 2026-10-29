@@ -82,6 +82,14 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         return provider is null ? null : provider() ?? throw new InvalidOperationException("历史执行门禁没有返回租约。");
     }
 
+    public bool ReleaseMutationLeaseProvider(Func<IDisposable> expected)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        if(Environment.CurrentManagedThreadId!=_ownerThread)throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if(_mutationLeaseProvider!=expected)return false;
+        _mutationLeaseProvider=null;return true;
+    }
+
     /// <summary>Hold the host execution gate while an owner-thread composite edit
     /// applies its constituent changes before registering one history operation.</summary>
     public IDisposable? BeginCompositeMutation()

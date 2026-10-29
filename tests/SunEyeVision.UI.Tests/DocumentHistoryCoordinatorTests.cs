@@ -5,6 +5,20 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class DocumentHistoryCoordinatorTests
 {
+    [Fact]
+    public void History_gate_release_requires_the_registered_owner()
+    {
+        using var history=new DocumentHistoryCoordinator(Guid.NewGuid());
+        Func<IDisposable> first=()=>new Lease(()=>{});
+        Func<IDisposable> second=()=>new Lease(()=>{});
+        history.SetMutationLeaseProvider(first);
+        Assert.False(history.ReleaseMutationLeaseProvider(second));
+        Assert.Throws<InvalidOperationException>(()=>history.SetMutationLeaseProvider(second));
+        Assert.True(history.ReleaseMutationLeaseProvider(first));
+        history.SetMutationLeaseProvider(second);
+        Assert.False(history.ReleaseMutationLeaseProvider(first));
+        Assert.True(history.ReleaseMutationLeaseProvider(second));
+    }
     private sealed class State { public int A, B; }
     private sealed class Lease(Action release) : IDisposable
     {

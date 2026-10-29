@@ -17,7 +17,7 @@ public partial class MainWindowViewModel
         if(history is not null)
         {
             history.Changed-=DocumentHistoryChanged;
-            history.SetMutationLeaseProvider(null);
+            history.ReleaseMutationLeaseProvider(_executionManager.BeginHistoryMutation);
         }
     }
     private ICommand? _navigateEditHistoryCommand;
@@ -56,12 +56,13 @@ public partial class MainWindowViewModel
             if (_observedDocumentHistory != null)
             {
                 _observedDocumentHistory.Changed -= DocumentHistoryChanged;
-                _observedDocumentHistory.SetMutationLeaseProvider(null);
+                _observedDocumentHistory.ReleaseMutationLeaseProvider(_executionManager.BeginHistoryMutation);
             }
-            _observedDocumentHistory = history;
+            _observedDocumentHistory = null;
             if (history != null)
             {
                 history.SetMutationLeaseProvider(_executionManager.BeginHistoryMutation);
+                _observedDocumentHistory=history;
                 history.Changed += DocumentHistoryChanged;
             }
         }

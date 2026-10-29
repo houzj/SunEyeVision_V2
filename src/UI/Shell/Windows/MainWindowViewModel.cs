@@ -796,6 +796,8 @@ SplitterPosition = position;
 
         public MainWindowViewModel()
         {
+            try
+            {
             Toolbox = new ToolboxViewModel();
 
             WorkflowTabViewModel = new WorkflowTabControlViewModel();
@@ -947,6 +949,9 @@ SplitterPosition = position;
                 }
                 UpdateCurrentSolutionInfo();
             };
+
+            }
+            catch { ReleaseDocumentHost(); throw; }
         }
 
         /// <summary>

@@ -81,12 +81,17 @@ public partial class MainWindowViewModel
                 // Acceptance is final; observer failure cannot make the source roll back its accepted state.
                 try { InvalidatePublishedResults(session,publication.InvalidatedNodes,
                     ()=>_acceptingImageSource&&ReferenceEquals(DocumentManager.Session,session)&&!IsRunning&&!_executionManager.IsAnyRunning()); }
-                catch(Exception error) { try { _logger?.LogError("图像源已接纳，结果失效失败", "MainWindowViewModel",error); } catch { } }
+                catch(Exception error) { ReportAcceptedSourceRefreshError("结果失效失败",error); }
                 try { RefreshProductionPublication(session,publication,resultsAlreadyRefreshed:true); }
-                catch(Exception error) { try { _logger?.LogError("图像源已接纳，显示刷新失败", "MainWindowViewModel",error); } catch { } }
+                catch(Exception error) { ReportAcceptedSourceRefreshError("显示刷新失败",error); }
             }
             finally { _acceptingImageSource=false; }
         };
+    }
+    private void ReportAcceptedSourceRefreshError(string stage,Exception error)
+    {
+        try { _logger?.LogError("图像源配置已接纳，"+stage,"MainWindowViewModel",error); } catch { }
+        try { StatusText="图像源配置已接纳，"+stage+"："+error.Message; } catch { }
     }
     private void RefreshAcceptedImageSourceViews()
     {

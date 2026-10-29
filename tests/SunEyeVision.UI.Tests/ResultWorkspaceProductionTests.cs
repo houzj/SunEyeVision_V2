@@ -564,6 +564,31 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Equal(next.Snapshot.Identity,f.Main.CurrentResultPublication!.Stamp.Invocation);
     });
     [Fact]
+    public void Source_acceptance_reports_retirement_observer_failure_after_attempting_all_affected_cleanup()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture(includeOther:true);f.Main.SelectedNode=f.Source;Pump();
+        var old=f.Publish(f.Source,92);var downstream=f.Publish(f.Selected,93);var unrelated=f.Publish(f.Other,94);
+        old.Snapshot.Dispose();downstream.Snapshot.Dispose();
+        var path=Path.Combine(f.Directory,"accepted-retirement-error.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{13,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        void Fail(string domain)
+        {
+            if(domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))throw new InvalidOperationException("受控退役观察者错误");
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Fail;
+        try { f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Fail; }
+        Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+        Assert.Equal(path,Assert.Single(f.Main.ActiveInputSource!.CapturePolicy().FilePaths));
+        Assert.False(old.Snapshot.ExecutionIdentity!.IsCurrent);Assert.False(downstream.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.Null(f.Context.GetNodeResult(f.Selected.Id));
+        Assert.Same(unrelated.Snapshot,f.Context.GetNodeResult(f.Other.Id)!.Result);
+        Assert.Equal(1,old.Releases);Assert.Equal(1,downstream.Releases);
+        Assert.Contains("图像源配置已接纳，结果失效失败",f.Main.StatusText);
+    });
+    [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

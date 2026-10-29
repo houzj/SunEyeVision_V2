@@ -479,16 +479,17 @@ public sealed class ResultWorkspaceProductionTests
     public void Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {
-        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        void Stage(string name){Console.WriteLine("1051_STAGE "+name);Console.Out.Flush();}
+        Stage("fixture");using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();Stage("fixture-ready");
         var path=Path.Combine(f.Directory,"large-strip.png");
         var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
         using(var output=File.Create(path))png.Save(output);
         var source=f.Main.ActiveInputSource!;
-        source.AddImages(Enumerable.Range(0,1051).Select(index=>new SunEyeVision.UI.Shared.ImageInfo
+        Stage("add-batch");source.AddImages(Enumerable.Range(0,1051).Select(index=>new SunEyeVision.UI.Shared.ImageInfo
             {FilePath=path,SourceReference=path,Name="图像 "+index}),selectFirstAdded:true);
-        var strip=f.View.ImagePreviewContent;
+        Stage("batch-accepted");var strip=f.View.ImagePreviewContent;
         Until(()=>strip.IsLoaded&&strip.Items.Count==1051);
-        f.Host.UpdateLayout();Pump();
+        Stage("layout");f.Host.UpdateLayout();Pump();Stage("layout-ready");
         var list=Assert.IsType<ListBox>(strip.FindName("lst"));
         var scroll=Assert.Single(VisualDescendants<ScrollViewer>(list));scroll.ApplyTemplate();scroll.UpdateLayout();
         var bar=Assert.IsType<System.Windows.Controls.Primitives.ScrollBar>(scroll.Template.FindName("PART_HorizontalScrollBar",scroll));
@@ -503,13 +504,13 @@ public sealed class ResultWorkspaceProductionTests
         scroll.ScrollToHorizontalOffset(scroll.ScrollableWidth);Until(()=>scroll.HorizontalOffset>0);Pump();
         Assert.InRange(Enumerable.Range(0,list.Items.Count).Count(index=>list.ItemContainerGenerator.ContainerFromIndex(index) is not null),1,200);
         var session=Assert.IsType<ImageSourceStripSession>(strip.Session);var last=source.Images.Last();
-        AwaitWorkspace(session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None));
+        Stage("select-last");AwaitWorkspace(session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None));Stage("selected-last");
         Pump();Assert.Same(last,source.CurrentImage);Assert.Equal(1050,source.CapturePolicy().CurrentIndex);
         strip.IsExpanded=false;Pump();Assert.Equal(40,strip.ActualHeight);Assert.False(bar.IsVisible);
         var visibleIds=typeof(ImageSourceStripSession).GetField("_visibleIds",BindingFlags.Instance|BindingFlags.NonPublic)!;
         Until(()=>Assert.IsType<HashSet<string>>(visibleIds.GetValue(session)).Count==0);
         strip.IsExpanded=true;Pump();Assert.Equal(125,strip.ActualHeight);
-        f.Host.Content=null;Pump();Assert.Null(strip.Session);Assert.True(session.IsReadOnly);Assert.Empty(session.Items);
+        Stage("unload");f.Host.Content=null;Pump();Assert.Null(strip.Session);Assert.True(session.IsReadOnly);Assert.Empty(session.Items);Stage("unloaded");
         f.Host.Content=f.View;Pump();Until(()=>strip.Session?.Items.Count==1051);
         Assert.NotSame(session,strip.Session);Assert.Same(last,source.CurrentImage);
     });

@@ -53,13 +53,13 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
         TimeSpan timeout,
         CancellationToken cancellationToken)
     {
-        if (!runtime.TryGetSession(cameraRef, out var session))
-            throw new InvalidOperationException($"相机 {cameraRef.Value} 未连接，请先在设备列表连接。");
-
         var lease = runtime.AcquireCaptureLease(cameraRef, "工作流");
+        CameraSession session;
         CameraCaptureConfiguration config;
         try
         {
+            if (!runtime.TryGetSession(cameraRef, out session))
+                throw new InvalidOperationException($"相机 {cameraRef.Value} 未连接，请先在设备列表连接。");
             config = await session.Adapter.ReadCaptureConfigurationAsync(cancellationToken).ConfigureAwait(false);
             if (!config.IsValid)
                 throw new InvalidOperationException(config.StatusMessage ?? "无法读取相机触发配置");
@@ -229,12 +229,20 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
     {
         var failures = new System.Collections.Generic.List<Exception>();
         try { _streamCancellation.Cancel(); } catch (Exception error) { failures.Add(error); }
-        try { await readsDrained.ConfigureAwait(false); } catch (Exception error) { failures.Add(error); }
-        if (_streamTask is { } stream)
-        {
-            try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }
+        Task? stopping = null;
+        if (_streamTask is not null)
+            try { stopping = _session.Adapter.StopStreamAsync(CancellationToken.None); }
             catch (OperationCanceledException) when (_streamCancellation.IsCancellationRequested) { }
             catch (Exception error) { failures.Add(error); }
+        // Stop may be required to unblock an in-flight trigger, but ownership stays
+        // until both the trigger/read and the real producer have actually exited.
+        try { await readsDrained.ConfigureAwait(false); } catch (Exception error) { failures.Add(error); }
+        if (stopping is not null)
+            try { await stopping.ConfigureAwait(false); }
+            catch (OperationCanceledException) when (_streamCancellation.IsCancellationRequested) { }
+            catch (Exception error) { failures.Add(error); }
+        if (_streamTask is { } stream)
+        {
             // The driver may throw before its producer exits. Keep acquisition ownership
             // until the actual stream has ended, including when stop reported an error.
             try { await stream.ConfigureAwait(false); }

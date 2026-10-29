@@ -18,6 +18,7 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
     private readonly ConcurrentDictionary<string, CameraDescriptor> _descriptors = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, CameraSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _captureGates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _connectionGates = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, CaptureOwner> _captureOwners = new(StringComparer.OrdinalIgnoreCase);
 
     private sealed record CaptureOwner(Guid Token, string Name);
@@ -110,55 +111,41 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(cameraRef);
-
-        if (!_descriptors.TryGetValue(cameraRef.Value, out var descriptor))
-        {
-            throw new InvalidOperationException($"Camera '{cameraRef.Value}' is not registered.");
-        }
-
-        if (_sessions.ContainsKey(cameraRef.Value))
-        {
-            throw new InvalidOperationException($"Camera '{cameraRef.Value}' is already in use.");
-        }
-
-        var factory = _factories.FirstOrDefault(item => item.CanCreate(descriptor));
-        if (factory == null)
-        {
-            throw new InvalidOperationException($"No camera adapter is available for '{cameraRef.Value}'.");
-        }
-
-        var adapter = factory.Create(descriptor);
-        CameraSession? session = null;
-        session = new CameraSession(
-            cameraRef,
-            accessMode,
-            adapter,
-            disposedSession =>
-            {
-                if (_sessions.TryGetValue(cameraRef.Value, out var current)
-                    && ReferenceEquals(current, disposedSession))
-                {
-                    _sessions.TryRemove(cameraRef.Value, out _);
-                }
-                return Task.CompletedTask;
-            });
+        var gate = _connectionGates.GetOrAdd(cameraRef.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await adapter.ConnectAsync(options ?? new CameraConnectionOptions(), cancellationToken)
-                .ConfigureAwait(false);
-            if (!_sessions.TryAdd(cameraRef.Value, session))
-            {
-                await session.DisposeAsync().ConfigureAwait(false);
+            if (!_descriptors.TryGetValue(cameraRef.Value, out var descriptor))
+                throw new InvalidOperationException($"Camera '{cameraRef.Value}' is not registered.");
+            if (_sessions.ContainsKey(cameraRef.Value))
                 throw new InvalidOperationException($"Camera '{cameraRef.Value}' is already in use.");
+            var factory = _factories.FirstOrDefault(item => item.CanCreate(descriptor));
+            if (factory is null)
+                throw new InvalidOperationException($"No camera adapter is available for '{cameraRef.Value}'.");
+            var adapter = factory.Create(descriptor);
+            var session = new CameraSession(cameraRef, accessMode, adapter,
+                requested => new ValueTask(CloseSessionAsync(requested, CancellationToken.None)),
+                disposed =>
+                {
+                    if (_sessions.TryGetValue(cameraRef.Value, out var current) && ReferenceEquals(current, disposed))
+                        _sessions.TryRemove(cameraRef.Value, out _);
+                    return Task.CompletedTask;
+                });
+            try
+            {
+                await adapter.ConnectAsync(options ?? new CameraConnectionOptions(), cancellationToken).ConfigureAwait(false);
+                if (!_sessions.TryAdd(cameraRef.Value, session))
+                    throw new InvalidOperationException($"Camera '{cameraRef.Value}' is already in use.");
+                return session;
             }
-
-            return session;
+            catch (Exception failure)
+            {
+                try { await session.DisposeCoreAsync().ConfigureAwait(false); }
+                catch (Exception cleanup) { throw new AggregateException("相机连接及清理均失败。", failure, cleanup); }
+                throw;
+            }
         }
-        catch
-        {
-            await adapter.DisposeAsync().ConfigureAwait(false);
-            throw;
-        }
+        finally { gate.Release(); }
     }
 
     public async Task<CameraFrame> CaptureAsync(
@@ -177,12 +164,24 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
             if (_sessions.TryGetValue(request.CameraRef.Value, out var existing))
                 return await CaptureConfiguredFrameAsync(existing, request, cancellationToken).ConfigureAwait(false);
 
-            await using var temporary = await OpenAsync(
+            var temporary = await OpenAsync(
                 request.CameraRef,
                 CameraAccessMode.Exclusive,
                 new CameraConnectionOptions { Timeout = request.Timeout },
                 cancellationToken).ConfigureAwait(false);
-            return await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false);
+            CameraFrame? frame = null;
+            Exception? failure = null;
+            try { frame = await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false); }
+            catch (Exception error) { failure = error; }
+            try { await CloseConnectedSessionAsync(temporary.CameraRef, temporary, CancellationToken.None).ConfigureAwait(false); }
+            catch (Exception error) { failure = failure is null ? error : new AggregateException(failure, error); }
+            if (failure is not null)
+            {
+                try { frame?.Dispose(); }
+                catch (Exception error) { failure = new AggregateException(failure, error); }
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            }
+            return frame!;
         }
         finally
         {
@@ -211,36 +210,65 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         return await session.Adapter.CaptureAsync(configuredRequest, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task CloseAsync(
-        CameraDeviceRef cameraRef,
-        CancellationToken cancellationToken = default)
+    public Task CloseAsync(CameraDeviceRef cameraRef, CancellationToken cancellationToken = default)
+        => CloseWithCaptureGuardAsync(cameraRef, null, cancellationToken);
+
+    private Task CloseSessionAsync(CameraSession session, CancellationToken cancellationToken)
+        => CloseWithCaptureGuardAsync(session.CameraRef, session, cancellationToken);
+
+    private async Task CloseWithCaptureGuardAsync(CameraDeviceRef cameraRef, CameraSession? expected,
+        CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(cameraRef);
+        if (expected?.CloseResult is { } existingClose)
+        { await existingClose.ConfigureAwait(false); return; }
+        if (expected is not null && (!_sessions.TryGetValue(cameraRef.Value, out var current)
+            || !ReferenceEquals(expected, current))) return;
         var gate = _captureGates.GetOrAdd(cameraRef.Value, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (!_sessions.TryRemove(cameraRef.Value, out var session))
-                return;
-            try
-            {
-                await session.Adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                await session.DisposeAsync().ConfigureAwait(false);
-            }
+            if (expected?.CloseResult is { } completedClose)
+            { await completedClose.ConfigureAwait(false); return; }
+            if (expected is not null && (!_sessions.TryGetValue(cameraRef.Value, out var currentAfterGate)
+                || !ReferenceEquals(expected, currentAfterGate))) return;
+            // Hold the same ownership token as all producers before removing a session.
+            using var lease = AcquireCaptureLease(cameraRef, "设备关闭");
+            await CloseConnectedSessionAsync(cameraRef, expected, cancellationToken).ConfigureAwait(false);
         }
-        finally
+        finally { gate.Release(); }
+    }
+
+    private async Task CloseConnectedSessionAsync(CameraDeviceRef cameraRef, CameraSession? expected,
+        CancellationToken cancellationToken)
+    {
+        var gate = _connectionGates.GetOrAdd(cameraRef.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            gate.Release();
+            if (!_sessions.TryGetValue(cameraRef.Value, out var session)
+                || (expected is not null && !ReferenceEquals(expected, session))) return;
+            var completion = session.BeginClose();
+            Exception? failure = null;
+            try { await session.Adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false); }
+            catch (Exception error) { failure = error; }
+            try { await session.DisposeCoreAsync().ConfigureAwait(false); }
+            catch (Exception error) { failure = failure is null ? error : new AggregateException(failure, error); }
+            if (failure is null) completion.TrySetResult(true);
+            else completion.TrySetException(failure);
+            await completion.Task.ConfigureAwait(false);
         }
+        finally { gate.Release(); }
     }
 
     public async ValueTask DisposeAsync()
     {
+        var failures = new List<Exception>();
         foreach (var cameraRef in _sessions.Keys.ToArray())
         {
-            await CloseAsync(new CameraDeviceRef(cameraRef)).ConfigureAwait(false);
+            try { await CloseAsync(new CameraDeviceRef(cameraRef)).ConfigureAwait(false); }
+            catch (Exception error) { failures.Add(error); }
         }
+        if (failures.Count != 0) throw new AggregateException("相机管理器关闭失败。", failures);
     }
 }

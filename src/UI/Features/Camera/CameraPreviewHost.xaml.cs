@@ -93,7 +93,12 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private async Task EnsureSessionAsync()
     {
         if (Volatile.Read(ref _stopped) != 0) throw new OperationCanceledException("相机预览窗口已关闭。");
-        if (_session is not null) return;
+        if (_session is not null)
+        {
+            if (!_runtime.TryGetSession(_cameraRef, out var current) || !ReferenceEquals(current, _session))
+                throw new InvalidOperationException("相机会话已关闭或重连，请重新打开预览。");
+            return;
+        }
         _opening ??= _runtime.OpenAsync(_cameraRef, CameraAccessMode.Preview, cancellationToken: _lifetime.Token);
         var opening = _opening;
         CameraSession session;
@@ -158,10 +163,10 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             VisionLogger.Instance.Log(LogLevel.Error,
                 $"[camera-trace={correlationId ?? "preview-config"}] 读取相机采集配置失败 camera={_cameraRef.Value}: {ex.Message}",
                 "CameraPreviewTrace", ex, LogTarget.All);
+            _configurationValid = false;
+            ConfigurationSummary = ex.Message;
             if (IsLoaded)
             {
-                _configurationValid = false;
-                ConfigurationSummary = "采集配置读取失败";
                 CaptureStatus = ex.Message;
                 RaiseCaptureStateChanged();
             }
@@ -223,14 +228,19 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     {
         var failures = new List<Exception>();
         try { cancellation?.Cancel(); } catch (Exception error) { failures.Add(error); }
+        Task? stopping = null;
+        try { stopping = session.Adapter.StopStreamAsync(CancellationToken.None); }
+        catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true) { }
+        catch (Exception error) { failures.Add(error); }
         if (_activeTriggers != 0)
         {
             _triggersDrained ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             try { await _triggersDrained.Task.ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         }
-        try { await session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true); }
-        catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true) { }
-        catch (Exception error) { failures.Add(error); }
+        if (stopping is not null)
+            try { await stopping.ConfigureAwait(true); }
+            catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true) { }
+            catch (Exception error) { failures.Add(error); }
         try { await stream.ConfigureAwait(true); }
         catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true) { }
         catch (Exception error) { failures.Add(error); }
@@ -346,6 +356,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
             _captureLease = acquired;
             if (Volatile.Read(ref _stopped) != 0)
                 throw new OperationCanceledException("相机预览已关闭。");
+            if (!_runtime.TryGetSession(_cameraRef, out var current) || !ReferenceEquals(_session, current))
+                throw new InvalidOperationException("相机会话已关闭或重连，请重新打开预览。");
 
             _activeMode = mode;
             _activeDescription = description;

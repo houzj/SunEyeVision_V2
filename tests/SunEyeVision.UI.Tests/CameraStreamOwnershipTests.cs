@@ -226,6 +226,215 @@ public sealed class CameraStreamOwnershipTests
         }
     }));
 
+    [Fact]
+    public async Task Active_workflow_rejects_manual_close_and_session_disposal_until_stream_is_drained()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var feed = await CameraWorkflowFrameFeed.StartAsync(camera.Runtime, camera.Reference, TimeSpan.FromSeconds(1), CancellationToken.None);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CloseAsync(camera.Reference));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Session.DisposeAsync().AsTask());
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(camera.Session, retained);
+        await camera.Adapter.DidNotReceive().DisconnectAsync(Arg.Any<CancellationToken>());
+        var closeFeed = feed.DisposeAsync().AsTask();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CloseAsync(camera.Reference));
+        camera.Stream.SetResult(true);
+        await Assert.ThrowsAsync<AggregateException>(() => closeFeed.WaitAsync(TimeSpan.FromSeconds(5)));
+        await camera.Runtime.CloseAsync(camera.Reference);
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        await camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Disconnect_serializes_reopen_and_old_session_disposal_never_closes_the_new_session()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var old = camera.Session;
+        var newAdapter = Substitute.For<ICameraAdapter>();
+        newAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        newAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(newAdapter);
+        var disconnect = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ => disconnect.Task);
+        var closing = camera.Runtime.CloseAsync(camera.Reference);
+        var reopening = camera.Runtime.OpenAsync(camera.Reference, CameraAccessMode.Exclusive);
+        Assert.False(closing.IsCompleted); Assert.False(reopening.IsCompleted);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => CameraWorkflowFrameFeed.StartAsync(
+            camera.Runtime, camera.Reference, TimeSpan.FromSeconds(1), CancellationToken.None));
+        disconnect.SetResult(true);
+        await closing.WaitAsync(TimeSpan.FromSeconds(5));
+        var current = await reopening.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.NotSame(old, current);
+        using (camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集"))
+            await old.DisposeAsync();
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(current, retained);
+        Assert.Same(newAdapter, current.Adapter);
+        _ = camera.Adapter.Received(1).DisposeAsync();
+        _ = newAdapter.DidNotReceive().DisposeAsync();
+    }
+
+    [Fact]
+    public void Preview_borrowing_a_retired_session_cannot_start_on_the_reconnected_device()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var old = camera.Session;
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference, old);
+        await host.RefreshConfigurationAsync();
+        await old.DisposeAsync();
+        var newAdapter = Substitute.For<ICameraAdapter>();
+        newAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        newAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(newAdapter);
+        await camera.OpenAsync();
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAcquisitionAsync());
+        Assert.Contains("会话已关闭或重连", error.Message);
+        await camera.Adapter.DidNotReceive().StartStreamAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<ICameraFrameSink>(), Arg.Any<CancellationToken>());
+        await camera.Adapter.Received(1).ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>());
+        _ = newAdapter.DidNotReceive().DisposeAsync();
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(camera.Session, retained);
+        await host.DisposeAsync();
+    }));
+
+    [Fact]
+    public async Task Temporary_capture_cleanup_failure_disposes_the_unreturned_frame()
+    {
+        await using var camera = new ControlledCamera();
+        var image = Substitute.For<IVisionImage>();
+        var frame = new CameraFrame(camera.Reference, 1, DateTimeOffset.UtcNow, image);
+        camera.Adapter.CaptureAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(frame));
+        camera.Adapter.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromException(new InvalidOperationException("disconnect-failure")));
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CaptureAsync(
+            new CameraCaptureRequest { CameraRef = camera.Reference, Timeout = TimeSpan.FromSeconds(1) }, CancellationToken.None));
+        Assert.Contains("disconnect-failure", error.Message); Assert.True(frame.IsDisposed); image.Received(1).Dispose();
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+    }
+
+    [Fact]
+    public async Task Stop_is_requested_before_waiting_for_a_workflow_trigger_that_needs_stop_to_finish()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
+        var trigger = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>()).Returns(_ => trigger.Task);
+        camera.Adapter.StopStreamAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+        { trigger.TrySetResult(true); camera.Stream.TrySetResult(true); return Task.CompletedTask; });
+        var feed = await CameraWorkflowFrameFeed.StartAsync(camera.Runtime, camera.Reference, TimeSpan.FromSeconds(1), CancellationToken.None);
+        var read = feed.NextFrameAsync(CancellationToken.None);
+        await feed.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        var error = await Record.ExceptionAsync(() => read.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.True(error is OperationCanceledException or ObjectDisposedException);
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集");
+    }
+
+    [Fact]
+    public void Stop_is_requested_before_waiting_for_a_preview_trigger_that_needs_stop_to_finish()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.Capabilities.Returns(new CameraCapabilities { SupportsSoftwareTrigger = true });
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
+        var trigger = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>()).Returns(_ => trigger.Task);
+        camera.Adapter.StopStreamAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+        { trigger.TrySetResult(true); camera.Stream.TrySetResult(true); return Task.CompletedTask; });
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference, camera.Session);
+        await host.RefreshConfigurationAsync(); await host.StartAcquisitionAsync();
+        var fire = host.TriggerOnceAsync();
+        await host.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        await fire.WaitAsync(TimeSpan.FromSeconds(5));
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流");
+    }));
+
+    [Fact]
+    public async Task Concurrent_session_disposals_share_the_same_disconnect_failure()
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var disconnect = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ => disconnect.Task);
+        var first = camera.Session.DisposeAsync().AsTask();
+        var second = camera.Session.DisposeAsync().AsTask();
+        Assert.False(first.IsCompleted); Assert.False(second.IsCompleted);
+        disconnect.SetException(new InvalidOperationException("disconnect-failure"));
+        var one = await Assert.ThrowsAsync<InvalidOperationException>(() => first.WaitAsync(TimeSpan.FromSeconds(5)));
+        var two = await Assert.ThrowsAsync<InvalidOperationException>(() => second.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Equal("disconnect-failure", one.Message); Assert.Equal(one.Message, two.Message);
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        await camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Manager_shutdown_attempts_other_devices_when_one_device_is_still_capturing()
+    {
+        var firstRef = new CameraDeviceRef("shutdown-busy");
+        var secondRef = new CameraDeviceRef("shutdown-idle");
+        var firstAdapter = Substitute.For<ICameraAdapter>();
+        var secondAdapter = Substitute.For<ICameraAdapter>();
+        firstAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        firstAdapter.DisposeAsync().Returns(ValueTask.CompletedTask); secondAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        var factory = Substitute.For<ICameraAdapterFactory>();
+        factory.CanCreate(Arg.Any<CameraDescriptor>()).Returns(true);
+        factory.Create(Arg.Any<CameraDescriptor>()).Returns(call =>
+            call.Arg<CameraDescriptor>().CameraRef.Value == firstRef.Value ? firstAdapter : secondAdapter);
+        var runtime = new CameraRuntimeManager(new[] { factory });
+        runtime.RegisterDevice(new CameraDescriptor { DeviceId = firstRef.Value, CameraRef = firstRef });
+        runtime.RegisterDevice(new CameraDescriptor { DeviceId = secondRef.Value, CameraRef = secondRef });
+        await runtime.OpenAsync(firstRef, CameraAccessMode.Exclusive);
+        await runtime.OpenAsync(secondRef, CameraAccessMode.Exclusive);
+        using (runtime.AcquireCaptureLease(firstRef, "工作流"))
+        {
+            var failure = await Assert.ThrowsAsync<AggregateException>(() => runtime.DisposeAsync().AsTask());
+            Assert.Contains(failure.InnerExceptions, error => error.Message.Contains("工作流"));
+            Assert.True(runtime.TryGetSession(firstRef, out _));
+            Assert.False(runtime.TryGetSession(secondRef, out _));
+            _ = firstAdapter.DidNotReceive().DisposeAsync();
+            _ = secondAdapter.Received(1).DisposeAsync();
+        }
+        await runtime.DisposeAsync();
+        Assert.False(runtime.TryGetSession(firstRef, out _));
+    }
+
+    [Fact]
+    public void Disconnect_completion_does_not_change_the_newly_selected_camera()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var disconnect = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ => disconnect.Task);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var first = new CameraDevice { DeviceId = camera.Reference.Value };
+        var second = new CameraDevice { DeviceId = "other-camera", State = CameraState.Capturing };
+        await vm.SetConnectionAsync(first, true);
+        var closing = vm.SetConnectionAsync(first, false);
+        Assert.False(closing.IsCompleted);
+        vm.SelectedCamera = second;
+        disconnect.SetResult(true);
+        await closing.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Same(second, vm.SelectedCamera);
+        Assert.Equal(CameraState.Capturing, second.State);
+        Assert.Equal(CameraState.Offline, first.State);
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Parameter_gate_is_released_when_temporary_camera_close_fails()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var closeCalls = 0;
+        camera.Adapter.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+            ++closeCalls == 1 ? Task.FromException(new InvalidOperationException("disconnect-failure")) : Task.CompletedTask);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        vm.SelectedCamera = new CameraDevice { DeviceId = camera.Reference.Value };
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => vm.ApplyPendingParametersAsync());
+        Assert.Contains("disconnect-failure", error.Message);
+        Assert.Contains("临时相机关闭失败", vm.ParameterStatus);
+        Assert.True(await vm.ApplyPendingParametersAsync().WaitAsync(TimeSpan.FromSeconds(5)));
+        await vm.DisposeAsync();
+    }));
+
     private static void Pump(Func<Task> action)
     {
         var frame = new DispatcherFrame(); Exception? failure = null;

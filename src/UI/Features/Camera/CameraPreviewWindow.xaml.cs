@@ -13,12 +13,12 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
     private readonly CameraPreviewHost _host;
     private readonly CameraDetailViewModel _viewModel;
 
-    public CameraPreviewWindow(CameraRuntimeComposition runtime, CameraDeviceRef cameraRef, CameraSession existingSession, CameraDetailViewModel viewModel)
+    public CameraPreviewWindow(CameraRuntimeManager runtime, CameraDeviceRef cameraRef, CameraSession existingSession, CameraDetailViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = viewModel;
-        _host = new CameraPreviewHost((runtime ?? throw new ArgumentNullException(nameof(runtime))).Runtime, cameraRef, existingSession);
+        _host = new CameraPreviewHost((runtime ?? throw new ArgumentNullException(nameof(runtime))), cameraRef, existingSession);
         _host.CaptureStateChanged += OnCaptureStateChanged;
         PreviewHostContainer.Content = _host;
         Loaded += (_, _) => UpdateCaptureControls();

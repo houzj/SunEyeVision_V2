@@ -90,7 +90,7 @@ namespace SunEyeVision.UI.Features.Camera
         private CameraDevice _selectedCamera;
         private bool _isCameraSelected;
         private object _manufacturerParamsViewModel;
-        private readonly CameraRuntimeComposition _runtime;
+        private readonly CameraRuntimeManager _runtime;
         private CameraSession? _session;
         private CameraPreviewWindow? _previewWindow;
         private bool _previewOwnsSession;
@@ -204,7 +204,7 @@ namespace SunEyeVision.UI.Features.Camera
             ? "连接中..."
             : IsConnected ? "断开" : "连接";
 
-        public CameraDetailViewModel(CameraRuntimeComposition runtime)
+        public CameraDetailViewModel(CameraRuntimeManager runtime)
         {
             _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
             ConnectCommand = new RelayCommand(Connect);
@@ -235,7 +235,7 @@ namespace SunEyeVision.UI.Features.Camera
                 cancellationToken.ThrowIfCancellationRequested();
                 var camera = SelectedCamera;
                 var reference = new CameraDeviceRef(camera.DeviceId);
-                var session = await _runtime.Runtime.OpenAsync(
+                var session = await _runtime.OpenAsync(
                     reference, CameraAccessMode.Diagnostic, cancellationToken: cancellationToken).ConfigureAwait(true);
                 try
                 {
@@ -264,7 +264,7 @@ namespace SunEyeVision.UI.Features.Camera
                 finally
                 {
                     // 清理不能被“切换相机”的取消信号打断，保证旧会话一定释放。
-                    await _runtime.Runtime.CloseAsync(reference, CancellationToken.None).ConfigureAwait(true);
+                    await session.DisposeAsync().ConfigureAwait(true);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -472,7 +472,7 @@ namespace SunEyeVision.UI.Features.Camera
                 var session = _session;
                 if (session is null)
                 {
-                    temporarySession = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
+                    temporarySession = await _runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                     session = temporarySession;
                 }
                 VisionLogger.Instance.Log(LogLevel.Info,
@@ -494,7 +494,7 @@ namespace SunEyeVision.UI.Features.Camera
             finally
             {
                 if (temporarySession is not null)
-                    await _runtime.Runtime.CloseAsync(temporarySession.CameraRef);
+                    await temporarySession.DisposeAsync();
             }
         }
 
@@ -534,7 +534,7 @@ namespace SunEyeVision.UI.Features.Camera
             var cameraReference = new CameraDeviceRef(SelectedCamera.DeviceId);
             // 设备列表的连接状态可能来自应用级运行时会话，而不一定已经同步到本详情 VM 的 _session。
             // 预览前必须同时检查运行时会话和设备状态，否则会误认为预览新建了连接，关闭预览时错误释放原连接。
-            var runtimeAlreadyConnected = _runtime.Runtime.TryGetSession(cameraReference, out _);
+            var runtimeAlreadyConnected = _runtime.TryGetSession(cameraReference, out _);
             var wasConnectedBeforePreview = IsConnected
                 || runtimeAlreadyConnected
                 || SelectedCamera.IsConnected;
@@ -713,7 +713,7 @@ namespace SunEyeVision.UI.Features.Camera
                 SelectedCamera.State = CameraState.Connecting;
 
                 var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
-                if (_runtime.Runtime.TryGetSession(reference, out var existingSession))
+                if (_runtime.TryGetSession(reference, out var existingSession))
                 {
                     _session = existingSession;
                     SelectedCamera.State = CameraState.Connected;
@@ -721,7 +721,7 @@ namespace SunEyeVision.UI.Features.Camera
                     return;
                 }
 
-                _session = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
+                _session = await _runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                 SelectedCamera.State = CameraState.Connected;
                 ParameterStatus = "设备已连接";
             }
@@ -741,23 +741,26 @@ namespace SunEyeVision.UI.Features.Camera
 
         private async System.Threading.Tasks.Task DisconnectAsync()
         {
-            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
-                return;
-
+            var camera = SelectedCamera;
+            if (camera == null || string.IsNullOrWhiteSpace(camera.DeviceId)) return;
+            var reference = new CameraDeviceRef(camera.DeviceId);
+            var session = _runtime.TryGetSession(reference, out var current) ? current : null;
             try
             {
                 _connectionBusy = true;
                 OnPropertyChanged(nameof(ConnectionActionText));
-                SelectedCamera.State = CameraState.Connecting;
-                await _runtime.Runtime.CloseAsync(new CameraDeviceRef(SelectedCamera.DeviceId));
-                _session = null;
-                SelectedCamera.State = CameraState.Offline;
-                ParameterStatus = "设备已断开";
+                camera.State = CameraState.Connecting;
+                if (session is not null) await session.DisposeAsync().ConfigureAwait(true);
+                if (ReferenceEquals(_session, session)) _session = null;
+                camera.State = CameraState.Offline;
+                if (ReferenceEquals(SelectedCamera, camera)) ParameterStatus = "设备已断开";
             }
             catch (Exception ex)
             {
-                SelectedCamera.State = _session != null ? CameraState.Connected : CameraState.Faulted;
-                ParameterStatus = $"断开失败：{ex.Message}";
+                var retained = _runtime.TryGetSession(reference, out var live) && ReferenceEquals(session, live);
+                if (!retained && ReferenceEquals(_session, session)) _session = null;
+                camera.State = retained ? session!.Adapter.State : CameraState.Faulted;
+                if (ReferenceEquals(SelectedCamera, camera)) ParameterStatus = $"断开失败：{ex.Message}";
             }
             finally
             {
@@ -770,9 +773,16 @@ namespace SunEyeVision.UI.Features.Camera
         private async System.Threading.Tasks.Task ReleaseSessionAsync()
         {
             var session = _session;
-            _session = null;
             if (session != null)
-                await _runtime.Runtime.CloseAsync(session.CameraRef).ConfigureAwait(true);
+            {
+                try { await session.DisposeAsync().ConfigureAwait(true); }
+                finally
+                {
+                    if (ReferenceEquals(_session, session)
+                        && (!_runtime.TryGetSession(session.CameraRef, out var current)
+                            || !ReferenceEquals(current, session))) _session = null;
+                }
+            }
         }
 
         public async ValueTask DisposeAsync()
@@ -790,14 +800,14 @@ namespace SunEyeVision.UI.Features.Camera
 
         private async Task<bool> SaveParamsAsync()
         {
-            if (SelectedCamera == null || string.IsNullOrWhiteSpace(SelectedCamera.DeviceId))
+            var camera = SelectedCamera;
+            if (camera == null || string.IsNullOrWhiteSpace(camera.DeviceId))
                 return false;
 
             await _parameterApplyGate.WaitAsync().ConfigureAwait(true);
 
             var traceId = Guid.NewGuid().ToString("N");
-            var cameraId = SelectedCamera.DeviceId;
-            using var diagnosticScope = CameraDiagnosticScope.Begin(traceId);
+            var cameraId = camera.DeviceId;
             CameraSession? temporarySession = null;
             CameraSession? session = null;
             var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -809,11 +819,15 @@ namespace SunEyeVision.UI.Features.Camera
             var previousCategoryPath = SelectedParameterCategory?.CategoryPath;
             try
             {
-                var reference = new CameraDeviceRef(SelectedCamera.DeviceId);
+                using var diagnosticScope = CameraDiagnosticScope.Begin(traceId);
+                if (!ReferenceEquals(SelectedCamera, camera)) return false;
+                var reference = new CameraDeviceRef(cameraId);
                 session = _session;
+                if (session is not null && !string.Equals(session.CameraRef.Value, cameraId, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("相机选择已改变，请重新连接所选设备。");
                 if (session == null)
                 {
-                    temporarySession = await _runtime.Runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
+                    temporarySession = await _runtime.OpenAsync(reference, CameraAccessMode.Diagnostic);
                     session = temporarySession;
                 }
 
@@ -933,22 +947,32 @@ namespace SunEyeVision.UI.Features.Camera
             }
             finally
             {
-                if (pausedForParameterApply && wasCapturing && _previewWindow is not null
-                    && !captureConfigurationChanged)
+                try
                 {
-                    try
+                    if (pausedForParameterApply && wasCapturing && _previewWindow is not null
+                        && !captureConfigurationChanged)
                     {
-                        await _previewWindow.RefreshConfigurationAsync(traceId);
-                        await _previewWindow.StartAcquisitionAsync();
+                        try
+                        {
+                            await _previewWindow.RefreshConfigurationAsync(traceId);
+                            await _previewWindow.StartAcquisitionAsync();
+                        }
+                        catch (Exception resumeException)
+                        {
+                            ParameterStatus += $"；恢复采集失败：{resumeException.Message}";
+                        }
                     }
-                    catch (Exception resumeException)
+                    if (temporarySession != null)
                     {
-                        ParameterStatus += $"；恢复采集失败：{resumeException.Message}";
+                        try { await temporarySession.DisposeAsync(); }
+                        catch (Exception cleanup)
+                        {
+                            ParameterStatus += $"；临时相机关闭失败：{cleanup.Message}";
+                            throw;
+                        }
                     }
                 }
-                if (temporarySession != null)
-                    await _runtime.Runtime.CloseAsync(temporarySession.CameraRef);
-                _parameterApplyGate.Release();
+                finally { _parameterApplyGate.Release(); }
             }
         }
 

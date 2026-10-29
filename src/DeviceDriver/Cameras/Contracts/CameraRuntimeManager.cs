@@ -187,7 +187,7 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
             Exception? failure = null;
             try { frame = await CaptureConfiguredFrameAsync(temporary, request, cancellationToken).ConfigureAwait(false); }
             catch (Exception error) { failure = error; }
-            try { await CloseConnectedSessionAsync(temporary.CameraRef, temporary, CancellationToken.None).ConfigureAwait(false); }
+            try { await CloseConnectedSessionAsync(temporary.CameraRef, temporary, CancellationToken.None, waitForOperations: true).ConfigureAwait(false); }
             catch (Exception error) { failure = failure is null ? error : new AggregateException(failure, error); }
             if (failure is not null)
             {
@@ -254,7 +254,7 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
     }
 
     private async Task CloseConnectedSessionAsync(CameraDeviceRef cameraRef, CameraSession? expected,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool waitForOperations = false)
     {
         var gate = _connectionGates.GetOrAdd(cameraRef.Value, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -262,7 +262,8 @@ public sealed class CameraRuntimeManager : ICameraCaptureService, IAsyncDisposab
         {
             if (!_sessions.TryGetValue(cameraRef.Value, out var session)
                 || (expected is not null && !ReferenceEquals(expected, session))) return;
-            var completion = session.BeginClose();
+            var (completion, operationsDrained) = session.BeginClose(waitForOperations);
+            await operationsDrained.ConfigureAwait(false);
             Exception? failure = null;
             try { await session.Adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false); }
             catch (Exception error) { failure = error; }

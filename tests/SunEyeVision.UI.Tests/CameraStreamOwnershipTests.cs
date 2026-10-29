@@ -310,6 +310,44 @@ public sealed class CameraStreamOwnershipTests
     }
 
     [Fact]
+    public async Task Temporary_capture_waits_for_device_operations_then_closes_its_session()
+    {
+        await using var camera = new ControlledCamera();
+        var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = new TaskCompletionSource<CameraFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var image = Substitute.For<IVisionImage>();
+        var frame = new CameraFrame(camera.Reference, 1, DateTimeOffset.UtcNow, image);
+        camera.Adapter.CaptureAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<CancellationToken>()).Returns(_ =>
+        { entered.TrySetResult(true); return pending.Task; });
+        var capture = camera.Runtime.CaptureAsync(
+            new CameraCaptureRequest { CameraRef = camera.Reference, Timeout = TimeSpan.FromSeconds(1) }, CancellationToken.None);
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var session));
+        using var operation = camera.Runtime.AcquireSessionOperationLease(session, "参数读取");
+        pending.TrySetResult(frame);
+        Task? concurrentClose = null;
+        try
+        {
+            var closeResult = typeof(CameraSession).GetProperty("CloseResult", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var deadline = System.Diagnostics.Stopwatch.StartNew();
+            while (closeResult.GetValue(session) is null && !capture.IsCompleted && deadline.Elapsed < TimeSpan.FromSeconds(5))
+                await Task.Delay(10);
+            Assert.NotNull(closeResult.GetValue(session));
+            Assert.False(capture.IsCompleted);
+            concurrentClose = session.DisposeAsync().AsTask();Assert.False(concurrentClose.IsCompleted);
+            Assert.Throws<InvalidOperationException>(() => camera.Runtime.AcquireSessionOperationLease(session, "迟到参数读取"));
+            _ = camera.Adapter.DidNotReceive().DisconnectAsync(Arg.Any<CancellationToken>());
+        }
+        finally { operation.Dispose(); }
+        using var returned = await capture.WaitAsync(TimeSpan.FromSeconds(5));
+        await concurrentClose!.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Same(frame, returned);Assert.False(returned.IsDisposed);
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        _ = camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.Received(1).DisposeAsync();
+    }
+
+    [Fact]
     public async Task Stop_is_requested_before_waiting_for_a_workflow_trigger_that_needs_stop_to_finish()
     {
         await using var camera = new ControlledCamera(); await camera.OpenAsync();

@@ -21,6 +21,7 @@ public sealed class CameraSession : IAsyncDisposable
     private readonly object _disposeGate = new();
     private Task? _disposeTask;
     private TaskCompletionSource<bool>? _closeCompletion;
+    private TaskCompletionSource<bool>? _operationsDrained;
     private int _activeOperations;
 
     public CameraDeviceRef CameraRef { get; }
@@ -46,14 +47,18 @@ public sealed class CameraSession : IAsyncDisposable
         }
     }
 
-    internal TaskCompletionSource<bool> BeginClose()
+    internal (TaskCompletionSource<bool> Completion, Task OperationsDrained) BeginClose(bool waitForOperations)
     {
         lock (_disposeGate)
         {
-            if (_closeCompletion is not null) return _closeCompletion;
-            if (_activeOperations != 0)
+            if (_closeCompletion is not null)
+                return (_closeCompletion, _operationsDrained?.Task ?? Task.CompletedTask);
+            if (_activeOperations != 0 && !waitForOperations)
                 throw new InvalidOperationException($"相机 {CameraRef.Value} 存在进行中的参数或设备操作，请等待完成后关闭。");
-            return _closeCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _closeCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (_activeOperations != 0)
+                _operationsDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            return (_closeCompletion, _operationsDrained?.Task ?? Task.CompletedTask);
         }
     }
 
@@ -63,7 +68,13 @@ public sealed class CameraSession : IAsyncDisposable
         public void Dispose()
         {
             if (System.Threading.Interlocked.Exchange(ref _released, 1) != 0) return;
-            lock (owner._disposeGate) --owner._activeOperations;
+            TaskCompletionSource<bool>? drained = null;
+            lock (owner._disposeGate)
+            {
+                if (--owner._activeOperations == 0)
+                { drained = owner._operationsDrained; owner._operationsDrained = null; }
+            }
+            drained?.TrySetResult(true);
         }
     }
 

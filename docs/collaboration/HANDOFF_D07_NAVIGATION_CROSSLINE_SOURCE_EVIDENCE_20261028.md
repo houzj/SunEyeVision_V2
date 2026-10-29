@@ -1,3 +1,19 @@
+## 2026-10-29 新结果链基线后的整批设计（当前，优先于下文历史方案）
+
+**真实源码与边界**：本分支f3732020完整承接主线36bcd14f，`src/scripts/tests`与该固定提交一致；主线C09未提交候选未纳入。`LocalImageSequenceService`以全部源共同iteration及整体success推进；Manager仍预过滤File.Exists、失败不写cursor，连续末项只在成功时StopAtEnd；原结果区PreviousImageCommand/NextImageCommand在产品未接。`CaptureLocalImagePlan`已冻结原始引用/解析地址/RunMode/配置起点，`LocalCursorOwner`已管根对象、源定义与reset版本；这些正确身份及资源路径能力复用。正式和私有调试已共用CaptureAsync，但主线现行正式运行承载为新DeclaredOutputSnapshot，不能恢复旧ToolResults链。Group语义冻结，当前仅根流程交互，非根层行为保待办而非假执行根层。
+
+**两个不同时点**：原ModuleResultView.xaml.cs:1940–2020明确RunCheck、拒绝运行中、取current-level全部ImageSource、逐源LastImage/NextImage命令，最后仅一次procedure.Run；原DLL回件说明SetParam处理导航步进及one-shot，读图处理再消费one-shot。普通AutoPlay在实际取图时前进，缺文件失败也消费；AutoStop末项接纳时请求本轮后停止，当前末帧仍处理。不能将“仅实际取图才修改”误用于显式导航，也不能将“命令前移”误用于普通自动取图。导航后源未执行时one-shot保留多久、显式命令部分源失败后的原件细节尚无专项实机覆盖；需保留状态并追加定向验收，不把默认推测写成VM实测。
+
+**读取接纳位置**：`ImageSourceInvocationInputs.CaptureAsync`只复制地址；`AlgorithmNode.ExecuteRuntimeNodeAsync`之后还有`ToolRuntimeExecutor`的冻结/校验、output request校验、取消与CreateSession，`ImageSourceSession.Execute`还校验settings、SN、源类型；因此CaptureAsync或调用Runtime之前就记录消费会误消费未进入真实取图的节点。结果回调又太晚，会丢失读图中取消/异常。需要运行内中性一次性接纳合同，准确落在ImageSourceSession输入校验后、File.Exists/HImage前；该合同不引用WPF/调度器，携真实RunIdentity及源内受控令牌，能在接纳时取得该轮地址并不可二次接纳。Plugin.Contracts是主线唯一写入边界，已交主线协调；合同位置和签名须按共享能力完整设计，不能临时用全局变量、静态注册表、跨层反射或虚假success代替。
+
+**状态和所有权**：每个根对象+源唯一游标/定义版本/编辑reset代号；每轮冻结配置、地址和参与集合，按当前scope+NodeId唯一核验。普通源尝试只对实际进入源执行的节点原子记一次（不因下游失败回滚），回执/补发/取消均核document owner、真实run/scope/node/request及session generation/iteration与reset，旧事件不得写新文档/源。仅接纳后取消才保留该次消费；末项标记stop-after-current而不取消当前帧。SN继续按对应节点实际成功递增。显式导航在完成运行锁/版本准入后，按原当前层源分开记录步进及one-shot，不改正式配置、Undo或其他层；保持条目原始顺序，包括文件暂缺。空集合、选中不在运行集合、源被删/替换和单图模式作明确可诊断处理。配置起点与显示、运行游标分别维护；首轮选择补偿需按原UI路径证据实现，不由原DLL CurrentImagePath裸值推断。
+
+**完整消费者**：一次Run/连续/停止和关闭经Manager统一排空；左/右来自原Shell命令并检查视图、活动方案及当前层身份、执行锁，调用一次运行；私有调试/显式缩略图运行须冻结正式或私有草稿及正确单次语义，不能伪造调度或把UI控件传入Runtime；通信/全方案运行、资源基目录和相机源同样核是否适用，不因本批改变硬件或Group。运行不进入Undo，不以视图显示位置反向写正式起点。当前根工作区可执行，Group当前层导航不接错根流程。
+
+**验收出口**：直接用原件证据给定A/B/C和从A的前后环绕、手动保持、自动读取、导航one-shot、缺B后C、末项成功及缺图停止/非停止；真实源未执行、多个源部分执行、下游失败、验证/会话创建失败、取图前后取消、重复/旧回执、换文档/根/源/reset、运行中拒绝，所有源同层一次Run；空/单图/勾选、显式缩略图、保存重开及Undo不写游标；相机切换/运行资源释放分别断言。主线唯一正式Release运行相关新合同、源条/UI及实HALCON整体轨，保原失败；原249总体、硬件、VS/主题/人工分别记，不以专项证明完整目标。原件无证模式明确注明限制。
+
+本节是已核对的整体实现设计，不是产品实现或新测试通过；下一在共享接纳合同定稿后，单批贯通引擎、图像源、Manager、Shell、取消和回归，不先落孤立接口。
+
 # D07 导航、辅助线与背景菜单源码核验
 
 基线：ecd4ea90。仅只读核验现有恢复源码，无二进制重新逆向、构建、运行或人工验收。原主方案与 CURRENT_TASK 由集成方统一维护。本文件的“确认”仅指静态源码行为；恢复项目实现不能代替原件行为证据。

@@ -297,6 +297,7 @@ namespace SunEyeVision.UI.Shell.Windows
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             ImageResultHost.Shutdown();
             _viewModel?.StopWorkflowCommand.Execute(null);
+            _viewModel?.ReleaseDocumentHost();
             base.OnClosed(e);
 
             // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。

@@ -63,6 +63,8 @@ public sealed class ResultWorkspaceProductionTests
         internal readonly List<Results> Runs = new();
         private readonly object? _base = AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
         private bool _disposed;
+        private readonly FieldInfo _solutionManagerField=typeof(ServiceInitializer).GetField("_solutionManager",BindingFlags.Static|BindingFlags.NonPublic)!;
+        private object? _previousSolutionManager;
         internal ResultWorkspacePresenter Presenter => Assert.IsType<ResultWorkspacePresenter>(typeof(ImageResultControl)
             .GetField("_workspacePresenter", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(View));
         internal Fixture(bool includeOther=false)
@@ -80,7 +82,9 @@ public sealed class ResultWorkspaceProductionTests
                 registration.Publish();
             }
             Directory = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? Path.Combine(host, "..", "..", "_validation", "ResultWorkspace"), Guid.NewGuid().ToString("N"));
-            System.IO.Directory.CreateDirectory(Directory); ServiceInitializer.InitializeServices(); ServiceInitializer.InitializeSolutionManager(Directory);
+            System.IO.Directory.CreateDirectory(Directory); ServiceInitializer.InitializeServices();
+            _previousSolutionManager=_solutionManagerField.GetValue(null);
+            _solutionManagerField.SetValue(null,new SolutionManager(Directory));
             Source = new("source", "实际图像源", "实际图像源", "ImageLoad") { RuntimeConfiguration = RuntimeToolConfiguration.Create("ImageLoad") };
             Selected = new("selected", "受控结果节点", "受控结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
             Other = new("other", "无关结果节点", "无关结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
@@ -139,8 +143,10 @@ public sealed class ResultWorkspaceProductionTests
         {
             if (_disposed) return; _disposed = true;
             View.Shutdown(); Host.Content = null; Host.Close(); Main.CloseResultPresentation(); Context.ClearNodeResults();
+            Main.ReleaseDocumentHost();
             foreach (var run in Runs) run.Snapshot.Dispose();
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", _base);
+            _solutionManagerField.SetValue(null,_previousSolutionManager);
         }
     }
     [Fact]

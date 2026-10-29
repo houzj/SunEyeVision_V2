@@ -889,6 +889,7 @@ SplitterPosition = position;
             // 监听解决方案变更事件
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             solutionManager.CurrentSolutionChanged += OnCurrentSolutionChanged;
+            _documentEventOwner=solutionManager;
 
             // 初始化当前解决方案信息
             UpdateCurrentSolutionInfo();

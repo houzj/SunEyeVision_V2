@@ -5,6 +5,21 @@ namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
     private DocumentHistoryCoordinator? _observedDocumentHistory;
+    private SolutionManager? _documentEventOwner;
+    private bool _documentHostReleased;
+    public void ReleaseDocumentHost()
+    {
+        if(_documentHostReleased)return;
+        _documentHostReleased=true;
+        if(_documentEventOwner is {} manager)manager.CurrentSolutionChanged-=OnCurrentSolutionChanged;
+        _documentEventOwner=null;
+        var history=_observedDocumentHistory;_observedDocumentHistory=null;
+        if(history is not null)
+        {
+            history.Changed-=DocumentHistoryChanged;
+            history.SetMutationLeaseProvider(null);
+        }
+    }
     private ICommand? _navigateEditHistoryCommand;
     public ICommand NavigateEditHistoryCommand => _navigateEditHistoryCommand ??= new RelayCommand(
         request => {
@@ -33,6 +48,7 @@ public partial class MainWindowViewModel
     }
     private void BindDocumentHistory()
     {
+        if(_documentHostReleased)return;
         var session = DocumentManager.Session;
         var history = session?.History;
         if (!ReferenceEquals(history, _observedDocumentHistory))

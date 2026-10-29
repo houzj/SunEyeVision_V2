@@ -435,6 +435,181 @@ public sealed class CameraStreamOwnershipTests
         await vm.DisposeAsync();
     }));
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Old_preview_closes_only_its_own_session_after_switching_devices(bool ownsSession)
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var firstSession = camera.Session;
+        var secondRef = new CameraDeviceRef("second-device");
+        var secondAdapter = Substitute.For<ICameraAdapter>();
+        secondAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        camera.Runtime.RegisterDevice(new CameraDescriptor { DeviceId = secondRef.Value, CameraRef = secondRef });
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(secondAdapter);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var first = new CameraDevice { DeviceId = camera.Reference.Value };
+        var second = new CameraDevice { DeviceId = secondRef.Value };
+        await vm.SetConnectionAsync(first, true);
+        await vm.SetConnectionAsync(second, true);
+        Assert.True(vm.IsConnected);
+        await vm.ClosePreviewSessionAsync(first, firstSession, ownsSession);
+        Assert.Same(second, vm.SelectedCamera); Assert.Equal(CameraState.Connected, second.State); Assert.True(vm.IsConnected);
+        Assert.True(camera.Runtime.TryGetSession(secondRef, out var secondSession)); Assert.Same(secondAdapter, secondSession.Adapter);
+        _ = secondAdapter.DidNotReceive().DisposeAsync();
+        Assert.Equal(!ownsSession, camera.Runtime.TryGetSession(camera.Reference, out _));
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Connection_completion_after_selection_changes_does_not_claim_the_new_device()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var connecting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(_ => connecting.Task);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var first = new CameraDevice { DeviceId = camera.Reference.Value };
+        var second = new CameraDevice { DeviceId = "second-device", State = CameraState.Capturing };
+        var pending = vm.SetConnectionAsync(first, true);
+        Assert.False(pending.IsCompleted);
+        vm.SelectedCamera = second;
+        connecting.SetResult(true);
+        await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(CameraState.Connected, first.State);
+        Assert.Equal(CameraState.Capturing, second.State);
+        Assert.False(vm.IsConnected);
+        Assert.True(camera.Runtime.TryGetSession(camera.Reference, out _));
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Disconnect_during_pending_connect_retires_the_late_session()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var connecting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(_ => connecting.Task);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var selected = new CameraDevice { DeviceId = camera.Reference.Value };
+        var pending = vm.SetConnectionAsync(selected, true);
+        Assert.False(pending.IsCompleted);
+        await vm.SetConnectionAsync(selected, false);
+        connecting.SetResult(true);
+        await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(CameraState.Offline, selected.State);
+        Assert.False(vm.IsConnected);
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        _ = camera.Adapter.Received(1).DisposeAsync();
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Reload_after_selecting_another_camera_reads_the_selected_device_session()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var secondRef = new CameraDeviceRef("schema-second");
+        var secondAdapter = Substitute.For<ICameraAdapter>();
+        secondAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        secondAdapter.GetParameterSchemaAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(new CameraParameterSchema
+        { Parameters = new[] { new CameraParameterDescriptor { Name = "SecondValue", Value = 1 } } }));
+        secondAdapter.ReadParametersAsync(Arg.Any<IReadOnlyCollection<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyDictionary<string, object?>>(new Dictionary<string, object?>()));
+        camera.Runtime.RegisterDevice(new CameraDescriptor { DeviceId = secondRef.Value, CameraRef = secondRef });
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(secondAdapter);
+        await camera.Runtime.OpenAsync(secondRef, CameraAccessMode.Exclusive);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        await vm.SetConnectionAsync(new CameraDevice { DeviceId = camera.Reference.Value }, true);
+        vm.SelectedCamera = new CameraDevice { DeviceId = secondRef.Value };
+        vm.ResetParamsCommand.Execute(null);
+        await secondAdapter.Received(1).GetParameterSchemaAsync(Arg.Any<CancellationToken>());
+        await camera.Adapter.DidNotReceive().GetParameterSchemaAsync(Arg.Any<CancellationToken>());
+        Assert.Single(vm.Parameters); Assert.Equal("SecondValue", vm.Parameters[0].Name);
+        Assert.True(vm.IsConnected);
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Preview_preparation_is_single_entry_and_abandoned_session_is_released()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var schema = new TaskCompletionSource<CameraParameterSchema>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.GetParameterSchemaAsync(Arg.Any<CancellationToken>()).Returns(_ => schema.Task);
+        camera.Adapter.ReadParametersAsync(Arg.Any<IReadOnlyCollection<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyDictionary<string, object?>>(new Dictionary<string, object?>()));
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        vm.SelectedCamera = new CameraDevice { DeviceId = camera.Reference.Value };
+        var first = vm.PreviewAsync();
+        Assert.False(first.IsCompleted);
+        await vm.PreviewAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        _ = camera.Adapter.Received(1).GetParameterSchemaAsync(Arg.Any<CancellationToken>());
+        vm.SelectedCamera = new CameraDevice { DeviceId = "other" };
+        schema.SetResult(new CameraParameterSchema());
+        await first.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
+        _ = camera.Adapter.Received(1).DisposeAsync();
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Parameter_command_after_switch_targets_the_selected_camera()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        var secondRef = new CameraDeviceRef("command-second");
+        var secondAdapter = Substitute.For<ICameraAdapter>();
+        secondAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.ExecuteCommandAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        camera.Runtime.RegisterDevice(new CameraDescriptor { DeviceId = secondRef.Value, CameraRef = secondRef });
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(secondAdapter);
+        await camera.Runtime.OpenAsync(secondRef, CameraAccessMode.Exclusive);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        await vm.SetConnectionAsync(new CameraDevice { DeviceId = camera.Reference.Value }, true);
+        vm.SelectedCamera = new CameraDevice { DeviceId = secondRef.Value };
+        var command = new CameraParameterItemViewModel(new CameraParameterDescriptor
+        { Name = "UserSetLoad", Kind = CameraParameterKind.Command }, null);
+        vm.ExecuteParameterCommand.Execute(command);
+        await secondAdapter.Received(1).ExecuteCommandAsync("UserSetLoad", Arg.Any<CancellationToken>());
+        await camera.Adapter.DidNotReceive().ExecuteCommandAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await vm.DisposeAsync();
+    }));
+
+    [Fact]
+    public void Switching_camera_retires_old_dirty_parameters_and_cancels_pending_auto_apply()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.GetParameterSchemaAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(new CameraParameterSchema
+        { Parameters = new[] { new CameraParameterDescriptor { Name = "ExposureTime", Kind = CameraParameterKind.Integer, Value = 1 } } }));
+        camera.Adapter.ReadParametersAsync(Arg.Any<IReadOnlyCollection<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyDictionary<string, object?>>(new Dictionary<string, object?>()));
+        var secondRef = new CameraDeviceRef("parameter-second");
+        var secondAdapter = Substitute.For<ICameraAdapter>();
+        secondAdapter.ConnectAsync(Arg.Any<CameraConnectionOptions>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        secondAdapter.DisposeAsync().Returns(ValueTask.CompletedTask);
+        camera.Runtime.RegisterDevice(new CameraDescriptor { DeviceId = secondRef.Value, CameraRef = secondRef });
+        camera.Factory.Create(Arg.Any<CameraDescriptor>()).Returns(secondAdapter);
+        await camera.Runtime.OpenAsync(secondRef, CameraAccessMode.Exclusive);
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        await vm.SetConnectionAsync(new CameraDevice { DeviceId = camera.Reference.Value }, true);
+        vm.ResetParamsCommand.Execute(null);
+        Assert.Single(vm.Parameters);
+        vm.Parameters[0].Value = 2;
+        vm.SelectedCamera = new CameraDevice { DeviceId = secondRef.Value };
+        Assert.Empty(vm.Parameters);
+        await Task.Delay(450);
+        Assert.True(await vm.ApplyPendingParametersAsync().WaitAsync(TimeSpan.FromSeconds(5)));
+        await secondAdapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
+        await camera.Adapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
+        await vm.DisposeAsync();
+    }));
+
     private static void Pump(Func<Task> action)
     {
         var frame = new DispatcherFrame(); Exception? failure = null;

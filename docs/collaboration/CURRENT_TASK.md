@@ -1,3 +1,7 @@
+## 2026-10-29 图像源运行与格式原21项同源回归候选
+
+在ddba6577的29项基础上整组纳入ImageSourceRuntime 11及DeclarationAndFormat 10，原清单逐名门禁现核50名称；直接编译原新架构测试和ProductRuntimeTestHost，启动按正式Release schema2 manifest逐SHA绑定工具组件，样本只放Release/test-data下并清理。只读复核确认public类型、50名称/Theory格式和本机正式manifest形态；C#/PowerShell语法及diff检查通过，尚未构建或运行。模块初始化发生在SafeEntry之前，若manifest或装载失败会由进程日志报告而非伪造逐项通过；HALCON许可、正式产物同源、原249总体及人工验收未证。
+
 ## 2026-10-29 配置/保存/历史原29项同源回归候选
 
 将ImageSourceConfigurationHistory 15、ImageSourceSavePersistence 6、LocalImageConfigurationSnapshot 4、ImageSourceResolver 4整组原测试源码加入ImageSourceRecovery，按D07_FULL_IMAGESOURCE_TRACK_MIGRATION_AUDIT原29个完整名称逐项校验，不改旧测试结论。结构历史中的旧SDK B2测试夹具改为实际注册的独立图像源节点，保结构变化及同节点Undo/Redo断言；清单文件纳来源SHA，需随候选一起提供给主线。C#/PowerShell语法、原29唯一名称及diff检查通过；尚未编译或执行，原249全轨和主目标门禁仍待。

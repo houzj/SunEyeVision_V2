@@ -67,7 +67,7 @@ public sealed class ImageSourceRuntimeTests
     [Fact]
     public async Task Local_file_decode_has_explicit_address_and_fresh_run_frame_identity()
     {
-        var directory=Path.Combine(Path.GetTempPath(),"image-source-runtime-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        var directory=Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot,"test-data","image-source","runtime-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
         try
         {
             var path=Path.Combine(directory,"image.png");var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();

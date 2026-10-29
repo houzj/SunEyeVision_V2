@@ -95,6 +95,8 @@ namespace SunEyeVision.UI.Features.Camera
         private CameraPreviewWindow? _previewWindow;
         private bool _previewOpening;
         private bool _changingCamera;
+        private bool _hasPendingCamera;
+        private CameraDevice? _pendingCamera;
         private bool _connectionBusy;
         private int _connectionOperationVersion;
         private bool _parameterSchemaLoaded;
@@ -161,29 +163,52 @@ namespace SunEyeVision.UI.Features.Camera
             get => _selectedCamera;
             set
             {
+                if (_changingCamera)
+                {
+                    // Synchronous observers may select again while the old tree is retiring.
+                    // Keep the latest intent and apply it before reopening edit commands.
+                    _pendingCamera = value;
+                    _hasPendingCamera = true;
+                    return;
+                }
                 if (ReferenceEquals(_selectedCamera, value)) return;
                 _changingCamera = true;
                 try
                 {
-                    // Retire edits before publishing a different selected device.
-                    _autoApplyCts?.Cancel();
-                    _autoApplyCts?.Dispose();
-                    _autoApplyCts = null;
-                    _schemaLoadCts?.Cancel();
-                    _schemaLoadCts?.Dispose();
-                    _schemaLoadCts = new CancellationTokenSource();
-                    ClearParameterItems();
-                    ParameterCategories.Clear();
-                    SelectedParameters.Clear();
-                    SelectedParameterCategory = null;
-                    _parameterSchemaLoaded = false;
-                    SetProperty(ref _selectedCamera, value);
-                    IsCameraSelected = value != null;
-                    OnPropertyChanged(nameof(IsConnected));
-                    OnPropertyChanged(nameof(ConnectionActionText));
-                    LoadManufacturerParams();
+                    var next = value;
+                    while (true)
+                    {
+                        _hasPendingCamera = false;
+                        if (!ReferenceEquals(_selectedCamera, next))
+                        {
+                            var oldAutoApply = _autoApplyCts;
+                            _autoApplyCts = null;
+                            var oldSchemaLoad = _schemaLoadCts;
+                            _schemaLoadCts = null;
+                            oldAutoApply?.Cancel(); oldAutoApply?.Dispose();
+                            oldSchemaLoad?.Cancel(); oldSchemaLoad?.Dispose();
+                            _schemaLoadCts = new CancellationTokenSource();
+                            ClearParameterItems();
+                            ParameterCategories.Clear();
+                            SelectedParameters.Clear();
+                            SelectedParameterCategory = null;
+                            _parameterSchemaLoaded = false;
+                            SetProperty(ref _selectedCamera, next);
+                            IsCameraSelected = next != null;
+                            OnPropertyChanged(nameof(IsConnected));
+                            OnPropertyChanged(nameof(ConnectionActionText));
+                            LoadManufacturerParams();
+                        }
+                        if (!_hasPendingCamera) break;
+                        next = _pendingCamera!;
+                    }
                 }
-                finally { _changingCamera = false; }
+                finally
+                {
+                    _pendingCamera = null;
+                    _hasPendingCamera = false;
+                    _changingCamera = false;
+                }
             }
         }
 

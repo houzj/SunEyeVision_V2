@@ -610,6 +610,32 @@ public sealed class CameraStreamOwnershipTests
         await vm.DisposeAsync();
     }));
 
+    [Fact]
+    public void Reentrant_selection_from_parameter_tree_change_preserves_the_latest_device()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera();
+        var vm = new CameraDetailViewModel(camera.Runtime);
+        var first = new CameraDevice { DeviceId = "first" };
+        var second = new CameraDevice { DeviceId = "second" };
+        var latest = new CameraDevice { DeviceId = "latest" };
+        vm.SelectedCamera = first;
+        vm.Parameters.Add(new CameraParameterItemViewModel(new CameraParameterDescriptor
+        { Name = "OldValue", Kind = CameraParameterKind.Integer, Value = 1 }, 1));
+        var reentered = false;
+        vm.Parameters.CollectionChanged += (_, _) =>
+        {
+            if (reentered) return;
+            reentered = true;
+            vm.SelectedCamera = latest;
+        };
+        vm.SelectedCamera = second;
+        Assert.True(reentered);
+        Assert.Same(latest, vm.SelectedCamera);
+        Assert.Empty(vm.Parameters);
+        await vm.DisposeAsync();
+    }));
+
     private static void Pump(Func<Task> action)
     {
         var frame = new DispatcherFrame(); Exception? failure = null;

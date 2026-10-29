@@ -152,15 +152,6 @@ namespace SunEyeVision.UI.Shell.Windows
             RegisterHotkeys();
             // 后台切换到NativeDiagramControl（使用原生AIStudio.Wpf.DiagramDesigner库）
             SwitchToDefaultConfiguration();
-            // Force initialize log panel - fix TabControl lazy loading
-            // LogPanelContent is at index 1 (second tab)
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (BottomPanelTabControl != null && BottomPanelTabControl.Items.Count > 1)
-                {
-                    BottomPanelTabControl.SelectedIndex = 1; // Select log tab to trigger load
-                }
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
         /// <summary>
         /// 切换到默认配置：WorkflowCanvasControl画布 + VmPathCalculator路径计算器
@@ -431,39 +422,7 @@ namespace SunEyeVision.UI.Shell.Windows
             WorkspaceHost.OpenSubroutineNodeParameterDialog(node);
         }
         #endregion
-        #region 右侧面板分隔条事件处理
-        private double _previousSplitterPosition;
-        /// <summary>
-        /// 图像-属性分隔条开始拖动
-        /// </summary>
-        private void ImagePropertySplitter_DragStarted(object sender, DragStartedEventArgs e)
-        {
-            // 记录拖动开始前的状态
-            _previousSplitterPosition = RightPanelGrid.RowDefinitions[0].ActualHeight;
-}
-        /// <summary>
-        /// 图像-属性分隔条拖动中 - 实时更新高度
-        /// </summary>
-        private void ImagePropertySplitter_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            // 获取当前图像显示区域的高度
-            double currentImageHeight = RightPanelGrid.RowDefinitions[0].ActualHeight;
-            // 实时记录拖动过程中的位置变化（用于调试）
-// 注意：由于ShowsPreview="False"，GridSplitter会自动调整相邻Row的高度
-            // 不需要手动更新Height，只需要记录状态即可
-        }
-        /// <summary>
-        /// 图像-属性分隔条拖动完成
-        /// </summary>
-        private void ImagePropertySplitter_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            // 保存新的分隔条位置到ViewModel
-            double newPosition = RightPanelGrid.RowDefinitions[0].ActualHeight;
-if (DataContext is MainWindowViewModel viewModel)
-            {
-                viewModel.SaveSplitterPosition(newPosition);
-            }
-        }
+        #region 工具箱分隔条事件（已废弃）
         /// <summary>
         /// 工具箱分割器的折叠/展开事件（已废弃 - 切换功能已由ToolboxControl内部按钮实现）
         /// </summary>

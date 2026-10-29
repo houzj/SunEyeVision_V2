@@ -8,7 +8,7 @@
  xmlns:sources="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;assembly=SunEyeVision.Plugin.Wpf"
  mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="780">
  <UserControl.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/></UserControl.Resources>
- <composition:ResultWorkspaceShell x:Name="Workspace" HelpContent="请选择节点查看当前运行声明；主结果区历史、图像叠层及背景替换、未接入的图形文字与ROI编辑均明确未实现，相关入口禁用。">
+ <composition:ResultWorkspaceShell x:Name="Workspace">
   <composition:ResultWorkspaceShell.PropertyListContent>
    <results:PropertyListView SelectedItemChanged="OnResultTreeSelectionChanged"/>
   </composition:ResultWorkspaceShell.PropertyListContent>

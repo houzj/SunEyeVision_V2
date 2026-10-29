@@ -61,7 +61,7 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
     public void SetResultStatus(bool isOk){ObjectDisposedException.ThrowIf(_disposed,this);_isOk=isOk;OnChanged();}
     private void OnChanged()
     {
-        if(_disposed)return;var revision=++_drawRevision;var values=_draft.ReadFields();
+        if(_disposed)return;var revision=++_drawRevision;var values=_draft.CaptureFields();
         var x=Fields.Fields.Single(field=>field.FieldId=="text.x").Setting;
         var y=Fields.Fields.Single(field=>field.FieldId=="text.y").Setting;
         if(x is not ConstantSetting {Value:double px}||y is not ConstantSetting {Value:double py})
@@ -84,7 +84,7 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
 
     private sealed class NativeDisplayDraft : IToolSettingsDraft
     {
-        private InputValues _root;
+        private FieldSettingsDraft _root;
         public int Writes {get;private set;}
         public ToolSchema Schema {get;}
         public NativeDisplayDraft()
@@ -98,7 +98,7 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
             Add("text.x",DataType.Number,"位置X","文本显示",5,"文字样式",FieldEditorKind.Scalar,120d,modes:FieldEditModes.Constant|FieldEditModes.Reference,digits:null);
             Add("text.y",DataType.Number,"位置Y","文本显示",6,"文字样式",FieldEditorKind.Scalar,80d,modes:FieldEditModes.Constant|FieldEditModes.Reference,digits:null);
             Graphic("outline","轮廓",10,true);Graphic("region","区域",20,false);
-            Schema=new(ports,Array.Empty<Port>(),new ToolPresentation(presentations));_root=new(Schema.Inputs,values);
+            Schema=new(ports,Array.Empty<Port>(),new ToolPresentation(presentations));_root=new(Schema,new FieldSettings(Schema.Inputs,values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
             void Graphic(string group,string title,int order,bool width)
             {
                 Add(group+".visible",DataType.Boolean,title,"图形显示",order,"图形样式",FieldEditorKind.Scalar,true,dialog:group,title:title,primary:true);
@@ -116,13 +116,11 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
                     DialogGroup:dialog,DialogTitle:title,DialogPrimary:primary,Increment:increment)});
             }
         }
-        public InputValues ReadFields()=>new(Schema.Inputs,_root.CopyValues());
-        public object CaptureSettings()=>ReadFields();
-        public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
-        {
-            var next=_root.CopyValues().ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal);
-            foreach(var (id,value) in changes)next[id]=value;
-            var candidate=new InputValues(Schema.Inputs,next);acceptCandidate(candidate);_root=candidate;Writes++;
-        }
+        public long Revision=>_root.Revision;
+        public FieldSettings CaptureFields()=>_root.CaptureFields();
+        public FieldSettings CaptureValidatedFields()=>_root.CaptureValidatedFields();
+        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
+        {_root.ApplyFields(changes,acceptCandidate);Writes++;}
+
     }
 }

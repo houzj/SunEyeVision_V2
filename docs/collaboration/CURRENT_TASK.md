@@ -1,3 +1,103 @@
+## 2026-10-29 FieldSettings 整批接入进行中
+
+以交接提交 `89f57f65` 恢复 FieldSettings 合同、字段引用、编辑及序列化消费者，图像源声明改用完整字段实体化；正式运行与私有调试保留本地图像读取接纳、游标及结束清理。工具参数组合保留本地图像条，同时合并主线相机行；设计态接回同一草稿合同。保留历史重放失效传播，并恢复 Runtime 节点引用复制和资源基目录的正式字段路径。主线已确认用户结束当前试用，图像源候选交付后优先安排下一轮主仓正式集成构建。
+
+当前仍是未完成源码：Blob 等主线消费者及产品 UI 尚未统一集成，不可提交为已完成或交付验收。47 个修改 C# 文件的 Roslyn 语法诊断为 0，2 个 XAML XML 可解析；以本分支合同、Plugin.Runtime、Workflow 全量 C# 源在内存中依次连接，另以本分支合同及 Runtime 连接图像源工具 Runtime 源码，引用主线正式 Release 现有依赖和 PowerShell .NET 宿主，各层类型诊断均为 0 错误、无程序集落盘。首次检查缺少 OpenCvSharp 引用而产生 10 个错误，补充引用后通过；此前手写命令另有 PowerShell 解析错误。这些检查不是 net9 构建、功能回归或人工验收。
+
+## 2026-10-29 图像源交接已批准，整批整合进行中
+
+技术总监确认独立 worktree 单写图像源与相关工作流链；主线以 `89f57f656d334119e5864778a0d0fb271e78c452` 保全相关源码，以 FieldSettings 为统一配置合同，下一正式 Release 窗口优先图像源，由主线整合构建。保全提交不是全仓新基线，不得覆盖 Blob、Group 和主线其他基础组件。主线当前试用进程须在产物替换前协调。
+
+已核实以下四份控件文件在独立基线与主线交接父提交 `ddc59a9d` 相同，采用其差异补丁接入：ImageSourceInputView、ImageSourceStrip XAML/代码和设计视图 XAML。包含文件/目录直接导入和控件解绑/刷新生命周期调整，尚未独立验证。工具参数及运行时两侧均有改动，须保留图像读取接纳，并整批接回 FieldSettings，不得直接覆盖；VS 设计器、正式构建和人工验收均未完成。
+
+## 2026-10-29 用户要求重新确认整批交接
+
+用户要求直接联系技术总监确认交接及正式构建窗口，交接后按 VM 原件整批迁移。已向“技术总监｜架构与决策”发送请求：确认图像源及共享文件的唯一写入归属、主线未提交源码保全、FieldSettings 统一基线和正式 Release 窗口。独立分支基线 `3c1adc02c23e876347ce4301fe34447deae3f9a6`；原方案、任务记录、两个验证源码有未提交内容。主线正在进行 Blob 批次，尚无交接确认；不得覆盖主线或把主线构建当成本分支验证。Group 保持暂停。
+
+## 2026-10-29 本分支合同/运行时/工作流只读类型连接
+
+采用本分支真实源文件，在内存中依次编译并传递 Contracts（22份）、Plugin.Runtime（15份）和 Workflow（95份）的类型元数据；其他依赖引用当前主线正式 Release，框架引用 PowerShell .NET10/WindowsDesktop .NET10。三层类型诊断均为0，未写程序集或程序目录。此结果说明本分支三层源码在该受控引用集合下类型连接，无运行测试；不消除主线 FieldSettings 合同分叉，也不是目标 net9 正式构建，UI、工具插件、真实交互及人工验收仍待统一集成。
+
+## 2026-10-29 工作流配置合同根因
+
+对照两侧 RuntimeToolConfiguration，差异不只是 Describe/Capabilities 方法签名：独立候选以冻结 typed settings 为持久主体并用 ApplySettings；主线以 FieldSettings 保存常量和 ReferenceSetting，在执行/编辑边界 MaterializeSettings，具备引用映射、字段恢复和序列化。直接替换文件或只改签名会丢正式订阅/保存语义；整合须以主线 FieldSettings 正式合同为基线，同步图像源冻结/接纳、调试、NodeConfigurationEditHost 未提交修改和全部消费者，覆盖保存重开/撤销/引用。已发主线，本轮未修改合同或运行验证。
+
+## 2026-10-29 工作流全源码只读类型核查
+
+以本分支95份 Workflow C# 源和主线当前正式 Release 程序集、PowerShell .NET10 及 WindowsDesktop .NET10 引用进行不落盘 Roslyn 诊断，共6个错误：RuntimeDebugInvocation.cs:177、AlgorithmNode.Runtime.cs:108 的 ILocalImageReadContext 尚不在主线 DLL；RuntimeToolConfiguration.cs:28/39/40/52 依赖的 Describe(settings)、Capabilities(settings)、ApplySettings 与主线合同不同。说明不能把两个版本直接混用，整合须同批核合同、Runtime、工具和消费者。该检查不是 net9 正式构建，也未验证运行；错误已反馈主线。
+
+## 2026-10-29 来源规划/调试类型连接只读检查
+
+将独立候选 `LocalImageSequenceService`、`ImageSourcePolicy`、`ImageSourceDebugCursor` 和 `ImageSourceInvocationInputs` 四份源码放入内存 Roslyn 编译模型，以当前主线正式 Release 的 SunEyeVision 程序集和当前 PowerShell .NET 10 宿主框架作只读引用，类型诊断0错误；不生成程序集、不覆盖 Release。该检查依赖当前主线 DLL、并非目标 net9/WPF 完整项目编译，不覆盖调用方、合同差异、运行、UI、硬件或人工验收，正式整批仍待交接和主仓同源构建。
+
+## 2026-10-29 图像源单写交接请求
+
+为用户要求的原件整批快速落地，已请求主线明确将 ImageSources 控件、图像源工具及对应宿主的独立 worktree 写入权整体交接；主仓及正式 Release 仍由主线统一。只读确认主线基线 `ddc59a9d`，图像源范围有7份未提交文件（ImageSourceInputView、Strip XAML/代码、Runtime Fields/Session、设计数据及参数编辑器），必须保留并逐文件合并；主线仍在处理 Blob，尚未确认交接。独立基线 `3c1adc02`，后续原件证据及灰度公式测试仍有未提交变更；未发生合并或构建。
+
+## 2026-10-29 图像显示元数据复用边界
+
+进一步核查既有 `OutputVariable.DisplayInResultPanel`：该标志仅控制模块结果面板，false 仍可绑定；`DataSourceQueryService.GetImageDisplaySources` 按 Image 输出筛选，既有 `ResultProjectionDescriptor` 也仅描述属性/结果表。它们均不足以证明 VM `[Display]` 到图像下拉的映射，不能把结果面板可见性误作图像来源声明。保持未授权扩展暂停，按用户要求整批处理时先明确原件来源身份与正式宿主合同；本轮为源码核查，未修改生产行为。
+
+## 2026-10-29 图像显示声明基础核对
+
+`DataSourceQueryService.GetImageDisplaySources` 的正式路径按输出 VariableType=Image 枚举，未发现 VM `[Display]` 的独立映射；`ResultProjectionDescriptor` 是属性/表格结果呈现声明，不能直接视为图像显示合同。该证据修正“现有 Schema 即原件显示清单”的假设；当前目标暂停未授权显示插件合同扩展，需先复用已有可证明的显示元数据并保留未完成项，不能自行扩合同或以结果表列冒充原件映射。已通知主线，尚未实施或验收。
+
+## 2026-10-29 VM 主结果图像来源原件证据
+
+找到原 `VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs` SHA-256 `CEDA24B7FB93BCD9F02B77B23D42A839B1F737BF70CF3ABC6B7786D11765740E`。`RefreshImageList` 由当前与上游模块 `[Display]` 清单筛图像类型，再按输入/输出映射生成 ImageViewList，列表生成阶段未按当轮值是否为空过滤；1926起勾选叠加时取值，空图撤销勾选和输出订阅并提示。故缺值本身不证明声明应从列表消失，但本方按全部 Schema 端口列出也不自动等于原 Display 映射；普通选择和真实桌面仍须验证。已发主线，未修改 UI 或宣称完成。
+
+## 2026-10-29 主结果图像来源缺失处理核对
+
+`CaptureNativeImageSources` 按 Schema 列出所有图像端口，即使本次输出缺失；`ResultImagePane.TryPresent` 在解析前清旧帧并释放旧 lease，失败不保留旧图；`ResultWorkspacePresenter.Present` 对失败当前仅写日志。原件下拉是否隐藏或保留未发布声明尚无对应证据，不能猜。附加灰度整批需验证选中缺失值、旧图清除、选择身份、用户可见诊断、下游绑定和资源释放；已同步主线。本次为源码观察，未执行或宣称 UI 行为完成。
+
+## 2026-10-29 资源型缺失结果展示纠偏
+
+复查 `ResultPresentationModel` 发现此前“结果树支持 Missing”仅对普通值成立：资源类型优先标记 ResourcePending，根资源叶不读值，嵌套资源 ChildReader 也直接返回 null，所以未产生的可选灰度资源当前不会展示 Missing。`InputValues.Contains/Read` 能识别是否发布，下游 ParameterBindingService 仍拒绝缺失，但结果树须在不持有资源对象、保持弱租约/延迟加载下处理根及嵌套资源缺失与 Null，再覆盖结果和消费者回归。已更正先前通知并交主线；未实施或运行验证。
+
+## 2026-10-29 附加灰度可见性条件纠偏
+
+进一步查 `DeclaredFieldsView.cs:310–311`：ParentConditions 用 `All(Meets)`，仅支持合取；不能直接表达 OutMono8 的“相机模式，或本地 RGB 模式”析取。先前“可能复用复合条件”的判断不足，已更正并通知主线。应按原件参数页组装链复用原控件实现精确显隐，同时贯通草稿、执行和可选输出；不以单一条件冒称对齐，也不据此扩无关公共合同。尚未实施或运行验证。
+
+## 2026-10-29 原件附加灰度默认和显隐依赖核对
+
+直接核对原件两个 XML：参数页 OutMono8 默认 True，原算法初始化 XML 默认 False；现有证据指出运行初始化采用算法默认，不能把 UI 默认直接作为运行默认。`IToolSettingsViewOptions.ParentConditions` 和现有 DeclaredFieldsView 条件组提供复合条件基础，可能可用于原件显示规则，但需按实际宿主确认；不为这一字段扩公共条件合同。原 RGB 样本的整数灰度算法与现 HALCON 转换是否完全等价仍待正式回归，缺条件输出及全部消费者仍未实施。已同步主线，保持整批范围。
+
+## 2026-10-29 原件相机灰度精度验证候选
+
+已有 VM 受控设备 RGB 样本的灰度输出符合整数公式 `(76R+150G+30B)>>8`；当前生产候选调用 HALCON `Rgb1ToGray`，未证明逐像素等价。新增相机 RGB 合成样本与该已观察公式对比的正式轨候选及逐名门禁，目的是在整批集成中判明现有实现是否满足已观察规则，不将单设备证据泛化到全部原件或硬件。测试尚未编译运行；OutMono8 配置、可选输出及相关消费者仍需整批对齐，不能把本项当作已迁移。
+
+## 2026-10-29 附加灰度缺失语义基础核对
+
+按行为而非类名核查：`Plugin.Contracts/Values.cs` 支持 Required=false 输出及 InputValues.Read 的 IsMissing；`Plugin.Wpf/.../ResultPresentationModel.cs` 支持 Missing 展示态；`Plugin.Runtime/ParameterBindingService.cs:156` 未发布源字段返回 missing-value 诊断。可作为 OutMono8 原件语义的现有基础复用，不必预先重写公共结果架构；但图像源 Schema 当前 GrayImage 仍必填、Session 总发布，配置字段、运行输出、结果、下游及资源回归尚未整批迁移，不能据此报告已具备完整链或硬件验证。证据已同步主线。
+
+## 2026-10-29 原件灰度输出跨链差异
+
+复用 `图像源根流程完整功能链证据与实施方案-20261029.md`：已确认原件 OutMono8 开启且 RGB 输入才生成附加灰度图及元数据，单通道主图不等于生成附加灰度。当前独立候选 ImageSourceSession 总发布 GrayImage（灰图时复用主图），差异跨 Runtime 设置/Schema、结果树、下游订阅和资源所有权，不能仅补 UI 控件或保留双轨；已通知主线纳入整批合同评估，缺正式基础须明示而非伪装完成。另核 ImageListPanelBase.AddImageByDir 按路径长度和名称排序，最多一层子目录，现 ImageFileImport 枚举策略对应；异常/取消/接纳语义仍须完整回归。尚未修改输出合同或验证。
+
+## 2026-10-29 用户要求原件整批实施
+
+用户进一步明确：通过逆向方式以最快速度完成本线负责的控件和优化，不要一点点重新设计和试错。本线按已恢复 VM 原件一次核完整入口、资源及宿主生产链，正确能力复用，差异集中迁移后统一验证；不扩展 Group/Blob。主线当前仍是 Plugin.Wpf 单写方并在另一工作目录工作，本线继续承担图像源宿主、正式/调试读取和接口消费者，跨共享文件须先对齐同一合同，不能靠独立局部补丁冒充整链。已核对 SourceStripSession 的导入、选择、运行勾选及资源释放生产链，与原 ImageListPanelBase 共同作为实施依据；尚未同源构建、运行或人工验收。
+
+## 2026-10-29 原件源条事件及图标同源核对
+
+逐模板提取原 ImageListPanel 的删除、清空、文件/目录、首张、勾选、鼠标、拖放、选图、滚动、上下文切换与菜单事件，以及 LocalImageListView 的模式切换；现行 ImageSourceStrip 将两层组合并重写事件，事件同名或近名不能证明行为一致。按真实文件 SHA-256 对照，独立分支 `Themes/Assets/ImageSources` 的文件、目录、清空、单项删除按钮正常/悬停共8张 PNG 与原 `Apps.XmlUI/resources` 对应文件字节一致，可复用中立命名原件，不需重新绘制。首张、选图运行、列表刷新/滚动及原资源模板闭包仍须按完整生产链迁移；已交主线，尚无运行或外观验收。
+
+## 2026-10-29 VM 图像源原始显隐触发提取
+
+从同一原 XML 逐 Setter 提取：来源1显示 CurrentImagePath、PixelFormat、SolSaveImageData、ShowImageName、AutoPlay、PathCache、IsSubscribeFolderMode，隐藏 CameraID、ExposureTimeInput、GainInput；来源2反向；来源3两组均隐藏。PixelFormat=1 且可见时隐藏 OutMono8；AutoPlay=false 或自身不可见时隐藏 AutoStop；字符过滤关闭隐藏 TriggerString/TriggerFilter；目录订阅开启且可见显示 SubscribeFolderPath/RefreshImage/TriggerProcessRun；拼接开启显示 StitchStartHeight/StitchHeight/ClearTrigger，后者开启且可见显示 ClearTriggerCondition。此记录仅为 XML 明示 setter，不推断未写出的反向动作，已交主线供原件整页迁移；尚无本方实现或运行证据。
+
+## 2026-10-29 原件图像源参数字段与现行组装差异
+
+直接读取原 XML 基本参数、触发、订阅三个类别：ImageSourceType、PixelFormat、SolSaveImageData、ShowImageName、CameraID、ExposureTimeInput、GainInput、InitialSN、PathCache、OutMono8、StitchEnable/StartHeight/Height、ClearTrigger/Condition；AutoPlay、AutoStop、TriggerStringEnable/String/Filter；IsSubscribeFolderMode、RefreshImage、TriggerProcessRun。各字段实际可见性须跟随原 XML 触发，不能只看名称。主线当前 ImageSourceInputView 已改为相机选择行，但其声明字段仍少于原件；已将具体清单转交唯一控件写入方，缺基础的明确禁用并记录依赖。尚未实施完整参数页迁移或验证，原 SDK 宿主的 LocalImageList 显示条件不可与 SDK 图像来源混同。
+
+## 2026-10-29 VM 图像源完整原件入口复核
+
+核验图像源参数 XML `D:/MyWork/REA逆向测试/examples/plugin-definitions/ImageSourceModule/ImageSourceModuleAlgorithmTab.xml` SHA-256 `001A57675192867594D3BBC7EFA94462C19F056583659D759CEB5648E55091E0`；它包含来源枚举触发的本地/相机/SDK字段、相机选择/曝光/增益及自动切换、订阅等，不能只迁缩略条。原 `ImageListPanelBase` 入口包含 GetModuleSel、删除/清空、文件/目录、本地/远程、选图运行、回调刷新、滚动、拖入、勾选/Ctrl/Shift、首张及打开位置；模板同时依赖原复选框、按钮、滚动条、布尔控件、枚举和主题资源。原选图经 CurrentImagePath 与所属 VmProcedure.Run，自动模式写有效列表前一项；首张写有效列表末项并设 IsReturnFirstForce。当前已确认第一处一致的行为是 Ctrl/Shift 仅在选择模式修改勾选，不能据此推断整套控件已迁齐。后续由 Plugin.Wpf 唯一写入方逐链按原件集中迁移，未进行 WPF 运行或人工验收。
+
+## 2026-10-29 用户要求直接按 VM 图像源控件迁移
+
+用户明确要求不再自行设计、零散修补，直接依据 VM 原件及完整控件依赖链实施。已直接读取 `D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml(.cs)`、`ImageListPanel.xaml(.cs)`、`ImageListPanelBase.cs`；后者 SHA-256 为 `DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79`。原件包含宿主、模式/自动切换模板、列表、资源、选图与从头执行完整链；自动切换时从头执行写有效列表末项并设置 IsReturnFirstForce，当前独立分支的 SelectStart 首项行为不一致；本地按钮直接打开文件或目录。主线负责 Plugin.Wpf 唯一写入，已转达用户要求及证据；接下来先核完整依赖和原件交互，集中移植并由主线同源构建。现临时提交 `3c1adc02` 仅保存此前未编译候选，不代表控件已迁完或验收。
+
 ## 2026-10-29 整批交接保存点准备
 
 独立分支基线 `320e59ad`；本批工作树含正式/调试图像读取接纳、共用序列规划、游标投影、导入和运行清理、主界面旧日志退出、相机格式差异合并、验证入口和主方案同步，须整体对照主线未提交控件/草稿改动。以下提交仅为跨工作区固定未验证候选，不是构建通过或人工验收；首张独立意图、共同合同合并、正式 Release 构建与回归、VS和人工仍未完成。主线保持独立写入和正在进行的公共页面验证。

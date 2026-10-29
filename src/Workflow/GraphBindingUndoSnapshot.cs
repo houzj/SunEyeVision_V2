@@ -7,14 +7,22 @@ namespace SunEyeVision.Workflow;
 public sealed class GraphBindingUndoSnapshot
 {
     public WorkflowNodeBase[] Nodes {get;private init;}=Array.Empty<WorkflowNodeBase>();
-    private Dictionary<WorkflowNodeBase,(ToolParameters? Parameters,ParamSettingContainer? Settings)> _nodes=new();
+    private Dictionary<WorkflowNodeBase,(RuntimeToolConfiguration? Runtime,ToolParameters? Parameters,ParamSettingContainer? Settings)> _nodes=new();
     private sealed record VariableBindings(ProducerBinding? Producer,List<ConsumerBinding> Consumers,string Reason,string Pending);
     private Dictionary<GlobalVariable,VariableBindings> _variables=new();
     public static GraphBindingUndoSnapshot Capture(IEnumerable<Workflow> flows,Solution? solution)=>Capture(flows.SelectMany(w=>w.Nodes),solution);
     public static GraphBindingUndoSnapshot Capture(IEnumerable<WorkflowNodeBase> nodes,Solution? solution)
     {
         var result=new GraphBindingUndoSnapshot{Nodes=nodes.Distinct().ToArray()};
-        result._nodes=result.Nodes.ToDictionary(n=>n,n=>(n.Parameters==null?null:ToolParameterSnapshot.Create(n.Parameters),ToolParameterSnapshot.CopySettings(n.ParamSettings)));
+        result._nodes=result.Nodes.ToDictionary(n=>n,n=>
+        {
+            if(n.RuntimeConfiguration is {} runtime)
+            {
+                if(n.ParamSettings.Settings.Any())throw new InvalidOperationException("Runtime历史不能包含SDK参数设置。");
+                return (runtime.Copy(),(ToolParameters?)null,(ParamSettingContainer?)null);
+            }
+            return ((RuntimeToolConfiguration?)null,n.Parameters==null?null:ToolParameterSnapshot.Create(n.Parameters),ToolParameterSnapshot.CopySettings(n.ParamSettings));
+        });
         if(solution!=null)foreach(var variable in solution.GlobalVariables)
         {
             var copy=variable.Clone();
@@ -24,7 +32,14 @@ public sealed class GraphBindingUndoSnapshot
     }
     public void Restore()
     {
-        foreach(var (node,state) in _nodes){node.Parameters=state.Parameters==null?null!:ToolParameterSnapshot.Create(state.Parameters);node.ParamSettings=ToolParameterSnapshot.CopySettings(state.Settings)!;}
+        var prepared=_nodes.ToDictionary(pair=>pair.Key,pair=>(Runtime:pair.Value.Runtime?.Copy(),
+            Parameters:pair.Value.Parameters==null?null:ToolParameterSnapshot.Create(pair.Value.Parameters),Settings:ToolParameterSnapshot.CopySettings(pair.Value.Settings)));
+        foreach(var (node,state) in prepared)
+        {
+            node.RuntimeConfiguration=state.Runtime;
+            if(state.Runtime is not null)node.ParamSettings=new ParamSettingContainer();
+            else {node.Parameters=state.Parameters!;node.ParamSettings=state.Settings!;}
+        }
         foreach(var (variable,state) in _variables)
         {
             var copy=new GlobalVariable{ProducerBinding=state.Producer,ConsumerBindings=state.Consumers,RebindingReason=state.Reason,BindingValidationPending=state.Pending}.Clone();

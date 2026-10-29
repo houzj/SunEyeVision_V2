@@ -43,16 +43,15 @@ public partial class AlgorithmNode
                 if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source is { } published)
                     leases.Add(published.AcquireReader());
             var snapshot=BindingContext!.Capture(this,results);
-            foreach(var setting in ParamSettings.Settings)
+            foreach(var (fieldId,setting) in configuration.Fields.Capture())
             {
-                if(!targets.TryGetValue(setting.ParameterName,out var port))
-                    throw new InvalidOperationException("Unknown Runtime input or setting: "+setting.ParameterName);
+                if(!targets.TryGetValue(fieldId,out var port))
+                    throw new InvalidOperationException("Unknown Runtime input or setting: "+fieldId);
                 var destination=settingFields.ContainsKey(port.Id)?settingValues:values;
-                if(setting.BindingType==BindingType.Constant)
+                if(setting is ConstantSetting constant)
                 {
-                    if(settingFields.ContainsKey(port.Id))throw new InvalidOperationException("Runtime setting literals cannot have duplicate binding storage.");
-                    if((port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("Runtime input cannot use a persisted constant.");
-                    destination.Add(port.Id,RuntimeInputBindings.Constant(port,setting.ConstantValue));
+                    if(port.EditModes!=FieldEditModes.None&&(port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("Runtime input cannot use a persisted constant.");
+                    if(!settingFields.ContainsKey(port.Id))destination.Add(port.Id,RuntimeInputBindings.Constant(port,constant.Value));
                 }
                 else
                 {
@@ -62,14 +61,7 @@ public partial class AlgorithmNode
                     destination.Add(port.Id,resolution.Value);
                 }
             }
-            if(settingValues.Count>0)
-            {
-                var effective=configuration.WithFieldValues(settingValues);
-                if(effective.Schema.Fingerprint!=schema.Fingerprint||!effective.Capabilities.ResourceKeys.ToHashSet(StringComparer.Ordinal)
-                    .SetEquals(configuration.Capabilities.ResourceKeys))
-                    throw new InvalidOperationException("Bound settings changed the admitted Runtime schema or resource capabilities.");
-                configuration=effective;
-            }
+            var settings=configuration.MaterializeSettings(settingValues);
             if(ToolType=="ImageLoad")
             {
                 var sourceInputs=await ImageSourceInvocationInputs.CaptureAsync(this,
@@ -82,7 +74,7 @@ public partial class AlgorithmNode
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests).ConfigureAwait(false);
+            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests,settings).ConfigureAwait(false);
             transferred=true; // The envelope also disposes both owners when its constructor fails.
             prepared=captureResult(outcome,resources,timer.Elapsed.TotalMilliseconds);
             return prepared;

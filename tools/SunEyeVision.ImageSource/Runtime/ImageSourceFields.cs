@@ -25,14 +25,14 @@ public static class ImageSourceFields
         new Port(OutputFormat,Text,EditModes:FieldEditModes.Constant,Choices:new(new[]{"original","mono8","rgb24"})),
         new Port(InitialSequence,Integer,Storage:NumericStorage.Int64,EditModes:FieldEditModes.Constant)
     },Array.Empty<Port>(),new ToolPresentation(new[] {
-        Choice(SourceKind,"图像来源","图像来源",0,new[]{"local","camera"},new[]{"本地图像","相机"}),
-        Choice(OutputFormat,"输出格式","基本参数",10,new[]{"original","mono8","rgb24"},new[]{"保持原图","MONO8","RGB24"}),
+        Choice(SourceKind,"图像源","基本参数",0,new[]{"local","camera"},new[]{"本地图像","相机"}),
+        Choice(OutputFormat,"像素格式","基本参数",10,new[]{"original","mono8","rgb24"},new[]{"保持原图","MONO8","RGB24"},"local"),
         new FieldPresentation(InitialSequence,"SN初始值","基本参数",20,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",Minimum:0,DecimalPlaces:0,AllowReference:false)},
-        new FieldPresentation(AutoSwitch,"自动切换","触发",30,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
-        new FieldPresentation(StopAtLast,"末张成功后停止","触发",40,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
+        new FieldPresentation(AutoSwitch,"自动切换","触发设置",30,FieldEditorKind.Scalar) {
+            Layout=new("基本参数","触发设置",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
+        new FieldPresentation(StopAtLast,"最后一张停止","触发设置",40,FieldEditorKind.Scalar) {
+            Layout=new("基本参数","触发设置",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
         new FieldPresentation(CameraTimeout,"取帧超时(ms)","相机",50,FieldEditorKind.Scalar) {
             Layout=new("基本参数","相机",VisibleWhen:new(SourceKind,"camera"),Minimum:1,Maximum:int.MaxValue,DecimalPlaces:0,AllowReference:false)}
     }));
@@ -56,7 +56,11 @@ public static class ImageSourceFields
             if(!values.ContainsKey(pair.Key))throw new ArgumentException("未声明的图像源字段："+pair.Key);
             values[pair.Key]=pair.Value;
         }
-        var candidate=new InputValues(Schema.Inputs,values);
+        return Materialize(new InputValues(Schema.Inputs,values));
+    }
+    public static ImageSourceSettings Materialize(InputValues values)
+    {
+        var candidate=new InputValues(Schema.Inputs,values.CopyValues());
         var result=new ImageSourceSettings {
             SourceKind=candidate.Get<string>(SourceKind),
             FileReferences=ReadReferences(candidate,Paths),StartIndex=checked((int)candidate.Get<long>(Start)),

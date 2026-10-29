@@ -117,6 +117,38 @@ internal sealed class WorkflowBindingContext : IDisposable
         return compiled is null?new(BindingCompatibility.Unresolved,"Binding declaration is unavailable.")
             :new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
     }
+    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId)
+    {
+        if(ReferenceOwnershipError(workflow,node,fieldId,setting,scopeId) is {} ownershipError)
+            return new(BindingCompatibility.Incompatible,ownershipError);
+        var declarations=CaptureDeclarations(workflow,scopeId,Guid.Empty);
+        var scope=new BindingScopeSnapshot(new(scopeId,node.Id),workflow.ExecutionOwner.Id,0,
+            declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
+            Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+        var target=node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId);
+        var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,scope,setting.Conversion);
+        return new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
+    }
+
+    internal static string? ReferenceOwnershipError(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId)
+    {
+        if(!string.IsNullOrEmpty(setting.RebindingReason))return setting.RebindingReason;
+        if(setting.OriginId is null)return null;
+        const string prefix="connection:";
+        if(!setting.OriginId.StartsWith(prefix,StringComparison.Ordinal)||setting.OriginId.Length==prefix.Length)
+            return "自动来源归属不是有效的连线标识。";
+        var reference=setting.Reference;
+        if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId!=fieldId
+            ||reference.Type!=TypeRef.ResourceOf(ResourceKind.Image)||reference.MemberFieldPath.Count!=0
+            ||reference.Selection is not BindingSelection.AllItems||setting.Conversion!=BindingConversion.Automatic
+            ||(reference.ScopeId??scopeId)!=scopeId)
+            return "自动图像来源的字段、引用或工作流归属不一致。";
+        var edges=workflow.Connections.Where(edge=>edge.Id==setting.OriginId[prefix.Length..]).ToArray();
+        if(edges.Length!=1||edges[0].TargetNodeId!=node.Id||edges[0].SourceNodeId!=reference.NodeId
+            ||!workflow.Nodes.Any(source=>source.Id==reference.NodeId))
+            return "自动图像来源对应的连线不存在或不属于当前来源与目标节点。";
+        return null;
+    }
 
     internal static IEnumerable<BindingNodeId> ReferenceNodes(OutputReference reference,string defaultScope)
     {
@@ -146,6 +178,21 @@ internal sealed class WorkflowBindingContext : IDisposable
                 _declarations.Values.Select(d=>d.Source),_declarations.Values.Select(d=>d.Source.Node),predecessors);
             var plans=new Dictionary<string,BindingPlan>(StringComparer.Ordinal);
             var errors=new List<ExecutionInputIssue>();
+            if(node.RuntimeConfiguration is {} runtime)
+            {
+                foreach(var (id,setting) in BindingRelationCatalog.References(node))
+                {
+                    if(ReferenceOwnershipError(workflow,node,id,setting,_scope) is {} ownershipError)
+                    {errors.Add(new(id,id,ownershipError));continue;}
+                    var target=runtime.BindingTargets.Single(port=>port.Id==id);
+                    var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,compilationScope,setting.Conversion);
+                    if(compiled.Plan is {} plan)plans.Add(id,plan);
+                    else errors.Add(new(id,id,compiled.Diagnostic?.Message??"Runtime reference is not ready."));
+                }
+                if(errors.Count>0)additional.Add(node.Id,errors);
+                node.CompiledBindings=new ReadOnlyDictionary<string,BindingPlan>(plans);
+                continue;
+            }
             var settings=node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).GroupBy(setting=>setting.ParameterName,StringComparer.Ordinal);
             foreach(var candidates in settings)
             {
@@ -172,7 +219,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             // writable canonical property. Their frozen relation descriptors are still real consumers.
             foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&!i.InternalProjection))
             {
-                if(BindingRelationCatalog.GetSetting(consumer,input.Key)?.ReferenceExpression is not null)continue;
+                if(BindingRelationCatalog.GetReference(consumer,input.Key) is not null)continue;
                 if(BindingRelationCatalog.SourceWorkflowId(consumer,input,_scope)!=_scope)continue;
                 if(BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
                     CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());

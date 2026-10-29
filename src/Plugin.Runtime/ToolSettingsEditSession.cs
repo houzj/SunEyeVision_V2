@@ -2,45 +2,49 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Runtime;
 
-/// <summary>One private settings instance. No SDK parameters, second business DTO,
-/// workflow publication, resources or WPF callbacks are retained here.</summary>
+/// <summary>One declaration-owned field state; no typed settings or reference backup authority.</summary>
 public sealed class ToolSettingsEditSession : IToolSettingsDraft
 {
+    private readonly FieldSettingsDraft _draft;
     private readonly IToolDefinition _definition;
-    private readonly IToolSettingsFields _fields;
-    private object _settings;
-    private bool _applying;
-    public ToolSettingsEditSession(IToolDefinition definition,object settings)
+    private readonly IToolSettingsFields _declaration;
+    public ToolSettingsEditSession(IToolDefinition definition,FieldSettings fields)
     {
-        _definition=definition??throw new ArgumentNullException(nameof(definition));
-        _fields=definition as IToolSettingsFields??throw new ArgumentException("Runtime has no settings field declaration.");
-        if(_fields.SettingsSchema.Outputs.Count!=0)throw new ArgumentException("Settings fields cannot declare algorithm outputs.");
-        _settings=Prepare(settings);
+        ArgumentNullException.ThrowIfNull(definition);
+        _definition=definition;
+        _declaration=definition as IToolSettingsFields??throw new ArgumentException("Runtime settings are not declared.");
+        _draft=new(_declaration.SettingsSchema,fields,ValidateEdit);
+        ValidateComplete(_draft.CaptureFields());
     }
-    public ToolSchema Schema=>_fields.SettingsSchema;
-    public object CaptureSettings()=>_definition.FreezeSettings(_settings);
-    public InputValues ReadFields()=>new(Schema.Inputs,_fields.ReadSettings(_settings).CopyValues());
-    private object Prepare(object settings)
+    private void ValidateEdit(FieldSettings candidate)
     {
-        var candidate=_definition.FreezeSettings(settings);
-        var diagnostics=_definition.Validate(candidate);
-        if(diagnostics.Count!=0)throw new ArgumentException(string.Join("; ",diagnostics.Select(x=>x.Message)));
-        _=new InputValues(_fields.SettingsSchema.Inputs,_fields.ReadSettings(candidate).CopyValues());
-        return candidate;
-    }
-    public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
-    {
-        ArgumentNullException.ThrowIfNull(changes);
-        ArgumentNullException.ThrowIfNull(acceptCandidate);
-        if(_applying)throw new InvalidOperationException("A settings proposal is already being accepted.");
-        _applying=true;
-        try
+        foreach(var port in _declaration.SettingsSchema.Inputs.Where(port=>port.Required))
+            if(candidate.Read(port.Id) is UnsetSetting)throw new ArgumentException("Missing required setting: "+port.Id);
+        foreach(var presentation in _declaration.SettingsSchema.Presentation?.Fields??Array.Empty<FieldPresentation>())
         {
-            var candidate=Prepare(_fields.ApplySettings(CaptureSettings(),changes));
-            // The callback receives a separate frozen value, never the draft's next mutable instance.
-            acceptCandidate(_definition.FreezeSettings(candidate));
-            _settings=candidate;
+            if(presentation.Layout is not { } layout||candidate.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} value)continue;
+            var number=Convert.ToDouble(value.Value,System.Globalization.CultureInfo.InvariantCulture);
+            if(!double.IsFinite(number)||layout.Minimum is {} min&&number<min||layout.Maximum is {} max&&number>max)
+                throw new ArgumentException("Setting is outside its declared range: "+presentation.FieldId);
         }
-        finally{_applying=false;}
     }
+    private void ValidateComplete(FieldSettings candidate)
+    {
+        ValidateEdit(candidate);
+        if(candidate.Capture().Values.Any(value=>value is ReferenceSetting))return;
+        var settings=_declaration.MaterializeSettings(candidate.Materialize(new Dictionary<string,object?>()));
+        var errors=_definition.Validate(settings);
+        if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
+    }
+    public ToolSchema Schema=>_draft.Schema;
+    public long Revision=>_draft.Revision;
+    public FieldSettings CaptureFields()=>_draft.CaptureFields();
+    public FieldSettings CaptureValidatedFields()
+    {
+        var revision=Revision;var snapshot=_draft.CaptureFields();ValidateComplete(snapshot);
+        if(revision!=Revision)throw new InvalidOperationException("Settings changed during capture.");
+        return snapshot;
+    }
+    public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
+        =>_draft.ApplyFields(changes,acceptCandidate);
 }

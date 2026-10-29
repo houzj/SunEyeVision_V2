@@ -73,6 +73,7 @@ internal static class S2DocumentEditingCases
         var localFormatCases=(from gray in new[]{false,true} from format in new[]{"original","mono8","rgb24"}
             select $"ImageSourceDeclarationAndFormatTests.Local_file_formats_preserve_pixels_frame_and_decoded_domain({gray},{format})")
             .ToHashSet(StringComparer.Ordinal);
+        var grayFormulaCase="ImageSourceDeclarationAndFormatTests.Camera_rgb_gray_conversion_matches_the_observed_vm_integer_formula()";
         var addedImportCases=new[]{
             "SolutionManagerUiTests.Manual_folder_import_expands_one_level_in_vm_entry_order_as_one_edit()",
             "SolutionManagerUiTests.Folder_import_failure_after_an_earlier_directory_does_not_accept_a_partial_batch()",
@@ -133,6 +134,7 @@ internal static class S2DocumentEditingCases
         if(!executed.Contains(missingFrameCase))throw new InvalidOperationException("正式单步缺图后续读取回归用例缺失。");
         var missingLocalFormats=localFormatCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
         if(missingLocalFormats.Length!=0)throw new InvalidOperationException("本地图像格式回归用例缺失："+string.Join("；",missingLocalFormats));
+        if(!executed.Contains(grayFormulaCase))throw new InvalidOperationException("VM 灰度公式回归用例缺失。");
         var missingSequence=sequenceCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
         if(missingSequence.Length!=0)throw new InvalidOperationException("图像读取序列回归用例缺失："+string.Join("；",missingSequence));
         var missingImport=addedImportCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();

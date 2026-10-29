@@ -35,17 +35,17 @@ public sealed record ToolCapabilities(IReadOnlyList<string> ResourceKeys)
 public interface IToolDefinition<TSettings,TOutput> : IToolDefinition
     where TSettings : IToolSettings<TSettings>, new() where TOutput : class, IToolOutput
 {
-    ToolSchema Describe(TSettings committedSettings);
+    ToolSchema Describe();
     IReadOnlyList<Diagnostic> Validate(TSettings settings);
-    ToolCapabilities Capabilities(TSettings settings);
+    ToolCapabilities Capabilities();
     new IToolSession<TSettings,TOutput> CreateSession();
     Type IToolDefinition.SettingsType=>typeof(TSettings);
     Type IToolDefinition.OutputType=>typeof(TOutput);
     object IToolDefinition.CreateSettings()=>new TSettings();
     object IToolDefinition.FreezeSettings(object settings)=>RequireSettings(settings).Freeze()!;
-    ToolSchema IToolDefinition.Describe(object settings)=>Describe(RequireSettings(settings));
+    ToolSchema IToolDefinition.Describe()=>Describe();
     IReadOnlyList<Diagnostic> IToolDefinition.Validate(object settings)=>Validate(RequireSettings(settings));
-    ToolCapabilities IToolDefinition.Capabilities(object settings)=>Capabilities(RequireSettings(settings));
+    ToolCapabilities IToolDefinition.Capabilities()=>Capabilities();
     IToolSession IToolDefinition.CreateSession()=>CreateSession();
     private static TSettings RequireSettings(object settings)=>settings is TSettings typed?typed:
         throw new ArgumentException("Runtime settings must be "+typeof(TSettings).FullName,nameof(settings));

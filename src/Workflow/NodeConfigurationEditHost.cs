@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow;
@@ -250,6 +251,34 @@ public sealed partial class NodeConfigurationEditHost
 
     public void Validate(NodeConfigurationEditDraft editor)
     { ArgumentNullException.ThrowIfNull(editor); ValidateBatch(new[] { editor }, null); }
+    /// <summary>Validate only the proposed Runtime settings fields against current declarations.
+    /// This does not publish a candidate or replace the complete validation at capture/commit.</summary>
+    public void ValidateRuntimeFieldProposals(NodeConfigurationEditDraft editor,IReadOnlyDictionary<string,ParameterSetting> changes)
+    {
+        ArgumentNullException.ThrowIfNull(editor);ArgumentNullException.ThrowIfNull(changes);
+        try
+        {
+            lock(_gate)
+            {
+                var batch=Compose(new[]{editor},null,null);var version=_store.Capture().Version;
+                var flow=batch.Draft.Configuration.Workflows.Single(workflow=>workflow.Id==editor.Identity.WorkflowId);
+                var node=Find(batch.Draft.Configuration,editor.Identity);
+                var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点没有Runtime配置。");
+                var schema=runtime.SettingsSchema??throw new InvalidOperationException("节点没有Runtime设置声明。");
+                var prepared=runtime.Fields.Select(schema.Inputs).Apply(changes);
+                foreach(var id in changes.Keys)
+                {
+                    if(prepared.Read(id) is not ReferenceSetting reference)continue;
+                    var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id);
+                    if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
+                        throw new ArgumentException(result.Reason);
+                }
+                EnsureBaseline();
+                if(_store.Capture().Version!=version)throw new InvalidOperationException("来源声明或方案已变化，请重试。");
+            }
+        }
+        finally{FlushStructureNotifications();}
+    }
     public BindingConfigurationPublication Commit(NodeConfigurationEditDraft editor)
     { ArgumentNullException.ThrowIfNull(editor); return CommitBatch(new[] { editor }, null); }
 

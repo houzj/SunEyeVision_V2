@@ -356,19 +356,6 @@
           </ControlTemplate>
         </Control.Template>
       </Button>
-      <Popup Name="Pop1" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnImageAdd}">
-        <Grid MinHeight="60" MinWidth="80" HorizontalAlignment="Left" Background="{DynamicResource ImageSources.Background}">
-          <Border BorderBrush="{DynamicResource ImageSources.Border}" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource ImageSources.MenuBackground}">
-            <UIElement.Effect>
-              <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
-            </UIElement.Effect>
-            <StackPanel>
-              <Button Content="本地" Style="{StaticResource MyButtonStyle}" Click="LocalImage_Click" />
-              <Button IsEnabled="False" ToolTip="远程/Linux：缺少正式来源合同" Content="远程（未接入）" Style="{StaticResource MyButtonStyle}" Click="LinuxImage_Click" />
-            </StackPanel>
-          </Border>
-        </Grid>
-      </Popup>
       <Button Name="BtnImageAddFolder" ToolTip="添加图像文件夹" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Margin="44,0,0,0" Click="BtnImageAddFolder_Click">
         <Control.Template>
           <ControlTemplate TargetType="{x:Type Button}">
@@ -387,19 +374,6 @@
           </ControlTemplate>
         </Control.Template>
       </Button>
-      <Popup Name="Pop2" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnImageAddFolder}">
-        <Grid MinHeight="60" MinWidth="80" HorizontalAlignment="Left" Background="{DynamicResource ImageSources.Background}">
-          <Border BorderBrush="{DynamicResource ImageSources.Border}" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource ImageSources.MenuBackground}">
-            <UIElement.Effect>
-              <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
-            </UIElement.Effect>
-            <StackPanel>
-              <Button Content="本地" Style="{StaticResource MyButtonStyle}" Click="LocalImageFolder_Click" />
-              <Button IsEnabled="False" ToolTip="远程/Linux：缺少正式来源合同" Content="远程（未接入）" Style="{StaticResource MyButtonStyle}" Click="LinuxImageFolder_Click" /><Button IsEnabled="False" Content="订阅目录（未接入）" ToolTip="缺少正式订阅合同" Style="{StaticResource MyButtonStyle}"/><Button IsEnabled="False" Content="RP/3D（未接入）" ToolTip="缺少3D资源合同" Style="{StaticResource MyButtonStyle}"/>
-            </StackPanel>
-          </Border>
-        </Grid>
-      </Popup>
       <StackPanel Orientation="Horizontal" Margin="83,0,0,0">
         <Button Name="BtnImageAddRpFolder" IsEnabled="False" ToolTip="RP/3D：当前未接入" Margin="0,0,10,0" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Visibility="Collapsed" Click="BtnImageAddRpFolder_Click">
           <Control.Template>

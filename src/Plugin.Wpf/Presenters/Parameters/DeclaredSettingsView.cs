@@ -12,7 +12,6 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 /// It does not execute, commit the document, resolve references or keep resources.</summary>
 public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
 {
-    private Dictionary<string,ReferenceSetting> _references=new(StringComparer.Ordinal);
     private DeclaredFieldsView? _fields;
     private FrameworkElement? _inputContent;
     private long _generation;
@@ -46,7 +45,6 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         _generation++;
         var fields=_fields;var input=_inputContent;
         _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;
-        _references=new(StringComparer.Ordinal);
         var cleanup=new List<Action>{()=>Content=null};
         if(fields is not null)
         {
@@ -67,9 +65,8 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         try
         {
             Detach(nextInput);if(!Current()||draft is null)return;
-        var schema=draft.Schema;var values=draft.ReadFields();
+        var schema=draft.Schema;var values=draft.CaptureFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
-        var references=options.References?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
         var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
         T Observe<T>(Func<T> callback)
         {
@@ -90,20 +87,17 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                     IsCurrent=()=>Current()&&snapshot.IsCurrent()&&Current()};
             },option.ValidateText is null?null:text=>Observe(()=>option.ValidateText(text)));
         },StringComparer.Ordinal);
-        foreach(var reference in references)
-            if(!schema.Inputs.Any(p=>p.Id==reference.Key&&(p.EditModes&FieldEditModes.Reference)!=0))
-                throw new ArgumentException("Unknown or non-reference settings field: "+reference.Key);
         candidate=new(schema.Presentation.Fields.Select(presentation=>
         {
             var port=schema.Inputs.Single(p=>p.Id==presentation.FieldId);
-            ParameterSetting initial=references.TryGetValue(port.Id,out var reference)?reference:new ConstantSetting(values.Get<object?>(port.Id));
+            ParameterSetting initial=values.Read(port.Id);
             return(port,presentation,initial);
         }),proposals=>
         {
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
-            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current,
+            id=>draft.CaptureFields().Read(id) as ConstantSetting,options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current,
             images?.ToDictionary(pair=>pair.Key,pair=>(Func<IReadOnlyList<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>>)(()=>
             {
                 if(!Current())throw new InvalidOperationException("图像来源视图已重绑或释放。");
@@ -119,7 +113,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.SelectedPageIndex=SelectedPageIndex;
             foreach(var field in candidate.Fields)field.Changed+=OnChanged;
             candidate.PageChanged+=OnPageChanged;
-            _fields=candidate;_inputContent=nextInput;_references=references;
+            _fields=candidate;_inputContent=nextInput;
             Content=candidate;
         }
         catch(Exception failure)
@@ -146,44 +140,30 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var draft=Draft??throw new InvalidOperationException("A settings draft is required.");
         var generation=_generation;var options=Options;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,options);
-        var constants=new Dictionary<string,object?>(StringComparer.Ordinal);
-        var nextReferences=new Dictionary<string,ReferenceSetting>(_references,StringComparer.Ordinal);
-        foreach(var (id,value) in proposals)
-        {
-            var port=draft.Schema.Inputs.SingleOrDefault(port=>port.Id==id)
-                ??throw new ArgumentException("Unknown settings field: "+id);
-            if(value is ConstantSetting constant)
-            {constants.Add(id,ValueRules.Freeze(port,constant.Value));nextReferences.Remove(id);}
-            else if(value is ReferenceSetting reference)
-            {
-                if((port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("Settings field does not allow references.");
-                nextReferences[id]=reference;
-            }
-            else throw new ArgumentException("Settings require a current value or an explicit reference.");
-        }
-        var frozenReferences=new ReadOnlyDictionary<string,ReferenceSetting>(nextReferences);
-        draft.ApplyFields(constants,candidate=>
+        draft.ApplyFields(proposals,candidate=>
         {
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
-            options?.AcceptCandidate?.Invoke(candidate,frozenReferences);
+            options?.AcceptCandidate?.Invoke(candidate);
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
         });
         if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
-        _references=nextReferences;
     }
     private void OnChanged()=>Changed?.Invoke();
-    public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)
+    public bool TryCapture(out FieldSettings fields,out string error)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(Draft is null||_fields is null)throw new InvalidOperationException("A settings draft is required.");
-        settings=null!;references=new ReadOnlyDictionary<string,ReferenceSetting>(new Dictionary<string,ReferenceSetting>(StringComparer.Ordinal));
+        fields=null!;
         if(_capturing){error="参数捕获正在进行，请等待当前提交完成。";return false;}
         _capturing=true;
         try
         {
-            if(!_fields.TryValidate(out error))return false;
-            settings=Draft.CaptureSettings();
-            references=new ReadOnlyDictionary<string,ReferenceSetting>(new Dictionary<string,ReferenceSetting>(_references,StringComparer.Ordinal));
+            var draft=Draft;var view=_fields;var generation=_generation;
+            bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(draft,Draft)&&ReferenceEquals(view,_fields);
+            if(!view.TryValidate(out error))return false;
+            if(!Current()){error="参数视图已经重新绑定。";return false;}
+            fields=draft.CaptureFields();
+            if(!Current()){fields=null!;error="参数捕获期间视图已重新绑定。";return false;}
             return true;
         }
         finally{_capturing=false;}

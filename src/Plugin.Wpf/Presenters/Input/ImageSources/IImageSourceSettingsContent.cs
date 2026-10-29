@@ -7,6 +7,6 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 public interface IImageSourceSettingsContent
 {
     event Action? Changed;
-    void BindSourceDraft(IToolSettingsDraft draft, Action prepareEdit, Action<object> acceptCandidate);
+    void BindSourceDraft(IToolSettingsDraft draft, Action prepareEdit, Action<FieldSettings> acceptCandidate);
     void RefreshSourceDraft();
 }

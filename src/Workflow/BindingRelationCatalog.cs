@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Workflow;
 
@@ -12,9 +14,20 @@ public static class BindingRelationCatalog
 {
     /// <summary>Typed settings live in their owning model slot; a name projection must not hide an ROI reference.</summary>
     public static ParamSetting? GetSetting(WorkflowNodeBase node,string key)
-        =>node.ParamSettings.GetSetting(key)??RoiBindingInputs.Settings(node.Parameters).SingleOrDefault(setting=>setting.ParameterName==key);
+        =>node.RuntimeConfiguration is not null?null:node.ParamSettings.GetSetting(key)??RoiBindingInputs.Settings(node.Parameters).SingleOrDefault(setting=>setting.ParameterName==key);
     public static IReadOnlyList<ParamSetting> Settings(WorkflowNodeBase node)
-        =>node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).ToArray();
+        =>node.RuntimeConfiguration is not null?Array.Empty<ParamSetting>():node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).ToArray();
+    public static ReferenceSetting? GetReference(WorkflowNodeBase node,string key)
+    {
+        if(node.RuntimeConfiguration is {} runtime)return runtime.Fields.Read(key) as ReferenceSetting;
+        var setting=GetSetting(node,key);
+        return setting?.ReferenceExpression is {} expression?new(BindingReferenceSerializer.Deserialize(expression),setting.Conversion):null;
+    }
+    public static IReadOnlyDictionary<string,ReferenceSetting> References(WorkflowNodeBase node)
+        =>node.RuntimeConfiguration is {} runtime
+            ?runtime.Fields.Capture().Where(pair=>pair.Value is ReferenceSetting).ToDictionary(pair=>pair.Key,pair=>(ReferenceSetting)pair.Value,StringComparer.Ordinal)
+            :Settings(node).Where(setting=>setting.BindingType==BindingType.Binding&&setting.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,setting.ParameterName))
+                .ToDictionary(setting=>setting.ParameterName,setting=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression!),setting.Conversion),StringComparer.Ordinal);
     public static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)
     {
         if(node.RuntimeConfiguration is not null)return RuntimeInputBindings.Describe(node);

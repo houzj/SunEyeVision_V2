@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using SunEyeVision.Core.Services.Serialization;
@@ -100,8 +101,13 @@ namespace SunEyeVision.Workflow
             {
                 if (!typeof(WorkflowNodeBase).IsAssignableFrom(info.Type)) return;
                 foreach (var property in info.Properties)
-                    if (property.Name == nameof(WorkflowNodeBase.Parameters))
-                        property.ShouldSerialize = (owner, _) => ((WorkflowNodeBase)owner).RuntimeConfiguration is null;
+                    if (property.Name is nameof(WorkflowNodeBase.Parameters) or nameof(WorkflowNodeBase.ParamSettings))
+                        property.ShouldSerialize = (owner, _) =>
+                        {
+                            var node=(WorkflowNodeBase)owner;
+                            if(node.RuntimeConfiguration is not null&&node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes cannot contain SDK ParamSettings.");
+                            return node.RuntimeConfiguration is null;
+                        };
             });
         }
     }

@@ -3,7 +3,8 @@ using System.Globalization;
 namespace SunEyeVision.Plugin.Contracts;
 public abstract record ParameterSetting;
 public sealed record ConstantSetting(object? Value) : ParameterSetting;
-public sealed record ReferenceSetting(OutputReference Reference) : ParameterSetting;
+public sealed record ReferenceSetting(OutputReference Reference, BindingConversion Conversion = BindingConversion.Automatic,
+    string? OriginId = null, string? RebindingReason = null) : ParameterSetting;
 /// <summary>Remove an optional setting. Distinct from a present null or a present empty collection.</summary>
 public sealed record UnsetSetting : ParameterSetting;
 /// <summary>UI-neutral transactional edit session. Invalid drafts never replace committed values.</summary>
@@ -55,13 +56,13 @@ public sealed class ParameterEditSession
         {
             if(_bindingCompiler is not null)
             {
-                var result=_bindingCompiler.CompileBinding(b.Reference,p,scope!);
+                var result=_bindingCompiler.CompileBinding(b.Reference,p,scope!,b.Conversion);
                 if(result.Plan is not null && result.Compatibility is BindingCompatibility.Compatible or BindingCompatibility.Conditional)return b;
                 throw new ArgumentException(result.Diagnostic?.Message??"Binding could not be compiled.");
             }
             // Standalone foundation editing has no graph owner. It only supports the original exact direct reference.
             // Production editing supplies the existing parameter service and authoritative scope, including quantity adaptation.
-            if(b.Reference.Type==p.Type && b.Reference.Selection is BindingSelection.AllItems && b.Reference.MemberFieldPath.Count==0)return b;
+            if(b.Conversion==BindingConversion.Automatic && b.Reference.Type==p.Type && b.Reference.Selection is BindingSelection.AllItems && b.Reference.MemberFieldPath.Count==0)return b;
         }
         throw new ArgumentException("Invalid binding");
     }

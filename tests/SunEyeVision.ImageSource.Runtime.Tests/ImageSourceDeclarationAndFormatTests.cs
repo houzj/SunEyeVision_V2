@@ -151,6 +151,30 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.Equal("2026-10-28T01:02:03.4560000+00:00", values[ImageSourceOutput.Timestamp]);
     }
 
+    [Fact]
+    public async Task Camera_rgb_gray_conversion_matches_the_observed_vm_integer_formula()
+    {
+            const int width=256;
+            var bgr=new byte[width*3];var expected=new byte[width];
+            for(var i=0;i<width;i++)
+            {
+                var red=(byte)i;var green=(byte)((i*37+19)&255);var blue=(byte)((i*79+53)&255);
+                bgr[3*i]=blue;bgr[3*i+1]=green;bgr[3*i+2]=red;
+                expected[i]=(byte)((76*red+150*green+30*blue)>>8);
+            }
+            using var resources=new FrozenOutputResources();var context=Context(resources);
+            var sourceFrame=new ImageFrameAddress(Guid.NewGuid(),"camera:formula-fixture");
+            var domain=resources.CreateRegion(new CoordinateFrame("pixels",CoordinateDomain.Image,CoordinateUnit.Pixel),sourceFrame,
+                new[]{new RegionRun(0,0,width-1)});
+            var camera=resources.CreateImage(new ImageLayout(width,1,width*3,PixelLayout.Bgr24),sourceFrame,domain,bgr);
+            await using var session=new ImageSourceTool().CreateSession();
+            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {SourceKind="camera",CameraDeviceId="device"},CameraInput(camera,1L),context));
+            Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
+            using var output=outcome.Output!;
+            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(output.ToValues()[ImageSourceOutput.GrayImage]);
+            Assert.Equal(expected,gray.CopyPixels());
+    }
+
     [Theory]
     [InlineData(true,"original")]
     [InlineData(true,"mono8")]

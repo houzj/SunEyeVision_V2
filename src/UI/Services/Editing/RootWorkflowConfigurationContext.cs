@@ -15,7 +15,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  private RootWorkflowConfigurationEditDraft _root;
  private readonly Dictionary<string,NodeConfigurationEditDraft> _nodes=new(StringComparer.Ordinal);
  private readonly Dictionary<string,WorkflowNodeBase> _openingNodes=new(StringComparer.Ordinal);
- private bool _active=true;private int _undoCount,_redoCount;private long _historyVersion;
+ private bool _validatingReference;private bool _active=true;private int _undoCount,_redoCount;private long _historyVersion;
  private readonly Dictionary<string,WorkflowNodeBase> _formalNodes=new(StringComparer.Ordinal);
  internal Flow Root {get;}
  internal SunEyeVision.Plugin.Runtime.ToolExecutionOwner ExecutionOwner {get;}
@@ -68,7 +68,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  internal Setting Read(RootParameterProxy proxy)
  {
   var target=Resolve(proxy);if(target.Resource is {} resource)return resource.Read(target.Node,Query,Root.Id);var field=target.Field!;var stored=target.Node.ParamSettings.GetSetting(field.StoragePath);
-  if(stored?.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression));
+  if(stored?.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression),stored.Conversion);
   if(stored?.BindingType==BindingType.Binding)
   {
    var output=Query.FormalOutputContractReader?.Invoke(stored.SourceNodeId!).SingleOrDefault(o=>stored.SourceFieldId.HasValue?o.FieldId==stored.SourceFieldId:o.Name==stored.SourceProperty)??throw new InvalidOperationException("现有订阅来源已失效，请解除或重新选择。");
@@ -80,29 +80,50 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  {
   Ensure(true);var target=Resolve(proxy);if(target.Resource is {} resource){resource.Write(target.Node,setting,Query,Root.Id);return;}var field=target.Field!;
   if(setting is ConstantSetting constant){field.Write(constant.Value);target.Node.ParamSettings.RemoveSetting(field.StoragePath);}
-  else if(setting is ReferenceSetting reference)target.Node.ParamSettings.SetSetting(ToSetting(field,reference.Reference));
+  else if(setting is ReferenceSetting reference)target.Node.ParamSettings.SetSetting(ToSetting(field,reference));
   else throw new InvalidOperationException("此参数不支持空设置。");
   target.Node.Parameters.RebindingRequired.Remove(field.StoragePath);target.Node.Parameters.BindingValidationPending.Remove(field.StoragePath);
  }
- private ParamSetting ToSetting(ConfigurationFieldAccessor field,OutputReference reference)
+ private ParamSetting ToSetting(ConfigurationFieldAccessor field,ReferenceSetting setting)
  {
+  var reference=setting.Reference;
   var source=Query.FormalOutputContractReader?.Invoke(reference.NodeId)?.SingleOrDefault(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId);
-  return new(){ParameterName=field.StoragePath,BindingType=BindingType.Binding,ReferenceExpression=BindingReferenceSerializer.Serialize(reference),SourceNodeId=reference.NodeId,SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
+  return new(){ParameterName=field.StoragePath,BindingType=BindingType.Binding,Conversion=setting.Conversion,ReferenceExpression=BindingReferenceSerializer.Serialize(reference),SourceNodeId=reference.NodeId,SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
  }
- internal string? ValidateReference(RootParameterProxy proxy,OutputReference reference)
+ internal string? ValidateReference(RootParameterProxy proxy,ReferenceSetting reference)
  {
-  Ensure(true);var target=Resolve(proxy);
-  if(target.Resource is {} resource)
+  if(_validatingReference)return "来源校验尚未结束，请稍后重试。";
+  Ensure(true);_=Resolve(proxy);
+  var root=_root;var version=_host.Capture().Version;var nodes=_nodes.ToArray();
+  Dictionary<string,NodeConfigurationEditDraft>? baselines=null;RootWorkflowConfigurationEditDraft? rootBaseline=null;
+  bool Current()
   {
-   var restore=resource.CaptureRestore(target.Node);
-   try{resource.Write(target.Node,new ReferenceSetting(reference),Query,Root.Id);_host.ValidateBatch(_nodes.Values.ToArray(),null,new[]{_root});return null;}
-   catch(Exception error){return error.Message;}
-   finally{restore();}
+   try
+   {
+   if(!CanEdit||!ReferenceEquals(_root,root)||_host.Capture().Version!=version||_nodes.Count!=nodes.Length
+    ||nodes.Any(pair=>!_nodes.TryGetValue(pair.Key,out var value)||!ReferenceEquals(pair.Value,value)))return false;
+   return (rootBaseline is null||NodeConfigurationEditHost.SamePendingEdits(root,rootBaseline))
+    &&(baselines is null||nodes.All(pair=>NodeConfigurationEditHost.SamePendingEdits(pair.Value,baselines[pair.Key])));
+   }
+   catch{return false;}
   }
-  var prior=target.Node.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();
-  try{target.Node.ParamSettings.SetSetting(ToSetting(target.Field!,reference));_host.ValidateBatch(_nodes.Values.ToArray(),null,new[]{_root});return null;}
-  catch(Exception error){return error.Message;}
-  finally{if(prior==null)target.Node.ParamSettings.RemoveSetting(proxy.StoragePath);else target.Node.ParamSettings.SetSetting(prior);}
+  const string changed="来源校验期间草稿或文档已变化，请使用当前参数重试。";
+  _validatingReference=true;
+  try
+  {
+   baselines=nodes.ToDictionary(pair=>pair.Key,pair=>_host.Freeze(pair.Value),StringComparer.Ordinal);
+   rootBaseline=_host.Freeze(root);
+   if(!Current())return changed;
+   var candidate=_host.Freeze(nodes.Single(pair=>pair.Key==proxy.NodeId).Value);
+   var target=RootParameterCatalog.Resolve(candidate.Node,proxy);
+   if(target.Resource is {} resource)resource.Write(target.Node,reference,Query,Root.Id);
+   else candidate.Node.ParamSettings.SetSetting(ToSetting(target.Field!,reference));
+   if(!Current())return changed;
+   _host.ValidateBatch(nodes.Select(pair=>pair.Key==proxy.NodeId?candidate:baselines[pair.Key]).ToArray(),null,new[]{rootBaseline});
+   return Current()?null:changed;
+  }
+  catch(Exception error){return Current()?error.Message:changed;}
+  finally{_validatingReference=false;}
  }
  public DocumentEditProposal Prepare(NodeConfigurationEditHost host)
  {

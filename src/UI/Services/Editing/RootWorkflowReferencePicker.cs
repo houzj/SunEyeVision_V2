@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Services.Editing;
 internal static class RootWorkflowReferencePicker
 {
  internal static ReferenceFieldOptions Options(RootWorkflowConfigurationContext context,RootParameterProxy proxy) => new(_ => Candidates(context,proxy),
-  (_,proposal) => proposal is ReferenceSetting reference ? context.ValidateReference(proxy,reference.Reference) : null);
+  (_,proposal) => proposal is ReferenceSetting reference ? context.ValidateReference(proxy,reference) : null);
  internal static ReferenceCandidates Candidates(RootWorkflowConfigurationContext context,RootParameterProxy proxy)
  {
   var resource=context.Resolve(proxy).Resource;

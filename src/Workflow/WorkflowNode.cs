@@ -187,12 +187,12 @@ namespace SunEyeVision.Workflow
         internal System.Threading.Tasks.ValueTask<SunEyeVision.Plugin.Contracts.ToolOutcome> ExecuteRuntimeAsync(
             RuntimeToolConfiguration configuration,SunEyeVision.Plugin.Contracts.InputValues inputs,
             SunEyeVision.Plugin.Contracts.IToolExecutionContext context,
-            IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests)
+            IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests,object? resolvedSettings=null)
         {
             if (configuration.ToolId != ToolType || context.Identity.NodeId != Id)
                 throw new InvalidOperationException("Runtime配置或执行上下文与节点身份不符。");
             return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(ToolRegistry.CreateRuntime(configuration.ToolId),
-                configuration.CaptureSettings(), inputs, context, outputRequests);
+                resolvedSettings??configuration.CaptureSettings(), inputs, context, outputRequests);
         }
 
         /// <summary>
@@ -764,7 +764,7 @@ namespace SunEyeVision.Workflow
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
                 Parameters = Parameters,
                 RuntimeConfiguration = RuntimeConfiguration?.Copy(),
-                ParamSettings = ParamSettings?.Clone(),
+                ParamSettings = RuntimeConfiguration is null ? ParamSettings?.Clone() : ParamSettings.Settings.Any() ? throw new InvalidOperationException("Runtime节点不能复制旧ParamSettings。") : new ParamSettingContainer(),
                 PositionX = PositionX,
                 PositionY = PositionY,
                 Width = Width,

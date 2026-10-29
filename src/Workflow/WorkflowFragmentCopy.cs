@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +43,14 @@ public static class WorkflowFragmentCopy
             {
                 var ids = nodes.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
                 if (ids.Count != nodes.Length) throw new InvalidOperationException("源工作流存在重复节点身份。");
+                // Validate provenance against the complete source graph before selection trims its edges.
+                // An explicitly broken reference remains copyable, with its repair reason intact.
+                foreach(var original in nodes)
+                    if(original.RuntimeConfiguration is {} runtime)
+                        foreach(var (fieldId,setting) in runtime.Fields.Capture())
+                            if(setting is ReferenceSetting {OriginId:not null} reference&&string.IsNullOrEmpty(reference.RebindingReason)
+                                &&WorkflowBindingContext.ReferenceOwnershipError(flow,original,fieldId,reference,flow.Id) is {} error)
+                                throw new InvalidOperationException("不能复制无效的自动来源归属："+error);
                 var scope = new Scope { SourceId = flow.Id, TargetId = targetId, SourceNodes = nodes,
                     SourceEdges = flow.Connections.Where(e => ids.Contains(e.TargetNodeId) && (ids.Contains(e.SourceNodeId) || flow.Id == targetId)).ToArray(),
                     Owned = parent != null, Parent = parent };
@@ -56,7 +64,7 @@ public static class WorkflowFragmentCopy
                     clone.Position = original.Position; clone.Width = original.Width; clone.Height = original.Height;
                     clone.IsEnabled = original.IsEnabled;
                     clone.Parameters = ToolParameterSnapshot.Create(original.Parameters);
-                    clone.ParamSettings = ToolParameterSnapshot.CopySettings(original.ParamSettings)!;
+                    clone.ParamSettings = original.RuntimeConfiguration is null ? ToolParameterSnapshot.CopySettings(original.ParamSettings)! : original.ParamSettings.Settings.Any() ? throw new InvalidOperationException("Runtime节点不能复制旧ParamSettings。") : new ParamSettingContainer();
                     clone.ParamSettings.NodeId = clone.Id;
                     clone.AdditionalData = original.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone());
                     clone.SelectedDisplaySource = Copy(original.SelectedDisplaySource);
@@ -203,6 +211,7 @@ public static class WorkflowFragmentCopy
                     var mapped = Remap(sourceId, oldScope ?? inputScope.SourceId, inputScope);
                     if (mapped.Node != sourceId) input.Write(mapped.Node + "." + path);
                 }
+                if(clone.RuntimeConfiguration is {} runtime)clone.RuntimeConfiguration=runtime.MapReferences(reference=>Reference(reference,scope),origin=>origin.StartsWith("connection:",StringComparison.Ordinal)&&scope.Edges.TryGetValue(origin[11..],out var edge)?"connection:"+edge.Id:null);
                 var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
                 Visit(clone.Parameters, scope, seen); Visit(clone.ParamSettings, scope, seen); Visit(clone.SelectedDisplaySource, scope, seen);
             }

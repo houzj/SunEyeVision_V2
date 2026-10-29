@@ -235,6 +235,12 @@ public sealed class OutputBindingChangeService
         {
             var input = relation.Input; var expression = input.Read();
             var parameters = relation.Node.Parameters;
+            if(relation.Node.RuntimeConfiguration is not null && BindingRelationCatalog.GetReference(relation.Node,input.Key) is {} runtimeReference)
+            {
+                // Invalid Runtime sources remain explicit references. Readiness is recomputed from declarations;
+                // never resurrect an old literal or write SDK parameter markers for this node.
+                continue;
+            }
             if(BindingRelationCatalog.GetSetting(relation.Node,input.Key) is {ReferenceExpression:not null} typed)
             {
                 var workflow=_solution.Workflows.Single(w=>w.Id==relation.Target.WorkflowId);

@@ -1,6 +1,7 @@
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Input;
 
@@ -29,6 +30,13 @@ public sealed partial class DeclaredFieldEditor
         var combo=NativeInputFactory.Enumeration();
         var generation=_renderGeneration;
         var refreshing=false;
+        var candidatesValid=false;var candidateRevision=0L;
+        var activationItems=new List<ComboBoxItem>();
+        void DetachItems()
+        {
+            foreach(var item in activationItems)item.PreviewMouseLeftButtonDown-=OnItemActivated;
+            activationItems.Clear();
+        }
         bool Current()=>!_disposed&&generation==_renderGeneration;
         void ChangeRefreshError(string value)
         {
@@ -47,16 +55,18 @@ public sealed partial class DeclaredFieldEditor
         void Refresh()
         {
             if(!Current())return;
+            var revision=++candidateRevision;candidatesValid=false;
+            bool Active()=>Current()&&revision==candidateRevision;
             try
             {
                 // Build a complete candidate snapshot before replacing the accepted display.
                 var items=new List<ComboBoxItem>();
                 if(!_port.Required)items.Add(new ComboBoxItem{Content="",Tag=new UnsetSetting(),ToolTip="清除图像来源"});
                 var candidates=_imageSources!()??throw new InvalidOperationException("图像来源函数返回了空列表。");
-                if(!Current())return;
+                if(!Active())return;
                 foreach(var candidate in candidates)
                 {
-                    if(!Current())return;
+                    if(!Active())return;
                     // A scalar image input cannot silently take the first image of a sequence.
                     if(candidate.Output.Type.Shape==ValueShape.Sequence||candidate.SelectedType!=_port.Type)continue;
                     var reference=new ReferenceSetting(candidate.Reference(BindingSelection.All));
@@ -71,35 +81,63 @@ public sealed partial class DeclaredFieldEditor
                         Tag=retained,IsEnabled=false,ToolTip="当前来源不在可选图像声明中，请重新选择"};
                     items.Add(selected);
                 }
-                if(!Current())return;
+                if(!Active())return;
                 refreshing=true;
                 try
                 {
+                    DetachItems();
                     combo.Items.Clear();
-                    foreach(var item in items)combo.Items.Add(item);
+                    if(!Active())return;
+                    foreach(var item in items)
+                    {
+                        item.PreviewMouseLeftButtonDown+=OnItemActivated;activationItems.Add(item);
+                        combo.Items.Add(item);
+                        if(!Active())return;
+                    }
+                    if(!Active())return;
                     combo.SelectedItem=selected;
                 }
                 finally{refreshing=false;}
-                ChangeRefreshError("");
+                if(!Active())return;
+                candidatesValid=true;ChangeRefreshError("");
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException)
-            {ChangeRefreshError(error.Message);}
+            {if(Active())ChangeRefreshError(error.Message);}
         }
         void OnOpened(object? sender,EventArgs args)=>Refresh();
         void OnSelectionChanged(object sender,SelectionChangedEventArgs args)
         {
             if(!Current()||!_presentationVisible||!IsEnabled||!combo.IsLoaded||!combo.IsVisible||!combo.IsEnabled||refreshing||combo.SelectedItem is not ComboBoxItem {IsEnabled:true,Tag:ParameterSetting selected})return;
-            if(!Set(selected))RestoreSelection();
+            if(!candidatesValid){RestoreSelection();return;}
+            var revision=candidateRevision;
+            if(!Set(selected)&&Current()&&revision==candidateRevision)RestoreSelection();
         }
+        bool ConfirmCurrent(ComboBoxItem item)
+        {
+            if(!Current()||!candidatesValid||refreshing||!combo.IsDropDownOpen||!_presentationVisible||!IsEnabled||!combo.IsLoaded||!combo.IsVisible||!combo.IsEnabled
+                ||!item.IsEnabled||!ReferenceEquals(combo.SelectedItem,item)||item.Tag is not ReferenceSetting selected
+                ||_setting is not ReferenceSetting current||!SameImageReference(selected.Reference,current.Reference)
+                ||current.OriginId is null&&string.IsNullOrEmpty(current.RebindingReason)&&_state.EditError.Length==0)return false;
+            var revision=candidateRevision;var accepted=Set(selected);
+            if(Current()&&revision==candidateRevision){if(!accepted)RestoreSelection();else combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
+            return true;
+        }
+        void OnItemActivated(object sender,MouseButtonEventArgs args)
+        {if(sender is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
+        void OnKeyDown(object sender,KeyEventArgs args)
+        {if(args.Key==Key.Enter&&combo.IsDropDownOpen&&combo.SelectedItem is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
         void OnUnloaded(object sender,RoutedEventArgs args)=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         combo.DropDownOpened+=OnOpened;
         combo.SelectionChanged+=OnSelectionChanged;
         combo.Unloaded+=OnUnloaded;
+        combo.PreviewKeyDown+=OnKeyDown;
         _detachImageSource=()=>
         {
             combo.DropDownOpened-=OnOpened;
             combo.SelectionChanged-=OnSelectionChanged;
             combo.Unloaded-=OnUnloaded;
+            combo.PreviewKeyDown-=OnKeyDown;
+            DetachItems();
             combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         };
         InputElement=combo;_body.Children.Add(combo);Refresh();

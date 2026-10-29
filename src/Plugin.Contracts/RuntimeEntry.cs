@@ -9,9 +9,9 @@ public interface IToolDefinition
     Type OutputType { get; }
     object CreateSettings();
     object FreezeSettings(object settings);
-    ToolSchema Describe(object settings);
+    ToolSchema Describe();
     IReadOnlyList<Diagnostic> Validate(object settings);
-    ToolCapabilities Capabilities(object settings);
+    ToolCapabilities Capabilities();
     IToolSession CreateSession();
 }
 

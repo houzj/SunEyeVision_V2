@@ -58,7 +58,7 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
             options.AcceptCandidate?.Invoke(candidate);
         });
         Editor.Bind(draft, options with { InputSection = null, InputAfterField = ImageSourceFields.SourceKind,
-            InputCondition = null });
+            InputCondition = new FieldCondition(ImageSourceFields.SourceKind,"camera") });
         EnsureCurrentBinding();
         Editor.Changed+=OnFieldsChanged;
         if(_source is not null)_source.Changed+=OnSourceChanged;

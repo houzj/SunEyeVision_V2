@@ -18,10 +18,10 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     private readonly string _nodeId;
     private readonly Func<bool> _isCurrent;
     private readonly SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver _paths;
-    private readonly ImageInputSource _source;
-    private readonly ImageSourceStrip _strip;
-    private readonly ImageSourceStripSession _session;
-    private readonly ImageSourceThemeScope _themeScope;
+
+
+
+
     private readonly ImageSourceThemeScope _cameraTheme;
     private IToolSettingsDraft? _draft;
     private Action<FieldSettings>? _accept;
@@ -39,24 +39,9 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver paths)
     {
         _nodeId=nodeId;_isCurrent=isCurrent;_paths=paths;
-        _source=new(nodeId);
-        _source.ConfigurationWriter=proposal=>
-        {
-            EnsureCurrent();
-            PrepareEdit();
-            var draft=_draft!;
-            var policy=ImageSourcePolicy.ReadFields(_nodeId,draft.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>()));
-            policy.UpdateLocalInput(proposal.Configuration);
-            draft.ApplyFields(policy.ToFieldValues(draft.Schema).ToDictionary(pair=>pair.Key,pair=>(ConfigurationSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal),candidate=>
-            {
-                EnsureCurrent();_accept!(candidate);EnsureCurrent();
-            });
-        };
-        _source.ConfigurationEdited+=SourceEdited;
-        _session=new(_source,()=>!_disposed&&_isCurrent(),dispatcher:Dispatcher,dialogOwner:()=>Window.GetWindow(this));
-        _inputView=new();_strip=_inputView.SourceStrip;_strip.Session=_session;
+        _inputView=new();
         _cameraPicker=_inputView.CameraPicker;_cameraStatus=_inputView.CameraStatus;
-        _themeScope=new(_strip);
+
         _cameraTheme=new(_cameraPicker);
         _cameraPicker.SelectionChanged+=CameraSelected;
         _inputView.OpenCameraButton.Click+=OpenCameraManager;Content=_inputView;
@@ -76,7 +61,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(_draft is null||_preparing)return;
         var policy=ImageSourcePolicy.ReadFields(_nodeId,_draft.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>()));
-        _source.LoadFromPolicy(policy,_paths);
+
         _inputView.IsCamera=policy.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera;
         _refreshing=true;
         try
@@ -159,9 +144,9 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         if(_disposed)return;_disposed=true;
         _statusTimer.Stop();_cameraPicker.SelectionChanged-=CameraSelected;
         _inputView.OpenCameraButton.Click-=OpenCameraManager;
-        _source.ConfigurationEdited-=SourceEdited;
-        _source.ConfigurationWriter=null;_strip.Session=null;_session.Dispose();
-        _themeScope.Dispose();
+
+
+
         _cameraTheme.Dispose();
         _draft=null;_prepare=null;_accept=null;Changed=null;Content=null;
     }

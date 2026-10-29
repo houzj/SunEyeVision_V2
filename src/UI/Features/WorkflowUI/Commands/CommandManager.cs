@@ -125,25 +125,32 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
         public Transaction BeginTransaction()
         {
             if (_transaction != null) throw new InvalidOperationException("已有未结束的编辑事务。");
-            return _transaction = new Transaction(this);
+            var lease = _documentHistory?.BeginCompositeMutation();
+            try { return _transaction = new Transaction(this, lease); }
+            catch { lease?.Dispose(); throw; }
         }
         public sealed class Transaction : IDisposable
         {
             private readonly CommandManager _owner;
             internal readonly List<IUndoableCommand> Commands = new();
             private bool _complete, _disposed;
-            internal Transaction(CommandManager owner) => _owner = owner;
+            private readonly IDisposable? _lease;
+            internal Transaction(CommandManager owner, IDisposable? lease) { _owner = owner; _lease = lease; }
             public void Complete() => _complete = true;
             public void Dispose()
             {
                 if (_disposed) return; _disposed = true; _owner._transaction = null;
-                if (!_complete)
+                try
                 {
-                    for (var i = Commands.Count - 1; i >= 0; --i) Commands[i].Undo();
-                    _owner.OnCommandStateChanged(); return;
+                    if (!_complete)
+                    {
+                        for (var i = Commands.Count - 1; i >= 0; --i) Commands[i].Undo();
+                        _owner.OnCommandStateChanged(); return;
+                    }
+                    if (Commands.Count == 0) return;
+                    _owner.Publish(new CompositeEditCommand(Commands.ToArray()), accepted: true);
                 }
-                if (Commands.Count == 0) return;
-                _owner.Publish(new CompositeEditCommand(Commands.ToArray()), accepted: true);
+                finally { _lease?.Dispose(); }
             }
         }
         private sealed class CompositeEditCommand : IUndoableCommand

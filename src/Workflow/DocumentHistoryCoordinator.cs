@@ -82,6 +82,13 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         return provider is null ? null : provider() ?? throw new InvalidOperationException("历史执行门禁没有返回租约。");
     }
 
+    /// <summary>Hold the host execution gate while an owner-thread composite edit
+    /// applies its constituent changes before registering one history operation.</summary>
+    public IDisposable? BeginCompositeMutation()
+    {
+        EnsureMutationAllowed();
+        return AcquireMutationLease();
+    }
     /// <summary>Ownership transfers only after successful application. A failed preparation/application
     /// leaves ownership with the caller and does not clear redo or advance the sequence.</summary>
     public DocumentHistoryEntry Execute(IDocumentHistoryOperation operation)

@@ -537,6 +537,75 @@ public sealed class ResultWorkspaceProductionTests
         Assert.False(manager.IsAnyRunning());
     });
 
+    private sealed class CanvasGateCommand(Action apply, Action rollback) : SunEyeVision.UI.Features.WorkflowUI.Commands.IUndoableCommand
+    {
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => apply();
+        public void Undo() => rollback();
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Composite_canvas_edit_excludes_execution_during_apply_commit_and_rollback(bool commit)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var before = f.Source.Position;
+        var after = new Point(before.X + 5, before.Y + 5);
+        var revision = history.Revision;
+        var attempts = new List<(string Phase, bool Accepted)>();
+        void Attempt(string phase) => attempts.Add((phase,
+            manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult()));
+        EventHandler changed = (_, _) => Attempt("history");
+        history.Changed += changed;
+        try
+        {
+            using (var transaction = tab.CommandManager.BeginTransaction())
+            {
+                tab.CommandManager.Execute(new CanvasGateCommand(
+                    () => { f.Source.Position = after; Attempt("apply"); },
+                    () => { Attempt("rollback"); f.Source.Position = before; }));
+                Attempt("between");
+                if (commit) transaction.Complete();
+            }
+        }
+        finally { history.Changed -= changed; }
+        Assert.Null(history.LastObserverError);
+        Assert.Contains(attempts, item => item.Phase == "apply");
+        Assert.Contains(attempts, item => item.Phase == "between");
+        Assert.Contains(attempts, item => item.Phase == (commit ? "history" : "rollback"));
+        Assert.All(attempts, item => Assert.False(item.Accepted, item.Phase));
+        Assert.Equal(commit ? after : before, f.Source.Position);
+        Assert.Equal(revision + (commit ? 1 : 0), history.Revision);
+        Assert.True(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None).GetAwaiter().GetResult());
+    });
+
+    [Fact]
+    public void Active_execution_rejects_composite_canvas_edit_before_its_first_mutation()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var before = f.Source.Position; var revision = history.Revision;
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var active = manager.RunCommunicationOperationAsync(_ => release.Task, CancellationToken.None);
+        try
+        {
+            Assert.True(manager.IsAnyRunning());
+            Assert.Throws<InvalidOperationException>(() => tab.CommandManager.BeginTransaction());
+            Assert.Equal(before, f.Source.Position); Assert.Equal(revision, history.Revision);
+        }
+        finally { release.TrySetResult(); Until(() => active.IsCompleted); active.GetAwaiter().GetResult(); }
+        using (tab.CommandManager.BeginTransaction()) { }
+    });
     [Fact]
     public void Active_communication_prevents_history_mutation_without_advancing_or_losing_the_result()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>

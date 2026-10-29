@@ -38,7 +38,7 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     private readonly Dictionary<ImageInfo, ThumbnailRequest> _thumbnails = new();
     private readonly HashSet<ImageInfo> _subscribedImages = new();
     private HashSet<string> _visibleIds = new(StringComparer.Ordinal);
-    private IReadOnlyList<ImageSourceStripItem> _items = Array.Empty<ImageSourceStripItem>();
+    private readonly System.Collections.ObjectModel.ObservableCollection<ImageSourceStripItem> _items = new();
     private int _configuredStartIndex = -1;
     private bool _disposed, _refreshQueued;
     private string? _status;
@@ -96,13 +96,22 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         foreach (var row in rows.Where(row => _visibleIds.Contains(row.Id)))
             if (!_thumbnails.ContainsKey(row)) _thumbnails.Add(row, new(row, _lifetime.Token));
         _configuredStartIndex = _source.CapturePolicy().CurrentIndex;
-        _items = Array.AsReadOnly(rows.Select(row =>
+        var nextItems = rows.Select(row =>
         {
             _thumbnails.TryGetValue(row, out var thumbnail);
             return new ImageSourceStripItem(row.Id, row.Name,
                 thumbnail is null ? null : Frozen(row.Thumbnail) ?? thumbnail.Bitmap,
                 row.IsForRun, row.ResourceError ?? thumbnail?.Error);
-        }).ToArray());
+        }).ToArray();
+        // Keep ItemsSource identity during viewport/thumbnail refresh. Replacing
+        // the whole source resets virtualization and can scroll back to selection,
+        // which starts the opposite viewport request again.
+        for(var index=0;index<nextItems.Length;index++)
+        {
+            if(index>=_items.Count)_items.Add(nextItems[index]);
+            else if(_items[index]!=nextItems[index])_items[index]=nextItems[index];
+        }
+        while(_items.Count>nextItems.Length)_items.RemoveAt(_items.Count-1);
         NotifyAll();
         if (!OwnerIsCurrent()) return;
         foreach (var thumbnail in _thumbnails.Values.ToArray())
@@ -238,6 +247,6 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         foreach (var row in _thumbnails.Keys.ToArray()) RemoveThumbnail(row);
         foreach (var row in _subscribedImages) row.PropertyChanged -= ImagePropertyChanged;
         _subscribedImages.Clear(); _visibleIds.Clear();
-        _items = Array.Empty<ImageSourceStripItem>(); _lifetime.Dispose();
+        _items.Clear(); _lifetime.Dispose();
     }
 }

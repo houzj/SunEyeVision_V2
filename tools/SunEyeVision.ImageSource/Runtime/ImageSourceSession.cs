@@ -62,6 +62,25 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             var image=HalImageSnapshotSource.Capture(converted,Frame(ImageSourceOutput.Image),resources);
             IReadOnlyImage gray;
             if(image.Layout.Format==PixelLayout.Gray8)gray=image;
+            else if(settings.SourceKind=="camera")
+            {
+                var pixels=image.CopyPixels();var bytes=new byte[checked(image.Width*image.Height)];
+                for(var y=0;y<image.Height;y++)
+                {
+                    cancellation.ThrowIfCancellationRequested();
+                    for(var x=0;x<image.Width;x++)
+                    {
+                        var offset=y*image.Layout.RowStrideBytes+x*(image.Layout.Format==PixelLayout.Bgra32?4:3);
+                        bytes[y*image.Width+x]=(byte)((76*pixels[offset+2]+150*pixels[offset+1]+30*pixels[offset])>>8);
+                    }
+                }
+                var frame=Frame(ImageSourceOutput.GrayImage);
+                using var reader=image.EffectiveDomain.AcquireReader();var runs=new List<RegionRun>();
+                for(var offset=0;offset<reader.RunCount;offset+=4096)
+                    runs.AddRange(reader.ReadRuns(offset,4096).ToArray());
+                var domain=resources.CreateRegion(reader.Frame,frame,runs.ToArray());
+                gray=resources.CreateImage(new ImageLayout(image.Width,image.Height,image.Width,PixelLayout.Gray8),frame,domain,bytes);
+            }
             else
             {
                 using var grayNative=HalconImageAdmission.Gray(converted);

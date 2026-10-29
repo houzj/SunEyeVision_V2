@@ -531,12 +531,12 @@ public sealed partial class SolutionManagerUiTests
             PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
             Assert.Empty(fixture.Errors);Assert.Equal(2,completed);Assert.Equal(1,source.CurrentIndex);
             // Existing file with invalid bytes passes path readiness and fails in the actual Runtime decoder.
-            File.WriteAllBytes(source.CurrentImage!.FilePath,new byte[]{1});
+            File.WriteAllBytes(source.Images[0].FilePath,new byte[]{1});
             PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab));
-            Assert.NotEmpty(fixture.Errors);Assert.Equal(1,source.CurrentIndex);
+            Assert.NotEmpty(fixture.Errors);Assert.Equal(0,source.CurrentIndex);
             using var cancel=new CancellationTokenSource();cancel.Cancel();
             PumpLocalExecution(()=>fixture.Manager.RunSingleAsync(fixture.Tab,cancel.Token));
-            Assert.Equal(1,source.CurrentIndex);
+            Assert.Equal(0,source.CurrentIndex);
         });
     }
     // This execution test needs a temporary manager, not the retired manager window/card fixture.

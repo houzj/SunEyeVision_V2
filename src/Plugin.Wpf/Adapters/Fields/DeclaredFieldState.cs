@@ -26,8 +26,10 @@ internal sealed class DeclaredFieldState : IDisposable
     public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not ReferenceSetting)
         && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting);
     public bool HasInvalidInput => MissingReference || (_accepted is UnsetSetting && Port.Required && !_allowUnboundReference)
+        || (IsReferenceMode && _accepted is ReferenceSetting {RebindingReason:{Length:>0}})
         || EditError.Length != 0 || SourceError.Length != 0;
     public string Error => EditError.Length!=0?EditError:SourceError.Length!=0?SourceError
+        : IsReferenceMode && _accepted is ReferenceSetting {RebindingReason:{Length:>0} reason} ? reason
         : MissingReference ? "请选择订阅来源，或切回数值模式。"
         : _accepted is UnsetSetting && Port.Required && !_allowUnboundReference ? "必填项尚未设置。" : "";
     public event Action? Changed;
@@ -142,11 +144,13 @@ internal sealed class DeclaredFieldState : IDisposable
             foreach(var (state,value) in prepared)
             {
                 var referenceMode=value is ReferenceSetting||value is UnsetSetting&&state.IsReferenceMode;
-                if(replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0)
+                var clearSourceError=value is ConstantSetting or UnsetSetting && state.SourceError.Length!=0;
+                if(replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0||clearSourceError)
                     notifications.Add(state);
                 state._accepted=value;
                 if(value is ConstantSetting constant)state._constantBackup=constant;
                 state.IsReferenceMode=referenceMode;state._referenceCleared=false;state.EditError="";
+                if(clearSourceError)state.SourceError="";
                 state.AcceptanceVersion++;
             }
             accepted=true;
@@ -217,7 +221,10 @@ internal sealed class DeclaredFieldState : IDisposable
     {
         if (IsDisposed) return false;
         if (ConstantBackup is { } value) return TrySet(value);
-        SetEditError("没有已保存的常量值，请提供明确的参数默认值。");
+        if((Port.EditModes&FieldEditModes.Constant)==0){SetEditError("此字段不允许常量。");return false;}
+        IsReferenceMode=false;
+        EditError="请输入新的常量值；原订阅在有效提交前保持不变。";
+        Changed?.Invoke();
         return false;
     }
 
@@ -247,7 +254,8 @@ internal sealed class DeclaredFieldState : IDisposable
     {
         (UnsetSetting, UnsetSetting) => true,
         (ConstantSetting a, ConstantSetting b) => SameValue(a.Value, b.Value),
-        (ReferenceSetting a, ReferenceSetting b) => SameReference(a.Reference, b.Reference),
+        (ReferenceSetting a, ReferenceSetting b) => a.Conversion == b.Conversion && a.OriginId == b.OriginId
+            && a.RebindingReason == b.RebindingReason && SameReference(a.Reference, b.Reference),
         _ => false
     };
 

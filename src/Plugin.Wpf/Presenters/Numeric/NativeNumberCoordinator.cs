@@ -46,6 +46,11 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private bool _active,_disposed,_syncing,_committing,_closing,_showSlider,_presentationHidden;
     private long _generation;
     private long _loadGeneration;
+    private long _attachGeneration;
+    private bool _acceptedProjectionPending;
+    private long _observedAcceptance;
+    private bool _observedReference;
+    private void DrainAcceptedProjection(){if(!_syncing&&_acceptedProjectionPending){_acceptedProjectionPending=false;if(_commit?.IsDirty==true)ProjectState();else ProjectAccepted();}}
     public TextBox? TextEditor=>_commit?.Text;
     public NativeNumberCoordinator(DeclaredFieldState state,FieldPresentation? presentation,
         FrameworkElement eventRoot,FrameworkElement nativeInput,ReferenceFieldOptions? references=null,
@@ -53,6 +58,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
         Action<double>? projectBoundValue=null,Func<bool>? isCurrent=null,Func<Window?>? getOwner=null)
     {
         _state=state;_layout=presentation?.Layout;_eventRoot=eventRoot;_native=nativeInput;
+        _observedAcceptance=state.AcceptanceVersion;
+        _observedReference=state.IsReferenceMode;
         _isCurrent=isCurrent;_getOwner=getOwner;_requireStartBinding=requireStartBinding;_projectBoundValue=projectBoundValue;
         _arrange=nativeInput as Numbers.SliderArrangeBase;
         if(_arrange is null&&nativeInput is not Numbers.NumericControl)throw new ArgumentException("必须借用原数值输入。");
@@ -117,28 +124,33 @@ internal sealed class NativeNumberCoordinator : IDisposable
         var syncing=_syncing;_syncing=true;
         try
         {
-        _commit?.Suspend();var raw=_commit?.PendingRaw;
+        var generation=++_attachGeneration;var old=_commit;old?.Suspend();var raw=old?.Pending;
+        var acceptance=_state.AcceptanceVersion;var edit=old?.EditVersion;
         _native.ApplyTemplate();_native.UpdateLayout();
-        if(!Current())return;
+        if(!Current()||generation!=_attachGeneration||!ReferenceEquals(old,_commit))return;
         if(_arrange is not null)
         {
             _box=(ComboBox)_arrange.FindName("CBox");_box.ApplyTemplate();
             _leaf=_arrange.EnsureTemplateInputs().Left;
         }
+        if(!Current()||generation!=_attachGeneration||!ReferenceEquals(old,_commit))return;
+        if(acceptance!=_state.AcceptanceVersion||edit!=old?.EditVersion)raw=null;
         if(_commit is null||!ReferenceEquals(_commit.Text,_leaf!.FindName("ValueText")))
         {
-            _commit?.Dispose();_commit=new(_state,_layout,_leaf!,_arrange,_arrange is null?null:Numbers.SliderArrangeBase.StartValueProperty,requireOwnerBinding:_requireStartBinding,isCurrent:CurrentInput,projectBoundValue:_projectBoundValue);
+            old?.Dispose();var created=new NativeNumericCommit(_state,_layout,_leaf!,_arrange,_arrange is null?null:Numbers.SliderArrangeBase.StartValueProperty,requireOwnerBinding:_requireStartBinding,isCurrent:CurrentInput,projectBoundValue:_projectBoundValue);
+            if(!Current()||generation!=_attachGeneration||!ReferenceEquals(old,_commit)){created.Dispose();return;}
+            _commit=created;
             _commit.RestorePending(raw);_commit.ValidateInitial();
         }
         else _commit.RestorePending(raw);
         }
-        finally{_syncing=syncing;}
+        finally{_syncing=syncing;DrainAcceptedProjection();}
     }
     private void ResumeCommit()
     {
         if(!CurrentInput())return;
         var syncing=_syncing;_syncing=true;
-        try{_commit?.Resume();}finally{_syncing=syncing;}
+        try{_commit?.Resume();}finally{_syncing=syncing;DrainAcceptedProjection();}
     }
     private bool CurrentInput()=>Current()&&(_arrange is null||_box?.Template is {} template
         &&ReferenceEquals(template.FindName("T1",_box),_leaf))&&Current();
@@ -161,18 +173,24 @@ internal sealed class NativeNumberCoordinator : IDisposable
                 _arrange.StartValue=Convert.ToDouble(initial.Value,CultureInfo.InvariantCulture);
             ApplySliderVisibility();
         }
-        finally{_syncing=false;}
+        finally{_syncing=false;DrainAcceptedProjection();}
     }
     public void ProjectAccepted()
     {
         if(!Current()||_syncing)return;
         _syncing=true;
         try{_commit?.ProjectAccepted();}
-        finally{_syncing=false;}
+        finally{_syncing=false;DrainAcceptedProjection();}
         ProjectState();
     }
-    private void OnStateChanged()=>ProjectState();
-    private void OnExplicitlyAccepted()=>ProjectAccepted();
+    private void OnStateChanged()
+    {
+        var accepted=_observedAcceptance!=_state.AcceptanceVersion||_observedReference!=_state.IsReferenceMode;
+        _observedAcceptance=_state.AcceptanceVersion;_observedReference=_state.IsReferenceMode;
+        if(_syncing&&accepted){_acceptedProjectionPending=true;return;}
+        ProjectState();
+    }
+    private void OnExplicitlyAccepted(){if(_syncing){_acceptedProjectionPending=true;return;}if(_commit?.IsDirty==true)ProjectState();else ProjectAccepted();}
     public bool TrySetConstant(object value)
     {
         if(!CurrentInput()||_committing)return false;
@@ -189,19 +207,20 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(_committing)return !_state.HasInvalidInput;
         if(_state.IsReferenceMode)return _reference?.TryCommitPending()??!_state.HasInvalidInput;
         if(_commit is null)return !_state.HasInvalidInput;
-        if(!_commit.IsDirty&&!retryAccepted)return !_state.HasInvalidInput;
+        if(!_commit.IsDirty&&!retryAccepted&&_state.SourceError.Length==0)return !_state.HasInvalidInput;
         _committing=true;
         try
         {
-            if(!_commit.TryPrepare(out var proposal))return false;
-            if(!CurrentInput())return false;
+            var commit=_commit;var acceptance=_state.AcceptanceVersion;var edit=commit.EditVersion;
+            if(!commit.TryPrepare(out var proposal))return false;
+            if(!CurrentInput()||!ReferenceEquals(commit,_commit)||acceptance!=_state.AcceptanceVersion||edit!=commit.EditVersion)return false;
             return AcceptPrepared(proposal);
         }
         finally{_committing=false;}
     }
     private bool AcceptPrepared(ConstantSetting proposal)
     {
-        var commit=_commit!;var raw=commit.PendingRaw;var editVersion=commit.EditVersion;
+        var commit=_commit!;var raw=commit.Pending;var editVersion=commit.EditVersion;
         var acceptance=_state.AcceptanceVersion;var accepted=false;Exception? failure=null;
         try{accepted=_state.TrySet(proposal);}
         catch(Exception error){failure=error;}
@@ -237,6 +256,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
                 try{if(_state.ConstantBackup is {} backup)_commit!.ValidateStored(backup);}
                 catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);return;}
                 _state.TryUseConstant();
+                if(!_state.IsReferenceMode&&_state.ConstantBackup is null)_commit?.BeginConstantEntry();
             }
         }
         finally{ProjectState();_referenceScope?.Refresh();}
@@ -301,8 +321,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(_eventRoot.IsVisible);
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
-    public string? TakePendingRaw(){_commit?.Suspend();return _commit?.PendingRaw;}
-    public void RestorePending(string? raw)=>_commit?.RestorePending(raw);
+    public NumericPendingEdit? TakePendingRaw(){_commit?.Suspend();return _commit?.Pending;}
+    public void RestorePending(NumericPendingEdit? raw)=>_commit?.RestorePending(raw);
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_active=false;_presentationHidden=true;_loadGeneration++;

@@ -39,7 +39,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                 var metadata=new NativeParameterGroup(group.Key);
                 foreach(var (field,port,_) in group)
                 {
-                    var editor=new DeclaredFieldEditor(port with{Required=port.Required&&schema.WorkflowImageInputId!=port.Id,EditModes=FieldEditModes.Reference},
+                    var editor=new DeclaredFieldEditor(port with{EditModes=FieldEditModes.Reference},
                         field.DisplayName,read(port),setting=>write(port,setting),references,formatReference:format,
                         presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
                     _fields.Add(editor);

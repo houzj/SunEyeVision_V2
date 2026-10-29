@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
@@ -51,9 +51,9 @@ public sealed class RootResourceProductionTests
     context.Write(region,new ReferenceSetting(new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:root.Id)));
     Assert.Empty(root.Nodes[1].ParamSettings.Settings);Assert.Empty(root.RootConfiguration.RunParameters);
     var priorReference=BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference);
-    Assert.NotNull(context.ValidateReference(region,new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:"other-root")));
+    Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:"other-root"))));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
-    Assert.NotNull(context.ValidateReference(region,new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id)));
+    Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id))));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
     Assert.DoesNotContain(context.Candidates(),candidate=>candidate.StoragePath=="input.local-address");
     var sequence=context.Add(context.Candidates().Single(candidate=>candidate.Node.Id=="image"&&candidate.StoragePath=="sequence.initial"));

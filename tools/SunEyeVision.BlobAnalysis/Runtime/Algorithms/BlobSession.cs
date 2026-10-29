@@ -18,7 +18,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         try
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
-            var schema=new BlobTool().Describe(invocation.Settings);
+            var schema=new BlobTool().Describe();
             var requested=BlobOutputRequest.None;
             foreach(var demand in invocation.OutputRequests)
             {

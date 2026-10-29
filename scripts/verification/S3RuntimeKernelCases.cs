@@ -14,6 +14,9 @@ internal static class S2DocumentEditingCases
         var rules=new BlobSettings().Judgments;return rules.Any(r=>r.Key==rule.Key)
             ?rules.Select(r=>r.Key==rule.Key?rule:r).ToArray():rules.Append(rule).ToArray();
     }
+    private static FieldSettings Initial(IToolSettingsFields definition,object settings)=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+    private static IReadOnlyDictionary<string,ParameterSetting> Constants(Dictionary<string,object?> values)=>values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value));
+    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureFields().Materialize(new Dictionary<string,object?>()));
     private static int _passed;
     private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, IsBlobCountFilterEnabled = false };
     private static int Main()
@@ -22,46 +25,64 @@ internal static class S2DocumentEditingCases
         {
             Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
                 var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
-                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,original);
+                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,Initial(provider,original));
                 Require(provider.SettingsSchema.Inputs.Count==54&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
                 string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
                 var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
-                draft.ApplyFields(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},_=>{});
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&original.Threshold==128
-                    &&draft.ReadFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,220L},{upper,210L}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,300L}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{mode,"undefined"}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{"unknown",1L}},_=>{}));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==211,"拒绝提案污染私有状态");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),_=>{});
+                Require(Materialize(draft).Threshold==73&&original.Threshold==128
+                    &&draft.CaptureFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,300L}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{mode,"undefined"}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{"unknown",1L}}),_=>{}));
+                Require(Materialize(draft).Threshold==73&&Materialize(draft).UpperThreshold==211,"拒绝提案污染私有状态");
                 var rule=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.Layout?.Page=="结果显示"&&f.Layout.PairWith is not null&&f.DisplayName=="Blob数量下限");
-                draft.ApplyFields(new Dictionary<string,object?>{{rule.FieldId,19d}},_=>{});
-                Require(draft.ReadFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{rule.FieldId,19d}}),_=>{});
+                Require(draft.CaptureFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
             });
             Case("设置整组候选只预检一次，拒绝或回调重入均不改变草稿",()=>{
-                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,new BlobSettings());
+                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,Initial((IToolSettingsFields)tool,new BlobSettings()));
                 string Field(string label)=>draft.Schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
                 var low=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var high=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
                 var calls=0;
-                draft.ApplyFields(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},candidate=>
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),candidate=>
                 {
-                    calls++;var next=(BlobSettings)candidate;
-                    Require(next.Threshold==220&&next.UpperThreshold==230&&((BlobSettings)draft.CaptureSettings()).Threshold==128,
+                    calls++;var next=(BlobSettings)((IToolSettingsFields)tool).MaterializeSettings(candidate.Materialize(new Dictionary<string,object?>()));
+                    Require(next.Threshold==220&&next.UpperThreshold==230&&Materialize(draft).Threshold==128,
                         "候选不完整或宿主接纳前污染草稿");
                 });
-                Require(calls==1&&((BlobSettings)draft.CaptureSettings()).Threshold==220,"整组未单次接纳");
-                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>throw new InvalidOperationException("宿主拒绝")));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220,"宿主拒绝污染草稿");
-                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>
-                    draft.ApplyFields(new Dictionary<string,object?>{{high,240L}},_=>{})));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==230,
+                Require(calls==1&&Materialize(draft).Threshold==220,"整组未单次接纳");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>throw new InvalidOperationException("宿主拒绝")));
+                Require(Materialize(draft).Threshold==220,"宿主拒绝污染草稿");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>
+                    draft.ApplyFields(Constants(new Dictionary<string,object?>{{high,240L}}),_=>{})));
+                Require(Materialize(draft).Threshold==220&&Materialize(draft).UpperThreshold==230,
                     "回调重入污染整组草稿");
-                draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>{});
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==221,"拒绝后提交门没有恢复");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>{});
+                Require(Materialize(draft).Threshold==221,"拒绝后提交门没有恢复");
+            });
+            Case("完整字段物化校验禁用参数标量域且不吞Boolean结构",()=>{
+                var tool=new BlobTool();var provider=(IToolSettingsFields)tool;
+                var disabled=new BlobSettings{SegmentationMode=BlobSegmentationMode.None,IsBlobCountFilterEnabled=false};
+                string Id(string property)=>provider.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(property)).FieldId;
+                var fields=Initial(provider,disabled);
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{Id("Threshold"),new ConstantSetting(999L)}}).Materialize(new Dictionary<string,object?>())));
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{Id("BlobCountLimit"),new ConstantSetting(0L)}}).Materialize(new Dictionary<string,object?>())));
+                var valid=fields.Apply(new Dictionary<string,ParameterSetting>{{Id("Threshold"),new ConstantSetting(201L)}});
+                Require(((BlobSettings)provider.MaterializeSettings(valid.Materialize(new Dictionary<string,object?>()))).Threshold==201,"合法禁用参数往返丢值");
+                var rule=disabled.Judgments.Single(item=>item.Kind!=BlobJudgmentKind.Range);
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Select(item=>item.Key==rule.Key?item with {Minimum=1}:item).ToArray()}));
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Select(item=>item.Key==rule.Key?item with {PerItem=!item.PerItem}:item).ToArray()}));
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Append(rule with {Key="unknown"}).ToArray()}));
+                var ratio=provider.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName=="白色像素比例上限").FieldId;
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{ratio,new ConstantSetting(101d)}}).Materialize(new Dictionary<string,object?>())));
+                var range=(BlobSettings)provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{ratio,new ConstantSetting(75d)}}).Materialize(new Dictionary<string,object?>()));
+                Require(!range.Judgments.Single(item=>item.Key=="white-ratio").Enabled&&range.Judgments.Single(item=>item.Key=="white-ratio").Maximum==75,"禁用判定合法上限往返丢值");
             });
             Case("宿主中立入口保留模型身份、冻结参数并在无UI回调时清理",()=>{
                 using var resources=new FrozenOutputResources();
@@ -106,7 +127,7 @@ internal static class S2DocumentEditingCases
                 var ports=new[]{new Port("image",DataType.Image),new Port("number",DataType.Integer)};
                 var direct=new ToolSchema(ports,Array.Empty<Port>());
                 var fallback=new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"image");
-                Require(direct.Fingerprint!=fallback.Fingerprint&&new BlobTool().Describe(Basic).WorkflowImageInputId==BlobTool.ImageInput,
+                Require(direct.Fingerprint!=fallback.Fingerprint&&new BlobTool().Describe().WorkflowImageInputId==BlobTool.ImageInput,
                     "默认图像源未由Runtime声明或未参与身份冻结");
                 Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"number"));
                 Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"unknown"));
@@ -183,7 +204,7 @@ internal static class S2DocumentEditingCases
                 Throws<InvalidDataException>(()=>BlobParameterDefinition.Read(dtd));
             });
             Case("显示XML声明源校验、样式与表格投影",()=>{
-                var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe(Basic);
+                var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe();
                 Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==8
                     &&definition.Table.Validate(schema).Count==0,"显示定义未加载或字段映射无效");
                 Require(definition.Graphics.Single(x=>x.Key=="inspection-roi").InputSource
@@ -215,7 +236,7 @@ internal static class S2DocumentEditingCases
                 var values=result.ToValues();
                 Require(values.ContainsKey(BlobSchema.BlobsPort)&&result.GrayImage is not null&&result.BinaryImage is not null, "请求资源被开关抑制");
                 Require((double)values[BlobSchema.Field(30)]! ==4&&(double)values[BlobSchema.Field(31)]! ==207,"公开最小/最大面积没有来自同一最终集合");
-                var definition=new BlobTool();var declaration=definition.Describe(Basic);
+                var definition=new BlobTool();var declaration=definition.Describe();
                 var session=definition.CreateSession();
                 var outcome=session.ExecuteAsync(new(Basic,
                     new InputValues(declaration.Inputs,new Dictionary<string,object?>{{BlobTool.ImageInput,input}}),
@@ -290,7 +311,7 @@ internal static class S2DocumentEditingCases
             });
             Case("声明执行与下游资源请求覆盖隐藏输出、无效路径明确拒绝",()=> {
                 using var factory=new FrozenOutputResources(); using var image=Image(8,8,(_,_)=>true);
-                var definition=new BlobTool();var schema=definition.Describe(Basic);
+                var definition=new BlobTool();var schema=definition.Describe();
                 var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{[BlobTool.ImageInput]=image});
                 var context=new Context(factory);
                 var requests=new[]{new OutputValueRequest(BlobSchema.Field(5)),new OutputValueRequest(BlobSchema.Field(6)),new OutputValueRequest(BlobSchema.BlobsPort,new[]{"boundary"})};
@@ -344,9 +365,9 @@ internal static class S2DocumentEditingCases
     private sealed class RunnerDefinition(bool asynchronous,bool fail=false):IToolDefinition<RunnerSettings,RunnerOutput>
     {
         public RunnerSession? Session;public string ToolId=>"runner";
-        public ToolSchema Describe(RunnerSettings settings)=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
+        public ToolSchema Describe()=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
         public IReadOnlyList<Diagnostic> Validate(RunnerSettings settings)=>settings.Values.Length==1?Array.Empty<Diagnostic>():new[]{new Diagnostic("invalid","one value required")};
-        public ToolCapabilities Capabilities(RunnerSettings settings)=>ToolCapabilities.None;
+        public ToolCapabilities Capabilities()=>ToolCapabilities.None;
         public IToolSession<RunnerSettings,RunnerOutput> CreateSession()=>Session=new(asynchronous,fail);
     }
     private sealed class RunnerSession(bool asynchronous,bool fail):IToolSession<RunnerSettings,RunnerOutput>

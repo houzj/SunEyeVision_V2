@@ -11,7 +11,7 @@ public sealed class BlobAnalysisParameterContractTests
     {
         var tool=new BlobTool();var settings=new BlobSettings();
         Assert.Empty(tool.Validate(settings));
-        Assert.Equal(new[]{BlobTool.ImageInput,BlobTool.InspectionInput,BlobTool.MaskInput,BlobTool.PoseInput},tool.Describe(settings).Inputs.Select(port=>port.Id));
+        Assert.Equal(new[]{BlobTool.ImageInput,BlobTool.InspectionInput,BlobTool.MaskInput,BlobTool.PoseInput},tool.Describe().Inputs.Select(port=>port.Id));
         Assert.Equal(54,tool.SettingsSchema.Inputs.Count);
         Assert.Contains(tool.SettingsSchema.Presentation!.Fields,field=>field.DisplayName==BlobParameterDefinition.Instance.Label(nameof(BlobSettings.FilterAreaMin)));
         var references=typeof(BlobTool).Assembly.GetReferencedAssemblies().Select(a=>a.Name).ToArray();

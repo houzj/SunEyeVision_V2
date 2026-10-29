@@ -23,7 +23,7 @@ public static class BlobDesignData
     }
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
-        var draft=new DesignDraft();var schema=draft.Tool.Describe((BlobSettings)draft.CaptureSettings());
+        var draft=new DesignDraft();var schema=draft.Tool.Describe();
         var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
         return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
     }
@@ -35,25 +35,16 @@ public static class BlobDesignData
     private sealed class DesignDraft : IToolSettingsDraft
     {
         internal BlobTool Tool {get;}=new();
-        private BlobSettings _settings=new(); // All defaults come from the actual embedded BlobParameters.xml.
-        private bool _applying;
-        public ToolSchema Schema=>Tool.SettingsSchema;
-        public object CaptureSettings()=>_settings.Freeze();
-        public InputValues ReadFields()=>Tool.ReadSettings(_settings);
-        public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
+        private readonly FieldSettingsDraft _draft;
+        public DesignDraft()
         {
-            if(_applying)throw new InvalidOperationException("A settings proposal is already being accepted.");
-            _applying=true;
-            try
-            {
-            var candidate=(BlobSettings)Tool.ApplySettings(_settings,changes);
-            var errors=Tool.Validate(candidate);
-            if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
-            acceptCandidate(candidate.Freeze());
-            _settings=candidate.Freeze();
-            }
-            finally{_applying=false;}
+            var declaration=(IToolSettingsFields)Tool;
+            _draft=new(declaration.SettingsSchema,new FieldSettings(declaration.SettingsSchema.Inputs,
+                declaration.ReadSettings(new BlobSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
         }
+        public ToolSchema Schema=>_draft.Schema;
+        public FieldSettings CaptureFields()=>_draft.CaptureFields();
+        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
     }
 }
 

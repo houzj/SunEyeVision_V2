@@ -21,6 +21,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private readonly WorkflowNodeBase _node;
     private readonly string _workflowId;
     private readonly InputValues _inputs;
+    private readonly object _settings;
     private readonly List<IDisposable> _readers;
     private ImageSourceRunInput? _sourceInput;
     private ICameraCaptureService? _cameraService;
@@ -28,8 +29,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private bool _disposed;
     public ToolExecutionIdentity Identity {get;}
     public IReadOnlyList<RunIdentity> SourceIdentities {get;}
-    private RuntimeDebugInvocation(string workflowId,WorkflowNodeBase node,InputValues inputs,ToolExecutionIdentity identity,List<IDisposable> readers,IEnumerable<RunIdentity> sources)
-    {_workflowId=workflowId;_node=node;_inputs=inputs;Identity=identity;_readers=readers;SourceIdentities=Array.AsReadOnly(sources.ToArray());}
+    private RuntimeDebugInvocation(string workflowId,WorkflowNodeBase node,InputValues inputs,ToolExecutionIdentity identity,List<IDisposable> readers,IEnumerable<RunIdentity> sources,object settings)
+    {_workflowId=workflowId;_node=node;_inputs=inputs;_settings=settings;Identity=identity;_readers=readers;SourceIdentities=Array.AsReadOnly(sources.ToArray());}
 
     /// <summary>Call on the document owner before dispatching execution. The double
     /// read rejects replacement during capture; retained readers survive later replacement.</summary>
@@ -43,9 +44,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
         var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
         if(errors.Count>0)throw new InvalidOperationException(errors[0].Message);
         var graph=WorkflowExecutionDependencyGraph.Compile(workflow);
-        var settings=node.ParamSettings.Settings.ToArray();
-        var references=settings.Where(s=>s.BindingType==BindingType.Binding).ToDictionary(s=>s.ParameterName,
-            s=>BindingReferenceSerializer.Deserialize(s.ReferenceExpression!),StringComparer.Ordinal);
+        var settings=configuration.Fields.Capture();
+        var references=settings.Where(pair=>pair.Value is ReferenceSetting).ToDictionary(pair=>pair.Key,pair=>((ReferenceSetting)pair.Value).Reference,StringComparer.Ordinal);
         var dependencies=references.Values.SelectMany(r=>WorkflowBindingContext.ReferenceNodes(r,workflow.Id)).Distinct().ToArray();
         var readers=new List<IDisposable>();ToolExecutionIdentity? identity=null;
         try
@@ -84,13 +84,13 @@ public sealed class RuntimeDebugInvocation : IDisposable
             var inputs=new Dictionary<string,object?>(StringComparer.Ordinal);var fields=new Dictionary<string,object?>(StringComparer.Ordinal);
             var settingsIds=configuration.SettingsSchema?.Inputs.Select(p=>p.Id).ToHashSet(StringComparer.Ordinal)??new();
             var resolver=new ParameterBindingService();
-            foreach(var setting in settings)
+            foreach(var (fieldId,setting) in settings)
             {
-                var target=configuration.BindingTargets.Single(p=>p.Id==setting.ParameterName);object? value;
-                if(setting.BindingType==BindingType.Constant)value=RuntimeInputBindings.Constant(target,setting.ConstantValue);
+                var target=configuration.BindingTargets.Single(p=>p.Id==fieldId);object? value;
+                if(setting is ConstantSetting constant){if(settingsIds.Contains(target.Id))continue;value=RuntimeInputBindings.Constant(target,constant.Value);}
                 else
                 {
-                    var compiled=resolver.CompileBinding(references[setting.ParameterName],target,scope,setting.Conversion);
+                    var compiled=resolver.CompileBinding(references[fieldId],target,scope,((ReferenceSetting)setting).Conversion);
                     if(compiled.Plan is null)throw new InvalidOperationException(compiled.Diagnostic?.Message??"调试来源声明不可用。");
                     var resolved=resolver.ResolvePublishedBinding(compiled.Plan,snapshot);
                     if(!resolved.Success)throw new InvalidOperationException(resolved.Diagnostic?.Message??"调试输入解析失败。");
@@ -98,13 +98,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 }
                 (settingsIds.Contains(target.Id)?fields:inputs).Add(target.Id,value);
             }
-            if(fields.Count>0)
-            {
-                var effective=configuration.WithFieldValues(fields);
-                if(effective.Schema.Fingerprint!=configuration.Schema.Fingerprint||!effective.Capabilities.ResourceKeys.ToHashSet(StringComparer.Ordinal).SetEquals(configuration.Capabilities.ResourceKeys))
-                    throw new InvalidOperationException("调试订阅改变了已准入声明或资源要求。");
-                node.RuntimeConfiguration=effective;configuration=effective;
-            }
+            var materialized=configuration.MaterializeSettings(fields);
             if(configuration.Schema.WorkflowImageInputId is { } imagePort&&!inputs.ContainsKey(imagePort)&&defaultImage is not null)
             {
                 if(defaultImage is not ITypedImageSnapshotSource typed)throw new InvalidOperationException("调试图像不支持像素及实际Domain快照。");
@@ -113,7 +107,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             }
             if(configuration.Schema.WorkflowImageInputId is { } requiredImage&&!inputs.ContainsKey(requiredImage))
                 throw new InvalidOperationException("请选择已发布的图像输入源后再调试。");
-            var invocation=new RuntimeDebugInvocation(workflow.Id,node,new InputValues(configuration.Schema.Inputs,inputs),identity,readers,values.Select(v=>v.Identity));
+            var invocation=new RuntimeDebugInvocation(workflow.Id,node,new InputValues(configuration.Schema.Inputs,inputs),identity,readers,values.Select(v=>v.Identity),materialized);
             if(node.ToolType=="ImageLoad")
             {
                 invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths);
@@ -149,7 +143,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     if(!values.TryAdd(pair.Key,pair.Value))throw new InvalidOperationException("图像源冻结输入与节点绑定冲突："+pair.Key);
                 inputs=new InputValues(_node.RuntimeConfiguration!.Schema.Inputs,values);
             }
-            outcome=await _node.ExecuteRuntimeAsync(inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources)).ConfigureAwait(false);
+            outcome=await _node.ExecuteRuntimeAsync(_node.RuntimeConfiguration!,inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources),null,_settings).ConfigureAwait(false);
             transferred=true;result=DeclaredOutputSnapshot.Capture(resultSchema,0,Identity,resultNodeId,outcome,resources,timer.Elapsed.TotalMilliseconds,sourceWorkflowId:_workflowId);
             return result;
         }

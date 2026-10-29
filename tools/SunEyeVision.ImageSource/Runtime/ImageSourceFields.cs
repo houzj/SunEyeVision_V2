@@ -56,7 +56,11 @@ public static class ImageSourceFields
             if(!values.ContainsKey(pair.Key))throw new ArgumentException("未声明的图像源字段："+pair.Key);
             values[pair.Key]=pair.Value;
         }
-        var candidate=new InputValues(Schema.Inputs,values);
+        return Materialize(new InputValues(Schema.Inputs,values));
+    }
+    public static ImageSourceSettings Materialize(InputValues values)
+    {
+        var candidate=new InputValues(Schema.Inputs,values.CopyValues());
         var result=new ImageSourceSettings {
             SourceKind=candidate.Get<string>(SourceKind),
             FileReferences=ReadReferences(candidate,Paths),StartIndex=checked((int)candidate.Get<long>(Start)),

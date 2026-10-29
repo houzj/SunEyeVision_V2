@@ -80,7 +80,7 @@ public sealed class BlobDisplayDefinition
     {
         using var stream=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobDisplay.xml")
             ??throw new InvalidDataException("BlobDisplay.xml is missing from the Runtime component.");
-        return Read(stream,new BlobTool().Describe(new BlobSettings()));
+        return Read(stream,new BlobTool().Describe());
     }
     public static BlobDisplayDefinition Read(Stream stream,ToolSchema schema)
     {

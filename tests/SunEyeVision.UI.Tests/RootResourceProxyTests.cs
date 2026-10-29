@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Runtime;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -59,7 +59,7 @@ public sealed class RootResourceProxyTests
    Assert.IsType<UnsetSetting>(context.Read(image));Assert.IsType<UnsetSetting>(context.Read(region));
    Assert.Throws<InvalidOperationException>(()=>context.Write(image,new ConstantSetting(null)));
    Assert.Throws<InvalidOperationException>(()=>context.Write(region,new ConstantSetting(null)));
-   Assert.Null(context.ValidateReference(image,Reference(ResourceKind.Image)));
+   Assert.Null(context.ValidateReference(image,new ReferenceSetting(Reference(ResourceKind.Image))));
    Assert.IsType<UnsetSetting>(context.Read(image));
    context.Write(image,new ReferenceSetting(Reference(ResourceKind.Image)));context.Write(region,new ReferenceSetting(Reference(ResourceKind.Region)));
    Assert.Null(((Parameters)root.Nodes[1].Parameters).ImageSourceRef);Assert.Null(root.Nodes[1].ParamSettings.GetSetting("Region"));
@@ -92,7 +92,7 @@ public sealed class RootResourceProxyTests
   var (session,root,context,query)=Model();using(context)
   {
    var image=context.Add(context.Candidates().Single(c=>c.Node.Id=="target"&&c.StoragePath=="ImageSource"));var region=context.Add(context.Candidates().Single(c=>c.Node.Id=="target"&&c.StoragePath=="Region"));
-   Assert.NotNull(context.ValidateReference(image,Reference(ResourceKind.Region)));Assert.NotNull(context.ValidateReference(image,Reference(ResourceKind.Image,"elsewhere")));
+   Assert.NotNull(context.ValidateReference(image,new ReferenceSetting(Reference(ResourceKind.Region))));Assert.NotNull(context.ValidateReference(image,new ReferenceSetting(Reference(ResourceKind.Image,"elsewhere"))));
    context.Write(image,new ReferenceSetting(Reference(ResourceKind.Image)));context.Write(region,new ReferenceSetting(Reference(ResourceKind.Region)));Assert.True(context.TryApply(out var error),error);
    var snapshot=SunEyeVision.Workflow.Persistence.SolutionSnapshot.Prepare(session.Document,System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"根资源代理正式保存.json"));
    var reopened=JsonSerializer.Deserialize<Solution>(snapshot.Json,WorkflowSerializationOptions.Default)!;
@@ -100,7 +100,7 @@ public sealed class RootResourceProxyTests
    var fragment=WorkflowFragmentCopy.Prepare(root,root.Nodes.Select(n=>n.Id),"copied",id=>id==root.Id?root:null,(node,_)=>new WorkflowNodeBase("copy-"+node.Id,node.Name,node.DispName,node.ToolType));
    var target=fragment.Nodes.Single(n=>n.Id=="copy-target");Assert.Equal("copy-source",((Parameters)target.Parameters).ImageSourceRef!.SourceNodeId);Assert.Equal("copied",((Parameters)target.Parameters).ImageSourceRef!.SourceWorkflowId);
    var reference=BindingReferenceSerializer.Deserialize(target.ParamSettings.GetSetting("Region")!.ReferenceExpression!);Assert.Equal("copy-source",reference.NodeId);Assert.Equal("copied",reference.ScopeId);
-   query.FormalOutputContractReader=_=>null;Assert.NotNull(context.ValidateReference(image,Reference(ResourceKind.Image)));
+   query.FormalOutputContractReader=_=>null;Assert.NotNull(context.ValidateReference(image,new ReferenceSetting(Reference(ResourceKind.Image))));
    context.Write(image,new UnsetSetting());Assert.IsType<UnsetSetting>(context.Read(image));
   }
  }

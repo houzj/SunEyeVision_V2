@@ -45,18 +45,16 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
             if(_disposed||generation!=_generation||!ReferenceEquals(_source,source)||!ReferenceEquals(Editor.Draft,draft))
                 throw new InvalidOperationException("图像源参数组合已重新绑定或关闭。");
         }
-        IReadOnlyDictionary<string,ReferenceSetting>? preparedReferences=null;
         _source?.BindSourceDraft(draft,()=>
         {
             EnsureCurrentBinding();
-            if(!Editor.TryCapture(out _,out var references,out var error))
+            if(!Editor.TryCapture(out var fields,out var error))
                 throw new InvalidOperationException(error);
-            EnsureCurrentBinding();preparedReferences=references;
+            EnsureCurrentBinding();
         },candidate=>
         {
             EnsureCurrentBinding();
-            options.AcceptCandidate?.Invoke(candidate,preparedReferences
-                ??throw new InvalidOperationException("源编辑尚未完成参数接纳准备。"));
+            options.AcceptCandidate?.Invoke(candidate);
         });
         Editor.Bind(draft, options with { InputSection = InputPage });
         EnsureCurrentBinding();
@@ -75,8 +73,8 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
         Editor.Bind(Editor.Draft??throw new InvalidOperationException("图像源设置草稿已释放。"),Editor.Options);
         ViewChanged?.Invoke();
     }
-    public bool TryCapture(out object settings, out IReadOnlyDictionary<string, ReferenceSetting> references, out string error)
-        => Editor.TryCapture(out settings, out references, out error);
+    public bool TryCapture(out FieldSettings fields, out string error)
+        => Editor.TryCapture(out fields, out error);
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_generation++;

@@ -60,7 +60,8 @@ public sealed class ReferenceBindingBatch
                 if(setting is ConstantSetting constant)
                 {values.Add(target.Id,ValueRules.Freeze(target,constant.Value));continue;}
                 if(setting is not ReferenceSetting reference)return Failure("binding-unset","整组参数尚未完成。",target.Id);
-                var compiled=_compiler.CompileBinding(reference.Reference,target,_scope);
+                if(!string.IsNullOrEmpty(reference.RebindingReason))return Failure("binding-reselection",reference.RebindingReason,target.Id);
+                var compiled=_compiler.CompileBinding(reference.Reference,target,_scope,reference.Conversion);
                 if(!_isCurrent())return Stale();
                 if(compiled.Plan is not {} plan)return new(null,compiled.Diagnostic??new("binding-compile","来源无法编译。",target.Id));
                 foreach(var dependency in plan.Dependencies)

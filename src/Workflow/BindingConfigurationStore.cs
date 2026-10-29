@@ -273,7 +273,7 @@ public sealed class BindingConfigurationStore
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
-        node.ParamSettings, node.SelectedDisplaySource
+        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplaySource
     }, WorkflowSerializationOptions.Compact);
 
     // Runtime initialization timestamps are not binding changes. Initial values are configuration.

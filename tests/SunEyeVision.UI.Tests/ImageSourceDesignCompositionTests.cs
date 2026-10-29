@@ -43,7 +43,7 @@ public sealed class ImageSourceDesignCompositionTests
                 Assert.Throws<InvalidOperationException>(()=>input.SourceStrip.Session.RequestAsync(
                     new ImageSourceStripRequest(ImageSourceStripRequestKind.Clear,input.SourceStrip.Session.Version),CancellationToken.None).GetAwaiter().GetResult());
                 Assert.Equal(camera?"camera":"local",context.Draft.ReadFields().Get<string>("source.kind"));
-                Assert.True(view.TryCapture(out _,out var references,out var error),error);Assert.Empty(references);
+                Assert.True(view.TryCapture(out var fields,out var error),error);Assert.DoesNotContain(fields.Capture().Values,value=>value is ReferenceSetting);
                 view.Dispose();Assert.Null(input.SourceStrip.Session);
             }
             finally{window.Content=null;window.Close();view.Dispose();}
@@ -71,7 +71,7 @@ public sealed class ImageSourceDesignCompositionTests
                 Assert.True(Field(view,"source.kind").TrySetConstant("local"));
                 Assert.False(input.IsCamera);Assert.Equal(Visibility.Visible,input.SourceStrip.Visibility);
                 Assert.False(input.SourceStrip.Session!.AutoSwitchEnabled);Assert.True(changed>=3);
-                Assert.True(view.TryCapture(out _,out _,out var error),error);
+                Assert.True(view.TryCapture(out _,out var error),error);
             }
             finally{window.Content=null;window.Close();}
         });
@@ -153,10 +153,10 @@ public sealed class ImageSourceDesignCompositionTests
     }
     private sealed class CallbackSource:UserControl,IImageSourceSettingsContent,IDisposable
     {
-        public Action? Prepare{get;private set;}public Action<object>? Accept{get;private set;}
+        public Action? Prepare{get;private set;}public Action<FieldSettings>? Accept{get;private set;}
         public int DisposeCount{get;private set;}
         public event Action? Changed;
-        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<object> acceptCandidate){Prepare=prepareEdit;Accept=acceptCandidate;}
+        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<FieldSettings> acceptCandidate){Prepare=prepareEdit;Accept=acceptCandidate;}
         public void RefreshSourceDraft(){}
         public void Notify()=>Changed?.Invoke();
         public void Dispose(){DisposeCount++;}

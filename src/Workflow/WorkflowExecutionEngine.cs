@@ -836,7 +836,7 @@ namespace SunEyeVision.Workflow
                 $"可并行声明={nodeExecutionProfiles.Values.Count(profile => profile.ConcurrencyKind == ToolConcurrencyKind.ParallelSafe)}");
             SunEyeVision.Plugin.Runtime.FrozenImageResource? frozenImage=null;
             var runtimeDefaults=executableWorkflow.Nodes.OfType<AlgorithmNode>().Where(node=>node.RuntimeConfiguration?.Schema.WorkflowImageInputId is { } port
-                && node.ParamSettings.GetSetting(port) is null).ToArray();
+                && node.RuntimeConfiguration!.Fields.Read(port) is SunEyeVision.Plugin.Contracts.UnsetSetting).ToArray();
             if(inputImage is not null&&runtimeDefaults.Length>0)
             {
                 try
@@ -916,7 +916,7 @@ namespace SunEyeVision.Workflow
                 {
                     var configuration=runtime.Copy();
                     if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
-                        configuration=configuration.WithOverrides(runtimeOverrides);
+                        configuration=configuration.WithFieldValues(runtimeOverrides);
                     executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
                 }
                 else
@@ -936,23 +936,12 @@ namespace SunEyeVision.Workflow
                 }
 
                 // 复制参数绑定配置
-                executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();
+                executionNode.ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings?.Clone() ?? new ParamSettingContainer() : new ParamSettingContainer();
                 if (request != null && request.NodeBindingOverrides.TryGetValue(node.Id, out var overrides))
                 {
-                    var settingsFields=executionNode.RuntimeConfiguration?.SettingsSchema?.Inputs.ToDictionary(p=>p.Id,StringComparer.Ordinal);
-                    var settingsValues=new Dictionary<string,object?>();
-                    foreach (var value in overrides)
-                    {
-                        if(settingsFields?.TryGetValue(value.Key,out var field)==true)
-                        {
-                            if((field.EditModes&SunEyeVision.Plugin.Contracts.FieldEditModes.Constant)==0)
-                                throw new InvalidOperationException("Runtime settings field does not allow a literal override.");
-                            settingsValues.Add(value.Key,RuntimeInputBindings.Constant(field,value.Value));
-                            executionNode.ParamSettings.RemoveSetting(value.Key);
-                        }
-                        else executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key, value.Value));
-                    }
-                    if(settingsValues.Count>0)executionNode.RuntimeConfiguration=executionNode.RuntimeConfiguration!.WithFieldValues(settingsValues);
+                    if(executionNode.RuntimeConfiguration is {} configured)
+                        executionNode.RuntimeConfiguration=configured.WithFieldValues(overrides);
+                    else foreach(var value in overrides)executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key,value.Value));
                 }
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
                 executionNode.ResourcePaths = request?.ResourcePaths;
@@ -1001,17 +990,15 @@ namespace SunEyeVision.Workflow
                 target.AddNode(executionNode);
             }
 
-            // 复制连接关系（节点 ID 不变，直接复制）
+            // 执行副本保留声明连线身份，自动来源归属必须对同一冻结图校验。
             foreach (var conn in source.Connections)
             {
-                try
+                target.AddConnection(new WorkflowConnection
                 {
-                    target.ConnectNodes(conn.SourceNodeId, conn.TargetNodeId);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning($"复制工作流连接失败: {ex.Message}");
-                }
+                    Id=conn.Id,SourceNodeId=conn.SourceNodeId,SourcePort=conn.SourcePort,
+                    TargetNodeId=conn.TargetNodeId,TargetPort=conn.TargetPort,
+                    ManualPathPoints=conn.ManualPathPoints?.ToArray()
+                });
             }
         }
 

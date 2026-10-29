@@ -1,13 +1,13 @@
 namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Finite editing/binding declaration over the Runtime's actual settings type.
-/// Read values are canonical projections; Apply returns a new settings instance and
-/// must never mutate the supplied settings. UI resources and workflow state are excluded.</summary>
+/// Read values are canonical projections. Materialization requires the complete resolved
+/// field set; it never fills missing fields from a prior/default settings object.</summary>
 public interface IToolSettingsFields
 {
     ToolSchema SettingsSchema { get; }
     InputValues ReadSettings(object settings);
-    object ApplySettings(object settings,IReadOnlyDictionary<string,object?> changes);
+    object MaterializeSettings(InputValues values);
 }
 
 /// <summary>Private, model-only editor state. Applying a rejected proposal must leave
@@ -15,9 +15,33 @@ public interface IToolSettingsFields
 public interface IToolSettingsDraft
 {
     ToolSchema Schema { get; }
-    object CaptureSettings();
-    InputValues ReadFields();
+    FieldSettings CaptureFields();
     /// <summary>Prepare the complete candidate, call the host once, then install it.
     /// A rejected or reentrant callback leaves this draft unchanged.</summary>
-    void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate);
+    void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate);
+}
+
+/// <summary>Atomic model-only editing of the actual declaration and one frozen field snapshot.</summary>
+public sealed class FieldSettingsDraft : IToolSettingsDraft
+{
+    private FieldSettings _fields;
+    private readonly Action<FieldSettings>? _validate;
+    private bool _applying;
+    public ToolSchema Schema { get; }
+    public FieldSettingsDraft(ToolSchema schema,FieldSettings fields,Action<FieldSettings>? validate=null)
+    {Schema=schema;_fields=fields.Select(schema.Inputs);_validate=validate;_validate?.Invoke(_fields);}
+    public FieldSettings CaptureFields()=>new(Schema.Inputs,_fields.Capture());
+    public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
+    {
+        ArgumentNullException.ThrowIfNull(changes);ArgumentNullException.ThrowIfNull(acceptCandidate);
+        if(_applying)throw new InvalidOperationException("A settings proposal is already being accepted.");
+        _applying=true;
+        try
+        {
+            var candidate=_fields.Apply(changes);_validate?.Invoke(candidate);
+            acceptCandidate(new(Schema.Inputs,candidate.Capture()));
+            _fields=candidate;
+        }
+        finally{_applying=false;}
+    }
 }

@@ -29,7 +29,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     private readonly Dictionary<string,NativeNumberCoordinator> _numbers=new(StringComparer.Ordinal);
     private readonly Dictionary<string,NativePicker> _colors=new(StringComparer.Ordinal);
     private readonly List<NativeColorPaletteScope> _palettes=[];
-    private readonly Dictionary<string,(long Version,string? Raw)> _pendingRaw=new(StringComparer.Ordinal);
+    private readonly Dictionary<string,(long Version,NumericPendingEdit? Raw)> _pendingRaw=new(StringComparer.Ordinal);
     private NativePopup? _popup;
     private ToggleButton? _eye;
     private FrameworkElement? _surface;

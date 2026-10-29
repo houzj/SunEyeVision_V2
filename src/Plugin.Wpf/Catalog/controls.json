@@ -6565,19 +6565,50 @@
         "C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。",
         "位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。",
         "Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
-      ]
+      ],
+      "committedValidation": {
+        "checkpointCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+        "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json",
+        "windowPassed": 18,
+        "designPassed": 108,
+        "manualAccepted": false
+      }
     }
   ],
   "currentIntegration": {
-    "baselineCommit": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
-    "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
-    "status": "C17完整配置组合候选，正式Release源码/发布/实际加载SHA核；VM/VS/人工及阶段一完整门禁仍未过。"
+    "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+    "uncommittedCandidate": true,
+    "evidence": "docs/collaboration/evidence/C09_NUMERIC_REENTRY_CANDIDATE_20261029.json",
+    "status": "C09原数值同步重入同源候选核收；只读边界及完整阶段门禁保留，非阶段完成。"
   },
   "integrationHistory": [
     {
       "productCommit": "5780c062",
       "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
       "status": "规定构建与原栅格10组过；GlobalBinding20及ImageSources2失败，不套旧链成绩；依赖hash为当前源，历史validation保原基线"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json",
+      "status": "C17组合检查点同提交正式Release核收，VM/VS/物理指针/人工及阶段一门禁仍未过。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_FIELD_STATE_CANDIDATE_20261029.json",
+      "status": "C09整体切换中；本批同源定向成绩与失败均归档，不以局部PASS宣布控件库或阶段完成。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_GRAPH_EDITOR_CANDIDATE_20261029.json",
+      "status": "C09复制/插线及窗口同源候选核收；根代理/数值重入与完整门禁继续，非阶段完成。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_ROOT_PROXY_CANDIDATE_20261029.json",
+      "status": "C09根代理真实窗口/保存历史同源候选核收；数值重入与完整阶段门禁继续。"
     }
   ]
 }

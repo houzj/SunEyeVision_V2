@@ -35,8 +35,8 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
                 if (runtimeMembers.Length > 1) throw new JsonException("Duplicate RuntimeConfiguration.");
                 if (runtimeMembers.Length != 0 && runtimeMembers[0].Value.ValueKind != JsonValueKind.Object)
                     throw new JsonException("RuntimeConfiguration must be an object when present.");
-                if (runtimeMembers.Length != 0 && element.EnumerateObject().Any(p => p.Name.Equals("Parameters", StringComparison.OrdinalIgnoreCase)))
-                    throw new JsonException("A Runtime node cannot also persist SDK Parameters.");
+                if (runtimeMembers.Length != 0 && element.EnumerateObject().Any(p => (p.Name.Equals("Parameters", StringComparison.OrdinalIgnoreCase)||p.Name.Equals("ParamSettings", StringComparison.OrdinalIgnoreCase))))
+                    throw new JsonException("A Runtime node cannot persist SDK Parameters or ParamSettings.");
                 WorkflowNodeBase node;
                 try { node = JsonSerializer.Deserialize<WorkflowNodeBase>(element.GetRawText(), options) ?? throw new JsonException("Null workflow node."); }
                 catch (Exception ex)
@@ -72,6 +72,7 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
     {
         foreach (var node in value.Nodes)
         {
+            if(node.RuntimeConfiguration is not null&&node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes cannot persist SDK ParamSettings.");
             if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                 throw new JsonException("Runtime configuration ToolId differs from the node identity.");
             if (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.HasRuntime(node.ToolType) && node.RuntimeConfiguration is null)

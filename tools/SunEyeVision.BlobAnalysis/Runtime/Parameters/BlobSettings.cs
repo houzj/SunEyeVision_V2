@@ -18,8 +18,10 @@ public sealed record BlobJudgment(
 /// <summary>Business settings only: no bindings, brushes, view state, backend handles or writable globals.</summary>
 public sealed record BlobSettings : IToolSettings<BlobSettings>
 {
-    public BlobSettings()
+    public BlobSettings() : this(true) { }
+    internal BlobSettings(bool initializeDefaults)
     {
+        if (!initializeDefaults) { Judgments = Array.Empty<BlobJudgment>(); return; }
         var definition=BlobParameterDefinition.Instance;
         Threshold=definition.Default<int>(nameof(Threshold));
         UpperThreshold=definition.Default<int>(nameof(UpperThreshold));

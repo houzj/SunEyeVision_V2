@@ -13,7 +13,7 @@ public static class ToolRuntimeExecutor
         var frozen=definition.FreezeSettings(settings);
         var errors=definition.Validate(frozen);
         if(errors.Count!=0)return new(false,null,BusinessJudgment.NotEvaluated,Array.AsReadOnly(errors.ToArray()));
-        var schema=definition.Describe(frozen);
+        var schema=definition.Describe();
         var invocation=new ToolInvocation(frozen,new InputValues(schema.Inputs,inputs.CopyValues()),context,outputRequests);
         foreach(var request in invocation.OutputRequests)request.Validate(schema);
         if(context.Cancellation.IsCancellationRequested)

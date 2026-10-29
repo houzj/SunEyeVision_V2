@@ -17,9 +17,8 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;
     public InputValues ReadSettings(object settings)=>BlobParameterDefinition.Instance.ReadSettings(settings as BlobSettings??throw new ArgumentException("BlobSettings is required."));
-    public object ApplySettings(object settings,IReadOnlyDictionary<string,object?> changes)=>BlobParameterDefinition.Instance.ApplySettings(
-        settings as BlobSettings??throw new ArgumentException("BlobSettings is required."),changes);
-    public ToolSchema Describe(BlobSettings committedSettings)
+    public object MaterializeSettings(InputValues values)=>BlobParameterDefinition.Instance.MaterializeSettings(values);
+    public ToolSchema Describe()
     {
         var inputs=new[] {
         new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes:FieldEditModes.Reference),
@@ -31,6 +30,6 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
             workflowImageInputId:BlobParameterDefinition.Instance.WorkflowImageInputId);
     }
     public IReadOnlyList<Diagnostic> Validate(BlobSettings settings) => settings.Validate();
-    public ToolCapabilities Capabilities(BlobSettings settings) => new(new[] { "halcon" });
+    public ToolCapabilities Capabilities() => new(new[] { "halcon" });
     public IToolSession<BlobSettings, BlobOutput> CreateSession() => new BlobSession();
 }

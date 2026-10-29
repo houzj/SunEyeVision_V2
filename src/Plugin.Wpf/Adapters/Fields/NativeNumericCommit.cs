@@ -7,6 +7,8 @@ using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
+internal readonly record struct NumericPendingEdit(string Raw,long Acceptance);
+
 /// <summary>Raw-edit and binding commit over the original numeric leaf; accepted values belong only to the borrowed state.</summary>
 internal sealed class NativeNumericCommit : IDisposable
 {
@@ -23,11 +25,31 @@ internal sealed class NativeNumericCommit : IDisposable
     private bool _syncing,_disposed,_suspended;
     private string? _pendingRaw;
     private string _rawError="";
-    public bool IsDirty {get;private set;}
+    private bool _dirty,_validateRaw;
+    private long _rawAcceptance,_externalMutation;
+    private long _textRevision;
+    private sealed class TextWrite(string expected){internal readonly string Expected=expected;internal bool Seen;}
+    private TextWrite? _textWrite;
+    public bool IsDirty {get=>_dirty&&_rawAcceptance==_state.AcceptanceVersion;private set{_dirty=value;if(value)_rawAcceptance=_state.AcceptanceVersion;}}
     public long EditVersion {get;private set;}
     public bool IsSuspended=>_suspended;
     public TextBox Text=>_text;
-    public string? PendingRaw=>IsDirty?(_suspended?_pendingRaw:_text.Text):null;
+    public NumericPendingEdit? Pending=>IsDirty?new(_suspended?_pendingRaw??_text.Text:_text.Text,_rawAcceptance):null;
+    private (long Acceptance,long Mutation,bool Reference) Stamp()=> (_state.AcceptanceVersion,_externalMutation,_state.IsReferenceMode);
+    private bool Matches((long Acceptance,long Mutation,bool Reference) stamp)=>Current()&&stamp==Stamp();
+    private bool WriteText(string expected,Action action,(long Acceptance,long Mutation,bool Reference) stamp)
+    {
+        if(!Matches(stamp))return false;
+        var revision=_textRevision;
+        var inner=_text.GetBindingExpression(TextBox.TextProperty);var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
+        var previous=_textWrite;_textWrite=new(expected);
+        try{IgnoreChanges(action);}finally{_textWrite=previous;}
+        var valid=Matches(stamp)&&_textRevision-revision<=1&&ReferenceEquals(inner,_text.GetBindingExpression(TextBox.TextProperty))
+            &&ReferenceEquals(outer,_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty));
+        if(!valid)_externalMutation++;
+        return valid;
+    }
+    internal bool ProjectCandidate(ConstantSetting value,Action action)=>WriteText(Format(value.Value!),action,Stamp());
     internal static void EnsureRepresentable(ConstantSetting setting)
     {
         if(setting.Value is long value&&(value < -9007199254740992L||value > 9007199254740992L))
@@ -47,11 +69,24 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     private void OnTextChanged(object sender,TextChangedEventArgs args)
     {
-        if(_syncing||_suspended||!Current()||_state.IsReferenceMode)return;
+        _textRevision++;
+        if(_textWrite is {Seen:false} write&&_text.Text==write.Expected){write.Seen=true;return;}
+        _externalMutation++;
+        var revision=_textRevision;var acceptance=_state.AcceptanceVersion;
+        if(_suspended||!Current()||_state.IsReferenceMode||revision!=_textRevision||acceptance!=_state.AcceptanceVersion)return;
         IsDirty=true;
         EditVersion++;
+        _validateRaw=true;
+        if(!_syncing)ValidateRaw();
+    }
+    private void ValidateRaw()
+    {
+        _validateRaw=false;
+        if(!Current()||!IsDirty||_state.IsReferenceMode)return;
+        var stamp=Stamp();
         var previous=_rawError;
         _rawError=ReadRaw(out _,out var error)?"":error;
+        if(!Matches(stamp))return;
         if(_rawError.Length!=0)_state.SetEditError(_rawError);
         else if(previous.Length!=0&&_state.EditError==previous)_state.SetEditError("");
     }
@@ -60,7 +95,7 @@ internal sealed class NativeNumericCommit : IDisposable
         value=null!;error="";
         try
         {
-            var raw=_suspended?_pendingRaw??_text.Text:_text.Text;
+            var raw=_suspended?(IsDirty?_pendingRaw??_text.Text:Format((_state.Accepted as ConstantSetting??_state.ConstantBackup??throw new ArgumentException("没有可提交的常量。")).Value!)):_text.Text;
             if(string.IsNullOrWhiteSpace(raw))throw new ArgumentException("请输入数值。");
             if(_state.Port.Type.Scalar==ScalarKind.Int64)
             {
@@ -108,21 +143,22 @@ internal sealed class NativeNumericCommit : IDisposable
         if(_disposed||_state.IsDisposed)return false;
         if(!ReadRaw(out var value,out var parseError)){_state.SetEditError(parseError);return false;}
         proposal=new(value);
-        var prepared=proposal;var raw=_suspended?_pendingRaw??_text.Text:_text.Text;var editVersion=EditVersion;var acceptance=_state.AcceptanceVersion;
+        var prepared=proposal;var raw=_suspended?_pendingRaw??_text.Text:_text.Text;var editVersion=EditVersion;var acceptance=_state.AcceptanceVersion;var stamp=Stamp();
         var valid=false;Exception? failure=null;string? bindingError=null;
         try{IgnoreChanges(()=>valid=ValidatePreparedBindings(prepared,error=>bindingError=error));}
         catch(Exception error){failure=error;}
         try
         {
-            // Binding validation may format a Float target. Only owner acceptance may replace the edit's raw text.
-            if(Current()&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion)
-                IgnoreChanges(()=>{if(_suspended)_pendingRaw=raw;else _text.SetCurrentValue(TextBox.TextProperty,raw);});
+            // Only successful, unchanged binding transfers may restore their captured raw text.
+            // A rejected transfer may contain a validator's newer edit; leave its actual text intact.
+            if(valid&&Current()&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion)
+            {if(_suspended)_pendingRaw=raw;else if(!WriteText(raw,()=>_text.SetCurrentValue(TextBox.TextProperty,raw),stamp))valid=false;}
         }
         catch(Exception cleanup){failure=failure is null?cleanup:new AggregateException(failure,cleanup);}
         if(failure is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
-        if(bindingError is not null&&Current()&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion)
+        if(bindingError is not null&&Matches(stamp)&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion)
             _state.SetEditError(bindingError);
-        return valid&&Current()&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion&&!_state.IsReferenceMode;
+        return valid&&Matches(stamp)&&editVersion==EditVersion&&acceptance==_state.AcceptanceVersion&&!_state.IsReferenceMode;
     }
     public bool TryReadProposal(out ConstantSetting proposal)
     {
@@ -132,22 +168,21 @@ internal sealed class NativeNumericCommit : IDisposable
         proposal=new(value);return true;
     }
     public void IgnoreChanges(Action action)
-    {var previous=_syncing;_syncing=true;try{action();}finally{_syncing=previous;}}
+    {var previous=_syncing;_syncing=true;try{action();}finally{_syncing=previous;if(!_syncing&&_validateRaw)ValidateRaw();}}
     public bool ValidatePreparedBindings(ConstantSetting proposal,Action<string>? reportError=null)
     {
         void Reject(string error){if(reportError is not null)reportError(error);else _state.SetEditError(error);}
         if(_disposed||_state.IsDisposed)return false;
         // An unloaded capture consumes its saved edit, without touching the detached visual.
         if(_suspended)return true;
-        if(_paired)IgnoreChanges(()=>_text.SetCurrentValue(TextBox.TextProperty,Format(proposal.Value!)));
+        var stamp=Stamp();var expected=Format(proposal.Value!);
+        if(_paired&&!WriteText(expected,()=>_text.SetCurrentValue(TextBox.TextProperty,expected),stamp))return false;
         // Preserve both original bindings, their validators, trigger and floating format.
         var inner=_text.GetBindingExpression(TextBox.TextProperty);
-        inner?.UpdateSource();
-        if(!Current())return false;
+        if(!WriteText(expected,()=>inner?.UpdateSource(),stamp))return false;
         if(inner?.HasValidationError==true){Reject("原数值输入校验未通过。");return false;}
         var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
-        outer?.UpdateSource();
-        if(!Current())return false;
+        if(!WriteText(expected,()=>outer?.UpdateSource(),stamp))return false;
         if(outer?.HasValidationError==true){Reject("无法提交原数值绑定。");return false;}
         if(_requireOwnerBinding)
         {
@@ -158,8 +193,7 @@ internal sealed class NativeNumericCommit : IDisposable
             var bridge=BindingOperations.GetBindingExpressionBase(_owner!,_valueProperty!);
             if(bridge is not BindingExpression binding||binding.Status!=BindingStatus.Active)
             {Reject("原数值桥绑定缺失或已失效。");return false;}
-            binding.UpdateSource();
-            if(!Current())return false;
+            if(!WriteText(expected,binding.UpdateSource,stamp))return false;
             if(!ReferenceEquals(bridge,BindingOperations.GetBindingExpressionBase(_owner!,_valueProperty!))
                 ||binding.Status!=BindingStatus.Active||binding.HasValidationError||Validation.GetHasError(_owner!))
             {Reject("无法提交原数值桥绑定。");return false;}
@@ -180,30 +214,35 @@ internal sealed class NativeNumericCommit : IDisposable
         if(constant is null)return;
         EnsureRepresentable(constant);
         if(_suspended){IsDirty=false;_rawError="";_pendingRaw=null;return;}
-        _syncing=true;
+        var stamp=Stamp();var expected=Format(constant.Value!);var syncing=_syncing;_syncing=true;
         try
         {
             if(_owner is not null)
             {
                 var value=Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture);
-                _projectBoundValue?.Invoke(value);
-                if(!Current())return;
-                _owner.SetCurrentValue(_valueProperty!,value);
-                if(!Current())return;
-                if(_requireOwnerBinding)_owner.GetBindingExpression(_valueProperty!)?.UpdateTarget();
-                if(!Current())return;
+                if(!WriteText(expected,()=>_projectBoundValue?.Invoke(value),stamp))return;
+                if(!WriteText(expected,()=>_owner.SetCurrentValue(_valueProperty!,value),stamp))return;
+                if(_requireOwnerBinding&&!WriteText(expected,()=>_owner.GetBindingExpression(_valueProperty!)?.UpdateTarget(),stamp))return;
             }
-            else _leaf.SetCurrentValue(Numbers.NumericControl.TextProperty,Format(constant.Value!));
-            if(!Current())return;
+            else if(!WriteText(expected,()=>_leaf.SetCurrentValue(Numbers.NumericControl.TextProperty,expected),stamp))return;
             var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
-            if(outer is not null){Validation.ClearInvalid(outer);outer.UpdateTarget();}
-            if(!Current())return;
+            if(outer is not null&&!WriteText(expected,()=>{Validation.ClearInvalid(outer);outer.UpdateTarget();},stamp))return;
             var inner=_text.GetBindingExpression(TextBox.TextProperty);
-            if(inner is not null){Validation.ClearInvalid(inner);inner.UpdateTarget();}
-            if(!Current())return;
+            if(inner is not null&&!WriteText(expected,()=>{Validation.ClearInvalid(inner);inner.UpdateTarget();},stamp))return;
+            // A restored raw SetCurrentValue can remain the effective target override even
+            // after UpdateTarget. Install this accepted text without replacing either binding.
+            if(!WriteText(expected,()=>_text.SetCurrentValue(TextBox.TextProperty,expected),stamp))return;
             IsDirty=false;_rawError="";_pendingRaw=null;
         }
-        finally{_syncing=false;}
+        finally{_syncing=syncing;if(!_syncing&&_validateRaw)ValidateRaw();}
+    }
+    public void BeginConstantEntry()
+    {
+        if(!Current()||_state.IsReferenceMode)return;
+        var stamp=Stamp();
+        if(!WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),stamp))return;
+        IsDirty=true;_pendingRaw=string.Empty;
+        _state.SetEditError("请输入新的常量值。");
     }
     private string Format(object value)=>value is long integer?integer.ToString(CultureInfo.InvariantCulture)
         :Convert.ToDouble(value,CultureInfo.InvariantCulture).ToString(_layout is null?"G17":"F"+_layout.DecimalPlaces,CultureInfo.InvariantCulture);
@@ -213,23 +252,23 @@ internal sealed class NativeNumericCommit : IDisposable
         try{if(IsDirty){if(!ReadRaw(out _,out var error))_state.SetEditError(error);}else ValidateStored(initial);}
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);}
     }
-    public void RestoreRejected(string? raw)
+    public void RestoreRejected(NumericPendingEdit? raw)
     {
-        var suspended=_suspended;ProjectAccepted();
-        if(raw is null)return;
+        var suspended=_suspended;var stamp=Stamp();ProjectAccepted();
+        if(raw is null||!Matches(stamp))return;
         RestorePending(raw);if(!suspended)Resume();
     }
-    public void Suspend(){if(_suspended)return;_pendingRaw=PendingRaw;_suspended=true;}
-    public void RestorePending(string? raw)
-    {if(raw is null)return;_pendingRaw=raw;_suspended=true;IsDirty=true;}
+    public void Suspend(){if(_suspended)return;_pendingRaw=Pending?.Raw;_suspended=true;}
+    public void RestorePending(NumericPendingEdit? raw)
+    {if(raw is null||raw.Value.Acceptance!=_state.AcceptanceVersion||IsDirty)return;_pendingRaw=raw.Value.Raw;_suspended=true;IsDirty=true;}
     public void Resume()
     {
         if(!_suspended||!Current())return;
         _suspended=false;
-        if(_pendingRaw is not {} raw){ProjectAccepted();return;}
-        _syncing=true;
-        try{_text.SetCurrentValue(TextBox.TextProperty,raw);if(!Current())return;IsDirty=true;_pendingRaw=null;}
-        finally{_syncing=false;}
+        if(!IsDirty||_pendingRaw is not {} raw){ProjectAccepted();return;}
+        var stamp=Stamp();
+        if(!WriteText(raw,()=>_text.SetCurrentValue(TextBox.TextProperty,raw),stamp))return;
+        IsDirty=true;_pendingRaw=null;
         _rawError=ReadRaw(out _,out var error)?"":error;
         if(_rawError.Length!=0)_state.SetEditError(_rawError);
     }

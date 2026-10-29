@@ -18,7 +18,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     public FrameworkElement View=>this;
     public bool HasInvalidInput=>Editor.HasInvalidInput;
     public event Action? Changed {add=>Editor.Changed+=value;remove=>Editor.Changed-=value;}
-    public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)
-        =>Editor.TryCapture(out settings,out references,out error);
+    public bool TryCapture(out FieldSettings fields,out string error)
+        =>Editor.TryCapture(out fields,out error);
     public void Dispose()=>Editor.Dispose();
 }

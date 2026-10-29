@@ -167,7 +167,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         Submit(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
     }
     private bool Submit(OutputReference reference,bool explicitCommit=false)
-        =>AcceptSetting(new ReferenceSetting(reference),explicitCommit);
+        =>AcceptSetting(new ReferenceSetting(reference,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic),explicitCommit);
     private bool AcceptSetting(ParameterSetting proposal,bool explicitCommit=false)
     {
         if(_suspended&&!explicitCommit||_disposed||_state.IsDisposed)return false;
@@ -184,7 +184,6 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(accepted)
         {
             _pendingText=null;
-            if(proposal is ConstantSetting)_state.SetSourceError("");
             if(_disposed||_state.IsDisposed||generation!=_uiGeneration)return true;
             RequestClose();if(!_disposed&&!_state.IsDisposed&&generation==_uiGeneration)OnStateChanged();return true;
         }
@@ -216,6 +215,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_disposed||_state.IsDisposed)return false;
         try
         {
+            if(_pendingText is null&&!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant)
+            {proposal=constant;return true;}
             if(_allowConstantText&&_pendingText is {} text)
             {
                 object? value=null;
@@ -242,7 +243,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
             if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
                 throw new ArgumentException("序号超出来源声明的最大数量。");
-            proposal=new ReferenceSetting(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
+            proposal=accepted with {Reference=new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage)};
             return !_disposed&&!_state.IsDisposed;
         }
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
@@ -255,16 +256,20 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         // Explicit owner capture is allowed offscreen; only UI-triggered writes are suspended.
         if(_disposed||_state.IsDisposed)return false;
         if(_commitGroup is not null)return _commitGroup();
-        if(_pendingText is null&&_allowConstantText&&_state.Accepted is ConstantSetting)
-        {_state.SetSourceError("");if(_disposed||_state.IsDisposed)return false;}
-        if(_committing||_pendingText is null)return !_state.HasInvalidInput;
+        if(_committing)return !_state.HasInvalidInput;
+        if(_pendingText is null)
+        {
+            if(!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant&&_state.SourceError.Length!=0)
+                return AcceptSetting(constant);
+            return !_state.HasInvalidInput;
+        }
         if(ReadOnlyA){_pendingText=null;Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
         _committing=true;
         try
         {
             if(!TryPreparePending(out var proposal))return false;
             if(uiGeneration is {} generation&&(_suspended||generation!=_uiGeneration))return false;
-            if(proposal is ReferenceSetting reference)return Submit(reference.Reference,true);
+            if(proposal is ReferenceSetting)return AcceptSetting(proposal,true);
             return AcceptSetting(proposal,true);
         }
         finally{_committing=false;}

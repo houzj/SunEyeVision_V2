@@ -1,0 +1,33 @@
+{
+  "status": "STATIC_INSTALLATION_API_EVIDENCE_NOT_TRANSFORM_EQUIVALENCE",
+  "checkpoint": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+  "sources": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Includes/VmModuleResultBase.h",
+      "sha256": "1f428dfdae4b953873d1ef26c51f24cae51bcd3dd14373f9f859ff0acbe7110b"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Development/V4.x/Includes/IVmImageFixture.h",
+      "sha256": "24266df51a947920129989ee3176d53ec8130d826a5d29b5f6effa4039c23bd7"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/Includes/Algorithms/PositionFixCpp.h",
+      "sha256": "bb6477e7c715cbeb8d152e96e4489a6e9951962afddcfdc1fc1796eeaf014c34"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/ReferencedAssemblies/Algorithms/MVDPositionFix.Net.XML",
+      "sha256": "022f5aa411d247d12a4aea1f255ce09a683819b80cf61e821f848b8c723fae8a"
+    }
+  ],
+  "confirmed": [
+    "VmModuleResultBase.h:164–174 Fixture含init/run PointF、Angle、ScaleX/Y。",
+    "IVmImageFixture.h:33–37 输入图像和SetPositionCorrectionInfo(Fixture*)仅当次执行起效。",
+    "PositionFixCpp.h:40–103提供RunImageSize/BasePoint/RunningPoint/FixMode/InitialShape；121–128提供CorrectedShape/Status；154–162 GetResult/Run，184 DestroyPositionFixToolInstance。"
+  ],
+  "unproven": [
+    "未发现VM Blob实际生产调用者；PositionFix只是定向取证入口，不能直接代用为Blob等价。",
+    "角度单位和正向、缩放旋转平移顺序、退化与逆变换规则未证。",
+    "检测/屏蔽共用修正、帧身份和借用释放合同未证；仅当次执行不是完整生命周期证明。",
+    "未验证实际编译选项与实例内存布局；不新增本方ABI假设或推测矩阵。"
+  ]
+}

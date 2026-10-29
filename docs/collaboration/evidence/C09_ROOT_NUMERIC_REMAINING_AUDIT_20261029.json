@@ -1,0 +1,72 @@
+{
+  "status": "CONFIRMED_SOURCE_GAPS_NOT_IMPLEMENTED",
+  "scope": "下一完整控件单元；不影响本批复制/插线已核收事实，不将本批局部通过当阶段准入。",
+  "units": [
+    {
+      "control": "根运行参数代理",
+      "files": [
+        "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+        "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+        "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs",
+        "src/UI/Services/Editing/RootResourceProxyBinding.cs"
+      ],
+      "gaps": [
+        "Reference状态被当作Constant(null)备份，非nullable数值行创建失败。",
+        "ValidateReference只传OutputReference，重建设置时丢Conversion。",
+        "RestoreOpening通过用户Unset提案恢复initial-missing Required输入，会拒绝移除代理。",
+        "临时校验写活草稿再整配置回滚，外部来源回调的新修改可能被覆盖。"
+      ],
+      "decision": "复用NodeConfigurationEditHost.Freeze/ValidateBatch/SamePendingEdits：独立验证候选、完整ReferenceSetting透传、仅真实常量作备份、可信opening单字段精确恢复；不放宽用户Required-Unset规则。",
+      "acceptance": [
+        "绑定整数设置真实根窗口行可创建/切换来源，无伪默认或null。",
+        "带显式转换的来源/索引校验保持转换。",
+        "移除初始未绑定图像代理仅删除其键，保留同节点另一代理修改。",
+        "验证A时回调合法修改B：拒旧校验且保B，A临时变化不落地。",
+        "关闭/重绑、应用/取消、保存/历史和资源生命周期沿正式宿主验证。"
+      ]
+    },
+    {
+      "control": "原数值文本回写",
+      "files": [
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+        "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs"
+      ],
+      "gaps": [
+        "BeginConstantEntry写Text后无接纳身份核查；Resume仅Current检查，可能污染同步接纳的新引用/常量。",
+        "_syncing期间TextChanged不追踪新raw，单靠AcceptanceVersion不能识别raw/ABA变更。"
+      ],
+      "decision": "补瞬态文本修改版本与Current/AcceptanceVersion/模式/叶身份保护，并统一检查其他受控文本回写；不加持久模型、不补0。Escape当前仅关闭Popup，不冒称完整字段取消，行为按原证据核定。",
+      "acceptance": [
+        "Begin/Resume回调接纳新引用/常量，旧尾部不改新dirty/错误/raw。",
+        "只改raw及ABA回调保留新输入，合法Enter单次提交失焦。",
+        "隐藏/再显、失焦队列、换模板/关闭/释放后旧回调不写。"
+      ]
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+      "sha256": "5884dfc9e7751d961b610f07bab509cad13a0a5b2515dcb23d55da2a64f64a65"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+      "sha256": "408a6caa721e741cfe0d869cdce8c532530725562d1bc77a77ae9376acbba31a"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs",
+      "sha256": "9244b1018ebeea6fae533bb02dc9849af6887fc7658b8109d8da7aac7dae7992"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootResourceProxyBinding.cs",
+      "sha256": "d88ef211f947d8eb3682b80d6e3245ca42dc9007e03b7b255760c53675f19f78"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "43a5b9870b4dc62c5cabacd2a4e20e2f9b64bb14c62f7fc82082c59d6f9b08ef"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "381b95e1df6d1bb9d84a54da497ba848af7ebbf846e3628e94b0b12f3e2e41af"
+    }
+  ]
+}

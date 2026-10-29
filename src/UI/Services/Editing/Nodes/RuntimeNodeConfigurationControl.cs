@@ -95,8 +95,6 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         _node=node;
         var configuration=node.RuntimeConfiguration??throw new ArgumentException("Runtime configuration is required.");
         var settings=configuration.SettingsSchema??throw new ArgumentException("Runtime settings metadata is required.");
-        var references=node.ParamSettings.Settings.Where(s=>settings.Inputs.Any(p=>p.Id==s.ParameterName)&&s.ReferenceExpression is not null)
-            .ToDictionary(s=>s.ParameterName,s=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(s.ReferenceExpression!)),StringComparer.Ordinal);
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
         var referenceOptions=new ReferenceFieldOptions(_=>
@@ -107,8 +105,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         },(target,proposal)=>ValidateProposal(target,proposal,generation));
         var panel=node.ToolType=="ImageLoad"?null:new DeclaredInputFieldsView(schema,port=>
         {
-            var saved=node.ParamSettings.GetSetting(port.Id);
-            return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
+            return node.RuntimeConfiguration!.Fields.Read(port.Id);
         },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
             _=>ReadReferenceCandidates(generation));
         var sourceContext=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
@@ -123,9 +120,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         try
         {
         if(_disposed||generation!=_generation){DisposeInput();return;}
-        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
-            new(references,referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
-                (candidate,bindings)=>ValidateSettingsCandidate(candidate,bindings,generation)));
+        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.SettingsSchema.Inputs),
+            new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
+                candidate=>ValidateSettingsCandidate(candidate,generation)));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
         if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;
         _view.Changed+=Changed;Content=_view.View;
@@ -184,31 +181,20 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         if(_inputs.FirstOrDefault(f=>f.HasInvalidText) is { } invalid){error=invalid.Error;return false;}
         if(view is null){error="配置尚未初始化。";return false;}
-        if(!view.TryCapture(out var settings,out var references,out error))return false;
+        if(!view.TryCapture(out var settings,out error))return false;
         if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
         _syncing=true;
         try
         {
-            var next=node.RuntimeConfiguration!.WithSettings(settings);
+            var next=node.RuntimeConfiguration!.WithSettingsFields(settings);
             if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
-            var bindings=node.ParamSettings.Clone();
-            foreach(var port in next.SettingsSchema!.Inputs)
-                if(references.TryGetValue(port.Id,out var reference))bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
-                else bindings.RemoveSetting(port.Id);
             if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
-            node.RuntimeConfiguration=next;node.ParamSettings=bindings;error="";return true;
+            node.RuntimeConfiguration=next;error="";return true;
         }
         catch(Exception exception)when(exception is ArgumentException or InvalidOperationException){error=exception.Message;return false;}
         finally{_syncing=false;}
         }
         finally{_capturing=false;}
-    }
-    private static ParamSetting ToSetting(WorkflowNodeBase node,string id,OutputReference reference)
-    {
-        var expression=BindingReferenceSerializer.Serialize(reference);var prior=node.ParamSettings.GetSetting(id);
-        return new(){ParameterName=id,BindingType=BindingType.Binding,ReferenceExpression=expression,SourceNodeId=reference.NodeId,
-            SourceWorkflowId=reference.ScopeId,SourceProperty=reference.PortId,
-            Conversion=prior?.ReferenceExpression==expression?prior.Conversion:BindingConversion.Automatic};
     }
     private void WriteInput(Port port,ConfigurationSetting setting,long generation)
     {
@@ -216,11 +202,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
             throw new InvalidOperationException("当前编辑范围尚未就绪或已经失效。");
         var node=_node;
-        var bindings=node.ParamSettings.Clone();
-        if(setting is ReferenceSetting reference)bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
-        else if(setting is UnsetSetting)bindings.RemoveSetting(port.Id);
-        else throw new ArgumentException("运行输入必须选择已声明来源。");
-        node.ParamSettings=bindings;
+        node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ConfigurationSetting>{[port.Id]=setting});
     }
     private string FormatReference(OutputReference reference)
     {
@@ -253,29 +235,26 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         return candidates.AsReadOnly();
     }
-    private void ValidateSettingsCandidate(object settings,IReadOnlyDictionary<string,ReferenceSetting> references,long generation)
+    private void ValidateSettingsCandidate(FieldSettings settings,long generation)
     {
         var node=_node;
         if(_disposed||generation!=_generation
             ||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
             throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
-        var priorBindings=node.ParamSettings;var priorConfiguration=node.RuntimeConfiguration!;
+        var priorConfiguration=node.RuntimeConfiguration!;
+        RuntimeToolConfiguration? candidate=null;
         try
         {
-            var candidate=priorConfiguration.WithSettings(settings);
+            candidate=priorConfiguration.WithSettingsFields(settings);
             if(_disposed||generation!=_generation||!ReferenceEquals(node,_node))
                 throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
-            var bindings=priorBindings.Clone();
-            foreach(var port in candidate.SettingsSchema!.Inputs)
-                if(references.TryGetValue(port.Id,out var reference))bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
-                else bindings.RemoveSetting(port.Id);
-            node.RuntimeConfiguration=candidate;node.ParamSettings=bindings;
+            node.RuntimeConfiguration=candidate;
             context.Host.Validate(context.PreparedDraft);
             if(_disposed||generation!=_generation||!context.IsValid||!ReferenceEquals(_node,node)
                 ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context))
                 throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
         }
-        finally{node.RuntimeConfiguration=priorConfiguration;node.ParamSettings=priorBindings;}
+        finally{if(ReferenceEquals(node.RuntimeConfiguration,candidate))node.RuntimeConfiguration=priorConfiguration;}
     }
     private string? ValidateProposal(Port target,ConfigurationSetting proposal,long generation)
     {
@@ -283,18 +262,18 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             ||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
             return "来源编辑已失效，请使用当前参数页。";
         if(proposal is not ReferenceSetting reference)return null;
-        var node=_node;var priorBindings=node.ParamSettings;var priorConfiguration=node.RuntimeConfiguration;
+        var node=_node;var priorConfiguration=node.RuntimeConfiguration!;RuntimeToolConfiguration? proposed=null;
         try
         {
-            var proposed=priorBindings.Clone();proposed.SetSetting(ToSetting(node,target.Id,reference.Reference));
-            node.ParamSettings=proposed;
+            proposed=priorConfiguration.WithFieldSettings(new Dictionary<string,ConfigurationSetting>{[target.Id]=proposal});
+            node.RuntimeConfiguration=proposed;
             context.Host.Validate(context.PreparedDraft);
             return _disposed||generation!=_generation||!context.IsValid||!ReferenceEquals(_node,node)
                 ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)
                 ?"来源编辑已失效，请使用当前参数页。":null;
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
-        finally{node.ParamSettings=priorBindings;node.RuntimeConfiguration=priorConfiguration;}
+        finally{if(ReferenceEquals(node.RuntimeConfiguration,proposed))node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
     {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;var view=_view;_view=null;_inputs.Clear();Content=null;if(view is not null){view.Changed-=Changed;view.Dispose();}}

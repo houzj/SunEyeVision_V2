@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,11 +12,11 @@ public partial class MainWindowViewModel
 {
     private void TryAutoBindRuntimeImageSource(SunEyeVision.Workflow.WorkflowNodeBase node,SunEyeVision.Workflow.WorkflowConnection? connection)
     {
-        if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId is not { } target||node.ParamSettings.GetSetting(target) is not null||
+        if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId is not { } target||node.RuntimeConfiguration.Fields.Read(target) is not Plugin.Contracts.UnsetSetting||
             node is not Shared.WorkflowNode uiNode||GetDataProviderForNode(uiNode) is not Plugin.SDK.Execution.Parameters.DataSourceQueryService query)return;
         var candidates=(query.BindingCandidateNodeIds?.Invoke(node.Id)??query.GetAvailableDataSources(node.Id).Select(source=>source.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray()).ToHashSet(StringComparer.Ordinal);
         var incoming=connection is not null?new[]{connection}:_workflowEngine.GetWorkflow(query.WorkflowId!)!.Connections.Where(edge=>edge.TargetNodeId==node.Id).ToArray();
-        foreach(var edge in incoming.Where(edge=>candidates.Contains(edge.SourceNodeId)))
+        foreach(var edge in incoming.Where(edge=>edge.TargetNodeId==node.Id&&candidates.Contains(edge.SourceNodeId)))
         foreach(var id in new[]{edge.SourceNodeId})
         foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<Plugin.SDK.Execution.Results.OutputVariable>())
         {
@@ -25,10 +25,8 @@ public partial class MainWindowViewModel
             try{port=Plugin.SDK.Execution.Parameters.BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
             if(port.Type.Shape!=Plugin.Contracts.ValueShape.Resource||port.Type.Resource!=Plugin.Contracts.ResourceKind.Image)continue;
             var reference=new Plugin.Contracts.OutputReference(id,port.Id,port.Type,scopeId:query.WorkflowId,storage:port.Storage);
-            var setting=new Plugin.SDK.Execution.Parameters.ParamSetting{ParameterName=target,BindingType=Plugin.SDK.Execution.Parameters.BindingType.Binding,
-                ReferenceExpression=Plugin.Runtime.BindingReferenceSerializer.Serialize(reference),SourceWorkflowId=query.WorkflowId,
-                SourceNodeId=id,SourceProperty=port.Id,AutomaticConnectionId=edge.Id};
-            node.ParamSettings.SetSetting(setting);
+            node.RuntimeConfiguration=node.RuntimeConfiguration.WithFieldSettings(new System.Collections.Generic.Dictionary<string,Plugin.Contracts.ParameterSetting>{
+                [target]=new Plugin.Contracts.ReferenceSetting(reference,OriginId:"connection:"+edge.Id)});
             AddLog($"自动绑定图像源: {node.Name} → {output.DisplayName??output.Name}");return;
         }
     }

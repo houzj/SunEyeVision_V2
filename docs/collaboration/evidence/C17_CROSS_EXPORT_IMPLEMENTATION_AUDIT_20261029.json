@@ -1,0 +1,25 @@
+{
+  "status": "READ_ONLY_ORIGINAL_SOURCE_PLAN_NOT_IMPLEMENTED",
+  "source": {
+    "helper": "Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs",
+    "helperSha256": "954980db0062e35506753b5fd918aab2472f2606e71a28ae5f9a3132b50257ee",
+    "entry": "analysis/decompiled/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+    "entrySha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
+    "evidenceKind": "只读审查原反编译来源，实施时再核所在归档；未运行VM或像素对照。"
+  },
+  "confirmedRules": [
+    "Helper199：仅Opacity==0跳过；285–289先横线(0,(int)Y)到(W,(int)Y)，再竖线((int)X,0)到((int)X,H)，坐标向零截断。",
+    "Helper456–464：BGR，线宽max(2,(int)width)，Cv2.Line LINE_8/shift0；非零opacity不混色，不绘制锁定/选中装饰。",
+    "原入口2185–2186仅按IIsVisible筛ShapeList，2195 SaveRoiImageSyn不带ROIList、屏幕网格或缩放。",
+    "Helper93默认jpgQuality=0，151–162未给合法quality则ImEncode默认参数；静态70不是该入口默认。",
+    "Helper735–769/903–926 RGB/P3转BGR、渲染灰度转BGR，raw灰度不转。"
+  ],
+  "implementationBoundary": [
+    "保当前receipt/proof、弹窗前冻结与ExportCross快照，替换BitmapSource-only导出准备物；复制图像后按原ShapeList次序绘制，再冻结像素和编码。",
+    "不能先全幅WPF渲染再叠Cross，避免重复及顺序错误；混合可见形状后端必须明确，未迁类型仍是导出差异。",
+    "公共库若使用OpenCvSharp须显式声明同仓4.13.0.20260222及runtime依赖，不能借UI加载；不新增产品/算法项目。",
+    "Gray16/BGRA支持明确为本方扩展；OpenCV原二进制版本差异与字节级同一性另实测，不冒称已等价。"
+  ],
+  "consumers": ["src/Plugin.Wpf/Adapters/Display/NativeImageExport.cs", "NativeResultViewport.Export.cs", "NativeResultViewport.cs的_prepareExport", "原ImageViewBox.xaml.cs导出消费及验证"],
+  "acceptance": "分数/负坐标、宽度.25/1.99/2/2.99/3.99、opacity0/.2/1、双十字交叠顺序、边界裁剪、隐藏/锁定无装饰、RGB/P3/Gray、PNG/BMP解码像素/JPEG默认参数，以及原换帧/关闭/取消/失效11组。"
+}

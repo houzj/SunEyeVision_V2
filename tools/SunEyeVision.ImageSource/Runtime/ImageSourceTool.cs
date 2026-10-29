@@ -27,9 +27,9 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new ResultColumnDescriptor("timestamp","设备时间",new(ImageSourceOutput.Timestamp))
     });
     public InputValues ReadSettings(object settings)=>ImageSourceFields.Read(RequireSettings(settings));
-    public object ApplySettings(object settings,IReadOnlyDictionary<string,object?> changes)=>ImageSourceFields.Apply(RequireSettings(settings),changes);
+    public object MaterializeSettings(InputValues values)=>ImageSourceFields.Materialize(values);
     private static ImageSourceSettings RequireSettings(object settings)=>settings as ImageSourceSettings??throw new ArgumentException("图像源设置类型不正确。");
-    public ToolSchema Describe(ImageSourceSettings settings)=>Schema;
+    public ToolSchema Describe()=>Schema;
     // No WorkflowImageInputId: an unrelated displayed/upstream image must never become a camera frame.
     public static ToolSchema Schema {get;}=new(new[] {
         new Port(LocalAddress,TypeRef.ScalarOf(ScalarKind.Text),Required:false),
@@ -40,6 +40,6 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new Port(DeviceTimestamp,TypeRef.ScalarOf(ScalarKind.Text),Required:false)
     },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()));
     public IReadOnlyList<Diagnostic> Validate(ImageSourceSettings settings)=>settings.Validate();
-    public ToolCapabilities Capabilities(ImageSourceSettings settings)=>new(new[]{"halcon"});
+    public ToolCapabilities Capabilities()=>new(new[]{"halcon"});
     public IToolSession<ImageSourceSettings,ImageSourceOutput> CreateSession()=>new ImageSourceSession();
 }

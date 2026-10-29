@@ -60,13 +60,11 @@ internal static class S2DocumentEditingCases
    {Layout=new("结果显示","图像显示",DialogGroup:"shape",DialogTitle:"Blob",DialogPrimary:i==0,Minimum:i==3?0:i==4?1:null,Maximum:i==3?1:i==4?10:null,Increment:i==3?.01:1)});
    return new(ports,Array.Empty<Port>(),new ToolPresentation(fields));
   }
-  public object CaptureSettings()=>ReadFields();
-  public InputValues ReadFields()=>new(Schema.Inputs,_values);
-  public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
-  {
-   var next=new Dictionary<string,object?>(_values);foreach(var item in changes)next[item.Key]=item.Value;
-   var prepared=new InputValues(Schema.Inputs,next);acceptCandidate(prepared);_values=prepared.CopyValues().ToDictionary(item=>item.Key,item=>item.Value);Writes++;
-  }
+  private FieldSettingsDraft? _draft;
+  private FieldSettingsDraft Draft=>_draft??=new FieldSettingsDraft(Schema,new FieldSettings(Schema.Inputs,_values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))));
+  public FieldSettings CaptureFields()=>Draft.CaptureFields();
+  public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
+  {Draft.ApplyFields(changes,acceptCandidate);Writes++;}
  }
  sealed class ExportImage : Native.Dependencies.VMControls.RenderInterface.IImageData,Native.Dependencies.VMControls.RenderInterface.IRangeImageData
  {
@@ -270,6 +268,22 @@ internal static class S2DocumentEditingCases
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }
+ sealed class CanonicalMutationRule(TextBox box):ValidationRule
+ {
+  internal bool Fired;
+  public override ValidationResult Validate(object value,CultureInfo culture)
+  {
+   if(!Fired&&Convert.ToString(value,culture)=="1.234")
+   {Fired=true;box.SetCurrentValue(TextBox.TextProperty,"1.23");return new ValidationResult(false,"一次性拒绝");}
+   return ValidationResult.ValidResult;
+  }
+ }
+ static string NumericDiagnostics(DeclaredFieldEditor field)
+ {
+  object? Get(object? value,string name)=>value?.GetType().GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)?.GetValue(value);
+  var coordinator=Get(Get(field,"_numeric"),"_coordinator");var commit=Get(coordinator,"_commit");
+  return "active="+Get(coordinator,"_active")+",sync="+Get(coordinator,"_syncing")+",deferred="+Get(coordinator,"_acceptedProjectionPending")+",suspended="+Get(commit,"_suspended")+",dirty="+Get(commit,"_dirty")+",rawVersion="+Get(commit,"_rawAcceptance")+",pending="+Get(commit,"_pendingRaw")+",current="+((TextBox)field.InputElement!).Text;
+ }
  static Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
  {
   var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
@@ -960,6 +974,17 @@ internal static class S2DocumentEditingCases
    Require(writes==0,"键入提前写入宿主");SendKey(a,Key.Enter,true);
    Require(writes==1&&accepted!.Count==2&&Equals(((ConstantSetting)accepted["low"]).Value,30d)&&Equals(((ConstantSetting)high.Setting).Value,40d)&&!a.IsKeyboardFocused,"未单次完整接纳或Enter未失焦");
    Require(native.StartValue==30&&native.EndValue==40,"原DP未双向同步");CaptureInline(fields,"native-between-accepted.png");
+  });
+  Test("数值重入 范围接纳及异常通知的新原文不被投影清除",()=>
+  {
+   foreach(var fail in new[]{false,true})
+   {
+    var writes=0;using var fields=Create(_=>writes++);Show(fields);var low=fields.Fields[0];var input=(TextBox)low.InputElement!;input.Text="15";var fired=false;
+    Action observer=()=>{if(fired)return;fired=true;input.Text="11";if(fail)throw new InvalidOperationException("范围新原文通知异常");};low.Changed+=observer;
+    var thrown=false;try{low.TryCommitPending();}catch(Exception error){thrown=error.ToString().Contains("范围新原文通知异常");}finally{low.Changed-=observer;}
+    Require(fired&&thrown==fail&&writes==1&&low.Setting is ConstantSetting{Value:15d}&&input.Text=="11","范围旧投影覆盖通知新原文");
+    Require(low.TryCommitPending()&&writes==2&&low.Setting is ConstantSetting{Value:11d},"范围新原文未单次再次接纳");Show(new TextBlock());
+   }
   });
   Test("原between非法另一端与宿主拒绝不半写，保留原文可修正",()=>
   {
@@ -2353,7 +2378,7 @@ internal static class S2DocumentEditingCases
   });
   Test("原参数宿主弹层子错误汇总与监听异常不截断其余行刷新",()=>
   {
-   var draft=new ColorLifetimeDraft();var declarations=draft.Schema.Presentation!.Fields.Select(p=>(draft.Schema.Inputs.Single(port=>port.Id==p.FieldId),p,(ParameterSetting)new ConstantSetting(draft.ReadFields().Get<object?>(p.FieldId)))).ToList();
+   var draft=new ColorLifetimeDraft();var declarations=draft.Schema.Presentation!.Fields.Select(p=>(draft.Schema.Inputs.Single(port=>port.Id==p.FieldId),p,(ParameterSetting)new ConstantSetting(draft.CaptureFields().Get<object?>(p.FieldId)))).ToList();
    declarations.Add((new Port("other",DataType.Boolean),new FieldPresentation("other","其他","其他",2,FieldEditorKind.Scalar){Layout=new("结果显示","其他")},new ConstantSetting(true)));
    var writes=0;using var fields=new DeclaredFieldsView(declarations,_=>writes++,graphicDisplays:ColorLifetimeDraft.Graphics);
    var list=(Native.Composition.Apps.XmlUI.ParamListView)((TabControl)fields.Content).Items.Cast<TabItem>().Single().Content;
@@ -2755,7 +2780,7 @@ internal static class S2DocumentEditingCases
   {
    var oldDraft=new ColorLifetimeDraft();var next=new ColorLifetimeDraft();DeclaredSettingsView? view=null;var rebind=false;
    view=new(oldDraft,new(ValidateComposition:_=>{if(rebind)view!.Bind(next,ColorLifetimeDraft.Options());return null;},GraphicDisplays:ColorLifetimeDraft.Graphics));
-   using(view){Show(view);rebind=true;Require(!view.TrySetFields(Values(("visible",false)))&&oldDraft.Writes==0&&next.Writes==0,"旧候选写入重绑草稿");Require(view.TryCapture(out _,out _,out _),"新范围不能继续捕获");Show(new TextBlock{Text="完成"});}
+   using(view){Show(view);rebind=true;Require(!view.TrySetFields(Values(("visible",false)))&&oldDraft.Writes==0&&next.Writes==0,"旧候选写入重绑草稿");Require(view.TryCapture(out _,out _),"新范围不能继续捕获");Show(new TextBlock{Text="完成"});}
   });
   Test("整组接纳重绘后旧字符串和眼睛回调失效且新输入继续工作",()=>
   {
@@ -3776,6 +3801,119 @@ internal static class S2DocumentEditingCases
     var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
     Require(original.IsSubscribeLeft,"初始引用没有显示原订阅槽");
    });
+   Test("数值重入 解除订阅清空回调的新常量或引用不被旧尾部覆盖",()=>
+   {
+    foreach(var useReference in new[]{false,true})
+    {
+     var source=new DeclaredReferenceCandidate("来源","first",null,new Port("ratio",DataType.Number),Array.Empty<string>());
+     var next=new DeclaredReferenceCandidate("新来源","second",null,new Port("ratio",DataType.Number),Array.Empty<string>());var writes=0;
+     using var fields=new DeclaredFieldsView(new[]{(new Port("value",DataType.Number,Required:false,Storage:NumericStorage.Float64,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+      new FieldPresentation("value","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)},(ParameterSetting)new ReferenceSetting(source.Reference(BindingSelection.All)))},_=>writes++,
+      new ReferenceFieldOptions(_=>new(new[]{source,next},Array.Empty<DeclaredReferenceCandidate>())));
+     Show(fields);var field=fields.Fields.Single();var text=(TextBox)OriginalNumberInput(field.View).FindName("ValueText");var fired=false;
+     TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="")return;fired=true;Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"value",useReference?new ReferenceSetting(next.Reference(BindingSelection.All)):new ConstantSetting(7d)}}),"清空回调新提案拒绝");};
+     text.TextChanged+=replace;
+     try
+     {
+      var mode=Visuals<ToggleButton>(field.View).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");mode.IsChecked=false;Click(mode);Pump();
+      Require(fired&&writes==1&&!field.HasInvalidText,"旧清空尾部污染新接纳："+field.Error);
+      Require(useReference?field.Setting is ReferenceSetting{Reference.NodeId:"second"}:field.Setting is ConstantSetting{Value:7d},"清空回调新状态丢失");
+      Require(field.TryCommitPending()&&writes==1,"清空回调遗留旧原文或重复写入");
+     }
+     finally{text.TextChanged-=replace;Show(new TextBlock());}
+    }
+   });
+   Test("数值重入 卸载恢复回调新接纳及新原文各自保留",()=>
+   {
+    foreach(var accept in new[]{false,true})
+    {
+     var value=.5;var writes=0;
+     using var field=new DeclaredFieldEditor(new("resume",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;},
+      presentation:new FieldPresentation("resume","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+     Show(field);var text=(TextBox)field.InputElement!;text.Text="bad";Show(new TextBlock());
+     host.Children.Clear();host.Children.Add(field);owner.UpdateLayout();text=(TextBox)field.InputElement!;text.Text="detached";var fired=false;
+     var trace=new List<string>();
+     TextChangedEventHandler replace=(_,_)=>{trace.Add(text.Text+"/"+ReferenceEquals(text,field.InputElement));if(fired||text.Text!="bad")return;fired=true;if(accept)Require(field.TrySetConstant(7d),"恢复回调新常量拒绝");else{text.SetCurrentValue(TextBox.TextProperty,"8");Require(text.Text=="8","恢复回调未实际产生新原文");}trace.Add("after="+text.Text);};
+     text.TextChanged+=replace;
+     try
+     {
+      Pump();Require(fired,"未触发真实恢复回调");
+      Require(!field.HasInvalidText&&text.Text==(accept?"7.00":"8"),"旧恢复污染新值/原文："+text.Text+" / "+field.Error+" current="+((TextBox)field.InputElement!).Text+" trace="+string.Join(",",trace));
+      Require(field.TryCommitPending()&&value==(accept?7d:8d)&&writes==1,"恢复后提交旧原文或重复写");
+     }
+     finally{text.TextChanged-=replace;Show(new TextBlock());}
+    }
+   });
+   Test("数值重入 恢复期间仅编辑模式变化也同步原订阅槽",()=>
+   {
+    var writes=0;var source=new DeclaredReferenceCandidate("来源","source",null,new Port("ratio",DataType.Number),Array.Empty<string>());
+    using var field=new DeclaredFieldEditor(new("mode-reentry",DataType.Number,Storage:NumericStorage.Float64,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数值",new ConstantSetting(.5),_=>writes++,
+     new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),presentation:new FieldPresentation("mode-reentry","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;text.Text="bad";Show(new TextBlock());host.Children.Clear();host.Children.Add(field);owner.UpdateLayout();text=(TextBox)field.InputElement!;text.SetCurrentValue(TextBox.TextProperty,"detached");
+    var state=field.GetType().GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field)!;var fired=false;
+    TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="bad")return;fired=true;state.GetType().GetMethod("EnterReferenceMode")!.Invoke(state,null);};text.TextChanged+=replace;
+    try{Pump();var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();Require(fired&&native.IsSubscribeLeft&&writes==0&&field.Setting is ConstantSetting{Value:.5}&&field.HasInvalidText,"未接纳的模式变化未同步原槽或提前写入");Require(field.TrySetConstant(7d)&&writes==1&&!native.IsSubscribeLeft&&!field.HasInvalidText,"模式重入后不能恢复实际常量");}
+    finally{text.TextChanged-=replace;Show(new TextBlock());}
+   });
+   Test("数值重入 恢复期间接纳版本ABA不复活旧非法原文",()=>
+   {
+    var value=.5;var writes=0;
+    using var field=new DeclaredFieldEditor(new("accept-aba",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;},
+     presentation:new FieldPresentation("accept-aba","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;text.Text="bad";Show(new TextBlock());
+    host.Children.Clear();host.Children.Add(field);owner.UpdateLayout();text=(TextBox)field.InputElement!;text.Text="detached";var fired=false;
+    TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="bad")return;fired=true;Require(field.TrySetConstant(7d)&&field.TrySetConstant(.5d),"接纳ABA未真实发生");};text.TextChanged+=replace;
+    try{Pump();Require(fired&&writes==2&&value==.5&&text.Text=="0.50"&&!field.HasInvalidText,"恢复旧尾部跨接纳ABA复活bad："+text.Text+" / "+field.Error+" / "+writes+" / "+NumericDiagnostics(field));Require(field.TryCommitPending()&&writes==2,"接纳ABA遗留旧pending");}
+    finally{text.TextChanged-=replace;Show(new TextBlock());}
+   });
+   Test("数值重入 接纳投影回调的新原文留待下一次提交",()=>
+   {
+    var value=.5;var writes=0;
+    using var field=new DeclaredFieldEditor(new("project",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;},
+     presentation:new FieldPresentation("project","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;var fired=false;
+    TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="5.00")return;fired=true;text.Text="8";};text.TextChanged+=replace;
+    try{Require(field.TrySetConstant(5d)&&fired&&text.Text=="8"&&value==5d&&writes==1,"投影覆盖回调新原文或提前写入");Require(field.TryCommitPending()&&value==8d&&writes==2,"投影清掉新原文待提交身份");}
+    finally{text.TextChanged-=replace;Show(new TextBlock());}
+   });
+   Test("数值重入 绑定格式化期间文本ABA拒旧捕获并保两级绑定",()=>
+   {
+    var value=.5;var writes=0;
+    using var field=new DeclaredFieldEditor(new("aba",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;},
+     presentation:new FieldPresentation("aba","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;var leaf=OriginalNumberInput(field);var fired=false;
+    TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="1.23")return;fired=true;text.Text="8";text.Text="1.23";};text.TextChanged+=replace;
+    try
+    {
+     text.Text="1.234";Require(!field.TryCommitPending()&&fired&&writes==0&&value==.5&&text.Text=="1.23","ABA旧提案写入或恢复旧1.234");
+     Require(field.TryCommitPending()&&value==1.23&&writes==1,"ABA后明确提交未单次接纳新原文");
+     Require(text.GetBindingExpression(TextBox.TextProperty)?.Status==BindingStatus.Active&&leaf.GetBindingExpression(Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty)?.Status==BindingStatus.Active,"ABA处理丢原两级绑定");
+    }
+    finally{text.TextChanged-=replace;Show(new TextBlock());}
+   });
+   Test("数值重入 恢复原文期间同值新绑定接管立即拒绝旧提案",()=>
+   {
+    var value=.5;var writes=0;
+    using var field=new DeclaredFieldEditor(new("binding-reentry",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;},
+     presentation:new FieldPresentation("binding-reentry","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;var original=BindingOperations.GetBinding(text,TextBox.TextProperty)!;var formatted=false;var fired=false;var replacement=new TextBox{Text="1.234"};
+    TextChangedEventHandler replace=(_,_)=>{if(text.Text=="1.23")formatted=true;if(fired||!formatted||text.Text!="1.234")return;fired=true;BindingOperations.SetBinding(text,TextBox.TextProperty,new Binding("Text"){Source=replacement,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});};
+    text.Text="1.234";text.TextChanged+=replace;
+    try{Require(!field.TryCommitPending()&&fired&&writes==0&&value==.5&&ReferenceEquals(text.GetBindingExpression(TextBox.TextProperty)!.ParentBinding.Source,replacement),"同值绑定接管后旧提案仍写入或恢复原绑定");}
+    finally{text.TextChanged-=replace;BindingOperations.SetBinding(text,TextBox.TextProperty,original);Show(new TextBlock());}
+   });
+   Test("数值重入 拒绝绑定规则的新规范原文不恢复成旧原文",()=>
+   {
+    var writes=0;
+    using var field=new DeclaredFieldEditor(new("rule",DataType.Number,Storage:NumericStorage.Float64),"数值",new ConstantSetting(.5),_=>writes++,
+     presentation:new FieldPresentation("rule","数值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,Increment:.01)});
+    Show(field);var text=(TextBox)field.InputElement!;var leaf=OriginalNumberInput(field);var original=BindingOperations.GetBinding(text,TextBox.TextProperty)!;
+    var rule=new CanonicalMutationRule(text){ValidationStep=ValidationStep.RawProposedValue};
+    var binding=new Binding("Text"){Source=leaf,Mode=original.Mode,UpdateSourceTrigger=original.UpdateSourceTrigger};binding.ValidationRules.Add(rule);
+    BindingOperations.SetBinding(text,TextBox.TextProperty,binding);
+    try{text.Text="1.234";Require(!field.TryCommitPending()&&rule.Fired&&writes==0&&text.Text=="1.23"&&field.HasInvalidText,"绑定拒绝覆盖规则新原文或旧提案写入");}
+    finally{BindingOperations.SetBinding(text,TextBox.TextProperty,original);Show(new TextBlock());}
+   });
    Test("原浮点卸载重载保留待编辑原文且离线捕获不依赖延迟回调",()=>
    {
     var value=.5;var writes=0;
@@ -3818,12 +3956,12 @@ internal static class S2DocumentEditingCases
     {
      Require(!Visuals<DeclaredFieldEditor>(surface).Any()&&Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(surface).Count()==2,"原样式创建了隐藏编辑器或重复数值叶");
      ((TextBox)line.InputElement!).Text="7";Require(line.TryCommitPending()&&((ConstantSetting)line.Setting).Value.Equals(7d),"粗细未更新调用方草稿");
-     Require(draft.Writes==1&&draft.ReadFields().Get<double>("width")==7d,"粗细未恰一次写真实draft");
+     Require(draft.Writes==1&&draft.CaptureFields().Get<double>("width")==7d,"粗细未恰一次写真实draft");
      var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)rgba.InputElement!;var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();
      var parent=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));Require(parent.IsDropDownOpen,"原色板关闭父层");
      Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute(new SolidColorBrush(Color.FromArgb(123,32,64,128)),picker);
      var color=(RecordValue)((ConstantSetting)rgba.Setting).Value!;Require(color.Get<long>("a")==123&&color.Get<long>("b")==128,"颜色未进入同一草稿或丢alpha");
-     var accepted=draft.ReadFields().Get<RecordValue>("rgba");Require(draft.Writes==2&&accepted.Get<long>("a")==123&&accepted.Get<long>("b")==128,"颜色未恰一次写真实draft");
+     var accepted=draft.CaptureFields().Get<RecordValue>("rgba");Require(draft.Writes==2&&accepted.Get<long>("a")==123&&accepted.Get<long>("b")==128,"颜色未恰一次写真实draft");
      palette.IsDropDownOpen=false;Require(!Visuals<Button>(surface).Any(button=>Equals(button.Content,"确定")||Equals(button.Content,"取消")),"原样式层存在自制保存按钮");
      palette.IsDropDownOpen=true;Pump();SendKey(palette,Key.Escape);Require(parent.IsDropDownOpen&&!palette.IsDropDownOpen,"首个Escape没有只关原子色板");
      SendKey(parent,Key.Escape);Require(!parent.IsDropDownOpen,"第二Escape未关父层");
@@ -3831,12 +3969,12 @@ internal static class S2DocumentEditingCases
     StylePopup(settings,_=>
     {
      reject=true;((TextBox)line.InputElement!).Text="9";Require(!line.TryCommitPending()&&line.HasInvalidText&&((ConstantSetting)line.Setting).Value.Equals(7d),"拒绝未保原文和accepted");
-     Require(draft.Writes==2&&draft.ReadFields().Get<double>("width")==7d&&((TextBox)line.InputElement!).Text=="9",$"拒绝污染真实草稿或丢原文：writes={draft.Writes},width={draft.ReadFields().Get<double>("width")},raw={((TextBox)line.InputElement!).Text}");
+     Require(draft.Writes==2&&draft.CaptureFields().Get<double>("width")==7d&&((TextBox)line.InputElement!).Text=="9",$"拒绝污染真实草稿或丢原文：writes={draft.Writes},width={draft.CaptureFields().Get<double>("width")},raw={((TextBox)line.InputElement!).Text}");
      reject=false;var corrected=(TextBox)line.InputElement!;corrected.Focus();corrected.Text="7";SendKey(corrected,Key.Enter,true);Require(!line.HasInvalidText,"纠正未清错误");
      var reopened=OpenStyle(settings);var invalid=(TextBox)line.InputElement!;invalid.Focus();Pump();
      Require(reopened.IsDropDownOpen&&invalid.IsVisible,"Enter后没有重新打开可编辑原样式叶");
      invalid.Text="bad";Require(line.HasInvalidText&&((ConstantSetting)line.Setting).Value.Equals(7d),$"非法输入未拒绝：invalid={line.HasInvalidText},accepted={((ConstantSetting)line.Setting).Value},raw={invalid.Text},visible={invalid.IsVisible},focus={invalid.IsKeyboardFocused}");invalid.Text="7";
-     Require(draft.Writes==2&&draft.ReadFields().Get<double>("width")==7d,"同值纠正或非法输入重复写真实草稿");
+     Require(draft.Writes==2&&draft.CaptureFields().Get<double>("width")==7d,"同值纠正或非法输入重复写真实草稿");
     });
     var popup=OpenStyle(settings);Show(new TextBlock{Text="卸载"});Require(!popup.IsDropDownOpen,"卸载原样式未关闭");
     Require(draft.Writes==2,"关层卸载重复提交真实草稿");
@@ -3858,7 +3996,7 @@ internal static class S2DocumentEditingCases
      try
      {
       ((TextBox)line.InputElement!).Text="9";
-      Require(!line.TryCommitPending()&&calls==1&&((TextBox)line.InputElement!).Text=="8"&&draft.Writes==0&&draft.ReadFields().Get<double>("width")==3d,"绑定错误通知期间的新原文被旧提案覆盖或写入");
+      Require(!line.TryCommitPending()&&calls==1&&((TextBox)line.InputElement!).Text=="8"&&draft.Writes==0&&draft.CaptureFields().Get<double>("width")==3d,"绑定错误通知期间的新原文被旧提案覆盖或写入");
      }
      finally{changed.RemoveEventHandler(state,replace);}
     });
@@ -3883,7 +4021,7 @@ internal static class S2DocumentEditingCases
     var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)field.InputElement!;var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();
     Require(field.TrySetConstant(PresentationDeclarations.Color(32,64,128,123)),"同state色板提案未接纳");Pump();
     Require(ReferenceEquals(picker,field.InputElement)&&picker.CurrentColor.Color==Color.FromArgb(123,32,64,128),"原色板未沿唯一叶投影accepted");
-    var accepted=draft.ReadFields().Get<RecordValue>("rgba");Require(draft.Writes==1&&accepted.Get<long>("r")==32&&accepted.Get<long>("g")==64&&accepted.Get<long>("b")==128&&accepted.Get<long>("a")==123,"程序色彩未恰一次写真实owner");
+    var accepted=draft.CaptureFields().Get<RecordValue>("rgba");Require(draft.Writes==1&&accepted.Get<long>("r")==32&&accepted.Get<long>("g")==64&&accepted.Get<long>("b")==128&&accepted.Get<long>("a")==123,"程序色彩未恰一次写真实owner");
     Show(new TextBlock{Text="暂时卸载"});Require(!display.IsDropDownOpen&&!palette.IsDropDownOpen,"卸载未关闭原父子层");
     var writes=draft.Writes;Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute(new SolidColorBrush(Colors.Red),picker);Pump();
     Require(draft.Writes==writes,"卸载旧色板命令写入草稿");Show(settings);OpenStyle(settings);Pump();

@@ -20,23 +20,9 @@ internal static class SolutionLegacyBindingMigration
         {
             foreach(var node in workflow.Nodes.Where(n=>n.RuntimeConfiguration is not null))
             {
-                var runtime=node.RuntimeConfiguration!;
-                var targets=runtime.BindingTargets.ToDictionary(p=>p.Id,StringComparer.Ordinal);
-                var fields=runtime.SettingsSchema?.Inputs.Select(p=>p.Id).ToHashSet(StringComparer.Ordinal)??new();
-                foreach(var setting in node.ParamSettings.Settings)
-                {
-                    if(!targets.TryGetValue(setting.ParameterName,out var port))throw new JsonException("Unknown Runtime input or settings field.");
-                    if(setting.BindingType==BindingType.Constant)
-                    {
-                        if(fields.Contains(port.Id))throw new JsonException("Runtime setting literals cannot have duplicate binding storage.");
-                        if((port.EditModes&FieldEditModes.Constant)==0)throw new JsonException("Runtime input does not allow a constant.");
-                        try{RuntimeInputBindings.Constant(port,setting.ConstantValue);}
-                        catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
-                        {throw new JsonException("Invalid Runtime input literal.",error);}
-                    }
-                    else if(setting.BindingType!=BindingType.Binding||setting.ReferenceExpression is null)
-                        throw new JsonException("Runtime requires an explicit semantic reference.");
-                }
+                if(node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes reject SDK ParamSettings.");
+                var issues=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
+                if(issues.Count>0)throw new JsonException(issues[0].Message);
             }
             foreach(var node in workflow.Nodes)
                 if(node.Parameters is IStoredConfigurationValidator configuration)

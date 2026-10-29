@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
+using ConfigurationSetting=SunEyeVision.Plugin.Contracts.ParameterSetting;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Services.Images;
@@ -23,7 +24,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     private readonly ImageSourceThemeScope _themeScope;
     private readonly ImageSourceThemeScope _cameraTheme;
     private IToolSettingsDraft? _draft;
-    private Action<object>? _accept;
+    private Action<FieldSettings>? _accept;
     private Action? _prepare;
     private bool _preparing;
     private bool _disposed;
@@ -44,9 +45,9 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
             EnsureCurrent();
             PrepareEdit();
             var draft=_draft!;
-            var policy=ImageSourcePolicy.ReadFields(_nodeId,draft.ReadFields());
+            var policy=ImageSourcePolicy.ReadFields(_nodeId,draft.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>()));
             policy.UpdateLocalInput(proposal.Configuration);
-            draft.ApplyFields(policy.ToFieldValues(draft.Schema),candidate=>
+            draft.ApplyFields(policy.ToFieldValues(draft.Schema).ToDictionary(pair=>pair.Key,pair=>(ConfigurationSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal),candidate=>
             {
                 EnsureCurrent();_accept!(candidate);EnsureCurrent();
             });
@@ -65,7 +66,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         Loaded+=(_,_)=>{if(!_disposed){RefreshCameraStatus();_statusTimer.Start();}};
         Unloaded+=(_,_)=>_statusTimer.Stop();
     }
-    public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<object> acceptCandidate)
+    public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<FieldSettings> acceptCandidate)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         _draft=draft;_prepare=prepareEdit;_accept=acceptCandidate;RefreshSourceDraft();
@@ -74,7 +75,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(_draft is null||_preparing)return;
-        var policy=ImageSourcePolicy.ReadFields(_nodeId,_draft.ReadFields());
+        var policy=ImageSourcePolicy.ReadFields(_nodeId,_draft.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>()));
         _source.LoadFromPolicy(policy,_paths);
         _inputView.IsCamera=policy.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera;
         _refreshing=true;
@@ -100,8 +101,8 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         try
         {
             EnsureCurrent();PrepareEdit();var draft=_draft;
-            draft.ApplyFields(new System.Collections.Generic.Dictionary<string,object?>{
-                ["camera.device"]=(_cameraPicker.SelectedItem as ComboBoxItem)?.Tag as string??string.Empty},
+            draft.ApplyFields(new System.Collections.Generic.Dictionary<string,ConfigurationSetting>{
+                ["camera.device"]=new ConstantSetting((_cameraPicker.SelectedItem as ComboBoxItem)?.Tag as string??string.Empty)},
                 candidate=>{EnsureCurrent();_accept!(candidate);EnsureCurrent();});
             Changed?.Invoke();RefreshCameraStatus();
         }
@@ -110,7 +111,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     private void RefreshCameraStatus()
     {
         if(_disposed||_draft is null)return;
-        var id=ImageSourcePolicy.ReadFields(_nodeId,_draft.ReadFields()).CameraDeviceId;
+        var id=ImageSourcePolicy.ReadFields(_nodeId,_draft.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>())).CameraDeviceId;
         _cameraStatus.Text=string.IsNullOrWhiteSpace(id)?"设备状态：未选择相机":
             SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime.TryGetSession(
                 new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id),out _)?"设备状态：已连接":"设备状态：未连接";
@@ -120,7 +121,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         EnsureCurrent();
         var manager=new SunEyeVision.UI.Features.Camera.CameraManagerViewModel(
             SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager);
-        var id=ImageSourcePolicy.ReadFields(_nodeId,_draft!.ReadFields()).CameraDeviceId;
+        var id=ImageSourcePolicy.ReadFields(_nodeId,_draft!.CaptureFields().Materialize(new System.Collections.Generic.Dictionary<string,object?>())).CameraDeviceId;
         manager.SelectedCamera=manager.Cameras.FirstOrDefault(camera=>camera.DeviceId==id);
         var dialog=new SunEyeVision.UI.Features.Camera.CameraManagerDialog(manager){Owner=Window.GetWindow(this)};
         dialog.ShowDialog();

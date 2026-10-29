@@ -159,11 +159,11 @@ internal static class S2DocumentEditingCases
                 var combo=(System.Windows.Controls.ComboBox)native.FindName("CBox");combo.ApplyTemplate();
                 var toggle=Visuals(combo).OfType<ToggleButton>().Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
                 toggle.IsChecked=true;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _,out _),"活动Upper没有来源仍可提交");
-                mode.TrySetConstant("SingleThreshold");Require(upper.View.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
-                mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _,out _),"恢复Double未恢复待选错误");
+                Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _),"活动Upper没有来源仍可提交");
+                mode.TrySetConstant("SingleThreshold");Require(upper.View.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
+                mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _),"恢复Double未恢复待选错误");
                 toggle.IsChecked=false;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(settingsView.TryCapture(out _,out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
+                Require(settingsView.TryCapture(out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
                 var controlling=new Port("controller",DataType.Text,EditModes:FieldEditModes.Constant|FieldEditModes.Reference,Choices:new TextChoiceConstraint(new[]{"a","b"}));
                 var dependent=new Port("dependent",DataType.Integer);var source=new ReferenceSetting(new OutputReference("node","out",DataType.Text));
                 var referenced=new DeclaredFieldsView(new[]{(controlling,new FieldPresentation("controller","mode","g",0,FieldEditorKind.Choice,new[]{"a","b"}),(ParameterSetting)source),(dependent,new FieldPresentation("dependent","value","g",1,FieldEditorKind.Scalar){Layout=new("p","s",new("controller","a",true))},(ParameterSetting)new ConstantSetting(1L))},_=>{});

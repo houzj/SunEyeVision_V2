@@ -13,7 +13,7 @@ public static class ImageSourceDesignData
     public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) CreateParameterContext(bool camera=false)
     {
         var draft = new DesignDraft();
-        if(camera)draft.ApplyFields(new Dictionary<string,object?>{[ImageSourceFields.SourceKind]="camera"},_=>{});
+        if(camera)draft.ApplyFields(new Dictionary<string,ParameterSetting>{[ImageSourceFields.SourceKind]=new ConstantSetting("camera")},_=>{});
         return (draft, new(InputSection: Views.ImageSourceParameterEditor.InputPage, InputContent: new DesignSourceContent()));
     }
 
@@ -29,17 +29,17 @@ public static class ImageSourceDesignData
             Input.CameraPicker.Items.Add(new System.Windows.Controls.ComboBoxItem{Content="未选择相机"});
             Input.CameraPicker.SelectedIndex=0;Input.CameraStatus.Text="设计态：未连接设备";
         }
-        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<object> acceptCandidate)
+        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<FieldSettings> acceptCandidate)
         {_draft=draft;RefreshSourceDraft();}
         public void RefreshSourceDraft()
-        {if(_draft is not null){Input.SourceStrip.Session=new ReadOnlySourceSession(_draft);Input.IsCamera=_draft.ReadFields().Get<string>(ImageSourceFields.SourceKind)=="camera";}}
+        {if(_draft is not null){Input.SourceStrip.Session=new ReadOnlySourceSession(_draft);Input.IsCamera=_draft.CaptureFields().Get<string>(ImageSourceFields.SourceKind)=="camera";}}
         public void Dispose(){Input.SourceStrip.Session=null;_draft=null;}
     }
     private sealed class ReadOnlySourceSession : IImageSourceStripSession
     {
         private readonly IToolSettingsDraft _draft;
         public ReadOnlySourceSession(IToolSettingsDraft draft) => _draft = draft;
-        private InputValues Values => _draft.ReadFields();
+        private FieldSettings Values => _draft.CaptureFields();
         public IReadOnlyList<ImageSourceStripItem> Items
         {
             get
@@ -69,31 +69,16 @@ public static class ImageSourceDesignData
 
     private sealed class DesignDraft : IToolSettingsDraft
     {
-        private readonly IToolDefinition _tool = new ImageSourceTool();
-        private IToolSettingsFields Fields => (IToolSettingsFields)_tool;
-        private object _settings;
-        private bool _applying;
-        public DesignDraft() => _settings = _tool.FreezeSettings(_tool.CreateSettings());
-        public ToolSchema Schema => Fields.SettingsSchema;
-        public InputValues ReadFields() => Fields.ReadSettings(_settings);
-        public object CaptureSettings() => _tool.FreezeSettings(_settings);
-
-        public void ApplyFields(IReadOnlyDictionary<string, object?> changes, Action<object> acceptCandidate)
+        internal ImageSourceTool Tool {get;}=new();
+        private readonly FieldSettingsDraft _draft;
+        public DesignDraft()
         {
-            ArgumentNullException.ThrowIfNull(changes);
-            ArgumentNullException.ThrowIfNull(acceptCandidate);
-            if (_applying) throw new InvalidOperationException("设计参数接纳正在进行。");
-            _applying = true;
-            try
-            {
-                var candidate = Fields.ApplySettings(_settings, changes);
-                var errors = _tool.Validate(candidate);
-                if (errors.Count != 0) throw new ArgumentException(string.Join("；", errors.Select(error => error.Message)));
-                var frozen = _tool.FreezeSettings(candidate);
-                acceptCandidate(frozen);
-                _settings = _tool.FreezeSettings(frozen);
-            }
-            finally { _applying = false; }
+            var declaration=(IToolSettingsFields)Tool;
+            _draft=new(declaration.SettingsSchema,new FieldSettings(declaration.SettingsSchema.Inputs,
+                declaration.ReadSettings(new ImageSourceSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
         }
+        public ToolSchema Schema=>_draft.Schema;
+        public FieldSettings CaptureFields()=>_draft.CaptureFields();
+        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
     }
 }

@@ -62,6 +62,7 @@ internal static class S2DocumentEditingCases
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
             return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;
         }
+        ReferenceSetting? ImageBinding(WorkflowNodeBase value)=>value.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) as ReferenceSetting;
         int Formal()=>(int)((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         var path=Path.Combine(folder,"runtime-editor.solution");
@@ -103,12 +104,12 @@ internal static class S2DocumentEditingCases
         {
             var control=Control(first);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;
             var replacement=context.DraftNode.Clone();
-            var configuration=replacement.RuntimeConfiguration;var bindings=replacement.ParamSettings;
+            var configuration=replacement.RuntimeConfiguration;var bindings=configuration!.Fields;
             var field=typeof(RuntimeNodeConfigurationControl).GetField("_view",BindingFlags.Instance|BindingFlags.NonPublic)!;
             var inner=(IToolSettingsView)field.GetValue(control)!;
             field.SetValue(control,new CaptureRebindView(inner,()=>control.BindDraft(replacement)));
             Require(!control.TryCapture(out var error)&&error.Contains("重新绑定"),"旧捕获没有拒绝同步重绑");
-            Require(ReferenceEquals(replacement.RuntimeConfiguration,configuration)&&ReferenceEquals(replacement.ParamSettings,bindings),
+            Require(ReferenceEquals(replacement.RuntimeConfiguration,configuration)&&ReferenceEquals(replacement.RuntimeConfiguration!.Fields,bindings),
                 "旧捕获污染新节点配置或绑定");
             control.BindDraft(context.DraftNode);Pump();
         });
@@ -126,14 +127,14 @@ internal static class S2DocumentEditingCases
             oldInputCombo=(ComboBox)input.InputElement!;
             var combo=(ComboBox)input.InputElement!;Require(combo.IsVisible&&combo.IsLoaded,"图像来源实际页未显示");combo.IsDropDownOpen=true;Pump();
             Require(!app.Windows.OfType<Window>().Any(w=>w.Title=="选择绑定来源"),"图像下拉仍打开通用订阅窗口");
-            Require(((ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!).DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput) is null,
+            Require(ImageBinding(((ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!).DraftNode) is null,
                 "刷新候选擅自写入了来源");
             combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().First(item=>item.Tag is ReferenceSetting reference&&reference.Reference.NodeId==source.Id
                 &&reference.Reference.MemberFieldPath.Count==0&&reference.Reference.Type.Resource==ResourceKind.Image);
             combo.IsDropDownOpen=false;Pump();
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)?.SourceNodeId==source.Id
-                &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"来源下拉未写草稿或污染正式引用");
+            Require(ImageBinding(context.DraftNode)?.Reference.NodeId==source.Id
+                &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"来源下拉未写草稿或污染正式引用");
         });
         Case("图像下拉拒绝真实自引用并恢复原草稿，刷新不改引用，修正后可继续",()=>
         {
@@ -141,19 +142,24 @@ internal static class S2DocumentEditingCases
             var combo=(ComboBox)input.InputElement!;var priorItem=(ComboBoxItem)combo.SelectedItem;
             var reference=((ReferenceSetting)priorItem.Tag).Reference;
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            var expression=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression;
+            var expression=ImageBinding(context.DraftNode)!;
             var invalid=new ComboBoxItem{Content="自引用拒绝检查",Tag=new ReferenceSetting(new OutputReference(node.Id,BlobSchema.Field(5),
                 TypeRef.ResourceOf(ResourceKind.Image),scopeId:reference.ScopeId))};
             combo.Items.Add(invalid);combo.SelectedItem=invalid;Pump();
             Require(input.HasInvalidText&&ReferenceEquals(combo.SelectedItem,priorItem)
-                &&context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==expression,
+                &&Equals(ImageBinding(context.DraftNode),expression),
                 "自引用未被生产合同拒绝或污染了原来源");
             combo.Items.Remove(invalid);
-            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);combo.SelectedItem=priorItem;Pump();
+            Require(!combo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is UnsetSetting),"必填图像来源不应提供清除项");
+            combo.IsDropDownOpen=true;Pump();
+            var validItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting candidate&&candidate.Reference.NodeId==reference.NodeId
+                &&candidate.Reference.PortId==reference.PortId&&candidate.Reference.ScopeId==reference.ScopeId&&candidate.Reference.MemberFieldPath.SequenceEqual(reference.MemberFieldPath));
+            validItem.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                {RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});Pump();
             Require(!input.HasInvalidText,"修正来源后仍无法继续");
             combo.IsDropDownOpen=true;Pump();combo.IsDropDownOpen=false;
-            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==expression
-                &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"刷新候选写入了草稿或正式节点");
+            Require(Equals(ImageBinding(context.DraftNode),expression)
+                &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"刷新候选写入了草稿或正式节点");
         });
         Case("真实未失焦数值在捕获时进入私有Runtime草稿，隐藏窗口保存后可重开",()=>
         {
@@ -170,10 +176,11 @@ internal static class S2DocumentEditingCases
         Case("保存重绑后旧来源控件的迟到清除事件不能改新草稿",()=>
         {
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression;
+            var prior=ImageBinding(context.DraftNode)!;
             var combo=oldInputCombo!;
-            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);
-            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)?.ReferenceExpression==prior,"旧控件事件写入了新草稿");
+            var stale=new ComboBoxItem{Content="迟到旧来源",Tag=new ReferenceSetting(new OutputReference("stale-node",BlobSchema.Field(5),TypeRef.ResourceOf(ResourceKind.Image)))};
+            combo.Items.Add(stale);combo.SelectedItem=stale;Pump();
+            Require(Equals(ImageBinding(context.DraftNode),prior),"旧控件事件写入了新草稿");
         });
         Case("真实工作流发布来源后，窗口执行命令只更新私有调试结果，连续运行可停止",()=>
         {
@@ -205,17 +212,22 @@ internal static class S2DocumentEditingCases
             var formal=Context().GetNodeResult(node.Id)!.Result;
             var ready=Control(first).RunDebugAsync();PumpUntil(()=>ready.IsCompleted);ready.GetAwaiter().GetResult();
             var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"有效调试未恢复结果表");
-            var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();
+            var prior=context.DraftNode.RuntimeConfiguration!;
             Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;first.UpdateLayout();Pump();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
             var sourceCombo=(ComboBox)input.InputElement!;
             Require(sourceCombo.IsVisible&&sourceCombo.IsLoaded,"解绑来源实际页未显示");
-            sourceCombo.SelectedItem=sourceCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);
-            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"可见来源未实际解绑");
+            Require(!sourceCombo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is UnsetSetting),"必填图像错误提供清除项");
+            try{context.DraftNode.RuntimeConfiguration=prior.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new UnsetSetting()}});throw new Exception("必填来源竟然可以清空");}
+            catch(ArgumentException){}
+            Require(ReferenceEquals(prior,context.DraftNode.RuntimeConfiguration),"拒绝清除污染原配置");
+            context.DraftNode.RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettingsFields(prior.Fields.Select(prior.SettingsSchema.Inputs));
+            Control(first).BindDraft(context.DraftNode);Pump();
+            Require(context.DraftNode.RuntimeConfiguration.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"缺输入的独立配置被补默认来源");
             var failed=Control(first).RunDebugAsync();PumpUntil(()=>failed.IsCompleted);
             try{failed.GetAwaiter().GetResult();throw new Exception("缺少来源的调试竟然成功");}catch(InvalidOperationException){}
             Require(context.DebugResults.GetNodeResult(node.Id) is null&&table.Items.Count==0&&ReferenceEquals(formal,Context().GetNodeResult(node.Id)!.Result),"失败未清空私有预览或污染正式结果");
-            context.DraftNode.ParamSettings.SetSetting(prior);Control(first).BindDraft(context.DraftNode);Pump();
+            context.DraftNode.RuntimeConfiguration=prior;Control(first).BindDraft(context.DraftNode);Pump();
         });
         Case("非法输入隐藏后仍阻断保存及确定，取消关闭保留正式配置并退出范围",()=>
         {
@@ -243,9 +255,9 @@ internal static class S2DocumentEditingCases
         public FrameworkElement View=>inner.View;
         public bool HasInvalidInput=>inner.HasInvalidInput;
         public event Action? Changed {add=>inner.Changed+=value;remove=>inner.Changed-=value;}
-        public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)
+        public bool TryCapture(out FieldSettings settings,out string error)
         {
-            var result=inner.TryCapture(out settings,out references,out error);
+            var result=inner.TryCapture(out settings,out error);
             if(!_called){_called=true;rebind();}return result;
         }
         public void Dispose()=>inner.Dispose();

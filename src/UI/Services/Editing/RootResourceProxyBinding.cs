@@ -65,29 +65,11 @@ internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,boo
   else node.Parameters.BindingSourceIdentities[StoragePath]=new(reference.NodeId+"."+output!.Name,rootId,reference.NodeId,output.FieldId);
   node.Parameters.RebindingRequired.Remove(StoragePath);node.Parameters.BindingValidationPending.Remove(StoragePath);
  }
- internal Action CaptureRestore(WorkflowNodeBase node)
- {
-  var setting=node.ParamSettings.GetSetting(StoragePath)?.Clone();
-  if(Runtime){var configuration=node.RuntimeConfiguration!;return ()=>{node.RuntimeConfiguration=configuration;if(setting is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(setting);};}
-  var image=ImageSource?((MeasureGuideParameters)node.Parameters).ImageSource:null;
-  var imageRef=ImageSource?((MeasureGuideParameters)node.Parameters).ImageSourceRef:null;
-  var identity=node.Parameters.BindingSourceIdentities.GetValueOrDefault(StoragePath);
-  var pending=node.Parameters.BindingValidationPending.GetValueOrDefault(StoragePath);var rebinding=node.Parameters.RebindingRequired.GetValueOrDefault(StoragePath);
-  return ()=>
-  {
-   if(ImageSource){var parameters=(MeasureGuideParameters)node.Parameters;parameters.ImageSource=image;parameters.ImageSourceRef=imageRef;}
-   if(setting is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(setting);
-   if(identity is null)node.Parameters.BindingSourceIdentities.Remove(StoragePath);else node.Parameters.BindingSourceIdentities[StoragePath]=identity;
-   if(pending is null)node.Parameters.BindingValidationPending.Remove(StoragePath);else node.Parameters.BindingValidationPending[StoragePath]=pending;
-   if(rebinding is null)node.Parameters.RebindingRequired.Remove(StoragePath);else node.Parameters.RebindingRequired[StoragePath]=rebinding;
-  };
- }
  internal void RestoreOpening(WorkflowNodeBase node,WorkflowNodeBase opening)
  {
   if(Runtime)
   {
-   if(IsSettings(opening))node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{[StoragePath]=Literal(opening)});
-   var prior=opening.ParamSettings.GetSetting(StoragePath)?.Clone();if(prior is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(prior);return;
+   node.RuntimeConfiguration=node.RuntimeConfiguration!.RestoreFieldFrom(StoragePath,opening.RuntimeConfiguration!);return;
   }
   if(ImageSource){var current=(MeasureGuideParameters)node.Parameters;current.ImageSource=null;current.ImageSourceRef=((MeasureGuideParameters)opening.Parameters).ImageSourceRef;}
   var original=opening.ParamSettings.GetSetting(StoragePath)?.Clone();if(original is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(original);
@@ -96,32 +78,16 @@ internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,boo
   if(opening.Parameters.RebindingRequired.TryGetValue(StoragePath,out var rebinding))node.Parameters.RebindingRequired[StoragePath]=rebinding;else node.Parameters.RebindingRequired.Remove(StoragePath);
  }
  internal bool IsSettings(WorkflowNodeBase node)=>node.RuntimeConfiguration!.SettingsSchema?.Inputs.Any(field=>field.Id==StoragePath)==true;
- internal object? Literal(WorkflowNodeBase node)=>IsSettings(node)?node.RuntimeConfiguration!.ReadFieldValues().CopyValues()[StoragePath]:null;
- private Setting ReadRuntime(WorkflowNodeBase node)
- {
-  var stored=node.ParamSettings.GetSetting(StoragePath);
-  if(stored is null)return IsSettings(node)?new ConstantSetting(Literal(node)):new UnsetSetting();
-  if(stored.BindingType==BindingType.Binding&&stored.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression));
-  if(stored.BindingType==BindingType.Constant&&!IsSettings(node))return new ConstantSetting(stored.ConstantValue);
-  throw new InvalidOperationException("Runtime代理设置不符合正式声明。");
- }
+ internal object? Literal(WorkflowNodeBase node)=>node.RuntimeConfiguration!.Fields.Read(StoragePath) is ConstantSetting constant?constant.Value:null;
+ private Setting ReadRuntime(WorkflowNodeBase node)=>node.RuntimeConfiguration!.Fields.Read(StoragePath);
  private void WriteRuntime(WorkflowNodeBase node,Setting setting,DataSourceQueryService query,string rootId)
  {
-  if(setting is ConstantSetting constant)
+  if(setting is ReferenceSetting reference)
   {
-   if((Port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("此声明不允许常量。");
-   if(IsSettings(node)){node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{[StoragePath]=constant.Value});node.ParamSettings.RemoveSetting(StoragePath);}
-   else {var frozen=ValueRules.Freeze(Port,constant.Value);node.ParamSettings.SetSetting(new(){ParameterName=StoragePath,BindingType=BindingType.Constant,ConstantValue=frozen});}
-   return;
+   if(reference.Reference.ScopeId is {} scope&&scope!=rootId)throw new InvalidOperationException("来源跨出当前根流程。");
+   _=Find(query,reference.Reference.NodeId,null,reference.Reference.PortId,null);
   }
-  if(setting is UnsetSetting){node.ParamSettings.RemoveSetting(StoragePath);return;}
-  if(setting is not ReferenceSetting reference||(Port.EditModes&FieldEditModes.Reference)==0)throw new InvalidOperationException("此声明不允许订阅。");
-  if(reference.Reference.ScopeId is {} scope&&scope!=rootId)throw new InvalidOperationException("来源跨出当前根流程。");
-  var output=Find(query,reference.Reference.NodeId,null,reference.Reference.PortId,null);
-  // 完整TypeRef、成员选择、存储及依赖合法性由宿主ValidateBatch的正式编译链核验。
-  node.ParamSettings.SetSetting(new(){ParameterName=StoragePath,BindingType=BindingType.Binding,
-   ReferenceExpression=BindingReferenceSerializer.Serialize(reference.Reference),SourceNodeId=reference.Reference.NodeId,
-   SourceWorkflowId=reference.Reference.ScopeId??rootId,SourceFieldId=output.FieldId,SourceProperty=output.Name});
+  node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,Setting>{[StoragePath]=setting});
  }
  private static OutputVariable Find(DataSourceQueryService query,string nodeId,Guid? fieldId,string? portId,string? name)
   =>query.FormalOutputContractReader?.Invoke(nodeId)?.SingleOrDefault(o=>o.Kind==OutputVariableKind.Data&&(fieldId.HasValue?o.FieldId==fieldId:portId is not null?BindingClrAdapter.OutputPortId(o)==portId:o.Name==name))

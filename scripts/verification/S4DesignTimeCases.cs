@@ -283,17 +283,18 @@ internal static class S2DocumentEditingCases
                 &&Descendants<Image>(image).Any(icon=>icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0),
                 "真实设计视图输入源使用VM EnumerationG下拉及原图标");
             var defaults=new BlobSettings();
-            Check(first.TryCapture(out var captured,out _,out _)&&((BlobSettings)captured).Threshold==defaults.Threshold,
+            var threshold=presenter.Draft!.Schema.Presentation!.Fields.Single(field=>field.DisplayName=="阈值").FieldId;
+            Check(first.TryCapture(out var captured,out _)&&captured.Get<long>(threshold)==defaults.Threshold,
                 "设计草稿默认值来自真实XML");
             var schema=presenter.Draft!.Schema;
-            var threshold=schema.Presentation!.Fields.Single(field=>field.DisplayName=="阈值").FieldId;
+
             var oldField=fields.Fields.Single(field=>field.FieldId==threshold);
-            Check(oldField.TrySetConstant(101L)&&first.TryCapture(out captured,out _,out _)&&((BlobSettings)captured).Threshold==101,
+            Check(oldField.TrySetConstant(101L)&&first.TryCapture(out captured,out _)&&captured.Get<long>(threshold)==101,
                 "设计器使用真实数值控件及草稿写入链");
-            Check(second.TryCapture(out var independent,out _,out _)&&((BlobSettings)independent).Threshold==defaults.Threshold,
+            Check(second.TryCapture(out var independent,out _)&&independent.Get<long>(threshold)==defaults.Threshold,
                 "两个设计视图不共享可变草稿");
             var replacement=BlobDesignData.CreateParameterContext();presenter.Bind(replacement.Draft,replacement.Options);
-            Check(!oldField.TrySetConstant(102L)&&first.TryCapture(out captured,out _,out _)&&((BlobSettings)captured).Threshold==defaults.Threshold,
+            Check(!oldField.TrySetConstant(102L)&&first.TryCapture(out captured,out _)&&captured.Get<long>(threshold)==defaults.Threshold,
                 "重绑后旧控件事件不能修改当前草稿");
             // Options can be rebound to the same input content; it must be detached from the old tree first.
             presenter.Bind(replacement.Draft,replacement.Options);

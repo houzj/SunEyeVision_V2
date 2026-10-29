@@ -1,3 +1,59 @@
+## 2026-10-29 C09原数值完整重入候选核收，拟保存完整中文检查点
+
+- 上轮Root代理已有实际进展；本轮继续一主写三路只读逐项核收，Blob业务/算法/文件重组仍冻结。36bcd14faa43037fe00471bd56cfcb3101417c1f基线加完整未提交C09候选，不套旧成绩；用户BlobParameterEditor.xaml原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不改不暂存。
+- NativeNumericCommit统一版本化pending、同步回写ticket/文本revision、文本及接纳ABA/绑定接管拒旧提案；模板迁叶、样式恢复、范围两端都消费同一receipt。普通Changed的接纳与编辑模式变化也在同步区内延迟投影；接受文本用SetCurrentValue保原两级绑定。范围正常与通知异常均逐端点保接纳后的新raw。
+- Window302–306原失败保留：先纠正旧/当前叶测试前提，回调原普通Text赋值实际未改变SetCurrentValue覆盖值，改显式实际新raw并断言；实测旧rawVersion0、state接纳2次、active且非暂停仍显示bad，揭露同步区普通Changed丢投影，已修。规则写canonical并拒绝、同值换绑定、仅模式改变均加真实反例。外部成功规则同canonical事件来源仍不可区分，不声称任意意图可识别，不要求正常Enter重试。
+- 最终串行UI006=0错6444警告42.45秒/full006=0错6447警告37.88秒。Window308数值17(含9新重入)、309浮点2、310between3、311完整样式2、312粗细1、313十字窗18全过；Field092=31、Design083=108、Editor097=10、FullChain158=19、Components224=9及实际EXE019=8全过并还原。已实看同版0.75数值与30/40范围截图；不代VM逐态、真实VS、物理操作或用户验收。
+- C09_NUMERIC_REENTRY_CANDIDATE_20261029.json核75源码、569发布项、11轨93实际加载SHA与当前验证源SHA；原方案/Catalog/计划当前指针统一，s4GoalPlan(含G2Acceptance)/blobFileStructure完整范围不变。所有旧失败、历史候选证据保留。
+- 73398/21276/55377/95517/89644/83218构建，80201/5477/79613/35471/23830失败，58324旧候选8过和44371最终集中回归均真实终态，无live。代码及验证源冻结后仅更文档/目录，准备完整中文本地检查点，排除用户XAML，不推送；提交后须再绑定正式提交身份，不能把当前36b+候选标签叫新提交产物。
+- 三路自动补位：下一优先完整S3RuntimeWorkflow直接Map消费者及旧断言，再Debug/Image/Catalog/有无Wpf，详C09_RUNTIME_CONSUMER_MIGRATION_AUDIT_20261029.json；C17原Cross OpenCV绘制/顺序/编码证据已足够，详C17_CROSS_EXPORT_IMPLEMENTATION_AUDIT_20261029.json，不用中文字库问题阻塞Cross，但不能把混合WPF整图再叠Cross冒充同态。
+- 图像源分支新消息已处理：它报告整批合入36b，独立工作区源码/测试对36b一致而不拷C09/user XAML。A03公共输入消费接纳能力由本主线唯一写、先设计后实现；CaptureAsync不是取图开始，现EnterRun过早，Owner.Publish的外部Admission后需再核退役。详A03_INPUT_CONSUMPTION_CONTRACT_REQUEST_20261029.json。独立线负责Manager/VM导航与C05设备预览/工作流采集排空，可在其独立worktree实施，不写公共合同/Plugin.Wpf/本主仓或正式Release；本主线未改其C05文件，也不将其报告当实现通过。
+- 分支历史核收限制同步：8fdb报告50/0含原21失败只能核归档receipt/日志/源码；共享out测试DLL已被后批覆盖，原249/19类未总体重跑，同名39项不证明覆盖等价；不称当前Release或测试DLL仍为8fdb。正式验证仍本主仓独占。
+- 目标active、第一阶段未完成，第二阶段不准入。C08 ROI来源/Assist同会话、位姿原公式与显示生命周期、完整C01—C17/SDK可视残留/历史/总体回归及VM/VS/人工门禁均保留。
+
+## 2026-10-29 C09根参数代理完整候选核收，下一原数值文本同步重入
+
+- 上轮隔离解释仅核已有构建终态，无新增实施；本轮实际推进Root代理完整单元。一主写三路只读，基线36bcd14faa43037fe00471bd56cfcb3101417c1f不变，无新提交/推送；Blob业务/算法/文件结构继续冻结，用户BlobParameterEditor.xaml不改不暂存。
+- 根窗口只以真实Constant建立备份，完整ReferenceSetting保Conversion；Runtime可信opening恢复仅还原单键，不放宽用户Required-Unset。预检用独立冻结候选，活草稿身份/版本/语义含通知回调后检查，不再整节点回滚。
+- 只读核查发现catch中的Current可能再次调用抛错准入回调，已封闭该探测并加双异常反例，恢复gate后可重试；真正窗口创建/关闭旧行退役、转换预检、应用/Undo/Redo/取消、正式保存重开、移除初始缺键输入且保另一字段、回调修改B与关窗均走真实生产入口。
+- FullChain156验证宿主编译失败（错误使用ExecutionOwner.Dispose）保留，改正式Retire后157十九组通过。最终UI002=0错6484警告43.95秒/full002=0错6484警告36.60秒；Editor096十组、Field091三十一组、Design082一百零八组、Components223九组通过；实际EXE准入018八项通过，组件/清单原SHA恢复。
+- 权威C09_ROOT_PROXY_CANDIDATE_20261029.json核73源码、569发布项、五轨60条实际加载SHA与用例源码SHA；产品仍基线+脏候选，不借旧成绩。用户XAML原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持。原O06/Catalog/计划同步；s4GoalPlan(含G2Acceptance)、blobFileStructure原范围未改。
+- 64745构建、83339整链、36419关联/准入均真实终态，无live。未代签VM逐态/实际指针/真实VS或用户验收；本轮独立Design创建并非VS人工通过。
+- 三路核查结论：根代理已修问题无新确定缺口；下一原数值统一处理Begin/Resume/投影/绑定格式化/拒绝恢复/AttachInput的接纳身份、raw及ABA，见C09_NUMERIC_TEXT_MUTATION_AUDIT_20261029.json；不能只补两个入口。C08下一统一ROI来源/Assist同会话接纳及退役，位姿原公式未证不能猜矩阵。
+- 后续RuntimeWorkflow/Debug/Image等验证直接迁新合同、有无Wpf正式功能、C01—C17全部原组合与SDK可视残留/历史/总体及VM/VS/用户门禁保留；目标active、第一阶段未完成，第二阶段不准入。
+
+## 2026-10-29 C09复制/插线与RuntimeEditor候选正式核收，下一根代理/数值重入
+
+- 上轮已推进Map整链；本轮继续第一阶段，主线唯一写、三路只读逐控件自动补位。基线36bcd14faa43037fe00471bd56cfcb3101417c1f未变，无新提交/推送；Blob业务/算法/文件结构冻结，仅现行合同消费更新。
+- WorkflowFragmentCopy在任何create前按完整源图核有效Origin；合法未复制边与非法归属区分，已有Reason保留不洗白。重叠插线保已有边对象/ID/顺序，AddedConnections只新增；端口命令跟随移动/配置历史，失败逐项恢复并保原异常，端口通知抛错仍恢复其他端口/路径。
+- RuntimeEditor旧ParamSettings断言全部直接Map；真实同源确认可修EditError。实测092发现输入组合私自把Required改可选，已保正式Required而单独允许执行前宿主供图；093验证按节点选择多图端口歧义，改完整端口/成员/Scope身份。095真实十组全部通过，覆盖必填清除拒绝/缺输入失败清私有表/保存取消/连续停止，失败保留。
+- UI001一次编译错（数组Reverse绑定void）保留，改逆序索引。最终串行UI004=0错6328警告37.06秒/full004=0错1120警告25.04秒。FullChain155十五组、Editor095十组、Field090三十一组、Design081一百零八组、Kernel045十八组、Components222九组均通过；正式EXE ProductIsolation017八项通过，组件/清单原身份还原。
+- C09_GRAPH_EDITOR_CANDIDATE_20261029.json逐核569发布项、六轨实际加载SHA与当前源码，保用户XAML单列SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed，不改不暂存；基线+脏候选不套旧成绩、不称纯净树。
+- 原方案同步C08最终五入口为FullScreen/Box/SectorRing/Polygon/Sector，普通CircleMes仅历史条目、不列Blob前置；Assist15角色已有独立候选，不再写“整体未实施”，但位姿真实公式/完整会话与VM/VS/人工仍未过。不改原最终验收范围。
+- 三路下一核报已归C09_ROOT_NUMERIC_REMAINING_AUDIT_20261029.json：根代理伪null常量备份、转换丢失、opening缺键Required恢复失败、活草稿临时验证重入覆盖；原数值Begin/Resume及其他受控文本回写缺acceptance/raw/ABA身份保护。以上未实施，下一完整单元优先修并沿正式宿主验证。
+- 35932/83089/9107/76444构建与29089/38676失败、14126/33075核收均真实终态，无live。后续调度/调试/图像及有无Wpf验证消费者、原C01—C17/位姿/导出差异/SDK可视残留/历史通知/总体关联与VM/真实VS/用户门禁继续。目标active，第一阶段未完成，第二阶段不准入。
+
+## 2026-10-29 C09字段状态整体切换候选：正式整链已跑通，复制/插线及完整门禁继续
+
+- 上轮隔离解释未推进代码；本轮主线唯一写、三路只读核证，继续第一阶段。基线36bcd14faa43037fe00471bd56cfcb3101417c1f，无新提交/推送；Blob算法业务与文件组织保持冻结，仅同步现行合同消费者。
+- FieldSettings作为输入/设置/常量/引用/Unset唯一权威，Describe/Capabilities不依赖假设置；持久化仅ToolId/Fields，拒旧Settings及Runtime ParamSettings，执行仅当轮物化。根代理、自动来源、保存路径、片段映射和编辑草稿直接新合同。
+- 修合法常量残留SourceError及无备份伪默认，中央原子清诊断避免晚清新引用错误；同源显式接管、候选刷新失败失效、刷新/重绘/释放回调身份补齐。XML完整物化与投影核标量域及判定固定结构，无算法计算变更。
+- FullChain150失败揭露图历史漏Runtime配置；GraphBindingUndoSnapshot及插线统一新Map。151/152进一步揭露执行副本ConnectNodes换边ID，已保原Id/端口/路径且不吞复制错误；153真实窗口整链九组通过，包括自动来源/撤销重做/HALCON/下游/私有调试/保存重开。失败原日志保留。
+- 最终UI010=0错6302警告42.25秒，全量007=0错6431警告35.72秒；同产物FieldEditing089=31过、Design080=108过、Kernel044=18过、Components221=9过；组件220旧API编译失败保留后直接迁新API。实际EXE ProductIsolation016八项过，组件/清单恢复原SHA。
+- 权威C09_FIELD_STATE_CANDIDATE_20261029.json逐核569发布文件、五轨实际加载路径/SHA和当前源码；正式标签仍基线+脏候选，不套旧成绩/不称纯净树。已实看Design080参数页；不代VM逐态/真实VS/用户验收。
+- 用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不改、不暂存。构建41648、88985等与验证37031/65546/25490均真实终态，无live。
+- 下一：复制须拒/标非法Origin不能洗成手动引用；重叠插线保边身份/明确归属；RuntimeEditor等旧验证消费直接迁Map并补重入/Enter反例。原C01—C17、位姿/导出差异/SDK可视残留、总体回归和VM/VS/人工完整门禁保留。目标active、阶段一未过、第二阶段不准入。
+
+## 2026-10-29 C17完整组合36bcd14f同提交正式核收完成，下一C09整体切换
+
+- 已保存中文本地检查点36bcd14faa43037fe00471bd56cfcb3101417c1f（31路径：原十字窗/双模型/受管层/导出/绑定清理修复、设计真实数值、目录与原方案及此前审计），未推送。用户BlobParameterEditor.xaml未暂存且SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持；主线唯一写，另外三路只读已核报。
+- 提交后串行UI001=0错6482警告39.37秒/full001=0错6341警告35.13秒。源码70条与提交规范化内容逐核；正式manifest标签36bcd14f，仍保留用户未提交XAML并单列SHA，不称纯净提交树。
+- 同提交Window十轨18/16/57/3/11/10/3/2/3/1均零失败（依次C17窗/绑定/ROI/between/导出/图形/颜色/原完整/色板/浮点）；Design108过、Editor10过、FullChain真实HALCON九过；正式EXE准入015八过并还原。权威C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json核569发布文件与13轨78条实际加载路径/SHA；不借提交前成绩，原失败/候选证据不改写。
+- 最新设计和运行实看均已显示真实数值及原标签前景；无Application的设计创建/编辑回显验证不代VS实际设计器、VM逐态/物理指针及用户验收。完整组合是公共库消费者，尚未接Blob业务；当前WPF冻结导出不冒称原OpenCV绘制编码同态。
+- 三路补位结果均已核源SHA落盘：C09_COMPLETE_STATE_CUTOVER_SCOPE_20261029.json记录转换/根代理/全部字段/保存复制历史执行调试整体范围；C08_FIXTURE_INSTALLATION_API_AUDIT_20261029.json新增Fixture头与仅当次执行、PositionFix形状修正入口，公式/实际Blob调用未证；C17_NATIVE_EXPORT_RENDERING_GAP_20261029.json明确原线宽/截断/文字字号重置/opacity与编码差异及缺证，不泛称资料不足。
+- 80397构建、47403同提交全部回归准入及归档已真实终态，无live。提交后仅更新非编译文档/Catalog核收指针，产品/验证源码冻结。原O06及计划当前身份同步，历史身份单独保留；用户文件不改、不推送。
+- 下一继续第一阶段C09唯一字段状态权威完整切换，先核Required/Unset/host输入阶段语义，再集中修改保存、复制、历史、根代理、引用转换及执行调试；必要的现行接口消费同步不改变Blob算法/业务语义/文件组织。原C01—C17/位姿/SDK可视残留/原249整体和真实VS/VM/人工等完整门禁保留，阶段一未过，Blob第二阶段仍冻结。
+
 ## 2026-10-29 C17十字配置完整组合候选核收完成，待中文检查点与同提交重绑
 
 - 上轮仅解释隔离，无代码进展；本轮主线唯一写，三路只读核查推动C17实际实施。基线fb2d5806；产品、测试均已冻结并核收，全部构建/检查真实终态。未推送，Blob业务和用户XAML不改。

@@ -3,68 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Workflow;
 
-/// <summary>Runtime inputs use declared stable port IDs and semantic references.
-/// No SDK writable-property inference or tool-specific parameter conversion.</summary>
 internal static class RuntimeInputBindings
 {
-    internal static object? Constant(Port port,object? value)
-    {
-        if(value is JsonElement json)
-        {
-            value=json.ValueKind==JsonValueKind.Null?null:port.Type.Scalar switch
-            {
-                ScalarKind.Int64=>json.GetInt64(),ScalarKind.Float64=>json.GetDouble(),
-                ScalarKind.Boolean=>json.GetBoolean(),ScalarKind.Text=>json.GetString(),
-                _=>throw new ArgumentException("This Runtime constant requires an explicit structured-value editor.")
-            };
-        }
-        return ValueRules.Freeze(port,value);
-    }
+    internal static object? Constant(Port port,object? value)=>ValueRules.Freeze(port,value);
     internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope)
     {
-        var configuration=node.RuntimeConfiguration!;
-        var ports=configuration.BindingTargets.ToDictionary(p=>p.Id,StringComparer.Ordinal);
-        var issues=new List<ExecutionInputIssue>();
-        foreach(var setting in node.ParamSettings.Settings)
+        var configuration=node.RuntimeConfiguration!;var issues=new List<ExecutionInputIssue>();
+        if(node.ParamSettings.Settings.Any())issues.Add(new("runtime-configuration","Runtime","Runtime nodes cannot contain SDK ParamSettings."));
+        foreach(var (id,setting) in configuration.Fields.Capture())
         {
             try
             {
-                if(!string.IsNullOrEmpty(setting.RebindingReason))throw new ArgumentException(setting.RebindingReason);
-                if(!ports.TryGetValue(setting.ParameterName,out var port))throw new ArgumentException("Unknown Runtime input port.");
-                if(setting.BindingType==BindingType.Constant)
+                if(setting is ReferenceSetting reference)
                 {
-                    if(configuration.SettingsSchema?.Inputs.Any(p=>p.Id==port.Id)==true)
-                        throw new ArgumentException("Runtime setting literals belong in the strong settings model, not duplicate binding storage.");
-                    if((port.EditModes&FieldEditModes.Constant)==0)throw new ArgumentException("This input does not allow a persisted constant.");
-                    Constant(port,setting.ConstantValue);
+                    if(!string.IsNullOrEmpty(reference.RebindingReason))throw new ArgumentException(reference.RebindingReason);
+                    var validation=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,scope);
+                    if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)throw new ArgumentException(validation.Reason);
                 }
-                else if(setting.BindingType==BindingType.Binding&&setting.ReferenceExpression is not null)
-                {
-                    var validation=WorkflowBindingContext.ValidateTyped(flow,node,setting,scope);
-                    if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
-                        throw new ArgumentException(validation.Reason);
-                }
-                else throw new ArgumentException("Runtime input requires an explicit semantic reference.");
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException or JsonException or FormatException or OverflowException)
-            {issues.Add(new(setting.ParameterName,setting.ParameterName,error.Message));}
+            {issues.Add(new(id,id,error.Message));}
         }
         return issues;
     }
-    internal static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)=>node.ParamSettings.Settings.Select(setting=>
-        new BindingInputReference(setting.ParameterName,setting.ParameterName,()=>
-        {
-            if(setting.ReferenceExpression is null)return "";
-            try{var reference=BindingReferenceSerializer.Deserialize(setting.ReferenceExpression);return reference.NodeId+"."+reference.PortId;}
-            catch(JsonException){return "";}
-        },text=>
-        {
-            if(text.Length!=0)throw new InvalidOperationException("Use an explicit Runtime semantic reference.");
-            node.ParamSettings.RemoveSetting(setting.ParameterName);
-        },Array.Empty<Type>(),ReadWorkflowId:()=>setting.SourceWorkflowId,ReferenceOnly:setting.BindingType==BindingType.Binding)).ToArray();
+    internal static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)
+        =>node.RuntimeConfiguration!.Fields.Capture().Select(pair=>new BindingInputReference(pair.Key,pair.Key,
+            ()=>pair.Value is ReferenceSetting reference?reference.Reference.NodeId+"."+reference.Reference.PortId:"",
+            text=>
+            {
+                if(text.Length!=0)throw new InvalidOperationException("Use an explicit Runtime reference.");
+                node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{[pair.Key]=new UnsetSetting()});
+            },Array.Empty<Type>(),ReadWorkflowId:()=>pair.Value is ReferenceSetting reference?reference.Reference.ScopeId:null,
+            ReferenceOnly:pair.Value is ReferenceSetting)).ToArray();
 }

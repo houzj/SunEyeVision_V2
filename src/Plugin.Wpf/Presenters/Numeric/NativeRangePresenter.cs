@@ -34,6 +34,10 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private Window? _owner;
     private DispatcherOperation? _pending,_resume;
     private long _generation;
+    private long _attachGeneration;
+    private readonly long[] _observedAcceptance=new long[2];
+    private readonly bool[] _observedReference=new bool[2];
+    private bool _acceptedProjectionPending;
     private bool _disposed,_active,_syncing,_committing,_closing,_presentationHidden;
     public Numbers.SliderArrangeBase NativeView {get;}
     public TextBox? Input(int endpoint)=>_commits[endpoint]?.Text;
@@ -48,6 +52,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     {
         _expansion=new(this);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
+        for(var i=0;i<2;i++){_observedAcceptance[i]=_states[i].AcceptanceVersion;_observedReference[i]=_states[i].IsReferenceMode;}
         _acceptPrepared=acceptPrepared;_beginGroup=beginGroup;
         _allow=_presentations.Select(p=>references is not null&&p.Layout?.AllowReference!=false).ToArray();
         Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0);MinHeight=32;
@@ -102,17 +107,39 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void AttachInputs()
     {
+        var generation=++_attachGeneration;var old=_commits.ToArray();var pending=old.Select(commit=>commit?.Pending).ToArray();
+        var edits=old.Select(commit=>commit?.EditVersion).ToArray();
         NativeView.ApplyTemplate();NativeView.UpdateLayout();_box!.ApplyTemplate();
+        if(_disposed||generation!=_attachGeneration||old.Where((commit,i)=>!ReferenceEquals(commit,_commits[i])).Any())return;
         var pair=NativeView.EnsureTemplateInputs();var leaves=new[]{pair.Left,pair.Right};
         for(var i=0;i<2;i++)
         {
             if(_commits[i] is {} current&&ReferenceEquals(current.Text,leaves[i].FindName("ValueText")))continue;
-            var raw=_commits[i]?.PendingRaw;_commits[i]?.Dispose();
-            _commits[i]=new(_states[i],_presentations[i].Layout,leaves[i],NativeView,ValueProperty(i),paired:true);
+            var raw=edits[i]==old[i]?.EditVersion?pending[i]:null;old[i]?.Dispose();
+            var endpoint=i;
+            var created=new NativeNumericCommit(_states[i],_presentations[i].Layout,leaves[i],NativeView,ValueProperty(i),paired:true,
+                isCurrent:()=>!_disposed&&ReferenceEquals(_box.Template.FindName(endpoint==0?"T1":"T2",_box),leaves[endpoint]));
+            if(_disposed||generation!=_attachGeneration||!ReferenceEquals(old[i],_commits[i])){created.Dispose();return;}
+            _commits[i]=created;
             _commits[i]!.RestorePending(raw);_commits[i]!.ValidateInitial();
         }
     }
-    private void OnStateChanged(){if(!_committing)Project(false);}
+    private bool ProjectValues(ParameterSetting[] values,Action action)
+    {
+        bool Next(int i)
+        {
+            if(i==2){action();return true;}
+            if(values[i] is not ConstantSetting number)return Next(i+1);
+            var nested=false;return _commits[i]!.ProjectCandidate(number,()=>nested=Next(i+1))&&nested;
+        }
+        return Next(0);
+    }
+    private void OnStateChanged()
+    {
+        var accepted=false;for(var i=0;i<2;i++){accepted|=_observedAcceptance[i]!=_states[i].AcceptanceVersion||_observedReference[i]!=_states[i].IsReferenceMode;_observedAcceptance[i]=_states[i].AcceptanceVersion;_observedReference[i]=_states[i].IsReferenceMode;}
+        if(_syncing&&accepted)_acceptedProjectionPending=true;
+        if(!_committing)Project(false);
+    }
     internal void ValidateReplay(IReadOnlyDictionary<string,AcceptedFieldValue> values)
     {
         if(values[_states[0].Port.Id].Setting is ConstantSetting low&&values[_states[1].Port.Id].Setting is ConstantSetting high
@@ -125,7 +152,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         ++_generation;_pending?.Abort();_pending=null;_resume?.Abort();_resume=null;
         _expansion.Close();foreach(var scope in _scopes)scope?.ClosePopups();Project(true);
     }
-    private void Project(bool accepted)
+    private void Project(bool accepted,Func<int,bool>? mayReplace=null)
     {
         if(_disposed||_syncing)return;_syncing=true;
         try
@@ -134,8 +161,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             NativeView.IsSubscribeVisible=_references.Any(session=>session is not null)?Visibility.Visible:Visibility.Collapsed;
             for(var i=0;i<2;i++)
             {
-                if(accepted||_states[i].IsReferenceMode||_commits[i]?.IsDirty!=true)_commits[i]?.ProjectAccepted();
-                if(accepted)_references[i]?.ProjectAccepted();
+                if((!accepted||mayReplace?.Invoke(i)!=false)&&(accepted||_states[i].IsReferenceMode||_commits[i]?.IsDirty!=true))_commits[i]?.ProjectAccepted();
+                if(accepted&&mayReplace?.Invoke(i)!=false)_references[i]?.ProjectAccepted();
                 if(!_states[i].IsReferenceMode)_scopes[i]?.ClosePopups();
             }
             foreach(var toggle in Visuals<ToggleButton>(NativeView))
@@ -146,7 +173,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             }
             _error.Text=string.Join("；",_states.Where(state=>state.Error.Length!=0).Select(state=>state.Error).Distinct());
         }
-        finally{_syncing=false;}
+        finally{_syncing=false;if(_acceptedProjectionPending&&!_committing){_acceptedProjectionPending=false;Project(false);}}
     }
     public bool TrySetConstant(int endpoint,object value)
     {
@@ -172,7 +199,9 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         if(_committing)return false;
         _committing=true;
         IDisposable? group=null;
-        var raw=_commits.Select(commit=>commit?.PendingRaw).ToArray();var candidateInstalled=false;var accepted=false;var projected=false;
+        var raw=_commits.Select(commit=>commit?.Pending).ToArray();var candidateInstalled=false;var accepted=false;var projected=false;
+        var versions=_states.Select(state=>state.AcceptanceVersion).ToArray();var commits=_commits.ToArray();var edits=commits.Select(commit=>commit?.EditVersion).ToArray();
+        bool Unchanged()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion&&ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);
         try
         {
             if(_beginGroup is not null){group=_beginGroup();if(group is null)return false;}
@@ -185,7 +214,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             for(var i=0;i<2;i++)
             {
                 var error=_validate?.Invoke(_states[i].Port,proposals[i]);
-                if(_disposed||_states.Any(state=>state.IsDisposed))return false;
+                if(!Unchanged())return false;
                 if(!string.IsNullOrEmpty(error)){_states[i].SetEditError(error);return false;}
             }
             if(proposals[0] is ConstantSetting low&&proposals[1] is ConstantSetting high&&
@@ -195,35 +224,36 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             _syncing=true;candidateInstalled=true;
             try
             {
-                _commits[0]!.IgnoreChanges(()=>_commits[1]!.IgnoreChanges(()=>
+                if(!ProjectValues(proposals,()=>
                 {
                     for(var i=0;i<2;i++)if(proposals[i] is ConstantSetting number)
-                        NativeView.SetCurrentValue(ValueProperty(i),Convert.ToDouble(number.Value,CultureInfo.InvariantCulture));
-                }));
+                    {NativeView.SetCurrentValue(ValueProperty(i),Convert.ToDouble(number.Value,CultureInfo.InvariantCulture));if(!Unchanged())return;}
+                }))return false;
                 for(var i=0;i<2;i++)if(proposals[i] is ConstantSetting number&&!_commits[i]!.ValidatePreparedBindings(number))return false;
             }
             finally{_syncing=false;}
+            if(!Unchanged())return false;
             var prepared=new[]{(_states[0],proposals[0]),(_states[1],proposals[1])};
             accepted=_acceptPrepared is {} submit?submit(prepared,()=>accepted=true):DeclaredFieldState.TrySetGroup(prepared,_write,installed:()=>accepted=true);
             if(_disposed||_states.Any(state=>state.IsDisposed))return false;
-            if(accepted){Project(true);projected=true;}return accepted&&!Invalid;
+            if(accepted){Project(true,i=>ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);projected=true;}return accepted&&!Invalid;
         }
         finally
         {
             try
             {
-            if(!_disposed&&accepted&&!projected&&!_states.Any(state=>state.IsDisposed))Project(true);
-            if(!_disposed&&candidateInstalled&&!accepted&&!_states.Any(state=>state.IsDisposed))
+            if(!_disposed&&accepted&&!projected&&!_states.Any(state=>state.IsDisposed))Project(true,i=>ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);
+            if(candidateInstalled&&!accepted&&Unchanged())
             {
                 _syncing=true;
                 try
                 {
-                    _commits[0]!.IgnoreChanges(()=>_commits[1]!.IgnoreChanges(()=>
+                    ProjectValues(_states.Select(state=>state.Accepted as ConstantSetting??state.ConstantBackup??state.Accepted).ToArray(),()=>
                     {
                         for(var i=0;i<2;i++)if((_states[i].Accepted as ConstantSetting??_states[i].ConstantBackup) is {} number)
-                            NativeView.SetCurrentValue(ValueProperty(i),Convert.ToDouble(number.Value,CultureInfo.InvariantCulture));
-                        for(var i=0;i<2;i++)_commits[i]!.RestoreRejected(raw[i]);
-                    }));
+                        {NativeView.SetCurrentValue(ValueProperty(i),Convert.ToDouble(number.Value,CultureInfo.InvariantCulture));if(!Unchanged())return;}
+                        for(var i=0;i<2;i++){_commits[i]!.RestoreRejected(raw[i]);if(!Unchanged())return;}
+                    });
                 }
                 finally{_syncing=false;}
             }

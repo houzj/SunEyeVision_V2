@@ -111,9 +111,9 @@ public static partial class ToolRegistry
         return changed;
     }
 
-    public static IToolSettingsView CreateSettingsView(string toolId,object settings,ToolSettingsViewOptions? options=null)
+    public static IToolSettingsView CreateSettingsView(string toolId,FieldSettings fields,ToolSettingsViewOptions? options=null)
     {
-        var draft=new ToolSettingsEditSession(CreateRuntime(toolId),settings);
+        var draft=new ToolSettingsEditSession(CreateRuntime(toolId),fields);
         ToolComponentRegistration? editor;
         lock(_lock)_editorComponents.TryGetValue(toolId,out editor);
         options??=new();
@@ -148,9 +148,9 @@ public static partial class ToolRegistry
             if(settings.GetType()!=definition.SettingsType||!typeof(IToolOutput).IsAssignableFrom(definition.OutputType))
                 throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
             if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
-            _=definition.Describe(definition.FreezeSettings(settings));
+            _=definition.Describe();
             if(definition is IToolSettingsFields)
-                _=new ToolSettingsEditSession(definition,settings).ReadFields();
+                _=new ToolSettingsEditSession(definition,new FieldSettings(((IToolSettingsFields)definition).SettingsSchema.Inputs,((IToolSettingsFields)definition).ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal))).CaptureFields();
         }
     }
 }

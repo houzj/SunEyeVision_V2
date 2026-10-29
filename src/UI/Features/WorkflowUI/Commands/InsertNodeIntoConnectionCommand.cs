@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Workflow;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.UI.Features.WorkflowUI.Commands;
 /// <summary>恢复InsertExecution：保留端口方向、拒环，位置/边/绑定配置作为一个历史项。</summary>
 public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
@@ -12,8 +11,9 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
     private readonly MoveNodesSnapshotCommand _move;
     private readonly WorkflowNode[] _affected;
     private readonly Action _configure, _refresh;
-    private readonly Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)> _beforeConfig;
-    private Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)>? _afterConfig;
+    private readonly EditConnectionPortsCommand[] _portEdits;
+    private readonly GraphBindingUndoSnapshot _beforeConfig;
+    private GraphBindingUndoSnapshot? _afterConfig;
     public IReadOnlyList<WorkflowConnection> AddedConnections { get; }
     public InsertNodeIntoConnectionCommand(ObservableCollection<WorkflowConnection> connections, IEnumerable<WorkflowNode> nodes,
         WorkflowConnection original, WorkflowNode inserted, Point position, Action configure, Action refresh)
@@ -23,16 +23,24 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
         _connections = connections; _before = connections.ToArray(); _configure = configure; _refresh = refresh;
         var next = _before.Where(c => !ReferenceEquals(c, original)).ToList();
         var added = new List<WorkflowConnection>();
+        var portEdits=new List<EditConnectionPortsCommand>();
         foreach (var pair in new[] { (original.SourceNodeId, inserted.Id), (inserted.Id, original.TargetNodeId) })
         {
+            var existing=next.SingleOrDefault(edge=>edge.SourceNodeId==pair.Item1&&edge.TargetNodeId==pair.Item2);
+            if(existing is not null)
+            {
+                if(existing.SourcePort!=original.SourcePort||existing.TargetPort!=original.TargetPort)
+                    portEdits.Add(new EditConnectionPortsCommand(existing,original.SourcePort,original.TargetPort));
+                continue;
+            }
             var edge = new WorkflowConnection(Guid.NewGuid().ToString("N"), pair.Item1, pair.Item2)
             { SourcePort = original.SourcePort, TargetPort = original.TargetPort };
-            var existing = next.FindIndex(c => c.SourceNodeId == pair.Item1 && c.TargetNodeId == pair.Item2);
-            if (existing >= 0) next[existing] = edge; else next.Add(edge);
+            next.Add(edge);
             added.Add(edge);
         }
         if (HasCycle(next)) throw new InvalidOperationException("插线将形成执行环，已取消。");
         _after = next.ToArray(); AddedConnections = added;
+        _portEdits=portEdits.ToArray();
         _move = new MoveNodesSnapshotCommand(new[] { (inserted, inserted.Position, position) }, _after);
         var affectedIds = new[] { original.SourceNodeId, original.TargetNodeId, inserted.Id }.ToHashSet();
         _affected = nodes.Where(n => affectedIds.Contains(n.Id)).ToArray();
@@ -51,16 +59,8 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
         }
         return outgoing.Keys.Any(Visit);
     }
-    private Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)> Capture() => _affected.ToDictionary(n => n,
-        n => (n.Parameters == null ? null : ToolParameterSnapshot.Create(n.Parameters), ToolParameterSnapshot.CopySettings(n.ParamSettings)));
-    private static void Restore(Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)> snapshot)
-    {
-        foreach (var pair in snapshot)
-        {
-            pair.Key.Parameters = pair.Value.Parameters == null ? null! : ToolParameterSnapshot.Create(pair.Value.Parameters);
-            pair.Key.ParamSettings = ToolParameterSnapshot.CopySettings(pair.Value.Settings)!;
-        }
-    }
+    private GraphBindingUndoSnapshot Capture()=>GraphBindingUndoSnapshot.Capture(_affected,null);
+    private static void Restore(GraphBindingUndoSnapshot snapshot)=>snapshot.Restore();
     private void ApplyEdges(IEnumerable<WorkflowConnection> edges)
     { _connections.Clear(); foreach (var edge in edges) _connections.Add(edge); }
     public event EventHandler? CanExecuteChanged { add { } remove { } }
@@ -69,11 +69,23 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
     {
         try
         {
-            ApplyEdges(_after); _move.Execute(null);
+            ApplyEdges(_after);
+            foreach(var edit in _portEdits)edit.Execute(null);
+            _move.Execute(null);
             if (_afterConfig == null) { _configure(); _afterConfig = Capture(); } else Restore(_afterConfig);
             _refresh();
         }
-        catch { ApplyEdges(_before); _move.Undo(); Restore(_beforeConfig); _refresh(); throw; }
+        catch(Exception failure){RestoreBefore(failure);throw;}
     }
-    public void Undo() { ApplyEdges(_before); _move.Undo(); Restore(_beforeConfig); _refresh(); }
+    private void RestoreBefore(Exception? failure)
+    {
+        var errors=new List<Exception>();if(failure is not null)errors.Add(failure);
+        void Attempt(Action action){try{action();}catch(Exception error){errors.Add(error);}}
+        Attempt(()=>ApplyEdges(_before));Attempt(()=>_move.Undo());
+        for(var index=_portEdits.Length-1;index>=0;index--)Attempt(_portEdits[index].Undo);
+        Attempt(()=>Restore(_beforeConfig));Attempt(_refresh);
+        if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();
+        if(errors.Count>1)throw new AggregateException("插线及配置恢复发生异常。",errors);
+    }
+    public void Undo()=>RestoreBefore(null);
 }

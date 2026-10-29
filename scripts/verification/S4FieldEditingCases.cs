@@ -139,6 +139,8 @@ internal static class S2DocumentEditingCases
             var imagePriorItem=imageCombo.SelectedItem;imageRefreshFails=true;RefreshImageSources();
             Require(imageEditor.HasInvalidText&&ReferenceEquals(imageCombo.SelectedItem,imagePriorItem)&&imageWrites==0
                 &&((ReferenceSetting)imageAccepted).Reference.NodeId=="A","候选读取失败破坏已接受来源或显示");
+            imageCombo.SelectedItem=ImageSourceItem(imageCombo,"B");Pump();
+            Require(imageEditor.HasInvalidText&&imageWrites==0&&ReferenceEquals(imageCombo.SelectedItem,imagePriorItem),"刷新失败后的旧候选仍能写入来源");
             imageRefreshFails=false;RefreshImageSources();
             Require(!imageEditor.HasInvalidText&&imageWrites==0&&((ReferenceSetting)imageAccepted).Reference.NodeId=="A","来源恢复后错误残留或擅自写入");
             Console.WriteLine("通过：来源刷新失败保留显示与身份，恢复只清除刷新错误");
@@ -158,6 +160,21 @@ internal static class S2DocumentEditingCases
             Require(imageWrites==beforeStale,"Dispose后的来源事件仍写入");
             Console.WriteLine("通过：重绘关闭旧弹层，旧选择及释放后回调不写当前字段");
 
+            var takeoverWrites=0;
+            ParameterSetting automatic=new ReferenceSetting(sourceA.Reference(BindingSelection.All),OriginId:"connection:edge");
+            using var takeover=new DeclaredFieldEditor(new("takeover",imageType,EditModes:FieldEditModes.Reference),"同源确认",automatic,next=>{automatic=next;takeoverWrites++;});
+            takeover.UseImageSourceSelector(()=>new[]{sourceA,sourceB});Show(takeover);
+            var takeoverCombo=(ComboBox)takeover.InputElement!;takeoverCombo.IsDropDownOpen=true;Pump();
+            Require(takeoverWrites==0&&((ReferenceSetting)automatic).OriginId=="connection:edge","打开图像下拉擅自接管自动来源");
+            ImageSourceItem(takeoverCombo,"A").RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                {RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});Pump();
+            Require(takeoverWrites==1&&automatic is ReferenceSetting {OriginId:null,RebindingReason:null}&&!takeoverCombo.IsDropDownOpen,"显式点击同源没有接管或重复写入");
+            takeoverCombo.IsDropDownOpen=true;Pump();
+            ImageSourceItem(takeoverCombo,"A").RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                {RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});Pump();
+            Require(takeoverWrites==1,"已显式同源重复确认再次写入");
+            Console.WriteLine("通过：图像下拉打开不接管，实际同项鼠标确认接管自动归属且去重");
+
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
             var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
@@ -167,7 +184,8 @@ internal static class S2DocumentEditingCases
             using var xmlStream=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
             var xml=System.Xml.Linq.XDocument.Load(xmlStream);var rule=xml.Descendants("Judgment").Single(e=>(string?)e.Attribute("key")=="total-area");
             var key=(string)rule.Attribute("minimumFieldId")!;
-            var updated=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)definition.ApplySettings(settings,new Dictionary<string,object?>{{key,12d}});
+            var initialFields=new FieldSettings(access.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+            var updated=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)definition.MaterializeSettings(initialFields.Apply(new Dictionary<string,ParameterSetting>{{key,new ConstantSetting(12d)}}).Materialize(new Dictionary<string,object?>()));
             Require(updated.Judgments.Single(r=>r.Key=="total-area").Minimum==12&&updated.Judgments.Single(r=>r.Key=="max-area")==settings.Judgments.Single(r=>r.Key=="max-area"),"嵌套同名最小值写错判定");
             Console.WriteLine("通过：正式Runtime XML的54个唯一设置字段及嵌套判定精确读写，不创建旧Blob参数");
             var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
@@ -294,22 +312,23 @@ internal static class S2DocumentEditingCases
     private static void VerifySettingsCandidate(IToolSettingsFields definition,object settings)
     {
         var tool=(IToolDefinition)definition;
-        var draft=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,settings);
+        FieldSettings Initial()=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+        var draft=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial());
         var schema=draft.Schema;
         string Id(string label)=>schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
         var low=Id("阈值");var high=Id("阈值上限");var highPort=schema.Inputs.Single(port=>port.Id==high);
         var source=new DeclaredReferenceCandidate("来源","producer",null,highPort,Array.Empty<string>());
         var calls=0;var reject=true;var rebind=false;
         using var view=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();
-        var options=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(AcceptCandidate:(candidate,references)=>
+        var options=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(AcceptCandidate:candidate=>
         {
             calls++;
-            Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)candidate).Threshold==73
-                &&references.Count==1&&references[high].Reference.NodeId=="producer"
-                &&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)draft.CaptureSettings()).Threshold==128,
+            Require(candidate.Get<long>(low)==73
+                &&candidate.Read(high) is ReferenceSetting {Reference.NodeId:"producer",Conversion:BindingConversion.Automatic}
+                &&draft.CaptureFields().Get<long>(low)==128,
                 "宿主没有取得完整常量和引用候选，或预检前污染草稿");
             if(reject)throw new InvalidOperationException("整组候选拒绝");
-            if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,settings));
+            if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial()));
         });
         view.Bind(draft,options);
         var method=typeof(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView).GetMethod("WriteGroup",BindingFlags.Instance|BindingFlags.NonPublic)!;
@@ -317,14 +336,14 @@ internal static class S2DocumentEditingCases
         void Apply()=>method.Invoke(view,new object[]{group});
         try{Apply();throw new Exception("整组宿主拒绝被忽略");}
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"整组候选拒绝"}){}
-        Require(calls==1&&view.TryCapture(out var captured,out var refs,out _)
-            &&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)captured).Threshold==128&&refs.Count==0,
+        Require(calls==1&&view.TryCapture(out var captured,out _)
+            &&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "混合常量和引用拒绝后缓存已污染");
         reject=false;rebind=true;
         try{Apply();throw new Exception("候选回调重绑仍接纳旧提案");}
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException){}
-        Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)draft.CaptureSettings()).Threshold==128
-            &&view.TryCapture(out captured,out refs,out _)&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)captured).Threshold==128&&refs.Count==0,
+        Require(draft.CaptureFields().Get<long>(low)==128
+            &&view.TryCapture(out captured,out _)&&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "候选回调重绑污染旧草稿或新视图");
         Console.WriteLine("通过：混合设置与引用候选一次预检，宿主拒绝及同步重绑不污染草稿或引用缓存");
     }
@@ -411,6 +430,24 @@ internal static class S2DocumentEditingCases
         Show(noBackup);Click(noBackup,"切换为数值编辑");
         Require(noBackup.Setting is ReferenceSetting&&noBackup.HasInvalidText&&noBackup.Error.Contains("常量"),"缺少备份时制造了默认常量");
         Console.WriteLine("通过：索引引用按完整身份去重，无常量备份时明确拒绝恢复");
+
+        var repairedWrites=0;
+        using var repair=new DeclaredFieldEditor(new("repair",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"修复来源",
+            new ReferenceSetting(Source()),_=>repairedWrites++,ReferenceFieldOptions.Empty);
+        var repairState=typeof(DeclaredFieldEditor).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(repair)!;
+        void SourceError(string message)=>repairState.GetType().GetMethod("SetSourceError")!.Invoke(repairState,new object[]{message});
+        Show(repair);SourceError("旧来源不可读");Click(repair,"切换为数值编辑");
+        var repairText=(TextBox)repair.InputElement!;
+        Require(repairText.Text==""&&repair.Setting is ReferenceSetting&&repairedWrites==0,"无备份切常量产生伪默认值");
+        Require(!repair.TryCommitPending()&&repairedWrites==0&&repair.Setting is ReferenceSetting,"空常量替换了原引用");
+        repairText.Text="42";
+        Require(repair.TryCommitPending()&&!repair.HasInvalidText&&repair.Setting is ConstantSetting {Value:42L}&&repairedWrites==1,"合法数值接纳后旧来源错误残留");
+        var repairChanges=0;repair.Changed+=()=>repairChanges++;
+        SourceError("旧来源诊断");var beforeRepair=repairChanges;
+        Require(repair.TrySetConstant(42L)&&!repair.HasInvalidText&&repairedWrites==1&&repairChanges>beforeRepair,"同值常量没有清诊断通知或重复写入");
+        SourceError("浏览失败但常量有效");
+        Require(repair.TryCommitPending()&&!repair.HasInvalidText&&repairedWrites==1,"无pending合法常量无法经接纳清旧来源诊断");
+        Console.WriteLine("通过：无备份引用不补默认值，空值不写入，合法常量单次接纳并原子清理旧来源诊断");
 
         var observed=0;
         using var observer=new DeclaredFieldEditor(new("observer",DataType.Integer),"观察者",new ConstantSetting(1L),_=>observed++);

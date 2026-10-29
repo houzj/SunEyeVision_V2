@@ -177,6 +177,31 @@ public sealed class CameraStreamOwnershipTests
     }));
 
     [Fact]
+    public void Preview_close_waits_for_inflight_software_trigger_before_releasing_capture_ownership()
+        => WpfTestDispatcher.Invoke(() => Pump(async () =>
+    {
+        await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
+        camera.Adapter.StopStreamAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var trigger = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        camera.Adapter.ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>()).Returns(_ => trigger.Task);
+        var host = new CameraPreviewHost(camera.Runtime, camera.Reference, camera.Session);
+        await host.RefreshConfigurationAsync(); await host.StartAcquisitionAsync();
+        var fire = host.TriggerOnceAsync();
+        var close = host.DisposeAsync().AsTask();
+        camera.Stream.SetResult(true);
+        Assert.False(close.IsCompleted);
+        Assert.Throws<InvalidOperationException>(() => camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流"));
+        trigger.SetResult(true);
+        await fire.WaitAsync(TimeSpan.FromSeconds(5));
+        await close.WaitAsync(TimeSpan.FromSeconds(5));
+        using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => host.TriggerOnceAsync());
+        await camera.Adapter.Received(1).ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
+    }));
+
+    [Fact]
     public void Preview_null_conversion_from_driver_thread_is_marshaled_and_releases_frame()
         => WpfTestDispatcher.Invoke(() => Pump(async () =>
     {

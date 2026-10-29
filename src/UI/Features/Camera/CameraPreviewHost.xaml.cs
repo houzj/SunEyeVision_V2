@@ -29,6 +29,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     private CancellationTokenSource? _streamCancellation;
     private Task<CameraSession>? _opening;
     private Task? _drainTask;
+    private int _activeTriggers;
+    private TaskCompletionSource<bool>? _triggersDrained;
     private Task? _disposeTask;
     private readonly object _disposeGate = new();
     private IDisposable? _captureLease;
@@ -221,6 +223,11 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
     {
         var failures = new List<Exception>();
         try { cancellation?.Cancel(); } catch (Exception error) { failures.Add(error); }
+        if (_activeTriggers != 0)
+        {
+            _triggersDrained ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try { await _triggersDrained.Task.ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
+        }
         try { await session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(true); }
         catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true) { }
         catch (Exception error) { failures.Add(error); }
@@ -258,10 +265,14 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         {
             if (!IsAcquiring)
                 await StartAcquisitionAsync().ConfigureAwait(true);
+            if (Volatile.Read(ref _stopped) != 0 || Volatile.Read(ref _stopRequested) != 0)
+                throw new OperationCanceledException("相机预览已停止。");
 
             if (_activeMode == CameraTriggerMode.Software)
             {
                 await TriggerOnceAsync().ConfigureAwait(true);
+                if (Volatile.Read(ref _stopped) != 0 || Volatile.Read(ref _stopRequested) != 0)
+                    throw new OperationCanceledException("相机预览已停止。");
                 CaptureStatus = "单次采集已触发，等待图像";
             }
             else if (_activeMode == CameraTriggerMode.Hardware)
@@ -283,12 +294,30 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
 
     public async Task TriggerOnceAsync()
     {
-        if (!CanSoftwareTrigger || _session is null)
+        if (!Dispatcher.CheckAccess())
+        { await Dispatcher.InvokeAsync(TriggerOnceAsync).Task.Unwrap().ConfigureAwait(false); return; }
+        if (Volatile.Read(ref _stopped) != 0 || Volatile.Read(ref _stopRequested) != 0
+            || !CanSoftwareTrigger || _session is null || _streamTask is null)
             throw new InvalidOperationException("当前设备配置不允许软件触发；请检查采集状态、触发模式和触发源。");
 
-        await _session.Adapter.ExecuteSoftwareTriggerAsync(_lifetime.Token).ConfigureAwait(true);
-        CaptureStatus = "软件触发命令已发送，等待相机帧";
-        RaiseCaptureStateChanged();
+        ++_activeTriggers; // Register before invoking a driver that may synchronously close this host.
+        try
+        {
+            await _session.Adapter.ExecuteSoftwareTriggerAsync(_lifetime.Token).ConfigureAwait(true);
+            if (Volatile.Read(ref _stopped) == 0 && Volatile.Read(ref _stopRequested) == 0)
+            {
+                CaptureStatus = "软件触发命令已发送，等待相机帧";
+                RaiseCaptureStateChanged();
+            }
+        }
+        finally
+        {
+            if (--_activeTriggers == 0)
+            {
+                var drained = _triggersDrained; _triggersDrained = null;
+                drained?.TrySetResult(true);
+            }
+        }
     }
 
     private void RaiseCaptureStateChanged() => CaptureStateChanged?.Invoke(this, EventArgs.Empty);

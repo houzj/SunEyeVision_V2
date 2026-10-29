@@ -181,6 +181,7 @@ public sealed class CameraStreamOwnershipTests
         => WpfTestDispatcher.Invoke(() => Pump(async () =>
     {
         await using var camera = new ControlledCamera(); await camera.OpenAsync();
+        camera.Adapter.Capabilities.Returns(new CameraCapabilities { SupportsSoftwareTrigger = true });
         camera.Adapter.ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new CameraCaptureConfiguration { StreamMode = CameraTriggerMode.Software }));
         camera.Adapter.StopStreamAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);

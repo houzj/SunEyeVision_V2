@@ -130,7 +130,7 @@ public sealed class CameraStreamOwnershipTests
         await Assert.ThrowsAsync<AggregateException>(() => feed.DisposeAsync().AsTask());
         using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "新采集");
         await Assert.ThrowsAsync<ObjectDisposedException>(() => feed.NextFrameAsync(CancellationToken.None));
-        await camera.Adapter.DidNotReceive().ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public sealed class CameraStreamOwnershipTests
         await close.WaitAsync(TimeSpan.FromSeconds(5));
         using var next = camera.Runtime.AcquireCaptureLease(camera.Reference, "工作流");
         await Assert.ThrowsAsync<InvalidOperationException>(() => host.TriggerOnceAsync());
-        await camera.Adapter.Received(1).ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.Received(1).ExecuteSoftwareTriggerAsync(Arg.Any<CancellationToken>());
     }));
 
     [Fact]
@@ -234,14 +234,14 @@ public sealed class CameraStreamOwnershipTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CloseAsync(camera.Reference));
         await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Session.DisposeAsync().AsTask());
         Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(camera.Session, retained);
-        await camera.Adapter.DidNotReceive().DisconnectAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().DisconnectAsync(Arg.Any<CancellationToken>());
         var closeFeed = feed.DisposeAsync().AsTask();
         await Assert.ThrowsAsync<InvalidOperationException>(() => camera.Runtime.CloseAsync(camera.Reference));
         camera.Stream.SetResult(true);
         await Assert.ThrowsAsync<AggregateException>(() => closeFeed.WaitAsync(TimeSpan.FromSeconds(5)));
         await camera.Runtime.CloseAsync(camera.Reference);
         Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
-        await camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -288,8 +288,8 @@ public sealed class CameraStreamOwnershipTests
         await camera.OpenAsync();
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAcquisitionAsync());
         Assert.Contains("会话已关闭或重连", error.Message);
-        await camera.Adapter.DidNotReceive().StartStreamAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<ICameraFrameSink>(), Arg.Any<CancellationToken>());
-        await camera.Adapter.Received(1).ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().StartStreamAsync(Arg.Any<CameraCaptureRequest>(), Arg.Any<ICameraFrameSink>(), Arg.Any<CancellationToken>());
+        _ = camera.Adapter.Received(1).ReadCaptureConfigurationAsync(Arg.Any<CancellationToken>());
         _ = newAdapter.DidNotReceive().DisposeAsync();
         Assert.True(camera.Runtime.TryGetSession(camera.Reference, out var retained)); Assert.Same(camera.Session, retained);
         await host.DisposeAsync();
@@ -361,7 +361,7 @@ public sealed class CameraStreamOwnershipTests
         var two = await Assert.ThrowsAsync<InvalidOperationException>(() => second.WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Equal("disconnect-failure", one.Message); Assert.Equal(one.Message, two.Message);
         Assert.False(camera.Runtime.TryGetSession(camera.Reference, out _));
-        await camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.Received(1).DisconnectAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -526,8 +526,8 @@ public sealed class CameraStreamOwnershipTests
         await vm.SetConnectionAsync(new CameraDevice { DeviceId = camera.Reference.Value }, true);
         vm.SelectedCamera = new CameraDevice { DeviceId = secondRef.Value };
         vm.ResetParamsCommand.Execute(null);
-        await secondAdapter.Received(1).GetParameterSchemaAsync(Arg.Any<CancellationToken>());
-        await camera.Adapter.DidNotReceive().GetParameterSchemaAsync(Arg.Any<CancellationToken>());
+        _ = secondAdapter.Received(1).GetParameterSchemaAsync(Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().GetParameterSchemaAsync(Arg.Any<CancellationToken>());
         Assert.Single(vm.Parameters); Assert.Equal("SecondValue", vm.Parameters[0].Name);
         Assert.True(vm.IsConnected);
         await vm.DisposeAsync();
@@ -575,8 +575,8 @@ public sealed class CameraStreamOwnershipTests
         var command = new CameraParameterItemViewModel(new CameraParameterDescriptor
         { Name = "UserSetLoad", Kind = CameraParameterKind.Command }, null);
         vm.ExecuteParameterCommand.Execute(command);
-        await secondAdapter.Received(1).ExecuteCommandAsync("UserSetLoad", Arg.Any<CancellationToken>());
-        await camera.Adapter.DidNotReceive().ExecuteCommandAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = secondAdapter.Received(1).ExecuteCommandAsync("UserSetLoad", Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().ExecuteCommandAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
         await vm.DisposeAsync();
     }));
 
@@ -605,8 +605,8 @@ public sealed class CameraStreamOwnershipTests
         Assert.Empty(vm.Parameters);
         await Task.Delay(450);
         Assert.True(await vm.ApplyPendingParametersAsync().WaitAsync(TimeSpan.FromSeconds(5)));
-        await secondAdapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
-        await camera.Adapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
+        _ = secondAdapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
+        _ = camera.Adapter.DidNotReceive().ApplyParametersAsync(Arg.Any<IReadOnlyDictionary<string, object?>>(), Arg.Any<CancellationToken>());
         await vm.DisposeAsync();
     }));
 

@@ -916,7 +916,12 @@ namespace SunEyeVision.Workflow
                 {
                     var configuration=runtime.Copy();
                     if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
+                    {
+                        var declaredSettings=configuration.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+                        if(runtimeOverrides.Keys.Any(id=>!declaredSettings.Contains(id)))
+                            throw new InvalidOperationException("Unknown Runtime setting override: "+string.Join(",",runtimeOverrides.Keys.Where(id=>!declaredSettings.Contains(id))));
                         configuration=configuration.WithFieldValues(runtimeOverrides);
+                    }
                     executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
                 }
                 else

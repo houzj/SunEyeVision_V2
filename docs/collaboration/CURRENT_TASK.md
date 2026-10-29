@@ -1,3 +1,7 @@
+## 2026-10-29 输出树身份拒绝回归候选
+
+原OutputContractTreeSelection 27项中，快照场景依赖旧ToolExecutor/ToolResults，声明通知场景依赖旧参数提供者；不能将旧夹具直接纳入新链或仅改名冒称原验收。现先在真实ResultWorkspaceProduction夹具的同一结果身份拒绝链补跨方案owner、跨流程scope及同ID删除重建三种候选，检查被拒快照不能成为当前publication且自身释放；继续沿正式编辑会话和发布链设计其他场景，不以该三例取代全部27。C#语法和diff检查通过，未正式编译或运行，真实释放、重建通知及混版合同仍待验证。
+
 ## 2026-10-29 范围绑定与结果显示用户验收反馈
 
 用户反馈VM范围上下限可独立切换常量/绑定，本程序另一端绑定未完成时切换受阻。主线NativeRangePresenter.ChangeMode调用整组TryCommitPending，Prepare会处理另一引用端，是可能耦合点，尚需真实状态及原件核验；已交公共控件主线整批处理，不改冻结Release。用户反馈结果显示缺图形显示和文本显示；主线有NativeGraphicDisplayOptions/NativeTextDisplayOptions和设计样例，尚未检出生产工具接入，图形/文本的字段、持久化、运行叠加仍未闭环；已交主线整体对照。

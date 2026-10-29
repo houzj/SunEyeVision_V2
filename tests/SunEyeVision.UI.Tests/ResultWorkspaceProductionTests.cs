@@ -304,6 +304,32 @@ public sealed class ResultWorkspaceProductionTests
         }
         finally { foreign.Retire(); }
     });
+    [Theory]
+    [InlineData("document")] [InlineData("workflow")] [InlineData("instance")]
+    public void Foreign_owner_workflow_or_recreated_node_never_borrows_the_rejected_snapshot(string mismatch)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var owner = mismatch == "document" ? new ToolExecutionOwner() : null;
+        try
+        {
+            var rejected = f.Publish(f.Selected, 93, scope: mismatch == "workflow" ? "foreign-flow" : null,
+                owner: owner, updateContext: false);
+            if (mismatch == "instance")
+            {
+                var index = f.Flow.Nodes.IndexOf(f.Selected);
+                f.Flow.Nodes.RemoveAt(index);
+                f.Flow.Nodes.Insert(index, new SunEyeVision.UI.Shared.WorkflowNode(f.Selected.Id, "替代节点", "替代节点", "ResultWorkspaceProbe")
+                { RuntimeConfiguration = RuntimeToolConfiguration.Create("ResultWorkspaceProbe") });
+            }
+            f.Main.UpdateModuleResults(rejected.Snapshot, f.Selected.Name, f.Selected.ToolType, f.Selected.Id);
+            Pump();
+            Assert.NotEqual(rejected.Snapshot.Identity, f.Main.CurrentResultPublication?.Stamp.Invocation);
+            rejected.Snapshot.Dispose();
+            Assert.Equal(1, rejected.Releases);
+        }
+        finally { owner?.Retire(); }
+    });
     [Fact]
     public void Foreign_late_notification_without_context_replacement_keeps_current_publication_and_both_frames()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>

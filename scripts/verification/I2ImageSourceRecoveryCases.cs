@@ -15,14 +15,14 @@ internal static class S2DocumentEditingCases
         var originals=original.RootElement.GetProperty("cases").EnumerateArray().Select(c=>c.GetProperty("originalName").GetString()!).ToHashSet(StringComparer.Ordinal);
         var auditSource=Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"../../../docs/collaboration/evidence/D07_FULL_IMAGESOURCE_TRACK_MIGRATION_AUDIT_20261029.json");
         using var audit=JsonDocument.Parse(File.ReadAllText(auditSource));
-        var configurationGroups=new[]{"ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests"}.ToHashSet(StringComparer.Ordinal);
-        var expectedConfigurationCases=audit.RootElement.GetProperty("groups").EnumerateArray()
-            .Where(g=>configurationGroups.Contains(g.GetProperty("class").GetString()!))
+        var originalGroups=new[]{"ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ResultPresentationModelTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests"}.ToHashSet(StringComparer.Ordinal);
+        var expectedOriginalCases=audit.RootElement.GetProperty("groups").EnumerateArray()
+            .Where(g=>originalGroups.Contains(g.GetProperty("class").GetString()!))
             .SelectMany(g=>g.GetProperty("cases").EnumerateArray().Select(c=>c.GetProperty("name").GetString()!)).ToHashSet(StringComparer.Ordinal);
-        if(expectedConfigurationCases.Count!=99)throw new InvalidOperationException("原配置、运行与视口清单必须包含99项。");
+        if(expectedOriginalCases.Count!=123)throw new InvalidOperationException("原配置、运行、结果模型与视口清单必须包含123项。");
         var executed=new HashSet<string>(StringComparer.Ordinal);
         var results=new List<object>();int failures=0,covered=0;
-        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests"})
+        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ResultPresentationModelTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceConfigurationHistoryTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests"})
         {
             var type=assembly.GetType("SunEyeVision.UI.Tests."+name)
                 ?? assembly.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
@@ -56,14 +56,14 @@ internal static class S2DocumentEditingCases
         }
         // Four design theories are serialized with Boolean.ToString in the original evidence.
         if(covered!=21)throw new InvalidOperationException("本批必须逐项承接21个原失败，实际："+covered);
-        var missing=expectedConfigurationCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
-        if(missing.Length!=0)throw new InvalidOperationException("原配置/保存/历史/来源用例缺失："+string.Join("；",missing));
+        var missing=expectedOriginalCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
+        if(missing.Length!=0)throw new InvalidOperationException("原配置、运行、结果模型或视口用例缺失："+string.Join("；",missing));
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-recovery-report.json"),
             JsonSerializer.Serialize(new{count=results.Count,failures,originalFailuresCovered=covered,
                 testAssemblyPath=assembly.Location,testAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location))),
                 runtimeProbeAssemblyPath=probeAssembly.Location,runtimeProbeAssemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(probeAssembly.Location))),
-                originalConfigurationRuntimeAndViewportCasesCovered=expectedConfigurationCases.Count,
-                scope="原21失败、配置/保存/历史/来源、图像源运行/格式及结果视口/根窗口原99项与相关相机和工作区用例；原249整体未重跑。直接编译原用例、正式产品引用及共享实际Dispatcher。",results},new JsonSerializerOptions{WriteIndented=true}));
+                originalAuditedCasesCovered=expectedOriginalCases.Count,
+                scope="原21失败、配置/保存/历史/来源、图像源运行/格式、结果模型及结果视口/根窗口原123项与相关相机和工作区用例；原249整体未重跑。直接编译原用例、正式产品引用及共享实际Dispatcher。",results},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"图像源失败承接：{results.Count-failures}通过，{failures}失败；覆盖原失败{covered}项。");
         return failures==0?0:1;
     }

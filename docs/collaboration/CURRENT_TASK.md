@@ -1,3 +1,7 @@
+## 2026-10-29 结果模型原24项回归候选
+
+ResultPresentationModelTests原24项直接针对当前ResultPublication及lease，含状态、嵌套分页、失效、资源借阅和弱引用；原源码不改整组纳入Recovery，原逐名门禁扩至123，原清单11组123名称唯一。PowerShell语法和diff检查通过，尚未正式编译或运行；原展示器/输出树仍有旧结果工厂依赖需整组迁移，原249、历史存储、硬件、VS及人工门禁未完成。原主方案同步；正式Release仍由主线统一管理。
+
 ## 2026-10-29 结果视口/全屏/原组合/根窗口原49项回归候选
 
 在ad60f9b7原50项基础上整组纳入ResultImagePane 22、FullscreenScope 17、NativeResultComposition 7、RootResultImagePreview 3，原清单逐名门禁扩至99。真实发布/资源及窗口断言保留，三组每例独立STA及根窗口旧编辑器helper改走共享WPF Application Dispatcher；原单例Join超时不再单独生效，外层正式runner进程90秒超时仍保留。只读核查源码依赖、原99名称/Theory与当前合同一致；C#/PowerShell语法与diff通过，未正式编译/运行，原249剩余、HALCON/VM/VS/人工未验。

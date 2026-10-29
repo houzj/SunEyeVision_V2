@@ -1,3 +1,7 @@
+## 2026-10-29 结果展示器原30项现行合同回归候选
+
+ResultPresentationPresenterTests原30项整体改为ToolExecutionOwner、DeclaredOutputSnapshot.Capture、ToolResultViews和中立测试输出，真实owner/reader释放及原树表、分页、诊断、重入断言保留；旧独立STA改共享WPF Dispatcher，进程90秒超时保留。原历史快照断言仅限受控展示器，不证明历史存储。已纳Recovery，原逐名门禁增至153；12组153名称唯一、C#/PowerShell语法及diff核过，未正式编译或运行。原输出树与调试旧夹具、A03和原249、VS/硬件/人工仍待；原主方案同步，正式Release由主线统一管理。
+
 ## 2026-10-29 结果模型原24项回归候选
 
 ResultPresentationModelTests原24项直接针对当前ResultPublication及lease，含状态、嵌套分页、失效、资源借阅和弱引用；原源码不改整组纳入Recovery，原逐名门禁扩至123，原清单11组123名称唯一。PowerShell语法和diff检查通过，尚未正式编译或运行；原展示器/输出树仍有旧结果工厂依赖需整组迁移，原249、历史存储、硬件、VS及人工门禁未完成。原主方案同步；正式Release仍由主线统一管理。

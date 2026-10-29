@@ -1,3 +1,7 @@
+## 2026-10-29 图像源调试原15项现行快照回归候选
+
+ImageSourceDebugInvocationTests原15项整组改用DeclaredOutputSnapshot/reader消费调试和正式结果；保冻结、帧身份、错误取消、在途排空、相机所有权及像素/domain生命周期断言。原名称及Theory逐项15/15，纳入Recovery后原逐名门禁168；C#/PowerShell语法和diff核，未正式编译或运行，HALCON/设备硬件/VS/人工未验。原输出树旧夹具、A03和249总体继续待办；主方案同步，主线独占正式Release。
+
 ## 2026-10-29 结果展示器原30项现行合同回归候选
 
 ResultPresentationPresenterTests原30项整体改为ToolExecutionOwner、DeclaredOutputSnapshot.Capture、ToolResultViews和中立测试输出，真实owner/reader释放及原树表、分页、诊断、重入断言保留；旧独立STA改共享WPF Dispatcher，进程90秒超时保留。原历史快照断言仅限受控展示器，不证明历史存储。已纳Recovery，原逐名门禁增至153；12组153名称唯一、C#/PowerShell语法及diff核过，未正式编译或运行。原输出树与调试旧夹具、A03和原249、VS/硬件/人工仍待；原主方案同步，正式Release由主线统一管理。

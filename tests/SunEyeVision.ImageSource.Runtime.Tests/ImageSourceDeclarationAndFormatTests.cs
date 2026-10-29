@@ -96,7 +96,10 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.Equal(PixelLayout.Gray8, gray.Layout.Format);
         using var imagePixels = image.AcquirePixels();
         using var grayPixels = gray.AcquirePixels();
-        Assert.Equal(new byte[] { 47, 208 }, grayPixels.GetRow(0)[..2].ToArray());
+        Assert.Equal(new byte[] {
+            (byte)((76*100+150*0+30*150)>>8),
+            (byte)((76*155+150*255+30*105)>>8)
+        }, grayPixels.GetRow(0)[..2].ToArray());
         Assert.Equal((byte)80, grayPixels.GetRow(1)[1]);
         Assert.NotSame(image, gray);
         Assert.Equal(new byte[] { 150, 0, 100, 105, 255, 155 }, imagePixels.GetRow(0)[..6].ToArray());

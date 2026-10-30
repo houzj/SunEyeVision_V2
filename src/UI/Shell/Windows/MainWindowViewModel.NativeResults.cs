@@ -14,6 +14,14 @@ public partial class MainWindowViewModel
     internal event Action? ResultWorkspaceChanged;
     internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
     internal event Action? ResultWorkspaceGraphicsCleared;
+    internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
+    internal event Action<string>? ResultWorkspaceRootSettled;
+    private long _nativeExplicitClearEpoch;
+    private void NotifyResultWorkspaceRootSettled(string workflowId)
+    {
+        try{ResultWorkspaceRootSettled?.Invoke(workflowId);}
+        catch(Exception error){AddLog("运行结束后的图像清理失败："+error.Message);}
+    }
     private string? _nativePreviewPath;
     private bool _nativeImagesSuppressed;
     internal string? NativePreviewPath=>_nativePreviewPath;

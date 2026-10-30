@@ -71,12 +71,24 @@ public partial class MainWindowViewModel
             var host=GetProductionEditorHost(session);
             var draft=host.BeginEdit(root.Id,node.Id);
             var policy=ImageSourcePolicy.Read(draft.Node)??throw new InvalidOperationException("图像源缺少正式Runtime设置。");
+            var displayOwner=SelectedNode;var displayTab=WorkflowTabViewModel.SelectedTab;var displayVersion=source.EditVersion;var displayClearEpoch=_nativeExplicitClearEpoch;
+            using var display=new SunEyeVision.UI.Services.Images.SourceDisplayPreservationScope(()=>
+                _nativeExplicitClearEpoch==displayClearEpoch&&ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Contains(root)
+                &&root.Nodes.Contains(node)&&ReferenceEquals(node.InputSource,source)&&ReferenceEquals(ActiveInputSource,source)
+                &&ReferenceEquals(SelectedNode,displayOwner)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,displayTab)
+                &&displayTab?.RootWorkflowId==root.Id&&displayTab.IsInSubroutine==false
+                &&(source.EditVersion==displayVersion||source.EditVersion==displayVersion+1));
+            if(!proposal.SelectStart&&policy.CurrentIndex==configuration.CurrentIndex&&policy.FilePaths.SequenceEqual(configuration.FilePaths))
+                try{SourceDisplayPreservationPreparing?.Invoke(source,display);}
+                catch(Exception error){try{AddLog("显示留存准备失败："+error.Message);}catch{}}
             policy.UpdateLocalInput(configuration);
             policy.ApplyTo(draft.Node);
             _acceptingImageSource=true;
             try
             {
                 var publication=host.Commit(draft);
+                try{display.Accept(publication.InvalidatedNodes);}
+                catch(Exception error){ReportAcceptedSourceRefreshError("显示留存接纳失败",error);}
                 // An explicit preview choice can equal the persisted start while differing
                 // from the last runtime cursor. Reset only this source, never other sources.
                 if(proposal.SelectStart)

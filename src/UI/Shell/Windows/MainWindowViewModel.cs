@@ -258,7 +258,11 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             UpdateCurrentSolutionInfo();
             if (ReferenceEquals(sender, ActiveInputSource))
+            {
                 ImagePreviewSourceMessage = ActiveInputSource?.Count == 0 ? "请添加本地图像" : string.Empty;
+                // The accepted source projection is now installed; consume display ownership guards again.
+                ResultWorkspaceChanged?.Invoke();
+            }
         }
 
         /// <summary>
@@ -4079,6 +4083,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionCompleted(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             AddLog($"✅ 执行完成: {e.WorkflowId}");
         }
 
@@ -4087,6 +4092,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionStopped(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"⏹️ 执行已停止: {e.WorkflowId}");
         }
@@ -4116,6 +4122,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionError(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"❌ 执行错误: {e.WorkflowId} - {e.ErrorMessage}");
         }
@@ -4293,6 +4300,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             try
             {
+                ++_nativeExplicitClearEpoch;
                 ClearNativeImagePresentation();
                 AddLog("已清除图像");
             }

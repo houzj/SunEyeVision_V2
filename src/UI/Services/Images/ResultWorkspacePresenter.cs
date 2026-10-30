@@ -49,6 +49,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
+        main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
+        main.ResultWorkspaceRootSettled+=RootSettled;
         shell.FullscreenCommand=new SunEyeVision.UI.Core.RelayCommand(value=>
         {
             if(value is FrameworkElement view&&Window.GetWindow(shell) is {} owner)
@@ -129,10 +131,22 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         if(!Current())return;
         pane.ClearGraphics();
         if(!Current())return;
-        if(source?.Publication is not {} publication){pane.Image.Clear();return;}
+        if(source?.Publication is not {} publication){pane.Image.ClearUnlessRetained();return;}
         if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
             ()=>Current()&&source.Current()&&Current(),out var error))
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
+    }
+    private void PrepareSourceDisplayPreservation(SunEyeVision.UI.Shared.ImageInputSource source,SourceDisplayPreservationScope scope)
+    {
+        if(_disposed||!ReferenceEquals(_main.ActiveInputSource,source))return;
+        bool Current()=>!_disposed&&scope.IsCurrent;
+        if(_input.Image.PrepareDisplayRetention(Current) is {} input)scope.Enlist(input);
+        if(_output.Image.PrepareDisplayRetention(Current) is {} output)scope.Enlist(output);
+    }
+    private void RootSettled(string workflowId)
+    {
+        if(_disposed||_main.WorkflowTabViewModel.SelectedTab?.RootWorkflowId!=workflowId)return;
+        Run(new Action[]{_input.Image.ClearRetained,_output.Image.ClearRetained});
     }
     internal void Refresh()
     {
@@ -147,7 +161,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
                 var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
-                Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
+                Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
                 {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;_navigationIndex=int.MinValue;}
@@ -292,6 +306,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             ()=>_main.ResultWorkspaceChanged-=Refresh,
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
+            ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,
+            ()=>_main.ResultWorkspaceRootSettled-=RootSettled,
             ()=>_inputSelection.RemoveValueChanged(_shell,InputSelected),
             ()=>_outputSelection.RemoveValueChanged(_shell,OutputSelected),
             ()=>_shell.FullscreenCommand=null,()=>_shell.SelectBackgroundCommand=null,

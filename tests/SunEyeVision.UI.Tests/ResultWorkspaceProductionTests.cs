@@ -1227,6 +1227,108 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Equal(new byte[]{6},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
         Assert.Equal(historyPosition,history.Position);
     });
+    [Fact]
+    public void Source_sequence_flags_retire_result_authority_but_keep_last_pixels_until_replaced_or_cleared()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"flag-retention.png");var png=new PngBitmapEncoder();
+        png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{51,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        var source=f.Main.ActiveInputSource!;
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}},selectFirstAdded:true);Pump();
+        var original=f.Publish(f.Source,31);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        original.Snapshot.Dispose(); // Release the fixture root; production/context/view readers now own its lifetime.
+        var publication=f.Main.CurrentResultPublication!;var receipt=f.Presenter.OutputPane.Viewport.CurrentFrame;
+        var trace=new List<object>();
+        object Observe(string phase,SourceDisplayPreservationScope? scope=null)
+        {
+            var pane=f.Presenter.OutputPane;
+            var active=typeof(ResultImagePane).GetField("_presentation",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(pane);
+            return new{phase,scopeCurrent=scope?.IsCurrent,source.EditVersion,frame=pane.Viewport.CurrentFrame?.ToString(),
+                active=active is null?0:System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(active),
+                displayOnly=active?.GetType().GetField("DisplayOnly",BindingFlags.Instance|BindingFlags.NonPublic)?.GetValue(active)};
+        }
+        trace.Add(Observe("before"));
+        f.Main.SourceDisplayPreservationPreparing+=(_,scope)=>
+        {
+            trace.Add(Observe("prepared",scope));
+            scope.Enlist(affected=>trace.Add(Observe(affected is null?"rejected":"accepted",scope)));
+        };
+        var lease=f.Presenter.OutputPane.BorrowCurrentImage()!;
+        var session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        void Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind kind,bool? flag=null,IEnumerable<string>? ids=null)
+            =>AwaitWorkspace(session.RequestAsync(new(kind,session.Version,flag:flag,itemIds:ids),CancellationToken.None));
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,flag:false);Pump();
+        trace.Add(Observe("after"));File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-display-retention-audit.json"),System.Text.Json.JsonSerializer.Serialize(trace,new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        Assert.False(publication.IsCurrent());Assert.False(lease.IsCurrent);
+        Assert.Null(f.Presenter.OutputPane.CurrentFrame);Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
+        Assert.Equal(receipt,f.Presenter.OutputPane.Viewport.CurrentFrame);
+        Assert.Equal(new byte[]{31},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        lease.Dispose();
+        var retained=typeof(ResultImagePane).GetField("_presentation",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Presenter.OutputPane)!;
+        var retiredLease=Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Presenters.Results.IResultValueLease>(retained.GetType().GetField("Lease",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(retained));
+        Assert.Throws<ObjectDisposedException>(()=>{_=retiredLease.Values;});
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetMode,flag:true);
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetRunSelection,ids:new[]{source.Images[0].Id});
+        Assert.Equal(receipt,f.Presenter.OutputPane.Viewport.CurrentFrame);
+        Assert.Equal(new byte[]{31},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
+        f.Publish(f.Source,71);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        Assert.Equal(new byte[]{71},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));Assert.Equal(1,original.Releases);
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,flag:true);
+        Assert.Null(f.Presenter.OutputPane.CurrentFrame);Assert.Equal(new byte[]{71},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        f.Main.ClearImageCommand.Execute(null);Pump();Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
+        f.Publish(f.Source,81);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,flag:false);
+        File.Delete(path);AwaitWorkspace(f.Main.RunSelectedImageAsync());Pump();
+        Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame); // Actual failed run without a new image ends retained display.
+        f.Publish(f.Source,91);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,flag:true);
+        Assert.Equal(new byte[]{91},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        f.Host.Content=null;Pump();Assert.Null(((ImageViewBox)f.Shell.OutputViewport).ImageDataSource);
+        f.Host.Content=f.View;Pump();Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
+        session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        f.Publish(f.Source,101);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        Request(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,flag:false);
+        source.ClearImages();Pump();Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
+    });
+    [Fact]
+    public void Source_display_retention_does_not_activate_on_rejection_or_cross_selected_node_reentry()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"not-read.png")}},selectFirstAdded:true);Pump();
+        var original=f.Publish(f.Source,31);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+        var frame=f.Presenter.OutputPane.CurrentFrame!.Frame;
+        var session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;var version=source.EditVersion;
+        var host=ServiceInitializer.SolutionManager.Session.Editing.Host;
+        var failure=typeof(NodeConfigurationEditHost).GetField("_acceptanceFailureAfterRawMutation",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        failure.SetValue(host,1);
+        try
+        {
+            Assert.Throws<InvalidOperationException>(()=>AwaitWorkspace(session.RequestAsync(new(
+                SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,
+                session.Version,flag:false),CancellationToken.None)));
+        }
+        finally{failure.SetValue(host,-1);}
+        Pump();Assert.Equal(position,history.Position);Assert.Equal(version,source.EditVersion);Assert.True(source.AutoSwitchEnabled);
+        Assert.Equal(frame,f.Presenter.OutputPane.CurrentFrame!.Frame);
+        using(var borrowed=f.Presenter.OutputPane.BorrowCurrentImage()){Assert.NotNull(borrowed);Assert.True(borrowed.IsCurrent);}
+        var switched=false;
+        Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope> switchSelection=(_,_)=>
+        {switched=true;f.Main.SelectedNode=f.Selected;};
+        f.Main.SourceDisplayPreservationPreparing+=switchSelection;
+        try{AwaitWorkspace(session.RequestAsync(new(
+            SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch,
+            session.Version,flag:false),CancellationToken.None));}
+        finally{f.Main.SourceDisplayPreservationPreparing-=switchSelection;}
+        Pump();Assert.True(switched);Assert.Same(f.Selected,f.Main.SelectedNode);Assert.False(source.AutoSwitchEnabled);
+        Assert.Null(f.Presenter.OutputPane.CurrentFrame);Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
+        Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
+    });
     private static void AwaitWorkspace(Task task)
     {
         Until(()=>task.IsCompleted);

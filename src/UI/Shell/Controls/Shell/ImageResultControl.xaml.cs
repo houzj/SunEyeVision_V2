@@ -61,7 +61,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
             CommandManager.InvalidateRequerySuggested();
-            ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+            // Keep original list focus through execution; formal source edits are guarded by the execution lease.
             ModuleResultTreeView.IsReadOnly=!allowed;
             RefreshSourceSession();
         }

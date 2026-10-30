@@ -1078,6 +1078,48 @@ public sealed class ResultWorkspaceProductionTests
         provider.Toggle();Pump();Assert.True(popup.IsOpen);mode.SelectedIndex=0;Pump();Assert.False(strip.IsSelectMode);
         mode.IsDropDownOpen=false;Pump();
     });
+    [Fact]
+    public void Source_direction_keys_keep_focus_after_actual_workflow_execution()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var paths=Enumerable.Range(0,2).Select(index=>Path.Combine(f.Directory,"key-"+index+".png")).ToArray();
+        foreach(var path in paths)
+        {
+            var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+            using var output=File.Create(path);png.Save(output);
+        }
+        var source=f.Main.ActiveInputSource!;
+        source.AddImages(paths.Select(path=>new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}),selectFirstAdded:true);Pump();
+        var strip=f.View.ImagePreviewContent;var list=Assert.IsType<ListBox>(strip.FindName("lst"));
+        var disabled=false;strip.IsEnabledChanged+=(_,e)=>{if(!(bool)e.NewValue)disabled=true;};
+        var gated=false;var rejected=false;
+        f.Main.PropertyChanged+=(_,_)=>
+        {
+            if(gated||f.Main.CanEditRootWorkspace)return;
+            gated=true;
+            try{source.ClearImages();}catch(InvalidOperationException){rejected=true;}
+        };
+        f.Host.Activate();f.Host.UpdateLayout();
+        var second=Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(1));second.ApplyTemplate();
+        var row=Assert.Single(VisualDescendants<Grid>(second).Where(grid=>grid.Width==72));
+        row.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,0,System.Windows.Input.MouseButton.Left){RoutedEvent=System.Windows.Input.Mouse.MouseDownEvent});
+        Until(()=>!f.Main.IsRunning&&source.CurrentIndex==1);Pump();
+        Assert.True(gated,"未经过真实工作流编辑门禁，不能证明生产链。");
+        Assert.True(rejected,"运行门禁必须拒绝源配置修改。");Assert.Equal(2,source.Count);
+        Assert.False(disabled,"运行不应禁用整条控件并驱逐焦点。");
+        Assert.True(strip.IsKeyboardFocusWithin,"真实工作流结束后焦点离开图像源条。");
+        void KeyInput(System.Windows.Input.Key key)
+        {
+            var target=Assert.IsAssignableFrom<UIElement>(System.Windows.Input.Keyboard.FocusedElement);
+            var input=PresentationSource.FromVisual(target)!;
+            var preview=new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,key){RoutedEvent=System.Windows.Input.Keyboard.PreviewKeyDownEvent};
+            target.RaiseEvent(preview);
+            if(!preview.Handled)target.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,key){RoutedEvent=System.Windows.Input.Keyboard.KeyDownEvent});
+        }
+        KeyInput(System.Windows.Input.Key.Left);Until(()=>!f.Main.IsRunning&&source.CurrentIndex==0);Pump();Assert.True(strip.IsKeyboardFocusWithin);
+        KeyInput(System.Windows.Input.Key.Right);Until(()=>!f.Main.IsRunning&&source.CurrentIndex==1);Pump();Assert.True(strip.IsKeyboardFocusWithin);
+    });
     private static void AwaitWorkspace(Task task)
     {
         Until(()=>task.IsCompleted);

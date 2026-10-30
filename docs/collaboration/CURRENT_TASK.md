@@ -1,3 +1,10 @@
+## 2026-10-30 S1真实运行后方向键焦点链修正（待人工复验）
+
+用户对82a51c1b再次明确反馈“不能切换”。此前独立条目回归没有覆盖正式工作流执行，不能证明生产链。新增真实ImageResultControl宿主回归在旧产物触发图像源正式运行，确认门禁禁用整个ImagePreviewContent，并以“真实工作流结束后焦点离开图像源条”断言失败，红色单例证据保留于Release/_validation/source-key-production-diagnostic.log及对应attempt-011。
+
+本批只修宿主边界：删除OnHostEditingStateChanged对整条图像源设置IsEnabled的行为，保留CanEditRootWorkspace、正式ConfigurationLeaseProvider、ConfigurationWriter、TrySelectPreviewImage及运行接纳检查。源条原件默认条目焦点无需在每次运行后被驱逐、再由补丁猜测恢复。新的生产回归实际运行门禁期间尝试修改源配置并验证拒绝；运行完成焦点保留，然后连续路由Left/Right，验证真正切换并执行，不再以独立列表或手改索引证明全链。
+
+全量Release 0错误/6487警告；ImageSourceRecovery最新整批348通过/0失败，包含新增真实生产执行/配置拒绝/连续方向键。独立正式Release已重新启动，PID见Release/_validation/s1-acceptance-pid.txt。当前只记源码、构建及自动通过，用户尚未复验本批；方向键仍待人工确认，菜单不卡死既有人工通过保留。S1不封版、S2—S4不提前推进、Group不动。当前实现仍含必要宿主适配，禁止称所有功能均为VM原件原样迁移。
 ## 2026-10-30 S1方向键人工失败后的完整输入链修正
 
 用户明确反馈“方向键不能切换图片”；上一批直接改变SelectedIndex的回归不足以证明按键导航可用。实际冲突是普通鼠标被Grid_MouseDown标记Handled并将焦点设到ListBox，绕开ListBoxItem原件默认选择和焦点。当前普通点击交回WPF条目，只对运行选择Ctrl/Shift处理Handled；鼠标/键盘统一按实际SelectionChanged进入正式Activate请求，列表自身获得焦点时先恢复当前条目焦点再交原导航。程序恢复仍由刷新标志抑制，首尾无选择变化不重复运行。

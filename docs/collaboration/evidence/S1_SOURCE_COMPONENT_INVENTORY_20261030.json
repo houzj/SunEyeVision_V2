@@ -1,0 +1,4715 @@
+{
+  "schemaVersion": 2,
+  "parserAssembly": "Microsoft.CodeAnalysis.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "scope": "Static source inventory only. Not complete IL/BAML/resource closure or behavioral acceptance.",
+  "originalFiles": [
+    {
+      "relative": "VMControls.WPF/LocalImageListView.xaml",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml",
+      "sha256": "D22C8A3F7FCE0D94E966A22FCE9865C91DE629471D4F1AD0F93BAA2CF6B19883"
+    },
+    {
+      "relative": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml.cs",
+      "sha256": "D887A0C8D363E9C6257977650AB3807B0A58547D91F424C93A369E9566451006"
+    },
+    {
+      "relative": "VMControls.WPF/ImageListPanel.xaml",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml",
+      "sha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF"
+    },
+    {
+      "relative": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml.cs",
+      "sha256": "CDC637F57C447E0214A4F2F34CCEDAB9ADE8021C5C49FB0810AFD0C132CF58A2"
+    },
+    {
+      "relative": "VMControls.WPF/ImageListPanelBase.cs",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "sha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79"
+    }
+  ],
+  "originalXaml": [
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml",
+      "names": [
+        {
+          "element": "Control",
+          "name": "UserControl"
+        },
+        {
+          "element": "Grid",
+          "name": "MainGrid"
+        },
+        {
+          "element": "ComboBox",
+          "name": "cbx"
+        },
+        {
+          "element": "ImageListPanel",
+          "name": "list"
+        }
+      ],
+      "eventCandidates": [
+        {
+          "element": "ComboBox",
+          "event": "SelectionChanged",
+          "handler": "cbxMode_SelectionChanged",
+          "review": "unreviewed"
+        }
+      ],
+      "bindings": [
+        {
+          "element": "BooleanControl",
+          "property": "IsChecked",
+          "expression": "{Binding CurValueA, Mode=TwoWay}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "InvokeCommandAction",
+          "property": "Command",
+          "expression": "{Binding ValueChangedCommand}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "StackPanel",
+          "property": "Margin",
+          "expression": "{Binding MarginA}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ContentControl",
+          "property": "Content",
+          "expression": "{Binding}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ContentControl",
+          "property": "Content",
+          "expression": "{Binding AutoPlay, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ContentControl",
+          "property": "Visibility",
+          "expression": "{Binding IsExpanded, ElementName=UserControl, Converter={StaticResource bool2VisibilityConverter}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ComboBox",
+          "property": "ItemsSource",
+          "expression": "{Binding ImageModes, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ComboBox",
+          "property": "SelectedValue",
+          "expression": "{Binding IsSelectMode, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ComboBox",
+          "property": "ToolTip",
+          "expression": "{Binding SelectedItem.DisplayName, RelativeSource={RelativeSource self}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsExpanded, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsSubscribeFolderMode.CurValueA, ElementName=list}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsImageSourceModule, ElementName=list}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsSubscribeFolderMode.CurValueA, ElementName=list}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ToggleButton",
+          "property": "IsChecked",
+          "expression": "{Binding IsExpanded, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "CurSelectedModule",
+          "expression": "{Binding DataContext.DecorateSource, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "TargetValue",
+          "expression": "{Binding CurValueA, Mode=TwoWay}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "IsSelectMode",
+          "expression": "{Binding IsSelectMode, Mode=TwoWay, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "DataContext",
+          "expression": "{Binding CurrentImagePath, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "IsExpanded",
+          "expression": "{Binding IsExpanded, ElementName=UserControl}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageListPanel",
+          "property": "DoFreshImageList",
+          "expression": "{Binding FreshImageListFlag}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "DataTrigger",
+          "property": "Binding",
+          "expression": "{Binding IsExpanded, ElementName=UserControl}",
+          "review": "unreviewed"
+        }
+      ],
+      "resourceReferences": [
+        {
+          "kind": "MergedDictionary",
+          "reference": "/Apps.XmlUI;component/ParamTabControl/ParamTabUI/FrequentlyStyle.xaml",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "MergedDictionary",
+          "reference": "/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "MergedDictionary",
+          "reference": "/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Foreground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "Boolean_sub",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Background",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "Boolean",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "bool2VisibilityConverter",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "ListViewComboBoxGrayStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "DisplayHideBtnStyle",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml",
+      "names": [
+        {
+          "element": "ImageListPanelBase",
+          "name": "ImagePanel"
+        },
+        {
+          "element": "Border",
+          "name": "Back"
+        },
+        {
+          "element": "Rectangle",
+          "name": "rect"
+        },
+        {
+          "element": "Grid",
+          "name": "Bg"
+        },
+        {
+          "element": "Track",
+          "name": "PART_Track"
+        },
+        {
+          "element": "Border",
+          "name": "Bd"
+        },
+        {
+          "element": "Grid",
+          "name": "Grid"
+        },
+        {
+          "element": "Rectangle",
+          "name": "Corner"
+        },
+        {
+          "element": "ScrollContentPresenter",
+          "name": "PART_ScrollContentPresenter"
+        },
+        {
+          "element": "ScrollBar",
+          "name": "PART_VerticalScrollBar"
+        },
+        {
+          "element": "ScrollBar",
+          "name": "PART_HorizontalScrollBar"
+        },
+        {
+          "element": "Grid",
+          "name": "imageListGrid"
+        },
+        {
+          "element": "Border",
+          "name": "bd"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "ListBox",
+          "name": "lst"
+        },
+        {
+          "element": "Button",
+          "name": "BtnDelete"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "Border",
+          "name": "Border"
+        },
+        {
+          "element": "Button",
+          "name": "BtnImageAdd"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "Popup",
+          "name": "Pop1"
+        },
+        {
+          "element": "Button",
+          "name": "BtnImageAddFolder"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "Popup",
+          "name": "Pop2"
+        },
+        {
+          "element": "Button",
+          "name": "BtnImageAddRpFolder"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "Button",
+          "name": "BtnImageClear"
+        },
+        {
+          "element": "Image",
+          "name": "ImageBackground"
+        },
+        {
+          "element": "Grid",
+          "name": "windowShadow"
+        }
+      ],
+      "eventCandidates": [
+        {
+          "element": "ImageListPanelBase",
+          "event": "DataContextChanged",
+          "handler": "ImagePanel_DataContextChanged",
+          "review": "unreviewed"
+        },
+        {
+          "element": "MenuItem",
+          "event": "Click",
+          "handler": "MenuItem_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "FirstImage_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "event": "DragEnter",
+          "handler": "lst_DragEnter",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "event": "DragOver",
+          "handler": "lst_DragOver",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "event": "Drop",
+          "handler": "lst_Drop",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "event": "ScrollViewer.ScrollChanged",
+          "handler": "lst_ScrollChanged",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "event": "SelectionChanged",
+          "handler": "lst_SelectionChanged",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Grid",
+          "event": "MouseEnter",
+          "handler": "Grid_MouseEnter",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Grid",
+          "event": "MouseLeave",
+          "handler": "Grid_MouseLeave",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Grid",
+          "event": "MouseDown",
+          "handler": "Grid_MouseDown",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "BtnDelete_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "CheckBox",
+          "event": "Click",
+          "handler": "CheckBox_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "BtnImageAdd_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "LocalImage_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "LinuxImage_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "BtnImageAddFolder_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "LocalImageFolder_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "LinuxImageFolder_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "BtnImageAddRpFolder_Click",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "event": "Click",
+          "handler": "BtnImageClear_Click",
+          "review": "unreviewed"
+        }
+      ],
+      "bindings": [
+        {
+          "element": "ScrollBar",
+          "property": "Value",
+          "expression": "{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ScrollBar",
+          "property": "Value",
+          "expression": "{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "property": "Visibility",
+          "expression": "{Binding ImageCount, ElementName=ImagePanel, Converter={StaticResource IntToVisibilityConverter}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "DataTrigger",
+          "property": "Binding",
+          "expression": "{Binding IsReturnFirstForce, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "property": "ItemsSource",
+          "expression": "{Binding ImageList, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ListBox",
+          "property": "SelectedIndex",
+          "expression": "{Binding CurSelectedIndex, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Grid",
+          "property": "Tag",
+          "expression": "{Binding ElementName=BtnDelete}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "ImageView",
+          "property": "ImageDataSource",
+          "expression": "{Binding ImageSource}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "property": "Tag",
+          "expression": "{Binding}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "CheckBox",
+          "property": "Tag",
+          "expression": "{Binding}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "CheckBox",
+          "property": "IsChecked",
+          "expression": "{Binding IsCheck}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "CheckBox",
+          "property": "Visibility",
+          "expression": "{Binding DataContext.SelectEnable, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Popup",
+          "property": "PlacementTarget",
+          "expression": "{Binding ElementName=BtnImageAdd}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Popup",
+          "property": "PlacementTarget",
+          "expression": "{Binding ElementName=BtnImageAddFolder}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Button",
+          "property": "Visibility",
+          "expression": "{Binding IsExistAddition, Source={x:Static Unity:CheckAdditionManager.Instance}, Converter={StaticResource BooleanToVisibilityConverter}}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsImageSourceModule, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsExpanded, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Condition",
+          "property": "Binding",
+          "expression": "{Binding IsSubscribeFolderMode.CurValueA, ElementName=ImagePanel}",
+          "review": "unreviewed"
+        },
+        {
+          "element": "Grid",
+          "property": "Visibility",
+          "expression": "{Binding Path=(VMInterface:IVMRun.IsRunning), Converter={StaticResource BooleanToVisibilityConverter}}",
+          "review": "unreviewed"
+        }
+      ],
+      "resourceReferences": [
+        {
+          "kind": "MergedDictionary",
+          "reference": "/Apps.Style;component/CheckBoxStyle/CheckBoxStyle.xaml",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "MergedDictionary",
+          "reference": "/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Lang_OpenFileDir",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "GloCameraComboBB",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ImgPanelForeground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_Theme",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "GloCameraComboSelectBg",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "GloCameraComboSelectBg",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "GloCameraComboSelectFg",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ResultTabBoBrush",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ImageListRectFill",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ImageListRectFill",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "VerticalScrollBarPageButton",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "VerticalScrollBarPageButton",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "ScrollBarThumb",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "{x:Static SystemColors.WindowBrushKey",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ListBorder",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "{x:Static SystemColors.ControlTextBrushKey",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ScrollViewerControlTemplate1",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "{x:Static SystemColors.ControlBrushKey",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "{x:Static SystemColors.ControlBrushKey",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "for_scrollbar",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Lang_FirstImage",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "IntToVisibilityConverter",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Button_Background",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Button_BoderBrush",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_Theme",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_Theme",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_Theme",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ListBoxStyle1",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "Operate",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "SmallCheckBoxStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "BooleanToVisibilityConverter",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_Theme",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Lang_ImgSoc",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Foreground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Col_DisplayImage_ImageSource_Foreground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Lang_ImageAdd",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "添加图片",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "MainviewBaground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ButtonBorderBrush",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Local",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "MyButtonStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Remote",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "MyButtonStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "添加图像文件夹",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "LogForeground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "MainviewBaground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "添加目录",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "MainviewBaground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "ButtonBorderBrush",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Local",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "MyButtonStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "Remote",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "MyButtonStyle",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "AddRpFolder",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "LogForeground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "MainviewBaground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "添加目录",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "BooleanToVisibilityConverter",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "清空图像",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "LogForeground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "MainviewBaground",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "清空图片",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "DynamicResource",
+          "reference": "WindowShadow",
+          "review": "unreviewed"
+        },
+        {
+          "kind": "StaticResource",
+          "reference": "BooleanToVisibilityConverter",
+          "review": "unreviewed"
+        }
+      ]
+    }
+  ],
+  "originalMethodCandidates": [
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "MethodDeclarationSyntax",
+      "line": 57,
+      "endLine": 60,
+      "member": "OnPropertyChanged",
+      "syntaxSha256": "C140EFCB9FDF223D68BDD44D6388602C3C830C66FE999F2FACFCC4C1628E998C",
+      "invocationExpressions": [
+        ".Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 191,
+      "endLine": 194,
+      "member": "OnPropertyChanged",
+      "syntaxSha256": "7B68A8003A9399A732B9429DBF4883E979DE835BD9764523882F7323D8CBEC32",
+      "invocationExpressions": [
+        ".Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 204,
+      "endLine": 210,
+      "member": "OnApplyTemplate",
+      "syntaxSha256": "2C72EA2A5C1E1C1C77B611B0ADD1F73F0F2BDB85D2362B5EF1D76B58446DA505",
+      "invocationExpressions": [
+        "base.OnApplyTemplate",
+        "OnLanguageChanged",
+        "Template.FindName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 212,
+      "endLine": 214,
+      "member": "ClearParamListView",
+      "syntaxSha256": "07B5403892B1192F612CF17BF3ACCC2C72839E833FC4FFBF46A2A341D4AD2496",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 216,
+      "endLine": 218,
+      "member": "listViewUserDefinedKeyParam_SelectionChanged",
+      "syntaxSha256": "FCC3CCB0C85457BFEAD24F44E0C77A55B8CB27C920FE73304E3D1D39CADBE56A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 220,
+      "endLine": 222,
+      "member": "ScrollViewer_PreviewMouseWheel",
+      "syntaxSha256": "AF674FD2A1BEA5DB66EED04C0567C9DD68ED90A819D01059BF90116F9FEA777B",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 224,
+      "endLine": 257,
+      "member": "OnRootChanged",
+      "syntaxSha256": "5D4A9EB97B63B0F48FE313F6E83DA2DC697D27B4974448B00771B33E9A036C49",
+      "invocationExpressions": [
+        "localImageListView.OnLanguageChanged",
+        "localImageListView.OnPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 259,
+      "endLine": 296,
+      "member": "cbxMode_SelectionChanged",
+      "syntaxSha256": "F5F46D9E46C2EBCF1699591B8D7546B1FD2E3C5340B3AB205985402D54494C66",
+      "invocationExpressions": [
+        ".GetModuleSelectMode",
+        ".OnExcuteTypeParamChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 298,
+      "endLine": 314,
+      "member": "OnLanguageChanged",
+      "syntaxSha256": "D16E8EA8DBAECA18EB1DAF0E6E0EA61DDA4134390B18C82D9AAAFEAE903FF957",
+      "invocationExpressions": [
+        "imageModes.Find",
+        "OnPropertyChanged",
+        "p.GetPropertyValueByName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "type": "ImageListPanel",
+      "kind": "MethodDeclarationSyntax",
+      "line": 21,
+      "endLine": 24,
+      "member": "ChangeShadowDataSource",
+      "syntaxSha256": "BC30E306DB2206CFAAB82A7E61D077314DCEB465E0F94F375E3A09A9CC70F307",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "type": "ImageListPanel",
+      "kind": "MethodDeclarationSyntax",
+      "line": 26,
+      "endLine": 31,
+      "member": "_CreateDelegate",
+      "syntaxSha256": "529A6B3B79E7B481BC8E7F964B818333DB21E90B760340F26DAB194F834B62D7",
+      "invocationExpressions": [
+        "Delegate.CreateDelegate"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 253,
+      "endLine": 254,
+      "member": "ILFree",
+      "syntaxSha256": "F9FF1528DA4635557A43B358E666600D3580192636472D3A60C327A10C2019DB",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 256,
+      "endLine": 257,
+      "member": "ILCreateFromPathW",
+      "syntaxSha256": "09815AE89D9ED206ECC76FA077E2A9E8CDFE543184DEFB4084DA1ACA92AD8AE5",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 259,
+      "endLine": 260,
+      "member": "SHOpenFolderAndSelectItems",
+      "syntaxSha256": "F9E85FC3C8087B2EB90C0588F3B432C7BEE85AFC373495444974AD57E1010D73",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 267,
+      "endLine": 279,
+      "member": "TargetValueChanged",
+      "syntaxSha256": "377274F6444028B8E3CF890980610E1F429562CBE3905EC2CF9B0FA90A3011FC",
+      "invocationExpressions": [
+        "imageListPanelBase.GetModuleSel",
+        "imageListPanelBase.IsTimeRefreshView"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 281,
+      "endLine": 287,
+      "member": "CurSelectedModuleChanged",
+      "syntaxSha256": "204F56DDB395165D5CFB337F168DECCA60AE6BA32BE5EED0BAFD29CC2F3B17F5",
+      "invocationExpressions": [
+        "imageListPanelBase.NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 289,
+      "endLine": 292,
+      "member": "DoFreshImageListChanged",
+      "syntaxSha256": "27CE1E824156026D7300217EE153A8217472348269E9EF429079D6988E4E27ED",
+      "invocationExpressions": [
+        "(d as ImageListPanelBase).RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 303,
+      "endLine": 361,
+      "member": "ImageListPanel_Loaded",
+      "syntaxSha256": "04874CD0F825554EAAA7B9012BB0586BB2A82C0EE3DF13261FF7887FC933CCC2",
+      "invocationExpressions": [
+        "Dispatcher.Invoke",
+        "GetModuleSel",
+        "LoadThumbnailImage",
+        "LogHelper.Info",
+        "PropertyManager.Register",
+        "refreshImageThread.Start",
+        "Thread.Sleep"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "VmSolution.OnReportModuleData",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "VmSolution_OnReportModuleData"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 363,
+      "endLine": 373,
+      "member": "ImageListPanel_Unloaded",
+      "syntaxSha256": "D31DDD20458FE24F6C90974618A691D465EC34727B01C0EE6752A71466DD117C",
+      "invocationExpressions": [
+        "LogHelper.Info",
+        "PropertyManager.UnRegister"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "VmSolution.OnReportModuleData",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "VmSolution_OnReportModuleData"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 380,
+      "endLine": 387,
+      "member": "OnUpdateExcuteType",
+      "syntaxSha256": "8F614A548A39C0D21E78B311AC72B316C3DEE6CF5960D0DB5065780E879DC0D9",
+      "invocationExpressions": [
+        "GetHashCode",
+        "GetHashCode().ToString",
+        "UpdateExcuteType"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 389,
+      "endLine": 396,
+      "member": "UpdateExcuteType",
+      "syntaxSha256": "CF2DE420DF9AA1E578E3B514967C3B354C0DB0E4F0657E7305FBE09E4987A234",
+      "invocationExpressions": [
+        "GetModuleSelectMode"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 398,
+      "endLine": 401,
+      "member": "OnExcuteTypeParamChanged",
+      "syntaxSha256": "E49FB20051ABA7F93D43AC4822CB9FA89215A5D2EB456E95E88B9BF141C76089",
+      "invocationExpressions": [
+        "GetHashCode",
+        "GetHashCode().ToString",
+        "PropertyManager.DisplayExecute"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 403,
+      "endLine": 410,
+      "member": "OnSubscribeFolderModeChanged",
+      "syntaxSha256": "F145D2E28F272D0C0E73A116C9C3E2ACED0955A9304136336B30ADD6D04DFFA9",
+      "invocationExpressions": [
+        "UpdateExcuteType"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 417,
+      "endLine": 427,
+      "member": "VmSolution_OnReportModuleData",
+      "syntaxSha256": "7B5DC0C73C1ABA96ACF29043368A29BAF196E5BC4E85AB41429A8EBA36F5CA34",
+      "invocationExpressions": [
+        "GetVMModule"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 429,
+      "endLine": 437,
+      "member": "IsTimeRefreshView",
+      "syntaxSha256": "640EADA4AD4638954C39A767977C9418EA509373E86DB285A12B36980289C0DF",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 439,
+      "endLine": 493,
+      "member": "RefreshImageList",
+      "syntaxSha256": "2044E2BC84181B855747D9E5B8D5CB1407802E035FD947B1A3A42EC4C19702B2",
+      "invocationExpressions": [
+        "AddImageToList",
+        "Convert.ToInt32",
+        "Dispatcher.BeginInvoke",
+        "GetModuleSel",
+        "GetModuleSelectMode",
+        "GetVMModule",
+        "ImageList.Clear",
+        "ImageList.FirstOrDefault",
+        "ImageList.Remove",
+        "list.Add",
+        "list.Contains",
+        "list.Count",
+        "list.Remove",
+        "LogHelper.Error",
+        "string.IsNullOrEmpty",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 498,
+      "endLine": 553,
+      "member": "GetModuleSel",
+      "syntaxSha256": "048EAF55E2CE0C33463BE136281B6CF9B07C33BBF6FE5D21DC0F8EF6DDCD320A",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".GetValue",
+        ".ScrollToHorizontalOffset",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.IndexOf",
+        "LogHelper.Error",
+        "Math.Floor",
+        "text.ToString"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 555,
+      "endLine": 561,
+      "member": "NotifyPropertyChanged",
+      "syntaxSha256": "AB9A577B305DDF9D8CA3F2CB379AE762659A0001E07D1FCC739227917B02BE76",
+      "invocationExpressions": [
+        "PropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 568,
+      "endLine": 609,
+      "member": "BtnDelete_Click",
+      "syntaxSha256": "8DEF13C470E2F8570293854A384923B4F66637098694826C47648F5D9A9FA416",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AppLocalizationService.GetLang",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.IndexOf",
+        "ImageList.Remove",
+        "Ioc.Get<IUnRedoService>",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 616,
+      "endLine": 628,
+      "member": "Grid_MouseEnter",
+      "syntaxSha256": "E5ED902C186787F178BFD744A810DAAB06DE19558D29B5C4422A56203DC6D2EE",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 635,
+      "endLine": 641,
+      "member": "Grid_MouseLeave",
+      "syntaxSha256": "00ACD321A089A49397F6743F39337D2AFAF19BE3E939340F8B4149765CA9A179",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 647,
+      "endLine": 660,
+      "member": "GetVMModule",
+      "syntaxSha256": "55DF40D49CF31D062AC84184CBA56B166078468F7D2F355F368903C8DF3E8882",
+      "invocationExpressions": [
+        "GetRoot"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 662,
+      "endLine": 675,
+      "member": "GetRoot",
+      "syntaxSha256": "18F03C374A01575AE18122E05ECBF589EAE005FA8B4CECAC325F9BF02C94A302",
+      "invocationExpressions": [
+        "buttonSelecter_ImageList.GetTopBaseNode",
+        "Dispatcher.Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 682,
+      "endLine": 712,
+      "member": "BtnImageClear_Click",
+      "syntaxSha256": "B8E51124DAC74BEBCBC07865F5CE89A55E060886555513A4E8B4D47774F6264D",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AppLocalizationService.GetLang",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Clear",
+        "Ioc.Get<IUnRedoService>",
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 719,
+      "endLine": 748,
+      "member": "BtnImageAdd_Click",
+      "syntaxSha256": "4D8AADFC36C525EA5A03776922704F7B2F56634851E096424264576D06E3E985",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "AppLocalizationService.GetLang",
+        "Apps.UIHelper.Extern.UIHelper.CheckInitDirectory",
+        "ConfigurationHelper.INIGetDefaultOpenPath",
+        "ConfigurationHelper.INISetDefaultOpenPath",
+        "DoAddImages",
+        "File.Exists",
+        "GetRoot",
+        "GetVMModule",
+        "openFileDialog.ShowDialog",
+        "Path.GetDirectoryName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 750,
+      "endLine": 768,
+      "member": "LocalImage_Click",
+      "syntaxSha256": "C77A9CDE4948E4491C93CFDF492BAF3C51F8DDA27D38E55CE5BAE9D25D62E286",
+      "invocationExpressions": [
+        "AppLocalizationService.GetLang",
+        "Apps.UIHelper.Extern.UIHelper.CheckInitDirectory",
+        "ConfigurationHelper.INIGetDefaultOpenPath",
+        "ConfigurationHelper.INISetDefaultOpenPath",
+        "DoAddImages",
+        "File.Exists",
+        "GetVMModule",
+        "openFileDialog.ShowDialog",
+        "Path.GetDirectoryName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 770,
+      "endLine": 784,
+      "member": "LinuxImage_Click",
+      "syntaxSha256": "A07C0E2BEB25717FDFB184E6124FE39A40946D59DF9DCF772FC9A91E715DBE7A",
+      "invocationExpressions": [
+        "AppLocalizationService.GetLang",
+        "ConfigurationHelper.INIGetDefaultOpenRemotePath",
+        "ConfigurationHelper.INISetDefaultOpenRemotePath",
+        "DoAddImages",
+        "GetVMModule",
+        "openFileDialog.GetDirectoryName",
+        "openFileDialog.ShowDialog"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 786,
+      "endLine": 818,
+      "member": "DoAddImages",
+      "syntaxSha256": "9A640A4B134A3656CC27448CA2D2457320EEFB4AA725935B578F1122FD3CDB05",
+      "invocationExpressions": [
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AddImage",
+        "AddImageLocal",
+        "AppLocalizationService.GetLang",
+        "GetVMModule",
+        "Ioc.Get<IUnRedoService>",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 820,
+      "endLine": 844,
+      "member": "AddImage",
+      "syntaxSha256": "68B1B9C5FF43316D29175A6FC50EB48C86BF0E44379F61559918AF0723D2DBBA",
+      "invocationExpressions": [
+        "AddImageToLinux",
+        "AddImageToList",
+        "AddImageToServer",
+        "AppLocalizationService.GetLang",
+        "HikMessageBox.Show"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 846,
+      "endLine": 874,
+      "member": "AddImageLocal",
+      "syntaxSha256": "A20A92850D6ADD2365318C0CC54A9CF8D0C7A098B538F26E51E663EE799A7950",
+      "invocationExpressions": [
+        "AddImageToList",
+        "AddImageToServer",
+        "AppLocalizationService.GetLang",
+        "ErrorCodeInfo.GetErrorInfo",
+        "HikMessageBox.Show"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 876,
+      "endLine": 897,
+      "member": "AddImageToLinux",
+      "syntaxSha256": "F251775225F1ACF63E2B26D6D361415FAEC4114AD651CFE9A9291DF1458E2A50",
+      "invocationExpressions": [
+        "AddImageToList",
+        "AddImageToServer",
+        "fileName.GetHashCode",
+        "fileName.GetHashCode().ToString",
+        "Path.GetDirectoryName",
+        "Path.GetDirectoryName(fileName).EndsWith",
+        "Path.GetExtension",
+        "Path.GetFileName",
+        "Path.GetFileNameWithoutExtension",
+        "ServerSDKAPI.FtpCheckFileName",
+        "ServerSDKAPI.FtpCreatDir",
+        "ServerSDKAPI.FtpUploadFile"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 899,
+      "endLine": 906,
+      "member": "AddImageToServer",
+      "syntaxSha256": "4D163EA04137E04BAACAFAF8B84B81878786CDAE2EC668C48ECC1CFEB949C62B",
+      "invocationExpressions": [
+        "GetVMModule",
+        "ImageList.FirstOrDefault"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 913,
+      "endLine": 923,
+      "member": "GetImageEntitybyPath",
+      "syntaxSha256": "C52129C985E21F638FD54626DEFE5CFE5D9B31D9EDE132D0B840700F242E1F72",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 930,
+      "endLine": 994,
+      "member": "AddImageByDir",
+      "syntaxSha256": "366617D3EC4806FAE8F86CBE2ADB17A40393276C7F5E74F593EB1D5A96645F28",
+      "invocationExpressions": [
+        ".Register",
+        "(from x in Directory.GetFileSystemEntries(dir)\r\n\t\t\t\torderby x.Length, x\r\n\t\t\t\tselect x).ToArray",
+        "AddImage",
+        "AddImageByDir",
+        "AddImageLocal",
+        "AppLocalizationService.GetLang",
+        "Directory.Exists",
+        "Directory.GetFileSystemEntries",
+        "File.Exists",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "Ioc.Get<IUnRedoService>",
+        "LogHelper.Error",
+        "Path.GetExtension",
+        "Path.GetExtension(text).ToUpper"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1000,
+      "endLine": 1014,
+      "member": "AddImageToList",
+      "syntaxSha256": "5B3DF5B3980EA626915EE5BDF19D1FEBBE63D9A63AD7496EA48C101048F90DE9",
+      "invocationExpressions": [
+        "ImageList.Add",
+        "ImageList.FirstOrDefault",
+        "string.IsNullOrEmpty"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1021,
+      "endLine": 1054,
+      "member": "BtnImageAddFolder_Click",
+      "syntaxSha256": "B1A2A4519FA0191F6135E791059E5399CFB47C7C8663654044A45BAA44BAD3B3",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "GetRoot",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1056,
+      "endLine": 1085,
+      "member": "LocalImageFolder_Click",
+      "syntaxSha256": "44A4596D23AF37FAF0C8E3EAFC5FB5E03E2FA575E7FD438D9BED31FC37E7C793",
+      "invocationExpressions": [
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1092,
+      "endLine": 1108,
+      "member": "GetFiles",
+      "syntaxSha256": "498E6AF6B3439F36AAFD41B4F008EF18A9BAD8E4B7169DAAA9AFABC1BCEFA720",
+      "invocationExpressions": [
+        "Encoding.UTF8.GetString",
+        "ServerSDKAPI.FtpRemoteList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1110,
+      "endLine": 1196,
+      "member": "LinuxImageFolder_Click",
+      "syntaxSha256": "C9B10399E634279BF5E49E0CD4F962F5D5E500677266B3FB42083A6EF48540B6",
+      "invocationExpressions": [
+        ".Register",
+        "AddImage",
+        "AppLocalizationService.GetLang",
+        "Encoding.UTF8.GetString",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileName).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FilePermission).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileTime).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO2.FileName).TrimEnd",
+        "folderBrowserDialog.FilePath.Trim",
+        "folderBrowserDialog.ShowDialog",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "Ioc.Get<IUnRedoService>",
+        "item2.Split",
+        "item2.Split('.').LastOrDefault",
+        "item2.Split('.').LastOrDefault().ToUpper",
+        "list.Add",
+        "LogHelper.Error",
+        "Marshal.FreeHGlobal",
+        "Marshal.PtrToStructure",
+        "Marshal.SizeOf",
+        "ServerSDKAPI.FtpRemoteFileList",
+        "text.Remove",
+        "text.Substring",
+        "text5.StartsWith",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1201,
+      "endLine": 1210,
+      "member": "DoEvents",
+      "syntaxSha256": "C85A0AC2AB963A2F12DC1E722B69E028B49E6DB5C5B800E8F8ED4789E4C0F4D6",
+      "invocationExpressions": [
+        "Dispatcher.CurrentDispatcher.BeginInvoke",
+        "Dispatcher.PushFrame"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1218,
+      "endLine": 1222,
+      "member": "IsChildVisibleInParent",
+      "syntaxSha256": "89D5399E1D9D704C9342CF3FBE06DB0506FCE2E5C09274C31B8600383772361D",
+      "invocationExpressions": [
+        ".TransformBounds",
+        "child.TransformToAncestor",
+        "new Rect(new Point(0.0, 0.0), parent.RenderSize).IntersectsWith"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1229,
+      "endLine": 1240,
+      "member": "InterfaceUpdateImageList",
+      "syntaxSha256": "A52D27B415F0FF8D40D775199B333E76D6183084D5A7E15108907CF32ADA6577",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "Convert.ToBoolean",
+        "Dispatcher.Invoke",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Clear",
+        "RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1245,
+      "endLine": 1273,
+      "member": "UpdateImageListSource",
+      "syntaxSha256": "02A11F5FABAA099741DA2270EA7E3E6778124019462521D80BF643498F11B6AC",
+      "invocationExpressions": [
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling",
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1275,
+      "endLine": 1307,
+      "member": "LoadThumbnailImage",
+      "syntaxSha256": "A9CF2030A3DA77F02F182DC1805A4914D361F74CF5119849E151B9BD66EC6669",
+      "invocationExpressions": [
+        ".ToLower",
+        "ImageData.GetImageDataFrom3DFile",
+        "ImageData.GetImageDataFromFile",
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling",
+        "Path.GetExtension"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1314,
+      "endLine": 1360,
+      "member": "lst_SelectionChanged",
+      "syntaxSha256": "3EBB6C55CE40C2AFF6409E3BBF082E3F1B02AAC01ADFD2693DB1256F392A8FAC",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetModuleSel",
+        "GetRoot",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "ImageList.ToList",
+        "ImageList.Where",
+        "ImageList.Where((ImageEntity p) => p.IsCheck).ToList",
+        "list.IndexOf",
+        "vmProcedure.Run",
+        "vmProcedure.RunCheck"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1362,
+      "endLine": 1375,
+      "member": "OnPreduceResultCallBackArrived",
+      "syntaxSha256": "A1CA8D54990B70872009999830E1098560E3B630D0643015EE8576AF83953E61",
+      "invocationExpressions": [
+        "DoRefreshLocalImage",
+        "Task.Run"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1377,
+      "endLine": 1401,
+      "member": "DoRefreshLocalImage",
+      "syntaxSha256": "17589E90B7F3140530FE572C1E76FB986297FD6C28AA9019F853E7C1FBDE68E5",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".GetValue",
+        "GetRoot",
+        "GetVMModule",
+        "LogHelper.Error",
+        "RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1403,
+      "endLine": 1455,
+      "member": "lst_ScrollChanged",
+      "syntaxSha256": "64E42F17F41E82E30AD22DD375C5665E746B0EDF38F5FF6D31F8A3E23297EBD5",
+      "invocationExpressions": [
+        "Apps.UIHelper.Extern.UIHelper.GetChild<ScrollViewer>",
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1457,
+      "endLine": 1475,
+      "member": "JudgeDrage",
+      "syntaxSha256": "098D4D2F4C72B2E844D5A29D9B9FEB231DC3B46EC5D3135F0437457D7644D256",
+      "invocationExpressions": [
+        ".GetData",
+        "File.Exists",
+        "item.ToString",
+        "Path.GetExtension",
+        "Path.GetExtension(path).ToLower"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1477,
+      "endLine": 1480,
+      "member": "lst_DragEnter",
+      "syntaxSha256": "6D133A5AD6A6907BA2C00FD694929423E33D0CA759EB422E5C7AAD9F93830F7D",
+      "invocationExpressions": [
+        "JudgeDrage"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1482,
+      "endLine": 1485,
+      "member": "lst_DragOver",
+      "syntaxSha256": "AC2E992307181571084A943A0549081C83F88A8C3F938CA359833DEB9AE16093",
+      "invocationExpressions": [
+        "JudgeDrage"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1487,
+      "endLine": 1500,
+      "member": "lst_Drop",
+      "syntaxSha256": "9F8BE70F12E6A041696D55DDD0FDCA56271B658B6244A48E249FD282EF3998F1",
+      "invocationExpressions": [
+        ".GetData",
+        "DoAddImages",
+        "item.ToString",
+        "list.Add",
+        "list.ToArray"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1502,
+      "endLine": 1548,
+      "member": "ImagePanel_DataContextChanged",
+      "syntaxSha256": "48DF2EF996404E6943FC0BF7DDC10693A8B994FBB2D6263B604511EAA0F05D33",
+      "invocationExpressions": [
+        ".GetTopBaseNode",
+        "buttonSelecter_ImageList2.GetTopBaseNode",
+        "ChangeShadowDataSource",
+        "ImageList.Clear",
+        "NotifyPropertyChanged",
+        "RefreshImageList",
+        "WeakEventManager<IImageSourceNode, EventArgs>.AddHandler",
+        "WeakEventManager<IImageSourceNode, EventArgs>.RemoveHandler",
+        "WeakEventManager<IVmProcedure, EventArgs>.AddHandler",
+        "WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "nameValueItem.OnCurValueChanged",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnSubscribeFolderModeChanged"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1550,
+      "endLine": 1552,
+      "member": "ChangeShadowDataSource",
+      "syntaxSha256": "1BACDE4F5710CB75F911FDE5E287DFA2D1A4411379A307692346420C6EF5954A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1554,
+      "endLine": 1560,
+      "member": "CheckBox_Click",
+      "syntaxSha256": "8B939191E57B1D1D21B83F15FFF1F3E4AA876FECC4ADC662B68B325A80BA1DD7",
+      "invocationExpressions": [
+        "ChangedExecutePic"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1562,
+      "endLine": 1605,
+      "member": "Grid_MouseDown",
+      "syntaxSha256": "59AC545F3B02FEBDEBE2A739D11D34E73EA63A5DD4DD0F7298A671927E099FC4",
+      "invocationExpressions": [
+        "ChangedExecutePic",
+        "ImageList.IndexOf",
+        "Keyboard.IsKeyDown",
+        "Math.Max",
+        "Math.Min"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1611,
+      "endLine": 1635,
+      "member": "ChangedExecutePic",
+      "syntaxSha256": "302412BE86C1AAEC33636ACA86820A7D6789678A0B6898808D93E3316677BF74",
+      "invocationExpressions": [
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "LogHelper.Error",
+        "OnExcuteTypeParamChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1640,
+      "endLine": 1679,
+      "member": "GetModuleSelectMode",
+      "syntaxSha256": "A0550D5BE4F3D74E6ACB349B3A98A40D37DC7384FF0A9A3B727111DE870A1031",
+      "invocationExpressions": [
+        ".Split",
+        "array.Contains",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "LogHelper.Error"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1681,
+      "endLine": 1738,
+      "member": "FirstImage_Click",
+      "syntaxSha256": "7236A36C4775494526104BCCB63AC2D1D14592D6109F714AB54827F6F145EF6E",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".ScrollToLeftEnd",
+        "Dispatcher.BeginInvoke",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Where",
+        "ImageList.Where((ImageEntity p) => p.IsCheck).ToList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1740,
+      "endLine": 1761,
+      "member": "MenuItem_Click",
+      "syntaxSha256": "3FAE0900DDB54E6C42CEBC3A4109B9395F84FCDDF27516EA2BECF103760621E9",
+      "invocationExpressions": [
+        "Directory.Exists",
+        "ILCreateFromPathW",
+        "ILFree",
+        "Marshal.ThrowExceptionForHR",
+        "Process.Start",
+        "SHOpenFolderAndSelectItems"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1768,
+      "endLine": 1811,
+      "member": "BtnImageAddRpFolder_Click",
+      "syntaxSha256": "7DA2231C32D59496B494B4FD3D373475B2ACF28AA5FA9A1AF36BE21234DBFB76",
+      "invocationExpressions": [
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "AppLocalizationService.GetLang",
+        "Directory.Exists",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    }
+  ],
+  "originalDeclaredMembers": [
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "FieldDeclarationSyntax",
+      "line": 27,
+      "endLine": 27,
+      "member": "displayName",
+      "syntaxSha256": "398970AA26990CE97DC0AC31BD586B8A40B120E00EE9AB9025F1B8A817AD2413",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "FieldDeclarationSyntax",
+      "line": 29,
+      "endLine": 29,
+      "member": "val",
+      "syntaxSha256": "D7AA0D3883AEAC18B21A82B3AA2FD7FEBE25B5739CB0754C4D6682EC56DB22D4",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 31,
+      "endLine": 41,
+      "member": "DisplayName",
+      "syntaxSha256": "37388FB2CF53D5C617E6907F3BD8E26ACE9C88BB56BC9B95741FA3257B3B3880",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 43,
+      "endLine": 53,
+      "member": "Value",
+      "syntaxSha256": "F023BDF34417B437EBAEBFB757904A9BFA5A72B57F59F5049C563239F4C947AF",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "EventFieldDeclarationSyntax",
+      "line": 55,
+      "endLine": 55,
+      "member": "PropertyChanged",
+      "syntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView.TempClass",
+      "kind": "MethodDeclarationSyntax",
+      "line": 57,
+      "endLine": 60,
+      "member": "OnPropertyChanged",
+      "syntaxSha256": "C140EFCB9FDF223D68BDD44D6388602C3C830C66FE999F2FACFCC4C1628E998C",
+      "invocationExpressions": [
+        ".Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 63,
+      "endLine": 63,
+      "member": "list",
+      "syntaxSha256": "0DF880717FF279C645C9456B1DDFB4D41050A7D210E0F77D5F65C0D64A4C09DE",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 65,
+      "endLine": 65,
+      "member": "cbx",
+      "syntaxSha256": "FCE041247802E4D70E521629074B10500740B04C6872AF20C58762F5B3DB2B26",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 67,
+      "endLine": 67,
+      "member": "OnSelectedItemChanged",
+      "syntaxSha256": "FF76DFEACC6426CE5A5EC61997EC0DE41394C0512ECEF6321393FF3280C8BE2A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 69,
+      "endLine": 69,
+      "member": "IsExpandedProperty",
+      "syntaxSha256": "B01071A75317690821D6715FF43923DA30C739FD2203D599CAA6CE965A92795C",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 71,
+      "endLine": 71,
+      "member": "IsSelectModeProperty",
+      "syntaxSha256": "5D6403003FB30F4D41CF5CA841218028AA100903746D0E3DB9412EBC53A8AC4D",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 73,
+      "endLine": 73,
+      "member": "RootProperty",
+      "syntaxSha256": "267DB17FEBF957AB80403A36C955297DA66FE9ED19CCF7482444FA42CE451F60",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 75,
+      "endLine": 75,
+      "member": "imageModes",
+      "syntaxSha256": "A8FD5783614035CDDA053F16500043B00F59C087A97F63067C4AA4BF692C59CA",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 77,
+      "endLine": 77,
+      "member": "_AutoPlay",
+      "syntaxSha256": "D789107045630A98FB12D5F17CF5F3EFE0C073FF4CE333F96818C51AC3DF6BE4",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 79,
+      "endLine": 79,
+      "member": "_Interval",
+      "syntaxSha256": "832326960AF8946A71B7D80D41A32225F9178CA7ADB6DB194D58B22B8AEB2191",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "FieldDeclarationSyntax",
+      "line": 81,
+      "endLine": 81,
+      "member": "_CurrentImagePath",
+      "syntaxSha256": "07EEBCD86EE476E313D596292DDDC503D1615C0158CD56E953A4EE9060220B1F",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 83,
+      "endLine": 93,
+      "member": "IsExpanded",
+      "syntaxSha256": "C23282DE779DD020F6F4547DEEFE4002E9F9F5F1A9134AAFC5113C3CC01E9C1B",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 95,
+      "endLine": 105,
+      "member": "IsSelectMode",
+      "syntaxSha256": "7D3C9F12C4AB5C7DB23DB61B800C69D041BAEE1087789E34460A3F1833A87EB6",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 107,
+      "endLine": 117,
+      "member": "Root",
+      "syntaxSha256": "A94434DE3CCEDDB6EA396F87D334CCD360929BA57480EB5C31A956044F8CAC33",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 119,
+      "endLine": 141,
+      "member": "ImageModes",
+      "syntaxSha256": "3EB8FEA0A34013FFD02A8AD1DE103B3D74D32B0E7CF555F6D973F941B2ED9433",
+      "invocationExpressions": [
+        "AppLocalizationService.GetLang"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 146,
+      "endLine": 156,
+      "member": "AutoPlay",
+      "syntaxSha256": "88907DCA7768BC89447B3CA4C0A246EB42121FB32DD966B0925E011455734CB7",
+      "invocationExpressions": [
+        "Root.FindBaseNodeByName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 161,
+      "endLine": 171,
+      "member": "Interval",
+      "syntaxSha256": "631FE26EAAD58BA6F5B28B0A47E3D77FE23C63B1F8E686AE64C6B71960995465",
+      "invocationExpressions": [
+        "Root.FindBaseNodeByName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 176,
+      "endLine": 187,
+      "member": "CurrentImagePath",
+      "syntaxSha256": "07B3809E4C994B4B363BBA4E4AF0EEE1B476E02324C7A84A36F633688AE8CE59",
+      "invocationExpressions": [
+        ".GetParamUnit",
+        "Root.FindBaseNodeByName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "EventFieldDeclarationSyntax",
+      "line": 189,
+      "endLine": 189,
+      "member": "PropertyChanged",
+      "syntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 191,
+      "endLine": 194,
+      "member": "OnPropertyChanged",
+      "syntaxSha256": "7B68A8003A9399A732B9429DBF4883E979DE835BD9764523882F7323D8CBEC32",
+      "invocationExpressions": [
+        ".Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "ConstructorDeclarationSyntax",
+      "line": 199,
+      "endLine": 202,
+      "member": "LocalImageListView",
+      "syntaxSha256": "FA2A340655DBC2188B21CEA7B0C4E6E855868F7B28B794BA962EBEC8AD3ABCA0",
+      "invocationExpressions": [
+        "InitializeComponent"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 204,
+      "endLine": 210,
+      "member": "OnApplyTemplate",
+      "syntaxSha256": "2C72EA2A5C1E1C1C77B611B0ADD1F73F0F2BDB85D2362B5EF1D76B58446DA505",
+      "invocationExpressions": [
+        "base.OnApplyTemplate",
+        "OnLanguageChanged",
+        "Template.FindName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 212,
+      "endLine": 214,
+      "member": "ClearParamListView",
+      "syntaxSha256": "07B5403892B1192F612CF17BF3ACCC2C72839E833FC4FFBF46A2A341D4AD2496",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 216,
+      "endLine": 218,
+      "member": "listViewUserDefinedKeyParam_SelectionChanged",
+      "syntaxSha256": "FCC3CCB0C85457BFEAD24F44E0C77A55B8CB27C920FE73304E3D1D39CADBE56A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 220,
+      "endLine": 222,
+      "member": "ScrollViewer_PreviewMouseWheel",
+      "syntaxSha256": "AF674FD2A1BEA5DB66EED04C0567C9DD68ED90A819D01059BF90116F9FEA777B",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 224,
+      "endLine": 257,
+      "member": "OnRootChanged",
+      "syntaxSha256": "5D4A9EB97B63B0F48FE313F6E83DA2DC697D27B4974448B00771B33E9A036C49",
+      "invocationExpressions": [
+        "localImageListView.OnLanguageChanged",
+        "localImageListView.OnPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 259,
+      "endLine": 296,
+      "member": "cbxMode_SelectionChanged",
+      "syntaxSha256": "F5F46D9E46C2EBCF1699591B8D7546B1FD2E3C5340B3AB205985402D54494C66",
+      "invocationExpressions": [
+        ".GetModuleSelectMode",
+        ".OnExcuteTypeParamChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "type": "LocalImageListView",
+      "kind": "MethodDeclarationSyntax",
+      "line": 298,
+      "endLine": 314,
+      "member": "OnLanguageChanged",
+      "syntaxSha256": "D16E8EA8DBAECA18EB1DAF0E6E0EA61DDA4134390B18C82D9AAAFEAE903FF957",
+      "invocationExpressions": [
+        "imageModes.Find",
+        "OnPropertyChanged",
+        "p.GetPropertyValueByName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "type": "ImageListPanel",
+      "kind": "ConstructorDeclarationSyntax",
+      "line": 16,
+      "endLine": 19,
+      "member": "ImageListPanel",
+      "syntaxSha256": "0A260786B6E2BD56F5725C0A39C2FF2F275DEBD31C198B497F302F4A45F2F926",
+      "invocationExpressions": [
+        "InitializeComponent"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "type": "ImageListPanel",
+      "kind": "MethodDeclarationSyntax",
+      "line": 21,
+      "endLine": 24,
+      "member": "ChangeShadowDataSource",
+      "syntaxSha256": "BC30E306DB2206CFAAB82A7E61D077314DCEB465E0F94F375E3A09A9CC70F307",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "type": "ImageListPanel",
+      "kind": "MethodDeclarationSyntax",
+      "line": 26,
+      "endLine": 31,
+      "member": "_CreateDelegate",
+      "syntaxSha256": "529A6B3B79E7B481BC8E7F964B818333DB21E90B760340F26DAB194F834B62D7",
+      "invocationExpressions": [
+        "Delegate.CreateDelegate"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 37,
+      "endLine": 37,
+      "member": "ImageItemWidth",
+      "syntaxSha256": "DAA1CE29AB502BF7EE42220B372D256EEC20F3D0B57CA984CAD8A2270971A1E0",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 39,
+      "endLine": 39,
+      "member": "curScrollOffset",
+      "syntaxSha256": "8031F0E0771C61EC0DA82E87F45A0CD117B2A333B155FD30D79C333BC0E23C3E",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 41,
+      "endLine": 41,
+      "member": "curActualWidth",
+      "syntaxSha256": "DAAD3B851A5A6192F40132D590156F1B67A46C1D588D4EF064A971260FD05FF9",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 43,
+      "endLine": 43,
+      "member": "scrollViewer",
+      "syntaxSha256": "F035E8718AC3F81B3212435F8ADD2842D17A6A1E0A4C759B20A2A09A5BBF2046",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 45,
+      "endLine": 45,
+      "member": "EXECUTE_TYPE",
+      "syntaxSha256": "627D5CB6903E641DE4A4E78A7105F530A7AF623B43F9734C7D394CAB61015F38",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 47,
+      "endLine": 47,
+      "member": "refreshImageThread",
+      "syntaxSha256": "CFD8E31D94AA4A1295049EE58991AB5C7B0A5E609BC16184AAF7D851866B5FAD",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 49,
+      "endLine": 49,
+      "member": "refreshImageThreadAlive",
+      "syntaxSha256": "7722EAE55D133277A972F6B16BE7F71A86A009C9771CD5746CEEBE0E2982471F",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 51,
+      "endLine": 51,
+      "member": "mutexrefreshImageThread",
+      "syntaxSha256": "E4EACEBA3E777BD1664BCDBD9482BBE8ABAF95CD256A0C809573E0CDA1E4C0AB",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 53,
+      "endLine": 53,
+      "member": "dataNumForReceiveStore",
+      "syntaxSha256": "9D0C9F18D556AA344CD6E17EFB60FA0A29AD2CCED66A3C06912A4D8B5C5F48C0",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 55,
+      "endLine": 55,
+      "member": "dataNumForSendStore",
+      "syntaxSha256": "7737266F27121B396619BEC9294F33613EDD83A5DFD13648C57CCF07E513F4FD",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 57,
+      "endLine": 57,
+      "member": "maxStoreLen",
+      "syntaxSha256": "37AC1E85694632C03E6D9B7F4AAEF7FF8EBC1E9C220657F9D62996CB5E085922",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 59,
+      "endLine": 59,
+      "member": "forReceiveStore",
+      "syntaxSha256": "B46ABD91A7860A8F94E2145534163DCB4BEA2A7DFD471E2793134A1FB46A3472",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 61,
+      "endLine": 61,
+      "member": "forSendStore",
+      "syntaxSha256": "63C6BC360777D1A732CF94A8DFB7DBE56E869E51B3F4AD494C565383F8D7C501",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 63,
+      "endLine": 63,
+      "member": "needSelectImagePath",
+      "syntaxSha256": "D6D27F1F7F53EB796EF68E61C15EB657F003EAF3FD01E17EB900CC893C7D9CB3",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 65,
+      "endLine": 65,
+      "member": "TargetValueProperty",
+      "syntaxSha256": "9E15ACB182448694587BACE22AB0D9E7777D3B55B4CC59E217AFD31B69EA16EA",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 67,
+      "endLine": 67,
+      "member": "CurSelectedModuleProperty",
+      "syntaxSha256": "54D1636237446541DB196068892C90ED76BAA12D1F2AA5AB398BB3C6E02DA0D8",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 69,
+      "endLine": 69,
+      "member": "CurSelectedIndexProperty",
+      "syntaxSha256": "6BBEA19618A8BAB6CD445A1BF50156FDE10F54D7D5590152A3E54794CECB7B4B",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 71,
+      "endLine": 71,
+      "member": "DoFreshImageListProperty",
+      "syntaxSha256": "315A1BAB2200C2C308FA3605F86412E195EC13D427742AD683B0319E43EA0A1E",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 73,
+      "endLine": 73,
+      "member": "IsExpandedProperty",
+      "syntaxSha256": "652E858202D35EBA0944408A975C8936FA5522EEFF07B36D4BE5FBA7E86701E3",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 75,
+      "endLine": 75,
+      "member": "IsSelectModeProperty",
+      "syntaxSha256": "967789D56734038460A564FAD7A446DED82B2AFC81EF9DAEAFE19898B4EC1526",
+      "invocationExpressions": [
+        "DependencyProperty.Register"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 77,
+      "endLine": 77,
+      "member": "_IsSubscribeFolderMode",
+      "syntaxSha256": "FAB16172686481B14AFA5D0AD721F7609F07619A1088F7F77E0945767D063463",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 79,
+      "endLine": 79,
+      "member": "needReflashImages",
+      "syntaxSha256": "CE916CAC127047A2F23C5AC6191BA920057FC7FE59999BA3E761D091F416E882",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 81,
+      "endLine": 81,
+      "member": "curTime",
+      "syntaxSha256": "2E4CCB7F45A52D54592D141E0E91A0A8A74AF59F051C97BD89552DF92883620E",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 83,
+      "endLine": 83,
+      "member": "ptr",
+      "syntaxSha256": "9DC8EE986E9DBFF6D94AE6BC2146392EB17A7E484865D4DC650776C9BC681C09",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 85,
+      "endLine": 85,
+      "member": "PATH_MAX",
+      "syntaxSha256": "CCF19E6AC14E09AA93E1143EF6626C77531374688906E15F8DF3DAD84E50246F",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 87,
+      "endLine": 87,
+      "member": "isWindowsPicture",
+      "syntaxSha256": "43C5100B72730065426B788E2D69FD6AE890F5AD688A195DC57CB9C2658B62E5",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 92,
+      "endLine": 92,
+      "member": "CurImageIndex",
+      "syntaxSha256": "79E5ACD8CF3597A64436FEDA4705900AFC4F8627DED9059069AF12254E44AB8A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 97,
+      "endLine": 97,
+      "member": "OwnerModule",
+      "syntaxSha256": "1132832D8EB97B1DE47590AEEBC1D928FCB1D2095F2F2DBFD587266BEFEB9B4E",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 99,
+      "endLine": 99,
+      "member": "root",
+      "syntaxSha256": "F07768E10A47214C5DFA923EDB7546E401C633A52FA2307881FF6AE8D077A884",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 101,
+      "endLine": 101,
+      "member": "needSelectionTrigger",
+      "syntaxSha256": "32B0BCE3840085B529B3375D4F45119064AF613CFC4C5357A1F606F6E6E7A60F",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 103,
+      "endLine": 103,
+      "member": "needSetSelectImage",
+      "syntaxSha256": "293255807B7FC9E469D0DD31F3D35B34AD56F05C22D1110384DD5D3313125C54",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "FieldDeclarationSyntax",
+      "line": 105,
+      "endLine": 105,
+      "member": "isReturnFirstForce",
+      "syntaxSha256": "E60555677CEAC0F6144C67B31945BE8A05F67AE91AA5D4B011E63A1A5F712E1E",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 110,
+      "endLine": 120,
+      "member": "TargetValue",
+      "syntaxSha256": "E8CDA8EB12995F50F8DC17FEB6A143053B7424F49703541807759C0E7AB04071",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 122,
+      "endLine": 132,
+      "member": "CurSelectedModule",
+      "syntaxSha256": "F7E264B3B996F948050BB3007FC8DD1ECFAE6BE7D27C22ADF8BD1521E7AED4C0",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 134,
+      "endLine": 144,
+      "member": "CurSelectedIndex",
+      "syntaxSha256": "4D9C72C499D2BC09428C0C09338808C94BBD84378FFC78D1B0F3C3971A0C4617",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 146,
+      "endLine": 156,
+      "member": "DoFreshImageList",
+      "syntaxSha256": "3FF8C08B7303E3D11C68453E6010FE63E7A1D86219538597FA81F1D784FCC7A4",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 158,
+      "endLine": 168,
+      "member": "IsExpanded",
+      "syntaxSha256": "C23282DE779DD020F6F4547DEEFE4002E9F9F5F1A9134AAFC5113C3CC01E9C1B",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 170,
+      "endLine": 180,
+      "member": "IsSelectMode",
+      "syntaxSha256": "7D3C9F12C4AB5C7DB23DB61B800C69D041BAEE1087789E34460A3F1833A87EB6",
+      "invocationExpressions": [
+        "GetValue",
+        "SetValue"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 182,
+      "endLine": 182,
+      "member": "IsImageSourceModule",
+      "syntaxSha256": "6937904509ED1BAF2C713FF487BF09FE4D8501760209DA11FA65946BD58BCD8A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 187,
+      "endLine": 202,
+      "member": "IsSubscribeFolderMode",
+      "syntaxSha256": "7A38863C11D17C87BFC13371FFF8EB078E7D60F998E34D74B1215EA9B88DF77C",
+      "invocationExpressions": [
+        "GetRoot",
+        "GetRoot().FindBaseNodeByName",
+        "nameValueItem.GetParamUnit"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "nameValueItem.OnCurValueChanged",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnSubscribeFolderModeChanged"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 204,
+      "endLine": 204,
+      "member": "ImageCount",
+      "syntaxSha256": "14669C8008FDFFF67FD16D8B9C226AF9775E374089787D5312DDBB47FCDB93C5",
+      "invocationExpressions": [
+        "ImageList.Count"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 209,
+      "endLine": 209,
+      "member": "ImageList",
+      "syntaxSha256": "B53D913DA090BC1C6BD98A05914C34D24E1094F5827BF8B1F5A16E49D085A587",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 214,
+      "endLine": 214,
+      "member": "Islocal",
+      "syntaxSha256": "E6FB5BFC7EC558FF00568063B08E9CAB150736AAFC536D61B66FB32121589691",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 219,
+      "endLine": 230,
+      "member": "CurImageIndexT",
+      "syntaxSha256": "82C82166A5E5B18A7FD3875A0CD763455ADE03C82ABF33EB983AA4C5DB0CFA95",
+      "invocationExpressions": [
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "PropertyDeclarationSyntax",
+      "line": 235,
+      "endLine": 249,
+      "member": "IsReturnFirstForce",
+      "syntaxSha256": "DB807BBD7B3426ACE4F45F5A8FA20923A51C5AA161A7DE2C29B070E84E308736",
+      "invocationExpressions": [
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "EventFieldDeclarationSyntax",
+      "line": 251,
+      "endLine": 251,
+      "member": "PropertyChanged",
+      "syntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 253,
+      "endLine": 254,
+      "member": "ILFree",
+      "syntaxSha256": "F9FF1528DA4635557A43B358E666600D3580192636472D3A60C327A10C2019DB",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 256,
+      "endLine": 257,
+      "member": "ILCreateFromPathW",
+      "syntaxSha256": "09815AE89D9ED206ECC76FA077E2A9E8CDFE543184DEFB4084DA1ACA92AD8AE5",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 259,
+      "endLine": 260,
+      "member": "SHOpenFolderAndSelectItems",
+      "syntaxSha256": "F9E85FC3C8087B2EB90C0588F3B432C7BEE85AFC373495444974AD57E1010D73",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 267,
+      "endLine": 279,
+      "member": "TargetValueChanged",
+      "syntaxSha256": "377274F6444028B8E3CF890980610E1F429562CBE3905EC2CF9B0FA90A3011FC",
+      "invocationExpressions": [
+        "imageListPanelBase.GetModuleSel",
+        "imageListPanelBase.IsTimeRefreshView"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 281,
+      "endLine": 287,
+      "member": "CurSelectedModuleChanged",
+      "syntaxSha256": "204F56DDB395165D5CFB337F168DECCA60AE6BA32BE5EED0BAFD29CC2F3B17F5",
+      "invocationExpressions": [
+        "imageListPanelBase.NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 289,
+      "endLine": 292,
+      "member": "DoFreshImageListChanged",
+      "syntaxSha256": "27CE1E824156026D7300217EE153A8217472348269E9EF429079D6988E4E27ED",
+      "invocationExpressions": [
+        "(d as ImageListPanelBase).RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "ConstructorDeclarationSyntax",
+      "line": 294,
+      "endLine": 301,
+      "member": "ImageListPanelBase",
+      "syntaxSha256": "93D1AA39DC9382976E00C896B0F2B88C74523E2716F4C939ABA3D988EC7C8C51",
+      "invocationExpressions": [
+        "DesignerProperties.GetIsInDesignMode"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "Loaded",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "ImageListPanel_Loaded"
+        },
+        {
+          "eventExpression": "Unloaded",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "ImageListPanel_Unloaded"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 303,
+      "endLine": 361,
+      "member": "ImageListPanel_Loaded",
+      "syntaxSha256": "04874CD0F825554EAAA7B9012BB0586BB2A82C0EE3DF13261FF7887FC933CCC2",
+      "invocationExpressions": [
+        "Dispatcher.Invoke",
+        "GetModuleSel",
+        "LoadThumbnailImage",
+        "LogHelper.Info",
+        "PropertyManager.Register",
+        "refreshImageThread.Start",
+        "Thread.Sleep"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "VmSolution.OnReportModuleData",
+          "operation": "+=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "VmSolution_OnReportModuleData"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 363,
+      "endLine": 373,
+      "member": "ImageListPanel_Unloaded",
+      "syntaxSha256": "D31DDD20458FE24F6C90974618A691D465EC34727B01C0EE6752A71466DD117C",
+      "invocationExpressions": [
+        "LogHelper.Info",
+        "PropertyManager.UnRegister"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "PropertyManager.UpdateDisplayStatus",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnUpdateExcuteType"
+        },
+        {
+          "eventExpression": "VmSolution.OnReportModuleData",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "VmSolution_OnReportModuleData"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 380,
+      "endLine": 387,
+      "member": "OnUpdateExcuteType",
+      "syntaxSha256": "8F614A548A39C0D21E78B311AC72B316C3DEE6CF5960D0DB5065780E879DC0D9",
+      "invocationExpressions": [
+        "GetHashCode",
+        "GetHashCode().ToString",
+        "UpdateExcuteType"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 389,
+      "endLine": 396,
+      "member": "UpdateExcuteType",
+      "syntaxSha256": "CF2DE420DF9AA1E578E3B514967C3B354C0DB0E4F0657E7305FBE09E4987A234",
+      "invocationExpressions": [
+        "GetModuleSelectMode"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 398,
+      "endLine": 401,
+      "member": "OnExcuteTypeParamChanged",
+      "syntaxSha256": "E49FB20051ABA7F93D43AC4822CB9FA89215A5D2EB456E95E88B9BF141C76089",
+      "invocationExpressions": [
+        "GetHashCode",
+        "GetHashCode().ToString",
+        "PropertyManager.DisplayExecute"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 403,
+      "endLine": 410,
+      "member": "OnSubscribeFolderModeChanged",
+      "syntaxSha256": "F145D2E28F272D0C0E73A116C9C3E2ACED0955A9304136336B30ADD6D04DFFA9",
+      "invocationExpressions": [
+        "UpdateExcuteType"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 417,
+      "endLine": 427,
+      "member": "VmSolution_OnReportModuleData",
+      "syntaxSha256": "7B5DC0C73C1ABA96ACF29043368A29BAF196E5BC4E85AB41429A8EBA36F5CA34",
+      "invocationExpressions": [
+        "GetVMModule"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 429,
+      "endLine": 437,
+      "member": "IsTimeRefreshView",
+      "syntaxSha256": "640EADA4AD4638954C39A767977C9418EA509373E86DB285A12B36980289C0DF",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 439,
+      "endLine": 493,
+      "member": "RefreshImageList",
+      "syntaxSha256": "2044E2BC84181B855747D9E5B8D5CB1407802E035FD947B1A3A42EC4C19702B2",
+      "invocationExpressions": [
+        "AddImageToList",
+        "Convert.ToInt32",
+        "Dispatcher.BeginInvoke",
+        "GetModuleSel",
+        "GetModuleSelectMode",
+        "GetVMModule",
+        "ImageList.Clear",
+        "ImageList.FirstOrDefault",
+        "ImageList.Remove",
+        "list.Add",
+        "list.Contains",
+        "list.Count",
+        "list.Remove",
+        "LogHelper.Error",
+        "string.IsNullOrEmpty",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 498,
+      "endLine": 553,
+      "member": "GetModuleSel",
+      "syntaxSha256": "048EAF55E2CE0C33463BE136281B6CF9B07C33BBF6FE5D21DC0F8EF6DDCD320A",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".GetValue",
+        ".ScrollToHorizontalOffset",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.IndexOf",
+        "LogHelper.Error",
+        "Math.Floor",
+        "text.ToString"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 555,
+      "endLine": 561,
+      "member": "NotifyPropertyChanged",
+      "syntaxSha256": "AB9A577B305DDF9D8CA3F2CB379AE762659A0001E07D1FCC739227917B02BE76",
+      "invocationExpressions": [
+        "PropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 568,
+      "endLine": 609,
+      "member": "BtnDelete_Click",
+      "syntaxSha256": "8DEF13C470E2F8570293854A384923B4F66637098694826C47648F5D9A9FA416",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AppLocalizationService.GetLang",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.IndexOf",
+        "ImageList.Remove",
+        "Ioc.Get<IUnRedoService>",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 616,
+      "endLine": 628,
+      "member": "Grid_MouseEnter",
+      "syntaxSha256": "E5ED902C186787F178BFD744A810DAAB06DE19558D29B5C4422A56203DC6D2EE",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 635,
+      "endLine": 641,
+      "member": "Grid_MouseLeave",
+      "syntaxSha256": "00ACD321A089A49397F6743F39337D2AFAF19BE3E939340F8B4149765CA9A179",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 647,
+      "endLine": 660,
+      "member": "GetVMModule",
+      "syntaxSha256": "55DF40D49CF31D062AC84184CBA56B166078468F7D2F355F368903C8DF3E8882",
+      "invocationExpressions": [
+        "GetRoot"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 662,
+      "endLine": 675,
+      "member": "GetRoot",
+      "syntaxSha256": "18F03C374A01575AE18122E05ECBF589EAE005FA8B4CECAC325F9BF02C94A302",
+      "invocationExpressions": [
+        "buttonSelecter_ImageList.GetTopBaseNode",
+        "Dispatcher.Invoke"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 682,
+      "endLine": 712,
+      "member": "BtnImageClear_Click",
+      "syntaxSha256": "B8E51124DAC74BEBCBC07865F5CE89A55E060886555513A4E8B4D47774F6264D",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AppLocalizationService.GetLang",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Clear",
+        "Ioc.Get<IUnRedoService>",
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 719,
+      "endLine": 748,
+      "member": "BtnImageAdd_Click",
+      "syntaxSha256": "4D8AADFC36C525EA5A03776922704F7B2F56634851E096424264576D06E3E985",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "AppLocalizationService.GetLang",
+        "Apps.UIHelper.Extern.UIHelper.CheckInitDirectory",
+        "ConfigurationHelper.INIGetDefaultOpenPath",
+        "ConfigurationHelper.INISetDefaultOpenPath",
+        "DoAddImages",
+        "File.Exists",
+        "GetRoot",
+        "GetVMModule",
+        "openFileDialog.ShowDialog",
+        "Path.GetDirectoryName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 750,
+      "endLine": 768,
+      "member": "LocalImage_Click",
+      "syntaxSha256": "C77A9CDE4948E4491C93CFDF492BAF3C51F8DDA27D38E55CE5BAE9D25D62E286",
+      "invocationExpressions": [
+        "AppLocalizationService.GetLang",
+        "Apps.UIHelper.Extern.UIHelper.CheckInitDirectory",
+        "ConfigurationHelper.INIGetDefaultOpenPath",
+        "ConfigurationHelper.INISetDefaultOpenPath",
+        "DoAddImages",
+        "File.Exists",
+        "GetVMModule",
+        "openFileDialog.ShowDialog",
+        "Path.GetDirectoryName"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 770,
+      "endLine": 784,
+      "member": "LinuxImage_Click",
+      "syntaxSha256": "A07C0E2BEB25717FDFB184E6124FE39A40946D59DF9DCF772FC9A91E715DBE7A",
+      "invocationExpressions": [
+        "AppLocalizationService.GetLang",
+        "ConfigurationHelper.INIGetDefaultOpenRemotePath",
+        "ConfigurationHelper.INISetDefaultOpenRemotePath",
+        "DoAddImages",
+        "GetVMModule",
+        "openFileDialog.GetDirectoryName",
+        "openFileDialog.ShowDialog"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 786,
+      "endLine": 818,
+      "member": "DoAddImages",
+      "syntaxSha256": "9A640A4B134A3656CC27448CA2D2457320EEFB4AA725935B578F1122FD3CDB05",
+      "invocationExpressions": [
+        ".Register",
+        ".RemoveEmptyOperation",
+        "AddImage",
+        "AddImageLocal",
+        "AppLocalizationService.GetLang",
+        "GetVMModule",
+        "Ioc.Get<IUnRedoService>",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 820,
+      "endLine": 844,
+      "member": "AddImage",
+      "syntaxSha256": "68B1B9C5FF43316D29175A6FC50EB48C86BF0E44379F61559918AF0723D2DBBA",
+      "invocationExpressions": [
+        "AddImageToLinux",
+        "AddImageToList",
+        "AddImageToServer",
+        "AppLocalizationService.GetLang",
+        "HikMessageBox.Show"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 846,
+      "endLine": 874,
+      "member": "AddImageLocal",
+      "syntaxSha256": "A20A92850D6ADD2365318C0CC54A9CF8D0C7A098B538F26E51E663EE799A7950",
+      "invocationExpressions": [
+        "AddImageToList",
+        "AddImageToServer",
+        "AppLocalizationService.GetLang",
+        "ErrorCodeInfo.GetErrorInfo",
+        "HikMessageBox.Show"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 876,
+      "endLine": 897,
+      "member": "AddImageToLinux",
+      "syntaxSha256": "F251775225F1ACF63E2B26D6D361415FAEC4114AD651CFE9A9291DF1458E2A50",
+      "invocationExpressions": [
+        "AddImageToList",
+        "AddImageToServer",
+        "fileName.GetHashCode",
+        "fileName.GetHashCode().ToString",
+        "Path.GetDirectoryName",
+        "Path.GetDirectoryName(fileName).EndsWith",
+        "Path.GetExtension",
+        "Path.GetFileName",
+        "Path.GetFileNameWithoutExtension",
+        "ServerSDKAPI.FtpCheckFileName",
+        "ServerSDKAPI.FtpCreatDir",
+        "ServerSDKAPI.FtpUploadFile"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 899,
+      "endLine": 906,
+      "member": "AddImageToServer",
+      "syntaxSha256": "4D163EA04137E04BAACAFAF8B84B81878786CDAE2EC668C48ECC1CFEB949C62B",
+      "invocationExpressions": [
+        "GetVMModule",
+        "ImageList.FirstOrDefault"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 913,
+      "endLine": 923,
+      "member": "GetImageEntitybyPath",
+      "syntaxSha256": "C52129C985E21F638FD54626DEFE5CFE5D9B31D9EDE132D0B840700F242E1F72",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 930,
+      "endLine": 994,
+      "member": "AddImageByDir",
+      "syntaxSha256": "366617D3EC4806FAE8F86CBE2ADB17A40393276C7F5E74F593EB1D5A96645F28",
+      "invocationExpressions": [
+        ".Register",
+        "(from x in Directory.GetFileSystemEntries(dir)\r\n\t\t\t\torderby x.Length, x\r\n\t\t\t\tselect x).ToArray",
+        "AddImage",
+        "AddImageByDir",
+        "AddImageLocal",
+        "AppLocalizationService.GetLang",
+        "Directory.Exists",
+        "Directory.GetFileSystemEntries",
+        "File.Exists",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "Ioc.Get<IUnRedoService>",
+        "LogHelper.Error",
+        "Path.GetExtension",
+        "Path.GetExtension(text).ToUpper"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1000,
+      "endLine": 1014,
+      "member": "AddImageToList",
+      "syntaxSha256": "5B3DF5B3980EA626915EE5BDF19D1FEBBE63D9A63AD7496EA48C101048F90DE9",
+      "invocationExpressions": [
+        "ImageList.Add",
+        "ImageList.FirstOrDefault",
+        "string.IsNullOrEmpty"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1021,
+      "endLine": 1054,
+      "member": "BtnImageAddFolder_Click",
+      "syntaxSha256": "B1A2A4519FA0191F6135E791059E5399CFB47C7C8663654044A45BAA44BAD3B3",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "GetRoot",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1056,
+      "endLine": 1085,
+      "member": "LocalImageFolder_Click",
+      "syntaxSha256": "44A4596D23AF37FAF0C8E3EAFC5FB5E03E2FA575E7FD438D9BED31FC37E7C793",
+      "invocationExpressions": [
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1092,
+      "endLine": 1108,
+      "member": "GetFiles",
+      "syntaxSha256": "498E6AF6B3439F36AAFD41B4F008EF18A9BAD8E4B7169DAAA9AFABC1BCEFA720",
+      "invocationExpressions": [
+        "Encoding.UTF8.GetString",
+        "ServerSDKAPI.FtpRemoteList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1110,
+      "endLine": 1196,
+      "member": "LinuxImageFolder_Click",
+      "syntaxSha256": "C9B10399E634279BF5E49E0CD4F962F5D5E500677266B3FB42083A6EF48540B6",
+      "invocationExpressions": [
+        ".Register",
+        "AddImage",
+        "AppLocalizationService.GetLang",
+        "Encoding.UTF8.GetString",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileName).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FilePermission).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileTime).TrimEnd",
+        "Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO2.FileName).TrimEnd",
+        "folderBrowserDialog.FilePath.Trim",
+        "folderBrowserDialog.ShowDialog",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "Ioc.Get<IUnRedoService>",
+        "item2.Split",
+        "item2.Split('.').LastOrDefault",
+        "item2.Split('.').LastOrDefault().ToUpper",
+        "list.Add",
+        "LogHelper.Error",
+        "Marshal.FreeHGlobal",
+        "Marshal.PtrToStructure",
+        "Marshal.SizeOf",
+        "ServerSDKAPI.FtpRemoteFileList",
+        "text.Remove",
+        "text.Substring",
+        "text5.StartsWith",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1201,
+      "endLine": 1210,
+      "member": "DoEvents",
+      "syntaxSha256": "C85A0AC2AB963A2F12DC1E722B69E028B49E6DB5C5B800E8F8ED4789E4C0F4D6",
+      "invocationExpressions": [
+        "Dispatcher.CurrentDispatcher.BeginInvoke",
+        "Dispatcher.PushFrame"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1218,
+      "endLine": 1222,
+      "member": "IsChildVisibleInParent",
+      "syntaxSha256": "89D5399E1D9D704C9342CF3FBE06DB0506FCE2E5C09274C31B8600383772361D",
+      "invocationExpressions": [
+        ".TransformBounds",
+        "child.TransformToAncestor",
+        "new Rect(new Point(0.0, 0.0), parent.RenderSize).IntersectsWith"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1229,
+      "endLine": 1240,
+      "member": "InterfaceUpdateImageList",
+      "syntaxSha256": "A52D27B415F0FF8D40D775199B333E76D6183084D5A7E15108907CF32ADA6577",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "Convert.ToBoolean",
+        "Dispatcher.Invoke",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Clear",
+        "RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1245,
+      "endLine": 1273,
+      "member": "UpdateImageListSource",
+      "syntaxSha256": "02A11F5FABAA099741DA2270EA7E3E6778124019462521D80BF643498F11B6AC",
+      "invocationExpressions": [
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling",
+        "NotifyPropertyChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1275,
+      "endLine": 1307,
+      "member": "LoadThumbnailImage",
+      "syntaxSha256": "A9CF2030A3DA77F02F182DC1805A4914D361F74CF5119849E151B9BD66EC6669",
+      "invocationExpressions": [
+        ".ToLower",
+        "ImageData.GetImageDataFrom3DFile",
+        "ImageData.GetImageDataFromFile",
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling",
+        "Path.GetExtension"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1314,
+      "endLine": 1360,
+      "member": "lst_SelectionChanged",
+      "syntaxSha256": "3EBB6C55CE40C2AFF6409E3BBF082E3F1B02AAC01ADFD2693DB1256F392A8FAC",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetModuleSel",
+        "GetRoot",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "ImageList.ToList",
+        "ImageList.Where",
+        "ImageList.Where((ImageEntity p) => p.IsCheck).ToList",
+        "list.IndexOf",
+        "vmProcedure.Run",
+        "vmProcedure.RunCheck"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1362,
+      "endLine": 1375,
+      "member": "OnPreduceResultCallBackArrived",
+      "syntaxSha256": "A1CA8D54990B70872009999830E1098560E3B630D0643015EE8576AF83953E61",
+      "invocationExpressions": [
+        "DoRefreshLocalImage",
+        "Task.Run"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1377,
+      "endLine": 1401,
+      "member": "DoRefreshLocalImage",
+      "syntaxSha256": "17589E90B7F3140530FE572C1E76FB986297FD6C28AA9019F853E7C1FBDE68E5",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".GetValue",
+        "GetRoot",
+        "GetVMModule",
+        "LogHelper.Error",
+        "RefreshImageList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1403,
+      "endLine": 1455,
+      "member": "lst_ScrollChanged",
+      "syntaxSha256": "64E42F17F41E82E30AD22DD375C5665E746B0EDF38F5FF6D31F8A3E23297EBD5",
+      "invocationExpressions": [
+        "Apps.UIHelper.Extern.UIHelper.GetChild<ScrollViewer>",
+        "LogHelper.Error",
+        "LogHelper.Info",
+        "Math.Ceiling"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1457,
+      "endLine": 1475,
+      "member": "JudgeDrage",
+      "syntaxSha256": "098D4D2F4C72B2E844D5A29D9B9FEB231DC3B46EC5D3135F0437457D7644D256",
+      "invocationExpressions": [
+        ".GetData",
+        "File.Exists",
+        "item.ToString",
+        "Path.GetExtension",
+        "Path.GetExtension(path).ToLower"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1477,
+      "endLine": 1480,
+      "member": "lst_DragEnter",
+      "syntaxSha256": "6D133A5AD6A6907BA2C00FD694929423E33D0CA759EB422E5C7AAD9F93830F7D",
+      "invocationExpressions": [
+        "JudgeDrage"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1482,
+      "endLine": 1485,
+      "member": "lst_DragOver",
+      "syntaxSha256": "AC2E992307181571084A943A0549081C83F88A8C3F938CA359833DEB9AE16093",
+      "invocationExpressions": [
+        "JudgeDrage"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1487,
+      "endLine": 1500,
+      "member": "lst_Drop",
+      "syntaxSha256": "9F8BE70F12E6A041696D55DDD0FDCA56271B658B6244A48E249FD282EF3998F1",
+      "invocationExpressions": [
+        ".GetData",
+        "DoAddImages",
+        "item.ToString",
+        "list.Add",
+        "list.ToArray"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1502,
+      "endLine": 1548,
+      "member": "ImagePanel_DataContextChanged",
+      "syntaxSha256": "48DF2EF996404E6943FC0BF7DDC10693A8B994FBB2D6263B604511EAA0F05D33",
+      "invocationExpressions": [
+        ".GetTopBaseNode",
+        "buttonSelecter_ImageList2.GetTopBaseNode",
+        "ChangeShadowDataSource",
+        "ImageList.Clear",
+        "NotifyPropertyChanged",
+        "RefreshImageList",
+        "WeakEventManager<IImageSourceNode, EventArgs>.AddHandler",
+        "WeakEventManager<IImageSourceNode, EventArgs>.RemoveHandler",
+        "WeakEventManager<IVmProcedure, EventArgs>.AddHandler",
+        "WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler"
+      ],
+      "eventSubscriptions": [
+        {
+          "eventExpression": "nameValueItem.OnCurValueChanged",
+          "operation": "-=",
+          "handlerKind": "IdentifierNameSyntax",
+          "handler": "OnSubscribeFolderModeChanged"
+        }
+      ],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1550,
+      "endLine": 1552,
+      "member": "ChangeShadowDataSource",
+      "syntaxSha256": "1BACDE4F5710CB75F911FDE5E287DFA2D1A4411379A307692346420C6EF5954A",
+      "invocationExpressions": [],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1554,
+      "endLine": 1560,
+      "member": "CheckBox_Click",
+      "syntaxSha256": "8B939191E57B1D1D21B83F15FFF1F3E4AA876FECC4ADC662B68B325A80BA1DD7",
+      "invocationExpressions": [
+        "ChangedExecutePic"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1562,
+      "endLine": 1605,
+      "member": "Grid_MouseDown",
+      "syntaxSha256": "59AC545F3B02FEBDEBE2A739D11D34E73EA63A5DD4DD0F7298A671927E099FC4",
+      "invocationExpressions": [
+        "ChangedExecutePic",
+        "ImageList.IndexOf",
+        "Keyboard.IsKeyDown",
+        "Math.Max",
+        "Math.Min"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1611,
+      "endLine": 1635,
+      "member": "ChangedExecutePic",
+      "syntaxSha256": "302412BE86C1AAEC33636ACA86820A7D6789678A0B6898808D93E3316677BF74",
+      "invocationExpressions": [
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "LogHelper.Error",
+        "OnExcuteTypeParamChanged"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1640,
+      "endLine": 1679,
+      "member": "GetModuleSelectMode",
+      "syntaxSha256": "A0550D5BE4F3D74E6ACB349B3A98A40D37DC7384FF0A9A3B727111DE870A1031",
+      "invocationExpressions": [
+        ".Split",
+        "array.Contains",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "LogHelper.Error"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1681,
+      "endLine": 1738,
+      "member": "FirstImage_Click",
+      "syntaxSha256": "7236A36C4775494526104BCCB63AC2D1D14592D6109F714AB54827F6F145EF6E",
+      "invocationExpressions": [
+        ".FindBaseNodeByName",
+        ".ScrollToLeftEnd",
+        "Dispatcher.BeginInvoke",
+        "GetRoot",
+        "GetVMModule",
+        "ImageList.Where",
+        "ImageList.Where((ImageEntity p) => p.IsCheck).ToList"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1740,
+      "endLine": 1761,
+      "member": "MenuItem_Click",
+      "syntaxSha256": "3FAE0900DDB54E6C42CEBC3A4109B9395F84FCDDF27516EA2BECF103760621E9",
+      "invocationExpressions": [
+        "Directory.Exists",
+        "ILCreateFromPathW",
+        "ILFree",
+        "Marshal.ThrowExceptionForHR",
+        "Process.Start",
+        "SHOpenFolderAndSelectItems"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    },
+    {
+      "file": "VMControls.WPF/ImageListPanelBase.cs",
+      "type": "ImageListPanelBase",
+      "kind": "MethodDeclarationSyntax",
+      "line": 1768,
+      "endLine": 1811,
+      "member": "BtnImageAddRpFolder_Click",
+      "syntaxSha256": "7DA2231C32D59496B494B4FD3D373475B2ACF28AA5FA9A1AF36BE21234DBFB76",
+      "invocationExpressions": [
+        "((CommonFileDialog)val).Dispose",
+        "((CommonFileDialog)val).FileName.Trim",
+        "((CommonFileDialog)val).ShowDialog",
+        "AddImageByDir",
+        "AppLocalizationService.GetLang",
+        "Directory.Exists",
+        "ErrorCodeInfo.GetErrorInfo",
+        "GetVMModule",
+        "HikMessageBox.Show",
+        "UpdateImageListSource"
+      ],
+      "eventSubscriptions": [],
+      "review": "unreviewed"
+    }
+  ],
+  "productXamlSha256": "7D3A51FC5E7D7EF01BDCE8D343FAE4095D846F912FF47F0AAE4FC2D402E9207B",
+  "namedElementObligations": [
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "Control",
+      "originalName": "UserControl",
+      "candidateName": "ImagePanel",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "Grid",
+      "originalName": "MainGrid",
+      "candidateName": "MainGrid",
+      "candidateNamePresent": false,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "ComboBox",
+      "originalName": "cbx",
+      "candidateName": "Mode",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "ImageListPanel",
+      "originalName": "list",
+      "candidateName": "lst",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ImageListPanelBase",
+      "originalName": "ImagePanel",
+      "candidateName": "ImagePanel",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Back",
+      "candidateName": "Back",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Rectangle",
+      "originalName": "rect",
+      "candidateName": "rect",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "Bg",
+      "candidateName": "Bg",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Track",
+      "originalName": "PART_Track",
+      "candidateName": "PART_Track",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Bd",
+      "candidateName": "Bd",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "Grid",
+      "candidateName": "Grid",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Rectangle",
+      "originalName": "Corner",
+      "candidateName": "Corner",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollContentPresenter",
+      "originalName": "PART_ScrollContentPresenter",
+      "candidateName": "PART_ScrollContentPresenter",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollBar",
+      "originalName": "PART_VerticalScrollBar",
+      "candidateName": "PART_VerticalScrollBar",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollBar",
+      "originalName": "PART_HorizontalScrollBar",
+      "candidateName": "PART_HorizontalScrollBar",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "imageListGrid",
+      "candidateName": "imageListGrid",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "bd",
+      "candidateName": "bd",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ListBox",
+      "originalName": "lst",
+      "candidateName": "lst",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnDelete",
+      "candidateName": "BtnDelete",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Border",
+      "candidateName": "Border",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAdd",
+      "candidateName": "BtnImageAdd",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Popup",
+      "originalName": "Pop1",
+      "candidateName": "Pop1",
+      "candidateNamePresent": false,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAddFolder",
+      "candidateName": "BtnImageAddFolder",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Popup",
+      "originalName": "Pop2",
+      "candidateName": "Pop2",
+      "candidateNamePresent": false,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAddRpFolder",
+      "candidateName": "BtnImageAddRpFolder",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageClear",
+      "candidateName": "BtnImageClear",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "candidateName": "ImageBackground",
+      "candidateNamePresent": true,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "windowShadow",
+      "candidateName": "windowShadow",
+      "candidateNamePresent": false,
+      "decision": "unreviewed",
+      "note": "Name presence alone does not prove type, behavior or completion."
+    }
+  ],
+  "residual": "Every event, method, binding, resource, ancestor/runtime edge and alias requires explicit evidence review; no completion inferred."
+}

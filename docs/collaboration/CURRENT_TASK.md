@@ -1,3 +1,21 @@
+## 2026-10-30 用户要求重新审视迁移方式：完整组件核收优先
+
+用户明确否定依赖其手测逐点补齐的方式，要求能判断完整性。当前停止发现一点补一点的产品修改；用户人工测试定位为最终验收，不是主要原件恢复方法。此前原版A—F操作表保留为可选辅助证据，不作为继续向用户索取碎片行为的主要路径。AGENTS.md已追加完整组件覆盖台账及实施者先完成生产验证的长期约束，并向逆向负责人集中要求整个S1闭包，而非继续提供孤立调用点。
+
+已建立可重复的第一层原件清单：scripts/verification/New-ImageSourceMigrationInventory.ps1，读取同版LocalImageListView.xaml/.cs、ImageListPanel.xaml/.cs和ImageListPanelBase.cs，记录SHA、XAML命名元素、事件候选、绑定、资源引用和源码方法候选。产物docs/collaboration/evidence/S1_SOURCE_COMPONENT_INVENTORY_20261030.json覆盖5文件、68方法候选、33命名元素义务；当前候选名称未对应为MainGrid、Pop1、Pop2、windowShadow。它们不是自动判失败：MainGrid可能是组合改名，Pop1/2涉及原件来源弹层和已确认部署边界，windowShadow为已证遗漏，均须逐项证据/理由审核。名称存在也不代表类型或行为相符。
+
+该工具明确只做静态清点，不声称完成IL/BAML真实性、递归资源闭包、完整动态调用图或行为核验。后续同一批核收必须补全：原件依赖身份与递归资源、父级/继承事件及外部SDK边界、运行遮罩、程序恢复/导入/键盘导航/AutoPlay变更/完成回写与释放时序；每项只可标原件保留、必要非视觉适配、缺基础占位或未完成，不能据348自动测试推定完整。
+
+封版证据须按完整宿主入口及异步时序组织，与原件结论逐项对应，人工验收最后进行。关键未知不得以自拟策略或用户反复测试掩盖；如真实原件观察受权限/环境阻断，集中一次列最小条件及影响，不扩大成无限环境工程。当前S1尚未完成，Group及S2—S4保持原边界，当前49b33e70运行产物不变。
+## 2026-10-30 S1方向键通过，快速切图回跳为新增阻断项
+
+用户确认“可以切换了”，据此记录49b33e70方向键基本切换人工通过；同时明确快速切到6后较早2的运行完成会回到2，本项未通过，不扩大为S1通过。
+
+已有原件证据：ImageListPanelBase.cs 1314—1360，选中变化写CurrentImagePath，再经RunCheck和VmProcedure.Run(null,bIsWait:false)；Apps.XmlParser.ParamTab.VmModuleExtern.RunCheck只检查IsReady，不是已证明的忙碌去重；VM.Core/VmProcedure.cs 1130起调用ProcessManager.SyncExecuteOnce；VM.PlatformSDKCS.Audit/ProcessManager.cs 277起调用IMVS_ExecuteOnce_V30，只有bIsWait=true才PrecisionWait。完成回调OnPreduceResultCallBackArrived→DoRefreshLocalImage读取CurImagePath.Value；索引刷新用needSelectionTrigger=false/true抑制再次运行。上述为静态源码证据，不证明native忙碌时的排队/合并/拒绝策略，也不能认定无最后意图保护。
+
+本方已知缺口：ImageResultControl.RunWorkflowWithImage在main.IsRunning时直接返回，不接纳或记录新的选择意图；控件请求结束刷新仍按正式DisplayIndex恢复。WorkflowExecutionManager.LocalImages完成回执按旧的EditVersion调用TryPresentRuntimeCursor；若运行期间选择未被接纳而未推进版本，原游标仍可覆盖列表。现有编辑版本保护不能代替独立用户导航意图身份。不得先猜latest-only或以延时/防抖掩盖。
+
+已按用户既有授权给“逆向负责人｜VM取证统筹”发送精确补证：IMVS_ExecuteOnce_V30忙碌处理、选择快于处理的真实轨迹、完成刷新与较新意图区分。先复用源码及既有证据，必要时最小慢处理实机；不扩全调度重构、不动Group、不以请求已发代表证据已取得。当前运行版本保持不变，待机制清楚后整批设计选择意图/执行快照/完成显示及异常取消关闭链，并补真实慢运行快速输入回归。
 ## 2026-10-30 S1真实运行后方向键焦点链修正（待人工复验）
 
 用户对82a51c1b再次明确反馈“不能切换”。此前独立条目回归没有覆盖正式工作流执行，不能证明生产链。新增真实ImageResultControl宿主回归在旧产物触发图像源正式运行，确认门禁禁用整个ImagePreviewContent，并以“真实工作流结束后焦点离开图像源条”断言失败，红色单例证据保留于Release/_validation/source-key-production-diagnostic.log及对应attempt-011。
@@ -3572,3 +3590,27 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 2026-10-30：原主方案补齐0cdfc3e3对应S1逐项证据矩阵；特别保留键盘默认行为精确对应、目录定位、视觉/DPI、真实VS设计器和用户验收未证实项。仅文档核收，不改运行产物。
 
 S1源码核收新增明确差异：原件选择变化入口与本方无条件Activate/Enter/Delete；原件当前选择项+Shell定位与本方右键项+Explorer。已在原方案集中记录完整修正边界，验收程序仍冻结，尚未实施，不称一致。
+
+快速切图：原主方案已集中盘点输入—忙碌接纳—正式快照—完成回写—释放切换五条边界和整批时序验收矩阵；等待VM完整证据确定策略，不新增队列/导航合同或改运行产物。用户“完整证据、不要挤牙膏”的七项要求已一次发送负责人。
+
+完整专项回件已核：50/100ms为回写节流；原生忙态仍有未证特殊分支，未实测。自动SDK有原安装COM/脚本副作用，现改优先索取一次完整的原UI人工验证表，复用用户此前自行操作授权，不改注册或脚本，不先实现latest-only。
+
+### 快速切图一次性原版UI验证交付
+
+已接收并完整核对 `D:/MyWork/REA逆向测试/docs/joint-audit/图像源快速切换-原版VM人工验证表-20261030.md`，已向用户一次给出A—F整组操作，不逐次追加测试要求。A—D为运行全部/运行选中×自动关/开，均在明确尚未完成时2→3→6；选中模式先勾三项。E运行中停止，F运行中切换现有源或流程。每组记录执行次数起止、最终选中/输出、回跳/提示，选择6且未完成和最终稳定为关键记录点。使用用户已启动原版VM、自行保存并另存临时方案，不运行SDK、不改全局脚本或COM注册。
+
+当前接纳边界：原版UI记录能够确认可见行为并用于同态验收，但不能替代原生返回码/每请求身份和内部队列证明；原生已有静态部分证据与此后实测分别保留。用户尚未提供A—F结果，不能推定VM保证最后选择优先，也不把已经发送验证表记作取证完成。本方继续保持49b33e70产物，暂不新增调度/防抖代码，S1不封版。
+
+### 用户复现入口纠正及外层保护补查
+
+用户再次明确：点击执行按钮正常，回弹由键盘左右方向键快速切换触发，不是点击执行按钮；“VM可能有蒙版”仅为用户观察猜测，未确证。另新增两个实际失败：添加文件/文件夹似乎自动执行一次；切自动切换开关清空ImageViewBox。三项须在同一生产链区分配置变更/程序性选择/用户导航/运行结果，暂未修复，不得将导入请求的局部无_activate当作无自动执行的生产证据。
+
+外层原件只读核对：ModuleResultView.xaml.cs的btnLeft_Click/btnRight_Click先RunCheck再显式检查vmProcedure.IsRunning，busy提示Lang_PlzLoopStop后返回；与缩略图SelectedIndex→lst_SelectionChanged路径不同。主窗MainWindow和主工作区MainViewControl确有ProgressMask，但已追到的VmMainViewConfigControl/VmProcedureConfigControl开启事件属于方案加载和通用保存/导入导出；不能将其命名或存在直接当快速切图蒙版。MainWindow当前已恢复PreviewKeyDown体为空，也不能由此否定其他宿主或WPF路径。已把具体位置与限定交负责人集中补核，不改产品状态策略。
+
+本方共同接缝：BindLocalImageSourceEditor无差别InvalidatePublishedResults会退休并清空旧结果；导入AddImages(selectFirstAdded:true)产生正式选择通知，真实宿主/焦点选择反馈仍需核对；快速键盘请求在IsRunning早退未保留新意图。这些属于待集中设计和复现的差异，不以猜测开关行为或添加遮罩代替取证。
+
+### S1清点基数升级：语法树成员清单
+
+原正则方法候选仅适合作线索，现改用宿主Roslyn语法树解析五个核心原件文件，源语法诊断必须无错误。已枚举143个声明：3构造、3事件字段、44字段、71方法、22属性；记录类型上下文、起止行、声明语法SHA、调用表达式和事件订阅/解除。XAML共22事件绑定、40绑定表达式、76资源引用；已消除正则将TargetName=rect误判成事件的假阳性。首次加载SDK Roslyn与PowerShell已有程序集冲突，已改用宿主已有Roslyn，不更改安装工具链。
+
+产物仍为S1_SOURCE_COMPONENT_INVENTORY_20261030.json（schemaVersion=2），每项review默认unreviewed，不能拿143或71作为已迁完。下一核收单位为完整行为链，必须对每项有实现映射和证据；递归资源/语义依赖及运行行为未因语法清点而自动完成。当前没有产品代码修改或新运行产物。

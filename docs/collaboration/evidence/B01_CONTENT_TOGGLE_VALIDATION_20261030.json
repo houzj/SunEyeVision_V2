@@ -1,0 +1,109 @@
+{
+  "unit": "B01 PCUI内容开关完整基础原件",
+  "status": "中立原件及dark资源、13项组件检查和同版回归通过；工作流接入、VS和人工待验",
+  "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+  "WpfSha256": "A816F60EB36BBA843467E04F4324E749A233679F171E969B0F2C78ADEC7F6062",
+  "builds": {
+    "ui": {
+      "warnings": 6524,
+      "log": "Release/_validation/ImageSourceIntegration-20261029/b01-content-toggle-ui-build.log",
+      "errors": 0
+    },
+    "full": {
+      "warnings": 6526,
+      "log": "Release/_validation/ImageSourceIntegration-20261029/b01-content-toggle-full-build.log",
+      "errors": 0
+    }
+  },
+  "design": {
+    "receipt": {
+      "stage": "S4",
+      "attempt": 138,
+      "pid": 68440,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4DesignTimeCases.cs",
+      "caseSourceSha256": "3B05B37D835646CC35A35AE7073E028170BAB716E0FC278337B69708A094A45A",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-138"
+    },
+    "oldChecks": 306,
+    "checks": 319,
+    "newComponentChecks": 13
+  },
+  "fieldEditing": {
+    "checks": 34,
+    "receipt": {
+      "stage": "S4",
+      "attempt": 131,
+      "pid": 17692,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4FieldEditingCases.cs",
+      "caseSourceSha256": "3E6BFA5092D60FA84B18DED1150EB5B98C1DE2051766913D912DE5335B447586",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-131"
+    }
+  },
+  "runtimeEditorUiStage": {
+    "checks": 6,
+    "receipt": {
+      "stage": "S4",
+      "attempt": 16,
+      "pid": 39720,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4RuntimeEditorCases.cs",
+      "caseSourceSha256": "915720D69C2D56CBDADB2E011F739F31BB3BDCB2B9C2CB12CDB921C1FAA44214",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-016"
+    }
+  },
+  "resourceAudit": {
+    "passed": true,
+    "resources": [
+      {
+        "oldKey": "controls/native/input/vm.pcui/hikpcui.listview/booleancontrol.baml",
+        "key": "controls/inputs/contenttoggleswitch.baml",
+        "present": true,
+        "oldAbsent": true
+      },
+      {
+        "oldKey": "themes/assets/native/composition/apps.xmlui/resources/swith_off_dark.png",
+        "key": "themes/assets/inputs/switch/off-dark.png",
+        "present": true,
+        "oldAbsent": true
+      },
+      {
+        "oldKey": "themes/assets/native/composition/apps.xmlui/resources/swith_on_dark.png",
+        "key": "themes/assets/inputs/switch/on-dark.png",
+        "present": true,
+        "oldAbsent": true
+      }
+    ],
+    "WpfSha256": "A816F60EB36BBA843467E04F4324E749A233679F171E969B0F2C78ADEC7F6062",
+    "oldProductFilesAbsent": true,
+    "assetsUnchanged": true,
+    "limits": "资源/路径/原图标核验，不代替控件功能或VS人工"
+  },
+  "originalParity": "B01_CONTENT_TOGGLE_ORIGINAL_PARITY_20261030.json",
+  "render": {
+    "path": "Release/_validation/S4-20261025/DesignTime/attempt-137/content-toggle-dark.png",
+    "inspected": true,
+    "note": "实际WPF深色关/开两态；不是实际VS或人工签字"
+  },
+  "priorFailure": {
+    "rootCause": "未确定；同版增加插件加载边界日志后attempt138正常结束，未改产品或放宽超时",
+    "lastPass": "释放视图移除草稿和控件树",
+    "attempt": 137,
+    "preserved": true,
+    "kind": "90秒超时"
+  },
+  "notDone": [
+    "工作流消费者接入与其生产验收",
+    "实际VS设计器及用户人工验收",
+    "B08解绑回读与TRIGGER_STRING未证语义",
+    "Blob完整功能和S3"
+  ],
+  "fullFunctionalAcceptance": false
+}

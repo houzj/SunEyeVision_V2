@@ -47,14 +47,20 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public bool IsReadOnly => Session?.IsReadOnly ?? true;
     public bool IsSelectMode => Session?.IsSelectMode ?? false;
     public int ModeIndex => IsSelectMode ? 1 : 0;
-    public bool AutoSwitchEnabled => Session?.AutoSwitchEnabled ?? false;
+    // UI projection only. Formal configuration remains owned by the source session.
+    public static readonly DependencyProperty AutoSwitchEnabledProperty = DependencyProperty.Register(nameof(AutoSwitchEnabled),
+        typeof(bool), typeof(ImageSourceStrip), new PropertyMetadata(false));
+    public bool AutoSwitchEnabled { get => (bool)GetValue(AutoSwitchEnabledProperty); set => SetValue(AutoSwitchEnabledProperty, value); }
+    public string AutoSwitchText => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("RunParam_Auto Switch", "自动切换");
+    public string AutoSwitchToolTip => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Switch to next image every run", "每次执行后会自动切换至下一张图片");
     public bool IsImporting => Session?.IsImporting ?? false;
     public bool CanInteract => Session is not null && !IsReadOnly && !IsImporting;
     public bool IsFirstResetActive => _firstResetActive;
     public Visibility ExpandedVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
     public string? Status => _requestError ?? Session?.Status;
     private sealed record RunModeItem(string DisplayName, bool Value);
-    public ImageSourceStrip() { InitializeComponent(); Mode.ItemsSource = new[] { new RunModeItem("运行全部", false), new RunModeItem("运行选中", true) }; }
+    private string? _allModeText, _selectedModeText;
+    public ImageSourceStrip() { InitializeComponent(); Refresh(); }
     private static void SessionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var view = (ImageSourceStrip)d;
@@ -75,6 +81,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         if (_lifetime is not null) return;
         _lifetime = new CancellationTokenSource(); _attached = Session;
         if (_attached is not null) _attached.PropertyChanged += SessionPropertyChanged;
+        AutoSwitch.OnCheckedChange += AutoSwitchChanged;
         lst.LayoutUpdated += ViewportLayoutUpdated;
         lst.ItemContainerGenerator.StatusChanged += ViewportLayoutUpdated;
         lst.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ViewportScrolled));
@@ -91,6 +98,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         var errors = new List<Exception>();
         void Clean(Action action) { try { action(); } catch (Exception error) { errors.Add(error); } }
         if (attached is not null) Clean(() => attached.PropertyChanged -= SessionPropertyChanged);
+        Clean(() => AutoSwitch.OnCheckedChange -= AutoSwitchChanged);
         Clean(() => lst.LayoutUpdated -= ViewportLayoutUpdated);
         Clean(() => lst.ItemContainerGenerator.StatusChanged -= ViewportLayoutUpdated);
         Clean(() => lst.RemoveHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ViewportScrolled)));
@@ -121,8 +129,18 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         var wasRefreshing=_refreshing;_refreshing = true;
         try
         {
+            var all = SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("运行全部", "运行全部");
+            var selected = SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("运行选中", "运行选中");
+            if (_allModeText != all || _selectedModeText != selected || Mode.ItemsSource is null)
+            {
+                Mode.ItemsSource = new[] { new RunModeItem(all, false), new RunModeItem(selected, true) };
+                if (!Current()) return;
+                _allModeText = all; _selectedModeText = selected;
+            }
+            SetCurrentValue(AutoSwitchEnabledProperty, session?.AutoSwitchEnabled ?? false);
+            if (!Current()) return;
             foreach (var name in new[] { nameof(Items), nameof(DisplayIndex), nameof(DisplayNumber), nameof(ImageCount), nameof(IsReadOnly),
-                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(CanInteract), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
+                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(AutoSwitchText), nameof(AutoSwitchToolTip), nameof(IsImporting), nameof(CanInteract), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
             {
                 if(!Current())return;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -133,7 +151,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             if(!Current())return;
             Mode.SelectedIndex = ModeIndex;
             if(!Current())return;
-            AutoSwitch.IsChecked = AutoSwitchEnabled;
+            AutoSwitch.GetBindingExpression(SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch.IsCheckedProperty)?.UpdateTarget();
             if(!Current())return;
             string? displayedId = DisplayIndex >= 0 && DisplayIndex < Items.Count ? Items[DisplayIndex].Id : null;
             if (displayedId is not null && displayedId != _lastDisplayedId) lst.ScrollIntoView(Items[DisplayIndex]);
@@ -262,8 +280,13 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         if (DisplayIndex >= 0 && DisplayIndex < Items.Count)
             await Request(ImageSourceStripRequestKind.OpenDirectory, Items[DisplayIndex].Id);
     }
-    private async void AutoSwitchClick(object sender, RoutedEventArgs e)
-    { if (!_refreshing) await Request(ImageSourceStripRequestKind.SetAutoSwitch, flag: AutoSwitch.IsChecked == true); }
+    private async void AutoSwitchChanged(object sender, RoutedEventArgs e)
+    {
+        if (_refreshing || sender is not ToggleButton toggle) return;
+        // The original event precedes some outer TwoWay transfers; read the internal sender.
+        if (!CanInteract || !IsLoaded || !ReferenceEquals(Session, _attached)) { Refresh(); return; }
+        await Request(ImageSourceStripRequestKind.SetAutoSwitch, flag: toggle.IsChecked == true);
+    }
     private async void ModeChanged(object sender, SelectionChangedEventArgs e)
     { if (!_refreshing && IsLoaded && Mode.SelectedIndex is 0 or 1) await Request(ImageSourceStripRequestKind.SetMode, flag: Mode.SelectedIndex == 1); }
     private async void CancelImportClick(object sender, RoutedEventArgs e) => await Request(ImageSourceStripRequestKind.CancelImport);

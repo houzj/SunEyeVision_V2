@@ -21792,8 +21792,9 @@
         "http://schemas.openxmlformats.org/markup-compatibility/2006"
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\BooleanControl.xaml.cs",
-      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml",
-      "output_sha256": "3D5F622B74B144A26B518BE41D043069A620EE271F100A73CA6008E98EEDDBBB"
+      "output": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+      "output_sha256": "09F3ACC0D43FE730D2612B81F7B7158513452706A0C3D0F42A80071FCB439936",
+      "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch"
     },
     {
       "library": "VM.PcUI",
@@ -21804,7 +21805,7 @@
       "reasons": [],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ListView",
-      "namespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView",
+      "namespace": "SunEyeVision.Plugin.Wpf.Controls.Inputs",
       "types": [
         "HikPcUI.ListView.BooleanControl"
       ],
@@ -21812,8 +21813,9 @@
       "external_namespaces": [],
       "empty_void_method_sites": [],
       "paired_xaml": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\BooleanControl.xaml",
-      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
-      "output_sha256": "3DF2AC9357A16ABB6929D3981D5EE1A623439F55C8E31BABD15768D335D0BA33"
+      "output": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+      "output_sha256": "D4E4E02178190D26209ABCEBBA422F86AD9B5AD0B90931386753420E38FC51C6",
+      "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch"
     },
     {
       "library": "VM.PcUI",
@@ -37066,7 +37068,7 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.BooleanControl",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.BooleanControl",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
       "status": "transplanted_unbuilt"
     },
     {
@@ -40552,10 +40554,12 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.BooleanControl",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.BooleanControl",
+      "migrated": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
       "status": "transplanted_unbuilt",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\BooleanControl.xaml.cs",
-      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs"
+      "output": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+      "output_sha256": "D4E4E02178190D26209ABCEBBA422F86AD9B5AD0B90931386753420E38FC51C6",
+      "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch"
     },
     {
       "assembly": "VM.PcUI",

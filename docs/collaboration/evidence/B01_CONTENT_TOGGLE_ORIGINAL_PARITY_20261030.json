@@ -1,0 +1,7 @@
+{
+  "codeTokensEquivalent": true,
+  "templateEquivalentExceptClassAndUnusedNamespace": true,
+  "originalTypePreservedInCatalog": "HikPcUI.ListView.BooleanControl",
+  "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+  "scope": "静态原件差异核验，不代替运行或人工验收"
+}

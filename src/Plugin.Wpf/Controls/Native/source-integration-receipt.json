@@ -4401,12 +4401,12 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml",
+      "path": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
       "sha256": "6e8aba64471bc45309eccd304d0c47d32a40ef3f8016d1a8afa87d2be4ea72b7",
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
       "sha256": "86577eced34a329ef5fb6c2d91a6799fd194ef1bf20c917702b6d17d1d0dcb10",
       "pending": false
     },

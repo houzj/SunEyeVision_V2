@@ -1,0 +1,3209 @@
+{
+  "scope": "五文件143声明完整职责/适配/缺口处置表，内部声明不是独立开发任务；不把声明分类冒充原件运行等价或S1封版",
+  "sourceInventorySha256": "F967CE8A6212F582324376B18F72187234D097B91B068F650F9C252102C279D3",
+  "members": [
+    {
+      "id": "LocalImageListView.TempClass.displayName",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 27,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "398970AA26990CE97DC0AC31BD586B8A40B120E00EE9AB9025F1B8A817AD2413",
+      "decision": "immutable-mode-presentation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原setter本身不通知；当前RunModeItem表达模式值和显示名，原通知方法在已核五文件无消费。语言查询/重建另核，不为私有字段新造类型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.TempClass.val",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 29,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "D7AA0D3883AEAC18B21A82B3AA2FD7FEBE25B5739CB0754C4D6682EC56DB22D4",
+      "decision": "immutable-mode-presentation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原setter本身不通知；当前RunModeItem表达模式值和显示名，原通知方法在已核五文件无消费。语言查询/重建另核，不为私有字段新造类型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.TempClass.DisplayName",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 31,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "37388FB2CF53D5C617E6907F3BD8E26ACE9C88BB56BC9B95741FA3257B3B3880",
+      "decision": "immutable-localized-mode-presentation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "RunModeItem.DisplayName由现有语言查询赋值；非可变业务状态",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.TempClass.Value",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 43,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "F023BDF34417B437EBAEBFB757904A9BFA5A72B57F59F5049C563239F4C947AF",
+      "decision": "immutable-presentation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "RunModeItem.Value",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.TempClass.PropertyChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 55,
+      "kind": "EventFieldDeclarationSyntax",
+      "originalSyntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "decision": "immutable-mode-presentation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原setter本身不通知；当前RunModeItem表达模式值和显示名，原通知方法在已核五文件无消费。语言查询/重建另核，不为私有字段新造类型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.TempClass.OnPropertyChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 57,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "C140EFCB9FDF223D68BDD44D6388602C3C830C66FE999F2FACFCC4C1628E998C",
+      "decision": "immutable-mode-presentation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原setter本身不通知；当前RunModeItem表达模式值和显示名，原通知方法在已核五文件无消费。语言查询/重建另核，不为私有字段新造类型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.list",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 63,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "0DF880717FF279C645C9456B1DDFB4D41050A7D210E0F77D5F65C0D64A4C09DE",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.cbx",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 65,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "FCE041247802E4D70E521629074B10500740B04C6872AF20C58762F5B3DB2B26",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.OnSelectedItemChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 67,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "FF76DFEACC6426CE5A5EC61997EC0DE41394C0512ECEF6321393FF3280C8BE2A",
+      "decision": "bounded-unconsumed-declaration",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原本文件仅字段声明；不凭名称新增用户交互或保留旧API兼容。外部动态调用未证不作全域断言。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.IsExpandedProperty",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 69,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "B01071A75317690821D6715FF43923DA30C739FD2203D599CAA6CE965A92795C",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.IsSelectModeProperty",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 71,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "5D6403003FB30F4D41CF5CA841218028AA100903746D0E3DB9412EBC53A8AC4D",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.RootProperty",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 73,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "267DB17FEBF957AB80403A36C955297DA66FE9ED19CCF7482444FA42CE451F60",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.imageModes",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 75,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "A8FD5783614035CDDA053F16500043B00F59C087A97F63067C4AA4BF692C59CA",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView._AutoPlay",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 77,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "D789107045630A98FB12D5F17CF5F3EFE0C073FF4CE333F96818C51AC3DF6BE4",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView._Interval",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 79,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "832326960AF8946A71B7D80D41A32225F9178CA7ADB6DB194D58B22B8AEB2191",
+      "decision": "no-shared-visual-consumer",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原Interval代理没有共享XAML显示入口；不复制旧参数代理API，不增加不可见间隔设置。已记录属性及外部消费者边界。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView._CurrentImagePath",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 81,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "07EEBCD86EE476E313D596292DDDC503D1615C0158CD56E953A4EE9060220B1F",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.IsExpanded",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 83,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "C23282DE779DD020F6F4547DEEFE4002E9F9F5F1A9134AAFC5113C3CC01E9C1B",
+      "decision": "dependency-property-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "IsExpanded/ExpandedChanged/QueueViewport",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.IsSelectMode",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 95,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "7D3C9F12C4AB5C7DB23DB61B800C69D041BAEE1087789E34460A3F1833A87EB6",
+      "decision": "formal-session-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "IsSelectMode/ModeIndex/ModeChanged",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.Root",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 107,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "A94434DE3CCEDDB6EA396F87D334CCD360929BA57480EB5C31A956044F8CAC33",
+      "decision": "formal-root-source-identity-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "RefreshSourceSession/ReleaseSourceSession",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.ImageModes",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 119,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "3EB8FEA0A34013FFD02A8AD1DE103B3D74D32B0E7CF555F6D973F941B2ED9433",
+      "decision": "localized-mode-cache-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "Refresh按现有AppLocalizationService查询两模式，仅标签改变时重建且抑制回填事件",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.AutoPlay",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 146,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "88907DCA7768BC89447B3CA4C0A246EB42121FB32DD966B0925E011455734CB7",
+      "decision": "formal-configuration-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "AutoSwitchEnabled/SetAutoSwitch request",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.Interval",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 161,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "631FE26EAAD58BA6F5B28B0A47E3D77FE23C63B1F8E686AE64C6B71960995465",
+      "decision": "external-consumers-unverified",
+      "product": [],
+      "note": "原共享XAML未消费此代理；不新增不可见间隔UI",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.CurrentImagePath",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 176,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "07B3809E4C994B4B363BBA4E4AF0EEE1B476E02324C7A84A36F633688AE8CE59",
+      "decision": "formal-root-source-identity-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "ImageInputSource/RefreshSourceSession",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.PropertyChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 189,
+      "kind": "EventFieldDeclarationSyntax",
+      "originalSyntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.OnPropertyChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 191,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "7B68A8003A9399A732B9429DBF4883E979DE835BD9764523882F7323D8CBEC32",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.LocalImageListView",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 199,
+      "kind": "ConstructorDeclarationSyntax",
+      "originalSyntaxSha256": "FA2A340655DBC2188B21CEA7B0C4E6E855868F7B28B794BA962EBEC8AD3ABCA0",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.OnApplyTemplate",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 204,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "2C72EA2A5C1E1C1C77B611B0ADD1F73F0F2BDB85D2362B5EF1D76B58446DA505",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.ClearParamListView",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 212,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "07B5403892B1192F612CF17BF3ACCC2C72839E833FC4FFBF46A2A341D4AD2496",
+      "decision": "original-empty-body-no-behavior-to-port",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原件方法体为空；不把空方法变成三个开发任务，也不复制旧签名作为兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.listViewUserDefinedKeyParam_SelectionChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 216,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "FCC3CCB0C85457BFEAD24F44E0C77A55B8CB27C920FE73304E3D1D39CADBE56A",
+      "decision": "original-empty-body-no-behavior-to-port",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原件方法体为空；不把空方法变成三个开发任务，也不复制旧签名作为兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.ScrollViewer_PreviewMouseWheel",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 220,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "AF674FD2A1BEA5DB66EED04C0567C9DD68ED90A819D01059BF90116F9FEA777B",
+      "decision": "original-empty-body-no-behavior-to-port",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原件方法体为空；不把空方法变成三个开发任务，也不复制旧签名作为兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.OnRootChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 224,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "5D4A9EB97B63B0F48FE313F6E83DA2DC697D27B4974448B00771B33E9A036C49",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.cbxMode_SelectionChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 259,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "F5F46D9E46C2EBCF1699591B8D7546B1FD2E3C5340B3AB205985402D54494C66",
+      "decision": "existing-host-composition-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "原模板查找、根参数代理与事件合入实际UserControl/Session；Attach/Detach、版本及当前root/source门禁承载。控件不持有SDK全局服务，模式/开关正式接纳复用已有编辑链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "LocalImageListView.OnLanguageChanged",
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
+      "originalLine": 298,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "D16E8EA8DBAECA18EB1DAF0E6E0EA61DDA4134390B18C82D9AAAFEAE903FF957",
+      "decision": "existing-language-query-and-refresh-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+          "sha256": "2347185AF5DFC140393F30AA84828AE91A8EAE00B03D013041525A727BC8C561"
+        }
+      ],
+      "note": "原件重建模式名称；复用现有语言查询及实际模板/根刷新边界，不新增全局动态语言服务。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanel.ImageListPanel",
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "originalLine": 16,
+      "kind": "ConstructorDeclarationSyntax",
+      "originalSyntaxSha256": "0A260786B6E2BD56F5725C0A39C2FF2F275DEBD31C198B497F302F4A45F2F926",
+      "decision": "original-shadow-host-binding-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "实际组合保留最终子遮罩；根IsRunning绑定和释放在RefreshSourceSession/ReleaseSourceSession，单次状态已纳入真实生产回归。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanel.ChangeShadowDataSource",
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "originalLine": 21,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "BC30E306DB2206CFAAB82A7E61D077314DCEB465E0F94F375E3A09A9CC70F307",
+      "decision": "original-shadow-host-binding-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "实际组合保留最终子遮罩；根IsRunning绑定和释放在RefreshSourceSession/ReleaseSourceSession，单次状态已纳入真实生产回归。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanel._CreateDelegate",
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml.cs",
+      "originalLine": 26,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "529A6B3B79E7B481BC8E7F964B818333DB21E90B760340F26DAB194F834B62D7",
+      "decision": "generated-xaml-infrastructure",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "原生成代理由当前XAML编译及InitializeComponent承载，不手工复制生成兼容方法。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageItemWidth",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 37,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "DAA1CE29AB502BF7EE42220B372D256EEC20F3D0B57CA984CAD8A2270971A1E0",
+      "decision": "original-horizontal-viewport-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "原76单元、72x52内容和横向回收模板保留；QueueViewport按实际可见容器求交，既有1051图真实宿主回归覆盖滚动及释放，不为字段再造状态。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.curScrollOffset",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 39,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "8031F0E0771C61EC0DA82E87F45A0CD117B2A333B155FD30D79C333BC0E23C3E",
+      "decision": "original-horizontal-viewport-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "原76单元、72x52内容和横向回收模板保留；QueueViewport按实际可见容器求交，既有1051图真实宿主回归覆盖滚动及释放，不为字段再造状态。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.curActualWidth",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 41,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "DAAD3B851A5A6192F40132D590156F1B67A46C1D588D4EF064A971260FD05FF9",
+      "decision": "original-horizontal-viewport-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "原76单元、72x52内容和横向回收模板保留；QueueViewport按实际可见容器求交，既有1051图真实宿主回归覆盖滚动及释放，不为字段再造状态。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.scrollViewer",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 43,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "F035E8718AC3F81B3212435F8ADD2842D17A6A1E0A4C759B20A2A09A5BBF2046",
+      "decision": "original-horizontal-viewport-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "原76单元、72x52内容和横向回收模板保留；QueueViewport按实际可见容器求交，既有1051图真实宿主回归覆盖滚动及释放，不为字段再造状态。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.EXECUTE_TYPE",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 45,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "627D5CB6903E641DE4A4E78A7105F530A7AF623B43F9734C7D394CAB61015F38",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.refreshImageThread",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 47,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "CFD8E31D94AA4A1295049EE58991AB5C7B0A5E609BC16184AAF7D851866B5FAD",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.refreshImageThreadAlive",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 49,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "7722EAE55D133277A972F6B16BE7F71A86A009C9771CD5746CEEBE0E2982471F",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.mutexrefreshImageThread",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 51,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "E4EACEBA3E777BD1664BCDBD9482BBE8ABAF95CD256A0C809573E0CDA1E4C0AB",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.dataNumForReceiveStore",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 53,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "9D0C9F18D556AA344CD6E17EFB60FA0A29AD2CCED66A3C06912A4D8B5C5F48C0",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.dataNumForSendStore",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 55,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "7737266F27121B396619BEC9294F33613EDD83A5DFD13648C57CCF07E513F4FD",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.maxStoreLen",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 57,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "37AC1E85694632C03E6D9B7F4AAEF7FF8EBC1E9C220657F9D62996CB5E085922",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.forReceiveStore",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 59,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "B46ABD91A7860A8F94E2145534163DCB4BEA2A7DFD471E2793134A1FB46A3472",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.forSendStore",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 61,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "63C6BC360777D1A732CF94A8DFB7DBE56E869E51B3F4AD494C565383F8D7C501",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.needSelectImagePath",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 63,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "D6D27F1F7F53EB796EF68E61C15EB657F003EAF3FD01E17EB900CC893C7D9CB3",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.TargetValueProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 65,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "9E15ACB182448694587BACE22AB0D9E7777D3B55B4CC59E217AFD31B69EA16EA",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurSelectedModuleProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 67,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "54D1636237446541DB196068892C90ED76BAA12D1F2AA5AB398BB3C6E02DA0D8",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurSelectedIndexProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 69,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "6BBEA19618A8BAB6CD445A1BF50156FDE10F54D7D5590152A3E54794CECB7B4B",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoFreshImageListProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 71,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "315A1BAB2200C2C308FA3605F86412E195EC13D427742AD683B0319E43EA0A1E",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsExpandedProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 73,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "652E858202D35EBA0944408A975C8936FA5522EEFF07B36D4BE5FBA7E86701E3",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsSelectModeProperty",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 75,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "967789D56734038460A564FAD7A446DED82B2AFC81EF9DAEAFE19898B4EC1526",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase._IsSubscribeFolderMode",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 77,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "FAB16172686481B14AFA5D0AD721F7609F07619A1088F7F77E0945767D063463",
+      "decision": "unimplemented-folder-subscription-branch",
+      "product": [
+        {
+          "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+          "sha256": "FFE2D68B3821B49B4B0B8915F4548C7502EF979B9156680F69634024E0D9BC9E"
+        },
+        {
+          "path": "src/Workflow/ImageSourcePolicy.cs",
+          "sha256": "29E3408F1F0E1904EC7DAF4A91BB2F66951AB1988A36EB04C8B9226E6FBEB9FD"
+        }
+      ],
+      "note": "原特定模块报告类型驱动订阅目录刷新和模式变化；当前正式工具配置无订阅目录能力。保留明确依赖，不把手动添加目录冒充自动订阅。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.needReflashImages",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 79,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "CE916CAC127047A2F23C5AC6191BA920057FC7FE59999BA3E761D091F416E882",
+      "decision": "unimplemented-folder-subscription-branch",
+      "product": [
+        {
+          "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+          "sha256": "FFE2D68B3821B49B4B0B8915F4548C7502EF979B9156680F69634024E0D9BC9E"
+        },
+        {
+          "path": "src/Workflow/ImageSourcePolicy.cs",
+          "sha256": "29E3408F1F0E1904EC7DAF4A91BB2F66951AB1988A36EB04C8B9226E6FBEB9FD"
+        }
+      ],
+      "note": "原特定模块报告类型驱动订阅目录刷新和模式变化；当前正式工具配置无订阅目录能力。保留明确依赖，不把手动添加目录冒充自动订阅。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.curTime",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 81,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "2E4CCB7F45A52D54592D141E0E91A0A8A74AF59F051C97BD89552DF92883620E",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ptr",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 83,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "9DC8EE986E9DBFF6D94AE6BC2146392EB17A7E484865D4DC650776C9BC681C09",
+      "decision": "unimplemented-remote-deployment-branch",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原ptr/本地远程标志服务SDK远程上传；当前无正式远程会话，未实现/不暴露远程菜单，不移植业务全局句柄或伪造成功。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.PATH_MAX",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 85,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "CCF19E6AC14E09AA93E1143EF6626C77531374688906E15F8DF3DAD84E50246F",
+      "decision": "bounded-helper-not-a-separate-feature",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "原件有界搜索未见这些辅助函数调用或常量消费；相关实际路径/目录/视口由现有正式链承载。保留来源与外部未知，不复制无用途方法或增加兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.isWindowsPicture",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 87,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "43C5100B72730065426B788E2D69FD6AE890F5AD688A195DC57CB9C2658B62E5",
+      "decision": "unimplemented-remote-deployment-branch",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原ptr/本地远程标志服务SDK远程上传；当前无正式远程会话，未实现/不暴露远程菜单，不移植业务全局句柄或伪造成功。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurImageIndex",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 92,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "79E5ACD8CF3597A64436FEDA4705900AFC4F8627DED9059069AF12254E44AB8A",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.OwnerModule",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 97,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "1132832D8EB97B1DE47590AEEBC1D928FCB1D2095F2F2DBFD587266BEFEB9B4E",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.root",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 99,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "F07768E10A47214C5DFA923EDB7546E401C633A52FA2307881FF6AE8D077A884",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.needSelectionTrigger",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 101,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "32B0BCE3840085B529B3375D4F45119064AF613CFC4C5357A1F606F6E6E7A60F",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.needSetSelectImage",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 103,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "293255807B7FC9E469D0DD31F3D35B34AD56F05C22D1110384DD5D3313125C54",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.isReturnFirstForce",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 105,
+      "kind": "FieldDeclarationSyntax",
+      "originalSyntaxSha256": "E60555677CEAC0F6144C67B31945BE8A05F67AE91AA5D4B011E63A1A5F712E1E",
+      "decision": "original-first-reset-transient-state",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        }
+      ],
+      "note": "全部/选中和AutoPlay四组合保留；首图不直接Run；真实同索引回写复原高亮，缩略刷新不误清。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.TargetValue",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 110,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "E8CDA8EB12995F50F8DC17FEB6A143053B7424F49703541807759C0E7AB04071",
+      "decision": "formal-session-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "DisplayIndex/SourcePropertyChanged/RequestAsync",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurSelectedModule",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 122,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "F7E264B3B996F948050BB3007FC8DD1ECFAE6BE7D27C22ADF8BD1521E7AED4C0",
+      "decision": "formal-root-source-identity-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "RefreshSourceSession及当前root/source引用门禁",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurSelectedIndex",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 134,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "4D9C72C499D2BC09428C0C09338808C94BBD84378FFC78D1B0F3C3971A0C4617",
+      "decision": "transient-navigation-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "CurrentIndex/TryPresentRuntimeCursor",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoFreshImageList",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 146,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "3FF8C08B7303E3D11C68453E6010FE63E7A1D86219538597FA81F1D784FCC7A4",
+      "decision": "versioned-refresh-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "SourcePropertyChanged/SourceCollectionChanged/QueueRefresh",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsExpanded",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 158,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "C23282DE779DD020F6F4547DEEFE4002E9F9F5F1A9134AAFC5113C3CC01E9C1B",
+      "decision": "dependency-property-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "IsExpanded/ExpandedChanged/QueueViewport",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsSelectMode",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 170,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "7D3C9F12C4AB5C7DB23DB61B800C69D041BAEE1087789E34460A3F1833A87EB6",
+      "decision": "formal-session-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "IsSelectMode/ModeIndex/ModeChanged",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsImageSourceModule",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 182,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "6937904509ED1BAF2C713FF487BF09FE4D8501760209DA11FA65946BD58BCD8A",
+      "decision": "formal-host-selection-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "ActiveInputSource/RefreshSourceSession；普通工具参数页无源条",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsSubscribeFolderMode",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 187,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "7A38863C11D17C87BFC13371FFF8EB078E7D60F998E34D74B1215EA9B88DF77C",
+      "decision": "unimplemented-platform-branch",
+      "product": [],
+      "note": "当前正式ImageSourceFields/ImageSourcePolicy无订阅目录配置；未复制VM全局Params",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageCount",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 204,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "14669C8008FDFFF67FD16D8B9C226AF9775E374089787D5312DDBB47FCDB93C5",
+      "decision": "collection-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "Items.Count/ImageCount",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageList",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 209,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "B53D913DA090BC1C6BD98A05914C34D24E1094F5827BF8B1F5A16E49D085A587",
+      "decision": "owned-observable-projection-adaptation",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "Items/_items/Refresh/UpdateVisibleItems",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.Islocal",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 214,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "E6FB5BFC7EC558FF00568063B08E9CAB150736AAFC536D61B66FB32121589691",
+      "decision": "unimplemented-remote-platform-branch",
+      "product": [],
+      "note": "当前ImportFiles/ImportDirectory仅本机，无远程会话基础",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurImageIndexT",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 219,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "82C82166A5E5B18A7FD3875A0CD763455ADE03C82ABF33EB983AA4C5DB0CFA95",
+      "decision": "display-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "DisplayNumber=DisplayIndex<0?0:DisplayIndex+1",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsReturnFirstForce",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 235,
+      "kind": "PropertyDeclarationSyntax",
+      "originalSyntaxSha256": "DB807BBD7B3426ACE4F45F5A8FA20923A51C5AA161A7DE2C29B070E84E308736",
+      "decision": "original-transient-state-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "_firstResetActive/SelectFirstAsync/SessionPropertyChanged/Detach",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.PropertyChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 251,
+      "kind": "EventFieldDeclarationSyntax",
+      "originalSyntaxSha256": "2E7945D4A6BA222F873C5C33B10A6908DAB94605B5DCCD86E616CD00684F9762",
+      "decision": "observable-list-and-source-policy-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "已有正式路径/勾选/游标投影与通知承载；不再由VM参数字符串重新造真相源。普通图像导入/删除/重开链已验证；订阅/远程/3D分支不计完成。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ILFree",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 253,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "F9FF1528DA4635557A43B358E666600D3580192636472D3A60C327A10C2019DB",
+      "decision": "original-windows-folder-action-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "沿原PIDL定位文件并在finally释放；当前会话/路径校验沿现有入口；目录进程参数安全传入。Explorer实机体验留最终人工，不把静态代码当物理操作。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ILCreateFromPathW",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 256,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "09815AE89D9ED206ECC76FA077E2A9E8CDFE543184DEFB4084DA1ACA92AD8AE5",
+      "decision": "original-windows-folder-action-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "沿原PIDL定位文件并在finally释放；当前会话/路径校验沿现有入口；目录进程参数安全传入。Explorer实机体验留最终人工，不把静态代码当物理操作。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.SHOpenFolderAndSelectItems",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 259,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "F9E85FC3C8087B2EB90C0588F3B432C7BEE85AFC373495444974AD57E1010D73",
+      "decision": "original-windows-folder-action-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "沿原PIDL定位文件并在finally释放；当前会话/路径校验沿现有入口；目录进程参数安全传入。Explorer实机体验留最终人工，不把静态代码当物理操作。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.TargetValueChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 267,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "377274F6444028B8E3CF890980610E1F429562CBE3905EC2CF9B0FA90A3011FC",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CurSelectedModuleChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 281,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "204F56DDB395165D5CFB337F168DECCA60AE6BA32BE5EED0BAFD29CC2F3B17F5",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoFreshImageListChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 289,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "27CE1E824156026D7300217EE153A8217472348269E9EF429079D6988E4E27ED",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageListPanelBase",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 294,
+      "kind": "ConstructorDeclarationSyntax",
+      "originalSyntaxSha256": "93D1AA39DC9382976E00C896B0F2B88C74523E2716F4C939ABA3D988EC7C8C51",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageListPanel_Loaded",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 303,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "04874CD0F825554EAAA7B9012BB0586BB2A82C0EE3DF13261FF7887FC933CCC2",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImageListPanel_Unloaded",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 363,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "D31DDD20458FE24F6C90974618A691D465EC34727B01C0EE6752A71466DD117C",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.OnUpdateExcuteType",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 380,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "8F614A548A39C0D21E78B311AC72B316C3DEE6CF5960D0DB5065780E879DC0D9",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.UpdateExcuteType",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 389,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "CF2DE420DF9AA1E578E3B514967C3B354C0DB0E4F0657E7305FBE09E4987A234",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.OnExcuteTypeParamChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 398,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "E49FB20051ABA7F93D43AC4822CB9FA89215A5D2EB456E95E88B9BF141C76089",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.OnSubscribeFolderModeChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 403,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "F145D2E28F272D0C0E73A116C9C3E2ACED0955A9304136336B30ADD6D04DFFA9",
+      "decision": "unimplemented-folder-subscription-branch",
+      "product": [
+        {
+          "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+          "sha256": "FFE2D68B3821B49B4B0B8915F4548C7502EF979B9156680F69634024E0D9BC9E"
+        },
+        {
+          "path": "src/Workflow/ImageSourcePolicy.cs",
+          "sha256": "29E3408F1F0E1904EC7DAF4A91BB2F66951AB1988A36EB04C8B9226E6FBEB9FD"
+        }
+      ],
+      "note": "原特定模块报告类型驱动订阅目录刷新和模式变化；当前正式工具配置无订阅目录能力。保留明确依赖，不把手动添加目录冒充自动订阅。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.VmSolution_OnReportModuleData",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 417,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "7B5DC0C73C1ABA96ACF29043368A29BAF196E5BC4E85AB41429A8EBA36F5CA34",
+      "decision": "unimplemented-folder-subscription-branch",
+      "product": [
+        {
+          "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+          "sha256": "FFE2D68B3821B49B4B0B8915F4548C7502EF979B9156680F69634024E0D9BC9E"
+        },
+        {
+          "path": "src/Workflow/ImageSourcePolicy.cs",
+          "sha256": "29E3408F1F0E1904EC7DAF4A91BB2F66951AB1988A36EB04C8B9226E6FBEB9FD"
+        }
+      ],
+      "note": "原特定模块报告类型驱动订阅目录刷新和模式变化；当前正式工具配置无订阅目录能力。保留明确依赖，不把手动添加目录冒充自动订阅。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsTimeRefreshView",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 429,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "640EADA4AD4638954C39A767977C9418EA509373E86DB285A12B36980289C0DF",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.RefreshImageList",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 439,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "2044E2BC84181B855747D9E5B8D5CB1407802E035FD947B1A3A42EC4C19702B2",
+      "decision": "observable-list-and-source-policy-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "已有正式路径/勾选/游标投影与通知承载；不再由VM参数字符串重新造真相源。普通图像导入/删除/重开链已验证；订阅/远程/3D分支不计完成。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetModuleSel",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 498,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "048EAF55E2CE0C33463BE136281B6CF9B07C33BBF6FE5D21DC0F8EF6DDCD320A",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.NotifyPropertyChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 555,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "AB9A577B305DDF9D8CA3F2CB379AE762659A0001E07D1FCC739227917B02BE76",
+      "decision": "observable-list-and-source-policy-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "已有正式路径/勾选/游标投影与通知承载；不再由VM参数字符串重新造真相源。普通图像导入/删除/重开链已验证；订阅/远程/3D分支不计完成。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.BtnDelete_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 568,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "8DEF13C470E2F8570293854A384923B4F66637098694826C47648F5D9A9FA416",
+      "decision": "original-local-structural-edit-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        }
+      ],
+      "note": "普通唯一路径按原追加/删除原生证据：删前减一、删后不变、删当前无选择；原子编辑、历史、资源失效及下一次实际读取复用已验证链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.Grid_MouseEnter",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 616,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "E5ED902C186787F178BFD744A810DAAB06DE19558D29B5C4422A56203DC6D2EE",
+      "decision": "original-item-delete-affordance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "悬停显示条目删除按钮，离开隐藏；只读/导入门禁不误暴露可用编辑。实际WPF外观仍待人工。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.Grid_MouseLeave",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 635,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "00ACD321A089A49397F6743F39337D2AFAF19BE3E939340F8B4149765CA9A179",
+      "decision": "original-item-delete-affordance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        }
+      ],
+      "note": "悬停显示条目删除按钮，离开隐藏；只读/导入门禁不误暴露可用编辑。实际WPF外观仍待人工。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetVMModule",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 647,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "55DF40D49CF31D062AC84184CBA56B166078468F7D2F355F368903C8DF3E8882",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetRoot",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 662,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "18F03C374A01575AE18122E05ECBF589EAE005FA8B4CECAC325F9BF02C94A302",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.BtnImageClear_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 682,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "B8E51124DAC74BEBCBC07865F5CE89A55E060886555513A4E8B4D47774F6264D",
+      "decision": "original-local-structural-edit-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        }
+      ],
+      "note": "普通唯一路径按原追加/删除原生证据：删前减一、删后不变、删当前无选择；原子编辑、历史、资源失效及下一次实际读取复用已验证链。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.BtnImageAdd_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 719,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "4D8AADFC36C525EA5A03776922704F7B2F56634851E096424264576D06E3E985",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.LocalImage_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 750,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "C77A9CDE4948E4491C93CFDF492BAF3C51F8DDA27D38E55CE5BAE9D25D62E286",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.LinuxImage_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 770,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A07C0E2BEB25717FDFB184E6124FE39A40946D59DF9DCF772FC9A91E715DBE7A",
+      "decision": "unimplemented-remote-deployment-branch",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原ptr/本地远程标志服务SDK远程上传；当前无正式远程会话，未实现/不暴露远程菜单，不移植业务全局句柄或伪造成功。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoAddImages",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 786,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "9A640A4B134A3656CC27448CA2D2457320EEFB4AA725935B578F1122FD3CDB05",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImage",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 820,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "68B1B9C5FF43316D29175A6FC50EB48C86BF0E44379F61559918AF0723D2DBBA",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImageLocal",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 846,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A20A92850D6ADD2365318C0CC54A9CF8D0C7A098B538F26E51E663EE799A7950",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImageToLinux",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 876,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "F251775225F1ACF63E2B26D6D361415FAEC4114AD651CFE9A9291DF1458E2A50",
+      "decision": "unimplemented-remote-deployment-branch",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原ptr/本地远程标志服务SDK远程上传；当前无正式远程会话，未实现/不暴露远程菜单，不移植业务全局句柄或伪造成功。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImageToServer",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 899,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "4D163EA04137E04BAACAFAF8B84B81878786CDAE2EC668C48ECC1CFEB949C62B",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetImageEntitybyPath",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 913,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "C52129C985E21F638FD54626DEFE5CFE5D9B31D9EDE132D0B840700F242E1F72",
+      "decision": "bounded-helper-not-a-separate-feature",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "原件有界搜索未见这些辅助函数调用或常量消费；相关实际路径/目录/视口由现有正式链承载。保留来源与外部未知，不复制无用途方法或增加兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImageByDir",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 930,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "366617D3EC4806FAE8F86CBE2ADB17A40393276C7F5E74F593EB1D5A96645F28",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.AddImageToList",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1000,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "5B3DF5B3980EA626915EE5BDF19D1FEBBE63D9A63AD7496EA48C101048F90DE9",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.BtnImageAddFolder_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1021,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "B1A2A4519FA0191F6135E791059E5399CFB47C7C8663654044A45BAA44BAD3B3",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.LocalImageFolder_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1056,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "44A4596D23AF37FAF0C8E3EAFC5FB5E03E2FA575E7FD438D9BED31FC37E7C793",
+      "decision": "original-local-import-with-explicit-platform-boundary",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/ImageFileImport.cs",
+          "sha256": "17B585790675A0310D77B30FDE9CBE27338069F2736429850B622ACB7D7EC7E6"
+        }
+      ],
+      "note": "仅本地平台，原手动目录一层展开和排序、去重、追加不激活、不执行；复用枚举冻结/取消/一次接纳/历史与异常链，不复制SDK字符串命令。远程上传支路另列未实现。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetFiles",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1092,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "498E6AF6B3439F36AAFD41B4F008EF18A9BAD8E4B7169DAAA9AFABC1BCEFA720",
+      "decision": "bounded-helper-not-a-separate-feature",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "原件有界搜索未见这些辅助函数调用或常量消费；相关实际路径/目录/视口由现有正式链承载。保留来源与外部未知，不复制无用途方法或增加兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.LinuxImageFolder_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1110,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "C9B10399E634279BF5E49E0CD4F962F5D5E500677266B3FB42083A6EF48540B6",
+      "decision": "unimplemented-remote-deployment-branch",
+      "product": [
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原ptr/本地远程标志服务SDK远程上传；当前无正式远程会话，未实现/不暴露远程菜单，不移植业务全局句柄或伪造成功。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoEvents",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1201,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "C85A0AC2AB963A2F12DC1E722B69E028B49E6DB5C5B800E8F8ED4789E4C0F4D6",
+      "decision": "bounded-helper-not-a-separate-feature",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "原件有界搜索未见这些辅助函数调用或常量消费；相关实际路径/目录/视口由现有正式链承载。保留来源与外部未知，不复制无用途方法或增加兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.IsChildVisibleInParent",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1218,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "89D5399E1D9D704C9342CF3FBE06DB0506FCE2E5C09274C31B8600383772361D",
+      "decision": "bounded-helper-not-a-separate-feature",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "原件有界搜索未见这些辅助函数调用或常量消费；相关实际路径/目录/视口由现有正式链承载。保留来源与外部未知，不复制无用途方法或增加兼容入口。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.InterfaceUpdateImageList",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1229,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A52D27B415F0FF8D40D775199B333E76D6183084D5A7E15108907CF32ADA6577",
+      "decision": "observable-list-and-source-policy-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "已有正式路径/勾选/游标投影与通知承载；不再由VM参数字符串重新造真相源。普通图像导入/删除/重开链已验证；订阅/远程/3D分支不计完成。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.UpdateImageListSource",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1245,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "02A11F5FABAA099741DA2270EA7E3E6778124019462521D80BF643498F11B6AC",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.LoadThumbnailImage",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1275,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A9CF2030A3DA77F02F182DC1805A4914D361F74CF5119849E151B9BD66EC6669",
+      "decision": "owned-cache-and-cancellation-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+          "sha256": "28CDF8846D6E17D631236926BEEBB5274557F50C992E845F18C0AF76D84CAA7A"
+        }
+      ],
+      "note": "原可见范围队列/线程改由现有独立缓存等待者与CTS承载；可见范围退出取消本视图请求，冻结位图，不释放别的视图资源。实际缓存/退出/重入回归与缩略刷新焦点诊断分别记录。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.lst_SelectionChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1314,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "3EBB6C55CE40C2AFF6409E3BBF082E3F1B02AAC01ADFD2693DB1256F392A8FAC",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.OnPreduceResultCallBackArrived",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1362,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A1CA8D54990B70872009999830E1098560E3B630D0643015EE8576AF83953E61",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.DoRefreshLocalImage",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1377,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "17589E90B7F3140530FE572C1E76FB986297FD6C28AA9019F853E7C1FBDE68E5",
+      "decision": "navigation-readback-and-version-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        },
+        {
+          "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+          "sha256": "0722EBE5BDD124995C9A4FFD7920AA75886548FC29BCA9E83F094E44C92DC698"
+        }
+      ],
+      "note": "程序回填不执行、用户选择先接纳再过忙门；原50/100ms单槽回填不是latest-only调度证据。现有执行快照和版本门禁防旧结果覆盖新选择；订阅目录的RefreshImage后端分支另列未实现，不冒称全域等价。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.lst_ScrollChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1403,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "64E42F17F41E82E30AD22DD375C5665E746B0EDF38F5FF6D31F8A3E23297EBD5",
+      "decision": "original-horizontal-viewport-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "原76单元、72x52内容和横向回收模板保留；QueueViewport按实际可见容器求交，既有1051图真实宿主回归覆盖滚动及释放，不为字段再造状态。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.JudgeDrage",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1457,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "098D4D2F4C72B2E844D5A29D9B9FEB231DC3B46EC5D3135F0437457D7644D256",
+      "decision": "original-file-drop-acceptance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原六扩展名、文件存在性逐项核验；非法混合整批拒绝。DragEnter/Over/Drop同一规则，正式导入一次接纳、零执行。路由事件测试不是物理OS拖放。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.lst_DragEnter",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1477,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "6D133A5AD6A6907BA2C00FD694929423E33D0CA759EB422E5C7AAD9F93830F7D",
+      "decision": "original-file-drop-acceptance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原六扩展名、文件存在性逐项核验；非法混合整批拒绝。DragEnter/Over/Drop同一规则，正式导入一次接纳、零执行。路由事件测试不是物理OS拖放。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.lst_DragOver",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1482,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "AC2E992307181571084A943A0549081C83F88A8C3F938CA359833DEB9AE16093",
+      "decision": "original-file-drop-acceptance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原六扩展名、文件存在性逐项核验；非法混合整批拒绝。DragEnter/Over/Drop同一规则，正式导入一次接纳、零执行。路由事件测试不是物理OS拖放。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.lst_Drop",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1487,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "9F8BE70F12E6A041696D55DDD0FDCA56271B658B6244A48E249FD282EF3998F1",
+      "decision": "original-file-drop-acceptance-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+          "sha256": "F4AC6A5A094980DF1AF49208A18253D0CDFCE7698F6D7AF65D7DEFABC5763897"
+        }
+      ],
+      "note": "原六扩展名、文件存在性逐项核验；非法混合整批拒绝。DragEnter/Over/Drop同一规则，正式导入一次接纳、零执行。路由事件测试不是物理OS拖放。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ImagePanel_DataContextChanged",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1502,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "48DF2EF996404E6943FC0BF7DDC10693A8B994FBB2D6263B604511EAA0F05D33",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ChangeShadowDataSource",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1550,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "1BACDE4F5710CB75F911FDE5E287DFA2D1A4411379A307692346420C6EF5954A",
+      "decision": "formal-identity-and-projection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+          "sha256": "F19F481CE4954E29CF6DF354761027FB7E666936035A52FDB9708B3A8788ACB3"
+        }
+      ],
+      "note": "按功能复用SessionChanged、源投影通知、当前root/source实例与EditVersion；生命周期先退旧后接新并防重入，不复制VM全局业务模型。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.CheckBox_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1554,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "8B939191E57B1D1D21B83F15FFF1F3E4AA876FECC4ADC662B68B325A80BA1DD7",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.Grid_MouseDown",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1562,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "59AC545F3B02FEBDEBE2A739D11D34E73EA63A5DD4DD0F7298A671927E099FC4",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.ChangedExecutePic",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1611,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "302412BE86C1AAEC33636ACA86820A7D6789678A0B6898808D93E3316677BF74",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.GetModuleSelectMode",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1640,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "A0550D5BE4F3D74E6ACB349B3A98A40D37DC7384FF0A9A3B727111DE870A1031",
+      "decision": "formal-run-selection-adaptation",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        }
+      ],
+      "note": "复用正式运行勾选集合、原Ctrl切换/Shift闭区间、全部/选中回读及拒绝恢复；原PropertyManager广播由同一正式来源通知替代，不把UI变成调度器。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.FirstImage_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1681,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "7236A36C4775494526104BCCB63AC2D1D14592D6109F714AB54827F6F145EF6E",
+      "decision": "original-first-reset-transient-state",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Shared/ImageInputSource.cs",
+          "sha256": "C0133DFA54B6F62795FF2AD9682F2C4F5A6CFB2D4869A3451978BEE7B7A557B6"
+        },
+        {
+          "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+          "sha256": "39845D6DE5EEE45792825AAC337E40F70FB9D32E63CC17736B91B487931A16AB"
+        }
+      ],
+      "note": "全部/选中和AutoPlay四组合保留；首图不直接Run；真实同索引回写复原高亮，缩略刷新不误清。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.MenuItem_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1740,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "3FAE0900DDB54E6C42CEBC3A4109B9395F84FCDDF27516EA2BECF103760621E9",
+      "decision": "original-windows-folder-action-retained",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+          "sha256": "A80156AE8F584A4067DE16A988BC34065492905DF0A9BF1A5B5A397B4445D364"
+        }
+      ],
+      "note": "沿原PIDL定位文件并在finally释放；当前会话/路径校验沿现有入口；目录进程参数安全传入。Explorer实机体验留最终人工，不把静态代码当物理操作。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    },
+    {
+      "id": "ImageListPanelBase.BtnImageAddRpFolder_Click",
+      "originalFile": "VMControls.WPF/ImageListPanelBase.cs",
+      "originalLine": 1768,
+      "kind": "MethodDeclarationSyntax",
+      "originalSyntaxSha256": "7DA2231C32D59496B494B4FD3D373475B2ACF28AA5FA9A1AF36BE21234DBFB76",
+      "decision": "disabled-rp-3d-placeholder",
+      "product": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+          "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+          "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+        }
+      ],
+      "note": "无正式RP/3D导入基础，入口禁用折叠；不计功能完成，不展开算法或插件合同重写。",
+      "acceptance": "classification-is-not-runtime-equivalence-or-stage-closure"
+    }
+  ],
+  "unmapped": [],
+  "additionalDependency": "ImageSourceThumbnail另核原ImageView全部模板与方法；两个鼠标处理体为空，像素转换沿现有冻结ImageSource必要适配。正式ContentToggleSwitch另沿总监e83b066d完整闭包接入。"
+}

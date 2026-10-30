@@ -20,7 +20,7 @@ foreach($document in $documents){
         $original[$uri]=[ordered]@{uri=$uri;path=$asset;extractedPath=$extracted;resolution=if($direct){'direct-extracted-path'}elseif($extracted){'normalized-extraction-candidate-raw-resource-name-unverified'}else{'not-found'};sha256=if($extracted){(Get-FileHash -LiteralPath $extracted -Algorithm SHA256).Hash}else{$null}}
     }
 }
-$assets=@(Get-ChildItem -LiteralPath (Join-Path $workspace 'src/Plugin.Wpf/Themes/Assets/ImageSources') -File | Sort-Object Name | ForEach-Object {
+$assets=@(Get-ChildItem -LiteralPath @((Join-Path $workspace 'src/Plugin.Wpf/Themes/Assets/ImageSources'),(Join-Path $workspace 'src/Plugin.Wpf/Themes/Assets/Inputs/Switch')) -File | Sort-Object Name | ForEach-Object {
     $hash=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
     $matches=@($original.Values | Where-Object {$_.sha256 -eq $hash} | ForEach-Object {$_.uri} | Sort-Object)
     [ordered]@{productPath=[IO.Path]::GetRelativePath($workspace,$_.FullName);sha256=$hash;originalUris=$matches;assetIdentity=if(!$matches.Count){'unmatched-needs-review'}elseif(@($original.Values | Where-Object {$_.sha256 -eq $hash -and $_.resolution -eq 'direct-extracted-path'}).Count){'byte-identical'}else{'byte-identical-normalized-extraction-candidate'};templateAndRuntimeReview='not-proven-by-asset-hash'}

@@ -3878,10 +3878,11 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\resources\\swith_off_dark.png",
       "source_sha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3",
-      "target": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_off_dark.png",
-      "target_sha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3",
+      "target": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/off-dark.png",
       "kind": "original_asset",
-      "unresolved_dependencies": []
+      "unresolved_dependencies": [],
+      "target_sha256": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3",
+      "productType": "ContentToggleSwitch dark face"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\resources\\swith_on.png",
@@ -3894,10 +3895,11 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\resources\\swith_on_dark.png",
       "source_sha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403",
-      "target": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on_dark.png",
-      "target_sha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403",
+      "target": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/on-dark.png",
       "kind": "original_asset",
-      "unresolved_dependencies": []
+      "unresolved_dependencies": [],
+      "target_sha256": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403",
+      "productType": "ContentToggleSwitch dark face"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\resources\\tab_collapsed.png",

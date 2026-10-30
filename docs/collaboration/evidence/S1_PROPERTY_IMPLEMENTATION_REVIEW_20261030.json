@@ -7,10 +7,10 @@
       "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
       "originalLine": 31,
       "originalSyntaxSha256": "37388FB2CF53D5C617E6907F3BD8E26ACE9C88BB56BC9B95741FA3257B3B3880",
-      "implementation": "RunModeItem.DisplayName",
-      "decision": "immutable-presentation-adaptation-language-review-required",
+      "implementation": "RunModeItem.DisplayName由现有语言查询赋值；非可变业务状态",
+      "decision": "immutable-localized-mode-presentation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -22,7 +22,7 @@
       "implementation": "RunModeItem.Value",
       "decision": "immutable-presentation-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -34,7 +34,7 @@
       "implementation": "IsExpanded/ExpandedChanged/QueueViewport",
       "decision": "dependency-property-retained",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -46,7 +46,7 @@
       "implementation": "IsSelectMode/ModeIndex/ModeChanged",
       "decision": "formal-session-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -67,10 +67,10 @@
       "originalFile": "VMControls.WPF/LocalImageListView.xaml.cs",
       "originalLine": 119,
       "originalSyntaxSha256": "3EB8FEA0A34013FFD02A8AD1DE103B3D74D32B0E7CF555F6D973F941B2ED9433",
-      "implementation": "constructor Mode.ItemsSource/RunModeItem",
-      "decision": "hardcoded-language-refresh-gap",
+      "implementation": "Refresh按现有AppLocalizationService查询两模式，仅标签改变时重建且抑制回填事件",
+      "decision": "localized-mode-cache-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -166,7 +166,7 @@
       "implementation": "IsExpanded/ExpandedChanged/QueueViewport",
       "decision": "dependency-property-retained",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -178,7 +178,7 @@
       "implementation": "IsSelectMode/ModeIndex/ModeChanged",
       "decision": "formal-session-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -214,7 +214,7 @@
       "implementation": "Items.Count/ImageCount",
       "decision": "collection-projection-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -250,7 +250,7 @@
       "implementation": "DisplayNumber=DisplayIndex<0?0:DisplayIndex+1",
       "decision": "display-projection-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     },
@@ -262,10 +262,10 @@
       "implementation": "_firstResetActive/SelectFirstAsync/SessionPropertyChanged/Detach",
       "decision": "original-transient-state-adaptation",
       "productFile": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
-      "productFileSha256": "33AF95FA11312186DA9F31762C3039D7C534B0F786AC3F819BF675AAE64481CA",
+      "productFileSha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86",
       "acceptance": "not-final-component-equivalence",
       "evidence": "逆向S1共享属性闭包及当前源码；执行/选择/保存与退出行为另由355项基线和当前变更用例分开证明，不按属性映射推定完成。"
     }
   ],
-  "localizationBoundary": "已有AppLocalizationService与只读LocalizationResourceDictionary，支持启动时语言查询；当前S1模式标签硬编码。未发现正式动态语言切换事件，不能把已有查询基础一概称为缺失，也不能新造全局语言系统。"
+  "localizationBoundary": "现有AppLocalizationService和只读文化字典已接入源条标题/提示/菜单及模式。模板/根刷新按语言查询重建模式，不产生配置编辑；不新增未有正式合同的全局动态语言服务。"
 }

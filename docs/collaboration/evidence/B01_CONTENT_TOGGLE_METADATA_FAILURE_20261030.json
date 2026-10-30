@@ -1,0 +1,6 @@
+{
+  "initialFailure": "元数据递归遇到没有output_sha256的记录，直接属性赋值抛错，构建尚未开始",
+  "repair": "用Add-Member明确增加或更新本地产物哈希，不覆盖原source_sha256；完成原4文件路径同步",
+  "productCodeRollbackNeeded": false,
+  "status": "元数据修正，进入正式构建"
+}

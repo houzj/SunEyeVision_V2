@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using NSubstitute;
@@ -157,6 +158,86 @@ public sealed partial class SolutionManagerUiTests
                 control.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));VerifyPalette();
             }
             finally{manager.ApplyTheme(originalTheme);}
+        });
+    }
+    [Fact]
+    public void Thumbnail_refresh_retains_selection_focus_and_the_next_direction_key()
+    {
+        Sta(()=>
+        {
+            System.Windows.Media.Imaging.BitmapSource Pixel(byte value)
+            {
+                var image=System.Windows.Media.Imaging.BitmapSource.Create(1,1,96,96,System.Windows.Media.PixelFormats.Gray8,null,new[]{value,(byte)0,(byte)0,(byte)0},4);
+                image.Freeze();return image;
+            }
+            var source=new ImageInputSource("refresh-focus");
+            source.AddImages(Enumerable.Range(0,3).Select(index=>new ImageInfo{FilePath="refresh-focus-"+index+".png",Thumbnail=Pixel((byte)(index+1))}),selectFirstAdded:true);
+            var activations=0;
+            using var fixture=new NativeSourceFixture(source,activate:(_,_,_)=>{activations++;return Task.CompletedTask;});
+            var list=Assert.IsType<ListBox>(fixture.Control.FindName("lst"));
+            void Drain(){list.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);list.UpdateLayout();}
+            Drain();fixture.ActivateForInput();Drain();
+            list.ScrollIntoView(list.SelectedItem);list.UpdateLayout();
+            var container=Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(0));
+            Assert.True(container.Focus());Drain();Assert.True(list.IsKeyboardFocusWithin);
+            var item=list.Items[0];source.Images[0].Thumbnail=Pixel(99);Drain();
+            var focusRetained=list.IsKeyboardFocusWithin;
+            var rowRetained=ReferenceEquals(item,list.Items[0]);
+            var containerRetained=ReferenceEquals(container,list.ItemContainerGenerator.ContainerFromIndex(0));
+            var audit=new{rowRetained,containerRetained,focusRetained,focusedType=System.Windows.Input.Keyboard.FocusedElement?.GetType().FullName,selectedIndex=list.SelectedIndex,activations};
+            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing validation root"),"source-item-refresh-identity.json"),System.Text.Json.JsonSerializer.Serialize(audit));
+            Assert.Equal(0,activations);Assert.Equal(0,source.CurrentIndex);
+            Assert.True(focusRetained,"缩略图刷新使键盘焦点离开列表。");
+            var target=Assert.IsAssignableFrom<UIElement>(System.Windows.Input.Keyboard.FocusedElement);
+            var input=PresentationSource.FromVisual(target)!;
+            var preview=new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,System.Windows.Input.Key.Right){RoutedEvent=System.Windows.Input.Keyboard.PreviewKeyDownEvent};
+            target.RaiseEvent(preview);
+            if(!preview.Handled)target.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,System.Windows.Input.Key.Right){RoutedEvent=System.Windows.Input.Keyboard.KeyDownEvent});
+            Drain();Assert.Equal(1,source.CurrentIndex);Assert.Equal(1,activations);
+        });
+    }
+    [Fact]
+    public void Original_content_switch_keeps_new_owner_and_localized_mode_during_reentrant_acceptance()
+    {
+        Sta(()=>
+        {
+            var language=SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResourceDictionary.Instance;
+            var keys=new[]{"运行全部","运行选中","RunParam_Auto Switch","Lang_ImgSoc"};
+            var saved=keys.ToDictionary(key=>key,key=>language[key]);
+            var first=new ImageInputSource("old-switch"){AutoSwitchEnabled=false};
+            var second=new ImageInputSource("new-switch"){AutoSwitchEnabled=false,RunMode=ImageRunMode.运行选择};
+            var oldWrites=0;var newWrites=0;second.ConfigurationWriter=_=>newWrites++;
+            using var secondSession=new ImageSourceStripSession(second,()=>true);
+            using var fixture=new NativeSourceFixture(first);
+            var strip=fixture.Control;
+            var control=Assert.IsType<SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch>(strip.FindName("AutoSwitch"));
+            var toggle=Assert.IsType<ToggleButton>(control.FindName("TO"));
+            try
+            {
+                language["运行全部"]="Run all (audit)";language["运行选中"]="Run selected (audit)";
+                language["RunParam_Auto Switch"]="Automatic switch (audit)";language["Lang_ImgSoc"]="Image source (audit)";
+                first.ConfigurationWriter=_=>{oldWrites++;strip.Session=secondSession;};
+                typeof(ToggleButton).GetMethod("OnClick",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(toggle,null);
+                strip.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);strip.UpdateLayout();
+                Assert.Equal(1,oldWrites);Assert.Equal(0,newWrites);Assert.True(first.AutoSwitchEnabled);
+                Assert.Same(secondSession,strip.Session);Assert.False(second.AutoSwitchEnabled);Assert.False(control.IsChecked);Assert.False(toggle.IsChecked);
+                var mode=Assert.IsType<ComboBox>(strip.FindName("Mode"));Assert.Equal(1,mode.SelectedIndex);
+                Assert.Equal(new[]{"Run all (audit)","Run selected (audit)"},mode.Items.Cast<object>().Select(item=>(string)item.GetType().GetProperty("DisplayName")!.GetValue(item)!));
+                Assert.Equal("Automatic switch (audit)",strip.AutoSwitchText);
+                var independent=new ImageSourceStrip{Session=secondSession};
+                var other=Assert.IsType<SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch>(independent.FindName("AutoSwitch"));
+                Assert.NotSame(control.OffContent,other.OffContent);Assert.NotSame(control.OnContent,other.OnContent);
+                foreach(var image in new[]{Assert.IsType<Image>(control.OffContent),Assert.IsType<Image>(control.OnContent)})Assert.Equal(System.Windows.Media.Stretch.None,image.Stretch);
+                Assert.Contains("/Inputs/Switch/off-dark.png",Assert.IsType<Image>(control.OffContent).Source.ToString());
+                first.AutoSwitchEnabled=false;strip.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
+                Assert.False(control.IsChecked);Assert.Equal(0,newWrites);Assert.Equal(1,mode.SelectedIndex);
+                independent.Session=null;
+            }
+            finally
+            {
+                foreach(var pair in saved)language[pair.Key]=pair.Value;
+                strip.Session=null;
+            }
         });
     }
     private sealed class NativeSourceFixture : IDisposable

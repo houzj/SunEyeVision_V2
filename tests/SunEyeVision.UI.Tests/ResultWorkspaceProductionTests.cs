@@ -1057,7 +1057,7 @@ public sealed class ResultWorkspaceProductionTests
         var strip=f.View.ImagePreviewContent;
         var mode=Assert.IsType<ComboBox>(strip.FindName("Mode"));
         mode.ApplyTemplate();
-        Assert.Equal("运行全部", Assert.IsType<string>(mode.ToolTip));
+        Assert.Equal(SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("运行全部"), Assert.IsType<string>(mode.ToolTip));
         Assert.NotNull(mode.FindResource("RecScrollViewer"));
         Assert.Equal(Color.FromRgb(255,120,0),Assert.IsType<SolidColorBrush>(strip.FindResource("ImageSources.Accent")).Color);
         Assert.Single(Assert.IsAssignableFrom<Panel>(f.Shell.SourceStripContent).Children.Cast<UIElement>());
@@ -1073,10 +1073,66 @@ public sealed class ResultWorkspaceProductionTests
         Console.WriteLine("MODE_POPUP opened");Console.Out.Flush();
         var popup=Assert.IsType<System.Windows.Controls.Primitives.Popup>(mode.Template.FindName("Popup",mode));
         Assert.True(popup.IsOpen);Assert.NotNull(popup.Child);Assert.True(popup.Child.IsVisible);
-        mode.SelectedIndex=1;Pump();Assert.True(strip.IsSelectMode);Assert.Equal("运行选中", Assert.IsType<string>(mode.ToolTip));
+        mode.SelectedIndex=1;Pump();Assert.True(strip.IsSelectMode);Assert.Equal(SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("运行选中"), Assert.IsType<string>(mode.ToolTip));
         mode.IsDropDownOpen=false;Pump();
         provider.Toggle();Pump();Assert.True(popup.IsOpen);mode.SelectedIndex=0;Pump();Assert.False(strip.IsSelectMode);
         mode.IsDropDownOpen=false;Pump();
+    });
+    [Fact]
+    public void Original_content_switch_runs_through_formal_acceptance_history_restore_and_host_lifetime()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;
+        var path=Path.Combine(f.Directory,"switch.png");var png=new PngBitmapEncoder();
+        png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var file=File.Create(path))png.Save(file);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}},selectFirstAdded:true);Pump();
+        source.AutoSwitchEnabled=true;Pump();f.Publish(f.Source,67);Pump();
+        var strip=f.View.ImagePreviewContent;
+        var original=Assert.IsType<SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch>(strip.FindName("AutoSwitch"));
+        var toggle=Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(original.FindName("TO"));
+        var formalWriter=source.ConfigurationWriter!;var writes=0;var starts=0;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel).GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        manager.WorkflowExecutionStarted+=(_,_)=>starts++;
+        var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;
+        void Click(){typeof(System.Windows.Controls.Primitives.ToggleButton).GetMethod("OnClick",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(toggle,null);Pump();}
+        void Snapshot(string state)
+        {
+            strip.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(strip.ActualWidth),(int)Math.Ceiling(strip.ActualHeight),96,96,PixelFormats.Pbgra32);
+            bitmap.Render(strip);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-strip-original-"+state+".png"));encoder.Save(file);
+        }
+        void Verify(bool value)
+        {
+            Assert.Equal(value,ImageSourcePolicy.Read(f.Source)!.AutoSwitchEnabled);Assert.Equal(value,source.AutoSwitchEnabled);
+            Assert.Equal(value,strip.AutoSwitchEnabled);Assert.Equal(value,original.IsChecked);Assert.Equal(value,toggle.IsChecked);
+            Assert.Equal(0,starts);
+        }
+        Verify(true);Assert.Equal(0,writes);
+        source.ConfigurationWriter=_=>{writes++;throw new InvalidOperationException("拒绝开关接纳");};
+        Click();Verify(true);Assert.Equal(1,writes);Assert.Equal(position,history.Position);
+        Assert.Contains("拒绝开关接纳",strip.Status??string.Empty);
+        Assert.NotNull(f.Presenter.OutputPane.CurrentFrame);
+        source.ConfigurationWriter=candidate=>{writes++;formalWriter(candidate);};
+        var countedWriter=source.ConfigurationWriter;
+        Click();Verify(false);Assert.Equal(2,writes);Assert.Equal(position+1,history.Position);Snapshot("off");
+        Assert.Null(f.Presenter.OutputPane.CurrentFrame);Assert.Equal(new byte[]{67},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        Click();Verify(true);Assert.Equal(3,writes);Assert.Equal(position+2,history.Position);Snapshot("on");
+        var json=System.Text.Json.JsonSerializer.Serialize<WorkflowNodeBase>(f.Source,WorkflowSerializationOptions.Default);
+        var restored=System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json,WorkflowSerializationOptions.Default)!;
+        Assert.True(ImageSourcePolicy.Read(restored)!.AutoSwitchEnabled);
+        history.Undo();Pump();Verify(false);history.Redo();Pump();Verify(true);Assert.Equal(3,writes);
+        source.IsReadOnly=true;Pump();toggle.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty,false);Pump();
+        Verify(true);Assert.Equal(3,writes);Assert.Equal(position+2,history.Position);
+        source.IsReadOnly=false;Pump();
+        f.Host.Content=null;Pump();toggle.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty,false);Pump();
+        Assert.True(source.AutoSwitchEnabled);Assert.Equal(3,writes);Assert.Equal(0,starts);
+        f.Host.Content=f.View;Pump();Assert.Same(original,strip.FindName("AutoSwitch"));Verify(true);
+        // Projection may have been reinstalled on reload; count the current formal writer.
+        if(!ReferenceEquals(source.ConfigurationWriter,countedWriter))
+        {var reloadedWriter=source.ConfigurationWriter!;source.ConfigurationWriter=candidate=>{writes++;reloadedWriter(candidate);};}
+        Click();Verify(false);Assert.Equal(4,writes);Assert.Equal(position+3,history.Position);
     });
     [Fact]
     public void Source_direction_keys_keep_focus_after_actual_workflow_execution()

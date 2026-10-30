@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "resources": [
+    {
+      "oldKey": "controls/native/input/vm.pcui/hikpcui.listview/booleancontrol.baml",
+      "key": "controls/inputs/contenttoggleswitch.baml",
+      "present": true,
+      "oldAbsent": true
+    },
+    {
+      "oldKey": "themes/assets/native/composition/apps.xmlui/resources/swith_off_dark.png",
+      "key": "themes/assets/inputs/switch/off-dark.png",
+      "present": true,
+      "oldAbsent": true
+    },
+    {
+      "oldKey": "themes/assets/native/composition/apps.xmlui/resources/swith_on_dark.png",
+      "key": "themes/assets/inputs/switch/on-dark.png",
+      "present": true,
+      "oldAbsent": true
+    }
+  ],
+  "WpfSha256": "A816F60EB36BBA843467E04F4324E749A233679F171E969B0F2C78ADEC7F6062",
+  "oldProductFilesAbsent": true,
+  "assetsUnchanged": true,
+  "limits": "资源/路径/原图标核验，不代替控件功能或VS人工"
+}

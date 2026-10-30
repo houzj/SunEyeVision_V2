@@ -1,7 +1,7 @@
-<UserControl x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources" x:Name="ImagePanel" Loaded="OnLoaded" Unloaded="OnUnloaded" Focusable="False" ClipToBounds="True" ToolTip="{Binding Status, ElementName=ImagePanel}" Height="125" Background="{DynamicResource ImageSources.Background}">
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:inputs="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs" xmlns:localization="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources" x:Name="ImagePanel" Loaded="OnLoaded" Unloaded="OnUnloaded" Focusable="False" ClipToBounds="True" ToolTip="{Binding Status, ElementName=ImagePanel}" Height="125" Background="{DynamicResource ImageSources.Background}">
 <UserControl.Resources>
     <ResourceDictionary>
-<ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceMenu.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
+<ResourceDictionary.MergedDictionaries><x:Static Member="localization:LocalizationResourceDictionary.Instance" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceMenu.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
 
   <Style x:Key="ImageSources.EmptyCheckBoxFocusVisual">
     <Setter Property="Control.Template"><Setter.Value><ControlTemplate>
@@ -93,15 +93,15 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Setter Property="FrameworkElement.ToolTip" Value="收起" />
+    <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource 收起}" />
     <Style.Triggers>
       <Trigger Property="ToggleButton.IsChecked" Value="False">
-        <Setter Property="FrameworkElement.ToolTip" Value="展开" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_Unwarp}" />
       </Trigger>
     </Style.Triggers>
   </Style>
 
-<Style x:Key="ImageSources.AutoSwitchStyle" TargetType="ToggleButton"><Setter Property="Margin" Value="2"/><Setter Property="Padding" Value="0"/><Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Image x:Name="shape" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/auto-off.png"/><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="shape" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/auto-on.png"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <local:ImageCountVisibilityConverter x:Key="IntToVisibilityConverter" />
 
@@ -253,11 +253,19 @@
     </ResourceDictionary>
   </UserControl.Resources>
 <StackPanel><Grid Height="40" Background="{DynamicResource ImageSources.Background}"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="130"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
-<StackPanel Grid.Column="1" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"><TextBlock Text="自动切换" Foreground="{DynamicResource ImageSources.Foreground}" FontSize="14" VerticalAlignment="Center" Margin="5,1,15,0"/><ToggleButton Style="{StaticResource ImageSources.AutoSwitchStyle}" x:Name="AutoSwitch" IsChecked="{Binding AutoSwitchEnabled, ElementName=ImagePanel, Mode=OneWay}" Click="AutoSwitchClick" VerticalAlignment="Center" ToolTip="自动切换"/></StackPanel>
+<StackPanel Grid.Column="1" Height="40" HorizontalAlignment="Right" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}">
+  <TextBlock Text="{Binding AutoSwitchText, ElementName=ImagePanel}" ToolTip="{Binding AutoSwitchToolTip, ElementName=ImagePanel}" Foreground="{DynamicResource ImageSources.Foreground}" FontSize="14" VerticalAlignment="Center" Margin="5,1,-5,0"/>
+  <ContentControl Margin="20,0,0,0">
+    <inputs:ContentToggleSwitch x:Name="AutoSwitch" Margin="5,4,0,0" IsChecked="{Binding AutoSwitchEnabled, ElementName=ImagePanel, Mode=TwoWay}" VerticalAlignment="Center" ToolTip="{Binding AutoSwitchToolTip, ElementName=ImagePanel}">
+      <inputs:ContentToggleSwitch.OffContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/off-dark.png" /></inputs:ContentToggleSwitch.OffContent>
+      <inputs:ContentToggleSwitch.OnContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/on-dark.png" /></inputs:ContentToggleSwitch.OnContent>
+    </inputs:ContentToggleSwitch>
+  </ContentControl>
+</StackPanel>
 <ComboBox Style="{StaticResource ListViewComboBoxGrayStyle}" x:Name="Mode" DisplayMemberPath="DisplayName" SelectedValuePath="Value" ToolTip="{Binding SelectedItem.DisplayName, RelativeSource={RelativeSource Self}}" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Grid.Column="2" Width="90" Margin="20,5" SelectedIndex="{Binding ModeIndex, ElementName=ImagePanel, Mode=OneWay}" SelectionChanged="ModeChanged" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"></ComboBox>
 <DockPanel Grid.Column="0" Height="28" Margin="100,5,0,5" LastChildFill="True"><DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsImporting, ElementName=ImagePanel}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style><Button DockPanel.Dock="Right" Content="取消导入" Click="CancelImportClick"/><TextBlock Foreground="{DynamicResource ImageSources.Foreground}" Text="{Binding Status, ElementName=ImagePanel}" TextTrimming="CharacterEllipsis"/></DockPanel><ToggleButton Grid.Column="4" Style="{StaticResource DisplayHideBtnStyle}" IsChecked="{Binding IsExpanded, ElementName=ImagePanel, Mode=TwoWay}"/>
 </Grid><Grid Margin="5,-40,5,5" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}">  <Grid Name="imageListGrid">
-    <Button Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="从头执行" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
+    <Button Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="{DynamicResource Lang_FirstImage}" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
       <Control.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <Border Name="bd" BorderThickness="1" Background="{DynamicResource ImageSources.Background}" BorderBrush="{DynamicResource ImageSources.Border}">
@@ -293,7 +301,7 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <Grid Background="#FF000000" Width="72" Height="52" Margin="2" Tag="{Binding ElementName=BtnDelete}" MouseEnter="Grid_MouseEnter" MouseLeave="Grid_MouseLeave" MouseDown="Grid_MouseDown"><Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0} {1}"><Binding Path="Name"/><Binding Path="ResourceError"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
-            <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu Style="{StaticResource ImageSources.ContextMenuStyle}"><MenuItem Header="打开所在目录" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
+            <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu Style="{StaticResource ImageSources.ContextMenuStyle}"><MenuItem Header="{DynamicResource Lang_OpenFileDir}" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
             <Button Name="BtnDelete" Margin="0,1,1,0" VerticalAlignment="Top" HorizontalAlignment="Right" Content="×" Height="16" Width="16" Visibility="Collapsed" Tag="{Binding}" Click="BtnDelete_Click">
               <Control.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -339,7 +347,7 @@
       </ItemsControl.ItemContainerStyle>
     </ListBox>
     <StackPanel Orientation="Horizontal" Height="21" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,11,1,1" IsHitTestVisible="False">
-      <TextBlock Text="图像源" Background="#00FFFFFF" Foreground="{DynamicResource ImageSources.Foreground}" FontWeight="Bold" FontSize="14" TextAlignment="Center" />
+      <TextBlock Text="{DynamicResource Lang_ImgSoc}" Background="#00FFFFFF" Foreground="{DynamicResource ImageSources.Foreground}" FontWeight="Bold" FontSize="14" TextAlignment="Center" />
       <TextBlock Background="#00FFFFFF" Foreground="{DynamicResource ImageSources.Foreground}" FontWeight="Bold" FontSize="14" TextAlignment="Center">
         <TextBlock.Text>
           <MultiBinding StringFormat=" ({0}/{1})">
@@ -350,7 +358,7 @@
       </TextBlock>
     </StackPanel>
     <Grid Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="1,1,20,1">
-      <Button Name="BtnImageAdd" ToolTip="添加图像" Content="添加图片" HorizontalAlignment="Left" Height="34" Width="34" Margin="5,0,0,0" Click="BtnImageAdd_Click">
+      <Button Name="BtnImageAdd" ToolTip="{DynamicResource Lang_ImageAdd}" Content="{DynamicResource 添加图片}" HorizontalAlignment="Left" Height="34" Width="34" Margin="5,0,0,0" Click="BtnImageAdd_Click">
         <Control.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-files-normal.png" />
@@ -368,7 +376,7 @@
           </ControlTemplate>
         </Control.Template>
       </Button>
-      <Button Name="BtnImageAddFolder" ToolTip="添加图像文件夹" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Margin="44,0,0,0" Click="BtnImageAddFolder_Click">
+      <Button Name="BtnImageAddFolder" ToolTip="{DynamicResource 添加图像文件夹}" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="{DynamicResource 添加目录}" HorizontalAlignment="Left" Height="34" Width="34" Margin="44,0,0,0" Click="BtnImageAddFolder_Click">
         <Control.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
@@ -387,7 +395,7 @@
         </Control.Template>
       </Button>
       <StackPanel Orientation="Horizontal" Margin="83,0,0,0">
-        <Button Name="BtnImageAddRpFolder" IsEnabled="False" ToolTip="RP/3D：当前未接入" Margin="0,0,10,0" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Visibility="Collapsed" Click="BtnImageAddRpFolder_Click">
+        <Button Name="BtnImageAddRpFolder" IsEnabled="False" ToolTip="RP/3D：当前未接入" Margin="0,0,10,0" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="{DynamicResource 添加目录}" HorizontalAlignment="Left" Height="34" Width="34" Visibility="Collapsed" Click="BtnImageAddRpFolder_Click">
           <Control.Template>
             <ControlTemplate TargetType="{x:Type Button}">
               <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
@@ -405,7 +413,7 @@
             </ControlTemplate>
           </Control.Template>
         </Button>
-        <Button Name="BtnImageClear" ToolTip="清空图像" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="清空图片" HorizontalAlignment="Left" Height="34" Width="34" Click="BtnImageClear_Click">
+        <Button Name="BtnImageClear" ToolTip="{DynamicResource 清空图像}" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="{DynamicResource 清空图片}" HorizontalAlignment="Left" Height="34" Width="34" Click="BtnImageClear_Click">
           <Control.Template>
             <ControlTemplate TargetType="{x:Type Button}">
               <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/clear-normal.png" />

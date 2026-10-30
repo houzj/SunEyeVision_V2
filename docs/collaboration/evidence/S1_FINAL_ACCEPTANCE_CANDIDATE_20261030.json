@@ -1,0 +1,61 @@
+{
+  "stage": "S1本地图像源候选待人工验收",
+  "sharedControlSourceCommit": "e83b066d1057d951003d357e09fb2f89f25bdb79",
+  "sourceBaselineBeforeBatch": "ff24a7ad",
+  "scope": "完整组件职责处置及正式PCUI开关/语言整批接入；不称S1或S1-S4目标完成",
+  "fullBuild": {
+    "log": "Release/_validation/s1-original-switch-integration-build.log",
+    "errors": 0,
+    "warnings": 6487
+  },
+  "uiBuild": {
+    "log": "Release/_validation/s1-original-switch-ui-build.log",
+    "errors": 0,
+    "warnings": 6484,
+    "changedPreviouslyTestedWpfDll": true
+  },
+  "finalProductionRegression": {
+    "attempt": 36,
+    "passed": 359,
+    "failed": 0,
+    "receipt": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\receipt.json",
+    "log": "Release/_validation/s1-final-acceptance-regression.log",
+    "frozenProduct": "Release/_validation/s1-final-acceptance-product.json",
+    "productStableThroughRegression": true
+  },
+  "coverage": {
+    "declaredMemberDisposition": 143,
+    "unmappedMember": 0,
+    "declaredProperties": 22,
+    "namedOccurrences": 33,
+    "assetCount": 21,
+    "localTemplatesWithFocusDependencies": 10,
+    "classificationIsNotRuntimeEquivalence": true
+  },
+  "productionEvidence": [
+    "原开关真实内部TO双向事件、正式接纳和拒绝恢复",
+    "历史/序列化、像素只显示、零隐式执行",
+    "只读及退役恢复、同实例重载、当前来源重入",
+    "模式本地化不重置业务、多个实例独立Image",
+    "缩略刷新真实容器/焦点及下一方向键保持，故不重写正确投影"
+  ],
+  "visual": {
+    "offImage": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\source-strip-original-off.png",
+    "onImage": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\source-strip-original-on.png",
+    "actualVisualStudioDesignerVerified": false,
+    "manualAccepted": false
+  },
+  "notImplemented": [
+    "远程文件/目录部署分支",
+    "RP/3D导入（禁用折叠）",
+    "订阅目录后端报告/自动刷新",
+    "图像随方案打包保存（本次用户仅询问，非新增实施）"
+  ],
+  "notExpanded": [
+    "Group",
+    "S2-S4提前迁移",
+    "主界面整体重组",
+    "主仓合并或推送"
+  ],
+  "phaseSealed": false
+}

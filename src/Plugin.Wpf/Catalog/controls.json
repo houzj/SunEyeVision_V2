@@ -6566,6 +6566,63 @@
         "位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。",
         "Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
       ]
+    },
+    {
+      "id": "B01.content-toggle-switch",
+      "assembly": "VM.PcUI",
+      "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+      "originalType": "HikPcUI.ListView.BooleanControl",
+      "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+      "status": "中立原件及dark资源、13项组件检查和同版回归通过；工作流接入、VS和人工待验",
+      "sourceFiles": [
+        {
+          "originalAssembly": "VM.PcUI",
+          "originalType": "HikPcUI.ListView.BooleanControl",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml",
+          "originalSha256": "ee87125a5ddd8156f17ebd08f8a7b88454a0689c7b42dbf91cdcda9691b6a3e7",
+          "localPath": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+          "localSha256": "09f3acc0d43fe730d2612b81f7b7158513452706a0c3d0f42a80071fcb439936"
+        },
+        {
+          "originalAssembly": "VM.PcUI",
+          "originalType": "HikPcUI.ListView.BooleanControl",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
+          "originalSha256": "733ab6a61c89f24572e0724c4e994f35d646015cfccb94c19993290629e3b83e",
+          "localPath": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+          "localSha256": "d4e4e02178190d26209abcebba422f86ad9b5ad0b90931386753420e38fc51c6"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "LocalImageListView.Boolean_sub resource",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/resources/swith_off_dark.png",
+          "originalSha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/off-dark.png",
+          "localSha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "LocalImageListView.Boolean_sub resource",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/resources/swith_on_dark.png",
+          "originalSha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/on-dark.png",
+          "localSha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403"
+        }
+      ],
+      "consumers": [
+        "工作流ImageSourceStrip待接入；不替代Apps.XmlUI参数开关家族"
+      ],
+      "dependencies": [
+        "WPF UserControl/ToggleButton/ContentControl",
+        "控件内部ToggleButtonStyle1及TO",
+        "调用者独立创建的dark Image；Stretch=None"
+      ],
+      "behaviorNotes": [
+        "OnCheckedChange保留原内部ToggleButton发送者及Checked/Unchecked语义",
+        "程序回填也可通知；宿主初始化/重入/退役门禁由消费者承担",
+        "无旧名别名，无SDK业务接口，无额外服务或持有者"
+      ],
+      "validation": "docs/collaboration/evidence/B01_CONTENT_TOGGLE_VALIDATION_20261030.json"
     }
   ],
   "currentIntegration": {

@@ -1,20 +1,18 @@
-using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
+namespace SunEyeVision.Plugin.Wpf.Controls.Inputs;
 
-public partial class BooleanControl : UserControl, IComponentConnector
+public partial class ContentToggleSwitch : UserControl, IComponentConnector
 {
 	public delegate void IsCheckedChange(object sender, RoutedEventArgs e);
 
-	public static readonly DependencyProperty OffContentProperty = DependencyProperty.Register("OffContent", typeof(object), typeof(BooleanControl), new PropertyMetadata(null));
+	public static readonly DependencyProperty OffContentProperty = DependencyProperty.Register("OffContent", typeof(object), typeof(ContentToggleSwitch), new PropertyMetadata(null));
 
-	public static readonly DependencyProperty OnContentProperty = DependencyProperty.Register("OnContent", typeof(object), typeof(BooleanControl), new PropertyMetadata(null));
+	public static readonly DependencyProperty OnContentProperty = DependencyProperty.Register("OnContent", typeof(object), typeof(ContentToggleSwitch), new PropertyMetadata(null));
 
-	public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register("IsChecked", typeof(bool), typeof(BooleanControl), new PropertyMetadata(false));
+	public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register("IsChecked", typeof(bool), typeof(ContentToggleSwitch), new PropertyMetadata(false));
 
 	public object OffContent
 	{
@@ -54,7 +52,7 @@ public partial class BooleanControl : UserControl, IComponentConnector
 
 	public event IsCheckedChange OnCheckedChange;
 
-	public BooleanControl()
+	public ContentToggleSwitch()
 	{
 		InitializeComponent();
 	}

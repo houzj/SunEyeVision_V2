@@ -153,7 +153,7 @@
           <ContentPresenter Content="{Binding PropertyListContent, ElementName=View}" />
         </TabItem>
       </TabControl>
-      <ContentPresenter Grid.Row="1" MaxHeight="110" Content="{Binding SourceStripContent, ElementName=View}" />
+      <ContentPresenter Grid.Row="1" Content="{Binding SourceStripContent, ElementName=View}" />
     </Grid>
     <GridSplitter Height="2" Grid.Row="1" HorizontalAlignment="Stretch" Background="Transparent" />
     <Grid Grid.Row="2">

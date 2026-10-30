@@ -11,6 +11,6 @@ public sealed class BlobResultViewFactory : IToolPresentationFactory
     {
         var errors=projection.Validate(schema);
         if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(e=>e.Message)));
-        return new BlobResultView();
+        return new BlobResultView(schema,projection);
     }
 }

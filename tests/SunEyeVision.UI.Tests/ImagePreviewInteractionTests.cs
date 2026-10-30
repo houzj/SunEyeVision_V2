@@ -14,7 +14,7 @@ using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Shell.Controls.Panels;
+
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;

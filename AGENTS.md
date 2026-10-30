@@ -43,7 +43,7 @@
 
 ## 构建与验收
 
-- 自动测试与手动测试均针对主仓库正式 Release 目录 `Release/SunEyeVision_v1.0.0/SunEyeVision` 的同一版本产物；测试数据与日志在 Release 下按用途隔离，不另复制仓库、程序或算法库，不以其他隔离包代替正式 Release 验收。
+- 2026-10-30用户最新决定：各独立worktree自行构建、测试和阶段人工验收自己实现的功能，按集成需要再合并统一基线；不为独立控件开发等待主仓构建窗口。当前worktree的程序、测试数据与日志使用其自身Release目录，不写入或覆盖其他worktree产物。阶段验证与主线合并后的集成验收分别记录，不以本地通过替代主线集成回归。
 - 跨卷保存等确实需要另一卷的检查，程序仍使用正式 Release；另一卷只放限量的一次性测试数据，验证记录归入 Release 后立即清理，不创建程序、算法库或仓库副本。
 
 - UI：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore`

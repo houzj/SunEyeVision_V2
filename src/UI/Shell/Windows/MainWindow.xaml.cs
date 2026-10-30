@@ -13,7 +13,6 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
-using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;

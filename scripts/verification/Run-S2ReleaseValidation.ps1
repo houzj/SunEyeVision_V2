@@ -5,15 +5,16 @@ $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('RuntimeEditor','DesignTime','FieldEditing','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-# Formal validation must run from the primary checkout, before creating any output.
+# Validate only this checkout's Release output; independent worktrees are supported.
 $gitDir = git -C $root rev-parse --absolute-git-dir
 if ($LASTEXITCODE -ne 0) { throw '无法识别正式验证仓库。' }
 $commonDir = git -C $root rev-parse --git-common-dir
 if ($LASTEXITCODE -ne 0) { throw '无法识别正式验证仓库的公共 Git 目录。' }
 $gitDir = [IO.Path]::GetFullPath($gitDir, $root).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
 $commonDir = [IO.Path]::GetFullPath($commonDir, $root).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
-if (-not [string]::Equals($gitDir, $commonDir, [StringComparison]::OrdinalIgnoreCase)) {
-    throw '正式验证必须从主仓工作目录执行，不能使用独立 worktree 的 Release。'
+$workspaceRoot=git -C $root rev-parse --show-toplevel
+if($LASTEXITCODE -ne 0 -or -not [string]::Equals([IO.Path]::GetFullPath($workspaceRoot).TrimEnd('\','/'),$root.TrimEnd('\','/'),[StringComparison]::OrdinalIgnoreCase)){
+    throw '验证必须使用当前工作区自身的Release产物。'
 }
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -137,7 +138,8 @@ $process=New-Object System.Diagnostics.Process
 $process.StartInfo=$launch
 if(-not $process.Start()){throw 'S2自有检查进程启动失败'}
 $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
-$finished=$process.WaitForExit(90000)
+$timeoutMs=if($Track -eq 'ImageSourceRecovery'){300000}else{90000}
+$finished=$process.WaitForExit($timeoutMs)
 if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 [IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)

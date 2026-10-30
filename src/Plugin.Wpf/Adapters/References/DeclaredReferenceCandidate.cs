@@ -5,6 +5,8 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 public sealed record DeclaredReferenceCandidate(string Label,string NodeId,string? ScopeId,Port Output,
     IReadOnlyList<string> MemberPath)
 {
+    /// <summary>Display metadata only; grouping and binding retain ScopeId/NodeId identity.</summary>
+    public string NodeDisplayName { get; init; } = NodeId;
     public override string ToString()=>Label;
     public NumericStorage? SelectedStorage=>ProjectStorage(Output.Type,Output.Storage,0).Storage;
     private (TypeRef Type,NumericStorage? Storage) ProjectStorage(TypeRef type,NumericStorage? storage,int position)

@@ -9,7 +9,6 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Shell.Controls.Panels;
 
 namespace SunEyeVision.UI.Shared
 {

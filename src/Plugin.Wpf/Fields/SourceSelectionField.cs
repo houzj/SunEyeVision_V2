@@ -35,7 +35,7 @@ public sealed class SourceSelectionField : UserControl
         var options=new StackPanel{Margin=new Thickness(89,3,0,0)};options.Children.Add(_index);
         var actions=new StackPanel{Orientation=Orientation.Horizontal};
         var apply=new Button{Content="应用序号",Margin=new Thickness(3)};var restore=new Button{Content="撤销",Margin=new Thickness(3)};actions.Children.Add(apply);actions.Children.Add(restore);options.Children.Add(actions);panel.Children.Add(options);
-        _current.IsHitTestVisible=false;_current.FontSize=14;_current.Margin=new Thickness(11,0,18,0);_current.VerticalAlignment=VerticalAlignment.Center;_current.TextTrimming=TextTrimming.CharacterEllipsis;Grid.SetColumn(_current,1);row.Children.Add(_current);_error.Margin=new Thickness(89,2,0,0);panel.Children.Add(_error);Content=panel;
+        _current.IsHitTestVisible=false;_current.FontSize=14;_current.Margin=new Thickness(11,0,18,0);_current.VerticalAlignment=VerticalAlignment.Center;_current.TextTrimming=TextTrimming.CharacterEllipsis;Grid.SetColumn(_current,1);row.Children.Add(_current);Content=panel;
         _sources.DropDownOpened+=(_,_)=>RefreshCatalog();
         _sources.SelectionChanged+=(_,_)=>
         {

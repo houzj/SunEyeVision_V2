@@ -23,7 +23,7 @@ public static class ImageFileImport
                 token.ThrowIfCancellationRequested();
                 if (File.Exists(path))
                 {
-                    if (Extensions.Contains(Path.GetExtension(path))) files.Add(path);
+                    if (Extensions.Contains(System.IO.Path.GetExtension(path))) files.Add(path);
                 }
                 else if (depth == 0 && Directory.Exists(path)) Visit(path, depth + 1);
             }

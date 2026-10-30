@@ -499,7 +499,7 @@ public sealed class ResultWorkspaceProductionTests
         var visible=bounds;
         for(DependencyObject? ancestor=VisualTreeHelper.GetParent(bar);ancestor is not null&&!ReferenceEquals(ancestor,f.Shell);ancestor=VisualTreeHelper.GetParent(ancestor))
             if(ancestor is FrameworkElement element)
-                visible.Intersect(element.TransformToAncestor(f.Shell).TransformBounds(new Rect(element.RenderSize)));
+                { var ancestorBounds=element.TransformToAncestor(f.Shell).TransformBounds(new Rect(element.RenderSize)); if(ancestorBounds.Top>bounds.Top||ancestorBounds.Bottom<bounds.Bottom) Console.WriteLine($"1051_CLIP {element.GetType().Name} {element.Name}: {ancestorBounds}; bar={bounds}; desired={element.DesiredSize}"); visible.Intersect(ancestorBounds); }
         Assert.True(visible.Height>=bounds.Height-0.5,"水平滚动条被结果区某级宿主裁切。");
         scroll.ScrollToHorizontalOffset(scroll.ScrollableWidth);Until(()=>scroll.HorizontalOffset>0);Pump();
         Assert.InRange(Enumerable.Range(0,list.Items.Count).Count(index=>list.ItemContainerGenerator.ContainerFromIndex(index) is not null),1,200);

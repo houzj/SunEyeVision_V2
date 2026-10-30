@@ -31,8 +31,9 @@ public sealed partial class BlobParameterDefinition
             throw new InvalidDataException("Blob input editor declarations differ from the input model.");
         foreach(var group in root.Elements("Group"))
         {
-            Shape(group,["page","section"],["Parameter"]);
+            Shape(group,["page","section","advanced"],["Parameter"]);
             Required(group,"page");Required(group,"section");
+            if(group.Attribute("advanced") is not null)Boolean(group,"advanced");
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
@@ -157,6 +158,7 @@ public sealed partial class BlobParameterDefinition
     public string Label(string id)=>Required(_fields[id],"label");
     public string Page(string id)=>Required(_fields[id].Parent!,"page");
     public string Section(string id)=>Required(_fields[id].Parent!,"section");
+    public bool Advanced(string id)=>_fields[id].Parent!.Attribute("advanced") is not null&&Boolean(_fields[id].Parent!,"advanced");
     public T Default<T>(string id)
     {
         if(typeof(BlobSettings).GetProperty(id)?.PropertyType!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);

@@ -19,21 +19,22 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     private string? _pending;
     private string? _ownedSourceError;
     private bool _disposed,_suspended,_committing,_restoring,_opening,_open;
-    private long _rawVersion,_treeVersion,_attachVersion;
+    private long _rawVersion,_treeVersion,_attachVersion,_selectionVersion;
     private TextExpressionSnapshot? _snapshot;
     private Dictionary<DeclaredReferenceCandidate,DeclaredReferenceCandidate> _originalCandidates=new(ReferenceEqualityComparer.Instance);
     private BrowseLease? _browse;
     private ReferenceTreeNode? _selected;
-    private sealed record BrowseLease(long RawVersion,long TreeVersion,long Acceptance,TextBox Text,
+    private sealed record BrowseLease(long RawVersion,long TreeVersion,long Acceptance,TextBox Text,BindingExpression Binding,
         string Raw,int Caret,int Selection,int Start,int End);
     public event PropertyChangedEventHandler? PropertyChanged;
-    public event Action<int>? RestoreCaretRequested;
+    public event Action<Action,string,int,Func<bool>>? ProjectInsertionRequested;
+    internal bool HasPendingEdits=>!_disposed&&_pending is not null;
     public string RawText
     {
         get=>_pending??AcceptedText();
         set
         {
-            if(!Current()||_suspended||_restoring||value==RawText)return;
+            if(!Current()||_suspended||value==RawText)return;
             _pending=value??"";_rawVersion++;InvalidateTree();ClearSourceError();
         }
     }
@@ -58,12 +59,15 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     {
         if(_disposed||ReferenceEquals(text,_text))return;
         var version=++_attachVersion;
+        if(_text is {} oldText)oldText.SelectionChanged-=OnSelectionChanged;
         if(_text is {} previous&&previous.GetBindingExpression(TextBox.TextProperty) is {DataItem:var item}
             &&ReferenceEquals(item,this))BindingOperations.ClearBinding(previous,TextBox.TextProperty);
         if(_disposed||version!=_attachVersion)return;
-        _text=text;InvalidateTree();
+        _text=text;if(text is not null)text.SelectionChanged+=OnSelectionChanged;InvalidateTree();
         if(text is not null&&Current())Notify(nameof(RawText));
     }
+    private void OnSelectionChanged(object sender,System.Windows.RoutedEventArgs args)
+    {if(ReferenceEquals(sender,_text))_selectionVersion++;}
     private string AcceptedText()=>_state.Accepted is ConstantSetting {Value:string text}?text:"";
     private bool Current()
     {
@@ -76,6 +80,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     {
         if(_suspended||!SameRaw(lease.RawVersion,lease.Raw)||lease.TreeVersion!=_treeVersion
             ||lease.Acceptance!=_state.AcceptanceVersion||!ReferenceEquals(_text,lease.Text)
+            ||!ReferenceEquals(lease.Binding,lease.Text.GetBindingExpression(TextBox.TextProperty))
             ||lease.Text.Text!=lease.Raw||lease.Text.SelectionStart!=lease.Caret||lease.Text.SelectionLength!=lease.Selection)return false;
         if(checkReceipt)
         {
@@ -113,7 +118,9 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
         try
         {
             InvalidateTree();
-            var lease=new BrowseLease(_rawVersion,_treeVersion,_state.AcceptanceVersion,text,raw,caret,text.SelectionLength,start,end);
+            var binding=text.GetBindingExpression(TextBox.TextProperty);
+            if(binding is null||!ReferenceEquals(binding.DataItem,this)||binding.ParentBinding.Path?.Path!=nameof(RawText))return;
+            var lease=new BrowseLease(_rawVersion,_treeVersion,_state.AcceptanceVersion,text,binding,raw,caret,text.SelectionLength,start,end);
             if(!LeaseCurrent(lease,false))return;
             TextExpressionSnapshot snapshot;
             ReferenceTreeNode[] nodes;
@@ -140,7 +147,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
                         throw new ArgumentException("文本来源只支持已声明的整数、浮点或字符串。");
                 }
                 nodes=candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId))
-                    .Select(group=>new ReferenceTreeNode(group.Key.NodeId,
+                    .Select(group=>new ReferenceTreeNode(group.First().NodeDisplayName,
                         Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(candidate.Label,Array.Empty<ReferenceTreeNode>(),candidate)).ToArray())))
                     .ToArray();
             }
@@ -179,12 +186,24 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
         ClearSourceError();
         if(!LeaseCurrent(lease))return;
         // Host acceptance/notification is deliberately outside the preparation catch.
-        if(!Accept(proposed,lease.RawVersion,lease.Raw))return;
-        if(!Current())return;
-        Close();
-        _restoring=true;
-        try{RestoreCaretRequested?.Invoke(proposed.Length-(lease.Raw.Length-lease.End));}
-        finally{_restoring=false;}
+        var initialSelectionVersion=_selectionVersion;var selectionChangedDuringAccept=false;
+        Accept(proposed,lease.RawVersion,lease.Raw,
+            ()=>selectionChangedDuringAccept=initialSelectionVersion!=_selectionVersion,
+            project=>
+            {
+                if(selectionChangedDuringAccept){project();return;}
+                var rawVersion=_rawVersion;var acceptance=_state.AcceptanceVersion;var attachment=_attachVersion;
+                bool OwnsCaret()=>Current()&&!_suspended&&_pending is null&&_rawVersion==rawVersion
+                    &&_state.AcceptanceVersion==acceptance&&_attachVersion==attachment
+                    &&ReferenceEquals(_text,lease.Text)&&AcceptedText()==proposed
+                    &&ReferenceEquals(lease.Binding,lease.Text.GetBindingExpression(TextBox.TextProperty))
+                    &&_selectionVersion==initialSelectionVersion&&_browse is null&&!_open;
+                var handler=ProjectInsertionRequested;
+                if(handler is null||!OwnsCaret()){project();return;}
+                _restoring=true;
+                try{handler(project,proposed,proposed.Length-(lease.Raw.Length-lease.End),OwnsCaret);}
+                finally{_restoring=false;}
+            });
     }
     private static bool Contains(IEnumerable<ReferenceTreeNode> nodes,ReferenceTreeNode target)
         =>nodes.Any(node=>ReferenceEquals(node,target)||Contains(node.EnumEntrysA,target));
@@ -212,26 +231,31 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
         if(!string.IsNullOrEmpty(error)){_state.SetEditError(error);return false;}
         return Accept(proposed,version,original);
     }
-    private bool Accept(string proposed,long version,string original)
+    private bool Accept(string proposed,long version,string original,Action? afterWrite=null,Action<Action>? projection=null)
     {
         if(_committing||!SameRaw(version,original))return false;
         var acceptedVersion=_state.AcceptanceVersion;_committing=true;
-        bool accepted;
-        try{accepted=_state.TrySet(new ConstantSetting(proposed));}
+        bool accepted=false;
+        try{accepted=_state.TrySet(new ConstantSetting(proposed));afterWrite?.Invoke();}
         finally
         {
             _committing=false;
-            if(Current()&&_state.AcceptanceVersion!=acceptedVersion&&version==_rawVersion)OnAccepted();
+            if(Current()&&_state.AcceptanceVersion!=acceptedVersion&&version==_rawVersion)OnAccepted(accepted?projection:null);
         }
         return accepted&&Current()&&!_state.HasInvalidInput;
     }
-    private void OnAccepted()
+    private void OnAccepted()=>OnAccepted(null);
+    private void OnAccepted(Action<Action>? projection)
     {
         if(!Current())return;
         _pending=null;var version=++_rawVersion;
         ParameterCleanup.Run(new Action[]{ClearSourceError,
             ()=>{if(Current()&&version==_rawVersion)InvalidateTree();},
-            ()=>{if(Current()&&version==_rawVersion)Notify(nameof(RawText));}});
+            ()=>{if(Current()&&version==_rawVersion)
+            {
+                void Project(){if(Current()&&version==_rawVersion)Notify(nameof(RawText));}
+                if(projection is null)Project();else projection(Project);
+            }}});
     }
     internal void SetSuspended(bool suspended)
     {
@@ -251,10 +275,11 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     {
         if(_disposed)return;_disposed=true;_rawVersion++;_attachVersion++;_state.ExplicitlyAccepted-=OnAccepted;
         var text=_text;var sourceError=_ownedSourceError;_ownedSourceError=null;
-        ParameterCleanup.Run(new Action[]{()=>{if(sourceError is not null&&!_state.IsDisposed&&_state.SourceError==sourceError)_state.SetSourceError("");},InvalidateTree,
+        ParameterCleanup.Run(new Action[]{()=>{if(text is not null)text.SelectionChanged-=OnSelectionChanged;},
+            ()=>{if(sourceError is not null&&!_state.IsDisposed&&_state.SourceError==sourceError)_state.SetSourceError("");},InvalidateTree,
             ()=>{if(text?.GetBindingExpression(TextBox.TextProperty) is {DataItem:var item}&&ReferenceEquals(item,this))
                 BindingOperations.ClearBinding(text,TextBox.TextProperty);},
-            ()=>{PropertyChanged=null;RestoreCaretRequested=null;_text=null;_pending=null;}});
+            ()=>{PropertyChanged=null;ProjectInsertionRequested=null;_text=null;_pending=null;}});
     }
     private sealed class TextCommand(Action<object?> action) : ICommand
     {

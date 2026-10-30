@@ -46,7 +46,7 @@ public sealed partial class BlobParameterDefinition
             string? pair=null;
             if(item.Attribute("pairWith") is { } partner)
             {if(!_fields.TryGetValue(partner.Value,out var endpoint))throw new InvalidDataException("Unknown Blob range endpoint.");pair=FieldId(endpoint,"fieldId");}
-            var layout=new FieldLayout(Page(name),Section(name),condition,pair,Minimum:Minimum(name),Maximum:Maximum(name),
+            var layout=new FieldLayout(Page(name),Section(name),condition,pair,Advanced:Advanced(name),Minimum:Minimum(name),Maximum:Maximum(name),
                 DecimalPlaces:DecimalPlaces(name),AllowReference:Boolean(item,"allowReference"),Increment:Increment(name));
             var presentation=new FieldPresentation(port.Id,Label(name),Section(name),bindings.Count,type.IsEnum?FieldEditorKind.Choice:FieldEditorKind.Scalar,
                 type.IsEnum?choices.Keys:null,type.IsEnum?choices:null){Layout=layout};
@@ -90,19 +90,47 @@ public sealed partial class BlobParameterDefinition
         if(bindings.Select(b=>b.Port.Id).Distinct(StringComparer.Ordinal).Count()!=bindings.Count)throw new InvalidDataException("Duplicate Blob editor field IDs.");
         return bindings.AsReadOnly();
     }
-    public InputValues ReadSettings(BlobSettings settings)=>new(SettingsSchema.Inputs,_bindings.ToDictionary(b=>b.Port.Id,b=>b.Read(settings),StringComparer.Ordinal));
+    public InputValues ReadSettings(BlobSettings settings)
+    {
+        var diagnostics=settings.Validate();
+        if(diagnostics.Count!=0)throw new ArgumentException(string.Join("; ",diagnostics.Select(item=>item.Message)));
+        foreach(var definition in CreateJudgments().Where(rule=>rule.Kind!=BlobJudgmentKind.Range))
+        {
+            var actual=settings.Judgments.SingleOrDefault(rule=>rule.Key==definition.Key)
+                ??throw new ArgumentException("Blob settings are missing a declared judgment: "+definition.Key);
+            if(actual.Minimum!=definition.Minimum||actual.Maximum!=definition.Maximum)
+                throw new ArgumentException("Blob Boolean judgment endpoints are fixed by XML: "+definition.Key);
+        }
+        return new(SettingsSchema.Inputs,_bindings.ToDictionary(b=>b.Port.Id,b=>PrepareField(b,b.Read(settings)),StringComparer.Ordinal));
+    }
+    private static object? PrepareField(SettingBinding field,object? value)
+    {
+        value=ValueRules.Freeze(field.Port,value);
+        if(value is long or double)
+        {
+            var number=Convert.ToDouble(value,CultureInfo.InvariantCulture);var layout=field.Presentation.Layout!;
+            if(layout.Minimum is {} min&&number<min||layout.Maximum is {} max&&number>max)
+                throw new ArgumentException("Blob settings field is outside XML editor bounds: "+field.Port.Id);
+        }
+        return value;
+    }
+    public BlobSettings MaterializeSettings(InputValues resolved)
+    {
+        var values = new InputValues(SettingsSchema.Inputs, resolved.CopyValues());
+        var result = new BlobSettings(false) { Judgments = Array.AsReadOnly(CreateJudgments().Select(rule =>
+            rule.Kind == BlobJudgmentKind.Range ? rule with { Enabled=false, Minimum=0, Maximum=0 } : rule with { Enabled=false }).ToArray()) };
+        foreach (var field in _bindings) result = field.Write(result, PrepareField(field,values.Get<object?>(field.Port.Id)));
+        var diagnostics = result.Validate();
+        if (diagnostics.Count != 0) throw new ArgumentException(string.Join("; ", diagnostics.Select(item => item.Message)));
+        return result.Freeze();
+    }
     public BlobSettings ApplySettings(BlobSettings settings,IReadOnlyDictionary<string,object?> changes)
     {
         var copy=settings.Freeze();
         foreach(var change in changes)
         {
             var field=_bindings.SingleOrDefault(b=>b.Port.Id==change.Key)??throw new ArgumentException("Unknown Blob settings field: "+change.Key);
-            var value=ValueRules.Freeze(field.Port,change.Value);
-            if(value is long or double)
-            {
-                var number=Convert.ToDouble(value,CultureInfo.InvariantCulture);var layout=field.Presentation.Layout!;
-                if(layout.Minimum is {} min&&number<min||layout.Maximum is {} max&&number>max)throw new ArgumentException("Blob settings field is outside XML editor bounds: "+change.Key);
-            }
+            var value=PrepareField(field,change.Value);
             copy=field.Write(copy,value);
         }
         return copy.Freeze();

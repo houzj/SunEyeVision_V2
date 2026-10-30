@@ -7,7 +7,7 @@ using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Shell.Controls.Panels;
+
 using SunEyeVision.Workflow;
 using Xunit;
 

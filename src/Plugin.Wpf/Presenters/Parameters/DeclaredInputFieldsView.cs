@@ -16,6 +16,8 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly NativeParameterPage _page=new();
     private readonly List<DeclaredFieldEditor> _fields=new();
     private readonly List<(DeclaredFieldEditor Field,Action Handler)> _handlers=new();
+    private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
+    private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
@@ -47,6 +49,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                         editor.UseImageSourceSelector(()=>referenceCandidates?.Invoke(port)??Array.Empty<DeclaredReferenceCandidate>());
                     var row=new NativeParameterRow(metadata,editor,()=>editor.NativeItemState,
                         ()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+                    _fieldRows.Add(port.Id,row);
                     _page.Rows.Add(row);
                     Action handler=row.Refresh;_handlers.Add((editor,handler));editor.Changed+=handler;
                 }
@@ -58,6 +61,31 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
     }
+    /// <summary>Transfers ownership of a real extra composition into the specified input section.</summary>
+    public void AddAfterField(string fieldId,FrameworkElement content,string? section=null)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(content);
+        if(!_fieldRows.TryGetValue(fieldId,out var anchor))throw new ArgumentException("输入字段不存在。",nameof(fieldId));
+        if(content.Parent is not null)throw new ArgumentException("输入组合已有父元素。",nameof(content));
+        var row=new NativeParameterRow(section is null?anchor.GroupName:new NativeParameterGroup(section),content);
+        try
+        {
+            _page.Rows.Insert(_page.Rows.IndexOf(anchor)+1,row);
+            if(content is IDisposable disposable)_additionalContents.Add(disposable);
+        }
+        catch {row.Dispose();throw;}
+    }
+    /// <summary>Move an input visual to its associated settings row; this host retains its field ownership.</summary>
+    public DeclaredFieldEditor TakeField(string fieldId)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if(!_fieldRows.Remove(fieldId,out var row))throw new ArgumentException("输入字段不存在或已移出。",nameof(fieldId));
+        var editor=_fields.Single(field=>field.FieldId==fieldId);
+        var handler=_handlers.Single(item=>ReferenceEquals(item.Field,editor));
+        editor.Changed-=handler.Handler;_handlers.Remove(handler);
+        _page.Rows.Remove(row);row.Dispose();
+        return editor;
+    }
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
@@ -65,6 +93,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         foreach(var (field,handler) in _handlers)cleanup.Add(()=>field.Changed-=handler);
         _handlers.Clear();
         cleanup.Add(()=>SetRows(null));cleanup.Add(_page.Dispose);
+        cleanup.AddRange(_additionalContents.Select(content=>(Action)content.Dispose));_additionalContents.Clear();_fieldRows.Clear();
         cleanup.AddRange(_fields.Select(field=>(Action)field.Dispose));
         cleanup.Add(()=>{BindingOperations.ClearBinding(this,ChildLeftWidthProperty);BindingOperations.ClearBinding(this,ChildMarginProperty);BindingOperations.ClearBinding(this,ChildHeaderMarginProperty);});
         ParameterCleanup.Run(cleanup);

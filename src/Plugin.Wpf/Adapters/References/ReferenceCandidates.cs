@@ -20,6 +20,7 @@ public sealed class ReferenceCandidates
         return Array.AsReadOnly(candidates.Select(candidate=>
         {
             ArgumentNullException.ThrowIfNull(candidate);ArgumentNullException.ThrowIfNull(candidate.MemberPath);
+            if(string.IsNullOrWhiteSpace(candidate.NodeDisplayName))throw new ArgumentException("来源节点显示名称不能为空。");
             var frozen=candidate with{MemberPath=Array.AsReadOnly(candidate.MemberPath.ToArray())};
             _=frozen.SelectedType;_=frozen.SelectedStorage;_=frozen.Reference(BindingSelection.All);
             return frozen;

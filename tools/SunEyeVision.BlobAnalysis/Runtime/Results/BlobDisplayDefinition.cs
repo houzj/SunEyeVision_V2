@@ -70,7 +70,7 @@ public sealed class BlobDisplayDefinition
             Shape(item,["key","label","member","decimals","unit"],[]);
             var source=new ResultFieldPath(port,[Required(item,"member")]);
             return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),source,Attribute(item,"unit"),Integer(item,"decimals",0,15),
-                new(port,["judgment-passed"]),new(port,["rotated-bounds"]),new(port,["region"]));
+                null,new(port,["rotated-bounds"]),new(port,["region"]));
         }),new(port),Required(table,"identity"));
         var errors=Table.Validate(schema);
         if(errors.Count!=0||Table.Columns.Count==0)throw new InvalidDataException("Invalid Blob table mapping: "+string.Join("; ",errors.Select(x=>x.Message)));
@@ -80,7 +80,7 @@ public sealed class BlobDisplayDefinition
     {
         using var stream=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobDisplay.xml")
             ??throw new InvalidDataException("BlobDisplay.xml is missing from the Runtime component.");
-        return Read(stream,new BlobTool().Describe(new BlobSettings()));
+        return Read(stream,new BlobTool().Describe());
     }
     public static BlobDisplayDefinition Read(Stream stream,ToolSchema schema)
     {

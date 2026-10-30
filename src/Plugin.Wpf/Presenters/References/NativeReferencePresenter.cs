@@ -18,12 +18,22 @@ internal sealed class NativeReferencePresenter : Decorator,IDisposable
     {
         _expansion=new(this);
         _session=new(state,options,format,expand:_expansion.Open,preference:_expansion.Preference,allowConstantText:allowConstantText);
-        Resources.MergedDictionaries.Add(new ResourceDictionary
-        {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
-        _content=new ContentControl{Content=_session,ContentTemplate=(DataTemplate)FindResource("ButtonSelecter_sub")};Child=_content;
-        _scope=new(this,_session,()=>!state.IsDisposed&&(allowConstantText||state.IsReferenceMode));
+        try
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
+            _content=new ContentControl{Content=_session,ContentTemplate=(DataTemplate)FindResource("ButtonSelecter_sub")};Child=_content;
+            _scope=new(this,_session,()=>!state.IsDisposed&&(allowConstantText||state.IsReferenceMode));
+        }
+        catch(Exception failure)
+        {
+            try{ParameterCleanup.Run(new Action[]{_expansion.Dispose,_session.Dispose,()=>Child=null});}
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     public bool TryCommitPending()=>!_disposed&&_session.TryCommitPending();
+    internal bool HasPendingEdits=>!_disposed&&_session.HasPendingText;
     internal void PrepareForVisibility(bool visible)
     {
         if(_disposed)return;
@@ -32,6 +42,7 @@ internal sealed class NativeReferencePresenter : Decorator,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        _expansion.Dispose();_scope.Dispose();_session.Dispose();_content.Content=null;Child=null;
+        ParameterCleanup.Run(new Action[]{()=>_session.SetSuspended(true),_scope.Dispose,_expansion.Dispose,
+            _session.Dispose,()=>_content.Content=null,()=>Child=null});
     }
 }

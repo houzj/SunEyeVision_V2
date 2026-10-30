@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Shell.Controls.Panels;
+
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;

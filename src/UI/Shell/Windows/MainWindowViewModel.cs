@@ -40,7 +40,6 @@ using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
-using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;

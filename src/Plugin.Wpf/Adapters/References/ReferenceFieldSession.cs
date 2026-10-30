@@ -30,8 +30,12 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
     private string? _pendingText;
+    private long _pendingVersion;
+    private void SetPending(string? value){if(_pendingText==value)return;_pendingText=value;_pendingVersion++;}
     private bool _disposed,_committing,_sourceOpen,_indexOpen,_suspended;
     private long _uiGeneration;
+    private long _popupGeneration;
+    internal long PopupGeneration=>_popupGeneration;
     private long _candidateGeneration;
     private bool _refreshing,_candidatesValid;
     internal void SetSuspended(bool suspended){if(_suspended==suspended)return;_suspended=suspended;_uiGeneration++;}
@@ -53,8 +57,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         request.SetIndex(request.IsIndex,false);Notify(nameof(IsSelectedSubscribeParam));
     }
     public bool IsSelectedSubscribeParam=>_expansion is {IsValid:true,HasSelection:true};
-    public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
-    public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
+    public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;if(value)_popupGeneration++;Notify(nameof(IsDropDownOpen));}}
+    public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;if(value)_popupGeneration++;Notify(nameof(IsTextDropDownOpen));}}
     public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(!_suspended&&value.Length!=0&&_pendingText is not null)TryCommitPendingFromUi();}}
     public ICommand DropDownCommand {get;}
     public ICommand ClickCommand {get;}
@@ -127,9 +131,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 
     private static IReadOnlyList<ReferenceTreeNode> Build(IEnumerable<DeclaredReferenceCandidate> candidates)
     {
-        var roots=new List<ReferenceTreeNode>{new("清除来源",Array.Empty<ReferenceTreeNode>(),Clear:true)};
+        var roots=new List<ReferenceTreeNode>{new("无",Array.Empty<ReferenceTreeNode>(),Clear:true)};
         foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)))
-            roots.Add(new(group.Key.NodeId,Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(
+            roots.Add(new(group.First().NodeDisplayName,Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(
                 candidate.Label,Array.Empty<ReferenceTreeNode>(),candidate)).ToArray())));
         return roots.AsReadOnly();
     }
@@ -167,15 +171,15 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         Submit(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
     }
     private bool Submit(OutputReference reference,bool explicitCommit=false)
-        =>AcceptSetting(new ReferenceSetting(reference),explicitCommit);
+        =>AcceptSetting(new ReferenceSetting(reference,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic),explicitCommit);
     private bool AcceptSetting(ParameterSetting proposal,bool explicitCommit=false)
     {
         if(_suspended&&!explicitCommit||_disposed||_state.IsDisposed)return false;
-        var generation=_uiGeneration;var version=_state.AcceptanceVersion;bool accepted;
+        var generation=_uiGeneration;var version=_state.AcceptanceVersion;var pendingVersion=_pendingVersion;var popupGeneration=_popupGeneration;bool accepted;
         try{accepted=_accept(proposal);}
         catch(Exception failure)when(_state.AcceptanceVersion!=version)
         {
-            _pendingText=null;
+            if(pendingVersion==_pendingVersion)SetPending(null);
             if(!_disposed&&!_state.IsDisposed&&generation==_uiGeneration)
                 try{OnStateChanged();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
@@ -183,10 +187,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_disposed||_state.IsDisposed)return accepted;
         if(accepted)
         {
-            _pendingText=null;
-            if(proposal is ConstantSetting)_state.SetSourceError("");
+            if(pendingVersion==_pendingVersion)SetPending(null);
             if(_disposed||_state.IsDisposed||generation!=_uiGeneration)return true;
-            RequestClose();if(!_disposed&&!_state.IsDisposed&&generation==_uiGeneration)OnStateChanged();return true;
+            ParameterCleanup.Run(new Action[]{()=>{if(popupGeneration==_popupGeneration)RequestClose();},
+                ()=>{if(!_disposed&&!_state.IsDisposed&&generation==_uiGeneration)OnStateChanged();}});return true;
         }
         if(generation==_uiGeneration){RestoreSelection();if(!_disposed)Notify(nameof(CurValueA));}return false;
     }
@@ -195,15 +199,16 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     {
         if(_disposed||text==CurValueA)return;
         if(!_suspended&&text.Length==0){ClearSource();return;}
-        _pendingText=text;
+        SetPending(text);
     }
     private void ClearSource()
     {
         if(!_state.Port.Required){AcceptSetting(new UnsetSetting());return;}
-        var generation=_uiGeneration;
+        var generation=_uiGeneration;var pendingVersion=_pendingVersion;var popupGeneration=_popupGeneration;
         if(!ClearReference()){RestoreSelection();Notify(nameof(CurValueA));return;}
         if(_disposed||_state.IsDisposed||generation!=_uiGeneration)return;
-        _pendingText=null;OnStateChanged();RequestClose();
+        if(pendingVersion==_pendingVersion)SetPending(null);
+        ParameterCleanup.Run(new Action[]{OnStateChanged,()=>{if(popupGeneration==_popupGeneration)RequestClose();}});
     }
     private bool ClearReference()
     {
@@ -216,6 +221,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_disposed||_state.IsDisposed)return false;
         try
         {
+            if(_pendingText is null&&!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant)
+            {proposal=constant;return true;}
             if(_allowConstantText&&_pendingText is {} text)
             {
                 object? value=null;
@@ -242,7 +249,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
             if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
                 throw new ArgumentException("序号超出来源声明的最大数量。");
-            proposal=new ReferenceSetting(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
+            proposal=accepted with {Reference=new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage)};
             return !_disposed&&!_state.IsDisposed;
         }
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
@@ -255,21 +262,25 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         // Explicit owner capture is allowed offscreen; only UI-triggered writes are suspended.
         if(_disposed||_state.IsDisposed)return false;
         if(_commitGroup is not null)return _commitGroup();
-        if(_pendingText is null&&_allowConstantText&&_state.Accepted is ConstantSetting)
-        {_state.SetSourceError("");if(_disposed||_state.IsDisposed)return false;}
-        if(_committing||_pendingText is null)return !_state.HasInvalidInput;
-        if(ReadOnlyA){_pendingText=null;Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
+        if(_committing)return !_state.HasInvalidInput;
+        if(_pendingText is null)
+        {
+            if(!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant&&_state.SourceError.Length!=0)
+                return AcceptSetting(constant);
+            return !_state.HasInvalidInput;
+        }
+        if(ReadOnlyA){SetPending(null);Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
         _committing=true;
         try
         {
             if(!TryPreparePending(out var proposal))return false;
             if(uiGeneration is {} generation&&(_suspended||generation!=_uiGeneration))return false;
-            if(proposal is ReferenceSetting reference)return Submit(reference.Reference,true);
+            if(proposal is ReferenceSetting)return AcceptSetting(proposal,true);
             return AcceptSetting(proposal,true);
         }
         finally{_committing=false;}
     }
-    public void ProjectAccepted(){_pendingText=null;OnStateChanged();}
+    public void ProjectAccepted(){SetPending(null);OnStateChanged();}
 
     private void FocusChanged(object? value)
     {
@@ -332,14 +343,23 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(!CanBrowse||_expansion?.IsIndex==true&&(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting {Reference.Type.Shape:ValueShape.Sequence}))InvalidateExpansion();
         RestoreSelection();Notify(nameof(CurValueA));
     }
-    public void Close(){IsDropDownOpen=false;IsTextDropDownOpen=false;}
-    private void RequestClose(){Close();if(!_disposed&&!_state.IsDisposed)CloseRequested?.Invoke();}
+    public void Close()
+    {
+        var source=_sourceOpen;var index=_indexOpen;_sourceOpen=false;_indexOpen=false;
+        ParameterCleanup.Run(new Action[]{()=>{if(source)Notify(nameof(IsDropDownOpen));},
+            ()=>{if(index)Notify(nameof(IsTextDropDownOpen));}});
+    }
+    private void RequestClose()
+    {
+        var generation=_popupGeneration;
+        ParameterCleanup.Run(new Action[]{Close,()=>{if(!_disposed&&!_state.IsDisposed&&generation==_popupGeneration)CloseRequested?.Invoke();}});
+    }
     private void Notify(string name){if(!_disposed)PropertyChanged?.Invoke(this,new(name));}
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_candidateGeneration++;_candidatesValid=false;
-        try{InvalidateExpansion();}
-        finally{Close();_state.Changed-=OnStateChanged;PropertyChanged=null;CloseRequested=null;}
+        ParameterCleanup.Run(new Action[]{InvalidateExpansion,Close,()=>_state.Changed-=OnStateChanged,
+            ()=>{PropertyChanged=null;CloseRequested=null;}});
     }
     private sealed class SessionCommand(Action<object?> action) : ICommand
     {

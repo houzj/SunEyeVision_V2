@@ -19,6 +19,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
 
 
     public TextBox? TextEditor=>_coordinator.TextEditor;
+    internal bool HasPendingEdits=>_coordinator.HasPendingEdits;
     public NativeNumberPresenter(DeclaredFieldState state,FieldPresentation? presentation,ReferenceFieldOptions? references,Func<OutputReference,string>? format)
     {
         var layout=presentation?.Layout;

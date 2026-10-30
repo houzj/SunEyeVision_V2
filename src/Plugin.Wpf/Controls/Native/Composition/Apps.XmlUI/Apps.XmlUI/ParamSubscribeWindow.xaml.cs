@@ -66,14 +66,20 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
     public ParamSubscribeWindow(Window owner) : this()
     {
         ArgumentNullException.ThrowIfNull(owner);
-        Owner=owner;attachedOwner=owner;WindowStartupLocation=WindowStartupLocation.Manual;
-        owner.LocationChanged+=Owner_LocationOrSizeChanged;owner.SizeChanged+=Owner_LocationOrSizeChanged;
-        owner.Closed+=Owner_Closed;
-        SetBinding(MyWindowStateProperty,new Binding(nameof(WindowState)){Source=owner});
+        try
+        {
+            Owner=owner;attachedOwner=owner;WindowStartupLocation=WindowStartupLocation.Manual;
+            owner.LocationChanged+=Owner_LocationOrSizeChanged;owner.SizeChanged+=Owner_LocationOrSizeChanged;
+            owner.Closed+=Owner_Closed;
+            SetBinding(MyWindowStateProperty,new Binding(nameof(WindowState)){Source=owner});
+        }
+        catch{DetachOwner();throw;}
     }
     private void Owner_Closed(object? sender,EventArgs args)=>Close();
 
-    private void ParamSubscribeWindow_Closed(object? sender,EventArgs e)
+    private void ParamSubscribeWindow_Closed(object? sender,EventArgs e)=>DetachOwner();
+
+    internal void DetachOwner()
     {
         if(attachedOwner is {} owner)
         {

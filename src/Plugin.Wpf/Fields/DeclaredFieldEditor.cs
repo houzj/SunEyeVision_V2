@@ -63,6 +63,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly NativeIntegerRadioOptions? _integerRadioOptions;
     private NativeIntegerRadioPresenter? _integerRadio;
     private bool _updatingInput;
+    private Action? _detachBooleanInput;
+    private Action? _detachChoiceInput;
     private bool _inlineConstantReference;
     private bool _disposed;
     private long _renderGeneration;
@@ -101,6 +103,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private bool MissingReference=>_state.MissingReference;
     internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
     public bool HasInvalidText => _state.HasInvalidInput || _children.Any(child => child.HasInvalidText);
+    public bool HasPendingEdits=>!_disposed&&(HasInvalidText||_numeric?.HasPendingEdits==true||_textPresenter?.HasPendingEdits==true
+        ||_referencePresenter?.HasPendingEdits==true||_children.Any(child=>child.HasPendingEdits));
     public string Error => _state.Error.Length!=0?_state.Error:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     private void UpdateErrorDisplay()=>_error.Text=_state.Error;
     public event Action? Changed;
@@ -144,8 +148,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
         var right=new Grid();right.ColumnDefinitions.Add(new());right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
         right.Children.Add(_body);Grid.SetColumn(_actions,1);right.Children.Add(_actions);Grid.SetColumn(_externalActions,2);right.Children.Add(_externalActions);
-        var body=new StackPanel();body.Children.Add(right);_error.Margin=new Thickness(0,2,0,0);body.Children.Add(_error);
-        _row.LeftContent=_label;_row.RightContent=body;Content=_row;
+        _row.LeftContent=_label;_row.RightContent=right;Content=_row;
         Render();
         UpdateErrorDisplay();
         }
@@ -239,22 +242,33 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                 {
                     var eye=new ToggleButton{IsChecked=value as bool?==true,ToolTip="显示 / 隐藏",Width=36,Height=30};
                     eye.SetResourceReference(StyleProperty,"eyeToggleButton");
-                    eye.Click+=(_,_)=>{if(!CurrentRender()||!eye.IsEnabled)return;var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
+                    RoutedEventHandler onEyeClick=(_,_)=>
+                    {
+                        if(!CurrentRender()||!eye.IsEnabled||!eye.IsLoaded||!eye.IsVisible||!ReferenceEquals(InputElement,eye))return;
+                        var visible=((ConstantSetting)_setting).Value as bool?!=true;Set(new ConstantSetting(visible));
+                        if(CurrentRender()&&eye.IsLoaded&&eye.IsVisible&&ReferenceEquals(InputElement,eye)&&_setting is ConstantSetting {Value:bool accepted})
+                            eye.SetCurrentValue(ToggleButton.IsCheckedProperty,accepted);
+                    };
+                    eye.Click+=onEyeClick;
+                    _detachBooleanInput=()=>eye.Click-=onEyeClick;
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
                 var input = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl
                     { IsChecked = value as bool? == true,IsThreeState=false,
                       OffContent=NativeInputFactory.BooleanImage(false),OnContent=NativeInputFactory.BooleanImage(true),
                       HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Center };
-                input.OnCheckedChange += (_, _) =>
+                SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl.IsCheckedChange onCheckedChange = (_, _) =>
                 {
-                    if(_disposed||generation!=_renderGeneration||_updatingInput||!input.IsEnabled)return;
+                    if(!CurrentRender()||_updatingInput||!input.IsEnabled||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
                     if(input.IsChecked is bool proposed&&_setting is ConstantSetting {Value:bool accepted}&&proposed==accepted&&_editError.Length==0)return;
                     if(Set(new ConstantSetting(input.IsChecked)))return;
+                    if(!CurrentRender()||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
                     _updatingInput=true;
                     try{input.SetCurrentValue(ToggleButton.IsCheckedProperty,((ConstantSetting)_setting).Value as bool?==true);}
                     finally{_updatingInput=false;}
                 };
+                input.OnCheckedChange += onCheckedChange;
+                _detachBooleanInput=()=>input.OnCheckedChange-=onCheckedChange;
                 InputElement = input; _body.Children.Add(input);
             }
             else if (_port.Choices is { } choices)
@@ -271,15 +285,18 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                 if(value is not string current||!choices.Keys.Contains(current))
                 {_state.SetEditError("当前枚举值不在声明选项中，请重新选择。");}
                 var restoring=false;
-                input.SelectionChanged += (_, _) =>
+                SelectionChangedEventHandler onSelectionChanged = (_, _) =>
                 {
-                    if(_disposed||generation!=_renderGeneration||restoring||!input.IsEnabled||input.SelectedValue is not string key)return;
+                    if(!CurrentRender()||_updatingInput||restoring||!input.IsEnabled||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input)||input.SelectedValue is not string key)return;
                     if(_setting is ConstantSetting accepted&&Equals(accepted.Value,key)&&_editError.Length==0)return;
                     if(Set(new ConstantSetting(key)))return;
+                    if(!CurrentRender()||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
                     restoring=true;
                     try{input.SetCurrentValue(ComboBox.SelectedValueProperty,((ConstantSetting)_setting).Value);}
                     finally{restoring=false;}
                 };
+                input.SelectionChanged += onSelectionChanged;
+                _detachChoiceInput=()=>input.SelectionChanged-=onSelectionChanged;
                 InputElement=input;_body.Children.Add(input);
             }
             else
@@ -331,7 +348,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private void OnNativeColorChanged(object sender,RoutedPropertyChangedEventArgs<Color> e)
     {
         if(_disposed||_updatingInput||sender is not NativeColorPresenter input||!ReferenceEquals(input,InputElement))return;
-        if(Set(new ConstantSetting(PresentationDeclarations.Color(e.NewValue.R,e.NewValue.G,e.NewValue.B,e.NewValue.A))))return;
+        if(_presentationVisible&&IsLoaded&&IsEnabled&&IsVisible&&Set(new ConstantSetting(PresentationDeclarations.Color(e.NewValue.R,e.NewValue.G,e.NewValue.B,e.NewValue.A))))return;
         var accepted=(RecordValue)((ConstantSetting)_setting).Value!;
         _updatingInput=true;
         try{input.SetCurrentValue(NativeColorPresenter.SelectedColorProperty,Color.FromArgb(
@@ -360,7 +377,27 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         cleanup.Add(()=>_integerRadio?.PrepareForVisibility(visible));
         cleanup.AddRange(_children.ToArray().Select(child=>(Action)(()=>((IParameterVisibility)child).PrepareForVisibility(visible))));
         if(!visible&&InputElement is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
+        if(!visible&&InputElement is NativeColorPresenter color)cleanup.Add(color.ClosePalette);
+        if(visible)cleanup.Add(RestoreSimpleProjection);
         ParameterCleanup.Run(cleanup);
+    }
+
+    private void RestoreSimpleProjection()
+    {
+        if(_disposed||!_presentationVisible||_setting is not ConstantSetting accepted)return;
+        var input=InputElement;var generation=_renderGeneration;
+        _updatingInput=true;
+        try
+        {
+            if(input is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl boolean&&accepted.Value is bool value)
+                boolean.SetCurrentValue(ToggleButton.IsCheckedProperty,value);
+            else if(_presentation?.Layout?.DialogPrimary==true&&input is ToggleButton eye&&accepted.Value is bool visible)
+                eye.SetCurrentValue(ToggleButton.IsCheckedProperty,visible);
+            else if(_imageSources is null&&_port.Choices is not null&&input is ComboBox choice)
+                choice.SetCurrentValue(ComboBox.SelectedValueProperty,accepted.Value);
+        }
+        finally{_updatingInput=false;}
+        if(_disposed||generation!=_renderGeneration||!ReferenceEquals(input,InputElement))return;
     }
 
     private void DetachOwnedEditors()
@@ -369,11 +406,19 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         var children=_children.ToArray();_children.Clear();
         _referencePresenter=null;_numeric=null;_textPresenter=null;_integerRadio=null;
         var cleanup=new List<Action>{DetachImageSource};
+        var detachBoolean=_detachBooleanInput;_detachBooleanInput=null;
+        if(detachBoolean is not null)cleanup.Add(detachBoolean);
+        var detachChoice=_detachChoiceInput;_detachChoiceInput=null;
+        if(detachChoice is not null)cleanup.Add(detachChoice);
         if(reference is not null)cleanup.Add(reference.Dispose);
         if(numeric is not null)cleanup.Add(numeric.Dispose);
         if(text is not null)cleanup.Add(text.Dispose);
         if(radio is not null)cleanup.Add(radio.Dispose);
-        if(input is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
+        if(input is ComboBox combo)
+        {
+            cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
+            cleanup.Add(()=>NativeInputFactory.ReleaseEnumeration(combo));
+        }
         if(input is NativeColorPresenter color)cleanup.Add(()=>{color.SelectedColorChanged-=OnNativeColorChanged;color.Dispose();});
         cleanup.AddRange(children.Select(child=>(Action)child.Dispose));
         ParameterCleanup.Run(cleanup);

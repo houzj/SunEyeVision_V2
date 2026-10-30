@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Shell.Controls.Panels;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;

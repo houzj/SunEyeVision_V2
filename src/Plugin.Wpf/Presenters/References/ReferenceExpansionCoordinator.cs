@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Windows;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 
@@ -17,9 +18,16 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
     private static readonly ConditionalWeakTable<Window,OwnerScope> Owners=new();
     private readonly FrameworkElement _root;
     private readonly ReferenceExpansionPreference _unownedPreference=new();
-    private ParamSubscribeWindow? _window;
-    private ReferenceExpansionRequest? _request;
-    private OwnerScope? _scope;
+    private sealed class WindowLease(ParamSubscribeWindow window,ReferenceExpansionRequest request,OwnerScope scope)
+    {
+        internal readonly ParamSubscribeWindow Window=window;
+        internal readonly ReferenceExpansionRequest Request=request;
+        internal readonly OwnerScope Scope=scope;
+        internal Action? Invalidated;
+        internal EventHandler? Closed;
+        internal bool Retired;
+    }
+    private WindowLease? _current;
     private bool _disposed;
 
     internal ReferenceExpansionCoordinator(FrameworkElement root)
@@ -30,7 +38,7 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
         ?Owners.GetValue(owner,_=>new()).Preference:_unownedPreference;
 
     internal static void ClearSelectionFor(Window owner)
-    {if(Owners.TryGetValue(owner,out var scope))scope.Active?._request?.ClearSelection();}
+    {if(Owners.TryGetValue(owner,out var scope))scope.Active?._current?.Request.ClearSelection();}
 
     internal void Open(ReferenceExpansionRequest request)
     {
@@ -38,42 +46,54 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
         if(_disposed||!request.IsValid||!_root.IsLoaded||!_root.IsVisible||Window.GetWindow(_root) is not {} owner)
         {request.Dispose();return;}
         var scope=Owners.GetValue(owner,_=>new());var generation=++scope.Generation;
-        scope.Active?.Close();
-        if(_disposed||!request.IsValid||generation!=scope.Generation||!_root.IsLoaded||!_root.IsVisible||!ReferenceEquals(Window.GetWindow(_root),owner))
-        {request.Dispose();return;}
-        ParamSubscribeWindow? window=null;
+        ParamSubscribeWindow? window=null;WindowLease? lease=null;
         try
         {
-            window=new ParamSubscribeWindow(owner){DataContext=request};
-            _window=window;_request=request;_scope=scope;scope.Active=this;
-            request.Invalidated+=OnInvalidated;window.Closed+=OnClosed;
+            scope.Active?.Close();
+            if(_disposed||!request.IsValid||generation!=scope.Generation||!_root.IsLoaded||!_root.IsVisible||!ReferenceEquals(Window.GetWindow(_root),owner))
+            {request.Dispose();return;}
+            window=new ParamSubscribeWindow(owner);
+            lease=new(window,request,scope);
+            var captured=lease;
+            lease.Invalidated=()=>Retire(captured,true);
+            lease.Closed=(_,_)=>Retire(captured,false);
+            _current=lease;scope.Active=this;
+            request.Invalidated+=lease.Invalidated;window.Closed+=lease.Closed;
+            window.DataContext=request;
+            if(!ReferenceEquals(_current,lease)||!request.IsValid){Retire(lease,true);return;}
             window.Show();
         }
-        catch
+        catch(Exception failure)
         {
-            if(ReferenceEquals(_window,window))Close();
-            else{window?.Close();request.Dispose();}
+            try
+            {
+                if(lease is not null)Retire(lease,true);
+                else ParameterCleanup.Run(new Action[]{request.Dispose,()=>window?.DetachOwner(),()=>window?.Close()});
+            }
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
         }
     }
-    private void OnInvalidated()=>Close();
-    private void OnClosed(object? sender,EventArgs args)
-    {if(ReferenceEquals(sender,_window))Release();}
-    private void Release()
+    private void Retire(WindowLease lease,bool closeWindow)
     {
-        var window=_window;var request=_request;var scope=_scope;
-        _window=null;_request=null;_scope=null;
-        if(scope is not null&&ReferenceEquals(scope.Active,this))scope.Active=null;
-        if(window is not null){window.Closed-=OnClosed;window.DataContext=null;}
-        if(request is not null){request.Invalidated-=OnInvalidated;request.Dispose();}
+        if(lease.Retired)return;lease.Retired=true;
+        if(ReferenceEquals(_current,lease))
+        {
+            _current=null;
+            if(ReferenceEquals(lease.Scope.Active,this))lease.Scope.Active=null;
+        }
+        ParameterCleanup.Run(new Action[]{
+            ()=>{if(lease.Closed is not null)lease.Window.Closed-=lease.Closed;},
+            ()=>{if(lease.Invalidated is not null)lease.Request.Invalidated-=lease.Invalidated;},
+            lease.Window.DetachOwner,lease.Request.Dispose,()=>lease.Window.DataContext=null,
+            ()=>{if(closeWindow&&lease.Window.IsVisible)lease.Window.Hide();},
+            ()=>{if(closeWindow)lease.Window.Close();}});
     }
     internal void Close()
     {
-        var window=_window;
-        try{Release();}
-        finally{window?.Close();}
+        if(_current is {} lease)Retire(lease,true);
     }
-    private void OnUnloaded(object sender,RoutedEventArgs args)=>Close();
+    private void OnUnloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_root))Close();}
     private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args)
     {if(!_root.IsVisible)Close();}
     public void Dispose()

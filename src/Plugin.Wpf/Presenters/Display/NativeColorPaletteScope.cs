@@ -25,6 +25,7 @@ internal sealed class NativeColorPaletteScope : IDisposable
         {
             Palette.DropDownOpened+=OnOpened;Palette.DropDownClosed+=OnClosed;
             eventRoot.Unloaded+=OnUnloaded;eventRoot.IsVisibleChanged+=OnVisibilityChanged;
+            eventRoot.IsEnabledChanged+=OnEnabledChanged;
         }
         catch(Exception failure)
         {try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
@@ -36,12 +37,14 @@ internal sealed class NativeColorPaletteScope : IDisposable
     }
 
     private void OnOpened(object? sender,EventArgs args)
-    {if(_disposed){ClosePalette();return;}QueueTextInheritance();}
+    {if(_disposed||!_eventRoot.IsEnabled||!_eventRoot.IsVisible){ClosePalette();return;}QueueTextInheritance();}
     private void OnClosed(object? sender,EventArgs args)
     {InvalidatePendingTextInheritance();DetachPaletteContent();}
     private void OnUnloaded(object sender,RoutedEventArgs args)=>ClosePalette();
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
     {if(!_eventRoot.IsVisible)ClosePalette();}
+    private void OnEnabledChanged(object sender,DependencyPropertyChangedEventArgs args)
+    {if(!_eventRoot.IsEnabled)ClosePalette();}
 
     private void InvalidatePendingTextInheritance()
     {
@@ -87,6 +90,7 @@ internal sealed class NativeColorPaletteScope : IDisposable
         if(_disposed)return;_disposed=true;
         ParameterCleanup.Run(new Action[]{ClosePalette,DetachPaletteContent,
             ()=>{Palette.DropDownOpened-=OnOpened;Palette.DropDownClosed-=OnClosed;},
-            ()=>{_eventRoot.Unloaded-=OnUnloaded;_eventRoot.IsVisibleChanged-=OnVisibilityChanged;}});
+            ()=>{_eventRoot.Unloaded-=OnUnloaded;_eventRoot.IsVisibleChanged-=OnVisibilityChanged;
+                _eventRoot.IsEnabledChanged-=OnEnabledChanged;}});
     }
 }

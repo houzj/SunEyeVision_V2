@@ -36,7 +36,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void ReleaseSourceSession()
         {
             var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
-            Cleanup(new Action[]{()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
+            Cleanup(new Action[]{
+                ()=>System.Windows.Data.BindingOperations.ClearBinding(ImagePreviewContent,
+                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty),
+                ()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
         }
         private void RefreshSourceSession()
         {
@@ -50,6 +53,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 &&ReferenceEquals(main.ActiveInputSource,source)&&ReferenceEquals(main.WorkflowTabViewModel.SelectedTab,workflow),
                 (image,index,version)=>RunWorkflowWithImage(workflow,source,version,image,index),Dispatcher,()=>Window.GetWindow(this));
             ImagePreviewContent.Session=_sourceSession;
+            ImagePreviewContent.SetBinding(
+                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty,
+                new System.Windows.Data.Binding(nameof(WorkflowTabViewModel.IsRunning))
+                {Source=workflow,Mode=System.Windows.Data.BindingMode.OneWay});
         }
 
         public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
@@ -209,7 +216,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
         {
             var main=_viewModel;
-            if(_shutdown||main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(_shutdown||main is null||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
             catch(Exception error)
             {
@@ -217,6 +224,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
             }
             if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(main.IsRunning||workflow.IsRunning)
+            {main.StatusText="图像已选中；当前运行仍使用已冻结的输入。";return;}
             var acceptedVersion=source.EditVersion;
             var workflowName = workflow.Name ?? "未知工作流";
             main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));

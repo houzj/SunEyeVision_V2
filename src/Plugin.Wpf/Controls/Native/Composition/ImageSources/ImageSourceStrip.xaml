@@ -428,6 +428,18 @@
         </Style>
       </FrameworkElement.Style>
     </Grid>
-
+    <!-- Original shared panel's final child: mouse overlay, never a keyboard focus/IsEnabled gate. -->
+    <Grid x:Name="RunningShadow" Margin="-5,0,-5,-10" Background="{DynamicResource ImageSources.RunningShadow}">
+      <Grid.Style>
+        <Style TargetType="Grid">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRunning, ElementName=ImagePanel}" Value="True">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Grid.Style>
+    </Grid>
   </Grid>
 </Grid></StackPanel></UserControl>

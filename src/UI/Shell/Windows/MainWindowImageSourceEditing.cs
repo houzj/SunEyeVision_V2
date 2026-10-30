@@ -29,14 +29,15 @@ public partial class MainWindowViewModel
         bool Current()=>session is not null&&root is not null&&node is not null&&
             ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Contains(root)&&root.Nodes.Contains(node)&&
             ReferenceEquals(node.InputSource,source)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&
-            ReferenceEquals(ActiveInputSource,source)&&CanEditRootWorkspace&&!source.IsReadOnly&&
+            ReferenceEquals(ActiveInputSource,source)&&!IsDebugWindowOpen&&!source.IsReadOnly&&!tab.IsInSubroutine&&
+            _solutionTransitionLease==null&&!_transitionPreparationInProgress&&session.Editing.HasPendingChanges!=true&&
             ImageSourcePolicy.Read(node)?.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local&&
             index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         if(source.EditVersion!=editVersion||!Current()||!source.CanSelectImage(index))return false;
-        var receipt=source.SelectImage(index);
-        // Acceptance notifications may switch documents, roots, sources or execution state.
-        return receipt.FormalAccepted&&receipt.RuntimeReady&&receipt.ProjectionVersion is { } acceptedVersion&&source.EditVersion==acceptedVersion&&
-            source.CurrentIndex==index&&ReferenceEquals(source.CurrentImage,image)&&Current();
+        var accepted=_executionManager.TrySelectLocalImageCursor(tab.RootWorkflowId,root!,source,image,index,editVersion,
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session!.Document));
+        // Navigation observers may switch roots or accept a newer choice; never start the older run.
+        return accepted&&source.EditVersion==editVersion&&source.CurrentIndex==index&&ReferenceEquals(source.CurrentImage,image)&&Current();
     }
     internal System.Threading.Tasks.Task RunPreviewImageAsync(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab,
         ImageInputSource source,ImageInfo image,int index,long editVersion)
@@ -49,7 +50,7 @@ public partial class MainWindowViewModel
             ReferenceEquals(node.InputSource,source)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&
             ReferenceEquals(ActiveInputSource,source)&&source.EditVersion==editVersion&&source.CurrentIndex==index&&source.CanSelectImage(index)&&
             ImageSourcePolicy.Read(node) is {SourceKind:SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local} policy&&
-            policy.CurrentIndex==index&&index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
+            index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         return Current()?ExecuteRunWorkflow(advanceLocalImage:false,expectedTab:tab,isCurrent:Current,explicitSourceId:source.NodeId):System.Threading.Tasks.Task.CompletedTask;
     }
     private void BindLocalImageSourceEditor(WorkflowNodeBase node,ImageInputSource source)

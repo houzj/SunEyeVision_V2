@@ -408,7 +408,7 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Contains("运行游标不可用",f.Main.StatusText);
         var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
         Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
-        Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
         var errors=new List<string>();manager.WorkflowExecutionError+=(_,e)=>errors.Add(e.ErrorMessage);
         var run=manager.RunSingleAsync(tab);Until(()=>run.IsCompleted);AwaitWorkspace(run);
         Assert.Contains(errors,error=>error.Contains("运行游标不可用"));
@@ -428,16 +428,16 @@ public sealed class ResultWorkspaceProductionTests
         var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
         var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
         source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
-        EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
-        {if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
-        source.ExplicitSelectionAccepted+=selectAgain;
+        EventHandler<int> selectAgain=(_,index)=>
+        {if(index==0)f.Main.TrySelectPreviewImage(f.Main.WorkflowTabViewModel.SelectedTab!,source,b,1,source.EditVersion);};
+        source.CurrentImageChanged+=selectAgain;
         try
         {
             var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
             Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
-            Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+            Assert.Same(b,source.CurrentImage);Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
         }
-        finally{source.ExplicitSelectionAccepted-=selectAgain;}
+        finally{source.CurrentImageChanged-=selectAgain;}
     });
     [Fact]
     public void Actual_result_workspace_navigation_commands_follow_formal_source_availability()
@@ -1092,6 +1092,10 @@ public sealed class ResultWorkspaceProductionTests
         var source=f.Main.ActiveInputSource!;
         source.AddImages(paths.Select(path=>new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}),selectFirstAdded:true);Pump();
         var strip=f.View.ImagePreviewContent;var list=Assert.IsType<ListBox>(strip.FindName("lst"));
+        var shadow=Assert.IsType<Grid>(strip.FindName("RunningShadow"));
+        Assert.Equal(Visibility.Collapsed,shadow.Visibility);
+        Assert.False(shadow.Focusable);
+        var shadowShown=false;shadow.IsVisibleChanged+=(_,e)=>{if((bool)e.NewValue)shadowShown=true;};
         var disabled=false;strip.IsEnabledChanged+=(_,e)=>{if(!(bool)e.NewValue)disabled=true;};
         var gated=false;var rejected=false;
         f.Main.PropertyChanged+=(_,_)=>
@@ -1108,6 +1112,9 @@ public sealed class ResultWorkspaceProductionTests
         Assert.True(gated,"未经过真实工作流编辑门禁，不能证明生产链。");
         Assert.True(rejected,"运行门禁必须拒绝源配置修改。");Assert.Equal(2,source.Count);
         Assert.False(disabled,"运行不应禁用整条控件并驱逐焦点。");
+        Assert.True(shadowShown,"真实运行期间未显示原件独立遮罩。");
+        Assert.Equal(Visibility.Collapsed,shadow.Visibility);
+        Assert.True(list.IsEnabled,"遮罩不能通过禁用列表驱逐已有键盘焦点。");
         Assert.True(strip.IsKeyboardFocusWithin,"真实工作流结束后焦点离开图像源条。");
         void KeyInput(System.Windows.Input.Key key)
         {
@@ -1119,6 +1126,106 @@ public sealed class ResultWorkspaceProductionTests
         }
         KeyInput(System.Windows.Input.Key.Left);Until(()=>!f.Main.IsRunning&&source.CurrentIndex==0);Pump();Assert.True(strip.IsKeyboardFocusWithin);
         KeyInput(System.Windows.Input.Key.Right);Until(()=>!f.Main.IsRunning&&source.CurrentIndex==1);Pump();Assert.True(strip.IsKeyboardFocusWithin);
+        var rootTab=f.Main.WorkflowTabViewModel.SelectedTab!;
+        f.Host.Content=null;Pump();
+        Assert.False(System.Windows.Data.BindingOperations.IsDataBound(strip,SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty));
+        rootTab.IsRunning=true;Pump();Assert.False(strip.IsRunning);
+        rootTab.IsRunning=false;f.Host.Content=f.View;Pump();
+        Assert.True(System.Windows.Data.BindingOperations.IsDataBound(strip,SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty));
+    });
+    [Fact]
+    public void Source_configuration_entry_audit_records_run_and_viewport_side_effects()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        var observations=new List<object>();var allImportsSilent=true;
+        foreach(var operation in new[]{"files","directory","automatic"})
+        {
+            using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+            string Write(string name)
+            {
+                var path=Path.Combine(f.Directory,name);var png=new PngBitmapEncoder();
+                png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{51,0,0,0},4)));
+                using var output=File.Create(path);png.Save(output);return path;
+            }
+            var first=Write("initial.png");var source=f.Main.ActiveInputSource!;
+            source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=first}},selectFirstAdded:true);Pump();
+            var published=f.Publish(f.Source,31);Pump();Until(()=>f.Presenter.OutputPane.CurrentFrame is not null);
+            var before=f.Presenter.OutputPane.CurrentFrame;var starts=0;
+            var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel).GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+            manager.WorkflowExecutionStarted+=(_,_)=>Interlocked.Increment(ref starts);
+            var session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+            var kind=operation=="files"?SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportFiles:
+                operation=="directory"?SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportDirectory:
+                SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SetAutoSwitch;
+            var added=operation=="automatic"?null:Write("added.png");
+            string[]? paths=operation=="files"?new[]{added!}:
+                operation=="directory"?new[]{f.Directory}:null;
+            var request=new SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequest(kind,session.Version,flag:operation=="automatic"?!source.AutoSwitchEnabled:null,paths:paths);
+            AwaitWorkspace(session.RequestAsync(request,CancellationToken.None));Pump();
+            var after=f.Presenter.OutputPane.CurrentFrame;
+            var preserved=before?.Frame==after?.Frame;
+            observations.Add(new{operation,executionStarts=starts,beforeFrame=before?.Frame.ToString(),afterFrame=after?.Frame.ToString(),preserved,source.Count});
+            if(operation!="automatic"){Assert.Equal(2,source.Count);allImportsSilent&=starts==0;}
+        }
+        File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-configuration-entry-audit.json"),System.Text.Json.JsonSerializer.Serialize(observations,new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        Assert.True(allImportsSilent,"导入路径触发了正式工作流执行。");
+        // AutoPlay rendering is an observation, not a blanket VM conformance assertion; see the original condition matrix.
+    });
+    [Fact]
+    public void Source_fast_direction_keys_preserve_the_latest_choice_after_an_older_run_finishes()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var paths=Enumerable.Range(0,6).Select(index=>Path.Combine(f.Directory,"rapid-"+index+".png")).ToArray();
+        for(var index=0;index<paths.Length;index++)
+        {
+            var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{(byte)(index+1),0,0,0},4)));
+            using var output=File.Create(paths[index]);png.Save(output);
+        }
+        var source=f.Main.ActiveInputSource!;
+        source.AddImages(paths.Select(path=>new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}),selectFirstAdded:true);Pump();
+        var strip=f.View.ImagePreviewContent;var list=Assert.IsType<ListBox>(strip.FindName("lst"));
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel).GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var starts=0;var injected=false;var visualAfterKeys=-1;
+        var history=ServiceInitializer.SolutionManager.Session!.History;var historyPosition=history.Position;var editVersion=source.EditVersion;
+        void KeyInput()
+        {
+            var target=Assert.IsAssignableFrom<UIElement>(System.Windows.Input.Keyboard.FocusedElement);
+            var input=PresentationSource.FromVisual(target)!;
+            var preview=new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,System.Windows.Input.Key.Right){RoutedEvent=System.Windows.Input.Keyboard.PreviewKeyDownEvent};
+            target.RaiseEvent(preview);
+            if(!preview.Handled)target.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,input,0,System.Windows.Input.Key.Right){RoutedEvent=System.Windows.Input.Keyboard.KeyDownEvent});
+        }
+        manager.WorkflowExecutionStarted+=(_,_)=>
+        {
+            starts++;
+            if(injected)return;
+            injected=true;
+            Assert.True(f.Main.IsRunning);
+            // The production input snapshot is already frozen, before the source tool executes.
+            // Inject real routed keys here so completion cannot race ahead of the test by chance.
+            for(var index=0;index<4;index++)KeyInput();
+            visualAfterKeys=list.SelectedIndex;
+        };
+        f.Host.Activate();f.Host.UpdateLayout();
+        var second=Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(1));second.ApplyTemplate();
+        var row=Assert.Single(VisualDescendants<Grid>(second).Where(grid=>grid.Width==72));
+        row.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,0,System.Windows.Input.MouseButton.Left){RoutedEvent=System.Windows.Input.Mouse.MouseDownEvent});
+        Until(()=>injected&&!f.Main.IsRunning);Pump();
+        File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-fast-keys-audit.json"),
+            System.Text.Json.JsonSerializer.Serialize(new{starts,visualAfterKeys,afterCompletion=source.CurrentIndex,listIndex=list.SelectedIndex,source.EditVersion}));
+        Assert.True(injected,"未经过正式执行开始边界。");
+        Assert.Equal(5,visualAfterKeys);
+        Assert.Equal(5,source.CurrentIndex);
+        Assert.Equal(5,list.SelectedIndex);
+        Assert.Equal(1,starts); // Busy navigation records intent; it does not invent another accepted execution.
+        Assert.Equal(historyPosition,history.Position);Assert.Equal(editVersion,source.EditVersion);
+        Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        Assert.Equal(new byte[]{2},f.Presenter.OutputPane.Viewport.ReadPixel(0,0)); // The old result is not relabelled as the new selection.
+        AwaitWorkspace(f.Main.RunSelectedImageAsync());Pump();
+        Assert.Equal(2,starts);Assert.Equal(5,source.CurrentIndex);
+        Assert.Equal(new byte[]{6},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        Assert.Equal(historyPosition,history.Position);
     });
     private static void AwaitWorkspace(Task task)
     {

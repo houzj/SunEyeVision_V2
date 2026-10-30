@@ -1,8 +1,17 @@
+## 2026-10-30 S1在制批：遮罩与快切整链已验证，显示条件继续核收
+
+当前独立Release已包含运行遮罩、所属根单次状态try/finally及瞬态选择/运行游标修正，不再是49b33e70产物。快键在正式执行开始边界的真实路由回归先红后绿，旧完成不覆盖第6张、忙时不伪增执行、导航不进配置历史、下次明确执行实际读取第6张，旧结果像素身份另有补证。全量构建0错误/3493警告；ImageSourceRecovery attempt-019为350通过/0失败。详见原主方案2026-10-30集中修正节及S1_COMPONENT_MIGRATION_REVIEW_20261030.md。
+
+WorkflowHost旧补充轨因旧测试依赖及API合同不符未通过，试验性验证入口已撤回，不计通过、不恢复旧兼容。当前继续核收配置/显示条件与完整原件资源事件，VS实际设计器和人工验收未做；S1不封版，未自动启动程序、未合并主仓，S2—S4和Group边界不变。
+## 2026-10-30 完整组件新证据核收与验收标准纠正
+
+已读取逆向负责人组件总台账、旧图条件矩阵及23项事件对照。确认独立运行遮罩遗漏；AutoPlay并非无条件保留旧图，attempt-014的清图观察保留，但automaticPreserved断言不能作为VM差分结论。随后按已确定设计接入运行遮罩、根状态绑定及释放，并由真实回归发现并补齐RunSingleAsync根Tab状态投影；仍不重启用户验收，导航/执行/回写与显示所有权继续按条件矩阵核收；详见S1_COMPONENT_MIGRATION_REVIEW_20261030.md。原件及候选仍有未核项，S1不封版。
+
 ## 2026-10-30 用户要求重新审视迁移方式：完整组件核收优先
 
 用户明确否定依赖其手测逐点补齐的方式，要求能判断完整性。当前停止发现一点补一点的产品修改；用户人工测试定位为最终验收，不是主要原件恢复方法。此前原版A—F操作表保留为可选辅助证据，不作为继续向用户索取碎片行为的主要路径。AGENTS.md已追加完整组件覆盖台账及实施者先完成生产验证的长期约束，并向逆向负责人集中要求整个S1闭包，而非继续提供孤立调用点。
 
-已建立可重复的第一层原件清单：scripts/verification/New-ImageSourceMigrationInventory.ps1，读取同版LocalImageListView.xaml/.cs、ImageListPanel.xaml/.cs和ImageListPanelBase.cs，记录SHA、XAML命名元素、事件候选、绑定、资源引用和源码方法候选。产物docs/collaboration/evidence/S1_SOURCE_COMPONENT_INVENTORY_20261030.json覆盖5文件、68方法候选、33命名元素义务；当前候选名称未对应为MainGrid、Pop1、Pop2、windowShadow。它们不是自动判失败：MainGrid可能是组合改名，Pop1/2涉及原件来源弹层和已确认部署边界，windowShadow为已证遗漏，均须逐项证据/理由审核。名称存在也不代表类型或行为相符。
+已建立可重复的第一层原件清单：scripts/verification/New-ImageSourceMigrationInventory.ps1，读取同版LocalImageListView.xaml/.cs、ImageListPanel.xaml/.cs和ImageListPanelBase.cs，记录SHA、XAML命名元素、事件候选、绑定、资源引用和源码方法候选。产物docs/collaboration/evidence/S1_SOURCE_COMPONENT_INVENTORY_20261030.json覆盖5文件、143声明（71方法）、33命名元素义务；当前候选名称未对应为MainGrid、Pop1、Pop2、windowShadow。它们不是自动判失败：MainGrid可能是组合改名，Pop1/2涉及原件来源弹层和已确认部署边界，windowShadow为已证遗漏，均须逐项证据/理由审核。名称存在也不代表类型或行为相符。
 
 该工具明确只做静态清点，不声称完成IL/BAML真实性、递归资源闭包、完整动态调用图或行为核验。后续同一批核收必须补全：原件依赖身份与递归资源、父级/继承事件及外部SDK边界、运行遮罩、程序恢复/导入/键盘导航/AutoPlay变更/完成回写与释放时序；每项只可标原件保留、必要非视觉适配、缺基础占位或未完成，不能据348自动测试推定完整。
 
@@ -3614,3 +3623,13 @@ S1源码核收新增明确差异：原件选择变化入口与本方无条件Act
 原正则方法候选仅适合作线索，现改用宿主Roslyn语法树解析五个核心原件文件，源语法诊断必须无错误。已枚举143个声明：3构造、3事件字段、44字段、71方法、22属性；记录类型上下文、起止行、声明语法SHA、调用表达式和事件订阅/解除。XAML共22事件绑定、40绑定表达式、76资源引用；已消除正则将TargetName=rect误判成事件的假阳性。首次加载SDK Roslyn与PowerShell已有程序集冲突，已改用宿主已有Roslyn，不更改安装工具链。
 
 产物仍为S1_SOURCE_COMPONENT_INVENTORY_20261030.json（schemaVersion=2），每项review默认unreviewed，不能拿143或71作为已迁完。下一核收单位为完整行为链，必须对每项有实现映射和证据；递归资源/语义依赖及运行行为未因语法清点而自动完成。当前没有产品代码修改或新运行产物。
+
+### 完整结果宿主配置入口副作用核收（当前产物红色证据）
+
+新增Source_configuration_entry_audit_records_run_and_viewport_side_effects，在真实ImageResultControl/正式编辑宿主中分别导入文件、导入含新文件的目录、切AutoSwitch；直接统计WorkflowExecutionStarted并记录前后NativeResultFrameReceipt身份。attempt-014的source-configuration-entry-audit.json表明：文件导入计数从1到2、正式执行开始0、视口换为local-preview；目录导入计数从1到2、正式执行开始0、同样换local-preview；AutoSwitch正式执行0、后视口为null。故本次覆盖路径不支持“导入触发正式执行”的判断，确认存在自动切换预览；不能外推为所有物理文件框事件绝无误激活。首个attempt-013目录无新增文件，已纠正用新文件重测，旧日志保留，不以空导入代替目录链。
+
+自动开关保留图像断言在当前49b33e70产物明确失败；这是新增红色回归，尚未修复，不沿用此前348全通过称当前完整核收通过。调用链为AutoSwitch→Source.Commit→正式配置host.Commit→InvalidatePublishedResults→当前图像/发布退休。导入则另经selectFirstAdded/ExplicitSelectionAccepted→本地预览，并非正式运行入口。旧结果的执行有效性与当前屏幕可见图像必须在整批设计中分别处理，不能为留图把过期输出标为当前或绕过所有权；也不能未经核对就用源图替代正在显示的处理后图像。
+
+以上为覆盖台账中的真实行为差异，产品代码/Release尚未修改。连同运行遮罩遗漏、键盘快速请求和程序性选择抑制一起集中决策，不继续逐点交付。
+
+S1已审行为链决定汇总到docs/collaboration/evidence/S1_COMPONENT_MIGRATION_REVIEW_20261030.md：逐链明确原件证据、当前完整宿主实证、复用/替换和验收出口。明确复用原子接纳/门禁/读取/身份/释放，不重写已有引擎；当前重点差异是配置清图、忙时吞导航、程序选择与激活混合及遮罩缺失。143声明/资源仍未全审，不能把按链决定表当完整迁移完成。

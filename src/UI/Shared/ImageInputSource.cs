@@ -29,6 +29,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     private readonly Entries _entries = new();
     private readonly Dictionary<string,int> _indices = new(StringComparer.Ordinal);
     private int _currentIndex = -1, _configuredIndex = -1;
+    private long _displayGeneration;
     private ImageRunMode _runMode;
     private bool _autoSwitch = true, _readOnly, _committing, _requiresWriter;
     private string? _acceptedRuntimeError;
@@ -147,7 +148,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         var structureChanged=rows.Length!=_entries.Count||rows.Where((row,index)=>!ReferenceEquals(row,_entries[index])).Any();
         var removed=_entries.Where(image=>!rows.Contains(image)).ToArray();
         foreach(var image in removed) image.RequestRunSelection=null;
-        _configuredIndex=config.CurrentIndex; _currentIndex=displayIndex;
+        ++_displayGeneration; _configuredIndex=config.CurrentIndex; _currentIndex=displayIndex;
         _runMode=(ImageRunMode)config.RunMode; _autoSwitch=config.AutoSwitchEnabled;
         _runReferences=new(config.ForRunPaths); _indices.Clear();
         for(var i=0;i<rows.Length;i++)
@@ -214,10 +215,14 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     {
         if(_committing||EditVersion!=expectedEditVersion||!_indices.TryGetValue(entryId,out var index))return false;
         var image=_entries[index];if(Reference(image)!=reference||image.FilePath!=address)return false;
+        var generation=++_displayGeneration;
+        bool Current()=>_displayGeneration==generation&&EditVersion==expectedEditVersion&&CurrentIndex==index&&ReferenceEquals(CurrentImage,image);
         _currentIndex=index;LastNotificationError=null;
-        Notify(()=>OnPropertyChanged(nameof(CurrentIndex)));Notify(()=>OnPropertyChanged(nameof(CurrentImage)));
-        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>())Notify(()=>((EventHandler<int>)callback)(this,index));
-        return true;
+        Notify(()=>OnPropertyChanged(nameof(CurrentIndex)));if(!Current())return false;
+        Notify(()=>OnPropertyChanged(nameof(CurrentImage)));if(!Current())return false;
+        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>())
+        {Notify(()=>((EventHandler<int>)callback)(this,index));if(!Current())return false;}
+        return Current();
     }
     public void LoadFromPolicy(ImageSourcePolicy config,IResourcePathResolver? resourcePaths=null)
     {

@@ -8,4 +8,6 @@
 <SolidColorBrush x:Key="ImageSources.Scroll" Color="#666666"/>
 <SolidColorBrush x:Key="ImageSources.MenuBackground" Color="#252525"/>
 <SolidColorBrush x:Key="Col_ScrollBar_BorderBrush" Color="#666666"/><SolidColorBrush x:Key="Col_ScrollBar_Fill" Color="#666666"/>
+<!-- Shared original WindowShadow; do not mix with the tool-dialog white palette. -->
+<SolidColorBrush x:Key="ImageSources.RunningShadow" Color="#44F0F4F9"/>
 </ResourceDictionary>

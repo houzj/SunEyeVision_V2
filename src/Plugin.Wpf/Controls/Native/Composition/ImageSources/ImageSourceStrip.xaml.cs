@@ -24,6 +24,10 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register(nameof(IsExpanded),
         typeof(bool), typeof(ImageSourceStrip), new PropertyMetadata(true, ExpandedChanged));
     public bool IsExpanded { get => (bool)GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
+    // Visual state only. The host owns execution and supplies the source root's state.
+    public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning),
+        typeof(bool), typeof(ImageSourceStrip), new PropertyMetadata(false));
+    public bool IsRunning { get => (bool)GetValue(IsRunningProperty); set => SetValue(IsRunningProperty, value); }
     private IImageSourceStripSession? _attached;
     private CancellationTokenSource? _lifetime;
     private bool _refreshing;

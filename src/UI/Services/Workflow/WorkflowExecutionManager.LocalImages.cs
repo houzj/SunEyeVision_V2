@@ -10,7 +10,7 @@ public partial class WorkflowExecutionManager
 {
     private readonly LocalImageSequenceService _localImageSequences = new();
     private sealed record LocalSourcePresentation(ImageInputSource Source, long EditVersion);
-    private sealed record LocalCursor(string Definition, string? EntryId);
+    private sealed record LocalCursor(string Definition, string? EntryId, bool PendingSelection = false, WeakReference<ImageInputSource>? SelectionOwner = null);
     private sealed record LocalCursorOwner(WeakReference<SunEyeVision.Workflow.Workflow> Root, Dictionary<string, LocalCursor> Sources,
         Dictionary<string,long> ResetVersions, Dictionary<string,string> Blocked);
     private readonly Dictionary<string, LocalCursorOwner> _localImageCursors = new(StringComparer.Ordinal);
@@ -31,6 +31,38 @@ public partial class WorkflowExecutionManager
             var cursors=GetLocalCursorOwner(rootId,root);
             cursors.ResetVersions[sourceId]=checked(++_nextLocalImageReset);
             cursors.Sources.Remove(sourceId);cursors.Blocked.Remove(sourceId);
+        }
+    }
+    // Runtime navigation is independent from configuration history and the current run's frozen input.
+    internal bool TrySelectLocalImageCursor(string rootId, SunEyeVision.Workflow.Workflow expectedRoot,
+        ImageInputSource source, ImageInfo image, int index, long editVersion,
+        SunEyeVision.Workflow.Persistence.SolutionResourceResolver paths)
+    {
+        var node=expectedRoot.Nodes.SingleOrDefault(item=>item.Id==source.NodeId&&ReferenceEquals(item.InputSource,source));
+        var policy=node is null?null:SunEyeVision.Workflow.ImageSourcePolicy.Read(node);
+        if(policy is null||index<0||index>=source.Count||!ReferenceEquals(source.Images[index],image)||!source.CanSelectImage(index))return false;
+        var plan=SunEyeVision.Workflow.ImageSourcePolicy.CreateLocalPlan(source.NodeId,policy,paths);
+        var entry=plan.Entries.SingleOrDefault(item=>item.OriginalIndex==index);
+        if(entry is null||entry.Address!=image.FilePath||entry.ResourceReference!=(image.SourceReference??image.FilePath))return false;
+        long reset;
+        lock(_lock)
+        {
+            if(!ReferenceEquals(_workflowEngine.GetWorkflow(rootId),expectedRoot)||source.EditVersion!=editVersion)return false;
+            var cursors=GetLocalCursorOwner(rootId,expectedRoot);
+            if(cursors.Blocked.ContainsKey(source.NodeId)||_nextLocalImageReset==long.MaxValue)return false;
+            reset=checked(++_nextLocalImageReset);
+        }
+        if(!source.TryPresentRuntimeCursor(editVersion,image.Id,entry.ResourceReference,entry.Address))return false;
+        lock(_lock)
+        {
+            if(!ReferenceEquals(_workflowEngine.GetWorkflow(rootId),expectedRoot)||!expectedRoot.Nodes.Contains(node!)
+                ||!ReferenceEquals(node!.InputSource,source)||source.EditVersion!=editVersion
+                ||source.CurrentIndex!=index||!ReferenceEquals(source.CurrentImage,image))return false;
+            var cursors=GetLocalCursorOwner(rootId,expectedRoot);
+            if(cursors.ResetVersions.GetValueOrDefault(source.NodeId)>=reset)return false;
+            cursors.ResetVersions[source.NodeId]=reset;
+            cursors.Sources[source.NodeId]=new(CursorDefinition(plan),entry.EntryId,true,new(source));
+            return true;
         }
     }
     internal void BlockLocalImageCursor(string rootId,string sourceId,string reason)
@@ -121,6 +153,7 @@ public partial class WorkflowExecutionManager
         public Dictionary<string, LocalSourcePresentation> Presentations { get; }
         public IReadOnlyList<LocalImageRunInput> Consumed { get; private set; } = Array.Empty<LocalImageRunInput>();
         public bool Advance { get; set; } = true;
+        public HashSet<string> PendingSelections { get; } = new(StringComparer.Ordinal);
         public string? ExplicitSourceId { get; set; }
         public int NavigationDirection { get; set; }
         public IReadOnlySet<string> RootSourceIds { get; }
@@ -130,7 +163,7 @@ public partial class WorkflowExecutionManager
         {
             var ticket=Consumed.SingleOrDefault(input=>input.SourceNodeId==sourceId);
             return ticket is null ? null : identity => _sequences.AcceptRead(ticket,identity.RequestId,
-                Advance || (ExplicitSourceId is not null && ExplicitSourceId!=sourceId),identity.CancellationToken,
+                !PendingSelections.Contains(sourceId) && (Advance || (ExplicitSourceId is not null && ExplicitSourceId!=sourceId)),identity.CancellationToken,
                 RootSourceIds.Contains(sourceId)?NavigationDirection:0).Entry.Address;
         }
         public LocalImageReadRound FinishRound()
@@ -186,23 +219,38 @@ public partial class WorkflowExecutionManager
         var validPlans = plans.ToArray();
 
         var definitions = plans.ToDictionary(plan => plan.SourceNodeId, CursorDefinition, StringComparer.Ordinal);
+        var pendingSelections=new HashSet<string>(StringComparer.Ordinal);
         lock (_lock)
         {
             if (_localImageCursors.TryGetValue(workflowId, out var cursors) &&
                 cursors.Root.TryGetTarget(out var owner) && ReferenceEquals(owner, captured.RootOwner))
-                validPlans = validPlans.Select(plan => cursors.Sources.TryGetValue(plan.SourceNodeId, out var cursor) &&
-                    cursors.ResetVersions.GetValueOrDefault(plan.SourceNodeId)==captured.ResetVersions[plan.SourceNodeId]&&
-                    cursor.Definition == definitions[plan.SourceNodeId] ? plan with { SelectedEntryId = cursor.EntryId } : plan).ToArray();
+                validPlans = validPlans.Select(plan =>
+                {
+                    if(!cursors.Sources.TryGetValue(plan.SourceNodeId,out var cursor)
+                        ||cursors.ResetVersions.GetValueOrDefault(plan.SourceNodeId)!=captured.ResetVersions[plan.SourceNodeId]
+                        ||cursor.Definition!=definitions[plan.SourceNodeId])return plan;
+                    if(cursor.PendingSelection)
+                    {
+                        if(cursor.SelectionOwner is null||!cursor.SelectionOwner.TryGetTarget(out var source)
+                            ||!captured.Presentations.TryGetValue(plan.SourceNodeId,out var presentation)
+                            ||!ReferenceEquals(source,presentation.Source))return plan;
+                        pendingSelections.Add(plan.SourceNodeId);
+                    }
+                    return plan with {SelectedEntryId=cursor.EntryId};
+                }).ToArray();
         }
         var generation = _localImageSequences.Begin(workflowId, validPlans);
-        return Task.FromResult(new LocalImageExecution(_localImageSequences, workflowId, generation, captured.Overrides, captured.Presentations,
-            captured.DefinitionSignature, captured.RootOwner, definitions,captured.ResetVersions,captured.RootSourceIds));
+        var execution=new LocalImageExecution(_localImageSequences, workflowId, generation, captured.Overrides, captured.Presentations,
+            captured.DefinitionSignature, captured.RootOwner, definitions,captured.ResetVersions,captured.RootSourceIds);
+        execution.PendingSelections.UnionWith(pendingSelections);
+        return Task.FromResult(execution);
     }
 
     private async Task<LocalImageCompletion> CompleteLocalImagesAsync(LocalImageExecution images, CancellationToken token)
     {
         // Acceptance is already final; cancellation and downstream status cannot undo it.
         var round=images.FinishRound();
+        foreach(var receipt in round.Accepted)images.PendingSelections.Remove(receipt.Ticket.SourceNodeId);
         lock (_lock)
         {
             if (ReferenceEquals(_workflowEngine.GetWorkflow(images.WorkflowId),images.RootOwner))

@@ -273,19 +273,19 @@ public sealed class RootWorkspaceHostTests
    Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
    Assert.Equal(position,history.Position); // Explicit same-value selection resets execution, without another history entry.
    var first=source.Images[0];var second=source.Images[1];
-   EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
-   {if(ReferenceEquals(e.Image,first))source.SelectImage(1);};
-   source.ExplicitSelectionAccepted+=selectAgain;
+   EventHandler<int> selectAgain=(_,index)=>
+   {if(index==0)main.TrySelectPreviewImage(tab,source,second,1,source.EditVersion);};
+   source.CurrentImageChanged+=selectAgain;
    try
    {
     Assert.False(main.TrySelectPreviewImage(tab,source,first,0,source.EditVersion));
-    Assert.Same(second,source.CurrentImage);Assert.Equal(1,ImageSourceTestRuntime.Read(node).CurrentIndex);
+    Assert.Same(second,source.CurrentImage);Assert.Equal(0,ImageSourceTestRuntime.Read(node).CurrentIndex);
    }
-   finally{source.ExplicitSelectionAccepted-=selectAgain;}
-   EventHandler switchSource=(_,_)=>SetActiveSource(previousSource);
-   source.ConfigurationEdited+=switchSource;
+   finally{source.CurrentImageChanged-=selectAgain;}
+   EventHandler<int> switchSource=(_,_)=>SetActiveSource(previousSource);
+   source.CurrentImageChanged+=switchSource;
    try{Assert.False(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));}
-   finally{source.ConfigurationEdited-=switchSource;}
+   finally{source.CurrentImageChanged-=switchSource;}
   }
   finally{SetActiveSource(previousSource);}
   VerifySourceBaseAfterSave(main,node,root.Id,source);

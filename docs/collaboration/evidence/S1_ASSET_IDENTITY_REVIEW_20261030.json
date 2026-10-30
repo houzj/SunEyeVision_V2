@@ -1,0 +1,1515 @@
+{
+  "scope": "S1图像源资产字节身份核收；不证明模板、运行主题、行为或完整控件一致",
+  "resourceGraphSha256": "2D04B5EB6EB6CA25138008B6802A58735CF666A9C661B5431910FC77F5B9A99A",
+  "originalAssets": [
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_link切换_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "9BC05F426D4486102B3236C107CFA281F2AB18CC3FF33D4A721544F50B76D803"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_add_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "3416DB56950BD4CABA75CBB85E9ECA86D1F8126EDE0D33BE8FAA90534DB16788"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序下_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "3335F1D7E78CF2738B7C3A54B6F6CDD0FF6242848AFE60497DA448C53286AEE0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_operate_more_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A8B80AFD57D5A281F4FD77C20FE68B8099C087928301DE0F875609F7C5121B09"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Frontend/inputbox_combo_ic_triangle_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Frontend\\inputbox_combo_ic_triangle_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Frontend\\inputbox_combo_ic_triangle_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "9067F234BE6B3BE5B179D31F6B3122FE4F36E129A385417B97B9698D9EC29D48"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_unlock_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "813FD29DCDE2938A86586D68A3EC122F02CDCD49A10387406D905252B20678D9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_缩小_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_缩小_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_缩小_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "093882A4CC70507BA20F2F48382BBFB2AD0364A5D951A1C6F5EB823B022FD3F3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_link切换_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "085AB4FF4F5DF7A56620C7ECCE6AFBFF615F9B5C5B80D2CE3A7978EBF0C21984"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/unlock_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0468814FF6DFC3FAB2B65E7307D495610338BD55EB114B2502C0AA194DD2CFE8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/toolGroupCali_N.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolGroupCali_N.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolGroupCali_N.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "05B3B977825D116C95E979AAA456FA418F48D60FDED48F33BCE7597230D78D29"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add list_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add list_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add-list_disable.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "A05A514CE593DC3C2ADA732EE46316FD08894FFF52739CAE8CADAA27CB1A67D0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_QuadraBox_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_QuadraBox_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_QuadraBox_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "86D13325609F720DC4FD45BBA4072F9F21BCE011A14B8C0C70702D5A3230AFC4"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_ROI_阵列圆_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_ROI_阵列圆_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_ROI_阵列圆_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "830B0B8DA894BC78FF51D44E4D9DE84D913E4569457206D23CE1B53003744826"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_扇形_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_扇形_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_扇形_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "EC651429033AE5624998CEA45365B8BB803B1F9CD0B5F190E4D6B49CED4EC728"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_polygon_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_polygon_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_polygon_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "24C7A5B1ED7EAE18682E06673CBBE4535A551A49D3B09CBED398B464C5FEE4BA"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/lock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "707526208D15A96F996EACDA5A3FCFC4EA2B5A42BBDF5EFF504710D304448DB0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/tool_right_ic_1比1_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_1比1_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_1比1_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_辅助线_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "C299D9FE0BCC06FD0174CCC4BE33B2D87976A530361092E78FDC45635517D848"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_清空图片_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "800E1BA59374C7679B8949E4466CD2CED1007563DE6127C26FADB266A07733DD"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_remove_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_remove_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_remove_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "C55DA9179EB5CB566B5030F993A85B3C0070F7A4199EAFFEBBF68F6086978C4A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_more_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E1A9119F67351AC5309B76C6AA7801005448153CB386B1805BED6296121F8CE9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_line_clickon.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_line_clickon.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_line_clickon.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A11E1A8F95AA712BCE0EEEC7DD06A8324E1153CDEB543B16EBC9A6AC8E2B570C"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/toolbarTriangleOpen_Normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolbarTriangleOpen_Normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolbarTriangleOpen_Normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "8BB45ED08B9B66FBE9CB8BB2BC5C0E54B962752FE5AFF4E4FAD51505AE597DF5"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/image_ic_delete_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\image_ic_delete_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\image_ic_delete_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "AF0F8B2826843279A3C7574169E7EEB8CC7A7AAA6A4BE9A820ACECAAB600B5D2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_topbar_VM-see_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_VM-see_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_VM-see_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "14AC30584F034BBFB8AD3E818B564AD9A6A85CE5187E2E6B5FF8A9452C6FF29D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/add_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\add_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\add_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "14FAAD1FE91AF1238DFE93A4AE6AC6C718B0F0B0C2CA02B088BABCABEFB7DA45"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/swith_on_dark.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\swith_on_dark.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\swith_on_dark.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_扇形_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_扇形_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_扇形_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "598D2E5DCA9438FE6656ADF23DD146D548422E0FFE8CC3F56845F0B06761A78B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_link切换_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_link切换_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BAE78AEADE08A9C376BD5BBB4E8271D3D12BCCA7028301CE0D124030D4984DDD"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allUnfold_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "247C4DE67BC2F0D65CD183E9AEF7450922F75CF3D12AD2BAFA95FBD0790BEF17"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_坐标系_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_坐标系_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_坐标系_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E8366D8F58A3F9052D153E6003B835753C5CFB62DB394FF0B641313B5C1DA09B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/see_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\see_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\see_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "904629A4350DC526E576E4DE88768FCDD8DFF722FB1AD4950C950A234D4F46E3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add list_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add list_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add-list_click.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "1E71D693778E5D05D85AD06EFDA563FA203DEE12B57649FA4DB68C9C91F12FBB"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_启用权限_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "02AAF669A1B5AF6277D2B8259CF22D1C128F000A798E832026986DB27E1E7B9E"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image fold_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image fold_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-fold_disable.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "0B1C5A9C682763D3073ECF260078B2F2B4D7B2AB56551B51751BD45650622E7A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_DoubleBox_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_DoubleBox_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_DoubleBox_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "9ECF6B660D3B9B95CF71222A1C0A63529B6F146F8C167DEFB94C626F1B295B48"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/edit_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A7B3FE62930D3A17FBD5029C5950B324A089B07212C0B00954CA226ED1EF7315"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_直线卡尺_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_直线卡尺_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_直线卡尺_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "35155CA14BBE4AC38F9B267923F7ECB19E7F62697928A908B50471EFF8492B38"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/see_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\see_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\see_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "C27B13B2CF090268B01A1E48F2C7748253FEA5F6F8DEB56BF37396422D9078C7"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/check-box_half.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check-box_half.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check-box_half.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "3B66FD8B9086F6DBA9F350A8D09BDEBD1EB8F98911BC2BFACAC9101AEC9093D9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_选中但未绘制_bg.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_选中但未绘制_bg.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_选中但未绘制_bg.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "16DE014AFC7A3D13534285D05ED6295F9BBFAB34F27F67047BD70E601E33671B"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序下_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "700FBC4492F0E000F8301440B7F233FDBE0D95998238318D2453405A2480E7CD"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allUnfold_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A9B7913FFC2D1FB0CDBB963A6895FD79BC4E85215ECC95E38539101538E832B2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_辅助线_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "281330E7C03D64616CAF50679AACA1BE7C474FC866A94AA6B845451CF151182F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_关闭权限_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "95C9D1E5CAF25170D751F11908E25FA98C9589AD2A0F62E123E8CB1C82295FE4"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/unlock_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "CB066B840E5D3F1ECDA6DEDD69CBF40DBF01C04AB2C17323AF3B0DAC272BBB74"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image_unchecked.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image_unchecked.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image_unchecked.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B7204C42DC44B4D5916407536E2B19878E857D37B19253084E83D9EB10003880"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/window_ROI_unlock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_unlock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_unlock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "077A3AE0C45A93D4BCA0101D369E7DF84D7C053840616711440FCFC267D84A3C"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_more_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "ACD7580B36928F68D7FD9A2C498D3B61763A7E7C6BABD2665F51573066CDBF67"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_add-directory_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_add-directory_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_add-directory_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E50A0FEB5DE76B88529DD3B54EB3D4448FC055299B422BB4AFE58C3E199E08D1"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Frontend/inputbox_combo_ic_triangle_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Frontend\\inputbox_combo_ic_triangle_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Frontend\\inputbox_combo_ic_triangle_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "D2CBC67DB45780AD07D3A3464547D3CA80CE77D09B4EE67A1E1D22B38C1EEABE"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_tab_downarrow_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "767E0FF5B870108C17BA5F09C104435935653273EE4CE33F20EC682232597F48"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add_list_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "4892712AE3F7349D8D2CB76F37598E7E6FBBA4F9278C8BA76160D09D823B8900"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_remove_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_remove_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_remove_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0A3BCDA9BEB203400B84EFFF3DF3E131A5170D9B9388107795F5167BACC795B0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_ring_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_ring_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_ring_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "44FDD972DF6B6F278F0028ECF705E4DE3355D076283CE88177EB59BD0FD73A79"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_circle_clickoff.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_circle_clickoff.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_circle_clickoff.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "788FC45F1D0187EB4DDFAB08E660D389E19558C04E5207B6728A3B7ED6A34E0B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/check2-box_off.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check2-box_off.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check2-box_off.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "C0D428AE5EDC804F9146F0350B7BBC9B651C3D587F56BD8378D8EAC661EFACD4"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/combo_ic_triangle_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\combo_ic_triangle_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\combo_ic_triangle_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BE2C6C437DF328FB1AA8EFAF6361B9F851F218045C277D57C165AAE019566FA0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_unlock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "CF548F1FE7D26CF618C8DE7F74D8B074BF5AE71562BA1EF8DC3665854B221C68"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/unlock.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "99C9F8F5AF969A8C28318D66374372CD1841D0AA641AA73EDE2B895AC4ABB3C1"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/swith_on.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_on.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_on.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "00ABD78EB5EFB43DE434F54BE0B0AC652A02882F224BEABA175241BEF39D1BD9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_tab_downarrow_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7DD16D3C9961BF3FDB88162369B7C02333C81D19A5676FEC9240915D982CD7D1"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/arrow_right.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\arrow_right.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\arrow_right.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "AFE1133AFA05A0215D4734F5764BDFFBB9DD233C8B13EAD0D9B853AED5C20BA0"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序上_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "775247A92E3814E97DB008F458DB8A2F3C1646E3C3FB40784DD7128D3AD2D16C"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/ic_btn_从头执行_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "AC7D76D1E011456FC83E7D5B9ACA95A47C91F5F3F81C2EB7E20EECE481B19E81"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/tool_right_ic_full-screen_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_full-screen_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_full-screen_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_toolbar_see_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BD95A26C86AC343F022FAEED10EA16D3B411C37CA485DCCF13BA6228ED1361E0"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_add-directory_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_add-directory_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_add-directory_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "D8B6AC138D7FAD48788B09CD31A12B4E9A432AD02805200FF201D6416A57EE6A"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序下_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序下_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A205F18691C4D2BBF7300080B1E8845FA2F9462E59F2272D046B09B6E17369DD"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_more  option_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_more  option_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_more--option_click.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "FFCDDA08E0F0B424F4960246B7FFCF7AE475CAA38AB4E0E55E7355756CBB8542"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_light open_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light open_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light-open_disable.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "DFAFBBCBADFE655B65A4B2E14DA4EFA9B09026A91B6EE00CE378E82ADBC3CAB0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_circle_clickon.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_circle_clickon.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_circle_clickon.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B99BB9D2F54ADD8D59A606DD6C1C47FABC470AD1CDDEF2F13569462CE47F54B6"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_addimage_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_addimage_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_addimage_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0662FC8813C0024E065009D934C4456C1A88EB74AF8D08D59D3245FD047D88CB"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_tab_downarrow_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "349D0D34E2E9BB85B13D6E15F3F1F18A47347769281C8C6174461D5D9F749A3B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_1：1_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_1：1_normal.png",
+      "extractedPath": null,
+      "resolution": "not-found",
+      "sha256": null
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序上_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "5FBB5A6256726977D407FB8D5640FC2C969000C8B34C1776CCE899A6075B09A4"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/toolbarTriangleOpen_Click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolbarTriangleOpen_Click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolbarTriangleOpen_Click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "491F2925D2D9B42260F02C10D2A858433609DAF6AC488BA0BE75A521D89FFB93"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image fold_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image fold_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-fold_normal.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "F1E6C27791FF52C3DE6F7997E3FDA89483AB4723FA7EE46988628BC805250412"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_辅助线_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_辅助线_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1FFA865E761BAEED48A8D88953B80608609B3C979BFF6AC703E1C72A34394BF0"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_edit切换_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "97F9DF0027635758F8F5F0412B832642EC99B738B16CA5F333869633B3CCF9AF"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/add_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\add_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\add_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "925A7569616FD4A884F21CED370417F771E0AC2DA95EDB8157D77F78B0A655A4"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allFold_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "6891001117845CFC73C6BC9D46E18CD9A09A2E2721C668357100800A89848E2D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_circle_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_circle_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_circle_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "788FC45F1D0187EB4DDFAB08E660D389E19558C04E5207B6728A3B7ED6A34E0B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/btn_高级参数_uparrow.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_uparrow.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_uparrow.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B6BEBBA8D02759061FB8BCAADEBE1303CD6A9AD169B902E2B1BA8546C790CD81"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_关闭权限_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "895CA5620445111B43C15573D35E122E5E154C95C4ED8432B350AB4075CF68DD"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_toolbar_see_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "087531685F0D49592813F45B2FBED65509699CDD78067CE35E29016A95A25901"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/window_ROI_lock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_lock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_lock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "2932851A1759B09D71EB4E60089F051CE815F97527163BE694157939F6708F08"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_lock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "8DF56DBDECC0EAEE5C6364EDD780C1A1D698E042736E549F9A1A845AB4EB42CC"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_operate_more_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "AEF4F7E359140B3B4AE5D82A138887FC6AFD9E5E231C6987B336F59E518F638B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_light open_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light open_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light-open_click.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "1A57DB82C07913F87932234E56F6F323E75D74B929E83C0A99D4B59E72FB8401"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/toolGroupCali_F.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolGroupCali_F.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\toolGroupCali_F.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F9E9DB091161EB72D830F4D7A0EE8AF2949930D03ADC964FE52F77F0AC8D0AF5"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_放大_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_放大_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_放大_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "752A6CD1B1BFDBA7F5BB0745C13F6A3226202F4A8E20483C7C61365214923135"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_add_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "57A34C91DEAAC7E6F230C5F62BCACE6ADC9861B34345867ED58180C293BE0B7D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_retangle_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_retangle_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_retangle_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1B321DDD93BD9F7179802D5C48A830814CF8E9E5B706B063905B01B8908FA8AA"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add_list_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "5AE4F3DFC3A02D5E8F01EF5D0D8AA3031756246DD9338B1DE8C233206DAB264B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/window_ROI_lock_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_lock_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_lock_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "D26FE57AF327B63C0152DB1D47125E7509E4AAEC60DD568C529F1D47D81827DC"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/特征模板_ic_排序上_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\特征模板_ic_排序上_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "4750C05CD4DECCE57C2F8A0BCD7024EA6B0023BB13219EDC5453E685A30F88A3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add list_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add list_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add-list_normal.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "F874B60952685F598DD203639A4EFFA125F0BECBD9C0FCDE3299A588A27BD6A6"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_edit切换_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F725452DD0A7DDE8682E3712C01B509D52BF4A3453D19CC6D551F54EBECA25BF"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/tabbar_ic_addimage_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_addimage_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\tabbar_ic_addimage_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "ADE1A0DCDDBE6DD13B8DB50E15CAAC313C2280BF5BEEB2F43C33B875BF9D35C1"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_清空图片_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1FE8DEE1866625893E33C52E8FB758C5338F6221B6CB2765E8E6FC9E1672E760"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_启用权限_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "66D8CD47650955CEF24037A1AA22FD60227BE175AEDBE0A9C06D249E13A76844"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/11.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\11.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\11.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "58C1884884E85D007D466BDEB10AC9EE9544CE8BA608D29134E03CFB4FA36132"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_lock_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "A7359AD7F2170B738E02731AC7DCEEB939779B98A1D0CE83D938E9FC3A0E3922"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_topbar_see_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_see_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_see_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "CE1B7934E3679380F8CA6DD6F54F3D768E14B8AA4FBAFCA5993418A7F641B1B8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image_checked.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image_checked.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image_checked.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E2E8E43519050F74E4F2E96164BC14CED55D3392BC2598339ACB74BFE74D6FE5"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_topbar_see_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_see_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_see_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "EF01D1C9A6899934DCE439036E0B03995D637F138F1858485D264BD7E2CD6C84"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_启用权限_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_启用权限_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BEC77C94617DA25ECCDBE8188A87007B06B11C9B25AABA83D54A3C707339D176"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_full-screen_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_full-screen_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_full-screen_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "998B66C54A8D6459CCD60F67B99B339512B1550E9F02151A66CEABEDCC11652D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_add_list_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_add_list_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E93CCD6D0058BC75CCC5F5D47089255F0A5ABE32B16146E90E88774C5EA9223F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/not-see_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\not-see_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\not-see_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "35F372F7D09C0F46F69B1F9ECAE0A9DF953E5B5960C9ED1C68BB6661BC746AA5"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_关闭权限_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_关闭权限_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "091686BF113E646227FAD5A83B9049FBA718DECCF5CC55D135F4BD94A42246A6"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_圆形卡尺_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆形卡尺_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆形卡尺_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "3F8AF3A02A01E98DBB24D01F28BCE91C6328F2FFFD857B819BA1215D76718F3B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/swith_off_dark.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_off_dark.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_off_dark.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_圆弧卡尺_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆弧卡尺_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆弧卡尺_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F70795CC19D35863D0B73981A9A79E017F9B64528BC3BC9FCBC73961841DE820"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image unfold_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image unfold_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-unfold_normal.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "B5B0AF07FDDFA12D652536AD54856CBC71CB2B21DEBDD7CFFC56248A8552BB06"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/swith_off_dark.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\swith_off_dark.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\swith_off_dark.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_圆弧卡尺_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆弧卡尺_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆弧卡尺_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "47AC3EA065E336DB3B42B9FF776DD19EAD8BE1A75FE6AF604B1F1C9534787FEB"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allFold_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B1263957BE15978BDF8D8ADE8B9C40FAF8784FC3908F3EA1964444FEA907EA4B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_circle_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_circle_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_circle_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B99BB9D2F54ADD8D59A606DD6C1C47FABC470AD1CDDEF2F13569462CE47F54B6"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_toolbar_hide_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_hide_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_hide_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B49BE777492BEA5981EC7ED796293746832D7F85D443FC2C7102127CF2BFA81A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allUnfold_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allUnfold_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "854E258F8D39C4B143FA63CCF293FC2A701A1F2565B7E9CE29FC42C4B2905FF9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_topbar_frameChange_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_frameChange_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_frameChange_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "329E541488AA6B58EA2A14C200E092BAECE3F971365FDCF68A583D112D21542B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/unlock_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B1297C08E2E3F33A18185AE701C78449838CEC9D848699D44BAF4E32D40CAA7D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_unlock_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_unlock_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "C060D4358370E74AD867FE2689DE5E5ECF7A25AA1707689C013CCAC2BD1F71A8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_line_clickoff.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_line_clickoff.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_line_clickoff.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "02BEF204A35D440708D5F6E34453762EB6DDF38CE6853348F9EA681EE577A2D8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/combo_ic_triangle_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\combo_ic_triangle_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\combo_ic_triangle_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "397439A8E64D1F24566E479439B31447F508B567E7AFE5E7A0D759D0D46B1209"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_清空图片_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_清空图片_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "E9A7A690F292ED8A142BC4D99031E664F99278BB39667D7BBB86AF8365CAF27F"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/image_ic_delete_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\image_ic_delete_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\image_ic_delete_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1C0382D5441C18B37AE914EF0CF82192011B103EDA5BAA6CCB30566F888F7565"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/ic_btn_从头执行_select.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_select.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_select.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "80CD078D727C647C2985704AA1D758B83F3AD4A17B4E5580A81CEB294042D511"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_ROI_阵列圆_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_ROI_阵列圆_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_ROI_阵列圆_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "90CE8A07C94C1987FE9EEAD1C4364EBB2E74269EA8D0C5BBC74196D7D2DD91EF"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/StayOnTop_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "FC6DDAE30AB6F8D3C58E6DE3C612592CF2B2F57CA52B90EBC17FA0EF74BDBCBA"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/StayOnTop_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "D78D537A653F21EB76A3AA050ECBD2A25DCC58CA634E549080A6250B066D78E6"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/locked.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\locked.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\locked.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1BFC94B2411C2DB007E3B303EC9020B17BA2374F89AE23A961485F2666438127"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ZoomOut_1.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ZoomOut_1.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ZoomOut_1.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F6261CA050E2AEDC2441EF43C59EBA5DE0F555238996D46D2218600046426CDE"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image unfold_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image unfold_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-unfold_disable.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "D073B8D8934A18A9ECCB8C6AA8289AFEAC4DEB82E4D4FDCCC7B7F3CC95367559"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_retangle_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_retangle_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_retangle_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "ED1AE13DEC8420707965DFD3B7729A975FD170810432E1E38467E1D9092AA050"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_more  option_nor.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_more  option_nor.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_more--option_nor.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "47989586FF01DF02D69D1C5EBB61D5E07F9CB4F0911E5545F88BEE73CF846740"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/swith_on_dark.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_on_dark.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_on_dark.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_point_clickon.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_point_clickon.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_point_clickon.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7DA6DF019FE6AE9665FE42548551888411FA0A76B7562B8DB94907D96944129E"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/check2-box_on.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check2-box_on.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\check2-box_on.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "55FFB3D6668938A73075C3C002B225481E43CBDA41E6304CF8DA473BDF651E1C"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_屏蔽polygon_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_屏蔽polygon_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_屏蔽polygon_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "88092CD14D3E63AEB18BF94A9A4E532E95FB73687A7450DBA1BAC2A9684B4DDF"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/btn_高级参数_downarrow.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_downarrow.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_downarrow.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "622514B0F4C49F6FC34D37692B371222342BD22FD39BAD903D0D83277EEB17F9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ZoomIn_1.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ZoomIn_1.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ZoomIn_1.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "48639AC34B64B0F7A75718B68B2F8EE6227E7951F0E3588F912ED419DDE0BE4A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/StayOnTop_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\StayOnTop_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "311B4BDAC79823FE5EA4392BEF92B50ED1021B9A44E541166E10A7075C4BB64B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/NotStayOnTop_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "17655DF06EEA98B2B383BBC9E09CA84901F5828F880C36ED442D027B9290222D"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/unlock_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\unlock_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F9453C601639261935474CC6DB23EE975E6D4CD8F159CE6E56B2E42DF44518D6"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image fold_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image fold_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-fold_click.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "97F37B87D2803F1C7C97178426C37048A343710A579E0A54BB2E4FCBE5F48BA9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/swith_off.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_off.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\swith_off.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "9BABAA9B8073F7FD3F87BDC6D86457E93D3D4CFDAADEA774E232C2D98A1D531F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_add_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "5C67D5C3CDE12D27ECEFB55632C0609F6D9A32816182A12C351FC81FADFEC812"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/NotStayOnTop_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "DC5699B3CD4097B999E2A44A7711B2142398D6A69FD7457684DD11AC5A309FEA"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_DoubleBox_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_DoubleBox_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_DoubleBox_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1AEA902F8695CAF76BF3ACB847FE8AB82E43CC20494CB30D2BAC80B09C2059D5"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_add_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_add_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "682F6570A3C408B15A235D5A8BFCF01030AA75D70FFB9734E668ABD11B4B7F5B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/edit_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7848EE46F8B0899193ED1FA8002716488980689C1B975AF0FA2AEFEF7341E563"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_btn_edit切换_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_btn_edit切换_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7C556E8F306D709B3D2D9A2F418602CA7AF7C41BF45DA112355E5915BF70B904"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_屏蔽polygon_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_屏蔽polygon_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_屏蔽polygon_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "2FA429366449E60CD1F52878A2FCB060183E9CDFC745469BAE94D2F73EA3B6A8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_坐标系_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_坐标系_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_坐标系_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "719D0B217FE12AD5F9B82D64FF696B431E864ADB4AB31DBBAA4AA6E9FEF548A8"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/NotStayOnTop_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\NotStayOnTop_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BF265AE2DA2466B222F085DBCF5F4B1C3CE00F4839EE0033A0B2F8C12E378C18"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_more_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "764DE75EEF981DAC544FD975B5E3824AA10840AFC2A49A92279605D1E4E1F677"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/not-_see_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\not-_see_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\not-_see_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0F3C941DFD11A5F8F66A5079EE6B5FC20E62994ECCEEE89E3784112426E3000A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/arrow_up.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\arrow_up.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\arrow_up.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "D538AB76D504F9B36984DAFDCC1C76B9ABB55EF2D52FBEA0348F0294C614E775"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_全画幅_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_全画幅_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_全画幅_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7C6DB26D2614970594557798825EE86F6F44A8DE5169087B6E0E76A05453D40F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/window_ROI_unlock_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_unlock_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\window_ROI_unlock_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "BAC5E6D3DE85FDBBCB2E93696BC0BD993563DEE6E6D22ED5E0F01F0E84E4056F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_多边形卡尺_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_多边形卡尺_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_多边形卡尺_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "63A7F25BC830FEB85901F4EE2DE54A03699260AE378607595B90D80C9B14DCFC"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/tool_right_ic_full-screen_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_full-screen_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_full-screen_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_点击.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_点击.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_点击.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "006BEF698EB55CCD2CFB32FA151FC38100D5B1034E2F2D8FEB2289AB6BD891DA"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_item_more_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_item_more_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "AD191B2BFD14C3C134E787D3B065E396FBF5247D01C20002633BF2CC1FB3A618"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_圆形卡尺_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆形卡尺_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_圆形卡尺_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "455EFDE15E1827AB7AED9A7E2614E9407ABFF72CE97F38D6BDE151197F15EA9F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_ring_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_ring_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_ring_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "07732CD3BEFC9703DC28B1D76CA2F34E95EC5511C6AAD3E526922ABA812340B3"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_light open_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light open_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_light-open_normal.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "2877F4D5EE23A345F79FAC1E540098B56E315C02ED3750B0569FC8FF64B77A5A"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_image unfold_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image unfold_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_image-unfold_click.png",
+      "resolution": "normalized-extraction-candidate-raw-resource-name-unverified",
+      "sha256": "6E4934BBD05B25352D65F72B7837CDD48907111D35807FD7AC1F40C028680CE9"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_toolbar_hide_focus.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_hide_focus.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_hide_focus.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "2952EF9B89E332378F67AD963E015BABB2C27575232A9DC8F91A45B588E6DA98"
+    },
+    {
+      "uri": "/Apps.XmlUI;component/Resources/ic_btn_从头执行_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Resources\\ic_btn_从头执行_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1CA671F0C7A5C5F831F9649BEABF745F4A41905FD185C7457DDE773DCFBEACC2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_toolbar_see_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_toolbar_see_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "6C0AC63F2F3D449FB7744B941ECF8DDAE19ABC5BA15F8AE6E20AB8AC5280AF95"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_topbar_frameChange_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_frameChange_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_topbar_frameChange_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "49EA34C0484C27D3698BF371149D8D3CEAEDF28D04763C5A6A947A41CBEBB818"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/FullScreen.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\FullScreen.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\FullScreen.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "DBD0FA83F88A82C7D000871CD4095997D80350DA2D6DBE8729CCA6C279226641"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_lock_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_lock_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "8194AC2853523F0EDFB3CDBCD0300692A15499C6901A87DBF42306E6472A60DC"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/Geometry_point_clickoff.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_point_clickoff.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\Geometry_point_clickoff.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "45259A2B9C6A22EF8112092624DC5C0D9D0E2A1046ADDDB8745A395B72A95F4F"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_operate_more_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_operate_more_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "CFB8F2722C0235B2E24EDCC522047FEA111FF20CE30AAE2B6B5E9C529D6FC831"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/lock_disable.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_disable.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_disable.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "FCF3793EA7333A3DEDF9E9944FC8F7BA80A425EA0C0C6145A3E87A8B5880D6A5"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/edit_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\edit_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "1DBF4F14ABF519F7C04332802BFAEA70FA1B063D7C433A628E420E7CE38334C2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_full-screen_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_full-screen_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_full-screen_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "B8E6A71AF30BFA0A7A2206FF0B87523BAC2CB3C52087BD5AB12F9892BBC8008B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_tab_downarrow_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_tab_downarrow_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "8437A6551A359BAC673D90C2CCD2A1840D69215522F8CAB6136032976519525B"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_polygon_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_polygon_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_polygon_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "2A3E99D975668D294553923A6D1F7787524BA850FFD04B51B05812EEBEF3971E"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ic_dialog_allFold_normal.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_normal.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ic_dialog_allFold_normal.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "7F5EEE6AC982B5D9426F7A052D7198BF9B55579B9B9973CF82EA253CD6538F21"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/lock_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\lock_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "347778DF09D50D1388AF5E6F92092251BEAFF8F3B0A7E78E6F1F9B65A98C68C2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/ROI_直线卡尺_click.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_直线卡尺_click.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\ROI_直线卡尺_click.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "75C0F2021595285A0AC1F5E4A130748642D9CE571A8FAA6AFBAC9E9C73B6F6A2"
+    },
+    {
+      "uri": "/Apps.Style;component/Resources/tool_right_ic_1比1_hover.png",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_1比1_hover.png",
+      "extractedPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\tool_right_ic_1比1_hover.png",
+      "resolution": "direct-extracted-path",
+      "sha256": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3"
+    }
+  ],
+  "productAssets": [
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\add-directory-hover.png",
+      "sha256": "D8B6AC138D7FAD48788B09CD31A12B4E9A432AD02805200FF201D6416A57EE6A",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_add-directory_click.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\add-directory-normal.png",
+      "sha256": "E50A0FEB5DE76B88529DD3B54EB3D4448FC055299B422BB4AFE58C3E199E08D1",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_add-directory_normal.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\add-files-hover.png",
+      "sha256": "0662FC8813C0024E065009D934C4456C1A88EB74AF8D08D59D3245FD047D88CB",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_addimage_click.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\add-files-normal.png",
+      "sha256": "ADE1A0DCDDBE6DD13B8DB50E15CAAC313C2280BF5BEEB2F43C33B875BF9D35C1",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_addimage_normal.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\auto-off.png",
+      "sha256": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3",
+      "originalUris": [
+        "/Apps.Style;component/Resources/swith_off_dark.png",
+        "/Apps.XmlUI;component/Resources/swith_off_dark.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\auto-on.png",
+      "sha256": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403",
+      "originalUris": [
+        "/Apps.Style;component/Resources/swith_on_dark.png",
+        "/Apps.XmlUI;component/Resources/swith_on_dark.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\clear-hover.png",
+      "sha256": "0A3BCDA9BEB203400B84EFFF3DF3E131A5170D9B9388107795F5167BACC795B0",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_remove_click.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\clear-normal.png",
+      "sha256": "C55DA9179EB5CB566B5030F993A85B3C0070F7A4199EAFFEBBF68F6086978C4A",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/tabbar_ic_remove_normal.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\collapse-disabled.png",
+      "sha256": "0B1C5A9C682763D3073ECF260078B2F2B4D7B2AB56551B51751BD45650622E7A",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image fold_disable.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\collapse-hover.png",
+      "sha256": "97F37B87D2803F1C7C97178426C37048A343710A579E0A54BB2E4FCBE5F48BA9",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image fold_click.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\collapse-normal.png",
+      "sha256": "F1E6C27791FF52C3DE6F7997E3FDA89483AB4723FA7EE46988628BC805250412",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image fold_normal.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\expand-disabled.png",
+      "sha256": "D073B8D8934A18A9ECCB8C6AA8289AFEAC4DEB82E4D4FDCCC7B7F3CC95367559",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image unfold_disable.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\expand-hover.png",
+      "sha256": "6E4934BBD05B25352D65F72B7837CDD48907111D35807FD7AC1F40C028680CE9",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image unfold_click.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\expand-normal.png",
+      "sha256": "B5B0AF07FDDFA12D652536AD54856CBC71CB2B21DEBDD7CFFC56248A8552BB06",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image unfold_normal.png"
+      ],
+      "assetIdentity": "byte-identical-normalized-extraction-candidate",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\item-delete-hover.png",
+      "sha256": "AF0F8B2826843279A3C7574169E7EEB8CC7A7AAA6A4BE9A820ACECAAB600B5D2",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/image_ic_delete_click.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\item-delete-normal.png",
+      "sha256": "1C0382D5441C18B37AE914EF0CF82192011B103EDA5BAA6CCB30566F888F7565",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/image_ic_delete_normal.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\restart-disabled.png",
+      "sha256": "1CA671F0C7A5C5F831F9649BEABF745F4A41905FD185C7457DDE773DCFBEACC2",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/ic_btn_从头执行_disable.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\restart-normal.png",
+      "sha256": "AC7D76D1E011456FC83E7D5B9ACA95A47C91F5F3F81C2EB7E20EECE481B19E81",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/ic_btn_从头执行_normal.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\restart-selected.png",
+      "sha256": "80CD078D727C647C2985704AA1D758B83F3AD4A17B4E5580A81CEB294042D511",
+      "originalUris": [
+        "/Apps.XmlUI;component/Resources/ic_btn_从头执行_select.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\run-checked.png",
+      "sha256": "E2E8E43519050F74E4F2E96164BC14CED55D3392BC2598339ACB74BFE74D6FE5",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image_checked.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    },
+    {
+      "productPath": "src\\Plugin.Wpf\\Themes\\Assets\\ImageSources\\run-unchecked.png",
+      "sha256": "B7204C42DC44B4D5916407536E2B19878E857D37B19253084E83D9EB10003880",
+      "originalUris": [
+        "/Apps.Style;component/Resources/ic_image_unchecked.png"
+      ],
+      "assetIdentity": "byte-identical",
+      "templateAndRuntimeReview": "not-proven-by-asset-hash"
+    }
+  ]
+}

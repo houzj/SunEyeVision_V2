@@ -3,11 +3,22 @@
     <ResourceDictionary>
 <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceMenu.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
 
+  <Style x:Key="ImageSources.EmptyCheckBoxFocusVisual">
+    <Setter Property="Control.Template"><Setter.Value><ControlTemplate>
+      <Rectangle StrokeDashArray="1 2" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" SnapsToDevicePixels="True" Margin="1" />
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="ImageSources.CheckRadioFocusVisual">
+    <Setter Property="Control.Template"><Setter.Value><ControlTemplate>
+      <Rectangle StrokeDashArray="1 2" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" SnapsToDevicePixels="True" Margin="14,0,0,0" />
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style x:Key="SmallCheckBoxStyle" TargetType="{x:Type CheckBox}">
     <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource ImageSources.CheckBoxFillNormal}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ImageSources.CheckBoxStroke}" />
     <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource ImageSources.EmptyCheckBoxFocusVisual}" />
 
     <Setter Property="Template">
       <Setter.Value>
@@ -20,6 +31,7 @@
           </BulletDecorator>
           <ControlTemplate.Triggers>
             <Trigger Property="HasContent" Value="True">
+              <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource ImageSources.CheckRadioFocusVisual}" />
           
               <Setter Property="Padding" Value="4,0,0,0" />
             </Trigger>

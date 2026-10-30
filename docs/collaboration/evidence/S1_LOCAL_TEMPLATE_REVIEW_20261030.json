@@ -1,0 +1,365 @@
+{
+  "scope": "S1局部六套列表/滚动模板、运行勾选及折叠模板静态逐属性核收；不包含所有传递字典或运行解析，不证明完整组件完成",
+  "productFileSha256": "F762795B746A7C81C4E1721515761EA86059CAEB95365DEA4452B60B340645B8",
+  "templates": [
+    {
+      "key": "VerticalScrollBarPageButton",
+      "productKey": "VerticalScrollBarPageButton",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 9,
+      "productNodeCount": 9,
+      "differences": [],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "MyButtonStyle",
+      "productKey": "MyButtonStyle",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 26,
+      "productNodeCount": 26,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 2,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource GloCameraComboBB}",
+          "product": "{DynamicResource ImageSources.Border}"
+        },
+        {
+          "kind": "attribute",
+          "node": 4,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource ImgPanelForeground}",
+          "product": "{DynamicResource ImageSources.Foreground}"
+        },
+        {
+          "kind": "attribute",
+          "node": 18,
+          "element": "Rectangle",
+          "attribute": "Fill",
+          "original": "{DynamicResource Col_Theme}",
+          "product": "{DynamicResource ImageSources.Accent}"
+        },
+        {
+          "kind": "attribute",
+          "node": 21,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource GloCameraComboSelectBg}",
+          "product": "{DynamicResource ImageSources.Hover}"
+        },
+        {
+          "kind": "attribute",
+          "node": 23,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource GloCameraComboSelectBg}",
+          "product": "{DynamicResource ImageSources.Hover}"
+        },
+        {
+          "kind": "attribute",
+          "node": 25,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource GloCameraComboSelectFg}",
+          "product": "{DynamicResource ImageSources.Foreground}"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "ScrollBarThumb",
+      "productKey": "ScrollBarThumb",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 12,
+      "productNodeCount": 12,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 11,
+          "element": "Rectangle",
+          "attribute": "Stroke",
+          "original": "{DynamicResource ResultTabBoBrush}",
+          "product": "{DynamicResource ImageSources.Border}"
+        },
+        {
+          "kind": "attribute",
+          "node": 11,
+          "element": "Rectangle",
+          "attribute": "Fill",
+          "original": "{DynamicResource ImageListRectFill}",
+          "product": "{DynamicResource ImageSources.Scroll}"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "for_scrollbar",
+      "productKey": "for_scrollbar",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 17,
+      "productNodeCount": 17,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 3,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource ImageListRectFill}",
+          "product": "{DynamicResource ImageSources.Scroll}"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "ListBoxStyle1",
+      "productKey": "ListBoxStyle1",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 26,
+      "productNodeCount": 26,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 1,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{StaticResource {x:Static SystemColors.WindowBrushKey}}",
+          "product": "Transparent"
+        },
+        {
+          "kind": "attribute",
+          "node": 2,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource ListBorder}",
+          "product": "{DynamicResource ImageSources.Border}"
+        },
+        {
+          "kind": "attribute",
+          "node": 5,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{StaticResource {x:Static SystemColors.ControlTextBrushKey}}",
+          "product": "{DynamicResource ImageSources.Foreground}"
+        },
+        {
+          "kind": "attribute",
+          "node": 20,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{StaticResource {x:Static SystemColors.ControlBrushKey}}",
+          "product": "{DynamicResource ImageSources.Background}"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "ScrollViewerControlTemplate1",
+      "productKey": "ScrollViewerControlTemplate1",
+      "originalFile": "VMControls.WPF/VMControls.WPF/ImageListPanel.xaml",
+      "originalFileSha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
+      "originalNodeCount": 12,
+      "productNodeCount": 12,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 8,
+          "element": "Rectangle",
+          "attribute": "Fill",
+          "original": "{StaticResource {x:Static SystemColors.ControlBrushKey}}",
+          "product": "{DynamicResource ImageSources.Background}"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "SmallCheckBoxStyle",
+      "productKey": "SmallCheckBoxStyle",
+      "originalFile": "Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "originalFileSha256": "26174951A0B4EC4A52F2C1B89353EBE0F58375CC1B7DCEC579BC765654E9A0B1",
+      "originalNodeCount": 21,
+      "productNodeCount": 21,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 2,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource CheckBoxFillNormal}",
+          "product": "{DynamicResource ImageSources.CheckBoxFillNormal}"
+        },
+        {
+          "kind": "attribute",
+          "node": 3,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource CheckBoxStroke}",
+          "product": "{DynamicResource ImageSources.CheckBoxStroke}"
+        },
+        {
+          "kind": "attribute",
+          "node": 5,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{StaticResource EmptyCheckBoxFocusVisual}",
+          "product": "{StaticResource ImageSources.EmptyCheckBoxFocusVisual}"
+        },
+        {
+          "kind": "attribute",
+          "node": 11,
+          "element": "Image",
+          "attribute": "Source",
+          "original": "/Apps.Style;component/Resources/ic_image_unchecked.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/run-unchecked.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 15,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{StaticResource CheckRadioFocusVisual}",
+          "product": "{StaticResource ImageSources.CheckRadioFocusVisual}"
+        },
+        {
+          "kind": "attribute",
+          "node": 20,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image_checked.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/run-checked.png"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "EmptyCheckBoxFocusVisual",
+      "productKey": "ImageSources.EmptyCheckBoxFocusVisual",
+      "originalFile": "Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "originalFileSha256": "26174951A0B4EC4A52F2C1B89353EBE0F58375CC1B7DCEC579BC765654E9A0B1",
+      "originalNodeCount": 5,
+      "productNodeCount": 5,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 0,
+          "element": "Style",
+          "attribute": "x:Key",
+          "original": "EmptyCheckBoxFocusVisual",
+          "product": "ImageSources.EmptyCheckBoxFocusVisual"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "CheckRadioFocusVisual",
+      "productKey": "ImageSources.CheckRadioFocusVisual",
+      "originalFile": "Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "originalFileSha256": "26174951A0B4EC4A52F2C1B89353EBE0F58375CC1B7DCEC579BC765654E9A0B1",
+      "originalNodeCount": 5,
+      "productNodeCount": 5,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 0,
+          "element": "Style",
+          "attribute": "x:Key",
+          "original": "CheckRadioFocusVisual",
+          "product": "ImageSources.CheckRadioFocusVisual"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    },
+    {
+      "key": "DisplayHideBtnStyle",
+      "productKey": "DisplayHideBtnStyle",
+      "originalFile": "Apps.Style/buttonstyle/togglebuttonstyle.xaml",
+      "originalFileSha256": "FB8176835AF3518F9B4A50133FEB862240AB73EA1820CCB032B2810E41E67F9E",
+      "originalNodeCount": 37,
+      "productNodeCount": 37,
+      "differences": [
+        {
+          "kind": "attribute",
+          "node": 9,
+          "element": "Image",
+          "attribute": "Source",
+          "original": "/Apps.Style;component/Resources/ic_image fold_normal.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-normal.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 15,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image fold_click.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-hover.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 20,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image fold_disable.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-disabled.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 22,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image unfold_normal.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-normal.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 27,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image unfold_click.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-hover.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 32,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "/Apps.Style;component/Resources/ic_image unfold_disable.png",
+          "product": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-disabled.png"
+        },
+        {
+          "kind": "attribute",
+          "node": 33,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource 收起}",
+          "product": "收起"
+        },
+        {
+          "kind": "attribute",
+          "node": 36,
+          "element": "Setter",
+          "attribute": "Value",
+          "original": "{DynamicResource Lang_Unwarp}",
+          "product": "展开"
+        }
+      ],
+      "review": "raw-differences-not-runtime-equivalence",
+      "note": "所有属性和元素类型差异保留。结构变化导致后续对齐不可靠，不能按节点数相同判通过。资源/语言/宿主适配须结合原主方案逐项审核。"
+    }
+  ]
+}

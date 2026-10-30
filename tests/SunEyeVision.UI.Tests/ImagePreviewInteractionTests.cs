@@ -94,6 +94,71 @@ public sealed partial class SolutionManagerUiTests
         });
     }
 
+    [Fact]
+    public void Actual_source_run_check_restores_original_focus_states_and_theme_lifetime()
+    {
+        Sta(()=>
+        {
+            var source=new ImageInputSource("focus-source");
+            source.AddImages(new[]{new ImageInfo{FilePath="focus-source.png"}},selectFirstAdded:true);
+            source.RunMode=ImageRunMode.运行选择;
+            using var fixture=new NativeSourceFixture(source);
+            var control=fixture.Control;
+            IEnumerable<DependencyObject> Visuals(DependencyObject parent)
+            {
+                for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
+                {
+                    var child=System.Windows.Media.VisualTreeHelper.GetChild(parent,i);yield return child;
+                    foreach(var descendant in Visuals(child))yield return descendant;
+                }
+            }
+            void Drain(){control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);control.UpdateLayout();}
+            Drain();var check=Assert.Single(Visuals(control).OfType<CheckBox>());
+            var emptyFocus=Assert.IsType<Style>(control.FindResource("ImageSources.EmptyCheckBoxFocusVisual"));
+            var contentFocus=Assert.IsType<Style>(control.FindResource("ImageSources.CheckRadioFocusVisual"));
+            Assert.Same(emptyFocus,check.FocusVisualStyle);
+            void VerifyFocus(Style style,Thickness margin)
+            {
+                var template=Assert.IsType<ControlTemplate>(Assert.Single(style.Setters.OfType<Setter>()).Value);
+                var rectangle=Assert.IsType<System.Windows.Shapes.Rectangle>(template.LoadContent());
+                Assert.Equal(margin,rectangle.Margin);Assert.Equal(1d,rectangle.StrokeThickness);
+                Assert.Equal(new[]{1d,2d},rectangle.StrokeDashArray);
+                Assert.Equal(SystemColors.ControlTextColor,Assert.IsType<System.Windows.Media.SolidColorBrush>(rectangle.Stroke).Color);
+            }
+            VerifyFocus(emptyFocus,new Thickness(1));VerifyFocus(contentFocus,new Thickness(14,0,0,0));
+            check.Content="运行";Drain();Assert.Same(contentFocus,check.FocusVisualStyle);Assert.Equal(new Thickness(4,0,0,0),check.Padding);
+            check.Content=null;Drain();Assert.Same(emptyFocus,check.FocusVisualStyle);
+            Assert.False(check.IsChecked??false);
+            source.SetRunSelection(new[]{source.Images[0].Id});Drain();Assert.True(check.IsChecked);
+            var icon=Assert.IsType<Image>(check.Template.FindName("im",check));
+            Assert.Contains("run-checked.png",Assert.IsAssignableFrom<System.Windows.Media.Imaging.BitmapSource>(icon.Source).ToString());
+            check.IsEnabled=false;Drain();Assert.Equal(SystemColors.GrayTextColor,Assert.IsType<System.Windows.Media.SolidColorBrush>(check.Foreground).Color);
+            check.ClearValue(UIElement.IsEnabledProperty);Drain();
+            var manager=new ThemeManager(new SolutionSettings());manager.Initialize();var originalTheme=manager.CurrentTheme;
+            using var palette=new ImageSourceThemeScope(control,manager);
+            void VerifyPalette()
+            {
+                Drain();
+                foreach(var pair in new[]{("ImageSources.CheckBoxFillNormal",SunEyeVision.UI.Themes.Base.ThemeKeys.InputBackgroundBrush),
+                    ("ImageSources.CheckBoxStroke",SunEyeVision.UI.Themes.Base.ThemeKeys.InputBorderBrush)})
+                    Assert.Equal(Assert.IsType<System.Windows.Media.SolidColorBrush>(Application.Current.FindResource(pair.Item2)).Color,
+                        Assert.IsType<System.Windows.Media.SolidColorBrush>(control.FindResource(pair.Item1)).Color);
+                Assert.Equal(Assert.IsType<System.Windows.Media.SolidColorBrush>(control.FindResource("ImageSources.CheckBoxFillNormal")).Color,
+                    Assert.IsType<System.Windows.Media.SolidColorBrush>(check.Background).Color);
+                Assert.Equal(Assert.IsType<System.Windows.Media.SolidColorBrush>(control.FindResource("ImageSources.CheckBoxStroke")).Color,
+                    Assert.IsType<System.Windows.Media.SolidColorBrush>(check.BorderBrush).Color);
+            }
+            try
+            {
+                manager.ApplyTheme(AppTheme.Dark);VerifyPalette();manager.ApplyTheme(AppTheme.Light);VerifyPalette();
+                control.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
+                manager.ApplyTheme(AppTheme.Dark);
+                Assert.Equal(System.Windows.Media.Color.FromRgb(244,244,244),Assert.IsType<System.Windows.Media.SolidColorBrush>(control.FindResource("ImageSources.CheckBoxFillNormal")).Color);
+                control.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));VerifyPalette();
+            }
+            finally{manager.ApplyTheme(originalTheme);}
+        });
+    }
     private sealed class NativeSourceFixture : IDisposable
     {
         public ImageInputSource Source {get;}

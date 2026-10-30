@@ -1,3 +1,22 @@
+## S1当前核收与交付状态（2026-10-30，模板批验证后）
+
+当前产品包含结构输入批5431c9fe及本批运行勾选模板/主题恢复。独立工作区正式Release全量构建0错误/6487警告；ImageSourceRecovery attempt-032为356通过/0失败（receipt exit=0）。此前attempt-031在300秒总时限终止，198通过/0失败但未跑全；随后仅显式延长同一套用例时限至900秒，默认时限不变，旧超时记录保留。新增实际源条回归核实原件两套焦点模板、空/有内容切换、勾选图像、禁用系统文字色、深浅主题与卸载重载；产品没有新增公共控件或执行接口。独立运行回归不等同VS设计器、原机运行差分或人工验收。
+
+| 核收范围 | 当前结论 | 证据/后续 |
+|---|---|---|
+| 33命名声明 | 已逐次记录当前映射；纠正外层list与内层lst误映射，不能按同名判等价 | S1_NAMED_ELEMENT_REVIEW_20261030.json |
+| 21张资产 | 15张直接提取路径字节一致；6张折叠图为归一化提取候选一致，嵌入资源名映射仍未核 | S1_ASSET_IDENTITY_REVIEW_20261030.json及复验脚本 |
+| 十套局部模板及焦点依赖 | 已保存逐节点、逐属性差异；六套列表/滚动无结构删减；焦点两模板除中立键改名外参数相同 | S1_LOCAL_TEMPLATE_REVIEW_20261030.json；资源/主题适配不冒充运行等价 |
+| 22属性 | 已逐项记录产品承载、必要适配与未证边界，不等于全部143声明完成 | S1_PROPERTY_IMPLEMENTATION_REVIEW_20261030.json；其余121声明仍待完整审核 |
+| 自动切换 | 本地ToggleButton替代尚未退出，所需PCUI布尔家族无中立正式接口及独立验收基线 | 总监WORKFLOW_BOOLEAN_CONTROL_HANDOFF_20261030.json；不可混用B01或旧SDK开关 |
+| 语言及部署分支 | 已有启动语言查询基础，但源条模式文字硬编码；无正式动态语言事件。远程/RP/订阅目录分支未实现，不计完成 | 不新造全局语言或远程架构；保留差异，下一批须先完成剩余声明集中设计 |
+| 阶段出口 | S1未封版；未启动新用户验收；不推进S2、不合并主仓 | VS实际设计器、WPF外观和用户人工验收仍待完成；Group边界不变 |
+
+日志：Release/_validation/s1-template-focus-build.log、s1-template-focus-regression-extended.log及S4-20261025/ImageSourceRecovery/attempt-032/receipt.json。
+
+保存行为核查：当前方案持久化local.paths/local.selected、配置起点、运行方式及自动切换等正式字段；原图内容和缩略图缓存均不进入方案。SolutionResourceResolver.RebaseCopy与SolutionManager.CopyOrSaveAsSolution只重定位引用并写方案JSON，不复制图像；缩略图重开后由可视范围按需读取原文件重建。原文件移动/缺失会影响加载，不能把仅保存引用描述成图片已随方案打包。此次用户询问未被擅自扩成图像打包新实施批。
+
+以下保留此前取证与实施历史；旧产品状态和旧测试结果以其当时基线为准，不覆盖本节当前结论。
 # S1原件到宿主整链核收决定（2026-10-30）
 
 基线：产品49b33e70；原件身份见S1_SOURCE_COMPONENT_INVENTORY_20261030.json。本文是已审行为链的实施决定，不将未审143声明、资源闭包或动态调度自动记作完成。用户不再承担逐点发现原件机制的任务。
@@ -94,3 +113,17 @@
 同版正式Release全量构建：0错误/3391警告，日志Release/_validation/s1-structural-final-build.log。ImageSourceRecovery整批355通过/0失败，日志Release/_validation/s1-structural-final-regression.log；新增生产回归包含真实宿主的导入零运行、追加保留像素但退休旧结果权限、删除前/后/当前后的下一次实际输出、清空与撤销重做，另含原件首图四组合状态和路由拖放。此前352通过/3失败的结果保留：两项旧测试假定导入主动激活，与已核原件冲突，改为验证不激活；一项真实提示覆盖统一为运行游标不可用，仍验证正式接纳、执行阻断及修复恢复，未删减故障检查。
 
 边界：普通唯一路径的原生静态证据不推广为重复路径或未提取外部回调的动态结论；构造WPF路由拖放不是物理OS拖放。143项声明及33项命名元素的完整对应仍待核，VS实际设计器、WPF同态及用户人工验收未完成。S1保持未封版，S2—S4顺序与Group暂停不变；本批未启动用户程序，不以355项通过宣称完整组件已迁完。
+## 2026-10-30 S1名称域、资产与正式布尔依赖核收
+
+本轮不改产品、不重复构建已验证5431c9fe。新增S1_NAMED_ELEMENT_REVIEW_20261030.json逐条记录全部33命名声明，六个ImageBackground按出现次序保留，不能一条名称匹配替代六个模板验证。纠正旧清单将外层ImageListPanel list误指目标lst ListBox的问题：原外层组合实际折入imageListGrid及外围Grid；MainGrid消失也是组合适配，需布局验证，不能仅按名称判缺失。RunningShadow已核到实际最终子级、根状态绑定与释放链；其余同名声明仍不证明等价。Pop1/Pop2属远程部署分支，现未实现；RP入口禁用折叠，均不算功能完成。
+
+新增可复验脚本scripts/verification/New-ImageSourceAssetIdentityReview.ps1及S1_ASSET_IDENTITY_REVIEW_20261030.json，逐文件校验逆向资源图中13份XAML的固定SHA，再核对产品21张S1图片。15张与原URI直接提取路径字节一致；折叠/展开6张与空格转连字符的提取候选字节一致，原始嵌入资源名映射仍未核，不假报为直接身份已证。整字典扫描的一个未定位1:1图片属于旁支，不可据此认定S1正在消费该图。资产一致不能代替模板/主题/运行正确。
+
+本轮发现两项明确模板缺口，必须纳入完整视觉批而非再按截图补丁：自动切换仍为本地ToggleButton+AutoSwitchStyle；运行勾选SmallCheckBoxStyle省略原EmptyCheckBoxFocusVisual及HasContent时CheckRadioFocusVisual，并用Transparent替换原动态填充/边框。原件两份焦点样式已定位checkboxstyle.xaml:6–24；需整组恢复及核对系统动态画刷作用域，不用默认主题焦点冒充原件。
+
+技术总监已正式交接D:/MyWork/SunEyeVision_V2/docs/collaboration/evidence/WORKFLOW_BOOLEAN_CONTROL_HANDOFF_20261030.json：所需HikPcUI.ListView.BooleanControl为VM.PcUI UserControl家族，IsChecked(bool DP)、OffContent/OnContent及OnCheckedChange，内部TO/ToggleButtonStyle1；原LocalImageListView使用dark两图、Stretch=None。目前没有中立正式入口或独立功能验收基线。已验B01是Apps.XmlUI ToggleButton家族，旧Controls.ToggleSwitch来自SDK，均不可最终替代。主线55507bce与所报Wpf SHA仅作交接身份，不是所需原件验收。公共开关由总监负责，本线不重复开发；保留真实缺口，继续其余核收，不宣布S1封版。
+
+尚待：143声明按行为与生产消费者逐项审核、模板/主题完整依赖、实际VS设计器及最终人工验收。本轮新增证据不提高功能通过数，既有355通过/0失败仍仅对应5431c9fe生产批。
+### S1运行勾选模板整链恢复设计（实施前）
+
+原件SmallCheckBoxStyle的EmptyCheckBoxFocusVisual、HasContent→CheckRadioFocusVisual及CheckBoxFillNormal/Stroke必须作为同一依赖闭包恢复。只在S1公共组合资源中添加中立ImageSources键，按原Rectangle模板和系统动态画刷保留两个焦点状态；不新增控件类型、不改变勾选请求或工作流执行。独立设计面使用原件色值；现有ImageSourceThemeScope按InputBackgroundBrush/InputBorderBrush提供正式宿主主题映射，并沿已有卸载/重载生命周期退出。生产触发器、勾选图标、取消/提交和只读逻辑复用现有实现；不借此修改尚待总监的PCUI开关。验收从实际ImageSourceStrip的真实Checkbox取模板，检查空/有内容焦点、已选图像、禁用系统文字色和动态画刷更新及卸载重载；随后同版Release全量构建与受影响生产回归。独立WPF渲染不等同于VS设计器或最终人工通过。

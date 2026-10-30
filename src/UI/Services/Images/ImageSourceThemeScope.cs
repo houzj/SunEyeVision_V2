@@ -41,6 +41,8 @@ public sealed class ImageSourceThemeScope : IDisposable
         var palette=new ResourceDictionary
         {
             ["ImageSources.Background"]=Brush(ThemeKeys.PanelBackgroundBrush),
+            ["ImageSources.CheckBoxFillNormal"]=Brush(ThemeKeys.InputBackgroundBrush),
+            ["ImageSources.CheckBoxStroke"]=Brush(ThemeKeys.InputBorderBrush),
             ["ImageSources.Foreground"]=Brush(ThemeKeys.TextPrimaryBrush),
             ["ImageSources.Border"]=Brush(ThemeKeys.BorderBrush),
             ["ImageSources.Hover"]=Brush(ThemeKeys.ButtonHoverBackgroundBrush),

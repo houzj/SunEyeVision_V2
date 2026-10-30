@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
-      [ValidateSet('S2','S3','S4')][string]$Stage='S2')
+      [ValidateSet('S2','S3','S4')][string]$Stage='S2',
+      [ValidateRange(0,900)][int]$TimeoutSeconds=0)
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('RuntimeEditor','DesignTime','FieldEditing','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
@@ -138,12 +139,12 @@ $process=New-Object System.Diagnostics.Process
 $process.StartInfo=$launch
 if(-not $process.Start()){throw 'S2自有检查进程启动失败'}
 $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
-$timeoutMs=if($Track -eq 'ImageSourceRecovery'){300000}else{90000}
+$timeoutMs=if($TimeoutSeconds -gt 0){$TimeoutSeconds*1000}elseif($Track -eq 'ImageSourceRecovery'){300000}else{90000}
 $finished=$process.WaitForExit($timeoutMs)
 if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 [IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 if(-not $finished){throw 'S2自有检查进程超时，已停止该自有进程'}
-[ordered]@{stage=$Stage;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope='当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
+[ordered]@{stage=$Stage;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;timeoutMs=$timeoutMs;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope='当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}

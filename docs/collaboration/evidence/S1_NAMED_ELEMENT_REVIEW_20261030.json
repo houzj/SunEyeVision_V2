@@ -1,0 +1,337 @@
+{
+  "scope": "S1全部33命名声明的当前组合映射，不代表143成员、资源闭包或运行等价已通过",
+  "inventorySha256": "F967CE8A6212F582324376B18F72187234D097B91B068F650F9C252102C279D3",
+  "candidateSha256": "F762795B746A7C81C4E1721515761EA86059CAEB95365DEA4452B60B340645B8",
+  "elements": [
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "Control",
+      "originalName": "UserControl",
+      "nameOccurrence": 1,
+      "candidate": "ImagePanel",
+      "candidateDeclarationCount": 1,
+      "decision": "composition-adaptation",
+      "note": "原Control与基类实例合为UserControl，生命周期由Attach/Detach和正式Session承载。"
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "Grid",
+      "originalName": "MainGrid",
+      "nameOccurrence": 1,
+      "candidate": "根StackPanel及其首个header Grid",
+      "candidateDeclarationCount": 0,
+      "decision": "composition-adaptation-needs-layout-verification",
+      "note": "原件ControlTemplate外层Grid被折入UserControl组合，不能仅据无同名判缺失。"
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "ComboBox",
+      "originalName": "cbx",
+      "nameOccurrence": 1,
+      "candidate": "Mode",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/LocalImageListView.xaml",
+      "originalElement": "ImageListPanel",
+      "originalName": "list",
+      "nameOccurrence": 1,
+      "candidate": "imageListGrid及其外围Grid",
+      "candidateDeclarationCount": 0,
+      "decision": "composition-adaptation-needs-layout-verification",
+      "note": "原ImageListPanel整体组合不是目标lst ListBox，纠正旧候选误映射。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ImageListPanelBase",
+      "originalName": "ImagePanel",
+      "nameOccurrence": 1,
+      "candidate": "ImagePanel",
+      "candidateDeclarationCount": 1,
+      "decision": "composition-adaptation",
+      "note": "基类依赖状态分散于正式Session、ImageInputSource和宿主，不要求同名类型。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Back",
+      "nameOccurrence": 1,
+      "candidate": "Back",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Rectangle",
+      "originalName": "rect",
+      "nameOccurrence": 1,
+      "candidate": "rect",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "Bg",
+      "nameOccurrence": 1,
+      "candidate": "Bg",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Track",
+      "originalName": "PART_Track",
+      "nameOccurrence": 1,
+      "candidate": "PART_Track",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Bd",
+      "nameOccurrence": 1,
+      "candidate": "Bd",
+      "candidateDeclarationCount": 2,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "Grid",
+      "nameOccurrence": 1,
+      "candidate": "Grid",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Rectangle",
+      "originalName": "Corner",
+      "nameOccurrence": 1,
+      "candidate": "Corner",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollContentPresenter",
+      "originalName": "PART_ScrollContentPresenter",
+      "nameOccurrence": 1,
+      "candidate": "PART_ScrollContentPresenter",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollBar",
+      "originalName": "PART_VerticalScrollBar",
+      "nameOccurrence": 1,
+      "candidate": "PART_VerticalScrollBar",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ScrollBar",
+      "originalName": "PART_HorizontalScrollBar",
+      "nameOccurrence": 1,
+      "candidate": "PART_HorizontalScrollBar",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "imageListGrid",
+      "nameOccurrence": 1,
+      "candidate": "imageListGrid",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "bd",
+      "nameOccurrence": 2,
+      "candidate": "bd",
+      "candidateDeclarationCount": 2,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 1,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "ListBox",
+      "originalName": "lst",
+      "nameOccurrence": 1,
+      "candidate": "lst",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnDelete",
+      "nameOccurrence": 1,
+      "candidate": "BtnDelete",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 2,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Border",
+      "originalName": "Border",
+      "nameOccurrence": 1,
+      "candidate": "Border",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAdd",
+      "nameOccurrence": 1,
+      "candidate": "BtnImageAdd",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 3,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Popup",
+      "originalName": "Pop1",
+      "nameOccurrence": 1,
+      "candidate": "Pop1",
+      "candidateDeclarationCount": 0,
+      "decision": "platform-branch-not-implemented",
+      "note": "原本地/远程弹层依部署条件出现；现产品直接本地导入，无远程基础，不记远程功能完成。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAddFolder",
+      "nameOccurrence": 1,
+      "candidate": "BtnImageAddFolder",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 4,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Popup",
+      "originalName": "Pop2",
+      "nameOccurrence": 1,
+      "candidate": "Pop2",
+      "candidateDeclarationCount": 0,
+      "decision": "platform-branch-not-implemented",
+      "note": "原本地/远程目录弹层依部署条件出现；现产品直接本地目录导入，无远程基础，不记远程功能完成。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageAddRpFolder",
+      "nameOccurrence": 1,
+      "candidate": "BtnImageAddRpFolder",
+      "candidateDeclarationCount": 1,
+      "decision": "disabled-placeholder",
+      "note": "现明确禁用且折叠，无RP/3D正式基础，不计功能完成。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 5,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Button",
+      "originalName": "BtnImageClear",
+      "nameOccurrence": 1,
+      "candidate": "BtnImageClear",
+      "candidateDeclarationCount": 1,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Image",
+      "originalName": "ImageBackground",
+      "nameOccurrence": 6,
+      "candidate": "ImageBackground",
+      "candidateDeclarationCount": 6,
+      "decision": "declaration-only-not-equivalence",
+      "note": "模板名称域逐次保留；存在声明不证明状态、资源或行为。"
+    },
+    {
+      "originalFile": "VMControls.WPF/ImageListPanel.xaml",
+      "originalElement": "Grid",
+      "originalName": "windowShadow",
+      "nameOccurrence": 1,
+      "candidate": "RunningShadow",
+      "candidateDeclarationCount": 1,
+      "decision": "implemented-runtime-chain-verified",
+      "note": "原final child及Margin、遮罩色已接入；根IsRunning绑定与释放、真实单次状态已回归，物理键鼠仍待人工验收。"
+    }
+  ]
+}

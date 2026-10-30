@@ -10,4 +10,6 @@
 <SolidColorBrush x:Key="Col_ScrollBar_BorderBrush" Color="#666666"/><SolidColorBrush x:Key="Col_ScrollBar_Fill" Color="#666666"/>
 <!-- Shared original WindowShadow; do not mix with the tool-dialog white palette. -->
 <SolidColorBrush x:Key="ImageSources.RunningShadow" Color="#44F0F4F9"/>
+<SolidColorBrush x:Key="ImageSources.CheckBoxFillNormal" Color="#F4F4F4"/>
+<SolidColorBrush x:Key="ImageSources.CheckBoxStroke" Color="#8E8F8F"/>
 </ResourceDictionary>

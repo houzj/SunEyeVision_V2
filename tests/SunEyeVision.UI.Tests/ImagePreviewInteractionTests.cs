@@ -107,6 +107,7 @@ public sealed partial class SolutionManagerUiTests
         }
         public Task Request(ImageSourceStripRequestKind kind,string? itemId=null,IEnumerable<string>? paths=null)
             =>Session.RequestAsync(new(kind,Session.Version,itemId,paths:paths),CancellationToken.None);
+        public void ActivateForInput(){_window.Activate();Control.UpdateLayout();}
         public void Dispose(){_window.Close();Control.Session=null;Session.Dispose();}
     }
 
@@ -382,34 +383,41 @@ public sealed partial class SolutionManagerUiTests
             var source=new ImageInputSource("node");source.AddImages(new[]{new ImageInfo{FilePath="a.png"},new ImageInfo{FilePath="b.png",IsForRun=true}});
             var executions=0;
             using var fixture=new NativeSourceFixture(source,activate:(_,_,_)=>{executions++;return Task.CompletedTask;});
+            fixture.ActivateForInput();
             var list=(ListBox)fixture.Control.FindName("lst");list.SelectedIndex=1;Assert.Equal(0,executions);
-            var row=new Border{DataContext=fixture.Session.Items[0]};
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Right){RoutedEvent=Mouse.MouseDownEvent});
-            Assert.Equal(0,executions);
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});
-            Assert.Equal(1,executions);Assert.Equal(0,source.CurrentIndex);
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});Assert.Equal(1,executions);
-            using var hwnd=new HwndSource(new HwndSourceParameters("source-key-test"){Width=1,Height=1,WindowStyle=unchecked((int)0x80000000)});
-            var key=new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Right){RoutedEvent=Keyboard.PreviewKeyDownEvent};
-            PreviewCall(fixture.Control,"ListKeyDown",list,key);Assert.False(key.Handled);
-            // The WPF selection change, not PreviewKeyDown, is the execution entrance.
-            Assert.Equal(1,executions);list.SelectedIndex=1;Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
-            PreviewCall(fixture.Control,"ListKeyDown",list,new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Enter){RoutedEvent=Keyboard.PreviewKeyDownEvent});
-            PreviewCall(fixture.Control,"ListKeyDown",list,new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Delete){RoutedEvent=Keyboard.PreviewKeyDownEvent});
-            Assert.Equal(2,executions);Assert.Equal(2,source.Count);
-            source.SetRunSelection(source.Images.Select(image=>image.Id));
-            source.RunMode=ImageRunMode.运行选择;
+            list.UpdateLayout();
+            var first=Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(0));first.ApplyTemplate();
+            System.Collections.Generic.IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+            {
+                for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
+                {var child=System.Windows.Media.VisualTreeHelper.GetChild(parent,i);yield return child;foreach(var nested in Descendants(child))yield return nested;}
+            }
+            var row=Assert.Single(Descendants(first).OfType<Grid>().Where(grid=>grid.Width==72));
+            void Click(MouseButton button)=>row.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,button){RoutedEvent=Mouse.MouseDownEvent});
+            Click(MouseButton.Right);Assert.Equal(0,executions);
+            // Establish a distinct restored selection, then use the real visual's routed mouse input.
+            list.SelectedIndex=1;Click(MouseButton.Left);
+            Assert.Equal(1,executions);Assert.Equal(0,source.CurrentIndex);Assert.True(first.IsKeyboardFocusWithin);
+            Click(MouseButton.Left);Assert.Equal(1,executions);
+            var input=PresentationSource.FromVisual(list)!;
+            void KeyInput(Key key)
+            {
+                var target=(UIElement)(Keyboard.FocusedElement??list);
+                var preview=new KeyEventArgs(Keyboard.PrimaryDevice,input,0,key){RoutedEvent=Keyboard.PreviewKeyDownEvent};
+                target.RaiseEvent(preview);
+                if(!preview.Handled)target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,input,0,key){RoutedEvent=Keyboard.KeyDownEvent});
+            }
+            KeyInput(Key.Right);Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
+            KeyInput(Key.Right);Assert.Equal(2,executions);
+            KeyInput(Key.Left);Assert.Equal(3,executions);Assert.Equal(0,source.CurrentIndex);
+            KeyInput(Key.Left);Assert.Equal(3,executions);
+            KeyInput(Key.Enter);KeyInput(Key.Delete);Assert.Equal(3,executions);Assert.Equal(2,source.Count);
+            source.SetRunSelection(source.Images.Select(image=>image.Id));source.RunMode=ImageRunMode.运行选择;
             PumpPreviewTask(fixture.Control,Task.CompletedTask);
-            row.DataContext=fixture.Session.Items[0];
-            // An eligible plain click activates; Ctrl is the run-selection gesture.
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});
-            Assert.Equal(3,executions);
-            source.CurrentIndex=1;Assert.Equal(3,executions);
-            PreviewCall(fixture.Control,"FirstImage_Click",fixture.Control,new RoutedEventArgs());
-            Assert.Equal(3,executions); // First eligible establishes a start; it does not execute.
+            KeyInput(Key.Right);Assert.Equal(4,executions);Assert.Equal(1,source.CurrentIndex);
+            PreviewCall(fixture.Control,"FirstImage_Click",fixture.Control,new RoutedEventArgs());Assert.Equal(4,executions);
         });
     }
-
     [Fact]
     public void Adding_missing_or_duplicate_images_does_not_change_current_selection()
     {

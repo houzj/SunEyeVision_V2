@@ -191,22 +191,23 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private async void Grid_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left || Item(sender) is not { } item || !CanInteract) return;
-        e.Handled = true;
-        lst.Focus();
+
         if (IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
         {
+            e.Handled = true;
             var selected = Items.Where(x => x.IsForRun).Select(x => x.Id).ToHashSet(StringComparer.Ordinal);
             if (!selected.Remove(item.Id)) selected.Add(item.Id);
             await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Where(x => selected.Contains(x.Id)).Select(x => x.Id));
         }
         else if (IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Shift) != 0 && DisplayIndex >= 0)
         {
+            e.Handled = true;
             int end = Items.ToList().FindIndex(x => x.Id == item.Id);
             if (end < 0 || end == DisplayIndex) return;
             int first = Math.Min(DisplayIndex, end), last = Math.Max(DisplayIndex, end);
             await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Skip(first).Take(last - first + 1).Select(x => x.Id));
         }
-        else if ((lst.SelectedItem as ImageSourceStripItem)?.Id != item.Id) await Request(ImageSourceStripRequestKind.Activate, item.Id);
+        else ArmUserSelection();
     }
     private async void CheckBox_Click(object sender, RoutedEventArgs e)
     {
@@ -261,7 +262,15 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private void ListKeyDown(object sender, KeyEventArgs e)
     {
         if (!CanInteract || Items.Count == 0 || e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;
-        // Let the original ListBox perform navigation. Only its resulting user selection may activate.
+        if (Keyboard.FocusedElement == lst && lst.SelectedIndex >= 0)
+        {
+            lst.ScrollIntoView(lst.SelectedItem); lst.UpdateLayout();
+            (lst.ItemContainerGenerator.ContainerFromIndex(lst.SelectedIndex) as ListBoxItem)?.Focus();
+        }
+        ArmUserSelection();
+    }
+    private void ArmUserSelection()
+    {
         var generation = ++_keyboardSelectionGeneration;
         _keyboardSelectionPending = true;
         Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>

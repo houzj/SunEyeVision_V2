@@ -97,7 +97,7 @@ internal static class S2DocumentEditingCases
                 ?? assembly.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
             foreach(var method in type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly).OrderBy(m=>m.Name))
             {
-                if(name=="SolutionManagerUiTests"&&method.Name!="Source_items_reentry_stops_refresh_after_release_or_owner_change"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
+                if(name=="SolutionManagerUiTests"&&method.Name!="Source_items_reentry_stops_refresh_after_release_or_owner_change"&&method.Name!="First_button_uses_original_auto_switch_reset_position"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
                     &&!addedImportCases.Contains(name+"."+method.Name+"()")&&name+"."+method.Name+"()"!=explicitSourceCase&&name+"."+method.Name+"()"!=navigationCase&&name+"."+method.Name+"()"!=replacedRootCase&&name+"."+method.Name+"()"!=cleanupFailureCase&&name+"."+method.Name+"()"!=settlementFailureCase&&name+"."+method.Name+"()"!=missingFrameCase)continue;
                 if(name=="SolutionTransitionTests"&&!addedStopMethods.Contains(method.Name))continue;
                 var args=new List<object?[]>();
@@ -135,6 +135,9 @@ internal static class S2DocumentEditingCases
             return 2;
         }
         // Four design theories are serialized with Boolean.ToString in the original evidence.
+        foreach(var firstCase in new[]{"False,False,0","True,False,2","False,True,1","True,True,2"})
+            if(!executed.Contains("SolutionManagerUiTests.First_button_uses_original_auto_switch_reset_position("+firstCase+")"))
+                throw new InvalidOperationException("S1原件首图组合未执行："+firstCase);
         if(covered!=21)throw new InvalidOperationException("本批必须逐项承接21个原失败，实际："+covered);
         var missing=currentRequiredCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
         if(missing.Length!=0)throw new InvalidOperationException("原配置、运行、调试、结果模型、展示器或视口用例缺失："+string.Join("；",missing));

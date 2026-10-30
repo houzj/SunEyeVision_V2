@@ -67,6 +67,26 @@ public sealed partial class SolutionManagerUiTests
         });
     }
 
+    [Theory]
+    [InlineData(false,false,0)]
+    [InlineData(true,false,2)]
+    [InlineData(false,true,1)]
+    [InlineData(true,true,2)]
+    public void First_button_uses_original_auto_switch_reset_position(bool automatic,bool selected,int expected)
+    {
+        Sta(()=>
+        {
+            var source=new ImageInputSource("first-reset");
+            source.AddImages(Enumerable.Range(0,3).Select(index=>new ImageInfo{FilePath="reset-"+index+".png"}));
+            source.AutoSwitchEnabled=automatic;
+            if(selected){source.SetRunSelection(source.Images.Skip(1).Select(image=>image.Id));source.RunMode=ImageRunMode.运行选择;}
+            using var fixture=new NativeSourceFixture(source);
+            var task=(Task)typeof(ImageSourceStrip).GetMethod("SelectFirstAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(fixture.Control,null)!;
+            PumpPreviewTask(fixture.Control,task);
+            Assert.Equal(expected,source.CapturePolicy().CurrentIndex);
+        });
+    }
+
     private sealed class NativeSourceFixture : IDisposable
     {
         public ImageInputSource Source {get;}

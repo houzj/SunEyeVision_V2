@@ -44,7 +44,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public bool AutoSwitchEnabled => Session?.AutoSwitchEnabled ?? false;
     public bool IsImporting => Session?.IsImporting ?? false;
     public bool CanInteract => Session is not null && !IsReadOnly && !IsImporting;
-    public bool IsFirstConfigured => Session is not null && Session.ConfiguredStartIndex == FirstEligibleIndex();
+    public bool IsFirstConfigured => Session is not null && Session.ConfiguredStartIndex == FirstResetIndex();
     public Visibility ExpandedVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
     public string? Status => _requestError ?? Session?.Status;
     public ImageSourceStrip() { InitializeComponent(); }
@@ -213,9 +213,16 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Where(x => x.Id == item.Id ? selected : x.IsForRun).Select(x => x.Id));
     }
     private async void FirstImage_Click(object sender, RoutedEventArgs e)=>await SelectFirstAsync();
+    private int FirstResetIndex()
+    {
+        if(!AutoSwitchEnabled)return FirstEligibleIndex();
+        for(var index=Items.Count-1;index>=0;index--)
+            if(!IsSelectMode||Items[index].IsForRun)return index;
+        return -1;
+    }
     private async Task SelectFirstAsync()
     {
-        int first = FirstEligibleIndex(); if (first < 0) return;
+        int first = FirstResetIndex(); if (first < 0) return;
         var session = Session; var lifetime = _lifetime; var id = Items[first].Id;
         await Request(ImageSourceStripRequestKind.SelectStart, id);
         if (session is null || lifetime is null || lifetime.IsCancellationRequested

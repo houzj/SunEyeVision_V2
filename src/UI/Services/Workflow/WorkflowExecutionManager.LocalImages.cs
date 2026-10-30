@@ -65,6 +65,34 @@ public partial class WorkflowExecutionManager
             return true;
         }
     }
+    internal void SynchronizeLocalImageProjection(SunEyeVision.Workflow.Workflow root,ImageInputSource source,
+        SunEyeVision.Workflow.Persistence.SolutionResourceResolver paths)
+    {
+        var version=source.EditVersion;
+        var node=root.Nodes.SingleOrDefault(item=>item.Id==source.NodeId&&ReferenceEquals(item.InputSource,source))
+            ??throw new InvalidOperationException("已接纳图像源的节点身份已改变。");
+        var policy=SunEyeVision.Workflow.ImageSourcePolicy.Read(node)
+            ??throw new InvalidOperationException("已接纳图像源缺少正式设置。");
+        if(policy.SourceKind!=ImageSourceKind.Local)return;
+        var projection=source.CapturePolicy();
+        if(!projection.FilePaths.SequenceEqual(policy.FilePaths)||projection.CurrentIndex!=policy.CurrentIndex
+            ||projection.RunMode!=policy.RunMode||projection.AutoSwitchEnabled!=policy.AutoSwitchEnabled
+            ||!projection.ForRunPaths.SequenceEqual(policy.ForRunPaths))
+            throw new InvalidOperationException("图像源正式设置与已安装投影不一致。");
+        var plan=SunEyeVision.Workflow.ImageSourcePolicy.CreateLocalPlan(node.Id,policy,paths);
+        var entry=plan.Entries.SingleOrDefault(item=>item.OriginalIndex==source.CurrentIndex);
+        lock(_lock)
+        {
+            if(!ReferenceEquals(_workflowEngine.GetWorkflow(root.Id),root)||!ReferenceEquals(node.InputSource,source)||source.EditVersion!=version)
+                throw new InvalidOperationException("图像源运行游标所属根或投影已改变。");
+            var cursors=GetLocalCursorOwner(root.Id,root);
+            if(cursors.Blocked.TryGetValue(node.Id,out var reason))throw new InvalidOperationException("图像源运行游标尚不可用："+reason);
+            var pending=entry is not null&&cursors.Sources.TryGetValue(node.Id,out var previous)&&previous.PendingSelection
+                &&previous.SelectionOwner is {} selectionOwner&&selectionOwner.TryGetTarget(out var owner)&&ReferenceEquals(owner,source);
+            cursors.ResetVersions[node.Id]=checked(++_nextLocalImageReset);
+            cursors.Sources[node.Id]=new(CursorDefinition(plan),entry?.EntryId,pending,pending?new(source):null);
+        }
+    }
     internal void BlockLocalImageCursor(string rootId,string sourceId,string reason)
     {
         lock(_lock)

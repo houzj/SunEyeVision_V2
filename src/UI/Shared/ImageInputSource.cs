@@ -97,7 +97,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         for(var i=0;i<rows.Count;i++)if(Reference(rows[i])==reference&&occurrence--==0)return i;
         return fallback;
     }
-    private ImageSourceEditReceipt Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected,bool selectStart=false)
+    private ImageSourceEditReceipt Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected,bool selectStart=false,int? displayOverride=null)
     {
         if (_committing) throw new InvalidOperationException("图像源编辑不能重入。");
         if (_readOnly) throw new InvalidOperationException("图像输入源已锁定。");
@@ -107,7 +107,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
             throw new InvalidOperationException("图像源条目身份、选择或模式无效。");
         using var configurationLease = ConfigurationLeaseProvider?.Invoke();
         var configuration=Configuration(rows,index,mode,auto,selected);
-        var displayIndex=selectStart?index:RemapDisplay(rows,index);
+        var displayIndex=displayOverride??(selectStart?index:RemapDisplay(rows,index));
         var version=EditVersion;
         var writer=ConfigurationWriter;
         var formalAccepted=_requiresWriter && writer is not null;
@@ -201,10 +201,10 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     {
         var index=_entries.IndexOf(image);if(index<0)return;
         var rows=_entries.Where(row=>!ReferenceEquals(row,image)).ToArray();
-        var current=_configuredIndex>index?_configuredIndex-1:_configuredIndex;
+        var current=_configuredIndex==index?-1:_configuredIndex>index?_configuredIndex-1:_configuredIndex;
         current=Math.Min(current,rows.Length-1);
         var selected=_runReferences.Where(reference=>reference!=Reference(image)||rows.Any(row=>Reference(row)==reference));
-        Commit(rows,current,_runMode,_autoSwitch,selected);
+        Commit(rows,current,_runMode,_autoSwitch,selected,displayOverride:ReferenceEquals(CurrentImage,image)?-1:null);
     }
     public void ClearImages()=>Commit(Array.Empty<ImageInfo>(),-1,_runMode,_autoSwitch,Array.Empty<string>());
     public void Reset()=>Commit(Array.Empty<ImageInfo>(),-1,ImageRunMode.运行全部,true,Array.Empty<string>());

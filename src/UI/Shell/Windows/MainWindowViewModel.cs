@@ -256,6 +256,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
         private void OnImageInputConfigurationEdited(object? sender, EventArgs e)
         {
+            if(sender is ImageInputSource accepted)SynchronizeAcceptedSourceCursor(accepted);
             UpdateCurrentSolutionInfo();
             if (ReferenceEquals(sender, ActiveInputSource))
             {

@@ -80,10 +80,17 @@ public sealed partial class SolutionManagerUiTests
             source.AddImages(Enumerable.Range(0,3).Select(index=>new ImageInfo{FilePath="reset-"+index+".png"}));
             source.AutoSwitchEnabled=automatic;
             if(selected){source.SetRunSelection(source.Images.Skip(1).Select(image=>image.Id));source.RunMode=ImageRunMode.运行选择;}
-            using var fixture=new NativeSourceFixture(source);
+            source.SelectImage(expected);
+            using var fixture=new NativeSourceFixture(source);Assert.False(fixture.Control.IsFirstResetActive);
             var task=(Task)typeof(ImageSourceStrip).GetMethod("SelectFirstAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(fixture.Control,null)!;
             PumpPreviewTask(fixture.Control,task);
             Assert.Equal(expected,source.CapturePolicy().CurrentIndex);
+            Assert.True(fixture.Control.IsFirstResetActive);
+            fixture.Session.UpdateVisibleItems(Array.Empty<string>());PumpPreviewTask(fixture.Control,Task.CompletedTask);
+            Assert.True(fixture.Control.IsFirstResetActive);
+            var image=source.Images[expected];
+            Assert.True(source.TryPresentRuntimeCursor(source.EditVersion,image.Id,image.SourceReference??image.FilePath,image.FilePath));
+            PumpPreviewTask(fixture.Control,Task.CompletedTask);Assert.False(fixture.Control.IsFirstResetActive);
         });
     }
 
@@ -453,7 +460,7 @@ public sealed partial class SolutionManagerUiTests
                 using var fixture=new NativeSourceFixture(source);
                 PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportDirectory,paths:new[]{root}));
                 Assert.Equal(new[]{childImage,first,last},source.Images.Select(image=>image.FilePath));
-                Assert.Equal(1,writes);Assert.Equal(childImage,source.CurrentImage!.FilePath);
+                Assert.Equal(1,writes);Assert.Equal(-1,source.CurrentIndex);Assert.Null(source.CurrentImage);
             }
             finally{Directory.Delete(root,true);}
         });
@@ -483,7 +490,7 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
-    public void Import_reentrant_selection_keeps_formal_batch_without_reporting_the_old_projection()
+    public void Import_preserves_current_selection_without_emitting_an_explicit_activation()
     {
         Sta(()=>
         {
@@ -494,10 +501,10 @@ public sealed partial class SolutionManagerUiTests
                 var source=new ImageInputSource("source");var original=new ImageInfo{FilePath="existing.png"};
                 source.AddImages(new[]{original},selectFirstAdded:true);var writes=0;source.ConfigurationWriter=_=>writes++;
                 using var fixture=new NativeSourceFixture(source);
-                source.ExplicitSelectionAccepted+=(_,e)=>{if(!ReferenceEquals(e.Image,original))source.SelectImage(0);};
+                var activations=0;source.ExplicitSelectionAccepted+=(_,_)=>activations++;
                 PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportFiles,paths:new[]{path}));
-                Assert.Equal(2,writes);Assert.Equal(2,source.Count);Assert.Same(original,source.CurrentImage);
-                Assert.DoesNotContain("已导入",fixture.Session.Status??string.Empty);
+                Assert.Equal(1,writes);Assert.Equal(0,activations);Assert.Equal(2,source.Count);Assert.Same(original,source.CurrentImage);
+                Assert.Contains("已添加",fixture.Session.Status??string.Empty);
             }
             finally{Directory.Delete(root,true);}
         });

@@ -78,7 +78,8 @@ public partial class MainWindowViewModel
                 &&ReferenceEquals(SelectedNode,displayOwner)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,displayTab)
                 &&displayTab?.RootWorkflowId==root.Id&&displayTab.IsInSubroutine==false
                 &&(source.EditVersion==displayVersion||source.EditVersion==displayVersion+1));
-            if(!proposal.SelectStart&&policy.CurrentIndex==configuration.CurrentIndex&&policy.FilePaths.SequenceEqual(configuration.FilePaths))
+            if(!proposal.SelectStart&&policy.CurrentIndex==configuration.CurrentIndex&&policy.FilePaths.Count<=configuration.FilePaths.Count
+                &&policy.FilePaths.SequenceEqual(configuration.FilePaths.Take(policy.FilePaths.Count)))
                 try{SourceDisplayPreservationPreparing?.Invoke(source,display);}
                 catch(Exception error){try{AddLog("显示留存准备失败："+error.Message);}catch{}}
             policy.UpdateLocalInput(configuration);
@@ -110,6 +111,20 @@ public partial class MainWindowViewModel
             }
             finally { _acceptingImageSource=false; }
         };
+    }
+    private void SynchronizeAcceptedSourceCursor(ImageInputSource source)
+    {
+        var session=DocumentManager.Session;if(session is null)return;
+        var roots=session.Document.Workflows.Where(flow=>!flow.IsSubroutine&&flow.Nodes.Any(node=>ReferenceEquals(node.InputSource,source))).ToArray();
+        if(roots.Length!=1)return;var root=roots[0];
+        try{_executionManager.SynchronizeLocalImageProjection(root,source,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));}
+        catch(Exception error)
+        {
+            if(!ReferenceEquals(DocumentManager.Session,session)||!session.Document.Workflows.Contains(root))return;
+            source.RecordAcceptedRuntimeFailure(error.Message);
+            _executionManager.BlockLocalImageCursor(root.Id,source.NodeId,error.Message);
+            ReportAcceptedSourceRefreshError("运行游标不可用（同步失败）",error);
+        }
     }
     private void ReportAcceptedSourceRefreshError(string stage,Exception error)
     {

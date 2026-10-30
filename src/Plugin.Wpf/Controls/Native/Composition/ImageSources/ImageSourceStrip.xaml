@@ -260,7 +260,7 @@
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-selected.png" />
               <Setter Value="{DynamicResource ImageSources.Accent}" TargetName="bd" Property="Border.BorderBrush" />
             </Trigger>
-            <DataTrigger Value="True" Binding="{Binding IsFirstConfigured, ElementName=ImagePanel}">
+            <DataTrigger Value="True" Binding="{Binding IsFirstResetActive, ElementName=ImagePanel}">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-selected.png" />
               <Setter Value="{DynamicResource ImageSources.Accent}" TargetName="bd" Property="Border.BorderBrush" />
             </DataTrigger>

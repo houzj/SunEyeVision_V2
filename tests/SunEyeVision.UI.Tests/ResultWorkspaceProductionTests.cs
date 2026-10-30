@@ -1329,6 +1329,83 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Null(f.Presenter.OutputPane.CurrentFrame);Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
         Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
     });
+    [Fact]
+    public void Original_source_drop_rejects_directories_and_mixed_invalid_files_before_formal_import()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;Assert.Equal(0,source.Count);
+        var list=Assert.IsType<ListBox>(f.View.ImagePreviewContent.FindName("lst"));
+        var session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        var valid=Path.Combine(f.Directory,"drop.PNG");var invalid=Path.Combine(f.Directory,"drop.txt");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{91,0,0,0},4)));
+        using(var output=File.Create(valid))png.Save(output);File.WriteAllText(invalid,"not an image");
+        var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;var version=source.EditVersion;
+        var starts=0;var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel).GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        manager.WorkflowExecutionStarted+=(_,_)=>starts++;
+        var constructor=typeof(DragEventArgs).GetConstructors(BindingFlags.Instance|BindingFlags.NonPublic)
+            .Single(item=>item.GetParameters().Length==5&&item.GetParameters()[0].ParameterType==typeof(IDataObject));
+        DragEventArgs Raise(RoutedEvent routed,string[]? paths)
+        {
+            var data=new DataObject();if(paths is not null)data.SetData(DataFormats.FileDrop,paths);
+            var args=(DragEventArgs)constructor.Invoke(new object[]{data,DragDropKeyStates.None,DragDropEffects.Copy,list,new Point(1,1)});
+            args.RoutedEvent=routed;list.RaiseEvent(args);return args;
+        }
+        // Real named-list routed events; this is not a claim of physical desktop drag/drop.
+        foreach(var paths in new string[]?[]{null,Array.Empty<string>(),new[]{f.Directory},new[]{invalid},new[]{valid,invalid},new[]{Path.Combine(f.Directory,"missing.png")}})
+        {
+            Assert.Equal(DragDropEffects.None,Raise(DragDrop.DragEnterEvent,paths).Effects);
+            Assert.Equal(DragDropEffects.None,Raise(DragDrop.DropEvent,paths).Effects);
+            Assert.Equal(0,source.Count);Assert.Equal(position,history.Position);Assert.Equal(version,source.EditVersion);
+        }
+        Assert.Equal(DragDropEffects.Copy,Raise(DragDrop.DragEnterEvent,new[]{valid}).Effects);
+        Assert.Equal(DragDropEffects.Copy,Raise(DragDrop.DropEvent,new[]{valid}).Effects);
+        Until(()=>source.Count==1&&!session.IsImporting);Pump();
+        Assert.Equal(valid,Assert.Single(source.Images).FilePath);Assert.Equal(position+1,history.Position);Assert.Equal(0,starts);
+        Assert.Equal(new[]{valid},ImageSourcePolicy.Read(f.Source)!.FilePaths);
+    });
+    [Fact]
+    public void Source_structural_edits_keep_the_runtime_record_and_leave_deleted_current_unselected()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;
+        var paths=Enumerable.Range(0,4).Select(index=>Path.Combine(f.Directory,"structure-"+index+".png")).ToArray();
+        for(var index=0;index<paths.Length;index++)
+        {
+            var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{(byte)(10+index*10),0,0,0},4)));
+            using var output=File.Create(paths[index]);png.Save(output);
+        }
+        var session=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        var history=ServiceInitializer.SolutionManager.Session!.History;var opening=history.Position;var starts=0;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel).GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        manager.WorkflowExecutionStarted+=(_,_)=>starts++;
+        void Import(params string[] files)=>AwaitWorkspace(session.RequestAsync(new(
+            SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportFiles,session.Version,paths:files),CancellationToken.None));
+        void Remove(int index)=>AwaitWorkspace(session.RequestAsync(new(
+            SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.Remove,session.Version,itemId:source.Images[index].Id),CancellationToken.None));
+        void Run(byte expected)
+        {
+            var before=starts;f.Main.RunWorkflowCommand.Execute(null);Until(()=>starts>before&&!f.Main.IsRunning);Pump();
+            Assert.Equal(new[]{expected},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+        }
+        Import(paths.Take(3).ToArray());Assert.Equal(0,starts);Assert.Equal(-1,source.CurrentIndex);
+        Assert.Equal(-1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);Assert.Null(f.Main.NativePreviewPath);
+        Run(10);Assert.Equal(0,source.CurrentIndex);
+        Import(paths[3]);Assert.Equal(1,starts);Assert.Equal(0,source.CurrentIndex);
+        Assert.Equal(new byte[]{10},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));Assert.Null(f.Main.NativePreviewPath);
+        Run(20);Assert.Equal(1,source.CurrentIndex);
+        Remove(3);Assert.Equal(1,source.CurrentIndex);Run(30);Assert.Equal(2,source.CurrentIndex);
+        Remove(0);Assert.Equal(1,source.CurrentIndex);Assert.Equal(paths[2],source.CurrentImage!.FilePath);
+        Run(20);Assert.Equal(0,source.CurrentIndex);
+        Remove(0);Assert.Equal(-1,source.CurrentIndex);Assert.Null(source.CurrentImage);
+        Run(30);Assert.Equal(0,source.CurrentIndex);
+        AwaitWorkspace(session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.Clear,session.Version),CancellationToken.None));
+        Assert.Equal(0,source.Count);Assert.Equal(-1,source.CurrentIndex);Assert.Null(f.Presenter.OutputPane.Viewport.CurrentFrame);
+        Assert.Equal(opening+6,history.Position);Assert.Equal(5,starts);
+        history.Undo();Pump();Assert.Single(source.Images);Assert.Equal(-1,source.CurrentIndex);Assert.Equal(5,starts);
+        history.Redo();Pump();Assert.Equal(0,source.Count);Assert.Equal(-1,source.CurrentIndex);Assert.Equal(5,starts);
+    });
     private static void AwaitWorkspace(Task task)
     {
         Until(()=>task.IsCompleted);

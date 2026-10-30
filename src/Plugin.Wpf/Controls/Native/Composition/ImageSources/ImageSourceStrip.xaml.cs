@@ -30,7 +30,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public bool IsRunning { get => (bool)GetValue(IsRunningProperty); set => SetValue(IsRunningProperty, value); }
     private IImageSourceStripSession? _attached;
     private CancellationTokenSource? _lifetime;
-    private bool _refreshing;
+    private bool _refreshing, _firstResetActive;
     private long _keyboardSelectionGeneration;
     private bool _keyboardSelectionPending;
     private long _refreshGeneration;
@@ -50,7 +50,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public bool AutoSwitchEnabled => Session?.AutoSwitchEnabled ?? false;
     public bool IsImporting => Session?.IsImporting ?? false;
     public bool CanInteract => Session is not null && !IsReadOnly && !IsImporting;
-    public bool IsFirstConfigured => Session is not null && Session.ConfiguredStartIndex == FirstResetIndex();
+    public bool IsFirstResetActive => _firstResetActive;
     public Visibility ExpandedVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
     public string? Status => _requestError ?? Session?.Status;
     private sealed record RunModeItem(string DisplayName, bool Value);
@@ -87,7 +87,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         _attached = null; _lifetime = null;
         _lastViewport = Array.Empty<string>();
         _lastDisplayedId = null;
-        _requestError = null;
+        _requestError = null;_firstResetActive=false;
         var errors = new List<Exception>();
         void Clean(Action action) { try { action(); } catch (Exception error) { errors.Add(error); } }
         if (attached is not null) Clean(() => attached.PropertyChanged -= SessionPropertyChanged);
@@ -104,8 +104,14 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private void SessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (!ReferenceEquals(sender, _attached)) return;
-        if (!Dispatcher.CheckAccess()) { Dispatcher.BeginInvoke(new Action(() => { if (ReferenceEquals(sender, _attached)) Refresh(); })); return; }
-        Refresh();
+        void Apply()
+        {
+            if(!ReferenceEquals(sender,_attached))return;
+            if(string.IsNullOrEmpty(e.PropertyName)||e.PropertyName==nameof(IImageSourceStripSession.DisplayIndex))SetFirstResetActive(false);
+            Refresh();
+        }
+        if (!Dispatcher.CheckAccess()) { Dispatcher.BeginInvoke(new Action(Apply)); return; }
+        Apply();
     }
     private void Refresh()
     {
@@ -116,7 +122,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         try
         {
             foreach (var name in new[] { nameof(Items), nameof(DisplayIndex), nameof(DisplayNumber), nameof(ImageCount), nameof(IsReadOnly),
-                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(CanInteract), nameof(IsFirstConfigured), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
+                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(CanInteract), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
             {
                 if(!Current())return;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -228,16 +234,22 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             if(!IsSelectMode||Items[index].IsForRun)return index;
         return -1;
     }
+    private void SetFirstResetActive(bool value)
+    {
+        if(_firstResetActive==value)return;
+        _firstResetActive=value;PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(nameof(IsFirstResetActive)));
+    }
     private async Task SelectFirstAsync()
     {
         int first = FirstResetIndex(); if (first < 0) return;
-        var session = Session; var lifetime = _lifetime; var id = Items[first].Id;
+        var session = Session; var lifetime = _lifetime; var id = Items[first].Id;var version=session?.Version;
         await Request(ImageSourceStripRequestKind.SelectStart, id);
         if (session is null || lifetime is null || lifetime.IsCancellationRequested
             || !ReferenceEquals(session, Session) || !ReferenceEquals(lifetime, _lifetime)) return;
         var configured = session.ConfiguredStartIndex;
-        if (configured >= 0 && configured < session.Items.Count && session.Items[configured].Id == id)
-            FindScrollViewer(lst)?.ScrollToLeftEnd();
+        if (_requestError is null&&session.Version!=version&&configured>=0&&configured<session.Items.Count
+            &&session.Items[configured].Id==id&&session.DisplayIndex==configured)
+        {SetFirstResetActive(true);FindScrollViewer(lst)?.ScrollToLeftEnd();}
     }
     private async void BtnDelete_Click(object sender, RoutedEventArgs e)
     { e.Handled = true; if (Item(sender) is { } item) await Request(ImageSourceStripRequestKind.Remove, item.Id); }
@@ -259,10 +271,28 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     { if (sender is Grid grid && grid.FindName("BtnDelete") is Button button) button.Visibility = CanInteract ? Visibility.Visible : Visibility.Collapsed; }
     private void Grid_MouseLeave(object sender, MouseEventArgs e)
     { if (sender is Grid grid && grid.FindName("BtnDelete") is Button button) button.Visibility = Visibility.Collapsed; }
+    private bool TryGetDropFiles(DragEventArgs e,out string[] paths)
+    {
+        paths=Array.Empty<string>();
+        if(!CanInteract||!e.Data.GetDataPresent(DataFormats.FileDrop)
+            ||e.Data.GetData(DataFormats.FileDrop) is not string[] candidates||candidates.Length==0)return false;
+        foreach(var path in candidates)
+        {
+            if(!System.IO.File.Exists(path))return false;
+            var extension=System.IO.Path.GetExtension(path).ToLowerInvariant();
+            if(extension is not (".bmp" or ".jpeg" or ".jpg" or ".png" or ".tif" or ".tiff"))return false;
+        }
+        paths=candidates.ToArray();return true;
+    }
     private void ListDragOver(object sender, DragEventArgs e)
-    { e.Effects = CanInteract && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; }
+    {e.Effects=TryGetDropFiles(e,out _)?DragDropEffects.Copy:DragDropEffects.None;e.Handled=true;}
     private async void ListDrop(object sender, DragEventArgs e)
-    { e.Handled = true; if (CanInteract && e.Data.GetData(DataFormats.FileDrop) is string[] paths) await Request(ImageSourceStripRequestKind.ImportFiles, paths: paths); }
+    {
+        e.Handled=true;
+        if(!TryGetDropFiles(e,out var paths)){e.Effects=DragDropEffects.None;return;}
+        e.Effects=DragDropEffects.Copy;
+        await Request(ImageSourceStripRequestKind.ImportFiles,paths:paths);
+    }
     private void ListKeyDown(object sender, KeyEventArgs e)
     {
         if (!CanInteract || Items.Count == 0 || e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;

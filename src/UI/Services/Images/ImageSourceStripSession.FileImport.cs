@@ -49,19 +49,9 @@ public sealed partial class ImageSourceStripSession
             paths = dialog.FileNames;
         }
         cancellationToken.ThrowIfCancellationRequested(); RequireCurrent(request.ExpectedVersion);
-        // Dragged directories use the same manual-folder enumeration as the button; no watcher or RP interpretation.
+        // File imports never enumerate directories. The distinct folder action owns that behavior.
         var frozen = paths.ToArray();
-        await ImportCoreAsync(async token =>
-        {
-            var files = new System.Collections.Generic.List<string>();
-            foreach (var path in frozen)
-            {
-                token.ThrowIfCancellationRequested();
-                if (Directory.Exists(path)) files.AddRange(await ImageFileImport.DirectoryFilesAsync(path, token).ConfigureAwait(false));
-                else files.Add(path);
-            }
-            return await ImageFileImport.ExistingFilesAsync(files, token).ConfigureAwait(false);
-        }, cancellationToken);
+        await ImportCoreAsync(token=>ImageFileImport.ExistingFilesAsync(frozen,token),cancellationToken);
     }
     private async Task ImportDirectoryRequestAsync(ImageSourceStripRequest request, CancellationToken cancellationToken)
     {
@@ -127,7 +117,7 @@ public sealed partial class ImageSourceStripSession
                 if (additions.Length == 0) { SetStatus("没有找到新的可导入图像文件"); return; }
                 // One action, one acceptance. Notifications may cancel or retire this session after acceptance;
                 // no partially accepted chunks and no rollback of already accepted references.
-                var receipt=_source.AddImages(additions, selectFirstAdded: true);
+                var receipt=_source.AddImages(additions);
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !OwnerIsCurrent()) return;
                 if(receipt.ExecutionError is { } failure)
                 {

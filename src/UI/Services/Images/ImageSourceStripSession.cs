@@ -41,7 +41,8 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     private HashSet<string> _visibleIds = new(StringComparer.Ordinal);
     private readonly System.Collections.ObjectModel.ObservableCollection<ImageSourceStripItem> _items = new();
     private int _configuredStartIndex = -1;
-    private bool _disposed, _refreshQueued;
+    private bool _disposed, _refreshQueued, _cursorNoticePending;
+    private int _lastNotifiedDisplayIndex=int.MinValue;
     private long _refreshGeneration;
     private string? _status;
     public ImageSourceStripSession(ImageInputSource source, Func<bool> isCurrent,
@@ -73,7 +74,11 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     {
         if (!CanAccept(version, edit)) throw new InvalidOperationException("图像源会话、版本或编辑权限已变化，请重新操作。");
     }
-    private void SourcePropertyChanged(object? sender, PropertyChangedEventArgs e) => QueueRefresh();
+    private void SourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if(string.IsNullOrEmpty(e.PropertyName)||e.PropertyName==nameof(ImageInputSource.CurrentIndex))_cursorNoticePending=true;
+        QueueRefresh();
+    }
     private void SourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueRefresh();
     private void ImagePropertyChanged(object? sender, PropertyChangedEventArgs e) => QueueRefresh();
     private void QueueRefresh()
@@ -183,9 +188,11 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     }
     private void NotifyAll(Func<bool> current)
     {
+        var notifyDisplay=_cursorNoticePending||_lastNotifiedDisplayIndex!=DisplayIndex;
+        _cursorNoticePending=false;_lastNotifiedDisplayIndex=DisplayIndex;
         foreach (var name in new[] { nameof(Items), nameof(Version), nameof(DisplayIndex), nameof(ConfiguredStartIndex),
             nameof(IsReadOnly), nameof(IsSelectMode), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(Status) })
-        { if (!current()) return; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)); }
+        { if (!current()) return; if(name==nameof(DisplayIndex)&&!notifyDisplay)continue; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)); }
     }
     private void SetStatus(string? status)
     { _status = status; if (!_disposed) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status))); }

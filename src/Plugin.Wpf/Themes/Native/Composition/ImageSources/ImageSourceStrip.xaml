@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 <!-- Standalone defaults; host replaces these keys atomically at its theme boundary. Original templates remain unchanged. -->
 <SolidColorBrush x:Key="ImageSources.Background" Color="#303030"/>
 <SolidColorBrush x:Key="ImageSources.Foreground" Color="#AAAAAA"/>
@@ -7,4 +7,5 @@
 <SolidColorBrush x:Key="ImageSources.Hover" Color="#454545"/>
 <SolidColorBrush x:Key="ImageSources.Scroll" Color="#666666"/>
 <SolidColorBrush x:Key="ImageSources.MenuBackground" Color="#252525"/>
+<SolidColorBrush x:Key="Col_ScrollBar_BorderBrush" Color="#666666"/><SolidColorBrush x:Key="Col_ScrollBar_Fill" Color="#666666"/>
 </ResourceDictionary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -27,6 +27,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private IImageSourceStripSession? _attached;
     private CancellationTokenSource? _lifetime;
     private bool _refreshing;
+    private long _keyboardSelectionGeneration;
+    private bool _keyboardSelectionPending;
     private long _refreshGeneration;
     private string? _requestError;
     private bool _viewportQueued;
@@ -47,7 +49,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public bool IsFirstConfigured => Session is not null && Session.ConfiguredStartIndex == FirstResetIndex();
     public Visibility ExpandedVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
     public string? Status => _requestError ?? Session?.Status;
-    public ImageSourceStrip() { InitializeComponent(); }
+    private sealed record RunModeItem(string DisplayName, bool Value);
+    public ImageSourceStrip() { InitializeComponent(); Mode.ItemsSource = new[] { new RunModeItem("运行全部", false), new RunModeItem("运行选中", true) }; }
     private static void SessionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var view = (ImageSourceStrip)d;
@@ -75,7 +78,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     }
     private void Detach()
     {
-        ++_refreshGeneration;
+        ++_refreshGeneration; ++_keyboardSelectionGeneration; _keyboardSelectionPending = false;
         var attached = _attached; var lifetime = _lifetime;
         _attached = null; _lifetime = null;
         _lastViewport = Array.Empty<string>();
@@ -203,7 +206,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             int first = Math.Min(DisplayIndex, end), last = Math.Max(DisplayIndex, end);
             await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Skip(first).Take(last - first + 1).Select(x => x.Id));
         }
-        else await Request(ImageSourceStripRequestKind.Activate, item.Id);
+        else if ((lst.SelectedItem as ImageSourceStripItem)?.Id != item.Id) await Request(ImageSourceStripRequestKind.Activate, item.Id);
     }
     private async void CheckBox_Click(object sender, RoutedEventArgs e)
     {
@@ -239,9 +242,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private void BtnImageAddRpFolder_Click(object sender, RoutedEventArgs e) { }
     private async void MenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuItem menu && ItemsControl.ItemsControlFromItemContainer(menu) is ContextMenu context
-            && context.PlacementTarget is FrameworkElement target && target.DataContext is ImageSourceStripItem item)
-            await Request(ImageSourceStripRequestKind.OpenDirectory, item.Id);
+        if (DisplayIndex >= 0 && DisplayIndex < Items.Count)
+            await Request(ImageSourceStripRequestKind.OpenDirectory, Items[DisplayIndex].Id);
     }
     private async void AutoSwitchClick(object sender, RoutedEventArgs e)
     { if (!_refreshing) await Request(ImageSourceStripRequestKind.SetAutoSwitch, flag: AutoSwitch.IsChecked == true); }
@@ -256,22 +258,20 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     { e.Effects = CanInteract && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; }
     private async void ListDrop(object sender, DragEventArgs e)
     { e.Handled = true; if (CanInteract && e.Data.GetData(DataFormats.FileDrop) is string[] paths) await Request(ImageSourceStripRequestKind.ImportFiles, paths: paths); }
-    private async void ListKeyDown(object sender, KeyEventArgs e)
+    private void ListKeyDown(object sender, KeyEventArgs e)
     {
-        if (!CanInteract || Items.Count == 0) return;
-        int index = Math.Clamp(DisplayIndex, 0, Items.Count - 1);
-        switch (e.Key)
-        {
-            case Key.Left: index = Math.Max(0, index - 1); break;
-            case Key.Right: index = Math.Min(Items.Count - 1, index + 1); break;
-            case Key.Home: index = 0; break;
-            case Key.End: index = Items.Count - 1; break;
-            case Key.Enter: break;
-            case Key.Delete: e.Handled = true; await Request(ImageSourceStripRequestKind.Remove, Items[index].Id); return;
-            default: return;
-        }
-        e.Handled = true;
-        await Request(ImageSourceStripRequestKind.Activate, Items[index].Id);
+        if (!CanInteract || Items.Count == 0 || e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;
+        // Let the original ListBox perform navigation. Only its resulting user selection may activate.
+        var generation = ++_keyboardSelectionGeneration;
+        _keyboardSelectionPending = true;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        { if (generation == _keyboardSelectionGeneration) _keyboardSelectionPending = false; }));
+    }
+    private async void ListSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, lst) || !_keyboardSelectionPending || _refreshing || !CanInteract) return;
+        _keyboardSelectionPending = false;
+        if (lst.SelectedItem is ImageSourceStripItem item) await Request(ImageSourceStripRequestKind.Activate, item.Id);
     }
     private static ScrollViewer? FindScrollViewer(DependencyObject parent)
     {

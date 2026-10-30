@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -247,9 +248,22 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         if (!File.Exists(path) && !Directory.Exists(path)) throw new FileNotFoundException("图像文件或目录不存在。", path);
         var start = new ProcessStartInfo("explorer.exe") { UseShellExecute = false };
         if (Directory.Exists(path)) start.ArgumentList.Add(path);
-        else { start.ArgumentList.Add("/select,"); start.ArgumentList.Add(path); }
+        else
+        {
+            var item = ILCreateFromPathW(path);
+            if (item == IntPtr.Zero) throw new IOException("无法定位图像文件：" + path);
+            try { RequireCurrent(version, edit: false); Marshal.ThrowExceptionForHR(SHOpenFolderAndSelectItems(item, 0, IntPtr.Zero, 0)); }
+            finally { ILFree(item); }
+            return;
+        }
         RequireCurrent(version, edit: false); Process.Start(start)?.Dispose();
     }
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr ILCreateFromPathW(string path);
+    [DllImport("shell32.dll")]
+    private static extern int SHOpenFolderAndSelectItems(IntPtr item, uint count, IntPtr children, uint flags);
+    [DllImport("shell32.dll")]
+    private static extern void ILFree(IntPtr item);
     public void Dispose()
     {
         if (!_dispatcher.CheckAccess()) { _dispatcher.Invoke(Dispose); return; }

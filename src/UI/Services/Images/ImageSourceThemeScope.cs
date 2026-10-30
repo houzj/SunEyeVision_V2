@@ -43,9 +43,10 @@ public sealed class ImageSourceThemeScope : IDisposable
             ["ImageSources.Background"]=Brush(ThemeKeys.PanelBackgroundBrush),
             ["ImageSources.Foreground"]=Brush(ThemeKeys.TextPrimaryBrush),
             ["ImageSources.Border"]=Brush(ThemeKeys.BorderBrush),
-            ["ImageSources.Accent"]=Brush(ThemeKeys.AccentBrush),
             ["ImageSources.Hover"]=Brush(ThemeKeys.ButtonHoverBackgroundBrush),
             ["ImageSources.Scroll"]=Brush(ThemeKeys.ScrollBarThumbBrush),
+            ["Col_ScrollBar_BorderBrush"]=Brush(ThemeKeys.ScrollBarThumbBrush),
+            ["Col_ScrollBar_Fill"]=Brush(ThemeKeys.ScrollBarThumbBrush),
             ["ImageSources.MenuBackground"]=Brush(ThemeKeys.ContextMenuBackgroundBrush),
             ["Col_ComboBox_Background"]=Brush(ThemeKeys.InputBackgroundBrush),
             ["Col_ComboBox_BorderBrush"]=Brush(ThemeKeys.InputBorderBrush),
@@ -53,7 +54,7 @@ public sealed class ImageSourceThemeScope : IDisposable
             ["Col_ComboBox_Popup"]=Brush(ThemeKeys.ContextMenuBackgroundBrush),
             ["Col_ComboBox_Popup_BoderBrush"]=Brush(ThemeKeys.BorderBrush),
             ["Col_ComboBox_Popup_Selected_Background"]=Brush(ThemeKeys.ButtonHoverBackgroundBrush),
-            ["Col_Theme"]=Brush(ThemeKeys.AccentBrush)
+            ["Col_Theme"]=_target.FindResource("ImageSources.Accent")
         };
         var dictionaries=_target.Resources.MergedDictionaries;
         if(_palette is not null&&dictionaries.IndexOf(_palette) is var index&&index>=0)dictionaries[index]=palette;

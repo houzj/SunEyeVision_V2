@@ -1049,6 +1049,35 @@ public sealed class ResultWorkspaceProductionTests
             foreach(var nested in VisualDescendants<T>(child))yield return nested;
         }
     }
+    [Fact]
+    public void Original_source_mode_popup_opens_and_switches_both_modes_without_running()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var strip=f.View.ImagePreviewContent;
+        var mode=Assert.IsType<ComboBox>(strip.FindName("Mode"));
+        mode.ApplyTemplate();
+        Assert.Equal("运行全部", Assert.IsType<string>(mode.ToolTip));
+        Assert.NotNull(mode.FindResource("RecScrollViewer"));
+        Assert.Equal(Color.FromRgb(255,120,0),Assert.IsType<SolidColorBrush>(strip.FindResource("ImageSources.Accent")).Color);
+        Assert.Single(Assert.IsAssignableFrom<Panel>(f.Shell.SourceStripContent).Children.Cast<UIElement>());
+        var list=Assert.IsType<ListBox>(strip.FindName("lst"));list.ApplyTemplate();
+        strip.IsEnabled=false;Pump();
+        var listBorder=Assert.IsType<Border>(list.Template.FindName("Bd",list));
+        Assert.Equal(Assert.IsType<SolidColorBrush>(strip.FindResource("ImageSources.Background")).Color,Assert.IsType<SolidColorBrush>(listBorder.Background).Color);
+        strip.IsEnabled=true;Pump();
+        Console.WriteLine("MODE_POPUP before-open");Console.Out.Flush();
+        var toggle=Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(mode.Template.FindName("toggle",mode));
+        var provider=Assert.IsAssignableFrom<System.Windows.Automation.Provider.IToggleProvider>(new System.Windows.Automation.Peers.ToggleButtonAutomationPeer(toggle).GetPattern(System.Windows.Automation.Peers.PatternInterface.Toggle));
+        provider.Toggle();f.Host.UpdateLayout();Pump();
+        Console.WriteLine("MODE_POPUP opened");Console.Out.Flush();
+        var popup=Assert.IsType<System.Windows.Controls.Primitives.Popup>(mode.Template.FindName("Popup",mode));
+        Assert.True(popup.IsOpen);Assert.NotNull(popup.Child);Assert.True(popup.Child.IsVisible);
+        mode.SelectedIndex=1;Pump();Assert.True(strip.IsSelectMode);Assert.Equal("运行选中", Assert.IsType<string>(mode.ToolTip));
+        mode.IsDropDownOpen=false;Pump();
+        provider.Toggle();Pump();Assert.True(popup.IsOpen);mode.SelectedIndex=0;Pump();Assert.False(strip.IsSelectMode);
+        mode.IsDropDownOpen=false;Pump();
+    });
     private static void AwaitWorkspace(Task task)
     {
         Until(()=>task.IsCompleted);

@@ -24,7 +24,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ImageResultControl : UserControl
     {
         internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView ModuleResultTreeView;
-        internal readonly TextBlock SourceStatusMessage;
         internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip ImagePreviewContent;
         private MainWindowViewModel _viewModel = null!;
         private bool _shutdown;
@@ -72,10 +71,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
             ModuleResultTreeView=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)Workspace.PropertyListContent;
             var sourceStrip=(Panel)Workspace.SourceStripContent;
-            SourceStatusMessage=sourceStrip.Children.OfType<TextBlock>().Single();
             ImagePreviewContent=sourceStrip.Children.OfType<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip>().Single();
             RegisterName(nameof(ModuleResultTreeView),ModuleResultTreeView);
-            RegisterName(nameof(SourceStatusMessage),SourceStatusMessage);
             RegisterName(nameof(ImagePreviewContent),ImagePreviewContent);
             _sourceTheme=new(ImagePreviewContent);
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
@@ -119,8 +116,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             ReleaseWorkspace();
             _viewModel = viewModel;
-            System.Windows.Data.BindingOperations.SetBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty,
-                new System.Windows.Data.Binding(nameof(MainWindowViewModel.ImagePreviewSourceMessage)){Source=viewModel});
             System.Windows.Data.BindingOperations.SetBinding(Workspace,
                 SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
                 new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
@@ -150,7 +145,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
                     SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
-                ()=>System.Windows.Data.BindingOperations.ClearBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty),
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }
 

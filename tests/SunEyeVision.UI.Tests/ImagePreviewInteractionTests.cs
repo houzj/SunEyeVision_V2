@@ -388,9 +388,15 @@ public sealed partial class SolutionManagerUiTests
             Assert.Equal(0,executions);
             PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});
             Assert.Equal(1,executions);Assert.Equal(0,source.CurrentIndex);
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});Assert.Equal(1,executions);
             using var hwnd=new HwndSource(new HwndSourceParameters("source-key-test"){Width=1,Height=1,WindowStyle=unchecked((int)0x80000000)});
             var key=new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Right){RoutedEvent=Keyboard.PreviewKeyDownEvent};
-            PreviewCall(fixture.Control,"ListKeyDown",list,key);Assert.True(key.Handled);Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
+            PreviewCall(fixture.Control,"ListKeyDown",list,key);Assert.False(key.Handled);
+            // The WPF selection change, not PreviewKeyDown, is the execution entrance.
+            Assert.Equal(1,executions);list.SelectedIndex=1;Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
+            PreviewCall(fixture.Control,"ListKeyDown",list,new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Enter){RoutedEvent=Keyboard.PreviewKeyDownEvent});
+            PreviewCall(fixture.Control,"ListKeyDown",list,new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Delete){RoutedEvent=Keyboard.PreviewKeyDownEvent});
+            Assert.Equal(2,executions);Assert.Equal(2,source.Count);
             source.SetRunSelection(source.Images.Select(image=>image.Id));
             source.RunMode=ImageRunMode.运行选择;
             PumpPreviewTask(fixture.Control,Task.CompletedTask);

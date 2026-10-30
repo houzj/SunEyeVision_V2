@@ -18,6 +18,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services.Workflow;
@@ -149,6 +150,35 @@ public sealed class ResultWorkspaceProductionTests
             _solutionManagerField.SetValue(null,_previousSolutionManager);
         }
     }
+    [Fact]
+    public void Real_workspace_crosshair_command_opens_existing_original_settings_and_retires_with_host()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        var command=Assert.IsAssignableFrom<System.Windows.Input.ICommand>(f.Shell.CrossLinesCommand);
+        Assert.True(command.CanExecute(null));command.Execute(null);Pump();
+        var window=Application.Current.Windows.OfType<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsWindow>().Single();
+        Assert.True(window.IsVisible);
+        var layer=Assert.IsType<NativeResultViewport.CrosshairLayer>(window.DataContext);
+        Assert.True(layer.CrossDatas[0].IsVisible);
+        Assert.Same(f.Presenter.OutputPane.Viewport.View,f.Shell.OutputViewport);
+        f.View.Shutdown();Pump();
+        Assert.False(window.IsVisible);Assert.Null(f.Shell.CrossLinesCommand);
+    });
+    [Fact]
+    public void Original_dual_image_transition_clears_hidden_input_and_reselects_first_without_changing_output()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        var output=f.Presenter.OutputPane.CurrentFrame;
+        using var input=f.Presenter.InputPane.BorrowCurrentImage();
+        f.Shell.IsDoubleImage=false;Pump();
+        Assert.Null(f.Shell.SelectedInputItem);Assert.Null(f.Presenter.InputPane.CurrentFrame);
+        Assert.False(input!.IsCurrent);Assert.Equal(output,f.Presenter.OutputPane.CurrentFrame);
+        f.Shell.IsDoubleImage=true;Pump();
+        Assert.Same(f.Shell.InputItems.Cast<ResultWorkspaceImageSource>().First(),f.Shell.SelectedInputItem);
+        Assert.NotNull(f.Presenter.InputPane.CurrentFrame);Assert.Equal(output,f.Presenter.OutputPane.CurrentFrame);
+    });
     [Fact]
     public void Loaded_real_workspace_uses_same_publication_in_two_independent_panes_and_switches_only_selected_side()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
@@ -385,9 +415,11 @@ public sealed class ResultWorkspaceProductionTests
         var selection=stripSession.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,stripSession.Version,selected.Id),CancellationToken.None);
         Until(()=>selection.IsCompleted);AwaitWorkspace(selection);
         Until(() => f.Presenter.OutputPane.CurrentFrame?.Frame.SourceId.StartsWith("local-preview:", StringComparison.Ordinal) == true);
+        Assert.Equal("preview.png",Assert.IsType<ImageViewBox>(f.Shell.OutputViewport).ImageName);
         Assert.Equal(new byte[] { 91 }, f.Presenter.OutputPane.Viewport.ReadPixel(0, 0)); Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
         var table = f.Main.CurrentResultPublication; f.Main.ClearImageCommand.Execute(null); Pump();
         Assert.Null(f.Presenter.OutputPane.CurrentFrame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table!.IsCurrent());
+        Assert.Null(Assert.IsType<ImageViewBox>(f.Shell.OutputViewport).ImageName);
     });
     [Fact]
     public void Accepted_source_edit_with_failed_cursor_reset_is_visible_but_cannot_run_until_repaired()

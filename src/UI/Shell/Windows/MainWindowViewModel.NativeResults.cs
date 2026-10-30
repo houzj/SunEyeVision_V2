@@ -113,6 +113,13 @@ public partial class MainWindowViewModel
                     {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
                 }
                 using var values=publication?.Borrow();
+                string? fileName=null;
+                if(ImageSourcePolicy.Read(node) is not null && values?.Values is {} frozen
+                    && schema.Outputs.Any(port=>port.Id=="output.file"&&port.Type==TypeRef.ScalarOf(ScalarKind.Text)))
+                {
+                    var file=frozen.Get<string?>("output.file");
+                    if(!string.IsNullOrWhiteSpace(file))fileName=System.IO.Path.GetFileName(file);
+                }
                 foreach(var port in schema.Outputs)
                 {
                     var label=snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id;
@@ -128,7 +135,8 @@ public partial class MainWindowViewModel
                                 &&(snapshot?.Fields.TryGetValue(port.Id,out var field)==true
                                     ?source.SourceFieldId is {} fieldId?field.FieldId==fieldId:field.Name==source.PropertyName
                                     :BindingClrAdapter.OutputPortId(new OutputVariable{Name=source.PropertyName,FieldId=source.SourceFieldId})==port.Id));
-                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id));
+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id)
+                                {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
                             return;
                         }
                         if(type.Shape==ValueShape.Record)

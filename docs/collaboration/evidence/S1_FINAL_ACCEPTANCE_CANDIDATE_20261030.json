@@ -1,5 +1,5 @@
 {
-  "stage": "S1本地图像源候选待人工验收",
+  "stage": "S1运行时人工验收通过，实际VS设计器待验证",
   "sharedControlSourceCommit": "e83b066d1057d951003d357e09fb2f89f25bdb79",
   "sourceBaselineBeforeBatch": "ff24a7ad",
   "scope": "完整组件职责处置及正式PCUI开关/语言整批接入；不称S1或S1-S4目标完成",
@@ -43,7 +43,7 @@
     "offImage": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\source-strip-original-off.png",
     "onImage": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\source-strip-original-on.png",
     "actualVisualStudioDesignerVerified": false,
-    "manualAccepted": false
+    "manualAccepted": true
   },
   "notImplemented": [
     "远程文件/目录部署分支",

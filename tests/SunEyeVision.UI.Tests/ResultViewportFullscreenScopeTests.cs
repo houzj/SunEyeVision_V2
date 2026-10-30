@@ -18,6 +18,32 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class ResultViewportFullscreenScopeTests
 {
+    [Fact]
+    public void Original_navigation_moves_with_same_frame_keeps_commands_and_restores_all_slots_on_double_click() => Sta(() =>
+    {
+        using var fixture=new Scene("panel");
+        var panel=Assert.IsType<StackPanel>(fixture.Holder);
+        var clicks=0;
+        var previous=new Button {Command=new SunEyeVision.UI.Core.RelayCommand(()=>clicks++)};
+        var next=new Button {Command=new SunEyeVision.UI.Core.RelayCommand(()=>clicks+=10)};
+        panel.Children.Add(previous);panel.Children.Add(next);
+        panel.Resources["FullscreenThemeProbe"]=System.Windows.Media.Brushes.Orange;
+        var receipt=fixture.Pane.CurrentFrame;
+        using var fullscreen=ResultViewportFullscreenScope.Open(fixture.View,fixture.Owner,new[]{previous,next});
+        Drain();
+        var surface=Assert.IsType<Grid>(fullscreen.Window.Content);
+        Assert.Contains(fixture.View,surface.Children.Cast<UIElement>());
+        Assert.Contains(previous,surface.Children.Cast<UIElement>());Assert.Contains(next,surface.Children.Cast<UIElement>());
+        Assert.Same(panel.Resources["FullscreenThemeProbe"],surface.FindResource("FullscreenThemeProbe"));
+        previous.Command.Execute(null);next.Command.Execute(null);Assert.Equal(11,clicks);
+        Assert.Equal(receipt,fixture.Pane.CurrentFrame);
+        fullscreen.Window.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left)
+            {RoutedEvent=Control.PreviewMouseDoubleClickEvent});
+        Drain();
+        Assert.False(fullscreen.IsCurrent);fixture.AssertOriginalSlot();
+        Assert.Same(previous,panel.Children[3]);Assert.Same(next,panel.Children[4]);
+        Assert.Equal(receipt,fixture.Pane.CurrentFrame);Assert.Null(fullscreen.CloseError);
+    });
     [Theory]
     [InlineData("panel", "dispose")]
     [InlineData("panel", "close")]

@@ -17,6 +17,8 @@ public partial class ResultWorkspaceShell : UserControl
     /// <summary>Borrow the actual original views through NativeResultViewport.Attach; the shell owns no image.</summary>
     public FrameworkElement InputViewport=>imageViewIn;
     public FrameworkElement OutputViewport=>imageView;
+    /// <summary>The original navigation controls move with either viewport in fullscreen.</summary>
+    public IReadOnlyList<FrameworkElement> ImageNavigationControls => new FrameworkElement[] { btnLeft, btnRight };
     public static readonly DependencyProperty IsDoubleImageProperty = DependencyProperty.Register(nameof(IsDoubleImage), typeof(bool), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LayoutChanged));
     public bool IsDoubleImage { get => (bool)GetValue(IsDoubleImageProperty); set => SetValue(IsDoubleImageProperty, value); }
     public static readonly DependencyProperty SourceStripContentProperty = DependencyProperty.Register(nameof(SourceStripContent), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -43,7 +45,14 @@ public partial class ResultWorkspaceShell : UserControl
     public ICommand? CrossLinesCommand { get => (ICommand?)GetValue(CrossLinesCommandProperty); set => SetValue(CrossLinesCommandProperty, value); }
     public static readonly DependencyProperty FullscreenCommandProperty = DependencyProperty.Register(nameof(FullscreenCommand), typeof(ICommand), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public ICommand? FullscreenCommand { get => (ICommand?)GetValue(FullscreenCommandProperty); set => SetValue(FullscreenCommandProperty, value); }
-    public ResultWorkspaceShell() { InitializeComponent(); Loaded += (_, _) => ApplyLayout(); }
+    public ResultWorkspaceShell()
+    {
+        InitializeComponent();
+        // Explicit sources survive the original buttons moving outside this namescope in fullscreen.
+        btnLeft.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(PreviousImageCommand)) { Source = this });
+        btnRight.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(NextImageCommand)) { Source = this });
+        Loaded += (_, _) => ApplyLayout();
+    }
     private static void LayoutChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) => ((ResultWorkspaceShell)sender).ApplyLayout();
     private void ApplyLayout()
     {

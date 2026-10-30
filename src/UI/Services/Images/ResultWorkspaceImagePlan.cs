@@ -7,6 +7,7 @@ namespace SunEyeVision.UI.Services.Images;
 internal sealed record ResultWorkspaceImageSource(string DisplayName,OutputReference Reference,
     IResultPublication? Publication,Func<bool> Current,int NavigationIndex,bool IsUpstream)
 {
+    public string? FileName { get; init; }
     public string Key=>BindingReferenceSerializer.Serialize(Reference);
     public bool CanOverlay=>false;
     public bool IsCheck=>false;

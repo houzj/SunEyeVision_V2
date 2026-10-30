@@ -421,11 +421,7 @@ public partial class App : Application
         while (true)
         {
             // Existing catalog entries are optional suggestions, not prerequisites for file opening.
-            var recent = StartPreferences.RecentFiles.Concat(ServiceInitializer.SolutionManager.GetAllMetadata()
-                .Select(x => new RecentSolutionFile { Name = x.Name, Path = x.FilePath, LastOpened = x.LastAccessTime }))
-                .Where(x => !string.IsNullOrWhiteSpace(x.Path) && !StartPreferences.DismissedPaths.Contains(x.Path, StringComparer.OrdinalIgnoreCase))
-                .GroupBy(x => Path.GetFullPath(x.Path), StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First()).OrderByDescending(x => x.LastOpened).ToArray();
+            var recent = StartPreferences.BuildRecentFiles(ServiceInitializer.SolutionManager.GetAllMetadata());
             var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
             if (wasVisible) page.Owner = mainWindow;
             page.ShowDialog();

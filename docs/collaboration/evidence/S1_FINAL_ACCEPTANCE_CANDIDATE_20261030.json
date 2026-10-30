@@ -4,23 +4,23 @@
   "sourceBaselineBeforeBatch": "ff24a7ad",
   "scope": "完整组件职责处置及正式PCUI开关/语言整批接入；不称S1或S1-S4目标完成",
   "fullBuild": {
-    "log": "Release/_validation/s1-original-switch-integration-build.log",
+    "log": "Release/_validation/s1-startup-time-full-build.log",
     "errors": 0,
-    "warnings": 6487
+    "warnings": 6446
   },
   "uiBuild": {
-    "log": "Release/_validation/s1-original-switch-ui-build.log",
+    "log": "Release/_validation/s1-startup-time-ui-build.log",
     "errors": 0,
     "warnings": 6484,
     "changedPreviouslyTestedWpfDll": true
   },
   "finalProductionRegression": {
-    "attempt": 36,
-    "passed": 359,
+    "attempt": 37,
+    "passed": 360,
     "failed": 0,
-    "receipt": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-036\\receipt.json",
-    "log": "Release/_validation/s1-final-acceptance-regression.log",
-    "frozenProduct": "Release/_validation/s1-final-acceptance-product.json",
+    "receipt": "Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-037\\receipt.json",
+    "log": "Release/_validation/s1-startup-fixed-regression.log",
+    "frozenProduct": "Release/_validation/s1-startup-fixed-product.json",
     "productStableThroughRegression": true
   },
   "coverage": {
@@ -57,5 +57,17 @@
     "主界面整体重组",
     "主仓合并或推送"
   ],
-  "phaseSealed": false
+  "phaseSealed": false,
+  "startup": {
+    "initialFailure": "DateTime.MinValue目录元数据隐式转DateTimeOffset越界，PID14356未交付",
+    "fix": "仅有文件路径和真实访问时间的目录项进入最近记录；既有偏好、去重、隐藏和排序保持",
+    "pid": 116840,
+    "window": "太阳眼视觉 - 机器视觉平台",
+    "handle": 66917198,
+    "normalStartupVerified": true,
+    "log": "D:/SunEyeVisionData/Logs/2026/10/30/SunEyeVision_225103.txt",
+    "unhandledApplicationExceptionCount": 0,
+    "manualAccepted": false,
+    "noFurtherBuildWhileTesting": true
+  }
 }

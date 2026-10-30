@@ -1079,6 +1079,40 @@ public sealed class ResultWorkspaceProductionTests
         mode.IsDropDownOpen=false;Pump();
     });
     [Fact]
+    public void Actual_start_page_catalog_projection_skips_unvisited_entries_and_preserves_history_rules()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();
+        var settings=new SunEyeVision.UI.Services.Startup.StartPageSettings();
+        var preferred=Path.Combine(f.Directory,"preferred.solution");File.WriteAllText(preferred,"history fixture");
+        var hidden=Path.Combine(f.Directory,"hidden.solution");var missing=Path.Combine(f.Directory,"moved.solution");
+        var time=new DateTime(2026,10,30,12,0,0,DateTimeKind.Local);
+        settings.RecentFiles.Add(new(){Name="preferred-history",Path=preferred,LastOpened=new DateTimeOffset(time)});
+        settings.DismissedPaths.Add(hidden);
+        var metadata=new List<SolutionMetadata>
+        {
+            new(){Name="never-visited",FilePath=Path.Combine(f.Directory,"never.solution")},
+            new(){Name="unsaved",FilePath="",LastAccessTime=time},
+            new(){Name="hidden",FilePath=hidden,LastAccessTime=time.AddDays(1)},
+            new(){Name="duplicate-catalog",FilePath=preferred,LastAccessTime=time.AddDays(2)},
+            new(){Name="moved",FilePath=missing,LastAccessTime=time.AddDays(-1)}
+        };
+        foreach(var kind in new[]{DateTimeKind.Local,DateTimeKind.Utc,DateTimeKind.Unspecified})
+            metadata.Add(new(){Name="valid-"+kind,FilePath=Path.Combine(f.Directory,kind+".solution"),LastAccessTime=DateTime.SpecifyKind(time.AddDays(-2),kind)});
+        var build=typeof(SunEyeVision.UI.Services.Startup.StartPageSettings).GetMethod("BuildRecentFiles",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var rows=Assert.IsType<SunEyeVision.UI.Services.Startup.RecentSolutionFile[]>(build.Invoke(settings,new object[]{metadata}));
+        Assert.Equal(5,rows.Length);Assert.Equal("preferred-history",rows[0].Name);
+        Assert.DoesNotContain(rows,row=>row.Name is "never-visited" or "unsaved" or "hidden" or "duplicate-catalog");
+        Assert.Equal(rows.OrderByDescending(row=>row.LastOpened),rows);
+        Assert.Equal("文件已移动",rows.Single(row=>row.Name=="moved").DisplayTime);
+        foreach(var kind in new[]{DateTimeKind.Local,DateTimeKind.Utc,DateTimeKind.Unspecified})
+            Assert.Equal(new DateTimeOffset(DateTime.SpecifyKind(time.AddDays(-2),kind)),rows.Single(row=>row.Name=="valid-"+kind).LastOpened);
+        var page=new SunEyeVision.UI.Shell.Windows.StartPageWindow(false,rows,null);
+        try{page.Measure(new Size(1020,690));page.Arrange(new Rect(0,0,1020,690));page.UpdateLayout();Assert.NotNull(page.FindName("RecentFilesList"));}
+        finally{page.Close();}
+        Assert.Equal(default,metadata[0].LastAccessTime);Assert.Single(settings.RecentFiles);Assert.Single(settings.DismissedPaths);
+    });
+    [Fact]
     public void Original_content_switch_runs_through_formal_acceptance_history_restore_and_host_lifetime()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

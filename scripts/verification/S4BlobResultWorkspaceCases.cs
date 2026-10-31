@@ -45,6 +45,8 @@ internal static class S2DocumentEditingCases
   var tool=new BlobTool();var projection=tool.ResultProjection;var keys=new[]{"label","area","perimeter","centroid-x","centroid-y","angle","long-axis","short-axis","circularity","rectangularity"};
   Require(projection.Columns.Select(column=>column.Key).SequenceEqual(keys),"Blob表未按原序号加九项特征排列");
   var placeholders=projection.Columns.Where(column=>column.Value is null).ToArray();Require(placeholders.Select(column=>column.Key).SequenceEqual(new[]{"angle","long-axis","short-axis"})&&placeholders.All(column=>!string.IsNullOrWhiteSpace(column.UnavailableReason)),"未证三项未明确声明展示占位");
+  var imagePorts=tool.Describe().Outputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)).Select(port=>port.Id).ToArray();Require(imagePorts.SequenceEqual(new[]{BlobSchema.Field(5),BlobSchema.Field(6)}),"存在未实现的Blob绘制图像输出");
+  var display=tool.Describe().OutputDisplay;Require(display.Single(node=>node.FieldId==BlobSchema.Field(5)).DisplayName=="灰度图像"&&!display.Any(node=>node.DisplayName=="Blob图像"),"灰度输出仍冒称Blob绘制图像");
   var fields=tool.ResultSchema.Outputs.Single(port=>port.Id==BlobSchema.BlobsPort).Type.Element!.Fields;Require(!fields.Any(field=>placeholders.Any(column=>column.Key==field.Id)),"占位泄漏为真实输出字段");
   Require(!tool.ManualReferenceSources.Any(source=>source.MemberPath?.Any(member=>placeholders.Any(column=>column.Key==member))==true),"占位泄漏为可订阅来源");
   ResultProjectionDescriptor Make(ResultColumnDescriptor column,ResultProjectionKind kind=ResultProjectionKind.StandardTable)=>new(kind,ResultCardinality.Many,new[]{column},projection.Rows,projection.ElementIdentityFieldId);
@@ -91,7 +93,8 @@ internal static class S2DocumentEditingCases
   try
   {
    var manager=new SolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"solution-manager"));managerField.SetValue(null,manager);manager.SetCurrentSolution(document,false);
-   main=new MainWindowViewModel();main.SelectedNode=node;node.IsSelected=true;context=(WorkflowContext)Get(main,"CurrentWorkflowContext");var results=(NodeResultManager)Get(main,"_nodeResultManager");
+   main=new MainWindowViewModel();main.SelectedNode=node;node.IsSelected=true;
+   var formal=main.CreateDataSourceQueryService(flow.Id).FormalOutputContractReader!.Invoke(node.Id);Require(formal.Single(field=>field.PortId==BlobSchema.Field(5)).DisplayName=="灰度图像"&&!formal.Any(field=>field.DisplayName=="Blob图像"),"自动来源/引用树的真实正式目录仍冒称Blob图像");context=(WorkflowContext)Get(main,"CurrentWorkflowContext");var results=(NodeResultManager)Get(main,"_nodeResultManager");
    view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);window=new Window{Content=view,Width=1000,Height=850,ShowActivated=false,ShowInTaskbar=false};window.Show();Pump();
    var shell=(ResultWorkspaceShell)view.FindName("Workspace");shell.IsDoubleImage=true;var presenter=Get(view,"_workspacePresenter");var output=Get(presenter,"OutputPane");var viewport=(ImageViewBox)shell.OutputViewport;
    var executor=new WorkflowExecutionEngine(engine,new PluginManager(),new CheckLogger());
@@ -102,7 +105,7 @@ internal static class S2DocumentEditingCases
     using var image=HalImage.CreateFromBytes(pixels,16,16,1);
     var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(path,offset+1){LocalReadAdmission=_=>path}}}){Configuration=WorkflowRunConfiguration.Capture(new[]{flow}),ExecutionOwner=document.ExecutionOwner,ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document)});Until(()=>task.IsCompleted);var run=task.GetAwaiter().GetResult();runs.Add(run);
     Require(run.Success,"真实Blob执行失败："+string.Join(";",run.Errors??new()));var snapshot=(DeclaredOutputSnapshot)run.NodeResults[node.Id].Result!;
-    Require(snapshot.IsSuccess&&snapshot.SourceWorkflowId==flow.Id,"Blob没有本流程正式快照");
+    Require(snapshot.IsSuccess&&snapshot.SourceWorkflowId==flow.Id,"Blob没有本流程正式快照");Require(snapshot.Fields[BlobSchema.Field(5)].DisplayName=="灰度图像","真实快照/引用树输出元数据仍冒称Blob图像");
     using(var reader=snapshot.AcquireReader())
     {
      var gray=reader.Values!.Get<IReadOnlyImage>(BlobSchema.Field(5));var binary=reader.Values.Get<IReadOnlyImage>(BlobSchema.Field(6));
@@ -117,7 +120,7 @@ internal static class S2DocumentEditingCases
    void SelectImage(string? port=null,string? selectedNode=null)
    {
     Until(()=>shell.OutputItems.Cast<object>().Any());
-    var choice=shell.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==(selectedNode??node.Id)&&reference.PortId==(port??BlobSchema.Field(5)));shell.SelectedOutputItem=choice;Pump();
+    var choice=shell.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==(selectedNode??node.Id)&&reference.PortId==(port??BlobSchema.Field(5)));if(port is null||port==BlobSchema.Field(5))Require(Get(choice,"DisplayName").ToString()!.Contains("灰度图像")&&!Get(choice,"DisplayName").ToString()!.Contains("Blob图像"),"结果图像选择仍冒称Blob绘制图像");shell.SelectedOutputItem=choice;Pump();
    }
    ResultSelection SelectRow(DeclaredOutputSnapshot snapshot)
    {

@@ -8,7 +8,7 @@ internal static class BlobOutputDisplay
     internal static IReadOnlyList<OutputDisplayNode> Create()
     {
         var roots=new Dictionary<string,string>(StringComparer.Ordinal);
-        foreach(var (id,name) in new (int,string)[]{(4,"模块状态"),(5,"Blob图像"),(6,"二值化图像"),
+        foreach(var (id,name) in new (int,string)[]{(4,"模块状态"),(5,"灰度图像"),(6,"二值化图像"),
             (8,"低阈值"),(9,"高阈值"),(10,"极性"),(102,"阈值方式"),(11,"Blob个数"),(12,"总面积"),
             (13,"平均面积"),(14,"平均圆度"),(15,"平均矩形度"),(16,"白色像素比例"),(17,"灰度直方图"),
             (18,"通道均值"),(19,"面积"),(20,"周长"),(21,"质心X"),(22,"质心Y"),(23,"圆度"),

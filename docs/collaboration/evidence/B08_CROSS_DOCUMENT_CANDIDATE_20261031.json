@@ -1,0 +1,283 @@
+{
+  "commit": "dfba37b5153eaa4a58cb90a2203a9a745a94107e",
+  "worktree": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2",
+  "branch": "codex/blob-reference-ui-20261031",
+  "productUiSha256": "70330667633407B42C16E5B10167A1CE660E33F558F0A904B05E415304BA1B0C",
+  "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+  "builds": {
+    "full": "solution-build-002.log：0错误6510警告，1:49.61",
+    "test": "test-build-010.log：0错误880警告",
+    "ui": "ui-build-002.log：0错误6525警告，2:31.12"
+  },
+  "design": "automatic-image-chain-design.json",
+  "attempts": [
+    {
+      "attempt": "attempt-019",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 19,
+        "pid": 76712,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "A2CE9771DF8AA6632E7C10C42DDB01C8A0765B8592FE8A4EE993132CB37BA73E",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-019"
+      },
+      "report": {
+        "scope": "B08CrossDocumentReferences",
+        "imageChainVerified": true,
+        "selectedTransition": "A-to-B",
+        "expected": 5,
+        "cases": [],
+        "passed": 0,
+        "fullFieldEditingRegression": false,
+        "fullFunctionalAcceptance": false,
+        "vsDesigner": false,
+        "nativeVmSemanticsProved": false
+      },
+      "completedLines": null,
+      "logSha256": "56EA22530E0409645F219599120B4A0B4A3F20B93DB322B7F2F8B3192D0CB78C"
+    },
+    {
+      "attempt": "attempt-020",
+      "receipt": null,
+      "report": null,
+      "completedLines": [
+        "通过：真实MainWindow A-to-B source-popup 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+        "通过：真实MainWindow A-to-B index-popup 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+        "通过：真实MainWindow A-to-B expanded 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗"
+      ],
+      "logSha256": "E8BFB052E676675901A686DC5ADE79C50F72F4A5BD4309DD05001C6A930A5CA0"
+    },
+    {
+      "attempt": "attempt-021",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 21,
+        "pid": 19268,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-021"
+      },
+      "report": {
+        "scope": "B08CrossDocumentReferences",
+        "imageChainVerified": true,
+        "selectedTransition": "A-to-B",
+        "selectedKinds": "variable-source,variable-index",
+        "expected": 2,
+        "cases": [
+          {
+            "transition": "A-to-B",
+            "kind": "variable-source",
+            "oldDocumentId": "e937726f-eda2-4038-807d-7cc7652fcf16",
+            "newDocumentId": "edb1e4aa-3be5-4aad-a179-2f76ceb8bcc5",
+            "oldEditing": "1ddb6edb-02ab-4aff-985c-bf3349d5d868",
+            "newEditing": "32de00ee-cc62-4526-959f-74849d94375b",
+            "oldNodeId": "070153c7-82f5-45d0-ad45-fde81bd91594",
+            "newNodeId": "d415e057-3921-4451-8283-6d31057d3453",
+            "realWindowOwnerRecreated": true,
+            "passed": true,
+            "fullFunctionalAcceptance": false
+          },
+          {
+            "transition": "A-to-B",
+            "kind": "variable-index",
+            "oldDocumentId": "aa0816b8-43fc-4307-b1af-754998f1b300",
+            "newDocumentId": "771b81bb-5749-4ee8-8a01-b239c6ce6edb",
+            "oldEditing": "0ed9e483-203e-435d-9f46-ef4d72f12f3f",
+            "newEditing": "745c4a2c-9d00-4696-aa13-afbdb1c126d6",
+            "oldNodeId": "ce4ac2d1-5761-4994-a7e7-6c0f1525073a",
+            "newNodeId": "3a1916ae-6d9b-43aa-a82f-e204c5b3323a",
+            "realWindowOwnerRecreated": true,
+            "passed": true,
+            "fullFunctionalAcceptance": false
+          }
+        ],
+        "passed": 2,
+        "fullFieldEditingRegression": false,
+        "fullFunctionalAcceptance": false,
+        "vsDesigner": false,
+        "nativeVmSemanticsProved": false
+      },
+      "completedLines": [
+        "通过：真实MainWindow A-to-B variable-source 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+        "通过：真实MainWindow A-to-B variable-index 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗"
+      ],
+      "logSha256": "AE07F99C086EE2788A17D61A16BC27F5F09E2FCB3467A451A375ED13B5D70D7C"
+    },
+    {
+      "attempt": "attempt-022",
+      "receipt": null,
+      "report": null,
+      "completedLines": [
+        "通过：真实MainWindow reopen-A source-popup 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+        "通过：真实MainWindow reopen-A index-popup 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗"
+      ],
+      "logSha256": "02802CAB120C22B4F809C7D0990DCD9DF5B545677FFA7E8BAF0E95E153AD300E"
+    },
+    {
+      "attempt": "attempt-023",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 23,
+        "pid": 89992,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-023"
+      },
+      "report": {
+        "scope": "B08CrossDocumentReferences",
+        "imageChainVerified": true,
+        "selectedTransition": "reopen-A",
+        "selectedKinds": "expanded",
+        "expected": 1,
+        "cases": [
+          {
+            "transition": "reopen-A",
+            "kind": "expanded",
+            "oldDocumentId": "0d2131e0-9c82-4f63-a108-df09dd98c2ac",
+            "newDocumentId": "0d2131e0-9c82-4f63-a108-df09dd98c2ac",
+            "oldEditing": "6afb8818-4b67-4457-acb1-08dd9c0994a4",
+            "newEditing": "06ee8a70-b896-4cdb-853c-7d977a5cb725",
+            "oldNodeId": "e20088f9-b0ee-43da-9bed-8d1384768cd1",
+            "newNodeId": "e20088f9-b0ee-43da-9bed-8d1384768cd1",
+            "realWindowOwnerRecreated": true,
+            "passed": true,
+            "fullFunctionalAcceptance": false
+          }
+        ],
+        "passed": 1,
+        "fullFieldEditingRegression": false,
+        "fullFunctionalAcceptance": false,
+        "vsDesigner": false,
+        "nativeVmSemanticsProved": false
+      },
+      "completedLines": "通过：真实MainWindow reopen-A expanded 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+      "logSha256": "F3A2D5A4389AA632DF7B5FE7520FCA1AC34E1D71D519107FC5D72A545A9319BD"
+    },
+    {
+      "attempt": "attempt-024",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 24,
+        "pid": 58724,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-024"
+      },
+      "report": {
+        "scope": "B08CrossDocumentReferences",
+        "imageChainVerified": true,
+        "selectedTransition": "reopen-A",
+        "selectedKinds": "variable-source",
+        "expected": 1,
+        "cases": [
+          {
+            "transition": "reopen-A",
+            "kind": "variable-source",
+            "oldDocumentId": "f6704a2c-3c58-42a8-b138-196c31939f11",
+            "newDocumentId": "f6704a2c-3c58-42a8-b138-196c31939f11",
+            "oldEditing": "ed1e22da-2357-4c56-93d6-8c74b4a76be8",
+            "newEditing": "f250c6e7-1012-4bde-97b3-5adc699e2ff8",
+            "oldNodeId": "c401f7fd-52a0-4bb1-98b5-d4c96f7eab17",
+            "newNodeId": "c401f7fd-52a0-4bb1-98b5-d4c96f7eab17",
+            "realWindowOwnerRecreated": true,
+            "passed": true,
+            "fullFunctionalAcceptance": false
+          }
+        ],
+        "passed": 1,
+        "fullFieldEditingRegression": false,
+        "fullFunctionalAcceptance": false,
+        "vsDesigner": false,
+        "nativeVmSemanticsProved": false
+      },
+      "completedLines": "通过：真实MainWindow reopen-A variable-source 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+      "logSha256": "66ACB28F5B3724C1EE84F0CEF20831AF19CFDB5E1F6BCC0373AF2C0EB5458456"
+    },
+    {
+      "attempt": "attempt-025",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 25,
+        "pid": 56864,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-025"
+      },
+      "report": {
+        "scope": "B08CrossDocumentReferences",
+        "imageChainVerified": true,
+        "selectedTransition": "reopen-A",
+        "selectedKinds": "variable-index",
+        "expected": 1,
+        "cases": [
+          {
+            "transition": "reopen-A",
+            "kind": "variable-index",
+            "oldDocumentId": "681972bf-3c70-4004-8d04-c069165d5675",
+            "newDocumentId": "681972bf-3c70-4004-8d04-c069165d5675",
+            "oldEditing": "f0739db8-df9b-42b8-a7cf-4d294fbaae07",
+            "newEditing": "d8aa5b9f-dd52-4e34-a1b9-53aa70545ff6",
+            "oldNodeId": "814300f5-f82b-4a85-8cf6-b09e1dc2924a",
+            "newNodeId": "814300f5-f82b-4a85-8cf6-b09e1dc2924a",
+            "realWindowOwnerRecreated": true,
+            "passed": true,
+            "fullFunctionalAcceptance": false
+          }
+        ],
+        "passed": 1,
+        "fullFieldEditingRegression": false,
+        "fullFunctionalAcceptance": false,
+        "vsDesigner": false,
+        "nativeVmSemanticsProved": false
+      },
+      "completedLines": "通过：真实MainWindow reopen-A variable-index 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗",
+      "logSha256": "FD2C5355A586DCF0F9E1BDE2270844C5E9B2512A00676F786F116446BE5AC4E7"
+    }
+  ],
+  "verdict": "真实自动来源整链通过，十场景都有完整断言通过日志；attempt020和022总预算超时，仅列已完成场景，不记整轨通过",
+  "remaining": [
+    "主仓正式产物集成验证",
+    "VS设计器与人工验收",
+    "原厂多值索引消费/偏好持久化等B08既有缺证"
+  ],
+  "gui": "所有候选自有进程结束，GUI已释放",
+  "normalFieldEditing": {
+    "attempt": "attempt-026",
+    "receipt": {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 26,
+      "pid": 77404,
+      "exit": 0,
+      "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4FieldEditingCases.cs",
+      "caseSourceSha256": "7E955B892883811687EA1D480DF9073D966E4F9FC4C97EAAE41CE7F58432CD18",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-026"
+    },
+    "passedLines": 38,
+    "runLogSha256": "4E7F3A886FBB76FEDBBE5359D5D52A48FBAC49852770B92D5ACF7B1B7B25C997",
+    "loadedProductSha256": "1B9FF96042016E69EE0DE8486D6674A8D84B661EC7ECB8E89D2990B95A071D19",
+    "result": "正常完整入口通过；未设置B08筛选；候选结果不代主仓正式/VS或B08整控件完成"
+  }
+}

@@ -16,6 +16,6 @@
 - 主线直接读取原 IMVSBlobFindModuAlgorithmTab.xml 的 RangArea/Integers：MinArea / MaxArea 均为 Integer；子项 CurValue 与 DefaultValue 分别是 10 / 999999999，两个子项 MinValue=0x1、MaxValue=999999999、IncValue=0x1。父组 DefaultValue=10000 与子项默认分开；当前本方范围 0–9999999、最大值默认 999999 有差异，尚待整链实施和验证。原件身份见 BLOB_VM_RUN_PARAMETERS_20261029.json。
 - 原 AlgorithmTab 同一 SHA 的九个订阅字段逐项只读核对：LowThreshold 整数默认 100、范围 0–255；HightThreshold 整数默认 150、范围 0–255；FindNum 整数默认 100、范围 1–20000；MinArea/MaxArea 整数默认 10/999999999、范围均 1–999999999；圆度和矩形度上下限为 Float、默认均 0.1/1、范围 0–1、步进 0.01。上述 CurValue 与 DefaultValue 在该原 XML 一致；不把它当作所有已保存方案的实际值。
 ## 已知设置与模式准入
-- 工具声明可对冻结 FieldSettings 校验当前已知常量，不解析订阅、不从旧值或默认补齐引用；字段类型/物理存储仍由原 FieldSettings 校验。Blob 在对应过滤使能时检查已知范围端点、两端均为常量时检查顺序，并检查低阈值和查找个数。
+- 工具声明可对冻结 FieldSettings 校验当前已知常量，不解析订阅、不从旧值或默认补齐引用；字段类型/物理存储仍由原 FieldSettings 校验。Blob 对所有已知数值常量核对声明范围（与完整物化一致），对应过滤使能且两端均为常量时检查顺序；未知引用继续留待实际消费校验。
 - 加载配置仍允许保留现行 None / DoubleThreshold 模式，以便显示原值及修正；正式确认、工作流与私有调试共用准入，当前仅 SingleThreshold 可通过。未支持的原厂三项不进入正式枚举；已知值校验不冒称未知引用已有效，引用在真正消费时继续校验。
 - 此机制不实现新的阈值算法，不宣称 Single 与 VM 原数值等价；显示与判定试用草稿的未完成保护独立保留。构建与真实场景结果以后续记录为准。

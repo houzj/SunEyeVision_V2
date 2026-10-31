@@ -38,18 +38,18 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         var definition=BlobParameterDefinition.Instance;
         var errors=new List<Diagnostic>();
         object? Constant(string name)=>settings.Read(definition.SettingsFieldId(name)) is ConstantSetting constant?constant.Value:null;
-        void Number(string name)
+        foreach(var presentation in SettingsSchema.Presentation!.Fields)
         {
-            var value=Constant(name);
-            if(value is not (long or double))return;
-            var n=Convert.ToDouble(value,System.Globalization.CultureInfo.InvariantCulture);
-            if(!double.IsFinite(n)||n<definition.Minimum(name)||n>definition.Maximum(name))
-                errors.Add(new("BLOB_SETTINGS_INVALID",definition.Label(name)+"超出允许范围。",definition.SettingsFieldId(name)));
+            if(settings.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} constant)continue;
+            var number=Convert.ToDouble(constant.Value,System.Globalization.CultureInfo.InvariantCulture);
+            var layout=presentation.Layout;
+            if(!double.IsFinite(number)||layout?.Minimum is double minimum&&number<minimum
+                ||layout?.Maximum is double maximum&&number>maximum)
+                errors.Add(new("BLOB_SETTINGS_INVALID",presentation.DisplayName+"超出允许范围。",presentation.FieldId));
         }
         void Range(string enabled,string minimum,string maximum)
         {
             if(Constant(enabled) is not true)return;
-            Number(minimum);Number(maximum);
             var lower=Constant(minimum);var upper=Constant(maximum);
             if(lower is long or double && upper is long or double &&
                Convert.ToDouble(lower,System.Globalization.CultureInfo.InvariantCulture)>Convert.ToDouble(upper,System.Globalization.CultureInfo.InvariantCulture))
@@ -57,7 +57,6 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         }
         if(Constant(nameof(BlobSettings.SegmentationMode)) is not nameof(BlobSegmentationMode.SingleThreshold))
             errors.Add(new("BLOB_MODE_NOT_READY","该阈值模式尚未完成原厂语义对齐。",definition.SettingsFieldId(nameof(BlobSettings.SegmentationMode))));
-        Number(nameof(BlobSettings.Threshold));Number(nameof(BlobSettings.BlobCountLimit));
         Range(nameof(BlobSettings.IsAreaFilterEnabled),nameof(BlobSettings.FilterAreaMin),nameof(BlobSettings.FilterAreaMax));
         Range(nameof(BlobSettings.IsCircularityFilterEnabled),nameof(BlobSettings.FilterCircularityMin),nameof(BlobSettings.FilterCircularityMax));
         Range(nameof(BlobSettings.IsRectangularityFilterEnabled),nameof(BlobSettings.FilterRectangularityMin),nameof(BlobSettings.FilterRectangularityMax));

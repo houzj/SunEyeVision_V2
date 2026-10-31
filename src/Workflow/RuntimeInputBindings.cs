@@ -10,11 +10,11 @@ namespace SunEyeVision.Workflow;
 internal static class RuntimeInputBindings
 {
     internal static object? Constant(Port port,object? value)=>ValueRules.Freeze(port,value);
-    internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope)
+    internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope,bool validateAdmission=true)
     {
         var configuration=node.RuntimeConfiguration!;var issues=new List<ExecutionInputIssue>();
         if(node.ParamSettings.Settings.Any())issues.Add(new("runtime-configuration","Runtime","Runtime nodes cannot contain SDK ParamSettings."));
-        foreach(var diagnostic in configuration.Validate())
+        foreach(var diagnostic in validateAdmission?configuration.Validate():Array.Empty<Diagnostic>())
             issues.Add(new(diagnostic.FieldId??"runtime-settings",diagnostic.FieldId??"Runtime",diagnostic.Message));
         foreach(var (id,setting) in configuration.Fields.Capture())
         {

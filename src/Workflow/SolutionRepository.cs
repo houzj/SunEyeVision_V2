@@ -130,7 +130,7 @@ public class SolutionRepository
             var legacyDocument = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
             SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacyDocument);
             new SolutionResourceResolver(directory).Inspect(root, diagnostics);
-            var solution = ReadFrozenCandidate(root, diagnostics, legacyDocument);
+            var solution = ReadFrozenCandidate(root, diagnostics, legacyDocument, validateAdmission:false);
             if (legacyDocument)
             {
                 diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
@@ -163,7 +163,7 @@ public class SolutionRepository
 
     /// <summary>Read only the supplied frozen candidate. Both disk reads and save preparation use
     /// the same device restoration, registered declarations and owning-workflow binding validation.</summary>
-    internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument)
+    internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument, bool validateAdmission = true)
     {
         var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
         if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
@@ -174,7 +174,7 @@ public class SolutionRepository
             new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
             ?? throw new JsonException("Null solution.");
         solution.Devices = devices;
-        SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument);
+        SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument, validateAdmission);
         return solution;
     }
 

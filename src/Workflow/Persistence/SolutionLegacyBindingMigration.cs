@@ -13,7 +13,7 @@ namespace SunEyeVision.Workflow.Persistence;
 /// Only unchanged declarations are accepted; no aliases or lossy schema conversion are inferred.</summary>
 internal static class SolutionLegacyBindingMigration
 {
-    internal static void Prepare(Solution candidate, List<PersistenceDiagnostic> diagnostics, bool legacyDocument = true)
+    internal static void Prepare(Solution candidate, List<PersistenceDiagnostic> diagnostics, bool legacyDocument = true, bool validateAdmission = true)
     {
         var contractReader = new OutputBindingChangeService();
         foreach (var workflow in candidate.Workflows)
@@ -21,7 +21,7 @@ internal static class SolutionLegacyBindingMigration
             foreach(var node in workflow.Nodes.Where(n=>n.RuntimeConfiguration is not null))
             {
                 if(node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes reject SDK ParamSettings.");
-                var issues=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
+                var issues=RuntimeInputBindings.Validate(workflow,node,workflow.Id,validateAdmission);
                 if(issues.Count>0)throw new JsonException(issues[0].Message);
             }
             foreach(var node in workflow.Nodes)

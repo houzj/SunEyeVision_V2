@@ -1,0 +1,147 @@
+{
+  "status": "九数值与六模式正式页面候选已通过；整个Blob窗仍由未闭合ROI/结果组合阻断确认，不报S2完成",
+  "designBaseline": "B08_BLOB_NUMERIC_PRODUCTION_INTEGRATION_DESIGN_20261031.json",
+  "sharedChoiceCommit": "a08ac49614e5dd4073243b3e447fb12131475551",
+  "mainContracts": [
+    "287c234d",
+    "0b600ba8",
+    "46d4cbb7",
+    "427f692d"
+  ],
+  "files": [
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+    "scripts/verification/S4FieldEditingCases.cs"
+  ],
+  "implementation": [
+    "正式Threshold/UpperThreshold/BlobCountLimit/面积整数两端/圆度浮点两端/矩形度浮点两端共9字段，正式面积/圆度/矩形度开关唯一宿主草稿；移除S1替身与抑制",
+    "移除已删除数量开关96e3的全部锚点与抑制，查找数量直接使用正式e748字段，没有隐藏数量使能",
+    "同一正式SegmentationMode消费原6项展示，仅Single可接纳；None/Double保留历史正式键但禁新提案和确认，3无正式键项禁用且不入JSON",
+    "原厂None/Single/Double显隐由主线XML及BlobPresentation统一：极性!=Double，低阈值!=None，高阈值==Double",
+    "ReferenceOptions沿用宿主候选/身份/校验，只开启原文本索引，WPF不计算调度资格或取运行值",
+    "未接入高级/输出原件保持布局但只读并Tooltip；ROI正式来源没有整体禁用，既有组合保护仍拒整个窗口确认",
+    "运行与独立DesignDraft消费同一BlobRunUi/DeclaredSettingsView组装，不添加预览模型或默认"
+  ],
+  "ownerDependency": {
+    "current": "NativeRoiUiDraftControls仅接FrameworkElement，内部模式和ShapeContext只写本地状态；NativeDisplay/NativeJudgment也有不可持久化UI状态",
+    "needed": "下一完整ROI批按正式源owner/正式几何编辑接口统一处理模式恢复、切换清源、输入拒绝/取消/关闭；结果组合另保正式状态/持久化；本批不扩散重写",
+    "guard": "ROI绘制、继承模式及结果显示组合尚未接入正式状态，当前窗口不能执行或保存。",
+    "excluded": "不整体禁正式ROI/位置来源，不解除整窗保护，不改算法/Contracts/Workflow/UI宿主/lifecycle脚本"
+  },
+  "preservedFailures": [
+    {
+      "log": "Release/_validation/B08ChoiceDisplay/field-editing-integrated.log",
+      "cause": "旧S1引用删除数量开关96e3，真实Blob构造KeyNotFound"
+    },
+    {
+      "log": "Release/_validation/B08ChoiceDisplay/field-editing-page-001.log",
+      "cause": "新增专属测试未限定NativeThresholdUiDraftControls命名空间，检查宿主编译失败；已修"
+    },
+    {
+      "log": "Release/_validation/B08ChoiceDisplay/field-editing-page-002.log",
+      "cause": "专项重构建后发布清单与HalAdapter.Runtime载荷SHA不一致，PluginManager准入拒绝；不篡改清单，重做全量规则"
+    },
+    {
+      "log": "Release/_validation/B08ChoiceDisplay/ui-page-build-003.log",
+      "cause": "新增禁用Tooltip未限定Controls命名空间，已修；最终004通过"
+    },
+    {
+      "log": "Release/_validation/B08ChoiceDisplay/field-editing-page-004.log",
+      "cause": "观察internal范围类型导致测试宿主编译失败，改反射观察，不扩产品API"
+    },
+    {
+      "logs": [
+        "Release/_validation/B08ChoiceDisplay/field-editing-page-005.log",
+        "Release/_validation/B08ChoiceDisplay/field-editing-page-006.log"
+      ],
+      "cause": "初测试仅LogicalTree查高级展开控件为空；006确认圆度两Session均有但折叠；改完整可视/逻辑去重树查找，非空+真正展开强断言保留，007/008通过"
+    }
+  ],
+  "verification": {
+    "uiBuild": {
+      "log": "Release/_validation/B08ChoiceDisplay/ui-page-build-004.log",
+      "errors": 0,
+      "warnings": 6509
+    },
+    "solutionBuild": {
+      "log": "Release/_validation/B08ChoiceDisplay/solution-page-build-004.log",
+      "errors": 0,
+      "warnings": 6382,
+      "note": "含1次并行test输出复制重试warning，最终成功"
+    },
+    "fieldEditing": {
+      "log": "Release/_validation/B08ChoiceDisplay/field-editing-page-008.log",
+      "attempt": "attempt-013",
+      "exit": 0,
+      "passedLines": 37,
+      "assertions": "真实生产宿主构造、6模式仅Single可选、9字段顺序/正式默认及私有草稿、三范围同Presenter与左右Session/真实按钮均可见可用、禁用试用行、None/Single/Double显隐与历史保留、设计样例同链及ROI总闸、取消不污染配置"
+    },
+    "sharedChoice": "同版整合前build/run005，7组成功；运行时/设计时展示快照、禁用程序/鼠标/键盘/组提案、回调重绑关闭与历史保留",
+    "pending": "主仓正式/VS实际设计器及人工验收；Blob整窗确认、执行、保存重开仍由ROI/结果组合保护阻断；RuntimeEditorUiStage旧脚本要求S1 NativeThreshold控件，生命周期线独占更新"
+  },
+  "visualDifferences": [
+    "极性正式标签区间内为白/区间外为白与VM亮于背景/暗于背景不同；原枚举名/标签矛盾已交主线集中补证，不猜映射，不称整页VM视觉或语义达标",
+    "不改变正式选项键和算法；低高阈值、数量、面积整数和圆度/矩形度float使用原数值/双端模板及原订阅图标"
+  ],
+  "identities": [
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "79A772112FE15D960C010BCCEEE12BFA5C35F51A2D0E94BC2B591DE2139FB6B2"
+    },
+    {
+      "path": "scripts/verification/S4FieldEditingCases.cs",
+      "sha256": "1A2DD9AF7A7DB246DB1DCCECAF4703272EE7DBE6E106BE80214D37480A90AC14"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "6EBB740C90F731F53F1916A28340404F13A6FFB2CC35C9005C9A7A178EDCA7F9"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+      "sha256": "F55F700BD3511A66D740B6A3D5328467560B3A2AFEF9F88D0F19EF80F692C883"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/advanced-before-check.png",
+      "sha256": "061F0CE53E21D1C543EB6987B4EE8E6A2502FF584116CA0EB8897DE7D081150A"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/advanced-ranges.png",
+      "sha256": "02CBF35A4469D6924948C77B5EA76FB76A3E16C898D56D06365B47780E908D7F"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/design-sample.png",
+      "sha256": "5F3DD361923559B772F6A75A9F5777E471B0F6C9E831A1FCC68371D10ED50507"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/DoubleThreshold.png",
+      "sha256": "72E2C59A3FCBBEF873F14C5B97ECC5AB4CD0453EB6C2DB5A9FBF1831B2926330"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/None.png",
+      "sha256": "D0FE8064C6F7C3C0F524188FCC5CC3600166DB6C64C63C12A3CAC8F3C508230C"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/production-host.png",
+      "sha256": "5F3DD361923559B772F6A75A9F5777E471B0F6C9E831A1FCC68371D10ED50507"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/range-FilterAreaMin.png",
+      "sha256": "061F0CE53E21D1C543EB6987B4EE8E6A2502FF584116CA0EB8897DE7D081150A"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/range-FilterCircularityMin.png",
+      "sha256": "644E1E9C06FF33B78701E7A544D8D99435C38FBD84496B8A14D23B42F289E869"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/range-FilterRectangularityMin.png",
+      "sha256": "02CBF35A4469D6924948C77B5EA76FB76A3E16C898D56D06365B47780E908D7F"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/single.png",
+      "sha256": "2D5932182955962FD5EB8B43AD8E6B24D83DC602878DFFF9E75B21FBF3F888F2"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/page-previews/SingleThreshold.png",
+      "sha256": "5F3DD361923559B772F6A75A9F5777E471B0F6C9E831A1FCC68371D10ED50507"
+    }
+  ]
+}

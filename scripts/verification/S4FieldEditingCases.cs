@@ -273,15 +273,16 @@ internal static class S2DocumentEditingCases
             var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
             var definition=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");var settings=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings();
-            var access=definition.SettingsSchema;Require(access.Inputs.Count==54&&access.Inputs.Select(p=>p.Id).Distinct().Count()==54,"XML设置字段不完整或重复");
+            var access=definition.SettingsSchema;Require(access.Inputs.Count==53&&access.Inputs.Select(p=>p.Id).Distinct().Count()==53,"XML设置字段不完整或重复");
             VerifySettingsCandidate(definition,settings);
             using var xmlStream=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
             var xml=System.Xml.Linq.XDocument.Load(xmlStream);var rule=xml.Descendants("Judgment").Single(e=>(string?)e.Attribute("key")=="total-area");
             var key=(string)rule.Attribute("minimumFieldId")!;
             var initialFields=new FieldSettings(access.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+            VerifyBlobPage(xml,initialFields);
             var updated=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)definition.MaterializeSettings(initialFields.Apply(new Dictionary<string,ParameterSetting>{{key,new ConstantSetting(12d)}}).Materialize(new Dictionary<string,object?>()));
             Require(updated.Judgments.Single(r=>r.Key=="total-area").Minimum==12&&updated.Judgments.Single(r=>r.Key=="max-area")==settings.Judgments.Single(r=>r.Key=="max-area"),"嵌套同名最小值写错判定");
-            Console.WriteLine("通过：正式Runtime XML的54个唯一设置字段及嵌套判定精确读写，不创建旧Blob参数");
+            Console.WriteLine("通过：正式Runtime XML的53个唯一设置字段及嵌套判定精确读写，不创建旧Blob参数");
             var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
             var flow=new SunEyeVision.Workflow.Workflow("flow","字段草稿");flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);
             var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
@@ -292,17 +293,17 @@ internal static class S2DocumentEditingCases
             typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("HasPendingViewEdits",BindingFlags.Instance|BindingFlags.NonPublic)!
                 .SetValue(context,(Func<bool>)(()=>control.HasPendingEdits));
             control.BindDraft(context.DraftNode);SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.AttachDraftContext(control,context);
-            Show(control);var fields=Descendants(control).OfType<DeclaredFieldsView>().Single();
+            Show(control);var fields=Descendants(control).OfType<DeclaredFieldsView>().Single();fields.SelectedPageIndex=1;Pump();CaptureBlobPreview(control,"production-host");
             var thresholdId=access.Presentation!.Fields.Single(f=>f.DisplayName==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
             ((TextBox)fields.Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="201";
             int Threshold()=>((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
-            Require(Threshold()==128,"公共控件提前写入正式配置");
+            Require(Threshold()==100,"公共控件提前写入正式配置");
             var valid=control.TryValidateEditor(out var validationError);
-            if(!valid&&validationError=="当前阈值为纯界面试用，功能接入前不能执行或保存。")
+            if(!valid&&validationError=="ROI绘制、继承模式及结果显示组合尚未接入正式状态，当前窗口不能执行或保存。")
             {
-                Require(!context.TryCommitEditor(out _)&&Threshold()==128,"纯UI阈值绕过保护发布正式配置");
-                context.Discard();Require(Threshold()==128,"纯UI取消改变正式配置");edits.Close();
-                Console.WriteLine("通过：纯UI阈值明确拒绝正式确认，取消不改变现行配置；真实功能确认链待S2接通后验收。");
+                Require(!context.TryCommitEditor(out _)&&Threshold()==100,"未接入ROI组合绕过保护发布正式配置");
+                context.Discard();Require(Threshold()==100,"纯UI取消改变正式配置");edits.Close();
+                Console.WriteLine("通过：真实阈值编辑仅写私有草稿，未接入ROI组合仍阻断整窗确认，取消不改变正式配置。");
                 Console.WriteLine("字段组件及现行UI阶段保护检查通过，不代表Blob功能确认、保存重开或人工验收完成。");
                 return 0;
             }
@@ -315,6 +316,84 @@ internal static class S2DocumentEditingCases
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
+    }
+    private static void VerifyBlobPage(System.Xml.Linq.XDocument xml,FieldSettings initial)
+    {
+        string Id(string name)=>(string)xml.Descendants("Parameter").Single(e=>(string?)e.Attribute("id")==name).Attribute("fieldId")!;
+        var expected=new Dictionary<string,object>{{"Threshold",100L},{"UpperThreshold",150L},{"BlobCountLimit",100L},
+            {"FilterAreaMin",10L},{"FilterAreaMax",999999999L},{"FilterCircularityMin",.1d},{"FilterCircularityMax",1d},
+            {"FilterRectangularityMin",.1d},{"FilterRectangularityMax",1d}};
+        using(var view=ToolRegistry.CreateSettingsView("BlobAnalysis",initial,new(ReferenceOptions:ReferenceFieldOptions.Empty)))
+        {
+            Show(view.View);var fields=Descendants(view.View).OfType<DeclaredFieldsView>().Single();fields.SelectedPageIndex=1;Pump();
+            Require(!Descendants(view.View).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls>().Any(),"真实页面仍保留S1阈值替身");
+            foreach(var (name,value) in expected)
+            {
+                var field=fields.Fields.Single(f=>f.FieldId==Id(name));
+                Require(field.Setting is ConstantSetting c&&Equals(c.Value,value),"九字段初值没有消费正式声明："+name);
+            }
+            Require(fields.Fields.Where(f=>expected.Keys.Select(Id).Contains(f.FieldId)).Select(f=>f.FieldId).SequenceEqual(expected.Keys.Select(Id)),"九字段声明顺序被页面替身改写");
+            var placeholders=NativeDescendants(view.View).OfType<DeclaredFieldEditor>().Where(e=>e.FieldId.StartsWith("ui-only-run.")).ToArray();
+            Require(placeholders.Length>0&&placeholders.All(e=>!e.IsEnabled&&e.ToolTip is string),"未接入试用行仍可误编辑或没有说明");
+            var mode=fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode"));var combo=(ComboBox)mode.InputElement!;
+            combo.IsDropDownOpen=true;Pump();combo.UpdateLayout();
+            Require(combo.Items.Count==6&&Enumerable.Range(0,6).Count(i=>((ComboBoxItem)combo.ItemContainerGenerator.ContainerFromIndex(i)).IsEnabled)==1,
+                "Blob没有保留六项且仅Single可用的原下拉容器");
+            CaptureBlobPreview(view.View,"single");combo.IsDropDownOpen=false;
+            Require(!mode.TrySetConstant("None")&&!mode.TrySetConstant("DoubleThreshold")&&!mode.TrySetConstant("AutoThreshold"),"禁用正式项/展示项写入Blob草稿");
+            Require(mode.TrySetConstant("SingleThreshold"),"可用同值不能修复拒绝状态");
+            foreach(var name in new[]{"IsCircularityFilterEnabled","IsRectangularityFilterEnabled"})Require(fields.Fields.Single(f=>f.FieldId==Id(name)).TrySetConstant(true),"正式过滤开关不可用");
+            var expanders=NativeDescendants(view.View).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeAdvancedPresenter>().ToArray();
+            Require(expanders.Length>0,"真实高级展开控件未进入原可视树");foreach(var advanced in expanders)advanced.IsExpanded=true;Pump();
+            Require(expanders.All(e=>e.IsExpanded),"高级展开事件未生效");
+            CaptureBlobPreview(view.View,"advanced-before-check");
+            foreach(var (lower,upper) in new[]{("FilterAreaMin","FilterAreaMax"),("FilterCircularityMin","FilterCircularityMax"),("FilterRectangularityMin","FilterRectangularityMax")})
+            {
+                var left=fields.Fields.Single(f=>f.FieldId==Id(lower));var right=fields.Fields.Single(f=>f.FieldId==Id(upper));
+                var range=left.View;var native=range.GetType().GetProperty("NativeView")?.GetValue(range);
+                Console.WriteLine($"范围检查 {lower} 类型={range.GetType().Name} 同视图={ReferenceEquals(left.View,right.View)} 可见={range.IsVisible}/{range.Visibility} 左订阅={native?.GetType().GetProperty("SubscribeDataLeft")?.GetValue(native) is not null} 右订阅={native?.GetType().GetProperty("SubscribeDataRight")?.GetValue(native) is not null}");
+                Require(ReferenceEquals(left.View,right.View)&&range.GetType().Name=="NativeRangePresenter"&&range.IsVisible
+                    &&native?.GetType().GetProperty("SubscribeDataLeft")?.GetValue(native) is not null
+                    &&native.GetType().GetProperty("SubscribeDataRight")?.GetValue(native) is not null,
+                    "正式范围两端不是同一真实范围/订阅组合："+lower);
+                var types=NativeDescendants(left.View).OfType<ToggleButton>().Where(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path is "IsSubscribeLeft" or "IsSubscribeRight").ToArray();
+                Require(types.Length==2&&types.All(button=>button.IsEnabled&&button.IsVisible),"正式范围两侧原订阅按钮不可用："+lower);
+                range.BringIntoView();Pump();CaptureBlobPreview(view.View,"range-"+lower);
+            }
+            CaptureBlobPreview(view.View,"advanced-ranges");
+            var next=new Dictionary<string,object>{{"Threshold",101L},{"UpperThreshold",151L},{"BlobCountLimit",120L},
+                {"FilterAreaMin",20L},{"FilterAreaMax",100000000L},{"FilterCircularityMin",.2d},{"FilterCircularityMax",.9d},
+                {"FilterRectangularityMin",.3d},{"FilterRectangularityMax",.8d}};
+            foreach(var (name,value) in next)Require(fields.Fields.Single(f=>f.FieldId==Id(name)).TrySetConstant(value),"正式数值接纳失败："+name);
+            var accepted=view.CaptureAcceptedFields();foreach(var (name,value) in next)Require(accepted.Read(Id(name)) is ConstantSetting c&&Equals(c.Value,value),"正式草稿未保存九字段："+name);
+            Require(initial.Get<long>(Id("Threshold"))==100&&!view.TryCapture(out _,out var error)&&error.Contains("ROI"),"接九字段误撤ROI组合整窗保护或污染初值");
+        }
+        foreach(var name in new[]{"None","SingleThreshold","DoubleThreshold"})
+        {
+            using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",initial.Apply(new Dictionary<string,ParameterSetting>{{Id("SegmentationMode"),new ConstantSetting(name)}}),new(ReferenceOptions:ReferenceFieldOptions.Empty));
+            Show(view.View);var fields=Descendants(view.View).OfType<DeclaredFieldsView>().Single();fields.SelectedPageIndex=1;Pump();
+            DeclaredFieldAccess Field(string id)=>fields.Fields.Single(f=>f.FieldId==Id(id));
+            Require(Field("SegmentationMode").Setting is ConstantSetting {Value:string saved}&&saved==name,"历史模式被打开页面自动替换");
+            Require(Field("Type").View.IsVisible==(name!="DoubleThreshold")&&Field("Threshold").View.IsVisible==(name!="None")
+                &&Field("UpperThreshold").View.IsVisible==(name=="DoubleThreshold"),"None/Single/Double原厂显隐不一致："+name);
+            CaptureBlobPreview(view.View,name);
+            Require(!view.TryCapture(out _,out _),"不可用历史模式或ROI未接通窗错误确认");
+        }
+        var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
+        using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options))
+        {
+            Show(preview);var fields=(DeclaredFieldsView)preview.Content;fields.SelectedPageIndex=1;Pump();
+            Require(fields.Fields.Count==53&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
+            CaptureBlobPreview(preview,"design-sample");
+        }
+        Console.WriteLine("通过：真实Blob六项仅Single可用，九字段正式默认/整数范围/草稿写入、原三模式显隐、历史保留及ROI整窗保护");
+    }
+    private static void CaptureBlobPreview(FrameworkElement view,string name)
+    {
+        view.UpdateLayout();Pump();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(view.ActualWidth),(int)Math.Ceiling(view.ActualHeight),96,96,PixelFormats.Pbgra32);
+        bitmap.Render(view);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));
+        var directory=Path.GetFullPath(Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"../../_validation/B08ChoiceDisplay/page-previews"));Directory.CreateDirectory(directory);
+        using var stream=File.Create(Path.Combine(directory,name+".png"));png.Save(stream);
     }
     private sealed record TreeNode(string Name,IReadOnlyList<TreeNode> EnumEntrysA)
     {public bool IsChecked {get;set;}}
@@ -571,7 +650,7 @@ internal static class S2DocumentEditingCases
             calls++;
             Require(candidate.Get<long>(low)==73
                 &&candidate.Read(high) is ReferenceSetting {Reference.NodeId:"producer",Conversion:BindingConversion.Automatic}
-                &&draft.CaptureFields().Get<long>(low)==128,
+                &&draft.CaptureFields().Get<long>(low)==100,
                 "宿主没有取得完整常量和引用候选，或预检前污染草稿");
             if(reject)throw new InvalidOperationException("整组候选拒绝");
             if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial()));
@@ -584,14 +663,14 @@ internal static class S2DocumentEditingCases
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"整组候选拒绝"}){}
         Require(calls==1&&view.TryCapture(out var captured,out _)
             &&view.AcceptedFieldOrder.Count==0
-            &&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
+            &&captured.Get<long>(low)==100&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "混合常量和引用拒绝后缓存已污染");
         reject=false;rebind=true;
         try{Apply();throw new Exception("候选回调重绑仍接纳旧提案");}
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException){}
-        Require(draft.CaptureFields().Get<long>(low)==128
+        Require(draft.CaptureFields().Get<long>(low)==100
             &&view.AcceptedFieldOrder.Count==0
-            &&view.TryCapture(out captured,out _)&&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
+            &&view.TryCapture(out captured,out _)&&captured.Get<long>(low)==100&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "候选回调重绑污染旧草稿或新视图");
         view.Bind(draft,options with{AcceptCandidate=null});
         Apply();

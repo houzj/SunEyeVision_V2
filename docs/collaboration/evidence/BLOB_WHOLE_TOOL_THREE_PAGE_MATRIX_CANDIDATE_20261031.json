@@ -42,7 +42,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "OutputMaskImageGroup",
@@ -70,7 +82,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "InputMaskImageGroup",
@@ -98,7 +122,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RoiSelectGroup",
@@ -126,7 +162,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RoiType",
@@ -158,7 +206,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "InheritWayGroup",
@@ -186,7 +246,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "ExternROITypeGroup",
@@ -214,7 +286,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "AssistGroup",
@@ -245,7 +329,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "ThresholdType",
@@ -291,7 +387,21 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "部分可交付：六项显示/旧值保留/仅Single准入；其余模式继续待证或明确未实现",
+      "acceptanceEntryIds": [
+        "field",
+        "nine",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "Polarity",
@@ -323,7 +433,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "LowThreshold",
@@ -355,7 +481,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "HightThreshold",
@@ -387,7 +529,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "ThresholdRangArea",
@@ -417,7 +575,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "Softness",
@@ -447,7 +617,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证且未实现：软阈值参数模型/条件/冻结/算法整体缺失，不逐项解闸",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SoftLeftRatio",
@@ -477,7 +659,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证且未实现：软阈值参数模型/条件/冻结/算法整体缺失，不逐项解闸",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SoftRightRatio",
@@ -507,7 +701,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证且未实现：软阈值参数模型/条件/冻结/算法整体缺失，不逐项解闸",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SoftLowRatio",
@@ -537,7 +743,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证且未实现：软阈值参数模型/条件/冻结/算法整体缺失，不逐项解闸",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SoftHighRatio",
@@ -567,7 +785,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证且未实现：软阈值参数模型/条件/冻结/算法整体缺失，不逐项解闸",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "FindNum",
@@ -597,7 +827,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "HoleMinArea",
@@ -625,7 +871,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByArea",
@@ -657,7 +915,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "RangArea",
@@ -688,7 +962,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "BlobContourType",
@@ -720,7 +1010,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：原绘制图/轮廓三态无正式同义输出；不得复用灰度/布尔冒充",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "publication",
+        "window"
+      ],
+      "missingAcceptance": "须先定义真实输出及资源消费者，再补逐像素/顺序/Domain/租约测试"
     },
     {
       "originalItem": "BolbImageEnable",
@@ -750,7 +1053,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：原绘制图/轮廓三态无正式同义输出；不得复用灰度/布尔冒充",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "publication",
+        "window"
+      ],
+      "missingAcceptance": "须先定义真实输出及资源消费者，再补逐像素/顺序/Domain/租约测试"
     },
     {
       "originalItem": "BinaryImageEnable",
@@ -780,7 +1096,21 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批接线候选：已有正式模型和执行，但页面被禁用临时项替换；先统一原语义再成片接回",
+      "acceptanceEntryIds": [
+        "nine",
+        "algorithm",
+        "publication",
+        "design"
+      ],
+      "missingAcceptance": "新增真实Blob页面写入/取消/保存重开/冻结消费断言；现有底层测试不能替代"
     },
     {
       "originalItem": "Expert",
@@ -825,7 +1155,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批复用：公共高级展开；子项业务状态另判",
+      "acceptanceEntryIds": [
+        "window",
+        "field",
+        "design"
+      ],
+      "missingAcceptance": "整工具原父子条件与页签切换下的可见性组合需核"
     },
     {
       "originalItem": "SelectByHistInfo",
@@ -855,7 +1198,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByBoxAngle",
@@ -886,7 +1241,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangBoxAngle",
@@ -916,7 +1283,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByRectWidth",
@@ -947,7 +1326,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangRectWidth",
@@ -977,7 +1368,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByRectHeight",
@@ -1008,7 +1411,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangRectHeight",
@@ -1038,7 +1453,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByPerimeter",
@@ -1069,7 +1496,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangPerimeter",
@@ -1099,7 +1538,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByShortAxis",
@@ -1130,7 +1581,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangShortAxis",
@@ -1160,7 +1623,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByLongAxis",
@@ -1191,7 +1666,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangLongAxis",
@@ -1221,7 +1708,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SelectByCircularuty",
@@ -1254,7 +1753,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "RangCircularity",
@@ -1287,7 +1802,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "SelectByRectangularity",
@@ -1320,7 +1851,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "RangRectangularity",
@@ -1353,7 +1900,23 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批可交付候选：复用现正式字段及控件；统一核默认/条件和算法差异后验收",
+      "acceptanceEntryIds": [
+        "nine",
+        "range",
+        "behavior",
+        "index",
+        "algorithm",
+        "design"
+      ],
+      "missingAcceptance": "仍须整工具同一配置串联及原条件状态组合；HightThreshold仅显示保值，非执行准入"
     },
     {
       "originalItem": "SelectByCentraBias",
@@ -1384,7 +1947,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "RangCenterBias",
@@ -1414,7 +1989,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "AxisRatioEnable",
@@ -1445,7 +2032,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "AxisRatioRange",
@@ -1475,7 +2074,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SortFeature",
@@ -1507,7 +2118,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "SortMode",
@@ -1539,7 +2162,21 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批接线候选：已有正式模型和执行，但页面被禁用临时项替换；先统一原语义再成片接回",
+      "acceptanceEntryIds": [
+        "nine",
+        "algorithm",
+        "publication",
+        "design"
+      ],
+      "missingAcceptance": "新增真实Blob页面写入/取消/保存重开/冻结消费断言；现有底层测试不能替代"
     },
     {
       "originalItem": "connectivity",
@@ -1569,7 +2206,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "MaxAreaInnerRectNum",
@@ -1599,7 +2248,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "OverlapRatio",
@@ -1629,7 +2290,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "MaxOutPixelNumEnable",
@@ -1660,7 +2333,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "MaxOutPixelNum",
@@ -1690,7 +2375,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：无已审定正式等价，纳入整工具设计，当前不开放",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     },
     {
       "originalItem": "OKWhenNumIsZero",
@@ -1720,7 +2417,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BlobNumLimitEnable",
@@ -1752,7 +2462,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangBlobNumLimit",
@@ -1782,7 +2505,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BlobAreaLimitEnable",
@@ -1814,7 +2550,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangBlobAreaLimit",
@@ -1844,7 +2593,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BlobTotalAreaLimitEnable",
@@ -1876,7 +2638,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangBlobTotalAreaLimit",
@@ -1906,7 +2681,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "",
@@ -1948,7 +2736,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "本批复用：公共高级展开；子项业务状态另判",
+      "acceptanceEntryIds": [
+        "window",
+        "field",
+        "design"
+      ],
+      "missingAcceptance": "整工具原父子条件与页签切换下的可见性组合需核"
     },
     {
       "originalItem": "CentroidXLimitEnable",
@@ -1979,7 +2780,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangCentroidXLimit",
@@ -2009,7 +2823,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "CentroidYLimitEnable",
@@ -2040,7 +2867,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangCentroidYLimit",
@@ -2070,7 +2910,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "AngleLimitEnable",
@@ -2101,7 +2954,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangAngleLimit",
@@ -2131,7 +2997,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "CenterXLimitEnable",
@@ -2162,7 +3041,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangCenterXLimit",
@@ -2192,7 +3084,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "CenterYLimitEnable",
@@ -2223,7 +3128,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangCenterYLimit",
@@ -2253,7 +3171,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BoxHeightLimitEnable",
@@ -2284,7 +3215,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BoxHeightLimit",
@@ -2314,7 +3258,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BoxWidthLimitEnable",
@@ -2345,7 +3302,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BoxWidthLimit",
@@ -2375,7 +3345,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "PerimeterLimitEnable",
@@ -2406,7 +3389,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangPerimeterLimit",
@@ -2436,7 +3432,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "LongAxisLimitEnable",
@@ -2467,7 +3476,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangLongAxisLimit",
@@ -2497,7 +3519,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "ShortAxisLimitEnable",
@@ -2528,7 +3563,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangShortAxisLimit",
@@ -2558,7 +3606,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "CircularityLimitEnable",
@@ -2591,7 +3652,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangCircularityLimit",
@@ -2623,7 +3697,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RectangularityLimitEnable",
@@ -2656,7 +3743,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "RangRectangularityLimit",
@@ -2688,7 +3788,20 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "待证：页面为UI-only；部分正式计算可复用，但原聚合/空集/默认及端点未定，不能直接等价接回",
+      "acceptanceEntryIds": [
+        "algorithm",
+        "field",
+        "publication"
+      ],
+      "missingAcceptance": "新增每项判定的空集/单体/多体/启停/边界及真实页面保存冻结测试"
     },
     {
       "originalItem": "BlobFiled",
@@ -2719,7 +3832,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "BlobMaxAreaInnerRect",
@@ -2750,7 +3875,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "CheckZone",
@@ -2781,7 +3918,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "MatchLocation",
@@ -2812,7 +3961,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "FixtureInitPoint",
@@ -2846,7 +4007,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "FixtureRunPoint",
@@ -2880,7 +4053,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "ResutlText",
@@ -2911,7 +4096,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "BlindZone",
@@ -2942,7 +4139,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "CheckZoneAnnular",
@@ -2973,7 +4182,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "缺基础：Blob正式图文配置owner/保存冻结/同次结果图层消费者缺失；保留占位",
+      "acceptanceEntryIds": [
+        "window",
+        "publication"
+      ],
+      "missingAcceptance": "公共样例已存在；缺真实Blob设置→同次publication图文层整链测试"
     },
     {
       "originalItem": "TextDisplayGroup",
@@ -3001,7 +4222,19 @@
         "来源失效/恢复及旧回调退役",
         "复制撤销重做保存重开",
         "同次publication输出与资源生命周期"
-      ]
+      ],
+      "originalEvidenceCertainty": {
+        "declaration": "已证：保存的原XML条目及默认/条件原文",
+        "runtimeFinalState": "未知：本矩阵未进行原厂运行证实",
+        "algorithmEquivalence": "未知或明确非等价；不得按名称推定"
+      },
+      "currentProductionProtection": "Blob整窗ROI/继承/结果显示保护仍生效",
+      "batchDecision": "按共享组成员逐项决定，不能将组计为贯通",
+      "acceptanceEntryIds": [
+        "window",
+        "design"
+      ],
+      "missingAcceptance": "需补该项真实宿主→冻结→执行→输出的定向断言；现有公共测试不覆盖原语义"
     }
   ],
   "linkedGroups": [
@@ -3022,7 +4255,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Assist0",
@@ -3038,7 +4282,19 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "已有正式候选对应，不等价：复用前核原语义和组条件",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "field",
+            "algorithm",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "SelectWay",
@@ -3052,7 +4308,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "CorrectInfo",
@@ -3068,7 +4335,19 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "已有正式候选对应，不等价：复用前核原语义和组条件",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "field",
+            "algorithm",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "OriginPoint",
@@ -3082,7 +4361,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "BaseX",
@@ -3096,7 +4386,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "BaseY",
@@ -3110,7 +4411,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Angle",
@@ -3124,7 +4436,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ScaleX",
@@ -3138,7 +4461,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ScaleY",
@@ -3152,7 +4486,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunPoint",
@@ -3166,7 +4511,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunPointBaseX",
@@ -3180,7 +4536,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunPointBaseY",
@@ -3194,7 +4561,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunAngle",
@@ -3208,7 +4586,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunScaleX",
@@ -3222,7 +4611,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RunScaleY",
@@ -3236,7 +4636,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3260,7 +4671,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ExternRoiSelect",
@@ -3274,7 +4696,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ExternRoiType",
@@ -3288,7 +4721,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "InputBlindPolygonString",
@@ -3302,7 +4746,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3326,7 +4781,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Tab_Image Input",
@@ -3340,7 +4806,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ImageSource",
@@ -3356,7 +4833,20 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "本批可复用：真实图像输入选择/冻结/退役；原候选资格仍待证",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "image",
+            "cross",
+            "publication",
+            "design"
+          ],
+          "missingAcceptance": "原候选构建最终条件及原保存失效行为未证；现有跨文档仅两种转换"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3380,7 +4870,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "InheritWay",
@@ -3394,7 +4895,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Region",
@@ -3410,7 +4922,19 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "已有正式候选对应，不等价：复用前核原语义和组条件",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "field",
+            "algorithm",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROICenterX",
@@ -3424,7 +4948,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROICenterY",
@@ -3438,7 +4973,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIWidth",
@@ -3452,7 +4998,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIHeight",
@@ -3466,7 +5023,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAngle",
@@ -3480,7 +5048,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Region2",
@@ -3496,7 +5075,19 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "已有正式候选对应，不等价：复用前核原语义和组条件",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "field",
+            "algorithm",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusCenterX",
@@ -3510,7 +5101,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusCenterY",
@@ -3524,7 +5126,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusInnerRadius",
@@ -3538,7 +5151,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusOuterRadius",
@@ -3552,7 +5176,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusStartAngle",
@@ -3566,7 +5201,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAnnulusAngleExtend",
@@ -3580,7 +5226,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3604,7 +5261,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "ROIAreaType",
@@ -3618,7 +5286,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "MaskImage",
@@ -3632,7 +5311,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3656,7 +5346,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "OutputMaskImage",
@@ -3670,7 +5371,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3694,7 +5406,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "RoiSelect",
@@ -3708,7 +5431,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3732,7 +5466,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "文本显示",
@@ -3746,7 +5491,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Content",
@@ -3760,7 +5516,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "OKColor",
@@ -3774,7 +5541,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "NGColor",
@@ -3788,7 +5566,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "CharacterSize",
@@ -3802,7 +5591,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "Transparency",
@@ -3816,7 +5616,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "PositionX",
@@ -3830,7 +5641,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         },
         {
           "name": "PositionY",
@@ -3844,7 +5666,18 @@
             "真实组内条件/默认与原XML一致",
             "正式owner保存冻结及执行",
             "切换取消关闭与旧回调退役"
-          ]
+          ],
+          "originalEvidenceCertainty": {
+            "declaration": "原Group.xml结构及条件已保存",
+            "runtimeSemantics": "unknown，除已明确候选对应不追加推断"
+          },
+          "batchDecision": "缺基础/待证：UI角色或结构成员，无已审定正式消费；保留unknown",
+          "currentProductionProtection": "整窗保护；共享控件独立过测不代表Blob接通",
+          "acceptanceEntryIds": [
+            "window",
+            "design"
+          ],
+          "missingAcceptance": "先确定本成员正式owner/保存/冻结及消费，补真实Blob整链测试"
         }
       ],
       "evidencePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -3889,5 +5722,82 @@
     "原特征×方向排序与当前合并枚举不同；二值/排序正式行被临时项替换",
     "全部正式判定被隐藏；原高级判定缺字段/执行，不能由真实结果值冒称已接",
     "图文配置缺正式owner/冻结/同次消费者；角度/轴输出定义未证"
-  ]
+  ],
+  "acceptanceEntryCatalog": {
+    "field": {
+      "source": "scripts/verification/S4FieldEditingCases.cs",
+      "scope": "既有控件写入/拒绝/退役，不能证明原算法",
+      "stage": "S4",
+      "track": "FieldEditing"
+    },
+    "behavior": {
+      "source": "scripts/verification/S4FieldEditingCases.cs:332",
+      "environment": {
+        "B08_REFERENCE_CASE_SCOPE": "BehaviorUi"
+      },
+      "scope": "真实宿主字段政策；不是全部原参数",
+      "stage": "S4",
+      "track": "FieldEditing"
+    },
+    "cross": {
+      "source": "scripts/verification/S4FieldEditingCases.cs:332",
+      "environment": {
+        "B08_REFERENCE_CASE_TRANSITION": "A-to-B或reopen-A分别运行",
+        "B08_REFERENCE_CASE_KINDS": "image-combo",
+        "B08_REFERENCE_CASE_SCOPE": "CrossDocument"
+      },
+      "scope": "真实图像Combo跨文档旧回调",
+      "stage": "S4",
+      "track": "FieldEditing"
+    },
+    "image": {
+      "source": "scripts/verification/S4ImageInputSelectionCases.cs",
+      "scope": "图像候选/失效/恢复/重入；不是原资格证明",
+      "stage": "S4",
+      "track": "ImageInputSelection"
+    },
+    "nine": {
+      "source": "scripts/verification/S4BlobParameterProductionCases.cs:31",
+      "scope": "真实九数值默认/存储/生产；新增原参数必须补测试",
+      "stage": "S4",
+      "track": "BlobParameterProduction"
+    },
+    "range": {
+      "source": "scripts/verification/S4BlobRangeLayoutCases.cs:37",
+      "scope": "已有双端布局与引用；不覆盖新筛选业务",
+      "stage": "S4",
+      "track": "BlobRangeLayout"
+    },
+    "index": {
+      "source": "scripts/verification/S4NumericIndexProductionCases.cs:29",
+      "scope": "显式整数引用政策及真实执行；不推断原多值语义",
+      "stage": "S4",
+      "track": "NumericIndexProduction"
+    },
+    "algorithm": {
+      "source": "scripts/verification/S3BlobRuntimeCases.cs",
+      "scope": "现有HALCON链/准入；未实现参数无覆盖",
+      "stage": "S3",
+      "track": "RuntimeAlgorithm"
+    },
+    "publication": {
+      "source": "scripts/verification/S4BlobResultWorkspaceCases.cs:64",
+      "scope": "真实表/同次publication/帧及退役；不证明新结果特征",
+      "stage": "S4",
+      "track": "BlobResultWorkspace"
+    },
+    "window": {
+      "source": "scripts/verification/O06WindowPresentationCases.cs",
+      "scope": "公共控件独立组装；不能替代Blob正式接入",
+      "stage": "S4",
+      "track": "WindowPresentation"
+    },
+    "design": {
+      "source": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "scope": "独立设计组装自动轨，不等于实际VS设计器",
+      "stage": "S4",
+      "track": "DesignTime"
+    }
+  },
+  "reviewStatus": "统一设计输入v2；逐项分类非批准实施清单；引用既有轨道仅说明可复用覆盖，未新执行"
 }

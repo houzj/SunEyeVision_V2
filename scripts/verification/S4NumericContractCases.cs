@@ -25,6 +25,7 @@ internal static class S2DocumentEditingCases
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             foreach(var source in new[]{.125,.135,0d,1d}){Scalar(source);Range(source,0);Range(source,1);}
             ScalarRejected();ScalarProposalRejected();ScalarInvalid();ScalarRetired();RangeRetired(0);RangeRetired(1);
+            foreach(var raw in new[]{"1.004","-0.004"}){RawBounds(raw,false);RawBounds(raw,true);}
             if(Environment.GetEnvironmentVariable("S4_NUMERIC_LOADED")=="1"){Loaded(false,false);Loaded(true,false);Loaded(false,true);Loaded(true,true);Loaded(true,true,1);}
             var file=System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"numeric-contract-report.json");
             System.IO.File.WriteAllText(file,JsonSerializer.Serialize(Rows,new JsonSerializerOptions{WriteIndented=true}));
@@ -149,6 +150,17 @@ internal static class S2DocumentEditingCases
             }
         }
         finally{window.Close();Pump();}
+    }
+    private static void RawBounds(string raw,bool range)
+    {
+        var writes=0;var accepted=.25d;
+        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==0?.25d:1d))),values=>{writes++;accepted=(double)((ConstantSetting)values["low"]).Value!;},Options(.125));
+        Prepare(fields);var field=fields.Fields.First();var text=(TextBox)field.InputElement!;
+        var leaf=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().First();
+        var original=new SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule{Container=leaf}.Validate(raw,System.Globalization.CultureInfo.InvariantCulture);
+        text.Text=raw;var result=field.TryCommitPending();
+        Check((range?"range":"scalar")+"原始越界不可借舍入进入范围"+raw,!original.IsValid&&!result&&writes==0&&accepted==.25d&&text.Text==raw,
+            new{Raw=raw,OriginalRangeRuleValid=original.IsValid,result,writes,accepted,RetainedRaw=text.Text,field.Error,fields.IsLoaded,HasPresentationSource=PresentationSource.FromVisual(fields)!=null});
     }
     private static void Prepare(FrameworkElement element)
     {element.Measure(new Size(650,500));element.Arrange(new Rect(0,0,650,500));element.UpdateLayout();foreach(var item in Desc(element).OfType<Control>().ToArray())item.ApplyTemplate();element.UpdateLayout();}

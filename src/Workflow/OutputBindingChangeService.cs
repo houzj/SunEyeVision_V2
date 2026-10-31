@@ -179,6 +179,8 @@ public sealed class OutputBindingChangeService
         return GetCandidateNodeIds(workflowId, targetId).Where(predecessors.Contains).ToArray();
     }
     /// <summary>Apply the same frozen manual-source eligibility used at acceptance and execution.</summary>
+    public static bool IsOrdinaryNumericParameter(Port port)
+        => port.Type.Shape==ValueShape.Scalar && port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
     public static Func<OutputReference,bool> CaptureManualParameterEligibility(Workflow workflow,string targetId)
     {
         ArgumentNullException.ThrowIfNull(workflow);

@@ -134,7 +134,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         var scope=new BindingScopeSnapshot(new(scopeId,node.Id),workflow.ExecutionOwner.Id,0,
             declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
             Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),variables?.CaptureBindingSources());
-        if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId))
+        if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId && OutputBindingChangeService.IsOrdinaryNumericParameter(port)))
             scope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,scopeId,node.Id).Validate);
         var target=node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId);
         var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,scope,setting.Conversion);
@@ -148,7 +148,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         var scope=new BindingScopeSnapshot(new(workflow.Id,node.Id),workflow.ExecutionOwner.Id,0,
             declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
             Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),globals.CaptureBindingSources());
-        if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId))
+        if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId && OutputBindingChangeService.IsOrdinaryNumericParameter(port)))
             scope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,workflow.Id,node.Id).Validate);
         _=RuntimeVariableBindings.Compile(setting,node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId),globals,scope);
     }
@@ -204,7 +204,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             if(node.RuntimeConfiguration is {} runtime)
             {
                 var manualScope=compilationScope.WithReferenceQualification(new ManualReferenceQualification(workflow,_scope,node.Id).Validate);
-                var settingsIds=runtime.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+                var settingsIds=runtime.SettingsSchema.Inputs.Where(OutputBindingChangeService.IsOrdinaryNumericParameter).Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
                 var variablePlans=new Dictionary<string,RuntimeVariableBindingPlan>(StringComparer.Ordinal);
                 foreach(var (id,setting) in runtime.Fields.Capture().Where(pair=>pair.Value is VariableSetting))
                 {

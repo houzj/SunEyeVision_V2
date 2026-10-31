@@ -156,6 +156,7 @@ internal static class S2DocumentEditingCases
                 f.DeleteEdges(edge);Require(f.Relation()==before,"断边删除或改写引用身份");
                 Require(OutputBindingChangeService.GetExecutionInputIssues(f.Flow,f.Flow.Id).ContainsKey(f.Target.Id),"断边未显示失效");
                 // Test qualification before another root run can stale the otherwise valid published identities.
+                Require((prior.NodeResults[f.Source.Id].Result as DeclaredOutputSnapshot)?.ExecutionIdentity?.IsCurrent==true,"断边实验的已发布来源身份已失效，不能据此判定资格拒绝");
                 using var debugOwner=new OwnerLease();Reject(()=>{using var unexpected=f.Debug(f.Host.BeginEdit(f.Flow.Id,f.Target.Id),debugOwner.Owner,prior);});
                 using(var failed=f.Run())Require(!failed.Success,"断边后仍使用旧输出运行");
                 f.Host.Undo();Require(f.Flow.Connections.Any(item=>ReferenceEquals(item,edge))&&f.Relation()==before,"Undo未恢复同一边/引用");
@@ -195,6 +196,7 @@ internal static class S2DocumentEditingCases
                 using var f=new Fixture();var edge=f.Connect(f.Source,f.Target);f.Accept(f.Ref(f.Source));using var run=f.Run();f.Expect(run,5);
                 var draft=f.Host.BeginEdit(f.Flow.Id,f.Target.Id);using var owner=new OwnerLease();using var invocation=f.Debug(draft,owner.Owner,run);
                 f.DeleteEdges(edge);using(var result=Wait(()=>invocation.ExecuteAsync()))Require(result.IsSuccess,"冻结调试因正式断边被重新解释");
+                Require((run.NodeResults[f.Source.Id].Result as DeclaredOutputSnapshot)?.ExecutionIdentity?.IsCurrent==true,"新调试拒绝前的原来源身份已失效");
                 Reject(()=>{using var unexpected=f.Debug(f.Host.BeginEdit(f.Flow.Id,f.Target.Id),owner.Owner,run);});
             });
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"manual-reference-report.json"),JsonSerializer.Serialize(

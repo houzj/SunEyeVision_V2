@@ -1,10 +1,10 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','ParameterValues','BlobParameterProduction','ManualReferenceQualification','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','ParameterValues','BlobParameterProduction','ManualReferenceQualification','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 # Formal validation must run from the primary checkout, before creating any output.
 $gitDir = git -C $root rev-parse --absolute-git-dir
@@ -143,6 +143,7 @@ if($Track -eq 'VariableDialog'){$source='S4VariableDialogCases.cs'}
 if($Track -eq 'VariableFields'){$source='S4VariableReferenceCases.cs'}
 if($Track -eq 'ParameterValues'){$source='S4ParameterCurrentValueCases.cs'}
 if($Track -eq 'BlobParameterProduction'){$source='S4BlobParameterProductionCases.cs'}
+if($Track -eq 'BlobRangeLayout'){$source='S4BlobRangeLayoutCases.cs'}
 if($Track -eq 'ManualReferenceQualification'){$source='S4ManualReferenceQualificationCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
@@ -217,6 +218,7 @@ if($Track -eq 'ManualReferenceQualification')
     $receipt.probe=$manualProbeEvidence
     $receipt.caseReport=Join-Path $logDir 'manual-reference-report.json'
 }
+if($Track -eq 'BlobRangeLayout'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-range-layout-report.json'}
 if($Track -eq 'BlobParameterProduction'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-parameter-production-report.json'}
 if($Track -in @('RuntimeEditor','RuntimeEditorUiStage')){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'ui-stage-report.json'}
 $receipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8

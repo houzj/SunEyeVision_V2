@@ -223,7 +223,12 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         RequestClose();
         if(_suspended||!CanBrowse||generation!=_variableGeneration||acceptance!=_state.AcceptanceVersion||uiGeneration!=_uiGeneration||candidates!=_candidateGeneration)return;
         var request=new VariableSelectionRequest(this,generation,acceptance,uiGeneration,candidates,items,index);_variableRequest=request;
-        try{_selectVariable(request);}catch{request.Dispose();throw;}
+        try{_selectVariable(request);}
+        catch(Exception failure)
+        {
+            try{request.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     internal bool IsVariableRequestCurrent(VariableSelectionRequest request,long generation,long acceptance,long uiGeneration,long candidates)
         =>!_suspended&&CanBrowse&&_candidatesValid&&ReferenceEquals(_variableRequest,request)&&generation==_variableGeneration
@@ -234,13 +239,23 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(request.IsIndex)
         {
             if(DisplaySetting is not {} source)return false;
-            try{return Submit(ReferenceSettingParts.WithSelection(source,new BindingSelection.AtVariable(item.Reference)));}
-            finally{request.Dispose();}
+            return SubmitAndRetire(request,()=>Submit(ReferenceSettingParts.WithSelection(source,new BindingSelection.AtVariable(item.Reference))));
         }
         var selection=DisplaySetting is {} old&&item.Reference.Type.Shape==ValueShape.Sequence?ReferenceSettingParts.Selection(old):BindingSelection.All;
         var proposal=new VariableSetting(new VariableReference(item.Reference.SolutionId,item.Reference.VariableId,item.Reference.Type,selection,item.Reference.Storage),
             ReferenceSettingParts.Conversion(_state.Accepted));
-        try{return Submit(proposal);}finally{request.Dispose();}
+        return SubmitAndRetire(request,()=>Submit(proposal));
+    }
+    private static bool SubmitAndRetire(VariableSelectionRequest request,Func<bool> submit)
+    {
+        bool accepted;
+        try{accepted=submit();}
+        catch(Exception failure)
+        {
+            try{request.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
+        request.Dispose();return accepted;
     }
     internal void ReleaseVariableRequest(VariableSelectionRequest request,long generation)
     {if(generation==_variableGeneration&&ReferenceEquals(_variableRequest,request))InvalidateVariableSelection();}
@@ -417,8 +432,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public void InvalidateExpansion()
     {
         _expansionGeneration++;var prior=_expansion;_expansion=null;
-        try{prior?.Invalidate();}
-        finally{Notify(nameof(IsSelectedSubscribeParam));Notify(nameof(IsTextPopupVisible));}
+        ParameterCleanup.Run(new Action[]{()=>prior?.Invalidate(),
+            ()=>Notify(nameof(IsSelectedSubscribeParam)),()=>Notify(nameof(IsTextPopupVisible))});
     }
     private void Expand(bool index,bool hasSelection=true)
     {
@@ -433,10 +448,16 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         var preference=_preference();
         if(_suspended||!CanBrowse||generation!=_expansionGeneration)return;
         var request=new ReferenceExpansionRequest(this,generation,preference,index);_expansion=request;request.SetIndex(index,hasSelection);
-        Notify(nameof(IsSelectedSubscribeParam));Notify(nameof(IsTextPopupVisible));
-        if(!request.IsValid)return;
-        try{_expand(request);}
-        catch{request.Dispose();throw;}
+        try
+        {
+            ParameterCleanup.Run(new Action[]{()=>Notify(nameof(IsSelectedSubscribeParam)),()=>Notify(nameof(IsTextPopupVisible))});
+            if(request.IsValid)_expand(request);
+        }
+        catch(Exception failure)
+        {
+            try{request.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     private void OnStateChanged()
     {

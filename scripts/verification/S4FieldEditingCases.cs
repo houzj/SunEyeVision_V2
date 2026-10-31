@@ -63,6 +63,7 @@ internal static class S2DocumentEditingCases
             VerifyAtomicFieldGroup();
             VerifyReferenceComposition();
             VerifyNumericReferenceCleanup();
+            VerifyReferenceLeaseCleanup();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
@@ -632,6 +633,88 @@ internal static class S2DocumentEditingCases
         Require(writes==0,"退役后保留命令写入");
         Console.WriteLine("通过：完整来源/索引刷新按显示名排序，失效保留身份，同名不重绑，旧回调与退役拒绝，恢复不写入");
     }
+    // REFERENCE_LEASE_CASE_BEGIN
+    private static void VerifyReferenceLeaseCleanup()
+    {
+        foreach(var scenario in new[]{"projection","retire","host-open","variable-open","variable-submit","variable-index-submit","normal"})
+        {
+            var asm=typeof(ReferenceFieldOptions).Assembly;
+            var stateType=asm.GetType("SunEyeVision.Plugin.Wpf.Adapters.Fields.DeclaredFieldState")!;
+            var sessionType=asm.GetType("SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldSession")!;
+            var sequence=scenario=="variable-index-submit";
+            var candidate=new DeclaredReferenceCandidate("来源","lease-source",null,new Port("value",sequence?TypeRef.SequenceOf(DataType.Integer):DataType.Integer),Array.Empty<string>());
+            var variable=new SunEyeVision.Plugin.Wpf.Controls.References.Variables.VariableSelectionItem("整数","方案",0,"","7",
+                new VariableReference(Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),DataType.Integer,BindingSelection.All));
+            var writes=0;var opened=0;ReferenceExpansionRequest? expanded=null;VariableSelectionRequest? selected=null;
+            var target=new Port("lease-target",DataType.Integer,EditModes:FieldEditModes.Reference);
+            var stateCtor=stateType.GetConstructors().Single();var stateArgs=stateCtor.GetParameters().Select(p=>p.HasDefaultValue?p.DefaultValue:null).ToArray();
+            stateArgs[0]=target;stateArgs[1]=new ReferenceSetting(candidate.Reference(sequence?new BindingSelection.AtConstant(0):BindingSelection.All));stateArgs[2]=(Action<ParameterSetting>)(_=>writes++);
+            var state=stateCtor.Invoke(stateArgs);
+            var options=new ReferenceFieldOptions(_=>new(new[]{candidate},Array.Empty<DeclaredReferenceCandidate>(),new[]{variable}),EditableIndex:true,
+                Expand:request=>{expanded=request;opened++;if(scenario=="host-open"){request.Invalidated+=()=>throw new InvalidOperationException("lease-retire-failed");throw new InvalidOperationException("host-open-failed");}},
+                SelectVariable:request=>{selected=request;if(scenario=="variable-open"){request.Invalidated+=()=>throw new InvalidOperationException("variable-retire-failed");throw new InvalidOperationException("variable-open-failed");}});
+            var ctor=sessionType.GetConstructors().Single();var args=ctor.GetParameters().Select(p=>p.HasDefaultValue?p.DefaultValue:null).ToArray();args[0]=state;args[1]=options;
+            if(scenario is "variable-submit" or "variable-index-submit")args[3]=(Func<ParameterSetting,bool>)(_=>throw new InvalidOperationException("variable-submit-failed"));
+            var session=ctor.Invoke(args);var expansionField=sessionType.GetField("_expansion",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            var variableField=sessionType.GetField("_variableRequest",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            var resources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)};
+            var root=(Grid)((DataTemplate)resources["ButtonSelecter_sub"]).LoadContent();root.DataContext=session;
+            root.Measure(new Size(400,40));root.Arrange(new Rect(0,0,400,40));Pump();
+            var border=root.Children.OfType<Border>().First();var descriptor=DependencyPropertyDescriptor.FromProperty(Border.BorderThicknessProperty,typeof(Border));
+            var armed=scenario=="projection";var textNotifications=0;
+            EventHandler fault=(_,_)=>{if(armed&&border.BorderThickness.Left==(scenario=="retire"?0:3)){armed=false;throw new InvalidOperationException("projection-failed");}};
+            descriptor.AddValueChanged(border,fault);
+            PropertyChangedEventHandler observe=(_,eventArgs)=>{if(eventArgs.PropertyName=="IsTextPopupVisible")textNotifications++;};((INotifyPropertyChanged)session).PropertyChanged+=observe;
+            Exception? Capture(Action operation){try{operation();return null;}catch(TargetInvocationException error){return error.InnerException??error;}catch(Exception error){return error;}}
+            void Open()=>((ICommand)sessionType.GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);
+            try
+            {
+                Exception? failure;
+                if(scenario=="normal")
+                {
+                    Open();var first=expanded!;Require(first.IsValid&&opened==1,"正常展开没有有效借用租约");first.Dispose();
+                    Require(!first.IsValid,"正常关闭未退役");Open();var second=expanded!;first.Dispose();
+                    first.ClickCommand.Execute(null);Require(second.IsValid&&opened==2&&writes==0,"旧展开回调影响新代或写值");second.Dispose();
+                }
+                else if(scenario.StartsWith("variable-",StringComparison.Ordinal))
+                {
+                    failure=Capture(()=>sessionType.GetMethod("Refresh")!.Invoke(session,null));Require(failure is null,"变量前提刷新失败");
+                    failure=Capture(()=>sessionType.GetMethod("OpenVariableSelector",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(session,new object[]{sequence}));
+                    if(scenario!="variable-open")
+                    {
+                        Require(failure is null&&selected is {IsValid:true},"变量选择没有有效借用租约");selected!.Invalidated+=()=>throw new InvalidOperationException("variable-retire-failed");
+                        failure=Capture(()=>selected.TrySelect(variable));
+                    }
+                    Require(failure is not null&&failure.ToString().Contains(scenario=="variable-open"?"variable-open-failed":"variable-submit-failed")
+                        &&failure.ToString().Contains("variable-retire-failed")&&selected is {IsValid:false}&&variableField.GetValue(session) is null&&writes==0,
+                        "变量打开/提案异常被清理覆盖或请求仍有效："+scenario+" "+failure);
+                    Require(!selected!.TrySelect(variable),"迟到变量请求仍能写入");
+                }
+                else
+                {
+                    if(scenario=="retire")
+                    {
+                        Open();expanded!.Invalidated+=()=>throw new InvalidOperationException("lease-retire-failed");armed=true;
+                        failure=Capture(()=>sessionType.GetMethod("InvalidateExpansion")!.Invoke(session,null));
+                    }
+                    else failure=Capture(Open);
+                    var primary=scenario=="host-open"?"host-open-failed":"projection-failed";
+                    Require(failure is not null&&failure.ToString().Contains(primary)&&expansionField.GetValue(session) is null,
+                        "展开投影/宿主故障遗留有效租约或丢原异常："+scenario+" "+failure);
+                    if(scenario is "host-open" or "retire")Require(failure!.ToString().Contains("lease-retire-failed"),"退役异常未与首异常同时保留");
+                    Require((bool)sessionType.GetProperty("IsTextPopupVisible")!.GetValue(session)!&&textNotifications>=2&&writes==0,"第二投影未复原或故障误写值");
+                    Require(expanded is null||!expanded.IsValid,"故障展开请求仍有效");
+                }
+            }
+            finally
+            {
+                descriptor.RemoveValueChanged(border,fault);((INotifyPropertyChanged)session).PropertyChanged-=observe;root.DataContext=null;
+                ((IDisposable)session).Dispose();((IDisposable)state).Dispose();
+            }
+        }
+        Console.WriteLine("通过：原订阅模板真实WPF投影故障完整退役、两个投影均恢复、首及清理异常均保留、变量主源/索引拒绝及迟到回调不写新代");
+    }
+    // REFERENCE_LEASE_CASE_END
     private static void VerifySettingsCandidate(IToolSettingsFields definition,object settings)
     {
         var tool=(IToolDefinition)definition;

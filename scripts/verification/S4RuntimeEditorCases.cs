@@ -14,6 +14,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -120,6 +121,31 @@ internal static class S2DocumentEditingCases
                 Require(choice.Content?.ToString()?.Contains("图像",StringComparison.Ordinal)==true
                     &&choice.Content?.ToString()?.Contains("output.image",StringComparison.Ordinal)!=true,"来源下拉没有消费正式中文显示声明");
             });
+        Case("图像下拉拒绝真实自引用并恢复原草稿，刷新不改引用，修正后可继续",()=>
+        {
+            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
+            var combo=(ComboBox)input.InputElement!;var priorItem=(ComboBoxItem)combo.SelectedItem;
+            var reference=((ReferenceSetting)priorItem.Tag).Reference;
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
+            var expression=ImageBinding(context.DraftNode)!;
+            var invalid=new ComboBoxItem{Content="自引用拒绝检查",Tag=new ReferenceSetting(new OutputReference(node.Id,BlobSchema.Field(5),
+                TypeRef.ResourceOf(ResourceKind.Image),scopeId:reference.ScopeId))};
+            combo.Items.Add(invalid);combo.SelectedItem=invalid;Pump();
+            Require(input.HasInvalidText&&ReferenceEquals(combo.SelectedItem,priorItem)
+                &&Equals(ImageBinding(context.DraftNode),expression),
+                "自引用未被生产合同拒绝或污染了原来源");
+            combo.Items.Remove(invalid);
+            Require(!combo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is UnsetSetting),"必填图像来源不应提供清除项");
+            combo.IsDropDownOpen=true;Pump();
+            var validItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting candidate&&candidate.Reference.NodeId==reference.NodeId
+                &&candidate.Reference.PortId==reference.PortId&&candidate.Reference.ScopeId==reference.ScopeId&&candidate.Reference.MemberFieldPath.SequenceEqual(reference.MemberFieldPath));
+            validItem.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                {RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});Pump();
+            Require(!input.HasInvalidText,"修正来源后仍无法继续");
+            combo.IsDropDownOpen=true;Pump();combo.IsDropDownOpen=false;
+            Require(Equals(ImageBinding(context.DraftNode),expression)
+                &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"刷新候选写入了草稿或正式节点");
+        });
             Case("未修改数值或未接入项时整窗仍明确拒绝调试确认保存",()=>
             {
                 var rejected=false;var execution=Control(first).RunDebugAsync();PumpUntil(()=>execution.IsCompleted);
@@ -138,9 +164,16 @@ internal static class S2DocumentEditingCases
                 for(var i=0;i<names.Length;i++)
                 {
                     var field=fields.Fields.Single(f=>f.FieldId==BindingId(names[i]));
-                    Require(field.View.IsLoaded&&field.InputElement is {IsLoaded:true},"九参数未接入真实加载控件："+names[i]);
+                    Require(field.InputElement is TextBox,"九参数没有实际数值编辑器："+names[i]);
                     Require(field.Setting is ConstantSetting constant&&Equals(constant.Value,expected[i]),"九参数控件默认错误："+names[i]);
                 }
+                foreach(var advanced in Visual(Control(first)).OfType<NativeAdvancedPresenter>())advanced.IsExpanded=true;
+                foreach(var enabledName in new[]{"IsCircularityFilterEnabled","IsRectangularityFilterEnabled"})
+                    Require(fields.Fields.Single(f=>f.FieldId==SettingId(enabledName)).TrySetConstant(true),"真实过滤开关不可接纳");
+                first.UpdateLayout();Pump();
+                foreach(var name in names.Where(value=>value!="HightThreshold"))
+                    Require(fields.Fields.Single(f=>f.FieldId==BindingId(name)).InputElement is {IsLoaded:true},"激活后九参数编辑器未加载："+name);
+                Require(!fields.Fields.Single(f=>f.FieldId==BindingId("HightThreshold")).View.IsVisible,"单阈值模式没有隐藏上阈值");
                 Require(!Visual(Control(first)).OfType<FrameworkElement>().Any(e=>e.GetType().Name=="NativeThresholdUiDraftControls"&&e.IsVisible),"页面仍展示旧阈值占位");
                 Require(fields.Fields.Single(f=>f.FieldId==threshold).TrySetConstant(77L),"真实阈值控件拒绝合法整数");Pump();
                 Require(fields.Fields.Single(f=>f.FieldId==threshold).Setting is ConstantSetting{Value:77L}&&Formal()==100,"真实阈值编辑未保留私有值或污染正式值");
@@ -153,7 +186,7 @@ internal static class S2DocumentEditingCases
                 Require(choice.IsLoaded&&choice.IsVisible&&choice.Items.Count==6&&Equals(choice.SelectedValue,"SingleThreshold"),"模式没有六个实际选项或默认单阈值");
                 choice.IsDropDownOpen=true;Pump();
                 var items=choice.Items.Cast<object>().ToArray();var keys=items.Select(item=>ChoiceKey(choice,item)).ToArray();var enabled=0;
-                Require(keys.Distinct(StringComparer.Ordinal).Count()==6&&new[]{"None","SingleThreshold","DoubleThreshold"}.All(keys.Contains),"六Choice缺失正式模式身份或包含重复项");
+                Require(keys.SequenceEqual(new[]{"BinaryImage","SingleThreshold","DoubleThreshold","AutoThreshold","FixedSoftThreshold","RelativeSoftThreshold"}),"六Choice缺失正式模式身份或包含重复项");
                 foreach(var item in items)
                 {
                     var key=ChoiceKey(choice,item);var container=item as ComboBoxItem??choice.ItemContainerGenerator.ContainerFromItem(item) as ComboBoxItem;
@@ -173,14 +206,14 @@ internal static class S2DocumentEditingCases
                 Require(ReferenceEquals(node.RuntimeConfiguration,formalOpening),"模式试选修改正式配置");
                 Capture(first,"runtime-editor-six-modes.png");
             });
-            Case("未接入项真实编辑进入脏状态，随后由整窗生产入口拒绝",()=>
+            Case("未接入占位项全部禁用且提供说明，不能冒充正式参数",()=>
             {
-                var unavailable=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId=="ui-only-run.hole-area");
-                Require(unavailable.TrySetConstant(1L)&&unavailable.Setting is ConstantSetting{Value:1L},"未能建立明确的未接入项修改前提");Pump();
+                var placeholders=Logical(Control(first)).OfType<DeclaredFieldEditor>().Where(f=>f.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();
+                Require(placeholders.Length>0&&placeholders.All(field=>!field.IsEnabled&&field.ToolTip is string),"未接入项仍可编辑或缺少说明");
                 Require(solutions.Session!.Editing.Host.GetVariableNames(solutions.CurrentSolution!.Id).ContainsKey(uiVariable!.Id),"真实变量候选准备丢失");
                 tabs.SelectedIndex=0;Pump();
             });
-            Case("未接入项阻止整窗调试与确定，不取得算法运行租约",()=>
+            Case("合法九参数编辑仍阻止整窗调试与确定，不取得算法运行租约",()=>
             {
                 var before=Context().GetNodeResult(node.Id)?.Result;
                 var task=Control(first).RunDebugAsync();PumpUntil(()=>task.IsCompleted);
@@ -197,6 +230,15 @@ internal static class S2DocumentEditingCases
                 vm.SaveCurrentSolutionCommand.Execute(null);Pump();
                 Require(savedOpening.SequenceEqual(File.ReadAllBytes(path))
                     &&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"未接入项修改写入文件或正式配置");
+            });
+            Case("非法数值未失焦及隐藏后仍不能保存确认，原文保留至取消",()=>
+            {
+                var text=Threshold(first);text.Focus();text.Text="invalid";Pump();
+                var field=Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);
+                Require(!field.TryCommitPending()&&field.HasInvalidText&&text.Text=="invalid","非法数值没有保留明确错误及原文");
+                var disk=File.ReadAllBytes(path);first.Hide();vm.SaveCurrentSolutionCommand.Execute(null);Pump();
+                Require(disk.SequenceEqual(File.ReadAllBytes(path))&&!first.TryConfirm(out _)&&ReferenceEquals(formalOpening,node.RuntimeConfiguration),"隐藏非法输入被保存确认或污染正式配置");
+                first.Show();Pump();
             });
             var retiredDraft=context.DraftNode;var retiredConfiguration=retiredDraft.RuntimeConfiguration;
             first.Close();Pump();
@@ -244,7 +286,13 @@ internal static class S2DocumentEditingCases
                 vm.SaveCurrentSolutionCommand.Execute(null);Pump();
                 Require(File.ReadAllBytes(oldPath).SequenceEqual(disk)&&ReferenceEquals(formal,target.RuntimeConfiguration),"旧模式窗口保存覆盖磁盘或正式配置");
                 Capture(window,"runtime-editor-old-mode-"+oldMode+".png");
-                Require(field.TrySetConstant("SingleThreshold"),"旧模式无法在真实Choice修正为可用模式");Pump();
+                var borrowedField=field;var borrowedOwner=owner;
+                control=Control(window);owner=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;
+                Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
+                field=Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==modeId);
+                Console.WriteLine("旧模式修正前诊断：mode="+oldMode+" fieldSame="+ReferenceEquals(field,borrowedField)+" ownerSame="+ReferenceEquals(owner,borrowedOwner)
+                    +" ownerValid="+owner.IsValid+" fieldLoaded="+field.View.IsLoaded+" inputLoaded="+field.InputElement?.IsLoaded+" error="+field.Error);
+                Require(field.TrySetConstant("SingleThreshold"),"旧模式当前活跃Choice修正被拒绝："+field.Error);Pump();
                 Require(field.Setting is ConstantSetting{Value:"SingleThreshold"}&&((BlobSettings)target.RuntimeConfiguration!.CaptureSettings()).SegmentationMode==oldMode,"修正Choice未进入私有值或提前发布");
                 window.Close();Pump();
                 Require(!owner.IsValid&&solutions.Session!.Editing.RegisteredScopeCount==0,"旧模式窗口关闭没有退役范围");
@@ -256,18 +304,18 @@ internal static class S2DocumentEditingCases
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"ui-stage-report.json"),
                 System.Text.Json.JsonSerializer.Serialize(new{stage="B08Window",track=Environment.GetEnvironmentVariable("S4_EDITOR_TRACK"),passed=_passed,fullFunctionalAcceptance=false,
                     remaining=new[]{"ROI/显示未接入项完整功能","实际VS与人工验收"},
-                    blockedPositiveCases=new[]{"未失焦数值经整窗确认保存重开","真实窗口调试与连续运行停止","私有调试预览结果表及失败清空","整窗成功确认发布后释放范围"},
+                    blockedPositiveCases=new[]{"成功捕获过程同步重绑的旧结果隔离","保存接纳并重绑后旧来源控件迟到回调","未失焦数值经整窗确认保存重开","真实窗口调试与连续运行停止","私有调试预览结果表及失败清空","整窗成功确认发布后释放范围"},
                     blockedReason="Blob整窗ROI/显示尚未闭合；不得绕过保护执行旧正向用例",actualVisualStudioDesigner=false,isolatedModeAdmissionProvenByThisUiTrack=false}));
             Console.WriteLine($"B08真实编辑窗口UI链：{_passed}组通过；fullFunctionalAcceptance=false；原正向窗口项在报告中保留为阻塞，未运行Blob算法。");
             return 0;
         }
     }
+    private static string SettingId(string name)=>new BlobTool().SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(name)).FieldId;
     private static string BindingId(string name)=>((IToolParameterBindingNames)new BlobTool()).ParameterBindingNames.Single(pair=>pair.Value==name).Key;
     private static string ChoiceKey(ComboBox choice,object item)
     {
-        if(item is ComboBoxItem container&&container.Tag is string tag)return tag;
-        return Convert.ToString(System.ComponentModel.TypeDescriptor.GetProperties(item)[choice.SelectedValuePath]?.GetValue(item),System.Globalization.CultureInfo.InvariantCulture)
-            ??throw new Exception("实际Choice缺少公开SelectedValuePath身份");
+        Require(choice.SelectedValuePath==nameof(DeclaredChoiceDisplayItem.FormalKey),"Choice没有使用正式键绑定");
+        return item is DeclaredChoiceDisplayItem display?display.DisplayId:throw new Exception("模式未使用正式公开展示快照");
     }
     private static bool IsUnavailableBoundary(string error)=>error.Contains("界面试用",StringComparison.Ordinal)||error.Contains("未接入",StringComparison.Ordinal)||error.Contains("未闭合",StringComparison.Ordinal)||error.Contains("未就绪",StringComparison.Ordinal)||error.Contains("未完成",StringComparison.Ordinal);
     private static IEnumerable<DependencyObject> Logical(DependencyObject root)

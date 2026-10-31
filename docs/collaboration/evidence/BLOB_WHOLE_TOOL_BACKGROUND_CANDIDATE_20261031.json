@@ -24,7 +24,86 @@
   ],
   "runs": [
     {
-      "loaded": [],
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        }
+      ],
       "receipt": {
         "stage": "S3",
         "validationScope": "Candidate",
@@ -43,7 +122,32 @@
       "groups": 9
     },
     {
-      "loaded": [],
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
       "receipt": {
         "stage": "S3",
         "validationScope": "Candidate",
@@ -62,7 +166,86 @@
       "groups": 19
     },
     {
-      "loaded": [],
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
       "receipt": {
         "stage": "S3",
         "validationScope": "Candidate",
@@ -81,7 +264,92 @@
       "groups": 10
     },
     {
-      "loaded": [],
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.UI",
+          "reportedSha256": "A4F99552D2D7511E7AE27B07976501A2C571BE9471CA8EDBE0DEEE812C444F72",
+          "actualSha256": "A4F99552D2D7511E7AE27B07976501A2C571BE9471CA8EDBE0DEEE812C444F72"
+        }
+      ],
       "receipt": {
         "stage": "S4",
         "validationScope": "Candidate",
@@ -100,7 +368,86 @@
       "groups": 18
     },
     {
-      "loaded": [],
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
       "receipt": {
         "stage": "S4",
         "validationScope": "Candidate",
@@ -208,5 +555,6 @@
     "正式连续调试会话与底栏",
     "原始上游输入槽到物理坐标域proof",
     "原二值输出像素/Domain等价和原资源释放全分支"
-  ]
+  ],
+  "loadedIdentityVerification": "逐条真实TAB解析并核对全部57条载入记录与候选产物SHA256，零差异。上一证据提交只记录清单文件SHA，载入数组因分隔符识别错误为空；本提交补全，不改变测试结果。"
 }

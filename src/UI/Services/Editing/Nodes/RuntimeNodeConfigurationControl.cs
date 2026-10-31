@@ -119,7 +119,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
         var referenceOptions=new ReferenceFieldOptions(target=>
         {
-            var candidates=ReadReferenceCandidates(generation,manualParameters:OutputBindingChangeService.IsOrdinaryNumericParameter(target));
+            var candidates=ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
             if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
             return new(candidates,candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer),ReadVariableCandidates(generation));
         },(target,proposal)=>ValidateProposal(target,proposal,generation),FormatVariable:reference=>FormatVariable(reference,generation),

@@ -2755,6 +2755,41 @@ internal static class S2DocumentEditingCases
  static NativeAdvancedPresenter Advanced(DeclaredFieldsView fields,int page)=>((Native.Composition.Apps.XmlUI.ParamListView)((TabControl)fields.Content).Items.Cast<TabItem>().ElementAt(page).Content).Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<NativeAdvancedPresenter>().Single();
  static void VerifyNativeAdvanced()
  {
+  Test("原页签跨页原文捕获及扩展订阅生命周期",()=>
+  {
+   var attempts=0;var writes=0;var reject=true;
+   using(var fields=AdvancedFields(_=>{attempts++;if(reject)throw new ArgumentException("跨页候选宿主拒绝");writes++;}))
+   {
+    Show(fields);Advanced(fields,0).IsExpanded=true;Pump();
+    var value=fields.Fields.Single(field=>field.FieldId=="a.value");var lower=fields.Fields.Single(field=>field.FieldId=="a.low");var upper=fields.Fields.Single(field=>field.FieldId=="a.high");
+    var text=(TextBox)value.InputElement!;var low=(TextBox)lower.InputElement!;var high=(TextBox)upper.InputElement!;
+    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(value.View).Single();var box=(ComboBox)native.FindName("CBox");
+    text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";low.Text="17";high.Text="23";
+    fields.SelectedPageIndex=1;Pump();
+    Require(!box.IsDropDownOpen&&writes==0&&attempts==0&&value.Setting is ConstantSetting{Value:35d}&&lower.Setting is ConstantSetting{Value:10L}&&upper.Setting is ConstantSetting{Value:20L},"切页接纳原文、半写双端或未关闭滑条");
+    Require(!fields.TryValidate(out _)&&attempts==1&&writes==0,"非当前页原文绕过捕获或宿主拒绝");
+    fields.SelectedPageIndex=0;Pump();Require(text.Text=="35.125"&&low.Text=="17"&&high.Text=="23"&&Advanced(fields,0).IsExpanded,"切回页签丢原文或展开状态");
+    text.Text="bad";fields.SelectedPageIndex=1;Pump();var before=attempts;
+    Require(!fields.TryValidate(out _)&&fields.HasInvalidActiveFields&&attempts==before&&writes==0,"非当前页非法原文被忽略或写入");
+    fields.SelectedPageIndex=0;Pump();Require(text.Text=="bad"&&low.Text=="17"&&high.Text=="23","错误恢复前原文丢失");
+    text.Text="36.25";fields.SelectedPageIndex=1;Pump();reject=false;
+    Require(fields.TryValidate(out var error)&&writes==2&&value.Setting is ConstantSetting{Value:36.25d}&&lower.Setting is ConstantSetting{Value:17L}&&upper.Setting is ConstantSetting{Value:23L},"跨页修复捕获未接纳标量和原子双端："+error);
+    fields.SelectedPageIndex=0;Pump();Require(text.Text=="36.25"&&low.Text=="17"&&high.Text=="23","成功捕获回页后投影不一致");Show(new TextBlock());
+   }
+   var source=new DeclaredReferenceCandidate("浮点来源","source",null,new Port("float",DataType.Number),Array.Empty<string>());var initial=new ReferenceSetting(source.Reference(BindingSelection.All));var referenceWrites=0;
+   using(var fields=AdvancedFields(_=>referenceWrites++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),initial))
+   {
+    Show(fields);Advanced(fields,0).IsExpanded=true;Pump();var access=fields.Fields.Single(field=>field.FieldId=="a.value");
+    var identity=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
+    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;
+    ((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
+    var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=((ReferenceWindowOwner)window.DataContext).CurrentRequest!;
+    Require(window.IsVisible&&request.IsValid,"扩展引用窗口未实际打开");fields.SelectedPageIndex=1;Pump();
+    Require(window.IsVisible&&window.DataContext is ReferenceWindowOwner {IsExpanded:true,CurrentRequest:null}&&!request.IsValid&&referenceWrites==0,"切页未退役旧目标或错误关闭仍Loaded的Root扩展窗");
+    fields.SelectedPageIndex=0;Pump();Require(identity==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference)&&referenceWrites==0,"切回页签改变已接纳引用身份");
+    Show(new TextBlock());Require(!window.IsVisible&&!request.IsValid&&referenceWrites==0,"整根卸载复活旧扩展目标");
+   }
+  });
   Test("原高级按钮同级行、条件与跨页独立，配对附件继承展开归属",()=>
   {
    var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);Pump();var first=Advanced(fields,0);var second=Advanced(fields,1);var button=first.NativeView;

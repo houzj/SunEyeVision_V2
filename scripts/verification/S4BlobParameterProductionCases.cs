@@ -195,10 +195,91 @@ internal static class S2DocumentEditingCases
                 using(var result=Wait(()=>invocation.ExecuteAsync()))Require(result.IsSuccess,"退役前调试失败");
                 f.Manager.CloseSolution(saveChanges:false);draft.Node.RuntimeConfiguration=invocation.AcceptedParameters;Reject(()=>f.Host.Commit(draft));Reject(()=>f.Host.BeginEdit(f.Flow.Id,f.Node.Id));
             });
-            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"blob-parameter-production-report.json"),JsonSerializer.Serialize(new{scope="真实Blob九参数非前台生产链；实际窗口、VS设计器、人工和VM算法另验",passed=_passed,failed=_failed,cases=Reports},new JsonSerializerOptions{WriteIndented=true}));
-            Console.WriteLine("Blob九参数非前台生产链："+_passed+"组通过，"+_failed+"组失败；不代表真实参数窗口、VS设计器、VM算法或B08整体验收。");return _failed==0?0:1;
+            Case("极性显示标签与正式身份及Schema指纹分离",()=>
+            {
+                var c=RuntimeToolConfiguration.Create(BlobTool.Id);var id=BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Type));var schema=c.SettingsSchema;
+                Require(id=="field:88b45ab61b965761b901670fd587903f"&&(int)BlobThresholdMode.Binary==0&&(int)BlobThresholdMode.BinaryInv==1,"极性稳定字段或枚举身份改变");
+                var port=schema.Inputs.Single(p=>p.Id==id);var presentation=schema.Presentation!.Fields.Single(p=>p.FieldId==id);
+                Require(port.Choices!.Keys.SequenceEqual(new[]{"Binary","BinaryInv"})&&c.Fields.Read(id) is ConstantSetting {Value:"Binary"},"极性key或默认改变");
+                Require(presentation.ChoiceLabels!["Binary"]=="亮于背景"&&presentation.ChoiceLabels["BinaryInv"]=="暗于背景","极性未消费原显示文字");
+                var unlabeled=new ToolSchema(schema.Inputs,schema.Outputs,new ToolPresentation(Array.Empty<FieldPresentation>(),regions:schema.Presentation.Regions),schema.WorkflowImageInputId,schema.OutputDisplay);
+                Require(schema.Fingerprint==unlabeled.Fingerprint,"显示标签进入持久Schema指纹");
+                Reject(()=>c.WithFieldValues(new Dictionary<string,object?>{{id,"亮于背景"}}),"显示标签被当作持久key接纳");
+                foreach(var mode in new[]{BlobThresholdMode.Binary,BlobThresholdMode.BinaryInv})
+                {
+                    var selected=c.WithFieldValues(new Dictionary<string,object?>{{id,mode.ToString()}});
+                    Require(((BlobSettings)selected.CaptureSettings()).Type==mode&&selected.SettingsSchema.Fingerprint==schema.Fingerprint,"极性key未原样进入当前本方设置分支");
+                }
+            });
+            Case("极性未确认草稿与真实宿主历史保存重开保持正式键",()=>
+            {
+                using var f=new Fixture(documentHistory:true);var id=BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Type));var fingerprint=f.Node.RuntimeConfiguration!.SettingsSchema.Fingerprint;
+                var cancelled=f.Host.BeginEdit(f.Flow.Id,f.Node.Id);cancelled.Node.RuntimeConfiguration=cancelled.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{id,"BinaryInv"}});
+                Require(f.Node.RuntimeConfiguration.Fields.Read(id) is ConstantSetting {Value:"Binary"},"未确认草稿改变正式极性");
+                foreach(var key in new[]{"BinaryInv","Binary"})
+                {
+                    Commit(f,new(){{id,key}});Require(f.Node.RuntimeConfiguration!.Fields.Read(id) is ConstantSetting value&&Equals(value.Value,key),"真实宿主没有接纳极性key");
+                    var loaded=f.SaveReopen("polarity-"+key);var restored=loaded.Workflows[0].Nodes[0].RuntimeConfiguration!;
+                    Require(restored.Fields.Read(id) is ConstantSetting result&&Equals(result.Value,key)&&restored.SettingsSchema.Fingerprint==fingerprint,"极性保存重开改变key或指纹");
+                }
+                f.Host.Undo();Require(f.Node.RuntimeConfiguration!.Fields.Read(id) is ConstantSetting {Value:"BinaryInv"},"极性撤销没有恢复原key");
+                f.Host.Redo();Require(f.Node.RuntimeConfiguration!.Fields.Read(id) is ConstantSetting {Value:"Binary"},"极性重做没有恢复新key");
+            });
+            if(Environment.GetEnvironmentVariable("S4_BLOB_POLARITY_UI")=="1")Case("正式与真实设计视图极性标签选择仍保留整窗门禁",VerifyPolarityViews);
+            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"blob-parameter-production-report.json"),JsonSerializer.Serialize(new{scope=Environment.GetEnvironmentVariable("S4_BLOB_POLARITY_UI")=="1"?"真实Blob生产链及极性正式/设计上下文窗口；非VS实际设计器或原厂像素等价验证":"真实Blob九参数非前台生产链；实际窗口、VS设计器、人工和VM算法另验",passed=_passed,failed=_failed,cases=Reports},new JsonSerializerOptions{WriteIndented=true}));
+            Console.WriteLine("Blob参数生产链："+_passed+"组通过，"+_failed+"组失败；"+(Environment.GetEnvironmentVariable("S4_BLOB_POLARITY_UI")=="1"?"包含极性正式/设计上下文窗口；":"非前台；")+"不代表完整参数窗口、VS设计器、原厂像素等价或B08整体验收。");return _failed==0?0:1;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
+    }
+    private static void VerifyPolarityViews()
+    {
+        if(System.Windows.Application.Current is null)new System.Windows.Application{ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
+        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})System.Windows.Application.Current.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
+        var window=new System.Windows.Window{Width=650,Height=650,Title="极性正式和设计上下文验证"};
+        void Pump()=>window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        var id=BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Type));var definition=new BlobTool();
+        void Verify(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView fields,Func<FieldSettings> capture,string context)
+        {
+            fields.SelectedPageIndex=1;Pump();var field=fields.Fields.Single(f=>f.FieldId==id);var combo=(System.Windows.Controls.ComboBox)field.InputElement!;
+            Require(combo.IsLoaded&&combo.IsVisible&&combo.SelectedValuePath=="Key"&&combo.DisplayMemberPath=="Label",context+"没有使用真实可见原枚举");
+            var labels=combo.Items.Cast<object>().ToDictionary(item=>(string)item.GetType().GetProperty("Key")!.GetValue(item)!,item=>(string)item.GetType().GetProperty("Label")!.GetValue(item)!);
+            Require(labels.Count==2&&labels["Binary"]=="亮于背景"&&labels["BinaryInv"]=="暗于背景",context+"极性标签不对");
+            foreach(var mode in new[]{BlobThresholdMode.BinaryInv,BlobThresholdMode.Binary})
+            {
+                combo.SelectedValue=mode.ToString();Pump();var fieldsAccepted=capture();
+                var label=mode==BlobThresholdMode.Binary?"亮于背景":"暗于背景";
+                Require(Desc(combo).OfType<System.Windows.Controls.TextBlock>().Any(text=>text.IsVisible&&text.Text==label),context+"实际选中显示没有渲染原标签");
+                Require(fieldsAccepted.Read(id) is ConstantSetting selected&&Equals(selected.Value,mode.ToString()),context+"选择提交了标签而不是正式key");
+                Require(((BlobSettings)definition.MaterializeSettings(fieldsAccepted.Materialize(new Dictionary<string,object?>()))).Type==mode,context+"选择未接入当前本方设置分支");
+            }
+        }
+        try
+        {
+            var initial=RuntimeToolConfiguration.Create(BlobTool.Id);
+            using(var formal=SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.CreateSettingsView(BlobTool.Id,initial.Fields,new(ReferenceOptions:SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions.Empty)))
+            {
+                window.Content=formal.View;window.Show();Pump();window.UpdateLayout();
+                var fields=Desc(formal.View).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>().Single();
+                Verify(fields,formal.CaptureAcceptedFields,"正式视图");
+                Require(initial.Fields.Read(id) is ConstantSetting {Value:"Binary"}&&!formal.TryCapture(out _,out var error)&&error.Contains("ROI"),"极性标签修改绕过ROI整窗门禁或污染初值");
+                window.Content=null;Pump();
+            }
+            var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
+            using var designer=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options);
+            window.Content=designer;Pump();window.UpdateLayout();
+            Verify((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView)designer.Content,designer.CaptureAcceptedFields,"真实设计上下文");
+        }
+        finally{window.Content=null;window.Close();Pump();}
+    }
+    private static IEnumerable<System.Windows.DependencyObject> Desc(System.Windows.DependencyObject root)
+    {
+        var seen=new HashSet<System.Windows.DependencyObject>();return Walk(root);
+        IEnumerable<System.Windows.DependencyObject> Walk(System.Windows.DependencyObject current)
+        {
+            if(!seen.Add(current))yield break;yield return current;
+            if(current is System.Windows.Media.Visual)for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(current);i++)foreach(var child in Walk(System.Windows.Media.VisualTreeHelper.GetChild(current,i)))yield return child;
+            foreach(var child in System.Windows.LogicalTreeHelper.GetChildren(current).OfType<System.Windows.DependencyObject>())foreach(var item in Walk(child))yield return item;
+        }
     }
     private static void Commit(Fixture f,Dictionary<string,object?> values)
     {

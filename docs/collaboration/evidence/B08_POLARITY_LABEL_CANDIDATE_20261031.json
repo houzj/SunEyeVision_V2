@@ -1,0 +1,308 @@
+{
+  "baseline": "324a826dcc330e603a2ff711235a6db5bc49612e",
+  "scope": "Candidate独立构建，未集成主仓正式Release验收",
+  "originalDisplayEvidence": {
+    "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-Blob单阈值极性与显示证据-20261031.md",
+    "sha256": "e116dffb8fb8cccfcb5fe423cb9bb850bb77aea748635b190d24c5741a6c36e9",
+    "proved": "原资源/托管接口值0显示亮于背景、值1显示暗于背景；内部英文名相反，不按名字猜raw含义",
+    "notProved": "原运行UI每次绑定、完整像素掩膜、阈值相等边界、是否互补及其他模式算法"
+  },
+  "displayMapping": [
+    {
+      "formalKey": "Binary",
+      "ownEnumValue": 0,
+      "newLabel": "亮于背景",
+      "ownExistingBranch": "保持Threshold(LowThreshold,255)所得区域"
+    },
+    {
+      "formalKey": "BinaryInv",
+      "ownEnumValue": 1,
+      "newLabel": "暗于背景",
+      "ownExistingBranch": "effectiveDomain.Difference(threshold)"
+    }
+  ],
+  "productionChange": "仅修改正式XML两Choice.label；Type字段ID、key、default、枚举、执行、持久化、显隐与模式门禁未改。不构造VM raw适配或宣称像素等价。",
+  "stableFieldId": "field:88b45ab61b965761b901670fd587903f",
+  "default": "Binary",
+  "schemaIdentity": "真实Schema剥离展示字段但保留端口/Choices.Keys和区域关系后指纹仍相等，标签不进入持久身份。",
+  "build": {
+    "log": "Release/_validation/blob-polarity-label-build.log",
+    "exit": 0,
+    "errors": 0,
+    "warnings": 6527,
+    "elapsed": "00:02:23.20"
+  },
+  "sourceSha256": {
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml": "1cf440ec4f830d9a70d23a4f13d1f43b2820712be8f1ab6f13524b80b2e237d6",
+    "scripts/verification/S4BlobParameterProductionCases.cs": "5c60c86659c227a8c741cf1d1472a7f1a4c1558fb3f4aa9b988f3c2be35729fe"
+  },
+  "unchangedAlgorithm": {
+    "path": "tools\\SunEyeVision.BlobAnalysis\\Runtime\\Algorithms\\BlobSession.cs",
+    "sha256": "6a0bd59102c484e85d538cc36acd086eb76657f785a7ba1e20a0bd0bf9041164",
+    "sameAsBaselineAfterNormalizingLineEndings": true
+  },
+  "tracks": [
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 11,
+        "pid": 118352,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "93375197DF59C96C4C6AC36989A60DDB541F9CA56996983CDA509F390B7AF2BC",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-011",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-011\\blob-parameter-production-report.json"
+      },
+      "report": {
+        "scope": "真实Blob九参数非前台生产链；实际窗口、VS设计器、人工和VM算法另验",
+        "passed": 20,
+        "failed": 0,
+        "cases": [
+          {
+            "name": "真实九字段稳定名称、VM默认和面积整数存储",
+            "passed": true
+          },
+          {
+            "name": "整数面积两端边界接受并经真实宿主保存重开",
+            "passed": true
+          },
+          {
+            "name": "整数面积越界小数与倒置提案拒绝且正式九字段不半写",
+            "passed": true
+          },
+          {
+            "name": "阈值仍绑定且面积筛选关闭时已知面积越界拒绝且无半写",
+            "passed": true
+          },
+          {
+            "name": "九字段显式非空变量数组索引确认与保存重开",
+            "passed": true
+          },
+          {
+            "name": "无控制前序的真实Blob输出不能成为普通阈值来源",
+            "passed": true
+          },
+          {
+            "name": "真实Blob控制前序输出绑定经调度消费并保持稳定来源身份",
+            "passed": true
+          },
+          {
+            "name": "私有调试回执取消隔离、确认接纳及当前值重开",
+            "passed": true
+          },
+          {
+            "name": "后项索引失败仅保留私有已接纳前缀，正式九字段不变",
+            "passed": true
+          },
+          {
+            "name": "九参数配置编辑历史与运行值历史分离",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：None",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：DoubleThreshold",
+            "passed": true
+          },
+          {
+            "name": "真实方案重开后空扩展数据不使连续结构同步自发增版",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：null",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：empty",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：nonempty",
+            "passed": true
+          },
+          {
+            "name": "非空未知流程扩展仍受正式格式门禁，保存失败不覆盖已有文件",
+            "passed": true
+          },
+          {
+            "name": "窗口所属正式会话退役后旧草稿和私有回执不能确认",
+            "passed": true
+          },
+          {
+            "name": "极性显示标签与正式身份及Schema指纹分离",
+            "passed": true
+          },
+          {
+            "name": "极性未确认草稿与真实宿主历史保存重开保持正式键",
+            "passed": true
+          }
+        ]
+      },
+      "loadedProduct": [
+        "SunEyeVision.Tool.BlobAnalysis.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll\t1171CAE53C433F28F892AD830FB9B747A354F1BAF770C92575EDCA8B3D47B1C8",
+        "SunEyeVision.Plugin.Infrastructure\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll\t6BC90024676C8DD1240A11905F86D5F2B15266C14E86140C7987A96C86E9476A",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\t2C4506780FEBB6146FC4865C45833FC08BBA91EBC418DD7332D8FD9DF3DCD56A",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\t96F2EE0770B927BA204C54B6ABC22116FEFF8103DC8C27BEB5F4AC6F0547D79E",
+        "SunEyeVision.Plugin.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll\tBD74C6588629A442FD53E346C290927FB5E37E6DEA4A7F6696B977B01C34F3A1",
+        "SunEyeVision.Core\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll\t85AD8F619230D500BA83F62535F80EB809D3D0F663573B5B3FAF6796A3F4F6FA",
+        "SunEyeVision.Tool.BlobAnalysis.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll\t7ADC3828E131CA805333A4303F70F3A4B898D597F5EA3C0BD164D0E88C12ABCB",
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t8B49FB3EF6B78CE14CC632AB111FF17A4F86EAD0AD746C392541E579EE7F4F8A",
+        "SunEyeVision.Tool.ImageSource.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll\t0CD9ED17622BDB516AC596DBBD75625500286EA25D0AE6DC0EE47B48ACEC8095",
+        "SunEyeVision.Tool.ImageSource.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll\t6DA92879C59C98D731700A97E04557465E49DADA511B5C93935024B17BCC4939",
+        "SunEyeVision.Workflow\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll\t323E52C3F9DA1780570F102612AA8312954B18D2487394240C1CA8D27520226B",
+        "SunEyeVision.HalAdapter\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll\t0A1002E428FBDAF0E2356495710782F043F1587350CF6BA3AC802606DE591526",
+        "SunEyeVision.HalAdapter.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll\tFDC9FCB9052097A6CEEBD8DD13BF81290DE8FC7A53AFB7D1F3CBD7B9EFB5ADB3"
+      ]
+    },
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 12,
+        "pid": 135536,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "5C60C86659C227A8C741CF1D1472A7F1A4C1558FB3F4AA9B988F3C2BE35729FE",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-012",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-012\\blob-parameter-production-report.json"
+      },
+      "report": {
+        "scope": "真实Blob生产链及极性正式/设计上下文窗口；非VS实际设计器或原厂像素等价验证",
+        "passed": 21,
+        "failed": 0,
+        "cases": [
+          {
+            "name": "真实九字段稳定名称、VM默认和面积整数存储",
+            "passed": true
+          },
+          {
+            "name": "整数面积两端边界接受并经真实宿主保存重开",
+            "passed": true
+          },
+          {
+            "name": "整数面积越界小数与倒置提案拒绝且正式九字段不半写",
+            "passed": true
+          },
+          {
+            "name": "阈值仍绑定且面积筛选关闭时已知面积越界拒绝且无半写",
+            "passed": true
+          },
+          {
+            "name": "九字段显式非空变量数组索引确认与保存重开",
+            "passed": true
+          },
+          {
+            "name": "无控制前序的真实Blob输出不能成为普通阈值来源",
+            "passed": true
+          },
+          {
+            "name": "真实Blob控制前序输出绑定经调度消费并保持稳定来源身份",
+            "passed": true
+          },
+          {
+            "name": "私有调试回执取消隔离、确认接纳及当前值重开",
+            "passed": true
+          },
+          {
+            "name": "后项索引失败仅保留私有已接纳前缀，正式九字段不变",
+            "passed": true
+          },
+          {
+            "name": "九参数配置编辑历史与运行值历史分离",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：None",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：DoubleThreshold",
+            "passed": true
+          },
+          {
+            "name": "真实方案重开后空扩展数据不使连续结构同步自发增版",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：null",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：empty",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：nonempty",
+            "passed": true
+          },
+          {
+            "name": "非空未知流程扩展仍受正式格式门禁，保存失败不覆盖已有文件",
+            "passed": true
+          },
+          {
+            "name": "窗口所属正式会话退役后旧草稿和私有回执不能确认",
+            "passed": true
+          },
+          {
+            "name": "极性显示标签与正式身份及Schema指纹分离",
+            "passed": true
+          },
+          {
+            "name": "极性未确认草稿与真实宿主历史保存重开保持正式键",
+            "passed": true
+          },
+          {
+            "name": "正式与真实设计视图极性标签选择仍保留整窗门禁",
+            "passed": true
+          }
+        ]
+      },
+      "loadedProduct": [
+        "SunEyeVision.Tool.BlobAnalysis.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll\t1171CAE53C433F28F892AD830FB9B747A354F1BAF770C92575EDCA8B3D47B1C8",
+        "SunEyeVision.Plugin.Infrastructure\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll\t6BC90024676C8DD1240A11905F86D5F2B15266C14E86140C7987A96C86E9476A",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\t2C4506780FEBB6146FC4865C45833FC08BBA91EBC418DD7332D8FD9DF3DCD56A",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\t96F2EE0770B927BA204C54B6ABC22116FEFF8103DC8C27BEB5F4AC6F0547D79E",
+        "SunEyeVision.Plugin.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll\tBD74C6588629A442FD53E346C290927FB5E37E6DEA4A7F6696B977B01C34F3A1",
+        "SunEyeVision.Core\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll\t85AD8F619230D500BA83F62535F80EB809D3D0F663573B5B3FAF6796A3F4F6FA",
+        "SunEyeVision.Tool.BlobAnalysis.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll\t7ADC3828E131CA805333A4303F70F3A4B898D597F5EA3C0BD164D0E88C12ABCB",
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t8B49FB3EF6B78CE14CC632AB111FF17A4F86EAD0AD746C392541E579EE7F4F8A",
+        "SunEyeVision.Tool.ImageSource.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll\t0CD9ED17622BDB516AC596DBBD75625500286EA25D0AE6DC0EE47B48ACEC8095",
+        "SunEyeVision.Tool.ImageSource.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll\t6DA92879C59C98D731700A97E04557465E49DADA511B5C93935024B17BCC4939",
+        "SunEyeVision.Workflow\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll\t323E52C3F9DA1780570F102612AA8312954B18D2487394240C1CA8D27520226B",
+        "SunEyeVision.HalAdapter\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll\t0A1002E428FBDAF0E2356495710782F043F1587350CF6BA3AC802606DE591526",
+        "SunEyeVision.HalAdapter.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll\tFDC9FCB9052097A6CEEBD8DD13BF81290DE8FC7A53AFB7D1F3CBD7B9EFB5ADB3",
+        "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\t6F6086117B6429307DE154E038424E12AA9F5A1C721A1014C9F7732A46B0AF81"
+      ]
+    }
+  ],
+  "sameProductAcrossTracks": true,
+  "guiAssertionsPassed": [
+    "正式ToolRegistry视图及BlobDesignData设计上下文均真实Loaded/可见",
+    "两项ChoiceItem.Key/Label分离，实际可见TextBlock渲染亮于背景/暗于背景",
+    "选择后捕获仍为Binary/BinaryInv，真实MaterializeSettings.Type对应当前本方枚举分支",
+    "真实Host未确认草稿隔离，确认/Undo/Redo/保存重开保持正式key与Schema指纹",
+    "ROI整窗拒绝及None/Double确认保存工作流调试插件执行门禁保持"
+  ],
+  "testPreconditionFailure": {
+    "path": "Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-010\\build.log",
+    "sha256": "3dc8856c3a4dfea14e93d13db775a24acc3ddae91732196f02f054f625194aca",
+    "error": "新测试ToolPresentation第二位置参数误用Region列表，编译CS1503，未进入产品用例；改regions命名参数后通过",
+    "classification": "测试前置，不是产品失败"
+  },
+  "formalRerun": "S4_BLOB_POLARITY_UI=1；Run-S2ReleaseValidation.ps1 -Stage S4 -Track BlobParameterProduction；不设该开关只20项非GUI。",
+  "boundaries": [
+    "显示标签及当前设置接线不证明原厂像素等价，未新执行原厂或S3差分算法验证",
+    "实际设计上下文不替代VS设计器；未改S4DesignTimeCases或引用线文件",
+    "独立Host参数确认与UI整窗确认分别记录；ROI/结果尚未闭合仍整窗拒绝",
+    "原SDK未启动，GUI已释放，完整B08和人工验收仍未完成"
+  ]
+}

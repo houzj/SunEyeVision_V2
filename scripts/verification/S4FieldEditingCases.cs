@@ -62,6 +62,7 @@ internal static class S2DocumentEditingCases
             VerifyFieldState();
             VerifyAtomicFieldGroup();
             VerifyReferenceComposition();
+            VerifyNumericReferenceCleanup();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
@@ -447,6 +448,65 @@ internal static class S2DocumentEditingCases
         finally{((INotifyPropertyChanged)refreshSession).PropertyChanged-=observer;}
         Require(!refreshField.HasInvalidText&&refreshWrites==0,"刷新观察者异常被误标为来源错误");
         Console.WriteLine("通过：原订阅树刷新及投影失败不半替换，恢复不写入，观察者异常不误判为读源失败");
+    }
+    private static void VerifyNumericReferenceCleanup()
+    {
+        foreach(var scenario in new[]{"unload","hide","close","reopen","dispose"})
+        {
+            var writes=0;var candidate=new DeclaredReferenceCandidate("数组","cleanup-source",null,
+                new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
+            var alternate=candidate with{NodeId="cleanup-other"};
+            using var field=new DeclaredFieldEditor(new("cleanup-"+scenario,DataType.Integer,Storage:NumericStorage.Int32,
+                EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"清理来源",
+                new ReferenceSetting(candidate.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
+                new ReferenceFieldOptions(_=>new(new[]{candidate,alternate},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true),
+                new ConstantSetting(7L),presentation:new("cleanup-"+scenario,"清理来源","参数",0,FieldEditorKind.Scalar)
+                {Layout=new("参数","参数",Minimum:0,Maximum:1000,DecimalPlaces:0)});
+            Show(field);
+            var numeric=typeof(DeclaredFieldEditor).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field)!;
+            var coordinator=numeric.GetType().GetField("_coordinator",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(numeric)!;
+            var type=coordinator.GetType();
+            object? Member(string name)=>type.GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator);
+            var session=Member("_reference")!;var sessionType=session.GetType();
+            var box=(ComboBox)Member("_box")!;var commit=Member("_commit")!;
+            bool Flag(object target,string name)=>(bool)target.GetType().GetProperty(name,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(target)!;
+            void Open(){box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);sessionType.GetProperty("IsDropDownOpen")!.SetValue(session,true);}
+            Require(ReferenceEquals(Member("_owner"),owner),"卸载清理缺少真实Owner监听前提");
+            sessionType.GetMethod("Refresh")!.Invoke(session,null);
+            var roots=((System.Collections.IEnumerable)sessionType.GetProperty("SourceNodes")!.GetValue(session)!).Cast<object>();
+            var stale=roots.SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>())
+                .Single(node=>node.GetType().GetProperty("Candidate")!.GetValue(node) is DeclaredReferenceCandidate selectedCandidate&&selectedCandidate.NodeId=="cleanup-other");
+            Open();Require(box.IsDropDownOpen&&Flag(session,"IsDropDownOpen"),"清理缺少原Combo及订阅打开前提");
+            var armed=true;var observed=false;
+            EventHandler outerFault=(_,_)=>{if(armed&&!box.IsDropDownOpen){armed=false;
+                if(scenario=="dispose"){((ICommand)sessionType.GetProperty("ClickCommand")!.GetValue(session)!).Execute(stale);return;}
+                if(scenario=="reopen"){sessionType.GetProperty("IsDropDownOpen")!.SetValue(session,false);sessionType.GetProperty("IsDropDownOpen")!.SetValue(session,true);return;}
+                throw new InvalidOperationException("outer-close-failed");}};
+            var outerDescriptor=DependencyPropertyDescriptor.FromProperty(ComboBox.IsDropDownOpenProperty,box.GetType());
+            PropertyChangedEventHandler referenceFault=(_,args)=>
+            {if(armed&&args.PropertyName=="IsDropDownOpen"&&!Flag(session,"IsDropDownOpen")){armed=false;throw new InvalidOperationException("reference-close-failed");}};
+            if(scenario is "close" or "reopen" or "dispose")outerDescriptor.AddValueChanged(box,outerFault);else ((INotifyPropertyChanged)session).PropertyChanged+=referenceFault;
+            try
+            {
+                var name=scenario=="dispose"?"Dispose":scenario is "close" or "reopen"?"ClosePopups":scenario=="unload"?"OnUnloaded":"PrepareForVisibility";
+                var args=scenario is "close" or "reopen" or "dispose"?Array.Empty<object>():scenario=="unload"?new object[]{numeric,new RoutedEventArgs(FrameworkElement.UnloadedEvent)}:new object[]{false};
+                try{type.GetMethod(name,BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!.Invoke(coordinator,args);}
+                catch(TargetInvocationException error)when(error.InnerException is not null)
+                {observed=error.InnerException.ToString().Contains(scenario=="close"?"outer-close-failed":"reference-close-failed",StringComparison.Ordinal);}
+                if(scenario=="dispose"){Require(!armed&&writes==0&&!Flag(session,"IsDropDownOpen")&&Flag(session,"IsSuspended"),"借用数值协调器Dispose关闭回调仍可写活跃字段状态");continue;}
+                if(scenario=="reopen"){Require(!armed&&!box.IsDropDownOpen&&Flag(session,"IsDropDownOpen")&&writes==0,"旧数值关闭操作覆盖回调中新代订阅Popup");continue;}
+                Require(observed,"关闭故障没有保留异常语义："+scenario);
+                Require(!box.IsDropDownOpen&&!Flag(session,"IsDropDownOpen"),"关闭故障截断原Combo或引用Popup清理："+scenario);
+                Require(!(bool)type.GetField("_closing",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!,"关闭异常留下重入标记");
+                if(scenario=="unload")Require(Member("_owner") is null&&!((bool)type.GetField("_active",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!),"卸载异常留下Owner监听归属或活跃状态");
+                if(scenario=="hide")Require((bool)type.GetField("_presentationHidden",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!
+                    &&Flag(commit,"IsSuspended")&&Flag(session,"IsSuspended"),"隐藏关闭异常跳过数值暂停或引用退役");
+                if(scenario is "hide" or "unload")((ICommand)sessionType.GetProperty("ClickCommand")!.GetValue(session)!).Execute(stale);
+                Require(writes==0,"清理异常或退役后的旧选择写入正式字段");
+            }
+            finally{outerDescriptor.RemoveValueChanged(box,outerFault);((INotifyPropertyChanged)session).PropertyChanged-=referenceFault;}
+        }
+        Console.WriteLine("通过：原数值Combo关闭故障仍关订阅双层，卸载解除Owner，隐藏先暂停数值与引用，异常完整保留且卸载/隐藏/借用Dispose旧回调无写入、重开新代不被覆盖");
     }
     private static void VerifyReferenceCandidateRefresh()
     {

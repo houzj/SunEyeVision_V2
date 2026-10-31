@@ -298,23 +298,29 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private void ClosePopups()
     {
         Cancel();_closing=true;
-        try{if(_box is not null)_box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);_referenceScope?.ClosePopups();}
+        var popupGeneration=_reference?.PopupGeneration;
+        try{ParameterCleanup.Run(new Action[]{()=>_box?.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false),
+            ()=>{if(popupGeneration==_reference?.PopupGeneration)_referenceScope?.ClosePopups();}});}
         finally{_closing=false;}
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
-    {_active=false;_loadGeneration++;_resume?.Abort();_resume=null;_commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
+    {
+        _active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
+        ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
+            ()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),()=>_expansion?.Close(),ClosePopups});
+    }
     internal void PrepareForVisibility(bool visible)
     {
-        _referenceScope?.PrepareForVisibility(visible&&_eventRoot.IsEnabled);
         if(_disposed)return;
         if(!visible)
         {
             _presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
-            _commit?.Suspend();ClosePopups();
+            ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
+                ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
-            _presentationHidden=false;
+            _presentationHidden=false;_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
             QueueResume();
         }
@@ -332,8 +338,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!_eventRoot.IsEnabled)
         {
             _loadGeneration++;_resume?.Abort();_resume=null;
-            _commit?.Suspend();ClosePopups();
-            if(Current())_referenceScope?.PrepareForVisibility(false);
+            ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
+                ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
@@ -348,7 +354,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_active=false;_presentationHidden=true;_loadGeneration++;
-        var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_commit?.Suspend(),ClosePopups,
+        var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_reference?.SetSuspended(true),()=>_commit?.Suspend(),ClosePopups,
             ()=>{_state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;},
             ()=>{if(_arrange is not null){_arrange.OnStartValueChange-=OnNativeValue;_arrange.OnLeftTypeChange-=OnModeChanged;
                 if(ReferenceEquals(_arrange.SubscribeDataLeft,_reference))_arrange.SubscribeDataLeft=null;}

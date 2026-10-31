@@ -1,0 +1,237 @@
+{
+  "baseline": "e1f856eb6a05f6f9982d8eeed7bf552021958cea",
+  "scope": "原O06/B08完整UI生命周期、交互消费者与可用状态对照；原未做清单不缩小",
+  "sources": [
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html",
+      "sha256": "2C47A65956C340213D74DA62029896822943954FD8B39D8B07381C6ECE6EF07F"
+    },
+    {
+      "path": "docs/collaboration/VM_CONTROL_BATCH_QUEUE_20261029.md",
+      "sha256": "691B31ACC1077EB4616C8A899EB26B2D7A567CF1F8D4492745B045556B68F4E9"
+    },
+    {
+      "path": "docs/collaboration/evidence/BLOB_B08_REFERENCE_AUDIT_20261030.json",
+      "sha256": "D25F4EE6D6AF453C16142300CB8B7FA00E49C9FC06927681D90BB977B625FDE8"
+    },
+    {
+      "path": "docs/collaboration/evidence/B08_VARIABLE_DIALOG_AUDIT_20261030.json",
+      "sha256": "0438C9F1D15A67A18B3ECB31952A6F50C07F024FB787A00133CC42ACB83058D2"
+    },
+    {
+      "path": "docs/collaboration/evidence/B08_VARIABLE_INDEX_ENTRY_EVIDENCE_20261030.json",
+      "sha256": "0E4061EA19D48CB60BB5027792227D19A6166695EBA1104B4A5F4CF739CB7714"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs",
+      "sha256": "A732B9BA9F5E3B38475098CF0E4EAE5A37C64B4E9969E785D2E5712657E1DFA4"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "33F82515BA84273CFABCEC5F2F8AC310DE22BEDFF371C4BB83EB506568B6F1EA"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "3591B0626A1059AB2B3B4405B5CEF4D38E4D4123BC32E19D99EDFC9A0AAD3FE1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "5987B058151C0B8A0B15FDEB7A2ABBC91382355A9B9A752DFFC759E500D09D90"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "EA0A29C49B9E787FE3080D24DD344E51AB673CC152E00FC2507BF00C63E63460"
+    }
+  ],
+  "matrix": [
+    {
+      "id": "UI01",
+      "requirement": "原件完整组合与家族",
+      "implementation": "ReferenceField.xaml ButtonSelecter_sub两个Popup、DeleteTextBox、SubTreeView；ParamSubscribeWindow；VariableSelectionDialog原主题资源",
+      "decision": "复用；不混StringConfig单Popup家族、不改图标/尺寸/布局",
+      "proof": "FieldEditing与VariableDialog、WindowPresentation扩展"
+    },
+    {
+      "id": "UI02",
+      "requirement": "节点→输出→成员声明树、同名/跨scope稳定身份",
+      "implementation": "DeclaredReferenceCandidate.Freeze/DeclaredReferenceTree.Build/ReferenceFieldSession.RestoreSelection，SameSource含type/storage/member path",
+      "decision": "已在242288补模块显示名排序；不凭标题重绑",
+      "proof": "FieldEditing新增来源刷新及扩展16组递归深层/同名身份"
+    },
+    {
+      "id": "UI03",
+      "requirement": "普通int/float过滤及主源/索引资格",
+      "implementation": "ReferenceCandidates冻结+宿主ReadCandidates，DeclaredReferenceTree.Matches，主源/AtField/AtVariable复合SourceAvailable",
+      "decision": "本线只消费已限定候选；来源前序/逐叶资格由主线负责，不能在WPF复制调度谓词",
+      "proof": "先前FieldEditing35/VariableFields13；主线资格合同不在本线当前基线"
+    },
+    {
+      "id": "UI04",
+      "requirement": "递归选中恢复、旧树刷新、失效删除/更名/同名替代",
+      "implementation": "SubTreeView容器遍历；Refresh原子装入树，旧失败保快照但_candiatesValid=false；SourceError只阻断提交",
+      "decision": "复用及242288修复，恢复只清诊断不写配置，标签不承担身份",
+      "proof": "FieldEditing/VariableFields与扩展深层树"
+    },
+    {
+      "id": "UI05",
+      "requirement": "文本固定索引、模块/变量动态索引及序列选择修复",
+      "implementation": "TryPreparePending/TryStageReference，VariableSelectionRequest.IsIndex，ReferenceSettingParts",
+      "decision": "显式单项索引，无数组首项或默认值回退；原生VM数组索引全域等价仍未证",
+      "proof": "FieldEditing/VariableFields/扩展固定多项编译与记录成员投影"
+    },
+    {
+      "id": "UI06",
+      "requirement": "常量↔引用、解绑当前值、拒绝与原文",
+      "implementation": "DeclaredFieldState唯一接受值，NativeNumberCoordinator与NativeRangePresenter借用，ReadCurrentValue由宿主提供",
+      "decision": "复用；本线不改当前值/历史合同，不猜默认值；无值时保留未完成状态",
+      "proof": "FieldEditing/VariableFields；当前值与保存历史由另一线整链核收"
+    },
+    {
+      "id": "UI07",
+      "requirement": "Enter/Escape/Delete/焦点与真实弹层关闭",
+      "implementation": "ReferencePopupScope、DeleteTextBox、NativeNumericCommit及原Combo",
+      "decision": "复用，非法留焦与合法单写；本批集中修正数字协调器关闭异常不得跳过引用清理",
+      "proof": "原完整FieldEditing与新增五出口故障注入"
+    },
+    {
+      "id": "UI08",
+      "requirement": "展开非模态即时选择、源/索引互斥、移出括号清空内容",
+      "implementation": "ReferenceExpansionRequest借同一session；ParamSubscribeWindow绑定IsIndex；SelectedSource/SelectedIndex；SetIndex",
+      "decision": "复用，不新增搜索/确定/取消事务；关窗不撤销已接纳选择",
+      "proof": "WindowPresentation扩展16组"
+    },
+    {
+      "id": "UI09",
+      "requirement": "展开窗Owner位置/大小/窗口状态跟随、互斥与偏好",
+      "implementation": "ReferenceExpansionCoordinator.OwnerScope/ConditionalWeakTable；ParamSubscribeWindow.Owner事件DetachOwner",
+      "decision": "复用Owner跟随；Owner范围偏好相对原Solution范围仍显式差异，需宿主上下文合同统一决定；宽240相对原英文320保留人工DPI核定，不擅改S1",
+      "proof": "扩展Owner跟随、双向移动、不同入口互斥与Owner独立偏好通过"
+    },
+    {
+      "id": "UI10",
+      "requirement": "变量分组/搜索/分页/空态/单击双击/确认取消",
+      "implementation": "VariableSelectionDialog冻结显示snapshot，VariableGroupSelector/Tree、VariablePageNavigator，SelectedVarItem带正式Reference",
+      "decision": "复用；Value仅展示不写方案；不引入VM全局服务或修改分组",
+      "proof": "VariableDialog8组、VariableFields真实Owner模态"
+    },
+    {
+      "id": "UI11",
+      "requirement": "变量主源与索引请求分代、目录刷新、Owner隐藏关闭",
+      "implementation": "VariableSelectionRequest acceptance/ui/candidate generation；ReferenceExpansionCoordinator.VariableLease与Owner互斥",
+      "decision": "复用，刷新/禁用/重绑/隐藏/Dispose使旧请求失效，确认只经同一正式提案",
+      "proof": "VariableFields13组"
+    },
+    {
+      "id": "UI12",
+      "requirement": "隐藏、禁用、折叠、卸载、关闭、借用Dispose、异常与回调重入",
+      "implementation": "ReferencePopupScope/ReferenceExpansionCoordinator原正确清理；NativeRangePresenter ParameterCleanup正确；NativeNumberCoordinator原顺序路径有缺口",
+      "decision": "本批集中修数字协调器ClosePopups/OnUnloaded/PrepareForVisibility/OnEnabledChanged/Dispose，早退役且所有清理独立执行；捕获PopupGeneration不关回调新代",
+      "proof": "旧候选实际卸载故障复现；修复版FieldEditing004为36条、VariableFields002为13、RuntimeEditorUiStage003为6、扩展WindowPresentation002为16通过；旧失败及首用例前超时单列保留"
+    },
+    {
+      "id": "UI13",
+      "requirement": "Blob真实生产入口、字段捕获与当前可用状态",
+      "implementation": "BlobEditorFactory→BlobParameterEditor→DeclaredSettingsView.Bind；RuntimeNodeConfigurationControl组装ReadCandidates/ValidateProposal/ReadCurrentValue及DeclaredInputFieldsView",
+      "decision": "公共库真实消费者已定位；当前9个可订阅数值正式字段被BlobRunUi抑制，用S1试用组合展示，不能将公共控件通过冒充可见Blob功能接通",
+      "proof": "RuntimeEditorUiStage6组，S1确认/调试/保存保护、取消重开/旧控件失效"
+    },
+    {
+      "id": "UI14",
+      "requirement": "复制、历史、保存重开、改源退役及正式执行",
+      "implementation": "正式ParameterSetting稳定身份通过宿主；控件无自己的历史、持久化或执行引擎",
+      "decision": "本线保持唯一接受状态和宿主预检；生产生命周期由另一线、普通资格与编译执行由主线集中集成，不加第二模型或兼容层",
+      "proof": "其他线正式记录，当前候选不代签"
+    },
+    {
+      "id": "UI15",
+      "requirement": "设计时、原件外观、主题、中文/DPI与实际键鼠",
+      "implementation": "同真实视图/资源链，ParamSubscribeWindow可独立构造、S1真实MainWindow",
+      "decision": "自动实际WPF和截图不代VS实际设计器或用户人工；原浅色/中文基准保留，动态语言/主题未扩展",
+      "proof": "扩展独立模板/双树通过；VS与人工本批未验"
+    },
+    {
+      "id": "UI16",
+      "requirement": "普通String/TRIGGER_STRING/通讯特殊源、父Group/动态输出",
+      "implementation": "原完整清单及已归档原生/SDK证据；Blob普通参数Integer3/Number6，无普通String消费者",
+      "decision": "保留完整未证项，StringConfig文本表达式另家族；不扩大Blob数值UI范围，不以局部原分支外推全域，不启SDK；Group暂停",
+      "proof": "B08_BLOB_STRING_FAMILY_SCOPE、NATIVE_DECISION、SOURCE_QUALIFICATION_RUNTIME审计"
+    }
+  ],
+  "blobReferenceParameters": [
+    {
+      "id": "Threshold",
+      "bindingName": "LowThreshold",
+      "type": "Integer",
+      "fieldId": "field:43bda03261df55b88f963bd18f2ba4d9",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "UpperThreshold",
+      "bindingName": "HightThreshold",
+      "type": "Integer",
+      "fieldId": "field:8ca20000000040008000000000000002",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "BlobCountLimit",
+      "bindingName": "FindNum",
+      "type": "Integer",
+      "fieldId": "field:e748553b7cb45d1a8003c2b345b1d98f",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterAreaMin",
+      "bindingName": "MinArea",
+      "type": "Number",
+      "fieldId": "field:fcdb01b095c25c6ea22384f993450aac",
+      "pairWith": "FilterAreaMax",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterAreaMax",
+      "bindingName": "MaxArea",
+      "type": "Number",
+      "fieldId": "field:cdce3e942b555fa58489e08eeb39236f",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterCircularityMin",
+      "bindingName": "MinCircularity",
+      "type": "Number",
+      "fieldId": "field:da4d70261e23551e9a5bd832b2a686d1",
+      "pairWith": "FilterCircularityMax",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterCircularityMax",
+      "bindingName": "MaxCircularity",
+      "type": "Number",
+      "fieldId": "field:1a8be75176b350f09f3cd64506c136da",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterRectangularityMin",
+      "bindingName": "MinRectangularity",
+      "type": "Number",
+      "fieldId": "field:13d8c5e0c7445f1087497a21f4103a5e",
+      "pairWith": "FilterRectangularityMax",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    },
+    {
+      "id": "FilterRectangularityMax",
+      "bindingName": "MaxRectangularity",
+      "type": "Number",
+      "fieldId": "field:c38989cfdf9e51799d27e0eeee34e726",
+      "pairWith": "",
+      "visibleUi": "BlobRunUi显式SuppressedFieldRows；对应可见S1试用组合，非正式数值来源生产接入"
+    }
+  ],
+  "independentGap": "NativeNumberCoordinator顺序关闭/隐藏/卸载/禁用以及借用Dispose的异常和晚回调隔离，本批集中修复；其余有证据的正确公共实现复用",
+  "noNewEvidenceRequest": "原已存报告足以支持本次异常清理；未启原VM/SDK，无新增逆向材料索取；未证原始范围保留由主线汇总",
+  "mainDocumentOwnership": "本分支不修改原O06/CURRENT_TASK，主线核收本完整对照后集中更新原文；本记录不代阶段完成"
+}

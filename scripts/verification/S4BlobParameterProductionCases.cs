@@ -147,6 +147,48 @@ internal static class S2DocumentEditingCases
                     Reject(()=>{using var invocation=stored.Debug(edit,debugOwner.Owner);},"私有调试预检接纳暂不可用模式");
                     Require(ReferenceEquals(before,f.Node.RuntimeConfiguration)&&f.Current==37,"模式拒绝污染正式九参数");
             });
+            Case("真实方案重开后空扩展数据不使连续结构同步自发增版",()=>
+            {
+                using var first=new Fixture();using var loaded=new Fixture(first.SaveReopen("structure-stability"));
+                Require(loaded.Flow.AdditionalData is {Count:0},"真实LoadCandidate未建立空扩展数据复现前提");
+                var versions=new List<long>{loaded.Host.Capture().Version};
+                for(var i=0;i<3;i++){loaded.Host.SynchronizeStructure();versions.Add(loaded.Host.Capture().Version);}
+                Console.WriteLine("重开结构版本轨迹："+string.Join(",",versions));
+                Require(versions.Distinct().Count()==1,"没有任何结构编辑却连续增版："+string.Join(",",versions));
+                var draft=loaded.Host.BeginEdit(loaded.Flow.Id,loaded.Node.Id);
+                loaded.Host.ValidateRuntimeFieldProposals(draft,new Dictionary<string,ParameterSetting>{{loaded.Threshold,new ConstantSetting(101L)}});
+                Require(loaded.Host.Capture().Version==versions[0],"纯字段提案校验产生结构版本");
+            });
+            foreach(var shape in new[]{"null","empty","nonempty"})
+            Case("流程扩展数据快照复制保留形态且与正式及其他副本隔离："+shape,()=>
+            {
+                using var f=new Fixture();
+                f.Flow.AdditionalData=shape=="null"?null:new Dictionary<string,JsonElement>();
+                if(shape=="nonempty")f.Flow.AdditionalData!.Add("test-metadata",JsonSerializer.SerializeToElement(new{label="initial"}));
+                f.Host.SynchronizeStructure();var snapshot=f.Host.Capture();
+                var left=snapshot.CopyConfiguration().Workflows.Single().AdditionalData;
+                var right=snapshot.CopyConfiguration().Workflows.Single().AdditionalData;
+                if(shape=="null"){Require(left is null&&right is null,"null形态被改写");return;}
+                Require(left is not null&&right is not null&&left.Count==f.Flow.AdditionalData!.Count,"快照丢失空或非空扩展数据");
+                Require(!ReferenceEquals(left,right)&&!ReferenceEquals(left,f.Flow.AdditionalData),"快照共享扩展字典");
+                left!["mutated-copy"]=JsonSerializer.SerializeToElement(true);
+                Require(!right!.ContainsKey("mutated-copy")&&!f.Flow.AdditionalData!.ContainsKey("mutated-copy"),"修改副本污染正式或另一个副本");
+                if(shape=="nonempty")
+                {
+                    left["test-metadata"]=JsonSerializer.SerializeToElement(new{label="changed"});
+                    Require(right["test-metadata"].GetProperty("label").GetString()=="initial"&&f.Flow.AdditionalData!["test-metadata"].GetProperty("label").GetString()=="initial","JsonElement值隔离丢失");
+                }
+                var version=f.Host.Capture().Version;f.Host.SynchronizeStructure();Require(f.Host.Capture().Version==version,"同一扩展结构反复重基");
+            });
+            Case("非空未知流程扩展仍受正式格式门禁，保存失败不覆盖已有文件",()=>
+            {
+                using var f=new Fixture();var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,f.Flow.Id+"-extension-save.solution");
+                var repository=new SolutionRepository();Require(repository.Save(f.Document,path),repository.LastError??"初始合法保存失败");var bytes=File.ReadAllBytes(path);
+                f.Flow.AdditionalData=new Dictionary<string,JsonElement>{{"test-unknown-extension",JsonSerializer.SerializeToElement(17)}};
+                Require(!repository.Save(f.Document,path)&&File.ReadAllBytes(path).SequenceEqual(bytes),"未知扩展突破格式门禁或覆盖文件");
+                var loaded=repository.LoadCandidate(path).Candidate??throw new Exception("原合法文件被污染");
+                try{Require(loaded.Workflows.Single().AdditionalData is {Count:0},"未覆盖的合法文件混入未知扩展");}finally{loaded.ExecutionOwner.Retire();}
+            });
             Case("窗口所属正式会话退役后旧草稿和私有回执不能确认",()=>
             {
                 using var f=new Fixture(documentHistory:true);var draft=f.Host.BeginEdit(f.Flow.Id,f.Node.Id);using var owner=new OwnerLease();using var invocation=f.Debug(draft,owner.Owner);

@@ -7,11 +7,12 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Workflow;
 
-internal sealed record RuntimeVariableBindingPlan(VariableSetting Setting,Port Source,TypeRef SelectedType,Port Target,BindingPlan? Index,BindingVariableSource? VariableIndex=null);
+internal sealed record RuntimeVariableBindingPlan(VariableSetting Setting,Port Source,TypeRef SelectedType,Port Target,BindingPlan? Index,BindingVariableSource? VariableIndex=null,ParameterReferenceBehavior Behavior=ParameterReferenceBehavior.StrictExactlyOne);
 internal static class RuntimeVariableBindings
 {
-    internal static RuntimeVariableBindingPlan Compile(VariableSetting setting,Port target,WorkflowGlobalRunValues? globals,IBindingCompilationScope scope)
+    internal static RuntimeVariableBindingPlan Compile(VariableSetting setting,Port target,WorkflowGlobalRunValues? globals,IBindingCompilationScope scope,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
+        ParameterReferenceRules.ValidateTarget(target,behavior);
         if(!string.IsNullOrEmpty(setting.RebindingReason))throw new ArgumentException(setting.RebindingReason);
         if(globals is null||globals.SolutionId!=setting.Reference.SolutionId||!globals.TryGetDeclaration(setting.Reference.VariableId,out var source))
             throw new ArgumentException("变量不存在于本批冻结声明，或没有受支持的纯值类型。");
@@ -29,13 +30,13 @@ internal static class RuntimeVariableBindings
             }
             else if(reference.Selection is BindingSelection.AtField dynamicIndex)
             {
-                var compiled=service.CompileBinding(dynamicIndex.Reference,new Port("index",TypeRef.ScalarOf(ScalarKind.Int64)),scope);
+                var compiled=service.CompileBinding(dynamicIndex.Reference,new Port("index",TypeRef.ScalarOf(ScalarKind.Int64),Storage:behavior==ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback?NumericStorage.Int32:NumericStorage.Int64),scope,behavior:behavior);
                 index=compiled.Plan??throw new ArgumentException(compiled.Diagnostic?.Message??"变量动态索引未就绪。");
-                if(index.Source.SelectedType!=TypeRef.ScalarOf(ScalarKind.Int64))throw new ArgumentException("变量动态索引必须是整数标量。");
+                if(!ParameterReferenceRules.CanUseIndexSource(index.Source.SelectedType,behavior))throw new ArgumentException("变量动态索引必须是整数标量。");
             }
             else if(reference.Selection is BindingSelection.AtVariable variable)
             {
-                if(!scope.TryGetVariable(variable.Reference,out variableIndex)||variableIndex.Reference.Type!=variable.Reference.Type
+                if(!ParameterReferenceRules.CanUseIndexSource(variable.Reference.Type,behavior)||!scope.TryGetVariable(variable.Reference,out variableIndex)||variableIndex.Reference.Type!=variable.Reference.Type
                     ||variableIndex.Reference.SolutionId!=variable.Reference.SolutionId||variableIndex.Reference.VariableId!=variable.Reference.VariableId
                     ||variableIndex.Reference.Storage!=variable.Reference.Storage)throw new ArgumentException("索引变量的冻结声明不存在或已改变。");
                 if(variableIndex.Producer is {} producer&&producer.ScopeId==scope.Consumer.ScopeId
@@ -44,9 +45,9 @@ internal static class RuntimeVariableBindings
             else throw new ArgumentException("不支持的变量索引类型。");
             type=type.Element!;
         }
-        _=service.CompareValueSource(new Port(source.Id,type,Storage:source.Storage),target,setting.Conversion,out var issue);
+        _=service.CompareValueSource(new Port(source.Id,type,Storage:source.Storage),target,setting.Conversion,out var issue,behavior);
         if(issue is not null)throw new ArgumentException(issue.Message);
-        return new(setting,source,type,target,index,variableIndex);
+        return new(setting,source,type,target,index,variableIndex,behavior);
     }
     internal static BindingResolution Resolve(RuntimeVariableBindingPlan plan,WorkflowGlobalRunValues globals,IBindingRunSnapshot snapshot)
         =>ResolveCore(plan,globals,snapshot,null);
@@ -68,11 +69,11 @@ internal static class RuntimeVariableBindings
             {
                 long index;
                 if(reference.Selection is BindingSelection.AtConstant constant)index=constant.Index;
-                else if(plan.VariableIndex is {} variable)index=ParameterBindingService.ReadVariableIndex(variable,snapshot);
+                else if(plan.VariableIndex is {} variable)index=ParameterBindingService.ReadVariableIndex(variable,snapshot,plan.Behavior);
                 else
                 {
-                    var result=published is null?new ParameterBindingService().ResolveBinding(plan.Index!,snapshot)
-                        :new ParameterBindingService().ResolvePublishedBinding(plan.Index!,published);
+                    var result=published is null?new ParameterBindingService().ResolveIndexBinding(plan.Index!,snapshot)
+                        :new ParameterBindingService().ResolvePublishedIndexBinding(plan.Index!,published);
                     if(!result.Success)return result;
                     index=result.Value is long integer?integer:throw new ArgumentException("变量动态索引没有整数标量值。");
                 }
@@ -80,7 +81,7 @@ internal static class RuntimeVariableBindings
                 if(index<0||index>=elements.Length)throw new ArgumentException("变量索引超出本次序列范围，不使用首项回退。");
                 value=elements[index];
             }
-            return new ParameterBindingService().ResolveValue(value,plan.SelectedType,plan.Target,plan.Setting.Conversion);
+            return new ParameterBindingService().ResolveValue(value,plan.SelectedType,plan.Target,plan.Setting.Conversion,plan.Behavior);
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException or OverflowException)
         {return new(false,null,new("variable-value",error.Message,plan.Target.Id));}

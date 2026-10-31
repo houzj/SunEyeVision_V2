@@ -137,7 +137,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId && OutputBindingChangeService.IsOrdinaryNumericParameter(port)))
             scope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,scopeId,node.Id).Validate);
         var target=node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId);
-        var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,scope,setting.Conversion);
+        var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,scope,setting.Conversion,node.RuntimeConfiguration!.GetParameterReferenceBehavior(fieldId));
         return new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
     }
 
@@ -150,7 +150,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),globals.CaptureBindingSources());
         if(node.RuntimeConfiguration!.SettingsSchema.Inputs.Any(port=>port.Id==fieldId && OutputBindingChangeService.IsOrdinaryNumericParameter(port)))
             scope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,workflow.Id,node.Id).Validate);
-        _=RuntimeVariableBindings.Compile(setting,node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId),globals,scope);
+        _=RuntimeVariableBindings.Compile(setting,node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId),globals,scope,node.RuntimeConfiguration.GetParameterReferenceBehavior(fieldId));
     }
     internal static string? ReferenceOwnershipError(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId)
     {
@@ -210,7 +210,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                 {
                     try
                     {
-                        var variable=RuntimeVariableBindings.Compile((VariableSetting)setting,runtime.BindingTargets.Single(port=>port.Id==id),_producedGlobals,settingsIds.Contains(id)?manualScope:compilationScope);
+                        var variable=RuntimeVariableBindings.Compile((VariableSetting)setting,runtime.BindingTargets.Single(port=>port.Id==id),_producedGlobals,settingsIds.Contains(id)?manualScope:compilationScope,runtime.GetParameterReferenceBehavior(id));
                         variablePlans.Add(id,variable);
                         if(variable.Index is {} index)plans.Add(id,index);
                     }
@@ -223,7 +223,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                     if(ReferenceOwnershipError(workflow,node,id,setting,_scope) is {} ownershipError)
                     {errors.Add(new(id,id,ownershipError));continue;}
                     var target=runtime.BindingTargets.Single(port=>port.Id==id);
-                    var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,settingsIds.Contains(id)?manualScope:compilationScope,setting.Conversion);
+                    var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,settingsIds.Contains(id)?manualScope:compilationScope,setting.Conversion,runtime.GetParameterReferenceBehavior(id));
                     if(compiled.Plan is {} plan)plans.Add(id,plan);
                     else errors.Add(new(id,id,compiled.Diagnostic?.Message??"Runtime reference is not ready."));
                 }

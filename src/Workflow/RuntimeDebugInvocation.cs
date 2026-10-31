@@ -176,10 +176,10 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 var target=configuration.BindingTargets.Single(port=>port.Id==fieldId);
                 if(setting is ReferenceSetting reference)
                 {
-                    var compiled=resolver.CompileBinding(reference.Reference,target,manualIds.Contains(fieldId)?manualScope:scope,reference.Conversion);
+                    var compiled=resolver.CompileBinding(reference.Reference,target,manualIds.Contains(fieldId)?manualScope:scope,reference.Conversion,configuration.GetParameterReferenceBehavior(fieldId));
                     plans.Add(fieldId,compiled.Plan??throw new InvalidOperationException(compiled.Diagnostic?.Message??"调试来源声明不可用。"));
                 }
-                else if(setting is VariableSetting variable)variablePlans.Add(fieldId,RuntimeVariableBindings.Compile(variable,target,globals,manualIds.Contains(fieldId)?manualScope:scope));
+                else if(setting is VariableSetting variable)variablePlans.Add(fieldId,RuntimeVariableBindings.Compile(variable,target,globals,manualIds.Contains(fieldId)?manualScope:scope,configuration.GetParameterReferenceBehavior(fieldId)));
             }
             IReadOnlyImage? fallbackImage=null;
             if(configuration.Schema.WorkflowImageInputId is { } imagePort&&!settings.ContainsKey(imagePort)&&defaultImage is not null)

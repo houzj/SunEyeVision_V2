@@ -21,7 +21,7 @@ public sealed partial class RuntimeToolConfiguration
 
     private RuntimeToolConfiguration(IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
         IReadOnlyDictionary<string,ParameterSetting>? currentValues=null,IReadOnlyDictionary<string,long>? currentRevisions=null,
-        IReadOnlyList<string>? bindingOrder=null)
+        IReadOnlyList<string>? bindingOrder=null,IReadOnlyDictionary<string,ParameterReferenceBehavior>? frozenBehaviors=null)
     {
         _definition = definition ?? throw new ArgumentNullException(nameof(definition));
         if (string.IsNullOrWhiteSpace(definition.ToolId)) throw new ArgumentException("Runtime ToolId is required.");
@@ -29,7 +29,13 @@ public sealed partial class RuntimeToolConfiguration
         if(definition.Describe().Inputs.Select(p=>p.Id)
             .Intersect(_settingsFields.SettingsSchema.Inputs.Select(p=>p.Id),StringComparer.Ordinal).Any())
             throw new ArgumentException("Runtime input and settings field identities must be distinct.");
+        _referenceBehaviors=frozenBehaviors??ParameterReferenceRules.Freeze(definition);
         Fields=new(BindingTargets,settings);
+        foreach(var pair in Fields.Capture())
+        {
+            var selection=pair.Value switch{ReferenceSetting reference=>reference.Reference.Selection,VariableSetting variable=>variable.Reference.Selection,_=>null};
+            if(selection is not null)ParameterReferenceRules.ValidateIndexSelections(selection,GetParameterReferenceBehavior(pair.Key));
+        }
         _bindingNames=FreezeBindingNames();_bindingOrder=FreezeBindingOrder(bindingOrder);
         var parameters=SettingsSchema.Inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
         var current=new Dictionary<string,ConstantSetting>(StringComparer.Ordinal);
@@ -67,6 +73,8 @@ public sealed partial class RuntimeToolConfiguration
             {
                 writer.WriteStartObject();writer.WriteString("ToolId",ToolId);
                 writer.WriteString("InputSchema",Schema.Fingerprint);writer.WriteString("SettingsSchema",SettingsSchema.Fingerprint);
+                writer.WritePropertyName("ReferenceBehaviors");writer.WriteStartObject();
+                foreach(var pair in _referenceBehaviors.OrderBy(p=>p.Key,StringComparer.Ordinal))writer.WriteString(pair.Key,pair.Value.ToString());writer.WriteEndObject();
                 writer.WritePropertyName("Fields");RuntimeFieldJson.Write(writer,Fields.Capture());
                 writer.WritePropertyName("ParameterBindingOrder");WriteBindingOrder(writer,export:false);
                 writer.WritePropertyName("ParameterBindingNames");writer.WriteStartObject();
@@ -95,7 +103,7 @@ public sealed partial class RuntimeToolConfiguration
     public object MaterializeSettings(IReadOnlyDictionary<string,object?> resolved)
         =>_definition.FreezeSettings(_settingsFields.MaterializeSettings(Fields.Select(SettingsSchema.Inputs).Materialize(resolved)));
     public RuntimeToolConfiguration WithSettings(object settings) => WithFieldValues(_settingsFields.ReadSettings(_definition.FreezeSettings(settings)).CopyValues());
-    public RuntimeToolConfiguration Copy() => new(_definition, Fields.Capture(),CaptureCurrentValues(),_currentRevisions,_bindingOrder);
+    public RuntimeToolConfiguration Copy() => new(_definition, Fields.Capture(),CaptureCurrentValues(),_currentRevisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     /// <summary>Pure parameter state, separate from binding configuration and invocation resources.
     /// Constants have only one authority, Fields; absent referenced values remain absent.</summary>
     public ConstantSetting? ReadCurrentParameter(string fieldId)
@@ -120,7 +128,7 @@ public sealed partial class RuntimeToolConfiguration
         current[fieldId]=FreezeCurrent(port,value);
         var revisions=_currentRevisions.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         revisions[fieldId]=checked(CurrentRevision(fieldId)+1);
-        return new(_definition,Fields.Capture(),current,revisions,_bindingOrder);
+        return new(_definition,Fields.Capture(),current,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     /// <summary>Configuration replay must not replay execution. Keep the live value for
     /// retained referenced parameter identities; explicit constant edits remain authoritative.</summary>
@@ -136,7 +144,7 @@ public sealed partial class RuntimeToolConfiguration
                 values.Remove(port.Id);
                 if(live.ReadCurrentParameter(port.Id) is {} current)values.Add(port.Id,current);
             }
-        return new(_definition,Fields.Capture(),values,values.Keys.ToDictionary(id=>id,id=>live.CurrentRevision(id),StringComparer.Ordinal),_bindingOrder);
+        return new(_definition,Fields.Capture(),values,values.Keys.ToDictionary(id=>id,id=>live.CurrentRevision(id),StringComparer.Ordinal),_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     private long CurrentRevision(string fieldId)=>_currentRevisions.GetValueOrDefault(fieldId);
     internal bool CurrentValueChangedFrom(string fieldId,RuntimeToolConfiguration opening)
@@ -175,7 +183,7 @@ public sealed partial class RuntimeToolConfiguration
                     revisions.Add(port.Id,changed?checked(live.CurrentRevision(port.Id)+1):live.CurrentRevision(port.Id));
                 }
             }
-        return new(_definition,Fields.Capture(),values,revisions,_bindingOrder);
+        return new(_definition,Fields.Capture(),values,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     private static ConstantSetting FreezeCurrent(Port port,object? value)
     {
@@ -214,7 +222,7 @@ public sealed partial class RuntimeToolConfiguration
                 var value=ReadCurrentParameter(port.Id);
                 if(value is not null)current.Add(port.Id,value);
             }
-        return new(_definition,fields.Capture(),current,current.Keys.ToDictionary(id=>id,CurrentRevision,StringComparer.Ordinal),ReconfigureBindingOrder(fields,proposals));
+        return new(_definition,fields.Capture(),current,current.Keys.ToDictionary(id=>id,CurrentRevision,StringComparer.Ordinal),ReconfigureBindingOrder(fields,proposals),frozenBehaviors:_referenceBehaviors);
     }
     /// <summary>Restore one exact field from an admitted opening snapshot, preserving all other edits.
     /// Missing invocation inputs can be restored to their original absence; user proposals still use Apply.</summary>
@@ -232,7 +240,7 @@ public sealed partial class RuntimeToolConfiguration
         current.Remove(fieldId);
         if(opening.ReadCurrentParameter(fieldId) is {} openingValue)current.Add(fieldId,openingValue);
         var revisions=current.Keys.ToDictionary(id=>id,id=>id==fieldId?opening.CurrentRevision(id):restored.CurrentRevision(id),StringComparer.Ordinal);
-        return new(_definition,values,current,revisions,restored.RestoreBindingPosition(fieldId,opening));
+        return new(_definition,values,current,revisions,restored.RestoreBindingPosition(fieldId,opening),frozenBehaviors:_referenceBehaviors);
     }
     public RuntimeToolConfiguration WithSettingsFields(FieldSettings settings,IReadOnlyList<string>? proposalOrder=null)
     {
@@ -248,7 +256,7 @@ public sealed partial class RuntimeToolConfiguration
     {
         var fields=Fields.MapReferences(map).Capture();
         return new(_definition,fields.ToDictionary(pair=>pair.Key,pair=>pair.Value is ReferenceSetting reference&&reference.OriginId is {} origin&&mapOrigin is not null
-            ?(ParameterSetting)(reference with{OriginId=mapOrigin(origin)}):pair.Value,StringComparer.Ordinal),CaptureCurrentValues(),_currentRevisions,_bindingOrder);
+            ?(ParameterSetting)(reference with{OriginId=mapOrigin(origin)}):pair.Value,StringComparer.Ordinal),CaptureCurrentValues(),_currentRevisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
 
     public static RuntimeToolConfiguration Create(string toolId)

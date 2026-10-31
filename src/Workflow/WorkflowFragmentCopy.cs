@@ -125,7 +125,7 @@ public static class WorkflowFragmentCopy
         {
             var mapped = Remap(reference.NodeId, reference.ScopeId, scope);
             var selection = reference.Selection is BindingSelection.AtField index
-                ? new BindingSelection.AtField(Reference(index.Reference, scope)) : reference.Selection;
+                ? new BindingSelection.AtField(Reference(index.Reference, scope),index.ConstructionBehavior) : reference.Selection;
             return new OutputReference(mapped.Node, reference.PortId, reference.Type, reference.MemberFieldPath, selection, mapped.Scope, reference.Storage);
         }
         string? Edge(string? id, Scope scope) => id != null && scope.Edges.TryGetValue(id, out var edge) ? edge.Id : null;

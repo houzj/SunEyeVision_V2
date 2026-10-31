@@ -73,7 +73,7 @@ public sealed class FieldSettings
             pair => pair.Value switch {
                 ReferenceSetting reference=>reference with {Reference=map(reference.Reference)},
                 VariableSetting variable when variable.Reference.Selection is BindingSelection.AtField index=>variable with {
-                    Reference=new VariableReference(variable.Reference.SolutionId,variable.Reference.VariableId,variable.Reference.Type,new BindingSelection.AtField(map(index.Reference)),variable.Reference.Storage)},
+                    Reference=new VariableReference(variable.Reference.SolutionId,variable.Reference.VariableId,variable.Reference.Type,new BindingSelection.AtField(map(index.Reference),index.ConstructionBehavior),variable.Reference.Storage)},
                 _=>pair.Value},
             StringComparer.Ordinal));
     }

@@ -16,10 +16,13 @@ internal static class RuntimeFieldJson
         var declared=definition as IToolSettingsFields??throw new JsonException("Runtime settings are not declared.");
         var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs))
             .ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        // Tool identity and declaration are available before the first binding is decoded.
+        var behaviors=ParameterReferenceRules.Freeze(definition);
         var result=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
         foreach(var property in fields.EnumerateObject())
         {
             if(!ports.TryGetValue(property.Name,out var port))throw new JsonException("Unknown Runtime field: "+property.Name);
+            var behavior=behaviors.GetValueOrDefault(property.Name,ParameterReferenceBehavior.StrictExactlyOne);
             var item=property.Value;
             if(item.ValueKind!=JsonValueKind.Object||!item.TryGetProperty("Kind",out var kind))throw new JsonException("Runtime setting requires Kind.");
             if(currentValues&&kind.GetString()!="Constant")throw new JsonException("Current parameter values require pure constant values.");
@@ -31,14 +34,14 @@ internal static class RuntimeFieldJson
                 Exact(item,"Kind","Reference","Conversion","OriginId","RebindingReason");var name=item.GetProperty("Conversion").GetString();
                 if(!Enum.TryParse<BindingConversion>(name,false,out var conversion)||!Enum.IsDefined(conversion)||conversion.ToString()!=name)
                     throw new JsonException("Unknown binding conversion.");
-                setting=new ReferenceSetting(BindingReferenceSerializer.Deserialize(item.GetProperty("Reference").GetRawText()),conversion,item.GetProperty("OriginId").GetString(),item.GetProperty("RebindingReason").GetString());
+                setting=new ReferenceSetting(BindingReferenceSerializer.Deserialize(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("OriginId").GetString(),item.GetProperty("RebindingReason").GetString());
             }
             else if(kind.GetString()=="Variable")
             {
                 Exact(item,"Kind","Reference","Conversion","RebindingReason");var name=item.GetProperty("Conversion").GetString();
                 if(!Enum.TryParse<BindingConversion>(name,false,out var conversion)||!Enum.IsDefined(conversion)||conversion.ToString()!=name)
                     throw new JsonException("Unknown variable conversion.");
-                setting=new VariableSetting(BindingReferenceSerializer.DeserializeVariable(item.GetProperty("Reference").GetRawText()),conversion,item.GetProperty("RebindingReason").GetString());
+                setting=new VariableSetting(BindingReferenceSerializer.DeserializeVariable(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("RebindingReason").GetString());
             }
             else throw new JsonException("Persistent fields require Constant or Reference; Unset must be absent.");
             result.Add(property.Name,currentValues?setting:FieldSettings.Freeze(port,setting));

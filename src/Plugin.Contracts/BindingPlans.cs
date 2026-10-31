@@ -10,14 +10,19 @@ public abstract class BindingSelection
         public AtConstant(int index){if(index<0)throw new ArgumentOutOfRangeException(nameof(index));Index=index;}
         public int Index {get;}
     }
-    public sealed class AtField(OutputReference reference):BindingSelection
-    {public OutputReference Reference {get;}=reference??throw new ArgumentNullException(nameof(reference));}
+    public sealed class AtField:BindingSelection
+    {
+        public AtField(OutputReference reference,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
+        {ArgumentNullException.ThrowIfNull(reference);if(!ParameterReferenceRules.CanUseIndexSource(ParameterReferenceRules.SelectedType(reference),behavior))throw new ArgumentException("Index source must be an admitted integer declaration.");Reference=reference;ConstructionBehavior=behavior;}
+        public OutputReference Reference {get;}
+        public ParameterReferenceBehavior ConstructionBehavior {get;}
+    }
     public sealed class AtVariable:BindingSelection
     {
-        public AtVariable(VariableReference reference)
+        public AtVariable(VariableReference reference,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
         {
             ArgumentNullException.ThrowIfNull(reference);
-            if(reference.Type!=DataType.Integer||reference.Selection is not AllItems)
+            if(!ParameterReferenceRules.CanUseIndexSource(reference.Type,behavior)||reference.Selection is not AllItems)
                 throw new ArgumentException("A variable index requires an integer scalar without a nested selection.");
             Reference=reference;
         }
@@ -50,8 +55,9 @@ public sealed record BindingReferencePlan(OutputReference Reference,BindingSourc
 /// <summary>Immutable compiled instructions. Execution belongs to the existing parameter resolution service.</summary>
 public sealed class BindingPlan
 {
-    public BindingPlan(BindingNodeId consumer,Guid documentSessionId,long documentRevision,BindingReferencePlan source,Port target,BindingConversion conversion,IEnumerable<BindingNodeId> dependencies)
-    {Consumer=consumer;DocumentSessionId=documentSessionId;DocumentRevision=documentRevision;Source=source;Target=target;Conversion=conversion;Dependencies=Array.AsReadOnly(dependencies.Distinct().ToArray());}
+    public BindingPlan(BindingNodeId consumer,Guid documentSessionId,long documentRevision,BindingReferencePlan source,Port target,BindingConversion conversion,IEnumerable<BindingNodeId> dependencies,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
+    {ParameterReferenceRules.ValidateTarget(target,behavior);Behavior=behavior;Consumer=consumer;DocumentSessionId=documentSessionId;DocumentRevision=documentRevision;Source=source;Target=target;Conversion=conversion;Dependencies=Array.AsReadOnly(dependencies.Distinct().ToArray());}
+    public ParameterReferenceBehavior Behavior {get;}
     public BindingNodeId Consumer {get;}
     public Guid DocumentSessionId {get;}
     public long DocumentRevision {get;}
@@ -74,5 +80,5 @@ public interface IBindingRunSnapshot
 public sealed record BindingResolution(bool Success,object? Value,Diagnostic? Diagnostic);
 public interface IBindingPlanCompiler
 {
-    BindingCompilation CompileBinding(OutputReference reference,Port target,IBindingCompilationScope scope,BindingConversion conversion=BindingConversion.Automatic);
+    BindingCompilation CompileBinding(OutputReference reference,Port target,IBindingCompilationScope scope,BindingConversion conversion=BindingConversion.Automatic,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne);
 }

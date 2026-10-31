@@ -8,6 +8,9 @@ namespace SunEyeVision.Plugin.Runtime;
 public static class BindingReferenceSerializer
 {
     private static readonly JsonSerializerOptions Options=CreateOptions();
+    private static readonly JsonSerializerOptions FirstItemOptions=CreateOptions(ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback);
+    private static JsonSerializerOptions OptionsFor(ParameterReferenceBehavior behavior)=>behavior switch
+    {ParameterReferenceBehavior.StrictExactlyOne=>Options,ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback=>FirstItemOptions,_=>throw new ArgumentException("Unknown reference behavior.")};
     private sealed record Document([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,[property:JsonRequired]OutputReference Reference);
     private sealed record VariableDocument([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,
         [property:JsonRequired]string SolutionId,[property:JsonRequired]string VariableId,[property:JsonRequired]TypeRef ExpectedType,[property:JsonRequired]string? Storage,
@@ -25,18 +28,18 @@ public static class BindingReferenceSerializer
             reference.Storage?.ToString(),kind,(reference.Selection as BindingSelection.AtConstant)?.Index,(reference.Selection as BindingSelection.AtField)?.Reference,
             reference.Selection is BindingSelection.AtVariable variable?ToVariableDocument(variable.Reference):null);
     }
-    public static VariableReference DeserializeVariable(string json)
+    public static VariableReference DeserializeVariable(string json,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
         try
         {
             using(var parsed=JsonDocument.Parse(json))RejectDuplicateProperties(parsed.RootElement);
-            var document=JsonSerializer.Deserialize<VariableDocument>(json,Options)??throw new JsonException("Variable reference is missing.");
-            return FromVariableDocument(document);
+            var document=JsonSerializer.Deserialize<VariableDocument>(json,OptionsFor(behavior))??throw new JsonException("Variable reference is missing.");
+            return FromVariableDocument(document,behavior);
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
         {throw new JsonException("Variable reference contains an invalid declaration.",error);}
     }
-    private static VariableReference FromVariableDocument(VariableDocument document)
+    private static VariableReference FromVariableDocument(VariableDocument document,ParameterReferenceBehavior behavior)
     {
             if(document.ContractMajor!=FoundationContract.Major||document.ContractMinor!=FoundationContract.Minor)
                 throw new JsonException("Variable binding contract version differs.");
@@ -46,14 +49,14 @@ public static class BindingReferenceSerializer
             BindingSelection selection=document.Selection switch {
                 "All" when document.Index is null&&document.IndexReference is null&&document.IndexVariable is null=>BindingSelection.All,
                 "AtConstant" when document.Index is {} index&&document.IndexReference is null&&document.IndexVariable is null=>new BindingSelection.AtConstant(index),
-                "AtField" when document.Index is null&&document.IndexReference is {} field&&document.IndexVariable is null=>new BindingSelection.AtField(field),
-                "AtVariable" when document.Index is null&&document.IndexReference is null&&document.IndexVariable is {} variable=>new BindingSelection.AtVariable(FromVariableDocument(variable)),
+                "AtField" when document.Index is null&&document.IndexReference is {} field&&document.IndexVariable is null=>new BindingSelection.AtField(field,behavior),
+                "AtVariable" when document.Index is null&&document.IndexReference is null&&document.IndexVariable is {} variable=>new BindingSelection.AtVariable(FromVariableDocument(variable,behavior),behavior),
                 _=>throw new JsonException("Variable selection fields differ from their declared kind.")};
             return new(document.SolutionId,document.VariableId,document.ExpectedType,selection,storage);
     }
     public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
-    public static OutputReference Deserialize(string json)
-        => DeserializeVersion(json, FoundationContract.Major, FoundationContract.Minor);
+    public static OutputReference Deserialize(string json,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
+        => DeserializeVersion(json, FoundationContract.Major, FoundationContract.Minor,behavior);
 
     /// <summary>Explicit in-memory legacy conversion. The document owner must resolve every old identity and declaration.
     /// This does not change the strict current-version reader and never writes a file.</summary>
@@ -67,22 +70,22 @@ public static class BindingReferenceSerializer
         return current;
     }
 
-    private static OutputReference DeserializeVersion(string json, int major, int minor)
+    private static OutputReference DeserializeVersion(string json, int major, int minor,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
         try
         {
         using (var parsed = JsonDocument.Parse(json)) RejectDuplicateProperties(parsed.RootElement);
-        var document=JsonSerializer.Deserialize<Document>(json,Options)??throw new JsonException("Binding document is missing.");
+        var document=JsonSerializer.Deserialize<Document>(json,OptionsFor(behavior))??throw new JsonException("Binding document is missing.");
         if(document.ContractMajor!=major||document.ContractMinor!=minor)throw new JsonException("Binding contract version must match the explicitly requested version; implicit migration is forbidden.");
         return document.Reference??throw new JsonException("Binding reference is missing.");
         }
         catch(Exception fault) when(fault is KeyNotFoundException or InvalidOperationException or ArgumentException or FormatException or OverflowException)
         { throw new JsonException("Binding reference contains an invalid or missing declaration.",fault); }
     }
-    private static JsonSerializerOptions CreateOptions()
+    private static JsonSerializerOptions CreateOptions(ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
         var options=new JsonSerializerOptions { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
-        options.Converters.Add(new TypeConverter());options.Converters.Add(new ReferenceConverter());return options;
+        options.Converters.Add(new TypeConverter());options.Converters.Add(new ReferenceConverter(behavior));return options;
     }
     private static void RejectDuplicateProperties(JsonElement item)
     {
@@ -172,7 +175,7 @@ public static class BindingReferenceSerializer
             writer.WriteEndObject();
         }
     }
-    private sealed class ReferenceConverter:JsonConverter<OutputReference>
+    private sealed class ReferenceConverter(ParameterReferenceBehavior behavior):JsonConverter<OutputReference>
     {
         public override OutputReference Read(ref Utf8JsonReader reader,Type typeToConvert,JsonSerializerOptions options)
         {
@@ -192,8 +195,8 @@ public static class BindingReferenceSerializer
             {
                 "All"=>BindingSelection.All,
                 "AtConstant"=>new BindingSelection.AtConstant(selection.GetProperty("index").GetInt32()),
-                "AtField"=>new BindingSelection.AtField(JsonSerializer.Deserialize<OutputReference>(selection.GetProperty("reference").GetRawText(),options)??throw new JsonException("Index reference is missing.")),
-                "AtVariable"=>new BindingSelection.AtVariable(DeserializeVariable(selection.GetProperty("variable").GetRawText())),
+                "AtField"=>new BindingSelection.AtField(JsonSerializer.Deserialize<OutputReference>(selection.GetProperty("reference").GetRawText(),options)??throw new JsonException("Index reference is missing."),behavior),
+                "AtVariable"=>new BindingSelection.AtVariable(DeserializeVariable(selection.GetProperty("variable").GetRawText(),behavior),behavior),
                 _=>throw new JsonException("Unknown binding selection.")
             };
             return new(root.GetProperty("nodeId").GetString()!,root.GetProperty("fieldId").GetString()!,type,

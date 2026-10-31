@@ -11,7 +11,8 @@ public sealed record ReferenceFieldOptions(
     Action<VariableSelectionRequest>? SelectVariable=null,
     Func<VariableReference,string>? FormatVariable=null,
     Func<Port,ConstantSetting?>? ReadCurrentValue=null,
-    ReferenceWindowOwner? WindowOwner=null)
+    ReferenceWindowOwner? WindowOwner=null,
+    Func<Port,ParameterReferenceBehavior>? ReadBehavior=null)
 {
     public static ReferenceFieldOptions Empty { get; } = new(_ => ReferenceCandidates.Empty);
 }

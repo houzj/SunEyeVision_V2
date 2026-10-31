@@ -128,7 +128,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private bool HasSequenceReference=>DisplaySetting is {} reference&&ProjectedType(reference)?.Shape==ValueShape.Sequence;
     private bool NeedsSelectionRepair(ParameterSetting reference)=>ProjectedType(reference) is {} type
-        &&DeclaredReferenceTree.RequiresSelectionRepair(type,_state.Port,ReferenceSettingParts.Selection(reference),ReferenceSettingParts.Conversion(reference));
+        &&DeclaredReferenceTree.RequiresSelectionRepair(type,_state.Port,ReferenceSettingParts.Selection(reference),ReferenceSettingParts.Conversion(reference),_state.ReferenceBehavior);
     public void Refresh()
     {
         if(_disposed||_state.IsDisposed||_refreshing)return;
@@ -147,17 +147,18 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 snapshot=_options.ReadCandidates(_state.Port)??throw new ArgumentException("来源目录返回了空快照。");
                 if(!Current())return;
                 sources=DeclaredReferenceTree.Build(snapshot.Sources.Where(candidate=>DeclaredReferenceTree.Matches(candidate,
-                    _state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex)),true);
-                indices=DeclaredReferenceTree.Build(snapshot.Indices,true);
-                indexVariables=Array.AsReadOnly(snapshot.Variables.Where(item=>item.Reference.Type==DataType.Integer&&item.Reference.Selection is BindingSelection.AllItems).ToArray());
-                variables=Array.AsReadOnly(snapshot.Variables.Where(item=>DeclaredReferenceTree.Matches(item.Reference,_state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex)).ToArray());
+                    _state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex,_state.ReferenceBehavior)),true);
+                var eligibleIndices=Array.AsReadOnly(snapshot.Indices.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,_state.ReferenceBehavior)).ToArray());
+                indices=DeclaredReferenceTree.Build(eligibleIndices,true);
+                indexVariables=Array.AsReadOnly(snapshot.Variables.Where(item=>ParameterReferenceRules.CanUseIndexSource(item.Reference.Type,_state.ReferenceBehavior)&&item.Reference.Selection is BindingSelection.AllItems).ToArray());
+                variables=Array.AsReadOnly(snapshot.Variables.Where(item=>DeclaredReferenceTree.Matches(item.Reference,_state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex,_state.ReferenceBehavior)).ToArray());
                 if(_selectVariable is not null&&variables.Count!=0)sources=Array.AsReadOnly(sources.Append(new ReferenceTreeNode(AppLocalizationService.GetLang("Lang_VariableManager","变量管理"),Array.Empty<ReferenceTreeNode>(),VariableManager:true)).ToArray());
                 if(_selectVariable is not null&&indexVariables.Count!=0)indices=Array.AsReadOnly(indices.Append(new ReferenceTreeNode(AppLocalizationService.GetLang("Lang_VariableManager","变量管理"),Array.Empty<ReferenceTreeNode>(),VariableManager:true)).ToArray());
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException)
             {if(Current())_state.SetSourceError(error.Message);return;}
             if(!Current())return;
-            _candidates=Array.AsReadOnly(DeclaredReferenceTree.Descendants(sources).Where(node=>node.Candidate is not null).Select(node=>node.Candidate!).ToArray());_indices=snapshot.Indices;_variables=variables;_indexVariables=indexVariables;SourceNodes=sources;IndexNodes=indices;_candidatesValid=true;
+            _candidates=Array.AsReadOnly(DeclaredReferenceTree.Descendants(sources).Where(node=>node.Candidate is not null).Select(node=>node.Candidate!).ToArray());_indices=Array.AsReadOnly(snapshot.Indices.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,_state.ReferenceBehavior)).ToArray());_variables=variables;_indexVariables=indexVariables;SourceNodes=sources;IndexNodes=indices;_candidatesValid=true;
             RestoreSelection(false);
             ParameterCleanup.Run(new Action[]{()=>{if(Current())_state.SetSourceError(DisplaySetting is {} displayed&&!SourceAvailable(displayed)?"来源或索引已删除、不可订阅或声明已改变，请重新选择。":"");}}
                 .Concat(new[]{nameof(SelectedSourceNode),nameof(SelectedIndexNode),nameof(SourceNodes),nameof(IndexNodes),nameof(CurValueA)}
@@ -240,7 +241,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(request.IsIndex)
         {
             if(DisplaySetting is not {} source)return false;
-            return SubmitAndRetire(request,()=>Submit(ReferenceSettingParts.WithSelection(source,new BindingSelection.AtVariable(item.Reference))));
+            return SubmitAndRetire(request,()=>Submit(ReferenceSettingParts.WithSelection(source,new BindingSelection.AtVariable(item.Reference,_state.ReferenceBehavior))));
         }
         var selection=DisplaySetting is {} old&&item.Reference.Type.Shape==ValueShape.Sequence?ReferenceSettingParts.Selection(old):BindingSelection.All;
         var proposal=new VariableSetting(new VariableReference(item.Reference.SolutionId,item.Reference.VariableId,item.Reference.Type,selection,item.Reference.Storage),
@@ -268,7 +269,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             ||!HasSequenceReference||node is null||node.EnumEntrysA.Count!=0)return;
         if(node.VariableManager){OpenVariableSelector(true);return;}
         var selection=node.Clear?BindingSelection.All:node.Candidate is {} candidate
-            ?new BindingSelection.AtField(candidate.Reference(BindingSelection.All)):null;
+            ?new BindingSelection.AtField(candidate.Reference(BindingSelection.All),_state.ReferenceBehavior):null;
         if(selection is null)return;
         Submit(ReferenceSettingParts.WithSelection(source,selection));
     }

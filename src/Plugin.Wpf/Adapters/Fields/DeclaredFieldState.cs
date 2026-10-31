@@ -16,6 +16,7 @@ internal sealed class DeclaredFieldState : IDisposable
     private bool _writing;
     private bool _referenceCleared;
     public Port Port { get; }
+    internal ParameterReferenceBehavior ReferenceBehavior {get;}
     public ParameterSetting Accepted => CopySetting(_accepted);
     public ConstantSetting? ConstantBackup
     {
@@ -53,9 +54,9 @@ internal sealed class DeclaredFieldState : IDisposable
 
     public DeclaredFieldState(Port port, ParameterSetting initial, Action<ParameterSetting> write,
         ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null,
-        Func<ParameterSetting,bool>? propose=null,Func<ConstantSetting?>? readCurrentValue=null)
+        Func<ParameterSetting,bool>? propose=null,Func<ConstantSetting?>? readCurrentValue=null,ParameterReferenceBehavior referenceBehavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
-        Port = port; _write = write;_validate=validate;_propose=propose;_readCurrentValue=readCurrentValue;
+        Port = port;ReferenceBehavior=referenceBehavior;ParameterReferenceRules.ValidateTarget(port,referenceBehavior); _write = write;_validate=validate;_propose=propose;_readCurrentValue=readCurrentValue;
         _accepted = PrepareInitial(initial);
         _constantBackup = initial is ConstantSetting ? (ConstantSetting)CopySetting(_accepted)
             : constantBackup is null ? null : (ConstantSetting)PrepareInitial(constantBackup);
@@ -220,6 +221,7 @@ internal sealed class DeclaredFieldState : IDisposable
         {
             if(proposal is ReferenceSetting {Reference:null} or VariableSetting {Reference:null})throw new ArgumentException("订阅设置缺少正式引用。");
             if((Port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("此字段不允许订阅。");
+            ParameterReferenceRules.ValidateIndexSelections(proposal is ReferenceSetting module?module.Reference.Selection:((VariableSetting)proposal).Reference.Selection,ReferenceBehavior);
             return proposal;
         }
         if(proposal is UnsetSetting)return proposal;

@@ -134,7 +134,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         {
             var candidates=ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
             if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
-            return new(candidates,candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer),ReadVariableCandidates(generation));
+            var behavior=configuration.GetParameterReferenceBehavior(target.Id);
+            return new(candidates,candidates.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,behavior)),ReadVariableCandidates(generation),behavior);
         },(target,proposal)=>ValidateProposal(target,proposal,generation),FormatVariable:reference=>FormatVariable(reference,generation),
             ReadCurrentValue:port=>
             {
@@ -144,7 +145,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
                 if(!current.SettingsSchema.Inputs.Any(parameter=>parameter.Id==port.Id))return null;
                 return ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context
                     ?context.ReadCurrentParameter(port.Id):current.ReadCurrentParameter(port.Id);
-            },WindowOwner:presentationOwner);
+            },WindowOwner:presentationOwner,ReadBehavior:port=>
+            {
+                if(_disposed||generation!=_generation||!ReferenceEquals(_node,node))throw new InvalidOperationException("引用行为所属字段页已失效。");
+                return configuration.GetParameterReferenceBehavior(port.Id);
+            });
         var panel=node.ToolType=="ImageLoad"?null:new DeclaredInputFieldsView(schema,port=>
         {
             return node.RuntimeConfiguration!.Fields.Read(port.Id);

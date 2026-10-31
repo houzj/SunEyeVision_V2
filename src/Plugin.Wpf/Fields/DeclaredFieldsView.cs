@@ -297,7 +297,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
    var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),
-       propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null);
+       propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null,referenceBehavior:references?.ReadBehavior?.Invoke(field.Port)??ParameterReferenceBehavior.StrictExactlyOne);
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);

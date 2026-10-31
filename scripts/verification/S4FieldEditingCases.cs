@@ -41,7 +41,7 @@ internal static class S2DocumentEditingCases
         try
         {
             if(Environment.GetEnvironmentVariable("B08_REFERENCE_WINDOW_CULTURE") is {Length:>0} culture){Require(culture is "zh-CN" or "en-US","未知窗口验证语言");System.Globalization.CultureInfo.CurrentUICulture=System.Globalization.CultureInfo.GetCultureInfo(culture);}
-            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE") is "CrossDocument" or "WindowSession")return RunCrossDocumentReferenceCases();
+            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE") is "CrossDocument" or "WindowSession" or "BehaviorUi")return RunCrossDocumentReferenceCases();
             if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             owner=new Window{Width=700,Height=720,Title="正式字段消费验证"};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -316,6 +316,7 @@ internal static class S2DocumentEditingCases
                 context.Discard();Require(Threshold()==100,"纯UI取消改变正式配置");edits.Close();
                 Console.WriteLine("通过：真实阈值编辑仅写私有草稿，未接入ROI组合仍阻断整窗确认，取消不改变正式配置。");
                 Console.WriteLine("字段组件及现行UI阶段保护检查通过，不代表Blob功能确认、保存重开或人工验收完成。");
+            Console.WriteLine(DateTime.UtcNow.ToString("O")+" BODY_COMPLETED / USING_DISPOSE_BEGIN");
                 return 0;
             }
             Require(valid,"Runtime草稿不能校验："+validationError);
@@ -326,7 +327,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("S4字段编辑：31组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
-        finally{owner?.Close();Application.Current?.Shutdown();}
+        finally{Console.WriteLine(DateTime.UtcNow.ToString("O")+" OWNER_CLOSE_BEGIN");owner?.Close();Console.WriteLine(DateTime.UtcNow.ToString("O")+" OWNER_CLOSE_END / APP_SHUTDOWN_BEGIN");Application.Current?.Shutdown();Console.WriteLine(DateTime.UtcNow.ToString("O")+" APP_SHUTDOWN_END");}
     }
     private static int RunCrossDocumentReferenceCases()
     {
@@ -346,7 +347,8 @@ internal static class S2DocumentEditingCases
         var transitions=string.IsNullOrEmpty(selectedTransition)?new[]{"A-to-B","reopen-A"}:new[]{selectedTransition!};
         var selectedKinds=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_KINDS");
         var windowSessionOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="WindowSession";
-        var allKinds=windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
+        var behaviorUiOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="BehaviorUi";
+        var allKinds=behaviorUiOnly?new[]{"behavior-ui"}:windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
         var kinds=string.IsNullOrEmpty(selectedKinds)?allKinds:selectedKinds.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries);
         Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(allKinds.Contains),"未知或重复跨文档控件筛选");
         var reports=new List<object>();var unexpected=new List<string>();var expectDelete=false;var imageChainVerified=false;
@@ -469,6 +471,60 @@ internal static class S2DocumentEditingCases
         AppsPopup Popup(DeclaredFieldAccess field,object session,string path)
             =>CrossVisuals(field.View).OfType<AppsPopup>().Single(p=>ReferenceEquals(p.DataContext,session)
                 &&p.Name==(path=="IsDropDownOpen"?"rt":"et")&&p.GetBindingExpression(AppsPopup.IsPopupOpenProperty)?.ParentBinding.Path?.Path==path);
+        void VerifyBehaviorControls()
+        {
+            var first=ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback;var sequence=TypeRef.SequenceOf(DataType.Integer,CountConstraint.Exactly(3));
+            var source=new DeclaredReferenceCandidate("数组","ui-policy-source",null,new Port("values",sequence),Array.Empty<string>());
+            var index=new DeclaredReferenceCandidate("数组索引","ui-policy-index",null,new Port("indices",sequence),Array.Empty<string>());
+            var snapshot=new ReferenceCandidates(new[]{source},new[]{index},behavior:first);var reads=0;var supplied=first;var writes=0;
+            var presentation=new FieldPresentation("policy","整数","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:1000,DecimalPlaces:0)};
+            var target=new Port("policy",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
+            using var field=new DeclaredFieldEditor(target,"整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
+                new ReferenceFieldOptions(_=>snapshot,EditableIndex:true,ReadBehavior:_=>{reads++;return supplied;}),new ConstantSetting(7L),presentation:presentation);
+            Show(field);var access=(DeclaredFieldAccess)Activator.CreateInstance(typeof(DeclaredFieldAccess),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{field},null)!;var session=Session(access);Command(session,"DropDownCommand");supplied=ParameterReferenceBehavior.StrictExactlyOne;
+            var text=(string)Property(session,"CurValueA")!;session.GetType().GetProperty("CurValueA")!.SetValue(session,System.Text.RegularExpressions.Regex.Replace(text,"\\[[^\\]]*\\]$","[]"));Pump();
+            Require(reads==1&&writes==1&&field.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AllItems}&&!field.HasInvalidText,"显式First未冻结一次/未接纳All[]");
+            var leaf=Nodes(session,"IndexNodes").Single(n=>Property(n,"Candidate") is DeclaredReferenceCandidate c&&c.NodeId==index.NodeId);Command(session,"IndexClickCommand",leaf);Pump();
+            Require(writes==2&&field.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtField dynamic}&&dynamic.Reference.Type.Shape==ValueShape.Sequence,"模块整数数组索引未显式传消费行为");
+            using var strict=new DeclaredFieldEditor(target,"严格整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>throw new Exception("严格字段不应写入"),
+                new ReferenceFieldOptions(_=>snapshot,EditableIndex:true),new ConstantSetting(7L),presentation:presentation);Show(strict);var strictSession=Session((DeclaredFieldAccess)Activator.CreateInstance(typeof(DeclaredFieldAccess),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{strict},null)!);Command(strictSession,"DropDownCommand");
+            Require(!Nodes(strictSession,"IndexNodes").Any(n=>Property(n,"Candidate") is DeclaredReferenceCandidate),"默认Strict泄露整数数组索引");
+            var strictText=(string)Property(strictSession,"CurValueA")!;strictSession.GetType().GetProperty("CurValueA")!.SetValue(strictSession,System.Text.RegularExpressions.Regex.Replace(strictText,"\\[[^\\]]*\\]$","[]"));Pump();
+            Require(strict.HasInvalidText&&strict.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant},"Strict多项All[]未保持旧接纳值");
+            var invalid=new ReferenceSetting(source.Reference(new BindingSelection.AtField(index.Reference(BindingSelection.All),first)));
+            var accepted=(bool)typeof(DeclaredFieldEditor).GetMethod("TryApplySetting",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(strict,new object[]{invalid})!;
+            Require(!accepted&&strict.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant},"程序提案绕过冻结Strict索引校验");
+            Show(new TextBlock());Trace("PASS_BEHAVIOR_CONTROLS 冻结/All/模块数组索引/Strict/程序拒绝");
+        }
+        void VerifyBehaviorHost((SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture)
+        {
+            var window=Open(fixture.Target);var control=Control(window);var fields=Fields(window);fields.SelectedPageIndex=1;Pump();
+            var states=((System.Collections.IEnumerable)typeof(DeclaredFieldsView).GetField("_fieldStates",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(fields)!).Cast<object>().ToArray();
+            var expected=new[]{"Threshold","UpperThreshold","BlobCountLimit","FilterAreaMin","FilterAreaMax"}.Select(Field).ToHashSet(StringComparer.Ordinal);
+            foreach(var state in states)
+            {
+                var port=(Port)Property(state,"Port")!;var actual=(ParameterReferenceBehavior)Property(state,"ReferenceBehavior")!;
+                Require(actual==fixture.Target.RuntimeConfiguration!.GetParameterReferenceBehavior(port.Id)&&actual==(expected.Contains(port.Id)?ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback:ParameterReferenceBehavior.StrictExactlyOne),"实际UI字段行为未来自唯一正式getter："+port.Id);
+            }
+            Require(expected.All(id=>states.Any(s=>((Port)Property(s,"Port")!).Id==id)),"未覆盖完整五整数");
+            var access=fields.Fields.Single(f=>f.FieldId==low);var session=Session(access);Command(session,"DropDownCommand");
+            void SelectArray(bool isIndex)
+            {
+                Exception? failure=null;var entered=false;var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(30)};
+                timer.Tick+=(_,_)=>{var dialog=Application.Current.Windows.OfType<VariableSelectionDialog>().SingleOrDefault(d=>d.IsVisible);if(dialog is null)return;timer.Stop();entered=true;
+                    try{var request=(VariableSelectionRequest)session.GetType().GetField("_variableRequest",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(session)!;Require(request.IsValid&&request.IsIndex==isIndex,"真实变量模态用途失效");
+                        var array=request.Items.Single(item=>item.Reference.Type.Shape==ValueShape.Sequence);((ListView)dialog.FindName("globalVarList")).SelectedItem=array;
+                        CrossVisuals(dialog).OfType<Button>().Single(b=>Equals(b.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));}
+                    catch(Exception error){failure=error;dialog.Close();}};
+                timer.Start();try{Command(session,isIndex?"IndexClickCommand":"ClickCommand",Nodes(session,isIndex?"IndexNodes":"SourceNodes").Single(n=>(bool)Property(n,"VariableManager")!));}finally{timer.Stop();}
+                if(failure is not null)throw failure;Require(entered,"未进入真实变量模态");Pump();
+            }
+            SelectArray(false);Require(access.Setting is VariableSetting {Reference.Selection:BindingSelection.AllItems},"生产字段未接纳整数数组All");
+            SelectArray(true);Require(access.Setting is VariableSetting {Reference.Selection:BindingSelection.AtVariable dynamic}&&dynamic.Reference.Type.Shape==ValueShape.Sequence,"生产变量数组索引未显式传行为");
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;manager.Session!.Editing.Host.Validate((NodeConfigurationEditDraft)Property(context,"PreparedDraft")!);
+            Require(fixture.Target.RuntimeConfiguration!.Fields.Read(low) is ReferenceSetting,"UI私有提案越过正式确认");
+            window.Close();Pump();Trace("PASS_BEHAVIOR_HOST 五字段/唯一getter/真实变量All与数组索引/私有草稿");
+        }
         void VerifyWindowConsumers()
         {
             var panel=new StackPanel();var current=true;var writes=0;var preference=new ReferenceExpansionPreference{PreferExpanded=true};
@@ -557,11 +613,13 @@ internal static class S2DocumentEditingCases
         }
         try
         {
+            if(behaviorUiOnly)VerifyBehaviorControls();
             if(windowSessionOnly)VerifyWindowConsumers();
             foreach(var transition in transitions)foreach(var kind in kinds)
             {
                 Trace("BEGIN "+transition+" "+kind);manager.CreateUntitledSolution();Pump();Trace("POPULATE "+kind);var a=Populate();Trace("POPULATED "+kind);var oldDocument=manager.CurrentSolution!;var oldSession=manager.Session!;var oldEditing=oldSession.Editing;
                 var pathA=Path.Combine(directory,transition+"-"+kind+"-A.solution");Require(manager.SaveCurrentDocument(pathA).FileWritten,"原方案保存前提失败");
+                if(behaviorUiOnly){VerifyBehaviorHost(a);reports.Add(new{transition,kind,passed=true});continue;}
                 if(windowSessionOnly){VerifyWindowSession(transition,a,pathA);reports.Add(new{transition,kind,windowRoot=true,passed=true});continue;}
                 var oldBytes=File.ReadAllBytes(pathA);var formalBefore=Stamp(a.Target.RuntimeConfiguration!);
                 Trace("OPEN "+kind);var oldWindow=Open(a.Target);Trace("OPENED "+kind);var oldControl=Control(oldWindow);var oldContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(oldControl)!;
@@ -676,7 +734,7 @@ internal static class S2DocumentEditingCases
         {
             dialogs.Stop();manager.CloseSolution(saveChanges:false);Pump();
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"b08-cross-document-report.json"),
-                System.Text.Json.JsonSerializer.Serialize(new{scope=windowSessionOnly?"B08WindowSession":"B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+                System.Text.Json.JsonSerializer.Serialize(new{scope=behaviorUiOnly?"B08ReferenceBehaviorUi":windowSessionOnly?"B08WindowSession":"B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
         }
     }
     private static IEnumerable<DependencyObject> CrossVisuals(DependencyObject root)

@@ -47,26 +47,23 @@ internal static class DeclaredReferenceTree
             foreach(var child in Descendants(node.EnumEntrysA))yield return child;
         }
     }
-    internal static bool Matches(DeclaredReferenceCandidate candidate,Port target,BindingConversion conversion,bool allowIndex)
-        =>MatchesKind(candidate.SelectedType,target.Type,conversion)
-            ||allowIndex&&candidate.SelectedType.Shape==ValueShape.Sequence
-                &&MatchesKind(candidate.SelectedType.Element!,target.Type,conversion);
-    internal static bool Matches(VariableReference candidate,Port target,BindingConversion conversion,bool allowIndex)
-        =>MatchesKind(candidate.Type,target.Type,conversion)
-            &&(candidate.Type.Shape!=ValueShape.Sequence||allowIndex||CanAdapt(candidate.Type,target.Type,conversion));
-    internal static bool RequiresSelectionRepair(TypeRef type,Port target,BindingSelection selection,BindingConversion conversion)
+    internal static bool Matches(DeclaredReferenceCandidate candidate,Port target,BindingConversion conversion,bool allowIndex,ParameterReferenceBehavior behavior)
+        =>MatchesType(candidate.SelectedType,target.Type,conversion,allowIndex,behavior);
+    internal static bool Matches(VariableReference candidate,Port target,BindingConversion conversion,bool allowIndex,ParameterReferenceBehavior behavior)
+        =>MatchesType(candidate.Type,target.Type,conversion,allowIndex,behavior);
+    private static bool MatchesType(TypeRef type,TypeRef target,BindingConversion conversion,bool allowIndex,ParameterReferenceBehavior behavior)
+        =>CanAdapt(type,target,conversion,behavior)||allowIndex&&type.Shape==ValueShape.Sequence&&type.Count.Maximum!=0&&CanAdapt(type.Element!,target,conversion,behavior);
+    internal static bool RequiresSelectionRepair(TypeRef type,Port target,BindingSelection selection,BindingConversion conversion,ParameterReferenceBehavior behavior)
     {
         if(type.Shape!=ValueShape.Sequence)return false;
-        var valid=selection is BindingSelection.AllItems?CanAdapt(type,target.Type,conversion):
+        var valid=selection is BindingSelection.AllItems?CanAdapt(type,target.Type,conversion,behavior):
             (selection is not BindingSelection.AtConstant index||type.Count.Maximum is not {} maximum||index.Index<maximum)
-                &&type.Count.Maximum!=0&&CanAdapt(type.Element!,target.Type,conversion);
-        return !valid&&(CanAdapt(type,target.Type,conversion)
-            ||type.Count.Maximum!=0&&CanAdapt(type.Element!,target.Type,conversion));
+                &&type.Count.Maximum!=0&&CanAdapt(type.Element!,target.Type,conversion,behavior);
+        return !valid&&(CanAdapt(type,target.Type,conversion,behavior)
+            ||type.Count.Maximum!=0&&CanAdapt(type.Element!,target.Type,conversion,behavior));
     }
-    private static bool CanAdapt(TypeRef type,TypeRef target,BindingConversion conversion)
-        =>MatchesKind(type,target,conversion)
-            &&(type.Shape==ValueShape.Sequence?type.Count:CountConstraint.Exactly(1))
-                .CompatibilityWith(target.Shape==ValueShape.Sequence?target.Count:CountConstraint.Exactly(1))!=BindingCompatibility.Incompatible;
+    private static bool CanAdapt(TypeRef type,TypeRef target,BindingConversion conversion,ParameterReferenceBehavior behavior)
+        =>MatchesKind(type,target,conversion)&&ParameterReferenceRules.CompareValueCount(type,target,behavior)!=BindingCompatibility.Incompatible;
     private static bool MatchesKind(TypeRef type,TypeRef target,BindingConversion conversion)
     {
         if(type.Shape==ValueShape.Sequence)type=type.Element!;

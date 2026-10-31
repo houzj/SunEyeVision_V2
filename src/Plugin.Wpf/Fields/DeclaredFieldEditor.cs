@@ -116,7 +116,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,
         NativeIntegerRadioOptions? integerRadioOptions=null,DeclaredChoiceDisplayOptions? choiceDisplay=null)
         : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>choiceDisplay?.ValidateProposal(proposal)??integerRadioOptions?.Validate(proposal)??references?.ValidateProposal?.Invoke(port,proposal),
-            readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(port):null),label,
+            readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(port):null,referenceBehavior:references?.ReadBehavior?.Invoke(port)??ParameterReferenceBehavior.StrictExactlyOne),label,
             references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true,choiceDisplay:choiceDisplay)
     { }
 

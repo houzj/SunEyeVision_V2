@@ -1,0 +1,53 @@
+{
+  "status": "本批已实现范围候选自测通过，交主仓正式整合；整窗未验证单列",
+  "baseline": "078607fe（4ebb合同与8ce测试已同步，Root7c8754e6在父链）",
+  "contract": {
+    "entry": "RuntimeNodeConfigurationControl.BindDraft：runtime.GetParameterReferenceBehavior(fieldId)→ReferenceFieldOptions.ReadBehavior",
+    "freeze": "DeclaredFieldState创建时一次冻结/ValidateTarget；各普通字段及范围端点共享既有state",
+    "ui": "ReferenceCandidates显式行为校验；Tree/Session仅用Contracts.CanUseIndexSource/CompareValueCount；AtField/AtVariable显式行为；程序与组提案重新校验动态索引",
+    "default": "所有未声明字段StrictExactlyOne，无Wpf工具ID/Runtime/Workflow依赖",
+    "host": "现行宿主预检、保存与生产编译独立重校，不以UI构造行为授权"
+  },
+  "builds": [
+    "UI 001：0错6525警告2:23.82",
+    "全量001：0错6527警告1:21.35"
+  ],
+  "uiSha256": "433EA6D2C1851F45A9B9D1CE6534B495B5BB82FE64023479A8316DF7D8F0EBCC",
+  "wpfSha256": "F777A13CF9F0CCB7AB17EE3E028663532610643AC28716BD71C347B4B96CCD88",
+  "validation": [
+    "FieldEditing034 BehaviorUi：完整直接UI及真实宿主五字段/变量All/数组索引/私有草稿通过",
+    "NumericIndexProduction001：29组通过且exit0",
+    "WindowPresentation006：原16组通过且exit0",
+    "FieldEditing036：完整38组通过且exit0，owner.Close和App.Shutdown边界完整",
+    "VariableFields004：原13组通过且exit0"
+  ],
+  "preservedFailures": [
+    "测试编译001：内部入口访问错误，按反射/现有Host入口修夹具",
+    "FieldEditing033：fixture MinArea/MaxArea名称错误，修为真实FilterAreaMin/FilterAreaMax",
+    "FieldEditing035：原90秒总预算超时，已打印38组但不记通过；无Scope预算限定180秒后036明确exit0"
+  ],
+  "budgets": "CrossDocument360秒、RuntimeEditorUiStage180秒、WindowSession240秒、无Scope FieldEditing180秒；其余不变；保留BlobRangeLayout/NumericIndexProduction入口",
+  "remaining": [
+    {
+      "item": "整窗正向确认/执行/保存/重开及ROI/结果组合",
+      "state": "保护保留，整窗未验证，不冒称通过",
+      "dependency": "正式ROI与结果组合owner/API及生产模型",
+      "integration": "BlobRunUi/AddUnavailableRows与RuntimeNodeConfigurationControl，主线后续完整组合接入，不在本批扩基础"
+    },
+    {
+      "item": "订阅默认方式跨保存、Dirty/Undo",
+      "state": "会话内临时投影已明确标注，持久化未实现",
+      "dependency": "原UserData具体静态路径仍可追，未冒称穷尽/原厂等价，无新增方案字段",
+      "integration": "UI ProductionEditorContext会话偏好provider"
+    },
+    {
+      "item": "Root/跨文档十场景、旧NumericContract/BlobRange/BlobParameter及主仓正式版",
+      "state": "按主线安排留整合后一轮，当前版本未重复全跑",
+      "integration": "既有专项源码和正式runner"
+    },
+    {
+      "item": "VS实际设计器与人工",
+      "state": "独立列未验，统一安排；不作为本批候选集成前置"
+    }
+  ]
+}

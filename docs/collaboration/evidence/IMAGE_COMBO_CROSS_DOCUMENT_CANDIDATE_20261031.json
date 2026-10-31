@@ -1,0 +1,73 @@
+{
+  "scope": "图像输入Combo真实跨文档及同ID保存重开候选验证",
+  "baseline": "f7f499fdd1c6b942847ada2d9d13d1f01dd6e424",
+  "productChanged": false,
+  "testSource": {
+    "path": "scripts/verification/S4FieldEditingCases.cs",
+    "sha256": "1AD1456B1BCBA355566B7761DE21E89FD08C49285A634DFA25B770DB5554C7E8"
+  },
+  "entry": "FieldEditing / ValidationScope Candidate / B08_REFERENCE_CASE_SCOPE=CrossDocument / B08_REFERENCE_CASE_KINDS=image-combo / B08_REFERENCE_CASE_TRANSITION=A-to-B或reopen-A",
+  "coverage": [
+    "真实MainWindow正式Host及DocumentEditSession，实际图像输入字段和原Popup.IsOpen",
+    "当前代禁用/隐藏后拒绝程序选择，恢复不经刷新即显示Accepted",
+    "A→B及原方案保存重开保持文档/节点ID但编辑会话替换",
+    "旧Combo选中、旧Item鼠标、旧Enter不改变新草稿、正式字段、编辑版本、历史、登记范围与磁盘",
+    "旧窗口/上下文退役且新Popup保持打开，当前窗口关闭再开仍可打开"
+  ],
+  "receipts": [
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 40,
+        "pid": 85004,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "1AD1456B1BCBA355566B7761DE21E89FD08C49285A634DFA25B770DB5554C7E8",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-040"
+      },
+      "receiptSha256": "2BD3D2984E4A107068F75E1EE9109A646BADCCA9AD62C09FE597E2C33DA98581",
+      "reportSha256": "92782706EE3F3787515F8FBAAD7B64645E888B1E39FE7B112E1E9DADEF8773B6",
+      "runLogSha256": "D4F96D862EBF06B7A98DA3BCB87D270173DDCEAB0F8A3CD1F7183240A2F773D5"
+    },
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 41,
+        "pid": 123976,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "1AD1456B1BCBA355566B7761DE21E89FD08C49285A634DFA25B770DB5554C7E8",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-041"
+      },
+      "receiptSha256": "0D9B36790E6F435853324A8F889F28EDC05BE303802CE719AFD7A6386C5903FF",
+      "reportSha256": "1FFC371004CA76ACCE8E0F988EA8540A82ADBE516AE8EF7C864A513CEF9CF6A3",
+      "runLogSha256": "D3E21A1A36F9B4F47A6686DFCA0366FF7B4A0D707EB4B091479E463C6553C67B"
+    }
+  ],
+  "products": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "3D7304AB94022A5D6348C8F812EBBCF83E2B3DDF5E1D1E31035E137D3805827B"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "sha256": "062201A98D8B0806F8C26C97315E39A3B97167C36978A152222FA3B022D56747"
+    }
+  ],
+  "failures": [
+    "test-build-001错误使用不存在公开IsDisposed，改用真实私有_disposed反射，未进入GUI",
+    "FieldEditing039以错误PART_Popup名称失败，原图像模板部件为Popup；修fixture后保持强断言"
+  ],
+  "limits": [
+    "候选自行构建产物；不是主仓正式验收",
+    "保留原默认5类×2转换10场景，此项只显式筛选，不替代旧整轨",
+    "未穷尽模板重建、异常观察者及所有来源身份组合",
+    "原厂资格/持久化语义未据本方测试宣称，ROI/显示owner及整窗保护未改"
+  ]
+}

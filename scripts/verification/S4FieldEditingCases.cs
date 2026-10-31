@@ -351,7 +351,7 @@ internal static class S2DocumentEditingCases
         var languageLayoutOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="LanguageLayout";
         var allKinds=languageLayoutOnly?new[]{"language-layout"}:behaviorUiOnly?new[]{"behavior-ui"}:windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
         var kinds=string.IsNullOrEmpty(selectedKinds)?allKinds:selectedKinds.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries);
-        Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(allKinds.Contains),"未知或重复跨文档控件筛选");
+        Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(kind=>allKinds.Contains(kind)||kind=="image-combo"),"未知或重复跨文档控件筛选");
         var reports=new List<object>();var unexpected=new List<string>();var expectDelete=false;var imageChainVerified=false;
         void Trace(string text){var line=DateTime.UtcNow.ToString("O")+" "+text;Console.WriteLine(line);File.AppendAllText(Path.Combine(directory,"progress.log"),line+Environment.NewLine);}
         var dialogs=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
@@ -472,6 +472,50 @@ internal static class S2DocumentEditingCases
         AppsPopup Popup(DeclaredFieldAccess field,object session,string path)
             =>CrossVisuals(field.View).OfType<AppsPopup>().Single(p=>ReferenceEquals(p.DataContext,session)
                 &&p.Name==(path=="IsDropDownOpen"?"rt":"et")&&p.GetBindingExpression(AppsPopup.IsPopupOpenProperty)?.ParentBinding.Path?.Path==path);
+        void VerifyImageCombo(string transition,(SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture,string pathA)
+        {
+            string ImageState(RuntimeToolConfiguration configuration)=>System.Text.Json.JsonSerializer.Serialize(configuration.Fields.Read(configuration.Schema.WorkflowImageInputId!));
+            (DeclaredFieldEditor Field,ComboBox Combo) ImageCombo(DefaultDebugWindow window)
+            {
+                var inputs=CrossVisuals(Control(window)).OfType<DeclaredInputFieldsView>().Single();
+                var field=inputs.Fields.Single(f=>f.FieldId==BlobTool.ImageInput);var combo=(ComboBox)field.InputElement!;
+                Require(combo.IsLoaded&&combo.IsVisible&&combo.IsEnabled,"图像Combo未真实加载可用");return(field,combo);
+            }
+            void OpenCombo(DefaultDebugWindow window,ComboBox combo)
+            {
+                window.Activate();combo.Focus();combo.IsDropDownOpen=true;Pump();
+                Require(combo.IsDropDownOpen&&combo.Template.FindName("Popup",combo) is Popup{IsOpen:true},"图像原Popup未实际打开");
+            }
+            var document=manager.CurrentSolution!;var edit=manager.Session!.Editing;var formal=Stamp(fixture.Target.RuntimeConfiguration!);var sourceState=ImageState(fixture.Target.RuntimeConfiguration!);var savedA=File.ReadAllBytes(pathA);
+            var first=Open(fixture.Target);var firstControl=Control(first);var firstContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(firstControl)!;
+            var old=ImageCombo(first);OpenCombo(first,old.Combo);var selected=(ComboBoxItem)old.Combo.SelectedItem!;
+            Require(selected.Tag is ReferenceSetting source&&source.Reference.NodeId==fixture.SourceId,"图像真实已选来源身份错误");
+            var alternate=old.Combo.Items.OfType<ComboBoxItem>().FirstOrDefault(item=>item.IsEnabled&&!ReferenceEquals(item,selected)&&item.Tag is ReferenceSetting)??throw new Exception("真实多图候选前提缺失");
+            foreach(var hidden in new[]{false,true})
+            {
+                var before=Stamp(firstContext.DraftNode.RuntimeConfiguration!);if(hidden)old.Field.Visibility=Visibility.Collapsed;else old.Field.IsEnabled=false;Pump();
+                Require(!old.Combo.IsDropDownOpen,"停用未关闭原图像Popup");old.Combo.SelectedItem=alternate;Pump();Require(before==Stamp(firstContext.DraftNode.RuntimeConfiguration!),"停用程序选择写入草稿");
+                if(hidden)old.Field.Visibility=Visibility.Visible;else old.Field.IsEnabled=true;Pump();
+                Require(old.Combo.SelectedItem is ComboBoxItem{Tag:ReferenceSetting restored}&&restored.Reference.NodeId==((ReferenceSetting)selected.Tag).Reference.NodeId&&restored.Reference.PortId==((ReferenceSetting)selected.Tag).Reference.PortId&&restored.Reference.ScopeId==((ReferenceSetting)selected.Tag).Reference.ScopeId&&restored.Reference.MemberFieldPath.SequenceEqual(((ReferenceSetting)selected.Tag).Reference.MemberFieldPath),"恢复未刷新却显示未接纳选择");
+                OpenCombo(first,old.Combo);
+            }
+            var oldItems=old.Combo.Items.OfType<ComboBoxItem>().ToArray();
+            manager.CloseSolution(saveChanges:false);Pump();var destination=transition=="reopen-A"?manager.OpenSolution(pathA):manager.CreateUntitledSolution();Pump();
+            Require(destination is not null&&!first.IsVisible&&(bool)typeof(RuntimeNodeConfigurationControl).GetField("_disposed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(firstControl)!&&!firstContext.IsValid&&!ReferenceEquals(edit,manager.Session!.Editing),"换方案未退役真实编辑器");
+            Require(!old.Combo.IsDropDownOpen&&savedA.SequenceEqual(File.ReadAllBytes(pathA)),"旧Popup未关或取消改变文件");
+            var target=transition=="reopen-A"?((SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(n=>n.Id==fixture.Target.Id)):Populate().Target;
+            Require(transition!="reopen-A"||destination.Id==document.Id&&target.Id==fixture.Target.Id,"同ID新文档会话前提失败");
+            var pathB=transition=="reopen-A"?pathA:Path.Combine(directory,"image-combo-B.solution");Require(manager.SaveCurrentDocument(pathB).FileWritten,"目标保存失败");
+            var current=Open(target);var control=Control(current);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;var next=ImageCombo(current);OpenCombo(current,next.Combo);
+            var draft=Stamp(context.DraftNode.RuntimeConfiguration!);var currentFormal=Stamp(target.RuntimeConfiguration!);var imageDraft=ImageState(context.DraftNode.RuntimeConfiguration!);var imageFormal=ImageState(target.RuntimeConfiguration!);var history=manager.Session!.History.Position;var version=manager.Session.Editing.Host.Capture().Version;var registered=manager.Session.Editing.RegisteredScopeCount;var savedB=File.ReadAllBytes(pathB);
+            old.Combo.SelectedItem=alternate;
+            foreach(var item in oldItems)item.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});
+            old.Combo.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(next.Combo),Environment.TickCount,Key.Enter){RoutedEvent=UIElement.PreviewKeyDownEvent});Pump();
+            Require(context.IsValid&&current.IsVisible&&next.Combo.IsDropDownOpen&&next.Combo.Template.FindName("Popup",next.Combo) is Popup{IsOpen:true},"旧事件破坏新宿主或图像Popup");
+            Require(draft==Stamp(context.DraftNode.RuntimeConfiguration!)&&currentFormal==Stamp(target.RuntimeConfiguration!)&&imageDraft==ImageState(context.DraftNode.RuntimeConfiguration!)&&imageFormal==ImageState(target.RuntimeConfiguration!)&&formal==Stamp(fixture.Target.RuntimeConfiguration!)&&sourceState==ImageState(fixture.Target.RuntimeConfiguration!)&&history==manager.Session.History.Position&&version==manager.Session.Editing.Host.Capture().Version&&registered==manager.Session.Editing.RegisteredScopeCount&&savedB.SequenceEqual(File.ReadAllBytes(pathB))&&savedA.SequenceEqual(File.ReadAllBytes(pathA)),"旧图像事件改写草稿/正式/历史/版本/文件");
+            Require(unexpected.Count==0,"意外产品提示");current.Close();Pump();var reopened=Open(target);OpenCombo(reopened,ImageCombo(reopened).Combo);reopened.Close();manager.CloseSolution(saveChanges:false);Pump();
+            Trace("PASS_IMAGE_COMBO "+transition+" real-host/physical-popup/disabled-hidden/old-events/reopen");
+        }
         void VerifyLanguageLayout((SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture)
         {
             var english=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English";
@@ -648,6 +692,7 @@ internal static class S2DocumentEditingCases
             {
                 Trace("BEGIN "+transition+" "+kind);manager.CreateUntitledSolution();Pump();Trace("POPULATE "+kind);var a=Populate();Trace("POPULATED "+kind);var oldDocument=manager.CurrentSolution!;var oldSession=manager.Session!;var oldEditing=oldSession.Editing;
                 var pathA=Path.Combine(directory,transition+"-"+kind+"-A.solution");Require(manager.SaveCurrentDocument(pathA).FileWritten,"原方案保存前提失败");
+                if(kind=="image-combo"){VerifyImageCombo(transition,a,pathA);reports.Add(new{transition,kind,passed=true});continue;}
                 if(languageLayoutOnly){VerifyLanguageLayout(a);reports.Add(new{transition,kind,passed=true});continue;}
                 if(behaviorUiOnly){VerifyBehaviorHost(a);reports.Add(new{transition,kind,passed=true});continue;}
                 if(windowSessionOnly){VerifyWindowSession(transition,a,pathA);reports.Add(new{transition,kind,windowRoot=true,passed=true});continue;}

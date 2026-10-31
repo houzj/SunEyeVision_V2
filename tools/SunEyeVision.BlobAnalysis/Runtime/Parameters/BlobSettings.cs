@@ -114,9 +114,8 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Number(nameof(BlobCountLimit), BlobCountLimit);
         void Range(bool enabled, string minField, double min, string maxField, double max)
         {
-            if (!enabled) return;
             Number(minField, min); Number(maxField, max);
-            Check(min <= max, "筛选下限不能超过上限。");
+            if(enabled)Check(min <= max, "筛选下限不能超过上限。");
         }
         Range(IsAreaFilterEnabled, nameof(FilterAreaMin), FilterAreaMin, nameof(FilterAreaMax), FilterAreaMax);
         Range(IsCircularityFilterEnabled, nameof(FilterCircularityMin), FilterCircularityMin, nameof(FilterCircularityMax), FilterCircularityMax);

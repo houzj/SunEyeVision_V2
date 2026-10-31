@@ -114,7 +114,7 @@ public partial class MainWindowViewModel
                 }
                 using var values=publication?.Borrow();
                 var projection=node.RuntimeConfiguration?.ResultProjection;
-                if(projection is not null && (new ToolSchema(Array.Empty<Port>(),node.RuntimeConfiguration!.Schema.Outputs).Fingerprint!=schema.Fingerprint
+                if(projection is not null && (new ToolSchema(Array.Empty<Port>(),node.RuntimeConfiguration!.Schema.Outputs).Fingerprint!=new ToolSchema(Array.Empty<Port>(),schema.Outputs).Fingerprint
                     ||projection.Validate(schema).Count!=0))projection=null;
                 string? fileName=null;
                 if(ImageSourcePolicy.Read(node) is not null && values?.Values is {} frozen

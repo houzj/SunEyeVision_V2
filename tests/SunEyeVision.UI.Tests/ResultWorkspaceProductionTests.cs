@@ -176,6 +176,16 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Equal(1,f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>().Count(item=>item.IsCheck));
     });
     [Fact]
+    public void Unexecuted_image_source_uses_declared_names_without_published_snapshot()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        Assert.True(f.Context.RemoveNodeResult(f.Source.Id));
+        f.Main.RefreshNativeResultImages();Pump();
+        Assert.Equal(f.Source.Name+" · 图像",f.Choice(f.Source.Id,"output.image").DisplayName);
+        Assert.Equal(f.Source.Name+" · 灰度图像",f.Choice(f.Source.Id,"output.gray-image").DisplayName);
+    });
+    [Fact]
     public void Output_check_notifications_cannot_overwrite_newer_selection_and_clear_retires_checks()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
     {

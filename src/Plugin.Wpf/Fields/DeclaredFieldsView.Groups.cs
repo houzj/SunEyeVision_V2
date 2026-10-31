@@ -18,7 +18,14 @@ public sealed partial class DeclaredFieldsView
     private readonly HashSet<string> _pairedFields=new(StringComparer.Ordinal);
     private IReadOnlyDictionary<string,FieldPresentation> _groupPresentations=new Dictionary<string,FieldPresentation>();
     private bool _submitting;
+    private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions> _choiceDisplays=new Dictionary<string,DeclaredChoiceDisplayOptions>();
     private IReadOnlyDictionary<string,TextExpressionOptions> _textExpressions=new Dictionary<string,TextExpressionOptions>();
+    private string? ChoiceReadinessError()
+    {
+        foreach(var (id,option) in _choiceDisplays)
+            if(_fieldStates.SingleOrDefault(state=>state.Port.Id==id) is {} state&&option.ValidateProposal(state.Accepted) is {} error)return error;
+        return null;
+    }
     private bool CurrentGroup()
     {
         if(_disposed)return false;
@@ -113,6 +120,8 @@ public sealed partial class DeclaredFieldsView
         {
             foreach(var change in changes)
             {
+                if(validateComposition&&_choiceDisplays.TryGetValue(change.Key,out var choice)&&choice.ValidateProposal(change.Value) is {} choiceError)
+                    throw new ArgumentException(choiceError);
                 if(change.Value is ConstantSetting {Value:string text}&&_textExpressions.TryGetValue(change.Key,out var expression))
                 {
                     if(!CurrentGroup())throw new InvalidOperationException("文本字段所属编辑范围已失效。");

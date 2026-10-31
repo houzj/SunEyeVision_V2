@@ -1,0 +1,40 @@
+{
+  "baseline": "9e205a0277bfc256dfd4c1b2f1affef58ea87064",
+  "scope": "共享Choice展示候选；不修改Blob/Runtime/Contracts/Workflow，不解除整窗总保护",
+  "api": "DeclaredChoiceDisplayItem(displayId,label,formalKey?,isAvailable,unavailableReason?)/DeclaredChoiceDisplayOptions.Items；ToolSettingsViewOptions.ChoiceDisplays按fieldId构造与with冻结；FieldsView/FieldEditor追加可选配置",
+  "build": {
+    "errors": 0,
+    "warnings": 5366,
+    "command": "dotnet build src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj -c Release --no-restore -p:BuildProjectReferences=false",
+    "log": "Release/_validation/B08ReferenceUiCandidate/choice-wpf-build-004.log"
+  },
+  "test": {
+    "source": "scripts/verification/B08ChoiceDisplayCases.cs",
+    "sha256": "BD2F7C3859ED08C9FDC0FD2000F8B880FA36378A3B8A5D881402CFE0786FBF33",
+    "passed": 7,
+    "exit": 0,
+    "buildLog": "Release/_validation/B08ChoiceDisplay/build-004.log",
+    "runLog": "Release/_validation/B08ChoiceDisplay/run-004.log",
+    "scope": "独立真实WPF，正式FieldSettingsDraft/FieldSettings、原ComboBoxStyle/Popup/容器及现有owner历史回放；不是Blob接入或VS人工"
+  },
+  "preservedFailure": {
+    "log": "Release/_validation/B08ChoiceDisplay/run-001.log",
+    "reason": "混合组拒绝会给两提案字段保留错误，初测试只重提Mode却期望另一字段错误自动消失；修为完整重提被拒组，两字段唯一接受状态/产品既有整组语义未改",
+    "later": "run002为5组，run003为6组；新增Options冻结/隐藏门禁后run004为7组"
+  },
+  "identities": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "963BA5F2BC8937CC3861017258B8844230E648DB0382178FFF605E14EDE3BEE5"
+    },
+    {
+      "path": "Release/_validation/B08ChoiceDisplay/bin/Release/net9.0-windows/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "963BA5F2BC8937CC3861017258B8844230E648DB0382178FFF605E14EDE3BEE5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "sha256": "117E99A64F3DD86FA8DD4F6D64A7648A454F62E2C0EA30381E3A06986D9E7FC3"
+    }
+  ],
+  "pending": "先固定本功能提交，按主线要求再合入287c234d的Runtime53字段；随后UI/全量构建、同版专属Choice/公共字段及RuntimeUI回归，正式/VS人工单列"
+}

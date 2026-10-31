@@ -45,8 +45,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _tabs.SelectedIndex=value;
   }
  }
- public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
- public bool HasPendingActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
+ public bool HasInvalidActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
+ public bool HasPendingActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
  private readonly Dictionary<string,FrameworkElement> _visualSources=new(StringComparer.Ordinal);
@@ -166,6 +166,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();
  public bool TryValidate(out string error)
  {
+  if(ChoiceReadinessError() is {} unavailable){error=unavailable;return false;}
   var checkedRanges=new HashSet<FrameworkElement>();
   foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
   {
@@ -190,7 +191,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyList<NativeGraphicDisplayOptions>? graphicDisplays=null,
   IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null,
   IReadOnlyList<NativeAssistOptions>? assistCompositions=null,IReadOnlySet<string>? headerlessSectionAnchors=null,
-  IReadOnlyDictionary<string,double>? pageLabelWidths=null)
+  IReadOnlyDictionary<string,double>? pageLabelWidths=null,
+  IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
@@ -199,6 +201,13 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   {
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
   var declarations=all.ToDictionary(field=>field.Port.Id,StringComparer.Ordinal);
+  _choiceDisplays=choiceDisplays?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)??new Dictionary<string,DeclaredChoiceDisplayOptions>(StringComparer.Ordinal);
+  foreach(var (id,option) in _choiceDisplays)
+  {
+   if(!declarations.TryGetValue(id,out var field)||option is null||field.Presentation.Editor!=FieldEditorKind.Choice)
+    throw new ArgumentException("枚举展示配置引用了未知或非枚举字段。");
+   option.ValidatePort(field.Port);
+  }
   if(pageLabelWidths is not null&&pageLabelWidths.Any(entry=>string.IsNullOrWhiteSpace(entry.Key)
       ||!double.IsFinite(entry.Value)||entry.Value<0||entry.Value>500
       ||!all.Any(field=>(field.Presentation.Layout?.Page??field.Presentation.Group)==entry.Key)))
@@ -321,7 +330,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    else if(!paired.Contains(field.Port.Id))
    {
     var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id));
+        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
     if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
     if(imageProviders.TryGetValue(field.Port.Id,out var provider))

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
@@ -34,7 +35,19 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,double>? PageLabelWidths=null,
     Func<string?>? ValidateUiState=null,
     IReadOnlySet<string>? SuppressedFieldRows=null,
-    IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null);
+    IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
+    IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null)
+{
+    private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
+    public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays
+    {
+        get=>_choiceDisplays;
+        init=>_choiceDisplays=FreezeChoiceDisplays(value);
+    }
+    private static IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? FreezeChoiceDisplays(IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? values)
+        =>values is null?null:new System.Collections.ObjectModel.ReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>(
+            values.ToDictionary(entry=>entry.Key,entry=>entry.Value??throw new ArgumentException("枚举展示配置不能为空。"),StringComparer.Ordinal));
+}
 
 public interface IToolSettingsView : IDisposable
 {

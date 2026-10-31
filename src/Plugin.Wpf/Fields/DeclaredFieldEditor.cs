@@ -28,6 +28,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private NativeReferencePresenter? _referencePresenter;
     private readonly Func<OutputReference,string>? _formatReference;
     private readonly IReadOnlyDictionary<string,string>? _choiceLabels;
+    private readonly DeclaredChoiceDisplayOptions? _choiceDisplay;
+    private string? ChoiceError=>_choiceDisplay?.ValidateProposal(_state.Accepted);
     private readonly StackPanel _body = new();
     private readonly TextBlock _error = new() { Foreground = Brushes.OrangeRed, TextWrapping = TextWrapping.Wrap };
     private readonly List<DeclaredFieldEditor> _children = new();
@@ -48,7 +50,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(options);
         options.Validate(_port);
-        if(_imageSources is not null||_inlineConstantReference||_integerRadioOptions is not null
+        if(_choiceDisplay is not null||_imageSources is not null||_inlineConstantReference||_integerRadioOptions is not null
             ||_presentation?.Layout?.PairWith is not null||_presentation?.Layout?.DialogPrimary==true)
             throw new ArgumentException("文本表达式与现有字段组合冲突。");
         var generation=_renderGeneration;var acceptance=_state.AcceptanceVersion;
@@ -71,7 +73,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private string _editError => _state.EditError;
     private bool _regionSourceSelector;
     private readonly bool _allowUnboundReference;
-    public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
+    public void UseRegionSourceSelector(){if(_choiceDisplay is not null)throw new ArgumentException("来源模式选择与枚举展示配置冲突。");_regionSourceSelector=true;HideLabel();Render();}
     public UIElement EditorBody => _row;
     public void SetLabel(string text){_label.Text=text;_integerRadio?.SetLabel(text);}
     internal void SetLabelWidth(double width)
@@ -102,34 +104,36 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_textPresenter?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
     internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
-    public bool HasInvalidText => _state.HasInvalidInput || _children.Any(child => child.HasInvalidText);
+    public bool HasInvalidText => _state.HasInvalidInput || ChoiceError is not null || _children.Any(child => child.HasInvalidText);
     public bool HasPendingEdits=>!_disposed&&(HasInvalidText||_numeric?.HasPendingEdits==true||_textPresenter?.HasPendingEdits==true
         ||_referencePresenter?.HasPendingEdits==true||_children.Any(child=>child.HasPendingEdits));
-    public string Error => _state.Error.Length!=0?_state.Error:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    public string Error => _state.Error.Length!=0?_state.Error:ChoiceError??_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     private void UpdateErrorDisplay()=>_error.Text=_state.Error;
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         ReferenceFieldOptions? references = null, ConstantSetting? constantBackup = null,
         Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,
-        NativeIntegerRadioOptions? integerRadioOptions=null)
-        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>integerRadioOptions?.Validate(proposal)??references?.ValidateProposal?.Invoke(port,proposal),
+        NativeIntegerRadioOptions? integerRadioOptions=null,DeclaredChoiceDisplayOptions? choiceDisplay=null)
+        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>choiceDisplay?.ValidateProposal(proposal)??integerRadioOptions?.Validate(proposal)??references?.ValidateProposal?.Invoke(port,proposal),
             readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(port):null),label,
-            references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true)
+            references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true,choiceDisplay:choiceDisplay)
     { }
 
     internal DeclaredFieldEditor(DeclaredFieldState state,string label,
         ReferenceFieldOptions? references=null,Func<OutputReference,string>? formatReference=null,
         IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,NativeIntegerRadioOptions? integerRadioOptions=null,bool ownsState=false,
-        bool inlineConstantReference=false)
+        bool inlineConstantReference=false,DeclaredChoiceDisplayOptions? choiceDisplay=null)
     {
         var port=state.Port;
         _state=state;_port=state.Port;_referenceOptions=references;_ownsState=ownsState;
-        _formatReference=formatReference;_choiceLabels=choiceLabels;_presentation=presentation;
+        _formatReference=formatReference;_choiceLabels=choiceLabels;_presentation=presentation;_choiceDisplay=choiceDisplay;
         _integerRadioOptions=integerRadioOptions;
         _allowUnboundReference=allowUnboundReference;
         try
         {
+        _choiceDisplay?.ValidatePort(port);
+        if(_choiceDisplay is not null&&(integerRadioOptions is not null||inlineConstantReference))throw new ArgumentException("枚举展示与其他字段组合冲突。");
         if(inlineConstantReference)
         {
             if(port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
@@ -164,6 +168,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private bool Set(ParameterSetting next)
     {
         if(_disposed)return false;
+        if(_choiceDisplay?.ValidateProposal(next) is {} choiceError){_state.SetEditError(choiceError);return false;}
         if(_integerRadioOptions?.Validate(next) is {} error){_state.SetEditError(error);return false;}
         return _state.TrySet(next);
     }
@@ -280,21 +285,45 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                     InputElement=selector;_body.Children.Add(selector);return;
                 }
                 var input=NativeInputFactory.Enumeration();
-                input.DisplayMemberPath=nameof(ChoiceItem.Label);input.SelectedValuePath=nameof(ChoiceItem.Key);
-                input.ItemsSource=choices.Keys.Select(key=>new ChoiceItem(key,_choiceLabels?.GetValueOrDefault(key,key)??key)).ToArray();
+                if(_choiceDisplay is {} display)
+                {
+                    input.DisplayMemberPath=nameof(DeclaredChoiceDisplayItem.Label);input.SelectedValuePath=nameof(DeclaredChoiceDisplayItem.FormalKey);
+                    var style=new Style(typeof(ComboBoxItem),input.ItemContainerStyle);
+                    style.Setters.Add(new Setter(IsEnabledProperty,new Binding(nameof(DeclaredChoiceDisplayItem.IsAvailable))));
+                    style.Setters.Add(new Setter(ToolTipProperty,new Binding(nameof(DeclaredChoiceDisplayItem.UnavailableReason))));
+                    style.Setters.Add(new Setter(ToolTipService.ShowOnDisabledProperty,true));
+                    input.ItemContainerStyle=style;input.ItemsSource=display.Items;
+                }
+                else
+                {
+                    input.DisplayMemberPath=nameof(ChoiceItem.Label);input.SelectedValuePath=nameof(ChoiceItem.Key);
+                    input.ItemsSource=choices.Keys.Select(key=>new ChoiceItem(key,_choiceLabels?.GetValueOrDefault(key,key)??key)).ToArray();
+                }
                 input.SelectedValue=value;
                 if(value is not string current||!choices.Keys.Contains(current))
                 {_state.SetEditError("当前枚举值不在声明选项中，请重新选择。");}
                 var restoring=false;
-                SelectionChangedEventHandler onSelectionChanged = (_, _) =>
+                void Restore()
                 {
-                    if(!CurrentRender()||_updatingInput||restoring||!input.IsEnabled||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input)||input.SelectedValue is not string key)return;
-                    if(_setting is ConstantSetting accepted&&Equals(accepted.Value,key)&&_editError.Length==0)return;
-                    if(Set(new ConstantSetting(key)))return;
                     if(!CurrentRender()||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
                     restoring=true;
-                    try{input.SetCurrentValue(ComboBox.SelectedValueProperty,((ConstantSetting)_setting).Value);}
+                    try{input.SetCurrentValue(ComboBox.SelectedValueProperty,(_setting as ConstantSetting)?.Value);}
                     finally{restoring=false;}
+                }
+                SelectionChangedEventHandler onSelectionChanged = (_, _) =>
+                {
+                    if(!CurrentRender()||_updatingInput||restoring||!input.IsEnabled||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
+                    if(_choiceDisplay is {} snapshot)
+                    {
+                        var selected=input.SelectedItem as DeclaredChoiceDisplayItem;
+                        var error=selected is null||!snapshot.Items.Any(item=>ReferenceEquals(item,selected))
+                            ?"选项展示快照已经失效。":!selected.IsAvailable?selected.UnavailableReason:null;
+                        if(error is not null){_state.SetEditError(error);Restore();return;}
+                    }
+                    if(input.SelectedValue is not string key)return;
+                    if(_setting is ConstantSetting accepted&&Equals(accepted.Value,key)&&_editError.Length==0)return;
+                    var didAccept=Set(new ConstantSetting(key));
+                    if(_choiceDisplay is not null||!didAccept)Restore();
                 };
                 input.SelectionChanged += onSelectionChanged;
                 _detachChoiceInput=()=>input.SelectionChanged-=onSelectionChanged;
@@ -360,7 +389,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     public bool TryCommitPending()
     {
-        if(IsDisposed)return false;
+        if(IsDisposed||ChoiceError is not null)return false;
         if(_numeric is not null&&!_numeric.TryCommitPending())return false;
         if(_textPresenter is not null&&!_textPresenter.TryCommitPending())return false;
         if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;

@@ -1,0 +1,16 @@
+{
+  "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08结果列表角度与长短轴映射-20261031.md",
+  "sha256": "4F308D98D30270A98054724251EDEA939FA8B60B6E7455AD7BE0D27EDF85E1E5",
+  "scope": "静态证据：默认配置、无同名覆盖、正常输出；未运行原机",
+  "confirmed": [
+    "Angle映射MinBoudingRect/Angle，区别于BlobAngle",
+    "LongAxis和ShortAxis各按名称读取",
+    "矩形接口声明顺时针为正、范围(-180,180]"
+  ],
+  "unconfirmed": [
+    "角度单位与坐标归一化",
+    "轴是半长或全长",
+    "退化形状和动态同名覆盖",
+    "原机数值等价"
+  ]
+}

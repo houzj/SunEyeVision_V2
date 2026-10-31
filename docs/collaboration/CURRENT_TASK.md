@@ -1,3 +1,7 @@
+## 2026-10-31 结果映射补证与导出缺口
+
+- 原默认结果列表 Angle 按名称映射到 MinBoudingRect/Angle，非独立 BlobAngle；LongAxis/ShortAxis 各读同名输出。矩形接口方向及范围有声明，单位、轴半长/全长和退化行为未证；证据 BLOB_RESULT_ORIGINAL_MAPPING_20261031.json，不将HALCON中间值冒充VM等价。
+- C17 原图/图文导出仍有 WPF 与原 OpenCV 渲染、透明度、线宽和 JPEG 参数差异；字体ABI未证。具体替换入口及保留的帧/冻结/退役保护已写 O06；按用户决定不为本批扩其他基础，不标成功能完成。
 ## 2026-10-31 S3 正式算法基线与完整范围
 
 - 主线正式 Release RuntimeAlgorithm attempt-002 退出码0，直接 HALCON 单阈值链的固定8邻域恢复、拒绝全局截断、先排序后限数、多孔边界/独立读者和空结果共5组通过；不是正式宿主全链或VM同态证明。产品源码与 c4e04f0f 构建一致。

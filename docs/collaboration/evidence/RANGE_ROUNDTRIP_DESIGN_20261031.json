@@ -26,7 +26,7 @@
   },
   "policy": {
     "ordinary": "保留GetDecimalStr普通自定义格式；对已按声明精度ToEven规范化的有限double，只有原格式文本以Invariant Float解析后有限且严格等于规范化值才采用。",
-    "fallback": "原格式不能有限往返才用Fdigits；仍不等则使用R。所有输出必须有限往返到规范化候选；否则拒绝。",
+    "fallback": "原格式不能有限往返才用Fdigits；仍不等则拒绝，不引入指数回退。所有输出必须有限往返到规范化候选；否则拒绝。",
     "consumers": "单一内部NumericTextProjection供原SliderArrangeFloat外层TwoWay converter和NativeNumericCommit使用；converter不调用工作流、不执行工具。",
     "convertBack": "同一Invariant有限解析；非法/Infinity/NaN返回UnsetValue，不写源；原RangeRule仍验证绝对范围，Raw先校验不被提前舍入绕过。",
     "binding": "在原Float Loaded创建外层Binding时安装共享converter；保持原Source/Path/Mode及默认UpdateSourceTrigger，事务期间不替换绑定，不吞TextChanged，不放宽身份/版本门禁。",

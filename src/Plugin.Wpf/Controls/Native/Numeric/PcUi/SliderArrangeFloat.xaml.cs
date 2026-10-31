@@ -1,7 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 using System;
-using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -73,7 +72,7 @@ public partial class SliderArrangeFloat : SliderArrangeBase, IComponentConnector
 			{
 				Source = this,
 				Mode = BindingMode.TwoWay,
-				StringFormat = GetDecimalStr(DecimalDigits)
+				Converter = new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeNumericTextConverter(() => DecimalDigits)
 			});
 		}
 		catch
@@ -90,7 +89,7 @@ public partial class SliderArrangeFloat : SliderArrangeBase, IComponentConnector
 			{
 				Source = this,
 				Mode = BindingMode.TwoWay,
-				StringFormat = GetDecimalStr(DecimalDigits)
+				Converter = new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeNumericTextConverter(() => DecimalDigits)
 			});
 		}
 		catch
@@ -98,21 +97,6 @@ public partial class SliderArrangeFloat : SliderArrangeBase, IComponentConnector
 		}
 	}
 
-	private string GetDecimalStr(int n)
-	{
-		string result = "0.000";
-		if (n != 3 && n >= 0 && n < 10)
-		{
-			StringBuilder stringBuilder = new StringBuilder("0.");
-			while (n > 0)
-			{
-				n--;
-				stringBuilder.Append('0');
-			}
-			return stringBuilder.ToString();
-		}
-		return result;
-	}
 
 	private void PART_Popup_Closed(object sender, EventArgs e)
 	{

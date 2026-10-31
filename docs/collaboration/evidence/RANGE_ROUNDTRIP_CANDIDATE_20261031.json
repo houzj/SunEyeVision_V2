@@ -1,0 +1,834 @@
+{
+  "scope": "双端范围完整单元候选；现有原控件/模型/事务/消费者复用，有限往返格式冲突集中修复；不是主仓正式验收或完整Blob/S3",
+  "baseline": "602ceb8b",
+  "designCommit": "fe204818",
+  "buildSource": "fe204818加本报告源码SHA清单；构建后产品源码未改，禁止称纯净fe204818产物",
+  "build": {
+    "session": 67941,
+    "exit": 0,
+    "errors": 0,
+    "warnings": 6527,
+    "duration": "00:01:07.45",
+    "file": {
+      "path": "Release/_validation/RangeProjectionDiagnostic-20261031/range-full-build-001.log",
+      "sha256": "C161BA33991ACA9CB3AA8F679619070BC2D7F4F8A3BA6CD4ED760CFD3BA6286A"
+    }
+  },
+  "sources": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericTextProjection.cs",
+      "sha256": "D841040620BB4DF0A81BAE297B2E8FF3AB46B498D5F6B8B1D3ACBA69C9D42E35"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "8506D015C831C2EBFA062AF1D8C42E2F239F76A9421C3B31742EC335431289CC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
+      "sha256": "AE2BAE8F3851CCF866B9F6BD9BBCC64442E1D94D069654DA910D4D5949C4D2FB"
+    },
+    {
+      "path": "scripts/verification/S4RangeRoundtripCases.cs",
+      "sha256": "82CB7DA92D454C3D660D5C1C137F2DBA866D5DA68C6D3EFEDDD116C8DC2A6A2F"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "268E27CB33E48E4A1A6E64C1D2BBA98D49E26597E5EED8F4E8C9F263791B552D"
+    }
+  ],
+  "products": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "195B0E6107E7B4349223BF3AE0F9D5710267EF43433C983E2A368C151B36D62B"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "BA24D0C42E7B5E3DBD130639CBE8EA1684AF7928DBB7D202743A7D4875E1B727"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll",
+      "sha256": "63B59B9A10C0CAF922C4BB431B61C475B60B996348ACB7F3455882C8213AE29F"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll",
+      "sha256": "84B50A92E913952B8D31E5F51B254640DED6E68EB70C899087862463ACC95B8B"
+    }
+  ],
+  "checks": [
+    {
+      "track": "RangeRoundtrip",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 142548,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4RangeRoundtripCases.cs",
+        "caseSourceSha256": "82CB7DA92D454C3D660D5C1C137F2DBA866D5DA68C6D3EFEDDD116C8DC2A6A2F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RangeRoundtrip\\attempt-003"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-003/receipt.json",
+          "sha256": "E7CFD4DFC57F59BDBA87E8E55D78AA467FA133A48B43CC6345EBBF57C14E91A2"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-003/run.log",
+          "sha256": "07457CBCB9D1C22C527BD702AE50972F8A2D9F881910461A0C81630137F3C8E0"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-003/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-003/loaded-product.tsv",
+          "sha256": "A7921EA3DFADB8C8E8B42E14845625489D68BEBF54D42EE5AE7F1599B3245B92"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-003/cases.cs.txt",
+          "sha256": "82CB7DA92D454C3D660D5C1C137F2DBA866D5DA68C6D3EFEDDD116C8DC2A6A2F"
+        }
+      ],
+      "loadedFlag": "S4_RANGE_LOADED=1",
+      "passed": 42,
+      "report": [
+        {
+          "name": "原普通格式与有限回退 zh-CN/0",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 zh-CN/2",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 zh-CN/3",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 zh-CN/9",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 en-US/0",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 en-US/2",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 en-US/3",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 en-US/9",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 de-DE/0",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 de-DE/2",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 de-DE/3",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 de-DE/9",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 fr-FR/0",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 fr-FR/2",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 fr-FR/3",
+          "passed": true
+        },
+        {
+          "name": "原普通格式与有限回退 fr-FR/9",
+          "passed": true
+        },
+        {
+          "name": "非有限源禁止投影",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 zh-CN/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 zh-CN/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 zh-CN/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 zh-CN/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 zh-CN/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 zh-CN/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 en-US/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 en-US/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 en-US/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 en-US/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 en-US/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 en-US/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 de-DE/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 de-DE/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 de-DE/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 de-DE/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 de-DE/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 de-DE/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 fr-FR/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 fr-FR/0",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 fr-FR/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 fr-FR/2",
+          "passed": true
+        },
+        {
+          "name": "Loaded单值及原外层绑定 fr-FR/9",
+          "passed": true
+        },
+        {
+          "name": "Loaded双端及原绑定编辑 fr-FR/9",
+          "passed": true
+        },
+        {
+          "name": "稳定Track四向极大域及原Thumb实际提交",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "track": "NumericContract",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 10,
+        "pid": 144084,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "E31518D59B79F351F314089A2E49FCFE7997B5C6E2A271FB806635BB09F88230",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-010"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/NumericContract/attempt-010/receipt.json",
+          "sha256": "6A7128BDBCE9669D27F3F54874DFD5682E46BA1DB6695ED0A1BBE2623A4C6122"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/NumericContract/attempt-010/run.log",
+          "sha256": "3936DBA4AA875153184794B9C90EAB72C06546A547DE4D0F01AB8A2B3243FCF5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/NumericContract/attempt-010/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/NumericContract/attempt-010/loaded-product.tsv",
+          "sha256": "4B44442E6BDAEADDD7D6CE63A7EC9C75423EEACAC74514A64625C99216B7594B"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/NumericContract/attempt-010/cases.cs.txt",
+          "sha256": "E31518D59B79F351F314089A2E49FCFE7997B5C6E2A271FB806635BB09F88230"
+        }
+      ],
+      "passed": 68,
+      "loadedFlag": "S4_NUMERIC_LOADED=1"
+    },
+    {
+      "track": "FieldEditing",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 4,
+        "pid": 40864,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "66DB8D9F485A51898C3A781172AFB46A9548A6FB7DCC50548E19737B1515E434",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-004"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/FieldEditing/attempt-004/receipt.json",
+          "sha256": "34E55D7D5989BBF137E4F2F1CE7A66E89F1049B8307E1D361D9B4075756F03A3"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FieldEditing/attempt-004/run.log",
+          "sha256": "8D35B2129ACB11CE177581BB60F7FFF05561F91E9AB3C6CD1E7B0310BBF16BB6"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FieldEditing/attempt-004/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FieldEditing/attempt-004/loaded-product.tsv",
+          "sha256": "BB67917F4D5D0AF3C6CA496C14FDAB010FEE256709873B59C6D847908F52774D"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/FieldEditing/attempt-004/cases.cs.txt",
+          "sha256": "66DB8D9F485A51898C3A781172AFB46A9548A6FB7DCC50548E19737B1515E434"
+        }
+      ]
+    },
+    {
+      "track": "VariableFields",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 86008,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4VariableReferenceCases.cs",
+        "caseSourceSha256": "51095D77058ACCACA510789E71CA99A0890EC63E3F11BF506A3C506EDA625E48",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\VariableFields\\attempt-002"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/VariableFields/attempt-002/receipt.json",
+          "sha256": "EFFD249797DCB52A7E8678A0702A285A62589A45E9EF8373E04592A9481C1977"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/VariableFields/attempt-002/run.log",
+          "sha256": "318D91176025C1C915C1C3BD2F9E7F8DB5FA9EAA7AA747AE280E7F770BF31D0F"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/VariableFields/attempt-002/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/VariableFields/attempt-002/loaded-product.tsv",
+          "sha256": "8733BA97FCA40D1B36579997EDD1CA302B1354C7954263702BB59A5A003C8B24"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/VariableFields/attempt-002/cases.cs.txt",
+          "sha256": "51095D77058ACCACA510789E71CA99A0890EC63E3F11BF506A3C506EDA625E48"
+        }
+      ],
+      "passed": 13
+    },
+    {
+      "track": "ParameterValues",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 6,
+        "pid": 141112,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4ParameterCurrentValueCases.cs",
+        "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-006"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-006/receipt.json",
+          "sha256": "A1DCBAB7EFEB3858DA30BB01DB40199D74A5343B435C528E780FABFCF904CC70"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-006/run.log",
+          "sha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-006/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-006/loaded-product.tsv",
+          "sha256": "1BC50C91A1700DE18D5F59A3E4BCE0CFAA92D166235AEB6110FE80F59913E1AC"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-006/cases.cs.txt",
+          "sha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+        }
+      ],
+      "passed": 18
+    },
+    {
+      "track": "BlobParameterProduction",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 13,
+        "pid": 131716,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "5C60C86659C227A8C741CF1D1472A7F1A4C1558FB3F4AA9B988F3C2BE35729FE",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-013",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-013\\blob-parameter-production-report.json"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-013/receipt.json",
+          "sha256": "AE720F7C118280437F6920CDEAF46C0396FEA2EFDC153C6E2F9B56BD572DA8BF"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-013/run.log",
+          "sha256": "99B93C84E8CC757AE62957BE6128EDAC252C03E7B9991F1A1A9BF34263F20E66"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-013/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-013/loaded-product.tsv",
+          "sha256": "C82A0858BA763AFA035BC58862E453BDD203DCD0FE0C8F63945E67B420BD6EDD"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-013/cases.cs.txt",
+          "sha256": "5C60C86659C227A8C741CF1D1472A7F1A4C1558FB3F4AA9B988F3C2BE35729FE"
+        }
+      ],
+      "passed": 20
+    },
+    {
+      "track": "WindowPresentation",
+      "filter": "样式",
+      "expectedGroups": 8,
+      "passed": 7,
+      "failed": 1,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 74728,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "5E27BB6A964C712F0EA49A41BD878EDEF91D88D0FBFBAA70548DB1E3FC46FBD7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-001"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-001/receipt.json",
+          "sha256": "AF16CCC6B0AEA540C9FB5841F8A38168ADC16288720DC6ED1BCD5CB0AFD45334"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-001/run.log",
+          "sha256": "A68E07ED67FAC228CAE0D6662DCF5F393622D1AFED3D1BEF0C0E6E4207DFCBD2"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-001/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-001/loaded-product.tsv",
+          "sha256": "A7921EA3DFADB8C8E8B42E14845625489D68BEBF54D42EE5AE7F1599B3245B92"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "filter": "between",
+      "expectedGroups": 4,
+      "passed": 4,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 125856,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "5E27BB6A964C712F0EA49A41BD878EDEF91D88D0FBFBAA70548DB1E3FC46FBD7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-002"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-002/receipt.json",
+          "sha256": "97205F1243D0CF302C7B83B86741BD93849B8F0E805643A591A141B8F88F301F"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-002/run.log",
+          "sha256": "9CF7E573268A1FC8108F5A28F746353668BD4F480C9DF5AE18EC71D5F8F5678F"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-002/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-002/loaded-product.tsv",
+          "sha256": "A7921EA3DFADB8C8E8B42E14845625489D68BEBF54D42EE5AE7F1599B3245B92"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "filter": "范围",
+      "expectedGroups": 14,
+      "passed": 14,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 126548,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "5E27BB6A964C712F0EA49A41BD878EDEF91D88D0FBFBAA70548DB1E3FC46FBD7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-003"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/receipt.json",
+          "sha256": "8C1984E7F7F7824EB8DD86AB2A7634D17E283A95C63A4BEB2EE21695D9ED1AA2"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/run.log",
+          "sha256": "DDFE14BFFDC8CCBBD863D93965C3BB4EF592F381987CF0F861C3FEBD7D7E3ADF"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/loaded-product.tsv",
+          "sha256": "89D34562701D6E8FA99EF39E8A1CEE787A8B53BC8432229BF7D0FC9D1CA26DE0"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "filter": "数值重入",
+      "expectedGroups": 9,
+      "passed": 9,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 4,
+        "pid": 64080,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "5E27BB6A964C712F0EA49A41BD878EDEF91D88D0FBFBAA70548DB1E3FC46FBD7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-004"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-004/receipt.json",
+          "sha256": "001213B3AA9A958D6E15E47F85E17FE2264CE4A8DDEC0A0C029A63E672D0D81E"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-004/run.log",
+          "sha256": "F891BF7AD77F9D05E61B99D4DEDA5F1FC8341A8678E3A2F5D003B4601FFD1B4E"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-004/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-004/loaded-product.tsv",
+          "sha256": "A7921EA3DFADB8C8E8B42E14845625489D68BEBF54D42EE5AE7F1599B3245B92"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "filter": "稳定Track",
+      "expectedGroups": 1,
+      "passed": 1,
+      "failed": 0,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 5,
+        "pid": 137596,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "5E27BB6A964C712F0EA49A41BD878EDEF91D88D0FBFBAA70548DB1E3FC46FBD7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-005"
+      },
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-005/receipt.json",
+          "sha256": "D53F8045CC771C5701C8A76A28049F67F16E11812A8B674C2A4B7F41EEFA1A18"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-005/run.log",
+          "sha256": "C595D55E24043D74C8589C8B056757BC970C711517ABE5DE982B8FF806BE6B49"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-005/run-error.log",
+          "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-005/loaded-product.tsv",
+          "sha256": "A7921EA3DFADB8C8E8B42E14845625489D68BEBF54D42EE5AE7F1599B3245B92"
+        }
+      ]
+    }
+  ],
+  "diagnosticBeforeFix": {
+    "receipt": {
+      "scope": "单次定向GUI诊断；非产品构建或整轨验收",
+      "productSourceCommit": "60669453dc6df14d6409e7f8f3ffd01b02fbd7ae",
+      "productRoot": "D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision",
+      "exit": 0,
+      "publicTrySetConstant": false,
+      "isolatedPrepareValue": true,
+      "isolatedValidateStored": true,
+      "isolatedProjectCandidate": false,
+      "acceptedVersion": 0,
+      "hostWrites": 0,
+      "firstProjectionMutation": "0→1",
+      "firstProjectionEditVersion": "0→1",
+      "formatEvidence": "当前.NET F0解析为double.MaxValue；原自定义0.实际投影解析为Infinity。不是SDK执行证据。",
+      "guiReleased": true,
+      "files": [
+        {
+          "path": "Cases.cs",
+          "sha256": "51231C5A3233800047CBA74BE88C2591F7467AFD2B736E34133DDD1539740EB6"
+        },
+        {
+          "path": "SafeEntry.cs",
+          "sha256": "2E2CB74487B140602493093B217A75D488987D8C78BAA9C1639F8A89DCDD1E2F"
+        },
+        {
+          "path": "Check.csproj",
+          "sha256": "F5CA16DF7C104CEC92CB05667C557FCFBF14AE3F4230EF47447F15F7D69281D4"
+        },
+        {
+          "path": "out/Check.dll",
+          "sha256": "FAB2CC4391556634EEA154B0ACB3B0356150458179B8C29F90674133EEA84C69"
+        },
+        {
+          "path": "projection.json",
+          "sha256": "5CA561C359D20564855F28FCB18BF6746C5BF3D54278C7EE2E309C5DAC0FF947"
+        },
+        {
+          "path": "loaded-product.tsv",
+          "sha256": "444075ACA29FA4F001CDC61EF870D2527DD9C536A1994BF068DEF3EEB5FE4E1C"
+        },
+        {
+          "path": "build.log",
+          "sha256": "91D344A9F25C726BD4F065319E11AE46635B251856E776B6F930F962017EA0E2"
+        },
+        {
+          "path": "run.log",
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        }
+      ]
+    },
+    "receiptFile": {
+      "path": "Release/_validation/RangeProjectionDiagnostic-20261031/attempt-001/receipt.json",
+      "sha256": "4F59577F14D6A437A8C77259436DF0A54AC8B749B8364B2170962D28693FB4DD"
+    },
+    "projection": [
+      {
+        "step": "before",
+        "isolated": false,
+        "text": "20",
+        "revision": 1,
+        "mutation": 0,
+        "edit": 0,
+        "acceptance": 0,
+        "error": "",
+        "writes": 0,
+        "nativeValue": "20",
+        "format": "SliderArrangeFloat"
+      },
+      {
+        "step": "TextChanged",
+        "isolated": false,
+        "text": "179769313486232000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "revision": 2,
+        "mutation": 1,
+        "edit": 1,
+        "acceptance": 0,
+        "error": "",
+        "writes": 0,
+        "nativeValue": "1.7976931348623157E+308",
+        "format": "SliderArrangeFloat"
+      },
+      {
+        "step": "public-result",
+        "result": false,
+        "setting": "ConstantSetting { Value = 20 }"
+      },
+      {
+        "step": "after",
+        "isolated": false,
+        "text": "179769313486232000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "revision": 2,
+        "mutation": 2,
+        "edit": 1,
+        "acceptance": 0,
+        "error": "请输入有限数值。",
+        "writes": 0,
+        "nativeValue": "1.7976931348623157E+308",
+        "format": "SliderArrangeFloat"
+      },
+      {
+        "step": "before",
+        "isolated": true,
+        "text": "20",
+        "revision": 1,
+        "mutation": 0,
+        "edit": 0,
+        "acceptance": 0,
+        "error": "",
+        "writes": 0,
+        "nativeValue": "20",
+        "format": "SliderArrangeFloat"
+      },
+      {
+        "step": "PrepareValue",
+        "passed": true,
+        "value": "1.7976931348623157E+308"
+      },
+      {
+        "step": "ValidateStored",
+        "passed": true
+      },
+      {
+        "step": "TextChanged",
+        "isolated": true,
+        "text": "179769313486232000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "revision": 2,
+        "mutation": 1,
+        "edit": 1,
+        "acceptance": 0,
+        "error": "",
+        "writes": 0,
+        "nativeValue": "1.7976931348623157E+308",
+        "format": "SliderArrangeFloat"
+      },
+      {
+        "step": "ProjectCandidate",
+        "result": false
+      },
+      {
+        "step": "after",
+        "isolated": true,
+        "text": "179769313486232000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "revision": 2,
+        "mutation": 2,
+        "edit": 1,
+        "acceptance": 0,
+        "error": "请输入有限数值。",
+        "writes": 0,
+        "nativeValue": "1.7976931348623157E+308",
+        "format": "SliderArrangeFloat"
+      }
+    ],
+    "projectionFile": {
+      "path": "Release/_validation/RangeProjectionDiagnostic-20261031/attempt-001/projection.json",
+      "sha256": "5CA561C359D20564855F28FCB18BF6746C5BF3D54278C7EE2E309C5DAC0FF947"
+    }
+  },
+  "preservedFailures": [
+    {
+      "kind": "测试前置",
+      "attempt": "RangeRoundtrip/attempt-002",
+      "reason": "Thumb方法名遮蔽Thumb类型，CS0119；未进入产品测试",
+      "file": {
+        "path": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-002/build.log",
+        "sha256": "3FC6D681F44D0275C66D866C4AE64DE44FBC293CE3403F32DFF20918112FA547"
+      }
+    },
+    {
+      "kind": "已知显示样例失败，非本数值修复新增",
+      "attempt": "WindowPresentation/attempt-001",
+      "reason": "缺Rectangle的Single()在样式写入前失败；真实图形样式其他7项通过，不称整轨通过",
+      "historicalFormal": "D:/MyWork/SunEyeVision_V2/Release/_validation/S4-20261025/WindowPresentation/attempt-338、345、360/run.log同名同异常",
+      "log": "FAIL 独立原显示样例的图形样式驱动同一图像视口: System.InvalidOperationException: Sequence contains no elements\n   at System.Linq.ThrowHelper.ThrowNoElementsException()\n   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source)\n   at S2DocumentEditingCases.<VerifyNativeTextPixels>g__Rectangle|102_6(<>c__DisplayClass102_0&) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\Cases.cs:line 3800\n   at S2DocumentEditingCases.<>c.<VerifyNativeTextPixels>b__102_0() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\Cases.cs:line 3809\n   at S2DocumentEditingCases.Test(String name, Action run) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\Cases.cs:line 53\nPASS 原样式粗细严格范围、非法Enter留焦与箭头单次提交\nPASS 原图形只显示眼睛时样式按钮隐藏且可见性仍可编辑\nPASS 原图形隐藏样式按钮时眼睛拒绝恢复并可重试\nPASS 原完整样式弹层草稿编辑校验及卸载关闭\nPASS 原完整样式更多色板同草稿接纳拒绝与重绑退役\nPASS 原完整样式绑定错误观察者新原文不被旧提交覆盖\nPASS 公共设置视图重绑释放原样式父层和色板\nO06独立窗口检查：7组通过，1组失败。仅自动交互，不代人工外观验收。\n"
+    }
+  ],
+  "semantics": [
+    "普通格式仅对已按声明精度ToEven规范化的有限候选比较，不能称原始任意DP文本一律不变",
+    "原自定义格式若不能有限且严格往返，才退回Fdigits非指数；回退仍不等则拒绝，不用R、不放行Infinity",
+    "原RangeRule、TwoWay Source/Path、原文界限、绑定身份/重入/代次门禁保留；整数分支未扩大",
+    "Loaded/重载的外层binding从创建使用converter，事务中不替换绑定；NativeNumericCommit消费同一内部策略",
+    "真实TextBox编辑通过SelectedText替换，未读写用户系统剪贴板；不冒称OS剪贴板粘贴已测"
+  ],
+  "limitations": [
+    "候选未主仓集成；正式整批和原主方案由主线统一",
+    "实际VS、其他DPI、OS剪贴板粘贴未验，原厂极值消费成功未据本适配声称等价",
+    "原图形显示样例旧失败保留，范围相关筛选不代全部WindowPresentation",
+    "B08已标ROI/结果/偏好/原厂浮点及S3缺失仍保留，不扩基础"
+  ]
+}

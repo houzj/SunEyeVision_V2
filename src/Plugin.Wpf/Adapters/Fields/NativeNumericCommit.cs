@@ -252,6 +252,7 @@ internal sealed class NativeNumericCommit : IDisposable
         _state.SetEditError("请输入新的常量值。");
     }
     private string Format(object value)=>value is long integer?integer.ToString(CultureInfo.InvariantCulture)
+        :_owner is Numbers.SliderArrangeFloat floating?NativeNumericTextProjection.Format(Convert.ToDouble(value,CultureInfo.InvariantCulture),floating.DecimalDigits)
         :Convert.ToDouble(value,CultureInfo.InvariantCulture).ToString(_layout is null?"G17":"F"+_layout.DecimalPlaces,CultureInfo.InvariantCulture);
     public void ValidateInitial()
     {

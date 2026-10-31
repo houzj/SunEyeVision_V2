@@ -4845,6 +4845,16 @@ function update(){['vm','current','target'].forEach(draw);el('context').textCont
 <aside id="o06-blob-image-original-20261031"><strong>Blob图像原厂证据与本方问题：</strong>原GetBinaryImage是输入二值化结果，GetBlobImage是目标连通域绘制结果，分别声明图像、宽、高和像素格式；仅凭现有静态证据不能确定Blob图像是否仅含筛选通过对象、具体像素及Domain。此前BlobOutput Field(5)实际返回GrayImage，但BlobOutputDisplay误标为“Blob图像”；主线9d02762c已按真实值更名“灰度图像”，正式来源目录、结果快照和图像选择器一致；原Blob绘制图继续明确未实现。来源和SHA见 BLOB_ORIGINAL_IMAGE_OUTPUT_20261031.json。</aside>
 <aside id="o06-blob-roi-dependencies-20261031"><strong>Blob本地ROI正式链断点：</strong>当前Blob仅有Region引用输入，缺本地ROI定义与持久owner；RuntimeFieldJson尚不支持Shape中Geometry值，IGeometryEditService/Lease无正式实现，现行RoiParameterEditingAdapter依赖SDK RoiParameters；RegionConverter的整环生成未物化部分圆环角范围。以上不能由公共控件样例或临时owner替代；本批不扩其他基础，绘制/继承执行及保存保护继续保留。后续需完整接通定义、事务、真实输入帧、物化、冻结及释放。</aside>
 <aside id="o06-blob-gray-naming-formal-20261031"><strong>灰度图名称正式验证：</strong>主线87e052a9同源正式UI、全量Release均0错；BlobResultWorkspace 4组、RuntimeKernel 19组、RuntimeWorkflow 10组通过，正式来源目录、快照和图像选择均采用“灰度图像”，帧及像素未改变。详见 BLOB_GRAY_OUTPUT_NAMING_FORMAL_20261031.json。原参数页“Blob图像输出”保留原文并禁用；原厂连通域绘制图未实现，不能当作灰度图。实际VS与用户人工未验。</aside>
+<section id="o06-blob-whole-tool-migration-20261031"><p><strong>整工具设计和原厂证据：</strong><a href="../../../../../../../collaboration/evidence/BLOB_WHOLE_TOOL_MIGRATION_DESIGN_20261031.md">统一迁移设计与整体验收矩阵</a>；<a href="../../../../../../../collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂整工具证据链.md">逆向负责人整工具报告</a>；<a href="../../../../../../../collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂参数资源索引.json">96项参数资源索引</a>；<a href="../../../../../../../collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂输入输出声明.json">输入/输出声明清单</a>。原始报告和清单已按哈希归档；源码逐项映射及统一批次实施仍未完成。</p><h2>Blob整工具统一逆向与迁移（2026-10-31用户纠正）</h2>
+<p><strong>执行单位：</strong>先整体核对并设计Blob三页参数、条件显隐和引用，输入与ROI、参数装配和冻结，算法执行、结果及图像、资源生命周期、宿主确认/保存/重开与验收；形成统一设计后成片实施和测试。不得以单个参数的实现或局部测试替代整工具迁移。已停下单独4/8连通实施；候选改动保留待整体设计审查，不计主线成果。</p>
+<table><thead><tr><th>链路</th><th>当前可复用</th><th>整体设计必须解决</th></tr></thead><tbody>
+<tr><td>原厂参数与界面</td><td>原96项资源、8个共享组、运行页46条清单、真实三页和公共控件；本方字段定义和事务宿主</td><td>逐项核对三页参数、默认、条件、类型、引用及全部消费者；字段存在不等于行为等价。运行页结构基线见 BLOB_WHOLE_TOOL_RUN_PARAMETER_BASELINE_20261031.json，尚不代表基本页和结果页已核完</td></tr>
+<tr><td>输入与ROI</td><td>图像和Region引用、冻结及真实资源租约</td><td>本地ROI/屏蔽定义、编辑owner、持久化、物化及同帧输入；本批不擅扩其他基础或解除未实现保护</td></tr>
+<tr><td>参数、执行和算法</td><td>正式事务、快照、单阈值HALCON调用和现有结果集合</td><td>原六模式、极性边界、填孔、连通、筛选、排序、限数、判定等统一映射及相互顺序；将原厂已证、本方假设和不可实现分列</td></tr>
+<tr><td>输出与宿主</td><td>六项真实特征、Region、灰度/二值结果、publication和同帧选择</td><td>角度/长短轴、原Blob绘制图、轮廓与完整结果声明、同次图文配置及原图映射；禁止用假值或其他图像冒充</td></tr>
+<tr><td>验证及交付</td><td>现有字段、资源、生命周期及正式构建回归</td><td>整体覆盖真实编辑/确认取消、冻结、复制历史、保存重开、调试与工作流、异常取消、结果身份与资源释放；VM同态证据和实际VS/人工单列</td></tr>
+</tbody></table>
+<p>原SDK样例可证明输入、ROI、PreproMask、Run和结果读取的调用，但不能据此证明主程序Run内部阈值、连通、填孔、筛选和排序顺序。逆向负责人正在集中整理原模块入口、参数装配、执行、输出及资源证据；未证事项须标明具体影响、保护和可替换位置。条件性闭口不删除完整范围，也不以假设声称VM等价。</p></section>
 </body></html>
 
 

@@ -1,0 +1,1240 @@
+{
+  "source": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.xml",
+  "sha256": "F1B2F279717DCE3EC61C11C41F858BD100359095BCF13672422A3C73EFE47F6C",
+  "scope": "active XML nodes; declared contract only",
+  "categories": {
+    "Input": [
+      {
+        "path": "InputImage",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "InputImage",
+          "Style": "IMAGE"
+        }
+      },
+      {
+        "path": "InputImage / InImage",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InImage",
+          "ValueType": "image",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "InputImage / InImageWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InImageWidth",
+          "ValueType": "int",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "InputImage / InImageHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InImageHeight",
+          "ValueType": "int",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "InputImage / InImagePixelFormat",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InImagePixelFormat",
+          "ValueType": "int",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "InputROI",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "InputROI",
+          "Style": "ROIBOX"
+        }
+      },
+      {
+        "path": "InputROI / ROI CenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "ROI CenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "InputROI / ROI CenterPoint / roicenterx",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roicenterx",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROI / ROI CenterPoint / roicentery",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roicentery",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROI / roiwidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiwidth",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROI / roiheight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiheight",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROI / roiangle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiangle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "InputROIAnnulus",
+          "Style": "ROIANNULUS"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / ROI Annulus CenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "ROI Annulus CenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / ROI Annulus CenterPoint / roiAnnulusCenterX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusCenterX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / ROI Annulus CenterPoint / roiAnnulusCenterY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusCenterY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / roiAnnulusInnerRadius",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusInnerRadius",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / roiAnnulusOuterRadius",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusOuterRadius",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / roiAnnulusStartAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusStartAngle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputROIAnnulus / roiAnnulusAngleExtend",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "roiAnnulusAngleExtend",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Position Correction Info",
+          "Style": "FIXTURE"
+        }
+      },
+      {
+        "path": "Position Correction Info / Fixtured Point",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Fixtured Point",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "Position Correction Info / Fixtured Point / FixtureInitPointX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureInitPointX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / Fixtured Point / FixtureInitPointY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureInitPointY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureInitAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureInitAngle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureInitScaleX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureInitScaleX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureInitScaleY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureInitScaleY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / Unfixtured Point",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Unfixtured Point",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "Position Correction Info / Unfixtured Point / FixtureRunPointX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureRunPointX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / Unfixtured Point / FixtureRunPointY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureRunPointY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureRunAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureRunAngle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureRunScaleX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureRunScaleX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "Position Correction Info / FixtureRunScaleY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "FixtureRunScaleY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputMask",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "InputMask",
+          "Style": "IMAGE"
+        }
+      },
+      {
+        "path": "InputMask / InMask",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InMask",
+          "ValueType": "image",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputMask / InMaskWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InMaskWidth",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputMask / InMaskHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InMaskHeight",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputMask / InMaskPixelFormat",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InMaskPixelFormat",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "InputBlindPolygonString",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "InputBlindPolygonString",
+          "ValueType": "string",
+          "IsForce": "false"
+        }
+      }
+    ],
+    "Output": [
+      {
+        "path": "ModuRunTime",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "ModuRunTime",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "ModuStatus",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "ModuStatus",
+          "ValueType": "int",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobStatus",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobStatus",
+          "ValueType": "int",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobNum",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobNum",
+          "ValueType": "int",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "Area",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Area",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "TotalArea",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "TotalArea",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "CentroidPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "CentroidPoint",
+          "Style": "POINT",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "CentroidPoint / CentroidX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "CentroidX",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "CentroidPoint / CentroidY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "CentroidY",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "MinBoudingRect",
+          "Style": "ROIBOX",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect / CenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "CenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "MinBoudingRect / CenterPoint / CenterX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "CenterX",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect / CenterPoint / CenterY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "CenterY",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect / BoxWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BoxWidth",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect / BoxHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BoxHeight",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinBoudingRect / Angle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Angle",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MinGrayValue",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MinGrayValue",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "MaxGrayValue",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxGrayValue",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "GrayContrast",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "GrayContrast",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "MaxAreaInnerRect",
+          "Style": "ROIBOX",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectCenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "MaxAreaInnerRectCenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectCenterPoint / MaxAreaInnerRectCenterX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxAreaInnerRectCenterX",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectCenterPoint / MaxAreaInnerRectCenterY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxAreaInnerRectCenterY",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxAreaInnerRectWidth",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxAreaInnerRectHeight",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "MaxAreaInnerRect / MaxAreaInnerRectAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "MaxAreaInnerRectAngle",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobRect",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "BlobRect",
+          "Style": "Rect",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobRect / RectPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "RectPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "BlobRect / RectPoint / BlobRectX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectX",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobRect / RectPoint / BlobRectY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectY",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobRect / BlobRectWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectWidth",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobRect / BlobRectHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectHeight",
+          "ValueType": "float",
+          "IsForce": "true"
+        }
+      },
+      {
+        "path": "BlobRectUpLeftX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectUpLeftX",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobRectUpLeftY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectUpLeftY",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobRectBottomRightX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectBottomRightX",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobRectBottomRightY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobRectBottomRightY",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlobAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobAngle",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "Perimeter",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Perimeter",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "LongAxis",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "LongAxis",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "ShortAxis",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "ShortAxis",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "Circularity",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Circularity",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "Rectangularity",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Rectangularity",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "Score",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "Score",
+          "ValueType": "float",
+          "IsForce": "true",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BinaryImageComb",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "BinaryImageComb",
+          "Style": "IMAGE"
+        }
+      },
+      {
+        "path": "BinaryImageComb / BinaryImage",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BinaryImage",
+          "ValueType": "image",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BinaryImageComb / BinaryImageWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BinaryImageWidth",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BinaryImageComb / BinaryImageHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BinaryImageHeight",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BinaryImageComb / BinaryImagePixelFormat",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BinaryImagePixelFormat",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BlobImageComb",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "BlobImageComb",
+          "Style": "IMAGE"
+        }
+      },
+      {
+        "path": "BlobImageComb / BlobImage",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobImage",
+          "ValueType": "image",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BlobImageComb / BlobImageWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobImageWidth",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BlobImageComb / BlobImageHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobImageHeight",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "BlobImageComb / BlobImagePixelFormat",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlobImagePixelFormat",
+          "ValueType": "int",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROI",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "ROI",
+          "Style": "ROIBOX",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "ROI / DetectRectCenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "DetectRectCenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "ROI / DetectRectCenterPoint / DetectCenterX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectCenterX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROI / DetectRectCenterPoint / DetectCenterY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectCenterY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROI / DetectWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectWidth",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROI / DetectHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectHeight",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROI / DetectAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAngle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "ROIAnnulus",
+          "Style": "ROIANNULUS",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusCenterPoint",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "DetectAnnulusCenterPoint",
+          "Style": "POINT"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusCenterPoint / DetectAnnulusCenterX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusCenterX",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusCenterPoint / DetectAnnulusCenterY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusCenterY",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusInnerRadius",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusInnerRadius",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusOuterRadius",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusOuterRadius",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusStartAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusStartAngle",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ROIAnnulus / DetectAnnulusAngleExtend",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "DetectAnnulusAngleExtend",
+          "ValueType": "float",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ContourPoints",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "ContourPoints",
+          "Style": "CONTOURPOINTS"
+        }
+      },
+      {
+        "path": "ContourPoints / ContourInfo",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "ContourInfo",
+          "ValueType": "pointset",
+          "IsForce": "false"
+        }
+      },
+      {
+        "path": "ContourPoints / ContourNum",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "ContourNum",
+          "ValueType": "int",
+          "IsForce": "false",
+          "AutoSubscribe": "false"
+        }
+      },
+      {
+        "path": "BlindPolygon",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "BlindPolygon",
+          "Style": "ROIPOLYGON",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlindPolygon / BlindPolygonPointNum",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlindPolygonPointNum",
+          "ValueType": "int",
+          "IsForce": "false",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlindPolygon / BlindPolygonPoints",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "BlindPolygonPoints",
+          "Style": "POINT",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlindPolygon / BlindPolygonPoints / BlindPolygonPointsX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlindPolygonPointsX",
+          "ValueType": "float",
+          "IsForce": "false",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlindPolygon / BlindPolygonPoints / BlindPolygonPointsY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlindPolygonPointsY",
+          "ValueType": "float",
+          "IsForce": "false",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "BlindPolygonString",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "BlindPolygonString",
+          "ValueType": "string",
+          "IsForce": "false",
+          "IsArray": "true"
+        }
+      },
+      {
+        "path": "OutputMask",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "OutputMask",
+          "Style": "IMAGE",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "OutputMask / OutMask",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutMask",
+          "ValueType": "image",
+          "IsForce": "false",
+          "AllowAutoSubscribeByOther": "False",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "OutputMask / OutMaskWidth",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutMaskWidth",
+          "ValueType": "int",
+          "IsForce": "false",
+          "AllowAutoSubscribeByOther": "False",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "OutputMask / OutMaskHeight",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutMaskHeight",
+          "ValueType": "int",
+          "IsForce": "false",
+          "AllowAutoSubscribeByOther": "False",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "OutputMask / OutMaskPixelFormat",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutMaskPixelFormat",
+          "ValueType": "int",
+          "IsForce": "false",
+          "AllowAutoSubscribeByOther": "False",
+          "IsArray": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Output Position Correction Info",
+          "Style": "FIXTURE",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Fixtured Point",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Output Fixtured Point",
+          "Style": "POINT",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Fixtured Point / OutputFixtureInitPointX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureInitPointX",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Fixtured Point / OutputFixtureInitPointY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureInitPointY",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureInitAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureInitAngle",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureInitScaleX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureInitScaleX",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureInitScaleY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureInitScaleY",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Unfixtured Point",
+        "kind": "Combination",
+        "attributes": {
+          "Name": "Output Unfixtured Point",
+          "Style": "POINT",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Unfixtured Point / OutputFixtureRunPointX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureRunPointX",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / Output Unfixtured Point / OutputFixtureRunPointY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureRunPointY",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureRunAngle",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureRunAngle",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureRunScaleX",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureRunScaleX",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      },
+      {
+        "path": "Output Position Correction Info / OutputFixtureRunScaleY",
+        "kind": "Filter",
+        "attributes": {
+          "Name": "OutputFixtureRunScaleY",
+          "ValueType": "float",
+          "IsForce": "false",
+          "Visible": "false"
+        }
+      }
+    ]
+  }
+}

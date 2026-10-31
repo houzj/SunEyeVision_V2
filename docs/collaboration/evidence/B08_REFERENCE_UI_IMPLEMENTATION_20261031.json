@@ -1,0 +1,34 @@
+{
+  "baseline": "7ebbf462d362f4c7f80be41fdc40e08f8ef30b0a",
+  "branch": "codex/blob-reference-ui-20261031",
+  "scope": "B08公共来源、变量、索引控件完整交互；候选由宿主限定，不计算调度资格或读取运行值",
+  "reuse": [
+    "ReferenceField原件两个Popup与原图标、SubTreeView、DeleteTextBox、变量管理窗口、展开窗口",
+    "ReferencePopupScope隐藏禁用卸载关闭及分代回调退役",
+    "ReferenceFieldSession待确认索引、复合接纳、常量引用模式及正式接受身份"
+  ],
+  "differences": [
+    "DeclaredReferenceTree模块组按NodeDisplayName默认OrderBy显示，身份仍为ScopeId/NodeId",
+    "刷新检查模块/变量主源与AtField/AtVariable索引完整组合，失效仅标记不可提交，不写入或改成同名来源",
+    "使用已过滤树的真实来源叶核身份，刷新失败保留显示且候选不可交互，恢复只清候选诊断",
+    "新索引交互不得接纳已不在候选中的主源"
+  ],
+  "contracts": "不新增公共合同；沿现有ReferenceFieldOptions.ReadCandidates/ReferenceCandidates及正式SameSource身份（含类型、存储与成员路径）；SourceError仅作既有状态，不新增红色行内文本",
+  "consumers": [
+    "NativeReferencePresenter与NativeNumberPresenter/范围协调器的ReferenceFieldSession",
+    "ReferenceExpansionRequest及VariableSelectionRequest借用同一会话",
+    "宿主工具配置字段保持现有候选与提案验证入口"
+  ],
+  "validation": [
+    "候选UI Release和公共WPF编译",
+    "S4 FieldEditing原两Popup与真实文本索引/关闭/禁用/退役回归",
+    "新增实际字段控件：模块显示排序，索引删除/恢复，同名新主源不重绑，旧节点回调拒绝，失效主源禁止索引写入，恢复无写入",
+    "现有VariableFields/VariableDialog及RuntimeEditorUiStage候选轨道"
+  ],
+  "limits": [
+    "独立worktree候选测试不能代主仓正式Release验收",
+    "VS实际设计器与人工外观未验",
+    "不解除Blob S1保护；B08/S2及S3未宣称完成",
+    "复制历史保存生命周期由另一线负责；本线只保持候选身份与可视会话一致"
+  ]
+}

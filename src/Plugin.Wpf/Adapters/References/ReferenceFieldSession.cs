@@ -37,6 +37,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private bool CanBrowse=>!_disposed&&!_state.IsDisposed&&(_allowConstantText||_state.IsReferenceMode);
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
+    private IReadOnlyList<DeclaredReferenceCandidate> _indices=Array.Empty<DeclaredReferenceCandidate>();
     private string? _pendingText;
     private sealed record PendingReference(ParameterSetting Setting,long Acceptance);
     private PendingReference? _pendingReference;
@@ -155,9 +156,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             catch(Exception error)when(error is ArgumentException or InvalidOperationException)
             {if(Current())_state.SetSourceError(error.Message);return;}
             if(!Current())return;
-            _candidates=snapshot.Sources;_variables=variables;_indexVariables=indexVariables;SourceNodes=sources;IndexNodes=indices;_candidatesValid=true;
+            _candidates=Array.AsReadOnly(DeclaredReferenceTree.Descendants(sources).Where(node=>node.Candidate is not null).Select(node=>node.Candidate!).ToArray());_indices=snapshot.Indices;_variables=variables;_indexVariables=indexVariables;SourceNodes=sources;IndexNodes=indices;_candidatesValid=true;
             RestoreSelection(false);
-            ParameterCleanup.Run(new Action[]{()=>{if(Current())_state.SetSourceError(VariableSourceMissing(DisplaySetting)?"变量来源或索引已删除或声明已改变，请重新选择。":"");}}
+            ParameterCleanup.Run(new Action[]{()=>{if(Current())_state.SetSourceError(DisplaySetting is {} displayed&&!SourceAvailable(displayed)?"来源或索引已删除、不可订阅或声明已改变，请重新选择。":"");}}
                 .Concat(new[]{nameof(SelectedSourceNode),nameof(SelectedIndexNode),nameof(SourceNodes),nameof(IndexNodes),nameof(CurValueA)}
                     .Select(property=>(Action)(()=>{if(Current())Notify(property);}))));
         }
@@ -205,12 +206,14 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         }
         return false;
     }
-    private bool SourceAvailable(ParameterSetting setting)=>!VariableSourceMissing(setting)&&(setting switch {
+    // Candidate identities include declaration type/storage and member path. Captions never rebind a source.
+    private bool SourceAvailable(ParameterSetting setting)=>(setting switch {
         ReferenceSetting module=>_candidates.Any(candidate=>DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),module.Reference)),
-        VariableSetting variable=>_variables.Any(candidate=>ReferenceSettingParts.SameSource(candidate.Reference,variable.Reference)),_=>false});
-    private bool VariableSourceMissing(ParameterSetting? setting)=>setting is not null&&(
-        setting is VariableSetting variable&&!_variables.Any(item=>ReferenceSettingParts.SameSource(item.Reference,variable.Reference))
-        ||ReferenceSettingParts.Selection(setting) is BindingSelection.AtVariable index&&!_indexVariables.Any(item=>ReferenceSettingParts.SameSource(item.Reference,index.Reference)));
+        VariableSetting variable=>_variables.Any(candidate=>ReferenceSettingParts.SameSource(candidate.Reference,variable.Reference)),_=>false})
+        &&(ReferenceSettingParts.Selection(setting) switch {
+            BindingSelection.AtField index=>_indices.Any(candidate=>DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),index.Reference)),
+            BindingSelection.AtVariable index=>_indexVariables.Any(candidate=>ReferenceSettingParts.SameSource(candidate.Reference,index.Reference)),
+            _=>true});
     private void OpenVariableSelector(bool index=false)
     {
         var items=index?_indexVariables:_variables;
@@ -255,6 +258,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private bool Submit(ParameterSetting reference,bool explicitCommit=false)
     {
+        if(!_candidatesValid||!SourceAvailable(reference))
+        {_state.SetSourceError("来源或索引已失效，请刷新后重新选择。");RestoreSelection();return false;}
         if(!explicitCommit&&TryStageReference(reference))return false;
         return AcceptSetting(reference,explicitCommit);
     }

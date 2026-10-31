@@ -414,6 +414,7 @@ internal static class S2DocumentEditingCases
             "Delete没有清空并关闭实际索引Popup，或污染已接纳引用");
         Console.WriteLine("通过：实际索引弹层打开且文本持焦时Delete清空并关闭两层，未接受必填清除");
 
+        VerifyReferenceCandidateRefresh();
         var record=TypeRef.RecordOf("record",new[]{new Port("area",DataType.Number)});
         var projection=new DeclaredReferenceCandidate("面积","blob",null,new Port("blobs",TypeRef.SequenceOf(record)),new[]{"area"});
         Require(projection.SelectedType.Shape==ValueShape.Sequence&&projection.SelectedType.Element==DataType.Number,
@@ -446,6 +447,51 @@ internal static class S2DocumentEditingCases
         finally{((INotifyPropertyChanged)refreshSession).PropertyChanged-=observer;}
         Require(!refreshField.HasInvalidText&&refreshWrites==0,"刷新观察者异常被误标为来源错误");
         Console.WriteLine("通过：原订阅树刷新及投影失败不半替换，恢复不写入，观察者异常不误判为读源失败");
+    }
+    private static void VerifyReferenceCandidateRefresh()
+    {
+        var sequence=TypeRef.SequenceOf(DataType.Integer);
+        var source=new DeclaredReferenceCandidate("数组","source",null,new Port("values",sequence),Array.Empty<string>()){NodeDisplayName="乙模块"};
+        var other=new DeclaredReferenceCandidate("数组","replacement",null,new Port("values",sequence),Array.Empty<string>()){NodeDisplayName="甲模块"};
+        var index=new DeclaredReferenceCandidate("索引","index",null,new Port("value",DataType.Integer),Array.Empty<string>()){NodeDisplayName="索引模块"};
+        var replacement=source with{NodeId="same-caption-new-id"};
+        var currentSources=new[]{source,other};var currentIndices=new[]{index};var writes=0;
+        var accepted=(ParameterSetting)new ReferenceSetting(source.Reference(new BindingSelection.AtField(index.Reference(BindingSelection.All))));
+        using var field=new DeclaredFieldEditor(new("candidate-refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"候选刷新",accepted,
+            value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new(currentSources,currentIndices),EditableIndex:true));
+        Show(field);
+        var session=NativeDescendants(field).OfType<ContentControl>().Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
+        var type=session.GetType();
+        object? Property(string name)=>type.GetProperty(name)!.GetValue(session);
+        void Refresh()=>((ICommand)Property("DropDownCommand")!).Execute(null);
+        object[] Roots()=>((System.Collections.IEnumerable)Property("SourceNodes")!).Cast<object>().ToArray();
+        string Name(object node)=>(string)node.GetType().GetProperty("Name")!.GetValue(node)!;
+        Refresh();
+        Require(Roots().Skip(1).Select(Name).SequenceEqual(new[]{"乙模块","甲模块"}.OrderBy(name=>name)),"模块来源没有按原显示名称规则排序");
+        Require(Property("SelectedSourceNode") is not null&&Property("SelectedIndexNode") is not null&&!field.HasInvalidText,"初始复合来源未恢复选中");
+        var priorSource=Property("SelectedSourceNode");var priorIndex=Property("SelectedIndexNode");
+        currentIndices=Array.Empty<DeclaredReferenceCandidate>();Refresh();
+        Require(field.HasInvalidText&&Property("SelectedSourceNode") is not null&&Property("SelectedIndexNode") is null&&writes==0,"索引消失未使复合来源失效或修改正式绑定");
+        Require(!field.TryCommitPending()&&writes==0,"索引已失效仍可确认配置");
+        ((ICommand)Property("IndexClickCommand")!).Execute(priorIndex);
+        Require(writes==0,"刷新后旧索引回调仍写入");
+        currentIndices=new[]{index};Refresh();
+        Require(!field.HasInvalidText&&Property("SelectedIndexNode") is not null&&writes==0,"索引恢复未清候选错误或擅自写入");
+        currentSources=new[]{replacement,other};Refresh();
+        Require(field.HasInvalidText&&Property("SelectedSourceNode") is null&&accepted is ReferenceSetting {Reference.NodeId:"source"}&&writes==0,"同显示名称新身份静默替代旧来源");
+        Require(!field.TryCommitPending()&&writes==0,"主来源已失效仍可确认配置");
+        ((ICommand)Property("ClickCommand")!).Execute(priorSource);
+        Require(writes==0,"刷新后旧来源回调仍写入");
+        var indexRoot=((System.Collections.IEnumerable)Property("IndexNodes")!).Cast<object>().Single(node=>Name(node)=="索引模块");
+        var indexLeaf=((System.Collections.IEnumerable)indexRoot.GetType().GetProperty("EnumEntrysA")!.GetValue(indexRoot)!).Cast<object>().Single();
+        ((ICommand)Property("IndexClickCommand")!).Execute(indexLeaf);
+        Require(writes==0&&field.HasInvalidText,"主源已失效时索引选择仍接纳旧来源");
+        currentSources=new[]{source,other};Refresh();
+        Require(!field.HasInvalidText&&Property("SelectedSourceNode") is not null&&writes==0,"原身份恢复改变正式设置或错误残留");
+        Require(field.TryCommitPending()&&writes==0,"恢复后的未改引用被重复写入");
+        field.Dispose();((ICommand)Property("ClickCommand")!).Execute(priorSource);
+        Require(writes==0,"退役后保留命令写入");
+        Console.WriteLine("通过：完整来源/索引刷新按显示名排序，失效保留身份，同名不重绑，旧回调与退役拒绝，恢复不写入");
     }
     private static void VerifySettingsCandidate(IToolSettingsFields definition,object settings)
     {

@@ -18,7 +18,7 @@ internal static class DeclaredReferenceTree
     {
         var roots=new List<ReferenceTreeNode>();
         if(includeClear)roots.Add(new("无",Array.Empty<ReferenceTreeNode>(),Clear:true));
-        foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)))
+        foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)).OrderBy(group=>group.First().NodeDisplayName))
         {
             var outputs=new Dictionary<string,Branch>(StringComparer.Ordinal);
             foreach(var candidate in group)

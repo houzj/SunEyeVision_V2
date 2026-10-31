@@ -28,6 +28,7 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
     private readonly NativeDisplayDraft _draft=new();
     private readonly NativeRoiSamples.Image _image=new();
     private long _drawRevision;
+    private long _geometryRevision,_textRevision;
     private bool _isOk=true;
     public DeclaredSettingsView SettingsView {get;}
     private readonly NativeResultViewport _viewport=new();
@@ -93,20 +94,24 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
             new CircleGeometry(receipt.Coordinates,new Point2(420,190),45),GraphicColor("region"),1,values.Get<double>("region.opacity")));
         if(values.Get<bool>("eyeonly.visible"))shapes.Add(new(_image.Frame,
             new PointGeometry(receipt.Coordinates,new Point2(110,200)),GraphicColor("eyeonly"),1,values.Get<double>("eyeonly.opacity")));
-        _geometry.Present(receipt,revision,shapes,()=>!_disposed&&revision==_drawRevision);
+        // A layer stays valid until that layer is replaced, not until its sibling begins an update.
+        _geometryRevision=revision;
+        _geometry.Present(receipt,revision,shapes,()=>!_disposed&&revision==_geometryRevision);
+        if(_disposed||revision!=_drawRevision)return;
+        _textRevision=revision;
         var x=Fields.Fields.Single(field=>field.FieldId=="text.x").Setting;
         var y=Fields.Fields.Single(field=>field.FieldId=="text.y").Setting;
         if(x is not ConstantSetting {Value:double px}||y is not ConstantSetting {Value:double py})
         {
             // This fixture has declarations, not a resolver. Never paint stale constant coordinates for a reference.
-            _text.Present(receipt,revision,Array.Empty<NativeTextOverlay>(),()=>!_disposed&&revision==_drawRevision);return;
+            _text.Present(receipt,revision,Array.Empty<NativeTextOverlay>(),()=>!_disposed&&revision==_textRevision);return;
         }
         var color=values.Get<RecordValue>(_isOk?"text.ok":"text.ng");
         var rgba=Color.FromArgb((byte)color.Get<long>("a"),(byte)color.Get<long>("r"),(byte)color.Get<long>("g"),(byte)color.Get<long>("b"));
         // Host fixture policy: original IText requires an integer font size. The editor retains its real number.
         var font=checked((int)Math.Round(values.Get<double>("text.size"),MidpointRounding.AwayFromZero));
         _text.Present(receipt,revision,new[]{new NativeTextOverlay(values.Get<string>("text.content"),new(px,py),font,rgba,values.Get<double>("text.opacity"))},
-            ()=>!_disposed&&revision==_drawRevision);
+            ()=>!_disposed&&revision==_textRevision);
     }
     public void Dispose()
     {

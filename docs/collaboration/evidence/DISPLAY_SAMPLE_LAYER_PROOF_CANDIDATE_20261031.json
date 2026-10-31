@@ -1,0 +1,87 @@
+{
+  "scope": "真实NativeDisplaySample图形文字同帧组合修复；非Blob正式显示接入",
+  "baseline": "43a099bbdeb2c73cb90fbed9344c8771af2958f9",
+  "merge": "9afbf76f",
+  "diagnosis": {
+    "failure": "WindowPresentation attempt-007/008，原Single断言失败；保留日志",
+    "observed": "构造/Show/Pump均有Rectangle；样式修改后geometry Present=false，text=true，最终只有MultiText",
+    "cause": "样例两个层长期proof共享_drawRevision，更新一层使另一层过期，交叉清理改变当前attempt",
+    "classification": "样例owner自身生命周期缺陷，不是过期矩形类型fixture或外部基础"
+  },
+  "repair": "geometry/text各用独立发布revision，兄弟层替换前仍有效；geometry提交后检查全局revision，阻断重入后旧text尾部；生产viewport严格proof不变",
+  "builds": [
+    "全量003：0错6238警告37.32秒",
+    "UI001：0错6511警告49.61秒"
+  ],
+  "tests": [
+    "样例最终2/0",
+    "样式8/0",
+    "原文字实际绘字1/0"
+  ],
+  "sources": [
+    {
+      "path": "src/Plugin.Wpf/Design/NativeDisplaySample.cs",
+      "sha256": "56DC858E61435D5550CE91BC00720BB48BB5937FC9B9D38EE0430FAC157D8203"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "9D6C64E4D376816D43ED1D4578EC79B1AD9F94EDBEB672C655B18C9C91ED4A39"
+    }
+  ],
+  "receipts": [
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 10,
+        "pid": 62684,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "9D6C64E4D376816D43ED1D4578EC79B1AD9F94EDBEB672C655B18C9C91ED4A39",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-010"
+      },
+      "receiptSha256": "40A847E0E360648B2F969AEEB275C6587144968B0C4B62C41E40DAFFB3E79A07",
+      "runLogSha256": "3F7ACC6118759B02E9A1D8EB12663BB98285D1594452ED572FF6A69E003D27C2"
+    },
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 11,
+        "pid": 88960,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "9D6C64E4D376816D43ED1D4578EC79B1AD9F94EDBEB672C655B18C9C91ED4A39",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-011"
+      },
+      "receiptSha256": "80EACD5B3604539D410EA73057AB8688391E93671958D8E4F1A65284032C6599",
+      "runLogSha256": "396D81A5FFAF46C5DEF77B01FFF7C10D46F5C89DF621B5CAF1E88ECCD0212DD0"
+    },
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 12,
+        "pid": 144120,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "9D6C64E4D376816D43ED1D4578EC79B1AD9F94EDBEB672C655B18C9C91ED4A39",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-012"
+      },
+      "receiptSha256": "EC11722B66A7898225AAECC09A78E9A05F09D85EC1EDF805602D2C95B8985517",
+      "runLogSha256": "2727B5D0854B5DA0D471046A211DD5EA084EF9C45F4E4DE9C099093EAB62A9EE"
+    }
+  ],
+  "limits": [
+    "候选自行构建产物，不等于主仓正式验收",
+    "不代表Blob正式显示配置/保存/图层消费者接入",
+    "真实VS、其他DPI、系统指针与人工未验"
+  ],
+  "preserved": "中间003曾重复插入新测试两次均通过，随后去重；最终只保留2项样例，各原强断言不减；产品临时Console已移除"
+}

@@ -3867,7 +3867,9 @@ internal static class S2DocumentEditingCases
  {
   Test("独立原显示样例的图形样式驱动同一图像视口",()=>
   {
-   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeDisplaySample();Show(sample);Pump();
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeDisplaySample();
+   void TraceDisplay(string phase){var v=(Native.Display.VMBaseControls.ImageViewBox)sample.Preview;Console.WriteLine("DISPLAY_TRACE "+phase+" loaded="+sample.IsLoaded+" image="+(v.ImageDataSource?.GetType().FullName??"null")+" shapes="+(v.ShapeList is null?"null":string.Join(" | ",v.ShapeList.Cast<object>().Select(x=>x.GetType().FullName)))+" visible="+sample.Fields.Fields.Single(f=>f.FieldId=="outline.visible").Setting+" writes="+sample.Writes);}
+   TraceDisplay("constructed");Show(sample);TraceDisplay("shown");Pump();TraceDisplay("pumped");
    var native=(Native.Display.VMBaseControls.ImageViewBox)sample.Preview;
    Native.Dependencies.VMControls.RenderInterface.IRectangle Rectangle()
     =>native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IRectangle>().Single();
@@ -3879,7 +3881,7 @@ internal static class S2DocumentEditingCases
    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{
     ["outline.width"]=new ConstantSetting(4d),["outline.opacity"]=new ConstantSetting(.5d),
     ["outline.ok"]=new ConstantSetting(PresentationDeclarations.Color(255,0,0))}),"图形样式未接纳");
-   Pump();var shape=Rectangle();Require(shape.StrokeThickness==4&&Math.Abs(shape.Opacity-.5)<.001
+   Pump();TraceDisplay("style-applied");var shape=Rectangle();Require(shape.StrokeThickness==4&&Math.Abs(shape.Opacity-.5)<.001
     &&shape.Stroke.Contains("FF0000",StringComparison.OrdinalIgnoreCase)&&Text().Content=="aa{}bb",
     "样式未投影到同一原图形或图形更新丢失文字");
    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"text.content",new ConstantSetting("更新文字")}}),"文字未接纳");
@@ -3891,6 +3893,19 @@ internal static class S2DocumentEditingCases
    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"outline.visible",new ConstantSetting(false)}}),"眼睛关闭未接纳");
    Pump();Require(!native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IRectangle>().Any()
     &&native.ImageDataSource is not null&&Text().Content=="更新文字","关闭图形时未移除原几何或错误清除图像及文字");
+  });
+  Test("独立原显示样例同层连续替换与跨层重入保留最新完整状态",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeDisplaySample();Show(sample);Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)sample.Preview;
+   Native.Dependencies.VMControls.RenderInterface.IRectangle Rectangle()=>native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IRectangle>().Single();
+   string Text()=>native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IMultiText>().SelectMany(x=>x.Texts).Single().Content;
+   foreach(var width in new[]{2d,3d,4d}){Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"outline.width",new ConstantSetting(width)}}),"同层替换拒绝");Pump();Require(Rectangle().StrokeThickness==width&&Text()=="aa{}bb","同层更新清掉自身或文字");}
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.ImageViewBox.ShapeListProperty,native.GetType());
+   var reentered=false;EventHandler callback=(_,_)=>{if(reentered)return;reentered=true;sample.SetResultStatus(false);};
+   descriptor.AddValueChanged(native,callback);var writes=sample.Writes;
+   try{sample.SetResultStatus(true);Pump();Require(reentered,"未经过真实ShapeList通知重入");Require(Rectangle().Stroke.Contains("FF0000",StringComparison.OrdinalIgnoreCase)&&Rectangle().StrokeThickness==4&&Text()=="aa{}bb"&&sample.Writes==writes,"旧发布尾部覆盖最新NG状态或清除另一层");}
+   finally{descriptor.RemoveValueChanged(native,callback);}
   });
   byte[] Pixels(BitmapSource source){var rgb=new FormatConvertedBitmap(source,PixelFormats.Rgb24,null,0);var bytes=new byte[rgb.PixelWidth*rgb.PixelHeight*3];rgb.CopyPixels(bytes,rgb.PixelWidth*3,0);return bytes;}
   (int Count,int X,int Y,int Peak) Ink(BitmapSource source,bool green)

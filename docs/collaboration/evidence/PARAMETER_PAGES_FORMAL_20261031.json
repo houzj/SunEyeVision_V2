@@ -1,0 +1,52 @@
+{
+  "receipts": [
+    {
+      "attempt": 372,
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-372/receipt.json",
+      "loadedRecords": 4,
+      "loadedMismatch": 0,
+      "sha256": "677E617163267BD8C2D8D006524EE53BA01966378EBF33D1DACE661219208323"
+    },
+    {
+      "attempt": 373,
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-373/receipt.json",
+      "loadedRecords": 4,
+      "loadedMismatch": 0,
+      "sha256": "FBD4248E8EF5F20CAD7EEE3E6CC88775AFB2ACD0C0BE287058C7BF1E5C7A5F7D"
+    },
+    {
+      "attempt": 374,
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-374/receipt.json",
+      "loadedRecords": 4,
+      "loadedMismatch": 0,
+      "sha256": "8ABFFB97150993659201A94FB4A70434DB9198DE69942E3142BD940719A0E946"
+    },
+    {
+      "attempt": 375,
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-375/receipt.json",
+      "loadedRecords": 4,
+      "loadedMismatch": 0,
+      "sha256": "9E0C905CA9CDCD539DDA0D5611D00BB5E5C8FDFD187E3ECDD049AD5A689429D7"
+    }
+  ],
+  "behavior": "真实普通页签、ParamListView分组与NativeAdvancedPresenter，跨页保留未提交原文、捕获拒绝、扩展引用目标退役和重绑释放。",
+  "payloadSha256": "462537ED48848A98B50A9082B316791262366801F43BE37D9DB8E1545DA4A818",
+  "limits": [
+    "原根动态页IsVisible、特殊Panal及业务展开初始化不在当前固定三页合同；未实现或未证",
+    "键盘页签焦点恢复、滚动位置保持、其他DPI和实际VS未验证；用户人工不代签",
+    "Blob ROI及结果等仍为占位或未接入，真实整窗保护保持"
+  ],
+  "buildId": "development-7636ff78f2c04d9ab87de52a51bb649e",
+  "status": "当前三页公共组合合同条件性自测闭口",
+  "unit": "参数页分组页签与高级展开",
+  "sourceCommit": "591db0a426fc28af4357a87ff0b22fd27f768f20",
+  "date": "2026-10-31",
+  "designTime": "相同产品源码正式DesignTime attempt-149：290组；非实际VS",
+  "tests": [
+    "原高级7组",
+    "原参数宿主4组",
+    "原输入分组1组",
+    "原页签跨页原文及扩展订阅生命周期1组"
+  ],
+  "testCommit": "082fa451"
+}

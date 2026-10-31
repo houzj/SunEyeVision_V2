@@ -23,7 +23,7 @@
     "floatFollowup": {
       "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_FLOAT_REFERENCE_20261031.md",
       "sha256": "850adb57f71e6f07d5e823bc665cffb8a2f0f557d3798ac0927a1236b1646433",
-      "status": "浮点分支已新取证，但当前只冻结五整数；Float32与%f文本到本方Float64精度/环境等价未证，四浮点保持Strict，另做完整后续子批。"
+      "status": "新报告具体目标仅BlobAreaLimitLow/High、BlobTotalAreaLimitLow/High（结果面积判定），不是FilterCircularity/Rectangularity四筛选字段。已证特定float32→sprintf_s(%f)→atof存double路径，locale/特殊值未证。四筛选浮点仍需逐setter独立取证，当前不声明行为。"
     }
   },
   "productionChain": [
@@ -218,18 +218,18 @@
       "保持当前值/绑定顺序/私有前缀/历史分离与旧回调门禁；UI整窗未就绪仍拒绝，原件像素算法及Group不在本批",
       "全局Integer/Integer[]继续物理Int64声明，不改词汇/值类型；仅五字段消费所取值做checked Int32投影，这是平台适配，不冒充原厂64位语义。溢出硬失败且不截断/不回落。",
       "索引来源已准入/身份正确且本批生产成功后，普通数据读取失败（缺值/空/可核读取失败）才可索引0；配置不存在、越权、Schema/Owner/会话/运行失配、取消、生产者失败均硬失败。成功读出的负/越界索引不降0。",
-      "AtVariable模型可表示整数序列All；Strict消费者必须在编译/运行明确拒绝数组动态索引。保存反序列化只构建合法结构，真实Host仍核行为资格，不能JSON绕过。"
+      "AtVariable模型可表示整数序列All；Strict消费者必须在编译/运行明确拒绝数组动态索引。保存反序列化只构建合法结构，真实Host仍核行为资格，不能JSON绕过。",
+      "受检Int32投影针对实际取用的整数值；全局Integer/Integer[]声明仍Int64，不截断、不重标物理声明，溢出硬失败且不能回落0。",
+      "普通索引读失败仅限已存在且已准入、Schema/Owner/会话/运行匹配、生产者成功后的缺席值/空序列等可核数据读取失败；配置不存在/越权/缺本批成功结果/Schema或身份失配/取消/生产者失败/值域溢出均硬失败。必须以结构化错误分类实现，不能catch所有异常返0。"
     ],
     "proposedFileGroups": {
       "mainOwnedCore": [
-        "src/Plugin.Contracts/BindingPlans.cs（仅合法域若证据要求）",
-        "src/Plugin.Runtime/ParameterBindingService.cs",
-        "src/Plugin.Runtime/BindingReferenceSerializer.cs（仅结构若确需，不做旧兼容）",
-        "src/Workflow/RuntimeVariableBindings.cs",
-        "src/Workflow/WorkflowBindingContext.cs",
-        "src/Workflow/RuntimeDebugInvocation.cs",
-        "src/Workflow/RuntimeInputBindings.cs",
-        "src/Workflow/RuntimeToolConfiguration.cs及BindingOrder/当前值消费者（通常复用）"
+        "本线拟唯一写：Contracts新增ParameterReferenceBehavior.cs和BindingPlans.cs",
+        "Plugin.Runtime/ParameterBindingService.cs、BindingReferenceSerializer.cs",
+        "Workflow/RuntimeVariableBindings.cs、WorkflowBindingContext.cs、RuntimeDebugInvocation.cs",
+        "Workflow新增RuntimeToolConfiguration.ReferenceBehavior.cs及RuntimeToolConfiguration.cs身份/构造接线",
+        "Workflow/RuntimeFieldJson.cs的目标资格读取上下文",
+        "BlobTool.cs仅声明五字段，不改算法、XML数值或模式门禁"
       ],
       "referenceLineCoordinationOnly": [
         "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
@@ -259,9 +259,18 @@
       "存盘重开Selection/身份/顺序/值与UndoRedo历史",
       "失败/未执行案例单独记录，不把保留旧值称执行回退"
     ],
-    "oracle": "当前严格合同基线期望与新原件分支期望分别列矩阵；在SDK映射未闭合前，不为跑绿调整成猜测的VM期望。"
+    "oracle": "当前严格合同基线期望与新原件分支期望分别列矩阵；在SDK映射未闭合前，不为跑绿调整成猜测的VM期望。",
+    "additionalRequiredCases": [
+      "同一自定义探针工具显式声明的Int32 Settings可用First...；同工具未声明字段、ImageSource未声明字段与普通Schema.Input仍Strict，证明无Blob字符串特判。",
+      "五字段逐项Profile与Type/Storage/稳定ID检查；四筛选Float64/图片/ROI/UI-only占位不适用。",
+      "主源Integer[]、动态AtField/AtVariable Integer[]仅取用值checked Int32，2^31/-2^31边界，溢出不回落；未取用值不改变变量声明。",
+      "索引已准入来源成功但空/缺值回落0；配置缺失/越权/源生产失败/错误Schema/Owner/Run/取消一律不回落，实际消费者执行次数为0。",
+      "Strict模型默认构造、反序列化、Host编译和运行均拒绝数组动态索引；同一JSON转投未声明字段不得绕过；合法目标保存重开/复制/UndoRedo/取消与旧回调保持身份和行为。",
+      "正式与私有Debug共用行为且保留成功前缀、后项失败不半写/不拿旧值继续；全局变量生产者仍独立控制合同。",
+      "Contracts纯规则与UI正式/设计候选一致；Wpf程序集仍仅依赖Contracts，不加Runtime/Workflow引用。"
+    ]
   },
-  "independentImplementationDecision": "设计已冻结，接续在本worktree成片实施非视觉生产链及真实夹具。引用UI线按最终getter/候选API接入；本线不改其文件。",
+  "independentImplementationDecision": "中断后工作树已核干净且无本线运行进程；本轮提交完整跨工具合同/准确消费者/UI纯投影及测试设计供统一框架评审，未改共享代码。接纳后在原worktree实施，拒绝按Blob ID特判。",
   "sourceIdentity": [
     {
       "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
@@ -316,8 +325,8 @@
       "sha256": "b89c9aa4ea16a44cb015d22be6140cf6a9b7a8b6e939dea7556933236effbdd6"
     }
   ],
-  "acceptanceStatus": "此提交只固定设计与夹具矩阵，尚未实现/编译新合同；实施后须候选全量和真实生产链，主线统一正式验收。",
-  "freezeStatus": "主线已冻结五整数行为并授予本线Contracts/Runtime/Workflow/BlobTool唯一写入；先固定本设计后实施。",
+  "acceptanceStatus": "设计稿，不是代码或候选测试通过。原机/非法异常未证；五整数限定与受检Int32投影为当前冻结范围，四浮点及结果判定不混同。",
+  "freezeStatus": "共享实现暂缓：按用户统一工具框架要求，先提交以下跨工具显式字段合同供主线评审。五整数数值域与严格身份边界已冻结，具体共享接口等待统一接纳。",
   "frozenFields": [
     {
       "property": "Threshold",
@@ -356,40 +365,56 @@
     }
   ],
   "sharedContract": {
-    "file": "src/Plugin.Contracts/ParameterReferenceBehavior.cs",
+    "file": "src/Plugin.Contracts/ParameterReferenceBehavior.cs（拟新增）",
+    "crossTool": "任意工具通过IToolParameterReferenceBehavior显式声明稳定Settings字段ID→行为。公共Contracts/Runtime/Workflow不检查BlobTool.Id或插件名，不根据字段显示名推断。当前Blob仅声明五项；ImageSource及其它工具未声明时同框架默认Strict。",
     "enum": [
       "StrictExactlyOne",
       "FirstItemWithIndexReadZeroFallback"
     ],
     "declaration": "IToolParameterReferenceBehavior.ParameterReferenceBehaviors : IReadOnlyDictionary<string,ParameterReferenceBehavior>",
-    "getter": "RuntimeToolConfiguration.GetParameterReferenceBehavior(string fieldId)",
-    "plan": "BindingPlan冻结行为；CompileBinding显式行为参数默认StrictExactlyOne；配置身份含冻结声明",
-    "uiCandidateContract": [
-      "ParameterBindingService.CompareValueSource增加behavior显式参数，保留旧默认Strict；UI不得自行镜像数量算法",
-      "ParameterBindingService.CanUseIndexSource(TypeRef selectedType,ParameterReferenceBehavior behavior)：Strict只Int64标量，五字段行为另允许Int64序列；不许Float索引序列",
-      "UI按真实Settings成员读取getter，传给ReferenceOptions/树匹配；来源资格和控制前序仍由宿主冻结。引用线实现其WPF消费者。"
+    "freezing": "RuntimeToolConfiguration复制并验证声明：fieldId必须存在于该工具SettingsSchema，行为First...当前只接受规范Int64、物理Int32的标量。非法字段/Float/图片/Schema.Input声明拒绝；冻结映射纳入配置身份。",
+    "getter": "RuntimeToolConfiguration.GetParameterReferenceBehavior(string fieldId)，未声明返回StrictExactlyOne",
+    "plan": "BindingPlan保存显式行为；IBindingPlanCompiler/ParameterBindingService.CompileBinding增行为参数默认Strict；正式与调试从同一已冻结配置逐字段传入，运行不可查询可变UI或全局表。",
+    "pureRules": [
+      "ParameterReferenceRules.CanUseIndexSource(TypeRef selectedType,ParameterReferenceBehavior behavior)：Strict仅Int64标量；First...另允许Int64标量序列，不允许Float或递归序列。",
+      "ParameterReferenceRules.CompareValueCount(TypeRef sourceType,TypeRef targetType,ParameterReferenceBehavior behavior)：只作数量声明兼容投影；First...仅针对整数序列→整数标量把非空首项视为可消费，空仍失败；其它值型/目标保持原严格规则。Runtime和Wpf共同调用，Wpf不引用Runtime。"
     ],
-    "futureFloat": "枚举可显式扩展，但本行为仅校验Int32目标/整数来源，浮点转换与格式化未实现前不声明四浮点。"
+    "uiContract": [
+      "ReferenceFieldOptions增加可选Func<Port,ParameterReferenceBehavior> ReadBehavior，缺省Strict；这个委托只投影已冻结行为，不读写运行值。",
+      "正式RuntimeNodeConfigurationControl按目标真实Settings成员身份调用冻结getter注入；主来源树调用Contracts数量规则，动态索引树调用Contracts资格规则，保留既有数值转换及来源资格。",
+      "BlobDesignData通过同一BlobTool声明表和同一Contracts校验/投影给ReferenceOptions注入，直接创建真实设计视图不依赖Workflow或Plugin.Runtime。",
+      "ReferenceFieldSession建立AtField/AtVariable及文本[]提案时传同一行为。UI来源/选项不得另造首项或错误回落算法；值解析全部留Runtime。"
+    ],
+    "modelAndSerialization": [
+      "AtVariable（以及需接收数组索引来源的AtField）模型构造增加显式行为上下文，默认Strict拒绝数组动态索引；First...只开放整数序列，嵌套非法类型仍拒绝。",
+      "BindingReferenceSerializer.Deserialize/DeserializeVariable增加行为读取上下文，默认Strict；递归沿用上下文。不把行为写入用户绑定JSON，不让JSON自授资格。",
+      "RuntimeFieldJson按已知toolId→工具冻结声明→目标fieldId获得合法读取上下文；只有已声明字段能恢复数组动态索引。Strict字段和通用独立读取拒绝，Host编译和执行再次核上下文。",
+      "Copy保留不可变引用与冻结行为；保存重开从工具声明重新冻结，不增加旧格式兼容开关或第二套绑定身份。"
+    ],
+    "futureExtension": "行为是跨工具显式合同，可未来添加具有独立证据的行为；当前First...只定义整数取用，绝不提前实现Float32/Float64格式转换。"
   },
   "uniqueWriters": {
-    "thisLine": "本批Contracts/Plugin.Runtime/Workflow非视觉及BlobTool/专属测试唯一写者；未列共享变更先协调",
+    "thisLine": "评审接纳后：本线唯一写跨工具非视觉合同/冻结/编译/解析/序列化及BlobTool声明、专属探针和测试。评审前只改此设计文件。",
     "exactPlannedFiles": [
-      "src/Plugin.Contracts/ParameterReferenceBehavior.cs（新增）",
+      "src/Plugin.Contracts/ParameterReferenceBehavior.cs",
       "src/Plugin.Contracts/BindingPlans.cs",
       "src/Plugin.Runtime/ParameterBindingService.cs",
+      "src/Plugin.Runtime/BindingReferenceSerializer.cs",
       "src/Workflow/RuntimeVariableBindings.cs",
       "src/Workflow/WorkflowBindingContext.cs",
       "src/Workflow/RuntimeDebugInvocation.cs",
-      "src/Workflow/RuntimeToolConfiguration.ReferenceBehavior.cs（新增）",
-      "src/Workflow/RuntimeToolConfiguration.cs（配置身份与构造接线）",
+      "src/Workflow/RuntimeToolConfiguration.ReferenceBehavior.cs",
+      "src/Workflow/RuntimeToolConfiguration.cs",
+      "src/Workflow/RuntimeFieldJson.cs（确认真实文件名后按实际所属文件改）",
       "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
-      "专属scripts/verification/S4NumericIndexProductionCases.cs与Contracts-only探针及runner接入"
+      "专属NumericIndexProduction探针/测试及runner"
     ],
     "uiLineOnly": [
-      "RuntimeNodeConfigurationControl",
+      "ReferenceFieldOptions",
       "ReferenceFieldSession",
       "DeclaredReferenceTree",
-      "ReferenceFieldOptions以及视觉/窗口测试"
+      "RuntimeNodeConfigurationControl",
+      "BlobDesignData及正式/设计视觉测试；由主线交引用UI线接入，不与本线同改。"
     ],
     "main": "统一接口冻结、原方案、集中集成与正式Release验收；当前不与本线改上述核心"
   }

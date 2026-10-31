@@ -1,0 +1,535 @@
+{
+  "status": "完整接入设计完成；关键共享展示/面积/模式与整窗准入未冻结，按主线最新要求当前不实施产品",
+  "baseline": "0d36e7ef57545b0349d54a001022832e3875fc91",
+  "scope": "B08真实Blob9数值订阅→共享原控件→私有草稿→生产宿主完整接入；原6模式和全部原清单保留",
+  "userDecisions": [
+    "保持VM六模式及布局，原未实现3项明确不可误用，不映射错误算法",
+    "面积正式Min/Max以VM Integer为准；本线评估，主线集中改Runtime",
+    "Double显隐以原厂为准且当前整个模式不可执行/不可确认到S3语义统一；其他影响逐项核查",
+    "本轮当前只出完整设计，不拆其余字段小补丁，不改Runtime/Workflow/RuntimeNodeConfigurationControl/共享合同/lifecycle脚本"
+  ],
+  "evidence": [
+    "原O06 optimization-o06.html",
+    "BLOB_VM_RUN_PARAMETERS_20261029.json：原6项及triggerXml、默认及原SHA",
+    "VM_BLOB_UI_SOURCE_BASELINE_20261026.json：原控件/整数面积子项范围及默认",
+    "B08_BINDING_ORDER_METADATA_AUDIT_20261031.json：9稳定ID/绑定键与原类型",
+    "VM_BLOB_PROCESSING_FLOW_20261026.md：原极性名字/说明矛盾不可按名推raw含义",
+    "B08_REFERENCE_UI_FULL_LIFECYCLE_AUDIT_20261031.json：当前S1与共享生命周期"
+  ],
+  "parameters": [
+    {
+      "property": "Threshold",
+      "fieldId": "field:43bda03261df55b88f963bd18f2ba4d9",
+      "bindingName": "LowThreshold",
+      "currentType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "currentDefault": "128",
+      "currentMin": "0",
+      "currentMax": "255",
+      "visibleWhen": "SegmentationMode",
+      "visibleValue": "None",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "UpperThreshold",
+      "fieldId": "field:8ca20000000040008000000000000002",
+      "bindingName": "HightThreshold",
+      "currentType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "currentDefault": "255",
+      "currentMin": "0",
+      "currentMax": "255",
+      "visibleWhen": "SegmentationMode",
+      "visibleValue": "DoubleThreshold",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "BlobCountLimit",
+      "fieldId": "field:e748553b7cb45d1a8003c2b345b1d98f",
+      "bindingName": "FindNum",
+      "currentType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "currentDefault": "1000",
+      "currentMin": "1",
+      "currentMax": "20000",
+      "visibleWhen": "IsBlobCountFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterAreaMin",
+      "fieldId": "field:fcdb01b095c25c6ea22384f993450aac",
+      "bindingName": "MinArea",
+      "currentType": "Number",
+      "originalTypes": [
+        "Integer"
+      ],
+      "currentDefault": "10",
+      "currentMin": "0",
+      "currentMax": "9999999",
+      "visibleWhen": "IsAreaFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "FilterAreaMax",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterAreaMax",
+      "fieldId": "field:cdce3e942b555fa58489e08eeb39236f",
+      "bindingName": "MaxArea",
+      "currentType": "Number",
+      "originalTypes": [
+        "Integer"
+      ],
+      "currentDefault": "999999",
+      "currentMin": "0",
+      "currentMax": "9999999",
+      "visibleWhen": "IsAreaFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterCircularityMin",
+      "fieldId": "field:da4d70261e23551e9a5bd832b2a686d1",
+      "bindingName": "MinCircularity",
+      "currentType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "currentDefault": "0",
+      "currentMin": "0",
+      "currentMax": "1",
+      "visibleWhen": "IsCircularityFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "FilterCircularityMax",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterCircularityMax",
+      "fieldId": "field:1a8be75176b350f09f3cd64506c136da",
+      "bindingName": "MaxCircularity",
+      "currentType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "currentDefault": "1",
+      "currentMin": "0",
+      "currentMax": "1",
+      "visibleWhen": "IsCircularityFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterRectangularityMin",
+      "fieldId": "field:13d8c5e0c7445f1087497a21f4103a5e",
+      "bindingName": "MinRectangularity",
+      "currentType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "currentDefault": "0",
+      "currentMin": "0",
+      "currentMax": "1",
+      "visibleWhen": "IsRectangularityFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "FilterRectangularityMax",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    },
+    {
+      "property": "FilterRectangularityMax",
+      "fieldId": "field:c38989cfdf9e51799d27e0eeee34e726",
+      "bindingName": "MaxRectangularity",
+      "currentType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "currentDefault": "1",
+      "currentMin": "0",
+      "currentMax": "1",
+      "visibleWhen": "IsRectangularityFilterEnabled",
+      "visibleValue": "true",
+      "pairWith": "",
+      "uiDecision": "移除本字段S1副本和抑制，唯一消费正式DeclaredSettingsView字段；面积先等主线整数合同；高阈值整模式最终准入待S3语义统一，不报告完整9项已交付"
+    }
+  ],
+  "choiceCapability": {
+    "existingNative": "NativeInputFactory.Enumeration为public；ListViewComboBoxStyle实际用ComboBoxItem+StackPanel IsItemsHost，WPF容器本身有IsEnabled，不需要仿绘或混入相机家族",
+    "missing": "DeclaredFieldEditor:275-301只将Port.Choices.Keys投影成私有ChoiceItem(Key,Label)，没有仅展示的不可用项、不可用原因或按项选择准入；所有本体有效键仅三项",
+    "doNot": "不把原六模式全部塞入TextChoiceConstraint；不扩BlobSegmentationMode，不映射Auto/Soft到已有算法；不借CameraComboBoxStyle的IsVisibleA或改变资源家族",
+    "proposedPresentationOnly": "主线统一决定名称/签名：按正式fieldId传入冻结的选项展示清单；每项有稳定展示ID、原标签、可选formalKey（空表示仅占位）、可用状态及原因。正式已声明键必须完整且唯一定址；仅展示项始终不可接纳、不可进入ParameterSetting/JSON/执行；仅本次Blob SegmentationMode有真实消费者，不改Plugin.Contracts/运行枚举",
+    "files": [
+      "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs：ToolSettingsViewOptions展示配置入口",
+      "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs：透传至同一字段视图",
+      "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs：按fieldId传入原字段，不生成第二份state",
+      "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs：替换ChoiceItem展示投影、拒绝不可用选择并恢复原接受键、保留Render generation与解绑",
+      "src/Plugin.Wpf/Adapters/Fields：如确需新增不可变展示记录由主线确定",
+      "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml：优先基于现ItemContainerStyle在适配器绑定IsEnabled/ToolTip，不编辑原字节模板；确需模板状态由主线集中核原件"
+    ],
+    "behaviors": [
+      "原顺序六项均可见，不用标签或下标保存；Auto/FixedSoft/RelativeSoft明确未实现、禁鼠标/键盘/程序事件接纳并保留原接受值",
+      "不可用项有非红色行内的明确原因（原标签旁未实现标记或原Tooltip，禁用项ShowOnDisabled）；不增加假参数行",
+      "当前正式值恰为不可用模式时显示原值及未就绪，不能自动改Single；捕获再次独立拒绝，不能只靠容器禁用",
+      "正式支持项选择经当前同一state/WriteGroup/宿主预检；拒绝回填、同值去重、异步重绘/解绑旧回调保持原B02行为",
+      "展示清单与正式Choices不符或重复/空标签在组装前失败，不半装页面；关闭旧Popup/释放文字scope，不能影响重绑新代"
+    ]
+  },
+  "thresholdModes": [
+    {
+      "vm": "BinaryImage",
+      "vmValue": "0x1",
+      "label": "不进行二值化",
+      "formalKey": "None",
+      "originalRows": [
+        "Polarity"
+      ],
+      "current": "None先RequireBinary，只取255且忽略Type；当前XML却隐藏Type",
+      "readiness": "原控件仍展示；与Double一样列语义未对齐，最终执行/确认拒绝，是否允许仅查看选择由主线展示合同冻结；不声称原等价",
+      "algorithm": "不在本批修改"
+    },
+    {
+      "vm": "SingleThreshold",
+      "vmValue": "2",
+      "label": "单阈值",
+      "formalKey": "SingleThreshold",
+      "originalRows": [
+        "Polarity",
+        "LowThreshold"
+      ],
+      "current": "显示Type+Low，与当前条件一致；本方[Low,255]或区域反差已存在",
+      "readiness": "具现行数值草稿基础；是否作为当前S2正式确认/执行可交付由主线统一冻结，不在设计提交中自行解除总闸；原极性raw枚举别名/标签矛盾须单列未证",
+      "algorithm": "复用已有调用，不新增算法"
+    },
+    {
+      "vm": "DoubleThreshold",
+      "vmValue": "3",
+      "label": "双阈值",
+      "formalKey": "DoubleThreshold",
+      "originalRows": [
+        "LowThreshold",
+        "HightThreshold"
+      ],
+      "current": "原不显示Polarity；本方当前显示Type且Double仍实际应用BinaryInv",
+      "readiness": "主线已定：保留原显隐，但整个模式明确不可执行/不可确认至S3语义统一；不能隐藏仍生效参数后伪称功能完整，不暗中重置Type",
+      "algorithm": "不在本批修改"
+    },
+    {
+      "vm": "AutoThreshold",
+      "vmValue": "4",
+      "label": "自动阈值",
+      "formalKey": null,
+      "originalRows": [
+        "Polarity"
+      ],
+      "current": "无正式模型及执行实现",
+      "readiness": "六项原位置可见、明确未实现且不可选择接纳，不映射Single",
+      "algorithm": "待S3"
+    },
+    {
+      "vm": "FixedSoftThreshold",
+      "vmValue": "5",
+      "label": "软阈值（固定）",
+      "formalKey": null,
+      "originalRows": [
+        "Polarity",
+        "ThresholdRangArea",
+        "Softness"
+      ],
+      "current": "NativeThresholdUiDraftControls只有本地试用数值，非算法设置",
+      "readiness": "六项原位置可见、明确未实现且不可选择接纳，不保留可编辑假参数副本",
+      "algorithm": "待S3"
+    },
+    {
+      "vm": "RelativeSoftThreshold",
+      "vmValue": "6",
+      "label": "软阈值（相对）",
+      "formalKey": null,
+      "originalRows": [
+        "Polarity",
+        "Softness",
+        "SoftLeftRatio",
+        "SoftRightRatio",
+        "SoftLowRatio",
+        "SoftHighRatio"
+      ],
+      "current": "只有本地试用数值，无正式设置及执行",
+      "readiness": "六项原位置可见、明确未实现且不可选择接纳；完整原行清单留待S3基础具备后接同正式草稿",
+      "algorithm": "待S3"
+    }
+  ],
+  "areaIntegerContract": {
+    "decision": "主线明确采用原Integer；本线只评估，不修改Runtime/共享合同",
+    "original": {
+      "MinArea": {
+        "type": "Integer",
+        "default": 10,
+        "minimum": 1,
+        "maximum": 999999999,
+        "increment": 1,
+        "algorithmIndex": "0x060C"
+      },
+      "MaxArea": {
+        "type": "Integer",
+        "default": 999999999,
+        "minimum": 1,
+        "maximum": 999999999,
+        "increment": 1,
+        "algorithmIndex": "0x060D"
+      }
+    },
+    "changes": [
+      "Runtime/Resources/BlobParameters.xml：FilterAreaMin/Max改Integer，min1/max999999999/step1/decimals0，默认10/999999999；稳定fieldId和bindingName MinArea/MaxArea不变",
+      "Runtime/Parameters/BlobSettings.cs：属性double→int、Default<double>→Default<int>；不增加兼容double setter或第二参数模型",
+      "BlobParameterDefinition.cs已按反射CLR int校验XML Integer与Int32合法范围；无需新增同义metadata",
+      "BlobParameterDefinition.Settings.cs已有int→Port.Integer/Storage.Int32，ReadSettings盒装long，Materialize checked(long→int)；直接复用",
+      "BlobSession.SelectFeatures的Add(double min,double max)自然接int，范围<1e9可精确转double；不改HALCON算法步骤或另加浮点来源候选",
+      "JSON使用正式BlobSettings与FieldSettings通用严格类型；新整数合同拒小数/越界；无旧格式兼容、无双轨读取；Schema/fingerprint/旧编译租约随类型变化失效",
+      "NativeRangePresenter按整数Port自动用原SliderArrange而非Float；配对/依赖/私有接受顺序均复用；最终9项为Integer5+Float4"
+    ],
+    "tests": [
+      "BlobAnalysisParameterContractTests：新增两Port Integer/Int32、默认、1/999999999边界、ReadSettings long/Materialize int与字段稳定ID断言",
+      "DeclaredBlobResultTests既有10/100为整数，编译后仍由HALCON SelectShape消费；补实际执行接受新边界而不改变轮廓语义",
+      "S3RuntimeKernelCases:149-181默认max999999、合法max9999999/非法10000000断言要集中改为原999999999；JSON严格小数/越界拒绝，已有用户值不被默认覆盖",
+      "O06WindowPresentationCases:4753-4767实际Blob范围100d/200d、ConstantSetting200d及Get<double>面积需同步100L/200L/Get<long>；由主线改，不由本线越权",
+      "Runtime参数当前值/订阅执行/复制/Undo/重开/组合顺序需Integer源与整数当前值回归，由主线及生命周期线集中验证"
+    ],
+    "valueLayerSeparation": {
+      "sourceAlgorithmTabSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+      "parentDefaultValue": "10000",
+      "childCurValue": "MinArea10 / MaxArea999999999",
+      "childDefaultValue": "MinArea10 / MaxArea999999999",
+      "note": "父RangArea DefaultValue10000不用于任何子项；CurValue、DefaultValue、SDK实际状态和截图分别记录。已存截图SLIDER左10、UNFOCUSED左9属不同用户状态，右框可见9字符不证明完整值；不取本方999999或截图位数为原默认",
+      "screenshots": [
+        {
+          "path": "docs/collaboration/evidence/VM_BLOB_RANGE_SLIDER_USER_20261026.png",
+          "sha256": "3B0ED8BD4C93F1CF573251E6BF6B26D76220C289912ECFEC59980357373792AB"
+        },
+        {
+          "path": "docs/collaboration/evidence/VM_BLOB_RANGE_UNFOCUSED_USER_20261026.png",
+          "sha256": "E86FFE1F7EF1224E69D1629CE4C32359E3F9E8128B2B73D04A68F8AB808E00FE"
+        }
+      ]
+    }
+  },
+  "productionChain": [
+    "正式入口：MainWindow打开→ProductionEditorContext私有scope→RuntimeNodeConfigurationControl提供同代候选、当前值及ValidateComposition→BlobEditorFactory→BlobParameterEditor→DeclaredSettingsView.Bind→同一DeclaredFieldsView正式states",
+    "Blob.Wpf仅组装原控件/声明和接业务fieldId；ReferenceOptions在Blob专属适配明确EditableIndex=true（当前宿主仅输入panel开启），保留ReadCandidates/ReadCurrentValue/ValidateComposition，不重算资格不读运行全局",
+    "先同时移除9数值及其对应模式/数量/面积/圆度/矩形度使能的S1副本和SuppressedFieldRows；不把ui-only字段ID映射成真实ID继续双轨",
+    "数字/单项与三对范围沿同一正式state→预备整个提案→ValidateComposition→draft.ApplyFields/AcceptCandidate→完整接受回执/Changed/AcceptedFieldOrder；拒绝或重绑不半写",
+    "条件显隐从正式同一模式/enable字段及已冻结原VM矩阵驱动；隐藏前暂停数字和来源弹层，保留接受值/待编辑边界，不用可见性伪造已清空设置；禁用模式不计算假值",
+    "确认：BlobParameterEditor.TryCapture先全窗未实现/模式准入，再DeclaredSettingsView.TryCapture提交合法原文、校验同代完整draft，宿主TryCommitEditor原子发布；取消/关窗沿原scope Discard/Dispose，不在Blob.Wpf另造历史/保存器",
+    "重开只从正式node配置构造新draft；旧来源、变量模态、展开窗和格式callback分代退役；当前值/解绑仍由宿主ReadCurrentValue提供，不能回填S1默认",
+    "设计器：BlobDesignData.CreateParameterContext与运行都走同一BlobRunUi新组装入口；DesignDraft仍取BlobSettings/XML真实默认与正式schema，不加载主程序/工作流/算法，不另造previewUI"
+  ],
+  "wholeWindowAdmission": {
+    "current": "BlobRunUi.ValidateUiState因thresholdUi存在无条件阻止执行/确认/保存；这同时保护其他未接入的显示/判定/ROI试用状态，不能仅删这一行",
+    "runPlaceholders": "非9字段的HoleMinArea、其他筛选、排序特征/连通性等无正式能力：保留原位置/原控件不可误用占位，禁用语义编辑或完整记录变化并拒绝；不能no-op writer默默确认",
+    "display": "BlobDisplayUi追加NativeDisplayUiDraftRows和NativeJudgmentUiDraftControls，两者无HasChanges/正式持久owner。若解除阈值总闸，必须保持这些语义输入明确只读（界面可导航、保留完整原清单与禁用原因）或由主线冻结真实状态准入接口后拒绝改变；不扩显示合同/假保存",
+    "roi": "NativeRoiUiDraftControls混合真实输入来源与本地绘制/继承试用状态，未提供统一HasChanges；本批仅参数接线时必须保留未接入绘制等不可误用，不能让改ROI的no-op状态随9字段确认被忽略；位置修正按点/坐标已有IsUnimplementedMode捕获拒绝继续保留",
+    "purpose": "现IToolSettingsView.TryCapture/ValidateUiState无Confirm/Run/Save目的参数，三个入口共享准入；不能声称只放确认而执行仍挡住，若主线希望分阶段区分目的须先给实际宿主消费合同，Blob.Wpf不能自行区分命令",
+    "noRedInline": "沿原行/原下拉Tooltip、明确不可用项和原宿主拒绝提示，不新增红色行内文字"
+  },
+  "ownership": {
+    "thisLine": [
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "tests/SunEyeVision.UI.Tests/BlobRunParameterIntegrationTests.cs（新Blob专属文件，最终归属/运行入口由主线确认；不修改lifecycle脚本）"
+    ],
+    "mainOwns": "上述共享Choice展示入口、Blob Runtime整数合同/默认/模式语义、主方案与CURRENT_TASK；所有RuntimeNodeConfigurationControl/Workflow/Contracts保持主线唯一写者",
+    "lifecycle": "正式confirm/cancel/history/save已有链及S4RuntimeEditorCases由生命周期线调整/验收；本线只提供Blob专属测试，不改其脚本",
+    "dependencies": "先冻结共享Choice API与模式/整窗准入、主线面积整数可验证提交；本线再同一批整体替换9字段相关S1副本并同步设计时。无关键合同时不先造接口/UiOnly-to-field桥"
+  },
+  "validation": [
+    "V01真实MainWindow/Blob三页，从正式配置打开单一组装链；9字段无重复ui-only副本，原6模式顺序/原布局/原资源保持",
+    "V02每个有基础字段的常量/模块/全局变量、固定/模块/变量索引，已限定前驱资格同代；Integer5/Float4准确分树，隐藏位置修正叶不混入；不以空候选假接线",
+    "V03三对范围原between，一次完整预检/接纳顺序；单端非法、另一端pending、宿主拒绝/重绑和当前值解绑不半写；整数面积1/999999999边界与小数拒绝",
+    "V04六模式每项鼠标/键盘/重复同值/程序事件/当前已存禁用值；3无formalKey项永不进入draft/JSON；Double及其他未就绪模式最终Capture/Run/Confirm/Save一致拒绝",
+    "V05原VM模式显隐、四使能/高级折叠；隐藏/禁用/卸载关闭原两Popup、变量模态和展开窗；旧节点/旧租约回调不能写新draft",
+    "V06真实确认发布、取消关闭不写、重开读正式值、保存磁盘再开/UndoRedo/复制及旧窗口退役，交叉主线/lifecycle线实际合同；不只私有draft静态断言",
+    "V07解除原总闸前核所有其他S1试用控件不可误用：ROI、显示/判定、排序/连通性等不允许被假保存；未实现原因可见且不伪映射",
+    "V08设计时与运行走同一schema/default/组装原件；独立渲染仅辅助，VS实际设计器和中文/DPI/键鼠人工单列",
+    "V09候选自身UI与全量Release同版构建，新增Blob专属UI集成测试+既有公共来源回归；主线集成后正式Release验收，不复制产物"
+  ],
+  "notClaimed": "未实施产品、未构建或运行新功能；此前0d36e7只证明异常关闭修复候选，不代表此9字段接入。VS/人工、完整B08/S2、S3仍未验；未启VM/SDK",
+  "originalNumericDeclarations": [
+    {
+      "name": "LowThreshold",
+      "type": "Integer",
+      "curValue": "0x64",
+      "defaultValue": "0x64",
+      "minimum": "0x0",
+      "maximum": "0xff",
+      "increment": "0x1"
+    },
+    {
+      "name": "HightThreshold",
+      "type": "Integer",
+      "curValue": "0x96",
+      "defaultValue": "0x96",
+      "minimum": "0x0",
+      "maximum": "0xff",
+      "increment": "0x1"
+    },
+    {
+      "name": "FindNum",
+      "type": "Integer",
+      "curValue": "100",
+      "defaultValue": "100",
+      "minimum": "1",
+      "maximum": "20000",
+      "increment": "1"
+    },
+    {
+      "name": "MinArea",
+      "type": "Integer",
+      "curValue": "10",
+      "defaultValue": "10",
+      "minimum": "0x1",
+      "maximum": "999999999",
+      "increment": "0x1"
+    },
+    {
+      "name": "MaxArea",
+      "type": "Integer",
+      "curValue": "999999999",
+      "defaultValue": "999999999",
+      "minimum": "0x1",
+      "maximum": "999999999",
+      "increment": "0x1"
+    },
+    {
+      "name": "MinCircularity",
+      "type": "Float",
+      "curValue": "0.1",
+      "defaultValue": "0.1",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01"
+    },
+    {
+      "name": "MaxCircularity",
+      "type": "Float",
+      "curValue": "1",
+      "defaultValue": "1",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01"
+    },
+    {
+      "name": "MinRectangularity",
+      "type": "Float",
+      "curValue": "0.1",
+      "defaultValue": "0.1",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01"
+    },
+    {
+      "name": "MaxRectangularity",
+      "type": "Float",
+      "curValue": "1.0",
+      "defaultValue": "1.0",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01"
+    }
+  ],
+  "countEnableContract": {
+    "recommendation": "删除原VM未提供的IsBlobCountFilterEnabled正式开关，FindNum始终按原整数1..20000生效；如主线认为禁用数量上限是另外算法功能，须另有明确可见语义和批准，不能以原VM开关呈现或隐藏后暗中改执行",
+    "changes": [
+      "BlobSettings删除IsBlobCountFilterEnabled属性及Default读取；BlobParameters.xml删除对应Parameter及BlobCountLimit.visibleWhen/visibleValue",
+      "BlobSettings.Validate对BlobCountLimit始终校验；BlobSession.final.Take(BlobCountLimit)从条件变为明确无条件（由主线实施，不在UI侧模拟）",
+      "BlobParameterDefinition反射自动少一字段，正式SettingsSchema54→53；绑定名称9项不变；原开关稳定ID退出，不复用给其他功能",
+      "BlobPresentation对应数量开关逻辑与When删除；FindNum行原位置始终显示，BlobRunUi删除S1数量副本并重锚真实FindNum",
+      "正式JSON/字段schema只保留一个新模型，不新增旧false→大数/默认true转换或兼容读取；旧schema/编译lease/历史不冒充新合同",
+      "直接消费者与测试：BlobSettings/BlobSession/XML/BlobPresentation、BlobRunUi；S3RuntimeKernelCases关闭开关容忍0旧断言退出，改FindNum0/20001始终拒绝；Default/JSON/schema53与实际Take边界统一验证",
+      "FieldEditing当前硬编码54和O06/RuntimeEditor相关活动检查在集中集成时同步为新唯一schema；不改历史旧成绩，生命周期线需核完整快照/Undo/保存/复制的53字段新形态"
+    ],
+    "rawFinding": "原FindNum无数量使能行、无本方bool前置条件；原MaxOutPixelNumEnable是另一功能，不能误认FindNum开关",
+    "decisionPending": "主线已要求不得假呈现/暗改执行；本设计给删除建议与完整影响，最终Runtime变更由主线统一固定",
+    "existingConsumers": [
+      "tools/SunEyeVision.BlobAnalysis\\Runtime\\BlobPresentation.cs",
+      "tools/SunEyeVision.BlobAnalysis\\Runtime\\Parameters\\BlobSettings.cs",
+      "scripts/verification\\O06AlgorithmCases.cs",
+      "tools/SunEyeVision.BlobAnalysis\\Wpf\\Views\\BlobRunUi.cs",
+      "scripts/verification\\O06RoiBindingCases.cs",
+      "tools/SunEyeVision.BlobAnalysis\\Runtime\\Resources\\BlobParameters.xml",
+      "scripts/verification\\S3BlobRuntimeCases.cs",
+      "tools/SunEyeVision.BlobAnalysis\\Runtime\\Algorithms\\BlobSession.cs",
+      "scripts/verification\\S3RuntimeKernelCases.cs"
+    ],
+    "testFixtureRule": "O06AlgorithmCases、O06RoiBindingCases、S3BlobRuntimeCases等用false表达不截断的旧fixture必须按测试实际区域数选择明确合法FindNum并验证结果；不能全局把false映射成20000或保留无限模式兼容桥。"
+  },
+  "defaultAlignmentDecision": "现正式Low128/High255/Find1000/MinCircularity0/MinRectangularity0与原100/150/100/0.1/0.1均分列；不能在Blob.Wpf回填S1默认。建议主线在同一Runtime/XML批按原默认统一，新文档一处取值；既有已接受值从正式draft读取不因打开重设，无兼容旧格式。",
+  "reviewState": "仅设计与静态/既有截图核对；未修改产品、未新增模式或运行算法。共享展示入口、全部模式准入及数量开关删除由主线冻结后，才整批接入与实测。",
+  "sourceIdentities": [
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "3591B0626A1059AB2B3B4405B5CEF4D38E4D4123BC32E19D99EDFC9A0AAD3FE1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "33F82515BA84273CFABCEC5F2F8AC310DE22BEDFF371C4BB83EB506568B6F1EA"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "F932C27B4BA8CDCE2D65CDDFCE7D986E0B10BF8E2EB0414F5163274CD400769A"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs",
+      "sha256": "C92B3AB0B0BB1C3A7AB1B4A27D2F5200A356A6D02C81ABEDB765D9F8C33A20DA"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "5987B058151C0B8A0B15FDEB7A2ABBC91382355A9B9A752DFFC759E500D09D90"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobParameterDefinition.Settings.cs",
+      "sha256": "21992B75B59791DCA0DC735393E0F075FA3C7F8218AA9B6F8808E1DFC8BEB690"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+      "sha256": "40A624C99D888583722B997FFB518921F374A29A972CE0C94F8802BBA4D7F962"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "5E1111B4DA03181D766A37899F836DB531A53C7E8C1A7311B7D36D2C7145B537"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+      "sha256": "E0185C9ED3294A431EA393FBCE678EE245A1C6E3C690C95502E9A778DFE81C48"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "sha256": "117E99A64F3DD86FA8DD4F6D64A7648A454F62E2C0EA30381E3A06986D9E7FC3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "52B1C43CD7AF7AB4DBA59CF161047116481BED3C7D43047BFE29E6218A1D1847"
+    },
+    {
+      "path": "src/Plugin.Contracts/FieldPresentation.cs",
+      "sha256": "EAA904FA23E993CE4A72EE9D9A55DCDE0C5DD6E8697DB28DF3642B0B219484E5"
+    },
+    {
+      "path": "docs/collaboration/evidence/BLOB_VM_RUN_PARAMETERS_20261029.json",
+      "sha256": "FD4466E393575BCBF3776DCE3542C46E3591E76CDC9E79CB202550435FC15BC6"
+    },
+    {
+      "path": "docs/collaboration/evidence/VM_BLOB_UI_SOURCE_BASELINE_20261026.json",
+      "sha256": "930EC01CA17867CB0231C91EF95E310EFD67851EC92AF99196715137D32915E4"
+    }
+  ]
+}

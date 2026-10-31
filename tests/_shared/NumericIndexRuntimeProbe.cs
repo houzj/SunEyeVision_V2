@@ -29,7 +29,7 @@ public sealed class NumericIndexProbeOutput(double value,long index,string label
         ["output.hidden"]=Value+30,["output.indices"]=new SequenceValue(NumericIndexProbeDefinitionBase.IntegerSequence,label=="empty-main"?Array.Empty<object?>():label=="big-main"?new object?[]{2147483648L,90L,173L}:label=="ordinal"?new object?[]{0L,1L,2L}:new object?[]{37L,90L,173L}),
         ["output.index-array"]=new SequenceValue(NumericIndexProbeDefinitionBase.IntegerSequence,label=="empty-index"?Array.Empty<object?>():new object?[]{Index,2L}),
         ["output.record"]=new RecordValue(NumericIndexProbeDefinitionBase.RecordType,new Dictionary<string,object?> {
-            ["allowed"]=Value+20,["hidden"]=Value+30,["index"]=Index,["hidden-index"]=Index})};
+            ["allowed"]=Value+20,["hidden"]=Value+30,["index"]=Index,["hidden-index"]=Index,["indices"]=new SequenceValue(TypeRef.SequenceOf(DataType.Integer),new object?[]{Index,2L})})};
         if(label=="missing-index")values.Remove("output.index");
         return values;
     }
@@ -42,7 +42,7 @@ public abstract class NumericIndexProbeDefinitionBase:IToolDefinition<NumericInd
     public const string NumberInput="input.number",IntegerInput="input.integer",GeneralInput="runtime.input.number";
     public static ConcurrentDictionary<string,NumericIndexProbeState> States {get;}=new();
     public static TypeRef RecordType {get;}=TypeRef.RecordOf("manual-reference.record",new[] {
-        new Port("allowed",DataType.Number),new Port("hidden",DataType.Number),new Port("index",DataType.Integer),new Port("hidden-index",DataType.Integer)});
+        new Port("allowed",DataType.Number),new Port("hidden",DataType.Number),new Port("index",DataType.Integer),new Port("hidden-index",DataType.Integer),new Port("indices",TypeRef.SequenceOf(DataType.Integer))});
     public static TypeRef IntegerSequence {get;}=TypeRef.SequenceOf(DataType.Integer);
     public static ToolSchema OutputSchema {get;}=new(new[]{new Port(GeneralInput,DataType.Number,Required:false,EditModes:FieldEditModes.Reference)},new[] {
         new Port("output.number",DataType.Number),new Port("output.index",DataType.Integer,Required:false),new Port("output.values",DataType.NumberArray),
@@ -91,7 +91,7 @@ public class NumericIndexQualifiedProbe:NumericIndexProbeDefinitionBase,IToolMan
     public override string ToolId=>Id;
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;}=Array.AsReadOnly(new[] {
         new ManualReferenceSource("output.number"),new ManualReferenceSource("output.index"),new ManualReferenceSource("output.values"),new ManualReferenceSource("output.indices"),new ManualReferenceSource("output.index-array"),
-        new ManualReferenceSource("output.record",new[]{"allowed"}),new ManualReferenceSource("output.record",new[]{"index"})});
+        new ManualReferenceSource("output.record",new[]{"allowed"}),new ManualReferenceSource("output.record",new[]{"index"}),new ManualReferenceSource("output.record",new[]{"indices"})});
 }
 public sealed class NumericIndexStrictProbe:NumericIndexQualifiedProbe
 {

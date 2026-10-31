@@ -70,6 +70,70 @@ internal static class S2DocumentEditingCases
         Case("真实Blob仅五个Int32设置声明政策，其他字段保持Strict",()=>{var config=RuntimeToolConfiguration.Create("BlobAnalysis");var firstFields=config.SettingsSchema.Inputs.Where(p=>config.GetParameterReferenceBehavior(p.Id)==first).ToArray();Require(firstFields.Length==5,"Blob显式字段数量错误");Require(firstFields.All(p=>p.Type==TypeRef.ScalarOf(ScalarKind.Int64)&&NumericStorageRules.Effective(p.Type,p.Storage)==NumericStorage.Int32),"政策扩到非Int32");Require(config.Schema.Inputs.All(p=>config.GetParameterReferenceBehavior(p.Id)==ParameterReferenceBehavior.StrictExactlyOne),"工具Input被扩散");Reject(()=>ParameterReferenceRules.Freeze(new NumericIndexInvalidProbe()));});
         Case("全局主数组与数组索引经VariableSetting真实消费",()=>{using var f=new Fixture();var values=f.AddVariable("values",new long[]{37,90,173},"Integer[]");var indices=f.AddVariable("indices",new long[]{1,2},"Integer[]");f.Host.Commit(f.Draft(new VariableSetting(f.VariableReference(values,new BindingSelection.AtVariable(f.VariableReference(indices),first)))));using var run=f.Run();ExpectInteger(f,run,90);});
         Case("递归AtField索引使用同一目标政策",()=>{using var f=new Fixture();f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);var inner=new BindingSelection.AtField(f.Ref(f.Index,"output.index-array"),first);var index=f.Ref(f.Index,"output.indices",selection:inner);f.Accept(f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(index,first)));using var run=f.Run();Require(!run.Success&&!f.State.Trace.Contains("target"),"递归成功索引90越界被回落");});
+        Case("已声明成员整数数组作为动态索引真实消费",()=>
+        {
+            using var f=new Fixture();f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);
+            var index=f.Ref(f.Index,"output.record",new[]{"indices"});
+            f.Accept(f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(index,first)));
+            using var run=f.Run();ExpectInteger(f,run,90);
+        });
+        Case("递归动态索引正向逐层实际消费",()=>
+        {
+            using var f=new Fixture(indexLabel:"ordinal");f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);
+            var inner=new BindingSelection.AtField(f.Ref(f.Index,"output.index-array"),first);
+            var index=f.Ref(f.Index,"output.indices",selection:inner);
+            f.Accept(f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(index,first)));
+            using var run=f.Run();ExpectInteger(f,run,90);
+        });
+        foreach(var change in new[]{"toolId","fieldId"})
+            Case("真实保存JSON更换目标身份不能自授权 "+change,()=>
+            {
+                using var f=new Fixture();f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);
+                f.Accept(f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(f.Ref(f.Index,"output.index-array"),first)));
+                var path=Path.Combine(f.Directory,"identity-source.solution");var saved=new SolutionApplicationService(f.Manager).Save(path,()=>f.Editing.AcceptAll());
+                Require(saved.FileWritten,saved.Error??"合法源文件保存失败");var original=File.ReadAllBytes(path);
+                var repository=new SolutionRepository();var valid=repository.LoadCandidate(path).Candidate??throw new Exception(repository.LastError??"合法原文件不能读取");
+                valid.ExecutionOwner.Retire();
+                var json=System.Text.Json.Nodes.JsonNode.Parse(original)!.AsObject();
+                var target=json["Workflows"]!.AsArray().SelectMany(flow=>flow!["Nodes"]!.AsArray()).Single(node=>node!["Id"]!.GetValue<string>()==f.Target.Id)!;
+                var configuration=target["RuntimeConfiguration"]!.AsObject();
+                if(change=="toolId")
+                {
+                    target["ToolType"]=NumericIndexStrictProbe.Id;configuration["ToolId"]=NumericIndexStrictProbe.Id;
+                }
+                else
+                {
+                    var fields=configuration["Fields"]!.AsObject();var reference=fields[Probe.IntegerInput]!.DeepClone();
+                    fields[Probe.IntegerInput]=new System.Text.Json.Nodes.JsonObject{["Kind"]="Constant",["Value"]=999L};
+                    fields[Probe.NumberInput]=reference;configuration["CurrentValues"]=new System.Text.Json.Nodes.JsonObject();
+                    configuration["ParameterBindingOrder"]=new System.Text.Json.Nodes.JsonArray(Probe.NumberInput);
+                }
+                var altered=Path.Combine(f.Directory,"identity-"+change+".solution");File.WriteAllText(altered,json.ToJsonString());
+                var rejected=repository.LoadCandidate(altered);
+                Require(rejected.Candidate is null,"替换目标身份后政策被JSON继承");
+                Require((repository.LastError??"").Contains(".RuntimeConfiguration: Binding reference contains an invalid or missing declaration.",StringComparison.Ordinal),"拒绝未发生在首次绑定声明读取："+repository.LastError);
+                var changedField=change=="toolId"?Probe.IntegerInput:Probe.NumberInput;
+                var expression=configuration["Fields"]![changedField]!["Reference"]!.ToJsonString();
+                Require(BindingReferenceSerializer.Deserialize(expression,first).Selection is BindingSelection.AtField,"同一引用在显式字段政策下无效");
+                Reject(()=>BindingReferenceSerializer.Deserialize(expression,ParameterReferenceBehavior.StrictExactlyOne));
+                // Restore only target identity. The exact same parsed/written document and binding remain valid.
+                if(change=="toolId")
+                {
+                    target["ToolType"]=NumericIndexQualifiedProbe.Id;configuration["ToolId"]=NumericIndexQualifiedProbe.Id;
+                }
+                else
+                {
+                    var fields=configuration["Fields"]!.AsObject();fields[Probe.IntegerInput]=fields[Probe.NumberInput]!.DeepClone();
+                    fields[Probe.NumberInput]=new System.Text.Json.Nodes.JsonObject{["Kind"]="Constant",["Value"]=777d};
+                    configuration["ParameterBindingOrder"]=new System.Text.Json.Nodes.JsonArray(Probe.IntegerInput);
+                }
+                var restoredPath=Path.Combine(f.Directory,"restored-"+change+".solution");File.WriteAllText(restoredPath,json.ToJsonString());
+                var restored=repository.LoadCandidate(restoredPath).Candidate??throw new Exception(repository.LastError??"仅恢复目标身份后仍不能读取同源文档");
+                restored.ExecutionOwner.Retire();
+                Require(File.ReadAllBytes(path).SequenceEqual(original),"读取失败覆盖合法原文件");
+                Require(f.Target.RuntimeConfiguration!.Fields.Read(Probe.IntegerInput) is ReferenceSetting,"读取候选失败污染正式配置");
+                using var run=f.Run();ExpectInteger(f,run,90);
+            });
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"numeric-index-report.json"),JsonSerializer.Serialize(new{passed=_passed,cases=Reports},new JsonSerializerOptions{WriteIndented=true}));
         return Reports.Count==_passed?0:1;
     }

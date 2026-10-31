@@ -16,6 +16,9 @@ public sealed partial class BlobParameterDefinition
         _fields.Values.Where(item=>Boolean(item,"allowReference")).ToDictionary(item=>FieldId(item,"fieldId"),
             item=>Required(item,"bindingName"),StringComparer.Ordinal));
 
+    public string SettingsFieldId(string property)
+        => _fields.TryGetValue(property,out var item)?FieldId(item,"fieldId")
+            :throw new ArgumentException("Unknown Blob setting: "+property,nameof(property));
     private static string FieldId(XElement item,string attribute)
     {
         var id=Required(item,attribute);

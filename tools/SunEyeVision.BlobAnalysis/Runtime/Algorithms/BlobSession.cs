@@ -18,6 +18,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         try
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
+            if(invocation.Settings.SegmentationMode!=BlobSegmentationMode.SingleThreshold)
+                return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_MODE_NOT_READY","该阈值模式尚未完成原厂语义对齐。"));
             var schema=new BlobTool().Describe();
             var requested=BlobOutputRequest.None;
             foreach(var demand in invocation.OutputRequests)

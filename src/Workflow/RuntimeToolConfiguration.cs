@@ -184,8 +184,14 @@ public sealed partial class RuntimeToolConfiguration
         if(ContainsResource(port.Type))throw new ArgumentException("Parameter current values cannot own invocation resources: "+port.Id);
         return new(ValueRules.Freeze(port,value));
     }
-    public IReadOnlyList<Diagnostic> Validate() => Fields.Select(SettingsSchema.Inputs).Capture().Values.Any(value=>value is ReferenceSetting or VariableSetting)
-        ?Array.Empty<Diagnostic>():_definition.Validate(CaptureSettings());
+    public IReadOnlyList<Diagnostic> Validate()
+    {
+        var settings=Fields.Select(SettingsSchema.Inputs);
+        var known=(_definition as IToolKnownSettingsValidation)?.ValidateKnownSettings(settings)??Array.Empty<Diagnostic>();
+        if(known.Count!=0)return known;
+        return settings.Capture().Values.Any(value=>value is ReferenceSetting or VariableSetting)
+            ?Array.Empty<Diagnostic>():_definition.Validate(CaptureSettings());
+    }
     public ToolSchema Schema => _definition.Describe();
     public ToolCapabilities Capabilities => _definition.Capabilities();
     public ToolSchema SettingsSchema => _settingsFields.SettingsSchema;

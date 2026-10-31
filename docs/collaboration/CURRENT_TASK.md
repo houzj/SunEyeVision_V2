@@ -1,3 +1,11 @@
+## 2026-10-31 形状参数资源与运行时元数据边界
+
+- 原算法 SDK 的 BlobFind.xml 将 Min/MaxCircularity 与 Min/MaxRectangularity 四项声明为 Float、范围 0–1；该导出资源是否为当前算法句柄的运行时元数据尚未证实。工具 AlgorithmTab 与导出资源的两个下限默认值不同，不推定实际初值。
+- 四名称经 SetParam 转发到算法对象；候选 setter 按名称查表、读取元数据。type=4 分支及缩放路径已定位，但四项实际类型和缩放值未确定，继续针对初始化入口只读取证，不把假设当作 VM 事实。证据 B08_ORIGINAL_SHAPE_METADATA_20261031.md，SHA256 505501CE5DB8185B5A1B41954FF68C494CE923BCB8D9F22F272B88C801204070。
+## 2026-10-31 圆度与矩形度原厂目标追踪
+
+- 逆向负责人对四个筛选字段逐项核实：Blob SetParam将原参数名及文本转发至算法对象setter，不是面积判定的atof→double分支。报告 B08_ORIGINAL_SHAPE_FILTER_FLOAT_20261031.md SHA256 F00DC36949D17E6B2662ACA1330C2CE38228B8F59FFC6045AEC36DFA559096A1；算法句柄四项元数据类型、缩放及最终存储仍有具体对象/地址可追，已交逆向负责人只读查证，不启SDK。
+- 工作流线确认继续按共享ToolSchema/TypeRef、OutputReference根身份+成员路径、同次结果与资源租约统一图像源和Blob；自动绑定/OriginId与本线数值设置同文件不同方法分别开发，固定提交后集成，不互相覆盖或日常停工。
 ## 2026-10-31 用户要求图像源与Blob共用工具框架
 
 - 已与工作流独立线核对：两工具共用ToolSchema/Port/TypeRef、IToolDefinition/Session、OutputReference根端口+成员路径、DeclaredOutputSnapshot及资源租约；显示声明只命名真实成员，结果树/主视口/下游绑定读取同一声明与同次结果，不按工具ID特判。Blob和图像源参数、算法及输出内容各自声明。

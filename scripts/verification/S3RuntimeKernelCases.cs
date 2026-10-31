@@ -217,7 +217,7 @@ internal static class S2DocumentEditingCases
             });
             Case("显示XML声明源校验、样式与表格投影",()=>{
                 var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe();
-                Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==8
+                Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==10
                     &&definition.Table.Validate(schema).Count==0,"显示定义未加载或字段映射无效");
                 Require(definition.Graphics.Single(x=>x.Key=="inspection-roi").InputSource
                     &&definition.Graphics.Single(x=>x.Key=="blobs").Source.PortId==BlobSchema.BlobsPort

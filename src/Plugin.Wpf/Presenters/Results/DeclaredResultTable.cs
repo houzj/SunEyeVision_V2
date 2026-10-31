@@ -51,8 +51,10 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
             SelectionMode=DataGridSelectionMode.Single,ItemsSource=_rows};
         _table.Style=(Style)Resources["CurResultDataGridStyle"];
         _table.DataContext=this;
+        var unavailable=projection.Columns.Where(column=>column.Value is null).ToArray();
+        if(unavailable.Length!=0)_table.ToolTip=string.Join("；",unavailable.Select(column=>column.DisplayName+"："+column.UnavailableReason))+"。空结果不代表这些特征已计算。";
         foreach(var column in projection.Columns)
-            _table.Columns.Add(new DataGridTextColumn{Header=column.DisplayName,
+            _table.Columns.Add(new DataGridTextColumn{Header=column.Value is null?column.DisplayName+"（未实现）":column.DisplayName,
                 CellStyle=(Style)Resources["dgCellCenterAlignmentStyle"],
                 Binding=new Binding("["+column.Key+"]"){Mode=BindingMode.OneWay,
                     StringFormat=column.DecimalPlaces is {} decimals?"{0:F"+decimals+"}":null}});
@@ -169,6 +171,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         var geometryPaths=new HashSet<string>(StringComparer.Ordinal);
         foreach(var column in _projection.Columns)
         {
+            if(column.Value is null){cells.Add(column.Key,"未实现");continue;}
             var valid=column.ValidWhen is null||read(column.ValidWhen) is true;
             cells.Add(column.Key,valid?DisplayCell(read(column.Value)):null);
             if(!valid)continue;

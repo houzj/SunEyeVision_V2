@@ -16,8 +16,10 @@
     <Column key="perimeter" label="周长" member="perimeter" decimals="1" unit="px" />
     <Column key="centroid-x" label="中心X" member="centroid-x" decimals="1" unit="px" />
     <Column key="centroid-y" label="中心Y" member="centroid-y" decimals="1" unit="px" />
+    <Column key="angle" label="角度" unavailable="原厂外接矩形角度映射已证；当前输出尚未实现，数值规范尚未验证，不产出或订阅该特征" />
+    <Column key="long-axis" label="长轴" unavailable="原厂长轴数值语义尚未证实，当前不产出或订阅该特征" />
+    <Column key="short-axis" label="短轴" unavailable="原厂短轴数值语义尚未证实，当前不产出或订阅该特征" />
     <Column key="circularity" label="圆度" member="circularity" decimals="3" unit="" />
     <Column key="rectangularity" label="矩形度" member="rectangularity" decimals="3" unit="" />
-    <Column key="bounds" label="边框" member="bounds" decimals="0" unit="px" />
   </Table>
 </BlobDisplay>

@@ -37,8 +37,22 @@ internal static class S2DocumentEditingCases
  static IEnumerable<T> Visuals<T>(DependencyObject root)where T:DependencyObject{for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);if(child is T item)yield return item;foreach(var nested in Visuals<T>(child))yield return nested;}}
  [STAThread] static int Main()
  {
-  try{VerifyCapture();Run();Console.WriteLine("通过：真实Blob表→正式publication→ResultWorkspacePresenter同帧选择、重跑及旧事件拒绝及快照/包装清理，3组。");return 0;}
+  try{VerifyColumns();VerifyCapture();Run();Console.WriteLine("通过：真实Blob表→正式publication→ResultWorkspacePresenter同帧选择、重跑及旧事件拒绝及快照/包装清理及声明占位，4组。");return 0;}
   catch(Exception error){Console.Error.WriteLine(error);return 1;}
+ }
+ static void VerifyColumns()
+ {
+  var tool=new BlobTool();var projection=tool.ResultProjection;var keys=new[]{"label","area","perimeter","centroid-x","centroid-y","angle","long-axis","short-axis","circularity","rectangularity"};
+  Require(projection.Columns.Select(column=>column.Key).SequenceEqual(keys),"Blob表未按原序号加九项特征排列");
+  var placeholders=projection.Columns.Where(column=>column.Value is null).ToArray();Require(placeholders.Select(column=>column.Key).SequenceEqual(new[]{"angle","long-axis","short-axis"})&&placeholders.All(column=>!string.IsNullOrWhiteSpace(column.UnavailableReason)),"未证三项未明确声明展示占位");
+  var fields=tool.ResultSchema.Outputs.Single(port=>port.Id==BlobSchema.BlobsPort).Type.Element!.Fields;Require(!fields.Any(field=>placeholders.Any(column=>column.Key==field.Id)),"占位泄漏为真实输出字段");
+  Require(!tool.ManualReferenceSources.Any(source=>source.MemberPath?.Any(member=>placeholders.Any(column=>column.Key==member))==true),"占位泄漏为可订阅来源");
+  ResultProjectionDescriptor Make(ResultColumnDescriptor column,ResultProjectionKind kind=ResultProjectionKind.StandardTable)=>new(kind,ResultCardinality.Many,new[]{column},projection.Rows,projection.ElementIdentityFieldId);
+  void Reject(Func<object> create){var rejected=false;try{create();}catch(ArgumentException){rejected=true;}Require(rejected,"非法展示占位合同被接纳");}
+  var path=new ResultFieldPath(BlobSchema.BlobsPort,new[]{"area"});
+  foreach(var column in new[]{new ResultColumnDescriptor("bad","未实现",null),new ResultColumnDescriptor("bad","未实现",null,UnavailableReason:" "),new ResultColumnDescriptor("bad","未实现",path,UnavailableReason:"尚未实现"),new ResultColumnDescriptor("bad","未实现",null,Geometry:path,UnavailableReason:"尚未实现"),new ResultColumnDescriptor("bad","未实现",null,ValidWhen:path,UnavailableReason:"尚未实现"),new ResultColumnDescriptor("bad","未实现",null,DecimalPlaces:2,UnavailableReason:"尚未实现"),new ResultColumnDescriptor("bad","未实现",null,Unit:null!,UnavailableReason:"尚未实现"),new ResultColumnDescriptor("bad","面积",path,Unit:null!)})Reject(()=>Make(column));
+  Reject(()=>Make(placeholders[0],ResultProjectionKind.PropertyList));Require(Make(new("bad","未实现",new(BlobSchema.BlobsPort,new[]{"angle"}))).Validate(tool.ResultSchema).Count>0,"假占位引用未知字段绕过声明校验");
+  Console.WriteLine("通过：原十列顺序、六真实特征、三展示占位与非法声明及来源隔离。");
  }
  static void VerifyCapture()
  {
@@ -81,9 +95,9 @@ internal static class S2DocumentEditingCases
    view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);window=new Window{Content=view,Width=1000,Height=850,ShowActivated=false,ShowInTaskbar=false};window.Show();Pump();
    var shell=(ResultWorkspaceShell)view.FindName("Workspace");shell.IsDoubleImage=true;var presenter=Get(view,"_workspacePresenter");var output=Get(presenter,"OutputPane");var viewport=(ImageViewBox)shell.OutputViewport;
    var executor=new WorkflowExecutionEngine(engine,new PluginManager(),new CheckLogger());
-   DeclaredOutputSnapshot Publish(int offset)
+   DeclaredOutputSnapshot Publish(int offset,bool empty=false,bool multiple=false)
    {
-    var pixels=new byte[256];for(var y=2;y<10;y++)for(var x=2+offset;x<10+offset;x++)pixels[y*16+x]=200;
+    var pixels=new byte[256];if(!empty)for(var y=2;y<10;y++)for(var x=2+offset;x<10+offset;x++)pixels[y*16+x]=200;if(multiple)for(var y=12;y<14;y++)for(var x=1;x<3;x++)pixels[y*16+x]=200;
     var bitmap=BitmapSource.Create(16,16,96,96,PixelFormats.Gray8,null,pixels,16);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(path))encoder.Save(file);
     using var image=HalImage.CreateFromBytes(pixels,16,16,1);
     var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(path,offset+1){LocalReadAdmission=_=>path}}}){Configuration=WorkflowRunConfiguration.Capture(new[]{flow}),ExecutionOwner=document.ExecutionOwner,ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document)});Until(()=>task.IsCompleted);var run=task.GetAwaiter().GetResult();runs.Add(run);
@@ -108,7 +122,11 @@ internal static class S2DocumentEditingCases
    ResultSelection SelectRow(DeclaredOutputSnapshot snapshot)
    {
     var table=Table();Require(table.GetType().Name=="BlobResultView","没有使用真实Blob结果视图");var publication=Publication();Require(publication.Stamp.Invocation==snapshot.Identity,"publication不是同次Blob执行");
-    var grid=Visuals<DataGrid>(table.View).Single();Require(grid.Items.Count==1&&grid.Columns.Count==8,"真实Blob表行列不符");ResultSelection? selected=null;object? senderIdentity=null;EventHandler<ResultSelection> capture=(sender,value)=>{senderIdentity=sender;selected=value;};table.SelectionHighlightChanged+=capture;
+    var grid=Visuals<DataGrid>(table.View).Single();Require(grid.Items.Count==1&&grid.Columns.Count==10,"真实Blob表行列不符");
+    Require(!grid.CanUserSortColumns&&!grid.CanUserReorderColumns,"占位改变原表排序/重排门禁");
+    var cell=grid.Items[0].GetType().GetProperty("Item")!;foreach(var key in new[]{"angle","long-axis","short-axis"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),"未实现"),"未证特征显示伪数值");
+    using(var reader=snapshot.AcquireReader()){var record=(RecordValue)reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort)[0]!;foreach(var key in new[]{"area","perimeter","centroid-x","centroid-y","circularity","rectangularity"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),record.Get<double>(key)),"已有真实特征被占位替换："+key);}
+    ResultSelection? selected=null;object? senderIdentity=null;EventHandler<ResultSelection> capture=(sender,value)=>{senderIdentity=sender;selected=value;};table.SelectionHighlightChanged+=capture;
     try{grid.SelectedItem=null;grid.SelectedItem=grid.Items[0];Pump();}finally{table.SelectionHighlightChanged-=capture;}
     Require(ReferenceEquals(senderIdentity,table),"真实Blob包装事件sender不是活动BlobResultView，而是"+senderIdentity?.GetType().Name);
     Require(selected is {Targets.Count:1}&&selected.Publication==publication.Stamp,"真实表事件未携带同次Stamp和几何");
@@ -129,6 +147,21 @@ internal static class S2DocumentEditingCases
    // Re-deliver the captured real event through the production handler, never invent a selection payload.
    Call(main,"OnDeclaredSelectionHighlightChanged",Table(),oldSelection);Pump();Require(ReferenceEquals(layer,viewport.ShapeList)&&ReferenceEquals(shape,((IList)viewport.ShapeList!)[0]),"旧Stamp选择覆盖新高亮");
    main.ClearResultHighlight();Pump();Require(viewport.ShapeList is null||((IList)viewport.ShapeList).Count==0,"真实清空高亮未生效");
+   var emptySnapshot=Publish(0,true);SelectImage();var emptyGrid=Visuals<DataGrid>(Table().View).Single();Require(emptyGrid.Items.Count==0&&emptyGrid.Columns.Count==10,"空结果制造占位假行或丢表头");
+   Require(emptyGrid.Columns.Cast<DataGridColumn>().Where(column=>column.Header?.ToString()?.Contains("未实现")==true).Count()==3&&emptyGrid.ToolTip?.ToString()?.Contains("空结果不代表")==true,"空结果表未明确保留三项未实现说明");
+   foreach(var order in new[]{BlobSort.AreaAsc,BlobSort.AreaDesc})
+   {
+    node.RuntimeConfiguration=node.RuntimeConfiguration!.WithSettings(new BlobSettings{Threshold=100,IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,SortMode=order});
+    var sorted=Publish(0,multiple:true);SelectImage();var sortedView=Table();var sortedGrid=Visuals<DataGrid>(sortedView.View).Single();Require(sortedGrid.Items.Count==2,"排序样本未得到两个真实Blob");
+    using var reader=sorted.AcquireReader();var records=reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort).Cast<RecordValue>().ToArray();var areas=records.Select(record=>record.Get<double>("area")).ToArray();Require(areas.SequenceEqual(order==BlobSort.AreaAsc?new[]{4d,64d}:new[]{64d,4d}),"真实反序排序未生效");
+    for(var index=0;index<2;index++)
+    {
+     ResultSelection? selected=null;EventHandler<ResultSelection> capture=(_,value)=>selected=value;sortedView.SelectionHighlightChanged+=capture;try{sortedGrid.SelectedItem=null;sortedGrid.SelectedItem=sortedGrid.Items[index];Pump();}finally{sortedView.SelectionHighlightChanged-=capture;}
+     var record=records[index];Require(selected is {Targets.Count:1}&&Equals(selected.ElementIdentity,record.Get<long>("element-id"))&&selected.Publication==Publication().Stamp,"排序后选择使用行号替代真实element-id或Stamp");
+     var vertices=record.Get<SequenceValue>("rotated-bounds").Cast<PointGeometry>().Select(point=>point.Point).ToArray();Require(selected!.Targets[0].Geometry.Single() is PolygonGeometry polygon&&polygon.Vertices.SequenceEqual(vertices),"排序后的事件几何不属于同一记录");
+     Require(viewport.ShapeList is IList {Count:1},"排序选择没有呈现唯一高亮");var rendered=((IEnumerable<Point>)Get(((IList)viewport.ShapeList!)[0]!,"Points")).Select(point=>new Point2(point.X,point.Y));Require(rendered.SequenceEqual(vertices),"排序后实际图层高亮与选中记录错配");
+    }
+   }
    view.Shutdown();Require(!(bool)Get(oldLease,"IsCurrent"),"工作区关闭复活旧租约");oldLease.Dispose();oldLease.Dispose();borrowed.Clear();
    Console.WriteLine("回执：run1="+first.Identity+"；run2="+second.Identity+"；frame1="+oldFrame+"；frame2="+currentSelection.Targets[0].ImageFrame);
   }

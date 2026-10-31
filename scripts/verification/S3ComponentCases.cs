@@ -136,7 +136,7 @@ internal static class S2DocumentEditingCases
                 var resultWindow=new Window{Content=resultView.View,Width=700,Height=350,Left=-10000,ShowActivated=false,ShowInTaskbar=false};
                 resultWindow.Show();resultWindow.UpdateLayout();
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                Require(grid.Items.Count==1&&grid.Columns.Count==8,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
+                Require(grid.Items.Count==1&&grid.Columns.Count==10,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
                 grid.SelectedItem=grid.Items[0];
                 Require(selected is not null&&selected.Publication==publication.Stamp&&Equals(selected.ElementIdentity,record.Get<long>("element-id"))&&selected.Targets.Count==1,
                     "结果选择缺少真实publication或稳定元素身份");

@@ -55,6 +55,17 @@ public sealed class NativeResultCompositionTests
     });
 
     [Fact]
+    public void Property_list_headers_use_shared_localization_in_standalone_host() => Sta(() =>
+    {
+        var view = new PropertyListView();
+        using var host = new LoadedHost(view);
+        var text = Descendants<TextBlock>(view).Select(item => item.Text).ToArray();
+        Assert.Contains((string)view.FindResource("Lang_ResultName"), text);
+        Assert.Contains((string)view.FindResource("Lang_CurValue"), text);
+        Assert.Contains((string)view.FindResource("Lang_VariableManager"), text);
+    });
+
+    [Fact]
     public void Hierarchical_binding_keeps_same_rows_and_restores_selection_without_user_command() => Sta(() =>
     {
         var rows = PropertyListDesignView.CreateRows();

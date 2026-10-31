@@ -35,7 +35,7 @@ public sealed class ResultVariableBindingProductionTests
         {
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
             Stage("加载正式工具组件");
-            Assert.True(PluginLoader.LoadPlugins(Path.Combine(host,"plugins")));
+            Assert.True(PluginLoader.LoadPlugins());
             var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"result-variable-binding-"+Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);Stage("初始化正式宿主服务");
             ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(directory);
@@ -43,12 +43,13 @@ public sealed class ResultVariableBindingProductionTests
             var source=new SunEyeVision.UI.Shared.WorkflowNode("source","图像源","图像源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
             var root=new SunEyeVision.Workflow.Workflow("root","正式根流程");root.Nodes.Add(source);
             var variable=new GlobalVariable("宽度",0L,"Integer"){Id="width"};
+            var second=new GlobalVariable("宽度二",0L,"Integer"){Id="width-two"};
             // Node IDs are local to a workflow. Another root with the same local node ID
             // must neither throw during binding lookup nor acquire this root's producer.
             var other=new SunEyeVision.Workflow.Workflow("other-root","另一正式根流程");
             other.Nodes.Add(new SunEyeVision.UI.Shared.WorkflowNode("source","另一个图像源","另一个图像源","ImageLoad")
                 {RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")});
-            var document=new Solution{Workflows=new(){root,other}};document.GlobalVariables.Add(variable);
+            var document=new Solution{Workflows=new(){root,other}};document.GlobalVariables.Add(variable);document.GlobalVariables.Add(second);
             var manager=ServiceInitializer.SolutionManager;manager.SetCurrentSolution(document,false);
             Stage("构造真实MainWindowViewModel");main=new MainWindowViewModel();
             Assert.Equal(2,main.WorkflowTabViewModel.Tabs.Count);
@@ -64,6 +65,20 @@ public sealed class ResultVariableBindingProductionTests
             var publication=Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication>(main.CurrentResultPublication);
             var row=Assert.Single(main.FlatResultRows.Where(item=>item.SourcePropertyName=="output.width"));
             Assert.True(row.IsBindable);Assert.True(tree.BindVariableCommand!.CanExecute(row));
+            Stage("结果路径复制反馈及清理");
+            {
+                string? clipboard=null;
+                view.ReadClipboardText=()=>clipboard;view.WriteClipboardText=text=>clipboard=text;
+                var path="SunEyeVision-test-"+Guid.NewGuid().ToString("N");
+                tree.SelectedItem=row;Assert.True(tree.CopyPathCommand!.CanExecute(path));
+                tree.CopyPathCommand.Execute(path);Pump();Assert.Equal(path,clipboard);
+                var field=typeof(ImageResultControl).GetField("_copyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!;
+                var notice=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox>(field.GetValue(view));
+                Assert.True(notice.IsVisible);
+                tree.CopyPathCommand.Execute(path);Pump();Assert.Same(notice,field.GetValue(view));
+                typeof(ImageResultControl).GetMethod("CloseCopyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,null);
+                Assert.Null(field.GetValue(view));Assert.False(notice.IsVisible);
+            }
             Stage("首次绑定选择与正式接纳");var verifyBind=SelectVariableInNextDialog(variable);tree.BindVariableCommand.Execute(row);verifyBind();Pump();
             Assert.Equal(initial+1,session.History.Position);Assert.Same(publication,main.CurrentResultPublication);
             Assert.Equal("宽度",row.BindingDisplayName);AssertUnlinkVisible(tree,row);
@@ -77,14 +92,20 @@ public sealed class ResultVariableBindingProductionTests
             main.RedoCommand.Execute(null);Pump();Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);Assert.Equal("宽度",row.BindingDisplayName);
             Stage("保存与正式重开");var file=Path.Combine(directory,"accepted.solution");var saved=manager.SaveCurrentDocument(file);Assert.True(saved.FileWritten,saved.Error);
             var reopened=new SolutionRepository().Load(file)!;
-            Assert.Equal(expression,Assert.Single(reopened.GlobalVariables).ProducerBinding!.ReferenceExpression);
+            Assert.Equal(expression,reopened.GlobalVariables.Single(item=>item.Id==variable.Id).ProducerBinding!.ReferenceExpression);
             Assert.True(tree.UnbindVariableCommand!.CanExecute(row));
-            Stage("正式解绑与Undo");var verifyUnbind=SelectVariableInNextDialog(variable);tree.UnbindVariableCommand.Execute(row);verifyUnbind();Pump();
+            Stage("单变量直接解绑与Undo");tree.UnbindVariableCommand.Execute(row);Pump();
             Assert.Null(variable.ProducerBinding);Assert.Null(row.BindingDisplayName);Assert.Equal(initial+2,session.History.Position);
             main.UndoCommand.Execute(null);Pump();Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);Assert.Equal("宽度",row.BindingDisplayName);
             var before=session.History.Position;
             Stage("取消选择");var verifyCancel=SelectVariableInNextDialog(variable,cancel:true);tree.BindVariableCommand.Execute(row);verifyCancel();Pump();
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
+            Stage("多变量绑定和指定解绑");
+            var verifySecond=SelectVariableInNextDialog(second);tree.BindVariableCommand.Execute(row);verifySecond();Pump();
+            Assert.Equal(expression,second.ProducerBinding!.ReferenceExpression);
+            var verifyChosen=SelectVariableInNextDialog(second);tree.UnbindVariableCommand.Execute(row);verifyChosen();Pump();
+            Assert.Null(second.ProducerBinding);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
+            before=session.History.Position;
             Stage("模态期间publication退出拒绝");var verifyStale=SelectVariableInNextDialog(variable,beforeAccept:()=>main.CloseResultPresentation());tree.BindVariableCommand.Execute(row);verifyStale();Pump();
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
             Assert.False(main.IsCurrentResultRow(row));Assert.False(tree.BindVariableCommand.CanExecute(row));
@@ -155,7 +176,7 @@ public sealed class ResultVariableBindingProductionTests
     {
         // Reuse the existing persistent real WPF dispatcher. An Application must not be
         // abandoned on a per-test thread while later controls resolve its dynamic resources.
-        var operation=Task.Run(()=>ImageThresholdProductionEditorTests.Sta(action));
+        var operation=Task.Run(()=>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action));
         try{operation.WaitAsync(TimeSpan.FromSeconds(60)).GetAwaiter().GetResult();}
         catch(TimeoutException error){throw new TimeoutException("真实结果绑定生产链超时；最后阶段："+_stage,error);}
     }

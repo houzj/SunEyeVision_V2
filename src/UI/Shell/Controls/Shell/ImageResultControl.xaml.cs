@@ -27,6 +27,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip ImagePreviewContent;
         private MainWindowViewModel _viewModel = null!;
         private bool _shutdown;
+        internal Func<string?> ReadClipboardText { get; set; } = () => Clipboard.ContainsText() ? Clipboard.GetText() : null;
+        internal Action<string> WriteClipboardText { get; set; } = Clipboard.SetText;
+        private SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox? _copyNotice;
+        private System.Windows.Threading.DispatcherTimer? _copyNoticeTimer;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
@@ -99,11 +103,37 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             ModuleResultTreeView.CopyPathCommand=new RelayCommand(value=>
             {
                 if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
-                    &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
+                    &&value is string path&&!string.IsNullOrWhiteSpace(path))CopyResultPath(row,path);
             },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
                 &&_viewModel?.IsCurrentResultRow(row)==true);
             Loaded+=(_,_)=>{RefreshSourceSession();AttachWorkspace();};
-            Unloaded+=(_,_)=>Cleanup(new Action[]{ReleaseSourceSession,ReleaseWorkspace});
+            Unloaded+=(_,_)=>Cleanup(new Action[]{CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace});
+        }
+
+        private void CopyResultPath(FlatResultRow row,string path)
+        {
+            if(ReadClipboardText()==path)return;
+            if(_shutdown||_viewModel?.IsCurrentResultRow(row)!=true||!ReferenceEquals(ModuleResultTreeView.SelectedItem,row))return;
+            WriteClipboardText(path);
+            CloseCopyNotice();
+            var notice=SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox.CreateMessageBox(
+                SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Lang_CopySuccess"),
+                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageIcons.Ok,
+                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageButtons.NoButton);
+            if(notice is null)return;
+            var owner=Window.GetWindow(this);
+            if(owner is {IsVisible:true})notice.Owner=owner;
+            _copyNotice=notice;
+            var timer=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromMilliseconds(1500)};
+            _copyNoticeTimer=timer;timer.Tick+=CopyNoticeElapsed;
+            notice.Show();timer.Start();
+        }
+        private void CopyNoticeElapsed(object? sender,EventArgs args)=>CloseCopyNotice();
+        private void CloseCopyNotice()
+        {
+            var timer=_copyNoticeTimer;_copyNoticeTimer=null;
+            if(timer is not null){timer.Stop();timer.Tick-=CopyNoticeElapsed;}
+            var notice=_copyNotice;_copyNotice=null;notice?.Close();
         }
 
         /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
@@ -149,7 +179,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             Cleanup(new Action[]{
                 ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
                 ()=>ModuleResultTreeView.ItemsSource=null,
-                ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
+                ()=>main?.CloseResultPresentation(),CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
                     SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
@@ -201,7 +231,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ThemeMessageDialog.Show(remove?"该结果没有可解除的变量绑定。":"没有可承载该正式声明及存储的全局变量。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
                 return;
             }
-            var variable=GlobalVariableSelectDialog.ShowSelect(choices);
+            var variable=remove&&choices.Count==1?choices[0]:GlobalVariableSelectDialog.ShowSelect(choices);
             if(variable is null)return;
             // The modal window may run arbitrary editing/navigation before it returns.
             if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.Session,expected)

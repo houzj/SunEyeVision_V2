@@ -1,3 +1,7 @@
+## 2026-10-31 图像输入选择器真实跨方案回归
+
+- 候选 f381302e 两种真实窗口路径均通过，测试提交集成为7e04004a；正式Release同产品70a13a3d上FieldEditing attempt-152/153分别验证A→B和同ID重开。旧项鼠标/Enter、停用/隐藏恢复不污染新草稿、正式状态、版本、历史、文件及新Popup；28条程序集加载记录与正式载荷哈希一致。
+- 正式回执 IMAGE_COMBO_CROSS_DOCUMENT_FORMAL_20261031.json；不冒称完整FieldEditing、全部身份/换模板/异常观察者、原厂来源资格或持久化等价。VS设计器和用户人工验收未做。
 ## 2026-10-31 单阈值像素实测与原厂证据边界
 
 - 逆向负责人确认当前静态材料无法判定原VM的实际极性方向、相等像素及0/255端点。现行本方以有效域内[T,255]为Binary并以有效域差集为BinaryInv，为可替换的自研假设，位置 BlobSession.Execute threshold/binary；不称VM等价。

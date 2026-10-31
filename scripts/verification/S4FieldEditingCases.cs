@@ -1,3 +1,11 @@
+using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.UI.Shell.Windows;
+using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Media.Imaging;
 using System.Windows.Data;
@@ -32,6 +40,7 @@ internal static class S2DocumentEditingCases
     {
         try
         {
+            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="CrossDocument")return RunCrossDocumentReferenceCases();
             if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             owner=new Window{Width=700,Height=720,Title="正式字段消费验证"};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -317,6 +326,278 @@ internal static class S2DocumentEditingCases
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
+    }
+    private static int RunCrossDocumentReferenceCases()
+    {
+        Console.WriteLine("B08跨文档专项入口；只运行新增真实宿主场景，不计完整FieldEditing。");
+        var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
+        SunEyeVision.Plugin.SDK.Vision.Hosting.VisionImageFactoryLocator.Current=new SunEyeVision.HalAdapter.HalImageFactory();
+        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/NodeStyleResources.xaml","Resources/Styles/ConnectionStyleResources.xaml","Resources/Styles/CanvasStyleResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
+        var plugins=new PluginManager();plugins.LoadPlugins();plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));PluginLoader.MarkAsLoaded();
+        var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"cross-document-reference");Directory.CreateDirectory(directory);
+        ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(directory);
+        var manager=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();
+        owner=new Window{Width=720,Height=440,Title="B08跨文档真实宿主",Content=new ContentControl(),ShowInTaskbar=false};app.MainWindow=owner;owner.Show();Pump();
+        var selectedTransition=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_TRANSITION");
+        Require(string.IsNullOrEmpty(selectedTransition)||selectedTransition is "A-to-B" or "reopen-A","未知跨文档场景筛选");
+        var transitions=string.IsNullOrEmpty(selectedTransition)?new[]{"A-to-B","reopen-A"}:new[]{selectedTransition!};
+        var selectedKinds=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_KINDS");
+        var allKinds=new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
+        var kinds=string.IsNullOrEmpty(selectedKinds)?allKinds:selectedKinds.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries);
+        Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(allKinds.Contains),"未知或重复跨文档控件筛选");
+        var reports=new List<object>();var unexpected=new List<string>();var expectDelete=false;var imageChainVerified=false;
+        void Trace(string text){var line=DateTime.UtcNow.ToString("O")+" "+text;Console.WriteLine(line);File.AppendAllText(Path.Combine(directory,"progress.log"),line+Environment.NewLine);}
+        var dialogs=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(50)};
+        dialogs.Tick+=(_,_)=>{foreach(var dialog in app.Windows.OfType<Window>().Where(w=>w.IsVisible&&w.GetType().Name.Contains("MessageDialog")).ToArray())
+            {if(expectDelete&&dialog.Title=="确认删除"&&dialog.FindName("YesButton") is Button yes){yes.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));continue;}
+             unexpected.Add(string.Join(" | ",CrossVisuals(dialog).OfType<TextBlock>().Select(t=>t.Text)));dialog.Close();}};dialogs.Start();
+        string Field(string name)=>BlobParameterDefinition.Instance.SettingsFieldId(name);
+        var low=Field("Threshold");var count=Field("BlobCountLimit");
+        string Stamp(RuntimeToolConfiguration config)
+        {
+            var identity=(string)typeof(RuntimeToolConfiguration).GetProperty("ConfigurationIdentity",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(config)!;
+            var values=config.SettingsSchema.Inputs.Where(p=>p.Type==DataType.Integer||p.Type==DataType.Number)
+                .ToDictionary(p=>p.Id,p=>config.ReadCurrentParameter(p.Id)?.Value,StringComparer.Ordinal);
+            return identity+System.Text.Json.JsonSerializer.Serialize(values);
+        }
+        (SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) Populate()
+        {
+            if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
+            var tab=vm.WorkflowTabViewModel.SelectedTab!;
+            var target=tab.CreateNode(BlobTool.Id);target.Name="同名Blob";target.DebugWindowStyle=SunEyeVision.Plugin.SDK.Core.DebugWindowStyle.Custom;vm.AddNodeToWorkflow(target);
+            var source=tab.CreateNode("ImageLoad");source.Name="同名来源";vm.AddNodeToWorkflow(source);
+            var image=Path.Combine(directory,"input.png");if(!File.Exists(image))
+            {
+                var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,9,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,72).ToArray(),8)));
+                using var stream=File.Create(image);png.Save(stream);
+            }
+            var document=manager.CurrentSolution!;var flow=document.Workflows.Single(f=>f.Nodes.Any(n=>ReferenceEquals(n,target)));
+            var host=manager.Session!.Editing.Host;var imageDraft=host.BeginEdit(flow.Id,source.Id);
+            var policy=ImageSourcePolicy.Read(imageDraft.Node)??throw new Exception("真实图像源草稿无正式策略");policy.FilePaths=new(){image};policy.ForRunPaths=new(){image};policy.CurrentIndex=0;policy.SNInitialValue=1;policy.ApplyTo(imageDraft.Node);host.Commit(imageDraft);
+            var edge=new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=source.Id,TargetNodeId=target.Id};
+            var imagePort=target.RuntimeConfiguration!.Schema.WorkflowImageInputId!;
+            Require(target.RuntimeConfiguration.Fields.Read(imagePort) is UnsetSetting&&target.ParamSettings.Count==0,"真实工厂图像字段不是空正式配置");
+            if(!imageChainVerified)
+            {
+                var initial=Stamp(target.RuntimeConfiguration);var injected=new InvalidOperationException("自动来源回调失败标记");
+                var rollback=new SunEyeVision.UI.Features.WorkflowUI.Commands.AddConnectionCommand(flow.Connections,edge,flow.Nodes,()=>
+                {
+                    typeof(MainWindowViewModel).GetMethod("AutoBindImageSourceOnConnectionAdded",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{edge});
+                    Require(target.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:not null},"失败回调前没有真实自动绑定");throw injected;
+                });
+                try{rollback.Execute(null);throw new Exception("回调异常未传播");}catch(InvalidOperationException error){Require(ReferenceEquals(error,injected),"回滚掩盖原回调异常");}
+                Require(!flow.Connections.Contains(edge)&&Stamp(target.RuntimeConfiguration!)==initial&&target.ParamSettings.Count==0,"回调失败没有完整回滚图/正式字段");
+            }
+            Require(vm.AddConnectionToWorkflow(edge),"真实MainWindow控制连线命令拒绝有效前提");
+            var automatic=target.RuntimeConfiguration!.Fields.Read(imagePort) as ReferenceSetting;
+            Require(automatic is not null&&automatic.OriginId=="connection:"+edge.Id&&automatic.Reference.NodeId==source.Id&&automatic.Reference.ScopeId==flow.Id&&target.ParamSettings.Count==0,"自动图像来源未写入正式字段/连线归属");
+            if(!imageChainVerified)
+            {
+                var accepted=Stamp(target.RuntimeConfiguration!);Require(vm.UndoCommand.CanExecute(null),"真实连线无撤销入口");vm.UndoCommand.Execute(null);Pump();
+                Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&target.RuntimeConfiguration!.Fields.Read(imagePort) is UnsetSetting,"真实连线撤销未恢复空来源");
+                Require(vm.RedoCommand.CanExecute(null),"真实连线无重做入口");vm.RedoCommand.Execute(null);Pump();
+                Require(flow.Connections.Any(e=>e.Id==edge.Id)&&Stamp(target.RuntimeConfiguration!)==accepted,"真实连线重做未恢复来源身份");
+                foreach(var n in flow.Nodes)n.IsSelected=false;foreach(var e in flow.Connections)e.IsSelected=e.Id==edge.Id;
+                expectDelete=true;try{vm.DeleteSelectedNodesCommand.Execute(null);Pump();}finally{expectDelete=false;}
+                Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&target.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:not null} broken&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(broken.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(automatic!.Reference),"断边未保留明确待修复引用");
+                var brokenStamp=Stamp(target.RuntimeConfiguration!);Require(vm.AddConnectionToWorkflow(edge)&&Stamp(target.RuntimeConfiguration!)==brokenStamp,"重新连线静默修复/替换待修复来源");
+                vm.UndoCommand.Execute(null);Pump();Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&Stamp(target.RuntimeConfiguration!)==brokenStamp,"待修复状态重新连线撤销失败");
+                vm.UndoCommand.Execute(null);Pump();Require(Stamp(target.RuntimeConfiguration!)==accepted,"断边撤销未恢复自动归属");
+                vm.RedoCommand.Execute(null);Pump();Require(target.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {RebindingReason:not null},"断边重做未恢复待修复状态");
+                vm.UndoCommand.Execute(null);Pump();Require(Stamp(target.RuntimeConfiguration!)==accepted,"断边二次撤销失败");
+                var fragment=WorkflowFragmentCopy.Prepare(flow,new[]{source.Id,target.Id},flow.Id,_=>null,(node,_)=>new WorkflowNodeBase("copy-"+node.Id,node.Name,node.DispName,node.ToolType));
+                var copied=fragment.Nodes.Single(n=>n.Id=="copy-"+target.Id);var copiedSetting=(ReferenceSetting)copied.RuntimeConfiguration!.Fields.Read(imagePort);
+                Require(copiedSetting.Reference.NodeId=="copy-"+source.Id&&copiedSetting.OriginId=="connection:"+fragment.Connections.Single().Id&&copied.ParamSettings.Count==0,"复制没有映射正式来源/连线身份");
+                host.SynchronizeStructure();var manualNode=tab.CreateNode(BlobTool.Id);manualNode.Name="手动来源保留";vm.AddNodeToWorkflow(manualNode);
+                var manualDraft=host.BeginEdit(flow.Id,manualNode.Id);var manual=new ReferenceSetting(automatic!.Reference);
+                manualDraft.Node.RuntimeConfiguration=manualDraft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{[imagePort]=manual});host.Commit(manualDraft);
+                var manualEdge=new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=source.Id,TargetNodeId=manualNode.Id};
+                Require(vm.AddConnectionToWorkflow(manualEdge)&&manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualKept&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manualKept.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manual.Reference)&&manualNode.ParamSettings.Count==0,"自动连线覆盖手动来源");
+                foreach(var n in flow.Nodes)n.IsSelected=false;foreach(var e in flow.Connections)e.IsSelected=e.Id==manualEdge.Id;
+                expectDelete=true;try{vm.DeleteSelectedNodesCommand.Execute(null);Pump();}finally{expectDelete=false;}
+                Require(manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualAfterDelete&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manualAfterDelete.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manual.Reference),"断边清除了手动来源");
+                imageChainVerified=true;Console.WriteLine("PASS 自动图像真实连线/撤销重做/断边/手动保留/复制/异常回滚");
+            }
+            host.SynchronizeStructure();var vars=host.BeginVariableEdit();
+            var sequence=new GlobalVariable("同名数组",new long[]{100,110,120},"Integer[]");var index=new GlobalVariable("同名索引",1L,"Integer");
+            vars.Configuration.GlobalVariables.Add(sequence);vars.Configuration.GlobalVariables.Add(index);host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),vars);
+            var width=source.RuntimeConfiguration!.Schema.Outputs.First(p=>p.Type==DataType.Integer);
+            var candidate=new DeclaredReferenceCandidate("真实整数来源",source.Id,flow.Id,width,Array.Empty<string>());
+            Require(GlobalProducerBindingRules.TryDescribeTarget(sequence.Type,out var variablePort,out _,out var reason),reason);
+            var draft=host.BeginEdit(flow.Id,target.Id);
+            draft.Node.RuntimeConfiguration=draft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>
+            {
+                [low]=new ReferenceSetting(candidate.Reference(BindingSelection.All)),
+                [count]=new VariableSetting(new VariableReference(document.Id,sequence.Id,variablePort.Type,new BindingSelection.AtConstant(0),variablePort.Storage))
+            });host.Commit(draft);return(target,source.Id,width.Id);
+        }
+        DefaultDebugWindow Open(SunEyeVision.UI.Shared.WorkflowNode node)
+        {
+            vm.OpenDebugWindowCommand.Execute(node);var wait=System.Diagnostics.Stopwatch.StartNew();
+            DefaultDebugWindow? found=null;
+            while(wait.Elapsed<TimeSpan.FromSeconds(8))
+            {
+                Pump();found=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible);
+                if(found?.FindName("ContentHost") is ContentControl{Content:RuntimeNodeConfigurationControl})break;
+                Thread.Sleep(10);
+            }
+            Require(found is not null&&found.FindName("ContentHost") is ContentControl{Content:RuntimeNodeConfigurationControl},"真实MainWindow打开命令未生成配置宿主："+string.Join(" | ",unexpected));
+            found!.UpdateLayout();Pump();return found;
+        }
+        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
+        DeclaredFieldsView Fields(DefaultDebugWindow window)=>CrossVisuals(Control(window)).OfType<DeclaredFieldsView>().Single();
+        object Session(DeclaredFieldAccess field)
+        {
+            var numeric=typeof(DeclaredFieldEditor).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!;
+            var coordinator=numeric.GetType().GetField("_coordinator",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(numeric)!;
+            var box=(ComboBox)coordinator.GetType().GetField("_box",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!;
+            Window.GetWindow(field.View)!.Activate();box.Focus();box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
+            var session=coordinator.GetType().GetField("_reference",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!;
+            Require(!(bool)Property(session,"IsSuspended")!,"真实来源会话仍暂停，不能据此做退役试验");return session;
+        }
+        object? Property(object value,string name)=>value.GetType().GetProperty(name,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(value);
+        void Command(object value,string name,object? argument=null)=>((ICommand)Property(value,name)!).Execute(argument);
+        object[] Nodes(object value,string property)=>Flatten(((System.Collections.IEnumerable)Property(value,property)!).Cast<object>()).ToArray();
+        IEnumerable<object> Flatten(IEnumerable<object> roots)
+        {foreach(var root in roots){yield return root;foreach(var child in Flatten(((System.Collections.IEnumerable)Property(root,"EnumEntrysA")!).Cast<object>()))yield return child;}}
+        object ModuleLeaf(object value,string property,string source,string? excluding=null)=>Nodes(value,property).Single(n=>Property(n,"Candidate") is DeclaredReferenceCandidate c&&c.NodeId==source&&(excluding is null||c.Output.Id!=excluding));
+        AppsPopup Popup(DeclaredFieldAccess field,object session,string path)
+            =>CrossVisuals(field.View).OfType<AppsPopup>().Single(p=>ReferenceEquals(p.DataContext,session)
+                &&p.Name==(path=="IsDropDownOpen"?"rt":"et")&&p.GetBindingExpression(AppsPopup.IsPopupOpenProperty)?.ParentBinding.Path?.Path==path);
+        try
+        {
+            foreach(var transition in transitions)foreach(var kind in kinds)
+            {
+                Trace("BEGIN "+transition+" "+kind);manager.CreateUntitledSolution();Pump();Trace("POPULATE "+kind);var a=Populate();Trace("POPULATED "+kind);var oldDocument=manager.CurrentSolution!;var oldSession=manager.Session!;var oldEditing=oldSession.Editing;
+                var pathA=Path.Combine(directory,transition+"-"+kind+"-A.solution");Require(manager.SaveCurrentDocument(pathA).FileWritten,"原方案保存前提失败");
+                var oldBytes=File.ReadAllBytes(pathA);var formalBefore=Stamp(a.Target.RuntimeConfiguration!);
+                Trace("OPEN "+kind);var oldWindow=Open(a.Target);Trace("OPENED "+kind);var oldControl=Control(oldWindow);var oldContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(oldControl)!;
+                var oldFields=Fields(oldWindow);oldFields.SelectedPageIndex=1;Pump();
+                var oldAccess=oldFields.Fields.Single(f=>f.FieldId==(kind is "index-popup" or "variable-index"?count:low));
+                var session=Session(oldAccess);Command(session,"DropDownCommand");Pump();
+                var oldText=(string)Property(session,"CurValueA")!;
+                object? staleLeaf=null;AppsPopup? stalePopup=null;ReferenceExpansionRequest? staleExpanded=null;Window? staleExpandedWindow=null;
+                VariableSelectionRequest? staleVariable=null;VariableSelectionItem? staleVariableItem=null;VariableSelectionDialog? staleDialog=null;
+                Solution? destination=null;Exception? nestedFailure=null;var switched=false;
+                void Switch()
+                {
+                    Console.WriteLine("SWITCH "+transition+" "+kind);
+                    if(transition=="reopen-A")
+                    {
+                        manager.CloseSolution(saveChanges:false);destination=manager.OpenSolution(pathA);Require(destination is not null,"真实文件重开失败");
+                    }
+                    else destination=manager.CreateUntitledSolution();
+                    switched=true;Pump();Console.WriteLine("SWITCHED "+transition+" "+kind);
+                }
+                if(kind=="source-popup")
+                {
+                    stalePopup=Popup(oldAccess,session,"IsDropDownOpen");stalePopup.Focus();stalePopup.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
+                    staleLeaf=ModuleLeaf(session,"SourceNodes",a.SourceId,a.WidthPort);
+                    Require(stalePopup.IsDropDownOpen&&stalePopup.Template.FindName("PART_Popup",stalePopup) is Popup{IsOpen:true},"原主来源Popup未真实打开");Switch();
+                }
+                else if(kind is "index-popup" or "variable-index")
+                {
+                    oldAccess=oldFields.Fields.Single(f=>f.FieldId==count);session=Session(oldAccess);Command(session,"DropDownCommand");oldText=(string)Property(session,"CurValueA")!;
+                    var text=CrossVisuals(oldAccess.View).OfType<NativeText>().Single(t=>ReferenceEquals(t.DataContext,session));
+                    text.Focus();text.CaretIndex=oldText.LastIndexOf('[')+1;Pump();
+                    Command(session,"FocusedCommand",new SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs{Text=oldText,IsFocus=true,SelectionStart=oldText.LastIndexOf('[')+1});Pump();
+                    if(kind=="index-popup")
+                    {
+                        stalePopup=Popup(oldAccess,session,"IsTextDropDownOpen");staleLeaf=Nodes(session,"IndexNodes").First(n=>Property(n,"Candidate") is DeclaredReferenceCandidate c&&c.NodeId==a.SourceId);
+                        Require(stalePopup.IsDropDownOpen&&stalePopup.Template.FindName("PART_Popup",stalePopup) is Popup{IsOpen:true},"原索引Popup未真实打开");Switch();
+                    }
+                }
+                if(kind=="expanded")
+                {
+                    Command(session,"PopSubscribeWindowCommand");Pump();staleExpandedWindow=oldWindow.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
+                    staleExpanded=(ReferenceExpansionRequest)staleExpandedWindow.DataContext;staleLeaf=ModuleLeaf(staleExpanded,"SourceNodes",a.SourceId,a.WidthPort);
+                    Require(staleExpanded.IsValid,"展开请求不是有效租约");Switch();
+                }
+                if(kind is "variable-source" or "variable-index")
+                {
+                    var isIndex=kind=="variable-index";var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(30)};
+                    timer.Tick+=(_,_)=>
+                    {
+                        var dialog=app.Windows.OfType<VariableSelectionDialog>().SingleOrDefault(w=>w.IsVisible);if(dialog is null)return;timer.Stop();Trace("MODAL_VISIBLE "+kind);
+                        try
+                        {
+                            staleDialog=dialog;staleVariable=(VariableSelectionRequest)session.GetType().GetField("_variableRequest",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(session)!;
+                            Require(staleVariable.IsValid&&staleVariable.IsIndex==isIndex&&ReferenceEquals(dialog.Owner,oldWindow),"真实变量模态/用途/Owner前提不符");
+                            staleVariableItem=staleVariable.Items.First(item=>item.Reference.Type==DataType.Integer);
+                            ((ListView)dialog.FindName("globalVarList")).SelectedItem=staleVariableItem;Switch();
+                        }
+                        catch(Exception error){nestedFailure=error;dialog.Close();}
+                    };
+                    timer.Start();Trace("MODAL_COMMAND "+kind);try{Command(session,isIndex?"IndexClickCommand":"ClickCommand",Nodes(session,isIndex?"IndexNodes":"SourceNodes").Single(n=>(bool)Property(n,"VariableManager")!));}
+                    finally{timer.Stop();}
+                    if(nestedFailure is not null)throw new Exception("模态中的真实方案切换失败",nestedFailure);
+                }
+                Require(switched&&destination is not null&&!ReferenceEquals(manager.Session,oldSession)&&!ReferenceEquals(manager.Session!.Editing,oldEditing)
+                    &&manager.Session.Editing.SessionId!=oldEditing.SessionId&&oldEditing.RegisteredScopeCount==0&&!oldContext.IsActive&&!oldWindow.IsVisible,"换方案未退役旧真实编辑器/DocumentSession");
+                Require(stalePopup is null||!stalePopup.IsDropDownOpen&&stalePopup.Template.FindName("PART_Popup",stalePopup) is not Popup{IsOpen:true},"换方案遗留真实原Popup");
+                Require(staleExpanded is null||!staleExpanded.IsValid&&staleExpandedWindow?.IsVisible!=true,"换方案遗留有效展开窗");
+                Require(staleVariable is null||!staleVariable.IsValid&&staleDialog?.IsVisible!=true,"换方案遗留有效变量模态");
+                Require(oldBytes.SequenceEqual(File.ReadAllBytes(pathA)),"方案切换/取消擅自写旧文件");
+                var b=transition=="reopen-A"?(Target:(SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(n=>n.Id==a.Target.Id),SourceId:a.SourceId,WidthPort:a.WidthPort):Populate();
+                Require(transition!="reopen-A"||destination!.Id==oldDocument.Id&&b.Target.Id==a.Target.Id,"同ID新会话的真实重开前提不成立");
+                var loadedImage=(ReferenceSetting)b.Target.RuntimeConfiguration!.Fields.Read(b.Target.RuntimeConfiguration.Schema.WorkflowImageInputId!);
+                Require(loadedImage.Reference.NodeId==b.SourceId&&loadedImage.Reference.ScopeId==vm.WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId&&loadedImage.OriginId is not null&&destination!.Workflows.SelectMany(w=>w.Connections).Any(e=>loadedImage.OriginId=="connection:"+e.Id&&e.SourceNodeId==b.SourceId&&e.TargetNodeId==b.Target.Id)&&b.Target.ParamSettings.Count==0,"保存重开/新方案没有保持正式图像来源及真实连线归属");
+                var pathB=transition=="reopen-A"?pathA:Path.Combine(directory,kind+"-B.solution");Require(manager.SaveCurrentDocument(pathB).FileWritten,"目标方案保存前提失败");
+                var nextWindow=Open(b.Target);var nextControl=Control(nextWindow);var nextContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(nextControl)!;
+                var nextFields=Fields(nextWindow);nextFields.SelectedPageIndex=1;Pump();
+                var nextLow=nextFields.Fields.Single(f=>f.FieldId==low);var nextSession=Session(nextLow);Command(nextSession,"PopSubscribeWindowCommand");Pump();
+                var nextExpandedWindow=nextWindow.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
+                var nextExpanded=(ReferenceExpansionRequest)nextExpandedWindow.DataContext;Require(nextExpanded.IsValid,"目标方案无有效展开前提");
+                var nextDraft=Stamp(nextContext.DraftNode.RuntimeConfiguration!);var nextFormal=Stamp(b.Target.RuntimeConfiguration!);var history=manager.Session!.History.Position;
+                var version=manager.Session.Editing.Host.Capture().Version;var registered=manager.Session.Editing.RegisteredScopeCount;Require(registered>0,"新方案真实编辑范围未登记");var saved=File.ReadAllBytes(pathB);var savedOld=File.ReadAllBytes(pathA);var pending=nextControl.HasPendingEdits;var invalid=nextFields.HasInvalidActiveFields;
+                if(staleLeaf is not null)
+                {
+                    Command(session,kind=="index-popup"?"IndexClickCommand":"ClickCommand",staleLeaf);
+                    staleExpanded?.ClickCommand.Execute(staleLeaf);staleExpanded?.IndexClickCommand.Execute(staleLeaf);
+                }
+                session.GetType().GetProperty("CurValueA")!.SetValue(session,oldText.Replace("[0]","[2]",StringComparison.Ordinal));
+                Command(session,"DropDownCommand");session.GetType().GetMethod("TryCommitPending")!.Invoke(session,null);
+                Require(!oldAccess.TrySetConstant(222L),"旧字段访问仍可接纳常量");
+                staleExpanded?.RefreshCommand.Execute(null);staleExpanded?.Dispose();
+                if(staleVariable is not null)
+                {
+                    Require(!staleVariable.TrySelect(staleVariableItem!),"迟到变量请求仍可接纳");
+                    staleDialog!.GetType().GetMethod("ConfirmSelection",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(staleDialog,null);staleVariable.Dispose();
+                }
+                Pump();
+                Require(nextContext.IsValid&&nextExpanded.IsValid&&nextExpandedWindow.IsVisible&&nextWindow.IsVisible,"旧关闭/回调破坏新会话窗口或租约");
+                Require(nextDraft==Stamp(nextContext.DraftNode.RuntimeConfiguration!)&&nextFormal==Stamp(b.Target.RuntimeConfiguration!)
+                    &&formalBefore==Stamp(a.Target.RuntimeConfiguration!)&&history==manager.Session.History.Position&&version==manager.Session.Editing.Host.Capture().Version
+                    &&registered==manager.Session.Editing.RegisteredScopeCount&&pending==nextControl.HasPendingEdits&&invalid==nextFields.HasInvalidActiveFields&&saved.SequenceEqual(File.ReadAllBytes(pathB))&&savedOld.SequenceEqual(File.ReadAllBytes(pathA)),
+                    "旧来源/索引/模态/文本迟到回调改变草稿、正式、版本、历史、状态或磁盘");
+                Require(unexpected.Count==0,"出现意外产品提示："+string.Join(" | ",unexpected));
+                reports.Add(new{transition,kind,oldDocumentId=oldDocument.Id,newDocumentId=destination!.Id,oldEditing=oldEditing.SessionId,newEditing=manager.Session.Editing.SessionId,
+                    oldNodeId=a.Target.Id,newNodeId=b.Target.Id,realWindowOwnerRecreated=!ReferenceEquals(oldWindow,nextWindow),passed=true,fullFunctionalAcceptance=false});
+                Console.WriteLine("通过：真实MainWindow "+transition+" "+kind+" 退役，迟到动作不改新草稿/正式/历史/磁盘且不关闭新展开窗");
+                manager.CloseSolution(saveChanges:false);Pump();
+            }
+            Require(reports.Count==transitions.Length*kinds.Length,"新增跨方案场景未全部执行");return 0;
+        }
+        catch(Exception failure){Console.Error.WriteLine("B08跨文档首个失败："+failure);throw;}
+        finally
+        {
+            dialogs.Stop();manager.CloseSolution(saveChanges:false);Pump();
+            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"b08-cross-document-report.json"),
+                System.Text.Json.JsonSerializer.Serialize(new{scope="B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        }
+    }
+    private static IEnumerable<DependencyObject> CrossVisuals(DependencyObject root)
+    {
+        var seen=new HashSet<DependencyObject>();var stack=new Stack<DependencyObject>();stack.Push(root);
+        while(stack.Count>0)
+        {
+            var node=stack.Pop();if(!seen.Add(node))continue;yield return node;
+            foreach(var value in LogicalTreeHelper.GetChildren(node))if(value is DependencyObject logical)stack.Push(logical);
+            if(node is Popup{Child:{} popup})stack.Push(popup);
+            if(node is Visual)for(var i=0;i<VisualTreeHelper.GetChildrenCount(node);i++)stack.Push(VisualTreeHelper.GetChild(node,i));
+        }
     }
     private static void VerifyBlobPage(System.Xml.Linq.XDocument xml,FieldSettings initial)
     {

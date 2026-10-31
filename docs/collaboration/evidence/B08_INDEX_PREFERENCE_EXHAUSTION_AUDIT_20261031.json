@@ -1,0 +1,240 @@
+{
+  "task": "B08多值索引与订阅窗偏好：取证穷尽资格审计",
+  "baseline": "9a4a0b294170d8f5a2b4021d15dda4d5977fdde4",
+  "scope": "只读既有报告/反编译/原汇编；未运行SDK、GUI、目标DLL或新原生分析工具，未改产品/共享合同",
+  "summary": {
+    "auditedTopics": 9,
+    "qualifiedExhaustedUnknowns": 0,
+    "newAssumptionsProposed": [],
+    "decision": "两组均仍有明确源码/机器码目标；当前没有满足Windows静态穷尽门槛的具体条目，不新增自研假设。缺运行授权或独立机器不是静态穷尽。"
+  },
+  "items": [
+    {
+      "id": "I01",
+      "topic": "空括号及无括号的普通来源提交",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "托管普通解析分支非空来源无索引或[]提交ALL；空字符串是解绑，不可混同。",
+      "nextStaticFrontier": "SetModuleParamBindOperation→VmParamSubManager→ModuleManager→IMVS_SetModuleParamBinding→ModuleFrame导入结构逐字段校验。",
+      "missingToClaimExhausted": "未有全部入口、原生内部tag映射及所有来源类型的完整ABI闭合。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "I02",
+      "topic": "固定索引基数与ALL整数消费",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "现成1800bca20.asm中输入tag0/1返回0，tag2返回[RDX+4]；现成1800f5f40.asm以index>=0、index<count检查后从[data+index*4+8]读取Int32。托管enum INVALID/ALL/CONSTANT/VARIABLE按声明为0/1/2/3。",
+      "nextStaticFrontier": "180145410→1800bd110/转换helper核公开indexType到内部tag与索引数值；1800bb4d0→1800bca20→1800ca500→1800f5f40核寄存器/返回及源类型3数据对象。",
+      "missingToClaimExhausted": "不能只把数值tag相同当ABI已证；旧c反编译将bca20误识别void，原汇编尚可复核，故绝不算穷尽。只可记该正常Int32读分支零基寻址，不外推全域。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "I03",
+      "topic": "动态索引来源为多项整数",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "bca20输入tag3的已见分支以R9D=0调用ca500，成功读取局部整数；该读取体未以count==1限制。只是具体分支指令，不是已闭合UI到后端行为。",
+      "nextStaticFrontier": "联合bca20/ca500/f5f40原汇编闭合返回/失败回退/管理器选择及普通变量记录对应关系；已由主线转逆向负责人独立核ABI，避免本线重复深入。",
+      "missingToClaimExhausted": "未闭合动态来源标量/数组构造到该对象布局，尚不可断言所有动态索引源取首项或当前严格单项等价VM。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "I04",
+      "topic": "float目标、其他来源与失败策略",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "旧报告仅证明GetBindingInt特定分支及单值[0]成功；99样本报错及旧值保留不等于所有越界统一错误。",
+      "nextStaticFrontier": "1800b9c70类型分派、对应浮点读取分支与来源种类分支；1800f5f40的空/负/越界路径；Blob正常setter1800bc680→1800bc8a0→180043120。",
+      "missingToClaimExhausted": "没有覆盖矩阵证明各类型、每失败分支和旧缓存/已写前缀的最终外层状态，不能用一次错误码统一解释。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "I05",
+      "topic": "多值绑定保存与重开",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "GetModuleParamBinding仅按已存indexType重建显示；单条[0]原样本已保存重开；Export/Import树与数组循环已部分静态恢复。",
+      "nextStaticFrontier": "ModuleFrame 1800bf230/1800bf800/1800bd110；继续核记录结构、调用者、过滤及重载失败外层清理。",
+      "missingToClaimExhausted": "未有多值场景原生文件字节/结构到消费的完整对应；存在明确函数体，不是Windows无法确认。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "P01",
+      "topic": "偏好归属与默认/错误缓存",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "VmSolution显式属性从方案UserData[IsSubscribeInWindow]读写；缺省正常读false并缓存，读异常可能重试；写先改缓存再SDK且吞写异常。当前Owner内存策略与此静态方案作用域并不等价。",
+      "nextStaticFrontier": "VmSolution.cs:841及UserData.cs→ModuleManager.SetUIParamValue/GetUIParamValueByKey→NativeMethods→iMVS-6000PlatformSDK.dll对应导出。",
+      "missingToClaimExhausted": "尚未检查完整原生存储、原件写入失败与后续保存关系；源码和导出均明确，不能登记穷尽。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "P02",
+      "topic": "方案保存/另存/新实例偏好恢复",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "三个未设置偏好的既有ZIP样本未命中ASCII键，只是有限负搜；不能证明未保存。",
+      "nextStaticFrontier": "IMVS_Set/GetUIParamValue导出后端、方案UI数据序列化和Load/SaveAs调用者；保留ID70000/key/bytes完整数据流。",
+      "missingToClaimExhausted": "没有全格式/编码/调用者覆盖，尚未追到具体序列化函数，不具备静态穷尽依据。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "P03",
+      "topic": "偏好UndoRedo与Dirty",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "UserData的特定对象分支RecordSingleData后可选Ioc<IUnRedoService>.Register；UserDataUnRedoOperation明确把Undo/Redo转交委托，但不证明实际服务与入栈。",
+      "nextStaticFrontier": "VMControls.Interface.IUnRedoService实现与Ioc注册/调用者；UserData_Redo/Undo、RootOperation、UI Undo命令及Dirty发布。",
+      "missingToClaimExhausted": "本轮文件名检索未定位完整服务实现，不是程序集类型/xref穷尽；已有委托与接口仍可追。",
+      "newSelfResearchAssumptionEligible": false
+    },
+    {
+      "id": "P04",
+      "topic": "开窗条件/共享/关闭与偏好关系",
+      "status": "未穷尽，有具体静态追踪目标",
+      "known": "Params/Comprehensive宿主仅BaseWindow或非SDK条件下读方案偏好；根HasSubscribeInWindow与每宿主curSubWindow为已证静态门槛。已读Closed不直接写方案UserData，不排除间接写。",
+      "nextStaticFrontier": "ButtonSelecter命令、AlgorithmTabRoot/SubAlgorithmTabRoot setter与Dispose、两个宿主Loaded/Closed及窗口内部所有写者。",
+      "missingToClaimExhausted": "尚未有全写者和间接事件图；同根/不同根的运行竞态、关闭重开与全局互斥仍不能由局部代码决定。",
+      "newSelfResearchAssumptionEligible": false
+    }
+  ],
+  "currentPoliciesNotVmFacts": [
+    {
+      "policy": "当前来源数量/索引严格合同",
+      "status": "既有本方合同，不是本次获准的新自研假设，也不是VM事实",
+      "current": "ALL序列到标量要求ExactlyOne；固定索引零基且无越界回退；AtField要求编译后Int64标量；AtVariable仅整数标量All。",
+      "replacementLocations": [
+        "src/Plugin.Runtime/ParameterBindingService.cs:CompileReference/ResolveValue/ReadReference",
+        "src/Plugin.Contracts/BindingPlans.cs:BindingSelection",
+        "src/Plugin.Runtime/BindingReferenceSerializer.cs",
+        "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession相关索引消费者",
+        "src/Workflow/RuntimeInputBindings.cs及冻结/调试/历史保存消费者"
+      ],
+      "trigger": "同版本ABI完整静态链或受控运行证据证明某具体当前合同不符后，主线按完整链统一设计更改；不只修下拉，不静默保留双套语义。"
+    },
+    {
+      "policy": "当前Owner窗口内存展开偏好",
+      "status": "既有本方策略；方案UserData静态作用域已有证据，不能标成VM等价或以未知为由固化",
+      "current": "ReferenceExpansionCoordinator.Owners弱表保存OwnerScope.Preference，未挂到方案持久存储；请求/窗口生存期与偏好持久化是不同职责。",
+      "replacementLocations": [
+        "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs:OwnerScope.Preference/Preference()",
+        "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs:ReferenceExpansionPreference",
+        "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml:PreferExpanded绑定",
+        "正式宿主到方案会话的偏好注入及持久化消费者（共享接口须主线先设计，不在本线造接口）"
+      ],
+      "trigger": "先按已证方案作用域与现有Owner窗口寿命分责设计；原保存/Undo/多根条件待对应链闭合，保留正确Owner退役与请求代际，不将方案偏好误做全局窗口互斥。"
+    }
+  ],
+  "environmentAudit": {
+    "windowsStaticEvidence": "既有图像源平台派发报告证实Windows上直接Java启动Ghidra、打开只读已分析工程成功；批处理找不到路径与中文URI日志不等于引擎不可用。",
+    "currentToolProbe": "本轮Get-Command未给出java/rea/ilspycmd等PATH条目，只是PATH探测，未做引擎不可用推断或安装修复。REA工具存在不等于provider已就绪。",
+    "alternativeEnvironment": "V2报告当时无独立测试机；当前可用替代环境没有完整清点证据，不虚称已有可用，也不据此断言所有替代环境不存在。",
+    "runtimeCandidate": "三元素V2仅编译准备，未运行；含CircleFind/脚本/共享清理的旧fixture不能直接执行。历史独占窗口已结束，不恢复授权。"
+  },
+  "exhaustionGate": [
+    "需同版本原件身份、静态入口/分支/间接调用前沿及未处理原因的可复核记录",
+    "需记录现有Windows工具失败的具体能力缺口与已尝试安全替代路径；启动脚本失败不等于静态失败",
+    "仍有明确函数/调用者/格式可追即不得写穷尽；单次字符串负搜/单值样本/反编译签名错误均不够",
+    "对确已穷尽的具体点才可提出假设、消费者/替换位置与验证触发；本批符合条目为0"
+  ],
+  "artifactIdentity": {
+    "ModuleFrameDllSha256ReportedByPriorAudits": "45C57BC46F72FD1F9E0B3A6F9183FF974D14590CFD05ECF4E9FA97A4FF95AE9B",
+    "mode": "二进制身份复用既有报告；本线重新散列以下原始报告/汇编，不把未重新定位安装文件当全文件搜索结论。",
+    "files": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08数值引用索引语义与补证方案-20261031.md",
+        "exists": true,
+        "sha256": "6ff23602f657fc1441a8a9e123b0b87347d27a1e4f5485cad4b7ade84f0ef628"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08订阅窗口偏好持久化与宿主边界-20261031.md",
+        "exists": true,
+        "sha256": "b30e3c5e1070393c5bc61a35f0ef21f014184312dd7d1d9272c8267d770cd9a7"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-Blob索引后端补证边界-20261030.md",
+        "exists": true,
+        "sha256": "61e71873e5994c40d3fde855501b804b075cddee0c967b9f82a89d611ec8fcca"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08执行订阅注入边界-20261030.md",
+        "exists": true,
+        "sha256": "ea9a7c142091e992528914a93d65d20a42e828a384b6a5557a1ed0a82a9cb7d4"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08三元素索引探针V2与离线前置审计-20261031.md",
+        "exists": true,
+        "sha256": "13975c1f6adf1712565071982f6dcf1f3c17db3fe1c02f64f9c7ddc551b726f8"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08绑定序列化及重载顺序-20261031.md",
+        "exists": true,
+        "sha256": "3419634eca07da505e7beb99d6b2095e5ad65b5e9f98026ddc50493153798ece"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\图像源平台派发与订阅存档有界核查-20261031.md",
+        "exists": true,
+        "sha256": "10c8e725aaee397bcf10cdda12ea818d628fd81a7ae434584afc366383de6717"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\global-variable-followup\\frame-consumer\\output\\1800bca20.c",
+        "exists": true,
+        "sha256": "2148edbb584bc887f10aa167bb4d159089501dadc5e8e9f5eefc3de7bedd7fdd"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\global-variable-followup\\frame-consumer\\output\\1800bca20.asm.txt",
+        "exists": true,
+        "sha256": "d6cf4a46f578eebcd4ae74536bd01552753174dfcbae30d8f7cc1afa5f5558fe"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\global-variable-followup\\frame-param-binding-index-consumers\\output\\1800f5f40.c",
+        "exists": true,
+        "sha256": "305662b1fd8acab7ca7f5294155331ff864d14cf04a3a4ee16edba0fa02d5db6"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\global-variable-followup\\frame-param-binding-index-consumers\\output\\1800f5f40.asm.txt",
+        "exists": true,
+        "sha256": "340241f8120d7dd619f207c7a6715b2ab8bcddac1b1436336933854f7bab6473"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-execution-inject-20261030\\module-binding\\0x1800bb4d0-1800bb4d0.asm.txt",
+        "exists": true,
+        "sha256": "9526b965a712518fa76dc2b343660ccc03f2c98e7f7eff75a3b9c2e589d7d9e7"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-execution-inject-20261030\\module-sink\\0x1800ca500-1800ca500.asm.txt",
+        "exists": true,
+        "sha256": "570d452f9c4c8e927124a3a15802e7a4a086488312941821622008476802a58a"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\UserData.cs",
+        "exists": true,
+        "sha256": "8b5099c298b336a6576f9c6ff0c02090ec48c5e4e06b3127d8129dc4c1a79394"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmSolution.cs",
+        "exists": true,
+        "sha256": "c141e2c53913b233b768782d6757fae5997ecaf638b35db2ddf98f5ef951a13e"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\UserDataUnRedoOperation.cs",
+        "exists": true,
+        "sha256": "c54856e8836ad2a4558a44b15693e12f47c5afb0380121303c0e079aca99908a"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\SetModuleParamBindOperation.cs",
+        "exists": true,
+        "sha256": "d77bb91862138a680729e5dd18e14f7a5564e7d52f4a65ae394e9cc74460e9e4"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ImvsSdkDefine.cs",
+        "exists": true,
+        "sha256": "b0641283e9e7ef4afac7270d43508f37fbba8d56d47bb49f49c332407fede717"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\ModuleManager.cs",
+        "exists": true,
+        "sha256": "783a45b1518f713223eca2b5e59291be973552c3e08fef0ea0d4bfccc2fbd922"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PlatformSDKCS.Audit\\VM.PlatformSDKCS\\NativeMethods.cs",
+        "exists": true,
+        "sha256": "6a60f612fb385987ff96d6973844a256402f097d1eb371e7ad462c44e57127d0"
+      }
+    ]
+  },
+  "handoff": "主线已将具体Int32汇编链交逆向负责人独立核ABI；本线不重复深入，清单供主线纳入原方案。B08整体未完成。"
+}

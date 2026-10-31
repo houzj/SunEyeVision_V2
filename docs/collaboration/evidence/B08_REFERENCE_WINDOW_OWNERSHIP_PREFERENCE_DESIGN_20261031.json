@@ -36,7 +36,7 @@
   "originalPersistenceBoundary": {
     "path": "默认Checkbox→Solution.(IVmSolution.IsSubscribeInWindow)→VmSolution.UserData[key]→UserData.Set/GetUIParamValue→ModuleManager→IMVS_SetUIParamValue / IMVS_GetUIParamValueByKey；VmSolution.Save/SaveAs另走BaseSave/BaseSaveAs→原SDK保存方案",
     "fact": "UserData不是仅普通Dictionary：真实读写到SDK；重置VmSolution缓存后代码会从SDK重读。UserData普通setter可能按Parent全局/动态标志及Undo服务记录，不能概括所有UI偏好均不进原历史。",
-    "notFact": "未有该偏好key的原机保存重开结果；从SDK setter与Save入口都存在，不能推出此键必存/保存时机/Dirty/Undo；原getter/setter吞异常也不证明成功",
+    "notFact": "最终只读报告已证缓存先改/写失败可吞、Undo仅条件静态可达、三个未设置偏好的sol未命中ASCII键；均不能证明实际保存、保存时机、Dirty或重开false。仍不新增格式/持久化策略。",
     "decision": "保持未证；此批不新定正式文件字段/键、撤销策略或兼容原UserData格式"
   },
   "creationAndCloseMatrix": [
@@ -207,6 +207,28 @@
     {
       "path": "D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs",
       "sha256": "62D56EDC0FC4DC5CEFA83DB1415FBF76295E1BB2B04DC5C0B492E287E7F5C95E"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+      "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7"
     }
-  ]
+  ],
+  "finalReverseBoundary": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "readFrom": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7",
+    "review": "已全文读取和核SHA；复用逆向负责人只读原件/既有ZIP报告，不新启SDK，不重复反编译",
+    "facts": [
+      "getter正常缺省或bool解析失败得到false缓存；读取抛异常时nullable缓存可仍null，下次可重试",
+      "setter先更新缓存和通知，再写UserData，写异常被吞；UI显示新值不证明SDK写成功",
+      "UserData静态存在条件Undo登记路径，不证明服务存在、实际入栈或Dirty",
+      "ParamsConfigControlBase与ComprehensiveConfigControlBase仅在BaseWindow或非SDK条件读方案默认，SubAlgorithmTabRoot委托Root；相同Root共享Has门槛，不同Root各有状态，不推运行互斥",
+      "attempt03三个sol ZIP全部解压条目未命中ASCII键，但未设置偏好且可能其他编码/结构；不证明未存、不证明重开false"
+    ],
+    "unknown": [
+      "具体键SaveAs/保存/新实例重开原字节和UI值",
+      "Dirty/Undo/Redo/取消及失败边界",
+      "同根/异根多宿主的实际窗口及关闭生命周期"
+    ]
+  }
 }

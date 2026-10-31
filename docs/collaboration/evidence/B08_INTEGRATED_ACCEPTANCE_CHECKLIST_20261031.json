@@ -522,7 +522,8 @@
     "本方能直接完成部分在同一正式产物验证；原机结论有原始结构/源码图像日志SHA和明确样本范围",
     "偏好合同、尺寸策略及所有实际消费者完整接入，没有假Target/假模型/双轨入口",
     "六类正向依赖若未满足则如实blocked且整体fullFunctionalAcceptance=false，不报B08/S2完整结束",
-    "VS及用户人工结果、未做范围/后续依赖和原主文档一次性更新完成"
+    "VS及用户人工结果、未做范围/后续依赖和原主文档一次性更新完成",
+    "偏好报告中的UI缓存、SDK写入、静态Undo、文件条目未命中、保存重开各层独立，不互相替代证明。"
   ],
   "executionPolicy": "本JSON是可执行清单及oracle，不是运行回执；本轮未构建、未跑GUI/SDK。$ValidationPowerShell由操作者现有本机配置提供，Formal命令必须workdir主仓；候选在已有独立worktree用-ValidationScope Candidate，先同步相应runner提交。索引/偏好原机recipe不可由本线直接执行。",
   "identities": [
@@ -549,6 +550,58 @@
     {
       "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
       "sha256": "6FF23602F657FC1441A8A9E123B0B87347D27A1E4F5485CAD4B7ADE84F0EF628"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+      "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7"
+    }
+  ],
+  "preferenceFinalReport": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "readFrom": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7",
+    "review": "已全文读取和核SHA；复用逆向负责人只读原件/既有ZIP报告，不新启SDK，不重复反编译",
+    "facts": [
+      "getter正常缺省或bool解析失败得到false缓存；读取抛异常时nullable缓存可仍null，下次可重试",
+      "setter先更新缓存和通知，再写UserData，写异常被吞；UI显示新值不证明SDK写成功",
+      "UserData静态存在条件Undo登记路径，不证明服务存在、实际入栈或Dirty",
+      "ParamsConfigControlBase与ComprehensiveConfigControlBase仅在BaseWindow或非SDK条件读方案默认，SubAlgorithmTabRoot委托Root；相同Root共享Has门槛，不同Root各有状态，不推运行互斥",
+      "attempt03三个sol ZIP全部解压条目未命中ASCII键，但未设置偏好且可能其他编码/结构；不证明未存、不证明重开false"
+    ],
+    "unknown": [
+      "具体键SaveAs/保存/新实例重开原字节和UI值",
+      "Dirty/Undo/Redo/取消及失败边界",
+      "同根/异根多宿主的实际窗口及关闭生命周期"
+    ]
+  },
+  "implementationBatches": [
+    {
+      "id": "B0",
+      "class": "可立即进行的本方准备/验收，不冒称新增开发",
+      "inputs": "已固定正式数值/身份/数量/异常合同及原资源",
+      "scope": "复用24项清单和现有回执准备具体fixtures/命令、源码资源映射/跨文档案例、VS/人工时段；面积尺寸线继续量测与原宽证据复核。未改代码不重跑已过轨。",
+      "productPatch": "本次没有新确认且可无合同独立修复的产品缺口；不为清单制造改动或把准备算实施完成"
+    },
+    {
+      "id": "B1",
+      "class": "本方可实施，但等主线一次冻结完整设计",
+      "inputs": "主线确定尺寸可读性策略及文档展示owner/空Target/默认与当前状态责任",
+      "scope": "语言240/320、面积可读性、文档scope/创建前偏好与当前窗目标，同原模板/全部生产消费者/设计数据/关闭清理按唯一写者成片接入。",
+      "boundary": "语言宽度有独立证据却按主线要求不先提交；不需要原厂索引后端才能保持现有严格数量合同，但偏好持久/历史方案不得绕B2"
+    },
+    {
+      "id": "B2",
+      "class": "依赖原机证据与共享合同，不可立即改产品",
+      "inputs": "索引最终报告Q1/Q2、偏好最终报告P1/P2/P3；新的独占/共享清理隔离由主线另行确认",
+      "scope": "确认多值ALL/固定/动态实际消费及偏好具体SaveAs/Dirty/Undo/多宿主；随后主线决定是否/如何正式存储、document session和callback代次/API。",
+      "boundary": "不启SDK、不因一般AdditionalData路径或UI缓存变化推持久化，不制造多项/范围功能或新格式字段"
+    },
+    {
+      "id": "B3",
+      "class": "已有明确外部组合依赖，保留原完整出口",
+      "inputs": "主线另行统一ROI/结果组合真实owner接入顺序及完整单元边界",
+      "scope": "解除确已具备真实功能的保护后，一次补六类真实窗正向（完整清单原样保留）；前提不具备继续阻断。",
+      "boundary": "当前不切下一控件，不整体禁正式ROI来源，不为B08局部过测绕过全窗保护；fullFunctionalAcceptance仍false"
     }
   ]
 }

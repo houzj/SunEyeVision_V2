@@ -1,0 +1,50 @@
+{
+  "status": "样例缺陷已修复并正式自测，Blob生产显示组合未闭口",
+  "builds": [
+    "正式UI Release：0错误，6525警告",
+    "正式全量Release：0错误，6527警告"
+  ],
+  "tests": [
+    "独立原显示样例2组",
+    "样式筛选8组（与样例有交叠）",
+    "原文字实际绘字1组",
+    "独立设计组装290组"
+  ],
+  "loadedRecords": 24,
+  "loadedMismatch": 0,
+  "payloadSha256": "339CA92269FAD82078467773D4E3C83AA7917C18D87BC3EF29EA1E6D99044580",
+  "unit": "图形显示样例分层更新",
+  "limits": [
+    "此为设计样例及公共原控件验证，不表示Blob图形/文本正式配置、保存和结果层已接入",
+    "原C11–C13完整Blob生产链未闭口；系统指针、实际VS、其他DPI、用户人工未验",
+    "FieldEditing attempt-150属于此前18f981c8正式产物，颜色/文本字段通过，不能混称本次c4e同版"
+  ],
+  "sourceCommit": "c4e04f0f5f8386529cf60eb3b65e92d48e4b28c9",
+  "buildId": "development-ccad8951d246498ea33892a1ef4c094a",
+  "date": "2026-10-31",
+  "fix": "样例内图文层分别保存已发布proof，并在几何发布后核全局重入代次；不修改生产NativeResultViewport严格校验。",
+  "receipts": [
+    {
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-383/receipt.json",
+      "sha256": "32E46834C8619312BA2059C960A9BDE4F4B0C8CE3F768ABE45477C666118C809",
+      "track": "WindowPresentation/attempt-383"
+    },
+    {
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-384/receipt.json",
+      "sha256": "DA3D9805B61EB623CD7098B5896FCC7593EF140A6F8FA49C2D615788CE8D165C",
+      "track": "WindowPresentation/attempt-384"
+    },
+    {
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-385/receipt.json",
+      "sha256": "7B45401C7DFEEC612A623FF95D3A8E410FE7A7A48AAC0EA25ABCBFDC405CC4C0",
+      "track": "WindowPresentation/attempt-385"
+    },
+    {
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-151/receipt.json",
+      "sha256": "C24D15F9CF26516F66A4B8312141C165DC0CEA192E21BB4C5DA81A6C328B6BF6",
+      "track": "DesignTime/attempt-151"
+    }
+  ],
+  "cause": "NativeDisplaySample几何层与文本层共享修订proof，样式更新时旧文本proof失效触发跨层清理，导致几何新发布被拒。",
+  "history": "正式WindowPresentation attempt-382保留原样例失败；候选诊断与失败见DISPLAY_SAMPLE_LAYER_PROOF_CANDIDATE_20261031.json。"
+}

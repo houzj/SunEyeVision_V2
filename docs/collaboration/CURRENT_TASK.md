@@ -1,3 +1,32 @@
+## 2026-10-31 用户要求图像源与Blob共用工具框架
+
+- 已与工作流独立线核对：两工具共用ToolSchema/Port/TypeRef、IToolDefinition/Session、OutputReference根端口+成员路径、DeclaredOutputSnapshot及资源租约；显示声明只命名真实成员，结果树/主视口/下游绑定读取同一声明与同次结果，不按工具ID特判。Blob和图像源参数、算法及输出内容各自声明。
+- 图像源组合输出试验仍有13项失败；ResultImagePane已支持成员投影，但自动图像绑定、OriginId校验、根流程/主视口目录等仍有顶层限制，须按完整消费者链修复。工作流线在独立worktree继续；其WorkflowBindingContext图像归属方法与本线数值Settings编译方法分别修改，固定提交后逐方法整合，不互相覆盖或强制日常停工。已提醒保留2b1cf539 Runtime字段自动绑定修复，不退回SDK ParamSettings。
+- 本线整数策略仍为通用字段显式合同，不得以Blob ID在公共层特判；订阅窗生命周期保持Plugin.Wpf与UI宿主边界。当前各线候选尚未集成，正式Release仍为build-012/4b61bbbd。
+## 2026-10-31 浮点目标映射纠正
+
+- 新报告 B08_ORIGINAL_FLOAT_TARGET_PARSE_20261031.md 已核 `%f`→`atof` 写入的四个具体目标为 BlobAreaLimitLow/High 和 BlobTotalAreaLimitLow/High（面积判定），不能将其直接等同当前 FilterCircularity/Rectangularity 四个筛选字段；此前泛称“四个浮点字段”不得作为映射证据。
+- ModuleFrame 类型2/来源类型3复用索引解析、float32读取和文本写入为限定静态链；目标setter仅上述面积判定四项已核。区域设置、特殊值与其他字段仍有具体可追路径，不冒称原机等价。
+## 2026-10-31 原厂浮点引用分支补证
+
+- 已归档 B08_ORIGINAL_FLOAT_REFERENCE_20261031.md，SHA256 850ADB57F71E6F07D5E823BC665CFFB8A2F0F557D3798AC0927A1236B1646433。原厂限定变量来源类型3浮点路径复用同一索引解析器，源数组以float32零基读取，成功值经原件sprintf_s的%f文本写入通用参数链。仅为静态分支，不冒称Float64等价、精确格式或原机验证。
+- 五整数引用为当前独立实施批；四浮点的物理精度与文本格式作为后续同控件完整链另行核证，不从整数规则直接扩用。已请逆向负责人只对bc730格式化及bc8a0解析的具体调用链继续只读核查。
+## 2026-10-31 Blob五整数引用合同冻结
+
+- 正常变量来源SDK→协议→ModuleFrame整数索引链已静态核通。限定Blob五个Int64规范/Int32存储Settings：ALL主源取0项，动态索引来源读取0项，已证普通索引数据读取失败回落0；配置不存在/越权、Schema或Owner身份失配、取消、生产者失败及数值超Int32范围均明确失败，不兜底。具体异常与原厂静态证据不同的限制作为平台适配记录，不能宣称完整原厂等价。
+- 本方全局整数/数组保持Int64声明，仅上述目标消费时受检Int32投影，不截断；图片、ROI、普通Input、浮点及其他工具保持既有严格合同。动态变量索引数组需扩模型合法域并确保Strict编译真实拒绝，涉及Contracts/Runtime/Workflow及BlobTool，由数值线独立worktree唯一写入；UI线待共享getter与候选资格合同固定后同步。冻结、执行、调试、身份、失败顺序、确认取消、复制历史和保存重开纳入同批验证；当前实现尚未完成。
+## 2026-10-31 SDK索引字段静态链闭合
+
+- 逆向负责人只读核实正常变量来源的SDK序列化：ALL写constant All，固定索引文本写constant，动态写moduleId/varName；接收端再转tag1/2/3并进入已核整数读取。证据 B08_ORIGINAL_SDK_INDEX_SERIALIZATION_20261031.md SHA256 07A05B0FC50968ABCBB37EC0AFB995AF5CEA0F9257F847C5CD2C04FCC03A6109；范围限定正常变量来源/整数执行分支，非法缓冲、其他类型、原机与方案落盘未据此证明。
+- 数值引用线正按完整模型、编译、运行、失败、冻结及宿主历史保存链设计对应调整，不全局改变其他输入/资源，不未经设计更改共享合同；订阅窗线独立实施会话生命周期。
+## 2026-10-31 原厂索引协议转换补证
+
+- B08_ORIGINAL_INDEX_PROTOCOL_20261031.md SHA256 F38916812981BF7ABB877AACF53010489A3AF66C887869A0CCFAF25200DE39FE：ModuleProxy接收 constant All→tag1、其他constant经atoi→tag2、variable→tag3；ModuleFrame转换复制进绑定表，与已核整数执行路径对应。仅静态正常分支，不代表保存文件或所有类型/原机行为。
+- SDK FUN_180685490 把strIndexConstant等结构序列化为协议字段的最后一段尚未逐字段核实，已交逆向负责人按该明确函数只读追踪；本方映射尚未擅改。
+## 2026-10-31 B08 订阅窗已证交互成片实施
+
+- 依据已证原厂三态冻结本批：DocumentEditSession 范围的默认偏好、当前根展开状态与可空字段目标分离；Loaded 自动空窗、显式打开/关闭、字段重绑、两文档和同ID重开退役及中英宽度一体实施。唯一UI适配入口和Plugin.Wpf公共控件一起接线，不造无消费者接口或保留双轨。
+- 方案偏好目前仅做明确标记的会话内临时投影；原厂保存重开、Dirty/Undo及多宿主持久化未证，不新增方案文件字段、不宣称等价。逆向负责人继续仅对具体原生入口只读追证。候选正在既有 worktree 实施，未构建、未验收。
 ## 2026-10-31 B08 逐项状态更新
 
 - 保留原24项清单和历史SHA，新增 B08_CURRENT_ACCEPTANCE_20261031.json 逐项对应正式build-012回执，明确哪些仅为本方限定行为、哪些仍需原厂证据及VS/人工；不把自动回归当完整B08验收。

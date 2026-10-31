@@ -5,7 +5,7 @@
   "payloadSha256": "0323EADE8F48BCF73749D9BF2B06778A1FDA9C030D96F7179422D5FE383CCE96",
   "payloadEntriesVerified": 569,
   "payloadMismatches": 0,
-  "loadedEntriesVerified": 65,
+  "loadedEntriesVerified": 67,
   "loadedMismatches": 0,
   "uiBuildLog": "Release/_validation/B08OriginalLanguageFormal/ui-build-001.log",
   "uiBuildSha256": "F4418984C72DED7E28E2DE6E6B140CAA696AA82F949D344FB58A3484DEAC704C",
@@ -56,6 +56,15 @@
       "receiptSha256": "35C3B79F0777FEEF26CF8EA64283EA9D47C9D31F1B0206D98C2144BD1713B2BD",
       "loaded": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-146\\loaded-product.tsv",
       "loadedSha256": "CFAA62C87F6D88DA4CF684766608D02B7CBD64E59201B49621263BF0ED52A934"
+    },
+    {
+      "track": "VariableDialog",
+      "attempt": "006",
+      "description": "变量模态搜索分页与清理",
+      "receipt": "Release\\_validation\\S4-20261025\\VariableDialog\\attempt-006\\receipt.json",
+      "receiptSha256": "83E326E75B27EC3D043F3A9F09C732B5B0084DD7994B9FC5AF030A997A47BBF8",
+      "loaded": "Release\\_validation\\S4-20261025\\VariableDialog\\attempt-006\\loaded-product.tsv",
+      "loadedSha256": "1E37D12E8A0F32E850496C81CF92389B0CE51E4969D5B30804D44560BB5B3DCE"
     }
   ],
   "languageEvidence": [

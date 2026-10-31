@@ -1,0 +1,38 @@
+{
+  "scope": "B08当前声明能力、144DPI中英布局及受保护窗口的条件性自测闭口；不表示A00-A23全部原要求或Blob/S2/S3完成",
+  "status": "条件性自测闭口",
+  "formalEvidence": [
+    "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+    "docs/collaboration/evidence/B08_FORMAL_LANGUAGE_LAYOUT_20261031.json"
+  ],
+  "productVersions": [
+    "232630453546a584cc25e80cedced94b1029289f",
+    "60669453dc6df14d6409e7f8f3ffd01b02fbd7ae"
+  ],
+  "acceptanceChecklist": "docs/collaboration/evidence/B08_CURRENT_ACCEPTANCE_20261031.json",
+  "acceptedWithinScope": [
+    "已声明来源与资格、当前值和引用",
+    "五整数显式索引策略与Strict隔离",
+    "已验字段/变量窗口及生命周期",
+    "当前会话临时窗口偏好",
+    "144DPI中英文布局和现有整窗保护"
+  ],
+  "unimplemented": [
+    "未产出原厂输出叶及Group新增迁移",
+    "方案偏好持久化、Dirty和Undo",
+    "ROI绘制继承正式草稿与图形文本配置及消费者",
+    "六类Blob真实整窗正向出口",
+    "四浮点原厂语义与S3算法"
+  ],
+  "notFullyVerified": [
+    "九字段全部输入方式全交叉",
+    "所有类型和存储变化视觉恢复",
+    "不同Owner同方案完整矩阵",
+    "其他DPI和真实VS设计器",
+    "运行时MVID独立记录",
+    "原厂异常和全域行为"
+  ],
+  "knownFailure": "WindowPresentation attempt-360 极大Float64上限未接纳并超时；该值不属Blob当前参数域，不计通过",
+  "manualAcceptance": "自测闭口后统一安排，尚未执行",
+  "retainedProtection": "未接入ROI/结果组合时Blob整窗确认、保存、调试继续拒绝"
+}

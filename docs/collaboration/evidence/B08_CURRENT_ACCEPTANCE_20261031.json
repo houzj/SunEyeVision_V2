@@ -88,7 +88,7 @@
       "item": "非模态展开/原变量模态",
       "originalRequirements": "展开源/索引互斥、当前目标切换、移出括号/清目标、窗口互斥；变量分组搜索分页单/双击确认取消、Owner隐藏关闭。",
       "originalOracle": "借同一正式field state，关窗不撤销已接受选择；取消不写；显示Value不当执行值；没有真实目标不能选择。",
-      "currentStatus": "现行来源选择与借用生命周期范围自测闭口：正式变量13、跨方案及WindowSession通过；模态搜索分页完整矩阵未逐项验证，偏好持久化归A21。"
+      "currentStatus": "现行来源选择与借用生命周期范围自测闭口：正式变量13、跨方案及WindowSession通过；当前正式版VariableDialog attempt-006共8组通过，覆盖搜索分页、确认取消和退役；偏好持久化归A21。"
     },
     {
       "id": "A12",
@@ -172,9 +172,9 @@
       "item": "整控件自审、文档收口与后续人工验收",
       "originalRequirements": "完整迁移并核原件、真实页面、状态和主题DPI；汇总已验、未证及依赖并统一回原O06与CURRENT_TASK。整体自测闭口后统一安排用户人工验收。",
       "originalOracle": "相称构建、自动及可执行的设计时与运行时测试、自审完成后判定控件闭口；用户人工验证不作为前置。VS实测或其他未执行项目如实列明，不以独立渲染冒充。",
-      "currentStatus": "正式自动回归已记录；整体迁移及自测未完成，闭口后统一人工验收。"
+      "currentStatus": "条件性自测闭口：当前声明能力、144DPI中英布局及受保护窗口完成自审；正式回归按23263045与60669453两版分别记录。缺失语义、未验矩阵、旧极值失败和后续统一人工验收保留，非完整Blob或S2/S3完成。"
     }
   ],
-  "remaining": "原厂索引及方案偏好特定分支、ROI/结果组合正向完整链和整体自测未完成；B08自测闭口后统一人工验收。",
+  "remaining": "原厂未产出输出与Group新增暂停；偏好持久化/Dirty/Undo未实现；ROI绘制继承及结果图文正式组合、六类整窗正向未接入；四浮点原厂语义与S3算法未完成；其他DPI、实际VS、部分输入/身份组合及运行时MVID未独立验证；旧Float64极值测试失败保留。B08自测条件闭口后统一人工验收。",
   "layoutFormalEvidence": "docs/collaboration/evidence/B08_FORMAL_LANGUAGE_LAYOUT_20261031.json"
 }

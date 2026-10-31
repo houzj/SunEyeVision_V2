@@ -18,7 +18,7 @@
       "item": "五整数四浮点与数值边界",
       "originalRequirements": "从正式XML/Schema打开9字段，核100/150/100、面积10/999999999且整数1..999999999、圆度/矩形度0.1..1；按键/粘贴/箭头/滚轮/失焦/Enter逐一编辑，重载不写默认。",
       "originalOracle": "非法小数/非有限/越界/倒置不半写；显示格式与接受值分开核，引用绑定存在/过滤关闭也核已知常量边界。",
-      "currentStatus": "正式NumericContract 68与BlobParameterProduction 21通过；实际VS/人工未验。"
+      "currentStatus": "已验字段合同与边界范围自测闭口：正式BlobParameterProduction 20、NumericContract 68及真实窗口13通过；九字段与键入/粘贴/箭头/滚轮/失焦/Enter的全交叉未逐项验，四浮点原厂转换未证明；旧double.MaxValue失败保留。"
     },
     {
       "id": "A02",
@@ -32,7 +32,7 @@
       "item": "六模式Choice与条件显隐",
       "originalRequirements": "原六项保留，仅Single可新接纳；None/Double既有配置保持显示，可私有修正Single，未实现三项展示不可接纳；核None/Single/Double极性/低高显隐。",
       "originalOracle": "鼠标/键盘/程序提案/整组均拒disabled；展示ID不可入字段/JSON；历史不可用键不自动替换；确认执行准入独立。",
-      "currentStatus": "正式真实窗口13及DesignTime 290通过；未就绪模式继续禁止确认。"
+      "currentStatus": "当前模式合同自测闭口：正式真实窗口与设计时检查通过，仅Single允许新接纳；None、Double及另三项未实现或未就绪，不能确认执行，算法等价未验证。"
     },
     {
       "id": "A04",
@@ -88,14 +88,14 @@
       "item": "非模态展开/原变量模态",
       "originalRequirements": "展开源/索引互斥、当前目标切换、移出括号/清目标、窗口互斥；变量分组搜索分页单/双击确认取消、Owner隐藏关闭。",
       "originalOracle": "借同一正式field state，关窗不撤销已接受选择；取消不写；显示Value不当执行值；没有真实目标不能选择。",
-      "currentStatus": "正式VariableFields 13及跨方案10场景通过；原厂方案偏好/多宿主语义仍未闭合。"
+      "currentStatus": "现行来源选择与借用生命周期范围自测闭口：正式变量13、跨方案及WindowSession通过；模态搜索分页完整矩阵未逐项验证，偏好持久化归A21。"
     },
     {
       "id": "A12",
       "item": "异常关闭/创建/退役",
       "originalRequirements": "close/unload/hide/disable/折叠/Dispose、原WPF绑定投影、宿主打开/提案、监听器、租约Invalidated异常；首错/清理错及重入新代。",
       "originalOracle": "先暂停/失效写权；每项清理执行；首与次异常都可查；旧PopupGeneration/request不关新代、不写活跃新scope。",
-      "currentStatus": "正式字段与跨方案真实旧回调测试通过；部分原厂关闭语义仍待证。"
+      "currentStatus": "已声明异常及退役范围自测闭口：正式字段、跨方案和宿主回归覆盖错误、清理及旧请求退役；未穷尽所有原厂异常组合。"
     },
     {
       "id": "A13",
@@ -116,35 +116,35 @@
       "item": "设计时同一真实视图/控件资源",
       "originalRequirements": "VS分别打开实际Blob XAML及公共组合；用正式schema示例走同组装，中文/英文与引用/常量/范围/禁用态；无主程序/Workflow/算法。",
       "originalOracle": "不复制默认值/假预览控件；设计器无候选时原按钮/模板仍正确，不调实际执行或写方案；真实VS与自动渲染分列。",
-      "currentStatus": "正式独立DesignTime 290通过；实际VS设计器及本版人工未验。"
+      "currentStatus": "独立自动设计范围自测闭口：正式DesignTime 290项通过；实际VS设计器及完整中英视觉组合未执行，人工验收按用户决定在B08闭口后统一进行。"
     },
     {
       "id": "A16",
       "item": "生产宿主完整组提案/拒绝",
       "originalRequirements": "9字段常量与引用混合整组、非法一项、主/索引组合、宿主拒绝、回调重绑、当前值和AcceptedFieldOrder；正式配置只在确认发布。",
       "originalOracle": "唯一draft/一次prepare，无部分写；回调重入不污染新代，拒绝原因保留；不旁路现版本/资格门禁。",
-      "currentStatus": "正式参数生产21与真实窗口拒绝保护已验；整窗正向组合仍阻塞。"
+      "currentStatus": "非前台生产宿主和字段原子合同范围自测闭口：正式生产20、当前值18、整数33及组提案回归通过；真实Blob整窗确认正向受A22保护，未执行。"
     },
     {
       "id": "A17",
       "item": "确认取消/未失焦/历史与保存重开",
       "originalRequirements": "未失焦文本→确认/保存→关闭重开；取消不改正式、undo/redo、复制/删除/重命名/断边、保存失败/不覆盖、旧模式读取修正与退出。",
       "originalOracle": "非法或未就绪不确认不覆盖原文件；业务编辑进入历史，运行/停止不重放；不能因外部保护阻断就在测试绕过。",
-      "currentStatus": "正式非前台历史/保存及跨方案已验；六类真实整窗正向仍阻塞。"
+      "currentStatus": "宿主事务、历史及持久化范围自测闭口：正式保存重开、失败不覆盖、复制和撤销回归通过；真实Blob合法未失焦文本经整窗确认保存重开仍受A22保护，未执行。"
     },
     {
       "id": "A18",
       "item": "跨文档/重开/退役身份",
       "originalRequirements": "同Owner由方案A切B、A关闭后重开同ID、相同显示名新节点、不同Owner同方案；关闭/换文档时所有Popup/变量/展开及偏好迟到回调。",
       "originalOracle": "DocumentSession/Generation与Node/Field身份分开；旧scope无写权；偏好生命周期不能仅用Window或可复用Solution.Id。",
-      "currentStatus": "正式A到B及同ID重开各5场景整组通过；偏好相关跨文档路径仍待。"
+      "currentStatus": "当前跨文档及根退役范围自测闭口：正式A到B、同ID重开及WindowSession通过；不同Owner同方案完整组合未逐项验证，偏好持久化归A21。"
     },
     {
       "id": "A19",
       "item": "运行/调试/连续停止与冻结值",
       "originalRequirements": "同批冻结常量/引用/变量/索引、执行消费点当前值、取消前后/算法异常、私有调试隔离、连续运行停止、关闭退役。",
       "originalOracle": "不查WPF或最新结果，不把运行写历史；失败/取消最终值按已冻结策略；不把旧Getter当消费成功。",
-      "currentStatus": "正式RuntimeWorkflow 10通过；真实窗口运行/调试正向仍阻塞。"
+      "currentStatus": "非前台执行与调试范围自测闭口：正式RuntimeWorkflow 10及引用生产回归通过；真实Blob窗口运行、私有预览和连续停止正向仍受A22保护，S3算法未完成。"
     },
     {
       "id": "A20",

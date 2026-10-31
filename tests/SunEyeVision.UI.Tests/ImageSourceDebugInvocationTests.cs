@@ -73,7 +73,7 @@ public sealed class ImageSourceDebugInvocationTests
         public void Dispose()=>Directory.Delete(DirectoryPath,true);
     }
 
-    private static IReadOnlyImage Image(DeclaredOutputReader reader)=>reader.Values!.Get<IReadOnlyImage>("output.image");
+    private static IReadOnlyImage Image(DeclaredOutputReader reader)=>reader.Values!.Get<RecordValue>("output.image").Get<IReadOnlyImage>("data");
 
     [Fact]
     public async Task Local_debug_missing_frame_is_consumed_and_next_request_reads_the_following_frame()

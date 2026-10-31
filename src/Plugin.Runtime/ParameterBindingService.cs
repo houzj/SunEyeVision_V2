@@ -55,8 +55,11 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             throw new BindingFault("schema-changed","Source physical numeric declaration changed; rebind explicitly.");
         dependencies.Add(node);
         var selected=port.Type;BindingReferencePlan? index=null;bool conditional=false;
+        var storage=port.Storage;var memberPosition=0;
         if(reference.Selection is not BindingSelection.AllItems)
         {
+            while(selected.Shape!=ValueShape.Sequence&&memberPosition<reference.MemberFieldPath.Count)
+                selected=ProjectType(selected,reference.MemberFieldPath[memberPosition++],ref conditional,ref storage);
             if(selected.Shape!=ValueShape.Sequence)throw new BindingFault("index-shape","Index selection requires a sequence declaration.");
             if(reference.Selection is BindingSelection.AtConstant fixedIndex)
             {
@@ -73,8 +76,8 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             else throw new BindingFault("selection","Unknown selection operation.");
             selected=selected.Element!;
         }
-        var storage=port.Storage;
-        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member,ref conditional,ref storage);
+        for(;memberPosition<reference.MemberFieldPath.Count;memberPosition++)
+            selected=ProjectType(selected,reference.MemberFieldPath[memberPosition],ref conditional,ref storage);
         return new(reference,source,selected,index,conditional,storage);
     }
 
@@ -156,8 +159,17 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         if(!result.Values.Contains(plan.Reference.PortId))throw new BindingFault("missing-value","Source did not publish the required field.");
         var root=plan.Source.Schema.Outputs.Single(p=>p.Id==plan.Reference.PortId);
         object? value=ValueRules.Freeze(root,result.Values.Get<object?>(plan.Reference.PortId));
+        var type=root.Type;var memberPosition=0;
         if(plan.Reference.Selection is not BindingSelection.AllItems)
         {
+            while(type.Shape!=ValueShape.Sequence&&memberPosition<plan.Reference.MemberFieldPath.Count)
+            {
+                var member=plan.Reference.MemberFieldPath[memberPosition++];
+                value=ProjectValue(value,member);
+                if(type.Shape!=ValueShape.Record)throw new BindingFault("member-shape","Member projection requires declared record fields.");
+                type=type.Fields.SingleOrDefault(field=>field.Id==member)?.Type
+                    ??throw new BindingFault("missing-member","Declared member field no longer exists.",true);
+            }
             if(value is null)throw new BindingFault("index-null","Cannot select an item from null.");
             long index=plan.Reference.Selection is BindingSelection.AtConstant fixedIndex?fixedIndex.Index:
                 ReadReference(plan.Index!,snapshot,published) is long dynamicIndex?dynamicIndex:throw new BindingFault("index-value","Dynamic index is unavailable or is not an Int64 scalar.");
@@ -165,7 +177,8 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             if(index<0 || index>=elements.Length)throw new BindingFault("index-range","Index is outside this invocation's sequence; no fallback item is used.");
             value=elements[(int)index];
         }
-        foreach(var member in plan.Reference.MemberFieldPath)value=ProjectValue(value,member);
+        for(;memberPosition<plan.Reference.MemberFieldPath.Count;memberPosition++)
+            value=ProjectValue(value,plan.Reference.MemberFieldPath[memberPosition]);
         return value;
     }
 

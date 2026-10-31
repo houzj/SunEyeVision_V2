@@ -30,6 +30,11 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
     private string? _pendingText;
+    private sealed record PendingReference(OutputReference Reference,long Acceptance);
+    private PendingReference? _pendingReference;
+    private bool HasPendingReference=>_pendingReference is {} pending&&pending.Acceptance==_state.AcceptanceVersion;
+    private OutputReference? DisplayReference=>HasPendingReference?_pendingReference!.Reference:
+        !_state.ReferenceCleared&&_state.Accepted is ReferenceSetting accepted?accepted.Reference:null;
     private long _pendingVersion;
     private void SetPending(string? value){if(_pendingText==value)return;_pendingText=value;_pendingVersion++;}
     private bool _disposed,_committing,_sourceOpen,_indexOpen,_suspended;
@@ -47,7 +52,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public IReadOnlyList<ReferenceTreeNode> IndexNodes {get;private set;}=Array.Empty<ReferenceTreeNode>();
     public ReferenceTreeNode? SelectedSourceNode {get=>_sourceNode;set=>_sourceNode=value;}
     public ReferenceTreeNode? SelectedIndexNode {get=>_indexNode;set=>_indexNode=value;}
-    public bool HasPendingText=>_pendingText is not null;
+    public bool HasPendingText=>_pendingText is not null||HasPendingReference;
     public bool ReadOnlyA=>!_allowConstantText&&!_options.EditableIndex;
     public bool IsTextPopupVisible=>_expansion is null;
     public bool SubscribeInPopWindowEnableA=>_expand is not null;
@@ -88,17 +93,26 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private string AcceptedText()
     {
-        if(!_state.ReferenceCleared&&_allowConstantText&&_state.Accepted is ConstantSetting number)
+        if(!HasPendingReference&&!_state.ReferenceCleared&&_allowConstantText&&_state.Accepted is ConstantSetting number)
             return number.Value switch{long integer=>integer.ToString(CultureInfo.InvariantCulture),double real when NumericStorageRules.Effective(_state.Port.Type,_state.Port.Storage)==NumericStorage.Float32=>((float)real).ToString("R",CultureInfo.InvariantCulture),double real=>real.ToString("R",CultureInfo.InvariantCulture),_=>""};
-        if(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted)return "";
-        var source=accepted.Reference;var label=Label(source);
-        return source.Type.Shape!=ValueShape.Sequence?label:label+" ["+(source.Selection switch
+        if(DisplayReference is not {} source)return "";
+        var label=Label(source);
+        return ProjectedType(source)?.Shape!=ValueShape.Sequence&&source.Selection is BindingSelection.AllItems?label:label+" ["+(source.Selection switch
         {
             BindingSelection.AtConstant index=>index.Index.ToString(CultureInfo.InvariantCulture),
             BindingSelection.AtField index=>_format?.Invoke(index.Reference)??index.Reference.NodeId+" · "+index.Reference.PortId,
             _=>""
         })+"]";
     }
+    private static TypeRef? ProjectedType(OutputReference reference)
+    {
+        try{return DeclaredReferenceCandidate.ProjectType(reference.Type,reference.MemberFieldPath);}
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException){return null;}
+    }
+    private bool HasSequenceReference=>DisplayReference is {} reference&&ProjectedType(reference)?.Shape==ValueShape.Sequence;
+    private bool NeedsSelectionRepair(OutputReference reference)=>ProjectedType(reference) is {} type
+        &&DeclaredReferenceTree.RequiresSelectionRepair(type,_state.Port,reference.Selection,
+            (_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic);
 
     public void Refresh()
     {
@@ -115,7 +129,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             {
                 snapshot=_options.ReadCandidates(_state.Port)??throw new ArgumentException("来源目录返回了空快照。");
                 if(!Current())return;
-                sources=Build(snapshot.Sources);indices=Build(snapshot.Indices);
+                sources=DeclaredReferenceTree.Build(snapshot.Sources.Where(candidate=>DeclaredReferenceTree.Matches(candidate,
+                    _state.Port,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic,_options.EditableIndex)),true);
+                indices=DeclaredReferenceTree.Build(snapshot.Indices,true);
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException)
             {if(Current())_state.SetSourceError(error.Message);return;}
@@ -129,23 +145,15 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         finally{_refreshing=false;}
     }
 
-    private static IReadOnlyList<ReferenceTreeNode> Build(IEnumerable<DeclaredReferenceCandidate> candidates)
-    {
-        var roots=new List<ReferenceTreeNode>{new("无",Array.Empty<ReferenceTreeNode>(),Clear:true)};
-        foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)))
-            roots.Add(new(group.First().NodeDisplayName,Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(
-                candidate.Label,Array.Empty<ReferenceTreeNode>(),candidate)).ToArray())));
-        return roots.AsReadOnly();
-    }
     private void RestoreSelection(bool notify=true)
     {
         _sourceNode=null;_indexNode=null;
-        if(!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting accepted)
+        if(DisplayReference is {} reference)
         {
-            _sourceNode=SourceNodes.SelectMany(node=>node.EnumEntrysA).FirstOrDefault(node=>node.Candidate is {} candidate
-                &&DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),accepted.Reference));
-            if(accepted.Reference.Selection is BindingSelection.AtField index)
-                _indexNode=IndexNodes.SelectMany(node=>node.EnumEntrysA).FirstOrDefault(node=>node.Candidate is {} candidate
+            _sourceNode=DeclaredReferenceTree.Descendants(SourceNodes).FirstOrDefault(node=>node.Candidate is {} candidate
+                &&DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),reference));
+            if(reference.Selection is BindingSelection.AtField index)
+                _indexNode=DeclaredReferenceTree.Descendants(IndexNodes).FirstOrDefault(node=>node.Candidate is {} candidate
                     &&DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),index.Reference));
         }
         if(notify)ParameterCleanup.Run(new Action[]{()=>Notify(nameof(SelectedSourceNode)),()=>Notify(nameof(SelectedIndexNode))});
@@ -153,25 +161,41 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 
     private void SelectSource(ReferenceTreeNode? node)
     {
-        if(_suspended||!CanBrowse||!ContainsSourceNode(node))return;
+        if(_suspended||!CanBrowse||!ContainsSourceNode(node)||node!.EnumEntrysA.Count!=0)return;
         if(node.Clear){ClearSource();return;}
         if(node.Candidate is not {} candidate)return;
-        var selection=!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting old&&candidate.Output.Type.Shape==ValueShape.Sequence
-            ?old.Reference.Selection:BindingSelection.All;
+        var selection=DisplayReference is {} old&&candidate.SelectedType.Shape==ValueShape.Sequence
+            ?old.Selection:BindingSelection.All;
         Submit(candidate.Reference(selection));
+    }
+    private bool TryStageReference(OutputReference reference)
+    {
+        if(_options.EditableIndex&&!_suspended&&CanBrowse&&NeedsSelectionRepair(reference))
+        {
+            _pendingReference=new(reference,_state.AcceptanceVersion);_pendingVersion++;SetPending(null);
+            var version=_pendingVersion;var popupGeneration=_popupGeneration;
+            _state.SetEditError("请选择有效的序列索引后再确认。");
+            if(_disposed||version!=_pendingVersion||!HasPendingReference)return true;
+            RestoreSelection();Notify(nameof(CurValueA));
+            if(popupGeneration==_popupGeneration)RequestClose();
+            return true;
+        }
+        return false;
     }
     private void SelectIndex(ReferenceTreeNode? node)
     {
-        if(_suspended||_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsIndexNode(node)||_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted
-            ||accepted.Reference.Type.Shape!=ValueShape.Sequence||node is null)return;
+        if(_suspended||!CanBrowse||!ContainsIndexNode(node)||DisplayReference is not {} source
+            ||!HasSequenceReference||node is null||node.EnumEntrysA.Count!=0)return;
         var selection=node.Clear?BindingSelection.All:node.Candidate is {} candidate
             ?new BindingSelection.AtField(candidate.Reference(BindingSelection.All)):null;
         if(selection is null)return;
-        var source=accepted.Reference;
         Submit(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
     }
     private bool Submit(OutputReference reference,bool explicitCommit=false)
-        =>AcceptSetting(new ReferenceSetting(reference,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic),explicitCommit);
+    {
+        if(!explicitCommit&&TryStageReference(reference))return false;
+        return AcceptSetting(new ReferenceSetting(reference,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic),explicitCommit);
+    }
     private bool AcceptSetting(ParameterSetting proposal,bool explicitCommit=false)
     {
         if(_suspended&&!explicitCommit||_disposed||_state.IsDisposed)return false;
@@ -203,6 +227,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private void ClearSource()
     {
+        if(_pendingReference is not null){_pendingReference=null;_pendingVersion++;}
         if(!_state.Port.Required){AcceptSetting(new UnsetSetting());return;}
         var generation=_uiGeneration;var pendingVersion=_pendingVersion;var popupGeneration=_popupGeneration;
         if(!ClearReference()){RestoreSelection();Notify(nameof(CurValueA));return;}
@@ -221,7 +246,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_disposed||_state.IsDisposed)return false;
         try
         {
-            if(_pendingText is null&&!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant)
+            if(!HasPendingReference&&_pendingText is null&&!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant)
             {proposal=constant;return true;}
             if(_allowConstantText&&_pendingText is {} text)
             {
@@ -236,20 +261,31 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 if(value is not null){proposal=new ConstantSetting(ValueRules.Freeze(_state.Port,value));return !_disposed&&!_state.IsDisposed;}
             }
             if(_state.SourceError.Length!=0)return false;
-            if(_state.ReferenceCleared||_state.MissingReference)throw new ArgumentException("请先选择来源，再编辑索引。");
-            proposal=_state.Accepted;
-            if(_pendingText is null||ReadOnlyA)return true;
+            if(HasPendingReference&&(!_candidatesValid||!_candidates.Any(candidate=>
+                DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),_pendingReference!.Reference))))
+                throw new ArgumentException("待确认来源已失效，请重新选择。");
+            if(DisplayReference is not {} source)throw new ArgumentException("请先选择来源，再编辑索引。");
+            var referenceSetting=!HasPendingReference&&_state.Accepted is ReferenceSetting original?original:
+                new ReferenceSetting(source,(_state.Accepted as ReferenceSetting)?.Conversion??BindingConversion.Automatic);
+            proposal=referenceSetting;
+            if(_pendingText is null||ReadOnlyA)
+            {
+                if(NeedsSelectionRepair(source))throw new ArgumentException("请选择有效的序列索引后再确认。");
+                return true;
+            }
             if(!_options.EditableIndex)throw new ArgumentException("请输入有效数值，或选择来源。");
-            if(proposal is not ReferenceSetting accepted)throw new ArgumentException("请先选择来源，再编辑索引。");
-            var source=accepted.Reference;var prefix=Label(source)+" [";
-            if(source.Type.Shape!=ValueShape.Sequence||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
+            var prefix=Label(source)+" [";
+            var projected=ProjectedType(source);
+            if(projected is not {Shape:ValueShape.Sequence}||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
                 ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");
             var content=_pendingText[prefix.Length..^1];
             BindingSelection selection=content.Length==0?BindingSelection.All
                 :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
-            if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
+            if(selection is BindingSelection.AtConstant index&&projected.Count.Maximum is int maximum&&index.Index>=maximum)
                 throw new ArgumentException("序号超出来源声明的最大数量。");
-            proposal=accepted with {Reference=new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage)};
+            var selected=new OutputReference(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage);
+            if(NeedsSelectionRepair(selected))throw new ArgumentException("请选择有效的序列索引后再确认。");
+            proposal=referenceSetting with{Reference=selected};
             return !_disposed&&!_state.IsDisposed;
         }
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
@@ -263,7 +299,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_disposed||_state.IsDisposed)return false;
         if(_commitGroup is not null)return _commitGroup();
         if(_committing)return !_state.HasInvalidInput;
-        if(_pendingText is null)
+        if(_pendingText is null&&!HasPendingReference)
         {
             if(!_state.IsReferenceMode&&_state.Accepted is ConstantSetting constant&&_state.SourceError.Length!=0)
                 return AcceptSetting(constant);
@@ -280,7 +316,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         }
         finally{_committing=false;}
     }
-    public void ProjectAccepted(){SetPending(null);OnStateChanged();}
+    public void ProjectAccepted(){if(_pendingReference is not null){_pendingReference=null;_pendingVersion++;}SetPending(null);OnStateChanged();}
 
     private void FocusChanged(object? value)
     {
@@ -288,7 +324,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(!args.IsFocus){IsTextDropDownOpen=false;return;}
         if(ReadOnlyA||args.SelectionStart<1||args.SelectionStart>text.Length)return;
         var before=text[..args.SelectionStart];var after=text[args.SelectionStart..];
-        var inside=_options.EditableIndex&&_state.Accepted is ReferenceSetting{Reference.Type.Shape:ValueShape.Sequence}
+        var inside=_options.EditableIndex&&HasSequenceReference
             &&before.LastIndexOf('[')>before.LastIndexOf(']')&&after.IndexOf(']')>=0
             &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
         if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);Notify(nameof(IsSelectedSubscribeParam));RequestClose();return;}
@@ -306,7 +342,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private static bool Contains(IReadOnlyList<ReferenceTreeNode> roots,object? node)
         =>node is not null&&roots.Any(item=>ReferenceEquals(item,node)||Contains(item.EnumEntrysA,node));
     internal bool IsExpansionCurrent(ReferenceExpansionRequest request,long generation)=>!_suspended&&CanBrowse
-        &&(!request.IsIndex||_state.Accepted is ReferenceSetting{Reference.Type.Shape:ValueShape.Sequence})
+        &&(!request.IsIndex||HasSequenceReference)
         &&generation==_expansionGeneration&&ReferenceEquals(_expansion,request);
     internal void ReleaseExpansion(ReferenceExpansionRequest request,long generation)
     {
@@ -326,7 +362,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(generation!=_expansionGeneration)return;
         Refresh();
         if(_suspended||!CanBrowse||generation!=_expansionGeneration)return;
-        if(index&&(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting {Reference.Type.Shape:ValueShape.Sequence}))return;
+        if(index&&!HasSequenceReference)return;
         RequestClose();
         if(_suspended||!CanBrowse||generation!=_expansionGeneration)return;
         var preference=_preference();
@@ -340,7 +376,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void OnStateChanged()
     {
         if(_disposed)return;
-        if(!CanBrowse||_expansion?.IsIndex==true&&(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting {Reference.Type.Shape:ValueShape.Sequence}))InvalidateExpansion();
+        if(_pendingReference is {} pending&&(pending.Acceptance!=_state.AcceptanceVersion||!CanBrowse))_pendingReference=null;
+        if(!CanBrowse||_expansion?.IsIndex==true&&!HasSequenceReference)InvalidateExpansion();
         RestoreSelection();Notify(nameof(CurValueA));
     }
     public void Close()
@@ -357,7 +394,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void Notify(string name){if(!_disposed)PropertyChanged?.Invoke(this,new(name));}
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_candidateGeneration++;_candidatesValid=false;
+        if(_disposed)return;_disposed=true;_candidateGeneration++;_candidatesValid=false;_pendingReference=null;_pendingText=null;_pendingVersion++;
         ParameterCleanup.Run(new Action[]{InvalidateExpansion,Close,()=>_state.Changed-=OnStateChanged,
             ()=>{PropertyChanged=null;CloseRequested=null;}});
     }

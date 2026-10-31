@@ -92,7 +92,7 @@ public sealed class ResultWorkspaceProductionTests
             Flow = new("workspace-flow", "工作区正式流程"); Flow.Nodes.Add(Source); Flow.Nodes.Add(Selected);
             Selected.RuntimeConfiguration=Selected.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>
             {
-                ["input.image"]=new ReferenceSetting(new OutputReference(Source.Id,"output.image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:Flow.Id))
+                ["input.image"]=new ReferenceSetting(new OutputReference(Source.Id,"output.image",Source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image").Type,new[]{"data"},scopeId:Flow.Id))
             });
             if(includeOther)Flow.Nodes.Add(Other);
             Flow.Connections.Add(new WorkflowConnection("source-to-result", Source.Id, Selected.Id));
@@ -113,7 +113,7 @@ public sealed class ResultWorkspaceProductionTests
         }
         internal Results Publish(SunEyeVision.UI.Shared.WorkflowNode node, byte first, string? scope = null, ToolExecutionOwner? owner = null,bool updateContext=true,Func<bool>? admission=null)
         {
-            var schema = node.RuntimeConfiguration is {} runtime ? new ToolSchema(Array.Empty<Port>(), runtime.Schema.Outputs) : ProbeSchema;
+            var schema = node.RuntimeConfiguration is {} runtime ? new ToolSchema(Array.Empty<Port>(), runtime.Schema.Outputs,outputDisplay:runtime.Schema.OutputDisplay) : ProbeSchema;
             var identity=(owner??Document.ExecutionOwner).Begin((scope??Flow.Id)+"/"+node.Id,Guid.NewGuid(),"5.0",admission:admission);
             var resources=new FrozenOutputResources();
             Results result;
@@ -125,7 +125,7 @@ public sealed class ResultWorkspaceProductionTests
                 var region=resources.CreateRegion(Coordinates,frame,new[]{new RegionRun(0,0,0)});
                 var values=schema.Outputs.ToDictionary(port=>port.Id,port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)?(object?)image
                     :port.Type==TypeRef.ResourceOf(ResourceKind.Region)?region:port.Type.Shape==ValueShape.Geometry?new PointGeometry(Coordinates,new(1,1))
-                    :port.Type.Shape==ValueShape.Sequence?new long[]{1,2,3}:port.Type.Scalar==ScalarKind.Int64?port.Id=="output.width"?(long)image.Width:port.Id=="output.height"?(long)image.Height:1L:(object?)"probe",StringComparer.Ordinal);
+                    :port.Type.Shape==ValueShape.Record?new RecordValue(port.Type,port.Type.Fields.ToDictionary(field=>field.Id,field=>field.Type==TypeRef.ResourceOf(ResourceKind.Image)?(object?)image:field.Type.Scalar==ScalarKind.Int64?(field.Id=="width"?(long)image.Width:(long)image.Height):(object?)image.Layout.Format.ToString(),StringComparer.Ordinal)):port.Type.Shape==ValueShape.Sequence?new long[]{1,2,3}:port.Type.Scalar==ScalarKind.Int64?1L:(object?)"probe",StringComparer.Ordinal);
                 result=new Results{Image=image,Values=values,Output=new(values)};
             }
             catch{resources.Dispose();throw;}
@@ -174,6 +174,35 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Empty(f.Shell.InputItems.Cast<ResultWorkspaceImageSource>());Assert.Null(f.Shell.SelectedInputItem);
         Assert.Contains(f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>(),item=>item.Reference.NodeId==f.Source.Id);
         Assert.Equal(1,f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>().Count(item=>item.IsCheck));
+    });
+    [Fact]
+    public void Output_member_selection_preserves_formal_identity_and_never_replaces_a_missing_choice()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        var gray=f.Choice(f.Source.Id,"output.gray-image");
+        f.Shell.SelectedOutputItem=gray;Pump();
+        var persisted=f.Selected.SelectedDisplayReference;
+        Assert.Equal(gray.Key,persisted);
+        var reference=BindingReferenceSerializer.Deserialize(persisted!);
+        Assert.Equal("output.gray-image",reference.PortId);Assert.Equal(new[]{"data"},reference.MemberFieldPath);
+        var file=Path.Combine(f.Directory,"selected-image.sln");
+        Assert.True(ServiceInitializer.SolutionManager.SaveSolution(file));
+        var reopened=Assert.IsType<Solution>(ServiceInitializer.SolutionManager.LoadSolutionOnly(file));
+        var reopenedNode=reopened.Workflows.Single(flow=>flow.Id==f.Flow.Id).Nodes.Single(node=>node.Id==f.Selected.Id);
+        Assert.Equal(persisted,reopenedNode.SelectedDisplayReference);
+        var fragment=WorkflowFragmentCopy.Prepare(f.Flow,new[]{f.Source.Id,f.Selected.Id},f.Flow.Id,
+            id=>id==f.Flow.Id?f.Flow:null,(node,_)=>new WorkflowNodeBase("copy-"+node.Id,node.Name,node.DispName,node.ToolType));
+        var copied=BindingReferenceSerializer.Deserialize(fragment.Nodes.Single(node=>node.Id=="copy-"+f.Selected.Id).SelectedDisplayReference!);
+        Assert.Equal("copy-"+f.Source.Id,copied.NodeId);Assert.Equal(f.Flow.Id,copied.ScopeId);
+        Assert.Equal(reference.PortId,copied.PortId);Assert.Equal(reference.MemberFieldPath,copied.MemberFieldPath);
+        f.Main.RefreshNativeResultImages();Pump();
+        Assert.Equal(persisted,Assert.IsType<ResultWorkspaceImageSource>(f.Shell.SelectedOutputItem).Key);
+        f.Selected.SelectedDisplayReference=BindingReferenceSerializer.Serialize(new OutputReference(
+            reference.NodeId,reference.PortId,reference.Type,new[]{"missing"},scopeId:reference.ScopeId,storage:reference.Storage));
+        f.Main.RefreshNativeResultImages();Pump();
+        Assert.Null(f.Shell.SelectedOutputItem);Assert.Null(f.Presenter.OutputPane.CurrentFrame);
+        Assert.Equal(new[]{"missing"},BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference).MemberFieldPath);
     });
     [Fact]
     public void Unexecuted_image_source_uses_declared_names_without_published_snapshot()
@@ -274,7 +303,7 @@ public sealed class ResultWorkspaceProductionTests
         using var f = new Fixture(); var table = f.Main.CurrentResultPublication!; var input = f.Presenter.InputPane.CurrentFrame!;
         Assert.NotEqual(input.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame);
         f.SelectOutput(f.Source.Id); Assert.Equal(input.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame);
-        Assert.Equal(f.Source.Id,f.Selected.SelectedDisplaySource!.SourceNodeId);
+        Assert.Equal(f.Source.Id,BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
         using var left = f.Presenter.InputPane.BorrowCurrentImage(); using var right = f.Presenter.OutputPane.BorrowCurrentImage();
         Assert.NotNull(left); Assert.NotNull(right); Assert.NotSame(left, right); Assert.Equal(left.Image.Frame, right.Image.Frame);
         f.Shell.SelectedInputItem = null; Pump(); Assert.Null(f.Presenter.InputPane.CurrentFrame);
@@ -282,7 +311,7 @@ public sealed class ResultWorkspaceProductionTests
         f.Shell.SelectedInputItem = f.Shell.InputItems.Cast<ResultWorkspaceImageSource>().First(); Pump();
         var restored = f.Presenter.InputPane.CurrentFrame;
         f.SelectOutput(f.Selected.Id); Assert.Equal(restored, f.Presenter.InputPane.CurrentFrame);
-        Assert.Equal(f.Selected.Id,f.Selected.SelectedDisplaySource!.SourceNodeId);
+        Assert.Equal(f.Selected.Id,BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
         Assert.NotEqual(restored!.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table.IsCurrent());
     });
     [Fact]
@@ -641,6 +670,8 @@ public sealed class ResultWorkspaceProductionTests
         using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
         var run=f.Publish(f.Source,33);var previous=f.Main.CurrentResultPublication;
         Assert.NotNull(previous);Assert.Equal(ResultViewState.Success,previous!.State);
+        Assert.Contains(f.Main.FlatResultRows,row=>row.DisplayName=="模块状态"&&row.DisplayValue=="成功");
+        Assert.Contains(f.Main.FlatResultRows,row=>row.DisplayName=="耗时（ms）"&&!string.IsNullOrWhiteSpace(row.DisplayValue));
         Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
         var source=f.Main.ActiveInputSource!;
         var path=Path.Combine(f.Directory,"accepted-image.png");

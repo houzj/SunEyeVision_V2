@@ -207,6 +207,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public List<ParentNodeInfo> GetParentNodes(string nodeId)
             => GetParentNodes(nodeId, false);
 
+        /// <summary>Frozen candidate node names only; never observes a result, output value or execution resource.</summary>
+        public IReadOnlyDictionary<string,string> GetBindingCandidateNodeNames(string targetNodeId)
+        {
+            IEnumerable<string> ids=BindingCandidateNodeIds?.Invoke(targetNodeId)
+                ??(IReadOnlyList<string>?)_connectionProvider?.GetParentNodeIds(targetNodeId)
+                ??Array.Empty<string>();
+            var names=ids.Where(id=>id!=targetNodeId).Distinct(StringComparer.Ordinal).ToDictionary(id=>id,id=>
+            {
+                var name=_nodeInfoProvider?.GetNodeName(id);
+                return string.IsNullOrWhiteSpace(name)?id:name;
+            },StringComparer.Ordinal);
+            return new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(names);
+        }
+
         private List<ParentNodeInfo> GetParentNodes(string nodeId, bool includeOtherSources)
         {
             var parentNodes = new List<ParentNodeInfo>();

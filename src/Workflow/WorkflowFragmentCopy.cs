@@ -67,7 +67,7 @@ public static class WorkflowFragmentCopy
                     clone.ParamSettings = original.RuntimeConfiguration is null ? ToolParameterSnapshot.CopySettings(original.ParamSettings)! : original.ParamSettings.Settings.Any() ? throw new InvalidOperationException("Runtime节点不能复制旧ParamSettings。") : new ParamSettingContainer();
                     clone.ParamSettings.NodeId = clone.Id;
                     clone.AdditionalData = original.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone());
-                    clone.SelectedDisplaySource = Copy(original.SelectedDisplaySource);
+                    clone.SelectedDisplayReference = original.SelectedDisplayReference;
                     clone.RuntimeConfiguration = original.RuntimeConfiguration?.Copy();
                     scope.Nodes.Add(original.Id, clone);
                     if (!string.IsNullOrEmpty(original.SubroutineId))
@@ -213,7 +213,9 @@ public static class WorkflowFragmentCopy
                 }
                 if(clone.RuntimeConfiguration is {} runtime)clone.RuntimeConfiguration=runtime.MapReferences(reference=>Reference(reference,scope),origin=>origin.StartsWith("connection:",StringComparison.Ordinal)&&scope.Edges.TryGetValue(origin[11..],out var edge)?"connection:"+edge.Id:null);
                 var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
-                Visit(clone.Parameters, scope, seen); Visit(clone.ParamSettings, scope, seen); Visit(clone.SelectedDisplaySource, scope, seen);
+                Visit(clone.Parameters, scope, seen); Visit(clone.ParamSettings, scope, seen);
+                if(clone.SelectedDisplayReference is {} displayReference)
+                    clone.SelectedDisplayReference=BindingReferenceSerializer.Serialize(Reference(BindingReferenceSerializer.Deserialize(displayReference),scope));
             }
         return new(root.Nodes.Values.ToArray(), root.Edges.Values.ToArray(), scopes.Where(p => p.Target != null).Select(p => p.Target!).ToArray());
     }

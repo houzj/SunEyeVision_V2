@@ -128,8 +128,8 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     {
         var query=DataProvider as DataSourceQueryService;
         var source=query?.FormalOutputContractReader?.Invoke(reference.NodeId)?.SingleOrDefault(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId);
-        var nodeName=AvailableDataSources.FirstOrDefault(source=>source.SourceNodeId==reference.NodeId)?.SourceNodeName??reference.NodeId;
-        var member=reference.MemberFieldPath.Count>0?" / "+string.Join(" / ",reference.MemberFieldPath):"";
+        var nodeName=query?.GetBindingCandidateNodeNames((CurrentNode as WorkflowNodeBase)?.Id??"").GetValueOrDefault(reference.NodeId)??reference.NodeId;
+        var member=reference.MemberFieldPath.Count>0?" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(source,reference.MemberFieldPath)):"";
         var selection=reference.Selection switch {BindingSelection.AtConstant index=>" ["+index.Index+"]",BindingSelection.AtField=>" [绑定序号]",_=>""};
         return nodeName+" · "+(source?.DisplayName??source?.Name??"已声明字段")+member+selection;
     }
@@ -251,28 +251,14 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
         var candidates=new List<DeclaredReferenceCandidate>();
         if(DataProvider is DataSourceQueryService query&&CurrentNode is WorkflowNodeBase node)
         {
-            var names=query.GetAvailableDataSources(node.Id,null,true).Where(source=>!source.SourceNodeId.StartsWith("__",StringComparison.Ordinal))
-                .GroupBy(source=>source.SourceNodeId).ToDictionary(group=>group.Key,group=>group.First().SourceNodeName);
-            foreach(var id in query.BindingCandidateNodeIds?.Invoke(node.Id)??names.Keys.ToArray())
+            var names=query.GetBindingCandidateNodeNames(node.Id);
+            foreach(var id in names.Keys)
                 foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable>())
                 {
                     if(output.Kind!=SunEyeVision.Plugin.SDK.Execution.Results.OutputVariableKind.Data)continue;
-                    Port source;
-                    try{source=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
-                    var label=(names.GetValueOrDefault(id)??id)+" · "+(output.DisplayName??output.Name);
-                    candidates.Add(new(label,id,query.WorkflowId,source,Array.Empty<string>()));
-                    AddMembers(source.Type,Array.Empty<string>(),label,id,source,query.WorkflowId);
+                    try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
+                    catch(ArgumentException){continue;}
                 }
-        }
-        void AddMembers(TypeRef type,IReadOnlyList<string> path,string label,string nodeId,Port root,string? scope)
-        {
-            while(type.Shape==ValueShape.Sequence)type=type.Element!;
-            if(type.Shape!=ValueShape.Record)return;
-            foreach(var field in type.Fields)
-            {
-                var next=path.Append(field.Id).ToArray();var nextLabel=label+" / "+field.Id;
-                candidates.Add(new(nextLabel,nodeId,scope,root,next));AddMembers(field.Type,next,nextLabel,nodeId,root,scope);
-            }
         }
         return candidates.AsReadOnly();
     }

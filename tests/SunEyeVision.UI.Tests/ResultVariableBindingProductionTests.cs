@@ -22,6 +22,27 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ResultVariableBindingProductionTests
 {
     [Fact]
+    public void Result_display_names_use_only_unambiguous_matching_tool_declarations()
+    {
+        var port=new SunEyeVision.Plugin.Contracts.Port("width",SunEyeVision.Plugin.Contracts.TypeRef.ScalarOf(SunEyeVision.Plugin.Contracts.ScalarKind.Int64));
+        var schema=new SunEyeVision.Plugin.Contracts.ToolSchema(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),new[]{port});
+        var fallback=new Dictionary<string,string>{{"width","width"}};
+        var projection=new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor(
+            SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList,
+            SunEyeVision.Plugin.Contracts.Results.Presentation.ResultCardinality.One,
+            new[]{new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultColumnDescriptor("w","图像宽度",new("width"))});
+        var names=SunEyeVision.UI.Services.Monitoring.ToolResultViews.DisplayNames(schema,fallback,schema,projection);
+        Assert.Equal("图像宽度",names["width"]);Assert.Equal("width",fallback["width"]);
+        var different=new SunEyeVision.Plugin.Contracts.ToolSchema(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),new[]{new SunEyeVision.Plugin.Contracts.Port("width",SunEyeVision.Plugin.Contracts.TypeRef.ScalarOf(SunEyeVision.Plugin.Contracts.ScalarKind.Text))});
+        Assert.Equal("width",SunEyeVision.UI.Services.Monitoring.ToolResultViews.DisplayNames(schema,fallback,different,projection)["width"]);
+        var ambiguous=new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor(
+            SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList,
+            SunEyeVision.Plugin.Contracts.Results.Presentation.ResultCardinality.One,
+            new[]{new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultColumnDescriptor("a","宽",new("width")),new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultColumnDescriptor("b","长度",new("width"))});
+        Assert.Equal("width",SunEyeVision.UI.Services.Monitoring.ToolResultViews.DisplayNames(schema,fallback,schema,ambiguous)["width"]);
+    }
+
+    [Fact]
     public void Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint()=>Sta(()=>
     {
         Stage("创建同dispatcher Application与主题");
@@ -57,25 +78,69 @@ public sealed class ResultVariableBindingProductionTests
             Assert.Same(root.Nodes,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes);
             Assert.Same(source,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single());
             Stage("选择真实图像源节点");main.SelectedNode=source;
+            Stage("查询服务无输出契约时使用正式运行声明");
+            var query=Assert.IsType<SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService>(
+                typeof(MainWindowViewModel).GetMethod("GetDataProviderForNode",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,new object[]{source}));
+            var savedContractReader=query.FormalOutputContractReader;
+            query.FormalOutputContractReader=null;
+            try
+            {
+                main.ClearResultDisplay();
+                main.UpdateModuleResults(null,source.Name,source.ToolType,source.Id,source.Parameters);Pump();
+                Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+                Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="图像宽度"&&item.SourcePropertyName=="output.image / width");
+                Assert.Equal(SunEyeVision.Plugin.Wpf.Presenters.Results.ResultViewState.Declaration,main.CurrentResultPublication!.State);
+                query.FormalOutputContractReader=_=>Array.Empty<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable>();
+                main.ClearResultDisplay();
+                main.UpdateModuleResults(null,source.Name,source.ToolType,source.Id,source.Parameters);Pump();
+                Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+                Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="图像宽度"&&item.SourcePropertyName=="output.image / width");
+            }
+            finally{query.FormalOutputContractReader=savedContractReader;}
+            Stage("未运行导入图像后保留结果声明");
+            Assert.NotEmpty(main.FlatResultRows);
+            Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="模块状态"&&item.DisplayValue is null);
+            Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="耗时（ms）"&&item.DisplayValue is null);
+            var imagePath=Path.Combine(directory,"unexecuted.png");
+            var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(System.Windows.Media.Imaging.BitmapSource.Create(1,1,96,96,System.Windows.Media.PixelFormats.Gray8,null,new byte[]{5,0,0,0},4)));
+            using(var imageFile=File.Create(imagePath))encoder.Save(imageFile);
+            main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=imagePath,SourceReference=imagePath}},selectFirstAdded:true);Pump();
+            Assert.NotEmpty(main.FlatResultRows);
+            Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="模块状态"&&item.DisplayValue is null);
             view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);
             ((SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)view.FindName("Workspace")).SelectedResultTabIndex=1;
             Stage("加载真实结果工作区窗口");owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
             var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
             var session=manager.Session!;var initial=session.History.Position;
             var publication=Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication>(main.CurrentResultPublication);
-            var row=Assert.Single(main.FlatResultRows.Where(item=>item.SourcePropertyName=="output.width"));
+            Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+            var row=Assert.Single(main.FlatResultRows.Where(item=>item.SourcePropertyName=="output.image / width"));
             Assert.True(row.IsBindable);Assert.True(tree.BindVariableCommand!.CanExecute(row));
             Stage("结果路径复制反馈及清理");
             {
                 string? clipboard=null;
                 view.ReadClipboardText=()=>clipboard;view.WriteClipboardText=text=>clipboard=text;
-                var path="SunEyeVision-test-"+Guid.NewGuid().ToString("N");
-                tree.SelectedItem=row;Assert.True(tree.CopyPathCommand!.CanExecute(path));
-                tree.CopyPathCommand.Execute(path);Pump();Assert.Equal(path,clipboard);
+                var actualTree=Assert.IsType<TreeView>(tree.FindName("resultTreeView"));actualTree.UpdateLayout();Pump();
+                var rootItem=Assert.IsType<TreeViewItem>(actualTree.ItemContainerGenerator.ContainerFromIndex(0));rootItem.UpdateLayout();
+                var item=VisualItems<TreeViewItem>(rootItem).Single(element=>ReferenceEquals(element.DataContext,row));item.ApplyTemplate();
+                var rowContent=Assert.IsType<Grid>(item.Template.FindName("RowContent",item));
+                rowContent.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                    {RoutedEvent=System.Windows.Input.Mouse.PreviewMouseDownEvent});
+                rowContent.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
+                    {RoutedEvent=UIElement.MouseLeftButtonDownEvent});Pump();
+                Assert.Same(row,tree.SelectedItem);
+                var pathBox=Assert.IsType<TextBox>(tree.FindName("tbPath"));var path=pathBox.Text;
+                Assert.Equal(row.BindingInfo!.ResultPath,path);Assert.False(string.IsNullOrWhiteSpace(path));
+                var button=VisualItems<Button>(tree).Single(candidate=>ReferenceEquals(candidate.Command,tree.CopyPathCommand));
+                Assert.Equal(path,button.CommandParameter);Assert.True(button.IsEnabled);Assert.True(button.Command.CanExecute(button.CommandParameter));
+                var peer=new System.Windows.Automation.Peers.ButtonAutomationPeer(button);
+                var invoke=Assert.IsAssignableFrom<System.Windows.Automation.Provider.IInvokeProvider>(peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke));
+                invoke.Invoke();Pump();Assert.Equal(path,clipboard);
                 var field=typeof(ImageResultControl).GetField("_copyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!;
                 var notice=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox>(field.GetValue(view));
                 Assert.True(notice.IsVisible);
-                tree.CopyPathCommand.Execute(path);Pump();Assert.Same(notice,field.GetValue(view));
+                invoke.Invoke();Pump();Assert.Same(notice,field.GetValue(view));
                 typeof(ImageResultControl).GetMethod("CloseCopyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,null);
                 Assert.Null(field.GetValue(view));Assert.False(notice.IsVisible);
             }
@@ -84,9 +149,9 @@ public sealed class ResultVariableBindingProductionTests
             Assert.Equal("宽度",row.BindingDisplayName);AssertUnlinkVisible(tree,row);
             var expression=variable.ProducerBinding!.ReferenceExpression;
             var reference=BindingReferenceSerializer.Deserialize(expression);
-            Assert.Equal(root.Id,reference.ScopeId);Assert.Equal(source.Id,reference.NodeId);Assert.Equal("output.width",reference.PortId);
-            Assert.Equal(source.RuntimeConfiguration.Schema.Outputs.Single(port=>port.Id=="output.width").Type,reference.Type);
-            Assert.Empty(reference.MemberFieldPath);
+            Assert.Equal(root.Id,reference.ScopeId);Assert.Equal(source.Id,reference.NodeId);Assert.Equal("output.image",reference.PortId);
+            Assert.Equal(source.RuntimeConfiguration.Schema.Outputs.Single(port=>port.Id=="output.image").Type,reference.Type);
+            Assert.Equal(new[]{"width"},reference.MemberFieldPath);
             Stage("绑定Undo/Redo同publication");main.UndoCommand.Execute(null);Pump();Assert.Null(variable.ProducerBinding);Assert.Null(row.BindingDisplayName);
             Assert.Same(publication,main.CurrentResultPublication);Assert.Equal(initial,session.History.Position);
             main.RedoCommand.Execute(null);Pump();Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);Assert.Equal("宽度",row.BindingDisplayName);
@@ -109,6 +174,9 @@ public sealed class ResultVariableBindingProductionTests
             Stage("模态期间publication退出拒绝");var verifyStale=SelectVariableInNextDialog(variable,beforeAccept:()=>main.CloseResultPresentation());tree.BindVariableCommand.Execute(row);verifyStale();Pump();
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
             Assert.False(main.IsCurrentResultRow(row));Assert.False(tree.BindVariableCommand.CanExecute(row));
+            Stage("结果退出时清除选中路径");
+            Assert.True(string.IsNullOrEmpty(tree.SelectedItemPath),"结果退出后不应保留先前结果的路径");
+            Assert.False(tree.CopyPathCommand!.CanExecute(tree.SelectedItemPath));
             var bad=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(new(source.Id,"missing",reference.Type,scopeId:root.Id))};
             Assert.False(main.TryBindResultVariable(session,bad,variable.Id,out var error));Assert.NotEmpty(error);
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
@@ -160,11 +228,17 @@ public sealed class ResultVariableBindingProductionTests
         for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
             foreach(var value in Texts(VisualTreeHelper.GetChild(parent,index)))yield return value;
     }
+    private static IEnumerable<T> VisualItems<T>(DependencyObject parent) where T:DependencyObject
+    {
+        if(parent is T value)yield return value;
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
+            foreach(var child in VisualItems<T>(VisualTreeHelper.GetChild(parent,index)))yield return child;
+    }
     private static void AssertUnlinkVisible(PropertyListView view,FlatResultRow row)
     {
         var tree=Assert.IsType<TreeView>(view.FindName("resultTreeView"));tree.UpdateLayout();Pump();
         var root=Assert.IsType<TreeViewItem>(tree.ItemContainerGenerator.ContainerFromIndex(0));root.UpdateLayout();
-        var item=Assert.IsType<TreeViewItem>(root.ItemContainerGenerator.ContainerFromItem(row));item.ApplyTemplate();
+        var item=VisualItems<TreeViewItem>(root).Single(element=>ReferenceEquals(element.DataContext,row));item.ApplyTemplate();
         var unlink=Assert.IsType<Button>(item.Template.FindName("btnDel",item));
         Assert.Equal(Visibility.Visible,unlink.Visibility);Assert.True(unlink.IsEnabled);
         Assert.Same(row,unlink.CommandParameter);Assert.Same(view.UnbindVariableCommand,unlink.Command);

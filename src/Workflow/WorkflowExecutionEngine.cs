@@ -914,6 +914,8 @@ namespace SunEyeVision.Workflow
                 AlgorithmNode executionNode;
                 if(node.RuntimeConfiguration is { } runtime)
                 {
+                    if(node.ParamSettings.Settings.Any())
+                        throw new InvalidOperationException("Runtime执行快照不能包含旧ParamSettings："+node.Id);
                     var configuration=runtime.Copy();
                     if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
                     {

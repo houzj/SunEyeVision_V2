@@ -44,7 +44,7 @@ public sealed class RootResourceProductionTests
     foreach(var target in new[]{"blob-a","blob-b"})
     {
      var proxy=context.Add(context.Candidates().Single(c=>c.Node.Id==target&&c.StoragePath=="input.image"));
-     context.Write(proxy,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id)));
+     context.Write(proxy,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,new[]{"data"},scopeId:root.Id)));
     }
     var region=context.Add(context.Candidates().Single(c=>c.Node.Id=="blob-b"&&c.StoragePath=="input.inspection.region"));
     var regionPort=BindingClrAdapter.DescribeOutput(query.FormalOutputContractReader("blob-a")!.Single(o=>BindingClrAdapter.OutputPortId(o)==BlobField(101)));
@@ -53,7 +53,7 @@ public sealed class RootResourceProductionTests
     var priorReference=BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference);
     Assert.NotNull(context.ValidateReference(region,new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:"other-root")));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
-    Assert.NotNull(context.ValidateReference(region,new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id)));
+    Assert.NotNull(context.ValidateReference(region,new OutputReference("image",imagePort.Id,imagePort.Type,new[]{"data"},scopeId:root.Id)));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
     Assert.DoesNotContain(context.Candidates(),candidate=>candidate.StoragePath=="input.local-address");
     var sequence=context.Add(context.Candidates().Single(candidate=>candidate.Node.Id=="image"&&candidate.StoragePath=="sequence.initial"));

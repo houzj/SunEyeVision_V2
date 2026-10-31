@@ -206,32 +206,23 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     }
     private string FormatReference(OutputReference reference)
     {
-        var source=_query?.GetAvailableDataSources(_node.Id,null,true).FirstOrDefault(s=>s.SourceNodeId==reference.NodeId);
+        var sourceName=_query?.GetBindingCandidateNodeNames(_node.Id).GetValueOrDefault(reference.NodeId);
         var output=_query?.FormalOutputContractReader?.Invoke(reference.NodeId)?.FirstOrDefault(p=>BindingClrAdapter.OutputPortId(p)==reference.PortId);
-        return (source?.SourceNodeName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
-            +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",reference.MemberFieldPath));
+        return (sourceName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
+            +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
     }
     private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates(long generation)
     {
         if(_disposed||generation!=_generation||_query is null||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true})
             return Array.Empty<DeclaredReferenceCandidate>();
         var candidates=new List<DeclaredReferenceCandidate>();
-        var names=_query.GetAvailableDataSources(_node.Id,null,true).GroupBy(s=>s.SourceNodeId).ToDictionary(g=>g.Key,g=>g.First().SourceNodeName);
-        foreach(var id in _query.BindingCandidateNodeIds?.Invoke(_node.Id)??names.Keys.ToArray())
+        var names=_query.GetBindingCandidateNodeNames(_node.Id);
+        foreach(var id in names.Keys)
         foreach(var output in _query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
         {
             if(output.Kind!=OutputVariableKind.Data)continue;
-            Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
-            var label=names.GetValueOrDefault(id,"可绑定节点")+" · "+(output.DisplayName??output.Name);
-            candidates.Add(new(label,id,_query.WorkflowId,port,Array.Empty<string>()));
-            AddMembers(port.Type,Array.Empty<string>(),label,id,port);
-        }
-        void AddMembers(TypeRef type,IReadOnlyList<string> path,string label,string id,Port root)
-        {
-            while(type.Shape==ValueShape.Sequence)type=type.Element!;
-            if(type.Shape!=ValueShape.Record)return;
-            foreach(var member in type.Fields)
-            {var next=path.Append(member.Id).ToArray();var name=label+" / "+member.Id;candidates.Add(new(name,id,_query.WorkflowId,root,next));AddMembers(member.Type,next,name,id,root);}
+            try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,_query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
+            catch(ArgumentException){continue;}
         }
         return candidates.AsReadOnly();
     }

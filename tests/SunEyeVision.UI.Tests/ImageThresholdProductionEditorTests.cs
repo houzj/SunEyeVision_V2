@@ -125,13 +125,14 @@ public sealed class ImageThresholdProductionEditorTests
     {
         using var f = new Fixture();
         var text = f.ThresholdText(); text.Text = "173";
-        var preview = new ImageSourceReference(f.Formal.Id, "OutputImage", f.Formal.Name, "输出图像");
-        f.Formal.SelectedDisplaySource = preview;
+        var preview = SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(
+            f.Formal.Id,"OutputImage",SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image)));
+        f.Formal.SelectedDisplayReference = preview;
         Assert.True(Assert.IsType<DefaultDebugWindow>(f.Window).TryConfirm(out var error), error);
         Assert.Equal(173, Get(f.Published, "Threshold")); Assert.Equal(1, f.Publications);
-        Assert.Same(preview, f.Formal.SelectedDisplaySource); Assert.False(f.Window.IsVisible);
-        f.Host.Undo(); Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Same(preview, f.Formal.SelectedDisplaySource);
-        f.Host.Redo(); Assert.Equal(173, Get(f.Published, "Threshold")); Assert.Same(preview, f.Formal.SelectedDisplaySource);
+        Assert.Equal(preview, f.Formal.SelectedDisplayReference); Assert.False(f.Window.IsVisible);
+        f.Host.Undo(); Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Equal(preview, f.Formal.SelectedDisplayReference);
+        f.Host.Redo(); Assert.Equal(173, Get(f.Published, "Threshold")); Assert.Equal(preview, f.Formal.SelectedDisplayReference);
     });
 
     [Fact]

@@ -49,7 +49,13 @@ internal sealed class WorkflowBindingContext : IDisposable
                     // adapter remains responsible until its explicit canonical bridge is implemented.
                 }
             }
-            var schema=new ToolSchema(Array.Empty<Port>(),ports);
+            var schema=new ToolSchema(Array.Empty<Port>(),ports,outputDisplay:ports.Select(port=>
+            {
+                var output=outputs[port.Id];
+                var name=!string.IsNullOrWhiteSpace(output.DisplayName)?output.DisplayName:
+                    !string.IsNullOrWhiteSpace(output.Name)?output.Name:port.Id;
+                return new OutputDisplayNode(port.Id,name,output.DisplayMembers);
+            }));
             result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),new ReadOnlyDictionary<string,OutputVariable>(outputs),complete));
         }
         return result;
@@ -138,8 +144,16 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(!setting.OriginId.StartsWith(prefix,StringComparison.Ordinal)||setting.OriginId.Length==prefix.Length)
             return "自动来源归属不是有效的连线标识。";
         var reference=setting.Reference;
+        // Automatic connections may target one image nested in a declared record.
+        // Type remains the root port declaration; only its formal member path is projected.
+        TypeRef? selectedType=reference.Type;
+        foreach(var member in reference.MemberFieldPath)
+        {
+            if(selectedType?.Shape!=ValueShape.Record){selectedType=null;break;}
+            selectedType=selectedType.Fields.SingleOrDefault(field=>field.Id==member)?.Type;
+        }
         if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId!=fieldId
-            ||reference.Type!=TypeRef.ResourceOf(ResourceKind.Image)||reference.MemberFieldPath.Count!=0
+            ||selectedType!=TypeRef.ResourceOf(ResourceKind.Image)
             ||reference.Selection is not BindingSelection.AllItems||setting.Conversion!=BindingConversion.Automatic
             ||(reference.ScopeId??scopeId)!=scopeId)
             return "自动图像来源的字段、引用或工作流归属不一致。";

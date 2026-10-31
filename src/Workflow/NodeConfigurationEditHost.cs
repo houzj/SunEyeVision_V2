@@ -767,7 +767,7 @@ public sealed partial class NodeConfigurationEditHost
         model.Id, model.Name, model.Description, model.SchemaVersion, model.Version,
         Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
             Nodes = w.Nodes.Select(n => new { n.Id, n.Name, n.DispName, n.ToolType, n.SubroutineId, n.IsEnabled,
-                n.GlobalIndex, n.LocalIndex, n.PositionX, n.PositionY, n.Width, n.Height, n.SelectedDisplaySource }),
+                n.GlobalIndex, n.LocalIndex, n.PositionX, n.PositionY, n.Width, n.Height, n.SelectedDisplayReference }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort, c.ManualPathPoints }) })
     }, WorkflowSerializationOptions.Compact);
     private static bool SameEditableValue(object? a, object? b) => JsonSerializer.Serialize(new { Type = a?.GetType().FullName, Value = a }, WorkflowSerializationOptions.Compact)

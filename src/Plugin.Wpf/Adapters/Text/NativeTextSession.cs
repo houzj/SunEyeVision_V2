@@ -135,7 +135,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
                 var candidates=snapshot.Candidates.Select(candidate=>
                 {
                     if(candidate is null)throw new ArgumentException("文本来源不能为空。");
-                    var frozen=candidate with {MemberPath=Array.AsReadOnly(candidate.MemberPath.ToArray())};
+                    var frozen=candidate.Freeze();
                     originals.Add(frozen,candidate);return frozen;
                 }).ToArray();
                 // The host supplies front/self/internal scope. No C07 Clear node or guessed evaluator.
@@ -146,10 +146,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
                     if(type.Shape!=ValueShape.Scalar||type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64 or ScalarKind.Text))
                         throw new ArgumentException("文本来源只支持已声明的整数、浮点或字符串。");
                 }
-                nodes=candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId))
-                    .Select(group=>new ReferenceTreeNode(group.First().NodeDisplayName,
-                        Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(candidate.Label,Array.Empty<ReferenceTreeNode>(),candidate)).ToArray())))
-                    .ToArray();
+                nodes=DeclaredReferenceTree.Build(candidates,false).ToArray();
             }
             catch(Exception error)
             {if(LeaseCurrent(lease,false))SetSourceError(error.Message);return;}

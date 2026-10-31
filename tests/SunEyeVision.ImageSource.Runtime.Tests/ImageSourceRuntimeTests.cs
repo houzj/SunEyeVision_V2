@@ -79,7 +79,7 @@ public sealed class ImageSourceRuntimeTests
             var context=Context(resources,localAddress:path);var input=Input(new Dictionary<string,object?>{{ImageSourceTool.LocalAddress,Path.Combine(directory,"stale.png")},{ImageSourceTool.Sequence,11L}});
             var result=await session.ExecuteAsync(new(new ImageSourceSettings(),input,context));
             Assert.True(result.Success,string.Join(";",result.Diagnostics.Select(d=>d.Message)));
-            using var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
+            using var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
             Assert.Equal(new byte[]{20,90},image.CopyPixels());Assert.Equal(context.Identity,image.Frame.ProducerRun);
             Assert.Equal(path,values[ImageSourceOutput.FileReference]);Assert.Equal(11L,values[ImageSourceOutput.Sequence]);
             using var domain=image.EffectiveDomain.AcquireReader();Assert.Equal(new[]{new RegionRun(0,0,1)},domain.ReadRuns(0,4096).ToArray());
@@ -167,8 +167,8 @@ public sealed class ImageSourceRuntimeTests
         await using var session=new ImageSourceTool().CreateSession();
         var result=await session.ExecuteAsync(new(new ImageSourceSettings{SourceKind="camera",CameraDeviceId="device"},inputs,context));
         Assert.True(result.Success,string.Join(";",result.Diagnostics.Select(d=>d.Message)));
-        var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
-        Assert.Same(image,values[ImageSourceOutput.GrayImage]);Assert.NotEqual(sourceFrame,image.Frame);
+        var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
+        Assert.Same(image,((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));Assert.NotEqual(sourceFrame,image.Frame);
         Assert.Equal(context.Identity,image.Frame.ProducerRun);Assert.Equal(ImageSourceOutput.Image,image.Frame.SourcePortId);
         Assert.Equal(image.Frame,image.EffectiveDomain.SourceFrame);Assert.Equal(7L,values[ImageSourceOutput.Sequence]);
         Assert.Equal("frame-7",values[ImageSourceOutput.FrameId]);Assert.Equal("time-7",values[ImageSourceOutput.Timestamp]);

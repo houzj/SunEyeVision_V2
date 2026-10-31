@@ -119,6 +119,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             }
         if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         if(_refreshing)return;
+        if(sender is not null&&_main.SelectedNode is {} selected)
+            selected.SelectedDisplayReference=source?.Key;
         var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
         if(source is {NavigationIndex:>=0})
@@ -197,7 +199,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;_navigationIndex=int.MinValue;}
+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;_navigationIndex=int.MinValue;}
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
@@ -207,8 +209,14 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 var navigation=_main.SelectedDisplayImageSourceIndex;
                 var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
                 var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
-                var output=(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
-                    :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                // A persisted explicit identity must match exactly, including scope and members.
+                // Missing or stale declarations never silently select a different image.
+                var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
+                var output=explicitChoice is not null
+                    ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
+                    :(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
+                        :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                if(explicitChoice is not null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
                 _navigationIndex=navigation;
                 _inputSource=input;_outputSource=output;
                 var outputChoiceRevision=_outputChoiceRevision;

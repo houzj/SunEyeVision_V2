@@ -37,6 +37,22 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _shellTheme;
         private SunEyeVision.UI.Services.Images.ResultWorkspacePresenter? _workspacePresenter;
+        private System.Collections.Specialized.INotifyCollectionChanged? _resultRoots;
+        private void ReleaseResultSelection()
+        {
+            if(_resultRoots is not null)_resultRoots.CollectionChanged-=OnResultRootsChanged;
+            _resultRoots=null;
+            ModuleResultTreeView.SetCurrentValue(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedItemProperty,null);
+            ModuleResultTreeView.SelectedItemPath=null;
+            CommandManager.InvalidateRequerySuggested();
+        }
+        private void OnResultRootsChanged(object? sender,System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+        {
+            if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true)return;
+            ModuleResultTreeView.SetCurrentValue(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedItemProperty,null);
+            ModuleResultTreeView.SelectedItemPath=null;
+            CommandManager.InvalidateRequerySuggested();
+        }
         private void ReleaseSourceSession()
         {
             var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
@@ -151,6 +167,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             ObjectDisposedException.ThrowIf(_shutdown,this);
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+            ReleaseResultSelection();
             ReleaseWorkspace();
             _viewModel = viewModel;
             System.Windows.Data.BindingOperations.SetBinding(Workspace,
@@ -158,6 +175,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
             // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
             ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
+            _resultRoots=(System.Collections.Specialized.INotifyCollectionChanged)viewModel.ResultTreeRoots;
+            _resultRoots.CollectionChanged+=OnResultRootsChanged;
             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             RefreshSourceSession();AttachWorkspace();
@@ -178,6 +197,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var main=_viewModel;_viewModel=null!;
             Cleanup(new Action[]{
                 ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
+                ReleaseResultSelection,
                 ()=>ModuleResultTreeView.ItemsSource=null,
                 ()=>main?.CloseResultPresentation(),CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
@@ -276,7 +296,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void OnResultTreeSelectionChanged(object sender,RoutedPropertyChangedEventArgs<object> e)
         {
             ModuleResultTreeView.SelectedItemPath=e.NewValue is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
-                ?row.BindingInfo?.ResultPath??row.Key:string.Empty;
+                ?row.BindingInfo?.ResultPath??row.Key:null;
             CommandManager.InvalidateRequerySuggested();
         }
 

@@ -47,17 +47,17 @@ public sealed class NodeConfigurationEditHostTests
     {
         var model = Model(); var source = model.Workflows[0].Nodes[0]; var parse = model.Workflows[0].Nodes[1];
         var host = new NodeConfigurationEditHost(model); var edit = host.BeginEdit("f", "source");
-        var sourcePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
-        var parsePreview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
-        source.SelectedDisplaySource = sourcePreview; parse.SelectedDisplaySource = parsePreview;
+        var sourcePreview = PreviewReference();
+        var parsePreview = PreviewReference();
+        source.SelectedDisplayReference = sourcePreview; parse.SelectedDisplayReference = parsePreview;
         ((BindingAdaptationB2Tests.SourceParameters)edit.Node.Parameters).Name = "edited";
         host.Validate(edit); host.Commit(edit);
         Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);
-        Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
+        Assert.Equal(sourcePreview, source.SelectedDisplayReference); Assert.Equal(parsePreview, parse.SelectedDisplayReference);
         // Renaming the source output legitimately updates its stable-ID downstream binding.
         Assert.Equal("source.edited", ((ProtocolParseParameters)parse.Parameters).InputText);
-        host.Undo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
-        host.Redo(); Assert.Same(sourcePreview, source.SelectedDisplaySource); Assert.Same(parsePreview, parse.SelectedDisplaySource);
+        host.Undo(); Assert.Equal(sourcePreview, source.SelectedDisplayReference); Assert.Equal(parsePreview, parse.SelectedDisplayReference);
+        host.Redo(); Assert.Equal(sourcePreview, source.SelectedDisplayReference); Assert.Equal(parsePreview, parse.SelectedDisplayReference);
         Assert.Equal("edited", ((BindingAdaptationB2Tests.SourceParameters)source.Parameters).Name);
     }
 
@@ -68,7 +68,7 @@ public sealed class NodeConfigurationEditHostTests
     {
         var model = Model(); model.GlobalVariables.Add(new GlobalVariable("v", "initial", "String"));
         var host = new NodeConfigurationEditHost(model); var before = host.Capture(); var edit = host.BeginEdit("f", "source");
-        model.Workflows[0].Nodes[0].SelectedDisplaySource = new("source", "OutputImage", "source", "图像");
+        model.Workflows[0].Nodes[0].SelectedDisplayReference = PreviewReference();
         switch (change)
         {
             case "binding": model.Workflows[0].Nodes[1].ParamSettings.SetSetting(SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting.CreateBinding("InputText", "source", "value")); break;
@@ -104,8 +104,8 @@ public sealed class NodeConfigurationEditHostTests
         var model = Model(); var host = new NodeConfigurationEditHost(model);
         var before = host.Capture(); var draft = host.BeginEdit("f", "source");
         ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name = "candidate";
-        var preview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
-        model.Workflows[0].Nodes[0].SelectedDisplaySource = preview;
+        var preview = PreviewReference();
+        model.Workflows[0].Nodes[0].SelectedDisplayReference = preview;
         if (change == "topology") model.Workflows[0].Connections.Add(new("edge", "source", "parse"));
         if (change == "enabled") model.Workflows[0].Nodes[0].IsEnabled = false;
         host.SynchronizeStructure();
@@ -124,9 +124,11 @@ public sealed class NodeConfigurationEditHostTests
             Assert.Equal("candidate", ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name);
             if (change == "enabled") Assert.False(model.Workflows[0].Nodes[0].IsEnabled);
         }
-        Assert.Same(preview, model.Workflows[0].Nodes[0].SelectedDisplaySource);
+        Assert.Equal(preview, model.Workflows[0].Nodes[0].SelectedDisplayReference);
     }
 
+    private static string PreviewReference()=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+        new SunEyeVision.Plugin.Contracts.OutputReference("source","OutputImage",SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image),scopeId:"f"));
     [Fact]
     public void External_design_changes_are_rejected_instead_of_silently_overwritten()
     {

@@ -12,13 +12,11 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
     public string ToolId=>Id;
     public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10);
     public ToolSchema SettingsSchema=>ImageSourceFields.Schema;
-    public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports);
+    public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports,outputDisplay:ImageSourceOutput.Display);
     public ResultProjectionDescriptor ResultProjection {get;}=new(ResultProjectionKind.PropertyList,ResultCardinality.One,new[] {
         new ResultColumnDescriptor("image","图像",new(ImageSourceOutput.Image)),
         new ResultColumnDescriptor("gray-image","灰度图像",new(ImageSourceOutput.GrayImage)),
-        new ResultColumnDescriptor("width","图像宽度",new(ImageSourceOutput.Width)),
-        new ResultColumnDescriptor("height","图像高度",new(ImageSourceOutput.Height)),
-        new ResultColumnDescriptor("pixel-format","图像像素格式",new(ImageSourceOutput.PixelFormat)),
+
         new ResultColumnDescriptor("source","图像来源",new(ImageSourceOutput.SourceKind)),
         new ResultColumnDescriptor("device","设备",new(ImageSourceOutput.DeviceId)),
         new ResultColumnDescriptor("file","文件引用",new(ImageSourceOutput.FileReference)),
@@ -38,7 +36,7 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new Port(DeviceId,TypeRef.ScalarOf(ScalarKind.Text),Required:false),
         new Port(DeviceFrameId,TypeRef.ScalarOf(ScalarKind.Text),Required:false),
         new Port(DeviceTimestamp,TypeRef.ScalarOf(ScalarKind.Text),Required:false)
-    },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()));
+    },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()),outputDisplay:ImageSourceOutput.Display);
     public IReadOnlyList<Diagnostic> Validate(ImageSourceSettings settings)=>settings.Validate();
     public ToolCapabilities Capabilities()=>new(new[]{"halcon"});
     public IToolSession<ImageSourceSettings,ImageSourceOutput> CreateSession()=>new ImageSourceSession();

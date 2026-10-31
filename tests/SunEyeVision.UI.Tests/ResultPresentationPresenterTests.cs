@@ -367,9 +367,9 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         var rows = new ObservableCollection<FlatResultRow>();
         var presenter = new ResultPresentationPresenter(rows, _ => { });
         presenter.Present(publication);run.ReleaseResult();Assert.Equal(0,released);
-        Assert.Equal("资源待接入",rows[1].DisplayValue);Assert.Equal("记录",rows[2].DisplayValue);
+        Assert.Equal("",rows[1].DisplayValue);Assert.Equal("",rows[2].DisplayValue);
         rows[2].IsExpanded=true;
-        Assert.All(rows.Where(row=>row.DisplayName=="image"),row=>Assert.Equal("资源待接入",row.DisplayValue));
+        Assert.All(rows.Where(row=>row.DisplayName=="image"),row=>Assert.Equal("",row.DisplayValue));
         Assert.Equal("secret",rows.Single(row=>row.DisplayName=="label").DisplayValue);
         Assert.Equal(0, poison.Accesses); Assert.Equal(0, poison.Disposals);
         run.ReleasePublication();Assert.Equal(0,released);presenter.Dispose(); presenter.Dispose(); Assert.Equal(1, released);

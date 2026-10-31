@@ -216,10 +216,12 @@ public sealed class DeclaredPropertyList : IToolResultView
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
         ResultPresentationValueState.Unavailable => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(model.State),
+        ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
+            model.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
         ResultPresentationValueState.ResourcePending => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "资源显示未提供" : StatusText(model.State),
         _ => node.Declaration.Shape switch
         {
-            ValueShape.Record => "记录",
+            ValueShape.Record => "",
             ValueShape.Sequence => node.ChildCount is {} count ? count==0?"空序列 (0)":"["+count.ToString(CultureInfo.InvariantCulture)+" 项]":"值不可用",
             ValueShape.Geometry => node.GeometryValue is { } geometry ? GeometryText(geometry) : "几何值不可用",
             _ => node.ScalarValue switch

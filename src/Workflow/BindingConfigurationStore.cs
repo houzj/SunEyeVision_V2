@@ -281,7 +281,7 @@ public sealed class BindingConfigurationStore
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
-        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplaySource
+        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
     }, WorkflowSerializationOptions.Compact);
 
     // Runtime initialization timestamps are not binding changes. Initial values are configuration.
@@ -355,7 +355,7 @@ public sealed class BindingConfigurationStore
                     RuntimeConfiguration = node.RuntimeConfiguration?.Copy(),
                     Parameters = node.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(node.Parameters)
                         : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters(),
-                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource)
+                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplayReference = node.SelectedDisplayReference
                 });
             }
             foreach (var connection in workflow.Connections)

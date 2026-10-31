@@ -125,11 +125,12 @@ public partial class MainWindowViewModel
                 }
                 foreach(var port in schema.Outputs)
                 {
-                    var label=snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id;
+                    var label=schema.FindOutputDisplay(port.Id)?.DisplayName
+                        ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
                     var declaredNames=projection?.Columns.Where(column=>column.Value.PortId==port.Id
                         &&column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
                         .Select(column=>column.DisplayName).Distinct(StringComparer.Ordinal).ToArray();
-                    if(declaredNames?.Length==1)label=declaredNames[0];
+                    if(schema.FindOutputDisplay(port.Id) is null&&declaredNames?.Length==1)label=declaredNames[0];
                     Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
@@ -148,8 +149,15 @@ public partial class MainWindowViewModel
                         }
                         if(type.Shape==ValueShape.Record)
                             foreach(var field in type.Fields)
+                            {
+                                // A record with one image keeps its declared group label in the image selector.
+                                var onlyImage=field.Type==TypeRef.ResourceOf(ResourceKind.Image)
+                                    &&type.Fields.Count(item=>item.Type==TypeRef.ResourceOf(ResourceKind.Image))==1;
+                                var memberPath=path.Append(field.Id).ToArray();
+                                var memberName=schema.FindOutputDisplay(port.Id,memberPath)?.DisplayName??field.Id;
                                 Walk(field.Type,value is {IsMissing:false,IsNull:false}?value.GetField(field.Id):null,
-                                    path.Append(field.Id).ToArray(),index,name+" / "+field.Id);
+                                    memberPath,index,onlyImage?name:name+" / "+memberName);
+                            }
                         else if(type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!))
                         {
                             if(index is not null||path.Length>0){plan.Diagnostics.Add(name+"：组合内或嵌套序列不具备正式索引合同，当前不可显示。");return;}

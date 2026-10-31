@@ -46,9 +46,11 @@ public sealed class ReferenceExpansionRequest : INotifyPropertyChanged,IDisposab
     internal ReferenceExpansionRequest(ReferenceFieldSession session,long generation,ReferenceExpansionPreference preference,bool index)
     {
         _session=session;_generation=generation;_preference=preference;_index=index;Target=session.Target;
-        ClickCommand=new RequestCommand(value=>IsValid&&HasSelection&&!IsIndex&&_session!.ContainsSourceNode(ReferenceFieldSession.Unwrap(value)),
+        ClickCommand=new RequestCommand(value=>IsValid&&HasSelection&&!IsIndex&&_session!.ContainsSourceNode(ReferenceFieldSession.Unwrap(value))
+            &&ReferenceFieldSession.Unwrap(value) is {EnumEntrysA.Count:0},
             value=>_session!.ClickCommand.Execute(value));
-        IndexClickCommand=new RequestCommand(value=>IsValid&&HasSelection&&IsIndex&&_session!.ContainsIndexNode(ReferenceFieldSession.Unwrap(value)),
+        IndexClickCommand=new RequestCommand(value=>IsValid&&HasSelection&&IsIndex&&_session!.ContainsIndexNode(ReferenceFieldSession.Unwrap(value))
+            &&ReferenceFieldSession.Unwrap(value) is {EnumEntrysA.Count:0},
             value=>_session!.IndexClickCommand.Execute(value));
         RefreshCommand=new RequestCommand(_=>IsValid,_=>_session!.Refresh());
         session.PropertyChanged+=OnSessionChanged;preference.PropertyChanged+=OnPreferenceChanged;

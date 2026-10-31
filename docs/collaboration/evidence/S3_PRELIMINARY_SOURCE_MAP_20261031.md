@@ -112,3 +112,18 @@
 ## 复制成功反馈依赖
 
 已定位控件库现有原件 `Native.Display.VMControls.HikMessageBox.CreateMessageBox`，支持 `MessageIcons.Ok` 和 `MessageButtons.NoButton`；原件在复制成功且文本与剪贴板不同时非模态显示约1.5秒。其静态自动关闭 Show 使用 ShowDialogDelay，不能不核语义直接替代非模态。要迁移时需确保拥有窗口、UI dispatcher、关闭/切换时定时器退出及剪贴板异常行为，新增真实WPF回归；目前未接入，不计完成。
+## 路径生产链待核风险
+
+`ImageResultControl.OnResultTreeSelectionChanged` 将可绑定项的 `BindingInfo.ResultPath` 或行Key赋给路径栏；无有效选择赋空字符串，而模板仅在 null 时折叠。当前新增复制测试直接设置 SelectedItem 并手动传入测试字符串，验证复制/提示生命周期但没有证明真实鼠标或键盘选择 → 路径栏 → 复制按钮参数这一整链。需在用户验收版本不变的前提下，后续通过实际路由选择验证路径是否符合当前正式引用语义、空选中是否隐藏并防止复制旧项；任何修正整批回归，不能把现有370项当此链通过。
+
+补充：以真实行的鼠标路由选择，再由 WPF ButtonAutomationPeer 调用复制按钮，使用隔离剪贴板替身的单例诊断通过，验证了路径栏、按钮参数及复制反馈链；日志 `Release/_validation/s3-routed-copy-diagnostic-3.log`。直接 RaiseEvent(Click) 不触发按钮的命令调用，前两次失败不能据此认定产品按钮失效。此为单例诊断，不替代整批回归，也未覆盖空选择或 Windows 系统剪贴板。
+
+## 路径身份澄清（2026-10-31）
+
+重命名链补证：`Workflow` 和 `WorkflowNodeBase` 均继承 `ObservableObject`；节点改名的 `RenameCanvasNodeCommand` 在执行和撤销时修改 `DispName`、`Name` 并刷新，根流程改名由 `RootWorkflowNameCommand` 进入历史并同步页签和执行快照。结果路径若需实时反映名称，须以选中结果的 ScopeId/NodeId 确定实体，并处理名称变化、选中项/结果更换、重初始化和关闭的订阅清理；还需覆盖 Undo/Redo。`ProducerBinding.DisplayPath` 使用持久化名称快照，不能直接认定自动跟随改名。当前证据不证明结果栏已订阅这些变化。
+
+当前已有完整展示格式：`src/Workflow/GlobalVariable.cs` 的 `ProducerBinding.DisplayPath` 是 `WorkflowName.NodeName.ResultDisplayName`，`InputSourceDisplayText` 消费它；这些名称字段是显示快照。与其并存的 `ReferenceExpression` 是版本化序列化的 `OutputReference`，是唯一生产者持久身份；不能将点分名称作为可解析身份。`ImageResultControl.EditResultVariable` 已在正式作用域和节点 ID 唯一匹配后构造这三项展示字段。针对 S3 可复用相同显示约定与身份校验生成当前显示内容，但必须另外覆盖名称更改、名称含分隔符、重复名称、结果撤销/退场与宿主切换；尚未证实名称快照自动随重命名更新，不能声称复制文本可以作为重新绑定输入。当前人工验收版本未变。
+
+原件 `VM.Core/VmFrameTreeBase.cs:43` 的 FullName 向父级遍历，以各实体 UniqueName 和点分隔构造，IO 有父级时以括号包围其 UniqueName 并跳到 Root；用户变量模块有特殊标记。`VmIO.cs:452`、`VmModule.cs:720`、`VmProcedure.cs:324` 均以 Name 作为 UniqueName；原件选择后去掉百分号再显示复制。现行 `ImageResultControl.EditResultVariable` 已从正式 ScopeId/NodeId 查到工作流 Name 与节点 DispName，并将其与正式 ReferenceExpression 分开保存；工具参数页 `RuntimeNodeConfigurationControl.FormatReference` 使用节点显示名、声明输出显示名及成员路径。上述能力说明可形成用户可读名称，但本项目名称层级、嵌套成员及可复制路径解析合同不能凭 VM 拼接语法推断，尤其不能把展示名称当持久身份。需集中核对重命名、同名及无声明项后再实施。
+
+此前“复制正式路径”表述不准确。`ResultPresentationPresenter` 用端口 ID 和成员路径构造 `ResultBindingInfo.ResultPath`，例如 `output.width`；界面复制的是此结果内局部路径，不含流程和节点身份。正式持久化绑定身份另由 `ResultBindingInfo.ReferenceExpression` 序列化 `OutputReference`，包含来源节点、流程等身份；两者不是同一字符串。原件选中时取 IO 的 `FullName` 并去除 `%`，不是当前这个局部路径。现有自动回归只证明局部路径经选择、复制按钮与剪贴板替身传递一致，不能证明复制值等价于完整 VM 路径或可直接作为当前正式绑定表达式；当前工具提示“正式引用路径”可能误导。完整用户可读路径格式与复制用途尚未取得充分合同证据，列为 S3 待确认差异，不借自动测试通过认定原件等价，也不在人工验收期间更换程序。

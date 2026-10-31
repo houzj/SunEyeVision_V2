@@ -17,19 +17,14 @@ internal static class RootWorkflowReferencePicker
  {
   var resource=context.Resolve(proxy).Resource;
   var query=context.Query;var candidates=new List<DeclaredReferenceCandidate>();var target=proxy.NodeId;
-  var names=query.GetAvailableDataSources(target,null,true).Where(s=>!s.SourceNodeId.StartsWith("__",StringComparison.Ordinal)).GroupBy(s=>s.SourceNodeId).ToDictionary(g=>g.Key,g=>g.First().SourceNodeName);
-  foreach(var id in query.BindingCandidateNodeIds?.Invoke(target)??names.Keys.ToArray())
+  var names=query.GetBindingCandidateNodeNames(target);
+  foreach(var id in names.Keys)
    foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
    {
-    if(output.Kind!=OutputVariableKind.Data)continue;Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
-    var label=(names.GetValueOrDefault(id)??id)+" · "+(output.DisplayName??output.Name);
-    candidates.Add(new(label,id,query.WorkflowId,port,Array.Empty<string>()));Members(port.Type,Array.Empty<string>(),label,id,port);
+    if(output.Kind!=OutputVariableKind.Data)continue;
+    try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
+    catch(ArgumentException){continue;}
    }
-  void Members(TypeRef type,IReadOnlyList<string> path,string label,string nodeId,Port root)
-  {
-   while(type.Shape==ValueShape.Sequence)type=type.Element!;if(type.Shape!=ValueShape.Record)return;
-   foreach(var field in type.Fields){var next=path.Append(field.Id).ToArray();var caption=label+" / "+field.Id;candidates.Add(new(caption,nodeId,query.WorkflowId,root,next));Members(field.Type,next,caption,nodeId,root);}
-  }
   _=context.Resolve(proxy);
   return new(candidates.Where(candidate=>resource is null||resource.Runtime||candidate.SelectedType==resource.Port.Type),
    candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));

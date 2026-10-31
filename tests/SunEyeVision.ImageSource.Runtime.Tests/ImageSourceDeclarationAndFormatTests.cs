@@ -43,12 +43,9 @@ public sealed class ImageSourceDeclarationAndFormatTests
     {
         var expected = new Dictionary<string, TypeRef>
         {
-            [ImageSourceOutput.Image] = TypeRef.ResourceOf(ResourceKind.Image),
-            [ImageSourceOutput.GrayImage] = TypeRef.ResourceOf(ResourceKind.Image),
-            [ImageSourceOutput.Width] = TypeRef.ScalarOf(ScalarKind.Int64),
-            [ImageSourceOutput.Height] = TypeRef.ScalarOf(ScalarKind.Int64),
+            [ImageSourceOutput.Image] = ImageSourceOutput.ImageType,
+            [ImageSourceOutput.GrayImage] = ImageSourceOutput.GrayImageType,
             [ImageSourceOutput.Sequence] = TypeRef.ScalarOf(ScalarKind.Int64),
-            [ImageSourceOutput.PixelFormat] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.SourceKind] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.DeviceId] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.FileReference] = TypeRef.ScalarOf(ScalarKind.Text),
@@ -90,8 +87,8 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(x => x.Message)));
         using var output = outcome.Output!;
         var values = output.ToValues();
-        var image = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
-        var gray = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
+        var image = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
+        var gray = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
         Assert.Equal(PixelLayout.Bgr24, image.Layout.Format);
         Assert.Equal(PixelLayout.Gray8, gray.Layout.Format);
         using var imagePixels = image.AcquirePixels();
@@ -115,9 +112,9 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.Equal("2026-10-28T01:02:03.4560000+00:00", Assert.IsType<string>(values[ImageSourceOutput.Timestamp]));
         Assert.Equal(string.Empty, Assert.IsType<string>(values[ImageSourceOutput.FileReference]));
         Assert.Equal(37L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
-        Assert.Equal(3L, Assert.IsType<long>(values[ImageSourceOutput.Width]));
-        Assert.Equal(2L, Assert.IsType<long>(values[ImageSourceOutput.Height]));
-        Assert.Equal(image.Layout.Format.ToString(), Assert.IsType<string>(values[ImageSourceOutput.PixelFormat]));
+        Assert.Equal(3L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageWidth)));
+        Assert.Equal(2L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageHeight)));
+        Assert.Equal(image.Layout.Format.ToString(), Assert.IsType<string>(((RecordValue)values[ImageSourceOutput.Image]!).Get<string>(ImageSourceOutput.ImageFormat)));
     }
 
     [Theory]
@@ -138,8 +135,8 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(x => x.Message)));
         using var output = outcome.Output!;
         var values = output.ToValues();
-        var image = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
-        var gray = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
+        var image = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
+        var gray = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
         Assert.Equal(PixelLayout.Gray8, image.Layout.Format);
         using var pixels = image.AcquirePixels();
         using var grayPixels = gray.AcquirePixels();
@@ -174,7 +171,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
             var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {SourceKind="camera",CameraDeviceId="device"},CameraInput(camera,1L),context));
             Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
             using var output=outcome.Output!;
-            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(output.ToValues()[ImageSourceOutput.GrayImage]);
+            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)output.ToValues()[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
             Assert.Equal(expected,gray.CopyPixels());
     }
 
@@ -207,8 +204,8 @@ public sealed class ImageSourceDeclarationAndFormatTests
             Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
             using var output=outcome.Output!;
             var values=output.ToValues();
-            var image=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
-            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.GrayImage]);
+            var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
+            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
             var expectGray=format=="mono8"||(format=="original"&&grayInput);
             Assert.Equal(expectGray?PixelLayout.Gray8:PixelLayout.Bgr24,image.Layout.Format);
             Assert.Equal(expectGray?new byte[]{20,90}:new byte[]{20,20,20,90,90,90},image.CopyPixels());
@@ -260,13 +257,13 @@ public sealed class ImageSourceDeclarationAndFormatTests
             Assert.Equal(path, Assert.IsType<string>(values[ImageSourceOutput.FileReference]));
             foreach (var id in new[] { ImageSourceOutput.DeviceId, ImageSourceOutput.FrameId, ImageSourceOutput.Timestamp })
                 Assert.Equal(string.Empty, Assert.IsType<string>(values[id]));
-            Assert.Equal(2L, Assert.IsType<long>(values[ImageSourceOutput.Width]));
-            Assert.Equal(1L, Assert.IsType<long>(values[ImageSourceOutput.Height]));
+            Assert.Equal(2L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageWidth)));
+            Assert.Equal(1L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageHeight)));
             Assert.Equal(21L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
-            var image = Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
+            var image = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
             Assert.Equal(new byte[] { 17, 29 }, image.CopyPixels());
-            Assert.Same(image, values[ImageSourceOutput.GrayImage]);
-            Assert.Equal(PixelLayout.Gray8.ToString(), Assert.IsType<string>(values[ImageSourceOutput.PixelFormat]));
+            Assert.Same(image, ((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
+            Assert.Equal(PixelLayout.Gray8.ToString(), Assert.IsType<string>(((RecordValue)values[ImageSourceOutput.Image]!).Get<string>(ImageSourceOutput.ImageFormat)));
             Assert.Equal(context.Identity, image.Frame.ProducerRun);
         }
         finally { Directory.Delete(directory, recursive: true); }

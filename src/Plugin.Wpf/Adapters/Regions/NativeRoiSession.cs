@@ -153,8 +153,8 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         var kind=geometry.Get<string>("kind");
         if(kind is not ("rectangle" or "sector" or "annulus" or "polygon"))
             throw new NotSupportedException("当前原组合接纳矩形、完整圆环、扇形及多边形。");
-        if(editable&&kind=="annulus"&&Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)>1e-9)
-            throw new NotSupportedException("原SectorRing四项参数只接纳完整圆环。");
+        // Partial annuli retain their exact identity and use the six-field Sector projection.
+        // Full annuli still use the original four-field SectorRing; inherited annuli remain read-only.
     }
     public void Refresh()
     {

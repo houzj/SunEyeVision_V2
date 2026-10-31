@@ -2046,12 +2046,12 @@ internal static class S2DocumentEditingCases
    model.OnRead=()=>session.SetDrawingGroup("mask");Require(session.BeginDraw("rectangle") is null&&session.ActiveDraw is null,"读取中换组仍发旧请求");model.OnRead=null;
    var fresh=session.BeginDraw("rectangle")!;Require(fresh.Group=="mask","新请求未使用显式当前组");session.CancelDraw();
   });
-  Test("原绘制非法及部分圆环候选在宿主写入前拒绝",()=>
+  Test("原绘制非法及退化圆环候选在宿主写入前拒绝",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(320,240,new byte[76800]));using var session=model.Open();session.DrawRequested+=_=>{};
-   var request=session.BeginDraw("annulus")!;var values=RoiGeometryEditing.Values(RingShape());values["end-radians"]=Math.PI;
-   var rejected=false;try{session.CompleteDraw(request,RoiGeometryEditing.Checked(values));}catch(NotSupportedException){rejected=true;}
-   Require(rejected&&model.Attempts==0&&model.Rows.Count==0&&session.ActiveDraw is null,"部分圆环先写后拒或请求未消费");
+   var request=session.BeginDraw("annulus")!;var values=RoiGeometryEditing.Values(RingShape());values["end-radians"]=values["start-radians"];
+   var rejected=false;try{session.CompleteDraw(request,new RecordValue(RoiDeclarations.Shape,values));}catch(ArgumentException){rejected=true;}
+   Require(rejected&&model.Attempts==0&&model.Rows.Count==0&&session.ActiveDraw is null,"退化圆环先写后拒或请求未消费");
    request=session.BeginDraw("rectangle")!;rejected=false;try{session.CompleteDraw(request,RingShape());}catch(ArgumentException){rejected=true;}
    Require(rejected&&model.Attempts==0,"类型不符进入宿主");
   });
@@ -2260,7 +2260,9 @@ internal static class S2DocumentEditingCases
    var a=new RoiHost(ia);var b=new RoiHost(ib);var c=new RoiHost(ic);using var sa=a.Open();using var sb=b.Open();using var sc=c.Open();
    using var scene=new NativeRoiScene{Session=sa};Show(scene);Pump();Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,new(30,40));
    sa.DrawCancelled+=_=>scene.Viewport.Bind(sb);scene.Viewport.Bind(sc);Pump();
-   Require(scene.Viewport.NativeView.ROIList.Cast<object>().SequenceEqual(sb.Items)&&scene.Viewport.NativeView.ImageDataSource is Native.Dependencies.VMControls.RenderInterface.IImageData current&&current.Buffer.Length==204800&&ia.Active==0&&ib.Active==1&&ic.Active==0,"外层旧Bind清掉或释放重入的新图像/稳定投影对象");
+   Require(scene.Viewport.NativeView.ROIList.Cast<object>().SequenceEqual(sb.Items),"旧Bind覆盖新会话的ROI列表");
+   Require(scene.Viewport.NativeView.ImageDataSource is Native.Dependencies.VMControls.RenderInterface.IImageData current&&current.Width==640&&current.Height==320&&current.PixelFormat=="Bgra32"&&current.Buffer.Length==640*320*4,"新帧未按正式BGRA32显示合同保留");
+   Require(ia.Active==0&&ib.Active==1&&ic.Active==0,"旧Bind释放或泄漏帧租约："+ia.Active+","+ib.Active+","+ic.Active);
    Require(sb.BeginDraw("rectangle") is not null&&sc.BeginDraw("rectangle") is null,"旧Bind复活或新会话未接收请求");sb.CancelDraw();
   });
   Test("原绘制视口同会话取消重绑后新请求不被外层CancelPending清除",()=>
@@ -2323,6 +2325,42 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyNativeSector()
  {
+  foreach(var direction in new[]{1d,-1d})Test("部分圆环适配六项原控件保留身份及正负扫角"+direction,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var values=RoiGeometryEditing.Values(SectorShape(170,40));values["kind"]="annulus";values["end-radians"]=values["start-radians"] is double start?start+40*direction*Math.PI/180:throw new InvalidOperationException();
+   var original=RoiGeometryEditing.Checked(values);var row=new RoiEditItem("detect",Guid.NewGuid(),"部分环",original);var model=new RoiHost(image,row);
+   using var session=model.Open();using var editor=new NativeRoiEditor();using var viewport=new NativeRoiViewport();editor.Bind(session);viewport.Bind(session);
+   var scene=new Grid();scene.Children.Add(viewport);scene.Children.Add(editor);Show(scene);session.Select(row.Group,row.Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var projection=(NativeSectorRoiProjection)session.CurROIData!;
+   Require(projection.Kind=="annulus"&&projection.Id==row.Id&&Math.Abs(projection.AngleRange-40)<1e-8&&model.Writes==0,"部分环投影改变身份或原角度");
+   Require(Visuals<Native.Composition.Apps.XmlUI.ParamTabControl.SectorROIStack>(editor).Count()==1&&Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedSectorROI>(viewport).Count()==1,"未借用原六项及真实图形");
+   var fields=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(editor).ToArray();Require(fields.Length==6,"部分环未显示六项");
+   var text=RoiText(fields[0]);text.Focus();Pump();text.Text="321.25";SendKey(text,Key.Enter,true);
+   var next=model.Rows.Single();Require(model.Writes==1&&next.Id==row.Id&&next.Geometry.Get<string>("kind")=="annulus"&&next.Geometry.Get<double>("start-radians")==original.Get<double>("start-radians")&&next.Geometry.Get<double>("end-radians")==original.Get<double>("end-radians"),"中心提交改变原端点或身份");
+   projection=(NativeSectorRoiProjection)session.CurROIData!;projection.AngleRange=60;Require(session.TryCommit(projection),"部分环扫角提交失败");
+   var accepted=model.Rows.Single().Geometry;Require(Math.Abs((accepted.Get<double>("end-radians")-accepted.Get<double>("start-radians"))*180/Math.PI-60*direction)<1e-8,"反向扫角未保留方向");
+   var anchor=original.Get<double>(direction<0?"end-radians":"start-radians");Require(accepted.Get<double>(direction<0?"end-radians":"start-radians")==anchor,"扫角编辑移动了原锚点");
+   projection=(NativeSectorRoiProjection)session.CurROIData!;projection.BeginAngle=-175;Require(session.TryCommit(projection),"跨负180起角未接纳");
+   accepted=model.Rows.Single().Geometry;Require(Math.Abs(accepted.Get<double>(direction<0?"end-radians":"start-radians")+175*Math.PI/180)<1e-10&&Math.Abs((accepted.Get<double>("end-radians")-accepted.Get<double>("start-radians"))*180/Math.PI-60*direction)<1e-8,"BeginAngle修改丢锚点或方向");
+   model.Reject=true;projection=(NativeSectorRoiProjection)session.CurROIData!;projection.Radius=140d/640;Require(!session.TryCommit(projection)&&ReferenceEquals(model.Rows.Single().Geometry,accepted),"拒绝半写部分环");projection.Cancel();model.Reject=false;
+   projection.AngleRange=360;Require(session.TryCommit(projection),"部分环切完整环失败");Pump();
+   var full=model.Rows.Single().Geometry;Require(full.Get<string>("kind")=="annulus"&&Math.Abs((full.Get<double>("end-radians")-full.Get<double>("start-radians"))*180/Math.PI-360*direction)<1e-8&&session.CurROIData is NativeRingRoiProjection,"完整环丢方向或未切四项投影");
+   Require(Visuals<Native.Composition.Apps.XmlUI.ParamTabControl.SectorRingROIStack>(editor).Count()==1,"完整环未重建四项原控件");
+   var fullWrites=model.Writes;projection.AngleRange=20;Require(!session.TryCommit(projection)&&model.Writes==fullWrites,"切换后旧六项投影仍可提交");
+   model.Rows[0]=row;model.Revision++;session.Refresh();Pump();Require(session.CurROIData is NativeSectorRoiProjection&&session.Items.Single().Id==row.Id&&model.Rows.Single().Geometry==original,"版本恢复丢失原定义或六项投影");
+   var writes=model.Writes;projection.Radius=150d/640;Require(!session.TryCommit(projection)&&model.Writes==writes,"旧版本投影仍能提交");
+   session.Dispose();Show(new TextBlock());Require(model.Writes==writes,"卸载后写入");
+  });
+  foreach(var direction in new[]{1d,-1d})Test("部分圆环适配CompleteDraw成功保留原始端点"+direction,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(640,320,new byte[640*320]));using var session=model.Open();session.DrawRequested+=_=>{};
+   var values=RoiGeometryEditing.Values(SectorShape());values["kind"]="annulus";values["end-radians"]=values["start-radians"] is double start?start+40*direction*Math.PI/180:throw new InvalidOperationException();var shape=RoiGeometryEditing.Checked(values);
+   var request=session.BeginDraw("annulus")!;Require(session.CompleteDraw(request,shape)&&model.Writes==1&&session.CurROIData is NativeSectorRoiProjection,"部分环完成入口未单次创建六项投影");
+   Require(model.Rows.Single().Geometry==shape&&session.CurROIData!.Kind=="annulus"&&session.CurROIData.Id==model.Rows.Single().Id&&session.ActiveDraw is null,"完成入口改变原角度身份或残留请求");
+   Require(!session.CompleteDraw(request,shape)&&model.Writes==1,"完成请求可重放");
+  });
   Test("原Sector六项/非方帧换算、跨180扫角、实际原图形和单次提交",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();

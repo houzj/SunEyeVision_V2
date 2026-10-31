@@ -53,10 +53,12 @@ internal static class S2DocumentEditingCases
         var shell=new Window{Width=620,Height=400,Content=resultHost,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);
         node.DebugWindowStyle=DebugWindowStyle.Custom;
-        var threshold=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
-        DefaultDebugWindow Open()
+        var threshold=BindingId("LowThreshold");
+        const string modeId="field:8ca20000000040008000000000000001";
+        DefaultDebugWindow Open()=>OpenFor(node);
+        DefaultDebugWindow OpenFor(WorkflowNodeBase target)
         {
-            vm.OpenDebugWindowCommand.Execute(node);Pump();
+            vm.OpenDebugWindowCommand.Execute(target);Pump();
             var window=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
             window.UpdateLayout();Pump();return window;
         }
@@ -71,10 +73,7 @@ internal static class S2DocumentEditingCases
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         var path=Path.Combine(folder,"runtime-editor.solution");
         Require(solutions.SaveCurrentDocument(path).FileWritten,"初始化测试文件位置失败");
-        ComboBox? oldInputCombo=null;
-        string? sourceNodeId=null;
             var source=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
-            sourceNodeId=source.Id;
             var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();
             png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,64).ToArray(),8)));
             using(var output=File.Create(imageFile))png.Save(output);
@@ -84,7 +83,6 @@ internal static class S2DocumentEditingCases
             vm.AddNodeToWorkflow(source);
 
         GlobalVariable? uiVariable=null;
-        if(Environment.GetEnvironmentVariable("S4_EDITOR_UI_ONLY")=="1")
         {
             var host=solutions.Session!.Editing.Host;var variables=host.BeginVariableEdit();
             uiVariable=new GlobalVariable("验收阈值",77d,"Double","验收参数");
@@ -92,7 +90,6 @@ internal static class S2DocumentEditingCases
             host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),variables);
         }
         var first=Open();
-        if(Environment.GetEnvironmentVariable("S4_EDITOR_UI_ONLY")=="1")
         {
             var formalOpening=node.RuntimeConfiguration!;
             var savedOpening=File.ReadAllBytes(path);
@@ -100,15 +97,18 @@ internal static class S2DocumentEditingCases
             var tabs=Logical(Control(first)).OfType<TabControl>().Single();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
             var combo=(ComboBox)input.InputElement!;
-            Case("S1真实MainWindow打开基本页与正式来源下拉",()=>
+            Case("真实MainWindow打开基本页与正式来源下拉",()=>
             {
                 Require(tabs.SelectedIndex==0&&combo.IsLoaded&&combo.IsVisible,"实际参数窗未从基本页打开或来源控件未加载");
+                Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&first.EditorControl is null
+                    &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");
+                Require(Logical(Control(first)).OfType<DeclaredInputFieldsView>().Single().Fields.Count==4,"四个真实输入未进入窗口");
                 Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未注册唯一编辑范围");
                 Require(combo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is ReferenceSetting reference
                     &&reference.Reference.NodeId==source.Id&&reference.Reference.PortId=="output.image"),"正式图像源输出没有进入真实下拉");
                 Capture(first,"runtime-editor-ui-stage.png");
             });
-            Case("S1来源选择仅写私有字段且展示中文声明",()=>
+            Case("来源选择仅写私有字段且展示中文声明",()=>
             {
                 combo.IsDropDownOpen=true;Pump();
                 var choice=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting reference
@@ -120,38 +120,88 @@ internal static class S2DocumentEditingCases
                 Require(choice.Content?.ToString()?.Contains("图像",StringComparison.Ordinal)==true
                     &&choice.Content?.ToString()?.Contains("output.image",StringComparison.Ordinal)!=true,"来源下拉没有消费正式中文显示声明");
             });
-            Case("真实Blob阈值仍为明确S1占位，不能冒充变量功能链已接入",()=>
+            Case("未修改数值或未接入项时整窗仍明确拒绝调试确认保存",()=>
             {
-                Threshold(first);var field=Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Single(item=>item.FieldId==threshold);
-                Require(!field.View.IsLoaded&&!field.View.IsVisible,"原正式阈值字段已经呈现，必须改为真实功能接纳验收，不能沿用占位结论");
-                Require(Visual(Control(first)).OfType<FrameworkElement>().Any(element=>element.GetType().Name=="NativeThresholdUiDraftControls"&&element.IsVisible),"可见页没有明确S1阈值组合");
-                Require(solutions.Session!.Editing.Host.GetVariableNames(solutions.CurrentSolution!.Id).ContainsKey(uiVariable!.Id)
-                    &&node.RuntimeConfiguration!.Fields.Read(threshold) is ConstantSetting
-                    &&context.DraftNode.RuntimeConfiguration!.Fields.Read(threshold) is ConstantSetting,"候选准备或页面显示擅自写入变量引用");
-                Capture(first,"runtime-editor-variable-boundary.png");tabs.SelectedIndex=0;Pump();
+                var rejected=false;var execution=Control(first).RunDebugAsync();PumpUntil(()=>execution.IsCompleted);
+                try{execution.GetAwaiter().GetResult();}catch(InvalidOperationException failure)when(IsUnavailableBoundary(failure.Message)){rejected=true;}
+                Require(rejected&&context.DebugOwner.ActiveRuns==0,"默认页面进入未闭合的算法调试");
+                Require(!first.TryConfirm(out var boundary)&&IsUnavailableBoundary(boundary)&&first.IsVisible,"默认页面绕过整窗保护确认");
+                vm.SaveCurrentSolutionCommand.Execute(null);Pump();
+                Require(savedOpening.SequenceEqual(File.ReadAllBytes(path))&&ReferenceEquals(formalOpening,node.RuntimeConfiguration),"默认页面绕过整窗保护保存或发布");
             });
-            Case("S1纯UI阻止调试与确定，不取得算法运行租约",()=>
+            Case("真实九参数控件加载、规范默认及正式配置隔离",()=>
+            {
+                Threshold(first);var fields=Logical(Control(first)).OfType<DeclaredFieldsView>().Single();
+                Require(fields.Fields.Select(f=>f.FieldId).Distinct().Count()==53,"真实Blob设置字段不是53项");
+                var names=new[]{"LowThreshold","HightThreshold","FindNum","MinArea","MaxArea","MinCircularity","MaxCircularity","MinRectangularity","MaxRectangularity"};
+                object[] expected={100L,150L,100L,10L,999999999L,.1,1d,.1,1d};
+                for(var i=0;i<names.Length;i++)
+                {
+                    var field=fields.Fields.Single(f=>f.FieldId==BindingId(names[i]));
+                    Require(field.View.IsLoaded&&field.InputElement is {IsLoaded:true},"九参数未接入真实加载控件："+names[i]);
+                    Require(field.Setting is ConstantSetting constant&&Equals(constant.Value,expected[i]),"九参数控件默认错误："+names[i]);
+                }
+                Require(!Visual(Control(first)).OfType<FrameworkElement>().Any(e=>e.GetType().Name=="NativeThresholdUiDraftControls"&&e.IsVisible),"页面仍展示旧阈值占位");
+                Require(fields.Fields.Single(f=>f.FieldId==threshold).TrySetConstant(77L),"真实阈值控件拒绝合法整数");Pump();
+                Require(fields.Fields.Single(f=>f.FieldId==threshold).Setting is ConstantSetting{Value:77L}&&Formal()==100,"真实阈值编辑未保留私有值或污染正式值");
+                Capture(first,"runtime-editor-nine-fields.png");
+            });
+            Case("六模式真实Choice只开放单阈值，禁项程序选择也不写入字段",()=>
+            {
+                var field=Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==modeId);
+                var choice=field.InputElement as ComboBox??throw new Exception("模式未使用实际Choice控件");
+                Require(choice.IsLoaded&&choice.IsVisible&&choice.Items.Count==6&&Equals(choice.SelectedValue,"SingleThreshold"),"模式没有六个实际选项或默认单阈值");
+                choice.IsDropDownOpen=true;Pump();
+                var items=choice.Items.Cast<object>().ToArray();var keys=items.Select(item=>ChoiceKey(choice,item)).ToArray();var enabled=0;
+                Require(keys.Distinct(StringComparer.Ordinal).Count()==6&&new[]{"None","SingleThreshold","DoubleThreshold"}.All(keys.Contains),"六Choice缺失正式模式身份或包含重复项");
+                foreach(var item in items)
+                {
+                    var key=ChoiceKey(choice,item);var container=item as ComboBoxItem??choice.ItemContainerGenerator.ContainerFromItem(item) as ComboBoxItem;
+                    Require(container is not null,"实际Choice下拉项未生成容器："+key);
+                    Require(container!.IsEnabled==(key=="SingleThreshold"),"模式可用状态错误："+key);if(container.IsEnabled)enabled++;
+                }
+                Require(enabled==1,"模式可选集合不是仅单阈值");
+                var disabledKeys=items.Select(item=>ChoiceKey(choice,item)).Where(key=>key!="SingleThreshold").ToArray();
+                foreach(var key in disabledKeys)
+                {
+                    choice=(ComboBox)field.InputElement!;choice.IsDropDownOpen=true;Pump();
+                    choice.SelectedItem=choice.Items.Cast<object>().Single(item=>ChoiceKey(choice,item)==key);Pump();
+                    Require(field.Setting is ConstantSetting{Value:"SingleThreshold"}&&Equals(choice.SelectedValue,"SingleThreshold"),"禁用模式通过程序选择进入草稿："+key);
+                    Require(field.TrySetConstant("SingleThreshold"),"拒绝模式后无法恢复可用值");
+                }
+                choice=(ComboBox)field.InputElement!;choice.IsDropDownOpen=false;Pump();
+                Require(ReferenceEquals(node.RuntimeConfiguration,formalOpening),"模式试选修改正式配置");
+                Capture(first,"runtime-editor-six-modes.png");
+            });
+            Case("未接入项真实编辑进入脏状态，随后由整窗生产入口拒绝",()=>
+            {
+                var unavailable=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId=="ui-only-run.hole-area");
+                Require(unavailable.TrySetConstant(1L)&&unavailable.Setting is ConstantSetting{Value:1L},"未能建立明确的未接入项修改前提");Pump();
+                Require(solutions.Session!.Editing.Host.GetVariableNames(solutions.CurrentSolution!.Id).ContainsKey(uiVariable!.Id),"真实变量候选准备丢失");
+                tabs.SelectedIndex=0;Pump();
+            });
+            Case("未接入项阻止整窗调试与确定，不取得算法运行租约",()=>
             {
                 var before=Context().GetNodeResult(node.Id)?.Result;
                 var task=Control(first).RunDebugAsync();PumpUntil(()=>task.IsCompleted);
                 var rejected=false;
                 try{task.GetAwaiter().GetResult();}
-                catch(InvalidOperationException failure) when(failure.Message.Contains("界面试用",StringComparison.Ordinal)){rejected=true;}
+                catch(InvalidOperationException failure) when(IsUnavailableBoundary(failure.Message)){rejected=true;}
                 Require(rejected&&context.DebugOwner.ActiveRuns==0&&ReferenceEquals(before,Context().GetNodeResult(node.Id)?.Result),
                     "纯UI调试未明确拒绝、遗留运行租约或修改正式结果");
-                Require(!first.TryConfirm(out var error)&&error.Contains("界面试用",StringComparison.Ordinal)
+                Require(!first.TryConfirm(out var error)&&IsUnavailableBoundary(error)
                     &&first.IsVisible&&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"纯UI确定未拒绝或提前关闭/发布");
             });
-            Case("S1未接入界面状态阻断保存，磁盘与正式字段保持不变",()=>
+            Case("未接入界面状态阻断保存，磁盘与正式字段保持不变",()=>
             {
                 vm.SaveCurrentSolutionCommand.Execute(null);Pump();
                 Require(savedOpening.SequenceEqual(File.ReadAllBytes(path))
-                    &&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"S1界面试用修改写入文件或正式配置");
+                    &&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"未接入项修改写入文件或正式配置");
             });
             var retiredDraft=context.DraftNode;var retiredConfiguration=retiredDraft.RuntimeConfiguration;
             first.Close();Pump();
             var reopened=Open();var reopenedContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(reopened))!;
-            Case("S1取消重开回读正式配置且旧来源控件不能写新会话",()=>
+            Case("关闭取消重开回读正式配置且旧来源控件不能写新会话",()=>
             {
                 Require(!context.IsValid&&solutions.Session!.Editing.RegisteredScopeCount==1
                     &&reopenedContext.DraftNode.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"旧范围未退役或重开继承了已取消的来源");
@@ -164,200 +214,62 @@ internal static class S2DocumentEditingCases
             });
             reopened.Close();Pump();
             Require(solutions.Session!.Editing.RegisteredScopeCount==0,"真实窗口全部关闭后编辑范围未清空");
+            var modeBaselinePath=Path.Combine(folder,"mode-window-baseline.solution");
+            Require(new SolutionRepository().Save(solutions.CurrentSolution!,modeBaselinePath),"准备真实旧模式窗口基线失败");
+            var modeBaseline=File.ReadAllText(modeBaselinePath);
+            var modeScope=solutions.CurrentSolution!.Workflows.Single(flow=>flow.Nodes.Any(value=>value.Id==node.Id)).Id;
+            foreach(var oldMode in new[]{BlobSegmentationMode.None,BlobSegmentationMode.DoubleThreshold})
+            Case("旧模式窗口原值与整窗保护，私有修正关闭重开："+oldMode,()=>
+            {
+                var legacy=System.Text.Json.Nodes.JsonNode.Parse(modeBaseline)!;
+                var modeConfiguration=formalOpening.WithSettings(new BlobSettings{SegmentationMode=oldMode}).WithFieldSettings(
+                    new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,"output.image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:modeScope))}});
+                var serialized=System.Text.Json.JsonSerializer.SerializeToNode(modeConfiguration);
+                var jsonNode=legacy["Workflows"]!.AsArray().SelectMany(flow=>flow!["Nodes"]!.AsArray()).Single(value=>value!["Id"]!.GetValue<string>()==node.Id)!;
+                jsonNode["RuntimeConfiguration"]=serialized;
+                var oldPath=Path.Combine(folder,"old-mode-"+oldMode+".solution");File.WriteAllText(oldPath,legacy.ToJsonString());
+                var load=new SolutionRepository().LoadCandidate(oldPath);var loaded=load.Candidate??throw new Exception("旧模式真实文件读取失败");
+                solutions.SetCurrentSolution(loaded,registerInCatalog:false);Pump();
+                var target=loaded.Workflows.SelectMany(flow=>flow.Nodes).Single(value=>value.Id==node.Id);
+                var window=OpenFor(target);var control=Control(window);var owner=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;
+                Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
+                var field=Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==modeId);
+                var choices=field.InputElement as ComboBox??throw new Exception("旧模式没有真实Choice");
+                Require(field.Setting is ConstantSetting oldSetting&&Equals(oldSetting.Value,oldMode.ToString())&&Equals(choices.SelectedValue,oldMode.ToString()),"打开旧模式被默认值覆盖");
+                var formal=target.RuntimeConfiguration;var disk=File.ReadAllBytes(oldPath);
+                Require(!window.TryConfirm(out var modeError)&&IsUnavailableBoundary(modeError)&&window.IsVisible,"旧未就绪模式在窗口确认通过");
+                var rejected=false;var execution=control.RunDebugAsync();PumpUntil(()=>execution.IsCompleted);
+                try{execution.GetAwaiter().GetResult();}catch(InvalidOperationException failure)when(IsUnavailableBoundary(failure.Message)){rejected=true;}
+                Require(rejected&&owner.DebugOwner.ActiveRuns==0,"旧未就绪模式进入调试或遗留租约");
+                vm.SaveCurrentSolutionCommand.Execute(null);Pump();
+                Require(File.ReadAllBytes(oldPath).SequenceEqual(disk)&&ReferenceEquals(formal,target.RuntimeConfiguration),"旧模式窗口保存覆盖磁盘或正式配置");
+                Capture(window,"runtime-editor-old-mode-"+oldMode+".png");
+                Require(field.TrySetConstant("SingleThreshold"),"旧模式无法在真实Choice修正为可用模式");Pump();
+                Require(field.Setting is ConstantSetting{Value:"SingleThreshold"}&&((BlobSettings)target.RuntimeConfiguration!.CaptureSettings()).SegmentationMode==oldMode,"修正Choice未进入私有值或提前发布");
+                window.Close();Pump();
+                Require(!owner.IsValid&&solutions.Session!.Editing.RegisteredScopeCount==0,"旧模式窗口关闭没有退役范围");
+                var again=OpenFor(target);Logical(Control(again)).OfType<TabControl>().Single().SelectedIndex=1;again.UpdateLayout();Pump();
+                Require(Logical(Control(again)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==modeId).Setting is ConstantSetting prior&&Equals(prior.Value,oldMode.ToString()),"取消修正后重开未回读正式旧模式");
+                again.Close();Pump();
+            });
             shell.Close();dialogs.Stop();
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"ui-stage-report.json"),
-                System.Text.Json.JsonSerializer.Serialize(new{stage="S1Ui",passed=_passed,fullFunctionalAcceptance=false,
-                    remaining=new[]{"阈值及控件功能执行","正式功能确认与保存重开","实际VS与人工验收"}}));
-            Console.WriteLine($"S1真实编辑窗口UI链：{_passed}组通过；fullFunctionalAcceptance=false，旧RuntimeEditor功能用例保留，未运行Blob算法。");
+                System.Text.Json.JsonSerializer.Serialize(new{stage="B08Window",track=Environment.GetEnvironmentVariable("S4_EDITOR_TRACK"),passed=_passed,fullFunctionalAcceptance=false,
+                    remaining=new[]{"ROI/显示未接入项完整功能","实际VS与人工验收"},
+                    blockedPositiveCases=new[]{"未失焦数值经整窗确认保存重开","真实窗口调试与连续运行停止","私有调试预览结果表及失败清空","整窗成功确认发布后释放范围"},
+                    blockedReason="Blob整窗ROI/显示尚未闭合；不得绕过保护执行旧正向用例",actualVisualStudioDesigner=false,isolatedModeAdmissionProvenByThisUiTrack=false}));
+            Console.WriteLine($"B08真实编辑窗口UI链：{_passed}组通过；fullFunctionalAcceptance=false；原正向窗口项在报告中保留为阻塞，未运行Blob算法。");
             return 0;
         }
-        Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
-        {
-            Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&first.EditorControl is null
-                &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");
-            Require(Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Select(field=>field.FieldId).Distinct().Count()==54&&Logical(Control(first)).OfType<DeclaredInputFieldsView>().Single().Fields.Count==4,"XML输入及设置字段未进入真实窗口");
-            Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未登记文档事务");
-            // The XAML design page may be saved on another tab; a real editor
-            // must still open on the image input page.
-            Require(Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex==0,
-                "实际Blob窗口未从基本参数和输入源开始");
-            first.UpdateLayout();Pump();
-            var sourceButtons=Visual(Control(first)).OfType<AppsPopup>().Where(b=>b.Name=="rt").ToArray();
-            Require(sourceButtons.Length==3&&sourceButtons.All(b=>Visual(b).OfType<Image>().Any(i=>i.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&i.ActualWidth>0)),
-                "来源按钮没有实际显示迁入图标");
-            var image=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
-            Require(image.InputElement is ComboBox combo&&combo.Resources.MergedDictionaries.Any(dictionary=>dictionary.Source?.OriginalString.EndsWith("SourceComboBoxes.xaml")==true)
-                &&!Logical(image).OfType<Button>().Any(),"图像输入源未使用VM EnumerationG原ComboBox，或仍有链/清除按钮");
-            Require(Visual(image).OfType<Image>().Any(icon=>icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&icon.ActualWidth>0),
-                "VM输入源右下角原三角图标未实际渲染");
-            Capture(first,"runtime-editor-basic.png");
-        });
-        Case("捕获回调同步重绑拒绝旧结果，不把旧配置写入新节点",()=>
-        {
-            var control=Control(first);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;
-            var replacement=context.DraftNode.Clone();
-            var configuration=replacement.RuntimeConfiguration;var bindings=configuration!.Fields;
-            var field=typeof(RuntimeNodeConfigurationControl).GetField("_view",BindingFlags.Instance|BindingFlags.NonPublic)!;
-            var inner=(IToolSettingsView)field.GetValue(control)!;
-            field.SetValue(control,new CaptureRebindView(inner,()=>control.BindDraft(replacement)));
-            Require(!control.TryCapture(out var error)&&error.Contains("重新绑定"),"旧捕获没有拒绝同步重绑");
-            Require(ReferenceEquals(replacement.RuntimeConfiguration,configuration)&&ReferenceEquals(replacement.RuntimeConfiguration!.Fields,bindings),
-                "旧捕获污染新节点配置或绑定");
-            control.BindDraft(context.DraftNode);Pump();
-        });
-        Case("VM图像输入源下拉从正式声明选择，未确认引用只写私有节点",()=>
-        {
-            source.IsSelected=true;vm.SelectedNode=source;
-            var sourcePanel=vm.ActiveInputSource??throw new Exception("正式输入源面板未建立");
-            Require(sourcePanel.CapturePolicy().FilePaths.SequenceEqual(new[]{imageFile})&&sourcePanel.CurrentIndex==0,
-                "真实图像源面板没有恢复Runtime正式列表和起点");
-            source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();
-            // The preceding rebind recreates the real view with the user's saved page index.
-            // Exercise the source on its visible page; hidden widgets must not accept UI events.
-            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;first.UpdateLayout();Pump();
-            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
-            oldInputCombo=(ComboBox)input.InputElement!;
-            var combo=(ComboBox)input.InputElement!;Require(combo.IsVisible&&combo.IsLoaded,"图像来源实际页未显示");combo.IsDropDownOpen=true;Pump();
-            Require(!app.Windows.OfType<Window>().Any(w=>w.Title=="选择绑定来源"),"图像下拉仍打开通用订阅窗口");
-            Require(ImageBinding(((ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!).DraftNode) is null,
-                "刷新候选擅自写入了来源");
-            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().First(item=>item.Tag is ReferenceSetting reference&&reference.Reference.NodeId==source.Id
-                &&reference.Reference.MemberFieldPath.Count==0&&reference.Reference.Type.Resource==ResourceKind.Image);
-            combo.IsDropDownOpen=false;Pump();
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            Require(ImageBinding(context.DraftNode)?.Reference.NodeId==source.Id
-                &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"来源下拉未写草稿或污染正式引用");
-        });
-        Case("图像下拉拒绝真实自引用并恢复原草稿，刷新不改引用，修正后可继续",()=>
-        {
-            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
-            var combo=(ComboBox)input.InputElement!;var priorItem=(ComboBoxItem)combo.SelectedItem;
-            var reference=((ReferenceSetting)priorItem.Tag).Reference;
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            var expression=ImageBinding(context.DraftNode)!;
-            var invalid=new ComboBoxItem{Content="自引用拒绝检查",Tag=new ReferenceSetting(new OutputReference(node.Id,BlobSchema.Field(5),
-                TypeRef.ResourceOf(ResourceKind.Image),scopeId:reference.ScopeId))};
-            combo.Items.Add(invalid);combo.SelectedItem=invalid;Pump();
-            Require(input.HasInvalidText&&ReferenceEquals(combo.SelectedItem,priorItem)
-                &&Equals(ImageBinding(context.DraftNode),expression),
-                "自引用未被生产合同拒绝或污染了原来源");
-            combo.Items.Remove(invalid);
-            Require(!combo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is UnsetSetting),"必填图像来源不应提供清除项");
-            combo.IsDropDownOpen=true;Pump();
-            var validItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting candidate&&candidate.Reference.NodeId==reference.NodeId
-                &&candidate.Reference.PortId==reference.PortId&&candidate.Reference.ScopeId==reference.ScopeId&&candidate.Reference.MemberFieldPath.SequenceEqual(reference.MemberFieldPath));
-            validItem.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left)
-                {RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});Pump();
-            Require(!input.HasInvalidText,"修正来源后仍无法继续");
-            combo.IsDropDownOpen=true;Pump();combo.IsDropDownOpen=false;
-            Require(Equals(ImageBinding(context.DraftNode),expression)
-                &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"刷新候选写入了草稿或正式节点");
-        });
-        Case("真实未失焦数值在捕获时进入私有Runtime草稿，隐藏窗口保存后可重开",()=>
-        {
-            var text=Threshold(first);text.Focus();text.Text="73";Pump();
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            Require(Formal()==128&&text.Text=="73","未提交输入污染正式设置或丢失原文");
-            Capture(first,"runtime-editor-run.png");
-            first.Hide();vm.SaveCurrentSolutionCommand.Execute(null);Pump();
-            Require(Formal()==73,"文档保存没有接受Runtime草稿");
-            var restored=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("保存重开失败");
-            Require(((BlobSettings)restored.Workflows.SelectMany(w=>w.Nodes).Single(n=>n.Id==node.Id).RuntimeConfiguration!.CaptureSettings()).Threshold==73,"重开覆盖用户值");
-            first.Show();Pump();
-        });
-        Case("保存重绑后旧来源控件的迟到清除事件不能改新草稿",()=>
-        {
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            var prior=ImageBinding(context.DraftNode)!;
-            var combo=oldInputCombo!;
-            var stale=new ComboBoxItem{Content="迟到旧来源",Tag=new ReferenceSetting(new OutputReference("stale-node",BlobSchema.Field(5),TypeRef.ResourceOf(ResourceKind.Image)))};
-            combo.Items.Add(stale);combo.SelectedItem=stale;Pump();
-            Require(Equals(ImageBinding(context.DraftNode),prior),"旧控件事件写入了新草稿");
-        });
-        Case("真实工作流发布来源后，窗口执行命令只更新私有调试结果，连续运行可停止",()=>
-        {
-            var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();
-            var production=Context().GetNodeResult(node.Id)?.Result??throw new Exception("正式工作流没有Blob结果");
-            Require(production.IsSuccess,"正式工作流准备失败："+production.ErrorMessage);
-            var source=Context().GetNodeResult(sourceNodeId!)!.Result;
-            var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"正式结果没有进入实际表格");
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            Threshold(first).Text="255";Pump();
-            SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.Execute(null,first);
-            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result is DeclaredOutputSnapshot);
-            var preview=(DeclaredOutputSnapshot)context.DebugResults.GetNodeResult(node.Id)!.Result!;
-            Require(preview.Output is BlobOutput{Count:0}&&Formal()==73,"调试未采用私有阈值或污染正式设置");
-            Require(ReferenceEquals(source,Context().GetNodeResult(sourceNodeId!)!.Result)&&ReferenceEquals(production,Context().GetNodeResult(node.Id)!.Result),"调试重跑或替换正式结果");
-            Require(table.Items.Count==0,"私有调试结果未刷新实际结果表");Capture(first,"runtime-editor-debug.png");
-            var request=preview.ExecutionIdentity!.RequestId;
-            SunEyeVision.Plugin.SDK.Commands.ToolCommands.ContinuousExecute.Execute(null,first);
-            PumpUntil(()=>context.DebugResults.GetNodeResult(node.Id)?.Result?.ExecutionIdentity?.RequestId is Guid next&&next!=request);
-            SunEyeVision.Plugin.SDK.Commands.ToolCommands.ContinuousExecute.Execute(null,first);
-            var stopped=context.DebugResults.GetNodeResult(node.Id)!.Result!.ExecutionIdentity!.RequestId;
-            var until=DateTime.UtcNow.AddMilliseconds(650);while(DateTime.UtcNow<until){Pump();Thread.Sleep(5);}
-            Require(context.DebugResults.GetNodeResult(node.Id)!.Result!.ExecutionIdentity!.RequestId==stopped&&context.DebugOwner.ActiveRuns==0,"连续运行停止后仍执行或未排空");
-            Threshold(first).Text="73";Pump();
-        });
-        Case("输入捕获失败清空私有预览与实际结果表，正式结果保持不变",()=>
-        {
-            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            var formal=Context().GetNodeResult(node.Id)!.Result;
-            var ready=Control(first).RunDebugAsync();PumpUntil(()=>ready.IsCompleted);ready.GetAwaiter().GetResult();
-            var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"有效调试未恢复结果表");
-            var prior=context.DraftNode.RuntimeConfiguration!;
-            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;first.UpdateLayout();Pump();
-            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
-            var sourceCombo=(ComboBox)input.InputElement!;
-            Require(sourceCombo.IsVisible&&sourceCombo.IsLoaded,"解绑来源实际页未显示");
-            Require(!sourceCombo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is UnsetSetting),"必填图像错误提供清除项");
-            try{context.DraftNode.RuntimeConfiguration=prior.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new UnsetSetting()}});throw new Exception("必填来源竟然可以清空");}
-            catch(ArgumentException){}
-            Require(ReferenceEquals(prior,context.DraftNode.RuntimeConfiguration),"拒绝清除污染原配置");
-            context.DraftNode.RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettingsFields(prior.Fields.Select(prior.SettingsSchema.Inputs));
-            Control(first).BindDraft(context.DraftNode);Pump();
-            Require(context.DraftNode.RuntimeConfiguration.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"缺输入的独立配置被补默认来源");
-            var failed=Control(first).RunDebugAsync();PumpUntil(()=>failed.IsCompleted);
-            try{failed.GetAwaiter().GetResult();throw new Exception("缺少来源的调试竟然成功");}catch(InvalidOperationException){}
-            Require(context.DebugResults.GetNodeResult(node.Id) is null&&table.Items.Count==0&&ReferenceEquals(formal,Context().GetNodeResult(node.Id)!.Result),"失败未清空私有预览或污染正式结果");
-            context.DraftNode.RuntimeConfiguration=prior;Control(first).BindDraft(context.DraftNode);Pump();
-        });
-        Case("非法输入隐藏后仍阻断保存及确定，取消关闭保留正式配置并退出范围",()=>
-        {
-            var before=File.ReadAllBytes(path);var text=Threshold(first);text.Focus();text.Text="invalid";Pump();first.Hide();
-            vm.SaveCurrentSolutionCommand.Execute(null);Pump();Require(before.SequenceEqual(File.ReadAllBytes(path)),"非法隐藏输入仍保存或污染文件");
-            Require(!first.TryConfirm(out _)&&Formal()==73,"非法输入确定成功或污染正式配置");
-            first.Close();Pump();Require(solutions.Session!.Editing.RegisteredScopeCount==0&&Formal()==73,"取消未退出或污染正式值");
-        });
-        Case("重新打开读正式值，关闭丢弃新草稿，确定发布并释放范围",()=>
-        {
-            var window=Open();var text=Threshold(window);Require(text.Text.StartsWith("73"),"重开没有正式值");text.Text="99";Pump();window.Close();Pump();Require(Formal()==73,"关闭提交了未确认草稿");
-            window=Open();Threshold(window).Text="99";Pump();Require(window.TryConfirm(out var error),error);Pump();
-            Require(Formal()==99&&solutions.Session!.Editing.RegisteredScopeCount==0,"确定未发布强类型设置或遗留编辑范围");
-        });
-        shell.Close();dialogs.Stop();
-        var sdkPresent=File.Exists(Path.Combine(product,"plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll"));
-        var wpfPresent=File.Exists(Path.Combine(product,"SunEyeVision.Tool.BlobAnalysis.Wpf.dll"));
-        if(!sdkPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"SDK入口缺席时仍加载了旧Blob");
-        if(!wpfPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf"),"Wpf缺席时仍加载了专属视图");
-        Console.WriteLine($"S4 Runtime窗口：{_passed}组通过；SDK入口={(sdkPresent?"存在":"缺席")}，Wpf={(wpfPresent?"存在":"缺席")}；真实打开/编辑/保存/确定取消/调试命令与连续停止；未验证本地ROI、全部VM外观或人工验收。");return 0;
     }
-    private sealed class CaptureRebindView(IToolSettingsView inner,Action rebind):IToolSettingsView
+    private static string BindingId(string name)=>((IToolParameterBindingNames)new BlobTool()).ParameterBindingNames.Single(pair=>pair.Value==name).Key;
+    private static string ChoiceKey(ComboBox choice,object item)
     {
-        private bool _called;
-        public FrameworkElement View=>inner.View;
-        public bool HasInvalidInput=>inner.HasInvalidInput;
-        public bool HasPendingEdits=>inner.HasPendingEdits;
-        public long AcceptedRevision=>inner.AcceptedRevision;
-        public IReadOnlyList<string> AcceptedFieldOrder=>inner.AcceptedFieldOrder;
-        public FieldSettings CaptureAcceptedFields()=>inner.CaptureAcceptedFields();
-        public event Action? Changed {add=>inner.Changed+=value;remove=>inner.Changed-=value;}
-        public bool TryCapture(out FieldSettings settings,out string error)
-        {
-            var result=inner.TryCapture(out settings,out error);
-            if(!_called){_called=true;rebind();}return result;
-        }
-        public void Dispose()=>inner.Dispose();
+        if(item is ComboBoxItem container&&container.Tag is string tag)return tag;
+        return Convert.ToString(System.ComponentModel.TypeDescriptor.GetProperties(item)[choice.SelectedValuePath]?.GetValue(item),System.Globalization.CultureInfo.InvariantCulture)
+            ??throw new Exception("实际Choice缺少公开SelectedValuePath身份");
     }
+    private static bool IsUnavailableBoundary(string error)=>error.Contains("界面试用",StringComparison.Ordinal)||error.Contains("未接入",StringComparison.Ordinal)||error.Contains("未闭合",StringComparison.Ordinal)||error.Contains("未就绪",StringComparison.Ordinal)||error.Contains("未完成",StringComparison.Ordinal);
     private static IEnumerable<DependencyObject> Logical(DependencyObject root)
     {
         var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);

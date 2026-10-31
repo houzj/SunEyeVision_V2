@@ -192,7 +192,7 @@ $env:TEMP=Join-Path $logDir 'data';$env:TMP=$env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
 $launch=New-Object System.Diagnostics.ProcessStartInfo
 $launch.FileName='dotnet';$launch.WorkingDirectory=$product
-$launch.Environment['S4_EDITOR_UI_ONLY']=if($Track -eq 'RuntimeEditorUiStage'){'1'}else{'0'}
+$launch.Environment['S4_EDITOR_TRACK']=$Track
 $launch.UseShellExecute=$false;$launch.CreateNoWindow=$true
 $launch.RedirectStandardOutput=$true;$launch.RedirectStandardError=$true
 $launch.Arguments=(@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir $(if($Track -eq 'ImageSourceRecovery'){'out/SunEyeVision.UI.Tests.dll'}else{'out/Check.dll'}))) | ForEach-Object {'"'+$_+'"'}) -join ' '
@@ -218,6 +218,7 @@ if($Track -eq 'ManualReferenceQualification')
     $receipt.caseReport=Join-Path $logDir 'manual-reference-report.json'
 }
 if($Track -eq 'BlobParameterProduction'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-parameter-production-report.json'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage')){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'ui-stage-report.json'}
 $receipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}

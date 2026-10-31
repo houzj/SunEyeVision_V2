@@ -1,0 +1,58 @@
+{
+  "baseline": "7cc73e299093954eb5c64223bc452c3600f010a6",
+  "previousCandidate": "c00147b9；与主仓产品/runner相同，差异仅主线阶段文档；切换前工作区干净",
+  "scope": "Blob图像输入选择完整单元；现worktree独立分支codex/blob-image-input-20261031；不改共享Contracts或工作流基础、不启原SDK",
+  "original": [
+    "VM_BLOB_UI_SOURCE_BASELINE_20261026.json、BLOB_B08_REFERENCE_AUDIT_20261030.json：原EnumerationG/ListViewComboBoxStyle，不用数值ButtonSelecter订阅弹层近似替代",
+    "O06_IMAGE_MODE_SOURCE_AUDIT_20261028.json及O06_INHERITANCE_COMPOSITION_STATIC_20261028.json：来源行和ROI创建模式分离，不把图像来源选择当ROI图像模式业务",
+    "B08_SOURCE_QUALIFICATION_RUNTIME_20261031.json：图像订阅不自授普通数值控制前序；本控件不能误套五整数候选政策"
+  ],
+  "reuse": [
+    {
+      "chain": "组装",
+      "implementation": "BlobTool.Schema.WorkflowImageInputId→RuntimeNodeConfigurationControl→DeclaredInputFieldsView→DeclaredFieldEditor.UseImageSourceSelector→NativeInputFactory.Enumeration原资源",
+      "decision": "复用原Combo模板及声明字段，不另建图像选择模型"
+    },
+    {
+      "chain": "身份与接纳",
+      "implementation": "DeclaredReferenceCandidate.Reference成员路径/类型/存储，ReferenceSetting保存Scope/Node/Port/MemberPath；宿主ValidateProposal/PreparedDraft正式准入",
+      "decision": "保持明确身份，同名显示不重绑；控件不计算调度，不将普通数值前序条件套IMAGE"
+    },
+    {
+      "chain": "自动来源归属",
+      "implementation": "SelectionChanged实际新选择；同项Mouse/Enter确认清OriginId接管；打开/刷新不接管",
+      "decision": "保留当前OriginId与工作流线已完成图像连线合同，不改WorkflowBindingContext.ReferenceOwnershipError"
+    },
+    {
+      "chain": "复制历史保存运行",
+      "implementation": "RuntimeToolConfiguration/FieldSettings、WorkflowFragmentCopy/Host、RuntimeFieldJson/Snapshot及RuntimeInputBindings冻结消费/结果Owner",
+      "decision": "复用现有真实生产链；不在Wpf保存图像资源或查询最新结果"
+    },
+    {
+      "chain": "已证测试",
+      "implementation": "FieldEditing图像同项鼠标接管、自引用拒绝/恢复、跨文档退役；RuntimeEditor真实输入与保护；RuntimeWorkflow实际源到Blob冻结消费",
+      "decision": "旧结果按版本复用，新专项不冒称已闭整窗"
+    }
+  ],
+  "cases": [
+    "同名不同Scope/Node/Port/MemberPath保身份与稳定去重、合法record.image来源",
+    "错型/Sequence/Sequence.Record成员拒绝，必填无清空项，可选Unset清空",
+    "Refresh只投影不写入；删除保旧身份并禁提交；异常目录完整保显示，恢复仅清正确诊断",
+    "新项单次接纳、同项Enter/鼠标接管OriginId；宿主拒绝恢复且不半写",
+    "字段禁用/隐藏/卸载/Dispose与重渲染后的旧项/旧回调失权，重新打开新目录可恢复",
+    "候选读取回调重入重绑/销毁、接纳回调刷新/重绑/关闭；旧尾部不能覆盖新代",
+    "候选不可变快照与成员路径副本隔离；失败不隐式恢复默认",
+    "真实Host主/成员来源、图连线归属、确认取消/复制历史保存重开/运行消费复用并必要补测"
+  ],
+  "writeBoundary": [
+    "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs：仅实证问题的成片修复",
+    "scripts/verification/S4ImageInputSelectionCases.cs（新增）、Run-S2ReleaseValidation.ps1专属轨",
+    "docs/collaboration/evidence/IMAGE_INPUT_SELECTION*设计与回执"
+  ],
+  "validation": "先写可执行探针保留失败；候选稳定源码全量构建一次，非GUI先行；实际Loaded GUI先协调，不触用户程序；现有字段/真实窗口与必要宿主轨相称回归。",
+  "dependencies": [
+    "原厂全域动态输出/Group、图像ROI模式与ROI/显示正式组合、偏好持久化仍按既有未实现标记；不是本控件新工作",
+    "未知厂商来源不虚造候选；不能解除BlobRunUi保护冒充整窗确认",
+    "原具体焦点键盘细节无新增证据不猜，记录现行可复现合同和未证边界"
+  ]
+}

@@ -920,7 +920,8 @@ internal static class S2DocumentEditingCases
                     var binaryOutput=fields.Fields.Single(field=>field.FieldId=="field:73f2c01e7b385e0ab2d35f739a88e718");
                     var binaryRow=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl)
                         ((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)binaryOutput.View).EditorBody;
-                    Check(page.ChildLeftWidth==120&&binaryRow.ChildLeftWidth==120,"运行参数页标签使用同一原控件列");
+                    var expectedLabelWidth=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English"?170d:89d;
+                    Check(page.ChildLeftWidth==expectedLabelWidth&&binaryRow.ChildLeftWidth==expectedLabelWidth,"运行参数页标签使用当前语言原控件列");
                     var unavailable=replacement.Options.AdditionalAnchoredContents!.Select(item=>item.Content)
                         .OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>()
                         .Where(editor=>editor.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();

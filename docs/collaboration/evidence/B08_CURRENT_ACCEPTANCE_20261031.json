@@ -1,6 +1,6 @@
 {
   "scope": "B08完整控件当前状态快照；旧清单保留作为历史，不以回归数量宣告整控件完成",
-  "baseline": "正式 Release：源码 232630453546a584cc25e80cedced94b1029289f；build development-eb1b10b24a094fee97f3f31600e3c198；载荷 SHA256 36DF0C891EA40C706EAF6EDEE2D0246DDD32C2632D4A4D29DB98BCE0FA849886。",
+  "baseline": "当前正式Release源码60669453dc6df14d6409e7f8f3ffd01b02fbd7ae；布局专项、字段与设计时采用此版；其他先前引用链回归采用23263045，版本分列。",
   "sourceChecklist": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
   "sourceChecklistSha256": "7CD20F28D7AFCA9CE586968A53795969F558A695456D129E186F87D101FDC357",
   "formalEvidence": "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
@@ -11,7 +11,7 @@
       "item": "同版产物与来源清单",
       "originalRequirements": "固定源码SHA、UI/full构建、发布清单与实际加载DLL/MVID/SHA；全轨同Release，不复制程序/算法库；targeted build改载荷后必须经标准全量规则重出一致清单再测。",
       "originalOracle": "版本不同、payload SHA不一致、产物根混用即拒收，不能只凭build成功。",
-      "currentStatus": "自测闭口：同一正式 Release 源码23263045；载荷569项SHA256逐项核对0不一致。全量/UI构建均0错误；其余轨道通过与否按各项独立记录。"
+      "currentStatus": "当前正式Release源码60669453，载荷569项SHA256核对0不一致；布局受影响回归加载记录与该载荷核对一致，先前引用链为23263045版本，分别记录；运行时MVID未独立记录。"
     },
     {
       "id": "A01",
@@ -25,7 +25,7 @@
       "item": "真实单值/三范围组合及订阅按钮",
       "originalRequirements": "真实Blob运行页核9字段顺序、三正式过滤开关；展开高级非空且真正生效，三范围左右原按钮均可见可用；常量与引用姿态量实际viewport。",
       "originalOracle": "不能仅看session存在；原模板/图标、两端独立状态、非法保留与共享同一正式草稿；不静默截断九位面积值。",
-      "currentStatus": "正式FieldEditing 38，三范围双侧可见；窄宽文本与人工视觉仍有边界。"
+      "currentStatus": "当前布局和字段范围自测闭口：正式字段147及中英布局145/146通过，三范围双侧订阅按钮可见；中文原420宽视觉裁剪但两端完整值与Tooltip存在，焦点滚动实测可达；人工视觉后置。"
     },
     {
       "id": "A03",
@@ -109,14 +109,14 @@
       "item": "中英文宽度/主题/DPI/面积文本",
       "originalRequirements": "原展开窗240/英文320、Owner等高与位置；原BaseWindow/checkbox/树/色板与字体；420/500宿主宽、标签宽、100/125/150%DPI、长来源名及九位面积。",
       "originalOracle": "区分严格原厂与可读性适配，不能以内部session存在代实图；宽度和偏好同批决定，不先改；面积量测不代人工外观。",
-      "currentStatus": "原中文默认420 DIP已证、现场覆盖未证；当前窄宽数字显示不足，未擅自加宽。"
+      "currentStatus": "当前144DPI中英文布局范围自测闭口：中文420×500/标签89，英文680×500/标签170；中文九位值焦点滚动与Tooltip实测可达，英文不裁剪。其他DPI、语言热切换及VS视觉未验证或未实现；旧极大Float64窗口失败仍保留。"
     },
     {
       "id": "A15",
       "item": "设计时同一真实视图/控件资源",
       "originalRequirements": "VS分别打开实际Blob XAML及公共组合；用正式schema示例走同组装，中文/英文与引用/常量/范围/禁用态；无主程序/Workflow/算法。",
       "originalOracle": "不复制默认值/假预览控件；设计器无候选时原按钮/模板仍正确，不调实际执行或写方案；真实VS与自动渲染分列。",
-      "currentStatus": "独立自动设计范围自测闭口：正式DesignTime 290项通过；实际VS设计器及完整中英视觉组合未执行，人工验收按用户决定在B08闭口后统一进行。"
+      "currentStatus": "独立自动设计范围自测闭口：最新正式DesignTime attempt-146共290项通过；实际VS设计器及完整中英视觉组合未执行，用户人工验收按决定后置。"
     },
     {
       "id": "A16",
@@ -175,5 +175,6 @@
       "currentStatus": "正式自动回归已记录；整体迁移及自测未完成，闭口后统一人工验收。"
     }
   ],
-  "remaining": "原厂索引及方案偏好特定分支、ROI/结果组合正向完整链和整体自测未完成；B08自测闭口后统一人工验收。"
+  "remaining": "原厂索引及方案偏好特定分支、ROI/结果组合正向完整链和整体自测未完成；B08自测闭口后统一人工验收。",
+  "layoutFormalEvidence": "docs/collaboration/evidence/B08_FORMAL_LANGUAGE_LAYOUT_20261031.json"
 }

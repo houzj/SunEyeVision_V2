@@ -1,0 +1,86 @@
+{
+  "scope": "B08语言布局及受影响真实视图正式回归；不替代真实VS、所有DPI、整窗或算法验收",
+  "sourceCommit": "60669453dc6df14d6409e7f8f3ffd01b02fbd7ae",
+  "buildId": "development-f9db02f796714fca8929b0f3845b3ae3",
+  "payloadSha256": "0323EADE8F48BCF73749D9BF2B06778A1FDA9C030D96F7179422D5FE383CCE96",
+  "payloadEntriesVerified": 569,
+  "payloadMismatches": 0,
+  "loadedEntriesVerified": 65,
+  "loadedMismatches": 0,
+  "uiBuildLog": "Release/_validation/B08OriginalLanguageFormal/ui-build-001.log",
+  "uiBuildSha256": "F4418984C72DED7E28E2DE6E6B140CAA696AA82F949D344FB58A3484DEAC704C",
+  "fullBuildLog": "Release/_validation/B08OriginalLanguageFormal/full-build-001.log",
+  "fullBuildSha256": "E1BE52F1073758A36B5AF0B0F31174216ADFE7910E69A044EAAC485A9546B3C3",
+  "formalTracks": [
+    {
+      "track": "FieldEditing",
+      "attempt": "145",
+      "description": "中文真实宿主布局",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-145\\receipt.json",
+      "receiptSha256": "88C459A11F76E3FD3E9F8F292756F4AD33CC33E9E31785B4CE581F1AD81CC100",
+      "loaded": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-145\\loaded-product.tsv",
+      "loadedSha256": "3821CC927978FED47FAF27EE77AE0233F9AA3314867E48CFE8A42792C21C16BC"
+    },
+    {
+      "track": "FieldEditing",
+      "attempt": "146",
+      "description": "英文真实宿主布局",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-146\\receipt.json",
+      "receiptSha256": "E9F06F8CD5173C2B104E1F5E86E7AE45B33CBD9929AE3D0E30244C5964AE5435",
+      "loaded": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-146\\loaded-product.tsv",
+      "loadedSha256": "3821CC927978FED47FAF27EE77AE0233F9AA3314867E48CFE8A42792C21C16BC"
+    },
+    {
+      "track": "FieldEditing",
+      "attempt": "147",
+      "description": "字段完整回归",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-147\\receipt.json",
+      "receiptSha256": "6B6FDCD99169FECAC5F93BDE120E5AC33300DC98A6C3F8475AE8303635A2F923",
+      "loaded": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-147\\loaded-product.tsv",
+      "loadedSha256": "62756E48EFBC2B369586C38F8E7DA5CC2DBB158EDFA69F4B7FFAFA1D27DB7B3A"
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "attempt": "025",
+      "description": "真实运行页保护",
+      "receipt": "Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-025\\receipt.json",
+      "receiptSha256": "5E619FDCB01B8284CF88EADB930B176B184B18BF6D1967EC050763F536D7031F",
+      "loaded": "Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-025\\loaded-product.tsv",
+      "loadedSha256": "B45E36D66692061C8C7FB3A5E47059E75BCAF311A1B31A99A593ED75AD2D7901"
+    },
+    {
+      "track": "DesignTime",
+      "attempt": "146",
+      "description": "独立设计时",
+      "receipt": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-146\\receipt.json",
+      "receiptSha256": "35C3B79F0777FEEF26CF8EA64283EA9D47C9D31F1B0206D98C2144BD1713B2BD",
+      "loaded": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-146\\loaded-product.tsv",
+      "loadedSha256": "CFAA62C87F6D88DA4CF684766608D02B7CBD64E59201B49621263BF0ED52A934"
+    }
+  ],
+  "languageEvidence": [
+    {
+      "culture": "zh-CN",
+      "metrics": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-145\\cross-document-reference\\layout-metrics-zh-CN.json",
+      "metricsSha256": "244757D589B19CC03927916B484F671D7B5BDF7F9E52E7ADEDB0BEBB2A94C47B",
+      "screenshot": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-145\\cross-document-reference\\original-layout-zh-CN.png",
+      "screenshotSha256": "ACB6BFE63C18C449D265D60895E6C0D4C770996AC1E79D8B8FD62A28AA355F59"
+    },
+    {
+      "culture": "en-US",
+      "metrics": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-146\\cross-document-reference\\layout-metrics-en-US.json",
+      "metricsSha256": "116C2B112F248A51FD155D2DD6C2B322A0FD6230E91EB3CE882A9B36420D0D4A",
+      "screenshot": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-146\\cross-document-reference\\original-layout-en-US.png",
+      "screenshotSha256": "89A1BE9A12C9EF5FB401EC0B13FD87DF7D8BE6507076022FE487C027ED65CBD3"
+    }
+  ],
+  "priorFailedDesignTime": "Release/_validation/S4-20261025/DesignTime/attempt-145",
+  "priorFailure": "旧测试将标签固定为120；已按语言资源改为89/170，同产物重跑attempt-146通过",
+  "limitations": [
+    "实际144 DPI；其他DPI与真实VS设计器未验证",
+    "中文420 DIP下九位数字视觉裁剪，完整内容通过原Tooltip及焦点Home/End滚动可达",
+    "语言热切换基础未实现；分别在中英文进程验证",
+    "Blob整窗ROI/结果组合仍受保护",
+    "旧极大Float64范围测试失败未修复"
+  ]
+}

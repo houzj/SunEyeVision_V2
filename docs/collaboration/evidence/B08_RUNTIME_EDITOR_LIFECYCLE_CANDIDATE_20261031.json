@@ -1,0 +1,185 @@
+{
+  "recordedAt": "2026-10-31",
+  "scope": "B08/S2候选真实页面、参数及流程重开生命周期；不表示整体完成",
+  "productInputs": {
+    "page": "c9bceea1e0e0bde24dd7a2ba2b18f85bbf49c84e",
+    "choice": "0fd878cb4c466bf92e0921d882f8af765b857834",
+    "snapshotFix": "0a55293dc58cbf861f2ddab9abef59e682888071",
+    "candidateProductHead": "27744778"
+  },
+  "testCommits": [
+    "4696009e90c3fdcee69fe6eb3ecada8cf0fb4ee6",
+    "a996ae523619189eededd4e3b4dc4bd4df5b18b3",
+    "ec356df44f049d0907d4a3efaee9db4ace5c4c28",
+    "4804c41d524eb0fec8493789a3ab7683a63dd0a4"
+  ],
+  "candidateProductRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "fullBuild": {
+    "log": "Release/_validation/RuntimeEditorPrepare-20261031/full-build-002.log",
+    "sha256": "F8AD8EB0EAC98C712C85C6BD9BE894988CC71CAC07CD6E5C3AEAADC05D610046",
+    "errors": 0,
+    "warnings": 6527,
+    "elapsed": "00:01:19.18"
+  },
+  "tracks": [
+    {
+      "track": "BlobParameterProduction",
+      "historicalRunnerStage": "S4",
+      "attempt": "attempt-009",
+      "passed": 18,
+      "exit": 0,
+      "pid": 142852,
+      "receipt": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-009/receipt.json",
+      "receiptSha256": "E49C40BAFE5CAD5A6B297AED77FC62947124379BEAD6803C65FAC0552002447A",
+      "caseSource": "S4BlobParameterProductionCases.cs",
+      "caseSourceSha256": "A47DE344B6318292364E2E07640A573DC71FA26B1A7654871ABE4C1581976784",
+      "loadedProductTsvSha256": "A012F12E98FCF9D02360EE1CB5EC4D87CB7FB9A6134CEDBA59A6D6685C157BC8"
+    },
+    {
+      "track": "ParameterValues",
+      "historicalRunnerStage": "S4",
+      "attempt": "attempt-005",
+      "passed": 18,
+      "exit": 0,
+      "pid": 136796,
+      "receipt": "Release/_validation/S4-20261025/ParameterValues/attempt-005/receipt.json",
+      "receiptSha256": "5EFBE1B5F6A61E8006FBD9685F11899886435FCAFEDABBBE5E38F1E3854FD00A",
+      "caseSource": "S4ParameterCurrentValueCases.cs",
+      "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B",
+      "loadedProductTsvSha256": "38A86769BD2D28DC5ECBFA862A27CC95BF9049324A8EA6EBEECF4DF1F6DD1FB7"
+    },
+    {
+      "track": "ManualReferenceQualification",
+      "historicalRunnerStage": "S4",
+      "attempt": "attempt-006",
+      "passed": 19,
+      "exit": 0,
+      "pid": 130056,
+      "receipt": "Release/_validation/S4-20261025/ManualReferenceQualification/attempt-006/receipt.json",
+      "receiptSha256": "9BF41AC8A85E040EA1AE11EBF20B1D67819CD3D0A106586DD985D3319F8E49DD",
+      "caseSource": "S4ManualReferenceQualificationCases.cs",
+      "caseSourceSha256": "A36BB263E260443AAFD59D4A9548DFBF0709CEF9355C86E4E69E42EBD45C3F70",
+      "loadedProductTsvSha256": "208D5B2390C3E6A57F1FAD87A25C705E04B5D5654230B8FEAAEDB4C5290E380D"
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "historicalRunnerStage": "S3",
+      "attempt": "attempt-004",
+      "passed": 10,
+      "exit": 0,
+      "pid": 137324,
+      "receipt": "Release/_validation/S3-20261025/RuntimeWorkflow/attempt-004/receipt.json",
+      "receiptSha256": "71F7F9DED98FC52DF518C337F2B90E5D30E6946E54109E0848F1D9F110BCFD1C",
+      "caseSource": "S3RuntimeWorkflowCases.cs",
+      "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC",
+      "loadedProductTsvSha256": "22CE50FB6E0CAD2068CB6181B801036986DAB115F9613084352E241D5BBF4275"
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "historicalRunnerStage": "S4",
+      "attempt": "attempt-003",
+      "passed": 13,
+      "exit": 0,
+      "pid": 134560,
+      "receipt": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/receipt.json",
+      "receiptSha256": "16F5073D9292D9772891116A9142809E4FEE28CC8CED63568D1A98C15137C71C",
+      "caseSource": "S4RuntimeEditorCases.cs",
+      "caseSourceSha256": "54FF6E5153240DEE8F256176EA28C8146687C5CCA0344B30979DDF0830E7AA09",
+      "loadedProductTsvSha256": "5DF0B992E47323825D7F169C3DB1153A835EDDD041EAC71B67DE9644A7EA97D0"
+    }
+  ],
+  "verifiedLoadedProductRows": 66,
+  "preservedFailures": [
+    {
+      "track": "RuntimeEditorUiStage",
+      "attempts": [
+        "attempt-001",
+        "attempt-002"
+      ],
+      "result": "前11项通过；旧模式活跃Choice修正失败。第二次证明Field/Owner同一且有效，错误来自Host版本变化，而非退役借用。"
+    },
+    {
+      "track": "BlobParameterProduction",
+      "attempt": "attempt-008",
+      "passed": 15,
+      "failed": 3,
+      "loadedVersionTrace": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "result": "真实LoadCandidate后无编辑连续结构同步增版，空/非空扩展字典快照丢失。"
+    }
+  ],
+  "resolvedRootCause": {
+    "reader": "WorkflowJsonConverter.Read正常流程也建立空AdditionalData字典",
+    "copy": "原BindingConfigurationStore.Copy遗漏流程AdditionalData，结构签名出现null与空字典差异",
+    "admission": "ValidateRuntimeFieldProposals中的两次EnsureBaseline导致自发Rebase并触发现有版本门禁",
+    "fix": "深复制流程AdditionalData，保留现有版本门禁及未知成员格式门禁",
+    "afterLoadedVersionTrace": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "windowReport": {
+    "stage": "B08Window",
+    "track": "RuntimeEditorUiStage",
+    "passed": 13,
+    "fullFunctionalAcceptance": false,
+    "remaining": [
+      "ROI/显示未接入项完整功能",
+      "实际VS与人工验收"
+    ],
+    "blockedPositiveCases": [
+      "成功捕获过程同步重绑的旧结果隔离",
+      "保存接纳并重绑后旧来源控件迟到回调",
+      "未失焦数值经整窗确认保存重开",
+      "真实窗口调试与连续运行停止",
+      "私有调试预览结果表及失败清空",
+      "整窗成功确认发布后释放范围"
+    ],
+    "blockedReason": "Blob整窗ROI/显示尚未闭合；不得绕过保护执行旧正向用例",
+    "actualVisualStudioDesigner": false,
+    "isolatedModeAdmissionProvenByThisUiTrack": false
+  },
+  "screenshots": [
+    {
+      "path": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/runtime-editor-nine-fields.png",
+      "sha256": "90AFDA2657386609EC8DCD3A12FA36DCDDA0E10CDA154EA1E4629F3E2CC0676C"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/runtime-editor-old-mode-DoubleThreshold.png",
+      "sha256": "6FCEAEFC43F613B2584D77A7784E659970A7F81BF427992E67A1309A1253E479"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/runtime-editor-old-mode-None.png",
+      "sha256": "32F50A9BEA32CC501AA68A1345E2949797292343FD4C7557F0206665AD46DE02"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/runtime-editor-six-modes.png",
+      "sha256": "90AFDA2657386609EC8DCD3A12FA36DCDDA0E10CDA154EA1E4629F3E2CC0676C"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-003/runtime-editor-ui-stage.png",
+      "sha256": "AE572196CA6F9EE65B0478396E94EC78491CFE43A804896D931A686E6B2C4E72"
+    }
+  ],
+  "visualReview": {
+    "inspected": [
+      "runtime-editor-nine-fields.png",
+      "runtime-editor-old-mode-None.png"
+    ],
+    "observation": "实际窗口九参数与None原值显示已核；面积上限数值在当前窄输入中有可见截断，布局及原厂外观人工验收未完成。",
+    "isVisualStudioDesignerVerification": false
+  },
+  "limits": [
+    "Candidate不是主仓Formal验收，主线需整批集成复验",
+    "ROI绘制/继承/结果显示未闭合，整窗成功执行确认保存等正向六类在windowReport中明确阻塞",
+    "两窗口轨共用同一真实保护链；本轮只运行RuntimeEditorUiStage，不重复计数",
+    "VS实际设计器、用户人工及完整原厂外观未验",
+    "未启动原VM/SDK；未推进S3算法或Group；未扩未知成员保存格式"
+  ]
+}

@@ -33,7 +33,7 @@
             <ScrollViewer Style="{StaticResource Results.Shell.RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
               <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="260">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding InputItems, ElementName=View}" SelectedItem="{Binding SelectedInputItem, ElementName=View, Mode=TwoWay}" DataContext="{Binding ElementName=View}">
+                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding InputItems, ElementName=View}" SelectedItem="{Binding SelectedInputItem, ElementName=View, Mode=TwoWay}" ToolTip="{Binding SelectedInputItem.DisplayName, ElementName=View}" DataContext="{Binding ElementName=View}">
                         </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -58,7 +58,7 @@
             <ScrollViewer Grid.Column="1" Style="{StaticResource Results.Shell.RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
               <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="300">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding OutputItems, ElementName=View}" SelectedItem="{Binding SelectedOutputItem, ElementName=View, Mode=TwoWay}" DataContext="{Binding ElementName=View}">
+                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding OutputItems, ElementName=View}" SelectedItem="{Binding SelectedOutputItem, ElementName=View, Mode=TwoWay}" ToolTip="{Binding SelectedOutputItem.DisplayName, ElementName=View}" DataContext="{Binding ElementName=View}">
                         </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

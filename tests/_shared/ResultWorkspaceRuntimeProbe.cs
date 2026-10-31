@@ -16,7 +16,7 @@ public sealed class WorkspaceProbeOutput(IReadOnlyDictionary<string,object?> val
 public sealed class WorkspaceProbeDefinition : IToolDefinition<WorkspaceProbeSettings,WorkspaceProbeOutput>,IToolCatalogProvider,IToolSettingsFields
 {
     public static readonly CoordinateFrame Coordinates=new("workspace-probe:pixel",CoordinateDomain.Image,CoordinateUnit.Pixel);
-    public static readonly ToolSchema Schema=new(Array.Empty<Port>(),new[]{
+    public static readonly ToolSchema Schema=new(new[]{new Port("input.image",TypeRef.ResourceOf(ResourceKind.Image),Required:false)},new[]{
         new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),new Port("region",TypeRef.ResourceOf(ResourceKind.Region)),
         new Port("point",TypeRef.GeometryOf(GeometryKind.Point,Coordinates)),new Port("count",TypeRef.ScalarOf(ScalarKind.Int64)),
         new Port("items",TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Int64)))});

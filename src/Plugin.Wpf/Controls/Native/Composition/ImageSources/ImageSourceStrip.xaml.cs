@@ -60,7 +60,13 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public string? Status => _requestError ?? Session?.Status;
     private sealed record RunModeItem(string DisplayName, bool Value);
     private string? _allModeText, _selectedModeText;
-    public ImageSourceStrip() { InitializeComponent(); Refresh(); }
+    public ImageSourceStrip()
+    {
+        InitializeComponent();
+        if(DesignerProperties.GetIsInDesignMode(this))
+            Session=SunEyeVision.Plugin.Wpf.Design.ImageSources.ImageSourceStripDesignView.CreateSampleSession();
+        Refresh();
+    }
     private static void SessionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var view = (ImageSourceStrip)d;

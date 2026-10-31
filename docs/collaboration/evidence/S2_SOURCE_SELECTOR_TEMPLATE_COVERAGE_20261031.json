@@ -1,0 +1,83 @@
+{
+  "source": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/styles/moduleviewstyle.xaml",
+  "sourceSha256": "2E195D69C45DE43C2DCA7528705959F4127207722ABDE533B49F7D3E70305D9B",
+  "target": "src/Plugin.Wpf/Themes/Native/Composition/Results/ResultShell/ResultShellStyles.xaml",
+  "namedElements": [
+    {
+      "element": "Border",
+      "name": "Back",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "Rectangle",
+      "name": "Rect",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "Border",
+      "name": "Border",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "ToggleButton",
+      "name": "toggle",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "Popup",
+      "name": "Popup",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "Border",
+      "name": "DropDown",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    },
+    {
+      "element": "Path",
+      "name": "InnerShadow",
+      "targetNamedCandidate": true,
+      "qualification": "同名节点定位，行为按整链方案及真实宿主回归另证"
+    }
+  ],
+  "originalBindings": [
+    "{Binding ActualWidth, ElementName=Border}",
+    "{Binding DataContext.ClickImageCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}",
+    "{Binding DataContext.SelectImageCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}",
+    "{Binding IsBackgroundImage}",
+    "{Binding IsCheck}",
+    "{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}",
+    "{Binding IsEnable}",
+    "{Binding Text, RelativeSource={RelativeSource Mode=Self}",
+    "{Binding}"
+  ],
+  "originalResourceReferences": [
+    "{DynamicResource Col_ComboBox_Background}",
+    "{DynamicResource Col_ComboBox_BorderBrush}",
+    "{DynamicResource Col_ComboBox_Foreground}",
+    "{DynamicResource Col_ComboBox_Popup_BoderBrush}",
+    "{DynamicResource Col_ComboBox_Popup_Selected_Background}",
+    "{DynamicResource Col_ComboBox_Popup}",
+    "{DynamicResource Col_Theme}",
+    "{DynamicResource RecScrollViewer}",
+    "{StaticResource BaseImage_ButtonStyle}",
+    "{StaticResource CheckBoxStyle1}",
+    "{StaticResource ComboxStyleBtn}",
+    "{StaticResource TextBoxStyle1}"
+  ],
+  "inheritedLifecycle": {
+    "target": "ResultWorkspacePresenter.Refresh/Dispose与计划publication current/lease，不复制厂商全局服务",
+    "source": "VMControls.WPF.DataForUI/DecoratorBase.cs DecorateSource setter / DecorateSourcePropertyChanged",
+    "outOfScope": "DecoratorBase模块删除/工程脚本/远程操作等非此选择器继承业务不移植"
+  },
+  "behaviorMatrix": "S2_COMPONENT_MIGRATION_PLAN_20261030.md 来源选择器整链核收与本批收口决定",
+  "runtimeOriginalObserved": false,
+  "unimplemented": "多图owner/叠层背景状态机及保存恢复，原理由和后续依赖完整保留",
+  "proofLimits": "模板清单和原件身份不等同于运行、VS或整阶段完成"
+}

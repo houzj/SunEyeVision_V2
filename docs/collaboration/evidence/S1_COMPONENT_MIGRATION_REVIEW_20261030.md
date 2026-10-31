@@ -187,3 +187,7 @@ bc1e50e1候选的真实普通启动在App.ShowStartPageAsync:425失败；D:/SunE
 用户明确要求：“VS设计器先记为待验证，不要卡在这里，继续推进S2图像结果视口，先完整对照逆向原件，再集中迁移。”本条覆盖此前等待设计器而不推进S2的限制。S1运行时人工验收通过，实际VS设计器继续待验证，不冒称通过；S2正式进入原件与已有生产链整体核收。保留当前Release程序供使用，源码设计/实施可继续，覆盖DLL前按实际进程情况协调关闭，不重复构建S1。
 
 S2已定位已有ResultWorkspaceShell双ImageViewBox、ResultWorkspacePresenter、ResultImagePane和NativeResultViewport、全屏作用域及原件ModuleResultView/ImageViewBox；复用D07既有整体设计及资源来源记录，不能以找到类名或历史测试就宣称本阶段已完成。下一步核完整原件入口、模板资源依赖、来源及单双图、缩放平移/像素、全屏和生命周期差异，形成统一处置与验收矩阵后集中修改。Group、S3/S4提前实施、主界面重组不扩入S2。
+
+### 2026-10-31 VS截图版本已确认：主仓，不是当前独立分支
+
+用户明确给出D:/MyWork/SunEyeVision_V2/Src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml。截图ControlBrush/Control.Template解析失败及重叠记录为主仓设计时证据，文件与当前87f4来源内容/行号不同，不能作为本分支实际设计器通过或相同失败。原图、两份源SHA及用户路径已保存S1_VS_MAIN_WORKSPACE_EVIDENCE_20261031.json，主仓未修改。当前验收程序和S2在87f4，尚未合并主仓；本分支VS仍待验证，按用户决定不阻塞S2。不要为修另一版本而编辑主仓或替换当前正式Release。

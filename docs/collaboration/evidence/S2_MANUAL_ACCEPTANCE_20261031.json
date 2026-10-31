@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "892d9fb0339c851f9e248db6e9aec0ad9489f82b",
+  "userFeedback": "目前测试没有问题；除了这个显示有问题",
+  "accepted": "五组交互按用户本轮测试无问题",
+  "remaining": "来源显示内部端口ID/收起名称截断，用户明确指出",
+  "images": [
+    {
+      "path": "Release\\_validation\\S2-manual-20261031\\codex-clipboard-928e2b8e-6a4e-49c7-a506-a538a110378a.png",
+      "sha256": "367A3DE2D3D0A279342569E9BB279DED557A9DABFBF26879EB6CA0474CCFA360"
+    },
+    {
+      "path": "Release\\_validation\\S2-manual-20261031\\codex-clipboard-dff77f57-9be3-4fe7-8957-675d552c6fdc.png",
+      "sha256": "4D95C1B6C90878FD054642A93639EB69428DD6497509C2BC4AAEAC86A7477DA5"
+    },
+    {
+      "path": "Release\\_validation\\S2-manual-20261031\\codex-clipboard-1e72997e-88e5-45cc-8da3-a1b75574b22a.png",
+      "sha256": "02EADBFD5BB295865828BC925BD35F262F9B8AA0868AED3F360648739AB3EF36"
+    },
+    {
+      "path": "Release\\_validation\\S2-manual-20261031\\codex-clipboard-c2090117-6008-4974-9e04-d01588547e4d.png",
+      "sha256": "C4138BDEB343AED355EF03F1411A5FD439D5D3E433FB591EA6DB78792104C6FB"
+    }
+  ],
+  "visualVerified": false,
+  "phaseSealed": false
+}

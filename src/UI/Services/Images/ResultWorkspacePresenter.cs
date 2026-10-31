@@ -89,7 +89,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
         _shell.SelectedInputItem=null;
         if(!_disposed&&_shell.IsDoubleImage)
-            _shell.SelectedInputItem=_plan?.Sources.FirstOrDefault(source=>source.IsUpstream);
+            _shell.SelectedInputItem=_plan?.InputSources.FirstOrDefault();
     }
     private void InputSelected(object? sender,EventArgs args)
     {
@@ -110,6 +110,14 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
         {RestoreChoice(false);return;}
         _outputSource=source;_outputKey=source?.Key;var choiceRevision=++_outputChoiceRevision;
+        var choicePlan=_plan;var choiceEpoch=_epoch;
+        if(choicePlan is not null)
+            foreach(var item in choicePlan.Sources.ToArray())
+            {
+                if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
+                item.IsCheck=ReferenceEquals(item,source);
+            }
+        if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         if(_refreshing)return;
         var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
@@ -123,8 +131,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
     {
-        if(_disposed||_plan is null||_plan.IsDisposed||input&&!source.IsUpstream)return false;
-        foreach(var candidate in _plan.Sources)if(ReferenceEquals(candidate,source))return true;
+        if(_disposed||_plan is null||_plan.IsDisposed)return false;
+        foreach(var candidate in input?_plan.InputSources:_plan.Sources)if(ReferenceEquals(candidate,source))return true;
         return false;
     }
     private void RestoreChoice(bool input)
@@ -193,7 +201,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
-                var inputs=plan.Sources.Where(source=>source.IsUpstream).ToArray();
+                var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
                 var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault():null;
                 var navigation=_main.SelectedDisplayImageSourceIndex;

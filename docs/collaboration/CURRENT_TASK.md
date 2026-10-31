@@ -1,5 +1,55 @@
+## 2026-10-31 当前阶段：S2来源选择器整批验证通过，待本组人工复验
 
-## 2026-10-31 S2整批视口候选验证通过，准备人工验收
+本批集中贯通工具既有展示声明、实际绑定图像输入目录、独立输入显示项、输出当前勾选、完整名称提示和生命周期清理；保持端口及持久引用身份不变。修复WPF可变显示项的引用身份和只读标题OneWay绑定，不引入双轨模型。S1设计资源改用明确ResourceDictionary入口，设计样例沿真实控件及同一组装链，运行时不注入示例。
+
+正式独立Release最终UI构建0错误/6488警告，全量0错误/6475警告；冻结18个DLL后attempt-042整批367通过/0失败，回归前后产物哈希不变。实际选择器及空宿主资源的真实设计组合PNG已查看。attempt-039、040失败历史与041单例诊断均保留；041有意退出2，不算整批成绩。证据位于Release/_validation/s2-selector-binding-*.log、s2-selector-binding-frozen-product.json、s2-selector-accepted-regression.log及S4-20261025/ImageSourceRecovery/attempt-042/receipt.json。
+
+S2此前五组一般运行交互人工反馈通过；本批中文名称、实际输入目录、当前勾选和完整提示仍待人工复验。叠层、背景交换与相关保存恢复缺正式多图owner基础，保留明确禁用及完整依赖待办，不记完成、不阻塞当前交付。Group和公共显示合同扩展继续暂停，S3/S4未启动。
+
+VS实际设计器仍未加载成功：用户最新截图为错误0但等待IntelliSense初始化；正确87f4方案已确认，Release五类型存在，Debug目标未有DLL。空宿主独立WPF设计渲染通过不能替代实际VS验证，不将待初始化报为成功，不改主仓、不删除VS缓存。
+
+以下历史记录保留，当前状态以本节为准。
+## 2026-10-31 最终同版回归进行中（42846/attempt-042），不再构建
+
+来源选择器完整批的最终UI构建0错误/6488警告，全量0错误/6475警告，日志s2-selector-binding-ui/full-build.log；18个DLL固定于Release/_validation/s2-selector-binding-frozen-product.json。实际失败场景attempt-041已严格执行1项通过，诊断有意退出2不当整批成绩，真实收起/弹出PNG已查看：中文名称、当前勾选和普通/不可用图标状态符合当前交付边界；产物变化0。
+
+最终整批已启动执行会话42846、attempt-042，日志Release/_validation/s2-selector-accepted-regression.log，待本会话结果；不重启、不重建、不把定向成绩当完整通过。当前无用户验收程序运行，成功后固定中文阶段提交、同版启动本组复验。失败历史attempt-039(366/1)、040(309/58同一只读DisplayName默认TwoWay原因)均保留。修正为稳定引用身份的内部显示项、只读标题OneWay，业务引用Key不变，不加可写标题setter或旧模型回退。
+
+VS正确87f4方案：先前五类型命名空间错误后截图已错误0但仍等待IntelliSense；Release五类型PE元数据均存在，Debug目标无DLL；已请求切Release，不继续让用户反复试错。空宿主Application.Resources的真实独立设计视图测试与PNG已过/查看；实际VS仍未成功且用户允许待验证不阻塞。当前SourceStrip.xaml资源入口及设计样例修正包含在本批，非主仓ControlBrush旧版本修复。主仓未写。
+
+用户已允许可做集中收口、关联缺口记录保留：叠层/背景交换/多图保存恢复完整待办与具体缺基础原因见原方案和S2_SOURCE_SELECTOR_FULL_CHAIN_REVIEW_20261031.json，绝不记完成。S2主体视口旧版五组人工反馈通过，本组名称/真实输入目录/当前勾选/禁用提示仍待新版本复验。Group、显示公共合同扩展、工具架构重写不做。
+## 2026-10-31 本批首次回归366/1，修正WPF显示项身份后统一重验
+
+
+### 本批首次完整回归与选择一致性修正
+
+attempt-039：366通过/1失败，原21项均承接。失败Source_selectors_use_tool_declared_names_and_full_tooltips_without_changing_port_identity：中文名称断言已过，但真实ComboBox.SelectedItem仍为受控节点，ToolTip已为灰度来源，暴露真实选择缓存不同步；不修改断言放行。可变IsCheck/事件放入record会参与生成的值相等/哈希，不适合作为WPF可变显示项。改为内部引用身份class，端口引用/Key不变，输入项通过明确工厂独立克隆；补哈希稳定和真实SelectedItem断言，保重入/清空回归。用户可见禁用提示仅说明图像叠加/背景切换未实现，不暴露内部租约术语。失败日志保留，不把366/1称通过。
+
+独立S1同正式控件设计图s1-typed-resources-design.png已生成并目视核查：正常/只读/折叠三态加载，首项与勾选可见。本证据仍非VS实际成功。VS当前截图错误0但等待IntelliSense；进程启动路径为正确87f4方案，Debug目标dev/Debug/SunEyeVision.Plugin.Wpf.dll不存在，Release元数据中五个类型均存在，已请求切Release复核。已有ServiceHub日志仅见旧断连，不足以认定当前原因；不删缓存、不改安全/全局设置，不阻塞S2。
+## 2026-10-31 程序已退出，选择器与实际设计器资源修正统一构建中
+
+PID130856已确认退出，已启动唯一UI构建会话63103，日志Release/_validation/s2-selector-ui-build.log，不再等待关闭。除S2整批选择器外，用户提供当前87f4实际VS的XLS0503证据，已按S2原方案补充的资源设计一起修：明确ResourceDictionary入口LocalizationResources合并同一共享语言实例；原控件设计宽度760与既有SampleSession工厂接入；运行时无示例注入，独立设计面同真实控件。原主仓ControlBrush截图和当前截图分开保存，不混称本分支问题或通过。
+
+本批尚未构建/回归完，旧363项仅属892d9fb0；不得据此启动交付候选。先等本会话，UI成功后full，再冻结DLL执行一次集中回归并查看新选择器/独立设计视图WPF产物。实际VS仍待用户重新加载新版确认，不靠其逐点发现原功能。缺基础叠层不阻塞，原完整范围保留。
+## 2026-10-31 S2来源选择器整批源码已就绪，待关闭验收程序统一验证
+
+完整相关原件已核：DisplayImageListDecorator、ImageViewItem、ModuleResultView选择/叠层/刷新退出、ImageListComboBox模板、TransparencyData、BGRA转换。证据S2_SOURCE_SELECTOR_FULL_CHAIN_REVIEW_20261031.json及原方案完整矩阵；总监确认多图像owner未实现，用户允许关联缺口记录保留不阻塞。未另扩公共显示合同。
+
+当前未交付整批源码：沿既有definition展示声明读取中文名称并校验同Schema/无歧义；输入目录按Runtime正式图像输入引用完整Port/Member/Selection/Scope匹配，独立克隆不共享输出勾选；当前输出IsCheck随接纳选择更新并守护重入；两侧完整名称提示与叠层/背景明确禁用原因；计划退出清目录。相应真实测试补实际图像输入声明和引用（旧夹具只有控制线无图像输入，不能保留错误预期），覆盖无绑定前驱排除、状态独立/重入/清空、中文同身份及真实WPF弹出/收起截图。
+
+源码尚未构建，不能套用892d9fb0的363项成绩。PID130856仍占当前正式Release，已发一次保存关闭请求等待用户；不强杀、不换包、不构建污染验收版。收到关闭确认后执行UI→full→固定产物→集中回归，并看新WPF截图，修复真实失败后启动本组复验。已通过的五组交互反馈保留；缺基础的完整叠层/背景/保存恢复不阻塞本批但仍不计完成。Group/架构重写不做。
+## 2026-10-31 S2来源选择器整批收口，缺基础项目不阻塞
+
+用户要求可修复集中完成，关联/逆向缺口记录保留，不因后续架构工具调整阻塞。完整原件链和双方差异已统一到S2_COMPONENT_MIGRATION_PLAN_20261030.md及原主方案；总监确认无现成多图像owner，本批保留不可误用禁用和完整后续依赖。当前实施整批：正式声明名称/悬停提示、实际绑定输入目录、输出选中勾选与输入独立状态、刷新重入/清空/关闭。现名称候选尚未构建，不能当交付；892d9fb0/363项/PID130856仍是原人工版本。不要为这批先造多图公共合同、重写架构或迁Group。
+
+## 2026-10-31 S2人工交互反馈通过，来源名称显示问题仍待修正
+
+用户反馈“目前测试没有问题”，随后明确补充来源选择器显示有问题并提供截图。已记录五组运行交互无问题，不能忽略后续纠正而将整个S2封版。4张原截图保存在Release/_validation/S2-manual-20261031，哈希及反馈见S2_MANUAL_ACCEPTANCE_20261031.json。
+
+集中显示修正设计：来源目录优先使用已有IToolResultPresentationProvider的ResultProjection中文列名，严格按同Schema的Port/MemberFieldPath匹配；通过现有RuntimeToolConfiguration持有的definition只读公开现成展示声明，不新增持久模型、协议或工具实例，不修改输出端口/运行/绑定身份。没有声明时保原明确显示字段，不硬编码image→中文、不将显示名当Key。原ImageListComboBox模板和142宽度保持；在真实选择器补完整SelectedItem.DisplayName悬停提示。新回归验证同身份中文标签、来源切换不变，以及双侧选择器提示；独立UI/full同版集中验证后只请用户复验显示，不要求重测已通过的全部交互。双图像素条窄宽裁剪与原模板相同，先记原件窄宽行为，未擅自另行设计状态栏。
+
+## 2026-10-31 S2整批视口候选验证通过，人工验收进行中
+当前人工验收基线892d9fb0339c851f9e248db6e9aec0ad9489f82b，正式Release PID130856，已正常进入“太阳眼视觉 - 机器视觉平台”且响应。用户已收到来源/单双图、缩放像素、全屏、辅助线、文件名清理五组操作清单，尚未反馈结果；保持版本，不构建/重启、不推进S3。启动身份保存在Release/_validation/s2-viewport-manual-startup.json。Git保存点已完成，不在等待GC或构建。
 
 原件对照及处置见S2_COMPONENT_MIGRATION_PLAN_20261030.md，原入口身份与29图标/9资源来源复核见S2_ORIGINAL_ENTRY_IDENTITIES_20261030.json、S2_RESULT_SHELL_ASSET_REVIEW_20261030.json，全部SHA一致。复用既有ImageViewBox变换/像素/导出/lease和同Frame层，不重造主视口。集中修正原全屏视口与左右按钮整体搬移、命令namescope及祖先主题资源、Topmost和非捕获双击退出、父槽恢复；单双图清输入/取首项；文件名来自同publication正式output.file或本次被接纳预览路径，换帧/清图清旧名；原辅助线完整配置窗口能力已接真实主结果按钮，惰性创建、宿主关闭退场。
 
@@ -3714,3 +3764,7 @@ S1已审行为链决定汇总到docs/collaboration/evidence/S1_COMPONENT_MIGRATI
 ### 2026-10-30 自动切换人工反馈补记
 
 用户明确确认“开关不会清图”，此项记为人工通过；删除图片后的撤销尚未操作，不记通过。当前版本保持冻结，不构建或重启。撤销入口已核对为主窗口顶栏撤销按钮（ShellTopBarControl），Ctrl+Z当前要求焦点位于流程画布内。
+
+### 2026-10-31 VS截图版本已确认：主仓，不是当前独立分支
+
+用户明确给出D:/MyWork/SunEyeVision_V2/Src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml。截图ControlBrush/Control.Template解析失败及重叠记录为主仓设计时证据，文件与当前87f4来源内容/行号不同，不能作为本分支实际设计器通过或相同失败。原图、两份源SHA及用户路径已保存S1_VS_MAIN_WORKSPACE_EVIDENCE_20261031.json，主仓未修改。当前验收程序和S2在87f4，尚未合并主仓；本分支VS仍待验证，按用户决定不阻塞S2。不要为修另一版本而编辑主仓或替换当前正式Release。

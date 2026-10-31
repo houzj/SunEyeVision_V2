@@ -20,6 +20,35 @@ namespace SunEyeVision.UI.Tests;
 [Collection("VM canvas UI")]
 public sealed class ImageSourceDesignCompositionTests
 {
+    [Fact]
+    public void Typed_localization_dictionary_loads_without_static_collection_extension_and_design_uses_real_strip() => Sta(() =>
+    {
+        var application=Application.Current??new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        var previousResources=application.Resources;
+        application.Resources=new ResourceDictionary();
+        try
+        {
+        var dictionary=Assert.IsType<ResourceDictionary>(System.Windows.Markup.XamlReader.Parse(
+            "<ResourceDictionary xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:l=\"clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization;assembly=SunEyeVision.Plugin.Wpf\"><ResourceDictionary.MergedDictionaries><l:LocalizationResources/></ResourceDictionary.MergedDictionaries></ResourceDictionary>"));
+        var language=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResources>(Assert.Single(dictionary.MergedDictionaries));
+        Assert.Same(SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResourceDictionary.Instance,Assert.Single(language.MergedDictionaries));
+        Assert.Null(new ImageSourceStrip().Session); // Production construction never installs visual sample data.
+        var design=new SunEyeVision.Plugin.Wpf.Design.ImageSources.ImageSourceStripDesignView();
+        var window=Show(design);window.Width=800;window.UpdateLayout();
+        try
+        {
+            var strip=Assert.IsType<ImageSourceStrip>(design.FindName("EditableStrip"));
+            Assert.Equal(3,strip.Items.Count);Assert.False(strip.IsReadOnly);
+            Assert.Contains(strip.Resources.MergedDictionaries,resource=>resource is SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResources);
+            Assert.Equal(SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("RunParam_Auto Switch","自动切换"),strip.AutoSwitchText);
+            var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(design.ActualWidth),(int)Math.Ceiling(design.ActualHeight),96,96,System.Windows.Media.PixelFormats.Pbgra32);
+            bitmap.Render(design);var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+            using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"s1-typed-resources-design.png"));png.Save(file);
+        }
+        finally{window.Content=null;window.Close();}
+        }
+        finally{application.Resources=previousResources;}
+    });
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

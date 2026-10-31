@@ -90,6 +90,10 @@ public sealed class ResultWorkspaceProductionTests
             Selected = new("selected", "受控结果节点", "受控结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
             Other = new("other", "无关结果节点", "无关结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
             Flow = new("workspace-flow", "工作区正式流程"); Flow.Nodes.Add(Source); Flow.Nodes.Add(Selected);
+            Selected.RuntimeConfiguration=Selected.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>
+            {
+                ["input.image"]=new ReferenceSetting(new OutputReference(Source.Id,"output.image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:Flow.Id))
+            });
             if(includeOther)Flow.Nodes.Add(Other);
             Flow.Connections.Add(new WorkflowConnection("source-to-result", Source.Id, Selected.Id));
             Document = new Solution { Workflows = new() { Flow } }; ServiceInitializer.SolutionManager.SetCurrentSolution(Document, false);
@@ -150,6 +154,80 @@ public sealed class ResultWorkspaceProductionTests
             _solutionManagerField.SetValue(null,_previousSolutionManager);
         }
     }
+    [Fact]
+    public void Real_input_directory_uses_only_bound_image_ports_and_keeps_output_check_state_independent()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        var input=Assert.Single(f.Shell.InputItems.Cast<ResultWorkspaceImageSource>());
+        var output=f.Choice(f.Source.Id,"output.image");
+        Assert.Equal(output.Key,input.Key);Assert.NotSame(output,input);
+        var identityHash=output.GetHashCode();
+        f.Shell.SelectedOutputItem=output;Pump();
+        Assert.Equal(identityHash,output.GetHashCode());
+        Assert.True(output.IsCheck);Assert.False(input.IsCheck);Assert.False(output.CanOverlay);
+        Assert.Contains("未实现",output.OverlayUnavailableReason);Assert.Contains("未实现",output.BackgroundUnavailableReason);
+        Assert.Equal(1,f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>().Count(item=>item.IsCheck));
+        f.Selected.RuntimeConfiguration=f.Selected.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>
+            {["input.image"]=new UnsetSetting()});
+        f.Main.RefreshNativeResultImages();Pump();
+        Assert.Empty(f.Shell.InputItems.Cast<ResultWorkspaceImageSource>());Assert.Null(f.Shell.SelectedInputItem);
+        Assert.Contains(f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>(),item=>item.Reference.NodeId==f.Source.Id);
+        Assert.Equal(1,f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>().Count(item=>item.IsCheck));
+    });
+    [Fact]
+    public void Output_check_notifications_cannot_overwrite_newer_selection_and_clear_retires_checks()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();var image=f.Choice(f.Source.Id,"output.image");var gray=f.Choice(f.Source.Id,"output.gray-image");
+        var selected=f.Choice(f.Selected.Id);f.Shell.SelectedOutputItem=image;Pump();
+        var reentered=false;
+        image.PropertyChanged+=(_,args)=>
+        {
+            if(args.PropertyName==nameof(ResultWorkspaceImageSource.IsCheck)&&!image.IsCheck&&!reentered)
+            {reentered=true;f.Shell.SelectedOutputItem=selected;}
+        };
+        f.Shell.SelectedOutputItem=gray;Pump();
+        Assert.True(reentered);Assert.Same(selected,f.Shell.SelectedOutputItem);
+        Assert.True(selected.IsCheck);Assert.False(image.IsCheck);Assert.False(gray.IsCheck);
+        f.Shell.SelectedOutputItem=null;Pump();
+        Assert.All(f.Shell.OutputItems.Cast<ResultWorkspaceImageSource>(),item=>Assert.False(item.IsCheck));
+    });
+    [Fact]
+    public void Source_selectors_use_tool_declared_names_and_full_tooltips_without_changing_port_identity()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f=new Fixture();
+        var image=f.Choice(f.Source.Id,"output.image");var gray=f.Choice(f.Source.Id,"output.gray-image");
+        Assert.Equal(f.Source.Name+" · 图像",image.DisplayName);
+        Assert.Equal(f.Source.Name+" · 灰度图像",gray.DisplayName);
+        Assert.Equal("output.image",image.Reference.PortId);Assert.Equal("output.gray-image",gray.Reference.PortId);
+        f.Shell.SelectedOutputItem=gray;Pump();
+        var outputSelector=System.Windows.Media.VisualTreeHelper.GetChildrenCount(f.Shell);
+        Assert.True(outputSelector>0);
+        var selectors=VisualDescendants<ComboBox>(f.Shell).Where(combo=>ReferenceEquals(combo.ItemsSource,f.Shell.OutputItems)
+            ||ReferenceEquals(combo.ItemsSource,f.Shell.InputItems)).ToArray();
+        Assert.Equal(2,selectors.Length);
+        var currentChoice=Assert.IsType<ResultWorkspaceImageSource>(f.Shell.SelectedOutputItem);
+        Assert.Equal(gray.Key,currentChoice.Key);
+        Assert.Same(currentChoice,selectors.Single(selector=>ReferenceEquals(selector.ItemsSource,f.Shell.OutputItems)).SelectedItem);
+        foreach(var selector in selectors)
+            Assert.Equal((selector.SelectedItem as ResultWorkspaceImageSource)?.DisplayName,selector.ToolTip);
+        var output=selectors.Single(selector=>ReferenceEquals(selector.ItemsSource,f.Shell.OutputItems));
+        void Snapshot(FrameworkElement view,string name)
+        {
+            view.UpdateLayout();
+            var bitmap=new RenderTargetBitmap((int)Math.Ceiling(view.ActualWidth),(int)Math.Ceiling(view.ActualHeight),96,96,PixelFormats.Pbgra32);
+            bitmap.Render(view);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));
+            using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));png.Save(file);
+        }
+        Snapshot(output,"s2-source-selector-closed.png");
+        output.IsDropDownOpen=true;Pump();
+        var popup=Assert.IsType<System.Windows.Controls.Primitives.Popup>(output.Template.FindName("Popup",output));
+        Snapshot(Assert.IsAssignableFrom<FrameworkElement>(popup.Child),"s2-source-selector-popup.png");
+        output.IsDropDownOpen=false;Pump();
+        Assert.Equal(gray.Reference.PortId,f.Choice(f.Source.Id,"output.gray-image").Reference.PortId);
+    });
     [Fact]
     public void Real_workspace_crosshair_command_opens_existing_original_settings_and_retires_with_host()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>

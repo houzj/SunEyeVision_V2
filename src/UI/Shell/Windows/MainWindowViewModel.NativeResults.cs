@@ -113,6 +113,9 @@ public partial class MainWindowViewModel
                     {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
                 }
                 using var values=publication?.Borrow();
+                var projection=node.RuntimeConfiguration?.ResultProjection;
+                if(projection is not null && (new ToolSchema(Array.Empty<Port>(),node.RuntimeConfiguration!.Schema.Outputs).Fingerprint!=schema.Fingerprint
+                    ||projection.Validate(schema).Count!=0))projection=null;
                 string? fileName=null;
                 if(ImageSourcePolicy.Read(node) is not null && values?.Values is {} frozen
                     && schema.Outputs.Any(port=>port.Id=="output.file"&&port.Type==TypeRef.ScalarOf(ScalarKind.Text)))
@@ -123,6 +126,10 @@ public partial class MainWindowViewModel
                 foreach(var port in schema.Outputs)
                 {
                     var label=snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id;
+                    var declaredNames=projection?.Columns.Where(column=>column.Value.PortId==port.Id
+                        &&column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
+                        .Select(column=>column.DisplayName).Distinct(StringComparer.Ordinal).ToArray();
+                    if(declaredNames?.Length==1)label=declaredNames[0];
                     Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
@@ -154,6 +161,21 @@ public partial class MainWindowViewModel
                     }
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
+            }
+            if(!historical&&selected.RuntimeConfiguration is {} inputConfiguration)
+            {
+                var inputKeys=new HashSet<string>(StringComparer.Ordinal);
+                foreach(var input in inputConfiguration.Schema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
+                {
+                    if(inputConfiguration.Fields.Read(input.Id) is not ReferenceSetting setting)continue;
+                    var reference=setting.Reference;
+                    if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
+                    var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,
+                        selection:reference.Selection,scopeId:scope,storage:reference.Storage);
+                    var key=BindingReferenceSerializer.Serialize(scoped);
+                    var source=plan.Sources.FirstOrDefault(item=>item.Key==key);
+                    if(source is not null&&inputKeys.Add(key))plan.InputSources.Add(source.CreateInputItem());
+                }
             }
             if(historical)plan.Diagnostics.Add("历史结果尚无冻结的整次运行来源上下文，未混用当前上游图像。");
             return plan;

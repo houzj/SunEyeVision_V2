@@ -39,49 +39,49 @@
       "item": "常量↔引用/清空/当前值",
       "originalRequirements": "常量37→引用173→消费→清源/解绑；分别无当前值、消费前、成功后、失效、取消/失败；用同owner读当前值回常量。",
       "originalOracle": "不猜XML默认/订阅前备份/最近结果，不将显示值写作常量；恢复应按现正式owner，状态/保存/历史不半写。",
-      "currentStatus": "正式ParameterValues 18、FieldEditing 38通过；原厂所有解绑语义未泛化。"
+      "currentStatus": "已实现当前值与生命周期范围自测闭口：正式ParameterValues 18及字段/数值回归通过；原厂其他解绑情形未全部证明，真实Blob整窗正向仍受A22保护。"
     },
     {
       "id": "A05",
       "item": "候选资格/完整来源树",
       "originalRequirements": "有/无直接和传递控制边、仅图像订阅、断边撤销；int/float主树、整数索引树、模块排序、记录深层、无/变量管理叶；选中恢复及分组不提交。",
       "originalOracle": "只消费宿主限定候选；Scope/Node/Port/MemberPath/Type/Storage身份一致；不在WPF计算调度或假造未产出叶。",
-      "currentStatus": "正式ManualReferenceQualification 19通过；原厂全域资格仍未证。"
+      "currentStatus": "现有正式输出声明范围自测闭口：正式来源资格19项及来源树回归通过；未声明原厂输出与全域动态资格未实现或未证明，不虚造候选。"
     },
     {
       "id": "A06",
       "item": "刷新与身份失效/恢复",
       "originalRequirements": "更名/删除/同名新ID/类型存储变更、刷新失败后恢复；分别主源、模块索引、变量索引复合身份；旧树叶迟到双击。",
       "originalOracle": "失败保显示但禁提交；恢复只清正确诊断不吞写入拒绝；不能同名重绑，不把旧节点对象接入新快照。",
-      "currentStatus": "正式FieldEditing 38及真实跨方案10场景通过；仅覆盖声明场景。"
+      "currentStatus": "已验刷新与会话退役场景自测闭口：正式变量回归13项及跨方案10场景通过；并非穷尽所有类型和存储变化的视觉恢复组合。"
     },
     {
       "id": "A07",
       "item": "All与数量/形状适配",
       "originalRequirements": "Scalar+All保持标量；Sequence All到Scalar在数量与1相交时可条件绑定，实际0/多项拒绝、1项解包；固定多项先补索引；All到Sequence保全并校验数量。",
       "originalOracle": "不得把所有Sequence说成必须索引；不得默认取首项；原[]/无括号提交ALL只属托管/条件回读，不证明消费。",
-      "currentStatus": "整数策略生产代码已集成4ebb87d9，候选专项33项通过；UI来源资格接线及同版正式验证未完成。"
+      "currentStatus": "五整数显式首项例外与其他字段Strict范围自测闭口：正式整数专项33项及UI策略专项通过；浮点、图像及其他工具不得继承五字段例外。"
     },
     {
       "id": "A08",
       "item": "固定索引与文本编辑",
       "originalRequirements": "当前来源真实括号内输入0、1、负数、溢出、小数、超声明最大数、运行时越界；刷新更名后保身份与原文；清索引回All按数量验证。",
       "originalOracle": "非法原文不丢且不写；有有效暂存来源也不能越过宿主；原单值[0]与[99]不推多值基数/错误码全域。",
-      "currentStatus": "本方固定索引子集已验；原厂特定内部整数分支零基，输入转换未闭合。"
+      "currentStatus": "已验严格固定索引范围自测闭口：正式零基消费与字段原文回归通过；正常SDK到整数读取静态链已核，原厂非法文本及atoi异常未证明，本方严格解析为适配。"
     },
     {
       "id": "A09",
       "item": "模块/变量动态索引",
       "originalRequirements": "模块或变量主源×AtField/AtVariable；索引0→1→越界→恢复；整型scalar、记录成员、同批快照、复制重映射/保存重开。",
       "originalOracle": "主源不被索引选择替代；变量ID/类型/存储/作用域及代次准确，旧请求不写；不把多值索引源擅取首项。",
-      "currentStatus": "整数动态索引生产代码已集成4ebb87d9，候选专项33项通过；UI接线及正式Release整链未验证。"
+      "currentStatus": "五整数动态索引生产与UI范围自测闭口：正式33项及UI策略专项通过，含成员数组、递归索引、复制保存和身份拒绝；Int64到Int32受检转换为平台适配，四浮点独立未闭口。"
     },
     {
       "id": "A10",
       "item": "双Popup/焦点/文本命令",
       "originalRequirements": "原Source/Index两个Popup、嵌套文本、树叶双击、Enter/Escape/Delete、内外焦点、窗口失活、常量/引用切换。",
       "originalOracle": "合法只写一次；非法留原文/正确焦点；实际Popup DP关闭，不能只把VM属性置false；不用红色行内提示。",
-      "currentStatus": "正式FieldEditing 38通过；未等同全部原厂交互。"
+      "currentStatus": "已验双Popup和焦点命令范围自测闭口：正式字段回归覆盖实际弹窗、Enter、Escape、Delete及退役；不表示穷尽原厂所有焦点和失活组合。"
     },
     {
       "id": "A11",

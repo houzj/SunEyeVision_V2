@@ -26,7 +26,7 @@ using Mode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode;
 
 internal static class S2DocumentEditingCases
 {
-    private static readonly BlobSettings Basic=new(){IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=false,OutputGrayImage=false};
+    private static readonly BlobSettings Basic=new(){IsAreaFilterEnabled=false,BlobCountLimit=20000,OutputGrayImage=false};
     private static int passed;
     [STAThread] private static int Main()
     {
@@ -74,7 +74,7 @@ internal static class S2DocumentEditingCases
                 Require(result.Values[BlobSchema.Field(5)] is IReadOnlyImage,"规范图像类型改变");
                 var many=new byte[16*16];many[2*16+2]=255;for(var y=8;y<10;y++)for(var x=8;x<10;x++)many[y*16+x]=255;
                 using var multiple=HalImage.CreateFromBytes(many,16,16,1);
-                using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc});
+                using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,BlobCountLimit=1,SortMode=BlobSort.AreaDesc});
                 var limited=(BlobOutput)((DeclaredOutputSnapshot)final.NodeResults["blob"].Result!).Output!;
                 Require(final.Success&&limited.Count==1&&limited.MinimumArea==4&&limited.MaximumArea==4,"统计未来自最终限数集合");
             });

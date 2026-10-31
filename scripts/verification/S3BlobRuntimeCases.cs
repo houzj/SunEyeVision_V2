@@ -24,7 +24,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：拒绝全局截断且不修改全局限制");HOperatorSet.SetSystem("max_connection",0);
             var separate=new byte[256];separate[34]=200;for(var y=8;y<10;y++)for(var x=8;x<10;x++)separate[y*16+x]=200;
             using var multiple=HalImage.CreateFromBytes(separate,16,16,1);
-            using(var output=Run(multiple,settings with{SortMode=BlobSort.AreaDesc,IsBlobCountFilterEnabled=true,BlobCountLimit=1}))Require(output.Count==1&&output.TotalArea==4,"没有先排序再限数");
+            using(var output=Run(multiple,settings with{SortMode=BlobSort.AreaDesc,BlobCountLimit=1}))Require(output.Count==1&&output.TotalArea==4,"没有先排序再限数");
             Console.WriteLine("通过：完整候选筛选排序后才执行数量限制");
             var ring=new byte[32*24];for(var y=2;y<=16;y++)for(var x=2;x<=16;x++)if(!(y>=5&&y<=7&&x>=5&&x<=7)&&!(y>=10&&y<=12&&x>=10&&x<=12))ring[y*32+x]=200;
             for(var y=20;y<=21;y++)for(var x=25;x<=26;x++)ring[y*32+x]=200;using var rings=HalImage.CreateFromBytes(ring,32,24,1);

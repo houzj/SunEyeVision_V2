@@ -29,15 +29,14 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Type=definition.Default<BlobThresholdMode>(nameof(Type));
         IsPositionCorrectionEnabled=definition.Default<bool>(nameof(IsPositionCorrectionEnabled));
         IsAreaFilterEnabled=definition.Default<bool>(nameof(IsAreaFilterEnabled));
-        FilterAreaMin=definition.Default<double>(nameof(FilterAreaMin));
-        FilterAreaMax=definition.Default<double>(nameof(FilterAreaMax));
+        FilterAreaMin=definition.Default<int>(nameof(FilterAreaMin));
+        FilterAreaMax=definition.Default<int>(nameof(FilterAreaMax));
         IsCircularityFilterEnabled=definition.Default<bool>(nameof(IsCircularityFilterEnabled));
         FilterCircularityMin=definition.Default<double>(nameof(FilterCircularityMin));
         FilterCircularityMax=definition.Default<double>(nameof(FilterCircularityMax));
         IsRectangularityFilterEnabled=definition.Default<bool>(nameof(IsRectangularityFilterEnabled));
         FilterRectangularityMin=definition.Default<double>(nameof(FilterRectangularityMin));
         FilterRectangularityMax=definition.Default<double>(nameof(FilterRectangularityMax));
-        IsBlobCountFilterEnabled=definition.Default<bool>(nameof(IsBlobCountFilterEnabled));
         BlobCountLimit=definition.Default<int>(nameof(BlobCountLimit));
         OutputGrayImage=definition.Default<bool>(nameof(OutputGrayImage));
         OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
@@ -59,9 +58,9 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public bool IsAreaFilterEnabled { get; init; }
     [JsonRequired]
-    public double FilterAreaMin { get; init; }
+    public int FilterAreaMin { get; init; }
     [JsonRequired]
-    public double FilterAreaMax { get; init; }
+    public int FilterAreaMax { get; init; }
     [JsonRequired]
     public bool IsCircularityFilterEnabled { get; init; }
     [JsonRequired]
@@ -74,8 +73,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public double FilterRectangularityMin { get; init; }
     [JsonRequired]
     public double FilterRectangularityMax { get; init; }
-    [JsonRequired]
-    public bool IsBlobCountFilterEnabled { get; init; }
+
     [JsonRequired]
     public int BlobCountLimit { get; init; }
     [JsonRequired]
@@ -113,7 +111,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
             Number(nameof(UpperThreshold), UpperThreshold);
             Check(UpperThreshold >= Threshold, "双阈值下限不能超过上限。");
         }
-        if (IsBlobCountFilterEnabled) Number(nameof(BlobCountLimit), BlobCountLimit);
+        Number(nameof(BlobCountLimit), BlobCountLimit);
         void Range(bool enabled, string minField, double min, string maxField, double max)
         {
             if (!enabled) return;

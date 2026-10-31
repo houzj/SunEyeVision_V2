@@ -28,8 +28,8 @@ public static class BlobPresentation
    if(family=="Area")decimals=0;else increment=.01;
    if(key.EndsWith("Min"))paired=Id(key[..^3]+"Max");
   }
-  if(key is "setting.IsAreaFilterEnabled" or "setting.IsCircularityFilterEnabled" or "setting.IsRectangularityFilterEnabled" or "setting.SortMode" or "setting.IsBlobCountFilterEnabled" or "setting.BlobCountLimit")section="Blob筛选";
-  if(key=="setting.BlobCountLimit"){When("setting.IsBlobCountFilterEnabled",true);minimum=1;maximum=20000;decimals=0;}
+  if(key is "setting.IsAreaFilterEnabled" or "setting.IsCircularityFilterEnabled" or "setting.IsRectangularityFilterEnabled" or "setting.SortMode" or "setting.BlobCountLimit")section="Blob筛选";
+  if(key=="setting.BlobCountLimit"){minimum=1;maximum=20000;decimals=0;}
   if(key.StartsWith("setting.Output"))section="输出";
   if(key.StartsWith("presentation.judgments."))
   {

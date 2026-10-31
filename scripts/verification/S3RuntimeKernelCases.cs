@@ -18,7 +18,7 @@ internal static class S2DocumentEditingCases
     private static IReadOnlyDictionary<string,ParameterSetting> Constants(Dictionary<string,object?> values)=>values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value));
     private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureValidatedFields().Materialize(new Dictionary<string,object?>()));
     private static int _passed;
-    private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, IsBlobCountFilterEnabled = false };
+    private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, BlobCountLimit = 20000 };
     private static int Main()
     {
         try
@@ -26,13 +26,13 @@ internal static class S2DocumentEditingCases
             Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
                 var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
                 var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,Initial(provider,original));
-                Require(provider.SettingsSchema.Inputs.Count==54&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
+                Require(provider.SettingsSchema.Inputs.Count==53&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
                 string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
                 var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),_=>{});
-                Require(Materialize(draft).Threshold==73&&original.Threshold==128
+                Require(Materialize(draft).Threshold==73&&original.Threshold==100
                     &&draft.CaptureFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}),_=>{});
                 Require(draft.CaptureFields().Get<long>(threshold)==220,"编辑中间态未保留在私有草稿");
@@ -56,7 +56,7 @@ internal static class S2DocumentEditingCases
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),candidate=>
                 {
                     calls++;var next=(BlobSettings)((IToolSettingsFields)tool).MaterializeSettings(candidate.Materialize(new Dictionary<string,object?>()));
-                    Require(next.Threshold==220&&next.UpperThreshold==230&&Materialize(draft).Threshold==128,
+                    Require(next.Threshold==220&&next.UpperThreshold==230&&Materialize(draft).Threshold==100,
                         "候选不完整或宿主接纳前污染草稿");
                 });
                 Require(calls==1&&Materialize(draft).Threshold==220,"整组未单次接纳");
@@ -80,7 +80,7 @@ internal static class S2DocumentEditingCases
             });
             Case("完整字段物化校验禁用参数标量域且不吞Boolean结构",()=>{
                 var tool=new BlobTool();var provider=(IToolSettingsFields)tool;
-                var disabled=new BlobSettings{SegmentationMode=BlobSegmentationMode.None,IsBlobCountFilterEnabled=false};
+                var disabled=new BlobSettings{SegmentationMode=BlobSegmentationMode.None};
                 string Id(string property)=>provider.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(property)).FieldId;
                 var fields=Initial(provider,disabled);
                 Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{Id("Threshold"),new ConstantSetting(999L)}}).Materialize(new Dictionary<string,object?>())));
@@ -146,8 +146,8 @@ internal static class S2DocumentEditingCases
             });
             Case("XML唯一默认、用户设置重开及强类型读取",()=>{
                 var settings=new BlobSettings();
-                Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
-                    &&settings.BlobCountLimit==1000&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
+                Require(settings.Threshold==100&&settings.UpperThreshold==150&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999999
+                    &&settings.BlobCountLimit==100&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
                 var changed=settings with{Threshold=73,UpperThreshold=211,FilterAreaMax=9999999,BlobCountLimit=993,
                     Judgments=Rules(new BlobJudgment("per-blob-area",true,true,19,750))};
                 var restored=JsonSerializer.Deserialize<BlobSettings>(JsonSerializer.Serialize(changed))!;
@@ -161,7 +161,7 @@ internal static class S2DocumentEditingCases
                     new BlobSettings { Judgments=Array.Empty<BlobJudgment>() },
                     new BlobSettings { Judgments=new BlobSettings().Judgments.Skip(1).ToArray() },
                     new BlobSettings { BlobCountLimit=20001 },
-                    new BlobSettings { FilterAreaMax=10000000 },
+                    new BlobSettings { FilterAreaMax=1000000000 },
                     new BlobSettings { SegmentationMode=BlobSegmentationMode.DoubleThreshold,Threshold=200,UpperThreshold=199 },
                     new BlobSettings { Judgments=Rules(new BlobJudgment("white-ratio",false,true,0,101)) },
                     new BlobSettings { Judgments=Rules(new BlobJudgment("average-circularity",false,true,-0.01,1)) },
@@ -179,7 +179,7 @@ internal static class S2DocumentEditingCases
                         "非法设置未在输入准入及算法执行前拒绝");
                 }
                 Require((new BlobSettings{BlobCountLimit=20000,FilterAreaMax=9999999}).Validate().Count==0,"XML合法边界被拒绝");
-                Require((new BlobSettings{IsBlobCountFilterEnabled=false,BlobCountLimit=0}).Validate().Count==0,"关闭的筛选仍参与执行校验");
+                Require((new BlobSettings{BlobCountLimit=0}).Validate().Count>0,"查找个数非法时应拒绝");
                 var absent=new BlobSettings{Judgments=null!};
                 Require(absent.Validate().Count>0,"空判定集合未报告字段错误");
                 Throws<ArgumentException>(()=>absent.Freeze());
@@ -260,7 +260,7 @@ internal static class S2DocumentEditingCases
                     var records=(SequenceValue)projected!.ToValues()[BlobSchema.BlobsPort]!;
                     Require(((RecordValue)records[0]!).Get<bool>("contour-lossy")&&((RecordValue)records[0]!).Contains("boundary"),"请求投影状态未生成完整边界或有损标记");
                 }
-                using var limited = new BlobSession().Execute(Basic with {IsBlobCountFilterEnabled=true,BlobCountLimit=1},input,factory);
+                using var limited = new BlobSession().Execute(Basic with {BlobCountLimit=1},input,factory);
                 Require(limited.Count==1 && limited.TotalArea==207 && Math.Abs(limited.WhitePixelRatio-211.0/768*100)<1e-9, "排序限数、最终统计或分割白像素语义错误");
             });
             Case("空ROI不回退满图、实际Domain内反阈值", () => {

@@ -4734,7 +4734,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
     using var root=new RuntimeNodeConfigurationControl(node);
     using var context=new ProductionEditorContext(edits.Host,flow.Id,node,()=>true,root.BindDraft,documentEdits:edits);root.BindDraft(context.DraftNode);ToolEditorCommit.AttachDraftContext(root,context);Show(root);
-    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==54&&fields.Fields.Select(field=>field.FieldId).Distinct().Count()==54&&Find<DeclaredInputFieldsView>(root).Single().Fields.Count==4,"新Runtime三页或54设置/4输入不完整");
+    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==53&&fields.Fields.Select(field=>field.FieldId).Distinct().Count()==53&&Find<DeclaredInputFieldsView>(root).Single().Fields.Count==4,"新Runtime三页或53设置/4输入不完整");
     var metadata=((IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis")).SettingsSchema.Presentation!.Fields;
     var pairs=metadata.Where(item=>item.Layout?.PairWith is not null).ToArray();Require(pairs.Length==14,"Blob配对清单变化未复核");
     foreach(var pair in pairs)
@@ -4747,22 +4747,22 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     foreach(var name in new[]{"FilterCircularityMin","FilterCircularityMax","FilterRectangularityMin","FilterRectangularityMax"})Require(Metadata(name).Layout!.Increment==.01,"浮点步进丢失");
     tabs.SelectedIndex=1;Pump();var threshold=fields.Fields.Single(f=>f.FieldId==Metadata("Threshold").FieldId);
     var text=(TextBox)threshold.InputElement!;text.Text="201";
-    Require(root.HasPendingEdits&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&text.Text=="201","合法未提交原文未标记待编辑或提前写入草稿");
+    Require(root.HasPendingEdits&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==100&&text.Text=="201","合法未提交原文未标记待编辑或提前写入草稿");
     Require(threshold.TryCommitPending(),"真实原数值不能提交："+threshold.Error);
-    Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==201,"数值没有隔离草稿");
+    Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold==100&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==201,"数值没有隔离草稿");
     var minId=Metadata("FilterAreaMin").FieldId;var maxId=Metadata("FilterAreaMax").FieldId;
     var low=fields.Fields.Single(field=>field.FieldId==minId);var high=fields.Fields.Single(field=>field.FieldId==maxId);
-    Require(low.TrySetConstant(100d)&&high.TrySetConstant(200d),"正式草稿不能设置有效范围");Pump();
+    Require(low.TrySetConstant(100L)&&high.TrySetConstant(200L),"正式草稿不能设置有效范围");Pump();
     var highText=(TextBox)high.InputElement!;highText.Text="250";
-    Require(low.TrySetConstant(150d)&&highText.Text=="250"&&high.Setting is ConstantSetting{Value:200d}&&root.HasPendingEdits,
+    Require(low.TrySetConstant(150L)&&highText.Text=="250"&&high.Setting is ConstantSetting{Value:200L}&&root.HasPendingEdits,
         "单端接纳时宿主提交或丢失了另一端合法原文");
-    highText.Text="200";Require(high.TryCommitPending()&&low.TrySetConstant(100d),"无法恢复范围验证前置");Pump();
+    highText.Text="200";Require(high.TryCommitPending()&&low.TrySetConstant(100L),"无法恢复范围验证前置");Pump();
     var range=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
     var rightToggle=Visuals<ToggleButton>(range).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeRight");
     rightToggle.IsChecked=true;Click(rightToggle);Pump();
     Require(high.HasInvalidText&&root.HasPendingEdits,"上限待选订阅没有作为未完成编辑");
     var privateFields=Find<DeclaredSettingsView>(root).Single().Draft!.CaptureFields();
-    Require(privateFields.Get<double>(minId)==100&&privateFields.Get<double>(maxId)==200,"未选订阅时原常量草稿发生变化");
+    Require(privateFields.Get<long>(minId)==100&&privateFields.Get<long>(maxId)==200,"未选订阅时原常量草稿发生变化");
     var frozen=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings();
     Require(frozen.FilterAreaMin==100&&frozen.FilterAreaMax==200,"未完成编辑污染正式节点配置");
     Require(!root.TryValidateEditor(out _)&&root.HasPendingEdits,"未选订阅的范围被最终捕获");

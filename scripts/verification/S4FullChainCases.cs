@@ -171,7 +171,7 @@ internal static class S2DocumentEditingCases
             Until(()=>context.DebugResults.GetNodeResult(blob.Id)?.Result is not null);
             Require(context.DebugResults.GetNodeResult(blob.Id)!.Result is DeclaredOutputSnapshot {Output:BlobOutput {Count:0}}&&ReferenceEquals(production,Result(blob.Id)),"私有调试污染正式结果");
             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==0,"实际结果表未显示私有结果");
-            window.Close();Pump();Require(solutions.Session!.Editing.RegisteredScopeCount==0&&((BlobSettings)blob.RuntimeConfiguration!.CaptureSettings()).Threshold==128,"关闭污染正式值或遗留范围");
+            window.Close();Pump();Require(solutions.Session!.Editing.RegisteredScopeCount==0&&((BlobSettings)blob.RuntimeConfiguration!.CaptureSettings()).Threshold==100,"关闭污染正式值或遗留范围");
         });
         Case("删除自动来源阻断运行，不静默回退；显式选择不受旧连线删除影响",()=>
         {
@@ -200,7 +200,7 @@ internal static class S2DocumentEditingCases
                     !string.IsNullOrEmpty(repository.LastError),"持久化未按错型所有权或未知字段拒绝："+repository.LastError);
             }
             Select(restored);Execute();Require(Count(restored.Id)==1&&Count(downstream.Id)==1,"重开未执行新Runtime链");
-            var window=Open(restored);Field(window,"Threshold").Text="230";window.Close();Pump();Require(((BlobSettings)restored.RuntimeConfiguration.CaptureSettings()).Threshold==128,"重开取消污染正式值");
+            var window=Open(restored);Field(window,"Threshold").Text="230";window.Close();Pump();Require(((BlobSettings)restored.RuntimeConfiguration.CaptureSettings()).Threshold==100,"重开取消污染正式值");
         });
         var view=vm.SelectedNodeDataAnalysisControl;vm.SelectedNode=null;Pump();Require(vm.SelectedNodeDataAnalysisControl is null,"选择退出仍保留结果页");
         if(!File.Exists(Path.Combine(product,"plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll")))
@@ -418,7 +418,7 @@ internal static class S2DocumentEditingCases
                 var command=new SunEyeVision.UI.Features.WorkflowUI.Commands.InsertNodeIntoConnectionCommand(edges,new[]{a,b,c},original,b,new Point(100,120),()=>
                 {b.RuntimeConfiguration=b.RuntimeConfiguration!.WithSettings(((BlobSettings)b.RuntimeConfiguration.CaptureSettings()) with {Threshold=73});if(failConfigure)throw new InvalidOperationException("配置失败标记");},()=>{if(!failConfigure&&++refresh==1)throw new InvalidOperationException("刷新失败标记");});
                 try{command.Execute(null);throw new Exception("失败插线竟然接纳");}catch(InvalidOperationException error){Require(error.Message.Contains("失败标记"),"丢失首个插线失败原因");}
-                Require(edges.SequenceEqual(new[]{original,left})&&b.Position==new Point(20,30)&&left.SourcePort=="RightPort"&&left.ManualPathPoints?.Single()==new Point(8,9)&&((BlobSettings)b.RuntimeConfiguration!.CaptureSettings()).Threshold==128,"失败恢复遗漏图/位置/端口/路径/配置");
+                Require(edges.SequenceEqual(new[]{original,left})&&b.Position==new Point(20,30)&&left.SourcePort=="RightPort"&&left.ManualPathPoints?.Single()==new Point(8,9)&&((BlobSettings)b.RuntimeConfiguration!.CaptureSettings()).Threshold==100,"失败恢复遗漏图/位置/端口/路径/配置");
             }
         });
         Case("端口恢复观察者抛错仍完成其余端口与路由恢复",()=>

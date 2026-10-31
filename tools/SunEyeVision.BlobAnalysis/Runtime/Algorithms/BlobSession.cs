@@ -90,7 +90,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var selected = SelectFeatures(connected, settings);
         var candidates = ExtractCandidates(selected, settings, cancellation);
         var final = Sort(candidates, settings.SortMode);
-        if (settings.IsBlobCountFilterEnabled) final = final.Take(settings.BlobCountLimit);
+        final = final.Take(settings.BlobCountLimit);
         var ordered = final.ToArray();
         var outputResources = resources.CreateScope();
         try

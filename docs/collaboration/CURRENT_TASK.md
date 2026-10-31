@@ -1,3 +1,10 @@
+## 2026-10-31 执行底栏、结果表与图像联动核查进行中
+
+- 同源码正式Release 591db0a4 已验证公共原底栏6、publication7、通用结果表1、来源2及结果生命周期24组；见 RESULT_AND_FOOTER_BASELINE_FORMAL_20261031.json。它们不代表Blob正式窗口底栏、结果缺列或完整表图联动闭口。
+
+- 已有NativeToolEditorFrame及命令状态/退役合同，但Blob实际窗口当前仍由SDK调试宿主提供底栏，尚未消费公共原底栏；不得把独立样例当正式Blob接入，也不能新增第二套底栏。
+- BlobResultView使用DeclaredResultTable，正式ResultPublication借同次DeclaredOutputSnapshot reader并携带运行身份和声明指纹；须核实真实消费者的表/图共享发布及退役，不根据旧方案推测工作流独立分支状态。
+- 当前Blob表声明8列；原厂XML明确9个数据项含角度、长轴、短轴，序号是否构成第10列尚须核证。现有HALCON最小旋转矩形已有角度及半长轴计算，但尚未成为对应正式输出，也未证原厂长短轴定义；不能凭边框或角点猜值。ROI与结果配置正式组合、图层及跨工作区集成按原完整清单保留。
 ## 2026-10-31 参数页与高级展开当前合同自测闭口
 
 - 复用原页签样式、真实ParamListView分组及NativeAdvancedPresenter；同产品源码正式Release 591db0a4的高级7、分组宿主4、输入分组1与新增跨页原文/引用生命周期1共13组通过。四轨加载程序集16条均与正式产物一致，测试提交082fa451；回执见 PARAMETER_PAGES_FORMAL_20261031.json。
@@ -2797,6 +2804,9 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
 
 - B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+
+
 
 
 

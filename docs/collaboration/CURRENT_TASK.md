@@ -1,3 +1,8 @@
+## 2026-10-31 位置修正公共组合当前合同自测闭口
+
+- 复用NativeAssistOptions和DeclaredFieldsView.Assist十五角色组合及原五槽三方式；同产品源码正式Release 591db0a4 的真实窗口Assist 10组通过，包含显隐、来源、关闭清理、拒绝回放和退役，四条加载程序集与正式产物一致。独立设计组装沿用同产品源码attempt-149，回执见 ASSIST_CONTROLS_FORMAL_20261031.json。
+- 此结论仅限公共组合：Blob按点/按坐标仍为UI-only并拒绝捕获，正式字段、保存及FIXTURE十float到Affine2D转换未接入；原厂单位、方向、顺序和退化语义未证，不猜转换。原厂顺序解绑与本方原子清理分开记录。ROI/结果整窗保护、VS/其他DPI与人工未验保留。
+- 下一单元为参数页、分组、页签和高级展开；复用现有真实视图和原模板，按完整状态及生命周期集中验证。
 ## 2026-10-31 ROI原控件组合当前合同自测闭口
 
 - 复用NativeRoiSession及原Editor/Viewport，部分annulus以六参数扇环投影保持kind、组ID、物理帧和正负扫角；完整环仍四参数，继承只读保留。该部分环为本方适配，不冒称原厂已证。
@@ -2787,6 +2792,8 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
 
 - B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+
 
 
 

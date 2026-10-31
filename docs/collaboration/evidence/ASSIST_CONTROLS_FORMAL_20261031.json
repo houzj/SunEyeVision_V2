@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "591db0a426fc28af4357a87ff0b22fd27f768f20",
+  "date": "2026-10-31",
+  "original": "Blob原AssistGroup三方式；原关闭顺序解除订阅，现行关闭清12来源的原子性是本方适配，不冒称原厂等价。",
+  "limits": [
+    "Blob按点和按坐标仍为UI-only并被捕获门禁拒绝；正式15角色字段和保存未接入",
+    "原FIXTURE十float与本方Affine2D不同，单位、方向、顺序及退化规则不足以证明转换，不能猜测",
+    "实际VS、其他DPI与用户人工未验；Blob ROI/结果整窗保护保留"
+  ],
+  "status": "当前公共组合合同条件性自测闭口",
+  "reuse": "NativeAssistOptions与DeclaredFieldsView.Assist复用原五槽三方式、15角色、Point与Float32来源；宿主组提案、拒绝、关闭清理和回放按现行事务合同。",
+  "formal": {
+    "failed": 0,
+    "track": "WindowPresentation/attempt-371",
+    "loadedRecords": 4,
+    "filter": "Assist",
+    "passed": 10,
+    "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-371/receipt.json",
+    "receiptSha256": "AC8C4AA47D6F08A014E2932A28FDCE4B57B2323D3D81D33BD651E4396A8F1ADC",
+    "loadedMismatch": 0
+  },
+  "unit": "位置修正十五角色公共组合",
+  "buildId": "development-7636ff78f2c04d9ab87de52a51bb649e",
+  "designTime": "同产品源码正式DesignTime attempt-149：290组通过；不代实际VS",
+  "payloadSha256": "462537ED48848A98B50A9082B316791262366801F43BE37D9DB8E1545DA4A818"
+}

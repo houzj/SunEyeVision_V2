@@ -1,0 +1,58 @@
+{
+  "productCodeCommit": "c4e04f0f",
+  "testedTrack": "RuntimeAlgorithm",
+  "stage": "S3",
+  "attempt": 2,
+  "scope": "正式Release直接算法入口；5组，不表示完整宿主或VM等价",
+  "receipt": {
+    "stage": "S3",
+    "validationScope": "Formal",
+    "attempt": 2,
+    "pid": 54760,
+    "exit": 0,
+    "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S3BlobRuntimeCases.cs",
+    "caseSourceSha256": "45347C65FD2D3C2C8866A23B24DC95DBC804596075B6653B822BF0A78BA7A393",
+    "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+    "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-002"
+  },
+  "loaded": [
+    {
+      "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "expected": "37BFE2E2757F5C49053760FD63C15AE8C5F8446FA81A8A9486EF0AD89A87F1B1",
+      "actual": "37BFE2E2757F5C49053760FD63C15AE8C5F8446FA81A8A9486EF0AD89A87F1B1"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Contracts",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "expected": "DE3F950112B8C385520D4B983C582F9DC78C0161C5D6CD526D0805945CA37122",
+      "actual": "DE3F950112B8C385520D4B983C582F9DC78C0161C5D6CD526D0805945CA37122"
+    },
+    {
+      "name": "SunEyeVision.HalAdapter",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+      "expected": "C4F690E0F91F573423D58C3429653DED367F2582B28BA1C56B3BE6C2620818D0",
+      "actual": "C4F690E0F91F573423D58C3429653DED367F2582B28BA1C56B3BE6C2620818D0"
+    },
+    {
+      "name": "SunEyeVision.Plugin.SDK",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+      "expected": "39CA55453D84CCD8371EFEA9A716845CA8D1795A75850122C0B2B510F0ECBACB",
+      "actual": "39CA55453D84CCD8371EFEA9A716845CA8D1795A75850122C0B2B510F0ECBACB"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Runtime",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "expected": "2DC61EE4CF450C68FDEE92F3641681B252976CC03AAFAECA96987A21A0F2F92E",
+      "actual": "2DC61EE4CF450C68FDEE92F3641681B252976CC03AAFAECA96987A21A0F2F92E"
+    },
+    {
+      "name": "SunEyeVision.HalAdapter.Runtime",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+      "expected": "B7D70D39D271F60764D29CFA40ABDF8520840FBE27C90B56F6BA3274A8AD90BA",
+      "actual": "B7D70D39D271F60764D29CFA40ABDF8520840FBE27C90B56F6BA3274A8AD90BA"
+    }
+  ],
+  "logSha256": "AA67DEC58EF5B905A63943CBC20209F7C37C06BA14D0694CB4A6672822C3E2D8"
+}

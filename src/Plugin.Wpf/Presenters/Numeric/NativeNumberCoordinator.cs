@@ -255,10 +255,12 @@ internal sealed class NativeNumberCoordinator : IDisposable
             }
             else
             {
-                try{if(_state.ConstantBackup is {} backup)_commit!.ValidateStored(backup);}
-                catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);return;}
-                _state.TryUseConstant();
-                if(!_state.IsReferenceMode&&_state.ConstantBackup is null)_commit?.BeginConstantEntry();
+                if(_state.ConstantBackup is {} backup)TrySetConstant(backup.Value!);
+                else
+                {
+                    _state.TryUseConstant();
+                    if(!_state.IsReferenceMode&&_state.ConstantBackup is null)_commit?.BeginConstantEntry();
+                }
             }
         }
         finally{ProjectState();_referenceScope?.Refresh();}

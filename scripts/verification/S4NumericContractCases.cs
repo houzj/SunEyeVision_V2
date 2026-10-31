@@ -24,8 +24,8 @@ internal static class S2DocumentEditingCases
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             foreach(var source in new[]{.125,.135,0d,1d}){Scalar(source);Range(source,0);Range(source,1);}
-            ScalarRejected();ScalarProposalRejected();ScalarInvalid();ScalarRetired();
-            if(Environment.GetEnvironmentVariable("S4_NUMERIC_LOADED")=="1"){Loaded(false,false);Loaded(true,false);Loaded(false,true);Loaded(true,true);}
+            ScalarRejected();ScalarProposalRejected();ScalarInvalid();ScalarRetired();RangeRetired(0);RangeRetired(1);
+            if(Environment.GetEnvironmentVariable("S4_NUMERIC_LOADED")=="1"){Loaded(false,false);Loaded(true,false);Loaded(false,true);Loaded(true,true);Loaded(true,true,1);}
             var file=System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"numeric-contract-report.json");
             System.IO.File.WriteAllText(file,JsonSerializer.Serialize(Rows,new JsonSerializerOptions{WriteIndented=true}));
             if(Rows.Any(row=>!(bool)row.GetType().GetProperty("Passed")!.GetValue(row)!))return 1;
@@ -91,17 +91,29 @@ internal static class S2DocumentEditingCases
         Check("宿主接纳同步关闭后不继续通知",writes==1&&notifications==0,new{writes,notifications});
         field.Dispose();
     }
-    private static void Pump()=>Dispatcher.CurrentDispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
-    private static void Loaded(bool range,bool queued)
+    private static void RangeRetired(int endpoint)
     {
-        var writes=0;var accepted=.2d;
-        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==0?.2d:1d))),values=>{accepted=(double)((ConstantSetting)values["low"]).Value!;writes++;},Options(.125));
+        var writes=0;var notifications=0;DeclaredFieldsView? fields=null;
+        fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Select((port,i)=>(port,Presentation(port.Id,i==0?"high":null),i==endpoint?Initial():(ParameterSetting)new ConstantSetting(i==0?0d:1d))),_=>{writes++;fields!.Dispose();},Options(.125));
+        Prepare(fields);
+        var presenter=(FrameworkElement)((IEnumerable)typeof(DeclaredFieldsView).GetField("_ranges",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(fields)!).Cast<object>().Single();
+        fields.Fields[endpoint].Changed+=()=>notifications++;
+        Switch(presenter,endpoint);
+        Check("范围"+endpoint+"宿主接纳同步关闭后不继续通知",writes==1&&notifications==0,new{writes,notifications});
+        fields.Dispose();
+    }
+    private static void Pump()=>Dispatcher.CurrentDispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+    private static void Loaded(bool range,bool queued,int endpoint=0)
+    {
+        var writes=0;var accepted=.2d;var reject=false;var id=endpoint==0?"low":"high";
+        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==endpoint?.2d:i==0?0d:1d))),values=>{if(reject)throw new InvalidOperationException("Loaded宿主拒绝");accepted=(double)((ConstantSetting)values[id]).Value!;writes++;},Options(.125));
         var stack=new StackPanel();stack.Children.Add(fields);var next=new Button{Content="焦点目标"};stack.Children.Add(next);
         var window=new Window{Width=650,Height=300,Content=stack,Title="数值禁用迟到验证"};
         try
         {
             window.Show();Pump();window.UpdateLayout();
-            var text=range?Desc(fields).OfType<TextBox>().First(t=>t.Name=="ValueText"):(TextBox)fields.Fields.Single().InputElement!;
+            var field=fields.Fields.Single(f=>f.FieldId==id);
+            var text=(TextBox)field.InputElement!;
             text.Focus();Keyboard.Focus(text);Pump();
             var focused=text.IsKeyboardFocused;
             text.Text="0.45";var beforeTransfer=writes;
@@ -110,12 +122,31 @@ internal static class S2DocumentEditingCases
             else next.Focus();
             var beforeDisable=writes;var valueBeforeDisable=accepted;
             fields.IsEnabled=false;var afterDisable=writes;var valueAfterDisable=accepted;
+            if(queued)
+            {
+                var native=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().ElementAt(endpoint);
+                ((RepeatButton)native.FindName("UpButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                fields.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(window)!,Environment.TickCount,Key.Enter){RoutedEvent=Keyboard.PreviewKeyDownEvent});
+            }
             Pump();var afterPump=writes;
             var passed=focused&&fields.IsLoaded&&afterPump==beforeDisable&&(!queued||beforeDisable==0);
             Check((range?"range":"scalar")+(queued?"真实Loaded路由失焦排队后禁用":"真实焦点转移后禁用时序"),passed,
-                new{focused,fields.IsLoaded,InjectedLostKeyboardFocus=queued,beforeTransfer,beforeDisable,valueBeforeDisable,afterDisable,valueAfterDisable,afterPump,accepted,Raw=text.Text,Dpi=VisualTreeHelper.GetDpi(window).PixelsPerInchX});
+                new{focused,fields.IsLoaded,Endpoint=endpoint,InjectedLostKeyboardFocus=queued,beforeTransfer,beforeDisable,valueBeforeDisable,afterDisable,valueAfterDisable,afterPump,accepted,Raw=text.Text,Dpi=VisualTreeHelper.GetDpi(window).PixelsPerInchX});
             fields.IsEnabled=true;Pump();
             Check((range?"range":"scalar")+(queued?"排队禁用恢复原文":"实际失焦恢复不重复写入"),text.Text=="0.45"&&writes==beforeDisable,new{Raw=text.Text,writes,beforeDisable});
+            if(queued)
+            {
+                Check((range?"range":"scalar")+id+"恢复后显式提交单次接纳",field.TryCommitPending()&&writes==1&&accepted==.45d,new{writes,accepted});
+                text.Focus();Keyboard.Focus(text);Pump();text.Text="0.55";
+                text.RaiseEvent(new KeyboardFocusChangedEventArgs(Keyboard.PrimaryDevice,Environment.TickCount,text,next){RoutedEvent=Keyboard.LostKeyboardFocusEvent});
+                stack.Children.Remove(fields);Pump();
+                Check((range?"range":"scalar")+id+"卸载拒绝排队写入",!fields.IsLoaded&&writes==1&&accepted==.45d,new{writes,accepted,fields.IsLoaded});
+                stack.Children.Insert(0,fields);Pump();
+                reject=true;var refused=field.TryCommitPending();
+                Check((range?"range":"scalar")+id+"重载原文及宿主拒绝不半写",text.Text=="0.55"&&!refused&&writes==1&&accepted==.45d,new{writes,accepted,field.Error,Raw=text.Text});
+                reject=false;var committed=field.TryCommitPending();
+                Check((range?"range":"scalar")+id+"拒绝修复后显式提交",committed&&writes==2&&accepted==.55d,new{writes,accepted,field.Error});
+            }
         }
         finally{window.Close();Pump();}
     }

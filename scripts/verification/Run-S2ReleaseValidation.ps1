@@ -1,10 +1,10 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','ParameterValues','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','ParameterValues','ManualReferenceQualification','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','ParameterValues','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','ParameterValues','ManualReferenceQualification','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 # Formal validation must run from the primary checkout, before creating any output.
 $gitDir = git -C $root rev-parse --absolute-git-dir
@@ -62,6 +62,30 @@ if($Track -eq 'RuntimeGlobals')
     foreach($name in @('xunit.assert.dll','xunit.core.dll','xunit.abstractions.dll','NSubstitute.dll','Castle.Core.dll')){$references+=Get-Item (Join-Path $root ('tests/bin/Release/'+$name))}
     [ordered]@{path='tests/_shared/GlobalProductionRuntimeProbe.cs';sha256=(Get-FileHash -LiteralPath $probeSource -Algorithm SHA256).Hash}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $logDir 'probe-source.json') -Encoding utf8
 }
+if($Track -eq 'ManualReferenceQualification')
+{
+    $probeDir=Join-Path $dir 'runtime-probe'
+    New-Item -ItemType Directory -Path $probeDir -Force|Out-Null
+    $probeSource=Join-Path $root 'tests/_shared/ManualReferenceRuntimeProbe.cs'
+    $contractPath=Join-Path $product 'SunEyeVision.Plugin.Contracts.dll'
+    $probeProject='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/><PropertyGroup><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><AssemblyName>SunEyeVision.ManualReference.Runtime.Tests</AssemblyName><OutputPath>out/</OutputPath><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup><Compile Include="'+[Security.SecurityElement]::Escape($probeSource)+'"/><Reference Include="SunEyeVision.Plugin.Contracts"><HintPath>'+[Security.SecurityElement]::Escape($contractPath)+'</HintPath><Private>false</Private></Reference></ItemGroup><Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/></Project>'
+    [IO.File]::WriteAllText((Join-Path $probeDir 'Probe.csproj'),$probeProject)
+    [IO.File]::WriteAllText((Join-Path $probeDir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')
+    Copy-Item -LiteralPath $probeSource -Destination (Join-Path $logDir 'probe-source.cs.txt')
+    dotnet build (Join-Path $probeDir 'Probe.csproj') -c Release *> (Join-Path $logDir 'probe-build.log')
+    if($LASTEXITCODE -ne 0){Get-Content (Join-Path $logDir 'probe-build.log') -Tail 12;throw '普通来源资格专用测试声明编译失败'}
+    $env:S2_RUNTIME_PROBE=Join-Path $probeDir 'out/SunEyeVision.ManualReference.Runtime.Tests.dll'
+    $references+=Get-Item $env:S2_RUNTIME_PROBE
+    $manualProbeEvidence=[ordered]@{
+        source='tests/_shared/ManualReferenceRuntimeProbe.cs'
+        sourceSha256=(Get-FileHash -LiteralPath (Join-Path $logDir 'probe-source.cs.txt') -Algorithm SHA256).Hash
+        assembly=$env:S2_RUNTIME_PROBE
+        assemblySha256=(Get-FileHash -LiteralPath $env:S2_RUNTIME_PROBE -Algorithm SHA256).Hash
+        contracts=$contractPath
+        contractsSha256=(Get-FileHash -LiteralPath $contractPath -Algorithm SHA256).Hash
+    }
+    $manualProbeEvidence|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $logDir 'probe-source.json') -Encoding utf8
+}
 $refs=($references | ForEach-Object {'<Reference Include="'+[Security.SecurityElement]::Escape($_.BaseName)+'"><HintPath>'+[Security.SecurityElement]::Escape($_.FullName)+'</HintPath><Private>false</Private></Reference>'}) -join "`n"
 $project='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><OutputType>Exe</OutputType><StartupObject>SafeEntry</StartupObject><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><OutputPath>out/</OutputPath><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath><GenerateAssemblyInfo>false</GenerateAssemblyInfo><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup>'+$refs+'</ItemGroup><Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/></Project>'
 if($Track -eq 'ImageSourceRecovery')
@@ -79,6 +103,12 @@ if($Track -eq 'RuntimeGlobals')
     $compile=($testSources|ForEach-Object {'<Compile Include="'+[Security.SecurityElement]::Escape((Join-Path $root $_))+'"/>'}) -join "`n"
     $project=$project.Replace('<ItemGroup>','<ItemGroup><Compile Remove="runtime-probe/**/*.cs"/>'+$compile)
     $testSources|ForEach-Object {[ordered]@{path=$_;sha256=(Get-FileHash -LiteralPath (Join-Path $root $_) -Algorithm SHA256).Hash}}|ConvertTo-Json -Depth 4|Set-Content -LiteralPath (Join-Path $logDir 'test-sources.json') -Encoding utf8
+}
+if($Track -eq 'ManualReferenceQualification')
+{
+    # The fixture is compiled once against Contracts and then loaded by SafeEntry.
+    # Do not pick its nested generated sources up again in the WPF test host.
+    $project=$project.Replace('<ItemGroup>','<ItemGroup><Compile Remove="runtime-probe/**/*.cs"/>')
 }
 [IO.File]::WriteAllText((Join-Path $dir 'Check.csproj'),$project)
 [IO.File]::WriteAllText((Join-Path $dir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')
@@ -112,6 +142,7 @@ if($Track -eq 'RuntimeGlobals'){$source='S3RuntimeGlobalCases.cs'}
 if($Track -eq 'VariableDialog'){$source='S4VariableDialogCases.cs'}
 if($Track -eq 'VariableFields'){$source='S4VariableReferenceCases.cs'}
 if($Track -eq 'ParameterValues'){$source='S4ParameterCurrentValueCases.cs'}
+if($Track -eq 'ManualReferenceQualification'){$source='S4ManualReferenceQualificationCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash
@@ -178,7 +209,14 @@ if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 [IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 if(-not $finished){throw 'S2自有检查进程超时，已停止该自有进程'}
-[ordered]@{stage=$Stage;validationScope=$ValidationScope;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope=$(if($ValidationScope -eq 'Formal'){'当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收'}else{'独立worktree自行构建产物的候选检查，尚未集成或正式验收'});logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
+$receipt=[ordered]@{stage=$Stage;validationScope=$ValidationScope;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope=$(if($ValidationScope -eq 'Formal'){'当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收'}else{'独立worktree自行构建产物的候选检查，尚未集成或正式验收'});logDir=$logDir}
+if($Track -eq 'ManualReferenceQualification')
+{
+    $receipt.track=$Track
+    $receipt.probe=$manualProbeEvidence
+    $receipt.caseReport=Join-Path $logDir 'manual-reference-report.json'
+}
+$receipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}
 

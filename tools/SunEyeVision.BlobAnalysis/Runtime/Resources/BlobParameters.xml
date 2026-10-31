@@ -15,7 +15,7 @@
       <Choice key="SingleThreshold" label="单阈值" />
       <Choice key="DoubleThreshold" label="双阈值" />
     </Parameter>
-    <Parameter id="Type" type="Enum" default="Binary" label="极性" fieldId="field:88b45ab61b965761b901670fd587903f" allowReference="false" visibleWhen="SegmentationMode" visibleValue="None" visibleNegate="true">
+    <Parameter id="Type" type="Enum" default="Binary" label="极性" fieldId="field:88b45ab61b965761b901670fd587903f" allowReference="false" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" visibleNegate="true">
       <Choice key="Binary" label="区间内为白" />
       <Choice key="BinaryInv" label="区间外为白" />
     </Parameter>

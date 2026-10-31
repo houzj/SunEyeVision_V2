@@ -17,7 +17,8 @@ public static class BlobPresentation
   string? Id(string logical)=>ids.TryGetValue(logical,out var id)?id:null;
   void When(string logical,object value){if(Id(logical) is {} id)condition=new(id,value);}
   if(key is "setting.Threshold" or "setting.UpperThreshold"){minimum=0;maximum=255;decimals=0;}
-  if(key is "setting.Threshold" or "setting.Type")condition=new(ids["setting.SegmentationMode"],"None",true);
+  if(key=="setting.Threshold")condition=new(ids["setting.SegmentationMode"],"None",true);
+  if(key=="setting.Type")condition=new(ids["setting.SegmentationMode"],"DoubleThreshold",true);
   if(key=="setting.UpperThreshold")When("setting.SegmentationMode", "DoubleThreshold");
   if(key.StartsWith("setting.Filter"))
   {

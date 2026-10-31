@@ -87,7 +87,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         private static readonly object CommunicationInitializationGate = new();
 
         /// <summary>
-        /// 获取 UI 日志写入器（供 LogPanelViewModel 使用）
+        /// 获取 UI 日志写入器
         /// </summary>
         /// <remarks>
         /// 支持延迟自动创建：如果尚未通过 InitializeServices() 初始化，

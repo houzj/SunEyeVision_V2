@@ -29,14 +29,15 @@ public partial class MainWindowViewModel
         bool Current()=>session is not null&&root is not null&&node is not null&&
             ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Contains(root)&&root.Nodes.Contains(node)&&
             ReferenceEquals(node.InputSource,source)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&
-            ReferenceEquals(ActiveInputSource,source)&&CanEditRootWorkspace&&!source.IsReadOnly&&
+            ReferenceEquals(ActiveInputSource,source)&&!IsDebugWindowOpen&&!source.IsReadOnly&&!tab.IsInSubroutine&&
+            _solutionTransitionLease==null&&!_transitionPreparationInProgress&&session.Editing.HasPendingChanges!=true&&
             ImageSourcePolicy.Read(node)?.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local&&
             index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         if(source.EditVersion!=editVersion||!Current()||!source.CanSelectImage(index))return false;
-        var receipt=source.SelectImage(index);
-        // Acceptance notifications may switch documents, roots, sources or execution state.
-        return receipt.FormalAccepted&&receipt.RuntimeReady&&receipt.ProjectionVersion is { } acceptedVersion&&source.EditVersion==acceptedVersion&&
-            source.CurrentIndex==index&&ReferenceEquals(source.CurrentImage,image)&&Current();
+        var accepted=_executionManager.TrySelectLocalImageCursor(tab.RootWorkflowId,root!,source,image,index,editVersion,
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session!.Document));
+        // Navigation observers may switch roots or accept a newer choice; never start the older run.
+        return accepted&&source.EditVersion==editVersion&&source.CurrentIndex==index&&ReferenceEquals(source.CurrentImage,image)&&Current();
     }
     internal System.Threading.Tasks.Task RunPreviewImageAsync(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab,
         ImageInputSource source,ImageInfo image,int index,long editVersion)
@@ -49,7 +50,7 @@ public partial class MainWindowViewModel
             ReferenceEquals(node.InputSource,source)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&
             ReferenceEquals(ActiveInputSource,source)&&source.EditVersion==editVersion&&source.CurrentIndex==index&&source.CanSelectImage(index)&&
             ImageSourcePolicy.Read(node) is {SourceKind:SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local} policy&&
-            policy.CurrentIndex==index&&index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
+            index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         return Current()?ExecuteRunWorkflow(advanceLocalImage:false,expectedTab:tab,isCurrent:Current,explicitSourceId:source.NodeId):System.Threading.Tasks.Task.CompletedTask;
     }
     private void BindLocalImageSourceEditor(WorkflowNodeBase node,ImageInputSource source)
@@ -70,12 +71,25 @@ public partial class MainWindowViewModel
             var host=GetProductionEditorHost(session);
             var draft=host.BeginEdit(root.Id,node.Id);
             var policy=ImageSourcePolicy.Read(draft.Node)??throw new InvalidOperationException("图像源缺少正式Runtime设置。");
+            var displayOwner=SelectedNode;var displayTab=WorkflowTabViewModel.SelectedTab;var displayVersion=source.EditVersion;var displayClearEpoch=_nativeExplicitClearEpoch;
+            using var display=new SunEyeVision.UI.Services.Images.SourceDisplayPreservationScope(()=>
+                _nativeExplicitClearEpoch==displayClearEpoch&&ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Contains(root)
+                &&root.Nodes.Contains(node)&&ReferenceEquals(node.InputSource,source)&&ReferenceEquals(ActiveInputSource,source)
+                &&ReferenceEquals(SelectedNode,displayOwner)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,displayTab)
+                &&displayTab?.RootWorkflowId==root.Id&&displayTab.IsInSubroutine==false
+                &&(source.EditVersion==displayVersion||source.EditVersion==displayVersion+1));
+            if(!proposal.SelectStart&&policy.CurrentIndex==configuration.CurrentIndex&&policy.FilePaths.Count<=configuration.FilePaths.Count
+                &&policy.FilePaths.SequenceEqual(configuration.FilePaths.Take(policy.FilePaths.Count)))
+                try{SourceDisplayPreservationPreparing?.Invoke(source,display);}
+                catch(Exception error){try{AddLog("显示留存准备失败："+error.Message);}catch{}}
             policy.UpdateLocalInput(configuration);
             policy.ApplyTo(draft.Node);
             _acceptingImageSource=true;
             try
             {
                 var publication=host.Commit(draft);
+                try{display.Accept(publication.InvalidatedNodes);}
+                catch(Exception error){ReportAcceptedSourceRefreshError("显示留存接纳失败",error);}
                 // An explicit preview choice can equal the persisted start while differing
                 // from the last runtime cursor. Reset only this source, never other sources.
                 if(proposal.SelectStart)
@@ -97,6 +111,20 @@ public partial class MainWindowViewModel
             }
             finally { _acceptingImageSource=false; }
         };
+    }
+    private void SynchronizeAcceptedSourceCursor(ImageInputSource source)
+    {
+        var session=DocumentManager.Session;if(session is null)return;
+        var roots=session.Document.Workflows.Where(flow=>!flow.IsSubroutine&&flow.Nodes.Any(node=>ReferenceEquals(node.InputSource,source))).ToArray();
+        if(roots.Length!=1)return;var root=roots[0];
+        try{_executionManager.SynchronizeLocalImageProjection(root,source,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));}
+        catch(Exception error)
+        {
+            if(!ReferenceEquals(DocumentManager.Session,session)||!session.Document.Workflows.Contains(root))return;
+            source.RecordAcceptedRuntimeFailure(error.Message);
+            _executionManager.BlockLocalImageCursor(root.Id,source.NodeId,error.Message);
+            ReportAcceptedSourceRefreshError("运行游标不可用（同步失败）",error);
+        }
     }
     private void ReportAcceptedSourceRefreshError(string stage,Exception error)
     {

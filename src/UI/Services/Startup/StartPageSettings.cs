@@ -26,6 +26,15 @@ public sealed class StartPageSettings
             .Select(x => x.OrderByDescending(r => r.LastOpened).First()).OrderByDescending(x => x.LastOpened).Take(12).ToList();
         return value;
     }
+    // A catalog suggestion without an actual visit is not recent history. Filter before
+    // DateTime -> DateTimeOffset: DateTime.MinValue cannot carry a positive local offset.
+    internal RecentSolutionFile[] BuildRecentFiles(IEnumerable<SunEyeVision.Workflow.SolutionMetadata> catalogEntries) =>
+        RecentFiles.Concat(catalogEntries
+            .Where(x => !string.IsNullOrWhiteSpace(x.FilePath) && x.LastAccessTime != default)
+            .Select(x => new RecentSolutionFile { Name = x.Name, Path = x.FilePath, LastOpened = x.LastAccessTime }))
+            .Where(x => !string.IsNullOrWhiteSpace(x.Path) && !DismissedPaths.Contains(x.Path, StringComparer.OrdinalIgnoreCase))
+            .GroupBy(x => System.IO.Path.GetFullPath(x.Path), StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First()).OrderByDescending(x => x.LastOpened).ToArray();
     public void RecordOpened(string path, string name)
     {
         path = System.IO.Path.GetFullPath(path);

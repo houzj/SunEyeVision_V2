@@ -1,0 +1,121 @@
+{
+  "worktree": "D:\\MyWork\\line-aiproject\\integration-data-contracts-20261031",
+  "branch": "codex/integration-data-contracts-20261031",
+  "main": "e597cc0b7bbb76430116a3fd87c7b511d045c721",
+  "workflow": "07cab9420476a55274dfd1ddc6ab465d570b54ac",
+  "built": false,
+  "files": [
+    {
+      "path": "src/Plugin.Contracts/FieldSettings.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "0A1B09FF3F7B3561A1D8F0F69EF70938B7B5F19463126F971F5F5653237143BC",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Plugin.Runtime/ParameterBindingService.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "82FBD9918E608A4FF0DC057943CC691098A7AA6D68E9AF9157079DA5DE519DED",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolSettingsEditSession.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "7BF0CE66FBBBC1C9A24B7206606DE8162DAA0EC8662235ABCE7967516A62D488",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "42CDF1B9AE057B8A40427AF333E7C5E30980AE6B81F394BE09733D6FE5550B5E",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "4BBAEA1C69C83BF42663D891C74170254EC2B4D039EABF8B60E889E5D449436F",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/LocalImageSequenceService.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "B1C3F1014CDC6CF7D005A05A8A1BC0CB54D7FF9A3FDF8C361D5EDB2BF3ABE57D",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "4A8BA688565FCB6806D04BCEC6441E6EDCA86B5A88C27A499041BF4F436A2581",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/OutputBindingChangeService.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "86C2AB3DD6E7CE9E868C9FD0412C2FAC2470175BD5EAD5FA95BE780D5E4242E4",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionLegacyBindingMigration.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "DB21E330467661F728CDA216C4997F2D7E14B616D857CF8AFAE1AE9E533596AE",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "C581BE533054CE8AF772385C421AFB096CF87EC09A6694CF18FB6C55F31A6904",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/RuntimeFieldJson.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "DB29E492FD3189B6FC118EE8EFE41021B3FC7D0D39189C01361EC4FEDAF2A72B",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/RuntimeInputBindings.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "A86A23527D2662732B0C9E9F54B110CE03501E69806E2EF037125B0DF522B6DD",
+      "equalsMain": true
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "B2063B7720D4E1007A6B42275EC8AD1EEC2F87C985F81C99B447377F3308A350",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/WorkflowBindingContext.cs",
+      "conflict": true,
+      "deleted": false,
+      "sha256": "EADD51C5C50CF32B7B08837C0D8458477933BFA8F5F72C95BDD0FFA97CFF353B",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/WorkflowFragmentCopy.cs",
+      "conflict": false,
+      "deleted": false,
+      "sha256": "8EE5FA53C7AE43FD989F532B067A66CAC9FBE4ECB804FC163E78849667424E5C",
+      "equalsMain": false
+    },
+    {
+      "path": "src/Workflow/WorkflowNode.cs",
+      "conflict": false,
+      "deleted": false,
+      "sha256": "95AF40AAFB7B66F6D6CEF37960D00C3FE35B48F2914CCF7B00B13AD27E38BCCC",
+      "equalsMain": false
+    }
+  ]
+}

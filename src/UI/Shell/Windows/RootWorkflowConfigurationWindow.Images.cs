@@ -11,12 +11,15 @@ using SunEyeVision.Workflow;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class RootWorkflowConfigurationWindow
 {
- private sealed record ImagePortChoice(string NodeId,Port Port,string Label);
+ private sealed record ImagePortChoice(string NodeId,Port Port,string Label,string[] Members)
+ {
+  public string Key=>Port.Id+string.Concat(Members.Select(member=>"/"+member.Length+":"+member));
+ }
  private ResultImagePane? _imagePane;
  private IResultPublication? _imagePublication;
  private DeclaredOutputSnapshot? _imageSnapshot;
  private WorkflowNodeBase? _imageNode;
- private Port? _imagePort;
+ private string? _imagePort;
  private long _imageEpoch;
  private bool _updatingPorts,_refreshingImage,_refreshImageAgain,_closedImages;
  internal ResultImagePane? ImagePreviewPane=>_imagePane;
@@ -40,34 +43,50 @@ public partial class RootWorkflowConfigurationWindow
     &&result.ExecutionIdentity is {} identity&&ReferenceEquals(identity.Owner,_context.ExecutionOwner)&&identity.IsCurrent
     &&identity.ToInvocationIdentity(node.Id)==snapshot.Identity&&snapshot.Identity.DocumentSessionId==_context.ExecutionOwner.Id
     &&snapshot.Identity.NodeId==node.Id&&snapshot.SourceWorkflowId==_context.Root.Id&&snapshot.IsComplete;
-   var ports=Proven()?snapshot!.Schema.Outputs.Where(p=>p.Type==TypeRef.ResourceOf(ResourceKind.Image)).ToArray():Array.Empty<Port>();
+   var ports=new List<ImagePortChoice>();
+   if(Proven())
+    foreach(var declaredPort in snapshot!.Schema.Outputs)
+    {
+     var label=snapshot.Fields.TryGetValue(declaredPort.Id,out var field)?field.DisplayName+" ("+declaredPort.Id+")":declaredPort.Id;
+     void Collect(TypeRef type,string[] path,string name)
+     {
+      if(type==TypeRef.ResourceOf(ResourceKind.Image)){ports.Add(new(node!.Id,declaredPort,name,path));return;}
+      if(type.Shape==ValueShape.Record)
+       foreach(var member in type.Fields)
+       {
+        var singleImage=member.Type==TypeRef.ResourceOf(ResourceKind.Image)
+         &&type.Fields.Count(item=>item.Type==TypeRef.ResourceOf(ResourceKind.Image))==1;
+        Collect(member.Type,path.Append(member.Id).ToArray(),singleImage?name:name+" / "+member.Id);
+       }
+     }
+     Collect(declaredPort.Type,Array.Empty<string>(),label);
+    }
    var prior=ImagePorts.SelectedItem as ImagePortChoice;
    var choices=ImagePorts.ItemsSource as ImagePortChoice[];
-   if(choices is null||choices.Length!=ports.Length||choices.Where((choice,index)=>choice.NodeId!=node!.Id||choice.Port!=ports[index]).Any())
+   if(choices is null||choices.Length!=ports.Count||choices.Where((choice,index)=>choice.NodeId!=ports[index].NodeId||choice.Key!=ports[index].Key||choice.Port.Type!=ports[index].Port.Type).Any())
    {
     _updatingPorts=true;
     try
     {
-     var next=ports.Select(port=>new ImagePortChoice(node!.Id,port,snapshot!.Fields.TryGetValue(port.Id,out var field)?field.DisplayName+" ("+port.Id+")":port.Id)).ToArray();
-     ImagePorts.ItemsSource=next;
-     ImagePorts.SelectedItem=prior is null?null:next.SingleOrDefault(item=>item.NodeId==prior.NodeId&&item.Port==prior.Port);
+     var next=ports.ToArray();ImagePorts.ItemsSource=next;
+     ImagePorts.SelectedItem=prior is null?null:next.SingleOrDefault(item=>item.NodeId==prior.NodeId&&item.Key==prior.Key&&item.Port.Type==prior.Port.Type);
     }
     finally{_updatingPorts=false;}
    }
    var selected=ImagePorts.SelectedItem as ImagePortChoice;
-   if(!Proven()||selected is null||selected.NodeId!=node!.Id||!ports.Contains(selected.Port))
+   if(!Proven()||selected is null||selected.NodeId!=node!.Id||!ports.Any(item=>item.Key==selected.Key&&item.Port.Type==selected.Port.Type))
    {ClearImagePreview();return;}
-   if(ReferenceEquals(snapshot,_imageSnapshot)&&ReferenceEquals(node,_imageNode)&&selected.Port==_imagePort&&_imagePublication?.IsCurrent()==true)
+   if(ReferenceEquals(snapshot,_imageSnapshot)&&ReferenceEquals(node,_imageNode)&&selected.Key==_imagePort&&_imagePublication?.IsCurrent()==true)
    {_imagePane!.RefreshCurrentness();UpdateNoImage();return;}
    ClearImagePreview();
-   var epoch=++_imageEpoch;var port=selected.Port;
-   bool Current()=>epoch==_imageEpoch&&Proven()&&ImagePorts.SelectedItem is ImagePortChoice choice&&choice.NodeId==node.Id&&choice.Port==port;
+   var epoch=++_imageEpoch;var port=selected.Port;var key=selected.Key;var members=selected.Members;
+   bool Current()=>epoch==_imageEpoch&&Proven()&&ImagePorts.SelectedItem is ImagePortChoice choice&&choice.NodeId==node.Id&&choice.Key==key&&choice.Port.Type==port.Type;
    if(!Current())return;
    var publication=ToolResultViews.FromSnapshot(snapshot!,Current);
    if(!Current()){publication.Dispose();return;}
-   _imagePublication=publication;_imageSnapshot=snapshot;_imageNode=node;_imagePort=port;
+   _imagePublication=publication;_imageSnapshot=snapshot;_imageNode=node;_imagePort=key;
    _imagePane??=new ResultImagePane(Preview);
-   if(!_imagePane.TryPresent(publication,new OutputReference(node.Id,port.Id,port.Type,scopeId:_context.Root.Id,storage:port.Storage),_context.Root.Id,Current,out var error))
+   if(!_imagePane.TryPresent(publication,new OutputReference(node.Id,port.Id,port.Type,members,scopeId:_context.Root.Id,storage:port.Storage),_context.Root.Id,Current,out var error))
    {ClearImagePreview();Error.Text="已发布图像不可显示："+error;}
    UpdateNoImage();
   }

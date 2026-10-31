@@ -17,10 +17,12 @@ public partial class ImageSourceStripDesignView : UserControl
     public ImageSourceStripDesignView()
     {
         InitializeComponent();
-        EditableStrip.Session = new SampleSession(false, false, intent => LastIntent.Text = intent);
-        ReadOnlyStrip.Session = new SampleSession(true, false, intent => LastIntent.Text = intent);
-        EmptyStrip.Session = new SampleSession(false, true, intent => LastIntent.Text = intent);
+        EditableStrip.Session = CreateSampleSession(false, false, intent => LastIntent.Text = intent);
+        ReadOnlyStrip.Session = CreateSampleSession(true, false, intent => LastIntent.Text = intent);
+        EmptyStrip.Session = CreateSampleSession(false, true, intent => LastIntent.Text = intent);
     }
+    internal static IImageSourceStripSession CreateSampleSession(bool readOnly=false,bool empty=false,Action<string>? report=null)
+        =>new SampleSession(readOnly,empty,report??(_=>{}));
     private sealed class SampleSession : IImageSourceStripSession
     {
         private readonly Action<string> _report;

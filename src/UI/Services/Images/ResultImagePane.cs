@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
@@ -9,7 +9,7 @@ namespace SunEyeVision.UI.Services.Images;
 internal sealed class ResultImagePane : IDisposable
 {
     private sealed class Presentation(IResultPublication publication, IResultValueLease lease, IReadOnlyImage image,
-        Func<bool> current, long generation, ResultPublicationStamp stamp)
+        Func<bool> current, long generation, ResultPublicationStamp stamp, string scopeId, string nodeId)
     {
         internal readonly IResultPublication Publication = publication;
         internal readonly IResultValueLease Lease = lease;
@@ -18,6 +18,9 @@ internal sealed class ResultImagePane : IDisposable
         internal readonly long Generation = generation;
         internal readonly ResultPublicationStamp Stamp = stamp;
         internal NativeResultFrameReceipt? Receipt;
+        internal readonly string ScopeId=scopeId, NodeId=nodeId;
+        internal bool DisplayOnly;
+        internal Func<bool>? DisplayCurrent;
     }
     private sealed class Preview(Func<bool> current, long generation)
     {
@@ -101,9 +104,9 @@ internal sealed class ResultImagePane : IDisposable
             var image = value as IReadOnlyImage ?? throw new InvalidOperationException("冻结来源没有单一图像值。");
             ResourceContractRules.ValidateImage(image);
             if (!AttemptCurrent()) throw new InvalidOperationException("图像读取期间来源已失效。");
-            active = new(publication, candidate, image, current, generation, stamp); candidate = null;
+            active = new(publication, candidate, image, current, generation, stamp, actualWorkflowId, reference.NodeId); candidate = null;
             _presentation = active;
-            if (!Viewport.BindImage(image, () => IsCurrent(active)))
+            if (!Viewport.BindImage(image, () => CanDisplay(active)))
                 throw new InvalidOperationException("图像绑定期间来源已失效。");
             active.Receipt = Viewport.CurrentFrame;
             if (!IsCurrent(active) || active.Receipt is null || active.Receipt.Frame != image.Frame
@@ -170,12 +173,43 @@ internal sealed class ResultImagePane : IDisposable
 
     private bool IsCurrent(Presentation active)
     {
-        if (_disposed || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
+        if (_disposed || active.DisplayOnly || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
         var valid = active.Current() && active.Publication.IsCurrent() && active.Publication.Stamp == active.Stamp
             && active.Lease.Stamp == active.Stamp;
         return valid && !_disposed && active.Generation == _generation && ReferenceEquals(_presentation, active);
     }
 
+    private bool CanDisplay(Presentation active)
+    {
+        if(!active.DisplayOnly)return IsCurrent(active);
+        if(_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active))return false;
+        var valid=active.DisplayCurrent?.Invoke()==true;
+        return valid&&!_disposed&&active.Generation==_generation&&ReferenceEquals(_presentation,active);
+    }
+    internal Action<IReadOnlyList<SunEyeVision.Workflow.ScopedNodeIdentity>?>? PrepareDisplayRetention(Func<bool> current)
+    {
+        Viewport.View.Dispatcher.VerifyAccess();
+        var active=_presentation;
+        if(active is null||!CanDisplay(active)||active.Receipt!=Viewport.CurrentFrame)return null;
+        return affected=>
+        {
+            if(affected is null||!affected.Any(node=>node.WorkflowId==active.ScopeId&&node.NodeId==active.NodeId)
+                ||_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active)
+                ||active.Receipt!=Viewport.CurrentFrame||!current())return;
+            active.DisplayOnly=true;active.DisplayCurrent=current;
+            // The native frame already owns an independent pixel reader. Retire result
+            // authority now; its reader is released by the normal viewport clear/replace path.
+            active.Lease.Dispose();
+            Viewport.RefreshCurrentness();
+        };
+    }
+    internal void ClearUnlessRetained()
+    {
+        if(_presentation is {DisplayOnly:true} retained&&CanDisplay(retained))RefreshCurrentness();
+        else Clear();
+    }
+    internal void ClearRetained()
+    {if(_presentation is {DisplayOnly:true})Clear();}
     internal ResultViewportImageLease? BorrowCurrentImage()
     {
         Viewport.View.Dispatcher.VerifyAccess();
@@ -213,9 +247,9 @@ internal sealed class ResultImagePane : IDisposable
         var valid = false;
         try
         {
-            if (active is not null ? !IsCurrent(active) : !IsCurrent(preview!)) return;
+            if (active is not null ? !CanDisplay(active) : !IsCurrent(preview!)) return;
             Viewport.RefreshCurrentness();
-            valid = active is not null ? IsCurrent(active) && active.Receipt == Viewport.CurrentFrame
+            valid = active is not null ? CanDisplay(active) && active.Receipt == Viewport.CurrentFrame
                 : IsCurrent(preview!) && preview!.Receipt == Viewport.CurrentFrame;
         }
         finally

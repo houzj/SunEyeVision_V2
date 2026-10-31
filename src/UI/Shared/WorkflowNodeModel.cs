@@ -216,7 +216,7 @@ namespace SunEyeVision.UI.Shared
                 // 绑定定义属于设计期节点状态，必须随基础节点转换到 UI 节点；
                 // 遗漏此字段会导致方案文件中已有 ParamSettings 在重启加载时丢失。
                 ParamSettings = baseNode.ParamSettings,
-                SelectedDisplaySource = baseNode.SelectedDisplaySource,
+                SelectedDisplayReference = baseNode.SelectedDisplayReference,
                 SubroutineId = baseNode.SubroutineId    // ★ SSOT
             };
 

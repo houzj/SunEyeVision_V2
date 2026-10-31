@@ -6,8 +6,29 @@ namespace SunEyeVision.UI.Tests;
 public class LocalImageSequenceTests
 {
     private static LocalImageSequenceEntry Entry(string id, int index) => new(id, "assets/" + id, "C:/resolved/" + id, index);
-    private static LocalImageSourcePlan Plan(string node, params LocalImageSequenceEntry[] entries) => new(node, entries, null, true, false);
+    private static LocalImageSourcePlan Plan(string node, params LocalImageSequenceEntry[] entries) => new(node, entries, entries.FirstOrDefault()?.EntryId, true, false);
 
+    [Fact]
+    public void Unselected_first_read_uses_fallback_without_skipping_and_retains_stop_and_cancellation_rules()
+    {
+        foreach(var direction in new[]{-1,0,1})
+        {
+            var service=new LocalImageSequenceService();
+            var plan=Plan("source",Entry("a",0),Entry("b",1)) with{SelectedEntryId=null,StopAtLast=true};
+            var generation=service.Begin("root",new[]{plan});var ticket=service.GetInputs("root",generation)[0];
+            using var cancelled=new CancellationTokenSource();cancelled.Cancel();
+            Assert.Throws<OperationCanceledException>(()=>service.AcceptRead(ticket,Guid.NewGuid(),true,cancelled.Token,direction));
+            var first=service.AcceptRead(ticket,Guid.NewGuid(),true,CancellationToken.None,direction);
+            Assert.Equal(direction<0?"b":"a",first.Entry.EntryId);Assert.False(first.StopAfterCurrent);
+            service.FinishReadRound("root",generation,ticket.IterationVersion);
+            var next=service.GetInputs("root",generation)[0];
+            var second=service.AcceptRead(next,Guid.NewGuid(),true,CancellationToken.None);
+            Assert.Equal(direction<0?"a":"b",second.Entry.EntryId);
+        }
+        var single=new LocalImageSequenceService();
+        var one=single.Begin("one",new[]{Plan("source",Entry("only",0)) with{SelectedEntryId=null,StopAtLast=true}});
+        Assert.True(single.AcceptRead(single.GetInputs("one",one)[0],Guid.NewGuid(),true,CancellationToken.None).StopAfterCurrent);
+    }
     [Fact]
     public void ReadAcceptanceAdvancesOnlyThatSourceAndIsIdempotentForTheRequest()
     {
@@ -93,7 +114,7 @@ public class LocalImageSequenceTests
     public void UnselectedCanStartAtFirstButInvalidExplicitSelectionCannotReplaceAnActiveSession()
     {
         var service = new LocalImageSequenceService();
-        var plan = Plan("source", Entry("a", 0));
+        var plan = Plan("source", Entry("a", 0)) with {SelectedEntryId=null};
         var generation = service.Begin("w", new[] { plan });
         Assert.Equal("a", service.GetInputs("w", generation)[0].Entry!.EntryId);
         Assert.Throws<InvalidOperationException>(() => service.Begin("w", new[] { plan with { SelectedEntryId = "removed" } }));

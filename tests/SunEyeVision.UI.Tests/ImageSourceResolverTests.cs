@@ -33,7 +33,7 @@ public class ImageSourceResolverTests
         var nodes = new[] { a, b, middle, target };
         var edges = new[] { Edge("b", "target"), Edge("a", "middle"), Edge("middle", "target") };
         Assert.Equal(ImageSourceResolutionKind.Ambiguous, ImageSourceResolver.Resolve("target", nodes, edges).Kind);
-        target.SelectedDisplaySource = new ImageSourceReference { SourceNodeId = "middle" };
+        target.SelectedDisplayReference = Reference("middle");
         Assert.Same(a, ImageSourceResolver.Resolve("target", nodes, edges).Source);
         Assert.Same(a, ImageSourceResolver.Resolve("target", nodes, edges.Reverse()).Source);
     }
@@ -42,22 +42,36 @@ public class ImageSourceResolverTests
     public void RemovedOrUnrelatedExplicitSelectionDoesNotFallBackToAnotherInput()
     {
         var a = Node("a", true); var unrelated = Node("other", true); var target = Node("target");
-        target.SelectedDisplaySource = new ImageSourceReference { SourceNodeId = "other" };
+        target.SelectedDisplayReference = Reference("other");
         var nodes = new[] { a, unrelated, target };
         Assert.Equal(ImageSourceResolutionKind.InvalidSelection,
             ImageSourceResolver.Resolve("target", nodes, new[] { Edge("a", "target") }).Kind);
     }
 
     [Fact]
+    public void SelectionFromAnotherWorkflowDoesNotResolveTheSameNodeId()
+    {
+        var source=Node("source",true);var target=Node("target");
+        target.SelectedDisplayReference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+            new SunEyeVision.Plugin.Contracts.OutputReference("source","image",
+                SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image),scopeId:"other"));
+        Assert.Equal(ImageSourceResolutionKind.InvalidSelection,
+            ImageSourceResolver.Resolve("target",new[]{source,target},new[]{Edge("source","target")},"current").Kind);
+    }
+
+    [Fact]
     public void CyclesTerminateAndSourceNodeResolvesItself()
     {
         var a = Node("a"); var b = Node("b"); var source = Node("source", true);
-        a.SelectedDisplaySource = new ImageSourceReference { SourceNodeId = "b" };
-        b.SelectedDisplaySource = new ImageSourceReference { SourceNodeId = "a" };
+        a.SelectedDisplayReference = Reference("b");
+        b.SelectedDisplayReference = Reference("a");
         var nodes = new[] { a, b, source };
         var edges = new[] { Edge("a", "b"), Edge("b", "a") };
         Assert.Equal(ImageSourceResolutionKind.InvalidSelection, ImageSourceResolver.Resolve("a", nodes, edges).Kind);
         Assert.Same(source, ImageSourceResolver.Resolve("source", nodes, edges).Source);
         Assert.Equal(ImageSourceResolutionKind.None, ImageSourceResolver.Resolve("missing", nodes, edges).Kind);
     }
+    private static string Reference(string node)=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+        new SunEyeVision.Plugin.Contracts.OutputReference(node,"image",
+            SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image)));
 }

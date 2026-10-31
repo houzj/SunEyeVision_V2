@@ -1,0 +1,1653 @@
+--- a/src/UI/Shell/Controls/Shell/ImageResultControl.xaml
++++ b/src/UI/Shell/Controls/Shell/ImageResultControl.xaml
+@@ -1,113 +1,22 @@
+ <UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl"
+-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+-             xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
+-             xmlns:results="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;assembly=SunEyeVision.Plugin.Wpf"
+-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+-             xmlns:panels="clr-namespace:SunEyeVision.UI.Shell.Controls.Panels"
+-             xmlns:sources="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;assembly=SunEyeVision.Plugin.Wpf"
+-             xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+-             xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
+-             xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
+-             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+-             mc:Ignorable="d"
+-             d:DesignHeight="400" d:DesignWidth="700">
+-
+-    <UserControl.Resources>
+-        <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+-        <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+-
+-    </UserControl.Resources>
+-
+-    <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
+-        <Grid.RowDefinitions>
+-            <RowDefinition Height="*"/>  <!-- 图像显示模块 -->
+-            <RowDefinition Height="Auto"/>  <!-- 图像加载及预览模块 -->
+-        </Grid.RowDefinitions>
+-
+-        <!-- 图像显示模块 - 使用TabControl -->
+-        <Border Grid.Row="0" BorderThickness="0">
+-            <TabControl x:Name="ImageDisplayTabControl"
+-                        Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}"
+-                        BorderThickness="0">
+-                <TabControl.Resources>
+-                    <!-- TabItem 头样式 -->
+-                    <Style TargetType="TabItem">
+-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+-                        <Setter Property="Template">
+-                            <Setter.Value>
+-                                <ControlTemplate TargetType="TabItem">
+-                                    <Border x:Name="Bd" Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent" Padding="12,6">
+-                                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+-                                    </Border>
+-                                    <ControlTemplate.Triggers>
+-                                        <Trigger Property="IsMouseOver" Value="True">
+-                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+-                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+-                                        </Trigger>
+-                                        <Trigger Property="IsSelected" Value="True">
+-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+-                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+-                                        </Trigger>
+-                                    </ControlTemplate.Triggers>
+-                                </ControlTemplate>
+-                            </Setter.Value>
+-                        </Setter>
+-                    </Style>
+-                </TabControl.Resources>
+-
+-                <!-- 第一个TabItem: 图像结果 -->
+-                <TabItem Header="图像结果" Padding="12,6">
+-                    <Border Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
+-                        <sdk:ImageControl x:Name="ImageDisplayContent"
+-                                          SourceImage="{Binding DisplayImage}"
+-                                          ShowToolBar="True"
+-                                          ShowStatusBar="True"
+-                                          ShowChessboardBackground="True"
+-                                          EnablePanning="True"
+-                                          EnableZoom="True"
+-                                          AutoFitMode="FirstOnly"
+-                                          ImageSources="{Binding DisplayImageSources}"
+-                                          SelectedImageSourceIndex="{Binding SelectedDisplayImageSourceIndex, Mode=TwoWay}"
+-                                          ImageLoaded="OnImageLoaded"
+-                                          ZoomChanged="OnZoomChanged"/>
+-                    </Border>
+-                </TabItem>
+-
+-                <!-- 第二个TabItem: 模块结果 -->
+-                <TabItem Header="模块结果" Padding="12,6">
+-                    <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
+-                        <results:PropertyListView x:Name="ModuleResultTreeView"
+-                            SelectedItemChanged="OnResultTreeSelectionChanged"
+-                            Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
+-
+-                        <!-- 空状态 -->
+-                        <Grid Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+-              <TextBlock Text="📊" FontSize="32"
+-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+-                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+-              <TextBlock Text="请选中已执行的节点查看结果" FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
+-                                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,52,0,0"/>
+-                        </Grid>
+-                    </Grid>
+-                </TabItem>
+-            </TabControl>
+-        </Border>
+-
+-        <!-- 图像加载及预览模块 -->
+-        <Border Grid.Row="1"
+-                Background="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"
+-                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+-                BorderThickness="0,1,0,0"
+-                Padding="2"
+-                Visibility="{Binding ShowImagePreview, Converter={StaticResource BoolToVisibilityConverter}}">
+-            <DockPanel>
+-                <TextBlock DockPanel.Dock="Top" Text="{Binding ImagePreviewSourceMessage}"
+-                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
+-                           TextTrimming="CharacterEllipsis"/>
+-                <sources:ImageSourceStrip x:Name="ImagePreviewContent"/>
+-            </DockPanel>
+-        </Border>
+-    </Grid>
++ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
++ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
++ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
++ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
++ xmlns:composition="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;assembly=SunEyeVision.Plugin.Wpf"
++ xmlns:results="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;assembly=SunEyeVision.Plugin.Wpf"
++ xmlns:sources="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;assembly=SunEyeVision.Plugin.Wpf"
++ mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="780">
++ <UserControl.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/></UserControl.Resources>
++ <composition:ResultWorkspaceShell x:Name="Workspace" HelpContent="请选择节点查看当前运行声明；主结果区历史、图像叠层及背景替换、未接入的图形文字与ROI编辑均明确未实现，相关入口禁用。">
++  <composition:ResultWorkspaceShell.PropertyListContent>
++   <results:PropertyListView x:Name="ModuleResultTreeView" SelectedItemChanged="OnResultTreeSelectionChanged"/>
++  </composition:ResultWorkspaceShell.PropertyListContent>
++  <composition:ResultWorkspaceShell.SourceStripContent>
++   <StackPanel Visibility="{Binding ShowImagePreview, Converter={StaticResource VisibleWhenTrue}}">
++    <TextBlock x:Name="SourceStatusMessage" Foreground="{DynamicResource ThemeTextDisabledBrush}" TextTrimming="CharacterEllipsis"/>
++    <sources:ImageSourceStrip x:Name="ImagePreviewContent"/>
++   </StackPanel>
++  </composition:ResultWorkspaceShell.SourceStripContent>
++ </composition:ResultWorkspaceShell>
+ </UserControl>
+--- a/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs
++++ b/src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs
+@@ -4,7 +4,6 @@
+ using System.Windows;
+ using System.Windows.Controls;
+ using System.Windows.Input;
+-using SunEyeVision.Plugin.SDK.UI.Controls;
+ using SunEyeVision.Plugin.SDK.Logging;
+ using SunEyeVision.UI.Core;
+ using SunEyeVision.UI.Shell.Controls.Panels;
+@@ -26,15 +25,21 @@
+     public partial class ImageResultControl : UserControl
+     {
+         private MainWindowViewModel _viewModel = null!;
++        private bool _shutdown;
+         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
+         private WorkflowTabViewModel? _sourceWorkflow;
+         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
+         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
++        private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _shellTheme;
++        private SunEyeVision.UI.Services.Images.ResultWorkspacePresenter? _workspacePresenter;
+         private void ReleaseSourceSession()
+-        {ImagePreviewContent.Session=null;_sourceSession?.Dispose();_sourceSession=null;_sourceWorkflow=null;}
++        {
++            var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
++            Cleanup(new Action[]{()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
++        }
+         private void RefreshSourceSession()
+         {
+-            if(!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
++            if(_shutdown||!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
+             var main=_viewModel;var source=main.ActiveInputSource;var workflow=main.WorkflowTabViewModel.SelectedTab;
+             if(ReferenceEquals(_sourceSession?.Source,source)&&ReferenceEquals(_sourceWorkflow,workflow))return;
+             ReleaseSourceSession();
+@@ -68,6 +73,7 @@
+             InitializeComponent();
+             _sourceTheme=new(ImagePreviewContent);
+             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
++            _shellTheme=new(Workspace,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.ResultShell);
+             ModuleResultTreeView.BindVariableCommand=new RelayCommand(
+                 value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
+                 value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);
+@@ -80,8 +86,8 @@
+                     &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
+             },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
+                 &&_viewModel?.IsCurrentResultRow(row)==true);
+-            Loaded+=(_,_)=>RefreshSourceSession();
+-            Unloaded+=(_,_)=>ReleaseSourceSession();
++            Loaded+=(_,_)=>{RefreshSourceSession();AttachWorkspace();};
++            Unloaded+=(_,_)=>Cleanup(new Action[]{ReleaseSourceSession,ReleaseWorkspace});
+         }
+ 
+         /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
+@@ -97,40 +103,58 @@
+         /// </summary>
+         public void Initialize(MainWindowViewModel viewModel)
+         {
++            ObjectDisposedException.ThrowIf(_shutdown,this);
+             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
++            ReleaseWorkspace();
+             _viewModel = viewModel;
++            System.Windows.Data.BindingOperations.SetBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty,
++                new System.Windows.Data.Binding(nameof(MainWindowViewModel.ImagePreviewSourceMessage)){Source=viewModel});
++            System.Windows.Data.BindingOperations.SetBinding(Workspace,
++                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
++                new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
+             // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
+             ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
+             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
+             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
+-            RefreshSourceSession();
++            RefreshSourceSession();AttachWorkspace();
+         }
+ 
+         /// <summary>
+         /// 退出时退订图像预览事件
+         /// </summary>
++        private static void Cleanup(IEnumerable<Action> actions)
++        {
++            var failures=new List<Exception>();
++            foreach(var action in actions)try{action();}catch(Exception error){failures.Add(error);}
++            if(failures.Count>0)throw new AggregateException("结果宿主关闭失败，所有清理均已尝试。",failures);
++        }
+         public void Shutdown()
+         {
+-            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+-            ModuleResultTreeView.ItemsSource=null;
+-            _viewModel?.CloseResultPresentation();
+-            ReleaseSourceSession();
+-            _sourceTheme.Dispose();
+-            _resultTheme.Dispose();
+-        }
+-
+-        /// <summary>
+-        /// 获取主图像显示控件（供 ViewModel GetMainImageControl 委托注入）
+-        /// </summary>
+-        public ImageControl? GetImageDisplayControl() => ImageDisplayContent;
+-
+-
+-        /// <summary>
+-        /// 切换图像显示全屏
+-        /// </summary>
++            if(_shutdown)return;_shutdown=true;
++            var main=_viewModel;_viewModel=null!;
++            Cleanup(new Action[]{
++                ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
++                ()=>ModuleResultTreeView.ItemsSource=null,
++                ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
++                ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
++                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
++                ()=>System.Windows.Data.BindingOperations.ClearBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty),
++                _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
++        }
++
++        private void AttachWorkspace()
++        {
++            if(_shutdown||!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
++            _workspacePresenter=new(_viewModel,Workspace);
++        }
++        private void ReleaseWorkspace()
++        {
++            var presenter=_workspacePresenter;_workspacePresenter=null;presenter?.Dispose();
++        }
+         public void ToggleFullscreen()
+         {
+-            ImageDisplayContent?.ToggleFullscreen();
++            if(Workspace.FullscreenCommand?.CanExecute(Workspace.OutputViewport)==true)
++                Workspace.FullscreenCommand.Execute(Workspace.OutputViewport);
+         }
+ 
+         /// <summary>
+@@ -179,25 +203,27 @@
+         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
+         {
+             var main=_viewModel;
+-            if(main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            if(_shutdown||main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
+             catch(Exception error)
+             {
+-                _viewModel.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
++                if(!_shutdown&&ReferenceEquals(_viewModel,main))main.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
+                 return;
+             }
+-            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             var acceptedVersion=source.EditVersion;
+             var workflowName = workflow.Name ?? "未知工作流";
+-            _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
+-            _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
++            main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
++            main.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
+             // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
+-            _viewModel.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            main.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             await main.RunPreviewImageAsync(workflow,source,image,index,acceptedVersion);
+         }
+ 
+ 
+-        #region SDK ImageControl 事件处理
++        #region 结果树交互
+ 
+         /// <summary>
+         /// DataGrid 结果行展开/折叠点击事件
+@@ -209,33 +235,6 @@
+             CommandManager.InvalidateRequerySuggested();
+         }
+ 
+-        /// <summary>
+-        /// 图像加载完成事件
+-        /// </summary>
+-        private void OnImageLoaded(object sender, ImageLoadedEventArgs e)
+-        {
+-            if (_viewModel != null && e.Image != null)
+-            {
+-                _viewModel.StatusText = $"图像加载完成: {e.Width}x{e.Height}";
+-            }
+-        }
+-
+-        /// <summary>
+-        /// 缩放变化事件
+-        /// </summary>
+-        private void OnZoomChanged(object sender, ZoomChangedEventArgs e)
+-        {
+-            if (_viewModel != null)
+-            {
+-                _viewModel.ImageScale = e.Zoom;
+-            }
+-            // 同步视口缩放到结果渲染层（幂律公式：线宽 / 缩放 = 视觉恒定）
+-            if (ImageDisplayContent?.ResultRenderLayerControl != null)
+-            {
+-                ImageDisplayContent.ResultRenderLayerControl.SetViewportScale(e.Zoom);
+-            }
+-        }
+-
+         #endregion
+     }
+ }
+--- a/src/UI/Shell/Controls/Shell/ImageResultViewModel.cs
++++ b/src/UI/Shell/Controls/Shell/ImageResultViewModel.cs
+@@ -1,5 +1,4 @@
+ using System.Collections.ObjectModel;
+-using System.Windows.Media.Imaging;
+ using SunEyeVision.Plugin.SDK.Execution.Parameters;
+ using SunEyeVision.Plugin.SDK.Execution.Results;
+ using SunEyeVision.UI.Shared;
+@@ -20,11 +19,9 @@
+     {
+         private readonly IRootCoordinator _coordinator;
+ 
+-        private BitmapSource? _displayImage;
+         private int _selectedDisplayImageSourceIndex = -1;
+         private bool _hasModuleResults;
+         private bool _showImagePreview;
+-        private double _imageScale = 1.0;
+         private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
+         private ObservableCollection<AvailableDataSource> _displayImageSources = new();
+         private ObservableCollection<FlatResultRow> _flatResultRows = new();
+@@ -43,15 +40,6 @@
+         {
+             _displayImageSources = displayImageSources;
+             _flatResultRows = flatResultRows;
+-        }
+-
+-        /// <summary>
+-        /// 当前显示图像
+-        /// </summary>
+-        public BitmapSource? DisplayImage
+-        {
+-            get => _displayImage;
+-            set => SetProperty(ref _displayImage, value);
+         }
+ 
+         /// <summary>
+@@ -120,20 +108,6 @@
+             set => SetProperty(ref _activeInputSource, value);
+         }
+ 
+-        /// <summary>
+-        /// 图像缩放比例
+-        /// </summary>
+-        public double ImageScale
+-        {
+-            get => _imageScale;
+-            set
+-            {
+-                if (SetProperty(ref _imageScale, value))
+-                {
+-                    OnPropertyChanged(nameof(DisplayImage));
+-                }
+-            }
+-        }
+ 
+         #region INodeResultSink 实现
+ 
+@@ -150,6 +124,9 @@
+             _coordinator.RefreshDisplayImageFromCurrentSource();
+         }
+ 
++        public void ClearResultGraphics()=>_coordinator.ClearResultGraphics();
++        public void ClearResultHighlight()=>_coordinator.ClearResultHighlight();
++
+         public void ClearResultDisplay()
+         {
+             _coordinator.ClearResultDisplay();
+--- a/src/UI/Services/Workflow/INodeResultSink.cs
++++ b/src/UI/Services/Workflow/INodeResultSink.cs
+@@ -1,4 +1,3 @@
+-using System.Windows.Media.Imaging;
+ using SunEyeVision.Plugin.SDK.Execution.Parameters;
+ using SunEyeVision.Plugin.SDK.Execution.Results;
+ 
+@@ -18,10 +17,8 @@
+         /// </summary>
+         void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
+ 
+-        /// <summary>
+-        /// 当前显示图像（null 表示无图像）
+-        /// </summary>
+-        BitmapSource? DisplayImage { get; set; }
++        void ClearResultGraphics();
++        void ClearResultHighlight();
+ 
+         /// <summary>
+         /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）。
+--- a/src/UI/Core/IRootCoordinator.cs
++++ b/src/UI/Core/IRootCoordinator.cs
+@@ -75,6 +75,8 @@
+ 
+         /// <summary>Retires the shared tree/table publication and releases its leases.</summary>
+         void ClearResultDisplay();
++        void ClearResultGraphics();
++        void ClearResultHighlight();
+ 
+         /// <summary>
+         /// 保存当前解决方案命令
+--- a/src/UI/Services/Workflow/NodeResultManager.cs
++++ b/src/UI/Services/Workflow/NodeResultManager.cs
+@@ -1,65 +1,16 @@
+-using System;
+-using System.Collections.Concurrent;
+-using System.Collections.Generic;
+-using System.Linq;
+-using System.Windows.Media.Imaging;
+-using SunEyeVision.Plugin.SDK.Execution.Helpers;
+-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+ using SunEyeVision.Plugin.SDK.Execution.Results;
+-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+-using SunEyeVision.Plugin.SDK.Models.Geometry;
+-using SunEyeVision.Plugin.SDK.Models.Visualization;
+-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
+-using SunEyeVision.UI.Shared;
+-using SunEyeVision.UI.Features.WorkflowUI;
+-using SunEyeVision.UI.Converters;
+-using WorkflowCore = SunEyeVision.Workflow;
+ using SunEyeVision.Workflow;
+-using ShapeType = SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType;
++using WorkflowCore=SunEyeVision.Workflow;
+ 
+-namespace SunEyeVision.UI.Services.Workflow
++namespace SunEyeVision.UI.Services.Workflow;
++
++/// <summary>Maintains scope-owned results. Image and overlay ownership belongs to the result workspace.</summary>
++public sealed class NodeResultManager
+ {
+-    /// <summary>
+-    /// 节点结果管理器 - 负责更新节点结果并刷新UI显示
+-    /// </summary>
+-    /// <remarks>
+-    /// 三通道设计（参考Halcon）：
+-    /// - DispImage: 图像 → DisplayImage
+-    /// - DispObj: 几何图形 → ResultRenderLayer.SetShapes()
+-    /// - DispText: 文本标签 → ResultRenderLayer.SetTexts()
+-    ///
+-    /// 使用虚方法替代反射，消除运行时类型检查开销。
+-    /// </remarks>
+-    public class NodeResultManager
+-    {
+-        private readonly Func<WorkflowCore.WorkflowContext?> _getContext;
+-        private readonly INodeResultSink _viewModel;
+-
+-        // 结果渲染层引用
+-        private Plugin.SDK.UI.Controls.ResultRenderLayer? _resultRenderLayer;
+-
+-        // 位置修正矩阵诊断收集（字典 → 单行摘要日志，减少假阳性日志干扰）
+-        private readonly ConcurrentDictionary<string, string> _correctionDiagnostics = new();
+-
+-        public NodeResultManager(
+-            Func<WorkflowCore.WorkflowContext?> getContext,
+-            INodeResultSink viewModel)
+-        {
+-            _getContext = getContext ?? throw new ArgumentNullException(nameof(getContext));
+-            _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+-        }
+-
+-        /// <summary>
+-        /// 设置结果渲染层（由 View 层调用）
+-        /// </summary>
+-        public void SetResultRenderLayer(Plugin.SDK.UI.Controls.ResultRenderLayer layer)
+-        {
+-            _resultRenderLayer = layer;
+-        }
+-
+-        /// <summary>
+-        /// 更新节点结果并刷新UI
+-        /// </summary>
++    private readonly Func<WorkflowContext?> _getContext;
++    private readonly INodeResultSink _viewModel;
++    public NodeResultManager(Func<WorkflowContext?> getContext,INodeResultSink viewModel)
++    {_getContext=getContext??throw new ArgumentNullException(nameof(getContext));_viewModel=viewModel??throw new ArgumentNullException(nameof(viewModel));}
+         public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result, bool refreshDisplay = true, WorkflowCore.WorkflowContext? targetContext = null)
+         {
+             if (node == null || result == null)
+@@ -91,479 +42,20 @@
+             }
+         }
+ 
+-        /// <summary>
+-        /// 刷新结果显示
+-        /// </summary>
+-        public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
+-        {
+-            using var resultLease = result?.Resources?.Retain();
+-            if (result?.ExecutionIdentity?.IsCurrent == false) return;
+-            // ★ 诊断：记录入参
+-            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+-                Plugin.SDK.Logging.LogLevel.Info,
+-                $"[诊断:RefreshResultDisplay] node.Name='{node.Name}' | node.ToolType='{node.ToolType}' | node.Id='{node.Id}' | result.Type={result?.GetType().Name ?? "null"} | result.IsSelected={node.IsSelected}",
+-                "NodeResultManager");
+ 
+-            if (result == null)
+-            {
+-                ClearResultDisplay();
+-                return;
+-            }
+-
+-            // ★ Step 1-2: 更新模块结果树（分组显示）
+-            _viewModel.UpdateModuleResults(result, node.Name, node.ToolType, node.Id);
+-
+-            // ★ Step 3: 更新图像 —— 统一委托 ViewModel 的显示源解析入口
+-            //   （可用性回退 + 下拉跟随 + 无可用图像时清空，全部收敛在 ViewModel，避免双份实现不一致）
+-            _viewModel.RefreshDisplayImageFromCurrentSource();
+-
+-            // ★ Step 4: 结果几何由执行参数快照生成；在调试页应改用当前参数中的显示样式，
+-            // 以便切换可见性、颜色和线宽时只重绘而不重复执行算法。
+-            ApplyLiveResultPresentationStyles(node, result);
+-
+-            // ★ Step 5: 工具输出 → 直接传 DisplayCollector
+-            _resultRenderLayer?.SetDisplayCollector(result.Display);
+-
+-            // ★ Step 6: 区域显示
+-            var regionItems = BuildRegionItems(node);
+-            _resultRenderLayer?.SetRegionItems(regionItems);
+-        }
+-
+-        /// <summary>Display a scope-owned preview without publishing to the production WorkflowContext.</summary>
+-        public void RefreshDebugPreview(WorkflowNodeBase draft, ToolResults result)
+-        {
+-            using var lease = result.Resources?.Retain();
+-            if (result.ExecutionIdentity?.IsCurrent == false) return;
+-            _viewModel.UpdateModuleResults(result, draft.Name, draft.ToolType, draft.Id, draft.Parameters);
+-            var image = result.GetDisplayImages().FirstOrDefault(p => p.Value is { IsEmpty: false });
+-            _viewModel.DisplayImage = image.Value is null ? null : GetDisplayImageFromSource(result, image.Key);
+-            ApplyLiveResultPresentationStyles(draft, result);
+-            _resultRenderLayer?.SetDisplayCollector(result.Display);
+-            _resultRenderLayer?.SetRegionItems(BuildRegionItems(draft));
+-        }
+-
+-        private static void ApplyLiveResultPresentationStyles(WorkflowNodeBase node, ToolResults result)
+-        {
+-            if (node.Parameters == null || result.Display == null) return;
+-
+-            var presentationProperty = node.Parameters.GetType().GetProperty("ResultPresentation");
+-            if (presentationProperty?.GetValue(node.Parameters) is ResultPresentationConfig presentation)
+-                presentation.ApplyLiveStyles(result.Display);
+-        }
+-
+-        /// <summary>
+-        /// 清空结果显示
+-        /// </summary>
+-        public void ClearResultDisplay()
+-        {
+-            _viewModel.ClearResultDisplay();
+-            _resultRenderLayer?.Clear();
+-            _resultRenderLayer?.ClearHighlight();
+-        }
+-
+-        /// <summary>
+-        /// 仅清空图形覆盖层（不清属性树），用于切换到无结果节点时清除残留旧图形
+-        /// </summary>
+-        public void ClearResultGraphics()
+-        {
+-            _resultRenderLayer?.Clear();
+-            _resultRenderLayer?.ClearHighlight();
+-        }
+-
+-        /// <summary>
+-        /// 设置高亮元素（用于选中 Blob 等场景的图像高亮反馈）
+-        /// </summary>
+-        public void SetHighlightItems(IEnumerable<DisplayItemBase>? items)
+-        {
+-            _resultRenderLayer?.SetHighlightItems(items);
+-        }
+-
+-        /// <summary>
+-        /// 清空高亮元素
+-        /// </summary>
+-        public void ClearHighlight()
+-        {
+-            _resultRenderLayer?.ClearHighlight();
+-        }
+-
+-        /// <summary>
+-        /// 获取节点的输出图像
+-        /// </summary>
+-        public IVisionImage? GetNodeOutputImage(WorkflowNodeBase node)
+-        {
+-            if (node == null)
+-                return null;
+-
+-            var executionResult = _getContext()?.GetNodeResult(node.Id);
+-            if (executionResult?.Result == null)
+-                return null;
+-
+-            var images = executionResult.Result.GetDisplayImages();
+-            return images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
+-        }
+-
+-        /// <summary>
+-        /// 从工具结果中获取指定属性名的图像并转换为 BitmapSource
+-        /// </summary>
+-        public BitmapSource? GetDisplayImageFromSource(ToolResults result, string propertyName)
+-        {
+-            var images = result.GetDisplayImages();
+-            if (images.TryGetValue(propertyName, out var hImage) && hImage != null && !hImage.IsEmpty)
+-            {
+-                try
+-                {
+-                    return VisionImageToBitmapSourceConverter.ToBitmapSource(hImage);
+-                }
+-                catch
+-                {
+-                    return null;
+-                }
+-            }
+-            return null;
+-        }
+-
+-        /// <summary>
+-        /// 默认检测区样式（当参数中未定义对应样式时使用）
+-        /// </summary>
+-        private static readonly GraphicsStyle DefaultInspectionRoiStyle = new()
+-        {
+-            Name = "InspectionRoi",
+-            OkColor = System.Windows.Media.Color.FromRgb(0x44, 0x88, 0xFF),
+-            LineWidth = 1.5
+-        };
+-
+-        /// <summary>
+-        /// 默认屏蔽区样式（当参数中未定义对应样式时使用）
+-        /// </summary>
+-        private static readonly GraphicsStyle DefaultMaskRoiStyle = new()
+-        {
+-            Name = "MaskRoi",
+-            OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
+-            LineWidth = 1.5
+-        };
+-
+-        /// <summary>
+-        /// 从 WorkflowContext 中查询位置修正矩阵。
+-        /// 通过持久化绑定引用的 SourceNodeId+PropertyName 查询父节点执行结果。
+-        /// 显示不能依赖调试窗口恢复 AvailableDataSource，也不能依赖其 CurrentValue。
+-        /// </summary>
+-        private AffineMatrix? GetPositionCorrectionMatrix(ToolParameters parameters)
+-        {
+-            if (parameters == null) return null;
+-
+-            try
+-            {
+-                var isEnabledProp = parameters.GetType().GetProperty("IsPositionCorrectionEnabled");
+-                if (isEnabledProp == null)
+-                {
+-                    _correctionDiagnostics["状态"] = "无IsPositionCorrectionEnabled属性";
+-                    return null;
+-                }
+-
+-                var isEnabledValue = isEnabledProp.GetValue(parameters);
+-                bool isEnabled = isEnabledValue is ParamValue<bool> pv
+-                    ? pv.Value
+-                    : isEnabledValue is true;
+-                if (!isEnabled)
+-                {
+-                    _correctionDiagnostics["状态"] = "位置修正未启用";
+-                    return null;
+-                }
+-
+-                // 工作流只在执行副本中恢复运行时绑定，原节点加载后仍只有持久化引用。
+-                // 直接读取该引用，使结果绘制与“是否打开过调试窗口”无关。
+-                var sourceRef = parameters.GetType().GetProperty("PositionCorrectionSource")
+-                    ?.GetValue(parameters) as ImageSourceReference;
+-                if (sourceRef == null)
+-                {
+-                    var bindingSource = parameters.GetType().GetProperty("PositionCorrectionBindingSource")
+-                        ?.GetValue(parameters) as AvailableDataSource;
+-                    sourceRef = ImageSourceReference.FromDataSource(bindingSource);
+-                }
+-                if (sourceRef == null || string.IsNullOrEmpty(sourceRef.SourceNodeId) || string.IsNullOrEmpty(sourceRef.PropertyName))
+-                {
+-                    _correctionDiagnostics["状态"] = "无有效绑定源";
+-                    return null;
+-                }
+-
+-                _correctionDiagnostics["绑定源"] = $"{sourceRef.SourceNodeId}.{sourceRef.PropertyName}";
+-
+-                // 直接通过 WorkflowContext 查询父节点执行结果
+-                var context = _getContext();
+-                if (context == null)
+-                {
+-                    _correctionDiagnostics["状态"] = "无WorkflowContext";
+-                    return null;
+-                }
+-
+-                var parentResult = context.GetNodeResult(sourceRef.SourceNodeId);
+-                if (parentResult?.Result == null)
+-                {
+-                    _correctionDiagnostics["状态"] = $"父节点{sourceRef.SourceNodeId}无执行结果";
+-                    return null;
+-                }
+-
+-                // 兼容上游输出数组（如 ShapeMatch 的 MatchedPositionCorrections）：数组输入取第一个（[0]=最佳）
+-                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(sourceRef.PropertyName)
+-                    ?? (parentResult.Result.GetOutputValue<AffineMatrix[]>(sourceRef.PropertyName) is { Length: > 0 } arr
+-                        ? arr[0]
+-                        : null);
+-                _correctionDiagnostics["矩阵"] = matrix?.ToString() ?? "null";
+-                _correctionDiagnostics["状态"] = matrix != null ? "已应用" : "父节点输出无矩阵";
+-
+-                return matrix;
+-            }
+-            catch (Exception ex)
+-            {
+-                _correctionDiagnostics["状态"] = $"异常:{ex.Message}";
+-                Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+-                    Plugin.SDK.Logging.LogLevel.Warning,
+-                    $"[GetPositionCorrectionMatrix] 查询位置修正矩阵失败: {ex.Message}",
+-                    "NodeResultManager");
+-            }
+-
+-            return null;
+-        }
+-
+-        private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
+-        {
+-            if (node.Parameters is not RoiParameters regionParams)
+-                return null;
+-
+-            var items = new List<DisplayItemBase>();
+-
+-            // 获取位置修正矩阵（使结果层与交互层坐标一致）
+-            var correctionMatrix = GetPositionCorrectionMatrix(node.Parameters);
+-
+-            // 订阅解析上下文（统一出口：本地/整对象订阅/参数拼装三态归一；无上游结果时返回 null）
+-            var context = BuildNodeResultsContext();
+-
+-            // ★ 诊断：结果层矩阵详细信息，与交互层对比
+-            var matrixHash = correctionMatrix != null ? System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(correctionMatrix) : 0;
+-            var matrixVals = correctionMatrix != null
+-                ? $"[{correctionMatrix.M11:F4},{correctionMatrix.M12:F4},{correctionMatrix.M21:F4},{correctionMatrix.M22:F4},{correctionMatrix.OffsetX:F2},{correctionMatrix.OffsetY:F2}]"
+-                : "null";
+-            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+-                Plugin.SDK.Logging.LogLevel.Info,
+-                $"[结果层] 节点 {node.Name}: 位置修正矩阵={matrixVals} | Hash=0x{matrixHash:X8} | 来源=WorkflowContext",
+-                "NodeResultManager");
+-
+-            // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
+-            // ★ 组级运行时出口：订阅/拼装组内本地绘制 Roi 不参与显示（按模式过滤），根治"订阅模式双画"。
+-            var activeRegions = regionParams is IBindingInputActivityProvider
+-                ?regionParams.InspectionRois.Rois.Where(roi=>roi.IsEnabled&&BindingInputCatalog.IsInputActive(regionParams,nameof(RoiParameters.InspectionRois)+":"+roi.Id))
+-                :regionParams.InspectionRois.GetRuntimeActiveInputs();
+-            var inspectionStyle = regionParams.InspectionRoiStyle ?? DefaultInspectionRoiStyle;
+-            AddRoiDisplayItems(items, activeRegions, inspectionStyle, correctionMatrix, context);
+-
+-            // 屏蔽区域（橙色）
+-            var activeMasks = regionParams is IBindingInputActivityProvider
+-                ?regionParams.MaskRois.Rois.Where(roi=>roi.IsEnabled&&BindingInputCatalog.IsInputActive(regionParams,nameof(RoiParameters.MaskRois)+":"+roi.Id))
+-                :regionParams.MaskRois.GetRuntimeActiveInputs();
+-            var maskStyle = regionParams.MaskRoiStyle ?? DefaultMaskRoiStyle;
+-            AddRoiDisplayItems(items, activeMasks, maskStyle, correctionMatrix, context);
+-
+-            // 测量引导显示（引导线 + 卡尺，与检测/屏蔽区域同通道；测量工具重写 BuildMeasureGuideItems）
+-            if (regionParams.HasMeasureGuide)
+-            {
+-                var guideItems = regionParams.BuildMeasureGuideItems(correctionMatrix);
+-                if (guideItems != null)
+-                    items.AddRange(guideItems.Where(i => i != null));
+-            }
+-
+-            // 输出位置修正诊断摘要（单行日志，减少假阳性干扰）
+-            if (_correctionDiagnostics.Count > 0)
+-            {
+-                var summary = string.Join(" | ", _correctionDiagnostics.Select(kv => $"{kv.Key}={kv.Value}"));
+-                Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+-                    Plugin.SDK.Logging.LogLevel.Info,
+-                    $"[位置修正] {node.Name}: {summary}",
+-                    "NodeResultManager");
+-                _correctionDiagnostics.Clear();
+-            }
+-
+-            return items.Count > 0 ? items : null;
+-        }
+-
+-        /// <summary>
+-        /// 构建订阅解析上下文：从 WorkflowContext 汇总全部节点执行结果（仅含已成功结果），
+-        /// 供区域显示统一出口 <see cref="Roi.ResolveRuntime"/> 解析订阅/拼装区域；无上下文返回 null。
+-        /// </summary>
+-        private NodeResultsParameterContext? BuildNodeResultsContext()
+-        {
+-            var wf = _getContext();
+-            if (wf == null) return null;
+-
+-            var all = wf.GetAllNodeResults();
+-            if (all == null || all.Count == 0) return null;
+-
+-            var dict = new Dictionary<string, ToolResults>();
+-            foreach (var kv in all)
+-            {
+-                if (kv.Value?.Result != null)
+-                    dict[kv.Key] = kv.Value.Result;
+-            }
+-            return dict.Count > 0 ? new NodeResultsParameterContext(dict) : null;
+-        }
+-
+-        /// <summary>
+-        /// 区域显示统一循环：每个 ROI 经 SDK 出口 <see cref="Roi.ResolveRuntime"/> 解析出实际几何
+-        /// （本地/整对象订阅/参数拼装三态归一），逐个生成显示项 + 旋转矩形方向箭头。
+-        /// 订阅/拼装区域若上游未执行而解析失败：记录日志并跳过该区域（结果层 Fail-Forward，不崩整体显示）。
+-        /// </summary>
+-        private static void AddRoiDisplayItems(
+-            List<DisplayItemBase> items,
+-            IEnumerable<Roi> rois,
+-            GraphicsStyle style,
+-            AffineMatrix? correctionMatrix,
+-            IParameterContext? context)
+-        {
+-            foreach (var roi in rois)
+-            {
+-                IReadOnlyList<RoiShape> shapes;
+-                try
+-                {
+-                    shapes = roi.ResolveRuntime(context);
+-                }
+-                catch (Exception ex) when (roi.IsSubscribed || roi.IsComposed)
+-                {
+-                    Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+-                        Plugin.SDK.Logging.LogLevel.Warning,
+-                        $"[结果层] 区域 '{roi.Name}' 解析失败（订阅/拼装需上游节点已执行）: {ex.Message}",
+-                        "NodeResultManager");
+-                    continue;
+-                }
+-
+-                foreach (var shape in shapes)
+-                {
+-                    // ★ 位置修正只作用于本地绘制 Roi（参考系几何 → 当前系）；
+-                    //   订阅/拼装 Roi 几何来自上游契约输出（已含上游坐标/修正），不再套本节点矩阵（防二次修正）。
+-                    var matrixForShape = roi.IsLocal ? correctionMatrix : null;
+-                    var item = CreateRegionDisplayItem(shape, style, matrixForShape);
+-                    if (item != null) items.Add(item);
+-
+-                    // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随区域样式）
+-                    if (shape.Geometry is RotatedRect2d)
+-                        items.Add(BuildDirectionArrowItem(shape, style, matrixForShape));
+-                }
+-            }
+-        }
+-
+-        /// <summary>
+-        /// 结果层区域显示：按形状有向性应用位置修正（无向剥转 / 有向完整），
+-        /// 使结果层轮廓与交互层、与算法处理区域空间一致（所见即所得）。
+-        /// 入参为经统一出口解析出的 RoiShape（不再直读 Roi.LocalGeometry）。
+-        /// </summary>
+-        private static DisplayItemBase? CreateRegionDisplayItem(RoiShape shape, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
+-        {
+-            if (shape?.Geometry == null) return null;
+-
+-            // 位置修正按形状有向性解析（对齐 RoiEditorControl 交互层语义）
+-            var matrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);
+-            double scale = matrix?.ScaleFactor() ?? 1.0;
+-
+-            System.Windows.Point TransformPoint(System.Windows.Point p) =>
+-                matrix != null ? matrix.TransformWpfPoint(p) : p;
+-
+-            switch (shape.Geometry)
+-            {
+-                case Circle2d c:
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Circle,
+-                        Geometries = new object[] { new Circle2d(TransformPoint(c.Center), c.Radius * scale) }
+-                    };
+-
+-                case Annulus2d a:
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Circle,
+-                        Geometries = new object[]
+-                        {
+-                            new Circle2d(TransformPoint(a.Center), a.OuterRadius * scale),
+-                            new Circle2d(TransformPoint(a.Center), a.InnerRadius * scale)
+-                        },
+-                        IsPassArray = new bool[2]
+-                    };
+-
+-                case RotatedRect2d rr:
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Polygon,
+-                        Geometries = new object[]
+-                        {
+-                            RotatedRectangleHelper.GetCorners(
+-                                new System.Windows.Point(rr.CenterX, rr.CenterY), rr.Width, rr.Height, rr.Angle)
+-                                .Select(TransformPoint).ToArray()
+-                        }
+-                    };
+-
+-                case Polygon2d poly when poly.Vertices.Length >= 3:
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Polygon,
+-                        Geometries = new object[]
+-                        {
+-                            poly.Vertices.Select(v => TransformPoint(new System.Windows.Point(v.X, v.Y))).ToArray()
+-                        }
+-                    };
+-
+-                case System.Windows.Rect r:
+-                    var center = TransformPoint(new System.Windows.Point(r.X + r.Width / 2, r.Y + r.Height / 2));
+-                    var displayRect = new System.Windows.Rect(
+-                        center.X - r.Width * scale / 2, center.Y - r.Height * scale / 2,
+-                        r.Width * scale, r.Height * scale);
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Rectangle,
+-                        Geometries = new object[] { displayRect }
+-                    };
+-
+-                case Line2d l:
+-                    return new GraphicsDisplayItem
+-                    {
+-                        Style = style, Type = GraphicsType.Line,
+-                        Geometries = new object[]
+-                        {
+-                            new LineSegment(TransformPoint(l.Point), TransformPoint(l.GetPointAt(100)))
+-                        }
+-                    };
+-
+-                default:
+-                    return null;
+-            }
+-        }
+-
+-        /// <summary>
+-        /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界；端点随位置修正矩阵变换）。
+-        /// 箭头颜色跟随区域样式（检测区蓝/屏蔽区橙），修复结果层屏蔽区箭头固定蓝色的问题。
+-        /// </summary>
+-        private static GraphicsDisplayItem BuildDirectionArrowItem(RoiShape shape, GraphicsStyle regionStyle, AffineMatrix? matrix)
+-        {
+-            double arrowLength = 50;
+-            double angleRad = 0;
+-            System.Windows.Point centerRef = new(0, 0);
+-            if (shape.Geometry is RotatedRect2d rr)
+-            {
+-                centerRef = new System.Windows.Point(rr.CenterX, rr.CenterY);
+-                arrowLength = rr.Width / 2;
+-                angleRad = rr.Angle * Math.PI / 180;
+-            }
+-            var endRef = new System.Windows.Point(
+-                centerRef.X + arrowLength * Math.Cos(angleRad),
+-                centerRef.Y + arrowLength * Math.Sin(angleRad));
+-            var center = matrix?.TransformWpfPoint(centerRef) ?? centerRef;
+-            var end = matrix?.TransformWpfPoint(endRef) ?? endRef;
+-
+-            return new GraphicsDisplayItem
+-            {
+-                // One live style for the entire region: hiding/recoloring the outline
+-                // must also hide/recolor its direction arrow without another execution.
+-                Style = regionStyle,
+-                Type = GraphicsType.Arrow,
+-                Geometries = new object[] { new LineSegment(center, end) }
+-            };
+-        }
+-
++    public void RefreshResultDisplay(WorkflowNodeBase node,ToolResults result)
++    {
++        using var lease=result.Resources?.Retain();
++        if(result.ExecutionIdentity?.IsCurrent==false)return;
++        _viewModel.UpdateModuleResults(result,node.Name,node.ToolType,node.Id,node.Parameters);
+     }
++    public void RefreshDebugPreview(WorkflowNodeBase draft,ToolResults result)
++    {
++        using var lease=result.Resources?.Retain();
++        if(result.ExecutionIdentity?.IsCurrent==false)return;
++        _viewModel.UpdateModuleResults(result,draft.Name,draft.ToolType,draft.Id,draft.Parameters);
++    }
++    public void ClearResultDisplay()=>_viewModel.ClearResultDisplay();
++    public void ClearResultGraphics()=>_viewModel.ClearResultGraphics();
++    public void ClearHighlight()=>_viewModel.ClearResultHighlight();
+ }
+--- a/src/UI/Shell/Windows/MainWindow.xaml.cs
++++ b/src/UI/Shell/Windows/MainWindow.xaml.cs
+@@ -147,7 +147,6 @@
+             // ★ 顶部栏请求全屏 → 图像结果区全屏（跨区域事件转发）
+             TopBarHost.FullscreenRequested += (s, e) => ImageResultHost.ToggleFullscreen();
+             // ★ 设置获取主窗口 ImageControl 的委托（经图像结果区获取）
+-            _viewModel.GetMainImageControl = () => ImageResultHost.GetImageDisplayControl();
+             // 初始化画布引擎管理器 - 设置默认引擎
+             CanvasEngineManager.SetDataContext(_viewModel.WorkflowTabViewModel?.SelectedTab);
+             RegisterHotkeys();
+@@ -355,20 +354,6 @@
+         {
+             try
+             {
+-                // ★ 设置 ResultRenderLayer 引用到 NodeResultManager（经图像结果区获取 ImageDisplayContent）
+-                var imageDisplay = ImageResultHost.GetImageDisplayControl();
+-                if (imageDisplay != null)
+-                {
+-                    var resultRenderLayer = imageDisplay.ResultRenderLayerControl;
+-                    if (resultRenderLayer != null)
+-                    {
+-                        // 通过 ViewModel 获取 NodeResultManager 并设置 ResultRenderLayer
+-                        var nodeResultManager = GetNodeResultManager(_viewModel);
+-                        nodeResultManager?.SetResultRenderLayer(resultRenderLayer);
+-                        // ★ 同步视口缩放（幂律公式：线宽 / 缩放 = 视觉恒定）
+-                        resultRenderLayer.SetViewportScale(_viewModel.ImageScale);
+-                    }
+-                }
+                 // 工具插件现在通过ToolboxViewModel自动加载
+                 var toolCount = ToolRegistry.GetToolCount();
+                 _viewModel.StatusText = $"已加载 {toolCount} 个工具插件";
+--- a/src/UI/Shell/Windows/MainWindow.xaml
++++ b/src/UI/Shell/Windows/MainWindow.xaml
+@@ -143,15 +143,7 @@
+                                 </Style>
+                             </TabControl.Resources>
+                             <!-- 第一个TabItem: 数据分析（动态显示） -->
+-                            <TabItem Header="{Binding DataAnalysisControlTitle}" Padding="12,6"
+-                                     Visibility="{Binding HasDataAnalysisControl, Converter={StaticResource BoolToVisibilityConverter}}">
+-                                <Grid Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
+-                                    <!-- 数据分析用户控件容器 -->
+-                                    <ContentControl Content="{Binding SelectedNodeDataAnalysisControl}"
+-                                                   HorizontalAlignment="Stretch"
+-                                                   VerticalAlignment="Stretch"/>
+-                                </Grid>
+-                            </TabItem>
++
+ 
+                             <!-- 第二个TabItem: 日志 -->
+                             <TabItem Header="日志" Padding="12,6">
+--- a/src/UI/Shell/Windows/MainWindowViewModel.cs
++++ b/src/UI/Shell/Windows/MainWindowViewModel.cs
+@@ -87,7 +87,6 @@
+         private string _currentCanvasTypeText = "原 Diagram (测试)";
+ 
+         // 图像显示
+-        private BitmapSource? _displayImage;
+         private double _imageScale = 1.0;
+ 
+         private bool _showImagePreview = false;
+@@ -483,17 +482,6 @@
+         public string CameraStatus => "相机(2台)";
+ 
+         // 图像显示相关
+-        public BitmapSource? DisplayImage
+-        {
+-            get => _imageResult.DisplayImage;
+-            set => _imageResult.DisplayImage = value;
+-        }
+-
+-        public double ImageScale
+-        {
+-            get => _imageResult.ImageScale;
+-            set => _imageResult.ImageScale = value;
+-        }
+ 
+ 
+         /// <summary>
+@@ -790,11 +778,6 @@
+         public ICommand ToggleContinuousAllCommand { get; }
+ 
+         // 图像视图
+-        public ICommand ZoomInCommand { get; }
+-        public ICommand ZoomOutCommand { get; }
+-        public ICommand FitToWindowCommand { get; }
+-        public ICommand ResetViewCommand { get; }
+-        public ICommand ToggleFullScreenCommand { get; }
+ 
+         // 图像操作
+         public ICommand ClearImageCommand { get; }
+@@ -807,15 +790,6 @@
+         public ICommand ShowGlobalVariableManagerCommand { get; }
+         public ICommand ShowCameraManagerCommand { get; }
+         public ICommand ShowCommunicationManagerCommand { get; }
+-
+-        // 主窗口 ImageControl 获取委托 - 用于区域编辑器绑定
+-        /// <summary>
+-        /// 获取主窗口 ImageControl 的委托 - 用于区域编辑器绑定
+-        /// </summary>
+-        /// <remarks>
+-        /// 由 MainWindow 在初始化时设置，用于在调试窗口创建时传递 ImageControl 引用
+-        /// </remarks>
+-        public Func<ImageControl?>? GetMainImageControl { get; set; }
+ 
+         public MainWindowViewModel()
+         {
+@@ -943,11 +917,6 @@
+             ToggleContinuousAllCommand = new RelayCommand(ExecuteToggleContinuousAll, () => true);
+ 
+             // 图像视图
+-            ZoomInCommand = new RelayCommand(ExecuteZoomIn);
+-            ZoomOutCommand = new RelayCommand(ExecuteZoomOut);
+-            FitToWindowCommand = new RelayCommand(ExecuteFitToWindow);
+-            ResetViewCommand = new RelayCommand(ExecuteResetView);
+-            ToggleFullScreenCommand = new RelayCommand(ExecuteToggleFullScreen);
+ 
+             // 图像操作
+             ClearImageCommand = new RelayCommand(ExecuteClearImage);
+@@ -2615,8 +2584,7 @@
+             try
+             {
+                 LogNodeStorageIdentity(node, "打开调试窗口");
+-                var mainImageControl = GetMainImageControl?.Invoke();
+-                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
++                var context = new NodeOpenContext(Application.Current.MainWindow);
+                 // UI owns editor creation. Use the formal node so identity and style
+                 // overrides are not lost in an incomplete execution-node conversion.
+                 var decisionChain = new NodeOpenDecisionChain();
+@@ -2663,8 +2631,6 @@
+                     _openDebugWindow = null;
+                     if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
+                         _ = UpdateDataAnalysisControl(node);
+-                    var imgCtrl = GetMainImageControl?.Invoke();
+-                    if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
+                     if (SelectedNode?.IsSelected == true)
+                     {
+                         // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
+@@ -2835,7 +2801,7 @@
+                 // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
+                 //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
+                 //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
+-                DisplayImage = null;
++                ClearNativeImagePresentation();
+                 _nodeResultManager.ClearResultGraphics();
+                 SetSelectedDisplayImageSourceIndexDeferred(-1);
+                 return;
+@@ -2904,11 +2870,7 @@
+             // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
+             if (DisplayImageSources.Count == 0)
+             {
+-                if (DisplayImage != null)
+-                {
+-                    LogInfo($"图像源|节点 {selectedNode.Name} 无输出图像, 清除残留显示", "ImageSourceSelector");
+-                    DisplayImage = null;
+-                }
++                ClearNativeImagePresentation();
+                 _nodeResultManager.ClearResultGraphics();
+             }
+         }
+@@ -3204,33 +3166,20 @@
+         ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
+         /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
+         /// </summary>
++        private long _displaySourceSelectionGeneration;
+         private void SetSelectedDisplayImageSourceIndexDeferred(int index)
+         {
+-            LogInfo($"图像源|Deferred排队: index={index}, 当前集合Count={DisplayImageSources.Count}", "ImageSourceSelector");
+-            Application.Current.Dispatcher.BeginInvoke(
+-                System.Windows.Threading.DispatcherPriority.Loaded,
+-                new Action(() =>
+-                {
+-                    var currentProperty = SelectedDisplayImageSourceIndex;
+-                    var currentField = _selectedDisplayImageSourceIndex;
+-                    var comboMayAutoSelect = (currentField != -1 || currentProperty != -1);
+-                    LogInfo($"图像源|Deferred执行[阶段1]: 清除选中, 当前 Field={currentField}, Property={currentProperty}, " +
+-                            $"可能已被ComboBox自动选中={comboMayAutoSelect}", "ImageSourceSelector");
+-
+-                    // 阶段1: 真正改变属性值为 -1，确保 WPF 绑定传播到 ImageControl 的 DP
+-                    // 此时 DP 回调检查 newIndex >= 0 → 不满足，仅记录日志
+-                    SelectedDisplayImageSourceIndex = -1;
+-                }));
+-
+-            Application.Current.Dispatcher.BeginInvoke(
+-                System.Windows.Threading.DispatcherPriority.Loaded,
+-                new Action(() =>
+-                {
+-                    _selectedDisplayImageSourceIndex = -1;
+-                    SelectedDisplayImageSourceIndex = index;
+-                    LogInfo($"图像源|Deferred执行[阶段2]: 设置选中 index={index}, " +
+-                            $"_selectedField={_selectedDisplayImageSourceIndex}", "ImageSourceSelector");
+-                }));
++            var generation=++_displaySourceSelectionGeneration;
++            var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
++            var dispatcher=Application.Current?.Dispatcher??System.Windows.Threading.Dispatcher.CurrentDispatcher;
++            dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,new Action(()=>
++            {
++                if(generation!=_displaySourceSelectionGeneration||!ReferenceEquals(SelectedNode,node)
++                    ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return;
++                _selectedDisplayImageSourceIndex=-1;SelectedDisplayImageSourceIndex=-1;
++                SelectedDisplayImageSourceIndex=index;
++                if(index<0)RefreshNativeResultImages();
++            }));
+         }
+ 
+         /// <summary>
+@@ -3269,69 +3218,7 @@
+         /// 若选中源不可用（源节点未执行 / 该属性无图），按数据源列表顺延到第一个可用源显示，
+         /// 并同步下拉选中项（下拉即真相）；全部不可用才清空（如实反映无可用图像）。
+         /// </summary>
+-        private void SetDisplayImageFromSource(AvailableDataSource source)
+-        {
+-            int preferredIndex = DisplayImageSources.IndexOf(source);
+-
+-            if (TryResolveDisplaySource(preferredIndex, out var resolved, out int resolvedIndex, out var bitmap))
+-            {
+-                // 下拉跟随实际显示源，避免"下拉选中 A、实际显示 B"的不一致。
+-                // 注意：设置选中项为延迟执行（Dispatcher），会再次进入本方法；
+-                //      届时 preferredIndex 已可用，TryResolve 直接命中且不再变更选中项 → 天然收敛。
+-                if (resolvedIndex != preferredIndex)
+-                {
+-                    LogInfo($"图像源|选中源不可用, 回退显示: {resolved!.SourceNodeName}.{resolved.DisplayName}", "ImageSourceSelector");
+-                    SetSelectedDisplayImageSourceIndexDeferred(resolvedIndex);
+-                }
+-
+-                DisplayImage = bitmap;
+-                return;
+-            }
+-
+-            // 整链均无可用图像 → 如实清空（输入图像有问题时的正确表现）
+-            LogInfo("图像源|当前工作流无任何可用图像, 清空显示", "ImageSourceSelector");
+-            DisplayImage = null;
+-        }
+-
+-        /// <summary>
+-        /// 按数据源列表顺序解析"实际可显示的图像源"。
+-        /// 候选顺序：preferredIndex 优先，其余按列表顺序（本节点 → 上游 近→远）。
+-        /// 命中条件：源节点有执行结果，且该属性对应的图像非空。
+-        /// </summary>
+-        private bool TryResolveDisplaySource(int preferredIndex, out AvailableDataSource? source,
+-            out int resolvedIndex, out BitmapSource? bitmap)
+-        {
+-            source = null;
+-            resolvedIndex = -1;
+-            bitmap = null;
+-
+-            int count = DisplayImageSources.Count;
+-            if (count == 0) return false;
+-
+-            var order = preferredIndex >= 0 && preferredIndex < count
+-                ? new[] { preferredIndex }.Concat(Enumerable.Range(0, count).Where(i => i != preferredIndex))
+-                : Enumerable.Range(0, count);
+-
+-            var context = CurrentWorkflowContext;
+-            using var sourceSnapshot = context?.CaptureNodeResults();
+-            foreach (var idx in order)
+-            {
+-                var candidate = DisplayImageSources[idx];
+-                NodeExecutionResult? executionResult = null;
+-                sourceSnapshot?.Results.TryGetValue(candidate.SourceNodeId, out executionResult);
+-                if (executionResult?.Result == null) continue;
+-
+-                var candidateBitmap = _nodeResultManager.GetDisplayImageFromSource(
+-                    executionResult.Result, candidate.PropertyName);
+-                if (candidateBitmap == null) continue;
+-
+-                source = candidate;
+-                resolvedIndex = idx;
+-                bitmap = candidateBitmap;
+-                return true;
+-            }
+-            return false;
+-        }
++        private void SetDisplayImageFromSource(AvailableDataSource source)=>RefreshNativeResultImages();
+ 
+         /// <summary>
+         /// 按当前选中的图像源刷新显示（实现 INodeResultSink，供 NodeResultManager 统一调用）
+@@ -3351,7 +3238,7 @@
+             CalculationResults.Clear();
+             if(epoch!=_resultPublicationEpoch)return;
+             ModuleResultTree.Clear();
+-            if(epoch==_resultPublicationEpoch)HasModuleResults=false;
++            if(epoch==_resultPublicationEpoch){HasModuleResults=false;ClearNativeImagePresentation();}
+         }
+ 
+         /// <summary>
+@@ -3406,20 +3293,12 @@
+         /// <summary>
+         /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
+         /// </summary>
+-        private Guid? _unavailableViewportHighlight;
+         private void OnDeclaredSelectionHighlightChanged(object? sender,ResultSelection selection)
+         {
+             var publication=_resultPublication;
+             if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
+-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
+-            _nodeResultManager.ClearHighlight();
+-            if(!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView)
+-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
+-            if(selection.Targets.Count>0&&_unavailableViewportHighlight!=publication.Stamp.PublicationId)
+-            {
+-                _unavailableViewportHighlight=publication.Stamp.PublicationId;
+-                AddLog("结果选择包含物理来源，但当前图像视口尚未提供同帧校验，已禁用跨图高亮。");
+-            }
++                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication))return;
++            ResultWorkspaceSelectionChanged?.Invoke(selection);
+         }
+ 
+         /// <summary>
+@@ -3721,32 +3600,13 @@
+                     // 缓存调试窗口（用于工作流执行完成后通知刷新）
+                     _nodeDebugWindows[node.Id] = debugWindow;
+ 
+-                    // 🔍 日志监控：窗口已显示，准备获取 ImageControl
+-                    AddLog($"🔍 [监控] 窗口已调用 Show()，开始获取 ImageControl");
+-
+-                    // ④ 设置主窗口 ImageControl（窗口显示后再设置，确保 OverlayCanvas 已准备就绪）
+-                    var mainImageControl = GetMainImageControl?.Invoke();
+-                    AddLog($"🔍 [监控] 获取到 ImageControl: {mainImageControl?.GetType().Name ?? "null"}");
+-
+-                    // 🔍 日志监控：准备调用 SetMainImageControl
+-                    AddLog($"🔍 [监控] 准备调用 initializer.SetMainImageControl()");
+-
+-                    initializer.SetMainImageControl(mainImageControl);
+-
+-                    AddLog($"✅ 已设置主窗口 ImageControl");
++                    AddLog("原主视口不再接受旧SDK绘制；区域编辑仅由具备实际输入证明的原会话接入。");
+ 
+                     // 窗口关闭清理
+                     debugWindow.Closed += (s, e) =>
+                     {
+                         // 1. 移除调试窗口缓存（DSQS 仍在 _workflowDsqsCache 中缓存，工作流删除时统一清理）
+                         _nodeDebugWindows.Remove(node.Id);
+-
+-                        // 3. 恢复主窗口 ImageControl 的只读模式
+-                        var mainImageControl = GetMainImageControl?.Invoke();
+-                        if (mainImageControl != null)
+-                        {
+-                            mainImageControl.OverlayHitTestVisible = false;
+-                        }
+ 
+                         // 4. 刷新当前选中节点的结果显示（如果有）
+                         if (SelectedNode != null && SelectedNode.IsSelected)
+@@ -3854,7 +3714,7 @@
+                                 if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
+                                 {
+                                     editorContext?.DebugResults.RemoveNodeResult(node.Id);
+-                                    if(DisplayCurrent()){ClearResultDisplay();DisplayImage=null;}
++                                    if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}
+                                 }
+                                 return;
+                             }
+@@ -3894,7 +3754,7 @@
+                         else
+                         {
+                             _nodeResultManager?.ClearResultDisplay();
+-                            DisplayImage = null;
++                            ClearNativeImagePresentation();
+                         }
+                         // Recreate the analysis view from the formal context. Passing null to a
+                         // legacy analysis control can leave the previous preview rows visible.
+@@ -4378,124 +4238,38 @@
+             return null;
+         }
+ 
+-        #region 图像视图
+-
+-        /// <summary>
+-        /// 放大图像
+-        /// </summary>
+-        private void ExecuteZoomIn()
+-        {
+-            ImageScale = Math.Min(ImageScale * 1.2, 5.0);
+-            AddLog($"🔍 图像放大: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 缩小图像
+-        /// </summary>
+-        private void ExecuteZoomOut()
+-        {
+-            ImageScale = Math.Max(ImageScale / 1.2, 0.1);
+-            AddLog($"🔍 图像缩小: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 适应窗口
+-        /// </summary>
+-        private void ExecuteFitToWindow()
+-        {
+-            // TODO: 根据窗口大小计算缩放
+-            ImageScale = 1.0;
+-            AddLog($"🔍 适应窗口: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 重置视图
+-        /// </summary>
+-        private void ExecuteResetView()
+-        {
+-            ImageScale = 1.0;
+-            AddLog($"🔄 重置视图: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 切换全屏显示
+-        /// </summary>
+-        private void ExecuteToggleFullScreen()
+-        {
+-            // TODO: 实现图像全屏显示
+-            AddLog("🖥️ 切换全屏显示");
++
++
++        #region 图像操作
++
++        /// <summary>
++        /// 清除图像
++        /// </summary>
++        private void ExecuteClearImage()
++        {
++            try
++            {
++                ClearNativeImagePresentation();
++                AddLog("已清除图像");
++            }
++            catch (Exception ex)
++            {
++                AddLog($"清除图像失败: {ex.Message}");
++            }
+         }
+ 
+         #endregion
+ 
+-        #region 图像操作
+-
+-        /// <summary>
+-        /// 清除图像
+-        /// </summary>
+-        private void ExecuteClearImage()
+-        {
+-            try
+-            {
+-                _legacyImageDisplayCancellation?.Cancel();
+-                DisplayImage = null;
+-                ImageScale = 1.0;
+-                AddLog("已清除图像");
+-            }
+-            catch (Exception ex)
+-            {
+-                AddLog($"清除图像失败: {ex.Message}");
+-            }
+-        }
+-
+-        #endregion
+-
+         #region 图像预览
+ 
+         /// <summary>
+         /// 更新当前图像显示
+         /// </summary>
+-        private static readonly System.Threading.SemaphoreSlim s_legacyImageDecodeSlot = new(1, 1);
+-        private System.Threading.CancellationTokenSource? _legacyImageDisplayCancellation;
+-        private async void UpdateCurrentImageDisplay()
+-        {
+-            _legacyImageDisplayCancellation?.Cancel();
+-            if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)
+-            {
+-                DisplayImage = null;
+-                return;
+-            }
+-
+-            var imageInfo = ImageCollection[CurrentImageIndex];
+-            var path = imageInfo.FilePath;
+-            var tab = WorkflowTabViewModel?.SelectedTab;
+-            var node = _selectedNode;
+-            var priorDisplay = DisplayImage;
+-            using var cancellation = new System.Threading.CancellationTokenSource();
+-            _legacyImageDisplayCancellation = cancellation;
+-            try
+-            {
+-                var token = cancellation.Token;
+-                var fullImage = await System.Threading.Tasks.Task.Run(async () =>
+-                {
+-                    await s_legacyImageDecodeSlot.WaitAsync(token).ConfigureAwait(false);
+-                    try { token.ThrowIfCancellationRequested(); return LocalImageAssetCache.LoadImageOptimized(path); }
+-                    finally { s_legacyImageDecodeSlot.Release(); }
+-                }, token);
+-                if (token.IsCancellationRequested || imageInfo.FilePath != path
+-                    || CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count
+-                    || !ReferenceEquals(ImageCollection[CurrentImageIndex], imageInfo)
+-                    || !ReferenceEquals(WorkflowTabViewModel?.SelectedTab, tab) || !ReferenceEquals(_selectedNode, node)
+-                    || !ReferenceEquals(DisplayImage, priorDisplay)) return;
+-                if (fullImage != null)
+-                {
+-                    DisplayImage = fullImage;
+-                    AddLog($"📷 显示图像: {imageInfo.Name}");
+-                }
+-            }
+-            catch (OperationCanceledException) { }
+-            catch (Exception ex) { AddLog($"显示图像失败: {ex.Message}"); }
+-            finally { if (ReferenceEquals(_legacyImageDisplayCancellation, cancellation)) _legacyImageDisplayCancellation = null; }
++        private void UpdateCurrentImageDisplay()
++        {
++            if(CurrentImageIndex<0||CurrentImageIndex>=ImageCollection.Count){ClearNativeImagePresentation();return;}
++            _nativePreviewPath=ImageCollection[CurrentImageIndex].FilePath;_nativeImagesSuppressed=false;
++            ResultWorkspaceChanged?.Invoke();
+         }
+ 
+         #endregion
+--- a/src/UI/Shell/Windows/MainWindowResultPublication.cs
++++ b/src/UI/Shell/Windows/MainWindowResultPublication.cs
+@@ -34,6 +34,7 @@
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>_activeResultView?.Clear());
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>ModuleResultTree.Clear());
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>_nodeResultManager?.ClearHighlight());
++        if(epoch==_resultPublicationEpoch)Cleanup(ClearNativeImagePresentation);
+         if(failures.Count>0)throw new AggregateException("结果视图清理失败，所有可执行清理均已尝试。",failures);
+         return epoch;
+     }
+@@ -53,6 +54,7 @@
+             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
+             if(!EnsureCurrent())return;
+             _activeResultView?.Present(publication);
++            if(EnsureCurrent())RefreshNativeResultImages();
+             EnsureCurrent();
+         }
+         catch
+--- a/src/UI/Shell/Windows/MainWindowGroupEditing.cs
++++ b/src/UI/Shell/Windows/MainWindowGroupEditing.cs
+@@ -52,7 +52,7 @@
+                 query.SetSootReader(id=>ReferenceEquals(DocumentManager.Session,session)
+                     ?_workflowContextService.GetOrCreate(flow.Id,flow.Name).GetNodeResult(id)?.Result:null);
+                 return query;
+-            }),()=>GetMainImageControl?.Invoke());
++            }));
+         groupEditor.SetRunParameterEditor(page);
+         ToolEditorCommit.AttachDraftContext(control,context);
+         context.PrepareView=()=>!groupEditor.TryPrepare(out var error)?error:!ToolEditorCommit.TryPrepare(control,out error)?error:page.TryPrepare(out error)?null:error;
+--- a/src/UI/Services/Editing/Nodes/NodeOpenContext.cs
++++ b/src/UI/Services/Editing/Nodes/NodeOpenContext.cs
+@@ -12,7 +12,7 @@
+     /// 上下文贯穿整个决策链，包含：
+     /// 1. 输入数据：节点、工具实例、元数据
+     /// 2. 决策结果：窗口类型、调试控件
+-    /// 3. 运行时信息：主窗口引用、ImageControl
++    /// 3. 运行时信息：主窗口所有者引用
+     /// 
+     /// 决策链各步骤通过读取和修改上下文来协同工作。
+     /// </remarks>
+@@ -73,11 +73,6 @@
+         /// </summary>
+         public Window? MainWindow { get; set; }
+ 
+-        /// <summary>
+-        /// 主窗口的 ImageControl（用于区域编辑器绑定）
+-        /// </summary>
+-        public FrameworkElement? MainImageControl { get; set; }
+-
+         #endregion
+ 
+         /// <summary>
+@@ -90,10 +85,9 @@
+         /// <summary>
+         /// 创建节点打开上下文（带主窗口引用）
+         /// </summary>
+-        public NodeOpenContext(Window? mainWindow, FrameworkElement? mainImageControl)
++        public NodeOpenContext(Window? mainWindow)
+         {
+             MainWindow = mainWindow;
+-            MainImageControl = mainImageControl;
+         }
+     }
+ }
+--- a/src/UI/Services/Editing/GroupRegionParameterControl.cs
++++ b/src/UI/Services/Editing/GroupRegionParameterControl.cs
+@@ -43,6 +43,11 @@
+     {
+         if(_disposed||!IsVisible||!IsEnabled){_manager.ClearMainOverlay();return;}
+         var image=_image?.Invoke();
++        if(image is null)
++        {
++            _contextError="未实现：Group区域主图编辑等待新控件和实际输入合同稳定，本阶段保留数值与配置。";
++            _status.Text=_contextError;_manager.ToolTip=_contextError;_manager.IsEnabled=false;_manager.ClearMainOverlay();return;
++        }
+         try
+         {
+             var context=_session.RegionContext(_item);
+--- a/tests/SunEyeVision.UI.Tests/ResultVariableBindingProductionTests.cs
++++ b/tests/SunEyeVision.UI.Tests/ResultVariableBindingProductionTests.cs
+@@ -57,7 +57,7 @@
+             Assert.Same(source,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single());
+             Stage("选择真实图像源节点");main.SelectedNode=source;
+             view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);
+-            ((TabControl)view.FindName("ImageDisplayTabControl")).SelectedIndex=1;
++            ((SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)view.FindName("Workspace")).SelectedResultTabIndex=1;
+             Stage("加载真实结果工作区窗口");owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
+             var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
+             var session=manager.Session!;var initial=session.History.Position;
+--- a/tests/SunEyeVision.UI.Tests/NodeEditorRoutingTests.cs
++++ b/tests/SunEyeVision.UI.Tests/NodeEditorRoutingTests.cs
+@@ -68,7 +68,7 @@
+         try
+         {
+             var node=new WorkflowNodeBase("node", "node", "node", "Editor.Open.Custom");
+-            var context=new NodeOpenContext(owner,null);
++            var context=new NodeOpenContext(owner);
+             Assert.True(new NodeOpenDecisionChain().Execute(node,context,()=>supplied));
+             Assert.Equal(DebugWindowStyle.Custom,context.WindowStyle);
+             Assert.Same(supplied,context.CreatedWindow); Assert.Same(owner,supplied.Owner);
+--- a/scripts/verification/S4FullChainCases.cs
++++ b/scripts/verification/S4FullChainCases.cs
+@@ -45,13 +45,12 @@
+         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();var document=solutions.CreateUntitledSolution();
+         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
+         var tab=vm.WorkflowTabViewModel.SelectedTab!;var canvasControl=new WorkflowCanvasControl{DataContext=tab,Width=600,Height=400};
+-        var canvas=(Canvas)canvasControl.FindName("WorkflowCanvas");var resultHost=new ContentControl{Width=620};
+-        resultHost.SetBinding(ContentControl.ContentProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=vm});
+-        var image=new ImageControl{Width=400,Height=400};vm.GetMainImageControl=()=>image;
+-        image.SetBinding(ImageControl.SourceImageProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.DisplayImage)){Source=vm.ImageResult});
+-        var resultManager=(SunEyeVision.UI.Services.Workflow.NodeResultManager)typeof(MainWindowViewModel).GetField("_nodeResultManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
+-        resultManager.SetResultRenderLayer(image.ResultRenderLayerControl);
+-        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(image);panel.Children.Add(resultHost);
++        var canvas=(Canvas)canvasControl.FindName("WorkflowCanvas");
++        var imageHost=new SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl{DataContext=vm.ImageResult,Width=780};
++        imageHost.Initialize(vm);
++        var workspace=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)imageHost.FindName("Workspace");
++        var image=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)workspace.OutputViewport;
++        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(imageHost);
+         var shell=new Window{DataContext=vm,Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
+         var drop=new WorkflowDragDropHandler(canvasControl){TabViewModel=vm.WorkflowTabViewModel};
+         SunEyeVision.UI.Shared.WorkflowNode Drop(string tool)
+@@ -113,7 +112,7 @@
+             Select(blob);Execute();Require(Count(blob.Id)==2&&Count(downstream.Id)==2,"默认入口真实HALCON结果不符");
+             var output=(BlobOutput)Result(blob.Id).Output!;using var region=output.Region.AcquireReader();Require(output.GrayImage is not null&&output.GrayImage.Frame==region.SourceFrame,"物理帧丢失");
+             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==2,"正式结果未进入实际表");
+-            Require(image.SourceImage?.PixelWidth==64&&vm.CreateDataSourceQueryService(flow.Id).GetImageDisplaySources(blob.Id).Any(s=>s.SourceNodeId==blob.Id&&s.PropertyName==BlobSchema.Field(5)),"Runtime主图像或自身图像来源未进入真实显示链");
++            Require(image.ImageDataSource?.Width==64&&vm.CreateDataSourceQueryService(flow.Id).GetImageDisplaySources(blob.Id).Any(s=>s.SourceNodeId==blob.Id&&s.PropertyName==BlobSchema.Field(5)),"Runtime主图像或自身图像来源未进入真实显示链");
+         });
+         Case("Runtime窗口编辑数量上限确认发布，下游实际来源弹窗订阅最终Region",()=>
+         {
+@@ -182,7 +181,7 @@
+         var view=vm.SelectedNodeDataAnalysisControl;vm.SelectedNode=null;Pump();Require(vm.SelectedNodeDataAnalysisControl is null,"选择退出仍保留结果页");
+         if(!File.Exists(Path.Combine(product,"plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll")))
+             Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"缺少SDK入口时仍加载旧Blob");
+-        shell.Close();dialogs.Stop();Console.WriteLine($"S4真实Runtime宿主连续链：{_passed}组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。");return 0;
++        imageHost.Shutdown();shell.Close();dialogs.Stop();Console.WriteLine($"S4真实Runtime宿主连续链：{_passed}组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。");return 0;
+     }
+     private static IEnumerable<DependencyObject> Logical(DependencyObject root){
+         var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);

@@ -17,14 +17,21 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         internal long Generation;
         internal readonly ResultImagePane Image;
         internal readonly NativeResultViewport.GeometryLayer Selection;
-        internal Pane(FrameworkElement view){Image=new(view);Selection=Image.Viewport.CreateSelectionLayer();}
+        private NativeResultViewport.CrosshairLayer? _cross;
+        internal NativeResultViewport.CrosshairLayer Cross=>_cross??=Image.Viewport.CreateCrosshairLayer();
+        internal Pane(FrameworkElement view)
+        {
+            Image=new(view);
+            try{Selection=Image.Viewport.CreateSelectionLayer();}
+            catch{Image.Dispose();throw;}
+        }
         internal void ClearGraphics()=>Selection.Clear();
-        public void Dispose()=>Run(new Action[]{ClearGraphics,Selection.Dispose,Image.Dispose});
+        public void Dispose()=>Run(new Action[]{ClearGraphics,()=>_cross?.Dispose(),Selection.Dispose,Image.Dispose});
     }
     private readonly MainWindowViewModel _main;
     private readonly ResultWorkspaceShell _shell;
     private readonly Pane _input,_output;
-    private readonly DependencyPropertyDescriptor _inputSelection,_outputSelection;
+    private readonly DependencyPropertyDescriptor _inputSelection,_outputSelection,_doubleImage;
     private ResultWorkspaceImagePlan? _plan;
     private CancellationTokenSource? _previewCancellation;
     private ResultViewportFullscreenScope? _fullscreen;
@@ -44,22 +51,30 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         try{_output=new(shell.OutputViewport);}catch{_input.Dispose();throw;}
         _inputSelection=DependencyPropertyDescriptor.FromProperty(ResultWorkspaceShell.SelectedInputItemProperty,typeof(ResultWorkspaceShell));
         _outputSelection=DependencyPropertyDescriptor.FromProperty(ResultWorkspaceShell.SelectedOutputItemProperty,typeof(ResultWorkspaceShell));
+        _doubleImage=DependencyPropertyDescriptor.FromProperty(ResultWorkspaceShell.IsDoubleImageProperty,typeof(ResultWorkspaceShell));
         try
         {
         _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
+        _doubleImage.AddValueChanged(shell,DoubleImageChanged);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
+        main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
+        main.ResultWorkspaceRootSettled+=RootSettled;
         shell.FullscreenCommand=new SunEyeVision.UI.Core.RelayCommand(value=>
         {
             if(value is FrameworkElement view&&Window.GetWindow(shell) is {} owner)
             {
-                _fullscreen?.Dispose();_fullscreen=ResultViewportFullscreenScope.Open(view,owner);
+                _fullscreen?.Dispose();_fullscreen=ResultViewportFullscreenScope.Open(view,owner,shell.ImageNavigationControls);
             }
         },value=>!_disposed&&value is FrameworkElement view&&(ReferenceEquals(view,shell.InputViewport)||ReferenceEquals(view,shell.OutputViewport)));
         // The original background command exchanges an established output background
         // with a checked overlay. It is not an alias of ordinary source selection.
         // Keep it unavailable until the one-owner multi-image layer chain is present.
         shell.SelectBackgroundCommand=null;
+        shell.CrossLinesCommand=new SunEyeVision.UI.Core.RelayCommand(()=>
+        {
+            if(Window.GetWindow(shell) is {} owner)_output.Cross.OpenSettings(owner);
+        },()=>!_disposed&&Window.GetWindow(shell)?.IsVisible==true);
         Refresh();
         }
         catch(Exception failure)
@@ -67,6 +82,14 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
         }
+    }
+    private void DoubleImageChanged(object? sender,EventArgs args)
+    {
+        if(_disposed)return;
+        // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
+        _shell.SelectedInputItem=null;
+        if(!_disposed&&_shell.IsDoubleImage)
+            _shell.SelectedInputItem=_plan?.InputSources.FirstOrDefault();
     }
     private void InputSelected(object? sender,EventArgs args)
     {
@@ -87,7 +110,17 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
         {RestoreChoice(false);return;}
         _outputSource=source;_outputKey=source?.Key;var choiceRevision=++_outputChoiceRevision;
+        var choicePlan=_plan;var choiceEpoch=_epoch;
+        if(choicePlan is not null)
+            foreach(var item in choicePlan.Sources.ToArray())
+            {
+                if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
+                item.IsCheck=ReferenceEquals(item,source);
+            }
+        if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         if(_refreshing)return;
+        if(sender is not null&&_main.SelectedNode is {} selected)
+            selected.SelectedDisplayReference=source?.Key;
         var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
         if(source is {NavigationIndex:>=0})
@@ -100,8 +133,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
     {
-        if(_disposed||_plan is null||_plan.IsDisposed||input&&!source.IsUpstream)return false;
-        foreach(var candidate in _plan.Sources)if(ReferenceEquals(candidate,source))return true;
+        if(_disposed||_plan is null||_plan.IsDisposed)return false;
+        foreach(var candidate in input?_plan.InputSources:_plan.Sources)if(ReferenceEquals(candidate,source))return true;
         return false;
     }
     private void RestoreChoice(bool input)
@@ -129,10 +162,26 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         if(!Current())return;
         pane.ClearGraphics();
         if(!Current())return;
-        if(source?.Publication is not {} publication){pane.Image.Clear();return;}
+        if(source?.Publication is not {} publication){pane.Image.ClearUnlessRetained();return;}
         if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
             ()=>Current()&&source.Current()&&Current(),out var error))
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
+        else if(Current())SetImageName(pane,source.FileName);
+    }
+    private static void SetImageName(Pane pane,string? name)
+        =>pane.Image.Viewport.View.SetCurrentValue(
+            SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox.ImageNameProperty,name);
+    private void PrepareSourceDisplayPreservation(SunEyeVision.UI.Shared.ImageInputSource source,SourceDisplayPreservationScope scope)
+    {
+        if(_disposed||!ReferenceEquals(_main.ActiveInputSource,source))return;
+        bool Current()=>!_disposed&&scope.IsCurrent;
+        if(_input.Image.PrepareDisplayRetention(Current) is {} input)scope.Enlist(input);
+        if(_output.Image.PrepareDisplayRetention(Current) is {} output)scope.Enlist(output);
+    }
+    private void RootSettled(string workflowId)
+    {
+        if(_disposed||_main.WorkflowTabViewModel.SelectedTab?.RootWorkflowId!=workflowId)return;
+        Run(new Action[]{_input.Image.ClearRetained,_output.Image.ClearRetained});
     }
     internal void Refresh()
     {
@@ -147,21 +196,27 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
                 var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
-                Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
+                Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;_navigationIndex=int.MinValue;}
+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;_navigationIndex=int.MinValue;}
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
-                var inputs=plan.Sources.Where(source=>source.IsUpstream).ToArray();
+                var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
-                var input=inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault();
+                var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault():null;
                 var navigation=_main.SelectedDisplayImageSourceIndex;
                 var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
                 var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
-                var output=(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
-                    :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                // A persisted explicit identity must match exactly, including scope and members.
+                // Missing or stale declarations never silently select a different image.
+                var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
+                var output=explicitChoice is not null
+                    ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
+                    :(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
+                        :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                if(explicitChoice is not null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
                 _navigationIndex=navigation;
                 _inputSource=input;_outputSource=output;
                 var outputChoiceRevision=_outputChoiceRevision;
@@ -220,8 +275,12 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             bool Current()=>!_disposed&&!token.IsCancellationRequested&&epoch==_epoch&&_output.Generation==paneGeneration&&_main.NativePreviewPath==path;
             if(!Current())return;
             if(!_output.Image.TryPresentPreview(decoded.Image,Current,out var error))_main.AddLog("文件预览未显示："+error);
-            else if(_main.StatusText==openingStatus&&!openingStatus.StartsWith("图像源配置已接纳，",StringComparison.Ordinal))
-                _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
+            else if(Current())
+            {
+                SetImageName(_output,System.IO.Path.GetFileName(path));
+                if(_main.StatusText==openingStatus&&!openingStatus.StartsWith("图像源配置已接纳，",StringComparison.Ordinal))
+                    _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
+            }
         }
         catch(OperationCanceledException){}
         catch(Exception error){if(!_disposed&&epoch==_epoch)_main.AddLog("文件预览失败："+error.Message);}
@@ -292,9 +351,12 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             ()=>_main.ResultWorkspaceChanged-=Refresh,
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
+            ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,
+            ()=>_main.ResultWorkspaceRootSettled-=RootSettled,
             ()=>_inputSelection.RemoveValueChanged(_shell,InputSelected),
             ()=>_outputSelection.RemoveValueChanged(_shell,OutputSelected),
-            ()=>_shell.FullscreenCommand=null,()=>_shell.SelectBackgroundCommand=null,
+            ()=>_doubleImage.RemoveValueChanged(_shell,DoubleImageChanged),
+            ()=>_shell.FullscreenCommand=null,()=>_shell.SelectBackgroundCommand=null,()=>_shell.CrossLinesCommand=null,
             ()=>_shell.SelectedInputItem=null,()=>_shell.SelectedOutputItem=null,
             ()=>_shell.InputItems=null,()=>_shell.OutputItems=null,
             ()=>cancellation?.Cancel(),()=>cancellation?.Dispose(),

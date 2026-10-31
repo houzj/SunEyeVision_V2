@@ -24,20 +24,42 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ImageResultControl : UserControl
     {
         internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView ModuleResultTreeView;
-        internal readonly TextBlock SourceStatusMessage;
         internal readonly SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip ImagePreviewContent;
         private MainWindowViewModel _viewModel = null!;
         private bool _shutdown;
+        internal Func<string?> ReadClipboardText { get; set; } = () => Clipboard.ContainsText() ? Clipboard.GetText() : null;
+        internal Action<string> WriteClipboardText { get; set; } = Clipboard.SetText;
+        private SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox? _copyNotice;
+        private System.Windows.Threading.DispatcherTimer? _copyNoticeTimer;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _shellTheme;
         private SunEyeVision.UI.Services.Images.ResultWorkspacePresenter? _workspacePresenter;
+        private System.Collections.Specialized.INotifyCollectionChanged? _resultRoots;
+        private void ReleaseResultSelection()
+        {
+            if(_resultRoots is not null)_resultRoots.CollectionChanged-=OnResultRootsChanged;
+            _resultRoots=null;
+            ModuleResultTreeView.SetCurrentValue(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedItemProperty,null);
+            ModuleResultTreeView.SelectedItemPath=null;
+            CommandManager.InvalidateRequerySuggested();
+        }
+        private void OnResultRootsChanged(object? sender,System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+        {
+            if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true)return;
+            ModuleResultTreeView.SetCurrentValue(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedItemProperty,null);
+            ModuleResultTreeView.SelectedItemPath=null;
+            CommandManager.InvalidateRequerySuggested();
+        }
         private void ReleaseSourceSession()
         {
             var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
-            Cleanup(new Action[]{()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
+            Cleanup(new Action[]{
+                ()=>System.Windows.Data.BindingOperations.ClearBinding(ImagePreviewContent,
+                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty),
+                ()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
         }
         private void RefreshSourceSession()
         {
@@ -51,6 +73,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 &&ReferenceEquals(main.ActiveInputSource,source)&&ReferenceEquals(main.WorkflowTabViewModel.SelectedTab,workflow),
                 (image,index,version)=>RunWorkflowWithImage(workflow,source,version,image,index),Dispatcher,()=>Window.GetWindow(this));
             ImagePreviewContent.Session=_sourceSession;
+            ImagePreviewContent.SetBinding(
+                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty,
+                new System.Windows.Data.Binding(nameof(WorkflowTabViewModel.IsRunning))
+                {Source=workflow,Mode=System.Windows.Data.BindingMode.OneWay});
         }
 
         public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
@@ -62,7 +88,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
             CommandManager.InvalidateRequerySuggested();
-            ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+            // Keep original list focus through execution; formal source edits are guarded by the execution lease.
             ModuleResultTreeView.IsReadOnly=!allowed;
             RefreshSourceSession();
         }
@@ -72,10 +98,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
             ModuleResultTreeView=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)Workspace.PropertyListContent;
             var sourceStrip=(Panel)Workspace.SourceStripContent;
-            SourceStatusMessage=sourceStrip.Children.OfType<TextBlock>().Single();
             ImagePreviewContent=sourceStrip.Children.OfType<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip>().Single();
             RegisterName(nameof(ModuleResultTreeView),ModuleResultTreeView);
-            RegisterName(nameof(SourceStatusMessage),SourceStatusMessage);
             RegisterName(nameof(ImagePreviewContent),ImagePreviewContent);
             _sourceTheme=new(ImagePreviewContent);
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
@@ -95,11 +119,37 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             ModuleResultTreeView.CopyPathCommand=new RelayCommand(value=>
             {
                 if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
-                    &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
+                    &&value is string path&&!string.IsNullOrWhiteSpace(path))CopyResultPath(row,path);
             },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
                 &&_viewModel?.IsCurrentResultRow(row)==true);
             Loaded+=(_,_)=>{RefreshSourceSession();AttachWorkspace();};
-            Unloaded+=(_,_)=>Cleanup(new Action[]{ReleaseSourceSession,ReleaseWorkspace});
+            Unloaded+=(_,_)=>Cleanup(new Action[]{CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace});
+        }
+
+        private void CopyResultPath(FlatResultRow row,string path)
+        {
+            if(ReadClipboardText()==path)return;
+            if(_shutdown||_viewModel?.IsCurrentResultRow(row)!=true||!ReferenceEquals(ModuleResultTreeView.SelectedItem,row))return;
+            WriteClipboardText(path);
+            CloseCopyNotice();
+            var notice=SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox.CreateMessageBox(
+                SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Lang_CopySuccess"),
+                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageIcons.Ok,
+                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageButtons.NoButton);
+            if(notice is null)return;
+            var owner=Window.GetWindow(this);
+            if(owner is {IsVisible:true})notice.Owner=owner;
+            _copyNotice=notice;
+            var timer=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromMilliseconds(1500)};
+            _copyNoticeTimer=timer;timer.Tick+=CopyNoticeElapsed;
+            notice.Show();timer.Start();
+        }
+        private void CopyNoticeElapsed(object? sender,EventArgs args)=>CloseCopyNotice();
+        private void CloseCopyNotice()
+        {
+            var timer=_copyNoticeTimer;_copyNoticeTimer=null;
+            if(timer is not null){timer.Stop();timer.Tick-=CopyNoticeElapsed;}
+            var notice=_copyNotice;_copyNotice=null;notice?.Close();
         }
 
         /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
@@ -117,15 +167,16 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             ObjectDisposedException.ThrowIf(_shutdown,this);
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+            ReleaseResultSelection();
             ReleaseWorkspace();
             _viewModel = viewModel;
-            System.Windows.Data.BindingOperations.SetBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty,
-                new System.Windows.Data.Binding(nameof(MainWindowViewModel.ImagePreviewSourceMessage)){Source=viewModel});
             System.Windows.Data.BindingOperations.SetBinding(Workspace,
                 SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
                 new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
             // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
             ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
+            _resultRoots=(System.Collections.Specialized.INotifyCollectionChanged)viewModel.ResultTreeRoots;
+            _resultRoots.CollectionChanged+=OnResultRootsChanged;
             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             RefreshSourceSession();AttachWorkspace();
@@ -146,11 +197,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var main=_viewModel;_viewModel=null!;
             Cleanup(new Action[]{
                 ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
+                ReleaseResultSelection,
                 ()=>ModuleResultTreeView.ItemsSource=null,
-                ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
+                ()=>main?.CloseResultPresentation(),CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
                     SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
-                ()=>System.Windows.Data.BindingOperations.ClearBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty),
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }
 
@@ -200,7 +251,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ThemeMessageDialog.Show(remove?"该结果没有可解除的变量绑定。":"没有可承载该正式声明及存储的全局变量。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
                 return;
             }
-            var variable=GlobalVariableSelectDialog.ShowSelect(choices);
+            var variable=remove&&choices.Count==1?choices[0]:GlobalVariableSelectDialog.ShowSelect(choices);
             if(variable is null)return;
             // The modal window may run arbitrary editing/navigation before it returns.
             if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.Session,expected)
@@ -215,7 +266,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
         {
             var main=_viewModel;
-            if(_shutdown||main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(_shutdown||main is null||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
             catch(Exception error)
             {
@@ -223,6 +274,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
             }
             if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(main.IsRunning||workflow.IsRunning)
+            {main.StatusText="图像已选中；当前运行仍使用已冻结的输入。";return;}
             var acceptedVersion=source.EditVersion;
             var workflowName = workflow.Name ?? "未知工作流";
             main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
@@ -243,7 +296,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void OnResultTreeSelectionChanged(object sender,RoutedPropertyChangedEventArgs<object> e)
         {
             ModuleResultTreeView.SelectedItemPath=e.NewValue is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
-                ?row.BindingInfo?.ResultPath??row.Key:string.Empty;
+                ?row.BindingInfo?.ResultPath??row.Key:null;
             CommandManager.InvalidateRequerySuggested();
         }
 

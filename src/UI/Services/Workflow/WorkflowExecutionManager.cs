@@ -244,6 +244,8 @@ namespace SunEyeVision.UI.Services.Workflow
             cancellationToken = runCancellation.Token;
             try
             {
+                // Project the accepted single run to its root tab; the execution lease stays unchanged.
+                await InvokeOnUIAsync(() => workflow.IsRunning = true);
                 if (!_communicationOwner.Value)
                     await InvokeOnUIAsync(() => PreparePublishedRun(workflow.RootWorkflowId));
                 using var localImages = await BeginLocalImagesAsync(workflow, cancellationToken);
@@ -273,7 +275,8 @@ namespace SunEyeVision.UI.Services.Workflow
             finally
             {
                 lock (_lock) _cancellationTokens.Remove(workflowId);
-                ReleaseExecution(workflowId);
+                try { ReleaseExecution(workflowId); }
+                finally { await InvokeOnUIAsync(() => workflow.IsRunning = false); }
             }
         }
 

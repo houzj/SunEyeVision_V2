@@ -14,7 +14,7 @@
   </composition:ResultWorkspaceShell.PropertyListContent>
   <composition:ResultWorkspaceShell.SourceStripContent>
    <StackPanel Visibility="{Binding ShowImagePreview, Converter={StaticResource VisibleWhenTrue}}">
-    <TextBlock Foreground="{DynamicResource ThemeTextDisabledBrush}" TextTrimming="CharacterEllipsis"/>
+
     <sources:ImageSourceStrip/>
    </StackPanel>
   </composition:ResultWorkspaceShell.SourceStripContent>

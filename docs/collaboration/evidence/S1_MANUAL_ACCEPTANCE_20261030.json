@@ -1,0 +1,81 @@
+{
+  "stage": "S1运行时人工验收通过，实际VS设计器未验证，未封版",
+  "sourceCommit": "35d3387286cc20ef7b57aa64b158b3f7a60807ac",
+  "product": "当前独立正式Release，360项回归版本保持冻结",
+  "sessionPid": 128724,
+  "images": [
+    {
+      "original": "D:/Temp/codex-clipboard-8296aef1-9e99-4b36-bffc-a9cd13aa85e6.png",
+      "preserved": "Release\\_validation\\S1-manual-20261030\\all-mode.png",
+      "sha256": "65BEA3F325D0C6E11F9542929BE397AF4B39E82A57D6740BDD40C422925427E0",
+      "observation": "运行全部，22/1051，当前条目橙色边框，自动切换显示开启",
+      "scope": "用户提供截图的静态可见事实，不证明未观察到的执行或保存行为"
+    },
+    {
+      "original": "D:/Temp/codex-clipboard-4930d260-751b-42fe-b447-0960f68fd67b.png",
+      "preserved": "Release\\_validation\\S1-manual-20261030\\selected-mode.png",
+      "sha256": "FE08902DF337B800F011A1E3B46C0EC7D9F70E4683396336968D28E8EBE967CE",
+      "observation": "切到运行选中，仍22/1051，出现未勾选复选框",
+      "scope": "用户提供截图的静态可见事实，不证明未观察到的执行或保存行为"
+    },
+    {
+      "original": "D:/Temp/codex-clipboard-734ce6c1-241c-4b5b-a6ef-85e76c89c52f.png",
+      "preserved": "Release\\_validation\\S1-manual-20261030\\selected-checked.png",
+      "sha256": "D5D71F5A1E6454D4DE49F8595824C1FAE646D038ECCFED2EFB7032C04EE9CAA2",
+      "observation": "运行选中，仍22/1051，多个可见条目显示橙色勾选",
+      "scope": "用户提供截图的静态可见事实，不证明未观察到的执行或保存行为"
+    }
+  ],
+  "userStatements": [
+    {
+      "quote": "左右不会弹",
+      "context": "对应所请求的左右快切验收",
+      "acceptedBehavior": "用户已确认左右快切不回弹",
+      "notClaimed": "没有据此声明极限频率、所有键鼠路径或全部异步场景均经人工验证"
+    },
+    {
+      "quote": "开关不会清图",
+      "context": "用户对自动切换开关人工验收的明确反馈",
+      "acceptedBehavior": "切换自动切换开关不会清空已有显示图像",
+      "notClaimed": "删除撤销尚待人工验证"
+    },
+    {
+      "quote": "删除后撤销可以恢复，也没有自动执行",
+      "context": "用户执行图片删除及统一撤销后的人工验收",
+      "acceptedBehavior": "删除后撤销恢复图片且不自动执行",
+      "notClaimed": "其余未操作项及实际VS设计器仍待验证"
+    },
+    {
+      "quote": "目前4项测试没有什么问题",
+      "context": "对应刚列出的添加图片、四组合运行规则、布局交互、保存重开四组人工验收",
+      "acceptedBehavior": "用户确认上述四组目前测试无问题",
+      "notClaimed": "不代替实际VS设计器验证或S2—S4验收"
+    }
+  ],
+  "acceptedVisible": [
+    "全部/选中模式切换的截图显示",
+    "切模式后22/1051与当前选中边框保持",
+    "运行选中显示复选框和多个橙色勾选"
+  ],
+  "pending": [
+    "实际VS设计器验证"
+  ],
+  "manualStageAccepted": true,
+  "phaseSealed": false,
+  "noCodeOrBuildChanges": true,
+  "designerGate": {
+    "status": "等待用户实际VS设计器加载结果",
+    "toolResult": "Computer Use was not approved to use Visual Studio",
+    "runtimeManualAccepted": true,
+    "designerVerified": false,
+    "target": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+    "acceptance": "真实设计视图加载正式模板和资源，并能以同组装链独立展示；空白无报错不视为通过",
+    "noBuildOrProductChanges": true
+  },
+  "progressionDecision": {
+    "userInstruction": "VS设计器先记为待验证，不要卡在这里，继续推进S2图像结果视口，先完整对照逆向原件，再集中迁移",
+    "s2Authorized": true,
+    "designerDeferred": true,
+    "designerVerified": false
+  }
+}

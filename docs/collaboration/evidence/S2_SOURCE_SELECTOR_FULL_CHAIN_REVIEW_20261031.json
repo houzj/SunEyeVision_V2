@@ -1,0 +1,57 @@
+{
+  "evidenceType": "原件静态源码完整相关入口/依赖核收，非新增VM实机",
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/DisplayImageListDecorator.cs",
+      "sha256": "B1A5E6F41B69F8E755A5353FAF79CCCC789236FD1DB7191A0CC22A7C9D6077A9",
+      "bytes": 20483
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ImageViewItem.cs",
+      "sha256": "B216BF3B6A5E99659645FF28A304CE40BD144B1337CB05CD3CB632320BBECFD0",
+      "bytes": 2836
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/TransparencyData.cs",
+      "sha256": "53B0D0F0F0C641AAF7E54DBF50BAF6256FB2B4B67469B3AA648ECAC01080BA7F",
+      "bytes": 522
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ImageView/Byte2ImageSource.cs",
+      "sha256": "484ECAAFF09C2DFA318DD3070D2A53A004E208BD4BAFF3C76F3A372EB53ED19E",
+      "bytes": 21809
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+      "sha256": "E165657162322FD6B1CE15758847BED07F8C1E86A637815DF8E87FE19439BB88",
+      "bytes": 74790
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/styles/moduleviewstyle.xaml",
+      "sha256": "2E195D69C45DE43C2DCA7528705959F4127207722ABDE533B49F7D3E70305D9B",
+      "bytes": 42450
+    }
+  ],
+  "plan": "S2_COMPONENT_MIGRATION_PLAN_20261030.md 来源选择器整链核收与本批收口决定",
+  "directorConfirmation": {
+    "conclusion": "主线无正式多IReadOnlyImage图层及待构建交付；RegionLayer不可替代；合同扩展暂停，不阻塞可做部分",
+    "received": "2026-10-31",
+    "thread": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84"
+  },
+  "deliveredBaseline": "892d9fb0",
+  "candidateBuilt": false,
+  "canImplement": [
+    "正式展示名称/完整提示",
+    "实际图像输入引用目录与独立项",
+    "普通输出勾选状态及刷新重入",
+    "禁用叠层/背景原因与退出清理"
+  ],
+  "deferred": [
+    "最多四图背景叠层状态机",
+    "191/127/63透明度及z100/101/102",
+    "背景交换/确认/取消回退",
+    "刷新重绘/图像租约/导出",
+    "多图选择保存复制删除撤销恢复",
+    "类别色表与缺失正式元数据"
+  ]
+}

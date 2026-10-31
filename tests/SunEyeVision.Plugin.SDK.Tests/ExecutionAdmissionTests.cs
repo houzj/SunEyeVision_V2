@@ -9,6 +9,25 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 
 public sealed class ExecutionAdmissionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AdmissionReentryCannotPublishRetiredOrReplacedIdentity(bool replace)
+    {
+        var owner = new ToolExecutionOwner();
+        var run = Guid.NewGuid();
+        ToolExecutionIdentity? winner = null;
+        var original = owner.Begin("flow/source", run, "schema", admission: () =>
+        {
+            if (replace) winner = owner.Begin("flow/source", run, "schema");
+            else owner.RetireNode("flow/source");
+            return true;
+        });
+        var published = false;
+        Assert.False(original.TryPublish(() => published = true));
+        Assert.False(published);
+        if (replace) Assert.True(winner!.IsCurrent);
+    }
     [Fact]
     public void ActiveRootAuthorityKeepsChildScopesIndependentAndRejectsDelayedOldAdmission()
     {

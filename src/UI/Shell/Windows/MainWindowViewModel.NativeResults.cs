@@ -14,6 +14,14 @@ public partial class MainWindowViewModel
     internal event Action? ResultWorkspaceChanged;
     internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
     internal event Action? ResultWorkspaceGraphicsCleared;
+    internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
+    internal event Action<string>? ResultWorkspaceRootSettled;
+    private long _nativeExplicitClearEpoch;
+    private void NotifyResultWorkspaceRootSettled(string workflowId)
+    {
+        try{ResultWorkspaceRootSettled?.Invoke(workflowId);}
+        catch(Exception error){AddLog("运行结束后的图像清理失败："+error.Message);}
+    }
     private string? _nativePreviewPath;
     private bool _nativeImagesSuppressed;
     internal string? NativePreviewPath=>_nativePreviewPath;
@@ -105,9 +113,24 @@ public partial class MainWindowViewModel
                     {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
                 }
                 using var values=publication?.Borrow();
+                var projection=node.RuntimeConfiguration?.ResultProjection;
+                if(projection is not null && (new ToolSchema(Array.Empty<Port>(),node.RuntimeConfiguration!.Schema.Outputs).Fingerprint!=new ToolSchema(Array.Empty<Port>(),schema.Outputs).Fingerprint
+                    ||projection.Validate(schema).Count!=0))projection=null;
+                string? fileName=null;
+                if(ImageSourcePolicy.Read(node) is not null && values?.Values is {} frozen
+                    && schema.Outputs.Any(port=>port.Id=="output.file"&&port.Type==TypeRef.ScalarOf(ScalarKind.Text)))
+                {
+                    var file=frozen.Get<string?>("output.file");
+                    if(!string.IsNullOrWhiteSpace(file))fileName=System.IO.Path.GetFileName(file);
+                }
                 foreach(var port in schema.Outputs)
                 {
-                    var label=snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id;
+                    var label=schema.FindOutputDisplay(port.Id)?.DisplayName
+                        ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
+                    var declaredNames=projection?.Columns.Where(column=>column.Value.PortId==port.Id
+                        &&column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
+                        .Select(column=>column.DisplayName).Distinct(StringComparer.Ordinal).ToArray();
+                    if(schema.FindOutputDisplay(port.Id) is null&&declaredNames?.Length==1)label=declaredNames[0];
                     Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
@@ -120,13 +143,21 @@ public partial class MainWindowViewModel
                                 &&(snapshot?.Fields.TryGetValue(port.Id,out var field)==true
                                     ?source.SourceFieldId is {} fieldId?field.FieldId==fieldId:field.Name==source.PropertyName
                                     :BindingClrAdapter.OutputPortId(new OutputVariable{Name=source.PropertyName,FieldId=source.SourceFieldId})==port.Id));
-                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id));
+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id)
+                                {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
                             return;
                         }
                         if(type.Shape==ValueShape.Record)
                             foreach(var field in type.Fields)
+                            {
+                                // A record with one image keeps its declared group label in the image selector.
+                                var onlyImage=field.Type==TypeRef.ResourceOf(ResourceKind.Image)
+                                    &&type.Fields.Count(item=>item.Type==TypeRef.ResourceOf(ResourceKind.Image))==1;
+                                var memberPath=path.Append(field.Id).ToArray();
+                                var memberName=schema.FindOutputDisplay(port.Id,memberPath)?.DisplayName??field.Id;
                                 Walk(field.Type,value is {IsMissing:false,IsNull:false}?value.GetField(field.Id):null,
-                                    path.Append(field.Id).ToArray(),index,name+" / "+field.Id);
+                                    memberPath,index,onlyImage?name:name+" / "+memberName);
+                            }
                         else if(type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!))
                         {
                             if(index is not null||path.Length>0){plan.Diagnostics.Add(name+"：组合内或嵌套序列不具备正式索引合同，当前不可显示。");return;}
@@ -138,6 +169,21 @@ public partial class MainWindowViewModel
                     }
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
+            }
+            if(!historical&&selected.RuntimeConfiguration is {} inputConfiguration)
+            {
+                var inputKeys=new HashSet<string>(StringComparer.Ordinal);
+                foreach(var input in inputConfiguration.Schema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
+                {
+                    if(inputConfiguration.Fields.Read(input.Id) is not ReferenceSetting setting)continue;
+                    var reference=setting.Reference;
+                    if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
+                    var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,
+                        selection:reference.Selection,scopeId:scope,storage:reference.Storage);
+                    var key=BindingReferenceSerializer.Serialize(scoped);
+                    var source=plan.Sources.FirstOrDefault(item=>item.Key==key);
+                    if(source is not null&&inputKeys.Add(key))plan.InputSources.Add(source.CreateInputItem());
+                }
             }
             if(historical)plan.Diagnostics.Add("历史结果尚无冻结的整次运行来源上下文，未混用当前上游图像。");
             return plan;

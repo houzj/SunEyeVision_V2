@@ -52,11 +52,11 @@ public partial class WorkflowCanvasControl
         try
         {
             if(!CanEditVmCanvas||ToolRegistry.GetToolMetadata(tool.ToolId)==null)return;
-            node=tab.CreateNode(tool.ToolId,tool.Name);
-            node.Position=new Point(Math.Clamp(Math.Round(location.X/5)*5,55,4945),Math.Clamp(Math.Round(location.Y/5)*5,node.Height/2,5000-node.Height/2));
-            // 沿正式添加链处理索引、图像自动绑定及预编译，并在全部接受后登记单个历史条目。
             using(var transaction=tab.CommandManager.BeginTransaction())
             {
+                node=tab.CreateNode(tool.ToolId,tool.Name);
+                node.Position=new Point(Math.Clamp(Math.Round(location.X/5)*5,55,4945),Math.Clamp(Math.Round(location.Y/5)*5,node.Height/2,5000-node.Height/2));
+                // 沿正式添加链处理索引、图像自动绑定及预编译，并在全部接受后登记单个历史条目。
                 _viewModel!.AddNodeToWorkflow(node);
                 transaction.Complete();
             }

@@ -1,0 +1,16 @@
+{
+  "evidenceType": "用户实际VS设计器截图",
+  "userConfirmedPath": "D:/MyWork/SunEyeVision_V2/Src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+  "mainFileSha256": "97FB498BA8018D233ECBDFFC7856B073D7C5960EC88E60EB9591542E92562BED",
+  "independentFile": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\ImageSources\\ImageSourceStrip.xaml",
+  "independentFileSha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47",
+  "screenshot": "Release/_validation/S1-manual-20261030/designer-main-workspace-20261031.png",
+  "screenshotSha256": "76748CBB372852E18DBFD222DFB2B485F766937AD702AE93E12241C6E1EBFC8B",
+  "visibleErrors": [
+    "XDG000：ControlBrush资源未找到，截图203行",
+    "XDG001：DependencyProperty.UnsetValue不是Control.Template有效值，截图275行"
+  ],
+  "result": "主仓版本设计器失败，不能推定独立分支相同，也不能作为独立分支通过",
+  "independentDesignerVerified": false,
+  "mainFileModified": false
+}

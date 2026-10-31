@@ -1,0 +1,8 @@
+{
+  "userConfirmedPath": "C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/Src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+  "evidence": "用户实际VS截图，标签有未保存星号",
+  "screenshot": "Release/_validation/S1-manual-20261030/designer-worktree-xls0503-20261031.png",
+  "error": "XLS0503：StaticExtension不能加入ResourceDictionary集合，第4行",
+  "fixCandidate": "明确ResourceDictionary类型入口合并同一语言Instance，并复用设计示例与设计尺寸",
+  "verifiedInActualVs": false
+}

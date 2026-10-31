@@ -1,0 +1,29 @@
+{
+  "baseline": "892d9fb0339c851f9e248db6e9aec0ad9489f82b",
+  "scope": "S2来源选择器整批及S1设计资源链",
+  "uiBuildErrors": 0,
+  "fullBuildErrors": 0,
+  "finalRegression": "attempt-042",
+  "passed": 367,
+  "failed": 0,
+  "frozenDllCount": 18,
+  "changedDllCountAfterRegression": 0,
+  "formalRelease": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+  "manualSelectorAcceptance": "待验证",
+  "visualStudioDesigner": "待验证：错误0但IntelliSense初始化未完成",
+  "deferred": [
+    "多图像叠层",
+    "背景交换",
+    "关联保存恢复"
+  ],
+  "paused": [
+    "Group",
+    "公共显示合同扩展"
+  ],
+  "preservedFailures": [
+    "attempt-039:366/1",
+    "attempt-040:309/58"
+  ],
+  "diagnostic": "attempt-041:1通过，预期退出2，不算整批",
+  "mainMerged": false
+}

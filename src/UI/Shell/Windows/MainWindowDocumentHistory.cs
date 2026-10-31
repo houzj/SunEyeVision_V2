@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Workflow;
+using SunEyeVision.Workflow;
 using SunEyeVision.UI.Core;
 using System.Windows.Input;
 namespace SunEyeVision.UI.Shell.Windows;

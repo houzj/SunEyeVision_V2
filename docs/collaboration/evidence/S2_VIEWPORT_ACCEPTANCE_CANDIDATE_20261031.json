@@ -1,0 +1,32 @@
+{
+  "stage": "S2候选已构建及自动回归通过，待人工验收",
+  "sourceBaseline": "35d3387286cc20ef7b57aa64b158b3f7a60807ac",
+  "uiBuild": {
+    "log": "Release/_validation/s2-viewport-ui-build.log",
+    "errors": 0,
+    "warnings": 3392
+  },
+  "fullBuild": {
+    "log": "Release/_validation/s2-viewport-full-build.log",
+    "errors": 0,
+    "warnings": 6374
+  },
+  "regression": {
+    "failed": 0,
+    "changedDllCount": 0,
+    "log": "Release/_validation/s2-viewport-regression.log",
+    "frozenDllCount": 18,
+    "attempt": 38,
+    "passed": 363,
+    "receipt": "Release/_validation/S4-20261025/ImageSourceRecovery/attempt-038/receipt.json"
+  },
+  "originalAssets": {
+    "assets": 29,
+    "mismatches": 0,
+    "sources": 9
+  },
+  "manualAccepted": false,
+  "actualVisualStudioDesignerVerified": false,
+  "designerDeferredByUser": true,
+  "phaseSealed": false
+}

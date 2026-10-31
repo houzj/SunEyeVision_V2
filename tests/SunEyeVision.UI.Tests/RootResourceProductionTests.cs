@@ -44,7 +44,7 @@ public sealed class RootResourceProductionTests
     foreach(var target in new[]{"blob-a","blob-b"})
     {
      var proxy=context.Add(context.Candidates().Single(c=>c.Node.Id==target&&c.StoragePath=="input.image"));
-     context.Write(proxy,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id)));
+     context.Write(proxy,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,new[]{"data"},scopeId:root.Id)));
     }
     var region=context.Add(context.Candidates().Single(c=>c.Node.Id=="blob-b"&&c.StoragePath=="input.inspection.region"));
     var regionPort=BindingClrAdapter.DescribeOutput(query.FormalOutputContractReader("blob-a")!.Single(o=>BindingClrAdapter.OutputPortId(o)==BlobField(101)));
@@ -53,7 +53,7 @@ public sealed class RootResourceProductionTests
     var priorReference=BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference);
     Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:"other-root"))));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
-    Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,scopeId:root.Id))));
+    Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,new[]{"data"},scopeId:root.Id))));
     Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
     Assert.DoesNotContain(context.Candidates(),candidate=>candidate.StoragePath=="input.local-address");
     var sequence=context.Add(context.Candidates().Single(candidate=>candidate.Node.Id=="image"&&candidate.StoragePath=="sequence.initial"));
@@ -85,7 +85,7 @@ public sealed class RootResourceProductionTests
     foreach(var proxy in reopened.Configuration.RunParameters){Assert.Equal(proxy.FieldId,reopened.Resolve(proxy).FieldId);Assert.IsType<ReferenceSetting>(reopened.Read(proxy));}
    var engine=new WorkflowEngine(VisionLogger.Instance);engine.RegisterWorkflow(restoredRoot);
    var runner=new WorkflowExecutionEngine(engine,plugins,VisionLogger.Instance);
-   using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(restoredRoot.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{["image"]=new(imagePath,1)})).WaitAsync(TimeSpan.FromSeconds(30));
+   using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(restoredRoot.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{["image"]=new(imagePath,1){LocalReadAdmission=_=>imagePath}})).WaitAsync(TimeSpan.FromSeconds(30));
    Assert.True(run.Success,string.Join(";",run.Errors.Concat(run.NodeResults.Values.SelectMany(n=>n.ErrorMessages))));Assert.Equal(3,run.NodeResults.Count);
    var publication=run.DeclaredOutputs.Single(output=>output.Identity.NodeId=="blob-b");
    using var consumer=run.AcquireDeclaredOutput(publication.Identity);

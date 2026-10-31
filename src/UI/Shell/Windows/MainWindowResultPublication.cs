@@ -50,7 +50,7 @@ public partial class MainWindowViewModel
         {
             if(!publication.IsCurrent()){publication.Dispose();return;}
             _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
-            DeclaredResultPresenter.Present(publication,bindings);
+            DeclaredResultPresenter.Present(publication,bindings,true,snapshot?.ExecutionTimeMs);
             if(!EnsureCurrent())return;
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
             if(!EnsureCurrent())return;
@@ -123,7 +123,8 @@ public partial class MainWindowViewModel
         bool Owner()=>viewOwner()&&SourceMatches()&&_declaredHistoricalResult==historical&&SameLiveResult()
             &&(sourceIsCurrent?.Invoke()!=false)&&viewOwner()&&SourceMatches()&&SameLiveResult();
         if(!Owner())return;
-        var publication=ToolResultViews.FromSnapshot(snapshot,Owner);
+        var config=node?.RuntimeConfiguration;
+        var publication=ToolResultViews.FromSnapshot(snapshot,Owner,config?.Schema,config?.ResultProjection);
         var handedToPresenter=false;
         try
         {
@@ -146,7 +147,7 @@ public partial class MainWindowViewModel
         var bindings=DeclaredBindings(publication.Schema,nodeId,_resultPublicationSnapshot?.SourceWorkflowId);
         if(!EnsureCurrent())return;
         _resultPublicationBindings=bindings;
-        DeclaredResultPresenter.Present(publication,bindings);
+        DeclaredResultPresenter.Present(publication,bindings,true,_resultPublicationSnapshot?.ExecutionTimeMs);
         EnsureCurrent();
     }
     private void PresentDeclaration(ToolSchema schema,string? nodeName,

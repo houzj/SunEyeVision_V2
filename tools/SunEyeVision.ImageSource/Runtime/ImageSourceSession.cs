@@ -61,6 +61,8 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                 invocation.Context.Identity,port);
             var image=HalImageSnapshotSource.Capture(converted,Frame(ImageSourceOutput.Image),resources);
             IReadOnlyImage gray;
+            // 语义占位：灰度原图暂复用同一受租约保护的图像。原件何时输出空灰度分支
+            // 在当前取证条件下尚未完整确认；替换点为此处的灰度输出生成。
             if(image.Layout.Format==PixelLayout.Gray8)gray=image;
             else if(settings.SourceKind=="camera")
             {
@@ -88,11 +90,15 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             }
             cancellation.ThrowIfCancellationRequested();
             var values=new Dictionary<string,object?> {
-                [ImageSourceOutput.Image]=image,[ImageSourceOutput.GrayImage]=gray,
-                [ImageSourceOutput.Width]=(long)image.Width,[ImageSourceOutput.Height]=(long)image.Height,
-                [ImageSourceOutput.PixelFormat]=image.Layout.Format.ToString(),[ImageSourceOutput.SourceKind]=settings.SourceKind,
+                [ImageSourceOutput.Image]=new RecordValue(ImageSourceOutput.ImageType,new Dictionary<string,object?> {
+                    [ImageSourceOutput.ImageData]=image,[ImageSourceOutput.ImageWidth]=(long)image.Width,
+                    [ImageSourceOutput.ImageHeight]=(long)image.Height,[ImageSourceOutput.ImageFormat]=image.Layout.Format.ToString()}),
+                [ImageSourceOutput.GrayImage]=new RecordValue(ImageSourceOutput.GrayImageType,new Dictionary<string,object?> {
+                    [ImageSourceOutput.GrayData]=gray,[ImageSourceOutput.GrayWidth]=(long)gray.Width,
+                    [ImageSourceOutput.GrayHeight]=(long)gray.Height,[ImageSourceOutput.GrayFormat]=gray.Layout.Format.ToString()}),
+                [ImageSourceOutput.SourceKind]=settings.SourceKind,
                 [ImageSourceOutput.DeviceId]=settings.SourceKind=="camera"?settings.CameraDeviceId:string.Empty,
-                [ImageSourceOutput.FileReference]=address,[ImageSourceOutput.Sequence]=sequence,
+                [ImageSourceOutput.FileReference]=address,[ImageSourceOutput.FileName]=address.Length==0?string.Empty:Path.GetFileName(address),[ImageSourceOutput.Sequence]=sequence,
                 [ImageSourceOutput.FrameId]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceFrameId)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceFrameId):string.Empty,
                 [ImageSourceOutput.Timestamp]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp):string.Empty
             };

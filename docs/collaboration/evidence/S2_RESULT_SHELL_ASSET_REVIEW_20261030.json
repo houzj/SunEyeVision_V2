@@ -1,0 +1,257 @@
+{
+  "status": "原件资源字节身份复核，不代替交互/设计器验收",
+  "assets": [
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\overlay-unselected.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_未选择.png",
+      "expected": "cff0ef46976d63b0af03c720aaf02b6c4b85c338f868fa6d3adac713be4cc9a2",
+      "targetHash": "CFF0EF46976D63B0AF03C720AAF02B6C4B85C338F868FA6D3ADAC713BE4CC9A2",
+      "originalHash": "CFF0EF46976D63B0AF03C720AAF02B6C4B85C338F868FA6D3ADAC713BE4CC9A2"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\overlay-selected.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_已选择.png",
+      "expected": "87fea12ce06ee0c6f53c0b3cca1d8ac8f3048ce66c4b56206f7c64cbe572329f",
+      "targetHash": "87FEA12CE06EE0C6F53C0B3CCA1D8AC8F3048CE66C4B56206F7C64CBE572329F",
+      "originalHash": "87FEA12CE06EE0C6F53C0B3CCA1D8AC8F3048CE66C4B56206F7C64CBE572329F"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\overlay-background.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_背景图.png",
+      "expected": "356eb052239ef17fee5e24d5c5ed00169e678ba17d8fd823a79e9d67710aed05",
+      "targetHash": "356EB052239EF17FEE5E24D5C5ED00169E678BA17D8FD823A79E9D67710AED05",
+      "originalHash": "356EB052239EF17FEE5E24D5C5ED00169E678BA17D8FD823A79E9D67710AED05"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\check-off.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check2-box_off.png",
+      "expected": "c0d428ae5edc804f9146f0350b7bbc9b651c3d587f56bd8378d8eac661efacd4",
+      "targetHash": "C0D428AE5EDC804F9146F0350B7BBC9B651C3D587F56BD8378D8EAC661EFACD4",
+      "originalHash": "C0D428AE5EDC804F9146F0350B7BBC9B651C3D587F56BD8378D8EAC661EFACD4"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\check-half.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check-box_half.png",
+      "expected": "3b66fd8b9086f6dba9f350a8d09bdebd1eb8f98911bc2bfacac9101aec9093d9",
+      "targetHash": "3B66FD8B9086F6DBA9F350A8D09BDEBD1EB8F98911BC2BFACAC9101AEC9093D9",
+      "originalHash": "3B66FD8B9086F6DBA9F350A8D09BDEBD1EB8F98911BC2BFACAC9101AEC9093D9"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\check-on.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check2-box_on.png",
+      "expected": "55ffb3d6668938a73075c3c002b225481e43cbda41e6304cf8da473bdf651e1c",
+      "targetHash": "55FFB3D6668938A73075C3C002B225481E43CBDA41E6304CF8DA473BDF651E1C",
+      "originalHash": "55FFB3D6668938A73075C3C002B225481E43CBDA41E6304CF8DA473BDF651E1C"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\selector-arrow-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\frontend\\inputbox_combo_ic_triangle_normal.png",
+      "expected": "9067f234be6b3be5b179d31f6b3122fe4f36e129a385417b97b9698d9ec29d48",
+      "targetHash": "9067F234BE6B3BE5B179D31F6B3122FE4F36E129A385417B97B9698D9EC29D48",
+      "originalHash": "9067F234BE6B3BE5B179D31F6B3122FE4F36E129A385417B97B9698D9EC29D48"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\selector-arrow-focus.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\frontend\\inputbox_combo_ic_triangle_focus.png",
+      "expected": "d2cbc67db45780ad07d3a3464547d3ca80ce77d09b4ee67a1e1d22b38c1eeabe",
+      "targetHash": "D2CBC67DB45780AD07D3A3464547D3CA80CE77D09B4EE67A1E1D22B38C1EEABE",
+      "originalHash": "D2CBC67DB45780AD07D3A3464547D3CA80CE77D09B4EE67A1E1D22B38C1EEABE"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\dual-image-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_双画幅_normal.png",
+      "expected": "6a5597c3eb6554a07657058c3c2e73c93090b403b1866875bd9076c31fb91eb3",
+      "targetHash": "6A5597C3EB6554A07657058C3C2E73C93090B403B1866875BD9076C31FB91EB3",
+      "originalHash": "6A5597C3EB6554A07657058C3C2E73C93090B403B1866875BD9076C31FB91EB3"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\dual-image-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_双画幅_click.png",
+      "expected": "4d80de30558aee206aa629e23ea76361c74b63d383421bcc9d3b91581f6ff751",
+      "targetHash": "4D80DE30558AEE206AA629E23EA76361C74B63D383421BCC9D3B91581F6FF751",
+      "originalHash": "4D80DE30558AEE206AA629E23EA76361C74B63D383421BCC9D3B91581F6FF751"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\single-image-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_单画幅_normal.png",
+      "expected": "eb1a7d3b8cad328d4ad7cb6ed60c27e5e80300973273abf1fb44e9d7b96172f9",
+      "targetHash": "EB1A7D3B8CAD328D4AD7CB6ED60C27E5E80300973273ABF1FB44E9D7B96172F9",
+      "originalHash": "EB1A7D3B8CAD328D4AD7CB6ED60C27E5E80300973273ABF1FB44E9D7B96172F9"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\single-image-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_单画幅_click.png",
+      "expected": "3f0e58506eab50b3204d6e52be7351204bb871a67f855189d21bad592a90261e",
+      "targetHash": "3F0E58506EAB50B3204D6E52BE7351204BB871A67F855189D21BAD592A90261E",
+      "originalHash": "3F0E58506EAB50B3204D6E52BE7351204BB871A67F855189D21BAD592A90261E"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\cross-lines-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_normal.png",
+      "expected": "281330e7c03d64616caf50679aaca1be7c474fc866a94aa6b845451cf151182f",
+      "targetHash": "281330E7C03D64616CAF50679AACA1BE7C474FC866A94AA6B845451CF151182F",
+      "originalHash": "281330E7C03D64616CAF50679AACA1BE7C474FC866A94AA6B845451CF151182F"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\cross-lines-disabled.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_disable.png",
+      "expected": "c299d9fe0bcc06fd0174ccc4be33b2d87976a530361092e78fdc45635517d848",
+      "targetHash": "C299D9FE0BCC06FD0174CCC4BE33B2D87976A530361092E78FDC45635517D848",
+      "originalHash": "C299D9FE0BCC06FD0174CCC4BE33B2D87976A530361092E78FDC45635517D848"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\cross-lines-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_click.png",
+      "expected": "1ffa865e761baeed48a8d88953b80608609b3c979bff6ac703e1c72a34394bf0",
+      "targetHash": "1FFA865E761BAEED48A8D88953B80608609B3C979BFF6AC703E1C72A34394BF0",
+      "originalHash": "1FFA865E761BAEED48A8D88953B80608609B3C979BFF6AC703E1C72A34394BF0"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\original-scale-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\11.png",
+      "expected": "58c1884884e85d007d466bdeb10ac9ee9544ce8ba608d29134e03cfb4fa36132",
+      "targetHash": "58C1884884E85D007D466BDEB10AC9EE9544CE8BA608D29134E03CFB4FA36132",
+      "originalHash": "58C1884884E85D007D466BDEB10AC9EE9544CE8BA608D29134E03CFB4FA36132"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\original-scale-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_1比1_hover.png",
+      "expected": "f3e8ae1acc325d977f1311f8e1c9dd2f4cf6918c3f89743f828267a5a1579ea3",
+      "targetHash": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3",
+      "originalHash": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\original-scale-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_1比1_click.png",
+      "expected": "f3e8ae1acc325d977f1311f8e1c9dd2f4cf6918c3f89743f828267a5a1579ea3",
+      "targetHash": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3",
+      "originalHash": "F3E8AE1ACC325D977F1311F8E1C9DD2F4CF6918C3F89743F828267A5A1579EA3"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\fullscreen-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\fullscreen.png",
+      "expected": "dbd0fa83f88a82c7d000871cd4095997d80350da2d6dbe8729cca6c279226641",
+      "targetHash": "DBD0FA83F88A82C7D000871CD4095997D80350DA2D6DBE8729CCA6C279226641",
+      "originalHash": "DBD0FA83F88A82C7D000871CD4095997D80350DA2D6DBE8729CCA6C279226641"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\fullscreen-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_full-screen_hover.png",
+      "expected": "0194d0aefa3628e5c4f37deef8bf8349be26169fd3daa65ec1ab8e6104340f1c",
+      "targetHash": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C",
+      "originalHash": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\fullscreen-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_full-screen_click.png",
+      "expected": "0194d0aefa3628e5c4f37deef8bf8349be26169fd3daa65ec1ab8e6104340f1c",
+      "targetHash": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C",
+      "originalHash": "0194D0AEFA3628E5C4F37DEEF8BF8349BE26169FD3DAA65EC1AB8E6104340F1C"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\previous-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_normal.png",
+      "expected": "f933ece36c968eb71dd3843a65d494ebe5051e20fd1c2835988cddcb02d09a26",
+      "targetHash": "F933ECE36C968EB71DD3843A65D494EBE5051E20FD1C2835988CDDCB02D09A26",
+      "originalHash": "F933ECE36C968EB71DD3843A65D494EBE5051E20FD1C2835988CDDCB02D09A26"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\previous-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_hover.png",
+      "expected": "eaf35a693eb1f8b697c729d1e4c128ff44de7b02c255f682ea2be65929b3bbab",
+      "targetHash": "EAF35A693EB1F8B697C729D1E4C128FF44DE7B02C255F682EA2BE65929B3BBAB",
+      "originalHash": "EAF35A693EB1F8B697C729D1E4C128FF44DE7B02C255F682EA2BE65929B3BBAB"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\previous-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_press.png",
+      "expected": "29cffa97cb2b617e22dfc1a543d4ed22110e471afc98925b89f3f22fcce5e2db",
+      "targetHash": "29CFFA97CB2B617E22DFC1A543D4ED22110E471AFC98925B89F3F22FCCE5E2DB",
+      "originalHash": "29CFFA97CB2B617E22DFC1A543D4ED22110E471AFC98925B89F3F22FCCE5E2DB"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\previous-disabled.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_disabled.png",
+      "expected": "b6a907d6b2cf8d0a25b781205a6899b572907e2e765812766ccdb743a4292abe",
+      "targetHash": "B6A907D6B2CF8D0A25B781205A6899B572907E2E765812766CCDB743A4292ABE",
+      "originalHash": "B6A907D6B2CF8D0A25B781205A6899B572907E2E765812766CCDB743A4292ABE"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\zoom-enlarge-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomout.png",
+      "expected": "9e5438c3ce75db19802e3805f4d3ce232823902c19f9f55536097dc4fc8ab4c3",
+      "targetHash": "9E5438C3CE75DB19802E3805F4D3CE232823902C19F9F55536097DC4FC8AB4C3",
+      "originalHash": "9E5438C3CE75DB19802E3805F4D3CE232823902C19F9F55536097DC4FC8AB4C3"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\zoom-enlarge-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomout_1.png",
+      "expected": "f6261ca050e2aedc2441ef43c59eba5de0f555238996d46d2218600046426cde",
+      "targetHash": "F6261CA050E2AEDC2441EF43C59EBA5DE0F555238996D46D2218600046426CDE",
+      "originalHash": "F6261CA050E2AEDC2441EF43C59EBA5DE0F555238996D46D2218600046426CDE"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\zoom-shrink-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomin.png",
+      "expected": "1844b7306ecbf882894a5f561bd4e40853d2335c669bed5563ce5fac6bdb6b2c",
+      "targetHash": "1844B7306ECBF882894A5F561BD4E40853D2335C669BED5563CE5FAC6BDB6B2C",
+      "originalHash": "1844B7306ECBF882894A5F561BD4E40853D2335C669BED5563CE5FAC6BDB6B2C"
+    },
+    {
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Results\\ResultShell\\zoom-shrink-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomin_1.png",
+      "expected": "48639ac34b64b0f7a75718b68b2f8ee6227e7951f0e3588f912ed419dde0be4a",
+      "targetHash": "48639AC34B64B0F7A75718B68B2F8EE6227E7951F0E3588F912ED419DDE0BE4A",
+      "originalHash": "48639AC34B64B0F7A75718B68B2F8EE6227E7951F0E3588F912ED419DDE0BE4A"
+    }
+  ],
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
+      "expected": "2e195d69c45de43c2dca7528705959f4127207722abde533b49f7d3e70305d9b",
+      "actual": "2E195D69C45DE43C2DCA7528705959F4127207722ABDE533B49F7D3E70305D9B"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\normalbuttonstyle.xaml",
+      "expected": "0ca27d6dd39d1ac0943b526664af4a07306a6a344833fa15f50e4c3041b33ea8",
+      "actual": "0CA27D6DD39D1AC0943B526664AF4A07306A6A344833FA15F50E4C3041B33EA8"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+      "expected": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+      "actual": "FB8176835AF3518F9B4A50133FEB862240AB73EA1820CCB032B2810E41E67F9E"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+      "expected": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
+      "actual": "0EB6FBF313592F15B61CF79A612CADBB4802FF73EA15A2493FCD5280E5B317FC"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\scrollbarstyle\\recscrollbarstyle.xaml",
+      "expected": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b",
+      "actual": "0B6E55A1E66A9FDA6E5025B95686885B1D998513FFDEDE451D3520BAB958D53B"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\tabcontrolstyle\\tabcontrolstyle.xaml",
+      "expected": "643e7e8bf415e696529e3ab7540f1f5e288a6089f3a1824275dd8ed67d6f8d72",
+      "actual": "643E7E8BF415E696529E3AB7540F1F5E288A6089F3A1824275DD8ED67D6F8D72"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\checkboxstyle\\checkboxstyle.xaml",
+      "expected": "26174951a0b4ec4a52f2c1b89353ebe0f58375cc1b7dcec579bc765654e9a0b1",
+      "actual": "26174951A0B4EC4A52F2C1B89353EBE0F58375CC1B7DCEC579BC765654E9A0B1"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\textboxstyle\\textboxstyle.xaml",
+      "expected": "36ce1a1deb41dcfef18985b2b8a71d54cc09964a657e116c23ec1b0d10d939f7",
+      "actual": "36CE1A1DEB41DCFEF18985B2B8A71D54CC09964A657E116C23EC1B0D10D939F7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\themes\\generic.xaml",
+      "expected": "1cc02132337c913a055b979373dc783589aa2b167c2c222a74a0ae824889a79d",
+      "actual": "1CC02132337C913A055B979373DC783589AA2B167C2C222A74A0AE824889A79D"
+    }
+  ],
+  "mismatchedAssets": 0,
+  "mismatchedSources": 0
+}

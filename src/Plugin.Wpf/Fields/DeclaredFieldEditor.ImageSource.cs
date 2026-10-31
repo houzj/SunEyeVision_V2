@@ -139,6 +139,20 @@ public sealed partial class DeclaredFieldEditor
             if(!combo.IsEnabled||!combo.IsVisible)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
             else RestoreWhenActive();
         }
+        bool ConfirmCurrent(ComboBoxItem item)
+        {
+            if(!Current()||!candidatesValid||refreshing||!combo.IsDropDownOpen||!_presentationVisible||!IsEnabled||!combo.IsLoaded||!combo.IsVisible||!combo.IsEnabled
+                ||!item.IsEnabled||!ReferenceEquals(combo.SelectedItem,item)||item.Tag is not ReferenceSetting selected
+                ||_setting is not ReferenceSetting current||!SameImageReference(selected.Reference,current.Reference)
+                ||current.OriginId is null&&string.IsNullOrEmpty(current.RebindingReason)&&_state.EditError.Length==0)return false;
+            var revision=candidateRevision;var accepted=Set(selected);
+            if(Current()&&revision==candidateRevision){if(!accepted)RestoreSelection();else combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
+            return true;
+        }
+        void OnItemActivated(object sender,MouseButtonEventArgs args)
+        {if(sender is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
+        void OnKeyDown(object sender,KeyEventArgs args)
+        {if(args.Key==Key.Enter&&combo.IsDropDownOpen&&combo.SelectedItem is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
         void OnUnloaded(object sender,RoutedEventArgs args)=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         combo.DropDownOpened+=OnOpened;
         combo.SelectionChanged+=OnSelectionChanged;

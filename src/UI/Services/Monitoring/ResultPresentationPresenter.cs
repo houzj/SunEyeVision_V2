@@ -36,6 +36,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
     private readonly List<(FlatResultRow Row, PropertyChangedEventHandler Handler)> _subscriptions = new();
     private readonly List<Entry> _outputs = new();
+    private readonly List<FlatResultRow> _summaryRows = new();
     private IReadOnlyDictionary<string,ResultBindingInfo>? _bindingRoots;
     private ResultPresentationModel? _model;
     private IResultPublication? _publication;
@@ -57,10 +58,11 @@ public sealed class ResultPresentationPresenter : IDisposable
         _pageSize = pageSize;
     }
 
-    public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)
-        =>RunProjection(()=>PresentCore(publication,bindings));
+    public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null,
+        bool showExecutionSummary=false,double? executionTimeMs=null)
+        =>RunProjection(()=>PresentCore(publication,bindings,showExecutionSummary,executionTimeMs));
 
-    private void PresentCore(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings)
+    private void PresentCore(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings,bool showExecutionSummary,double? executionTimeMs)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(publication);
         var entryGeneration=_generation;
@@ -90,6 +92,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             var displayed=publication.DisplayedPorts;if(!Current(generation)){Abandon(generation);return;}
             var diagnostics=publication.Diagnostics;if(!Current(generation)){Abandon(generation);return;}_diagnostics=diagnostics;
             Install(model,names,bindings,displayed,generation);
+            if(showExecutionSummary&&Current(generation))InstallExecutionSummary(model.State,executionTimeMs);
             if(Current(generation))RefreshRows();else Abandon(generation);
         }
         catch(Exception error)
@@ -150,14 +153,17 @@ public sealed class ResultPresentationPresenter : IDisposable
                 .Concat(entry.More is {} more?new[]{more}:Array.Empty<FlatResultRow>()).ToArray();
             if(!Synchronize(entry.Row.MutableChildren,children,generation))return;
         }
-        if(_root is {} root&&!Synchronize(root.MutableChildren,_outputs.Select(entry=>entry.Row).ToArray(),generation))return;
+        if(_root is {} root&&!Synchronize(root.MutableChildren,_summaryRows.Concat(_outputs.Select(entry=>entry.Row)).ToArray(),generation))return;
         if(!Synchronize(_roots,_root is {} current?new[]{current}:Array.Empty<FlatResultRow>(),generation))return;
         var visible = new List<FlatResultRow>();
         if (_root != null)
         {
             visible.Add(_root);
             if (_root.IsExpanded)
-                foreach (var output in _outputs) AppendVisible(output, visible);
+            {
+                visible.AddRange(_summaryRows);
+                foreach(var output in _outputs)AppendVisible(output,visible);
+            }
         }
         if(!Current(generation)){Abandon(generation);return;}
         _rows.Clear();
@@ -207,6 +213,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         foreach (var entry in _entries.Values) DetachMore(entry);
         _entries.Clear();
         _outputs.Clear();
+        _summaryRows.Clear();
         _root = null;
         _publication = null;_stamp=null;_diagnostics=Array.Empty<Diagnostic>();
         _model = null;_bindingRoots=null;
@@ -235,6 +242,16 @@ public sealed class ResultPresentationPresenter : IDisposable
         UpdateRootMetadata(names, bindings,generation);
     }
 
+    private void InstallExecutionSummary(ResultViewState state,double? elapsed)
+    {
+        if(_root is null)return;
+        var available=state is not (ResultViewState.Declaration or ResultViewState.NotExecuted);
+        _root.DisplayValue=null;
+        _summaryRows.Add(new FlatResultRow{Key="@execution/status",DisplayName="模块状态",DisplayValue=available?StatusText(state):null,Level=1});
+        _summaryRows.Add(new FlatResultRow{Key="@execution/elapsed",DisplayName="耗时（ms）",DisplayValue=available&&elapsed.HasValue?elapsed.Value.ToString("0.####",CultureInfo.InvariantCulture):null,Level=1});
+        _root.IsGroup=true;
+    }
+
     private void UpdateRootMetadata(IReadOnlyDictionary<string, string>? names, IReadOnlyDictionary<string, ResultBindingInfo>? bindings,int generation)
     {
         _bindingRoots=bindings;
@@ -260,12 +277,16 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
         var value=ValueText(node);var childCount=node.ChildCount;
         if(!Current(generation)){Abandon(generation);return null;}
+        // VM's result-tree item style starts expanded. Materialize the first page of
+        // declared record groups, while sequences retain their bounded lazy paging.
+        var expanded=node.IsExpanded||(node.Declaration.Shape==ValueShape.Record&&childCount is > 0);
+        node.IsExpanded=expanded;
         var row = new FlatResultRow
         {
             Key=node.Key,
             DisplayName = DisplayName(node),
             DisplayValue = value, Level = level,
-            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = node.IsExpanded
+            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = expanded
         };
         var entry = new Entry(node, row);
         _entries.Add(node.Key, entry);
@@ -276,6 +297,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry);
             RefreshRows();
         });
+        if(expanded&&entry.Row.IsGroup)LoadPageCore(entry);
         return entry;
     }
 
@@ -390,16 +412,18 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
+        ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
+            _model!.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
         ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess?"资源待接入":StatusText(_model.State),
         ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
         _ => node.Declaration.Shape switch
         {
             ValueShape.Sequence => SequenceText(node.ChildCount),
-            ValueShape.Record => "记录",
+            ValueShape.Record => "",
             ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
             _ => node.ScalarValue switch
             {
-                string text => text.Length == 0 ? "empty" : text,
+                string text => text,
                 bool boolean => boolean ? "true" : "false",
                 long integer => integer.ToString(CultureInfo.InvariantCulture),
                 double number => number.ToString("R", CultureInfo.InvariantCulture),

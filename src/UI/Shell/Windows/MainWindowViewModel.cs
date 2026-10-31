@@ -256,9 +256,14 @@ namespace SunEyeVision.UI.Shell.Windows
 
         private void OnImageInputConfigurationEdited(object? sender, EventArgs e)
         {
+            if(sender is ImageInputSource accepted)SynchronizeAcceptedSourceCursor(accepted);
             UpdateCurrentSolutionInfo();
             if (ReferenceEquals(sender, ActiveInputSource))
+            {
                 ImagePreviewSourceMessage = ActiveInputSource?.Count == 0 ? "请添加本地图像" : string.Empty;
+                // The accepted source projection is now installed; consume display ownership guards again.
+                ResultWorkspaceChanged?.Invoke();
+            }
         }
 
         /// <summary>
@@ -324,15 +329,9 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _acceptingWorkspaceNavigation;
         internal void AcceptWorkspaceImageSourceIndex(int index,bool persist=false)
         {
-            var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
-            var source=index>=0&&index<DisplayImageSources.Count?DisplayImageSources[index]:null;
             var previous=_acceptingWorkspaceNavigation;_acceptingWorkspaceNavigation=true;
             try{SelectedDisplayImageSourceIndex=index;}
             finally{_acceptingWorkspaceNavigation=previous;}
-            if(persist&&node is not null&&source is not null&&ReferenceEquals(SelectedNode,node)
-                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&index<DisplayImageSources.Count
-                &&ReferenceEquals(DisplayImageSources[index],source))
-                node.SelectedDisplaySource=ImageSourceReference.FromDataSource(source);
         }
         public void OnSelectedImageSourceIndexChanged(int index)
         {
@@ -2837,38 +2836,6 @@ SplitterPosition = position;
                 LogWarning($"图像源|DataSourceQueryService 未找到, Provider type={provider?.GetType().Name ?? "null"}", "ImageSourceSelector");
             }
 
-            // 从工作流引擎节点统一读取持久化的选中项（统一数据源）
-            var workflow = _workflowEngine.CurrentWorkflow;
-            var savedSource = workflow?.Nodes
-                .FirstOrDefault(n => n.Id == selectedNode.Id)
-                ?.SelectedDisplaySource;
-            if (savedSource != null)
-            {
-                int idx = -1;
-                for (int i = 0; i < DisplayImageSources.Count; i++)
-                {
-                    if (DisplayImageSources[i].SourceNodeId == savedSource.SourceNodeId &&
-                        DisplayImageSources[i].PropertyName == savedSource.PropertyName)
-                    {
-                        idx = i;
-                        break;
-                    }
-                }
-
-                if (idx >= 0)
-                {
-                    LogInfo($"图像源|命中持久化: ({savedSource.SourceNodeId}, {savedSource.PropertyName}), resolvedIdx={idx}", "ImageSourceSelector");
-                    SetSelectedDisplayImageSourceIndexDeferred(idx);
-                    return;
-                }
-
-                LogWarning($"图像源|持久化源未找到: ({savedSource.SourceNodeId}, {savedSource.PropertyName}), 回退到默认", "ImageSourceSelector");
-            }
-            else
-            {
-                LogInfo($"图像源|首次访问(无持久化)", "ImageSourceSelector");
-            }
-
             // 默认选中当前节点的第一个输出
             int firstCurrent = -1;
             for (int i = 0; i < DisplayImageSources.Count; i++)
@@ -3214,17 +3181,6 @@ SplitterPosition = position;
             var selectedSource = DisplayImageSources[index];
             LogInfo($"图像源|应用显示源: index={index}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName} (SNID={selectedSource.SourceNodeId}, Prop={selectedSource.PropertyName})", "ImageSourceSelector");
 
-            // 持久化：同步到节点的可序列化属性，保存工作流时自动携带
-            var workflow = _workflowEngine.CurrentWorkflow;
-            if (workflow != null)
-            {
-                var workflowNode = workflow.Nodes.FirstOrDefault(n => n.Id == _selectedNode.Id);
-                if (workflowNode != null)
-                {
-                    workflowNode.SelectedDisplaySource = ImageSourceReference.FromDataSource(selectedSource);
-                    LogInfo($"图像源|同步到可序列化属性: nodeId={_selectedNode.Id}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName}", "ImageSourceSelector");
-                }
-            }
             SetDisplayImageFromSource(selectedSource);
             UpdateImagePreviewVisibility(_selectedNode as WorkflowNode);
         }
@@ -3284,7 +3240,7 @@ SplitterPosition = position;
             if(!Current())return System.Threading.Tasks.Task.CompletedTask;
             DataAnalysisControlTitle="数据分析";
             if(selectedNode is null||!Current())return System.Threading.Tasks.Task.CompletedTask;
-            var view=ToolRegistry.CreateResultView(selectedNode.ToolType);
+            var view=ToolRegistry.CreateCurrentResultView(selectedNode.ToolType);
             if(!Current()){view?.Dispose();return System.Threading.Tasks.Task.CompletedTask;}
             if(view is null)
             {
@@ -4068,6 +4024,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionCompleted(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             AddLog($"✅ 执行完成: {e.WorkflowId}");
         }
 
@@ -4076,6 +4033,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionStopped(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"⏹️ 执行已停止: {e.WorkflowId}");
         }
@@ -4105,6 +4063,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionError(object? sender, WorkflowExecutionEventArgs e)
         {
+            NotifyResultWorkspaceRootSettled(e.WorkflowId);
             SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"❌ 执行错误: {e.WorkflowId} - {e.ErrorMessage}");
         }
@@ -4282,6 +4241,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             try
             {
+                ++_nativeExplicitClearEpoch;
                 ClearNativeImagePresentation();
                 AddLog("已清除图像");
             }
@@ -4351,6 +4311,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         private bool TryShowDeclaredSchema(IReadOnlyList<OutputVariable> contract,string? nodeName,string? nodeId)
         {
             var fields=contract.Where(output=>output.Kind==OutputVariableKind.Data).ToArray();
+            if(fields.Length==0&&SelectedNode?.Id==nodeId&&SelectedNode.RuntimeConfiguration?.Schema.Outputs.Count>0)return false;
             SunEyeVision.Plugin.Contracts.ToolSchema schema;
             try{schema=new(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),fields.Select(BindingClrAdapter.DescribeOutput),
                 outputDisplay:fields.Select(output=>new SunEyeVision.Plugin.Contracts.OutputDisplayNode(BindingClrAdapter.OutputPortId(output),
@@ -4358,7 +4319,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             catch(ArgumentException){return false;}
             var metadata=fields.ToDictionary(BindingClrAdapter.OutputPortId,output=>new DeclaredOutputField(output.Name,output.DisplayName,
                 output.VariableType,output.DeclaredType,output.FieldId,output.Group,output.DisplayInResultPanel),StringComparer.Ordinal);
-            PresentDeclaration(schema,nodeName,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
+            var config=SelectedNode?.Id==nodeId?SelectedNode.RuntimeConfiguration:null;
+            var names=ToolResultViews.DisplayNames(schema,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),config?.Schema,config?.ResultProjection);
+            PresentDeclaration(schema,nodeName,names,
                 DeclaredBindings(schema,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
             return true;
         }
@@ -4426,6 +4389,22 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 if(result is not null)
                     AddLog("该运行未发布完整声明快照，结果仅显示正式字段声明，不读取或转换未准入值。");
+                return;
+            }
+            // A loaded runtime definition already owns an output declaration. The
+            // workflow query service can temporarily be unavailable before execution;
+            // show that declaration without fabricating a result or borrowing values.
+            if(owner()&&SelectedNode is {RuntimeConfiguration: {} runtime} runtimeNode
+                &&runtimeNode.Id==nodeId&&runtime.Schema.Outputs.Count>0)
+            {
+                var schema=new SunEyeVision.Plugin.Contracts.ToolSchema(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),runtime.Schema.Outputs,outputDisplay:runtime.Schema.OutputDisplay);
+                var fallback=schema.Outputs.ToDictionary(port=>port.Id,port=>port.Id,StringComparer.Ordinal);
+                var names=ToolResultViews.DisplayNames(schema,fallback,runtime.Schema,runtime.ResultProjection);
+                if(!owner())return;
+                var projection=runtime.ResultProjection;
+                var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
+                    ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+                PresentDeclaration(schema,nodeName,names,DeclaredBindings(schema,nodeId),shown);
                 return;
             }
             ClearResultDisplay();
@@ -4899,7 +4878,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 return;
             }
             var resolution = SunEyeVision.UI.Services.ImageSourceResolver.Resolve(selectedNode.Id,
-                selectedTab.WorkflowNodes, selectedTab.WorkflowConnections);
+                selectedTab.WorkflowNodes, selectedTab.WorkflowConnections,selectedTab.CurrentWorkflowId);
             resolution = SunEyeVision.UI.Services.ImageSourceResolver.InheritParentInput(resolution,
                 selectedTab.CurrentWorkflowId, selectedTab.NavigationAncestorIds, _workflowEngine.GetWorkflow);
             var sourceNode = resolution.Source;

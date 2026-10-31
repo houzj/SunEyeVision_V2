@@ -77,7 +77,9 @@ internal static class S2DocumentEditingCases
         var addedImportCases=new[]{
             "SolutionManagerUiTests.Manual_folder_import_expands_one_level_in_vm_entry_order_as_one_edit()",
             "SolutionManagerUiTests.Folder_import_failure_after_an_earlier_directory_does_not_accept_a_partial_batch()",
-            "SolutionManagerUiTests.Import_reentrant_selection_keeps_formal_batch_without_reporting_the_old_projection()"
+            "SolutionManagerUiTests.Import_reentrant_selection_keeps_formal_batch_without_reporting_the_old_projection()",
+            "SolutionManagerUiTests.Import_preserves_current_selection_without_emitting_an_explicit_activation()",
+            "SolutionManagerUiTests.Actual_source_run_check_restores_original_focus_states_and_theme_lifetime()"
         }.ToHashSet(StringComparer.Ordinal);
         var addedStopMethods=new[]{"Single_and_all_stop_do_not_hold_execution_lock_during_cancellation",
             "Stop_all_requests_cancellation_for_remaining_runs_when_one_callback_fails"}.ToHashSet(StringComparer.Ordinal);
@@ -88,18 +90,17 @@ internal static class S2DocumentEditingCases
         }.ToHashSet(StringComparer.Ordinal);
         var executed=new HashSet<string>(StringComparer.Ordinal);
         var diagnosticCase=Environment.GetEnvironmentVariable("S2_DIAGNOSTIC_CASE");
-        if(!string.IsNullOrEmpty(diagnosticCase)&&diagnosticCase!="ResultWorkspaceProductionTests.Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()"
-            &&diagnosticCase!="LocalImageConfigurationSnapshotTests.Selected_run_filter_preserves_original_positions_and_repeated_reference_occurrences()")
+        if(!string.IsNullOrEmpty(diagnosticCase)&&diagnosticCase!="ResultWorkspaceProductionTests.Output_member_selection_preserves_formal_identity_and_never_replaces_a_missing_choice()"&&diagnosticCase!="RuntimeImageConnectionOwnershipTests.Automatic_connection_accepts_declared_image_member_and_rejects_wrong_member_or_edge()"&&diagnosticCase!="RuntimeImageConnectionOwnershipTests.Main_window_automatic_connection_uses_formal_member_reference_and_preserves_existing_setting()"&&diagnosticCase!="ResultVariableBindingProductionTests.Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_selectors_use_tool_declared_names_and_full_tooltips_without_changing_port_identity()"&&diagnosticCase!="ResultWorkspaceProductionTests.Original_content_switch_runs_through_formal_acceptance_history_restore_and_host_lifetime()"&&diagnosticCase!="SolutionManagerUiTests.Original_content_switch_keeps_new_owner_and_localized_mode_during_reentrant_acceptance()"&&diagnosticCase!="SolutionManagerUiTests.Thumbnail_refresh_retains_selection_focus_and_the_next_direction_key()"&&diagnosticCase!="SolutionManagerUiTests.Actual_source_run_check_restores_original_focus_states_and_theme_lifetime()"&&diagnosticCase!="ResultWorkspaceProductionTests.Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()"&&diagnosticCase!="LocalImageConfigurationSnapshotTests.Selected_run_filter_preserves_original_positions_and_repeated_reference_occurrences()"&&diagnosticCase!="ResultWorkspaceProductionTests.Original_source_mode_popup_opens_and_switches_both_modes_without_running()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_direction_keys_keep_focus_after_actual_workflow_execution()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_configuration_entry_audit_records_run_and_viewport_side_effects()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_fast_direction_keys_preserve_the_latest_choice_after_an_older_run_finishes()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_sequence_flags_retire_result_authority_but_keep_last_pixels_until_replaced_or_cleared()"&&diagnosticCase!="ResultWorkspaceProductionTests.Original_source_drop_rejects_directories_and_mixed_invalid_files_before_formal_import()"&&diagnosticCase!="ResultWorkspaceProductionTests.Source_structural_edits_keep_the_runtime_record_and_leave_deleted_current_unselected()")
             throw new InvalidOperationException("未批准的单例诊断入口。");
         var results=new List<object>();int failures=0,covered=0;
         var elapsed=System.Diagnostics.Stopwatch.StartNew();
-        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ImageSourceConfigurationHistoryTests","DocumentHistoryCoordinatorTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","LocalImageSequenceTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests","SolutionTransitionTests"})
+        foreach(var name in new[]{"LocalResultImagePreviewTests","ImageSourceDesignCompositionTests","SolutionManagerUiTests","ResultWorkspaceProductionTests","RuntimeImageConnectionOwnershipTests","ResultVariableBindingProductionTests","ResultPresentationModelTests","ResultPresentationPresenterTests","ResultImagePaneTests","ResultViewportFullscreenScopeTests","NativeResultCompositionTests","RootResultImagePreviewTests","ImageSourceAcceptanceTests","ImageSourceRuntimeTests","ImageSourceDeclarationAndFormatTests","ImageSourceDebugInvocationTests","ImageSourceConfigurationHistoryTests","DocumentHistoryCoordinatorTests","ImageSourceSavePersistenceTests","LocalImageConfigurationSnapshotTests","LocalImageSequenceTests","ImageSourceResolverTests","CameraStreamOwnershipTests","CameraWorkflowFrameFeedTests","SolutionTransitionTests"})
         {
             var type=assembly.GetType("SunEyeVision.UI.Tests."+name)
                 ?? assembly.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
             foreach(var method in type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly).OrderBy(m=>m.Name))
             {
-                if(name=="SolutionManagerUiTests"&&method.Name!="Source_items_reentry_stops_refresh_after_release_or_owner_change"&&method.Name!="First_button_uses_original_auto_switch_reset_position"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
+                if(name=="SolutionManagerUiTests"&&method.Name!="Original_content_switch_keeps_new_owner_and_localized_mode_during_reentrant_acceptance"&&method.Name!="Thumbnail_refresh_retains_selection_focus_and_the_next_direction_key"&&method.Name!="Source_items_reentry_stops_refresh_after_release_or_owner_change"&&method.Name!="First_button_uses_original_auto_switch_reset_position"&&!originals.Contains(name+"."+method.Name+"()")&&!expectedOriginalCases.Contains(name+"."+method.Name+"()")
                     &&!addedImportCases.Contains(name+"."+method.Name+"()")&&name+"."+method.Name+"()"!=explicitSourceCase&&name+"."+method.Name+"()"!=navigationCase&&name+"."+method.Name+"()"!=replacedRootCase&&name+"."+method.Name+"()"!=cleanupFailureCase&&name+"."+method.Name+"()"!=settlementFailureCase&&name+"."+method.Name+"()"!=missingFrameCase)continue;
                 if(name=="SolutionTransitionTests"&&!addedStopMethods.Contains(method.Name))continue;
                 var args=new List<object?[]>();
@@ -141,6 +142,7 @@ internal static class S2DocumentEditingCases
         }
         if(!string.IsNullOrEmpty(diagnosticCase))
         {
+            if(results.Count!=1)throw new InvalidOperationException("单例诊断必须实际执行恰好一个用例。");
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-single-case-diagnostic.json"),
                 JsonSerializer.Serialize(new{diagnosticOnly=true,fullAcceptance=false,count=results.Count,failures,results},new JsonSerializerOptions{WriteIndented=true}));
             Console.WriteLine("仅单例诊断，不构成完整回归通过。");Console.Out.Flush();
@@ -150,6 +152,9 @@ internal static class S2DocumentEditingCases
         foreach(var firstCase in new[]{"False,False,0","True,False,2","False,True,1","True,True,2"})
             if(!executed.Contains("SolutionManagerUiTests.First_button_uses_original_auto_switch_reset_position("+firstCase+")"))
                 throw new InvalidOperationException("S1原件首图组合未执行："+firstCase);
+        if(!executed.Contains("RuntimeImageConnectionOwnershipTests.Main_window_automatic_connection_uses_formal_member_reference_and_preserves_existing_setting()"))throw new InvalidOperationException("主窗口正式自动图像连线回归缺失。");
+        if(!executed.Contains("RuntimeImageConnectionOwnershipTests.Automatic_connection_accepts_declared_image_member_and_rejects_wrong_member_or_edge()"))throw new InvalidOperationException("正式成员连线归属回归缺失。");
+        if(!executed.Contains("ResultWorkspaceProductionTests.Output_member_selection_preserves_formal_identity_and_never_replaces_a_missing_choice()"))throw new InvalidOperationException("图像成员来源持久身份回归缺失。");
         if(covered!=21)throw new InvalidOperationException("本批必须逐项承接21个原失败，实际："+covered);
         var missing=currentRequiredCases.Except(executed,StringComparer.Ordinal).OrderBy(x=>x).ToArray();
         if(missing.Length!=0)throw new InvalidOperationException("原配置、运行、调试、结果模型、展示器或视口用例缺失："+string.Join("；",missing));

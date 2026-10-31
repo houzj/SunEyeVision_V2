@@ -1,0 +1,266 @@
+{
+  "kind": "原始DLL受控探针回件核收，非本产品Release验收",
+  "sourceThread": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+  "files": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\probe.json",
+      "sha256": "bf851509e752a88ee6b1bc227acfebb17962cb0c2b6ddf6b43886f4238f67a07"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\provenance.json",
+      "sha256": "f8ce40161a344d5ab57aee96c37190cf36880e871ec2faf72a5ec857d4f8c972"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+      "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+    }
+  ],
+  "provenance": [
+    {
+      "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+    },
+    {
+      "sha256": "7936a6c020af549ea35b9a74beeab38d226f4327db47779a60299888bf411f12",
+      "path": "D:\\Temp\\vision-image-probe-83cf38a274e54cc7b1400d6a268193c6\\workspace\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\OriginalImageSourceProbe.exe"
+    },
+    {
+      "sha256": "2fbbd1f709cab55b9ac91d3524ca12cb2770d01d980054d6d3efb1cd9ceb6711",
+      "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\OriginalImageSourceProbe.cs"
+    },
+    {
+      "sha256": "b9b982939fe909d124a1e82ac87fba6a0c2ab20bc4abb79486e0976247540ef5",
+      "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\ImageSourceCodecFixtures.cs"
+    }
+  ],
+  "observations": [
+    {
+      "sn": 18,
+      "phase": "nav-manual-a",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\a.bmp",
+      "name": "a.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "4c75b1675cd338faee8495940b780a2e84598955ca1e7c11315143e093599c62"
+    },
+    {
+      "sn": 19,
+      "phase": "nav-next-to-b",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "b55cf367d7f6481df839c4d17335cc00d9934158e3e8d4f10fa891df690b9f04"
+    },
+    {
+      "sn": 20,
+      "phase": "nav-manual-holds-b",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "b55cf367d7f6481df839c4d17335cc00d9934158e3e8d4f10fa891df690b9f04"
+    },
+    {
+      "sn": 21,
+      "phase": "nav-next-to-c",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\c.bmp",
+      "name": "c.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "f75105ede4ae95b08e4ef9ceed9dc5e81fee0478f95741fd7e67bdf1f380052e"
+    },
+    {
+      "sn": 22,
+      "phase": "nav-next-at-end",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\a.bmp",
+      "name": "a.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "4c75b1675cd338faee8495940b780a2e84598955ca1e7c11315143e093599c62"
+    },
+    {
+      "sn": 23,
+      "phase": "nav-last-after-end",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\c.bmp",
+      "name": "c.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "f75105ede4ae95b08e4ef9ceed9dc5e81fee0478f95741fd7e67bdf1f380052e"
+    },
+    {
+      "sn": 24,
+      "phase": "nav-last-at-start",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\c.bmp",
+      "name": "c.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "f75105ede4ae95b08e4ef9ceed9dc5e81fee0478f95741fd7e67bdf1f380052e"
+    },
+    {
+      "sn": 25,
+      "phase": "nav-auto-advance-from-a",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "b55cf367d7f6481df839c4d17335cc00d9934158e3e8d4f10fa891df690b9f04"
+    },
+    {
+      "sn": 26,
+      "phase": "nav-next-with-autoplay",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "b55cf367d7f6481df839c4d17335cc00d9934158e3e8d4f10fa891df690b9f04"
+    },
+    {
+      "sn": 27,
+      "phase": "nav-last-from-b-with-autoplay",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\a.bmp",
+      "name": "a.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "4c75b1675cd338faee8495940b780a2e84598955ca1e7c11315143e093599c62"
+    },
+    {
+      "sn": 0,
+      "phase": "nav-auto-missing-b",
+      "nativeErrorCode": 2148532230,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 0,
+      "height": 0,
+      "format": 17301505,
+      "length": 0,
+      "extraMonoLength": 0,
+      "pixelSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "sn": 28,
+      "phase": "nav-auto-after-failed-b",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\c.bmp",
+      "name": "c.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "f75105ede4ae95b08e4ef9ceed9dc5e81fee0478f95741fd7e67bdf1f380052e"
+    },
+    {
+      "phase": "nav-current-path-after-select-b",
+      "value": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp"
+    },
+    {
+      "sn": 29,
+      "phase": "nav-pre-save-current-b",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp",
+      "name": "b.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "b55cf367d7f6481df839c4d17335cc00d9934158e3e8d4f10fa891df690b9f04"
+    },
+    {
+      "phase": "nav-current-path-after-run-b",
+      "value": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp"
+    },
+    {
+      "phase": "nav-current-path-reset-b-before-save",
+      "value": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-fixtures\\b.bmp"
+    },
+    {
+      "phase": "nav-save-as",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\navigation-owned-copy.sol",
+      "exists": true,
+      "sha256": "bdfb674c946b4c677f138376e4ab9cfb6adc9780d37edf384052eb83207dc4a3"
+    },
+    {
+      "phase": "nav-reload-partial",
+      "code": -536870093
+    },
+    {
+      "phase": "nav-after-reload-params",
+      "autoPlay": false,
+      "currentImagePath": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\ImageTemp\\VM41488ImgSrcTemp\\0414880-c.bmp"
+    },
+    {
+      "sn": 30,
+      "phase": "nav-after-save-reload-current-b",
+      "nativeErrorCode": 0,
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-83cf38a274e54cc7b1400d6a268193c6\\ImageTemp\\VM41488ImgSrcTemp\\0414880-c.bmp",
+      "name": "0414880-c.bmp",
+      "width": 4,
+      "height": 4,
+      "format": 17301505,
+      "length": 16,
+      "extraMonoLength": 0,
+      "pixelSha256": "f75105ede4ae95b08e4ef9ceed9dc5e81fee0478f95741fd7e67bdf1f380052e"
+    }
+  ],
+  "limitations": [
+    "样例方案部分模块加载失败 -536870093；只验证存在的ImageSource模块",
+    "finished.originalRuntimeEquivalence=false，不宣称宿主整体等价",
+    "AutoStop需真实owner procedure运行态，当前直接module.Run未覆盖",
+    "输入背景先勾选后的跨列表行为未验证",
+    "SaveAs重载涉及附件重写，不能归因单字段持久合同"
+  ],
+  "verifiedExpectedNames": {
+    "nav-manual-a": "a.bmp",
+    "nav-next-to-b": "b.bmp",
+    "nav-manual-holds-b": "b.bmp",
+    "nav-next-to-c": "c.bmp",
+    "nav-next-at-end": "a.bmp",
+    "nav-last-at-start": "c.bmp",
+    "nav-auto-advance-from-a": "b.bmp",
+    "nav-next-with-autoplay": "b.bmp",
+    "nav-last-from-b-with-autoplay": "a.bmp",
+    "nav-auto-after-failed-b": "c.bmp"
+  }
+}

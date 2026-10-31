@@ -123,6 +123,7 @@ public sealed partial class NativeResultViewport : IDisposable
                 { if (!Owns(epoch, candidate)) break; layer.RetireFrame(); }
                 if (Owns(epoch, candidate)) RetireRoi();
                 if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
+                if (Owns(epoch, candidate)) _view.ImageName = null;
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
                 if (Owns(epoch, candidate))
                     foreach (var cross in _shapeLayers.OfType<CrosshairLayer>().ToArray())
@@ -218,6 +219,7 @@ public sealed partial class NativeResultViewport : IDisposable
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => () => { if (epoch == _epoch) layer.RetireFrame(); }));
         actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });
         actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageDataSource = null; });
+        actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageName = null; });
         actions.Add(() => frame?.Dispose()); ParameterCleanup.Run(actions);
     }
     public void Dispose()

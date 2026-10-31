@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared;
+
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Themes.Base;

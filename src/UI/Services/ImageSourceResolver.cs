@@ -21,7 +21,7 @@ public static class ImageSourceResolver
             if (parent == null) return new(ImageSourceResolutionKind.None);
             var calls = parent.Nodes.Where(node => node.SubroutineId == childId && node.IsEnabled).ToArray();
             if (calls.Length != 1) return new(ImageSourceResolutionKind.Ambiguous);
-            resolution = Resolve(calls[0].Id, parent.Nodes, parent.Connections);
+            resolution = Resolve(calls[0].Id, parent.Nodes, parent.Connections,parent.Id);
             childId = parentId;
         }
         return resolution;
@@ -33,7 +33,7 @@ public static class ImageSourceResolver
         || toolType.Contains("ImageSource", StringComparison.OrdinalIgnoreCase));
 
     public static ImageSourceResolution Resolve(string nodeId, IEnumerable<WorkflowNodeBase> nodes,
-        IEnumerable<WorkflowConnection> connections)
+        IEnumerable<WorkflowConnection> connections,string? workflowId=null)
     {
         var byId = nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var upstream = connections.GroupBy(edge => edge.TargetNodeId)
@@ -62,7 +62,17 @@ public static class ImageSourceResolver
                     }
                 }
 
-                var selectedId = start.SelectedDisplaySource?.SourceNodeId;
+                string? selectedId=null;
+                if(start.SelectedDisplayReference is {} expression)
+                {
+                    try
+                    {
+                        var reference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(expression);
+                        if(workflowId is not null&&reference.ScopeId!=workflowId)return new(ImageSourceResolutionKind.InvalidSelection);
+                        selectedId=reference.NodeId;
+                    }
+                    catch(System.Text.Json.JsonException){return new(ImageSourceResolutionKind.InvalidSelection);}
+                }
                 if (!string.IsNullOrEmpty(selectedId) && selectedId != startId)
                 {
                     // A stale or unrelated explicit selection must not silently choose another branch.

@@ -201,6 +201,9 @@ public sealed partial class RuntimeToolConfiguration
             ?Array.Empty<Diagnostic>():_definition.Validate(CaptureSettings());
     }
     public ToolSchema Schema => _definition.Describe();
+    /// <summary>Tool-owned display declaration; not a binding or persisted identity.</summary>
+    public SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor? ResultProjection
+        => (_definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)?.ResultProjection;
     public ToolCapabilities Capabilities => _definition.Capabilities();
     public ToolSchema SettingsSchema => _settingsFields.SettingsSchema;
     public InputValues ReadFieldValues()

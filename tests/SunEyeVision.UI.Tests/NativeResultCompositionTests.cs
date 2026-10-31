@@ -39,6 +39,16 @@ public sealed class NativeResultCompositionTests
             Assert.IsType<SolidColorBrush>(grid.Background).Color);
         Assert.Equal(expected, Assert.IsType<SolidColorBrush>(Assert.IsType<Grid>(shell.Content).Background).Color);
         if (theme == "Light") Assert.NotEqual(initial, expected);
+        var historyTab = Assert.IsType<TabItem>(shell.FindName("HistoryTab"));
+        var historyMenu = historyTab.ContextMenu!;
+        historyMenu.PlacementTarget = historyTab;
+        historyMenu.IsOpen = true; Drain();
+        Assert.Equal(((SolidColorBrush)shell.FindResource("Results.Shell.Col_ComboBox_Popup")).Color,
+            Assert.IsType<SolidColorBrush>(historyMenu.Background).Color);
+        Assert.Equal(((SolidColorBrush)shell.FindResource("Results.Shell.Col_ComboBox_BorderBrush")).Color,
+            Assert.IsType<SolidColorBrush>(historyMenu.BorderBrush).Color);
+        Assert.All(historyMenu.Items.Cast<MenuItem>(), item => Assert.False(item.IsEnabled));
+        historyMenu.IsOpen = false;
         shell.SelectedResultTabIndex = 0;
         Drain();
         var fullscreen = Assert.IsType<Button>(shell.FindName("BtnToolFullScreen"));
@@ -52,6 +62,17 @@ public sealed class NativeResultCompositionTests
         Assert.Equal(design.InputRaster!.Frame, design.InputViewportOwner.CurrentFrame!.Frame);
         Assert.NotEqual(design.InputRaster.Frame, design.OutputRaster.Frame);
         Assert.Equal(new byte[] { 45 }, design.InputViewportOwner.ReadPixel(0, 0));
+    });
+
+    [Fact]
+    public void Property_list_headers_use_shared_localization_in_standalone_host() => Sta(() =>
+    {
+        var view = new PropertyListView();
+        using var host = new LoadedHost(view);
+        var text = Descendants<TextBlock>(view).Select(item => item.Text).ToArray();
+        Assert.Contains((string)view.FindResource("Lang_ResultName"), text);
+        Assert.Contains((string)view.FindResource("Lang_CurValue"), text);
+        Assert.Contains((string)view.FindResource("Lang_VariableManager"), text);
     });
 
     [Fact]
@@ -218,7 +239,14 @@ public sealed class NativeResultCompositionTests
         Assert.Equal(design.OutputRaster!.Frame, design.OutputViewportOwner.CurrentFrame!.Frame);
         Assert.NotEqual(oldOutputFrame, design.OutputRaster.Frame); Assert.NotSame(oldOutputOwner, design.OutputViewportOwner);
         Assert.Equal(new byte[] { 45 }, design.OutputViewportOwner.ReadPixel(0, 0));
-        Assert.Contains(Descendants<TabItem>(shell), tab => Equals(tab.Header, "历史结果") && !tab.IsEnabled);
+        var history = Assert.IsType<TabItem>(shell.FindName("HistoryTab"));
+        history.IsSelected = true; Drain();
+        var historyGrid = Assert.IsType<DataGrid>(shell.FindName("HistoryGrid"));
+        Assert.False(historyGrid.IsEnabled);
+        Assert.Null(historyGrid.ItemsSource);
+        Assert.Equal(new[] { "执行序号", "时间", "模块数据" }, historyGrid.Columns.Select(column => column.Header));
+        Assert.All(history.ContextMenu!.Items.Cast<MenuItem>(), item => Assert.False(item.IsEnabled));
+        Assert.Contains(Descendants<TextBlock>(shell), text => text.Text == "历史记录尚未接入");
     });
 
     private static Color Theme(FrameworkElement view, string family, string key, string theme)

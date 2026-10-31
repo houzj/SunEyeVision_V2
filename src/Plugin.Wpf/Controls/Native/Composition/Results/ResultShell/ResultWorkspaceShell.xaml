@@ -5,7 +5,14 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Results/ResultShell/Dark.xaml" />
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Results/ResultShell/ResultShellStyles.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Results/StandardTable.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceMenu.xaml" />
       </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="Results.History.ContextMenu" TargetType="ContextMenu" BasedOn="{StaticResource ImageSources.ContextMenuStyle}">
+        <Setter Property="Foreground" Value="{DynamicResource Results.Shell.Col_DisplayImage_Foreground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Results.Shell.Col_ComboBox_BorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Results.Shell.Col_ComboBox_Popup}" />
+      </Style>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid Background="{DynamicResource Results.Shell.Col_DisplayImage_Background}">
@@ -33,7 +40,7 @@
             <ScrollViewer Style="{StaticResource Results.Shell.RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
               <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="260">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding InputItems, ElementName=View}" SelectedItem="{Binding SelectedInputItem, ElementName=View, Mode=TwoWay}" DataContext="{Binding ElementName=View}">
+                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding InputItems, ElementName=View}" SelectedItem="{Binding SelectedInputItem, ElementName=View, Mode=TwoWay}" ToolTip="{Binding SelectedInputItem.DisplayName, ElementName=View}" DataContext="{Binding ElementName=View}">
                         </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -58,7 +65,7 @@
             <ScrollViewer Grid.Column="1" Style="{StaticResource Results.Shell.RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
               <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="300">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding OutputItems, ElementName=View}" SelectedItem="{Binding SelectedOutputItem, ElementName=View, Mode=TwoWay}" DataContext="{Binding ElementName=View}">
+                  <ComboBox Style="{StaticResource Results.Shell.ImageListComboBox}" Height="32" Width="142" ItemsSource="{Binding OutputItems, ElementName=View}" SelectedItem="{Binding SelectedOutputItem, ElementName=View, Mode=TwoWay}" ToolTip="{Binding SelectedOutputItem.DisplayName, ElementName=View}" DataContext="{Binding ElementName=View}">
                         </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -160,10 +167,32 @@
       <Border BorderBrush="{DynamicResource Results.Shell.Col_DisplayImage_BorderBrush}" BorderThickness="0,1,0,1">
         <Grid>
           <TabControl Style="{StaticResource Results.Shell.ModuleViewTabControl}" Background="{DynamicResource Results.Shell.Col_DisplayImage_Background}" BorderBrush="{DynamicResource Results.Shell.Col_DisplayImage_BorderBrush}">
-            <TabItem Header="当前结果" Height="40" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}">
+            <TabItem x:Name="CurrentResultTab" Header="当前结果" Height="40" FontSize="14">
+              <TabItem.Style>
+                <Style TargetType="TabItem" BasedOn="{StaticResource Results.Shell.FrequentTab}">
+                  <Style.Triggers><DataTrigger Binding="{Binding CurrentResultContent, ElementName=View}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                </Style>
+              </TabItem.Style>
               <ContentPresenter Content="{Binding CurrentResultContent, ElementName=View}" />
             </TabItem>
-            <TabItem Header="历史结果" Height="40" FontSize="14" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="未实现：等待正式历史记录、查询、清空与导出服务" Style="{StaticResource Results.Shell.FrequentTab}" />
+            <TabItem x:Name="HistoryTab" Header="历史结果" Height="40" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}">
+              <TabItem.ContextMenu>
+                <ContextMenu Style="{StaticResource Results.History.ContextMenu}">
+                  <MenuItem Header="清空" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="未实现：历史记录服务尚未接入" />
+                  <MenuItem Header="保存" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="未实现：历史记录导出尚未接入" />
+                </ContextMenu>
+              </TabItem.ContextMenu>
+              <Grid>
+                <DataGrid x:Name="HistoryGrid" ColumnWidth="Auto" Style="{StaticResource ModuleViewDataGridStyle}" IsEnabled="False">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="执行序号" MinWidth="30" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding RowIndex}" />
+                    <DataGridTextColumn Header="时间" MinWidth="150" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding AddTime}" />
+                    <DataGridTextColumn Header="模块数据" MinWidth="200" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding Content}" />
+                  </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Text="历史记录尚未接入" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource Results.Shell.Col_DisplayImage_Foreground}" />
+              </Grid>
+            </TabItem>
             <TabItem Header="帮助" Height="40" Width="90" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}">
               <ScrollViewer VerticalScrollBarVisibility="Auto" Style="{StaticResource Results.Shell.shrinkScrollViewer}">
                 <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Results.Shell.Col_DisplayImage_Foreground}" Text="{Binding HelpContent, ElementName=View, TargetNullValue=未提供工具帮助, FallbackValue=未提供工具帮助}" />

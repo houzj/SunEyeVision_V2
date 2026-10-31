@@ -145,7 +145,7 @@
                       <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <CheckBox Grid.Column="0" Focusable="False" VerticalAlignment="Center" HorizontalAlignment="Left" IsChecked="{Binding IsCheck, Mode=OneWay}" IsEnabled="{Binding CanOverlay}" Command="{Binding DataContext.SelectOverlayCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" CommandParameter="{Binding}">
+                    <CheckBox Grid.Column="0" Focusable="False" VerticalAlignment="Center" HorizontalAlignment="Left" IsChecked="{Binding IsCheck, Mode=OneWay}" IsEnabled="{Binding CanOverlay}" ToolTipService.ShowOnDisabled="True" ToolTip="{Binding OverlayUnavailableReason}" Command="{Binding DataContext.SelectOverlayCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" CommandParameter="{Binding}">
                       <CheckBox.Style>
                         <Style TargetType="CheckBox" BasedOn="{StaticResource Results.Shell.CheckBoxStyle1}">
                           <Style.Triggers>
@@ -161,7 +161,7 @@
                         <Binding Path="DisplayName" />
                       </TextBlock.Text>
                     </TextBlock>
-                    <Button Grid.Column="2" Margin="5,0,5,0" Command="{Binding DataContext.SelectBackgroundCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" CommandParameter="{Binding}">
+                    <Button Grid.Column="2" Margin="5,0,5,0" ToolTipService.ShowOnDisabled="True" ToolTip="{Binding BackgroundUnavailableReason}" Command="{Binding DataContext.SelectBackgroundCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" CommandParameter="{Binding}">
                       <Image Stretch="None">
                         <FrameworkElement.Style>
                           <Style TargetType="{x:Type Image}">
@@ -233,7 +233,7 @@
             <Border Name="Border" Background="{TemplateBinding Control.Background}" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="{TemplateBinding Control.BorderBrush}" CornerRadius="2" />
             <TextBox Grid.Column="0" Focusable="False" Foreground="{TemplateBinding Control.Foreground}" FontSize="{TemplateBinding Control.FontSize}" Margin="11,0,0,0" Background="#00FFFFFF" IsReadOnly="True" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource Results.Shell.TextBoxStyle1}">
               <TextBox.Text>
-                <Binding Path="SelectedItem.DisplayName" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=ComboBox}" />
+                <Binding Path="SelectedItem.DisplayName" Mode="OneWay" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=ComboBox}" />
               </TextBox.Text>
             </TextBox>
             <ToggleButton Name="toggle" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" ClickMode="Press" Style="{StaticResource Results.Shell.ComboxStyleBtn}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />

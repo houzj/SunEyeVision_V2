@@ -1,0 +1,21 @@
+{
+  "scope": "本worktree VS设计器，不是主仓",
+  "source": "用户完整路径及截图",
+  "namespaceErrors": "用户报告五个类型不存在；Release PE元数据直接核验五类均存在，未执行GUI程序集",
+  "typesFoundInRelease": [
+    "LocalizationResources",
+    "ImageSourceThumbnail",
+    "ImageSourceStrip",
+    "ImageCountVisibilityConverter",
+    "ContentToggleSwitch"
+  ],
+  "debugDesignTarget": "dev/Debug/SunEyeVision.Plugin.Wpf.dll",
+  "debugTargetExists": false,
+  "textBlockException": "截图仅有外层XamlReader/FrameworkTemplate栈，内层根因未证",
+  "latestScreenshot": "Release/_validation/S1-manual-20261030/designer-worktree-initializing-20261031.png",
+  "latestObserved": "VS错误列表0，仍等待IntelliSense初始化，未显示视图",
+  "independentWpfRender": "attempt-039/s1-typed-resources-design.png，已查看正常/只读/折叠三态",
+  "actualVsVerified": false,
+  "blocksS2": false,
+  "limits": "未据旧ServiceHub断连日志归因；没有清缓存/修改全局配置/以WPF截图代替VS"
+}

@@ -25,6 +25,7 @@ public sealed class LocalImageSequenceService
     {
         public required string NodeId { get; init; }
         public required LocalImageSequenceEntry[] Entries { get; init; }
+        public bool HasCursor;
         public required bool AutoAdvance { get; init; }
         public required bool StopAtLast { get; init; }
         public int Position { get; set; }
@@ -52,7 +53,7 @@ public sealed class LocalImageSequenceService
             return new Source
             {
                 NodeId = plan.SourceNodeId, Entries = entries,
-                Position = entries.Length == 0 ? -1 : Math.Max(selected, 0),
+                Position = entries.Length == 0 ? -1 : Math.Max(selected, 0), HasCursor=selected>=0,
                 AutoAdvance = plan.AutoAdvance, StopAtLast = plan.StopAtLast
             };
         }).ToArray();
@@ -103,7 +104,8 @@ public sealed class LocalImageSequenceService
                 throw new InvalidOperationException("图像读取位置已发生变化。");
             if (source.Position < 0 || source.Entries.Length == 0)
                 throw new InvalidOperationException("当前来源没有可运行的图像。");
-            var position = navigationDelta != 0 ? (source.Position + navigationDelta + source.Entries.Length) % source.Entries.Length :
+            var position = !source.HasCursor ? (navigationDelta<0?source.Entries.Length-1:0) :
+                navigationDelta != 0 ? (source.Position + navigationDelta + source.Entries.Length) % source.Entries.Length :
                 advance && source.AutoAdvance ? (source.Position + 1) % source.Entries.Length : source.Position;
             var entry = source.Entries[position];
             var receipt = new LocalImageReadReceipt(ticket, requestId, entry, position,
@@ -111,7 +113,7 @@ public sealed class LocalImageSequenceService
             // This assignment is the read-admission linearization point. No I/O or callbacks run under this lock.
             cancellation.ThrowIfCancellationRequested();
             session.Accepted.Add(source.NodeId, receipt);
-            source.Position = position;
+            source.Position = position;source.HasCursor=true;
             return receipt;
         }
     }

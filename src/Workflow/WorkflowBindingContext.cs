@@ -160,8 +160,14 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(!setting.OriginId.StartsWith(prefix,StringComparison.Ordinal)||setting.OriginId.Length==prefix.Length)
             return "自动来源归属不是有效的连线标识。";
         var reference=setting.Reference;
+        TypeRef? selectedType=reference.Type;
+        foreach(var member in reference.MemberFieldPath)
+        {
+            if(selectedType?.Shape!=ValueShape.Record){selectedType=null;break;}
+            selectedType=selectedType.Fields.SingleOrDefault(field=>field.Id==member)?.Type;
+        }
         if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId!=fieldId
-            ||reference.Type!=TypeRef.ResourceOf(ResourceKind.Image)||reference.MemberFieldPath.Count!=0
+            ||selectedType!=TypeRef.ResourceOf(ResourceKind.Image)
             ||reference.Selection is not BindingSelection.AllItems||setting.Conversion!=BindingConversion.Automatic
             ||(reference.ScopeId??scopeId)!=scopeId)
             return "自动图像来源的字段、引用或工作流归属不一致。";

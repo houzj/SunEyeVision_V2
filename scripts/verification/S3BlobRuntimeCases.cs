@@ -54,7 +54,32 @@ internal static class S2DocumentEditingCases
                 Require(retained.FilterAreaMin==30&&retained.FilterAreaMax==10&&retained.FilterCircularityMin==.8&&retained.FilterCircularityMax==.2,"运行改写禁用保存值");
             }
             Console.WriteLine("通过：正式Runtime入口核禁用筛选全部常量值域并保留合法倒序值");
-            Console.WriteLine("通过：空结果执行完成且业务判定NG");Console.WriteLine("S3 Runtime算法检查：6组通过；不代表完整宿主、VM视觉或人工验收。");return 0;
+            var maskEvidence=new List<object>();
+            using(var pixels=HalImage.CreateFromBytes(new byte[]{0,1,99,100,101,254,255},7,1,1))
+            using(var frozen=pixels.CaptureSnapshot(new(Guid.NewGuid(),"single-threshold-pixel-probe")))
+            {
+                var definition=new BlobTool();var inputs=new SunEyeVision.Plugin.Contracts.InputValues(definition.Describe().Inputs,new Dictionary<string,object?>{{BlobTool.ImageInput,frozen}});
+                var cases=new[]{
+                    (Threshold:0,Type:BlobThresholdMode.Binary,Expected:new byte[]{255,255,255,255,255,255,255}),
+                    (Threshold:0,Type:BlobThresholdMode.BinaryInv,Expected:new byte[]{0,0,0,0,0,0,0}),
+                    (Threshold:100,Type:BlobThresholdMode.Binary,Expected:new byte[]{0,0,0,255,255,255,255}),
+                    (Threshold:100,Type:BlobThresholdMode.BinaryInv,Expected:new byte[]{255,255,255,0,0,0,0}),
+                    (Threshold:255,Type:BlobThresholdMode.Binary,Expected:new byte[]{0,0,0,0,0,0,255}),
+                    (Threshold:255,Type:BlobThresholdMode.BinaryInv,Expected:new byte[]{255,255,255,255,255,255,0})};
+                foreach(var item in cases)
+                {
+                    using var resultResources=new FrozenOutputResources();var requested=settings with{Threshold=item.Threshold,Type=item.Type,OutputBinaryImage=true};
+                    var outcome=ToolRuntimeExecutor.ExecuteAsync(definition,requested,inputs,new RuntimeContext(resultResources)).AsTask().GetAwaiter().GetResult();using var output=outcome.Output as IDisposable;
+                    Require(outcome.Success&&outcome.Output is BlobOutput,"单阈值像素探针正式Runtime执行失败");var result=(BlobOutput)outcome.Output!;var actual=result.BinaryImage!.CopyPixels();
+                    Require(actual.SequenceEqual(item.Expected),"本方单阈值掩膜不符：T="+item.Threshold+"；type="+item.Type+"；actual="+string.Join(",",actual));
+                    Require(result.BinaryImage.Frame==frozen.Frame&&result.BinaryImage.EffectiveDomain.Frame==BlobSchema.ImageFrame&&result.ThresholdMinUsed==item.Threshold&&result.ThresholdMaxUsed==255&&result.TypeUsed==item.Type.ToString(),"像素掩膜与实际使用值或Frame不一致");
+                    Require(result.TotalArea==item.Expected.Count(value=>value==255),"掩膜白像素与正式Region面积不一致");
+                    maskEvidence.Add(new{threshold=item.Threshold,polarity=item.Type.ToString(),input=new byte[]{0,1,99,100,101,254,255},mask=actual,area=result.TotalArea,frame=frozen.Frame,coordinates=result.BinaryImage.EffectiveDomain.Frame});
+                }
+            }
+            System.IO.File.WriteAllText(System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"single-threshold-pixel-masks.json"),System.Text.Json.JsonSerializer.Serialize(new{scope="本方SingleThreshold实测与自研比较合同；原VM方向、等号及0/255未证，不称等价",cases=maskEvidence},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+            Console.WriteLine("通过：正式Runtime单阈值T−1/T/T+1及0/255双极性六掩膜；仅本方合同不代VM等价");
+            Console.WriteLine("通过：空结果执行完成且业务判定NG");Console.WriteLine("S3 Runtime算法检查：7组通过；不代表完整宿主、VM视觉或人工验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
         finally{HOperatorSet.SetSystem("max_connection",limit);HOperatorSet.SetSystem("tsp_neighborhood",previous);limit.Dispose();previous.Dispose();}

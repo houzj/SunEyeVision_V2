@@ -41,7 +41,7 @@ internal static class S2DocumentEditingCases
         try
         {
             if(Environment.GetEnvironmentVariable("B08_REFERENCE_WINDOW_CULTURE") is {Length:>0} culture){Require(culture is "zh-CN" or "en-US","未知窗口验证语言");System.Globalization.CultureInfo.CurrentUICulture=System.Globalization.CultureInfo.GetCultureInfo(culture);}
-            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE") is "CrossDocument" or "WindowSession" or "BehaviorUi")return RunCrossDocumentReferenceCases();
+            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE") is "CrossDocument" or "WindowSession" or "BehaviorUi" or "LanguageLayout")return RunCrossDocumentReferenceCases();
             if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             owner=new Window{Width=700,Height=720,Title="正式字段消费验证"};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -348,7 +348,8 @@ internal static class S2DocumentEditingCases
         var selectedKinds=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_KINDS");
         var windowSessionOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="WindowSession";
         var behaviorUiOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="BehaviorUi";
-        var allKinds=behaviorUiOnly?new[]{"behavior-ui"}:windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
+        var languageLayoutOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="LanguageLayout";
+        var allKinds=languageLayoutOnly?new[]{"language-layout"}:behaviorUiOnly?new[]{"behavior-ui"}:windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
         var kinds=string.IsNullOrEmpty(selectedKinds)?allKinds:selectedKinds.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries);
         Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(allKinds.Contains),"未知或重复跨文档控件筛选");
         var reports=new List<object>();var unexpected=new List<string>();var expectDelete=false;var imageChainVerified=false;
@@ -471,6 +472,34 @@ internal static class S2DocumentEditingCases
         AppsPopup Popup(DeclaredFieldAccess field,object session,string path)
             =>CrossVisuals(field.View).OfType<AppsPopup>().Single(p=>ReferenceEquals(p.DataContext,session)
                 &&p.Name==(path=="IsDropDownOpen"?"rt":"et")&&p.GetBindingExpression(AppsPopup.IsPopupOpenProperty)?.ParentBinding.Path?.Path==path);
+        void VerifyLanguageLayout((SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture)
+        {
+            var english=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English";
+            var width=english?680d:420d;var label=english?170d:89d;var window=Open(fixture.Target);var control=Control(window);var fields=Fields(window);var initial=Stamp(fixture.Target.RuntimeConfiguration!);
+            Require(window.Width==width&&Math.Abs(window.ActualWidth-width)<.5&&window.Height==500&&window.MinWidth==360,"真实宿主未沿同一语言资源采用原默认宽高");
+            var pages=((System.Collections.IEnumerable)typeof(DeclaredFieldsView).GetField("_pages",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(fields)!).Cast<object>().ToArray();Require(pages.Length==3,"原三页丢失");
+            for(var i=0;i<pages.Length;i++){fields.SelectedPageIndex=i;window.UpdateLayout();Pump();var host=pages[i].GetType().GetField("Item2")!.GetValue(pages[i])!;Require((double)Property(host,"ChildLeftWidth")! ==label,"页面标签未沿原89/170默认："+i);}
+            fields.SelectedPageIndex=1;window.UpdateLayout();Pump();Require(fields.Fields.Single(f=>f.FieldId==Field("IsAreaFilterEnabled")).TrySetConstant(true),"正式面积过滤开关无法启用");
+            var lower=fields.Fields.Single(f=>f.FieldId==Field("FilterAreaMin"));var upper=fields.Fields.Single(f=>f.FieldId==Field("FilterAreaMax"));
+            Require(lower.TrySetConstant(999999999L),"面积两端合法相等上限未接纳");window.UpdateLayout();Pump();var endpoints=new List<object>();
+            foreach(var field in new[]{lower,upper})
+            {
+                var text=(TextBox)field.InputElement!;Require(text.IsLoaded&&text.IsVisible&&text.IsEnabled&&text.Text=="999999999","真实面积端点文本/状态不完整");
+                DependencyObject numeric=text;while(numeric is not SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl){numeric=VisualTreeHelper.GetParent(numeric)??throw new Exception("找不到原NumericControl");}
+                var tip=((FrameworkElement)numeric).ToolTip;Require(tip is string value&&value==text.Text,"原T1/T2 ToolTip未绑定完整当前文本");
+                window.Activate();text.Focus();Pump();Require(text.IsKeyboardFocused,"真实面积文本无法取得焦点");
+                void Key(Key key){text.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(text)!,Environment.TickCount,key){RoutedEvent=Keyboard.KeyDownEvent});window.UpdateLayout();Pump();}
+                Key(System.Windows.Input.Key.Home);var start=text.HorizontalOffset;var extent=text.ExtentWidth;var viewport=text.ViewportWidth;var clipped=extent>viewport+.5;
+                Key(System.Windows.Input.Key.End);var end=text.HorizontalOffset;var last=text.GetRectFromCharacterIndex(text.Text.Length,true);
+                Require(text.CaretIndex==text.Text.Length&&!last.IsEmpty&&last.Right<=text.ActualWidth+.5&&(!clipped||end>start),"原焦点Home/End未实际滚动到完整末位");
+                if(english)Require(!clipped,"英文680/170下九位面积仍显示不足");
+                endpoints.Add(new{field=field.FieldId,text=text.Text,tooltip=tip,actualWidth=text.ActualWidth,extent,viewport,clipped,start,end,lastRight=last.Right,caret=text.CaretIndex,font=text.FontFamily.Source,text.FontSize});
+            }
+            var dpi=VisualTreeHelper.GetDpi(window);var image=new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth*dpi.DpiScaleX),(int)Math.Ceiling(window.ActualHeight*dpi.DpiScaleY),dpi.PixelsPerInchX,dpi.PixelsPerInchY,PixelFormats.Pbgra32);image.Render(window);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(image));using(var file=File.Create(Path.Combine(directory,"original-layout-"+System.Globalization.CultureInfo.CurrentUICulture.Name+".png")))png.Save(file);
+            File.WriteAllText(Path.Combine(directory,"layout-metrics-"+System.Globalization.CultureInfo.CurrentUICulture.Name+".json"),System.Text.Json.JsonSerializer.Serialize(new{language=System.Globalization.CultureInfo.CurrentUICulture.Name,width=window.ActualWidth,label,height=window.ActualHeight,dpiX=dpi.PixelsPerInchX,dpiY=dpi.PixelsPerInchY,endpoints,liveLanguageSwitchImplemented=false,originalChineseClippingAllowed=true},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+            Require(Stamp(fixture.Target.RuntimeConfiguration!)==initial,"可读性验证提前改变正式参数");window.Close();Pump();
+            var reopened=Open(fixture.Target);Require(reopened.Width==width&&reopened.Height==500,"取消重开未恢复原语言默认窗口");Require(Stamp(fixture.Target.RuntimeConfiguration!)==initial,"取消后合法面积测试值写入正式模型");reopened.Close();Pump();Trace("PASS_LANGUAGE_LAYOUT "+System.Globalization.CultureInfo.CurrentUICulture.Name);
+        }
         void VerifyBehaviorControls()
         {
             var first=ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback;var sequence=TypeRef.SequenceOf(DataType.Integer,CountConstraint.Exactly(3));
@@ -619,6 +648,7 @@ internal static class S2DocumentEditingCases
             {
                 Trace("BEGIN "+transition+" "+kind);manager.CreateUntitledSolution();Pump();Trace("POPULATE "+kind);var a=Populate();Trace("POPULATED "+kind);var oldDocument=manager.CurrentSolution!;var oldSession=manager.Session!;var oldEditing=oldSession.Editing;
                 var pathA=Path.Combine(directory,transition+"-"+kind+"-A.solution");Require(manager.SaveCurrentDocument(pathA).FileWritten,"原方案保存前提失败");
+                if(languageLayoutOnly){VerifyLanguageLayout(a);reports.Add(new{transition,kind,passed=true});continue;}
                 if(behaviorUiOnly){VerifyBehaviorHost(a);reports.Add(new{transition,kind,passed=true});continue;}
                 if(windowSessionOnly){VerifyWindowSession(transition,a,pathA);reports.Add(new{transition,kind,windowRoot=true,passed=true});continue;}
                 var oldBytes=File.ReadAllBytes(pathA);var formalBefore=Stamp(a.Target.RuntimeConfiguration!);
@@ -734,7 +764,7 @@ internal static class S2DocumentEditingCases
         {
             dialogs.Stop();manager.CloseSolution(saveChanges:false);Pump();
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"b08-cross-document-report.json"),
-                System.Text.Json.JsonSerializer.Serialize(new{scope=behaviorUiOnly?"B08ReferenceBehaviorUi":windowSessionOnly?"B08WindowSession":"B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+                System.Text.Json.JsonSerializer.Serialize(new{scope=languageLayoutOnly?"B08OriginalLanguageLayout":behaviorUiOnly?"B08ReferenceBehaviorUi":windowSessionOnly?"B08WindowSession":"B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
         }
     }
     private static IEnumerable<DependencyObject> CrossVisuals(DependencyObject root)

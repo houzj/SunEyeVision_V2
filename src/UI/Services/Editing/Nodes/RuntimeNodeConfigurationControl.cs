@@ -60,7 +60,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         Loaded+=(_,_)=>
         {
             if(Window.GetWindow(this) is Plugin.SDK.UI.Windows.DefaultDebugWindow window)
-            {window.ApplyCompactParameterLayout();window.Resources.MergedDictionaries.Add(Plugin.Wpf.EditorResources.Create());}
+            {window.ApplyCompactParameterLayout();
+                window.Width=Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English"?680:420;
+                window.Resources.MergedDictionaries.Add(Plugin.Wpf.EditorResources.Create());}
         };
     }
     public void SetDataProvider(DataSourceQueryService query)=>_query=query;

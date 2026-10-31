@@ -111,9 +111,6 @@ internal static class BlobRunUi
                 advanced with{Minimum=0,Maximum=10,DecimalPlaces=0,Increment=1});
             rows.Add(new(sortAnchor,inner,FollowAnchorVisibility:false));
             Toggle("outside-pixels","像素超界使能",sortAnchor,false);
-            var widths=options.PageLabelWidths?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)
-                ??new Dictionary<string,double>(StringComparer.Ordinal);
-            widths["运行参数"]=120;
             var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
             suppressed.Add("field:2fff619e51a359a6a9af286c5e8fef65");
             suppressed.Add("field:3799fbc2f80e58bf9abc7d2c0ad70067");
@@ -139,7 +136,7 @@ internal static class BlobRunUi
                 new DeclaredChoiceDisplayItem("FixedSoftThreshold","软阈值（固定）",null,false,"固定软阈值尚未实现。"),
                 new DeclaredChoiceDisplayItem("RelativeSoftThreshold","软阈值（相对）",null,false,"相对软阈值尚未实现。")
             }));
-            return options with {AdditionalAnchoredContents=rows,PageLabelWidths=widths,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,
+            return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,
                 ReferenceOptions=options.ReferenceOptions is {} reference?reference with{EditableIndex=true}:null,
                 ValidateUiState=()=>
                 {

@@ -4838,6 +4838,7 @@ function update(){['vm','current','target'].forEach(draw);el('context').textCont
 <p>正式 Release RuntimeAlgorithm attempt-002 为 5 组通过（退出码 0），产品源码与已构建 c4e04f0f 产品一致；记录为 S3 算法基线，不宣称 S2 整体完成或 S3 完成。基础缺失事项保持不可误用及具体依赖记录，具备基础的单元按完整链推进。</p></section>
 <aside id="o06-s3-output-map-20261031"><strong>结果列表静态补证：</strong>VM默认 Result List 的 Angle 按名称读取 MinBoudingRect 下的 Angle，不是独立 BlobAngle；LongAxis、ShortAxis 读取同名输出。原接口将两轴描述为最小外接矩形轴，矩形接口声明顺时针为正及范围 (-180,180]；但长短轴半长/全长、角度单位及退化情况仍未由原机证明。详见 BLOB_RESULT_ORIGINAL_MAPPING_20261031.json；不得直接把 HALCON 中间值当成原厂等价。</aside>
 <aside id="o06-c17-export-gap-20261031"><strong>C17 导出未完成：</strong>当前公共导出使用 WPF 渲染及固定 JPEG 质量95；原同步路径为 OpenCV BGR 绘制及默认 JPEG 参数，非零透明度、线宽、Cross 绘制顺序存在差异，文字字体 ABI 和像素行为未证。现有冻结、帧及生命周期测试不证明渲染等价。替换位置为 NativeImageExport.PrepareRendered/SavePrepared；保留已有视口 proof、预算、模态前冻结和退役保护。OpenCV/字体依赖及发布合同尚需整体处理，本批不扩展其他基础，缺口不记为已实现。</aside>
+<aside id="o06-blob-filter-admission-formal-20261031"><strong>Blob 筛选端点准入修复：</strong>配置入口与直接正式运行入口此前对关闭筛选时的非法常量处理不一致；现统一按声明检查端点有限性和绝对值域，仅启用时检查上下限次序，合法禁用倒序值保留。主线产品70a13a3d正式 UI 与全量 Release 构建均0错误，同版 RuntimeAlgorithm 6、BlobParameterProduction 20、ParameterValues 18、RuntimeWorkflow 10组通过，53项加载程序集哈希一致。见 SINGLE_THRESHOLD_ADMISSION_FORMAL_20261031.json。本批未修改原厂量化、阈值算法或未证角度；矩形度禁用倒序未单独断言回读值，引用解析后非法值及保存重开/撤销重做不算新增专项覆盖。实际 VS、程序人工运行与原厂等价未验。</aside>
 </body></html>
 
 

@@ -1,3 +1,8 @@
+## 2026-10-31 Blob 筛选端点准入正式回归
+
+- b50270a2统一正式配置与ToolRuntimeExecutor：禁用筛选端点仍校验声明的有限性和绝对范围，合法禁用倒序保留，启用时仍拒绝倒序；未改原厂未证算法、量化或角度。候选失败与四轨证据保留 SINGLE_THRESHOLD_ADMISSION_CANDIDATE_20261031.json。
+- 同源正式Release 70a13a3d 的UI和全量构建均0错误；RuntimeAlgorithm 6、BlobParameterProduction 20、ParameterValues 18、RuntimeWorkflow 10组通过，53条加载记录哈希一致。正式证据 SINGLE_THRESHOLD_ADMISSION_FORMAL_20261031.json，覆盖边界与未测事项同步原O06；实际VS、程序人工运行及原厂等价未验。
+- 这只是已具备基础的参数准入修复，不代表Blob整链或S3闭口。结果列表角度映射已证，但单位、轴长和退化语义尚未证，其他阈值模式及S2缺失基础继续保留。
 ## 2026-10-31 结果映射补证与导出缺口
 
 - 原默认结果列表 Angle 按名称映射到 MinBoudingRect/Angle，非独立 BlobAngle；LongAxis/ShortAxis 各读同名输出。矩形接口方向及范围有声明，单位、轴半长/全长和退化行为未证；证据 BLOB_RESULT_ORIGINAL_MAPPING_20261031.json，不将HALCON中间值冒充VM等价。

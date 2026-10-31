@@ -151,21 +151,21 @@
       "item": "未知来源/Group/动态输出/完整原清单",
       "originalRequirements": "复用完整原输出/控件清单，明确已映射实际输出、未实现算法叶、时间戳/Visible/CustomVisible与资格区别。",
       "originalOracle": "不能以名称相近假造值/候选；不把Visible结果显示标志当订阅资格；Group暂停，不扩契约或进入S3算法。",
-      "currentStatus": "仅当前声明范围通过；Group与原厂动态输出等完整范围未证。"
+      "currentStatus": "条件性闭口：当前声明来源和资格已自测；未产出原厂输出叶不映射、Group新增迁移暂停，原厂全域动态资格未验证。ManualReferenceQualification和ParameterBindingService拒绝未声明/非法身份；后续在真实输出Schema、生产者和资格消费者一并接入。"
     },
     {
       "id": "A21",
       "item": "方案偏好正式载体/保存/Dirty/Undo",
       "originalRequirements": "先核UserData具体key保存重开/Dirty/Undo，再冻结会话scope与载体；若要求持久，实际通过Serialize→PrepareJson→ReadFrozenCandidate→WriteSnapshot及失败恢复/关闭。",
       "originalOracle": "不因AdditionalData存在就新增字段；Workflow扩展快照修复不能代根扩展/偏好证明；不另写旁路配置。",
-      "currentStatus": "原UserData保存/Dirty/Undo仅部分静态可见；未决定新格式或声明等价。"
+      "currentStatus": "条件性闭口：默认展开仅DocumentEditSession临时偏好，实际开关Tooltip标明不持久化；方案保存重开、Dirty及Undo未实现，原厂UserData键未验证。后续需在ProductionEditorContext和正式方案序列化/快照/历史链接入。"
     },
     {
       "id": "A22",
       "item": "实际消费者整窗六类正向出口",
       "originalRequirements": "ROI/结果合法owner接通后一次补：捕获重绑旧结果、保存重绑旧来源回调、未失焦确认保存重开、真实窗调试/连续停止、预览及失败清空、成功确认发布后释放。",
       "originalOracle": "保持现整窗保护，不整体禁用已有正式ROI来源、不用条件跳过/旧假模型验收；未满足前B08/S2仍未完整验收。",
-      "currentStatus": "BlobRunUi 的无条件保护阻止整窗确认：ROI绘制/继承及图形文本组合仍为未接正式草稿的UI私态；已有ROI输入、结果判定、结果表基础可复用。须贯通状态保存、消费者及生命周期后按实际状态验证，不能直接去掉保护。"
+      "currentStatus": "条件性闭口：ROI绘制/继承的Runtime正式草稿和图形/文本配置及渲染消费者未接入；BlobRunUi与DeclaredSettingsView保留整窗确认/调试/保存保护，六类真实整窗正向未验证。后续贯通ROI事务和帧租约、显示消费者、保存历史及退役后，再补六类正向验收；已有输入、判定模型和结果表不误称缺失。"
     },
     {
       "id": "A23",

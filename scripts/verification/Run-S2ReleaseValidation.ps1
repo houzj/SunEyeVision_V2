@@ -222,6 +222,7 @@ if($Track -in @('ManualReferenceQualification','NumericIndexProduction'))
     $receipt.probe=$manualProbeEvidence
     $receipt.caseReport=Join-Path $logDir $(if($Track -eq 'NumericIndexProduction'){'numeric-index-report.json'}else{'manual-reference-report.json'})
 }
+if($Track -eq 'ImageInputSelection'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'image-input-selection-report.json';$receipt.loaded=($env:S4_IMAGE_INPUT_LOADED -eq '1')}
 if($Track -eq 'RangeRoundtrip'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'range-roundtrip-report.json';$receipt.loaded=($env:S4_RANGE_LOADED -eq '1')}
 if($Track -eq 'BlobRangeLayout'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-range-layout-report.json'}
 if($Track -eq 'BlobParameterProduction'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-parameter-production-report.json'}

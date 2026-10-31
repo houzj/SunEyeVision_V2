@@ -73,10 +73,11 @@ public sealed partial class DeclaredFieldEditor
                     if(items.Any(item=>item.Tag is ReferenceSetting prior&&SameImageReference(prior.Reference,reference.Reference)))continue;
                     items.Add(new ComboBoxItem{Content=candidate.Label,Tag=reference});
                 }
-                var selected=items.FirstOrDefault(Matches);
+                var selected=items.FirstOrDefault(Matches);var retainedUnavailable=false;
                 if(selected is null&&_setting is ReferenceSetting retained)
                 {
                     // Preserve a removed/changed source for review; refreshing never rewrites its identity or draft.
+                    retainedUnavailable=true;
                     selected=new ComboBoxItem{Content=_formatReference?.Invoke(retained.Reference)??retained.Reference.NodeId+" · "+retained.Reference.PortId,
                         Tag=retained,IsEnabled=false,ToolTip="当前来源不在可选图像声明中，请重新选择"};
                     items.Add(selected);
@@ -99,7 +100,8 @@ public sealed partial class DeclaredFieldEditor
                 }
                 finally{refreshing=false;}
                 if(!Active())return;
-                candidatesValid=true;ChangeRefreshError("");
+                candidatesValid=true;
+                ChangeRefreshError(retainedUnavailable?"当前来源不在可选图像声明中，请重新选择":"");
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException)
             {if(Active())ChangeRefreshError(error.Message);}
@@ -126,16 +128,33 @@ public sealed partial class DeclaredFieldEditor
         {if(sender is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
         void OnKeyDown(object sender,KeyEventArgs args)
         {if(args.Key==Key.Enter&&combo.IsDropDownOpen&&combo.SelectedItem is ComboBoxItem item&&ConfirmCurrent(item))args.Handled=true;}
+        void RestoreWhenActive()
+        {
+            if(Current()&&_presentationVisible&&combo.IsLoaded&&combo.IsVisible&&combo.IsEnabled)RestoreSelection();
+        }
+        void OnLoaded(object sender,RoutedEventArgs args)=>RestoreWhenActive();
+        void OnActivationChanged(object sender,DependencyPropertyChangedEventArgs args)
+        {
+            if(!Current())return;
+            if(!combo.IsEnabled||!combo.IsVisible)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
+            else RestoreWhenActive();
+        }
         void OnUnloaded(object sender,RoutedEventArgs args)=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         combo.DropDownOpened+=OnOpened;
         combo.SelectionChanged+=OnSelectionChanged;
         combo.Unloaded+=OnUnloaded;
+        combo.Loaded+=OnLoaded;
+        combo.IsEnabledChanged+=OnActivationChanged;
+        combo.IsVisibleChanged+=OnActivationChanged;
         combo.PreviewKeyDown+=OnKeyDown;
         _detachImageSource=()=>
         {
             combo.DropDownOpened-=OnOpened;
             combo.SelectionChanged-=OnSelectionChanged;
             combo.Unloaded-=OnUnloaded;
+            combo.Loaded-=OnLoaded;
+            combo.IsEnabledChanged-=OnActivationChanged;
+            combo.IsVisibleChanged-=OnActivationChanged;
             combo.PreviewKeyDown-=OnKeyDown;
             DetachItems();
             combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);

@@ -390,6 +390,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     public bool TryCommitPending()
     {
         if(IsDisposed||ChoiceError is not null)return false;
+        // Image enumeration has no reference presenter; retain the same invalid-source capture gate.
+        if(_imageSources is not null&&_state.HasInvalidInput)return false;
         if(_numeric is not null&&!_numeric.TryCommitPending())return false;
         if(_textPresenter is not null&&!_textPresenter.TryCommitPending())return false;
         if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;

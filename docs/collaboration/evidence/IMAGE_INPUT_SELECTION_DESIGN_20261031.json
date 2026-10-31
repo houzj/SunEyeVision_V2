@@ -30,7 +30,7 @@
     },
     {
       "chain": "已证测试",
-      "implementation": "FieldEditing图像同项鼠标接管、自引用拒绝/恢复、跨文档退役；RuntimeEditor真实输入与保护；RuntimeWorkflow实际源到Blob冻结消费",
+      "implementation": "FieldEditing图像同项鼠标接管、自引用拒绝/恢复；其他引用控件已有跨文档退役，不等IMAGE Combo跨文档旧事件已验；RuntimeEditor真实输入与保护；RuntimeWorkflow实际源到Blob冻结消费",
       "decision": "旧结果按版本复用，新专项不冒称已闭整窗"
     }
   ],
@@ -46,6 +46,7 @@
   ],
   "writeBoundary": [
     "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs：仅实证问题的成片修复",
+    "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs：主线批准仅TryCommitPending加入图像专用HasInvalidInput门禁，其他字段不动",
     "scripts/verification/S4ImageInputSelectionCases.cs（新增）、Run-S2ReleaseValidation.ps1专属轨",
     "docs/collaboration/evidence/IMAGE_INPUT_SELECTION*设计与回执"
   ],
@@ -53,12 +54,20 @@
   "dependencies": [
     "原厂全域动态输出/Group、图像ROI模式与ROI/显示正式组合、偏好持久化仍按既有未实现标记；不是本控件新工作",
     "未知厂商来源不虚造候选；不能解除BlobRunUi保护冒充整窗确认",
-    "原具体焦点键盘细节无新增证据不猜，记录现行可复现合同和未证边界"
+    "原具体焦点键盘细节无新增证据不猜，记录现行可复现合同和未证边界",
+    "图像Combo跨文档旧事件矩阵本专项未执行，其他引用控件的既有跨文档通过不代此项。"
   ],
   "originalQualificationBoundary": {
     "original": "VmModule.cs:4049 IMAGE树使用CanSubscribeA&&Visible；EnumerationG.cs:35候选替换先CurValue=null，初始化随后从SubscriptionInfo无触发回填",
     "notProved": "初始化清投影不证明业务持久字段被清；失败/最终失效显示未知，不把本方保留禁用身份称原件一致",
     "platform": "本方仅当前真实Schema图像声明+一般DAG+标量成员筛选，没有IMAGE专门CanSubscribeA/Visible冻结合同；缺基础明确未实现，不扩Contracts、不误用数值资格或DisplayInResultPanel",
     "safeAdaptation": "刷新不写持久引用，删除/类型改变保留禁用旧身份并须阻断确认，显式选择才经宿主预检接纳；需要探针核实际阻断与恢复"
-  }
+  },
+  "confirmedRepair": {
+    "failureCommit": "7c8b4096",
+    "scope": "仅Combo专属失效保留项记录SourceError，沿现有错误合同捕获拒绝，不增红色提示区域；恢复原身份只清SourceError，不吞EditError/宿主拒绝。",
+    "hostDistinction": "RuntimeNodeConfigurationControl原本还有HasInvalidText检查；本次不能说改之前Host没有任何门禁，缺陷是控件未产生SourceError和专字段TryCommitPending缺少该分支。",
+    "activation": "有效候选使用快照显式retainedUnavailable标记，不从继承IsEnabled判断资格；Loaded/可见/启用恢复静默回填Accepted显示并退订事件，恢复前程序选择不被隐式接纳。"
+  },
+  "staticReviewBoundary": "RestoreWhenActive嵌套刷新是只读提示的静态风险，ItemCollection.Add中真实禁用/启用的精确探针已执行并保持0写入/原OriginId，未复现；不声称全部重入组合穷尽或追加基础。"
 }

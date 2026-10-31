@@ -1,3 +1,8 @@
+## 2026-10-31 单阈值像素实测与原厂证据边界
+
+- 逆向负责人确认当前静态材料无法判定原VM的实际极性方向、相等像素及0/255端点。现行本方以有效域内[T,255]为Binary并以有效域差集为BinaryInv，为可替换的自研假设，位置 BlobSession.Execute threshold/binary；不称VM等价。
+- 正式Release同产品70a13a3d，RuntimeAlgorithm attempt-004共7组通过，真实运行验证输入0/1/99/100/101/254/255在T=0/100/255的双极性六掩膜、面积和帧，回执及原证据哈希见 SINGLE_THRESHOLD_PIXEL_MASKS_FORMAL_20261031.json。未进行原机差分。
+- 二值输出当前全图Domain及域外黑像素，原厂及正式合同对Domain要求未证，继续保留差异和保护，不擅改；其他模式和Blob完整链仍未完成。
 ## 2026-10-31 Blob 筛选端点准入正式回归
 
 - b50270a2统一正式配置与ToolRuntimeExecutor：禁用筛选端点仍校验声明的有限性和绝对范围，合法禁用倒序保留，启用时仍拒绝倒序；未改原厂未证算法、量化或角度。候选失败与四轨证据保留 SINGLE_THRESHOLD_ADMISSION_CANDIDATE_20261031.json。

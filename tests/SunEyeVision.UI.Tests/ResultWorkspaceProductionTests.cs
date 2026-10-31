@@ -1127,6 +1127,32 @@ public sealed class ResultWorkspaceProductionTests
         finally { descriptor.RemoveValueChanged(output, changed); }
     });
     [Fact]
+    public void Image_source_output_tree_is_separate_from_declared_current_result_table()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        f.Main.SelectedNode = f.Source; Pump();
+        Assert.Null(ToolRegistry.CreateCurrentResultView("ImageLoad"));
+        Assert.Null(f.Shell.CurrentResultContent);
+        var current = Assert.IsType<TabItem>(f.Shell.FindName("CurrentResultTab"));
+        Assert.Equal(Visibility.Collapsed, current.Visibility);
+        Assert.NotEmpty(f.Main.ResultTreeRoots);
+        var contract = new OutputBindingChangeService().ReadContract(f.Flow.Nodes.Single(node => node.Id == f.Source.Id))!;
+        Assert.Equal(new[] { "output.image", "output.gray-image", "output.file", "output.file-name", "output.device-frame-id", "output.sequence" },
+            contract.Where(output => output.DisplayInResultPanel).Select(output => output.PortId));
+        Assert.Contains(contract, output => output.PortId == "output.source-kind" && !output.DisplayInResultPanel);
+        Assert.True(ToolRegistry.HasRuntime("BlobAnalysis"));
+        using var blob = ToolRegistry.CreateCurrentResultView("BlobAnalysis");
+        Assert.NotNull(blob);
+        f.Shell.CurrentResultContent = blob!.View; Pump();
+        Assert.Equal(Visibility.Visible, current.Visibility);
+        current.IsSelected = true;
+        f.Shell.CurrentResultContent = null; Pump();
+        Assert.Equal(Visibility.Collapsed, current.Visibility);
+        Assert.True(Assert.IsType<TabItem>(f.Shell.FindName("HistoryTab")).IsSelected);
+    });
+
+    [Fact]
     public void Final_shutdown_cannot_recreate_presenter_or_borrowed_content_after_a_real_reload()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
     {

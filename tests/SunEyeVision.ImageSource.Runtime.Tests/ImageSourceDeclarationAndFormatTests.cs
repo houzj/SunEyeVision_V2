@@ -49,6 +49,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
             [ImageSourceOutput.SourceKind] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.DeviceId] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.FileReference] = TypeRef.ScalarOf(ScalarKind.Text),
+            [ImageSourceOutput.FileName] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.FrameId] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.Timestamp] = TypeRef.ScalarOf(ScalarKind.Text)
         };
@@ -255,6 +256,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
             var values = output.ToValues();
             Assert.Equal("local", Assert.IsType<string>(values[ImageSourceOutput.SourceKind]));
             Assert.Equal(path, Assert.IsType<string>(values[ImageSourceOutput.FileReference]));
+            Assert.Equal(Path.GetFileName(path), Assert.IsType<string>(values[ImageSourceOutput.FileName]));
             foreach (var id in new[] { ImageSourceOutput.DeviceId, ImageSourceOutput.FrameId, ImageSourceOutput.Timestamp })
                 Assert.Equal(string.Empty, Assert.IsType<string>(values[id]));
             Assert.Equal(2L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageWidth)));

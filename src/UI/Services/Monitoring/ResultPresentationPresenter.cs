@@ -423,7 +423,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
             _ => node.ScalarValue switch
             {
-                string text => text.Length == 0 ? "empty" : text,
+                string text => text,
                 bool boolean => boolean ? "true" : "false",
                 long integer => integer.ToString(CultureInfo.InvariantCulture),
                 double number => number.ToString("R", CultureInfo.InvariantCulture),

@@ -25,7 +25,7 @@ public partial class ResultWorkspaceShell : UserControl
     public object? SourceStripContent { get => (object?)GetValue(SourceStripContentProperty); set => SetValue(SourceStripContentProperty, value); }
     public static readonly DependencyProperty PropertyListContentProperty = DependencyProperty.Register(nameof(PropertyListContent), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public object? PropertyListContent { get => (object?)GetValue(PropertyListContentProperty); set => SetValue(PropertyListContentProperty, value); }
-    public static readonly DependencyProperty CurrentResultContentProperty = DependencyProperty.Register(nameof(CurrentResultContent), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    public static readonly DependencyProperty CurrentResultContentProperty = DependencyProperty.Register(nameof(CurrentResultContent), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, CurrentResultChanged));
     public object? CurrentResultContent { get => (object?)GetValue(CurrentResultContentProperty); set => SetValue(CurrentResultContentProperty, value); }
     public static readonly DependencyProperty HelpContentProperty = DependencyProperty.Register(nameof(HelpContent), typeof(string), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public string? HelpContent { get => (string?)GetValue(HelpContentProperty); set => SetValue(HelpContentProperty, value); }
@@ -51,7 +51,13 @@ public partial class ResultWorkspaceShell : UserControl
         // Explicit sources survive the original buttons moving outside this namescope in fullscreen.
         btnLeft.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(PreviousImageCommand)) { Source = this });
         btnRight.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(NextImageCommand)) { Source = this });
-        Loaded += (_, _) => ApplyLayout();
+        Loaded += (_, _) => { ApplyLayout(); SelectAvailableInfoTab(); };
+    }
+    private static void CurrentResultChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) => ((ResultWorkspaceShell)sender).SelectAvailableInfoTab();
+    private void SelectAvailableInfoTab()
+    {
+        if (CurrentResultContent is null && CurrentResultTab is { IsSelected: true } && HistoryTab is not null)
+            HistoryTab.IsSelected = true;
     }
     private static void LayoutChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) => ((ResultWorkspaceShell)sender).ApplyLayout();
     private void ApplyLayout()

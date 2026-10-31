@@ -98,7 +98,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                     [ImageSourceOutput.GrayHeight]=(long)gray.Height,[ImageSourceOutput.GrayFormat]=gray.Layout.Format.ToString()}),
                 [ImageSourceOutput.SourceKind]=settings.SourceKind,
                 [ImageSourceOutput.DeviceId]=settings.SourceKind=="camera"?settings.CameraDeviceId:string.Empty,
-                [ImageSourceOutput.FileReference]=address,[ImageSourceOutput.Sequence]=sequence,
+                [ImageSourceOutput.FileReference]=address,[ImageSourceOutput.FileName]=address.Length==0?string.Empty:Path.GetFileName(address),[ImageSourceOutput.Sequence]=sequence,
                 [ImageSourceOutput.FrameId]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceFrameId)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceFrameId):string.Empty,
                 [ImageSourceOutput.Timestamp]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp):string.Empty
             };

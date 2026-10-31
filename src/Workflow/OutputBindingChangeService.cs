@@ -169,18 +169,23 @@ public sealed class OutputBindingChangeService
             .OfType<string>().Distinct().ToArray();
     }
 
-    private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema)=>schema.Outputs.Select(port=>new OutputVariable
+    private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor? projection)
     {
+        var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
+            ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+        return schema.Outputs.Select(port=>new OutputVariable
+        {
         PortId=port.Id,Name=port.Id,DisplayName=schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,
         DisplayMembers=schema.FindOutputDisplay(port.Id)?.Children??Array.Empty<OutputDisplayNode>(),ValueDeclaration=port.Type,AllowsNull=port.Nullable,
         DeclaredType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?typeof(IReadOnlyImage):null,
         VariableType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?"Image":"",
-        IsCollection=port.Type.Shape==ValueShape.Sequence,Kind=OutputVariableKind.Data
-    }).ToArray();
+        IsCollection=port.Type.Shape==ValueShape.Sequence,Kind=OutputVariableKind.Data,DisplayInResultPanel=shown is null||shown.Contains(port.Id)
+        }).ToArray();
+    }
 
     public IReadOnlyList<OutputVariable>? ReadContract(WorkflowNodeBase node)
     {
-        if(node.RuntimeConfiguration is { } runtime)return DescribeRuntimeOutputs(runtime.Schema);
+        if(node.RuntimeConfiguration is { } runtime)return DescribeRuntimeOutputs(runtime.Schema,runtime.ResultProjection);
         var contract = node.Parameters is IOutputContractProvider provider ? provider.GetOutputContract() : StaticContractReader?.Invoke(node);
         if (contract == null && ToolRegistry.ToolExists(node.ToolType))
             contract = ToolRegistry.GetAllPropertyMetadata(node.ToolType).Select(m => new OutputVariable

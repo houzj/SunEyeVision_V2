@@ -17,12 +17,10 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new ResultColumnDescriptor("image","图像",new(ImageSourceOutput.Image)),
         new ResultColumnDescriptor("gray-image","灰度图像",new(ImageSourceOutput.GrayImage)),
 
-        new ResultColumnDescriptor("source","图像来源",new(ImageSourceOutput.SourceKind)),
-        new ResultColumnDescriptor("device","设备",new(ImageSourceOutput.DeviceId)),
-        new ResultColumnDescriptor("file","文件引用",new(ImageSourceOutput.FileReference)),
-        new ResultColumnDescriptor("sequence","序列号",new(ImageSourceOutput.Sequence)),
-        new ResultColumnDescriptor("frame","设备帧号",new(ImageSourceOutput.FrameId)),
-        new ResultColumnDescriptor("timestamp","设备时间",new(ImageSourceOutput.Timestamp))
+        new ResultColumnDescriptor("file","当前图像路径",new(ImageSourceOutput.FileReference)),
+        new ResultColumnDescriptor("file-name","当前图像名称",new(ImageSourceOutput.FileName)),
+        new ResultColumnDescriptor("frame","帧号",new(ImageSourceOutput.FrameId)),
+        new ResultColumnDescriptor("sequence","SN码",new(ImageSourceOutput.Sequence))
     });
     public InputValues ReadSettings(object settings)=>ImageSourceFields.Read(RequireSettings(settings));
     public object MaterializeSettings(InputValues values)=>ImageSourceFields.Materialize(values);

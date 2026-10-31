@@ -230,7 +230,7 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         Assert.All(rows, row => Assert.Equal("失败: detail", row.DisplayValue));
         using var run = Success(schema, new() { ["null"] = null, ["empty"] = "", ["items"] = Array.Empty<double>() });
         presenter.Present(run.Publication);
-        Assert.Equal(new[] { "成功", "missing", "null", "empty", "空序列 (0)" }, rows.Select(row => row.DisplayValue));
+        Assert.Equal(new[] { "成功", "missing", "null", "", "空序列 (0)" }, rows.Select(row => row.DisplayValue));
         Assert.False(rows.Last().IsGroup);
     });
 

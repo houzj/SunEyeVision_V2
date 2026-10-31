@@ -3251,7 +3251,7 @@ SplitterPosition = position;
             if(!Current())return System.Threading.Tasks.Task.CompletedTask;
             DataAnalysisControlTitle="数据分析";
             if(selectedNode is null||!Current())return System.Threading.Tasks.Task.CompletedTask;
-            var view=ToolRegistry.CreateResultView(selectedNode.ToolType);
+            var view=ToolRegistry.CreateCurrentResultView(selectedNode.ToolType);
             if(!Current()){view?.Dispose();return System.Threading.Tasks.Task.CompletedTask;}
             if(view is null)
             {
@@ -4412,7 +4412,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 var fallback=schema.Outputs.ToDictionary(port=>port.Id,port=>port.Id,StringComparer.Ordinal);
                 var names=ToolResultViews.DisplayNames(schema,fallback,runtime.Schema,runtime.ResultProjection);
                 if(!owner())return;
-                PresentDeclaration(schema,nodeName,names,DeclaredBindings(schema,nodeId));
+                var projection=runtime.ResultProjection;
+                var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
+                    ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+                PresentDeclaration(schema,nodeName,names,DeclaredBindings(schema,nodeId),shown);
                 return;
             }
             ClearResultDisplay();

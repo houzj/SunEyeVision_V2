@@ -26,7 +26,7 @@ public static partial class ToolRegistry
         return component is null?tool as IToolEditorFactory:Activator.CreateInstance(component.EntryType) as IToolEditorFactory;
     }
 
-    public static IToolResultView? CreateResultView(string toolId)
+    public static IToolResultView? CreateCurrentResultView(string toolId)
     {
         ToolComponentRegistration? runtime, editor;
         lock(_lock)
@@ -38,7 +38,9 @@ public static partial class ToolRegistry
         var schema=provider.ResultSchema;var projection=provider.ResultProjection;
         var errors=projection.Validate(schema);
         if(errors.Count!=0)throw new InvalidOperationException("Invalid runtime result presentation: "+string.Join("; ",errors.Select(e=>e.Message)));
-        if(projection.Kind==ResultProjectionKind.None)return null;
+        // The module output tree has its own schema-driven owner. A property-list
+        // declaration must not be mounted as the separate current-result table.
+        if(projection.Kind is ResultProjectionKind.None or ResultProjectionKind.PropertyList)return null;
         if(editor is not null)
         {
             var factory=Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory
@@ -48,7 +50,6 @@ public static partial class ToolRegistry
         return projection.Kind switch
         {
             ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),
-            ResultProjectionKind.PropertyList=>new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList(schema,projection),
             _=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)
         };
     }

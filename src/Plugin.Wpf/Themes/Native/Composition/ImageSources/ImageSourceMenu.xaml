@@ -81,6 +81,8 @@
     <Setter Property="Grid.IsSharedSizeScope" Value="True" />
     <Setter Property="ContextMenu.HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
     <Setter Property="Foreground" Value="{DynamicResource ImageSources.Foreground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ImageSources.Border}" />
+    <Setter Property="Background" Value="{DynamicResource ImageSources.MenuBackground}" />
     <Setter Property="ScrollViewer.PanningMode" Value="Both" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
     <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" />
@@ -92,12 +94,12 @@
           <Grid SnapsToDevicePixels="True">
             <Border Name="bg" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True" BorderThickness="1" BorderBrush="{TemplateBinding Control.Background}" CornerRadius="1" />
             <Popup AllowsTransparency="True" Focusable="False" HorizontalOffset="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" Placement="Right" IsOpen="{Binding IsOpen, RelativeSource={RelativeSource TemplatedParent}}">
-              <Border Name="DropDown" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="{DynamicResource ImageSources.Border}" Background="{DynamicResource ImageSources.MenuBackground}" BorderThickness="1" Margin="4">
+              <Border Name="DropDown" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="1" Margin="4">
                 <UIElement.Effect>
                   <DropShadowEffect Color="#1E2C2C2C" BlurRadius="4" ShadowDepth="4" Opacity="0.1" />
                 </UIElement.Effect>
                 <ScrollViewer Name="SubMenuScrollViewer" Margin="1,2,1,2" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
-                  <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" Background="{DynamicResource ImageSources.MenuBackground}" />
+                  <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" Background="{TemplateBinding Control.Background}" />
                 </ScrollViewer>
               </Border>
             </Popup>

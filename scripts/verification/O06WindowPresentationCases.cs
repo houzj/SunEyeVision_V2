@@ -1384,9 +1384,9 @@ internal static class S2DocumentEditingCases
   var index=new DeclaredReferenceCandidate("索引来源","source",null,new Port("index",DataType.Integer),Array.Empty<string>());
   var alternate=new DeclaredReferenceCandidate("另一数值来源","source",null,new Port("values2",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
   FieldPresentation presentation=new("expanded","数量","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:1000)};
-  DeclaredFieldEditor Create(Action<ParameterSetting> write,Action<ReferenceExpansionRequest>? expand=null)=>new(
+  DeclaredFieldEditor Create(Action<ParameterSetting> write,Action<ReferenceExpansionRequest>? expand=null,ReferenceWindowOwner? windowOwner=null)=>new(
    new("expanded",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数量",
-   new ReferenceSetting(sequence.Reference(BindingSelection.All)),write,new ReferenceFieldOptions(_=>new(new[]{sequence,alternate},new[]{index}),EditableIndex:true,Expand:expand),
+   new ReferenceSetting(sequence.Reference(BindingSelection.All)),write,new ReferenceFieldOptions(_=>new(new[]{sequence,alternate},new[]{index}),EditableIndex:true,Expand:expand,WindowOwner:windowOwner),
    new ConstantSetting(7L),presentation:presentation);
   object Session(DeclaredFieldEditor field)=>Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single().SubscribeDataLeft!;
   void Command(object session,string name,object? argument=null)=>((ICommand)session.GetType().GetProperty(name)!.GetValue(session)!).Execute(argument);
@@ -1397,7 +1397,7 @@ internal static class S2DocumentEditingCases
    Command(session,"PopSubscribeWindowCommand");Pump();
    var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
    Require(window.Owner==owner&&window.IsVisible&&window.Style is not null,"原窗未取得实际Owner或正式样式");
-   var request=(ReferenceExpansionRequest)window.DataContext;
+   var request=((ReferenceWindowOwner)window.DataContext).CurrentRequest!;
    var tree=(SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView)window.FindName("treeView");
    Require(ReferenceEquals(tree.ItemSource,request.SourceNodes),"专窗复制了来源树");
    var node=request.SourceNodes.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).Last();
@@ -1412,7 +1412,7 @@ internal static class S2DocumentEditingCases
    var before=writes;request.ClickCommand.Execute(node);Require(writes==before,"已关闭请求仍可写入");
    Command(session,"PopSubscribeWindowCommand");Pump();
    var reopened=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
-   var active=(ReferenceExpansionRequest)reopened.DataContext;Show(new TextBlock{Text="卸载"});
+   var active=((ReferenceWindowOwner)reopened.DataContext).CurrentRequest!;Show(new TextBlock{Text="卸载"});
    Require(!active.IsValid&&!reopened.IsVisible,"字段卸载未关窗或未失效");
   });
   Test("扩展请求刷新旧节点、模式隔离与失效回调重入",()=>
@@ -1436,23 +1436,24 @@ internal static class S2DocumentEditingCases
    Command(session,"PopSubscribeWindowCommand");Require(requests.Count==2&&requests[1].IsValid&&!first.IsValid,"外层展开覆盖失效回调中新请求");
    field.Dispose();Require(!requests[1].IsValid,"释放未使最新借用请求失效");
   });
-  Test("原扩展窗默认方式仅在同一Owner共享且不同入口互斥",()=>
+  Test("原扩展窗默认与Root当前开关独立且同Root目标互斥",()=>
   {
-   using var a=Create(_=>{});using var b=Create(_=>{});Show(a);host.Children.Add(b);owner.UpdateLayout();Pump();
+   using var windowOwner=new ReferenceWindowOwner(host,()=>true,new(),false);
+   using var a=Create(_=>{},windowOwner:windowOwner);using var b=Create(_=>{},windowOwner:windowOwner);Show(a);host.Children.Add(b);owner.UpdateLayout();Pump();
    var sa=Session(a);var sb=Session(b);Command(sa,"PopSubscribeWindowCommand");Pump();
    var first=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
-   var request=(ReferenceExpansionRequest)first.DataContext;
+   var request=((ReferenceWindowOwner)first.DataContext).CurrentRequest!;
    var check=Visuals<CheckBox>(first).Single(check=>check.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="PreferExpanded");check.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
    Require(request.PreferExpanded,"原默认方式CheckBox未写UI偏好");
    Command(sb,"DropDownCommand");Pump();
    var second=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
-   Require(!request.IsValid&&second!=first,"跨入口未互斥或未共享Owner默认方式");
+   Require(!request.IsValid&&second==first&&windowOwner.CurrentRequest is {IsValid:true} next&&!ReferenceEquals(next,request),"同Root没有保留窗口、替换字段目标或退役旧请求");
    second.Close();Pump();
    using var other=Create(_=>{});var separate=new Window{Width=500,Height=400,Content=other};
    try{separate.Show();Pump();Command(Session(other),"DropDownCommand");Pump();Require(separate.OwnedWindows.Count==0,"UI偏好泄漏至另一Owner");}
    finally{separate.Close();}
    Command(sb,"PopSubscribeWindowCommand");Pump();
-   ((ReferenceExpansionRequest)owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single().DataContext).PreferExpanded=false;
+   ((ReferenceWindowOwner)owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single().DataContext).PreferExpanded=false;
   });
   Test("原扩展窗可独立构造取得模板和双树",()=>
   {
@@ -1479,12 +1480,12 @@ internal static class S2DocumentEditingCases
    var writes=0;using var field=Create(_=>writes++);Show(field);var session=Session(field);
    Command(session,"PopSubscribeWindowCommand");Pump();
    var first=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
-   var request=(ReferenceExpansionRequest)first.DataContext;var node=Leaf(request.SourceNodes);
+   var request=((ReferenceWindowOwner)first.DataContext).CurrentRequest!;var node=Leaf(request.SourceNodes);
    field.IsEnabled=false;Pump();Require(!request.IsValid&&!first.IsVisible,"禁用仍保留可写展开窗");
    request.ClickCommand.Execute(node);Require(writes==0,"禁用后的旧展开请求仍写入");
    field.IsEnabled=true;Command(session,"PopSubscribeWindowCommand");Pump();
    var second=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
-   var active=(ReferenceExpansionRequest)second.DataContext;
+   var active=((ReferenceWindowOwner)second.DataContext).CurrentRequest!;
    field.Visibility=Visibility.Collapsed;Pump();Require(!active.IsValid&&!second.IsVisible,"隐藏未退役当前展开窗");
   });
   Test("扩展来源递归父链精确筛选并恢复深层成员索引",()=>
@@ -2764,9 +2765,9 @@ internal static class S2DocumentEditingCases
    using var fields=AdvancedFields(_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),initial);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
    var access=fields.Fields.Single(field=>field.FieldId=="a.value");var before=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
-   var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=(ReferenceExpansionRequest)window.DataContext;
-   advanced.IsExpanded=false;Pump();Require(!window.IsVisible&&!request.IsValid&&writes==0&&before==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference),"折叠未关扩展窗或清除了引用");
-   advanced.IsExpanded=true;Pump();Require(access.Setting is ReferenceSetting&&writes==0,"展开恢复成其他模式");Show(new TextBlock());
+   var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=((ReferenceWindowOwner)window.DataContext).CurrentRequest!;
+   advanced.IsExpanded=false;Pump();Require(window.IsVisible&&window.DataContext is ReferenceWindowOwner {IsExpanded:true,CurrentRequest:null}&&!request.IsValid&&writes==0&&before==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference),"字段折叠未保持空Root窗、退役目标或改变了引用");
+   advanced.IsExpanded=true;Pump();Require(access.Setting is ReferenceSetting&&writes==0,"展开恢复成其他模式");Show(new TextBlock());Require(!window.IsVisible,"整个Root卸载未关闭空窗");
   });
   Test("原高级隐藏捕获被宿主拒绝后保留原文并可修改重试",()=>
   {

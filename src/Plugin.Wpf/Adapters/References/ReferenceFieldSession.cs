@@ -24,6 +24,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private readonly Func<bool>? _commitGroup;
     private readonly Action<ReferenceExpansionRequest>? _expand;
     private readonly Func<ReferenceExpansionPreference> _preference;
+    private readonly Func<bool> _isExpanded;
     private ReferenceExpansionRequest? _expansion;
     private long _expansionGeneration;
     internal Port Target=>_state.Port;
@@ -80,12 +81,12 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public ICommand FocusedCommand {get;}
     public ICommand PopSubscribeWindowCommand {get;}
 
-    public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format,Func<ParameterSetting,bool>? accept=null,Func<bool>? commitGroup=null,Action<ReferenceExpansionRequest>? expand=null,Func<ReferenceExpansionPreference>? preference=null,bool allowConstantText=false,Action<VariableSelectionRequest>? selectVariable=null)
+    public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format,Func<ParameterSetting,bool>? accept=null,Func<bool>? commitGroup=null,Action<ReferenceExpansionRequest>? expand=null,Func<ReferenceExpansionPreference>? preference=null,bool allowConstantText=false,Action<VariableSelectionRequest>? selectVariable=null,Func<bool>? isExpanded=null)
     {
         ArgumentNullException.ThrowIfNull(options.ReadCandidates);
         _state=state;_options=options;_format=format;_accept=accept??state.TrySet;_commitGroup=commitGroup;_expand=options.Expand??expand;_allowConstantText=allowConstantText;_selectVariable=options.SelectVariable??selectVariable;
-        var localPreference=new ReferenceExpansionPreference();_preference=preference??(()=>localPreference);
-        DropDownCommand=new SessionCommand(_=>{if(_suspended||!CanBrowse)return;if(_preference().PreferExpanded)Expand(false);else Refresh();});
+        var localPreference=new ReferenceExpansionPreference();_preference=preference??(()=>localPreference);_isExpanded=isExpanded??(()=>options.WindowOwner?.IsExpanded==true);
+        DropDownCommand=new SessionCommand(_=>{if(_suspended||!CanBrowse)return;if(_isExpanded())Expand(false);else Refresh();});
         ClickCommand=new SessionCommand(value=>SelectSource(Unwrap(value)));
         IndexClickCommand=new SessionCommand(value=>SelectIndex(Unwrap(value)));
         FocusedCommand=new SessionCommand(FocusChanged);
@@ -408,7 +409,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             &&before.LastIndexOf('[')>before.LastIndexOf(']')&&after.IndexOf(']')>=0
             &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
         if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);Notify(nameof(IsSelectedSubscribeParam));RequestClose();return;}
-        if(_preference().PreferExpanded){Expand(inside,inside);return;}
+        if(_isExpanded()){Expand(inside,inside);return;}
         if(inside)
         {
             var generation=_uiGeneration;Refresh();

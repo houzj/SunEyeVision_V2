@@ -15,7 +15,7 @@
     <Grid WindowChrome.IsHitTestVisibleInChrome="True">
       <TextBlock Text="{DynamicResource Lang_ParamSubscription}" HorizontalAlignment="Left" FontFamily="Microsoft YaHei" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="10,0" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <CheckBox Style="{StaticResource NormalCheckBoxStyle}" VerticalAlignment="Center" IsChecked="{Binding PreferExpanded, Mode=TwoWay}" />
+        <CheckBox Style="{StaticResource NormalCheckBoxStyle}" VerticalAlignment="Center" IsChecked="{Binding PreferExpanded, Mode=TwoWay}" ToolTip="{Binding PreferenceScopeDescription}" />
         <TextBlock Text="{DynamicResource Lang_DefaultMethod}" FontFamily="Microsoft YaHei" VerticalAlignment="Center" FontSize="10" Foreground="#FFFFFFFF" TextAlignment="Center" />
       </StackPanel>
     </Grid>

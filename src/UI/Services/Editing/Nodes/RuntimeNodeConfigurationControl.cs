@@ -26,6 +26,18 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
 {
     private WorkflowNodeBase _node=null!;
     private IToolSettingsView? _view;
+    private ReferenceWindowOwner? _referenceWindowOwner;
+    private ProductionEditorContext? _presentationContext;
+    private void RetireReferencePresentation(){var owner=_referenceWindowOwner;_referenceWindowOwner=null;var context=_presentationContext;_presentationContext=null;if(context is not null)context.Deactivated-=RetireReferencePresentation;owner?.Dispose();}
+    private ReferenceWindowOwner ReferencePresentation()
+    {
+        var context=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
+        if(_referenceWindowOwner is not null&&ReferenceEquals(_presentationContext,context))return _referenceWindowOwner;
+        RetireReferencePresentation();_presentationContext=context;
+        var preference=context?.ReferencePreference??new ReferenceExpansionPreference();
+        var owner=new ReferenceWindowOwner(this,()=>!_disposed&&ReferenceEquals(_presentationContext,context)&&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)&&(context?.IsValid??true),preference,preference.PreferExpanded);
+        _referenceWindowOwner=owner;if(context is not null)context.Deactivated+=RetireReferencePresentation;return owner;
+    }
     private DataSourceQueryService? _query;
     private readonly List<DeclaredFieldEditor> _inputs=new();
     private bool _syncing,_disposed,_capturing;
@@ -117,6 +129,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         var settings=configuration.SettingsSchema??throw new ArgumentException("Runtime settings metadata is required.");
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
+        var presentationOwner=ReferencePresentation();
         var referenceOptions=new ReferenceFieldOptions(target=>
         {
             var candidates=ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
@@ -131,7 +144,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
                 if(!current.SettingsSchema.Inputs.Any(parameter=>parameter.Id==port.Id))return null;
                 return ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context
                     ?context.ReadCurrentParameter(port.Id):current.ReadCurrentParameter(port.Id);
-            });
+            },WindowOwner:presentationOwner);
         var panel=node.ToolType=="ImageLoad"?null:new DeclaredInputFieldsView(schema,port=>
         {
             return node.RuntimeConfiguration!.Fields.Read(port.Id);
@@ -374,5 +387,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         finally{if(ReferenceEquals(node.RuntimeConfiguration,proposed))node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;var view=_view;_view=null;_inputs.Clear();Content=null;if(view is not null){view.Changed-=Changed;view.Dispose();}}
+    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;var view=_view;_view=null;_inputs.Clear();
+        var errors=new List<Exception>();try{RetireReferencePresentation();}catch(Exception error){errors.Add(error);}
+        try{Content=null;}catch(Exception error){errors.Add(error);}try{if(view is not null){view.Changed-=Changed;view.Dispose();}}catch(Exception error){errors.Add(error);}
+        if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();if(errors.Count>1)throw new AggregateException(errors);}
 }

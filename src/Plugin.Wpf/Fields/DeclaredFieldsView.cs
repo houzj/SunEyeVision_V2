@@ -25,6 +25,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<NativeGraphicStylePresenter> _displayCompositions=new();
  private bool _disposed;
+ private readonly ReferenceWindowOwner? _referenceWindowOwner;
+ private readonly bool _ownsReferenceWindowOwner;
  private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
@@ -126,7 +128,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
  private NativeParameterRow BorrowRow(NativeParameterGroup group,FrameworkElement view,Func<NativeParameterItemState>? state=null)
  {
-  var row=new NativeParameterRow(group,view,state,()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+  var row=new NativeParameterRow(group,view,state,()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
   _parameterRows.Add(row);return row;
  }
  private static void BindNativeRowMargin(FrameworkElement view,NativeHost page)
@@ -195,6 +197,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
+  if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
@@ -475,6 +478,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _assists=[];
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
+  if(_ownsReferenceWindowOwner&&_referenceWindowOwner is not null)cleanup.Add(_referenceWindowOwner.Dispose);
   ParameterCleanup.Run(cleanup);
  }
 }

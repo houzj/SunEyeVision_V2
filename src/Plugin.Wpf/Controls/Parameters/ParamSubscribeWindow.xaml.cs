@@ -52,6 +52,7 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 	public ParamSubscribeWindow()
 	{
 		InitializeComponent();
+        if(TryFindResource("Language") is string language&&language=="English")Width=320;
         SetBinding(IsSubscribeIndexProperty, new Binding("IsIndex"));
         SetResourceReference(StyleProperty, typeof(BaseWindow));
         Loaded += ParamSubscribeWindow_Loaded;

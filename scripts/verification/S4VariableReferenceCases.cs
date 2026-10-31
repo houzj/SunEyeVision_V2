@@ -84,7 +84,7 @@ internal static class S2DocumentEditingCases
         {
             Command(modalSession,"PopSubscribeWindowCommand");Pump();
             var expanded=Application.Current.Windows.OfType<Window>().Single(window=>window.IsVisible&&window.GetType().Name=="ParamSubscribeWindow");
-            var expansion=(ReferenceExpansionRequest)expanded.DataContext;
+            var expansion=((ReferenceWindowOwner)expanded.DataContext).CurrentRequest!;
             Require(expansion.IsValid&&ReferenceEquals(expanded.Owner,owner),"展开窗没有有效Owner租约");
             var manager=Nodes(expansion.SourceNodes).Single(node=>(bool)Property(node,"VariableManager"));
             WithDialog(dialog=>

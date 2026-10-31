@@ -78,8 +78,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
                 {
                     _referenceResources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)};
                     _eventRoot.Resources.MergedDictionaries.Add(_referenceResources);
-                    _expansion=new(eventRoot);
-                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference,selectVariable:_expansion.OpenVariable);
+                    _expansion=new(eventRoot,references?.WindowOwner);
+                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
                     _arrange.SubscribeTemplate=(DataTemplate)eventRoot.FindResource("ButtonSelecter_sub");
                     _arrange.SubscribeDataLeft=_reference;
                     _referenceScope=new(eventRoot,_reference,()=>Current()&&_state.IsReferenceMode);

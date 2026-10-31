@@ -53,7 +53,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references,Func<OutputReference,string>? format,
         Func<IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)>,Action,bool>? acceptPrepared=null,Func<IDisposable?>? beginGroup=null)
     {
-        _expansion=new(this);
+        _expansion=new(this,references?.WindowOwner);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
         for(var i=0;i<2;i++){_observedAcceptance[i]=_states[i].AcceptanceVersion;_observedReference[i]=_states[i].IsReferenceMode;}
         _acceptPrepared=acceptPrepared;_beginGroup=beginGroup;
@@ -79,7 +79,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             var endpoint=i;
             if((_states[i].Port.EditModes&FieldEditModes.Reference)!=0&&(_allow[i]||_states[i].IsReferenceMode))
             {
-                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitEndpoint(endpoint),_expansion.Open,_expansion.Preference,selectVariable:_expansion.OpenVariable);
+                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitEndpoint(endpoint),_expansion.Open,_expansion.Preference,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
                 _scopes[i]=new(this,_references[i]!,()=>!_disposed&&_states[endpoint].IsReferenceMode);
             }
             _states[i].Changed+=OnStateChanged;

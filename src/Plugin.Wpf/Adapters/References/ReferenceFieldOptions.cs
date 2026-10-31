@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 
@@ -10,7 +10,8 @@ public sealed record ReferenceFieldOptions(
     Action<ReferenceExpansionRequest>? Expand = null,
     Action<VariableSelectionRequest>? SelectVariable=null,
     Func<VariableReference,string>? FormatVariable=null,
-    Func<Port,ConstantSetting?>? ReadCurrentValue=null)
+    Func<Port,ConstantSetting?>? ReadCurrentValue=null,
+    ReferenceWindowOwner? WindowOwner=null)
 {
     public static ReferenceFieldOptions Empty { get; } = new(_ => ReferenceCandidates.Empty);
 }

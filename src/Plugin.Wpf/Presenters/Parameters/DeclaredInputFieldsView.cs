@@ -19,12 +19,15 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
     private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
+    private readonly ReferenceWindowOwner _referenceWindowOwner;
+    private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write,ReferenceFieldOptions references,
         Func<OutputReference,string>? format=null,
         Func<Port,IReadOnlyList<DeclaredReferenceCandidate>>? referenceCandidates=null)
     {
+        _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
         Fields=_fields.AsReadOnly();
         try
         {
@@ -48,7 +51,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                     if(port.Id==schema.WorkflowImageInputId)
                         editor.UseImageSourceSelector(()=>referenceCandidates?.Invoke(port)??Array.Empty<DeclaredReferenceCandidate>());
                     var row=new NativeParameterRow(metadata,editor,()=>editor.NativeItemState,
-                        ()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+                        ()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
                     _fieldRows.Add(port.Id,row);
                     _page.Rows.Add(row);
                     Action handler=row.Refresh;_handlers.Add((editor,handler));editor.Changed+=handler;
@@ -96,6 +99,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         cleanup.AddRange(_additionalContents.Select(content=>(Action)content.Dispose));_additionalContents.Clear();_fieldRows.Clear();
         cleanup.AddRange(_fields.Select(field=>(Action)field.Dispose));
         cleanup.Add(()=>{BindingOperations.ClearBinding(this,ChildLeftWidthProperty);BindingOperations.ClearBinding(this,ChildMarginProperty);BindingOperations.ClearBinding(this,ChildHeaderMarginProperty);});
+        if(_ownsReferenceWindowOwner)cleanup.Add(_referenceWindowOwner.Dispose);
         ParameterCleanup.Run(cleanup);
     }
 }

@@ -91,6 +91,9 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     private bool _active = true;
     private bool _committing;
     private readonly DocumentEditSession? _documentEdits;
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DocumentEditSession,SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference> ReferencePreferences=new();
+    private readonly SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference _localReferencePreference=new();
+    internal SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference ReferencePreference => _documentEdits is null ? _localReferencePreference : ReferencePreferences.GetValue(_documentEdits,_=>new(){ScopeDescription=System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?"仅当前方案编辑会话的临时默认方式；保存、重开、Dirty和撤销未接通。":"Temporary default for this document editing session only. Save/reopen, dirty state and undo are not connected."});
     private readonly CancellationTokenSource _debugCancellation = new();
     public ToolExecutionOwner DebugOwner { get; } = new();
     public WorkflowContext DebugResults { get; } = new();

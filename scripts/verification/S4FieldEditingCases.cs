@@ -40,7 +40,8 @@ internal static class S2DocumentEditingCases
     {
         try
         {
-            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="CrossDocument")return RunCrossDocumentReferenceCases();
+            if(Environment.GetEnvironmentVariable("B08_REFERENCE_WINDOW_CULTURE") is {Length:>0} culture){Require(culture is "zh-CN" or "en-US","未知窗口验证语言");System.Globalization.CultureInfo.CurrentUICulture=System.Globalization.CultureInfo.GetCultureInfo(culture);}
+            if(Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE") is "CrossDocument" or "WindowSession")return RunCrossDocumentReferenceCases();
             if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             owner=new Window{Width=700,Height=720,Title="正式字段消费验证"};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -344,7 +345,8 @@ internal static class S2DocumentEditingCases
         Require(string.IsNullOrEmpty(selectedTransition)||selectedTransition is "A-to-B" or "reopen-A","未知跨文档场景筛选");
         var transitions=string.IsNullOrEmpty(selectedTransition)?new[]{"A-to-B","reopen-A"}:new[]{selectedTransition!};
         var selectedKinds=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_KINDS");
-        var allKinds=new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
+        var windowSessionOnly=Environment.GetEnvironmentVariable("B08_REFERENCE_CASE_SCOPE")=="WindowSession";
+        var allKinds=windowSessionOnly?new[]{"window-session"}:new[]{"source-popup","index-popup","expanded","variable-source","variable-index"};
         var kinds=string.IsNullOrEmpty(selectedKinds)?allKinds:selectedKinds.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries);
         Require(kinds.Length!=0&&kinds.Distinct(StringComparer.Ordinal).Count()==kinds.Length&&kinds.All(allKinds.Contains),"未知或重复跨文档控件筛选");
         var reports=new List<object>();var unexpected=new List<string>();var expectDelete=false;var imageChainVerified=false;
@@ -450,9 +452,10 @@ internal static class S2DocumentEditingCases
         DeclaredFieldsView Fields(DefaultDebugWindow window)=>CrossVisuals(Control(window)).OfType<DeclaredFieldsView>().Single();
         object Session(DeclaredFieldAccess field)
         {
+            Window.GetWindow(field.View)?.UpdateLayout();Pump();Require(field.View.IsLoaded&&field.View.IsVisible,"数值字段尚未真实加载/可见，不能取模板会话");
             var numeric=typeof(DeclaredFieldEditor).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!;
             var coordinator=numeric.GetType().GetField("_coordinator",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(numeric)!;
-            var box=(ComboBox)coordinator.GetType().GetField("_box",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!;
+            var box=(ComboBox?)coordinator.GetType().GetField("_box",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)??throw new Exception("真实数值ComboBox模板尚未加载");
             Window.GetWindow(field.View)!.Activate();box.Focus();box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
             var session=coordinator.GetType().GetField("_reference",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)!;
             Require(!(bool)Property(session,"IsSuspended")!,"真实来源会话仍暂停，不能据此做退役试验");return session;
@@ -466,12 +469,100 @@ internal static class S2DocumentEditingCases
         AppsPopup Popup(DeclaredFieldAccess field,object session,string path)
             =>CrossVisuals(field.View).OfType<AppsPopup>().Single(p=>ReferenceEquals(p.DataContext,session)
                 &&p.Name==(path=="IsDropDownOpen"?"rt":"et")&&p.GetBindingExpression(AppsPopup.IsPopupOpenProperty)?.ParentBinding.Path?.Path==path);
+        void VerifyWindowConsumers()
+        {
+            var panel=new StackPanel();var current=true;var writes=0;var preference=new ReferenceExpansionPreference{PreferExpanded=true};
+            using var root=new ReferenceWindowOwner(panel,()=>current,preference,true);
+            var integer=new DeclaredReferenceCandidate("整数","ui-producer",null,new Port("n",DataType.Integer),Array.Empty<string>());
+            var image=new DeclaredReferenceCandidate("图像","ui-producer",null,new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),Array.Empty<string>());
+            var references=new ReferenceFieldOptions(port=>new(new[]{port.Type.Shape==ValueShape.Resource?image:integer},new[]{integer}),WindowOwner:root);
+            FieldPresentation Layout(string id,int order,string? pair=null)=>new(id,id,"参数",order,FieldEditorKind.Scalar){Layout=new("参数","参数",PairWith:pair,Minimum:0,Maximum:100,DecimalPlaces:0)};
+            var declarations=new[]{
+                (new Port("number",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),Layout("number",0),(ParameterSetting)new ReferenceSetting(integer.Reference(BindingSelection.All))),
+                (new Port("lower",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),Layout("lower",1,"upper"),(ParameterSetting)new ReferenceSetting(integer.Reference(BindingSelection.All))),
+                (new Port("upper",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),Layout("upper",2),(ParameterSetting)new ReferenceSetting(integer.Reference(BindingSelection.All))),
+                (new Port("image",TypeRef.ResourceOf(ResourceKind.Image),EditModes:FieldEditModes.Reference),Layout("image",3),(ParameterSetting)new ReferenceSetting(image.Reference(BindingSelection.All)))};
+            using var fields=new DeclaredFieldsView(declarations,_=>writes++,references,constantBackup:id=>id=="image"?null:new(10L));panel.Children.Add(fields);Show(panel);Pump();
+            var window=owner.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
+            Require(root.IsExpanded&&root.CurrentRequest is null&&ReferenceEquals(window.DataContext,root)&&window.Width==(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?240:320),"独立同组装链默认true空窗/原资源语言宽度不符");
+            var numeric=Session(fields.Fields.Single(f=>f.FieldId=="number"));Command(numeric,"DropDownCommand");Pump();var numberRequest=root.CurrentRequest!;
+            var range=fields.Fields.Single(f=>f.FieldId=="lower").View;var rangeSessions=(Array)range.GetType().GetField("_references",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(range)!;
+            var native=(FrameworkElement)range.GetType().GetProperty("NativeView")!.GetValue(range)!;var rangeBox=(ComboBox)native.FindName("CBox");rangeBox.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
+            var rangeSession=rangeSessions.GetValue(0)!;Command(rangeSession,"DropDownCommand");Pump();
+            Require(root.CurrentRequest is {IsValid:true} ranged&&ranged.Target.Id=="lower"&&!numberRequest.IsValid&&window.IsVisible,"真实范围端点未借用同Root或未退役普通数值目标");
+            var imageEditor=fields.Fields.Single(f=>f.FieldId=="image").View;var presenter=imageEditor.GetType().GetField("_referencePresenter",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(imageEditor)!;
+            var pure=presenter.GetType().GetField("_session",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(presenter)!;Command(pure,"PopSubscribeWindowCommand");Pump();
+            Require(root.CurrentRequest is {IsValid:true} pureRequest&&pureRequest.Target.Id=="image"&&owner.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible)==window&&writes==0,"纯引用未与数值/范围共用同窗或打开即写入");
+            var beforeHide=root.CurrentRequest!;fields.Visibility=Visibility.Collapsed;Pump();
+            Require(window.IsVisible&&root.IsExpanded&&root.CurrentRequest is null&&!beforeHide.IsValid&&writes==0,"字段隐藏没有保持空Root/退役字段或意外写入");fields.Visibility=Visibility.Visible;Pump();
+            panel.Visibility=Visibility.Collapsed;Pump();Require(!window.IsVisible&&!root.IsExpanded&&preference.PreferExpanded,"整个Root隐藏没有关窗或错误清默认");panel.Visibility=Visibility.Visible;Pump();
+            Command(numeric,"PopSubscribeWindowCommand");Pump();var prior=root.CurrentRequest!;var invoked=false;
+            prior.Invalidated+=()=>{if(invoked)return;invoked=true;Command(pure,"PopSubscribeWindowCommand");};Command(rangeSession,"PopSubscribeWindowCommand");Pump();
+            Require(invoked&&!prior.IsValid&&root.CurrentRequest is {IsValid:true} newer&&newer.Target.Id=="image","旧目标清理重入被外层覆盖/关闭");
+            var primary=new InvalidOperationException("Root投影失败标记");var cleanup=new InvalidOperationException("Root清理失败标记");var armed=true;ReferenceExpansionRequest? failed=null;
+            root.PropertyChanged+=(_,args)=>{if(armed&&args.PropertyName=="CurrentRequest"&&root.CurrentRequest is {} request){armed=false;failed=request;request.Invalidated+=()=>throw cleanup;throw primary;}};
+            Exception? failure=null;try{Command(numeric,"PopSubscribeWindowCommand");}catch(Exception error){failure=error;}
+            IEnumerable<Exception> Errors(Exception error)=>error is AggregateException aggregate?aggregate.InnerExceptions.SelectMany(Errors):new[]{error};
+            Require(failure is not null&&Errors(failure).Any(e=>ReferenceEquals(e,primary))&&Errors(failure).Any(e=>ReferenceEquals(e,cleanup))&&failed?.IsValid==false&&root.CurrentRequest is null&&!root.IsExpanded,"Root投影/清理异常未保留或未完整退役");
+            Command(pure,"PopSubscribeWindowCommand");Pump();Require(root.CurrentRequest is {IsValid:true},"异常清理后同Root不能恢复");
+            var live=root.CurrentRequest!;current=false;root.Dispose();live.RefreshCommand.Execute(null);root.PreferExpanded=false;
+            Require(!live.IsValid&&!root.IsCurrent&&preference.PreferExpanded&&writes==0,"失效Root迟到回调改默认/值或未退役");Show(new TextBlock());Trace("PASS_WINDOW_CONSUMERS 数值/范围/纯引用/隐藏/异常/重入");
+        }
+        ReferenceWindowOwner Root(DefaultDebugWindow window)=>(ReferenceWindowOwner)typeof(RuntimeNodeConfigurationControl).GetField("_referenceWindowOwner",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(Control(window))!;
+        SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow Subscription(DefaultDebugWindow window)=>window.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
+        void VerifyWindowSession(string transition,(SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture,string pathA)
+        {
+            var document=manager.CurrentSolution!;var editing=manager.Session!.Editing;Trace("ROOT_OPEN_EDITOR "+transition);var first=Open(fixture.Target);Trace("ROOT_OPENED_EDITOR "+transition);var control=Control(first);
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;var root=Root(first);var fields=Fields(first);fields.SelectedPageIndex=1;Pump();
+            var bytes=File.ReadAllBytes(pathA);var stamp=Stamp(fixture.Target.RuntimeConfiguration!);var history=manager.Session.History.Position;var dirty=manager.HasUnsavedChanges;
+            Require(!root.IsExpanded&&!root.PreferExpanded&&!first.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Any(),"新文档临时默认被其他文档/构造期owner污染");
+            var lowAccess=fields.Fields.Single(f=>f.FieldId==low);var lowSession=Session(lowAccess);Command(lowSession,"PopSubscribeWindowCommand");Pump();
+            var window=Subscription(first);var request=root.CurrentRequest!;var oldLeaf=ModuleLeaf(request,"SourceNodes",fixture.SourceId,fixture.WidthPort);
+            Require(ReferenceEquals(window.DataContext,root)&&root.IsExpanded&&!root.PreferExpanded&&request.IsValid,"显式展开错误改变默认或未绑定真实Root");
+            var countAccess=fields.Fields.Single(f=>f.FieldId==count);var countSession=Session(countAccess);Command(countSession,"DropDownCommand");Pump();
+            Require(ReferenceEquals(Subscription(first),window)&&!request.IsValid&&root.CurrentRequest is {IsValid:true} next&&next.Target.Id==count,"默认false时切换字段未按当前Root展开/未退役旧目标");
+            var check=CrossVisuals(window).OfType<CheckBox>().Single(c=>c.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="PreferExpanded");
+            check.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();Require(root.PreferExpanded&&root.IsExpanded,"默认方式错误改变当前Root");
+            var targetBeforeRebind=root.CurrentRequest!;Trace("ROOT_REBIND "+transition);control.BindDraft(context.DraftNode);Pump();
+            Require(ReferenceEquals(Root(first),root)&&ReferenceEquals(Subscription(first),window)&&root.CurrentRequest is null&&!targetBeforeRebind.IsValid,"BindDraft重建Root/窗口或保留旧字段目标");
+            Require(!root.ClickCommand.CanExecute(oldLeaf)&&!root.IndexClickCommand.CanExecute(oldLeaf)&&!root.RefreshCommand.CanExecute(null)&&!root.SourceNodes.Cast<object>().Any(),"空窗仍可写来源/刷新或借了假字段目标");
+            root.ClickCommand.Execute(oldLeaf);request.ClickCommand.Execute(oldLeaf);targetBeforeRebind.RefreshCommand.Execute(null);
+            Require(history==manager.Session.History.Position&&dirty==manager.HasUnsavedChanges&&stamp==Stamp(fixture.Target.RuntimeConfiguration!)&&bytes.SequenceEqual(File.ReadAllBytes(pathA)),"窗口模式/默认投影进入参数、Dirty、历史或写盘");
+            window.Close();Pump();Require(!root.IsExpanded&&root.PreferExpanded&&root.CurrentRequest is null,"关窗未仅清当前开关/目标");
+            fields=Fields(first);fields.SelectedPageIndex=1;Pump();lowAccess=fields.Fields.Single(f=>f.FieldId==low);lowSession=Session(lowAccess);Command(lowSession,"DropDownCommand");Pump();
+            var inline=Popup(lowAccess,lowSession,"IsDropDownOpen");inline.ApplyTemplate();inline.Focus();Pump();Require(inline.IsKeyboardFocusWithin,"关窗后inline原按钮没有取得真实键盘焦点");inline.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
+            Trace("ROOT_INLINE "+transition+" focus="+inline.IsKeyboardFocusWithin+" dropdown="+inline.IsDropDownOpen+" popup="+(inline.Template.FindName("PART_Popup",inline) is Popup{IsOpen:true})+" expanded="+root.IsExpanded+" owned="+first.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Count());
+            Require(inline.IsDropDownOpen&&inline.Template.FindName("PART_Popup",inline) is Popup{IsOpen:true}&&!root.IsExpanded&&!first.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Any(),"关窗后错误按默认true重新展开或inline未真实打开");
+            first.Close();Pump();Require(!root.IsCurrent&&!context.IsActive,"关闭配置窗口未退役Root/context");
+            Trace("ROOT_REOPEN_EDITOR "+transition);var reopened=Open(fixture.Target);var liveRoot=Root(reopened);var automaticWindow=Subscription(reopened);
+            Require(!ReferenceEquals(root,liveRoot)&&liveRoot.IsExpanded&&liveRoot.PreferExpanded&&liveRoot.CurrentRequest is null&&ReferenceEquals(automaticWindow.DataContext,liveRoot),"同会话新Root未按默认true自动开空窗或构造临时owner抢先开窗");
+            Require(reopened.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Count()==1&&automaticWindow.Width==(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?240:320),"重复空窗/中英原宽度错误");
+            var bitmap=new RenderTargetBitmap((int)automaticWindow.ActualWidth,(int)automaticWindow.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(automaticWindow);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var png=File.Create(Path.Combine(directory,"automatic-empty-"+System.Globalization.CultureInfo.CurrentUICulture.Name+"-"+transition+".png")))encoder.Save(png);
+            Require(liveRoot.PreferenceScopeDescription.Contains(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?"临时":"Temporary",StringComparison.Ordinal),"未标注会话临时边界");
+            root.PreferExpanded=false;root.Close();root.Dispose();request.RefreshCommand.Execute(null);
+            Require(liveRoot.IsExpanded&&liveRoot.PreferExpanded&&automaticWindow.IsVisible&&stamp==Stamp(fixture.Target.RuntimeConfiguration!)&&history==manager.Session.History.Position&&dirty==manager.HasUnsavedChanges,"旧Root回调改写/关闭同会话新Root或影响正式模型");
+            var liveFields=Fields(reopened);liveFields.SelectedPageIndex=1;Pump();var liveSession=Session(liveFields.Fields.Single(f=>f.FieldId==low));Command(liveSession,"PopSubscribeWindowCommand");Pump();var oldRequest=liveRoot.CurrentRequest!;
+            Require(oldRequest.IsValid,"文档切换前无真实活跃目标");
+            Trace("ROOT_SWITCH_DOCUMENT "+transition);Solution destination;
+            if(transition=="reopen-A"){manager.CloseSolution(false);destination=manager.OpenSolution(pathA)!;}else destination=manager.CreateUntitledSolution();Pump();
+            Require(!liveRoot.IsCurrent&&!oldRequest.IsValid&&!automaticWindow.IsVisible&&manager.Session!.Editing.SessionId!=editing.SessionId&&editing.RegisteredScopeCount==0,"文档切换未退役Root/目标或重用了编辑会话");
+            var target=transition=="reopen-A"?(SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(n=>n.Id==fixture.Target.Id):Populate().Target;
+            Require(transition!="reopen-A"||destination.Id==document.Id&&target.Id==fixture.Target.Id,"同ID真实重开前提错误");
+            Trace("ROOT_OPEN_DESTINATION "+transition);var current=Open(target);Trace("ROOT_OPENED_DESTINATION "+transition);var currentRoot=Root(current);Require(!currentRoot.PreferExpanded&&!currentRoot.IsExpanded&&!current.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Any(),"会话临时默认跨文档/同ID新会话泄漏");
+            var currentFields=Fields(current);currentFields.SelectedPageIndex=1;Pump();var currentSession=Session(currentFields.Fields.Single(f=>f.FieldId==low));Command(currentSession,"PopSubscribeWindowCommand");Pump();var currentRequest=currentRoot.CurrentRequest!;var currentWindow=Subscription(current);
+            var newFormal=Stamp(target.RuntimeConfiguration!);var newHistory=manager.Session.History.Position;liveRoot.PreferExpanded=false;liveRoot.Close();liveRoot.Dispose();oldRequest.RefreshCommand.Execute(null);oldRequest.ClickCommand.Execute(oldLeaf);
+            Require(currentRoot.IsCurrent&&currentRoot.IsExpanded&&currentRequest.IsValid&&currentWindow.IsVisible&&!currentRoot.PreferExpanded&&newFormal==Stamp(target.RuntimeConfiguration!)&&newHistory==manager.Session.History.Position&&bytes.SequenceEqual(File.ReadAllBytes(pathA)),"旧文档Root迟到回调影响当前文档/窗口/模型/磁盘");
+            Trace("ROOT_HIDE "+transition);current.Hide();Pump();Trace("ROOT_HIDDEN "+transition);Require(!currentRoot.IsExpanded&&!currentWindow.IsVisible&&!currentRequest.IsValid,"整个Root隐藏未关窗或退役目标");current.Close();Pump();
+            Require(!currentRoot.IsCurrent,"整个Root关闭后仍允许回调");Trace("PASS_WINDOW_SESSION "+transition);
+        }
         try
         {
+            if(windowSessionOnly)VerifyWindowConsumers();
             foreach(var transition in transitions)foreach(var kind in kinds)
             {
                 Trace("BEGIN "+transition+" "+kind);manager.CreateUntitledSolution();Pump();Trace("POPULATE "+kind);var a=Populate();Trace("POPULATED "+kind);var oldDocument=manager.CurrentSolution!;var oldSession=manager.Session!;var oldEditing=oldSession.Editing;
                 var pathA=Path.Combine(directory,transition+"-"+kind+"-A.solution");Require(manager.SaveCurrentDocument(pathA).FileWritten,"原方案保存前提失败");
+                if(windowSessionOnly){VerifyWindowSession(transition,a,pathA);reports.Add(new{transition,kind,windowRoot=true,passed=true});continue;}
                 var oldBytes=File.ReadAllBytes(pathA);var formalBefore=Stamp(a.Target.RuntimeConfiguration!);
                 Trace("OPEN "+kind);var oldWindow=Open(a.Target);Trace("OPENED "+kind);var oldControl=Control(oldWindow);var oldContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(oldControl)!;
                 var oldFields=Fields(oldWindow);oldFields.SelectedPageIndex=1;Pump();
@@ -512,7 +603,7 @@ internal static class S2DocumentEditingCases
                 if(kind=="expanded")
                 {
                     Command(session,"PopSubscribeWindowCommand");Pump();staleExpandedWindow=oldWindow.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
-                    staleExpanded=(ReferenceExpansionRequest)staleExpandedWindow.DataContext;staleLeaf=ModuleLeaf(staleExpanded,"SourceNodes",a.SourceId,a.WidthPort);
+                    staleExpanded=((ReferenceWindowOwner)staleExpandedWindow.DataContext).CurrentRequest!;staleLeaf=ModuleLeaf(staleExpanded,"SourceNodes",a.SourceId,a.WidthPort);
                     Require(staleExpanded.IsValid,"展开请求不是有效租约");Switch();
                 }
                 if(kind is "variable-source" or "variable-index")
@@ -549,7 +640,7 @@ internal static class S2DocumentEditingCases
                 var nextFields=Fields(nextWindow);nextFields.SelectedPageIndex=1;Pump();
                 var nextLow=nextFields.Fields.Single(f=>f.FieldId==low);var nextSession=Session(nextLow);Command(nextSession,"PopSubscribeWindowCommand");Pump();
                 var nextExpandedWindow=nextWindow.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);
-                var nextExpanded=(ReferenceExpansionRequest)nextExpandedWindow.DataContext;Require(nextExpanded.IsValid,"目标方案无有效展开前提");
+                var nextExpanded=((ReferenceWindowOwner)nextExpandedWindow.DataContext).CurrentRequest!;Require(nextExpanded.IsValid,"目标方案无有效展开前提");
                 var nextDraft=Stamp(nextContext.DraftNode.RuntimeConfiguration!);var nextFormal=Stamp(b.Target.RuntimeConfiguration!);var history=manager.Session!.History.Position;
                 var version=manager.Session.Editing.Host.Capture().Version;var registered=manager.Session.Editing.RegisteredScopeCount;Require(registered>0,"新方案真实编辑范围未登记");var saved=File.ReadAllBytes(pathB);var savedOld=File.ReadAllBytes(pathA);var pending=nextControl.HasPendingEdits;var invalid=nextFields.HasInvalidActiveFields;
                 if(staleLeaf is not null)
@@ -585,7 +676,7 @@ internal static class S2DocumentEditingCases
         {
             dialogs.Stop();manager.CloseSolution(saveChanges:false);Pump();
             File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"b08-cross-document-report.json"),
-                System.Text.Json.JsonSerializer.Serialize(new{scope="B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+                System.Text.Json.JsonSerializer.Serialize(new{scope=windowSessionOnly?"B08WindowSession":"B08CrossDocumentReferences",imageChainVerified,selectedTransition,selectedKinds,expected=transitions.Length*kinds.Length,cases=reports,passed=reports.Count,fullFieldEditingRegression=false,fullFunctionalAcceptance=false,vsDesigner=false,nativeVmSemanticsProved=false},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
         }
     }
     private static IEnumerable<DependencyObject> CrossVisuals(DependencyObject root)

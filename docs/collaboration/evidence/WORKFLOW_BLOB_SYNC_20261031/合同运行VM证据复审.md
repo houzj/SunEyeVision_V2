@@ -1,0 +1,14 @@
+# 共享数据合并的VM证据复核
+
+审查：e597cc0b 与 07cab942；复核集成1ea0c88c。仅只读审查产品，本文不修改已交付16文件。分支新旧不是行为裁判。
+
+- 输出资格：主仓 evidence/B08_OUTPUT_QUALIFICATION_INVENTORY_20261031.json 的 filters 追 GetFrontFilterTreeOperation→GetPreModules→GetOutputTreeNode(type/CanSubscribeA/Visible/private/timestamp)。支持前序与逐叶资格；VmIO默认不能代表SDK真实资格。显示投影仅决定DisplayInResultPanel，不应删完整Schema或授予订阅资格。
+- 整数索引：evidence/B08_ORIGINAL_INTEGER_INDEX_PATH_20261031.md 固定ModuleFrame SHA45C57BC4…及bb4d0/bca20/ca500机器码，证明已核整数读取的零基、ALL第0项、动态索引来源第0项及失败回0；不证明其他类型和所有持久化路径同态。
+- 参数当前值：evidence/B08_PARAMETER_CURRENT_VALUE_IMPLEMENTATION_DESIGN_20261030.json 的basis回链ORIGINAL_BINDING_RUNTIME_AUDIT/PRODUCTION_AUDIT；逐项参数接纳与算法成功区分。Owner/run/request门禁、纯值CurrentValues JSON、私有调试隔离是本方必要适配，不声称VM内部同构。
+- 图像Record：ImageSourceOutput把原图/灰图及尺寸格式组织为Record，自动连线投影data成员，属于本方TypeRef合同适配。当前原型及已读证据不能证明VM存在本方Record输入类型。原图像树结构能证明界面组织，不能证明本方容器ABI。需工作流提供该决定的用户确认/原件映射索引；暂标适配而非VM事实。
+- 首图游标：原反编译VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:69证明CurSelectedIndex默认-1，:533附近是选择恢复；仅这些位置不能证明HasCursor的首次上一张=末项、首次执行=首项。IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json记录原件SHA但不含该完整运行顺序。现有HTML交互原型是设计沟通材料，不代原件运行证据。HasCursor作为当前宿主明确策略，完整VM等价未证，等待工作流原件按钮/导航完整链回链。
+- 身份/资源：SelectedDisplayReference为纯表达式，复制时重映射；image reader持有至Blob运行结束，结果publication与stamp防旧选择；这些为本方资源安全合同及回归目标，不代VM生命周期证据。
+
+集成1ea0c88c发现：ImageSourceOutput遗留旧OutputDisplay引用已删除Width/Height/PixelFormat常量，明确编译缺陷，已通知主线；主线已首次构建复现并负责修复。其他检查未发现明确的新漏网，仍需正式构建与同版生产整链回归。
+
+未构建、不运行原VM、不操作用户程序。未证不等于不存在或静态取证穷尽。

@@ -361,7 +361,7 @@ public sealed class BindingConfigurationStore
             SchemaVersion = source.SchemaVersion, Version = source.Version };
         foreach (var workflow in source.Workflows)
         {
-            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration };
+            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration, AdditionalData=workflow.AdditionalData?.ToDictionary(entry=>entry.Key,entry=>entry.Value.Clone()) };
             foreach (var node in workflow.Nodes)
             {
                 if (node.RuntimeConfiguration is { } runtime && runtime.ToolId != node.ToolType)

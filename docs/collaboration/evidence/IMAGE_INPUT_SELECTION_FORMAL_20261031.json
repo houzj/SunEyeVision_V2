@@ -1,0 +1,52 @@
+{
+  "payloadSha256": "36955752D9BCAF163C93857BD2B9FC3EE002B33E127E5CE4B6F5FD50430EA6F8",
+  "sourceCommit": "1f2bd206839e8085d7dbbcf56dc8404602f3f6c9",
+  "buildId": "development-326c12e4004043e38cbf3d964df04e72",
+  "unit": "图像输入选择",
+  "receipts": [
+    {
+      "loadedRecords": 4,
+      "track": "ImageInputSelection/attempt-001",
+      "sha256": "EEC3AD52E39A5A82EE1AEA1D4A6EED16D9A4A1BAED4C9B7434DD1EAD03C7BF89",
+      "receipt": "Release/_validation/S4-20261025/ImageInputSelection/attempt-001/receipt.json"
+    },
+    {
+      "loadedRecords": 12,
+      "track": "FieldEditing/attempt-149",
+      "sha256": "4BCE75BAB378B5C172930EDCBDAD3038BB972856D67E0EDC5D9575A8DB163BBF",
+      "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-149/receipt.json"
+    },
+    {
+      "loadedRecords": 14,
+      "track": "RuntimeEditorUiStage/attempt-027",
+      "sha256": "25BBE7E998B40E14980BCA71B12B20DCADBA78F42E493EFED3F019C0D39022E6",
+      "receipt": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-027/receipt.json"
+    },
+    {
+      "loadedRecords": 11,
+      "track": "DesignTime/attempt-148",
+      "sha256": "623E532ED65F261FA8093F00ED256115A7AC365B40C3B2F69E059E1D313C1C9E",
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-148/receipt.json"
+    }
+  ],
+  "behavior": "原枚举模板与现行声明身份/草稿接纳链；来源失效保留身份并拒绝提交，恢复后回填已接纳显示；未新增行内红色提示",
+  "date": "2026-10-31",
+  "formalTests": [
+    "真实Loaded图像选择24项",
+    "FieldEditing完整回归",
+    "真实编辑窗口保护13项",
+    "独立设计组装290项"
+  ],
+  "limits": [
+    "IMAGE专属CanSubscribeA及Visible资格的现行声明基础未具备，当前不扩展共享合同，不宣称原厂全域资格一致",
+    "原厂失效来源最终外观及持久化未证，本方保留失效身份为明确适配",
+    "图像Combo真实跨文档旧事件矩阵、实际VS、其他DPI及用户人工未验",
+    "ROI/结果图文、完整Blob整窗与算法仍未完成，整窗保护保留"
+  ],
+  "builds": [
+    "正式 UI Release：0错误，6525警告",
+    "正式全量 Release：0错误，6527警告"
+  ],
+  "historical": "候选attempt-002真实失效缺陷、attempt-003测试编译错误、旧22项和新版24项分版保留，详见IMAGE_INPUT_SELECTION_CANDIDATE_20261031.json",
+  "status": "当前声明合同条件性自测闭口"
+}

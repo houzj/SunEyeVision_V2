@@ -1,0 +1,396 @@
+{
+  "task": "B08普通数值引用模型/执行全链差异及集中实施候选设计",
+  "baseline": "ddf38e648825edd2bc31a507e1b91efef6b1220a",
+  "scope": "只读完整链与测试设计；不改产品/共享合同/引用线文件，不SDK不GUI不重复构建",
+  "evidenceUpdate": {
+    "protocol": {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_INDEX_PROTOCOL_20261031.md",
+      "sha256": "f38916812981bf7abb877aacf53010489a3af66c887869a0ccfaf25200de39fe",
+      "proved": "ModuleProxy接收constant All→tag1，其他constant→atoi/tag2，variable→tag3；ModuleFrame字段复制/建表到已核整数读取闭合",
+      "remaining": "正常来源类型3 SDK发送已由后续07A05B0F报告闭合；非法/其它来源类型/实际持久化仍独立。"
+    },
+    "integer": {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08整数绑定索引解析静态追踪-20261031.md",
+      "sha256": "6352b78656c5aa5dce100234cbfad7ff8598ca3cb009e9eda957a36697927749"
+    },
+    "supersedes": "前次静态前沿的正常SDK序列化与接收到记录缺口已有后续报告闭合；旧材料保留历史，不作为当前阻塞。异常/其他来源与原机持久化不外推。",
+    "sdk": {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_SDK_INDEX_SERIALIZATION_20261031.md",
+      "sha256": "07a05b0fc50968abcbb37ec0afb995af5cea0f9257f847c5cd2c04fcc03a6109",
+      "proved": "正常来源类型3的SDK ALL→constant All、固定字符串原样constant、动态moduleId/varName，经已核接收和Frame字段复制闭合整数读取；不再把正常SDK映射标未知。",
+      "remaining": "非法缓冲、atoi溢出、畸形请求、实际运行和原sol多值持久化未证。"
+    },
+    "floatFollowup": {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_FLOAT_REFERENCE_20261031.md",
+      "sha256": "850adb57f71e6f07d5e823bc665cffb8a2f0f557d3798ac0927a1236b1646433",
+      "status": "浮点分支已新取证，但当前只冻结五整数；Float32与%f文本到本方Float64精度/环境等价未证，四浮点保持Strict，另做完整后续子批。"
+    }
+  },
+  "productionChain": [
+    {
+      "stage": "UI候选与选择",
+      "locations": [
+        "RuntimeNodeConfigurationControl.cs:120/124/281",
+        "ReferenceFieldSession.cs:114/147/151/267/356"
+      ],
+      "actual": "主来源按Settings真实成员身份与普通数值资格构造；索引候选排除根输出序列且要求SelectedType整数；变量索引仅整数标量All。[]保持All，固定文本int.Parse(None)不接受负数/路径；动态来源由候选树选择AtField/AtVariable。",
+      "boundary": "原托管提交支持含点路径，不单凭operation推断所有UI手写入口；不得只放开数组下拉而让编译必拒绝。"
+    },
+    {
+      "stage": "模型与身份",
+      "locations": [
+        "BindingPlans.cs:3/8/13/15",
+        "Values.cs:OutputReference",
+        "FieldSettings.cs:Read/Capture"
+      ],
+      "actual": "All、AtConstant非负int、AtField递归OutputReference、AtVariable整数标量All。Node/Scope/Port/MemberPath/Type/Storage与Selection分别持久；显示文本不是身份。",
+      "boundary": "不把本方稳定字段ID等同VM Root.ID/varName；不能据接收tag直接改现有模型构造合法域。"
+    },
+    {
+      "stage": "宿主准入与冻结编译",
+      "locations": [
+        "WorkflowBindingContext.cs:137/151/207",
+        "RuntimeInputBindings.cs:Validate",
+        "RuntimeDebugInvocation.cs:133",
+        "ParameterBindingService.cs:10/62/88/94"
+      ],
+      "actual": "冻结当前方案会话、消费者、声明版本、控制前序/输出资格；递归索引同样资格。AtField编译后必须Int64标量；AtVariable走独立全局变量生产合同。主序列→标量仅声明数量可交集时条件兼容。",
+      "boundary": "SettingsSchema成员身份必需；不得按名字input.*判域，不得把通用Schema.Input/资源/IMAGE/Group误套普通参数语义。"
+    },
+    {
+      "stage": "正式运行与真实消费者",
+      "locations": [
+        "AlgorithmNode.Runtime.cs:46/61/66/69",
+        "WorkflowBindingContext.cs:354",
+        "ParameterBindingService.cs:138/147/174/185/216"
+      ],
+      "actual": "冻结输入且保留结果Owner读租约；按ParameterBindingOrder读取。ALL到标量要求恰一项；固定/动态索引零基且无越界回退。成功后才调用AcceptParameterValue，再MaterializeSettings进入BlobSettings/插件；错误抛出，不拿旧当前值继续本次工具执行。",
+      "boundary": "旧缓存仍可显示不是算法回退；序列主值数量、动态索引来源数量、动态读取错误三者分层。"
+    },
+    {
+      "stage": "变量主引用",
+      "locations": [
+        "RuntimeVariableBindings.cs:13/32/51/55/74/83",
+        "ParameterBindingService.cs:224"
+      ],
+      "actual": "全局运行值冻结，核SolutionId/VariableId/Type/Storage/消费者及生产者；AtField用相同编译器，AtVariable读冻结整数标量；越界失败且无首项回退，最后共用ResolveValue数量/转换规则。",
+      "boundary": "不能把普通输出控制前序资格套给变量生产者，也不能只改模块引用遗漏VariableSetting主来源。"
+    },
+    {
+      "stage": "私有调试/失败前缀",
+      "locations": [
+        "RuntimeDebugInvocation.cs:158/196/205/244",
+        "RuntimeToolConfiguration.BindingOrder.cs:59"
+      ],
+      "actual": "读冻结Published快照且仍核身份，不冒充新运行；成功项进私有AcceptedParameters；后项失败保留私有前缀，正式实例不变。只有正式Host接纳入口才能确认。",
+      "boundary": "动态索引失败降0若未来采用，须与结构/类型/Owner/会话/运行失配硬失败分开，不能吞掉所有异常。"
+    },
+    {
+      "stage": "当前值、取消历史与旧回调",
+      "locations": [
+        "NodeConfigurationEditHost.ParameterValues.cs:10/41/72",
+        "RuntimeToolConfiguration.cs:61/101/113",
+        "NodeConfigurationEditHost.cs:FormalInstance/Commit"
+      ],
+      "actual": "绑定身份与当前值独立；按会话/真实节点实例/配置身份接纳。失败项不改当前值；正式/私有值及配置历史分离，关闭/替换/退役拒绝晚回调。",
+      "boundary": "索引语义迁移不能把运行值写进撤销历史或削弱既有门禁。"
+    },
+    {
+      "stage": "保存重开与绑定顺序",
+      "locations": [
+        "BindingReferenceSerializer.cs:23/46/180/214",
+        "RuntimeToolConfiguration.cs:315",
+        "RuntimeToolConfiguration.BindingOrder.cs:65"
+      ],
+      "actual": "Selection种类和递归身份结构化序列化，当前值单独保存；绑定执行顺序独立，导出按已冻结参数名规则；加载会再次核结构/来源且旧模式只读保留不等于准入。",
+      "boundary": "UI显示[]不是原sol字节；新语义若改变同一All含义须统一现行合同，不添旧兼容开关/双轨模型。"
+    }
+  ],
+  "confirmedDifferencesAndLimits": [
+    [
+      "M01",
+      "整数标量或实际单项序列，ALL",
+      "标量/单项正常消费",
+      "接收All→tag1→索引0，适用已核Int32来源类型3",
+      "可复用同态部分，无需更改"
+    ],
+    [
+      "M02",
+      "实际三项[37,90,173]，未知数量声明，ALL",
+      "编译可能条件接受，运行exactly-one失败；不取37",
+      "接收All正常Int32分支读取0项37",
+      "接收后差异明确，SDK序列化字段仍待闭合"
+    ],
+    [
+      "M03",
+      "声明Exactly3序列，ALL→标量",
+      "编译count不相交直接拒绝，UI可能要求修索引",
+      "接收后Int32读取不要求count==1",
+      "与M02区分声明期和运行期，不只改ResolveValue"
+    ],
+    [
+      "M04",
+      "固定[0]/[1]/[2]，三项源",
+      "分别37/90/173，保持零基",
+      "constant→atoi/tag2，内部整数直接作零基索引",
+      "内部与本方规则可对照；前端UI/SDK完整映射仍有限定"
+    ],
+    [
+      "M05",
+      "空主来源/固定越界/负索引",
+      "空/越界失败；负索引模型和UI更早拒绝；旧缓存不用于本次运行",
+      "底层负/非空越界0xe0000014；空/名称缺失可能0xe0000314",
+      "不得从错误码唯一归因，也不据协议可接收负数推UI入口可达"
+    ],
+    [
+      "M06",
+      "动态整数标量0/1/2",
+      "AtField/合法AtVariable消费对应主项",
+      "variable→tag3，先读索引来源0项的数值，再读主来源对应项",
+      "保留相同部分及全局变量独立身份"
+    ],
+    [
+      "M07",
+      "动态整数数组[1,2]作为索引来源",
+      "AtField选中序列编译index-type拒绝；AtVariable数组构造拒绝",
+      "已核接收后Int32动态读取来源第0项，若其值1则主来源90",
+      "数组动态来源是实质差异候选；未核其它源类型不扩域"
+    ],
+    [
+      "M08",
+      "动态索引来源空/无值/读取失败，主来源有效",
+      "编译或解析失败，不首项回退，不接纳失败项",
+      "已核解析器失败记录日志后索引降0，外层主来源仍可能成功",
+      "与最终主来源读取失败不同；SDK前端和错误分类待冻结"
+    ],
+    [
+      "M09",
+      "动态索引值3或负值",
+      "主来源索引范围失败",
+      "索引来源读取成功，随后主来源范围检查失败",
+      "不能误把动态读取失败降0套给成功读出的非法索引"
+    ],
+    [
+      "M10",
+      "索引来源跨方案/旧运行/Owner退役/Schema变化",
+      "硬失败且旧回调不写入",
+      "当前原件证据未映射本方身份层",
+      "无论数量政策如何均保持平台隔离，不吞为0"
+    ],
+    [
+      "M11",
+      "Float64目标或其它来源类型、IMAGE/Group",
+      "保持现行严格合同",
+      "本次只有Int32/来源类型3路径证据",
+      "不推全域首项，不进入S3或Group扩展"
+    ],
+    [
+      "M12",
+      "双参数前项成功/后项索引失败",
+      "正式按顺序接纳成功当前值；私有只进AcceptedParameters，后项不接纳",
+      "原件前项/停止与已写参数另有有界报告",
+      "验前缀、顺序和取消，不能说整组运行回滚或旧值回退"
+    ],
+    [
+      "M13",
+      "保存重开、改名同ID/同名不同ID、Undo/Redo",
+      "Selection/身份/顺序保持，运行值不重放",
+      "原单值样本不证明多值重开；原生Export/Import需对应记录",
+      "必须真实Host/Repository，不用单纯Copy函数代替"
+    ],
+    [
+      "M14",
+      "同源Schema.Input整数/Float目标、变量生产者无控制前序",
+      "不误套普通Settings规则，变量生产合同独立",
+      "原件所核入口不覆盖这些独立域",
+      "回归边界与资格19组复用"
+    ]
+  ],
+  "implementationCandidate": {
+    "gate": "按已冻结正常整数范围实施；非法/身份错误不仿原件宽容解析。",
+    "range": "仅显式声明的五个真实Settings字段，规范Int64/物理Int32；来源整数值实际取用时受检Int32投影。四Float64/Schema.Input/图片/ROI/Group/其它工具均默认Strict。",
+    "rules": [
+      "保留All/AtConstant/AtField/AtVariable身份分离；不把All重命名为First或偷改所有消费者",
+      "若需按消费域区分，编译时冻结目标Settings成员身份与选择规则，正式/调试/变量同源解析；不在运行核访问WPF或全局可变偏好，具体接口由主线证据冻结后设计，不先造元数据",
+      "主来源ALL取0项、动态索引来源取0项、动态来源读取失败降0三个规则各自冻结；固定越界/成功读出非法索引、身份/schema/Owner失配不可混作同一个fallback",
+      "候选/格式化/模型合法域/编译/解析/保存/错误状态/所有消费者同批调整，禁止只放开数组下拉或只改通用ResolveValue",
+      "保留控制前序与输出资格，变量生产者独立，不改正确调度器与执行Owner，不靠回退消除源生产失败",
+      "保持当前值/绑定顺序/私有前缀/历史分离与旧回调门禁；UI整窗未就绪仍拒绝，原件像素算法及Group不在本批",
+      "全局Integer/Integer[]继续物理Int64声明，不改词汇/值类型；仅五字段消费所取值做checked Int32投影，这是平台适配，不冒充原厂64位语义。溢出硬失败且不截断/不回落。",
+      "索引来源已准入/身份正确且本批生产成功后，普通数据读取失败（缺值/空/可核读取失败）才可索引0；配置不存在、越权、Schema/Owner/会话/运行失配、取消、生产者失败均硬失败。成功读出的负/越界索引不降0。",
+      "AtVariable模型可表示整数序列All；Strict消费者必须在编译/运行明确拒绝数组动态索引。保存反序列化只构建合法结构，真实Host仍核行为资格，不能JSON绕过。"
+    ],
+    "proposedFileGroups": {
+      "mainOwnedCore": [
+        "src/Plugin.Contracts/BindingPlans.cs（仅合法域若证据要求）",
+        "src/Plugin.Runtime/ParameterBindingService.cs",
+        "src/Plugin.Runtime/BindingReferenceSerializer.cs（仅结构若确需，不做旧兼容）",
+        "src/Workflow/RuntimeVariableBindings.cs",
+        "src/Workflow/WorkflowBindingContext.cs",
+        "src/Workflow/RuntimeDebugInvocation.cs",
+        "src/Workflow/RuntimeInputBindings.cs",
+        "src/Workflow/RuntimeToolConfiguration.cs及BindingOrder/当前值消费者（通常复用）"
+      ],
+      "referenceLineCoordinationOnly": [
+        "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+        "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+        "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs"
+      ],
+      "thisLinePreparation": [
+        "专属Contracts-only整数三项/空/缺席输出探针及真实Host/Manager/Repository测试，待合同固定后成片实施，不修改既有GlobalProductionRuntimeProbe"
+      ]
+    }
+  },
+  "testFixtureDesign": {
+    "reuse": [
+      "S4ManualReferenceQualificationCases真实Fixture/Host/控制边/Repository，19组来源资格边界",
+      "S4ParameterCurrentValueCases正式/私有当前值/顺序/退役，18组既有证据",
+      "S4BlobParameterProductionCases真实Blob绑定/保存历史/模式/失败前缀，当前21组证据",
+      "S4FieldEditingCases真实窗口索引/错误/旧回调；本线不改该文件"
+    ],
+    "newProbe": "Contracts-only生产探针输出Int32标量/未知数量声明Int32序列[37,90,173]/可控空序列/可选缺席索引输出，计数实际工具Execute次数；目标必须是真正SettingsSchema.Int32参数。另保留同类型Schema.Input与Float64目标边界，不按input.*字符串判域。",
+    "pipeline": "实际注册插件→控制前驱→Host.BeginEdit/Validate/Commit→正式WorkflowRun冻结/Resolver/实际消费者输出→私有Debug Published快照→当前值接纳→Manager/DocumentEditSession历史→Repository Save/Load→关闭/替换晚回调。GUI选择由引用线协作，仅在协调窗口做。",
+    "observations": [
+      "绑定结构及Selection JSON",
+      "编译诊断与来源资格",
+      "冻结源值/索引源值与执行身份",
+      "实际消费者拿到的整数与Execute次数",
+      "旧当前值与成功前缀，正式/私有是否改变",
+      "存盘重开Selection/身份/顺序/值与UndoRedo历史",
+      "失败/未执行案例单独记录，不把保留旧值称执行回退"
+    ],
+    "oracle": "当前严格合同基线期望与新原件分支期望分别列矩阵；在SDK映射未闭合前，不为跑绿调整成猜测的VM期望。"
+  },
+  "independentImplementationDecision": "设计已冻结，接续在本worktree成片实施非视觉生产链及真实夹具。引用UI线按最终getter/候选API接入；本线不改其文件。",
+  "sourceIdentity": [
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "aa0e20a9221b52e1e4b8c51ddb129cf05d2b10afa4e6b6f8c129f3eafb06ee2c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "6cdf1903fe1a3443b2981d9043985c274220447a29203e9a44640e7cdf705046"
+    },
+    {
+      "path": "src/Plugin.Contracts/BindingPlans.cs",
+      "sha256": "703195d524f60d13190e590bf8b8012273b28ce4012f57a8d3034e3463988efe"
+    },
+    {
+      "path": "src/Plugin.Runtime/BindingReferenceSerializer.cs",
+      "sha256": "63778aeab231aff70fcd16c38a73ac3b170736c9d17283e77254d483c649302d"
+    },
+    {
+      "path": "src/Plugin.Runtime/ParameterBindingService.cs",
+      "sha256": "07ffb2032068ae5a4f1b11ad057dc81655a140a61fe99ac5e9a5762d1910fc57"
+    },
+    {
+      "path": "src/Workflow/RuntimeVariableBindings.cs",
+      "sha256": "b81e1208c2646a05ebb3ff7b45970d4f5fcafa14f3f831a878991799618de033"
+    },
+    {
+      "path": "src/Workflow/WorkflowBindingContext.cs",
+      "sha256": "211636f129a6bd1bd718c99ce14ef26d27f9a134b9bae3f1e4faa49ecff5ba69"
+    },
+    {
+      "path": "src/Workflow/RuntimeInputBindings.cs",
+      "sha256": "a86a23527d2662732b0c9e9f54b110ce03501e69806e2ef037125b0df522b6dd"
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "42cdf1b9ae057b8a40427af333e7c5e30980ae6b81f394be09733d6fe5550b5e"
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "cc097a7a71e256ee3cf778152c8ccad60fdfb8af0e1d5128ab1e9e6875b5b2a2"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "82a55ae8986888cdd8829b5bcc5633783eb4fe07f929816871eee5d74945c955"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.BindingOrder.cs",
+      "sha256": "920dd400a0845eef7f7cdd7c2bb14de722433ee182708dd6707dd377a71d0190"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.ParameterValues.cs",
+      "sha256": "b89c9aa4ea16a44cb015d22be6140cf6a9b7a8b6e939dea7556933236effbdd6"
+    }
+  ],
+  "acceptanceStatus": "此提交只固定设计与夹具矩阵，尚未实现/编译新合同；实施后须候选全量和真实生产链，主线统一正式验收。",
+  "freezeStatus": "主线已冻结五整数行为并授予本线Contracts/Runtime/Workflow/BlobTool唯一写入；先固定本设计后实施。",
+  "frozenFields": [
+    {
+      "property": "Threshold",
+      "fieldId": "field:43bda03261df55b88f963bd18f2ba4d9",
+      "bindingName": "LowThreshold",
+      "canonical": "Int64",
+      "physical": "Int32"
+    },
+    {
+      "property": "UpperThreshold",
+      "fieldId": "field:8ca20000000040008000000000000002",
+      "bindingName": "HightThreshold",
+      "canonical": "Int64",
+      "physical": "Int32"
+    },
+    {
+      "property": "BlobCountLimit",
+      "fieldId": "field:e748553b7cb45d1a8003c2b345b1d98f",
+      "bindingName": "FindNum",
+      "canonical": "Int64",
+      "physical": "Int32"
+    },
+    {
+      "property": "FilterAreaMin",
+      "fieldId": "field:fcdb01b095c25c6ea22384f993450aac",
+      "bindingName": "MinArea",
+      "canonical": "Int64",
+      "physical": "Int32"
+    },
+    {
+      "property": "FilterAreaMax",
+      "fieldId": "field:cdce3e942b555fa58489e08eeb39236f",
+      "bindingName": "MaxArea",
+      "canonical": "Int64",
+      "physical": "Int32"
+    }
+  ],
+  "sharedContract": {
+    "file": "src/Plugin.Contracts/ParameterReferenceBehavior.cs",
+    "enum": [
+      "StrictExactlyOne",
+      "FirstItemWithIndexReadZeroFallback"
+    ],
+    "declaration": "IToolParameterReferenceBehavior.ParameterReferenceBehaviors : IReadOnlyDictionary<string,ParameterReferenceBehavior>",
+    "getter": "RuntimeToolConfiguration.GetParameterReferenceBehavior(string fieldId)",
+    "plan": "BindingPlan冻结行为；CompileBinding显式行为参数默认StrictExactlyOne；配置身份含冻结声明",
+    "uiCandidateContract": [
+      "ParameterBindingService.CompareValueSource增加behavior显式参数，保留旧默认Strict；UI不得自行镜像数量算法",
+      "ParameterBindingService.CanUseIndexSource(TypeRef selectedType,ParameterReferenceBehavior behavior)：Strict只Int64标量，五字段行为另允许Int64序列；不许Float索引序列",
+      "UI按真实Settings成员读取getter，传给ReferenceOptions/树匹配；来源资格和控制前序仍由宿主冻结。引用线实现其WPF消费者。"
+    ],
+    "futureFloat": "枚举可显式扩展，但本行为仅校验Int32目标/整数来源，浮点转换与格式化未实现前不声明四浮点。"
+  },
+  "uniqueWriters": {
+    "thisLine": "本批Contracts/Plugin.Runtime/Workflow非视觉及BlobTool/专属测试唯一写者；未列共享变更先协调",
+    "exactPlannedFiles": [
+      "src/Plugin.Contracts/ParameterReferenceBehavior.cs（新增）",
+      "src/Plugin.Contracts/BindingPlans.cs",
+      "src/Plugin.Runtime/ParameterBindingService.cs",
+      "src/Workflow/RuntimeVariableBindings.cs",
+      "src/Workflow/WorkflowBindingContext.cs",
+      "src/Workflow/RuntimeDebugInvocation.cs",
+      "src/Workflow/RuntimeToolConfiguration.ReferenceBehavior.cs（新增）",
+      "src/Workflow/RuntimeToolConfiguration.cs（配置身份与构造接线）",
+      "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "专属scripts/verification/S4NumericIndexProductionCases.cs与Contracts-only探针及runner接入"
+    ],
+    "uiLineOnly": [
+      "RuntimeNodeConfigurationControl",
+      "ReferenceFieldSession",
+      "DeclaredReferenceTree",
+      "ReferenceFieldOptions以及视觉/窗口测试"
+    ],
+    "main": "统一接口冻结、原方案、集中集成与正式Release验收；当前不与本线改上述核心"
+  }
+}

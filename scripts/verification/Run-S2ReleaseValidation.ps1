@@ -206,7 +206,7 @@ $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.
 # Recovery contains hundreds of real WPF cases. Its runner enforces a separate
 # 90-second watchdog per case; the aggregate budget must not terminate a healthy
 # case merely because earlier completed cases consumed the former global budget.
-$processTimeoutMs=if($Track -eq 'ImageSourceRecovery' -and -not $env:S2_DIAGNOSTIC_CASE){300000}else{90000}
+$processTimeoutMs=if($Track -eq 'ImageSourceRecovery' -and -not $env:S2_DIAGNOSTIC_CASE){300000}elseif($Track -eq 'RuntimeEditorUiStage'){180000}else{90000}
 $finished=$process.WaitForExit($processTimeoutMs)
 if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)

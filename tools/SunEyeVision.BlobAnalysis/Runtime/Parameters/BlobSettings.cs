@@ -3,8 +3,10 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
+public enum BlobConnectivity { Connected_8 = 8, Connected_4 = 4 }
 public enum BlobThresholdMode { Binary, BinaryInv }
-public enum BlobSort { None, AreaAsc, AreaDesc, CircularityAsc, CircularityDesc, RectangularityAsc, RectangularityDesc, XAsc, XDesc, YAsc, YDesc }
+public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6 }
+public enum BlobSortMode { SortModeAscend = 1, SortModeDecend = 2, SortModeNotSort = 3 }
 public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
 public enum BlobJudgmentKind { Range, Empty, Boolean }
 public sealed record BlobJudgment(
@@ -41,7 +43,9 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         OutputGrayImage=definition.Default<bool>(nameof(OutputGrayImage));
         OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
         OutputBoundary=definition.Default<bool>(nameof(OutputBoundary));
-        SortMode=definition.Default<BlobSort>(nameof(SortMode));
+        SortMode=definition.Default<BlobSortMode>(nameof(SortMode));
+        SortFeature=definition.Default<BlobSortFeature>(nameof(SortFeature));
+        Connectivity=definition.Default<BlobConnectivity>(nameof(Connectivity));
         Judgments=definition.CreateJudgments();
     }
 
@@ -83,7 +87,11 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public bool OutputBoundary { get; init; }
     [JsonRequired]
-    public BlobSort SortMode { get; init; }
+    public BlobSortMode SortMode { get; init; }
+    [JsonRequired]
+    public BlobSortFeature SortFeature { get; init; }
+    [JsonRequired]
+    public BlobConnectivity Connectivity { get; init; }
     [JsonRequired]
     public IReadOnlyList<BlobJudgment> Judgments { get; init; }
     public BlobSettings Freeze()
@@ -104,7 +112,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
             if (!valid) errors.Add(new("BLOB_SETTINGS_INVALID", $"{definition.Label(field)}必须在{definition.Minimum(field)}至{definition.Maximum(field)}之间。", field));
             return valid;
         }
-        Check(Enum.IsDefined(SegmentationMode) && Enum.IsDefined(Type) && Enum.IsDefined(SortMode), "不支持的Blob分割、极性或排序模式。");
+        Check(Enum.IsDefined(SegmentationMode) && Enum.IsDefined(Type) && Enum.IsDefined(SortMode) && Enum.IsDefined(SortFeature) && Enum.IsDefined(Connectivity), "不支持的Blob分割、极性或排序模式。");
         if (SegmentationMode != BlobSegmentationMode.None) Number(nameof(Threshold), Threshold);
         if (SegmentationMode == BlobSegmentationMode.DoubleThreshold)
         {

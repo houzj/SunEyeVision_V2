@@ -158,7 +158,7 @@ internal static class S2DocumentEditingCases
             Case("真实九参数控件加载、规范默认及正式配置隔离",()=>
             {
                 Threshold(first);var fields=Logical(Control(first)).OfType<DeclaredFieldsView>().Single();
-                Require(fields.Fields.Select(f=>f.FieldId).Distinct().Count()==53,"真实Blob设置字段不是53项");
+                Require(fields.Fields.Select(f=>f.FieldId).Distinct().Count()==55,"真实Blob设置字段不是55项");
                 var names=new[]{"LowThreshold","HightThreshold","FindNum","MinArea","MaxArea","MinCircularity","MaxCircularity","MinRectangularity","MaxRectangularity"};
                 object[] expected={100L,150L,100L,10L,999999999L,.1,1d,.1,1d};
                 for(var i=0;i<names.Length;i++)
@@ -168,6 +168,11 @@ internal static class S2DocumentEditingCases
                     Require(field.Setting is ConstantSetting constant&&Equals(constant.Value,expected[i]),"九参数控件默认错误："+names[i]);
                 }
                 foreach(var advanced in Visual(Control(first)).OfType<NativeAdvancedPresenter>())advanced.IsExpanded=true;
+                var production=fields.Fields;var sortFeature=production.Single(field=>field.FieldId==SettingId("SortFeature"));var choices=(ComboBox)sortFeature.InputElement!;
+                Require(choices.Items.Count==13&&choices.Items.Cast<DeclaredChoiceDisplayItem>().Count(item=>item.IsAvailable)==6,"原13项排序未保留或未实现项被开放");
+                Require(sortFeature.TrySetConstant("SortFeaturePerimeter")&&production.Single(field=>field.FieldId==SettingId("SortMode")).TrySetConstant("SortModeAscend")&&production.Single(field=>field.FieldId==SettingId("Connectivity")).TrySetConstant("Connected_4")&&production.Single(field=>field.FieldId==SettingId("OutputBinaryImage")).TrySetConstant(false),"正式排序/连通/二值开关未接纳同一草稿");
+                Require(!Logical(Control(first)).OfType<DeclaredFieldEditor>().Any(field=>field.FieldId is "ui-only-run.sort-feature" or "ui-only-run.sort-mode" or "ui-only-run.connectivity" or "ui-only-run.binary-output"),"正式字段仍被重复UI-only覆盖");
+
                 foreach(var enabledName in new[]{"IsCircularityFilterEnabled","IsRectangularityFilterEnabled"})
                     Require(fields.Fields.Single(f=>f.FieldId==SettingId(enabledName)).TrySetConstant(true),"真实过滤开关不可接纳");
                 first.UpdateLayout();Pump();

@@ -28,7 +28,7 @@ internal static class S2DocumentEditingCases
             var engine=new WorkflowEngine(new CheckLogger());
             var flow=engine.CreateWorkflow("runtime-scheduled","Runtime调度");
             var initial=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings
-                {Threshold=73,IsAreaFilterEnabled=false,OutputGrayImage=false,OutputBinaryImage=false,OutputBoundary=false});
+                {Threshold=73,Connectivity=BlobConnectivity.Connected_4,SortFeature=BlobSortFeature.SortFeaturePerimeter,SortMode=BlobSortMode.SortModeAscend,IsAreaFilterEnabled=false,OutputGrayImage=false,OutputBinaryImage=false,OutputBoundary=false});
             var first=new WorkflowNodeBase("first","first","第一个",BlobTool.Id){RuntimeConfiguration=initial};
             var second=new WorkflowNodeBase("second","second","第二个",BlobTool.Id){RuntimeConfiguration=initial.Copy()};
             Bind(second,BlobTool.ImageInput,first.Id,BlobSchema.Field(5),TypeRef.ResourceOf(ResourceKind.Image),flow.Id);
@@ -108,7 +108,8 @@ internal static class S2DocumentEditingCases
                     var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"runtime-setting-binding.solution");
                     var repository=new SolutionRepository();Require(repository.Save(document,path),repository.LastError??"设置引用保存失败");
                     var restored=repository.LoadCandidate(path).Candidate?.Workflows.Single()??throw new Exception(repository.LastError);
-                    Require(restored.Nodes[1].RuntimeConfiguration!.Fields.Read(threshold) is ReferenceSetting {Conversion:BindingConversion.Float64ToInt64Checked},"保存丢失设置引用或回写订阅值");
+                    Require(((BlobSettings)restored.Nodes[0].RuntimeConfiguration!.CaptureSettings()).Connectivity==BlobConnectivity.Connected_4,"保存重开丢失4连通选择");
+                Require(restored.Nodes[1].RuntimeConfiguration!.Fields.Read(threshold) is ReferenceSetting {Conversion:BindingConversion.Float64ToInt64Checked},"保存丢失设置引用或回写订阅值");
                     engine.RegisterWorkflow(restored);
                     try{using var replay=Run(restored);Require(replay.Success&&((BlobOutput)Result(replay,second.Id).Output!).TotalArea==16,"重开后设置订阅未执行");}
                     finally{engine.RegisterWorkflow(flow);}
@@ -187,6 +188,8 @@ internal static class S2DocumentEditingCases
                 Require(json["Workflows"]![0]!["Nodes"]!.AsArray().All(n=>n!["Parameters"] is null),"新节点还写出SDK参数");
                 var reopened=repository.LoadCandidate(path).Candidate??throw new Exception(repository.LastError);
                 var restored=reopened.Workflows.Single();
+                var restoredSettings=(BlobSettings)restored.Nodes[0].RuntimeConfiguration!.CaptureSettings();Require(restoredSettings.Connectivity==BlobConnectivity.Connected_4&&restoredSettings.SortFeature==BlobSortFeature.SortFeaturePerimeter&&restoredSettings.SortMode==BlobSortMode.SortModeAscend&&!restoredSettings.OutputBinaryImage,"整工具正式字段保存重开不一致");
+
                 Require(restored.Nodes[1].RuntimeConfiguration!.Fields.Capture().Values.OfType<ReferenceSetting>().Count()==2&&restored.Nodes[1].ParamSettings.Settings.Count==0&&((BlobSettings)restored.Nodes[0].RuntimeConfiguration!.CaptureSettings()).Threshold==73,"重开覆盖用户设置或丢失绑定");
                 engine.RegisterWorkflow(restored);
                 try{using var replay=Run(restored);Require(replay.Success&&((BlobOutput)Result(replay,second.Id).Output!).TotalArea==16,"重开工作流不能实际执行");}

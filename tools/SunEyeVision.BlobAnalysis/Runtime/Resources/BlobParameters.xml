@@ -26,7 +26,7 @@
     <Parameter id="FilterAreaMin" bindingName="MinArea" type="Integer" default="10" label="面积下限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:fcdb01b095c25c6ea22384f993450aac" allowReference="true" pairWith="FilterAreaMax" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
     <Parameter id="FilterAreaMax" bindingName="MaxArea" type="Integer" default="999999999" label="面积上限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:cdce3e942b555fa58489e08eeb39236f" allowReference="true" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
     <Parameter id="OutputGrayImage" type="Boolean" default="true" label="灰度图像输出" fieldId="field:2fff619e51a359a6a9af286c5e8fef65" allowReference="false" />
-    <Parameter id="OutputBinaryImage" type="Boolean" default="false" label="二值化图像输出" fieldId="field:73f2c01e7b385e0ab2d35f739a88e718" allowReference="false" />
+    <Parameter id="OutputBinaryImage" type="Boolean" default="true" label="二值化图像输出" fieldId="field:73f2c01e7b385e0ab2d35f739a88e718" allowReference="false" />
     <Parameter id="OutputBoundary" type="Boolean" default="false" label="轮廓输出" fieldId="field:3799fbc2f80e58bf9abc7d2c0ad70067" allowReference="false" />
   </Group>
   <Group page="运行参数" section="高级" advanced="true">
@@ -36,18 +36,22 @@
     <Parameter id="IsRectangularityFilterEnabled" type="Boolean" default="false" label="矩形度使能" fieldId="field:34886e8b5b765d49b8662bb061b02bf7" allowReference="false" />
     <Parameter id="FilterRectangularityMin" bindingName="MinRectangularity" type="Number" default="0.1" label="矩形度下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:13d8c5e0c7445f1087497a21f4103a5e" allowReference="true" pairWith="FilterRectangularityMax" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
     <Parameter id="FilterRectangularityMax" bindingName="MaxRectangularity" type="Number" default="1" label="矩形度上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:c38989cfdf9e51799d27e0eeee34e726" allowReference="true" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
-    <Parameter id="SortMode" type="Enum" default="AreaDesc" label="排序方式" fieldId="field:cb01714e6b0b503a812fe7a99f1c815e" allowReference="false">
-      <Choice key="None" label="不排序" />
-      <Choice key="AreaAsc" label="面积升序" />
-      <Choice key="AreaDesc" label="面积降序" />
-      <Choice key="CircularityAsc" label="圆度升序" />
-      <Choice key="CircularityDesc" label="圆度降序" />
-      <Choice key="RectangularityAsc" label="矩形度升序" />
-      <Choice key="RectangularityDesc" label="矩形度降序" />
-      <Choice key="XAsc" label="质心X升序" />
-      <Choice key="XDesc" label="质心X降序" />
-      <Choice key="YAsc" label="质心Y升序" />
-      <Choice key="YDesc" label="质心Y降序" />
+    <Parameter id="Connectivity" type="Enum" default="Connected_8" label="连通性" fieldId="field:8ca20000000040008000000000000003" allowReference="false">
+      <Choice key="Connected_8" label="8连通" />
+      <Choice key="Connected_4" label="4连通" />
+    </Parameter>
+    <Parameter id="SortFeature" type="Enum" default="SortFeatureArea" label="排序特征" fieldId="field:8ca20000000040008000000000000004" allowReference="false">
+      <Choice key="SortFeatureArea" label="面积" />
+      <Choice key="SortFeaturePerimeter" label="周长" />
+      <Choice key="SortFeatureCircularity" label="圆度" />
+      <Choice key="SortFeatureRect" label="矩形度" />
+      <Choice key="SortFeatureCentroidX" label="质心X" />
+      <Choice key="SortFeatureCentroidY" label="质心Y" />
+    </Parameter>
+    <Parameter id="SortMode" type="Enum" default="SortModeDecend" label="排序方式" fieldId="field:cb01714e6b0b503a812fe7a99f1c815e" allowReference="false">
+      <Choice key="SortModeAscend" label="升序" />
+      <Choice key="SortModeDecend" label="降序" />
+      <Choice key="SortModeNotSort" label="不排序" />
     </Parameter>
   </Group>
   <Judgments page="结果显示" section="结果判定">

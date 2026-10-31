@@ -31,7 +31,7 @@ public sealed class DeclaredBlobResultTests
         foreach(var box in new[]{(X:2,Y:2,W:3,H:3),(X:22,Y:7,W:4,H:5),(X:8,Y:28,W:6,H:7)})
             for(var y=0;y<box.H;y++)for(var x=0;x<box.W;x++)pixels[(box.Y+y)*64+box.X+x]=255;
         using var input=HalImage.CreateFromBytes(pixels,64,64,1);
-        var executor=Engine(new BlobSettings{IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSort.AreaDesc,OutputBoundary=true},out var flow,out _);
+        var executor=Engine(new BlobSettings{IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSortMode.SortModeDecend,OutputBoundary=true},out var flow,out _);
         using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
         Assert.True(run.Success,string.Join(";",run.Errors));
         var output=(BlobOutput)((DeclaredOutputSnapshot)run.NodeResults["blob"].Result!).Output!;

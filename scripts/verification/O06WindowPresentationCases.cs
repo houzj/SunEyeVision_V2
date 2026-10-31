@@ -4823,7 +4823,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
     using var root=new RuntimeNodeConfigurationControl(node);
     using var context=new ProductionEditorContext(edits.Host,flow.Id,node,()=>true,root.BindDraft,documentEdits:edits);root.BindDraft(context.DraftNode);ToolEditorCommit.AttachDraftContext(root,context);Show(root);
-    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==53&&fields.Fields.Select(field=>field.FieldId).Distinct().Count()==53&&Find<DeclaredInputFieldsView>(root).Single().Fields.Count==4,"新Runtime三页或53设置/4输入不完整");
+    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==55&&fields.Fields.Select(field=>field.FieldId).Distinct().Count()==55&&Find<DeclaredInputFieldsView>(root).Single().Fields.Count==4,"新Runtime三页或55设置/4输入不完整");
     var metadata=((IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis")).SettingsSchema.Presentation!.Fields;
     var pairs=metadata.Where(item=>item.Layout?.PairWith is not null).ToArray();Require(pairs.Length==14,"Blob配对清单变化未复核");
     foreach(var pair in pairs)

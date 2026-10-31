@@ -97,15 +97,7 @@ internal static class BlobRunUi
                 ("SortFeatureRectX","Rectangle left upper x"),("SortFeatureRectY","Rectangle left upper y"),
                 ("SortFeatureAxisAngle","Two step spindle angle"),("SortFeatureAxisRatio","MinAxis / LongAxis")})
                 sortFeatures.Add(key,AppLocalizationService.GetLang(resource));
-            var feature=Create(new Port("ui-only-run.sort-feature",DataType.Text,EditModes:FieldEditModes.Constant,
-                Choices:new TextChoiceConstraint(sortFeatures.Keys)),"排序特征",new ConstantSetting("SortFeatureArea"),advanced,
-                FieldEditorKind.Choice,sortFeatures);
-            rows.Add(new(sortAnchor,feature,FollowAnchorVisibility:false,InsertBefore:true));
-            var connectivity=new Dictionary<string,string>{{"Connected_8","8连通"},{"Connected_4","4连通"}};
-            var connected=Create(new Port("ui-only-run.connectivity",DataType.Text,EditModes:FieldEditModes.Constant,
-                Choices:new TextChoiceConstraint(connectivity.Keys)),"连通性",new ConstantSetting("Connected_8"),advanced,
-                FieldEditorKind.Choice,connectivity);
-            rows.Add(new(sortAnchor,connected,FollowAnchorVisibility:false));
+            var sortFeatureId="field:8ca20000000040008000000000000004";
             var inner=Create(new Port("ui-only-run.inner-count",DataType.Integer,Storage:NumericStorage.Int32,
                 EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"最大内接矩形输出数量",new ConstantSetting(0L),
                 advanced with{Minimum=0,Maximum=10,DecimalPlaces=0,Increment=1});
@@ -115,19 +107,15 @@ internal static class BlobRunUi
             suppressed.Add("field:2fff619e51a359a6a9af286c5e8fef65");
             suppressed.Add("field:3799fbc2f80e58bf9abc7d2c0ad70067");
 
-            suppressed.Add("field:73f2c01e7b385e0ab2d35f739a88e718");
-            suppressed.Add(sortAnchor);
-            var binary=Create(new Port("ui-only-run.binary-output",DataType.Boolean,EditModes:FieldEditModes.Constant),
-                "二值化图像输出",new ConstantSetting(true),layout);
-            rows.Add(new("field:73f2c01e7b385e0ab2d35f739a88e718",binary,FollowAnchorVisibility:false,InsertBefore:true));
-            var sortModes=new Dictionary<string,string>{{"ascending","升序"},{"descending","降序"},{"none","不排序"}};
-            var sort=Create(new Port("ui-only-run.sort-mode",DataType.Text,EditModes:FieldEditModes.Constant,
-                Choices:new TextChoiceConstraint(sortModes.Keys)),"排序方式",new ConstantSetting("descending"),advanced,
-                FieldEditorKind.Choice,sortModes);
-            rows.Add(new(sortAnchor,sort,FollowAnchorVisibility:false,InsertBefore:true));
+
+
             const string mode="field:8ca20000000040008000000000000001";
             var displays=options.ChoiceDisplays?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)
                 ??new Dictionary<string,DeclaredChoiceDisplayOptions>(StringComparer.Ordinal);
+            var supportedFeatures=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY"},StringComparer.Ordinal);
+            displays.Add(sortFeatureId,new(sortFeatures.Select(pair=>new DeclaredChoiceDisplayItem(pair.Key,pair.Value,
+                supportedFeatures.Contains(pair.Key)?pair.Key:null,supportedFeatures.Contains(pair.Key),
+                supportedFeatures.Contains(pair.Key)?null:"该排序特征的正式数值语义尚未实现。"))));
             displays.Add(mode,new(new[]{
                 new DeclaredChoiceDisplayItem("BinaryImage","不进行二值化","None",false,"当前算法语义尚未统一，不能确认或执行此模式。"),
                 new DeclaredChoiceDisplayItem("SingleThreshold","单阈值","SingleThreshold",true),

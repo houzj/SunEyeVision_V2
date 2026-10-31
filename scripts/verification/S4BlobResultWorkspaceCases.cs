@@ -152,11 +152,11 @@ internal static class S2DocumentEditingCases
    main.ClearResultHighlight();Pump();Require(viewport.ShapeList is null||((IList)viewport.ShapeList).Count==0,"真实清空高亮未生效");
    var emptySnapshot=Publish(0,true);SelectImage();var emptyGrid=Visuals<DataGrid>(Table().View).Single();Require(emptyGrid.Items.Count==0&&emptyGrid.Columns.Count==10,"空结果制造占位假行或丢表头");
    Require(emptyGrid.Columns.Cast<DataGridColumn>().Where(column=>column.Header?.ToString()?.Contains("未实现")==true).Count()==3&&emptyGrid.ToolTip?.ToString()?.Contains("空结果不代表")==true,"空结果表未明确保留三项未实现说明");
-   foreach(var order in new[]{BlobSort.AreaAsc,BlobSort.AreaDesc})
+   foreach(var order in new[]{BlobSortMode.SortModeAscend,BlobSortMode.SortModeDecend})
    {
     node.RuntimeConfiguration=node.RuntimeConfiguration!.WithSettings(new BlobSettings{Threshold=100,IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,SortMode=order});
     var sorted=Publish(0,multiple:true);SelectImage();var sortedView=Table();var sortedGrid=Visuals<DataGrid>(sortedView.View).Single();Require(sortedGrid.Items.Count==2,"排序样本未得到两个真实Blob");
-    using var reader=sorted.AcquireReader();var records=reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort).Cast<RecordValue>().ToArray();var areas=records.Select(record=>record.Get<double>("area")).ToArray();Require(areas.SequenceEqual(order==BlobSort.AreaAsc?new[]{4d,64d}:new[]{64d,4d}),"真实反序排序未生效");
+    using var reader=sorted.AcquireReader();var records=reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort).Cast<RecordValue>().ToArray();var areas=records.Select(record=>record.Get<double>("area")).ToArray();Require(areas.SequenceEqual(order==BlobSortMode.SortModeAscend?new[]{4d,64d}:new[]{64d,4d}),"真实反序排序未生效");
     for(var index=0;index<2;index++)
     {
      ResultSelection? selected=null;EventHandler<ResultSelection> capture=(_,value)=>selected=value;sortedView.SelectionHighlightChanged+=capture;try{sortedGrid.SelectedItem=null;sortedGrid.SelectedItem=sortedGrid.Items[index];Pump();}finally{sortedView.SelectionHighlightChanged-=capture;}

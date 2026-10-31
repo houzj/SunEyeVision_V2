@@ -42,6 +42,28 @@ internal static class S2DocumentEditingCases
                     }
                 }
             });
+            Case("整工具统一字段经正式宿主调试冻结取消确认历史与重开",()=>
+            {
+                using var f=new Fixture(documentHistory:true);
+                var values=new Dictionary<string,object?>{{Setting("Connectivity"),"Connected_4"},{Setting("SortFeature"),"SortFeaturePerimeter"},{Setting("SortMode"),"SortModeAscend"},{Setting("OutputBinaryImage"),true}};
+                bool Whole(RuntimeToolConfiguration configuration)=>configuration.Fields.Read(Setting("Connectivity")) is ConstantSetting {Value:"Connected_4"}&&configuration.Fields.Read(Setting("SortFeature")) is ConstantSetting {Value:"SortFeaturePerimeter"}&&configuration.Fields.Read(Setting("SortMode")) is ConstantSetting {Value:"SortModeAscend"}&&configuration.Fields.Read(Setting("OutputBinaryImage")) is ConstantSetting {Value:true};
+                var original=f.Node.RuntimeConfiguration!;var cancelled=f.Host.BeginEdit(f.Flow.Id,f.Node.Id);
+                cancelled.Node.RuntimeConfiguration=cancelled.Node.RuntimeConfiguration!.WithFieldValues(values);
+                using(var owner=new OwnerLease())using(var invocation=f.Debug(cancelled,owner.Owner))
+                {
+                    // Capture后改私有草稿，已捕获本次执行仍消费原冻结字段。
+                    cancelled.Node.RuntimeConfiguration=cancelled.Node.RuntimeConfiguration.WithFieldValues(new Dictionary<string,object?>{{Setting("OutputBinaryImage"),false},{Setting("Connectivity"),"Connected_8"}});
+                    using var result=Wait(()=>invocation.ExecuteAsync());Require(result.IsSuccess&&result.Output is BlobOutput {BinaryImage:not null},"私有调试未消费捕获的二值开关");
+                    Require(Whole(invocation.AcceptedParameters!),"本次回执混入捕获后修改");
+                }
+                Require(ReferenceEquals(original,f.Node.RuntimeConfiguration),"取消私有调试污染正式状态");
+                Commit(f,values);Require(Whole(f.Node.RuntimeConfiguration!),"正式组确认不一致");
+                var before=f.Node.RuntimeConfiguration;var version=f.Host.Capture().Version;Reject(()=>Commit(f,new(){{Setting("SortFeature"),"SortFeatureBoxAngle"},{Setting("OutputBinaryImage"),false}}));Require(ReferenceEquals(before,f.Node.RuntimeConfiguration)&&f.Host.Capture().Version==version,"未知特征组合发生半写");
+                var copy=f.Node.RuntimeConfiguration!.Copy();Require(Whole(copy)&&copy.Fields.Read(f.Threshold) is VariableSetting,"正式复制丢配置或绑定");
+                f.Host.Undo();Require(f.Node.RuntimeConfiguration!.Fields.Read(Setting("Connectivity")) is ConstantSetting {Value:"Connected_8"},"整组撤销未恢复");f.Host.Redo();
+                var reopened=f.SaveReopen("whole-tool-fields");Require(Whole(reopened.Workflows[0].Nodes[0].RuntimeConfiguration!),"整组历史重做保存重开丢字段");
+                using var run=f.Run();Require(run.Success,"整工具正式组重做后执行失败");
+            });
             Case("整数面积两端边界接受并经真实宿主保存重开",()=>
             {
                 using var f=new Fixture(documentHistory:true);
@@ -393,7 +415,7 @@ internal static class S2DocumentEditingCases
     }
     private sealed class OwnerLease:IDisposable{public ToolExecutionOwner Owner{get;}=new();public void Dispose()=>Owner.Retire();}
     private static string Setting(string name)
-        =>((IToolParameterBindingNames)new BlobTool()).ParameterBindingNames.Single(pair=>pair.Value==Names[name]).Key;
+        =>Names.TryGetValue(name,out var bindingName)?((IToolParameterBindingNames)new BlobTool()).ParameterBindingNames.Single(pair=>pair.Value==bindingName).Key:BlobParameterDefinition.Instance.SettingsFieldId(name);
     private static DeclaredOutputSnapshot Result(ExecutionResult result,string node)=>result.NodeResults[node].Result as DeclaredOutputSnapshot??throw new Exception("没有正式Runtime结果");
     private static T Wait<T>(Func<Task<T>> start)
     {

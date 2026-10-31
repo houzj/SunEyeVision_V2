@@ -56,7 +56,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         if ((requested & ~(BlobOutputRequest.GrayImage | BlobOutputRequest.BinaryImage | BlobOutputRequest.Boundary)) != 0)
             throw new ArgumentException("Unknown Blob output request.", nameof(requested));
         cancellation.ThrowIfCancellationRequested();
-        using var execution = new HalconBlobExecutionScope();
+        using var execution = new HalconBlobExecutionScope(settings.Connectivity);
         if (settings.SegmentationMode == BlobSegmentationMode.None) HalconImageAdmission.RequireBinary(input, cancellation);
         using var image = HalconResourceBridge.CopyImage(input);
         HOperatorSet.GetImageSize(image, out var widthValue, out var heightValue);
@@ -91,7 +91,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         HalconBlobExecutionScope.RequireUnlimitedConnection();
         using var selected = SelectFeatures(connected, settings);
         var candidates = ExtractCandidates(selected, settings, cancellation);
-        var final = Sort(candidates, settings.SortMode);
+        var final = Sort(candidates, settings.SortFeature, settings.SortMode);
         final = final.Take(settings.BlobCountLimit);
         var ordered = final.ToArray();
         var outputResources = resources.CreateScope();
@@ -207,11 +207,22 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         _ => false
     };
 
-    private static IEnumerable<Candidate> Sort(IEnumerable<Candidate> source, BlobSort mode) => mode switch {
-        BlobSort.AreaAsc => source.OrderBy(x => x.Area), BlobSort.AreaDesc => source.OrderByDescending(x => x.Area),
-        BlobSort.CircularityAsc => source.OrderBy(x => x.Circularity), BlobSort.CircularityDesc => source.OrderByDescending(x => x.Circularity),
-        BlobSort.RectangularityAsc => source.OrderBy(x => x.Rectangularity), BlobSort.RectangularityDesc => source.OrderByDescending(x => x.Rectangularity),
-        BlobSort.XAsc => source.OrderBy(x => x.X), BlobSort.XDesc => source.OrderByDescending(x => x.X),
-        BlobSort.YAsc => source.OrderBy(x => x.Y), BlobSort.YDesc => source.OrderByDescending(x => x.Y), _ => source
-    };
+    // 本方明确策略：以真实已计算特征排序，同值保持HALCON候选顺序，再执行数量限制。
+    // 原声明已证特征/方向，原生内核同值规则及数值等价尚未证明。
+    private static IEnumerable<Candidate> Sort(IEnumerable<Candidate> source, BlobSortFeature feature, BlobSortMode mode)
+    {
+        Func<Candidate,double> key = feature switch {
+            BlobSortFeature.SortFeatureArea => value=>value.Area,
+            BlobSortFeature.SortFeaturePerimeter => value=>value.Perimeter,
+            BlobSortFeature.SortFeatureCircularity => value=>value.Circularity,
+            BlobSortFeature.SortFeatureRect => value=>value.Rectangularity,
+            BlobSortFeature.SortFeatureCentroidX => value=>value.X,
+            BlobSortFeature.SortFeatureCentroidY => value=>value.Y,
+            _ => throw new ArgumentOutOfRangeException(nameof(feature)) };
+        return mode switch {
+            BlobSortMode.SortModeAscend => source.OrderBy(key),
+            BlobSortMode.SortModeDecend => source.OrderByDescending(key),
+            BlobSortMode.SortModeNotSort => source,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode)) };
+    }
 }

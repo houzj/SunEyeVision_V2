@@ -26,8 +26,16 @@ internal static class S2DocumentEditingCases
             Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
                 var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
                 var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,Initial(provider,original));
-                Require(provider.SettingsSchema.Inputs.Count==53&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
+                Require(provider.SettingsSchema.Inputs.Count==55&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
                 string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
+                var connectivity=provider.SettingsSchema.Inputs.Single(port=>port.Id==BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Connectivity)));
+                Require(connectivity.EditModes==FieldEditModes.Constant&&connectivity.Choices!.Keys.ToHashSet().SetEquals(new[]{"Connected_8","Connected_4"}),"连通字段资格不符");
+
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{connectivity.Id,"Connected_4"},{Field("排序特征"),"SortFeaturePerimeter"},{Field("排序方式"),"SortModeAscend"},{Field("二值化图像输出"),false}}),_=>{});
+                var connectedFrozen=Materialize(draft);Require(connectedFrozen.Connectivity==BlobConnectivity.Connected_4&&connectedFrozen.SortFeature==BlobSortFeature.SortFeaturePerimeter&&connectedFrozen.SortMode==BlobSortMode.SortModeAscend&&!connectedFrozen.OutputBinaryImage&&original.Connectivity==BlobConnectivity.Connected_8&&original.OutputBinaryImage,"统一生产字段未进入同一冻结草稿或污染原值");
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{connectivity.Id,"Connected_6"},{Field("排序方式"),"SortModeDecend"}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{Field("排序特征"),"SortFeatureBoxAngle"}}),_=>{}));
+                Require(Materialize(draft).SortMode==BlobSortMode.SortModeAscend&&connectedFrozen.Connectivity==BlobConnectivity.Connected_4,"非法组合半写或改写冻结值");
                 var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
@@ -147,7 +155,7 @@ internal static class S2DocumentEditingCases
             Case("XML唯一默认、用户设置重开及强类型读取",()=>{
                 var settings=new BlobSettings();
                 Require(settings.Threshold==100&&settings.UpperThreshold==150&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999999
-                    &&settings.BlobCountLimit==100&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
+                    &&settings.BlobCountLimit==100&&settings.OutputGrayImage&&settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
                 var changed=settings with{Threshold=73,UpperThreshold=211,FilterAreaMax=9999999,BlobCountLimit=993,
                     Judgments=Rules(new BlobJudgment("per-blob-area",true,true,19,750))};
                 var restored=JsonSerializer.Deserialize<BlobSettings>(JsonSerializer.Serialize(changed))!;

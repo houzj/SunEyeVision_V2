@@ -813,8 +813,8 @@ internal static class S2DocumentEditingCases
                 &&native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<DeclaredInputFieldsView>().Any(view=>
                     view.Fields.Any(field=>field.FieldId==BlobTool.ImageInput)));
             Render(first,"parameters-initial.png",600,680);
-            Check(fields.Fields.Count==53&&replacementInputCount(fields)==4,
-                "独立无参真实参数视图包含53设置及4输入，未启动宿主");
+            Check(fields.Fields.Count==55&&replacementInputCount(fields)==4,
+                "独立无参真实参数视图包含55设置及4输入，未启动宿主");
             var inputFields=InputFields(fields);
             var image=inputFields.Single(field=>field.FieldId==BlobTool.ImageInput);
             Check(image.InputElement is ComboBox combo&&combo.Resources.MergedDictionaries.Any(dictionary=>dictionary.Source?.OriginalString.EndsWith("SourceComboBoxes.xaml")==true)
@@ -1029,7 +1029,7 @@ internal static class S2DocumentEditingCases
             var markup=ReadRootMarkup("BlobParameterEditor.xaml");
             var root=(UserControl)XamlReader.Parse(markup);
             var markupPresenter=(DeclaredSettingsView)root.Content;
-            Check(markupPresenter.Draft is not null&&((DeclaredFieldsView)markupPresenter.Content).Fields.Count==53,
+            Check(markupPresenter.Draft is not null&&((DeclaredFieldsView)markupPresenter.Content).Fields.Count==55,
                 "根XAML不执行外层构造函数也能由真实子视图取得设计草稿");
             markupPresenter.Dispose();
             var resultRoot=(UserControl)XamlReader.Parse(ReadRootMarkup("BlobResultView.xaml"));

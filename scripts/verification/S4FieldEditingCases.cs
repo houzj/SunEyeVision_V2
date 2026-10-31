@@ -284,7 +284,7 @@ internal static class S2DocumentEditingCases
             var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
             var definition=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");var settings=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings();
-            var access=definition.SettingsSchema;Require(access.Inputs.Count==53&&access.Inputs.Select(p=>p.Id).Distinct().Count()==53,"XML设置字段不完整或重复");
+            var access=definition.SettingsSchema;Require(access.Inputs.Count==55&&access.Inputs.Select(p=>p.Id).Distinct().Count()==55,"XML设置字段不完整或重复");
             VerifySettingsCandidate(definition,settings);
             using var xmlStream=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
             var xml=System.Xml.Linq.XDocument.Load(xmlStream);var rule=xml.Descendants("Judgment").Single(e=>(string?)e.Attribute("key")=="total-area");
@@ -889,7 +889,7 @@ internal static class S2DocumentEditingCases
         using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options))
         {
             Show(preview);var fields=(DeclaredFieldsView)preview.Content;fields.SelectedPageIndex=1;Pump();
-            Require(fields.Fields.Count==53&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
+            Require(fields.Fields.Count==55&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
             CaptureBlobPreview(preview,"design-sample");
         }
         Console.WriteLine("通过：真实Blob六项仅Single可用，九字段正式默认/整数范围/草稿写入、原三模式显隐、历史保留及ROI整窗保护");

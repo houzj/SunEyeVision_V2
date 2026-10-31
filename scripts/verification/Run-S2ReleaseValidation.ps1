@@ -1,10 +1,10 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 # Formal validation must run from the primary checkout, before creating any output.
 $gitDir = git -C $root rev-parse --absolute-git-dir
@@ -132,6 +132,7 @@ if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FieldEditing'){$source='S4FieldEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'NumericContract'){$source='S4NumericContractCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'RangeRoundtrip'){$source='S4RangeRoundtripCases.cs'}
+if($Stage -eq 'S4' -and $Track -eq 'ImageInputSelection'){$source='S4ImageInputSelectionCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPresentationCases.cs'}
 if($Stage -eq 'S4' -and $Track -in @('RuntimeEditor','RuntimeEditorUiStage')){$source='S4RuntimeEditorCases.cs'}

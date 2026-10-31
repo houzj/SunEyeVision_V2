@@ -1,0 +1,45 @@
+using System.IO;using System.Linq;using System.Collections.Generic;using System.Text.Json;using System.Windows;using System.Windows.Controls;using System.Windows.Input;using System.Windows.Threading;using SunEyeVision.Plugin.Contracts;using SunEyeVision.Plugin.Wpf.Fields;using SunEyeVision.Plugin.Wpf.Adapters.References;
+internal static class S2DocumentEditingCases
+{
+ static List<object> Reports=new();static int passed;
+ static void Require(bool b,string message){if(!b)throw new Exception(message);}
+ static void Case(string name,Action action){try{action();passed++;Reports.Add(new{name,passed=true});Console.WriteLine("通过："+name);}catch(Exception e){Reports.Add(new{name,passed=false,error=e.ToString()});Console.Error.WriteLine("失败："+name+" "+e);}}
+ static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+ static readonly TypeRef Image=TypeRef.ResourceOf(ResourceKind.Image);
+ static DeclaredReferenceCandidate Candidate(string node="source",string port="image",string scope="flow",TypeRef? type=null,IReadOnlyList<string>? path=null)=>new("同名图像",node,scope,new Port(port,type??Image),path??Array.Empty<string>());
+ sealed class Fixture:IDisposable
+ {
+  public DeclaredFieldEditor Field;public Window? Window;public ComboBox Box=>(ComboBox)Field.InputElement!;
+  public IReadOnlyList<DeclaredReferenceCandidate> Candidates;public Action? OnRead;public Action<ParameterSetting>? OnWrite;public bool ThrowRead,Reject;public int Writes;public ParameterSetting Accepted;
+  public Fixture(bool required=true,ParameterSetting? initial=null,IReadOnlyList<DeclaredReferenceCandidate>? candidates=null,bool show=true)
+  {Candidates=candidates??new[]{Candidate()};Accepted=initial??new ReferenceSetting(Candidate().Reference(BindingSelection.All));Field=new(new Port("input.image",Image,Required:required,EditModes:FieldEditModes.Reference),"图像来源",Accepted,setting=>{Accepted=setting;Writes++;OnWrite?.Invoke(setting);},new ReferenceFieldOptions(_=>ReferenceCandidates.Empty,ValidateProposal:(_,_)=>Reject?"宿主拒绝":null),allowUnboundReference:true);Field.UseImageSourceSelector(Read);if(show){Window=new Window{Content=Field,Width=420,Height=180,Title="图像来源选择专项"};Window.Show();Pump();}}
+  IReadOnlyList<DeclaredReferenceCandidate> Read(){OnRead?.Invoke();if(ThrowRead)throw new InvalidOperationException("候选读取失败");return Candidates;}
+  public void Refresh(){Box.IsDropDownOpen=false;Box.IsDropDownOpen=true;Pump();}
+  public ComboBoxItem[] Items()=>Box.Items.OfType<ComboBoxItem>().ToArray();
+  public void Select(string node){Box.SelectedItem=Items().Single(i=>i.Tag is ReferenceSetting r&&r.Reference.NodeId==node);Pump();}
+  public void Enter(){Box.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(Window!)!,Environment.TickCount,Key.Enter){RoutedEvent=Keyboard.PreviewKeyDownEvent});Pump();}
+  public void Dispose(){Field.Dispose();Window?.Close();Pump();}
+ }
+ [STAThread] static int Main()
+ {
+  var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};foreach(var r in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+r)});
+  try{
+   Case("未Loaded选项不写字段",()=>{using var f=new Fixture(candidates:new[]{Candidate(),Candidate("other")},show:false);f.Select("other");Require(f.Writes==0&&f.Accepted is ReferenceSetting{Reference.NodeId:"source"},"未加载控件接受选择");});
+   if(Environment.GetEnvironmentVariable("S4_IMAGE_INPUT_LOADED")=="1")
+   {
+    Case("同名复合身份及精确去重保留选择",()=>{using var f=new Fixture(candidates:new[]{Candidate(),Candidate(),Candidate("other"),Candidate(scope:"other-flow"),Candidate(port:"other-port")});Require(f.Items().Length==4,"同名误去重或重复身份未去重");Require(f.Box.SelectedItem is ComboBoxItem{Tag:ReferenceSetting{Reference.NodeId:"source",Reference.ScopeId:"flow",Reference.PortId:"image"}},"显示名替代稳定身份");f.Select("other");Require(f.Writes==1&&f.Accepted is ReferenceSetting{Reference.NodeId:"other"},"同名新身份未实际接纳");});
+    Case("记录成员图像可选择而不同成员不合并",()=>{var type=TypeRef.RecordOf("image-record",new[]{new Port("a",Image),new Port("b",Image)});using var f=new Fixture(candidates:new[]{Candidate(),Candidate("record",type:type,path:new[]{"a"}),Candidate("record",type:type,path:new[]{"b"})});Require(f.Items().Length==3,"成员身份丢失");f.Box.SelectedItem=f.Items().First(i=>i.Tag is ReferenceSetting r&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"b"}));Require(f.Writes==1&&f.Accepted is ReferenceSetting r&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"b"}),"成员未接纳");});
+    Case("错型序列和序列成员不能静默取首图",()=>{var record=TypeRef.RecordOf("images",new[]{new Port("images",TypeRef.SequenceOf(Image))});using var f=new Fixture(candidates:new[]{Candidate(),Candidate("number",type:DataType.Number),Candidate("array",type:TypeRef.SequenceOf(Image)),Candidate("record",type:record,path:new[]{"images"})});Require(f.Items().Length==1&&f.Writes==0,"错型或序列混入图像选择");});
+    Case("必填无清空入口可选字段明确Unset",()=>{using(var f=new Fixture())Require(!f.Items().Any(i=>i.Tag is UnsetSetting),"必填图像出现清空项");using var optional=new Fixture(required:false);optional.Box.SelectedItem=optional.Items().Single(i=>i.Tag is UnsetSetting);Require(optional.Writes==1&&optional.Accepted is UnsetSetting,"可选清空未进入单一字段状态");});
+    Case("刷新删除仅失效显示保留正式引用再恢复不写入",()=>{using var f=new Fixture();f.Candidates=Array.Empty<DeclaredReferenceCandidate>();f.Refresh();Require(f.Writes==0&&f.Accepted is ReferenceSetting{Reference.NodeId:"source"}&&f.Items().Single().IsEnabled==false&&f.Field.HasInvalidText,"失效来源未标错或被隐式清除");Require(!f.Field.TryCommitPending(),"失效来源可确认");f.Candidates=new[]{Candidate()};f.Refresh();Require(f.Writes==0&&!f.Field.HasInvalidText,"恢复写入或错误残留");});
+    Case("目录失败保留完整显示恢复不写入",()=>{using var f=new Fixture();var old=f.Box.SelectedItem;f.ThrowRead=true;f.Refresh();Require(f.Writes==0&&f.Field.HasInvalidText&&ReferenceEquals(old,f.Box.SelectedItem),"失败半替换显示");f.ThrowRead=false;f.Refresh();Require(f.Writes==0&&!f.Field.HasInvalidText,"失败后不能恢复");});
+    Case("同项Enter才接管自动来源打开刷新不接管",()=>{using var f=new Fixture(initial:new ReferenceSetting(Candidate().Reference(BindingSelection.All),OriginId:"connection:auto"));f.Refresh();Require(f.Writes==0&&f.Accepted is ReferenceSetting{OriginId:"connection:auto"},"仅打开即接管");f.Enter();Require(f.Writes==1&&f.Accepted is ReferenceSetting{OriginId:null}&&!f.Box.IsDropDownOpen,"Enter未单次接管或未关原Popup");f.Refresh();f.Enter();Require(f.Writes==1,"已手动同项重复写入");});
+    Case("宿主拒绝恢复显示并保留诊断且刷新不能清除",()=>{using var f=new Fixture(candidates:new[]{Candidate(),Candidate("other")});f.Reject=true;f.Select("other");Require(f.Writes==0&&f.Accepted is ReferenceSetting{Reference.NodeId:"source"}&&f.Field.Error.Contains("宿主拒绝"),"拒绝半写");f.Refresh();Require(f.Field.Error.Contains("宿主拒绝"),"刷新吞写入拒绝");f.Reject=false;f.Select("other");Require(f.Writes==1&&!f.Field.HasInvalidText,"拒绝后不能显式修复");});
+    foreach(var mode in new[]{"disabled","hidden","unloaded","disposed"})Case("退役与恢复阻断旧选择 "+mode,()=>{using var f=new Fixture(candidates:new[]{Candidate(),Candidate("other")});var old=f.Box;f.Refresh();if(mode=="disabled")f.Field.IsEnabled=false;else if(mode=="hidden")f.Field.Visibility=Visibility.Collapsed;else if(mode=="unloaded")f.Window!.Content=null;else f.Field.Dispose();Pump();Require(!old.IsDropDownOpen,"退役未关闭Popup");old.SelectedItem=old.Items.OfType<ComboBoxItem>().Single(i=>i.Tag is ReferenceSetting r&&r.Reference.NodeId=="other");Require(f.Writes==0,"退役后旧选择仍写入");if(mode=="disposed")return;if(mode=="disabled")f.Field.IsEnabled=true;else if(mode=="hidden")f.Field.Visibility=Visibility.Visible;else f.Window!.Content=f.Field;Pump();f.Refresh();f.Select("other");Require(f.Writes==1,"恢复后当前目录不能选择");});
+    Case("候选读取同步重渲染旧快照不安装",()=>{using var f=new Fixture();var old=f.Box;var once=true;f.OnRead=()=>{if(!once)return;once=false;f.Candidates=new[]{Candidate(),Candidate("next")};f.Field.UseImageSourceSelector(()=>f.Candidates);};f.Refresh();Require(!ReferenceEquals(old,f.Box)&&f.Items().Any(i=>i.Tag is ReferenceSetting{Reference.NodeId:"next"})&&f.Writes==0,"候选重入后旧尾部覆盖新控件");old.SelectedIndex=0;Require(f.Writes==0,"旧控件回调写新代");});
+    Case("接纳同步重渲染后旧尾部不改新控件",()=>{using var f=new Fixture(candidates:new[]{Candidate(),Candidate("other")});var old=f.Box;f.OnWrite=_=>f.Field.UseImageSourceSelector(()=>new[]{Candidate("other"),Candidate("next")});f.Select("other");Require(f.Writes==1&&!ReferenceEquals(old,f.Box)&&f.Items().Any(i=>i.Tag is ReferenceSetting{Reference.NodeId:"next"}),"接纳重入覆盖新代");old.SelectedIndex=0;Require(f.Writes==1,"旧选择迟到再次写入");});
+   }
+   File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-input-selection-report.json"),JsonSerializer.Serialize(new{passed,failed=Reports.Count-passed,cases=Reports},new JsonSerializerOptions{WriteIndented=true}));return passed==Reports.Count?0:1;
+  }finally{app.Shutdown();}
+ }
+}

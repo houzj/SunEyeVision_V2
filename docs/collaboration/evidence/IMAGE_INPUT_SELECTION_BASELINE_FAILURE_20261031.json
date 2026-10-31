@@ -1,0 +1,106 @@
+{
+  "baseline": "7cc73e29",
+  "probeScope": "图像输入选择Loaded首次探针；未修改产品；候选Release为本worktree此前自行构建的等价产品源码",
+  "receipt": {
+    "stage": "S4",
+    "validationScope": "Candidate",
+    "attempt": 2,
+    "pid": 372,
+    "exit": 1,
+    "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4ImageInputSelectionCases.cs",
+    "caseSourceSha256": "ADFCB43A665473217C859F4E660CEC2C75E1BA842D4C5D1DE372F68FD49C2B26",
+    "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+    "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageInputSelection\\attempt-002"
+  },
+  "report": {
+    "passed": 14,
+    "failed": 1,
+    "cases": [
+      {
+        "name": "未Loaded选项不写字段",
+        "passed": true
+      },
+      {
+        "name": "同名复合身份及精确去重保留选择",
+        "passed": true
+      },
+      {
+        "name": "记录成员图像可选择而不同成员不合并",
+        "passed": true
+      },
+      {
+        "name": "错型序列和序列成员不能静默取首图",
+        "passed": true
+      },
+      {
+        "name": "必填无清空入口可选字段明确Unset",
+        "passed": true
+      },
+      {
+        "name": "刷新删除仅失效显示保留正式引用再恢复不写入",
+        "passed": false,
+        "error": "System.Exception: 失效来源未标错或被隐式清除\r\n   at S2DocumentEditingCases.Require(Boolean b, String message) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageInputSelection\\Cases.cs:line 5\r\n   at S2DocumentEditingCases.<>c.<Main>b__8_5() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageInputSelection\\Cases.cs:line 34\r\n   at S2DocumentEditingCases.Case(String name, Action action) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageInputSelection\\Cases.cs:line 6"
+      },
+      {
+        "name": "目录失败保留完整显示恢复不写入",
+        "passed": true
+      },
+      {
+        "name": "同项Enter才接管自动来源打开刷新不接管",
+        "passed": true
+      },
+      {
+        "name": "宿主拒绝恢复显示并保留诊断且刷新不能清除",
+        "passed": true
+      },
+      {
+        "name": "退役与恢复阻断旧选择 disabled",
+        "passed": true
+      },
+      {
+        "name": "退役与恢复阻断旧选择 hidden",
+        "passed": true
+      },
+      {
+        "name": "退役与恢复阻断旧选择 unloaded",
+        "passed": true
+      },
+      {
+        "name": "退役与恢复阻断旧选择 disposed",
+        "passed": true
+      },
+      {
+        "name": "候选读取同步重渲染旧快照不安装",
+        "passed": true
+      },
+      {
+        "name": "接纳同步重渲染后旧尾部不改新控件",
+        "passed": true
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "Release/_validation/S4-20261025/ImageInputSelection/attempt-002/receipt.json",
+      "sha256": "7EA79F2D91E743ABD145F0A507FFBA3B35367FB4BA5AA19B0F321FD9DA090E1C"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/ImageInputSelection/attempt-002/cases.cs.txt",
+      "sha256": "ADFCB43A665473217C859F4E660CEC2C75E1BA842D4C5D1DE372F68FD49C2B26"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/ImageInputSelection/attempt-002/run.log",
+      "sha256": "4BEC446B0C8CCEDCEC0E9639FFFD2608AE11529813A824E236F7D794FBDA470F"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/ImageInputSelection/attempt-002/run-error.log",
+      "sha256": "64017992A10CFB62D0A3DE2FA4FBF6A2B703EF6D32E438187F2D30BA70A93536"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/ImageInputSelection/attempt-002/loaded-product.tsv",
+      "sha256": "D58C3393B76340912601A82DFDAD14714D869979A001EB5C06CD74A73F2A6A43"
+    }
+  ],
+  "failure": "目录删除来源后仅禁用保留项但最终ChangeRefreshError(\"\")，未设来源无效诊断；必须保留引用且拒绝字段捕获，不新增行内红字。"
+}

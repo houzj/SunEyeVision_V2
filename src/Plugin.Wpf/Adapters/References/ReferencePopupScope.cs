@@ -3,8 +3,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using NativePopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
-using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
+using NativeText=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 
@@ -23,9 +24,9 @@ internal sealed class ReferencePopupScope : IDisposable
     {
         _root=root;_session=session;_isActive=isActive;
         _session.CloseRequested+=ClosePopups;
-        _root.Loaded+=OnLoaded;_root.Unloaded+=OnUnloaded;_root.IsVisibleChanged+=OnVisibilityChanged;
+        _root.Loaded+=OnLoaded;_root.Unloaded+=OnUnloaded;_root.IsVisibleChanged+=OnVisibilityChanged;_root.IsEnabledChanged+=OnVisibilityChanged;
         _root.PreviewKeyDown+=OnKey;_root.LostKeyboardFocus+=OnLostFocus;
-        _session.SetSuspended(!_root.IsLoaded||!_root.IsVisible);
+        _session.SetSuspended(!_root.IsLoaded||!_root.IsVisible||!_root.IsEnabled);
     }
     private IEnumerable<NativePopup> Popups()=>Visuals<NativePopup>(_root).Where(popup=>ReferenceEquals(popup.DataContext,_session));
     public void Refresh(){if(!_disposed&&_root.IsLoaded)Attach();}
@@ -38,7 +39,7 @@ internal sealed class ReferencePopupScope : IDisposable
     }
     private void UpdateAvailability()
     {
-        var suspended=_disposed||!_presentationAllowed||!_root.IsLoaded||!_root.IsVisible;
+        var suspended=_disposed||!_presentationAllowed||!_root.IsLoaded||!_root.IsVisible||!_root.IsEnabled;
         _session.SetSuspended(suspended);
         if(suspended)
         {
@@ -80,8 +81,9 @@ internal sealed class ReferencePopupScope : IDisposable
         if(args.Key==Key.Enter)
         {
             args.Handled=true;
-            var text=_text;
+            var text=_text;var popupGeneration=_session.PopupGeneration;
             bool OwnsFocus()=>!_disposed&&ReferenceEquals(text,_text)&&_root.IsLoaded&&_root.IsVisible
+                &&popupGeneration==_session.PopupGeneration
                 &&(text?.IsKeyboardFocusWithin==true||Popups().Any(popup=>popup.IsKeyboardFocusWithin
                     ||popup.Template?.FindName("PART_Popup",popup) is System.Windows.Controls.Primitives.Popup {Child:{IsKeyboardFocusWithin:true}}));
             if(TryCommitPending()&&OwnsFocus()){ClosePopups();if(OwnsFocus())Keyboard.ClearFocus();}
@@ -103,23 +105,31 @@ internal sealed class ReferencePopupScope : IDisposable
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
         if(!ReferenceEquals(args.OriginalSource,_root))return;
-        _session.SetSuspended(true);_session.InvalidateExpansion();ClosePopups();DetachText();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
+        Cancel();var owner=_owner;_owner=null;DetachText();
+        ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
+            ()=>{if(!_root.IsLoaded)_session.SetSuspended(true);},
+            ()=>{if(!_root.IsLoaded)_session.InvalidateExpansion();},()=>{if(!_root.IsLoaded)ClosePopups();}});
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args){if(!_disposed)UpdateAvailability();}
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
     private void Cancel(){_generation++;_pending?.Abort();_pending=null;}
     public void ClosePopups()
     {
-        Cancel();_session.Close();
+        Cancel();var generation=_session.PopupGeneration;var popups=Popups().ToArray();
         // The original IsPopupOpen callback is focus-gated; final close must target the actual popup DP.
-        foreach(var popup in Popups())popup.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
+        ParameterCleanup.Run(new Action[]{_session.Close}.Concat(popups.Select(popup=>(Action)(()=>
+        {
+            if(generation==_session.PopupGeneration&&ReferenceEquals(popup.DataContext,_session))
+                popup.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
+        }))));
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_session.SetSuspended(true);ClosePopups();DetachText();
-        if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
-        _root.Loaded-=OnLoaded;_root.Unloaded-=OnUnloaded;_root.IsVisibleChanged-=OnVisibilityChanged;
+        if(_disposed)return;_disposed=true;Cancel();var owner=_owner;_owner=null;DetachText();
+        _root.Loaded-=OnLoaded;_root.Unloaded-=OnUnloaded;_root.IsVisibleChanged-=OnVisibilityChanged;_root.IsEnabledChanged-=OnVisibilityChanged;
         _root.PreviewKeyDown-=OnKey;_root.LostKeyboardFocus-=OnLostFocus;
         _session.CloseRequested-=ClosePopups;
+        ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
+            ()=>_session.SetSuspended(true),_session.InvalidateExpansion,ClosePopups});
     }
 }

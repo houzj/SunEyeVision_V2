@@ -1,5 +1,5 @@
 (()=>{
-const d=JSON.parse(document.getElementById('page-data').textContent),E=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const d=window.__PAGE_DATA__||JSON.parse(document.getElementById('page-data').textContent),E=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const labels={implemented:'静态已实现 · 未作运行验收',partial:'部分实现',unimplemented:'未实现',unknown:'待核实'};
 const dc=x=>x==='缺失'?'missing':x==='差异大'?'large':x==='差异小'?'small':'unknown';
 const root=d.files.main,toolfile=id=>d.capFiles[id]||root;

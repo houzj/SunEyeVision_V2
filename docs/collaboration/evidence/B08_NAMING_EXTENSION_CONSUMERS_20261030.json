@@ -1,0 +1,9 @@
+{
+  "extensionConsumers": [
+    "src\\Plugin.Wpf\\Controls\\Foundation\\FouerColorBorder.cs"
+  ],
+  "changedConsumers": [
+    "scripts/verification\\O06WindowPresentationCases.cs",
+    "src\\Plugin.Wpf\\Controls\\Foundation\\FouerColorBorder.cs"
+  ]
+}

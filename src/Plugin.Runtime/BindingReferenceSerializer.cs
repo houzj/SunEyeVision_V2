@@ -9,6 +9,48 @@ public static class BindingReferenceSerializer
 {
     private static readonly JsonSerializerOptions Options=CreateOptions();
     private sealed record Document([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,[property:JsonRequired]OutputReference Reference);
+    private sealed record VariableDocument([property:JsonRequired]int ContractMajor,[property:JsonRequired]int ContractMinor,
+        [property:JsonRequired]string SolutionId,[property:JsonRequired]string VariableId,[property:JsonRequired]TypeRef ExpectedType,[property:JsonRequired]string? Storage,
+        [property:JsonRequired]string Selection,[property:JsonRequired]int? Index,[property:JsonRequired]OutputReference? IndexReference,
+        [property:JsonRequired]VariableDocument? IndexVariable);
+    public static string Serialize(VariableReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        return JsonSerializer.Serialize(ToVariableDocument(reference),Options);
+    }
+    private static VariableDocument ToVariableDocument(VariableReference reference)
+    {
+        var kind=reference.Selection switch{BindingSelection.AllItems=>"All",BindingSelection.AtConstant=>"AtConstant",BindingSelection.AtField=>"AtField",BindingSelection.AtVariable=>"AtVariable",_=>throw new ArgumentException("Unknown variable selection.")};
+        return new(FoundationContract.Major,FoundationContract.Minor,reference.SolutionId,reference.VariableId,reference.Type,
+            reference.Storage?.ToString(),kind,(reference.Selection as BindingSelection.AtConstant)?.Index,(reference.Selection as BindingSelection.AtField)?.Reference,
+            reference.Selection is BindingSelection.AtVariable variable?ToVariableDocument(variable.Reference):null);
+    }
+    public static VariableReference DeserializeVariable(string json)
+    {
+        try
+        {
+            using(var parsed=JsonDocument.Parse(json))RejectDuplicateProperties(parsed.RootElement);
+            var document=JsonSerializer.Deserialize<VariableDocument>(json,Options)??throw new JsonException("Variable reference is missing.");
+            return FromVariableDocument(document);
+        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
+        {throw new JsonException("Variable reference contains an invalid declaration.",error);}
+    }
+    private static VariableReference FromVariableDocument(VariableDocument document)
+    {
+            if(document.ContractMajor!=FoundationContract.Major||document.ContractMinor!=FoundationContract.Minor)
+                throw new JsonException("Variable binding contract version differs.");
+            NumericStorage? storage=document.Storage is null?null:
+                Enum.TryParse<NumericStorage>(document.Storage,false,out var stored)&&Enum.IsDefined(stored)&&stored.ToString()==document.Storage
+                    ?stored:throw new JsonException("Variable storage declaration is invalid.");
+            BindingSelection selection=document.Selection switch {
+                "All" when document.Index is null&&document.IndexReference is null&&document.IndexVariable is null=>BindingSelection.All,
+                "AtConstant" when document.Index is {} index&&document.IndexReference is null&&document.IndexVariable is null=>new BindingSelection.AtConstant(index),
+                "AtField" when document.Index is null&&document.IndexReference is {} field&&document.IndexVariable is null=>new BindingSelection.AtField(field),
+                "AtVariable" when document.Index is null&&document.IndexReference is null&&document.IndexVariable is {} variable=>new BindingSelection.AtVariable(FromVariableDocument(variable)),
+                _=>throw new JsonException("Variable selection fields differ from their declared kind.")};
+            return new(document.SolutionId,document.VariableId,document.ExpectedType,selection,storage);
+    }
     public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
     public static OutputReference Deserialize(string json)
         => DeserializeVersion(json, FoundationContract.Major, FoundationContract.Minor);
@@ -143,6 +185,7 @@ public static class BindingReferenceSerializer
                 "All" => new[] { "kind" },
                 "AtConstant" => new[] { "kind", "index" },
                 "AtField" => new[] { "kind", "reference" },
+                "AtVariable" => new[] { "kind", "variable" },
                 _ => throw new JsonException("Unknown binding selection.")
             });
             BindingSelection selected=selection.GetProperty("kind").GetString() switch
@@ -150,6 +193,7 @@ public static class BindingReferenceSerializer
                 "All"=>BindingSelection.All,
                 "AtConstant"=>new BindingSelection.AtConstant(selection.GetProperty("index").GetInt32()),
                 "AtField"=>new BindingSelection.AtField(JsonSerializer.Deserialize<OutputReference>(selection.GetProperty("reference").GetRawText(),options)??throw new JsonException("Index reference is missing.")),
+                "AtVariable"=>new BindingSelection.AtVariable(DeserializeVariable(selection.GetProperty("variable").GetRawText())),
                 _=>throw new JsonException("Unknown binding selection.")
             };
             return new(root.GetProperty("nodeId").GetString()!,root.GetProperty("fieldId").GetString()!,type,
@@ -170,6 +214,7 @@ public static class BindingReferenceSerializer
                 case BindingSelection.AllItems:writer.WriteString("kind","All");break;
                 case BindingSelection.AtConstant index:writer.WriteString("kind","AtConstant");writer.WriteNumber("index",index.Index);break;
                 case BindingSelection.AtField index:writer.WriteString("kind","AtField");writer.WritePropertyName("reference");JsonSerializer.Serialize(writer,index.Reference,options);break;
+                case BindingSelection.AtVariable index:writer.WriteString("kind","AtVariable");writer.WritePropertyName("variable");writer.WriteRawValue(Serialize(index.Reference));break;
                 default:throw new JsonException("Unknown binding selection.");
             }
             writer.WriteEndObject();writer.WriteEndObject();

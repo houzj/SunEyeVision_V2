@@ -33,9 +33,10 @@ public partial class MainWindowViewModel
             ImageSourcePolicy.Read(node)?.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local&&
             index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         if(source.EditVersion!=editVersion||!Current()||!source.CanSelectImage(index))return false;
-        source.SelectImage(index);
+        var receipt=source.SelectImage(index);
         // Acceptance notifications may switch documents, roots, sources or execution state.
-        return Current();
+        return receipt.FormalAccepted&&receipt.RuntimeReady&&receipt.ProjectionVersion is { } acceptedVersion&&source.EditVersion==acceptedVersion&&
+            source.CurrentIndex==index&&ReferenceEquals(source.CurrentImage,image)&&Current();
     }
     internal System.Threading.Tasks.Task RunPreviewImageAsync(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab,
         ImageInputSource source,ImageInfo image,int index,long editVersion)
@@ -49,13 +50,14 @@ public partial class MainWindowViewModel
             ReferenceEquals(ActiveInputSource,source)&&source.EditVersion==editVersion&&source.CurrentIndex==index&&source.CanSelectImage(index)&&
             ImageSourcePolicy.Read(node) is {SourceKind:SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local} policy&&
             policy.CurrentIndex==index&&index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
-        return Current()?ExecuteRunWorkflow(advanceLocalImage:false,expectedTab:tab,isCurrent:Current):System.Threading.Tasks.Task.CompletedTask;
+        return Current()?ExecuteRunWorkflow(advanceLocalImage:false,expectedTab:tab,isCurrent:Current,explicitSourceId:source.NodeId):System.Threading.Tasks.Task.CompletedTask;
     }
     private void BindLocalImageSourceEditor(WorkflowNodeBase node,ImageInputSource source)
     {
         var session=DocumentManager.Session??throw new InvalidOperationException("图像源缺少当前方案编辑会话。");
         var root=session.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Nodes.Any(item=>ReferenceEquals(item,node)));
         source.AttachFormalOwner();
+        source.ConfigurationLeaseProvider=_executionManager.BeginHistoryMutation;
         // Root source editing only; Group source editing requires its deferred ownership contract.
         source.ConfigurationWriter=proposal=>
         {
@@ -76,13 +78,30 @@ public partial class MainWindowViewModel
                 var publication=host.Commit(draft);
                 // An explicit preview choice can equal the persisted start while differing
                 // from the last runtime cursor. Reset only this source, never other sources.
-                if(proposal.SelectStart)_executionManager.ResetLocalImageCursor(root.Id,node.Id);
+                if(proposal.SelectStart)
+                {
+                    try { _executionManager.ResetLocalImageCursor(root.Id,node.Id,root); }
+                    catch(Exception error)
+                    {
+                        source.RecordAcceptedRuntimeFailure(error.Message);
+                        _executionManager.BlockLocalImageCursor(root.Id,node.Id,error.Message);
+                        ReportAcceptedSourceRefreshError("运行游标不可用",error);
+                    }
+                }
                 // Acceptance is final; observer failure cannot make the source roll back its accepted state.
-                try { RefreshProductionPublication(session,publication); }
-                catch(Exception error) { try { _logger?.LogError("图像源已接纳，显示刷新失败", "MainWindowViewModel",error); } catch { } }
+                try { InvalidatePublishedResults(session,publication.InvalidatedNodes,
+                    ()=>_acceptingImageSource&&ReferenceEquals(DocumentManager.Session,session)&&!IsRunning&&!_executionManager.IsAnyRunning()); }
+                catch(Exception error) { ReportAcceptedSourceRefreshError("结果失效失败",error); }
+                try { RefreshProductionPublication(session,publication,resultsAlreadyRefreshed:true); }
+                catch(Exception error) { ReportAcceptedSourceRefreshError("显示刷新失败",error); }
             }
             finally { _acceptingImageSource=false; }
         };
+    }
+    private void ReportAcceptedSourceRefreshError(string stage,Exception error)
+    {
+        try { _logger?.LogError("图像源配置已接纳，"+stage,"MainWindowViewModel",error); } catch { }
+        try { StatusText="图像源配置已接纳，"+stage+"："+error.Message; } catch { }
     }
     private void RefreshAcceptedImageSourceViews()
     {

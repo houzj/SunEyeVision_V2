@@ -824,8 +824,8 @@ namespace SunEyeVision.Workflow
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
             foreach(var node in executableWorkflow.Nodes.OfType<AlgorithmNode>())node.WorkflowInputImage=inputImage;
             var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
-            var variableDefinitions=request?.CommunicationInputs?.GetVariables().ToArray();
-            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues);
+            var variableDefinitions=request?.ProducedGlobals?.Sources??request?.CommunicationInputs?.GetVariables().ToArray();
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues,request?.ProducedGlobals?.SolutionId);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
                 node => inputIssues.ContainsKey(node.Id) ? ToolExecutionProfile.LegacyExclusive
@@ -914,9 +914,16 @@ namespace SunEyeVision.Workflow
                 AlgorithmNode executionNode;
                 if(node.RuntimeConfiguration is { } runtime)
                 {
+                    if(node.ParamSettings.Settings.Any())
+                        throw new InvalidOperationException("Runtime执行快照不能包含旧ParamSettings："+node.Id);
                     var configuration=runtime.Copy();
                     if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
+                    {
+                        var declaredSettings=configuration.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+                        if(runtimeOverrides.Keys.Any(id=>!declaredSettings.Contains(id)))
+                            throw new ArgumentException("Unknown Runtime setting override: "+string.Join(",",runtimeOverrides.Keys.Where(id=>!declaredSettings.Contains(id))));
                         configuration=configuration.WithFieldValues(runtimeOverrides);
+                    }
                     executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
                 }
                 else

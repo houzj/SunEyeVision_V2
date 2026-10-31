@@ -1,0 +1,61 @@
+{
+  "unit": "B07 颜色控件",
+  "status": "颜色基础及高级单元自动检查通过，字段现行阶段检查通过；VS/人工与完整Blob功能仍待",
+  "fix": "禁用和隐藏关闭原弹层，迟到颜色提案恢复已接纳值；订阅与延迟任务配对释放",
+  "validation": {
+    "fieldTrackPassed": false,
+    "designTotal": 302,
+    "fieldFailure": "VerifySettingsCandidate按旧标签查阈值上限无匹配项；此前完整高级颜色段已通过",
+    "colorChecks": 13,
+    "uiBuild": "0错误/6433警告",
+    "failedBaselineAttempt": 125,
+    "fieldAttempt": "attempt-112",
+    "fullBuild": "0错误/1103警告",
+    "limitations": "图表像素由测试注入；不能替代实际鼠标取色、VS及Blob完整集成",
+    "designAttempt": 126
+  },
+  "sources": [
+    {
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml"
+    },
+    {
+      "sha256": "DC354ABEAA2FCA7045B4A22BAD5AC07A346811527F95DB780E61985ECB9ED44C",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs"
+    },
+    {
+      "sha256": "0C85759B6B2D57FBAE00426F7B841D3851131E983BF12D5830D76A7977ACBD18",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeColorPresenter.cs"
+    },
+    {
+      "sha256": "9EF08C81EA52E2FBB1A9F05C6D47767D3D3FA081E53647A678E95DD7EFC3496A",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeColorPaletteScope.cs"
+    },
+    {
+      "sha256": "C6CBA39C55BA3EAB5B640B74BD7487EF5FFD1EE875525EADA5DF6487E8F923D5",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
+    },
+    {
+      "sha256": "7387FBE6C5600835BBB17312B2FAF2FD8B9C32C56209FDD5984316EF21AC0857",
+      "path": "scripts/verification/S4DesignTimeCases.cs"
+    },
+    {
+      "sha256": "8F1219BC134C755D3426B4FC14EB1315704CAD637D109EFD2D92F6D5CC1AF263",
+      "path": "scripts/verification/S4FieldEditingCases.cs"
+    }
+  ],
+  "latestValidation": {
+    "fieldAttempt": 115,
+    "renderReviewed": "Release/_validation/S4-20261025/FieldEditing/attempt-115/native-palette-more.png",
+    "scope": "原默认/更多色板、亮度、绑定、拒绝恢复、重入异常、关闭卸载，以及现行纯UI确认保护",
+    "fieldExit": 0,
+    "retainedFailures": [
+      110,
+      111,
+      112,
+      113,
+      114
+    ],
+    "phaseBoundary": "按实际MainWindowRuntimeEditing接PrepareView与HasPendingViewEdits；纯UI阈值必须拒绝正式确认，不记功能确认链通过"
+  }
+}

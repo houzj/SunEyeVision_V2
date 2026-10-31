@@ -1,0 +1,28 @@
+{
+  "scope": "当前Blob实例所需原件，区分普通String与StringConfig",
+  "algorithm": {
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+    "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+    "ordinaryStringCount": 0,
+    "stringConfigCount": 0,
+    "usesTextDisplayGroup": true
+  },
+  "groups": {
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml",
+    "sha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC",
+    "ordinaryStringCount": 0,
+    "stringConfig": "<StringConfig Name=\"Content\" NameSpace=\"Standard\"><Description>RunParam_Content</Description><DisplayName>RunParam_Content</DisplayName><Visibility>Beginner</Visibility><AccessMode>O</AccessMode><CurValue></CurValue><DefaultValue></DefaultValue><Length>0x00000020</Length><PropertyName>Value</PropertyName><BrigdgeSetter><TargetName>BridgeObj</TargetName><OperationName>GetDisplayObjectFeatureOperation</OperationName><OperationParams>Show Text;Content</OperationParams></BrigdgeSetter></StringConfig>"
+  },
+  "localNumericReferences": [
+    {
+      "Name": "Integer",
+      "Count": 3
+    },
+    {
+      "Name": "Number",
+      "Count": 6
+    }
+  ],
+  "decision": "普通String.IsSubA的MaxLen/UTF8额外回写不属于当前Blob原件，不得套到StringConfig或为其造假MaxLen。原B08普通String/TS完整清单保留待对应消费者，不作为本Blob数值链前置；文本表达式仍按独立StringConfig完整链实施。",
+  "functionalAcceptance": false
+}

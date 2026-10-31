@@ -110,6 +110,11 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     public bool IsValid => _active && _isCurrent() && OwnsAllNodes();
     internal NodeConfigurationEditHost Host => _host;
     internal NodeConfigurationEditDraft PreparedDraft => _draft;
+    internal SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(string fieldId)
+    {
+        EnsureCurrent();
+        return _host.ReadCurrentParameter(_draft,fieldId);
+    }
     internal event Action? Deactivated;
 
     public ProductionEditorContext(NodeConfigurationEditHost host, string workflowId, WorkflowNodeBase formalNode,

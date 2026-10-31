@@ -1,0 +1,99 @@
+{
+  "source": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "sourceSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "local": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+  "localSha256": "873FF0864E3C509547C0FB9810FDFCE03700EA64FF1870F5803D9EC275C5AEBC",
+  "entries": [
+    {
+      "property": "Threshold",
+      "fieldId": "field:43bda03261df55b88f963bd18f2ba4d9",
+      "bindingName": "LowThreshold",
+      "localType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "UpperThreshold",
+      "fieldId": "field:8ca20000000040008000000000000002",
+      "bindingName": "HightThreshold",
+      "localType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "BlobCountLimit",
+      "fieldId": "field:e748553b7cb45d1a8003c2b345b1d98f",
+      "bindingName": "FindNum",
+      "localType": "Integer",
+      "originalTypes": [
+        "Integer"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterAreaMin",
+      "fieldId": "field:fcdb01b095c25c6ea22384f993450aac",
+      "bindingName": "MinArea",
+      "localType": "Number",
+      "originalTypes": [
+        "Integer"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterAreaMax",
+      "fieldId": "field:cdce3e942b555fa58489e08eeb39236f",
+      "bindingName": "MaxArea",
+      "localType": "Number",
+      "originalTypes": [
+        "Integer"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterCircularityMin",
+      "fieldId": "field:da4d70261e23551e9a5bd832b2a686d1",
+      "bindingName": "MinCircularity",
+      "localType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterCircularityMax",
+      "fieldId": "field:1a8be75176b350f09f3cd64506c136da",
+      "bindingName": "MaxCircularity",
+      "localType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterRectangularityMin",
+      "fieldId": "field:13d8c5e0c7445f1087497a21f4103a5e",
+      "bindingName": "MinRectangularity",
+      "localType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "matches": 1
+    },
+    {
+      "property": "FilterRectangularityMax",
+      "fieldId": "field:c38989cfdf9e51799d27e0eeee34e726",
+      "bindingName": "MaxRectangularity",
+      "localType": "Number",
+      "originalTypes": [
+        "Float"
+      ],
+      "matches": 1
+    }
+  ],
+  "scope": "核实际参数Name映射，不证明数值物理类型/算法或所有原生入口等价"
+}

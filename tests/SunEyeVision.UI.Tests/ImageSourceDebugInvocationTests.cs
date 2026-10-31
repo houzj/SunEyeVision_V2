@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 using System.Reflection;
 using System.Windows.Media;
@@ -7,9 +7,8 @@ using NSubstitute;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
-using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
-using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -22,6 +21,20 @@ namespace SunEyeVision.UI.Tests;
 /// <summary>Actual source Runtime through formal/debug host entry points; controlled camera service is not hardware acceptance.</summary>
 public sealed class ImageSourceDebugInvocationTests
 {
+    [Fact]
+    public void Cancelled_read_identity_rejects_before_admission_with_cancellation()
+    {
+        using var cancellation=new CancellationTokenSource();
+        var owner=new ToolExecutionOwner();
+        var identity=owner.Begin("flow/source",Guid.NewGuid(),"schema",cancellation.Token);
+        var admitted=false;
+        var input=new ImageSourceRunInput("unused",1){LocalReadAdmission=_=>{admitted=true;return "unused";}};
+        cancellation.Cancel();
+        var method=typeof(ImageSourceRunInput).GetMethod("AcceptLocalImage",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var error=Assert.Throws<TargetInvocationException>(()=>method.Invoke(input,new object[]{identity}));
+        Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
+        Assert.False(admitted);
+    }
     private sealed class Fixture : IDisposable
     {
         public string DirectoryPath {get;}
@@ -49,8 +62,8 @@ public sealed class ImageSourceDebugInvocationTests
             using(var output=File.Create(path))encoder.Save(output);return path;
         }
         public RuntimeDebugInvocation Capture(WorkflowNodeBase? draft=null,CancellationToken cancellation=default,
-            ICameraCaptureService? camera=null,IVisionImage? defaultImage=null,IResourcePathResolver? resolver=null)
-            =>RuntimeDebugInvocation.Capture(Flow,draft??Host.BeginEdit(Flow.Id,Node.Id).Node,new ToolExecutionOwner(),Host.Capture().Version,
+            ICameraCaptureService? camera=null,IVisionImage? defaultImage=null,IResourcePathResolver? resolver=null,ToolExecutionOwner? owner=null)
+            =>RuntimeDebugInvocation.Capture(Flow,draft??Host.BeginEdit(Flow.Id,Node.Id).Node,owner??new ToolExecutionOwner(),Host.Capture().Version,
                 _=>throw new InvalidOperationException("图像源不得读取上游发布作为默认输入。"),cancellation,defaultImage,
                 resourcePaths:resolver??new SolutionResourceResolver(Document.ResourceBaseDirectory),cameraService:camera);
         public void Edit(Action<ImageSourcePolicy> change)
@@ -60,9 +73,88 @@ public sealed class ImageSourceDebugInvocationTests
         public void Dispose()=>Directory.Delete(DirectoryPath,true);
     }
 
-    private static IReadOnlyImage Image(RuntimeToolResults result)=>Assert.IsAssignableFrom<IReadOnlyImage>(result.Values!["output.image"]);
-    private static void Release(RuntimeToolResults result)=>result.Resources?.Dispose();
+    private static IReadOnlyImage Image(DeclaredOutputReader reader)=>reader.Values!.Get<IReadOnlyImage>("output.image");
 
+    [Fact]
+    public async Task Local_debug_missing_frame_is_consumed_and_next_request_reads_the_following_frame()
+    {
+        using var f=new Fixture();
+        var a=f.WriteImage(Path.Combine(f.DirectoryPath,"a"),20);
+        var c=f.WriteImage(Path.Combine(f.DirectoryPath,"c"),90);
+        f.Edit(p=>{p.FilePaths=new(){"a/image.png","b/image.png","c/image.png"};p.CurrentIndex=0;
+            p.AutoSwitchEnabled=true;p.StopAtLastImage=false;});
+        var owner=new ToolExecutionOwner();
+        using(var first=f.Capture(owner:owner))
+        using(var failed=await first.ExecuteAsync())Assert.False(failed.IsSuccess);
+        using(var second=f.Capture(owner:owner))
+        using(var result=await second.ExecuteAsync())
+        using(var reader=result.AcquireReader())
+        {
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+            Assert.Equal(c,reader.Values!.Get<string>("output.file"));
+            Assert.Equal(new byte[]{90,90},Image(reader).CopyPixels());
+        }
+        using(var third=f.Capture(owner:owner))
+        using(var result=await third.ExecuteAsync())
+        using(var reader=result.AcquireReader())
+        {
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+            Assert.Equal(a,reader.Values!.Get<string>("output.file"));
+        }
+    }
+
+    [Fact]
+    public async Task Debug_owners_keep_independent_cursors_and_a_reopened_editor_starts_fresh()
+    {
+        using var f=new Fixture();
+        f.WriteImage(Path.Combine(f.DirectoryPath,"a"),10);
+        var b=f.WriteImage(Path.Combine(f.DirectoryPath,"b"),20);
+        var c=f.WriteImage(Path.Combine(f.DirectoryPath,"c"),30);
+        f.Edit(p=>{p.FilePaths=new(){"a/image.png","b/image.png","c/image.png"};p.CurrentIndex=0;
+            p.AutoSwitchEnabled=true;p.StopAtLastImage=false;});
+        var firstOwner=new ToolExecutionOwner();var secondOwner=new ToolExecutionOwner();
+        async Task<string> Run(ToolExecutionOwner owner)
+        {
+            using var invocation=f.Capture(owner:owner);
+            using var result=await invocation.ExecuteAsync();
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+            using var reader=result.AcquireReader();
+            return reader.Values!.Get<string>("output.file");
+        }
+        Assert.Equal(b,await Run(firstOwner));
+        Assert.Equal(b,await Run(secondOwner));
+        Assert.Equal(c,await Run(firstOwner));
+        firstOwner.Retire();
+        Assert.Equal(b,await Run(new ToolExecutionOwner()));
+        Assert.Equal(c,await Run(secondOwner));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Invalid_debug_draft_preserves_previous_cursor_when_the_draft_is_restored(bool empty)
+    {
+        using var f=new Fixture();
+        var path=f.WriteImage(f.DirectoryPath,20);
+        var owner=new ToolExecutionOwner();
+        using(var first=f.Capture(owner:owner))
+        using(var result=await first.ExecuteAsync())
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+
+        var invalid=f.Host.BeginEdit(f.Flow.Id,f.Node.Id).Node;
+        ImageSourceTestRuntime.Edit(invalid,p=>
+        {
+            if(empty){p.FilePaths.Clear();p.CurrentIndex=-1;}
+            else {p.RunMode=1;p.ForRunPaths.Clear();}
+        });
+        Assert.ThrowsAny<Exception>(()=>f.Capture(invalid,owner:owner));
+
+        using var restored=f.Capture(owner:owner);
+        using var restoredResult=await restored.ExecuteAsync();
+        using var reader=restoredResult.AcquireReader();
+        Assert.True(restoredResult.IsSuccess,restoredResult.ErrorMessage);
+        Assert.Equal(path,reader.Values!.Get<string>("output.file"));
+    }
     [Fact]
     public async Task Local_debug_freezes_private_settings_base_and_sequence_without_publishing_formal_state()
     {
@@ -74,17 +166,18 @@ public sealed class ImageSourceDebugInvocationTests
         ImageSourceTestRuntime.Edit(draft,p=>p.SNInitialValue=88);
         var edit=f.Host.BeginEdit(f.Flow.Id,f.Node.Id);ImageSourceTestRuntime.Edit(edit.Node,p=>p.SNInitialValue=99);f.Host.Commit(edit);
         f.Document.ResourceBaseDirectory=b;var publication=f.Host.Capture();
-        var result=await invocation.ExecuteAsync();
+        using var result=await invocation.ExecuteAsync();
+        using var reader=result.AcquireReader();
         try
         {
-            Assert.True(result.IsSuccess,result.ErrorMessage);Assert.Equal(expected,result.Values!["output.file"]);
-            Assert.Equal(7L,result.Values["output.sequence"]);Assert.Equal(new byte[]{20,20},Image(result).CopyPixels());
-            Assert.Equal(invocation.Identity.ToInvocationIdentity(f.Node.Id),Image(result).Frame.ProducerRun);
+            Assert.True(result.IsSuccess,result.ErrorMessage);Assert.Equal(expected,reader.Values!.Get<string>("output.file"));
+            Assert.Equal(7L,reader.Values.Get<long>("output.sequence"));Assert.Equal(new byte[]{20,20},Image(reader).CopyPixels());
+            Assert.Equal(invocation.Identity.ToInvocationIdentity(f.Node.Id),Image(reader).Frame.ProducerRun);
             Assert.Empty(invocation.SourceIdentities);Assert.Same(publication,f.Host.Capture());
             Assert.Equal(99,ImageSourceTestRuntime.Read(f.Node).SNInitialValue);Assert.Equal(88,ImageSourceTestRuntime.Read(draft).SNInitialValue);
             Assert.Same(cache,f.Node.OutputCache);Assert.Same(last,f.Node.LastResult);
         }
-        finally{Release(result);}
+        finally{reader.Dispose();}
     }
 
     [Theory]
@@ -106,23 +199,24 @@ public sealed class ImageSourceDebugInvocationTests
     {
         using var f=new Fixture();var path=f.WriteImage(f.DirectoryPath,40);
         var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
-        var sourceInputs=new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7)}};
+        var sourceInputs=new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7){LocalReadAdmission=_=>path}}};
         var request=new WorkflowRunRequest(f.Flow.Id,sourceInputs:sourceInputs);
         sourceInputs[f.Node.Id]=new(path+".missing",99); // Request must retain its admitted immutable mapping.
         using var run=await executor.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(20));
         Assert.True(run.Success,string.Join(";",run.Errors));
-        var formal=Assert.IsType<RuntimeToolResults>(run.NodeResults[f.Node.Id].Result);
-        using var debug=f.Capture();var preview=await debug.ExecuteAsync();
+        var formal=Assert.IsType<DeclaredOutputSnapshot>(run.NodeResults[f.Node.Id].Result);
+        using var formalReader=formal.AcquireReader();
+        using var debug=f.Capture();using var preview=await debug.ExecuteAsync();using var previewReader=preview.AcquireReader();
         try
         {
-            Assert.True(preview.IsSuccess,preview.ErrorMessage);var a=Image(formal);var b=Image(preview);
-            Assert.Equal(a.CopyPixels(),b.CopyPixels());Assert.Equal(7L,formal.Values!["output.sequence"]);
-            Assert.Equal(7L,preview.Values!["output.sequence"]);Assert.NotEqual(a.Frame,b.Frame);
+            Assert.True(preview.IsSuccess,preview.ErrorMessage);var a=Image(formalReader);var b=Image(previewReader);
+            Assert.Equal(a.CopyPixels(),b.CopyPixels());Assert.Equal(7L,formalReader.Values!.Get<long>("output.sequence"));
+            Assert.Equal(7L,previewReader.Values!.Get<long>("output.sequence"));Assert.NotEqual(a.Frame,b.Frame);
             Assert.NotEqual(a.Frame.ProducerRun,b.Frame.ProducerRun);Assert.Equal(debug.Identity.ToInvocationIdentity(f.Node.Id),b.Frame.ProducerRun);
             using var da=a.EffectiveDomain.AcquireReader();using var db=b.EffectiveDomain.AcquireReader();
             Assert.Equal(da.ReadRuns(0,4096).ToArray(),db.ReadRuns(0,4096).ToArray());
         }
-        finally{Release(preview);}
+        finally{previewReader.Dispose();}
     }
 
     [Fact]
@@ -141,11 +235,12 @@ public sealed class ImageSourceDebugInvocationTests
         Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
         // Rejection must drain the same engine root slot; only an explicit frozen scheduler input may run.
         using var admitted=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,sourceInputs:
-            new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7)}}));
+            new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7){LocalReadAdmission=_=>path}}}));
         Assert.True(admitted.Success,string.Join(";",admitted.Errors));
-        var output=Assert.IsType<RuntimeToolResults>(admitted.NodeResults[f.Node.Id].Result);
-        Assert.Equal(7L,output.Values["output.sequence"]);
-        Assert.Equal(new byte[]{50,50},Image(output).CopyPixels());
+        var output=Assert.IsType<DeclaredOutputSnapshot>(admitted.NodeResults[f.Node.Id].Result);
+        using var reader=output.AcquireReader();
+        Assert.Equal(7L,reader.Values!.Get<long>("output.sequence"));
+        Assert.Equal(new byte[]{50,50},Image(reader).CopyPixels());
     }
 
     private sealed class TrackedFrame : IDisposable
@@ -179,18 +274,18 @@ public sealed class ImageSourceDebugInvocationTests
         {captured=call.Arg<CameraCaptureRequest>();return Task.FromResult(frame.Frame);});
         using var invocation=f.Capture(camera:service);
         ImageSourceTestRuntime.Edit(f.Node,p=>{p.CameraDeviceId="changed";p.CameraTimeoutMs=9999;p.SNInitialValue=99;});
-        var result=await invocation.ExecuteAsync();
+        using var result=await invocation.ExecuteAsync();using var reader=result.AcquireReader();
         try
         {
             Assert.True(result.IsSuccess,result.ErrorMessage);Assert.Equal("camera",captured!.CameraRef.Value);
             Assert.Equal(TimeSpan.FromMilliseconds(1234),captured.Timeout);Assert.Equal(CameraTriggerMode.Continuous,captured.TriggerMode);
             Assert.Equal(invocation.Identity.RequestId.ToString("N"),captured.DiagnosticCorrelationId);
             Assert.True(frame.Frame.IsDisposed);Assert.Equal(1,frame.ImageDisposals);
-            Assert.Equal("camera",result.Values!["output.device"]);Assert.Equal("42",result.Values["output.device-frame-id"]);
-            Assert.Equal(frame.Frame.Timestamp.ToString("O",System.Globalization.CultureInfo.InvariantCulture),result.Values["output.device-timestamp"]);
-            Assert.Equal(7L,result.Values["output.sequence"]);Assert.Equal(new byte[]{30,80},Image(result).CopyPixels());
+            Assert.Equal("camera",reader.Values!.Get<string>("output.device"));Assert.Equal("42",reader.Values.Get<string>("output.device-frame-id"));
+            Assert.Equal(frame.Frame.Timestamp.ToString("O",System.Globalization.CultureInfo.InvariantCulture),reader.Values.Get<string>("output.device-timestamp"));
+            Assert.Equal(7L,reader.Values.Get<long>("output.sequence"));Assert.Equal(new byte[]{30,80},Image(reader).CopyPixels());
         }
-        finally{Release(result);}
+        finally{reader.Dispose();}
         Assert.Equal(1,frame.ImageDisposals);
     }
 
@@ -207,7 +302,7 @@ public sealed class ImageSourceDebugInvocationTests
         service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>
         {captures++;return failure=="service-failure"?Task.FromException<CameraFrame>(new IOException("采集失败")):Task.FromResult(frame.Frame);});
         using var invocation=f.Capture(camera:service);
-        await Assert.ThrowsAnyAsync<Exception>(async()=>{var unexpected=await invocation.ExecuteAsync();Release(unexpected);});
+        await Assert.ThrowsAnyAsync<Exception>(async()=>{using var unexpected=await invocation.ExecuteAsync();});
         Assert.Equal(failure=="missing-device"?0:1,captures);
         Assert.Equal(failure is "wrong-device" or "untyped"?1:0,frame.ImageDisposals);
         Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
@@ -223,6 +318,28 @@ public sealed class ImageSourceDebugInvocationTests
         Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Camera_debug_retains_original_failure_and_frame_cleanup_failure(bool cancelled)
+    {
+        using var f=new Fixture();f.Camera();using var cancellation=new CancellationTokenSource();
+        var image=Substitute.For<IVisionImage>();
+        image.When(value=>value.Dispose()).Do(_=>throw new InvalidOperationException("frame-release-failed"));
+        var frame=new CameraFrame(new(cancelled?"camera":"other"),42,DateTimeOffset.UtcNow,image);
+        var service=Substitute.For<ICameraCaptureService>();
+        service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>
+        {if(cancelled)cancellation.Cancel();return Task.FromResult(frame);});
+        using var invocation=f.Capture(cancellation:cancellation.Token,camera:service);
+        var error=await Assert.ThrowsAsync<AggregateException>(()=>invocation.ExecuteAsync());
+        if(cancelled)Assert.Contains(error.InnerExceptions,item=>item is OperationCanceledException);
+        else Assert.Contains(error.InnerExceptions,item=>item.Message.Contains("设备身份不匹配"));
+        Assert.Contains(error.InnerExceptions,item=>item.Message=="frame-release-failed");
+        Assert.True(frame.IsDisposed);image.Received(1).Dispose();
+        Assert.Equal(0,invocation.Identity.Owner.ActiveRuns);
+        Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
+    }
+
     [Fact]
     public async Task Direct_formal_borrowed_camera_frame_remains_host_owned_after_run_disposal()
     {
@@ -235,7 +352,9 @@ public sealed class ImageSourceDebugInvocationTests
         using(var run=await executor.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(20)))
         {
             Assert.True(run.Success,string.Join(";",run.Errors));
-            Assert.Equal(new byte[]{30,80},Image(Assert.IsType<RuntimeToolResults>(run.NodeResults[f.Node.Id].Result)).CopyPixels());
+            var snapshot=Assert.IsType<DeclaredOutputSnapshot>(run.NodeResults[f.Node.Id].Result);
+            using var reader=snapshot.AcquireReader();
+            Assert.Equal(new byte[]{30,80},Image(reader).CopyPixels());
             Assert.False(frame.Frame.IsDisposed);Assert.Equal(0,frame.ImageDisposals);
         }
         Assert.False(frame.Frame.IsDisposed);Assert.Equal(0,frame.ImageDisposals);
@@ -267,11 +386,11 @@ public sealed class ImageSourceDebugInvocationTests
         using var f=new Fixture();f.WriteImage(f.DirectoryPath,60);
         var abandoned=f.Capture();abandoned.Dispose();abandoned.Dispose();
         await Assert.ThrowsAsync<ObjectDisposedException>(async()=>{await abandoned.ExecuteAsync();});
-        using var invocation=f.Capture();var result=await invocation.ExecuteAsync();
-        var image=Image(result);var publishedFrame=image.Frame;
+        using var invocation=f.Capture();using var result=await invocation.ExecuteAsync();
+        using var reader=result.AcquireReader();var image=Image(reader);var publishedFrame=image.Frame;
         using var pixels=image.AcquirePixels();using var domain=pixels.AcquireDomainReader();
         var expectedRuns=domain.ReadRuns(0,4096).ToArray();
-        Release(result);Assert.Throws<ObjectDisposedException>(()=>image.Frame);
+        reader.Dispose();result.Dispose();Assert.Throws<ObjectDisposedException>(()=>image.Frame);
         Assert.Equal(new byte[]{60,60},pixels.GetRow(0).ToArray());
         Assert.Equal(publishedFrame,pixels.Frame);Assert.Equal(publishedFrame,domain.SourceFrame);
         pixels.Dispose();Assert.Throws<ObjectDisposedException>(()=>pixels.GetRow(0).ToArray());

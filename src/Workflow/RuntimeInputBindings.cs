@@ -21,9 +21,13 @@ internal static class RuntimeInputBindings
                 if(setting is ReferenceSetting reference)
                 {
                     if(!string.IsNullOrEmpty(reference.RebindingReason))throw new ArgumentException(reference.RebindingReason);
+                    // Variable-index readiness needs the owning solution's frozen declarations.
+                    // The document host and real invocation compiler perform that complete check.
+                    if(BindingRelationCatalog.IndexVariables(reference.Reference.Selection).Any())continue;
                     var validation=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,scope);
                     if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)throw new ArgumentException(validation.Reason);
                 }
+                else if(setting is VariableSetting {RebindingReason:{Length:>0} reason})throw new ArgumentException(reason);
             }
             catch(Exception error)when(error is ArgumentException or InvalidOperationException or JsonException or FormatException or OverflowException)
             {issues.Add(new(id,id,error.Message));}

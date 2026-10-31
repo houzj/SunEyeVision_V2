@@ -1,0 +1,59 @@
+{
+  "status": "完整消费者资格差异已定位，不将候选非环校验当VM前序或访问资格等价",
+  "sources": [
+    {
+      "path": "src/Plugin.Contracts/Values.cs",
+      "sha256": "5E1A2498DEA53955946D8BD5E9F89C8204697129FB90CF896E8A088D90867B7B"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Results/OutputVariable.cs",
+      "sha256": "9FB66071841A7007581AEEDDCD24F1C63E11E9CCA6AF0E71F518CBB012CEE399"
+    },
+    {
+      "path": "src/Workflow/OutputBindingChangeService.cs",
+      "sha256": "86FA3F1AE4A6F93F0F649B58C84776BE0E8A350A0DFC6AB92031945A4C4ACC4B"
+    },
+    {
+      "path": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs",
+      "sha256": "F2AD7532914F1B1E3FEBFBF76A673FD109A12F0CD9CA9EBC625D2BB5B9CE3AAA"
+    },
+    {
+      "path": "src/UI/Services/Editing/DeclaredReferenceCandidateBuilder.cs",
+      "sha256": "F0D1DF6DD722E8295A72BF9DA83E81B88A45B0CE2B0B7484541B686A8B5DFC4F"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "BDEA623720BBE939FCA2B3E1704E395F8EBB45C043753B52CC375DB1CB67C852"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/VmModuleExtern.cs",
+      "sha256": "4D4B726DF4EAC492C955502CB90118E793679EE74718B900E62625CFE2DE2C9C"
+    }
+  ],
+  "chain": {
+    "host": "MainWindowViewModel为Query安装BindingCandidateNodeIds→OutputBindingChangeService.GetCandidateNodeIds→RuntimeNodeConfigurationControl.ReadReferenceCandidates→DeclaredReferenceCandidateBuilder.Build→ReferenceFieldSession",
+    "original": "GetFrontFilterTreeOperation→VmModule.GetFrontFilterTree→GetOutputVmIOTreeNode/GetOutputTreeNode"
+  },
+  "differences": [
+    {
+      "decision": "已具备防环能力，但候选集合并非原前序集合；不为局部控件调整重写工作流，集成设计须明确宿主适配并验收",
+      "area": "节点范围",
+      "original": "递归GetPreModules、按特定入口决定自身/内部/父模块",
+      "current": "同流程排除目标及依赖后继，包含其它非后继节点；图编译含全局变量返回依赖"
+    },
+    {
+      "decision": "不能以元数据不存在推定所有VM资格为true，也不造字段补丁。现有声明公开输出集合与原VM过滤后集合需同工具逐项核；Group例外继续暂停",
+      "area": "输出资格",
+      "original": "类型、CanSubscribeA、Visible、IsPrivate及fTimeStamp过滤，父Group有特定例外",
+      "current": "正式Schema.Outputs映射Data合同，按类型/成员投影；没有逐项对应的可订阅/私有/时间戳元数据"
+    },
+    {
+      "decision": "不可把结果面板显示开关当VM Visible订阅资格；不错误复用现有布尔值",
+      "area": "结果面板显示",
+      "original": "VM Visible在该来源过滤分支有资格意义",
+      "current": "OutputVariable.DisplayInResultPanel注释明确false仍可绑定"
+    }
+  ],
+  "scope": "不修改Plugin.Contracts、SDK、调度或独立工作流分支；B08原范围保留，缺口不缩减",
+  "productChanged": false
+}

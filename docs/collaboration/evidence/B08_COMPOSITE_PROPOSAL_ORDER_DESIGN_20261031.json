@@ -1,0 +1,18 @@
+{
+  "status": "Changed及显式TryCapture两出口已接线；后者UI构建0错及S1保护6组通过，完整Blob尚未验收",
+  "problem": "DeclaredSettingsView保留提案字典顺序，但宿主Changed只读取完整FieldSettings，丢失多字段提案顺序",
+  "chain": [
+    "DeclaredFieldState.TrySetGroup按提案顺序提交",
+    "DeclaredSettingsView.WriteGroup成功安装草稿后保存本次不可变字段顺序",
+    "IToolSettingsView及Blob/ImageSource包装透传已接纳顺序",
+    "RuntimeNodeConfigurationControl.Changed与TryCapture读取同修订快照及接纳顺序，不能只覆盖事件路径",
+    "RuntimeToolConfiguration.WithSettingsFields按显式提案顺序重排变化绑定，未变化绑定保持"
+  ],
+  "ownership": "顺序只作本次编辑回执，无视觉、资源、执行或独立历史；视图重绑清空。拒绝/重入不安装回执。正式撤销仍由NodeConfigurationEditHost负责",
+  "scope": "TryReplayAccepted只有ROI设计样例消费者，不为生产假设另造字段历史",
+  "verification": [
+    "组合提案顺序与完整快照顺序不同的回归",
+    "拒绝及重绑不污染回执",
+    "正式Release全量构建及字段/参数/Runtime窗口相称回归"
+  ]
+}

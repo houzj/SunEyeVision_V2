@@ -22,6 +22,24 @@ public sealed class ImageSourcePolicy
     public ImageOutputFormat OutputFormat { get; set; }
     public long SNInitialValue { get; set; } = 1;
 
+    /// <summary>Freeze the same local-source plan for formal execution and private debug.</summary>
+    public static LocalImageSourcePlan CreateLocalPlan(string nodeId,ImageSourcePolicy? config,
+        Persistence.SolutionResourceResolver resourcePaths)
+    {
+        ArgumentNullException.ThrowIfNull(resourcePaths);
+        config ??= new() { NodeId = nodeId };
+        if (config.NodeId != nodeId || config.FilePaths is null || config.ForRunPaths is null ||
+            config.RunMode is not (0 or 1) || config.CurrentIndex < -1 || config.CurrentIndex >= config.FilePaths.Count ||
+            !Enum.IsDefined(config.SourceKind) || !Enum.IsDefined(config.OutputFormat) || config.CameraTimeoutMs <= 0 || config.SNInitialValue < 0)
+            throw new InvalidOperationException("正式图像源身份、运行模式或选择无效。");
+        var selected=config.ForRunPaths.ToHashSet(StringComparer.Ordinal);
+        var all=config.FilePaths.Select((reference,index)=>new LocalImageSequenceEntry(
+            $"{index}:{reference}",reference,resourcePaths.ResolveAddress("ImageSourceSettings.FileReferences",reference),index)).ToArray();
+        var entries=all.Where(entry=>config.RunMode==0||selected.Contains(entry.ResourceReference)).ToArray();
+        return new(nodeId,Array.AsReadOnly(entries),config.CurrentIndex<0?null:all[config.CurrentIndex].EntryId,
+            config.AutoSwitchEnabled,config.StopAtLastImage);
+    }
+
     public static ImageSourcePolicy? Read(WorkflowNodeBase node)
     {
         ArgumentNullException.ThrowIfNull(node);

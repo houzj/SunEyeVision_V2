@@ -25,6 +25,12 @@ public interface IDocumentHistoryReplayGuard
     bool CanReplay(DocumentHistoryDirection direction);
 }
 
+/// <summary>Effects of one successfully replayed configuration operation, never runtime values.</summary>
+internal interface IDocumentHistoryReplayEffects
+{
+    IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; }
+}
+
 /// <summary>One owner-thread cursor for one document session. No WPF or execution dependency.</summary>
 public sealed class DocumentHistoryCoordinator : IDisposable
 {
@@ -35,9 +41,11 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     private int _position;
     private long _sequence;
     private bool _busy, _notifying, _closed;
+    private Func<IDisposable>? _mutationLeaseProvider;
     public Guid SessionId { get; }
     public long Revision { get; private set; }
     public DocumentHistoryEntry? LastAppliedEntry { get; private set; }
+    public IReadOnlyList<ScopedNodeIdentity> LastInvalidatedNodes { get; private set; } = Array.Empty<ScopedNodeIdentity>();
     public int Position => _position;
     public bool IsClosed => _closed;
     public bool IsApplying => _busy;
@@ -57,11 +65,44 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         _capacity = capacity;
     }
 
+    /// <summary>The document host supplies its shared execution exclusion lease. History itself
+    /// stays independent of the UI and does not own the host or a running workflow.</summary>
+    public void SetMutationLeaseProvider(Func<IDisposable>? provider)
+    {
+        if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if (_closed && provider is not null) throw new ObjectDisposedException(nameof(DocumentHistoryCoordinator));
+        if (provider is not null && _mutationLeaseProvider is not null && _mutationLeaseProvider != provider)
+            throw new InvalidOperationException("历史已有另一个执行门禁宿主。");
+        _mutationLeaseProvider = provider;
+    }
+
+    private IDisposable? AcquireMutationLease()
+    {
+        var provider = _mutationLeaseProvider;
+        return provider is null ? null : provider() ?? throw new InvalidOperationException("历史执行门禁没有返回租约。");
+    }
+
+    public bool ReleaseMutationLeaseProvider(Func<IDisposable> expected)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        if(Environment.CurrentManagedThreadId!=_ownerThread)throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if(_mutationLeaseProvider!=expected)return false;
+        _mutationLeaseProvider=null;return true;
+    }
+
+    /// <summary>Hold the host execution gate while an owner-thread composite edit
+    /// applies its constituent changes before registering one history operation.</summary>
+    public IDisposable? BeginCompositeMutation()
+    {
+        EnsureMutationAllowed();
+        return AcquireMutationLease();
+    }
     /// <summary>Ownership transfers only after successful application. A failed preparation/application
     /// leaves ownership with the caller and does not clear redo or advance the sequence.</summary>
     public DocumentHistoryEntry Execute(IDocumentHistoryOperation operation)
     {
         EnsureMutationAllowed();
+        using var mutationLease = AcquireMutationLease();
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(operation.Scopes);
         if (_items.Any(x => ReferenceEquals(x.Operation, operation))) throw new ArgumentException("同一历史载荷不能重复登记。");
@@ -80,6 +121,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         _position++;
         _sequence = entry.Sequence;
         LastAppliedEntry = entry;
+        LastInvalidatedNodes = operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         Revision++;
         Item? trimmed = null;
         if (_items.Count > _capacity) { trimmed = _items[0]; _items.RemoveAt(0); _position--; }
@@ -92,9 +134,11 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         EnsureMutationAllowed();
         if (!CanUndo) return false;
+        using var mutationLease = AcquireMutationLease();
         var item=_items[_position-1];
         Apply(item.Operation, DocumentHistoryDirection.Backward);
         LastAppliedEntry=item.Entry;
+        LastInvalidatedNodes = item.Operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         _position--; Revision++; Notify(); return true;
     }
 
@@ -102,9 +146,11 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         EnsureMutationAllowed();
         if (!CanRedo) return false;
+        using var mutationLease = AcquireMutationLease();
         var item=_items[_position];
         Apply(item.Operation, DocumentHistoryDirection.Forward);
         LastAppliedEntry=item.Entry;
+        LastInvalidatedNodes = item.Operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         _position++; Revision++; Notify(); return true;
     }
 
@@ -146,7 +192,13 @@ public sealed class DocumentHistoryCoordinator : IDisposable
                 throw;
             }
         }
-        finally { _busy = false; if (Fault is not null) Notify(); }
+        finally
+        {
+            _busy = false;
+            // A fault notification is not a successfully committed replay. Never
+            // expose effects left by an earlier successful history step.
+            if (Fault is not null) { LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>(); Notify(); }
+        }
     }
 
     private void EnsureMutationAllowed(bool allowFault = false)
@@ -187,8 +239,8 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         if (_closed) return;
         EnsureMutationAllowed(allowFault: true);
-        _closed = true;
+        _closed = true; LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
         var discarded = _items.ToArray(); _items.Clear(); _position = 0; Revision++;
-        Release(discarded); Notify(); Changed = null;
+        Release(discarded); Notify(); Changed = null; _mutationLeaseProvider = null;
     }
 }

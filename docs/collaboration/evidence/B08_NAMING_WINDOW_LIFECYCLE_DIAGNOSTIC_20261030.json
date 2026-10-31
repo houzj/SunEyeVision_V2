@@ -1,0 +1,34 @@
+{
+  "status": "两处验证操作缺陷已修正并定向通过；一处右端初始订阅可见性问题仍未闭合",
+  "productChanged": false,
+  "formalProduct": "沿用b08-neutral-naming-full-build.log的同版正式Release，未重建或启动常驻试用品",
+  "fixtureCorrections": [
+    {
+      "finding": "文本与眼睛布局属于两个页；原测试未切到眼睛页即发Click，且真实眼睛handler要求Loaded/Visible",
+      "result": "1通过/0失败",
+      "change": "提交文本后选择页1、完成布局并断言可交互，再点击新眼睛；旧控件退役断言保留",
+      "case": "整组接纳重绘后旧字符串和眼睛回调失效且新输入继续工作"
+    },
+    {
+      "finding": "前次Enter清空焦点，测试在再次键入前没有重新聚焦，范围OnKey按实际焦点选择端点",
+      "result": "1通过/0失败",
+      "change": "再次键入前Focus/Pump；原写入次数、引用失效和最终校验断言保留",
+      "case": "原between右订阅独立接纳，最终校验及旧访问失效"
+    }
+  ],
+  "remaining": {
+    "originalSha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2",
+    "staticFinding": "原件Loaded/订阅回调写isBeside，InitUI按该字段折叠IsVisibleOfChild；本地仍保留这套机制，须核完整消费者重排链，不直接强制显示改变原件行为",
+    "result": "仍0通过/1失败，仅初始右端引用分支",
+    "limits": "未证明原厂运行实例同样失败，不凭此猜算法或新兼容回退",
+    "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeBase.cs",
+    "observed": "两个原生订阅标记均false，但T2父区域不可见，ValueText未Loaded且PresentationSource=null；当前InputElement仍为该叶",
+    "case": "范围无常量备份可解除订阅并单端输入"
+  },
+  "logs": [
+    "b08-diagnostic2-整组接纳重绘后旧字符串.log",
+    "b08-diagnostic2-范围无常量备份可解除订阅.log",
+    "b08-diagnostic2-原between右订阅独立接纳.log"
+  ],
+  "fullRegression": "attempt345的34失败/超时仍保留；仅上述两条由定向复测澄清，未代替完整回归与人工捕获验收"
+}

@@ -1,7 +1,7 @@
 {
   "status": "READ_ONLY_ORIGINAL_SOURCE_PLAN_NOT_IMPLEMENTED",
   "source": {
-    "helper": "Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs",
+    "helper": "D:/MyWork/REA逆向测试/docs/architecture-recovery/image-export-entry-audit.resources/Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs",
     "helperSha256": "954980db0062e35506753b5fd918aab2472f2606e71a28ae5f9a3132b50257ee",
     "entry": "analysis/decompiled/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
     "entrySha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
@@ -20,6 +20,6 @@
     "公共库若使用OpenCvSharp须显式声明同仓4.13.0.20260222及runtime依赖，不能借UI加载；不新增产品/算法项目。",
     "Gray16/BGRA支持明确为本方扩展；OpenCV原二进制版本差异与字节级同一性另实测，不冒称已等价。"
   ],
-  "consumers": ["src/Plugin.Wpf/Adapters/Display/NativeImageExport.cs", "NativeResultViewport.Export.cs", "NativeResultViewport.cs的_prepareExport", "原ImageViewBox.xaml.cs导出消费及验证"],
+  "consumers": ["src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs", "NativeResultViewport.Export.cs", "NativeResultViewport.cs的_prepareExport", "原ImageViewBox.xaml.cs导出消费及验证"],
   "acceptance": "分数/负坐标、宽度.25/1.99/2/2.99/3.99、opacity0/.2/1、双十字交叠顺序、边界裁剪、隐藏/锁定无装饰、RGB/P3/Gray、PNG/BMP解码像素/JPEG默认参数，以及原换帧/关闭/取消/失效11组。"
 }

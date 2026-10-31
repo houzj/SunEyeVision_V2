@@ -1,0 +1,13 @@
+{
+  "sha256": "ABC3F631D0E717C273FBA53FCDB40A3705684FEF58B42F868A195497400F7823",
+  "path": "D:/Program Files/VisionMaster4.4.0/Applications/ModuleProxy/ImageSourceTempPath.txt",
+  "scope": "只读当前共享历史清单与顶层路径存在性，不递归读取、不更改或清理，不授权启动SDK",
+  "rows": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\ImageTemp\\VM127868ImgSrcTemp",
+      "lastWrite": "2026-10-30T14:36:39.0172669Z",
+      "exists": true,
+      "name": "VM127868ImgSrcTemp"
+    }
+  ]
+}

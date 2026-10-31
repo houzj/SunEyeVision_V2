@@ -1,0 +1,14 @@
+{
+  "baseline": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "uncommitted": true,
+  "scope": "参数页真实原边距绑定；未代替 VS 或用户视觉验收",
+  "source": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+  "sourceSha256": "f7c38ae9f2b7cbd1191593a7c1d4da0b102a862c06413deb94d976c144dfe0ce",
+  "release": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+  "releaseSha256": "699f937b433edd8d2737ea6e495d6830ad81c9c18489714ea13ef94659a9eebf",
+  "oldEvidence": "Release/_validation/S4-20261025/DesignTime/attempt-104/run.log",
+  "currentEvidence": "Release/_validation/S4-20261025/DesignTime/attempt-105/run.log",
+  "old": "PathError；行边距0；坐标1",
+  "current": "Active；行边距32；坐标33",
+  "limits": "原位程序视觉、VS 与完整 Blob 功能仍未验"
+}

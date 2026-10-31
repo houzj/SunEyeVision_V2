@@ -53,7 +53,7 @@ public sealed class ResultWorkspaceProductionTests
         internal readonly string Directory;
         internal readonly Solution Document;
         internal readonly SunEyeVision.Workflow.Workflow Flow;
-        internal readonly SunEyeVision.UI.Shared.WorkflowNode Source, Selected;
+        internal readonly SunEyeVision.UI.Shared.WorkflowNode Source, Selected, Other;
         internal readonly MainWindowViewModel Main;
         internal readonly ImageResultControl View;
         internal readonly ResultWorkspaceShell Shell;
@@ -63,9 +63,11 @@ public sealed class ResultWorkspaceProductionTests
         internal readonly List<Results> Runs = new();
         private readonly object? _base = AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
         private bool _disposed;
+        private readonly FieldInfo _solutionManagerField=typeof(ServiceInitializer).GetField("_solutionManager",BindingFlags.Static|BindingFlags.NonPublic)!;
+        private object? _previousSolutionManager;
         internal ResultWorkspacePresenter Presenter => Assert.IsType<ResultWorkspacePresenter>(typeof(ImageResultControl)
             .GetField("_workspacePresenter", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(View));
-        internal Fixture()
+        internal Fixture(bool includeOther=false)
         {
             if (Application.Current is null) _ = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
             var host = typeof(ResultWorkspaceProductionTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a => a.Key == "HostDebugRoot").Value!;
@@ -80,10 +82,14 @@ public sealed class ResultWorkspaceProductionTests
                 registration.Publish();
             }
             Directory = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? Path.Combine(host, "..", "..", "_validation", "ResultWorkspace"), Guid.NewGuid().ToString("N"));
-            System.IO.Directory.CreateDirectory(Directory); ServiceInitializer.InitializeServices(); ServiceInitializer.InitializeSolutionManager(Directory);
+            System.IO.Directory.CreateDirectory(Directory); ServiceInitializer.InitializeServices();
+            _previousSolutionManager=_solutionManagerField.GetValue(null);
+            _solutionManagerField.SetValue(null,new SolutionManager(Directory));
             Source = new("source", "实际图像源", "实际图像源", "ImageLoad") { RuntimeConfiguration = RuntimeToolConfiguration.Create("ImageLoad") };
             Selected = new("selected", "受控结果节点", "受控结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
+            Other = new("other", "无关结果节点", "无关结果节点", "ResultWorkspaceProbe") {RuntimeConfiguration=RuntimeToolConfiguration.Create("ResultWorkspaceProbe")};
             Flow = new("workspace-flow", "工作区正式流程"); Flow.Nodes.Add(Source); Flow.Nodes.Add(Selected);
+            if(includeOther)Flow.Nodes.Add(Other);
             Flow.Connections.Add(new WorkflowConnection("source-to-result", Source.Id, Selected.Id));
             Document = new Solution { Workflows = new() { Flow } }; ServiceInitializer.SolutionManager.SetCurrentSolution(Document, false);
             Main = new(); Assert.Equal(Flow.Id, Main.WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId);
@@ -100,10 +106,10 @@ public sealed class ResultWorkspaceProductionTests
             Assert.Same(Shell.OutputViewport, Presenter.OutputPane.Viewport.View);
             Assert.NotNull(Main.CurrentResultPublication);
         }
-        internal Results Publish(SunEyeVision.UI.Shared.WorkflowNode node, byte first, string? scope = null, ToolExecutionOwner? owner = null,bool updateContext=true)
+        internal Results Publish(SunEyeVision.UI.Shared.WorkflowNode node, byte first, string? scope = null, ToolExecutionOwner? owner = null,bool updateContext=true,Func<bool>? admission=null)
         {
             var schema = node.RuntimeConfiguration is {} runtime ? new ToolSchema(Array.Empty<Port>(), runtime.Schema.Outputs) : ProbeSchema;
-            var identity=(owner??Document.ExecutionOwner).Begin((scope??Flow.Id)+"/"+node.Id,Guid.NewGuid(),"5.0");
+            var identity=(owner??Document.ExecutionOwner).Begin((scope??Flow.Id)+"/"+node.Id,Guid.NewGuid(),"5.0",admission:admission);
             var resources=new FrozenOutputResources();
             Results result;
             try
@@ -137,8 +143,10 @@ public sealed class ResultWorkspaceProductionTests
         {
             if (_disposed) return; _disposed = true;
             View.Shutdown(); Host.Content = null; Host.Close(); Main.CloseResultPresentation(); Context.ClearNodeResults();
+            Main.ReleaseDocumentHost();
             foreach (var run in Runs) run.Snapshot.Dispose();
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", _base);
+            _solutionManagerField.SetValue(null,_previousSolutionManager);
         }
     }
     [Fact]
@@ -256,6 +264,38 @@ public sealed class ResultWorkspaceProductionTests
         finally{f.Main.ResultWorkspaceChanged-=changed;}
     });
     [Fact]
+    public void New_run_notified_during_failed_capture_is_eventually_presented_after_the_exception()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();var before=f.Presenter.OutputPane.CurrentFrame!.Frame;
+        var previous=f.LatestSelected;previous.Snapshot.Dispose();
+        var armed=false;var enteredCapture=false;var calls=0;Results? next=null;
+        bool Admission()
+        {
+            if(!armed)return true;
+            // This is the real upstream invocation gate, not a ResultWorkspaceChanged observer.
+            // Only inject while the actual source-capture stack owns the admission check.
+            if(!Environment.StackTrace.Contains("CaptureNativeImageSources",StringComparison.Ordinal))return true;
+            armed=false;enteredCapture=true;calls++;
+            next=f.Publish(f.Selected,82);
+            throw new FormatException("受控上游身份读取失败；新运行已在真实来源捕获期间发布。");
+        }
+        var source=f.Publish(f.Source,22,admission:Admission);source.Snapshot.Dispose();
+        armed=true;
+        try
+        {
+            f.Main.RefreshNativeResultImages();
+            Until(()=>next is not null&&f.Presenter.OutputPane.CurrentFrame?.Frame==next.Image.Frame);
+            Assert.True(enteredCapture);Assert.Equal(1,calls);Assert.NotNull(next);
+            Assert.NotEqual(before,next!.Image.Frame);Assert.Equal(new byte[]{82},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+            Assert.Equal(next.Snapshot.Identity,f.Main.CurrentResultPublication!.Stamp.Invocation);
+            Assert.True(f.Main.CurrentResultPublication.IsCurrent());
+            Assert.Equal(1,previous.Releases);Assert.Equal(0,source.Releases);
+            f.Dispose();Assert.All(f.Runs,run=>Assert.Equal(1,run.Releases));
+        }
+        finally{armed=false;}
+    });
+    [Fact]
     public void Foreign_workflow_or_document_results_never_supply_display_images()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
     {
@@ -269,6 +309,32 @@ public sealed class ResultWorkspaceProductionTests
             Assert.NotNull(f.Presenter.InputPane.CurrentFrame); // The valid actual upstream input remains independent.
         }
         finally { foreign.Retire(); }
+    });
+    [Theory]
+    [InlineData("document")] [InlineData("workflow")] [InlineData("instance")]
+    public void Foreign_owner_workflow_or_recreated_node_never_borrows_the_rejected_snapshot(string mismatch)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var owner = mismatch == "document" ? new ToolExecutionOwner() : null;
+        try
+        {
+            var rejected = f.Publish(f.Selected, 93, scope: mismatch == "workflow" ? "foreign-flow" : null,
+                owner: owner, updateContext: false);
+            if (mismatch == "instance")
+            {
+                var index = f.Flow.Nodes.IndexOf(f.Selected);
+                f.Flow.Nodes.RemoveAt(index);
+                f.Flow.Nodes.Insert(index, new SunEyeVision.UI.Shared.WorkflowNode(f.Selected.Id, "替代节点", "替代节点", "ResultWorkspaceProbe")
+                { RuntimeConfiguration = RuntimeToolConfiguration.Create("ResultWorkspaceProbe") });
+            }
+            f.Main.UpdateModuleResults(rejected.Snapshot, f.Selected.Name, f.Selected.ToolType, f.Selected.Id);
+            Pump();
+            Assert.NotEqual(rejected.Snapshot.Identity, f.Main.CurrentResultPublication?.Stamp.Invocation);
+            rejected.Snapshot.Dispose();
+            Assert.Equal(1, rejected.Releases);
+        }
+        finally { owner?.Retire(); }
     });
     [Fact]
     public void Foreign_late_notification_without_context_replacement_keeps_current_publication_and_both_frames()
@@ -317,11 +383,465 @@ public sealed class ResultWorkspaceProductionTests
         var stripSession=f.View.ImagePreviewContent.Session!;
         var selected=f.Main.ActiveInputSource!.Images.Single(image=>image.FilePath==file);
         var selection=stripSession.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,stripSession.Version,selected.Id),CancellationToken.None);
-        Until(()=>selection.IsCompleted);selection.GetAwaiter().GetResult();
+        Until(()=>selection.IsCompleted);AwaitWorkspace(selection);
         Until(() => f.Presenter.OutputPane.CurrentFrame?.Frame.SourceId.StartsWith("local-preview:", StringComparison.Ordinal) == true);
         Assert.Equal(new byte[] { 91 }, f.Presenter.OutputPane.Viewport.ReadPixel(0, 0)); Assert.Null(f.Presenter.OutputPane.BorrowCurrentImage());
         var table = f.Main.CurrentResultPublication; f.Main.ClearImageCommand.Execute(null); Pump();
         Assert.Null(f.Presenter.OutputPane.CurrentFrame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table!.IsCurrent());
+    });
+    [Fact]
+    public void Accepted_source_edit_with_failed_cursor_reset_is_visible_but_cannot_run_until_repaired()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
+        var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var counter=typeof(WorkflowExecutionManager).GetField("_nextLocalImageReset",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        counter.SetValue(manager,long.MaxValue);
+        var receipt=source.SelectImage(1);
+        Assert.True(receipt.FormalAccepted);Assert.False(receipt.RuntimeReady);Assert.NotNull(receipt.ExecutionError);
+        Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        Assert.Contains("运行游标不可用",f.Main.StatusText);
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
+        Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
+        Assert.Equal(0,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        var errors=new List<string>();manager.WorkflowExecutionError+=(_,e)=>errors.Add(e.ErrorMessage);
+        var run=manager.RunSingleAsync(tab);Until(()=>run.IsCompleted);AwaitWorkspace(run);
+        Assert.Contains(errors,error=>error.Contains("运行游标不可用"));
+        counter.SetValue(manager,0L);
+        var repaired=source.SelectImage(1);
+        Assert.True(repaired.FormalAccepted);Assert.True(repaired.RuntimeReady);
+        errors.Clear();var retry=manager.RunSingleAsync(tab,advanceLocalImage:false,explicitSourceId:source.NodeId);
+        Until(()=>retry.IsCompleted);AwaitWorkspace(retry);
+        Assert.DoesNotContain(errors,error=>error.Contains("运行游标不可用"));
+    });
+    [Fact]
+    public void Actual_source_selection_reentry_retains_the_committed_new_choice_and_rejects_the_stale_run()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
+        var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
+        EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
+        {if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
+        source.ExplicitSelectionAccepted+=selectAgain;
+        try
+        {
+            var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
+            Assert.False(f.Main.TrySelectPreviewImage(tab,source,a,0,source.EditVersion));
+            Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        }
+        finally{source.ExplicitSelectionAccepted-=selectAgain;}
+    });
+    [Fact]
+    public void Actual_result_workspace_navigation_commands_follow_formal_source_availability()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var previous=Assert.IsAssignableFrom<System.Windows.Input.ICommand>(f.Shell.PreviousImageCommand);
+        var next=Assert.IsAssignableFrom<System.Windows.Input.ICommand>(f.Shell.NextImageCommand);
+        Assert.False(previous.CanExecute(null));Assert.False(next.CanExecute(null));
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var path=Path.Combine(f.Directory,"navigation.png");
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var file=File.Create(path))encoder.Save(file);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path}},selectFirstAdded:true);Pump();
+        Assert.True(previous.CanExecute(null));Assert.True(next.CanExecute(null));
+    });
+    [Fact]
+    public void Actual_folder_import_commits_once_and_round_trips_through_document_history()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var folder=Path.Combine(f.Directory,"folder");var child=Path.Combine(folder,"sub");System.IO.Directory.CreateDirectory(child);
+        var first=Path.Combine(folder,"a.png");var second=Path.Combine(child,"b.png");
+        var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var file=File.Create(first))encoder.Save(file);File.Copy(first,second);
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var strip=Assert.IsType<ImageSourceStripSession>(f.View.ImagePreviewContent.Session);
+        var history=ServiceInitializer.SolutionManager.Session!.History;var position=history.Position;
+        var request=strip.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.ImportDirectory,
+            strip.Version,paths:new[]{folder}),CancellationToken.None);
+        Until(()=>request.IsCompleted);AwaitWorkspace(request);Pump();
+        Assert.Equal(position+1,history.Position);Assert.Equal(2,ImageSourcePolicy.Read(f.Source)!.FilePaths.Count);
+        Assert.Equal(2,source.Count);Assert.Contains(source.Images,image=>image.FilePath==first);Assert.Contains(source.Images,image=>image.FilePath==second);
+        history.Undo();Pump();Assert.Empty(ImageSourcePolicy.Read(f.Source)!.FilePaths);Assert.Empty(source.Images);
+        history.Redo();Pump();Assert.Equal(2,ImageSourcePolicy.Read(f.Source)!.FilePaths.Count);Assert.Equal(2,source.Count);
+        Assert.True(File.Exists(first));Assert.True(File.Exists(second));
+    });
+    [Fact]
+    public void Real_result_host_keeps_the_horizontal_scrollbar_accessible_for_1051_images_and_releases_the_session()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        void Stage(string name){Console.WriteLine("1051_STAGE "+name);Console.Out.Flush();}
+        Stage("fixture");using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();Stage("fixture-ready");
+        var path=Path.Combine(f.Directory,"large-strip.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{12,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        var source=f.Main.ActiveInputSource!;
+        Stage("add-batch");source.AddImages(Enumerable.Range(0,1051).Select(index=>new SunEyeVision.UI.Shared.ImageInfo
+            {FilePath=path,SourceReference=path,Name="图像 "+index}),selectFirstAdded:true);
+        Stage("batch-accepted");var strip=f.View.ImagePreviewContent;
+        Until(()=>strip.IsLoaded&&strip.Items.Count==1051);
+        Stage("layout");f.Host.UpdateLayout();Pump();Stage("layout-ready");
+        var list=Assert.IsType<ListBox>(strip.FindName("lst"));
+        var scroll=Assert.Single(VisualDescendants<ScrollViewer>(list));scroll.ApplyTemplate();scroll.UpdateLayout();
+        var bar=Assert.IsType<System.Windows.Controls.Primitives.ScrollBar>(scroll.Template.FindName("PART_HorizontalScrollBar",scroll));
+        Assert.Equal(Visibility.Visible,scroll.ComputedHorizontalScrollBarVisibility);Assert.True(bar.IsVisible);
+        Assert.True(scroll.ScrollableWidth>0);Assert.True(bar.ActualHeight>0);
+        var bounds=bar.TransformToAncestor(f.Shell).TransformBounds(new Rect(bar.RenderSize));
+        var visible=bounds;
+        for(DependencyObject? ancestor=VisualTreeHelper.GetParent(bar);ancestor is not null&&!ReferenceEquals(ancestor,f.Shell);ancestor=VisualTreeHelper.GetParent(ancestor))
+            if(ancestor is FrameworkElement element)
+                visible.Intersect(element.TransformToAncestor(f.Shell).TransformBounds(new Rect(element.RenderSize)));
+        Assert.True(visible.Height>=bounds.Height-0.5,"水平滚动条被结果区某级宿主裁切。");
+        scroll.ScrollToHorizontalOffset(scroll.ScrollableWidth);Until(()=>scroll.HorizontalOffset>0);Pump();
+        Assert.InRange(Enumerable.Range(0,list.Items.Count).Count(index=>list.ItemContainerGenerator.ContainerFromIndex(index) is not null),1,200);
+        var session=Assert.IsType<ImageSourceStripSession>(strip.Session);var last=source.Images.Last();
+        Stage("select-last");AwaitWorkspace(session.RequestAsync(new(SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources.ImageSourceStripRequestKind.SelectStart,session.Version,last.Id),CancellationToken.None));Stage("selected-last");
+        Pump();Assert.Same(last,source.CurrentImage);Assert.Equal(1050,source.CapturePolicy().CurrentIndex);
+        strip.IsExpanded=false;Pump();Assert.Equal(40,strip.ActualHeight);Assert.False(bar.IsVisible);
+        var visibleIds=typeof(ImageSourceStripSession).GetField("_visibleIds",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        Until(()=>Assert.IsType<HashSet<string>>(visibleIds.GetValue(session)).Count==0);
+        strip.IsExpanded=true;Pump();Assert.Equal(125,strip.ActualHeight);
+        Stage("unload");f.Host.Content=null;Pump();Assert.Null(strip.Session);Assert.True(session.IsReadOnly);Assert.Empty(session.Items);Stage("unloaded");
+        f.Host.Content=f.View;Pump();Until(()=>strip.Session?.Items.Count==1051);
+        Assert.NotSame(session,strip.Session);Assert.Same(last,source.CurrentImage);
+    });
+    [Fact]
+    public void Accepted_image_source_edit_retires_its_run_and_restores_formal_output_declaration()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var run=f.Publish(f.Source,33);var previous=f.Main.CurrentResultPublication;
+        Assert.NotNull(previous);Assert.Equal(ResultViewState.Success,previous!.State);
+        Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+        var source=f.Main.ActiveInputSource!;
+        var path=Path.Combine(f.Directory,"accepted-image.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{5,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        Pump();
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(previous.IsCurrent());
+        Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
+        var declaration=Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication);
+        Assert.Equal(ResultViewState.Declaration,declaration.State);Assert.Null(declaration.Stamp.Invocation);
+        Assert.Contains(declaration.Schema.Outputs,port=>port.Id=="output.image");
+        Assert.NotEmpty(f.Main.FlatResultRows);
+    });
+    [Fact]
+    public void Image_source_undo_and_redo_retire_the_affected_run_and_restore_its_declaration()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture(includeOther:true);f.Main.SelectedNode=f.Source;Pump();
+        var source=f.Main.ActiveInputSource!;
+        var path=Path.Combine(f.Directory,"history-image.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{8,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var history=ServiceInitializer.SolutionManager.Session!.History;
+        Assert.True(history.CanUndo);
+        var unrelated=f.Publish(f.Other,39);Assert.Same(unrelated.Snapshot,f.Context.GetNodeResult(f.Other.Id)!.Result);
+        var downstreamUndo=f.Publish(f.Selected,44);downstreamUndo.Snapshot.Dispose();
+        var beforeUndo=f.Publish(f.Source,42);var undoPublication=f.Main.CurrentResultPublication!;
+        Assert.Equal(ResultViewState.Success,undoPublication.State);
+        beforeUndo.Snapshot.Dispose();Assert.Equal(0,beforeUndo.Releases);
+        Assert.True(history.Undo());Pump();Assert.Null(history.LastObserverError);
+        Assert.False(beforeUndo.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Empty(ImageSourcePolicy.Read(f.Source)!.FilePaths);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(undoPublication.IsCurrent());
+        Assert.Null(f.Context.GetNodeResult(f.Selected.Id));Assert.Equal(1,downstreamUndo.Releases);
+        Assert.Same(unrelated.Snapshot,f.Context.GetNodeResult(f.Other.Id)!.Result);
+        Assert.Equal(ResultViewState.Declaration,Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication).State);
+        Assert.Equal(1,beforeUndo.Releases);
+
+        var downstreamRedo=f.Publish(f.Selected,45);downstreamRedo.Snapshot.Dispose();
+        var beforeRedo=f.Publish(f.Source,43);var redoPublication=f.Main.CurrentResultPublication!;
+        Assert.Equal(ResultViewState.Success,redoPublication.State);
+        beforeRedo.Snapshot.Dispose();Assert.Equal(0,beforeRedo.Releases);
+        Assert.True(history.Redo());Pump();Assert.Null(history.LastObserverError);
+        Assert.False(beforeRedo.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.False(redoPublication.IsCurrent());
+        Assert.Null(f.Context.GetNodeResult(f.Selected.Id));Assert.Equal(1,downstreamRedo.Releases);
+        Assert.Same(unrelated.Snapshot,f.Context.GetNodeResult(f.Other.Id)!.Result);
+        Assert.Equal(ResultViewState.Declaration,Assert.IsAssignableFrom<IResultPublication>(f.Main.CurrentResultPublication).State);
+        Assert.Equal(1,beforeRedo.Releases);
+    });
+    [Fact]
+    public void History_retirement_does_not_remove_a_new_run_published_by_a_reentrant_observer()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"reentrant-history.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{6,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var old=f.Publish(f.Source,54);Results? replacement=null;
+        void Reenter(string domain)
+        {
+            if(replacement is null && domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))
+                replacement=f.Publish(f.Source,55);
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Reenter;
+        try { Assert.True(ServiceInitializer.SolutionManager.Session!.History.Undo());Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Reenter; }
+        Assert.NotNull(replacement);Assert.False(old.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.True(replacement!.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Same(replacement.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+        Assert.Equal(ResultViewState.Success,f.Main.CurrentResultPublication!.State);
+    });
+    [Fact]
+    public void History_retirement_excludes_all_real_execution_admission_paths_until_every_node_is_invalidated()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"admission-history.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{7,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var source=f.Publish(f.Source,71);var downstream=f.Publish(f.Selected,72);
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;var attempted=false;var invoked=false;
+        void Reenter(string domain)
+        {
+            if(attempted||!domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))return;
+            attempted=true;
+            AwaitWorkspace(manager.RunSingleAsync(tab));Assert.False(manager.IsAnyRunning());
+            Assert.False(manager.StartContinuousRun(tab));Assert.False(manager.IsAnyRunning());
+            Assert.Throws<InvalidOperationException>(()=>AwaitWorkspace(manager.RunSolutionAsync(f.Main.WorkflowTabViewModel.Tabs,f.Document)));
+            Assert.False(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>{invoked=true;return Task.CompletedTask;},CancellationToken.None)));
+            Assert.False(manager.IsAnyRunning());
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Reenter;
+        try { Assert.True(ServiceInitializer.SolutionManager.Session!.History.Undo());Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Reenter; }
+        Assert.True(attempted);Assert.False(invoked);Assert.Null(ServiceInitializer.SolutionManager.Session!.History.LastObserverError);
+        Assert.False(source.Snapshot.ExecutionIdentity!.IsCurrent);Assert.False(downstream.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.Null(f.Context.GetNodeResult(f.Selected.Id));
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None)));
+        Assert.False(manager.IsAnyRunning());
+    });
+
+    private sealed class CanvasGateCommand(Action apply, Action rollback) : SunEyeVision.UI.Features.WorkflowUI.Commands.IUndoableCommand
+    {
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => apply();
+        public void Undo() => rollback();
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Composite_canvas_edit_excludes_execution_during_apply_commit_and_rollback(bool commit)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var before = f.Source.Position;
+        var after = new Point(before.X + 5, before.Y + 5);
+        var revision = history.Revision;
+        var attempts = new List<(string Phase, bool Accepted)>();
+        void Attempt(string phase) => attempts.Add((phase,
+            AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None))));
+        EventHandler changed = (_, _) => Attempt("history");
+        history.Changed += changed;
+        try
+        {
+            using (var transaction = tab.CommandManager.BeginTransaction())
+            {
+                tab.CommandManager.Execute(new CanvasGateCommand(
+                    () => { f.Source.Position = after; Attempt("apply"); },
+                    () => { Attempt("rollback"); f.Source.Position = before; }));
+                Attempt("between");
+                if (commit) transaction.Complete();
+            }
+        }
+        finally { history.Changed -= changed; }
+        Assert.Null(history.LastObserverError);
+        Assert.Contains(attempts, item => item.Phase == "apply");
+        Assert.Contains(attempts, item => item.Phase == "between");
+        Assert.Contains(attempts, item => item.Phase == (commit ? "history" : "rollback"));
+        Assert.All(attempts, item => Assert.False(item.Accepted, item.Phase));
+        Assert.Equal(commit ? after : before, f.Source.Position);
+        Assert.Equal(revision + (commit ? 1 : 0), history.Revision);
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
+    });
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Canvas_node_collection_observer_failure_restores_the_node_and_history(bool undo)
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var node = new SunEyeVision.UI.Shared.WorkflowNode("observer-target", "节点", "节点", "ResultWorkspaceProbe")
+            { RuntimeConfiguration = RuntimeToolConfiguration.Create("ResultWorkspaceProbe") };
+        void AddNode()
+        {
+            using var transaction = tab.CommandManager.BeginTransaction();
+            tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.AddNodeCommand(f.Flow.Nodes, node));
+            transaction.Complete();
+        }
+        if (undo) AddNode();
+        var revision = history.Revision; var position = history.Position; var attempts = 0;
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler observer = (_, args) =>
+        {
+            var relevant = undo ? args.OldItems?.Contains(node) == true : args.NewItems?.Contains(node) == true;
+            if (!relevant) return;
+            attempts++;
+            Assert.False(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
+            throw new InvalidOperationException("受控节点集合通知失败");
+        };
+        f.Flow.Nodes.CollectionChanged += observer;
+        try { Assert.ThrowsAny<Exception>(() => { if (undo) history.Undo(); else AddNode(); }); }
+        finally { f.Flow.Nodes.CollectionChanged -= observer; }
+        Assert.Equal(1, attempts); Assert.Equal(undo, f.Flow.Nodes.Contains(node));
+        Assert.Equal(revision, history.Revision); Assert.Equal(position, history.Position);
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_ => Task.CompletedTask, CancellationToken.None)));
+    });
+    [Fact]
+    public void Active_execution_rejects_composite_canvas_edit_before_its_first_mutation()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
+    {
+        using var f = new Fixture();
+        var manager = Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(f.Main));
+        var history = ServiceInitializer.SolutionManager.Session!.History;
+        var tab = f.Main.WorkflowTabViewModel.SelectedTab!;
+        var before = f.Source.Position; var revision = history.Revision;
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var active = manager.RunCommunicationOperationAsync(_ => release.Task, CancellationToken.None);
+        try
+        {
+            Assert.True(manager.IsAnyRunning());
+            Assert.Throws<InvalidOperationException>(() => tab.CommandManager.BeginTransaction());
+            Assert.Equal(before, f.Source.Position); Assert.Equal(revision, history.Revision);
+        }
+        finally { release.TrySetResult(); Until(() => active.IsCompleted); AwaitWorkspace(active); }
+        using (tab.CommandManager.BeginTransaction()) { }
+    });
+    [Fact]
+    public void Active_communication_prevents_history_mutation_without_advancing_or_losing_the_result()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"active-history.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{9,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);
+        var run=f.Publish(f.Source,81);var publication=f.Main.CurrentResultPublication!;
+        var history=ServiceInitializer.SolutionManager.Session!.History;var revision=history.Revision;var position=history.Position;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var release=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var active=manager.RunCommunicationOperationAsync(_=>release.Task,CancellationToken.None);
+        Assert.True(manager.IsAnyRunning());
+        try
+        {
+            Assert.Throws<InvalidOperationException>(()=>history.Undo());
+            var version=f.Main.ActiveInputSource!.EditVersion;
+            Assert.Throws<InvalidOperationException>(()=>f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}}));
+            Assert.Equal(version,f.Main.ActiveInputSource!.EditVersion);Assert.Single(f.Main.ActiveInputSource.Images);
+            Assert.Equal(revision,history.Revision);Assert.Equal(position,history.Position);
+            Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+            Assert.Same(run.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+            Assert.True(run.Snapshot.ExecutionIdentity!.IsCurrent);Assert.Same(publication,f.Main.CurrentResultPublication);
+        }
+        finally { release.TrySetResult();Until(()=>active.IsCompleted);AwaitWorkspace(active); }
+        Assert.True(history.Undo());Pump();Assert.False(run.Snapshot.ExecutionIdentity!.IsCurrent);
+    });
+    [Fact]
+    public void Source_acceptance_holds_the_same_execution_gate_through_history_and_visible_list_notifications()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var path=Path.Combine(f.Directory,"source-acceptance-gate.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{10,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        var source=f.Main.ActiveInputSource!;var history=ServiceInitializer.SolutionManager.Session!.History;
+        var manager=Assert.IsType<WorkflowExecutionManager>(typeof(MainWindowViewModel)
+            .GetField("_executionManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Main));
+        var tab=f.Main.WorkflowTabViewModel.SelectedTab!;var attempts=new List<(string Phase,bool Accepted)>();
+        void Attempt(string phase)
+        {
+            attempts.Add((phase+"-continuous",manager.StartContinuousRun(tab)));
+            attempts.Add((phase+"-communication",AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None))));
+            attempts.Add((phase+"-other-thread",AwaitWorkspace(Task.Run(()=>
+            {
+                try { using var lease=manager.BeginHistoryMutation();return true; }
+                catch(InvalidOperationException) { return false; }
+            }))));
+        }
+        EventHandler historyChanged=(_,_)=>Attempt("history");
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler collectionChanged=(_,_)=>Attempt("collection");
+        EventHandler configurationChanged=(_,_)=>Attempt("configuration");
+        history.Changed+=historyChanged;source.CollectionChanged+=collectionChanged;source.ConfigurationEdited+=configurationChanged;
+        try { source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true); }
+        finally { history.Changed-=historyChanged;source.CollectionChanged-=collectionChanged;source.ConfigurationEdited-=configurationChanged; }
+        Assert.Null(history.LastObserverError);Assert.Null(source.LastNotificationError);
+        Assert.Equal(9,attempts.Count);Assert.All(attempts,attempt=>Assert.False(attempt.Accepted,attempt.Phase));
+        Assert.Equal(path,Assert.Single(source.CapturePolicy().FilePaths));Assert.Equal(0,source.CurrentIndex);
+        Assert.False(manager.IsAnyRunning());
+        Assert.True(AwaitWorkspace(manager.RunCommunicationOperationAsync(_=>Task.CompletedTask,CancellationToken.None)));
+    });
+    [Fact]
+    public void Source_acceptance_retires_old_queued_runs_without_overwriting_a_reentrant_new_result()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var old=f.Publish(f.Source,90);Results? next=null;
+        var path=Path.Combine(f.Directory,"accepted-reentrant.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{11,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        void Reenter(string domain)
+        {
+            if(next is null&&domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))next=f.Publish(f.Source,91);
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Reenter;
+        try { f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Reenter; }
+        Assert.NotNull(next);Assert.False(old.Snapshot.ExecutionIdentity!.IsCurrent);Assert.True(next!.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Same(next.Snapshot,f.Context.GetNodeResult(f.Source.Id)!.Result);
+        Assert.Equal(next.Snapshot.Identity,f.Main.CurrentResultPublication!.Stamp.Invocation);
+    });
+    [Fact]
+    public void Source_acceptance_reports_retirement_observer_failure_after_attempting_all_affected_cleanup()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture(includeOther:true);f.Main.SelectedNode=f.Source;Pump();
+        var old=f.Publish(f.Source,92);var downstream=f.Publish(f.Selected,93);var unrelated=f.Publish(f.Other,94);
+        old.Snapshot.Dispose();downstream.Snapshot.Dispose();
+        var path=Path.Combine(f.Directory,"accepted-retirement-error.png");
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new byte[]{13,0,0,0},4)));
+        using(var output=File.Create(path))png.Save(output);
+        void Fail(string domain)
+        {
+            if(domain.Contains("/"+f.Flow.Id+"/"+f.Source.Id+"/",StringComparison.Ordinal))throw new InvalidOperationException("受控退役观察者错误");
+        }
+        f.Document.ExecutionOwner.DomainRetired+=Fail;
+        try { f.Main.ActiveInputSource!.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=path,SourceReference=path}},selectFirstAdded:true);Pump(); }
+        finally { f.Document.ExecutionOwner.DomainRetired-=Fail; }
+        Assert.Equal(path,Assert.Single(ImageSourcePolicy.Read(f.Source)!.FilePaths));
+        Assert.Equal(path,Assert.Single(f.Main.ActiveInputSource!.CapturePolicy().FilePaths));
+        Assert.False(old.Snapshot.ExecutionIdentity!.IsCurrent);Assert.False(downstream.Snapshot.ExecutionIdentity!.IsCurrent);
+        Assert.Null(f.Context.GetNodeResult(f.Source.Id));Assert.Null(f.Context.GetNodeResult(f.Selected.Id));
+        Assert.Same(unrelated.Snapshot,f.Context.GetNodeResult(f.Other.Id)!.Result);
+        Assert.Equal(1,old.Releases);Assert.Equal(1,downstream.Releases);
+        Assert.Contains("图像源配置已接纳，结果失效失败",f.Main.StatusText);
     });
     [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
@@ -519,6 +1039,25 @@ public sealed class ResultWorkspaceProductionTests
         var panel=Assert.IsAssignableFrom<Panel>(view.Template.FindName("ImageLayers",view));
         var baseImage=Assert.IsType<Image>(view.Template.FindName("sImage",view));Assert.Contains(baseImage,panel.Children.Cast<object>());
         return panel.Children.Cast<object>().Where(layer=>!ReferenceEquals(layer,baseImage)).ToArray();
+    }
+    private static IEnumerable<T> VisualDescendants<T>(DependencyObject parent) where T:DependencyObject
+    {
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
+        {
+            var child=VisualTreeHelper.GetChild(parent,index);
+            if(child is T match)yield return match;
+            foreach(var nested in VisualDescendants<T>(child))yield return nested;
+        }
+    }
+    private static void AwaitWorkspace(Task task)
+    {
+        Until(()=>task.IsCompleted);
+        try{task.GetAwaiter().GetResult();}
+        finally{Pump();}
+    }
+    private static T AwaitWorkspace<T>(Task<T> task)
+    {
+        AwaitWorkspace((Task)task);return task.GetAwaiter().GetResult();
     }
     private static void Pump()
     { var frame = new DispatcherFrame(); Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() => frame.Continue = false)); Dispatcher.PushFrame(frame); }

@@ -28,12 +28,13 @@ public sealed class NativeToolEditorSample:Decorator,IDisposable
         Fields=new(Enumerable.Range(0,24).Select(index=>(new Port("sample."+index,DataType.Boolean),
             new FieldPresentation("sample."+index,"独立示例 "+(index%8+1),"控件组合",index,FieldEditorKind.Scalar)
             {Layout=new(pages[index/8],"控件组合")},(ParameterSetting)new ConstantSetting(index%2==0))),_=>{});
-        Frame.EditorContent=Fields;Frame.BindCommands(Commands);Frame.Loaded+=OnLoaded;Child=Frame;
+        Frame.EditorContent=Fields;Frame.BindCommands(Commands);Frame.Loaded+=OnLoaded;Fields.PageChanged+=OnPageChanged;OnPageChanged();Child=Frame;
     }
+    private void OnPageChanged()=>Frame.ResetVisibility=Fields.SelectedPageIndex==1?Visibility.Visible:Visibility.Collapsed;
     private void OnLoaded(object sender,RoutedEventArgs args){if(!_disposed)Frame.BindCommands(Commands);}
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;Frame.Loaded-=OnLoaded;
+        if(_disposed)return;_disposed=true;Frame.Loaded-=OnLoaded;Fields.PageChanged-=OnPageChanged;
         SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(new Action[]{Frame.Dispose,Fields.Dispose,()=>Child=null});
     }
 

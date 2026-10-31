@@ -1,8 +1,7 @@
-﻿using SunEyeVision.UI.Services.Thumbnail;
+using SunEyeVision.UI.Services.Thumbnail;
 using System.IO;
 using System.Threading;
 using Xunit;
-using SunEyeVision.UI.Shell.Controls.Panels;
 
 namespace SunEyeVision.UI.Tests;
 

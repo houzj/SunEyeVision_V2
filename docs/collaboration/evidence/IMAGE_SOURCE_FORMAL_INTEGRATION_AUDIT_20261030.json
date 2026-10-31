@@ -1,0 +1,70 @@
+{
+  "batch": "图像源正式整合与结果工作区自动回归",
+  "status": "本批自动回归通过，非S2整体/人工/VM同态完成",
+  "baseCommit": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "workingTree": true,
+  "build": {
+    "toolboxProbeExit": 0,
+    "warnings": 6058,
+    "full": "Release/_validation/ImageSourceIntegration-20261029/full-build-10.log",
+    "errors": 0,
+    "toolboxProbe": "Release/_validation/ImageSourceIntegration-20261029/toolbox-probe-final.json"
+  },
+  "validation": {
+    "elapsedMs": 91348,
+    "perCaseWatchdogMs": 90000,
+    "originalAuditedCasesCovered": 216,
+    "priorFailureAttempts": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      30,
+      32,
+      33
+    ],
+    "failures": 0,
+    "count": 342,
+    "retiredCameraCases": 6,
+    "report": "Release/_validation/S4-20261025/ImageSourceRecovery/attempt-034/image-source-recovery-report.json",
+    "originalFailuresCovered": 21,
+    "aggregateBudgetMs": 300000
+  },
+  "scope": "原21失败、原审计216项及6项相机行为替代、配置/保存/历史/接纳/来源、图像源运行/调试/格式、真实本地预览、设计组合与结果工作区、结果模型/展示器及结果视口/根窗口和相关相机与工作区用例；历史相机转换语义已退役，不能计作原断言通过。展示器与调试夹具已切现行快照，历史展示断言不代表历史存储产品已实现。原249整体未重跑。直接编译测试源码、正式产品引用及共享实际Dispatcher。",
+  "pending": [
+    "实际相机硬件及VM同态场景",
+    "VS实际设计器",
+    "用户人工布局和键鼠验收",
+    "历史存储产品实现",
+    "Blob完整S2组合与S3算法"
+  ],
+  "artifacts": [
+    {
+      "sha256": "DC6497FF0FAE38457531C56DC6CCD92B82E5074322B362CC9E3C241437E3EA29",
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe"
+    },
+    {
+      "sha256": "1365289C3D9920D82C4D6FF8BFD9E80A2D45708C3438E7392E7FBD9F1E4B7D2F",
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll"
+    },
+    {
+      "sha256": "3AC12B8A9CDA15CA974C4E8CC79298AC223ABC46DEB33FAB70E697875911F93D",
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll"
+    },
+    {
+      "sha256": "CA3624A763725939F2FD0DFBEB9825E99840B9364E18B88926AE2B0B2B198F16",
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll"
+    }
+  ],
+  "sourceSnapshot": "d7e98fb7e00856aea6743635cfae319d4dc5d91d",
+  "snapshotRef": "codex/controls-image-source-20261030",
+  "manual": {
+    "observedPid": 76744,
+    "status": "待用户验收",
+    "formalArtifactsFrozen": true
+  }
+}

@@ -1,13 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
@@ -351,7 +348,7 @@ public sealed class ResultPresentationPresenterTests:IDisposable
     {
         var schema = Schema(new Port("value", DataType.Number));
         using var run = Success(schema, new() { ["value"] = 42d });
-        run.Result.ExecutionIdentity!.Owner.Retire(); Assert.False(run.Result.ExecutionIdentity.IsCurrent);
+        run.Snapshot.ExecutionIdentity!.Owner.Retire(); Assert.False(run.Snapshot.ExecutionIdentity.IsCurrent);
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { });
         presenter.Present(run.Publication); Assert.Equal("42", rows.Last().DisplayValue);
@@ -523,26 +520,24 @@ public sealed class ResultPresentationPresenterTests:IDisposable
 
     private static RunFixture Success(ToolSchema schema, Dictionary<string, object?> values, Action? release = null)
     {
-        var request = new ToolExecutionRequest(new Parameters()) { NodeId = "source", BindingOutputSchema = schema };
-        var result = new ToolExecutor(new ParameterResolver()).Run(new Probe(release ?? (() => { })), request);
-        return new(result, DeclaredOutputSnapshot.Publish(result, request.GetInvocationIdentity(), values));
+        var identity=new ToolExecutionOwner().Begin("source",Guid.NewGuid(),"result-presenter-tests");
+        var output=new SunEyeVision.TestFixtures.WorkspaceProbeOutput(values);
+        var snapshot=DeclaredOutputSnapshot.Capture(schema,1,identity,"source",
+            new(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new CallbackOwner(release),0);
+        return new(snapshot);
     }
 
-    public sealed class Parameters : ToolParameters { }
-    private sealed class Results : ToolResults
+    private sealed class CallbackOwner(Action? release):IDisposable
     {
-        public Results() { }
-        public Results(Action release) { Resources = new(release); SetSuccess(); }
+        private Action? _release=release;
+        public void Dispose()=>Interlocked.Exchange(ref _release,null)?.Invoke();
     }
-    private sealed class Probe(Action release) : IToolPlugin<Parameters, Results>
-    { public Results Run(Parameters parameters) => new(release); }
-    private sealed class RunFixture(Results result,DeclaredOutputSnapshot snapshot):IDisposable
+    private sealed class RunFixture(DeclaredOutputSnapshot snapshot):IDisposable
     {
-        internal Results Result{get;}=result;
         internal DeclaredOutputSnapshot Snapshot{get;}=snapshot;
         private IResultPublication? _publication;
         internal IResultPublication Publication=>_publication??=ToolResultViews.FromSnapshot(Snapshot,()=>true);
-        internal void ReleaseResult()=>Result.Resources!.Dispose();
+        internal void ReleaseResult()=>Snapshot.Dispose();
         internal void ReleasePublication()=>_publication?.Dispose();
         public void Dispose(){ReleasePublication();ReleaseResult();}
     }
@@ -599,16 +594,5 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => frame.Continue = false));
         Dispatcher.PushFrame(frame);
     }
-    private static void Sta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); } catch (Exception exception) { failure = exception; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "Presenter Dispatcher test exceeded 20 seconds.");
-        if (failure != null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void Sta(Action action)=>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
 }

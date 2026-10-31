@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Shell.Controls.Panels;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
@@ -54,10 +53,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             ImagePreviewContent.Session=_sourceSession;
         }
 
-        /// <summary>
-        /// 当前选中图像用于本轮；成功完成后才推进到下一张。
-        /// </summary>
-
         public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
             nameof(EditingAllowed),typeof(bool),typeof(ImageResultControl),new PropertyMetadata(true));
         public bool EditingAllowed => (bool)GetValue(EditingAllowedProperty);
@@ -66,6 +61,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_viewModel is null)return;
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
+            CommandManager.InvalidateRequerySuggested();
             ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
             ModuleResultTreeView.IsReadOnly=!allowed;
             RefreshSourceSession();
@@ -84,6 +80,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _sourceTheme=new(ImagePreviewContent);
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
             _shellTheme=new(Workspace,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.ResultShell);
+            Workspace.PreviousImageCommand=new RelayCommand(async ()=>
+            { if(_viewModel is {} viewModel)await viewModel.NavigateLocalImagesAsync(-1); },
+                ()=>_viewModel?.CanNavigateLocalImages()==true);
+            Workspace.NextImageCommand=new RelayCommand(async ()=>
+            { if(_viewModel is {} viewModel)await viewModel.NavigateLocalImagesAsync(1); },
+                ()=>_viewModel?.CanNavigateLocalImages()==true);
             ModuleResultTreeView.BindVariableCommand=new RelayCommand(
                 value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
                 value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);

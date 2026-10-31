@@ -98,7 +98,7 @@ public sealed class SolutionExecutionDependencyGraph
             // Candidate reconciliation must retain unresolved-but-explicit binding edges for cycle checking.
             // Runtime readiness still omits failed inputs so unrelated nodes can execute.
             var localIssues = checkReadiness ? OutputBindingChangeService.GetExecutionInputIssues(workflow, workflow.Id) : null;
-            var local = WorkflowExecutionDependencyGraph.Compile(workflow, null, workflow.Id, localIssues);
+            var local = WorkflowExecutionDependencyGraph.Compile(workflow, null, workflow.Id, localIssues,solution.Id);
             foreach (var dependency in local.Dependencies)
             {
                 AddDependency(
@@ -139,6 +139,18 @@ public sealed class SolutionExecutionDependencyGraph
                             AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable, variable.Name, input.Key);
         }
 
+        foreach(var variable in solution.GlobalVariables.Where(variable=>variable.ProducerBinding is not null
+            &&string.IsNullOrEmpty(variable.RebindingReason)&&string.IsNullOrEmpty(variable.BindingValidationPending)))
+        {
+            var source=variable.ProducerBinding!.SourceReference;
+            var producer=ResolveNode(source.ScopeId!,source.NodeId,"变量生产来源");
+            if(producer is null)continue;
+            foreach(var workflow in workflows)
+                foreach(var node in workflow.Nodes.Where(node=>node.RuntimeConfiguration is not null))
+                    foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node))
+                        if(reference.SolutionId==solution.Id&&reference.VariableId==variable.Id)
+                            AddDependency(producer,GetScopedNodeId(workflow.Id,node.Id),SolutionDependencyKind.GlobalVariable,variable.Name,fieldId);
+        }
         var graph = new SolutionExecutionDependencyGraph(predecessors, dependencies);
         graph.GetTopologicalLayers(nodeLookup.Keys);
         return graph;

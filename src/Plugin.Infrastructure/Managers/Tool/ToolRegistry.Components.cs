@@ -150,7 +150,7 @@ public static partial class ToolRegistry
             if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
             _=definition.Describe();
             if(definition is IToolSettingsFields)
-                _=new ToolSettingsEditSession(definition,new FieldSettings(((IToolSettingsFields)definition).SettingsSchema.Inputs,((IToolSettingsFields)definition).ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal))).CaptureFields();
+                _=new ToolSettingsEditSession(definition,new FieldSettings(((IToolSettingsFields)definition).SettingsSchema.Inputs,((IToolSettingsFields)definition).ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal))).CaptureValidatedFields();
         }
     }
 }

@@ -28,6 +28,7 @@ internal static class S2DocumentEditingCases
             var consumer=new WorkflowNodeBase("consumer","consumer","编辑节点",BlobTool.Id){RuntimeConfiguration=configuration.Copy()};
             Bind(consumer,BlobTool.ImageInput,source.Id,BlobSchema.Field(5),TypeRef.ResourceOf(ResourceKind.Image),flow.Id);
             Bind(consumer,BlobTool.InspectionInput,source.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),flow.Id);
+            var consumerConfiguration=consumer.RuntimeConfiguration!.Copy();
             using var ownerScope=new OwnerScope();var owner=ownerScope.Owner;
             Case("生产结果释放后调试保留原始图像和ROI帧，冻结草稿且不重跑生产者，无UI回调",()=>
             {
@@ -38,32 +39,34 @@ internal static class S2DocumentEditingCases
                 {
                     using var invocation=RuntimeDebugInvocation.Capture(flow,consumer,owner,4,id=>id==source.Id?published:null,default);
                     Require(invocation.SourceIdentities.Single()==original&&invocation.Identity.ToInvocationIdentity(consumer.Id).RunId!=original.RunId,"来源身份被重标记");
-                    consumer.RuntimeConfiguration=configuration.WithOverrides(new Dictionary<string,object?>{{"Threshold",200}});consumer.ParamSettings.RemoveSetting(BlobTool.InspectionInput);
+                    consumer.RuntimeConfiguration=configuration.WithSettings(new BlobSettings{Threshold=200,IsAreaFilterEnabled=false,OutputGrayImage=true});consumer.RuntimeConfiguration=consumer.RuntimeConfiguration!.RestoreFieldFrom(BlobTool.InspectionInput,configuration);
                     run.Dispose();var result=WithoutUiPump(invocation.ExecuteAsync);
                     try
                     {
                         Require(result.Output is BlobOutput {TotalArea:16},"草稿修改污染本次冻结值");
+                        Require(result.Schema.FindOutputDisplay(BlobSchema.BlobsPort,new[]{"bounds","x"})?.DisplayName=="左上点X",
+                            "真实调试结果丢失正式声明成员显示名称");
                         using var region=((BlobOutput)result.Output!).Region.AcquireReader();Require(region.SourceFrame==frame,"物理帧被替换");
                         using var gray=((BlobOutput)result.Output!).GrayImage!.AcquirePixels();Require(gray.Layout.Width==8,"输入读者释放后输出图像失效");
                         Require(executions==0&&owner.ActiveRuns==0&&result?.SourceWorkflowId==flow.Id,"调试重跑上游或未排空/发布");
                     }
                     finally{result.Dispose();}
                 }
-                finally{executor.NodeStatusChanged-=count;flow.Nodes.Remove(consumer);consumer.RuntimeConfiguration=configuration;Bind(consumer,BlobTool.InspectionInput,source.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),flow.Id);run.Dispose();}
+                finally{executor.NodeStatusChanged-=count;flow.Nodes.Remove(consumer);consumer.RuntimeConfiguration=consumerConfiguration.Copy();Bind(consumer,BlobTool.InspectionInput,source.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),flow.Id);run.Dispose();}
             });
             using var production=Produce();var current=(DeclaredOutputSnapshot)production.NodeResults[source.Id].Result!;flow.Nodes.Add(consumer);
-            Case("设置订阅使用冻结已发布值，正式强类型设置保持原值",()=>
+            Case("设置订阅使用冻结已发布值，正式引用配置不回写运行值",()=>
             {
                 var field=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
-                consumer.RuntimeConfiguration=configuration.WithFieldValues(new Dictionary<string,object?>{{field,200L}});
+                consumer.RuntimeConfiguration=consumerConfiguration.WithFieldValues(new Dictionary<string,object?>{{field,200L}});
                 Bind(consumer,field,source.Id,BlobSchema.Field(11),DataType.Integer,flow.Id);
                 try
                 {
                     using var request=RuntimeDebugInvocation.Capture(flow,consumer,owner,5,_=>current,default);var result=WithoutUiPump(request.ExecuteAsync);
-                    try{Require(result.Output is BlobOutput{TotalArea:16}&&((BlobSettings)consumer.RuntimeConfiguration.CaptureSettings()).Threshold==200,"设置订阅污染正式模型或未进入本次执行");}
+                    try{Require(result.Output is BlobOutput{TotalArea:16}&&consumer.RuntimeConfiguration.Fields.Read(field) is ReferenceSetting,"设置订阅污染正式模型或未进入本次执行");}
                     finally{result.Dispose();}
                 }
-                finally{consumer.ParamSettings.RemoveSetting(field);consumer.RuntimeConfiguration=configuration;}
+                finally{consumer.RuntimeConfiguration=consumerConfiguration.Copy();}
             });
             Case("普通工作流解析仍拒绝跨轮结果，只有明确发布快照入口允许选定来源",()=>
             {
@@ -74,7 +77,7 @@ internal static class S2DocumentEditingCases
                     var sourceDeclaration=new BindingSource(node,actual.Identity.ScopeId,actual.Schema,actual.SchemaRevision);
                     var scope=new BindingScopeSnapshot(consumerId,owner.Id,6,new[]{sourceDeclaration},new[]{node},Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
                     var target=configuration.Schema.Inputs.Single(p=>p.Id==BlobTool.ImageInput);var resolver=new ParameterBindingService();
-                    var plan=resolver.CompileBinding(BindingReferenceSerializer.Deserialize(consumer.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression!),target,scope).Plan!;
+                    var plan=resolver.CompileBinding(((ReferenceSetting)consumer.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput)).Reference,target,scope).Plan!;
                     var snapshot=new PublishedBindingSnapshot(consumerId,id.ToInvocationIdentity(consumer.Id),6,new[]{new BindingNodeResult(node,actual.Identity,actual.SchemaRevision,actual.Schema.Fingerprint,true,reader.Values!)});
                     Require(!resolver.ResolveBinding(plan,snapshot).Success&&resolver.ResolvePublishedBinding(plan,snapshot).Success,"跨轮规则被放宽或发布快照不能解析");
                 }
@@ -104,7 +107,7 @@ internal static class S2DocumentEditingCases
             });
             Case("缺省工作流图像独立捕获像素及Domain，调试只执行一次",()=>
             {
-                var draft=consumer.Clone();draft.ParamSettings=new();using var request=RuntimeDebugInvocation.Capture(flow,draft,owner,9,_=>throw new Exception("无引用不应读取上游"),default,image);
+                var draft=consumer.Clone();draft.RuntimeConfiguration=configuration.Copy();using var request=RuntimeDebugInvocation.Capture(flow,draft,owner,9,_=>throw new Exception("无引用不应读取上游"),default,image);
                 var result=WithoutUiPump(request.ExecuteAsync);try{Require(result.Output is BlobOutput {TotalArea:16},"缺省图像未进入调试");}finally{result.Dispose();}
                 Reject(()=>WithoutUiPump(request.ExecuteAsync));
             });
@@ -113,7 +116,7 @@ internal static class S2DocumentEditingCases
                 var connection=new WorkflowConnection{Id="debug-cycle",SourceNodeId=consumer.Id,TargetNodeId=source.Id};flow.Connections.Add(connection);
                 try{Reject(()=>RuntimeDebugInvocation.Capture(flow,consumer,owner,10,_=>current,default));}
                 finally{flow.Connections.Remove(connection);}
-                var missing=consumer.Clone();missing.ParamSettings=new();Reject(()=>RuntimeDebugInvocation.Capture(flow,missing,owner,10,_=>current,default));
+                var missing=consumer.Clone();missing.RuntimeConfiguration=configuration.Copy();Reject(()=>RuntimeDebugInvocation.Capture(flow,missing,owner,10,_=>current,default));
                 Require(owner.ActiveRuns==0,"拒绝后仍有调试运行");
             });
             Console.WriteLine($"S3 Runtime调试：{_passed}组通过；已发布输入快照/真实HALCON/资源排空，不代表完整窗口、VM视觉或人工验收。");return 0;
@@ -121,7 +124,7 @@ internal static class S2DocumentEditingCases
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
     private static void Bind(WorkflowNodeBase consumer,string target,string source,string port,TypeRef type,string scope)
-        =>consumer.ParamSettings.SetSetting(new ParamSetting{ParameterName=target,BindingType=BindingType.Binding,ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(source,port,type,scopeId:scope)),SourceNodeId=source,SourceProperty=port,SourceWorkflowId=scope});
+        =>consumer.RuntimeConfiguration=consumer.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{target,new ReferenceSetting(new OutputReference(source,port,type,scopeId:scope))}});
     private static void Reject(Action action){try{action();}catch(InvalidOperationException){return;}catch(OperationCanceledException){return;}throw new Exception("预期拒绝却成功");}
     private static T WithoutUiPump<T>(Func<Task<T>> start)
     {var previous=SynchronizationContext.Current;var context=new NoPost();SynchronizationContext.SetSynchronizationContext(context);try{var task=start();Require(Task.WhenAny(task,Task.Delay(TimeSpan.FromSeconds(30))).GetAwaiter().GetResult()==task,"算法等待UI");Require(context.Posts==0,"算法反调UI");return task.GetAwaiter().GetResult();}finally{SynchronizationContext.SetSynchronizationContext(previous);}}

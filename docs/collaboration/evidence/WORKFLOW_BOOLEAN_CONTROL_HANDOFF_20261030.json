@@ -1,0 +1,69 @@
+{
+  "request": "工作流5431c9fe之后的自动切换原布尔控件接入",
+  "status": "PCUI原件已迁为正式中立类型并通过13项组件及同版回归；工作流接入、VS与人工未验",
+  "mainSourceBaseline": "e83b066d1057d951003d357e09fb2f89f25bdb79",
+  "mainWpfSha256": "A816F60EB36BBA843467E04F4324E749A233679F171E969B0F2C78ADEC7F6062",
+  "requiredOriginal": {
+    "template": "控件内部ToggleButtonStyle1及TO，Checked/Unchecked转发OnCheckedChange",
+    "evidence": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml:11-24",
+    "base": "UserControl",
+    "localXaml": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+    "assembly": "VM.PcUI",
+    "api": [
+      "IsChecked(bool DP)",
+      "OffContent(object DP)",
+      "OnContent(object DP)",
+      "OnCheckedChange(sender,RoutedEventArgs)"
+    ],
+    "type": "HikPcUI.ListView.BooleanControl",
+    "localCode": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
+    "localNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView"
+  },
+  "requiredImages": {
+    "off": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_off_dark.png",
+    "on": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on_dark.png",
+    "original": "原LocalImageListView显式使用Apps.XmlUI的_dark两图，Stretch=None；不能用参数页非dark图片冒充"
+  },
+  "existingB01": {
+    "images": "NativeInputFactory.BooleanImage使用swith_off/on.png非dark",
+    "type": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl",
+    "base": "ToggleButton",
+    "validation": "B01已有基础及宿主检查；本次FieldEditing34/DesignTime306覆盖的是该家族，不是PCUI UserControl家族"
+  },
+  "forbiddenSubstitution": [
+    "本地ToggleButton+AutoSwitchStyle不能宣称原件闭包",
+    "Controls.ToggleSwitch来自旧SDK且是自定义皮肤，不能作VM最终替代",
+    "两个原件家族不按名称/外观合并，不把当前编译存在当已独立验收"
+  ],
+  "nextRequired": "公共控件线先集中迁移PCUI原件、dark两图、依赖/中立命名及状态/事件/生命周期验证，再提供真实新基线；工作流继续其它核收，不自行新增公共布尔控件",
+  "productChanged": false,
+  "messageSent": true,
+  "goalStatus": "B08仍blocked，本次仅准备请求的事实交接，不据跨对话来信自动恢复目标",
+  "humanAuthorization": "用户本轮答复：允许发送本次交接",
+  "recipientThread": "01a176b8-278f-77f3-8093-20a80f11403b",
+  "previousHandoff": {
+    "status": "尚无对应的中立正式类型及独立功能验收基线；不可把B01另一原件当等价",
+    "mainSourceBaseline": "55507bce",
+    "mainWpfSha256": "5F61FA357D3F34B92405CE2F1BAEC3CB92CCE557DD7F774600C2C7D4AC1C6667",
+    "requiredOriginal": {
+      "template": "控件内部ToggleButtonStyle1及TO，Checked/Unchecked转发OnCheckedChange",
+      "evidence": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml:11-24",
+      "base": "UserControl",
+      "localXaml": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+      "assembly": "VM.PcUI",
+      "api": [
+        "IsChecked(bool DP)",
+        "OffContent(object DP)",
+        "OnContent(object DP)",
+        "OnCheckedChange(sender,RoutedEventArgs)"
+      ],
+      "type": "HikPcUI.ListView.BooleanControl",
+      "localCode": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
+      "localNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView"
+    }
+  },
+  "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+  "contract": "docs/collaboration/evidence/CONTENT_TOGGLE_SWITCH_CONTRACT_20261030.json",
+  "validation": "docs/collaboration/evidence/B01_CONTENT_TOGGLE_VALIDATION_20261030.json",
+  "verifiedFollowupSent": true
+}

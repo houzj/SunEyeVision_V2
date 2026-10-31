@@ -77,7 +77,7 @@ public sealed class WorkflowExecutionDependencyGraph
 
     public static WorkflowExecutionDependencyGraph Compile(Workflow workflow,
         IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables, string? sourceWorkflowId,
-        IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>>? inputIssues)
+        IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>>? inputIssues,string? solutionId=null)
     {
         if (workflow == null)
             throw new ArgumentNullException(nameof(workflow));
@@ -147,6 +147,21 @@ public sealed class WorkflowExecutionDependencyGraph
                     if (variable != null && knownNodes.Contains(variable.ProducerNodeId)
                         && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
                         AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
+                }
+            if(node.RuntimeConfiguration is not null)
+                foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node))
+                {
+                    if(reference.SolutionId!=solutionId)continue;
+                    var variable=variables?.FirstOrDefault(item=>item.Id==reference.VariableId);
+                    if(variable is {HasProducer:true}&&knownNodes.Contains(variable.ProducerNodeId)
+                        &&(string.IsNullOrEmpty(variable.ProducerWorkflowId)||variable.ProducerWorkflowId==(sourceWorkflowId??workflow.Id)))
+                        AddDependency(variable.ProducerNodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                    if(reference.Selection is SunEyeVision.Plugin.Contracts.BindingSelection.AtField index)
+                        foreach(var dependency in WorkflowBindingContext.ReferenceNodes(index.Reference,sourceWorkflowId??workflow.Id))
+                        {
+                            if(dependency.ScopeId!=(sourceWorkflowId??workflow.Id))throw new InvalidOperationException("变量动态索引跨出工作流作用域。");
+                            AddDependency(dependency.NodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                        }
                 }
         }
 

@@ -1,0 +1,61 @@
+{
+  "unit": "B08变量动态索引入口",
+  "source": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs",
+  "sha256": "A04C04DC557328269A06D67C194F6C3A64B68659ACC1F76E4DE778F5DA858931",
+  "native": [
+    "IndexOpenSetter36—41：GetFrontFilterTreeOperation(int)",
+    "GetSubFilteFromGlobalVariable401—453：按类型/作用域选择真实Owner/VmIO",
+    "IndexClickCommandExecute455—483：变量管理返回VmIO.ModulePathName插入括号"
+  ],
+  "current": "AtVariable整数标量索引已贯通选择租约、严格持久化、依赖、同批冻结值、真实宿主保存历史；B08整体未完",
+  "designConstraints": [
+    "索引变量必须当前方案内纯整数标量，禁止数组首项回退",
+    "沿同一变量窗口和Owner代际，但区分主来源/索引用途",
+    "显式稳定身份贯通序列化、复制、依赖、冻结值解析、保存/历史/删除",
+    "公共控件不依赖Workflow或SDK可视组件，无伪输出节点"
+  ],
+  "productChanged": true,
+  "nativeRuntimeVerified": false,
+  "currentContract6Validation": {
+    "date": "2026-10-30",
+    "contract": "6.0",
+    "status": "变量动态索引定向验证通过，B08整体未完",
+    "fullBuild": "0错误/6511警告，b08-variable-index-contract6-full-build.log",
+    "checks": {
+      "RuntimeGlobals": "017:31通过/0失败",
+      "FieldEditing": "128通过",
+      "DesignTime": "306组，不代VS实际验证",
+      "RuntimeEditorUiStage": "013:6组，fullFunctionalAcceptance=false",
+      "RuntimeWorkflow": "059:10组",
+      "VariableFields": "010:12组",
+      "RuntimeKernel": "050:19组"
+    },
+    "pending": [
+      "原厂删除解绑及参数回读",
+      "TRIGGER_STRING通讯来源",
+      "Blob可见S1占位功能接入",
+      "本批VS与人工",
+      "原生VM运行等价证明"
+    ],
+    "nativeRuntimeVerified": false
+  },
+  "fragmentCopyValidation": {
+    "productRebuilt": false,
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-fragment-copy-RuntimeGlobals.log",
+    "passed": 32,
+    "newCase": "Fragment_copy_remaps_module_indices_and_preserves_solution_variable_identities",
+    "failed": 0,
+    "track": "RuntimeGlobals018",
+    "combinations": 4,
+    "scope": "真实WorkflowFragmentCopy.Prepare保留变量身份/重映射模块来源及动态索引，不证明跨方案变量迁移或原厂解绑"
+  },
+  "indexRefreshValidation": {
+    "fullB08Acceptance": false,
+    "sourceSavepoint": "2aa8959d不含该新增验证源码",
+    "track": "VariableFields011",
+    "passed": 13,
+    "productRebuilt": false,
+    "newCoverage": "真实公共字段：模块/变量主来源的变量索引更名不写配置、目录删除标失效、迟到选择退役、有效替换索引恢复且保持主来源",
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-index-refresh-VariableFields.log"
+  }
+}

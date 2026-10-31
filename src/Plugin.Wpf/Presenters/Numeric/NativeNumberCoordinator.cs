@@ -52,6 +52,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private bool _observedReference;
     private void DrainAcceptedProjection(){if(!_syncing&&_acceptedProjectionPending){_acceptedProjectionPending=false;if(_commit?.IsDirty==true)ProjectState();else ProjectAccepted();}}
     public TextBox? TextEditor=>_commit?.Text;
+    internal bool HasPendingEdits=>!_disposed&&(_commit?.IsDirty==true||_reference?.HasPendingText==true);
     public NativeNumberCoordinator(DeclaredFieldState state,FieldPresentation? presentation,
         FrameworkElement eventRoot,FrameworkElement nativeInput,ReferenceFieldOptions? references=null,
         Func<OutputReference,string>? format=null,bool requireStartBinding=false,
@@ -78,7 +79,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
                     _referenceResources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)};
                     _eventRoot.Resources.MergedDictionaries.Add(_referenceResources);
                     _expansion=new(eventRoot);
-                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference);
+                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference,selectVariable:_expansion.OpenVariable);
                     _arrange.SubscribeTemplate=(DataTemplate)eventRoot.FindResource("ButtonSelecter_sub");
                     _arrange.SubscribeDataLeft=_reference;
                     _referenceScope=new(eventRoot,_reference,()=>Current()&&_state.IsReferenceMode);
@@ -88,6 +89,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
             else{_leaf=(Numbers.NumericControl)nativeInput;_leaf.OnNumericClick+=OnLeafValue;}
             _state.Changed+=OnStateChanged;_state.ExplicitlyAccepted+=OnExplicitlyAccepted;
             eventRoot.Loaded+=OnLoaded;eventRoot.Unloaded+=OnUnloaded;eventRoot.IsVisibleChanged+=OnVisibilityChanged;
+            eventRoot.IsEnabledChanged+=OnEnabledChanged;
             eventRoot.PreviewKeyDown+=OnKey;eventRoot.PreviewMouseWheel+=OnWheel;eventRoot.LostKeyboardFocus+=OnLostFocus;
             AttachInput();ProjectState();
             if(eventRoot.IsLoaded&&Current())OnLoaded(eventRoot,new RoutedEventArgs());
@@ -106,7 +108,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
         if(!Current())return;_active=true;
-        var generation=++_loadGeneration;
+        _loadGeneration++;
         AttachInput();
         if(_disposed||_state.IsDisposed)return;
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;
@@ -114,9 +116,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!Current())return;
         _owner=owner;if(_owner is not null)_owner.Deactivated+=OnDeactivated;
         ProjectState();_referenceScope?.Refresh();
-        _resume?.Abort();
-        _resume=_eventRoot.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-        {if(!Current()||!_active||!_eventRoot.IsVisible||_presentationHidden||generation!=_loadGeneration)return;_resume=null;ResumeCommit();}));
+        _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible&&_eventRoot.IsEnabled);
+        QueueResume();
     }
     public void AttachInput()
     {
@@ -148,7 +149,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void ResumeCommit()
     {
-        if(!CurrentInput())return;
+        if(!CurrentInput()||!_eventRoot.IsEnabled)return;
         var syncing=_syncing;_syncing=true;
         try{_commit?.Resume();}finally{_syncing=syncing;DrainAcceptedProjection();}
     }
@@ -238,12 +239,13 @@ internal sealed class NativeNumberCoordinator : IDisposable
         return accepted&&CurrentInput()&&!_state.HasInvalidInput;
     }
     private void OnNativeValue(object sender,RoutedPropertyChangedEventArgs<double> args)
-    {if(_active&&!_syncing&&!_closing&&!_presentationHidden&&CurrentInput()&&!_state.IsReferenceMode)TryCommitPending();}
+    {if(_active&&_eventRoot.IsEnabled&&!_syncing&&!_closing&&!_presentationHidden&&CurrentInput()&&!_state.IsReferenceMode)TryCommitPending();}
     private void OnLeafValue(object? sender,EventArgs args)
-    {if(_active&&!_syncing&&!_closing&&!_presentationHidden&&CurrentInput())TryCommitPending();}
+    {if(_active&&_eventRoot.IsEnabled&&!_syncing&&!_closing&&!_presentationHidden&&CurrentInput())TryCommitPending();}
     private void OnModeChanged(object sender,RoutedPropertyChangedEventArgs<double> args)
     {
         if(_syncing||_presentationHidden||!CurrentInput())return;
+        if(!_eventRoot.IsEnabled){ProjectState();return;}
         try
         {
             if(_arrange!.IsSubscribeLeft)
@@ -263,7 +265,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnKey(object sender,KeyEventArgs args)
     {
-        if(!CurrentInput()||_presentationHidden)return;
+        if(!CurrentInput()||_presentationHidden||!_eventRoot.IsEnabled)return;
         if(_state.IsReferenceMode)return;
         if(args.Key==Key.Escape){ClosePopups();args.Handled=true;return;}
         if(args.Key!=Key.Enter)return;
@@ -279,7 +281,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     {
         Cancel();var generation=_generation;
         _pending=_eventRoot.Dispatcher.BeginInvoke(DispatcherPriority.Input,new Action(()=>
-        {if(!CurrentInput()||generation!=_generation||!_active||_presentationHidden||!_eventRoot.IsVisible)return;_pending=null;action();}));
+        {if(!CurrentInput()||generation!=_generation||!_active||_presentationHidden||!_eventRoot.IsVisible||!_eventRoot.IsEnabled)return;_pending=null;action();}));
     }
     private void OnWheel(object sender,MouseWheelEventArgs args)
     {if(!_state.IsReferenceMode&&TextEditor?.IsKeyboardFocused==true)Queue(()=>TryCommitPending());}
@@ -303,7 +305,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     {_active=false;_loadGeneration++;_resume?.Abort();_resume=null;_commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
     internal void PrepareForVisibility(bool visible)
     {
-        _referenceScope?.PrepareForVisibility(visible);
+        _referenceScope?.PrepareForVisibility(visible&&_eventRoot.IsEnabled);
         if(_disposed)return;
         if(!visible)
         {
@@ -314,9 +316,29 @@ internal sealed class NativeNumberCoordinator : IDisposable
         {
             _presentationHidden=false;
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
-            var generation=++_loadGeneration;_resume?.Abort();
-            _resume=_eventRoot.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-            {if(!CurrentInput()||!_active||!_eventRoot.IsVisible||_presentationHidden||generation!=_loadGeneration)return;_resume=null;ResumeCommit();}));
+            QueueResume();
+        }
+    }
+    private void QueueResume()
+    {
+        var generation=++_loadGeneration;_resume?.Abort();_resume=null;
+        if(!Current()||!_active||!_eventRoot.IsVisible||_presentationHidden||!_eventRoot.IsEnabled)return;
+        _resume=_eventRoot.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
+        {if(!CurrentInput()||!_active||!_eventRoot.IsVisible||_presentationHidden||!_eventRoot.IsEnabled||generation!=_loadGeneration)return;_resume=null;ResumeCommit();}));
+    }
+    private void OnEnabledChanged(object sender,DependencyPropertyChangedEventArgs args)
+    {
+        if(!Current())return;
+        if(!_eventRoot.IsEnabled)
+        {
+            _loadGeneration++;_resume?.Abort();_resume=null;
+            _commit?.Suspend();ClosePopups();
+            if(Current())_referenceScope?.PrepareForVisibility(false);
+        }
+        else
+        {
+            _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible);
+            QueueResume();
         }
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(_eventRoot.IsVisible);
@@ -334,6 +356,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
             ()=>{if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;},
             ()=>_expansion?.Dispose(),()=>_commit?.Dispose(),()=>_referenceScope?.Dispose(),()=>_reference?.Dispose(),
             ()=>{_eventRoot.Loaded-=OnLoaded;_eventRoot.Unloaded-=OnUnloaded;_eventRoot.IsVisibleChanged-=OnVisibilityChanged;
+                _eventRoot.IsEnabledChanged-=OnEnabledChanged;
                 _eventRoot.PreviewKeyDown-=OnKey;_eventRoot.PreviewMouseWheel-=OnWheel;_eventRoot.LostKeyboardFocus-=OnLostFocus;},
             ()=>{if(_referenceResources is not null)_eventRoot.Resources.MergedDictionaries.Remove(_referenceResources);_referenceResources=null;}};
         ParameterCleanup.Run(cleanup);

@@ -1,0 +1,214 @@
+{
+  "status": "VM4.4真实整数变量→Blob低阈值：绑定/消费/动态更新/失效索引/解绑/保存重开矩阵已取得；非B08整体或S2完成",
+  "receipt": {
+    "pid": 127868,
+    "finished": true,
+    "exit": 0,
+    "timeoutMs": 180000,
+    "root": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03",
+    "scope": "Original VM owned complete binding probe with original global Ex initialization; not product acceptance"
+  },
+  "identity": {
+    "phase": "identity",
+    "utc": "2026-10-30T14:36:33.6744721Z",
+    "pid": 127868,
+    "appBase": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\",
+    "solution": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\fixture.sol",
+    "solutionSha256": "B91A7736F467757E15A55AF7836E22364AE153478E17C69AAEB69E0C30674D0B",
+    "applications": "D:\\Program Files\\VisionMaster4.4.0\\Applications",
+    "blob": "@create",
+    "source": "Flow1.Image Source1",
+    "sourceOutput": "B08Var",
+    "a": 37,
+    "b": 173,
+    "xmlDefault": 100
+  },
+  "actualSourceIdentity": {
+    "phase": "variable-io-identity",
+    "name": "%B08Var%",
+    "rootId": 24000,
+    "moduleId": 24000,
+    "values": []
+  },
+  "matrix": [
+    {
+      "phase": "D-default-after-run",
+      "readback": "100",
+      "binding": "",
+      "blobCount": [
+        "2"
+      ],
+      "totalArea": [
+        "512"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "B-constant-after-run",
+      "readback": "173",
+      "binding": "",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "A-after-run",
+      "readback": "37",
+      "binding": "",
+      "blobCount": [
+        "3"
+      ],
+      "totalArea": [
+        "768"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "bound-after-run",
+      "readback": "173",
+      "binding": "24000 流程局部变量.B08Var[0]",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "bound-reopened-after-run",
+      "readback": "173",
+      "binding": "24000 流程局部变量.B08Var[0]",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "source-90-after-run",
+      "readback": "90",
+      "binding": "24000 流程局部变量.B08Var[0]",
+      "blobCount": [
+        "2"
+      ],
+      "totalArea": [
+        "512"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "source-173-after-run",
+      "readback": "173",
+      "binding": "24000 流程局部变量.B08Var[0]",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "unbound-after-run",
+      "readback": "173",
+      "binding": "",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    },
+    {
+      "phase": "reloaded-after-run",
+      "readback": "173",
+      "binding": "",
+      "blobCount": [
+        "1"
+      ],
+      "totalArea": [
+        "256"
+      ],
+      "matched": true
+    }
+  ],
+  "beforeRunBindingReadback": "37，建立关系本身没有将配置值改为173",
+  "afterUnbindReadback": "173且关系空，之后执行与重开仍173/1个/面积256",
+  "invalidSource": {
+    "interpretation": "此来源未被消费，Getter保持此前成功值173；恢复有效来源后可继续90→173",
+    "index": 99,
+    "outputs": {
+      "BlobNum": [
+        "<null>"
+      ],
+      "Area": [
+        "<null>"
+      ],
+      "TotalArea": [
+        "<null>"
+      ]
+    },
+    "nativeCode": "0xe0000314见本次日志；不据同码推断唯一根因",
+    "readback": "173",
+    "binding": true
+  },
+  "decision": "正常成功消费会更新同一参数当前值；本样本直接原生解绑后保留最后成功写入值，不恢复订阅前37或XML100。不能把当前UI旧常量备份当通用原厂解绑策略。",
+  "limits": [
+    "只证明本VM版本/整数LowThreshold/本图像/本真实局部变量源与固定索引",
+    "未覆盖ValueBase UI的额外变量关联清理、校验异常及其他数据类型",
+    "未证明多参数执行失败的回滚/部分写入策略，不能称整批事务与VM等价",
+    "TRIGGER_STRING/连续取消及全部退出链仍需补证",
+    "不属于本方正式Release产品验收"
+  ],
+  "priorRuns": {
+    "attempt01": "创建后0314、无控制先后、重复FullName查找错误，保留",
+    "attempt03": "按原VmIO.Root.ID/Name使用%B08Var%并完成区分结果",
+    "attempt02": "控制与重开修复成功，但原生来源仍误传显示名，0314保留；不是有效消费"
+  },
+  "raw": [
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\B08BindingRuntimeProbe.cs",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\B08BindingRuntimeProbe.cs.txt",
+      "sha256": "255FB3248F02A473AC3F9DA303B8E73A1FC2521490867A44D9A725FCE59BCDA0"
+    },
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\InitializedEntry.cs",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\InitializedEntry.cs.txt",
+      "sha256": "6BB89928D435F62ABBA8BA297621B7FBF449FF376BB23524016F683AB4DD5BB6"
+    },
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\Run.ps1",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\Run.ps1.txt",
+      "sha256": "E5A8A0B2BB19CCE6992ECCE1DD7165A9AE53A1972AE433126E1D74EE79526DF7"
+    },
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\b08-observations.json",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\b08-observations.json",
+      "sha256": "A8A229568B813D556D2304D3AB4902A067B1D4CC816607058578965D64D6FCD2"
+    },
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\init-observations.json",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\init-observations.json",
+      "sha256": "F1803DA6B9C3136B8305A4EE4667FB5D6A648035C21F6D450FC395756F98240C"
+    },
+    {
+      "source": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\receipt.json",
+      "archive": "docs\\collaboration\\evidence\\B08_ORIGINAL_BINDING_RUNTIME_20261030\\receipt.json",
+      "sha256": "A70874CED387EE982E656FA9D84BAE8DAB772A46C0B3104848CE461B65D57228"
+    }
+  ],
+  "imageSha256": "988ADB1C04EBC63CFAEBE971D9F9292A9964C22D5EFFA0734C1178C007DA8C58",
+  "boundSolutionSha256": "60CF6DDF06ED50AC44B503F9ED7901BDB3A693B139446CBD7FF14F6317610962",
+  "unboundSolutionSha256": "45A0339239D8295CE445BCEDC77858EC4AA28141140B16FE9CF6B94DC24D8DB1",
+  "nativeLogSha256": "5822DC82C927059191DA71E4775E2E4C292670224F3ACA656E7600E7C573A613",
+  "independentReverseReview": "逆向负责人已来件独立核receipt及observations，原生写入vtable+18链另在B08执行订阅注入边界报告",
+  "productChanged": false
+}

@@ -1,0 +1,14 @@
+{
+  "commit": "55507bce44a793f1f5f18b40dcb16746606e05b6",
+  "parent": "2aa8959d0901e5889e3a9f32884e39f54bc39b2c",
+  "reference": "refs/heads/codex/b08-neutral-controls-layout-20261030",
+  "changedFiles": 247,
+  "mainHead": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "mainHeadUnchanged": true,
+  "realIndexSha256": "ABB13C4A65515BAB3FB7C3F64C4C046EA0F413928010D0DE4EB50FC405B9B154",
+  "realIndexUnchanged": true,
+  "pushed": false,
+  "independentIndex": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\ImageSourceIntegration-20261029\\b08-neutral-controls-layout-savepoint.index",
+  "status": "命名与范围修复的源码检查点，不是B08或全目标完成；整轨失败与语义缺口继续保留",
+  "sourceWorkingTreeDifferences": 0
+}

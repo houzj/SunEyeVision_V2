@@ -22,8 +22,9 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         ExecutionIdentity=executionIdentity;Judgment=judgment;ExecutionTimeMs=elapsed;Output=output;
         Diagnostics=Array.AsReadOnly(diagnostics.ToArray());
         Fields=new System.Collections.ObjectModel.ReadOnlyDictionary<string,DeclaredOutputField>(
-            fields is null?schema.Outputs.ToDictionary(port=>port.Id,port=>new DeclaredOutputField(port.Id,port.Id,"",null,null,null,true))
-                :fields.ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal));
+            fields is null?schema.Outputs.ToDictionary(port=>port.Id,port=>new DeclaredOutputField(port.Id,schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,"",null,null,null,true))
+                :fields.ToDictionary(item=>item.Key,item=>schema.FindOutputDisplay(item.Key) is {} display
+                    ?item.Value with{DisplayName=display.DisplayName}:item.Value,StringComparer.Ordinal));
         if(Fields.Count!=schema.Outputs.Count || Fields.Keys.Any(key=>!schema.Outputs.Any(port=>port.Id==key)))
             throw new ArgumentException("Result field metadata differs from the captured output declaration.");
         SourceWorkflowId=sourceWorkflowId;IsComplete=complete;
@@ -56,7 +57,7 @@ public sealed class DeclaredOutputSnapshot : IDisposable
             if(!executionIdentity.TryCaptureResult())throw new InvalidOperationException("This invocation is stale or its result was already captured.");
             var status=outcome.Success?ExecutionStatus.Success:
                 executionIdentity.CancellationToken.IsCancellationRequested?ExecutionStatus.Cancelled:ExecutionStatus.Failed;
-            var outputSchema=new ToolSchema(Array.Empty<Port>(),schema.Outputs);
+            var outputSchema=new ToolSchema(Array.Empty<Port>(),schema.Outputs,outputDisplay:schema.OutputDisplay);
             var values=outcome.Success?new InputValues(outputSchema.Outputs,
                 outcome.Output?.ToValues()??throw new ArgumentException("A successful invocation has no output.")):null;
             return new(outputSchema,revision,executionIdentity.ToInvocationIdentity(nodeId),status,values,owner,

@@ -1,0 +1,57 @@
+{
+  "unit": "B03 整数单选",
+  "status": "复用既有正确实现，自动核收通过，实际VS/人工待验",
+  "basis": "RadioSelecter/RadioSelecter3 → 两槽/五槽原模板 → 单向EqualConverter投影 → Checked/ValueChangedCommand → 原整数接纳/通知",
+  "decision": "不重写原模板和现有适配，UI中的Int32候选值以正式Int64字段写入宿主声明草稿；状态借用、投影/事件与幂等释放复用",
+  "validation": {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-120",
+    "total": 247,
+    "integerRadioChecks": 14,
+    "exit": 0,
+    "scope": "真实加载的原件事件及正式FieldSettingsDraft，结合既有公共宿主配置回归；不代表Blob ROI组合接入"
+  },
+  "images": "on/off分别与Apps.Style原件SHA256完全一致",
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/RadioSelecter.cs",
+      "sha256": "B35FACD3F1E42C2153A9AC2A00C0B5783388CBA8F53B014195B37F55D3169791"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/RadioSelecter3.cs",
+      "sha256": "294AF8D285CD8D679165EDAF060B4582F23EB8FCA3A2A1716995186D0F02280E"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioOptions.cs",
+      "sha256": "AF7178CD977C05C7A775BF7E7838DB77F9FECE570D70FCEDDB7CC0622E8F9A97"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioPresenter.cs",
+      "sha256": "C061B6FF1EED505599EA4BD4E4814A65B7ECAF7B2DE9BA2007F101D61C2BE222"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/IntegerRadioResources.xaml",
+      "sha256": "F8CFE8F5A71D897CE0EE14FC23FF0CB320EEF3B860277016B266B7BBF0C6B8FB"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/check-box_on.png",
+      "sha256": "E9693E37C209B37FF9473AE816AD31BC1331DD831F3616519E30D883AE812655"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/check-box_off.png",
+      "sha256": "CB3EE5D0093A0EF7A38ECABE6E71BE305319B4B32D4D6C3C9E6B8324A6EC55DE"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "3716A6F00B1CD476A9E595C8C6009B2252FC66CCEA7796E447BB5EBD59E7A727"
+    }
+  ],
+  "pending": [
+    "实际VS、人工键鼠和语言切换",
+    "Blob ROI/位置修正等组合的真实值、引用和保存仍归后续组合",
+    "图像源整合执行覆盖边界修正未构建，不继承控件测试作为其验证"
+  ]
+}

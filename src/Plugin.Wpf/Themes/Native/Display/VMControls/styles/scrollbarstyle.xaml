@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:Color="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<ResourceDictionary xmlns:b08n1="clr-namespace:SunEyeVision.Plugin.Wpf.Themes.Palettes" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" >
   <ResourceDictionary.MergedDictionaries>
-    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+    <x:StaticExtension Member="b08n1:ColorThemesResourceDictionary.Instance" />
   </ResourceDictionary.MergedDictionaries>
   <Style x:Key="VerticalScrollBarThumb" TargetType="{x:Type Thumb}">
     <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />

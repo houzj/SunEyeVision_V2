@@ -43,7 +43,7 @@
 
             // ★ Step 3: 更新图像 —— 统一委托 ViewModel 的显示源解析入口
             //   （可用性回退 + 下拉跟随 + 无可用图像时清空，全部收敛在 ViewModel，避免双份实现不一致）
-            _viewModel.RefreshDisplayImageFromCurrentSource();</pre></details><details class="source-card"><summary>R027</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
+            _viewModel.RefreshDisplayImageFromCurrentSource();</pre></details><details class="source-card"><summary>R027</summary><p><a title="src/UI/Services/Performance/ImageConverterPool.cs（取证时点路径，文件已重构移除）">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
         {
             if (mat == null || mat.Empty())
                 throw new ArgumentNullException(nameof(mat));
@@ -62,7 +62,7 @@
                 // 创建新的WriteableBitmap
                 writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);
 
-                // 缓存（如果未达上限）</pre></details><details class="source-card"><summary>N034</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>public BitmapSource ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
+                // 缓存（如果未达上限）</pre></details><details class="source-card"><summary>N034</summary><p><a title="src/UI/Services/Performance/ImageConverterPool.cs（取证时点路径，文件已重构移除）">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>public BitmapSource ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
         {
             if (mat == null || mat.Empty())
                 throw new ArgumentNullException(nameof(mat));

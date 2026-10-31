@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Style x:Key="input" TargetType="{x:Type TextBox}">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="FontSize" Value="14px" />
+    <Setter Property="FontFamily" Value="Microsoft YaHei" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBox.Normal.Forground}" />
+    <Setter Property="Background" Value="{DynamicResource ListViewComboBoxBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="6,0,0,0" />
+    <Setter Property="UIElement.AllowDrop" Value="True" />
+    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type TextBox}">
+          <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" CornerRadius="2">
+            <Grid>
+              <themes:ListBoxChrome Background="#00FFFFFF" BorderThickness="0" RenderMouseOver="{TemplateBinding UIElement.IsMouseOver}" RenderFocused="{TemplateBinding UIElement.IsKeyboardFocusWithin}" UIElement.SnapsToDevicePixels="True">
+                <ScrollViewer Name="PART_ContentHost" Background="#00FFFFFF" BorderThickness="0" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+              </themes:ListBoxChrome>
+              <TextBlock Name="Message" FontSize="14" VerticalAlignment="Center" Foreground="#FFD3D3D3" Padding="16,0,0,0" Text="{TemplateBinding FrameworkElement.Tag}" Visibility="Hidden" />
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Border.Background" />
+              <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+            </Trigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+            </Trigger>
+            <Trigger Property="UIElement.IsFocused" Value="True">
+              <Setter TargetName="Bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+            </Trigger>
+            <DataTrigger Value="" Binding="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+              <Setter TargetName="Message" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="TextBoxBase.IsInactiveSelectionHighlightEnabled" Value="True" />
+          <Condition Property="TextBoxBase.IsSelectionActive" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter Property="TextBoxBase.SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+      </MultiTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="searchBtn" TargetType="{x:Type Button}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border BorderBrush="{DynamicResource TextButtonBB}" CornerRadius="2">
+            <Image Name="icon" Height="32" Width="32" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_search_normal.png" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_search_normal.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

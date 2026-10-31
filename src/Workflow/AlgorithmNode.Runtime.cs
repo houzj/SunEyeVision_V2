@@ -43,7 +43,7 @@ public partial class AlgorithmNode
                 if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source is { } published)
                     leases.Add(published.AcquireReader());
             var snapshot=BindingContext!.Capture(this,results);
-            foreach(var (fieldId,setting) in configuration.Fields.Capture())
+            foreach(var (fieldId,setting) in configuration.CaptureExecutionFields())
             {
                 if(!targets.TryGetValue(fieldId,out var port))
                     throw new InvalidOperationException("Unknown Runtime input or setting: "+fieldId);
@@ -53,12 +53,20 @@ public partial class AlgorithmNode
                     if(port.EditModes!=FieldEditModes.None&&(port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("Runtime input cannot use a persisted constant.");
                     if(!settingFields.ContainsKey(port.Id))destination.Add(port.Id,RuntimeInputBindings.Constant(port,constant.Value));
                 }
+                else if(setting is VariableSetting)
+                {
+                    var resolution=BindingContext.ResolveVariable(this,port.Id,snapshot);
+                    if(!resolution.Success)throw new InvalidOperationException(resolution.Diagnostic?.Message??"Runtime variable resolution failed.");
+                    destination.Add(port.Id,resolution.Value);
+                    if(settingFields.ContainsKey(port.Id))BindingContext.AcceptParameterValue(this,configuration,port.Id,resolution.Value);
+                }
                 else
                 {
                     if(!CompiledBindings.TryGetValue(port.Id,out var plan))throw new InvalidOperationException("Runtime input has no admitted binding plan: "+port.Id);
                     var resolution=new ParameterBindingService().ResolveBinding(plan,snapshot);
                     if(!resolution.Success)throw new InvalidOperationException(resolution.Diagnostic?.Message??"Runtime binding resolution failed.");
                     destination.Add(port.Id,resolution.Value);
+                    if(settingFields.ContainsKey(port.Id))BindingContext.AcceptParameterValue(this,configuration,port.Id,resolution.Value);
                 }
             }
             var settings=configuration.MaterializeSettings(settingValues);
@@ -74,7 +82,7 @@ public partial class AlgorithmNode
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources),OutputRequests,settings).ConfigureAwait(false);
+            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests,settings).ConfigureAwait(false);
             transferred=true; // The envelope also disposes both owners when its constructor fails.
             prepared=captureResult(outcome,resources,timer.Elapsed.TotalMilliseconds);
             return prepared;
@@ -97,11 +105,12 @@ public partial class AlgorithmNode
             }
         }
     }
-    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources):IToolExecutionContext
+    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources,Func<string>? localRead):IToolExecutionContext,ILocalImageReadContext
     {
         public RunIdentity Identity=>identity;
         public CancellationToken Cancellation=>cancellation;
         public IOutputResources Resources=>resources;
+        public string AcceptLocalImage()=>localRead?.Invoke()??throw new InvalidOperationException("当前执行不提供本地图像读取接纳。");
         public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(
             SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime:"+identity.NodeId);
     }

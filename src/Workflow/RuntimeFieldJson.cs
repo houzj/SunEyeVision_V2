@@ -10,17 +10,19 @@ namespace SunEyeVision.Workflow;
 
 internal static class RuntimeFieldJson
 {
-    internal static IReadOnlyDictionary<string,ParameterSetting> Read(string toolId,JsonElement fields)
+    internal static IReadOnlyDictionary<string,ParameterSetting> Read(string toolId,JsonElement fields,bool currentValues=false)
     {
         var definition=ToolRegistry.CreateRuntime(toolId);
         var declared=definition as IToolSettingsFields??throw new JsonException("Runtime settings are not declared.");
-        var ports=definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs).ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs))
+            .ToDictionary(port=>port.Id,StringComparer.Ordinal);
         var result=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
         foreach(var property in fields.EnumerateObject())
         {
             if(!ports.TryGetValue(property.Name,out var port))throw new JsonException("Unknown Runtime field: "+property.Name);
             var item=property.Value;
             if(item.ValueKind!=JsonValueKind.Object||!item.TryGetProperty("Kind",out var kind))throw new JsonException("Runtime setting requires Kind.");
+            if(currentValues&&kind.GetString()!="Constant")throw new JsonException("Current parameter values require pure constant values.");
             ParameterSetting setting;
             if(kind.GetString()=="Constant")
             {Exact(item,"Kind","Value");setting=new ConstantSetting(ReadValue(port,item.GetProperty("Value")));}
@@ -31,8 +33,15 @@ internal static class RuntimeFieldJson
                     throw new JsonException("Unknown binding conversion.");
                 setting=new ReferenceSetting(BindingReferenceSerializer.Deserialize(item.GetProperty("Reference").GetRawText()),conversion,item.GetProperty("OriginId").GetString(),item.GetProperty("RebindingReason").GetString());
             }
+            else if(kind.GetString()=="Variable")
+            {
+                Exact(item,"Kind","Reference","Conversion","RebindingReason");var name=item.GetProperty("Conversion").GetString();
+                if(!Enum.TryParse<BindingConversion>(name,false,out var conversion)||!Enum.IsDefined(conversion)||conversion.ToString()!=name)
+                    throw new JsonException("Unknown variable conversion.");
+                setting=new VariableSetting(BindingReferenceSerializer.DeserializeVariable(item.GetProperty("Reference").GetRawText()),conversion,item.GetProperty("RebindingReason").GetString());
+            }
             else throw new JsonException("Persistent fields require Constant or Reference; Unset must be absent.");
-            result.Add(property.Name,FieldSettings.Freeze(port,setting));
+            result.Add(property.Name,currentValues?setting:FieldSettings.Freeze(port,setting));
         }
         return result;
     }
@@ -79,6 +88,8 @@ internal static class RuntimeFieldJson
             if(setting is ConstantSetting constant){writer.WriteString("Kind","Constant");writer.WritePropertyName("Value");WriteValue(writer,constant.Value);}
             else if(setting is ReferenceSetting reference)
             {writer.WriteString("Kind","Reference");writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(reference.Reference));writer.WriteString("Conversion",reference.Conversion.ToString());writer.WriteString("OriginId",reference.OriginId);writer.WriteString("RebindingReason",reference.RebindingReason);}
+            else if(setting is VariableSetting variable)
+            {writer.WriteString("Kind","Variable");writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(variable.Reference));writer.WriteString("Conversion",variable.Conversion.ToString());writer.WriteString("RebindingReason",variable.RebindingReason);}
             else throw new JsonException("Persistent Unset must be absent.");
             writer.WriteEndObject();
         }

@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Web.Script.Serialization;
+
+internal static class InitializedEntry
+{
+    [StructLayout(LayoutKind.Sequential)]
+    struct Options { [MarshalAs(UnmanagedType.I1)] public bool WarmupGpu; [MarshalAs(UnmanagedType.ByValArray,SizeConst=8)] public int[] Reserved; }
+    const string Original="D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/Runtime/x64/MVDGlobalInitCpp.dll";
+    [DllImport(Original,CallingConvention=CallingConvention.StdCall)] static extern int CreateGlobalInitToolInstanceEx(ref IntPtr handle, ref Options options);
+    [DllImport(Original,CallingConvention=CallingConvention.StdCall)] static extern int DestroyGlobalInitToolInstance(IntPtr handle);
+    [DllImport("kernel32",CharSet=CharSet.Unicode,SetLastError=true)] static extern bool SetDllDirectory(string path);
+    static readonly List<object> Rows=new List<object>();
+    static string output;
+    static void Record(string phase,object data) { Rows.Add(new{phase,utc=DateTime.UtcNow.ToString("o"),data});File.WriteAllText(output,new JavaScriptSerializer{MaxJsonLength=int.MaxValue}.Serialize(Rows));Console.WriteLine(phase); }
+    [STAThread] public static int Main(string[] args)
+    {
+        output=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"init-observations.json");
+        if(File.Exists(output))return 9;
+        IntPtr handle=IntPtr.Zero;bool created=false;
+        try
+        {
+            if(Marshal.SizeOf(typeof(Options))!=36)throw new InvalidOperationException("Original initialization ABI is not 36 bytes");
+            if(!SetDllDirectory(Path.GetDirectoryName(Original)))throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            Record("before-create",new{pid=Process.GetCurrentProcess().Id,dll=Original,size=36,warmupGpu=false,reserved="zero"});
+            Options options=new Options{WarmupGpu=false,Reserved=new int[8]};
+            int code=CreateGlobalInitToolInstanceEx(ref handle,ref options);created=code==0&&handle!=IntPtr.Zero;
+            Record("create-return",new{code,hex="0x"+unchecked((uint)code).ToString("X8"),handle="0x"+handle.ToInt64().ToString("X"),created});
+            if(!created)return 2;
+            Record("loaded-modules",Process.GetCurrentProcess().Modules.Cast<ProcessModule>().Where(m=>m.ModuleName.StartsWith("MVD",StringComparison.OrdinalIgnoreCase)).Select(m=>new{m.ModuleName,m.FileName}).ToArray());
+            Record("before-binding-probe",new{note="Global handle retained through original full owned-solution probe"});
+            int result=B08BindingRuntimeProbe.Main(args);
+            Record("binding-probe-return",new{result});return result;
+        }
+        catch(Exception ex){Record("managed-error",new{type=ex.GetType().FullName,ex.Message});return 1;}
+        finally
+        {
+            if(created)
+            {
+                Record("before-destroy",new{note="All owned solution disposal has returned"});
+                int code=DestroyGlobalInitToolInstance(handle);Record("destroy-return",new{code,hex="0x"+unchecked((uint)code).ToString("X8")});
+            }
+            // Keep native DLL references until process exit; the preceding probe
+            // recorded a hang in explicit FreeLibrary after successful Destroy.
+            Record("owned-main-end",new{note="No explicit native module unload"});
+        }
+    }
+}

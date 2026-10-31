@@ -1,0 +1,136 @@
+{
+  "baseline": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "uncommitted": true,
+  "scope": "C13 Blob 文本显示 UI；不证明完整控件、持久化或人工验收",
+  "historicalHashes": [
+    {
+      "previous": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88",
+      "current": "9a3f00ab5336c7d79dcf5f26c65d8a8f565b424163a8319498b349e68c2fd517",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs"
+    },
+    {
+      "previous": "c35461526ebd152f5d058bfb1f51f7cd6d1cfe179fcff568b9ff133b65070ffc",
+      "current": "06ad8b51d8c2f162566c5431d0179f4ae3eef3ad0d11cf20be7707bb60e0dfa5",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+    },
+    {
+      "previous": "dcc844d068154a45c0d1f7654a1b19b34381dd1a3fc37bd4ee282469823ae1f2",
+      "current": "7270ea7bfc1492b3a06e0151b64a1fd833efd3df843bdc7fe8a4725c8f78451f",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs"
+    },
+    {
+      "previous": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18",
+      "current": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs"
+    },
+    {
+      "previous": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b",
+      "current": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs"
+    },
+    {
+      "previous": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350",
+      "current": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml"
+    },
+    {
+      "previous": "00ad8418d8077146ceff7a702c3a43af12c7c962930fd5797eb20279c90932fe",
+      "current": "750a52df019407b5ce5a15ddf691c6a14ea8d944be3e2557cfc57e5de2c8bb27",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Design/NativeDisplaySample.cs"
+    },
+    {
+      "previous": "006a48ae244eceee39aa995108e63f75a82242d4544dc7584c3569023afd406e",
+      "current": "9b1bd0e928ab2f2f9e4946724bd642ae8a226577b0340eb15840ca8b3f80d531",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
+    },
+    {
+      "previous": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a",
+      "current": "1cfa1d404899928ab69bcbdb244f587b7380108fb53c2fa37e2860d36063853f",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs"
+    },
+    {
+      "previous": "e97f0c837d2087a00ded73feb3123919b369f177efe97b93df069fd3833381f7",
+      "current": "620156dd2440a63e626b7b3265081331bc51e6aefa7ae5e5f44183019db1eeed",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs"
+    },
+    {
+      "previous": "e9b2d7adf71215c62fbd83055554997277965145ae66a51937d6dab641c9917c",
+      "current": "65443504d6a626d8880df87c3cc72cf287f7299cff9cc6fe6c1bae5e77d30128",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicBridge.cs"
+    },
+    {
+      "previous": "acbe7240c9fffd5e179f0be7f3242ca46969d8fb8abd53ea90cf60d849382552",
+      "current": "10d63b0d45ca16d1b41a323c430f5fc6a03a5b4206749888a9785134cd1fa798",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs"
+    },
+    {
+      "previous": "23d612073cdb8728462144d66b6a409946ca8256cb45f745877b9375071238ee",
+      "current": "f2e8f7a8c379688cad2c2985a246c86207ab205ff010d2afa81c181703e3b884",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs"
+    },
+    {
+      "previous": "f5d860e6fbc20c799b45a589a626c3a6107cc37a7b80df3cb797cc30fab55d29",
+      "current": "557e67e986695bd2671ef4bdb1365be95e5a4441180e24eb0c846a2eda911ca8",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs"
+    },
+    {
+      "previous": "2a095f688914f1a93188ec852673365341d05859afa29d8c80bdfdeb504d95e7",
+      "current": "b8b12cc9ccc51426485c1c5232b3142f53ec499dcbe539d1ed5faf9817c17f8e",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs"
+    },
+    {
+      "previous": "94761c5a87173e59c545a3d848802d9ea73b4667d55d6116a7d897862c8dbeec",
+      "current": "a95cdbb5e4980e2d4b9614a616bdd82b85b7f076deb96152bcf1dd59e551ecb7",
+      "field": "dependencies",
+      "path": "src/Plugin.Wpf/Presenters/Text/NativeTextPresenter.cs"
+    },
+    {
+      "previous": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b",
+      "current": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6",
+      "field": "sourceFiles",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs"
+    },
+    {
+      "previous": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350",
+      "current": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728",
+      "field": "sourceFiles",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml"
+    },
+    {
+      "previous": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18",
+      "current": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4",
+      "field": "sourceFiles",
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs"
+    }
+  ],
+  "designValidation": "Release/_validation/S4-20261025/DesignTime/attempt-099",
+  "failedPrior": "Release/_validation/S4-20261025/DesignTime/attempt-098/blob-text-settings.png",
+  "releaseAssembly": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+  "releaseSha256": "bbb0720a7b84967e58941fe7716792d5f23f7574a72d3743ef262664a5030e8d",
+  "sources": [
+    {
+      "sha256": "e5dd413c31aabf3147089bcdf09fc25e5af30834c99d19b4e3cb329904adab99",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs"
+    },
+    {
+      "sha256": "21e27174e4c3d70dd8698bb6aefca09f070e448c64238fdfa254762e69cbd382",
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs"
+    }
+  ],
+  "manual": "VS 设计器、VM 同态及用户验收待做"
+}

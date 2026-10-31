@@ -1,0 +1,17 @@
+[
+  {
+    "sha256": "E9B769190F0CEDCBF06E01FF062FD9A3A6E65EC70A826682F89A4503B6CB4C85",
+    "scope": "身份核对，不冒称独立重核全部原指令语义",
+    "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-blob-output-source-20261031/output/0x18064e220-18064e220.asm.txt"
+  },
+  {
+    "sha256": "C3397099E37D86C900B118948A584472DA3323894F70ADDE8D70595269C1741D",
+    "scope": "身份核对，不冒称独立重核全部原指令语义",
+    "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-blob-output-source-20261031/sdk2/0x180626c60-180626c60.asm.txt"
+  },
+  {
+    "sha256": "FC4E36C9EC8E4E19B1560A15B271A5DCA79405AC982470557C0D0010E69A91A0",
+    "scope": "身份核对，不冒称独立重核全部原指令语义",
+    "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-blob-output-source-20261031/sdk2/0x18066f910-18066f910.asm.txt"
+  }
+]

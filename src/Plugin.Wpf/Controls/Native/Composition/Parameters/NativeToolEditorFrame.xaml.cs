@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Presenters.Commands;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
@@ -10,8 +11,21 @@ public partial class NativeToolEditorFrame:UserControl,IDisposable
 {
     public static readonly DependencyProperty EditorContentProperty=DependencyProperty.Register(nameof(EditorContent),typeof(FrameworkElement),typeof(NativeToolEditorFrame));
     public static readonly DependencyProperty ExternalContentProperty=DependencyProperty.Register(nameof(ExternalContent),typeof(FrameworkElement),typeof(NativeToolEditorFrame));
+    public static readonly DependencyProperty ResetVisibilityProperty=DependencyProperty.Register(nameof(ResetVisibility),typeof(Visibility),typeof(NativeToolEditorFrame),new PropertyMetadata(Visibility.Collapsed));
+    public static readonly DependencyProperty ResetCommandProperty=DependencyProperty.Register(nameof(ResetCommand),typeof(ICommand),typeof(NativeToolEditorFrame),new PropertyMetadata(null,ResetCommandChanged));
+    private static readonly DependencyPropertyKey ResetAvailablePropertyKey=DependencyProperty.RegisterReadOnly(nameof(ResetAvailable),typeof(bool),typeof(NativeToolEditorFrame),new PropertyMetadata(false));
+    public static readonly DependencyProperty ResetAvailableProperty=ResetAvailablePropertyKey.DependencyProperty;
     public FrameworkElement? EditorContent {get=>(FrameworkElement?)GetValue(EditorContentProperty);set=>SetValue(EditorContentProperty,value);}
     public FrameworkElement? ExternalContent {get=>(FrameworkElement?)GetValue(ExternalContentProperty);set=>SetValue(ExternalContentProperty,value);}
+    public Visibility ResetVisibility {get=>(Visibility)GetValue(ResetVisibilityProperty);set=>SetValue(ResetVisibilityProperty,value);}
+    public ICommand? ResetCommand {get=>(ICommand?)GetValue(ResetCommandProperty);set=>SetValue(ResetCommandProperty,value);}
+    public bool ResetAvailable=>(bool)GetValue(ResetAvailableProperty);
+    private static void ResetCommandChanged(DependencyObject sender,DependencyPropertyChangedEventArgs args)
+    {
+        var frame=(NativeToolEditorFrame)sender;
+        frame.SetValue(ResetAvailablePropertyKey,args.NewValue is ICommand);
+        if(frame.ResetButton is not null)frame.ResetButton.ToolTip=args.NewValue is null?"重置运行参数（尚未接入）":"重置运行参数";
+    }
     private NativeToolCommandPresenter? _commands;
     private long _request;
     private bool _disposed;
@@ -55,7 +69,7 @@ public partial class NativeToolEditorFrame:UserControl,IDisposable
     public void Dispose()
     {
         VerifyAccess();if(_disposed)return;_disposed=true;
-        ParameterCleanup.Run(new Action[]{RetireCommands,()=>SetCurrentValue(EditorContentProperty,null),()=>SetCurrentValue(ExternalContentProperty,null)});
+        ParameterCleanup.Run(new Action[]{RetireCommands,()=>SetCurrentValue(ResetCommandProperty,null),()=>SetCurrentValue(EditorContentProperty,null),()=>SetCurrentValue(ExternalContentProperty,null)});
     }
     private sealed class CommandLease(NativeToolEditorFrame owner,NativeToolCommandPresenter presenter,long request):IDisposable
     {

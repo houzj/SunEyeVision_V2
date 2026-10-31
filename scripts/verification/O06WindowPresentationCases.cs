@@ -42,6 +42,12 @@ internal static class S2DocumentEditingCases
  [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]
  [return:System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
  static extern bool GetCursorPos(out NativePoint point);
+ [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]
+ [return:System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+ static extern bool SetCursorPos(int x,int y);
+ [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr WindowFromPoint(NativePoint point);
+ [System.Runtime.InteropServices.DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+ [System.Runtime.InteropServices.DllImport("user32.dll")] static extern void mouse_event(uint flags,uint dx,uint dy,uint data,UIntPtr extraInfo);
  static Window owner=null!;static StackPanel host=null!;static int passed,failed;
  static void Require(bool value,string message){if(!value)throw new Exception(message);}
  static void Test(string name,Action run){var filter=Environment.GetEnvironmentVariable("O06_WINDOW_CASE_FILTER");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;try{run();passed++;Console.WriteLine("PASS "+name);}catch(Exception e){failed++;Console.WriteLine("FAIL "+name+": "+e);}}
@@ -63,8 +69,60 @@ internal static class S2DocumentEditingCases
   private FieldSettingsDraft? _draft;
   private FieldSettingsDraft Draft=>_draft??=new FieldSettingsDraft(Schema,new FieldSettings(Schema.Inputs,_values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))));
   public FieldSettings CaptureFields()=>Draft.CaptureFields();
+  public long Revision=>Draft.Revision;
+  public FieldSettings CaptureValidatedFields()=>Draft.CaptureValidatedFields();
   public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
   {Draft.ApplyFields(changes,acceptCandidate);Writes++;}
+ }
+ sealed class CaptureMutationDraft : IToolSettingsDraft
+ {
+  private readonly FieldSettingsDraft _draft;
+  public Action? DuringCapture {get;set;}
+  public CaptureMutationDraft()
+  {
+   var port=new Port("value",DataType.Number);
+   var presentation=new FieldPresentation("value","值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:100,DecimalPlaces:0)};
+   Schema=new ToolSchema(new[]{port},Array.Empty<Port>(),new ToolPresentation(new[]{presentation}));
+   _draft=new FieldSettingsDraft(Schema,new FieldSettings(Schema.Inputs,new Dictionary<string,ParameterSetting>{{"value",new ConstantSetting(1d)}}));
+  }
+  public ToolSchema Schema {get;}
+  public long Revision=>_draft.Revision;
+  public FieldSettings CaptureFields()=>_draft.CaptureFields();
+  public FieldSettings CaptureValidatedFields(){var result=_draft.CaptureValidatedFields();DuringCapture?.Invoke();return result;}
+  public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
+ }
+ sealed class FormalAssistDraft : IToolSettingsDraft
+ {
+  private readonly FieldSettingsDraft _draft;
+  public NativeAssistOptions Assist {get;}
+  public IReadOnlyList<Port> Ports {get;}
+  public ToolSchema Schema {get;}
+  public int Writes {get;private set;}
+  public IReadOnlyDictionary<string,ParameterSetting>? LastChanges {get;private set;}
+  public FormalAssistDraft()
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Assist=sample.Assist;Ports=sample.Ports.ToArray();
+   var presentation=Ports.Select((port,i)=>new FieldPresentation(port.Id,port.Id,"位置修正",i,port.Type.Shape switch
+    {ValueShape.Record=>FieldEditorKind.Record,ValueShape.Geometry=>FieldEditorKind.Geometry,_=>FieldEditorKind.Scalar})
+    {Layout=new("基本参数","位置修正",DecimalPlaces:port.Type==DataType.Number?null:2)}).ToArray();
+   Schema=new ToolSchema(Ports,Array.Empty<Port>(),new ToolPresentation(presentation));
+   var initial=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal){{Assist.EnabledFieldId,new ConstantSetting(false)},{Assist.ModeFieldId,new ConstantSetting(0L)}};
+   _draft=new FieldSettingsDraft(Schema,new FieldSettings(Ports,initial));
+  }
+  public FieldSettings CaptureFields()=>_draft.CaptureFields();
+  public long Revision=>_draft.Revision;
+  public FieldSettings CaptureValidatedFields()=>_draft.CaptureValidatedFields();
+  public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
+  {
+   _draft.ApplyFields(changes,acceptCandidate);Writes++;LastChanges=changes.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+  }
+  public ReferenceSetting Source(string id)
+  {var port=Ports.Single(item=>item.Id==id);return new(new OutputReference("assist-producer","out."+id,port.Type,scopeId:"assist-scope",storage:port.Storage));}
+  public ReferenceFieldOptions References()
+  {
+   var candidates=Ports.Skip(2).Select(port=>new DeclaredReferenceCandidate(port.Id,"assist-producer","assist-scope",port with{Id="out."+port.Id,Required=true,EditModes=FieldEditModes.None},Array.Empty<string>())).ToArray();
+   return new ReferenceFieldOptions(_=>new ReferenceCandidates(candidates,Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true);
+  }
  }
  sealed class ExportImage : Native.Dependencies.VMControls.RenderInterface.IImageData,Native.Dependencies.VMControls.RenderInterface.IRangeImageData
  {
@@ -302,9 +360,9 @@ internal static class S2DocumentEditingCases
   using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(file);
  }
  static void Click(ButtonBase button)=>button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
- static Native.Input.Apps.PcUI.Controls.PopupButton OpenStyle(FrameworkElement scope)
+ static SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton OpenStyle(FrameworkElement scope)
  {
-  var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(scope).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));
+  var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(scope).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));
   popup.Focus();popup.IsDropDownOpen=true;Pump();Require(popup.IsDropDownOpen,"原样式弹层未打开");return popup;
  }
  static Native.Input.HikPcUI.Controls.PopupButton Palette(Native.Input.HikPcUI.ListView.ColorPickerControlView picker)
@@ -959,21 +1017,59 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyBetween()
  {
-  DeclaredFieldsView Create(Action<IReadOnlyDictionary<string,ParameterSetting>> writer,ReferenceFieldOptions? refs=null,double maximum=1000,double initialLow=10,double initialHigh=20)=>new(new[]{
-   (new Port("low",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("low","面积下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:maximum,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(initialLow)),
-   (new Port("high",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("high","面积上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:maximum,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(initialHigh))},writer,refs);
-  Test("原between一份真实双端、联合输入跨旧上限、Enter一次提交及失焦",()=>
+  Test("原开关与枚举隐藏后旧叶不可写，恢复后正常接纳",()=>
   {
-   var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
-   using var fields=Create(values=>{writes++;accepted=values;});Show(fields);
+   var writes=0;
+   using var fields=new DeclaredFieldsView(new[]{
+    (new Port("enabled",DataType.Boolean),new FieldPresentation("enabled","启用","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(true)),
+    (new Port("flag",DataType.Boolean),new FieldPresentation("flag","开关","参数",1,FieldEditorKind.Scalar){Layout=new("参数","参数",VisibleWhen:new("enabled",true))},(ParameterSetting)new ConstantSetting(false)),
+    (new Port("choice",DataType.Text,Choices:new TextChoiceConstraint(new[]{"x","y"})),new FieldPresentation("choice","枚举","参数",2,FieldEditorKind.Choice,new[]{"x","y"}){Layout=new("参数","参数",VisibleWhen:new("enabled",true))},(ParameterSetting)new ConstantSetting("x"))},_=>writes++);
+   Show(fields);Pump();var flag=fields.Fields.Single(field=>field.FieldId=="flag");var choice=fields.Fields.Single(field=>field.FieldId=="choice");
+   var toggle=(Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)flag.InputElement!;var combo=(ComboBox)choice.InputElement!;
+   Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"enabled",new ConstantSetting(false)}}),"隐藏条件未接纳");Pump();var before=writes;
+   toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);combo.SetCurrentValue(ComboBox.SelectedValueProperty,"y");Pump();
+   Require(writes==before&&flag.Setting is ConstantSetting{Value:false}&&choice.Setting is ConstantSetting{Value:"x"},"隐藏后的旧开关或枚举写入草稿");
+   Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"enabled",new ConstantSetting(true)}}),"显示条件未接纳");Pump();
+   toggle=(Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)flag.InputElement!;combo=(ComboBox)choice.InputElement!;
+   toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);combo.SetCurrentValue(ComboBox.SelectedValueProperty,"y");Pump();
+   Require(flag.Setting is ConstantSetting{Value:true}&&choice.Setting is ConstantSetting{Value:"y"},"恢复后开关或枚举无法接纳");
+  });
+  DeclaredFieldsView Create(Action<IReadOnlyDictionary<string,ParameterSetting>> writer,ReferenceFieldOptions? refs=null,double maximum=1000,double initialLow=10,double initialHigh=20,ParameterSetting? lowSetting=null,ParameterSetting? highSetting=null)=>new(new[]{
+   (new Port("low",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("low","面积下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:maximum,DecimalPlaces:0)},lowSetting??(ParameterSetting)new ConstantSetting(initialLow)),
+   (new Port("high",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("high","面积上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:maximum,DecimalPlaces:0)},highSetting??(ParameterSetting)new ConstantSetting(initialHigh))},writer,refs);
+  Test("完整捕获期间出现新原文必须拒绝旧快照",()=>
+  {
+   foreach(var raw in new[]{"bad","7"})
+   {
+    var draft=new CaptureMutationDraft();using var settings=new DeclaredSettingsView(draft);Show(settings);
+    var input=(TextBox)((DeclaredFieldsView)settings.Content).Fields.Single().InputElement!;
+    draft.DuringCapture=()=>{draft.DuringCapture=null;input.SetCurrentValue(TextBox.TextProperty,raw);};
+    Require(!settings.TryCapture(out _,out _)&&input.Text==raw&&draft.CaptureFields().Get<double>("value")==1d&&draft.Revision==0,
+        "捕获期新原文被旧快照吞掉或提前提交");
+    Show(new TextBlock());
+   }
+  });
+  Test("原between整组捕获及Enter关闭原弹层后分别接纳两端",()=>
+  {
+   var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;var writeFields=new List<string[]>();
+   using var fields=Create(values=>{writes++;accepted=values;writeFields.Add(values.Keys.ToArray());});Show(fields);
    var low=fields.Fields[0];var high=fields.Fields[1];
    Require(ReferenceEquals(low.View,high.View)&&!ReferenceEquals(low.InputElement,high.InputElement),"双端未共享一份真实组合或端点混用");
    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
    Require(native.SliderType==Native.Numeric.HikPcUI.ListView.SliderArrangeType.between&&native.IsVisibleOfChild==Visibility.Visible,"没有使用原between");
    var a=(TextBox)low.InputElement!;var b=(TextBox)high.InputElement!;a.Focus();a.Text="30";b.Text="40";
-   Require(writes==0,"键入提前写入宿主");SendKey(a,Key.Enter,true);
-   Require(writes==1&&accepted!.Count==2&&Equals(((ConstantSetting)accepted["low"]).Value,30d)&&Equals(((ConstantSetting)high.Setting).Value,40d)&&!a.IsKeyboardFocused,"未单次完整接纳或Enter未失焦");
+   Require(writes==0,"键入提前写入宿主");Require(fields.TryValidate(out var rangeError),rangeError);
+   Require(writes==1&&accepted!.Count==2&&Equals(((ConstantSetting)accepted["low"]).Value,30d)&&Equals(((ConstantSetting)high.Setting).Value,40d),"最终捕获未单次完整接纳");
    Require(native.StartValue==30&&native.EndValue==40,"原DP未双向同步");CaptureInline(fields,"native-between-accepted.png");
+   a.Focus();Pump();var box=(ComboBox)native.FindName("CBox");Require(box.IsDropDownOpen,"原数值GotFocus未打开滑条弹层");
+   a.Text="35";b.Text="45";SendKey(a,Key.Enter,true);
+   // Original PART_Popup_Closed forces both sources, then raises both value
+   // events. Enter accepts its endpoint first; closing can accept the other
+   // valid pending endpoint. The invalid-other-endpoint case is separate.
+   Require(writes==3&&writeFields[1].SequenceEqual(new[]{"low"})&&writeFields[2].SequenceEqual(new[]{"high"})
+       &&Equals(((ConstantSetting)low.Setting).Value,35d)&&Equals(((ConstantSetting)high.Setting).Value,45d)
+       &&a.Text=="35"&&b.Text=="45"&&!a.IsKeyboardFocused&&!box.IsDropDownOpen,
+       $"原弹层关闭双端链不一致：writes={writes},keys={string.Join(",",accepted!.Keys)},low={low.Setting},high={high.Setting},raw={a.Text}/{b.Text},focused={a.IsKeyboardFocused}");
   });
   Test("数值重入 范围接纳及异常通知的新原文不被投影清除",()=>
   {
@@ -986,20 +1082,102 @@ internal static class S2DocumentEditingCases
     Require(low.TryCommitPending()&&writes==2&&low.Setting is ConstantSetting{Value:11d},"范围新原文未单次再次接纳");Show(new TextBlock());
    }
   });
-  Test("原between非法另一端与宿主拒绝不半写，保留原文可修正",()=>
+  Test("原between另一端非法原文不阻断本端提交",()=>
+  {
+   var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
+   using var fields=Create(values=>{writes++;accepted=values;});Show(fields);
+   var a=(TextBox)fields.Fields[0].InputElement!;var b=(TextBox)fields.Fields[1].InputElement!;
+   a.Focus();a.Text="15";b.Text="bad";SendKey(a,Key.Enter,true);Pump();
+   Require(writes==1&&accepted!.Count==1&&accepted.ContainsKey("low")&&fields.Fields[0].Setting is ConstantSetting{Value:15d}&&b.Text=="bad","另一端非法原文阻断本端或被带写/清除");
+   Require(fields.Fields[1].Setting is ConstantSetting{Value:20d}&&!a.IsKeyboardFocused,"另一端接纳值被改变或本端没有失焦");
+   Pump();Require(writes==1&&b.Text=="bad","延迟失焦带写或清除了另一端");
+   Require(!fields.TryValidate(out _)&&writes==1,"最终捕获接受非法另一端");
+  });
+  Test("范围无常量备份可解除订阅并单端输入",()=>
+  {
+   foreach(var endpoint in new[]{0,1})
+   {
+    var source=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",DataType.Number),Array.Empty<string>());
+    var original=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
+    using var fields=Create(values=>{writes++;accepted=values;},new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),lowSetting:endpoint==0?original:null,highSetting:endpoint==1?original:null);
+    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
+    var path=endpoint==0?"IsSubscribeLeft":"IsSubscribeRight";
+    var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==path);
+    Require(toggle.IsChecked==true&&writes==0,"初始引用状态未投影");toggle.IsChecked=false;Click(toggle);Pump();
+    var input=(TextBox)fields.Fields[endpoint].InputElement!;
+    Require(toggle.IsChecked==false&&input.Text==""&&fields.Fields[endpoint].Setting is ReferenceSetting&&writes==0,"解除订阅时丢失原引用或填入伪常量");
+    Require(!fields.TryValidate(out _)&&writes==0,"空常量被最终捕获");
+    var rangeBox=(ComboBox)native.FindName("CBox");var liveLeaf=(FrameworkElement)rangeBox.Template.FindName(endpoint==0?"T1":"T2",rangeBox);
+    Require(PresentationSource.FromVisual(input) is not null,$"解除订阅输入已离树：endpoint={endpoint},loaded={input.IsLoaded},visible={input.IsVisible},nativeLoaded={native.IsLoaded},sameInput={ReferenceEquals(input,fields.Fields[endpoint].InputElement)},nativeModes={native.IsSubscribeLeft}/{native.IsSubscribeRight},leafLoaded={liveLeaf.IsLoaded},leafVisible={liveLeaf.IsVisible},sameLeafInput={ReferenceEquals(input,liveLeaf.FindName("ValueText"))},parent={VisualTreeHelper.GetParent(input)?.GetType().Name}");
+    input.Focus();input.Text=endpoint==0?"12":"30";SendKey(input,Key.Enter,true);Pump();
+    Require(writes==1&&accepted!.Count==1&&accepted.ContainsKey(endpoint==0?"low":"high")&&fields.Fields[endpoint].Setting is ConstantSetting&&!input.IsKeyboardFocused,"单端有效输入未独立接纳");
+    Show(new TextBlock());
+   }
+  });
+  Test("范围初始单端引用切常量在整型浮点中恢复两列且重载不写入",()=>
+  {
+   foreach(var integer in new[]{false,true})foreach(var endpoint in new[]{0,1})
+   {
+    var type=integer?DataType.Integer:DataType.Number;
+    var source=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",type),Array.Empty<string>());
+    var original=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;
+    object Low()=>integer?(object)10L:10d;object High()=>integer?(object)20L:20d;
+    using var fields=new DeclaredFieldsView(new[]{
+     (new Port("low",type,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("low","下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:100,DecimalPlaces:0)},endpoint==0?(ParameterSetting)original:new ConstantSetting(Low())),
+     (new Port("high",type,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("high","上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:100,DecimalPlaces:0)},endpoint==1?(ParameterSetting)original:new ConstantSetting(High()))},
+     _=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())));
+    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
+    var path=endpoint==0?"IsSubscribeLeft":"IsSubscribeRight";
+    var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==path);
+    toggle.IsChecked=false;Click(toggle);Pump();
+    Require(writes==0&&fields.Fields[endpoint].Setting is ReferenceSetting,"布局恢复擅自解绑或填默认值");
+    foreach(var field in fields.Fields)
+    {
+     var input=(TextBox)field.InputElement!;
+     Require(input.IsLoaded&&input.IsVisible&&PresentationSource.FromVisual(input) is not null,$"双端未恢复：integer={integer},endpoint={endpoint},field={field.FieldId}");
+    }
+    var edited=(TextBox)fields.Fields[endpoint].InputElement!;Require(edited.Text.Length==0,"布局恢复用旧值覆盖未提交空原文");
+    edited.Focus();edited.Text=endpoint==0?"12":"30";SendKey(edited,Key.Enter,true);Pump();
+    Require(writes==1&&fields.Fields[endpoint].Setting is ConstantSetting,"布局恢复后的实际输入不能独立接纳");
+    Show(new TextBlock());Show(fields);
+    Require(writes==1&&fields.Fields.All(field=>field.InputElement is TextBox {IsLoaded:true,IsVisible:true}),"卸载重载丢失第二列或重复写入");
+   }
+  });
+  Test("范围解除订阅回调的新接纳和新原文不被清空",()=>
+  {
+   foreach(var accept in new[]{false,true})
+   {
+    var source=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",DataType.Number),Array.Empty<string>());
+    var original=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;
+    using var fields=Create(_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),lowSetting:original);
+    Show(fields);var field=fields.Fields[0];var input=(TextBox)field.InputElement!;
+    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Single();
+    var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
+    var state=((Array)field.View.GetType().GetField("_states",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!).GetValue(0)!;
+    var fired=false;Action observer=()=>{if(fired||toggle.IsChecked!=false||(bool)state.GetType().GetProperty("IsReferenceMode")!.GetValue(state)!)return;fired=true;if(accept)Require(field.TrySetConstant(12d),"回调的新常量未接纳");else{input.SetCurrentValue(TextBox.TextProperty,"13");Require(input.Text=="13","回调未产生新原文");}};
+    field.Changed+=observer;
+    try{toggle.IsChecked=false;Click(toggle);Pump();}
+    finally{field.Changed-=observer;}
+    Require(fired&&input.Text==(accept?"12":"13")&&writes==(accept?1:0),"解除订阅的旧回调清空了新接纳或新原文");
+    Require(accept?field.Setting is ConstantSetting{Value:12d}:field.Setting is ReferenceSetting,"回调接纳状态被旧切换覆盖");
+    if(!accept){input.Focus();SendKey(input,Key.Enter,true);Pump();Require(writes==1&&field.Setting is ConstantSetting{Value:13d},"回调的新原文未单次接纳");}
+    Show(new TextBlock());
+   }
+  });
+  Test("原between宿主拒绝不半写，保留原文可修正",()=>
   {
    var writes=0;var reject=true;
    using var fields=Create(_=>{if(reject)throw new InvalidOperationException("宿主拒绝范围");writes++;});Show(fields);
    var a=(TextBox)fields.Fields[0].InputElement!;var b=(TextBox)fields.Fields[1].InputElement!;
    a.Focus();a.Text="30";b.Text="bad";SendKey(a,Key.Enter,true);
    Require(writes==0&&a.IsKeyboardFocused&&a.Text=="30"&&b.Text=="bad","非法另一端仍提交或清原文/焦点");
-   b.Text="40";SendKey(a,Key.Enter,true);
+   b.Text="40";Require(!fields.TryValidate(out _),"拒绝宿主时最终捕获被接纳");
    Require(writes==0&&a.Text=="30"&&b.Text=="40"&&Equals(((ConstantSetting)fields.Fields[0].Setting).Value,10d),"宿主拒绝丢原文或部分写入");
    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
    Require(native.StartValue==10&&native.EndValue==20,"拒绝未恢复原DP");
-   reject=false;SendKey(a,Key.Enter,true);Require(writes==1&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,40d),"拒绝后原文无法再次提交");
+   reject=false;Require(fields.TryValidate(out _)&&writes==1&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,40d),"拒绝后原文无法再次提交");
   });
-  Test("原between右订阅槽与另一端联合校验，清空不复活且旧访问失效",()=>
+  Test("原between右订阅独立接纳，最终校验及旧访问失效",()=>
   {
    var writes=0;var refreshFails=false;
    var candidate=new DeclaredReferenceCandidate("数值来源","source",null,new Port("values",TypeRef.SequenceOf(DataType.Number)),Array.Empty<string>());
@@ -1016,16 +1194,38 @@ internal static class S2DocumentEditingCases
     var node=roots.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).First();
     ((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(node);Pump();
    }
-   a.Text="bad";Select();Require(writes==0&&fields.Fields[1].Setting is ConstantSetting,"选源绕过另一端非法数字");
-   a.Text="11";Select();Require(writes==1&&fields.Fields[1].Setting is ReferenceSetting,"修正后未联合选择来源");
-   refreshFails=true;Refresh();Select();Require(writes==1,"保留树显式选源绕过来源错误");a.Focus();Pump();a.Text="12";SendKey(a,Key.Enter,true);Require(writes==1,"来源刷新失败仍调用组writer");
-   refreshFails=false;Refresh();SendKey(a,Key.Enter,true);Require(writes==2,"来源恢复后不能提交；writes="+writes+"；focus="+a.IsKeyboardFocused+"；low="+a.Text+"；errors="+string.Join("/",fields.Fields.Select(f=>f.Error)));
-   a.Text="bad";Require(!(bool)type.GetMethod("TryCommitPending")!.Invoke(session,null)!,"干净引用提交绕过另一端错误");
-   type.GetMethod("ObserveText")!.Invoke(session,new object[]{""});a.Text="13";SendKey(a,Key.Enter,true);
-   Require(writes==2&&fields.Fields[1].HasInvalidText,"必填清空复活旧来源");
+   a.Text="bad";Select();Require(writes==1&&fields.Fields[1].Setting is ReferenceSetting&&a.Text=="bad","另一端非法原文阻挡选源或被清除");
+   Require(!fields.TryValidate(out _)&&writes==1,"另一端非法原文未阻断最终捕获");
+   refreshFails=true;Refresh();Select();Require(writes==1,"保留树显式选源绕过来源错误");a.Focus();Pump();a.Text="12";SendKey(a,Key.Enter,true);Require(writes==2&&Equals(((ConstantSetting)fields.Fields[0].Setting).Value,12d),"来源刷新失败阻挡另一端独立提交");
+   refreshFails=false;Refresh();
+   a.Text="bad";Require((bool)type.GetMethod("TryCommitPending")!.Invoke(session,null)!&&writes==2,"另一端错误阻止已完成引用确认");
+   Require(!fields.TryValidate(out _),"另一端非法原文未阻止最终捕获");
+   type.GetMethod("ObserveText")!.Invoke(session,new object[]{""});a.Focus();Pump();a.Text="13";SendKey(a,Key.Enter,true);
+   Require(writes==3&&fields.Fields[1].HasInvalidText&&!fields.TryValidate(out _),$"必填清空复活旧来源或阻止另一端编辑：writes={writes},rightInvalid={fields.Fields[1].HasInvalidText},left={fields.Fields[0].Setting},leftText={a.Text},leftLoaded={a.IsLoaded},leftCurrent={ReferenceEquals(a,fields.Fields[0].InputElement)}");
    toggle.IsChecked=false;Click(toggle);Pump();
-   Require(writes==3&&!native.IsSubscribeRight&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,20d),"解绑未通过组接纳恢复真实常量备份");
+   Require(writes==4&&!native.IsSubscribeRight&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,20d),"解绑未恢复真实常量备份");
    var access=fields.Fields[0];fields.Dispose();Require(!access.TrySetConstant(14d)&&!access.TryCommitPending()&&access.InputElement is null,"释放后的范围访问仍有效");
+  });
+  Test("范围双端未选来源可独立切换和选择，最终捕获仍拒绝",()=>
+  {
+   foreach(var first in new[]{0,1})
+   {
+    var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
+    var candidate=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",DataType.Number),Array.Empty<string>());
+    using var fields=Create(values=>{writes++;accepted=values;},new ReferenceFieldOptions(_=>new(new[]{candidate},Array.Empty<DeclaredReferenceCandidate>())));
+    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+    ToggleButton Toggle(int i)=>Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==(i==0?"IsSubscribeLeft":"IsSubscribeRight"));
+    var firstToggle=Toggle(first);firstToggle.IsChecked=true;Click(firstToggle);Pump();
+    var otherToggle=Toggle(1-first);otherToggle.IsChecked=true;Click(otherToggle);Pump();
+    Require(native.IsSubscribeLeft&&native.IsSubscribeRight&&writes==0,"两端无法在未选源时独立切换");
+    var session=first==0?native.SubscribeDataLeft!:native.SubscribeDataRight!;var type=session.GetType();type.GetMethod("Refresh")!.Invoke(session,null);
+    var roots=(System.Collections.IEnumerable)type.GetProperty("SourceNodes")!.GetValue(session)!;
+    var node=roots.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).First();
+    ((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(node);Pump();
+    Require(writes==1&&accepted!.Count==1&&accepted.ContainsKey(first==0?"low":"high")&&fields.Fields[first].Setting is ReferenceSetting,"单端选择带写另一端或未接纳");
+    Require(fields.Fields[1-first].HasInvalidText&&!fields.TryValidate(out _)&&writes==1,"未完成的另一端未阻断最终捕获");
+    Show(new TextBlock());
+   }
   });
   Test("范围初始逆序拒绝保存、拓扑缺失拒绝且合法独立边界可创建",()=>
   {
@@ -1066,8 +1266,120 @@ internal static class S2DocumentEditingCases
    CaptureInline(fields,"native-between-extreme.png");
   });
  }
+ static (SunEyeVision.Plugin.Runtime.BindingScopeSnapshot Scope,SunEyeVision.Plugin.Runtime.BindingRunSnapshot Run)
+  ReferenceBindingSnapshots(params (string NodeId,Port Port,object? Value)[] sources)
+ {
+  var document=Guid.NewGuid();var run=Guid.NewGuid();var executionScope=Guid.NewGuid();
+  var consumer=new BindingNodeId("reference-component","consumer");
+  var expected=sources.ToDictionary(item=>new BindingNodeId(consumer.ScopeId,item.NodeId),
+   item=>new RunIdentity(document,run,executionScope,item.NodeId,Guid.NewGuid()));
+  var rows=sources.Select(item=>
+  {
+   var node=new BindingNodeId(consumer.ScopeId,item.NodeId);var schema=new ToolSchema(Array.Empty<Port>(),new[]{item.Port});
+   return (Source:new BindingSource(node,executionScope,schema,1),
+    Result:new BindingNodeResult(node,expected[node],1,schema.Fingerprint,true,
+     new InputValues(schema.Outputs,new Dictionary<string,object?>{{item.Port.Id,item.Value}})));
+  }).ToArray();
+  var scope=new SunEyeVision.Plugin.Runtime.BindingScopeSnapshot(consumer,document,1,rows.Select(row=>row.Source),expected.Keys,
+   Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+  return(scope,new(consumer,new RunIdentity(document,run,executionScope,consumer.NodeId,Guid.NewGuid()),1,rows.Select(row=>row.Result),expected));
+ }
  static void VerifyExpandedReference()
  {
+  Test("扩展显示声明隔离身份并拒绝未声明路径",()=>
+  {
+   var record=TypeRef.RecordOf("display.record",new[]{new Port("x",DataType.Number),new Port("y",DataType.Number)});
+   var port=new Port("record",TypeRef.SequenceOf(record));
+   var names=new List<OutputDisplayNode>{new("x","同名"),new("y","同名")};
+   var root=new OutputDisplayNode("record","记录",names);names.Clear();
+   var plain=new ToolSchema(Array.Empty<Port>(),new[]{port});
+   var named=new ToolSchema(Array.Empty<Port>(),new[]{port},outputDisplay:new[]{root});
+   Require(plain.Fingerprint==named.Fingerprint&&root.Children.Count==2
+    &&named.FindOutputDisplay("record",new[]{"y"})?.DisplayName=="同名","显示元数据改变语义指纹、丢失同名身份或借用了可变列表");
+   PublicationThrows<ArgumentException>(()=>new OutputDisplayNode("record","记录",new[]{new OutputDisplayNode("x","X"),new OutputDisplayNode("x","重复")}));
+   PublicationThrows<ArgumentException>(()=>new ToolSchema(Array.Empty<Port>(),new[]{port},outputDisplay:new[]{new OutputDisplayNode("record","记录",new[]{new OutputDisplayNode("missing","缺失")})}));
+   PublicationThrows<ArgumentException>(()=>new ToolSchema(Array.Empty<Port>(),new[]{new Port("n",DataType.Number)},outputDisplay:new[]{new OutputDisplayNode("n","数值",new[]{new OutputDisplayNode("x","X")})}));
+   var variable=new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable{Name="record",PortId="record",ValueDeclaration=port.Type,DisplayMembers=root.Children};
+   var copied=variable.CopyDeclaration();variable.DisplayMembers=Array.Empty<OutputDisplayNode>();
+   Require(copied.DisplayMembers.Count==2,"正式目录复制丢失或共享可变成员名称容器");
+  });
+  Test("扩展正式候选范围复用DAG且排除跨流程返回后继",()=>
+  {
+   Require(PluginLoader.LoadPlugins(),"正式插件未加载");
+   WorkflowNodeBase Node(string id)=>new(id,id,id,"BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
+   var flow=new SunEyeVision.Workflow.Workflow("candidate-main","候选范围");
+   foreach(var id in new[]{"first","a","b","c","last"})flow.Nodes.Add(Node(id));
+   flow.Connections.Add(new WorkflowConnection("candidate-ab","a","b"));
+   flow.Connections.Add(new WorkflowConnection("candidate-bc","b","c"));
+   var other=new SunEyeVision.Workflow.Workflow("candidate-other","其他作用域");other.Nodes.Add(Node("a"));
+   var solution=new Solution{Workflows=new(){flow,other}};var service=new OutputBindingChangeService();service.Reset(solution);
+   Require(service.GetCandidateNodeIds(flow.Id,"a").SequenceEqual(new[]{"first","last"})
+    &&service.GetCandidateNodeIds(flow.Id,"c").SequenceEqual(new[]{"first","a","b","last"})
+    &&service.GetCandidateNodeIds(flow.Id,"missing").Count==0,"真实Runtime候选未保留无边来源、定义顺序、后继排除或目标范围");
+   var allowed=service.GetCandidateNodeIds(flow.Id,"a").ToList();var valueReads=0;
+   var query=new DataSourceQueryService(flow,flow){WorkflowId=flow.Id,BindingCandidateNodeIds=_=>allowed,
+       FormalOutputContractReader=_=>throw new Exception("只取节点名称不能查询输出或实际值")};
+   query.SetSootReader(_=>{valueReads++;throw new Exception("候选元数据不能读取SSOT结果");});
+   var frozenNames=query.GetBindingCandidateNodeNames("a");allowed.Clear();
+   Require(frozenNames.Keys.SequenceEqual(new[]{"first","last"})&&valueReads==0,
+       "候选节点名称依赖结果、输出查询或借用宿主可变列表");
+   var fallback=new DataSourceQueryService(flow,flow);fallback.SetSootReader(_=>throw new Exception("上游名称不能取运行结果"));
+   Require(fallback.GetBindingCandidateNodeNames("b").Keys.SequenceEqual(new[]{"a"}),"无额外目录时未沿已有上游元数据范围取名");
+   var returned=new SunEyeVision.Workflow.Workflow("candidate-return","跨流程返回");
+   foreach(var id in new[]{"a","returned","free"})returned.Nodes.Add(Node(id));
+   var bridge=new SunEyeVision.Workflow.Workflow("candidate-bridge","桥接流程");bridge.Nodes.Add(Node("bridge"));
+   var count=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.Field(11);
+   ProducerBinding Producer(string scope,string id)=>new(){ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(new OutputReference(id,count,DataType.Integer,scopeId:scope))};
+   var cross=new Solution{Workflows=new(){returned,bridge},GlobalVariables=new(){
+    new(){Id="candidate-out",Name="输出",Type="Integer",ProducerBinding=Producer(returned.Id,"a"),ConsumerBindings=new(){new(){WorkflowId=bridge.Id,NodeId="bridge",ParameterName="explicit-consumer"}}},
+    new(){Id="candidate-back",Name="返回",Type="Integer",ProducerBinding=Producer(bridge.Id,"bridge"),ConsumerBindings=new(){new(){WorkflowId=returned.Id,NodeId="returned",ParameterName="explicit-consumer"}}}}};
+   service.Reset(cross);
+   Require(service.GetCandidateNodeIds(returned.Id,"a").SequenceEqual(new[]{"free"}),"经其他流程全局依赖返回的后继仍成为来源候选");
+   // This verifies catalogue reachability only, not global-value selection or execution.
+  });
+  Test("扩展正式Blob目录到候选成员及结果树共用名称",()=>
+  {
+   Require(PluginLoader.LoadPlugins(),"正式插件未加载");
+   var node=new WorkflowNodeBase("display-blob","display-blob","Blob测试","BlobAnalysis")
+       {RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
+   var contract=new OutputBindingChangeService().ReadContract(node)!;
+   var blobs=contract.Single(output=>output.PortId==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.BlobsPort);
+   Require(blobs.DisplayName=="Blob明细"&&blobs.DisplayMembers.Single(item=>item.FieldId=="bounds").Children.Single(item=>item.FieldId=="x").DisplayName=="左上点X",
+    "正式目录未从Runtime声明取得完整成员名称");
+   var builder=typeof(RuntimeNodeConfigurationControl).Assembly.GetType("SunEyeVision.UI.Services.Editing.DeclaredReferenceCandidateBuilder")!;
+   var candidates=(IReadOnlyList<DeclaredReferenceCandidate>)builder.GetMethod("Build",BindingFlags.Static|BindingFlags.NonPublic)!
+    .Invoke(null,new object?[]{blobs,node.Id,"display-scope",node.DispName})!;
+   var selected=candidates.Single(item=>item.MemberPath.SequenceEqual(new[]{"bounds","x"}));
+   Require(selected.MemberDisplayNames.SequenceEqual(new[]{"Blob矩形框","左上点X"})
+    &&selected.Reference(new BindingSelection.AtConstant(0)).MemberFieldPath.SequenceEqual(new[]{"bounds","x"}),"候选名称缺失或标签污染正式引用身份");
+   var record=TypeRef.RecordOf("display.tree",new[]{new Port("x",DataType.Number)});
+   var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("bounds",record)},outputDisplay:new[]{new OutputDisplayNode("bounds","Blob矩形框",new[]{new OutputDisplayNode("x","左上点X")})});
+   var rows=new System.Collections.ObjectModel.ObservableCollection<SunEyeVision.UI.Shell.Windows.FlatResultRow>();
+   using var tree=new SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter(rows,_=>{});
+   using var publication=new ResultPublication(schema,new(Guid.NewGuid(),null,null,schema.Fingerprint),ResultViewState.Declaration,null,null,()=>true);
+   tree.Present(publication);var bounds=rows.Single(row=>row.DisplayName=="Blob矩形框");bounds.IsExpanded=true;
+   Require(rows.Any(row=>row.DisplayName==selected.MemberDisplayNames[1]),"结果树与来源候选未使用同一声明名称");
+   var imageNode=new WorkflowNodeBase("display-image","display-image","图像源","ImageLoad")
+       {RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
+   var images=new OutputBindingChangeService().ReadContract(imageNode)!;
+   Require(images.Single(output=>output.PortId=="output.image").DisplayName=="图像"
+    &&images.Single(output=>output.PortId=="output.gray-image").DisplayName=="灰度图像","实际图像来源目录仍泄露英文端口键");
+  });
+  Test("扩展显示名称随真实结果快照保留且不改变运行身份",()=>
+  {
+   var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("n",DataType.Integer)},outputDisplay:new[]{new OutputDisplayNode("n","数量")});
+   var executionOwner=new SunEyeVision.Plugin.Runtime.ToolExecutionOwner();
+   var execution=executionOwner.Begin("display-result",Guid.NewGuid(),SunEyeVision.Plugin.SDK.Core.ToolContract.Version);var resource=new ResultOwnerProbe();
+   try
+   {
+    using var snapshot=SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot.Capture(schema,1,execution,"display-result",
+     new ToolOutcome(false,null,BusinessJudgment.Fail,Array.Empty<Diagnostic>()),resource,0);
+    Require(snapshot.Schema.FindOutputDisplay("n")?.DisplayName=="数量"&&snapshot.Fields["n"].DisplayName=="数量"
+     &&snapshot.Identity==execution.ToInvocationIdentity("display-result"),"结果快照丢失声明名称或重标记执行身份");
+   }
+   finally{execution.CompleteCallbacks();executionOwner.Retire();}
+   Require(resource.Releases==1,"显示元数据改变了结果资源释放所有权");
+  });
   var sequence=new DeclaredReferenceCandidate("数值来源","source",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
   var index=new DeclaredReferenceCandidate("索引来源","source",null,new Port("index",DataType.Integer),Array.Empty<string>());
   var alternate=new DeclaredReferenceCandidate("另一数值来源","source",null,new Port("values2",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
@@ -1083,10 +1395,10 @@ internal static class S2DocumentEditingCases
   {
    var writes=0;using var field=Create(_=>writes++);Show(field);var session=Session(field);
    Command(session,"PopSubscribeWindowCommand");Pump();
-   var window=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
    Require(window.Owner==owner&&window.IsVisible&&window.Style is not null,"原窗未取得实际Owner或正式样式");
    var request=(ReferenceExpansionRequest)window.DataContext;
-   var tree=(Native.Composition.Apps.XmlUI.ParamTab.SubTreeView)window.FindName("treeView");
+   var tree=(SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView)window.FindName("treeView");
    Require(ReferenceEquals(tree.ItemSource,request.SourceNodes),"专窗复制了来源树");
    var node=request.SourceNodes.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).Last();
    tree.UpdateLayout();var leaf=Visuals<TreeViewItem>(tree).Single(item=>ReferenceEquals(item.DataContext,node));
@@ -1099,7 +1411,7 @@ internal static class S2DocumentEditingCases
    window.Close();Pump();Require(!request.IsValid,"关闭后请求仍有效");
    var before=writes;request.ClickCommand.Execute(node);Require(writes==before,"已关闭请求仍可写入");
    Command(session,"PopSubscribeWindowCommand");Pump();
-   var reopened=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var reopened=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
    var active=(ReferenceExpansionRequest)reopened.DataContext;Show(new TextBlock{Text="卸载"});
    Require(!active.IsValid&&!reopened.IsVisible,"字段卸载未关窗或未失效");
   });
@@ -1110,7 +1422,7 @@ internal static class S2DocumentEditingCases
    Command(session,"PopSubscribeWindowCommand");var first=requests.Single();var stale=Leaf(first.SourceNodes);
    first.RefreshCommand.Execute(null);first.ClickCommand.Execute(stale);Require(writes==0,"刷新后旧树节点仍有效");
    first.ClickCommand.Execute(Leaf(first.SourceNodes));Require(first.IsValid,"来源选择使专窗请求过早失效");
-   var focusType=typeof(Native.Dependencies.Apps.UIHelper.Extern.TextBoxFocusEventArgs);
+   var focusType=typeof(SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs);
    var focus=Activator.CreateInstance(focusType)!;
    // The original focus command receives the same bracket caret event as its real text control.
    focusType.GetProperty("Text")!.SetValue(focus,"数值来源 []");focusType.GetProperty("IsFocus")!.SetValue(focus,true);
@@ -1128,25 +1440,177 @@ internal static class S2DocumentEditingCases
   {
    using var a=Create(_=>{});using var b=Create(_=>{});Show(a);host.Children.Add(b);owner.UpdateLayout();Pump();
    var sa=Session(a);var sb=Session(b);Command(sa,"PopSubscribeWindowCommand");Pump();
-   var first=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var first=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
    var request=(ReferenceExpansionRequest)first.DataContext;
    var check=Visuals<CheckBox>(first).Single(check=>check.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="PreferExpanded");check.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
    Require(request.PreferExpanded,"原默认方式CheckBox未写UI偏好");
    Command(sb,"DropDownCommand");Pump();
-   var second=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var second=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
    Require(!request.IsValid&&second!=first,"跨入口未互斥或未共享Owner默认方式");
    second.Close();Pump();
    using var other=Create(_=>{});var separate=new Window{Width=500,Height=400,Content=other};
    try{separate.Show();Pump();Command(Session(other),"DropDownCommand");Pump();Require(separate.OwnedWindows.Count==0,"UI偏好泄漏至另一Owner");}
    finally{separate.Close();}
    Command(sb,"PopSubscribeWindowCommand");Pump();
-   ((ReferenceExpansionRequest)owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single().DataContext).PreferExpanded=false;
+   ((ReferenceExpansionRequest)owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single().DataContext).PreferExpanded=false;
   });
   Test("原扩展窗可独立构造取得模板和双树",()=>
   {
-   var window=new Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
+   var window=new SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow();
    try{window.Show();Pump();Require(window.Style is not null&&window.FindName("treeView") is not null&&window.FindName("indextreeView") is not null,"独立构造缺原资源或双树");}
    finally{window.Close();}
+  });
+  Test("扩展来源按正式身份分组并使用宿主节点名称",()=>
+  {
+   var a=sequence with{NodeId="identity-a",NodeDisplayName="13 图像源1"};
+   var b=sequence with{NodeId="identity-b",NodeDisplayName="13 图像源1"};
+   using var field=new DeclaredFieldEditor(new("named",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",
+    new ReferenceSetting(a.Reference(BindingSelection.All)),_=>{},
+    new ReferenceFieldOptions(_=>new(new[]{a,b},Array.Empty<DeclaredReferenceCandidate>())));
+   Show(field);var content=Visuals<ContentControl>(field).Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession");
+   var session=content.Content;Command(session,"DropDownCommand");
+   var roots=((System.Collections.IEnumerable)session.GetType().GetProperty("SourceNodes")!.GetValue(session)!).Cast<object>().Skip(1).ToArray();
+   Require(roots.Length==2&&roots.All(root=>Equals(root.GetType().GetProperty("Name")!.GetValue(root),"13 图像源1")),"显示名称泄露正式ID或同名节点被合并");
+   var leaf=Leaf(new[]{roots[1]});Command(session,"ClickCommand",leaf);
+   Require(field.Setting is ReferenceSetting{Reference.NodeId:"identity-b"},"相同显示名改变绑定身份");
+  });
+  Test("扩展窗禁用隐藏使请求失效且旧命令不能写入",()=>
+  {
+   var writes=0;using var field=Create(_=>writes++);Show(field);var session=Session(field);
+   Command(session,"PopSubscribeWindowCommand");Pump();
+   var first=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
+   var request=(ReferenceExpansionRequest)first.DataContext;var node=Leaf(request.SourceNodes);
+   field.IsEnabled=false;Pump();Require(!request.IsValid&&!first.IsVisible,"禁用仍保留可写展开窗");
+   request.ClickCommand.Execute(node);Require(writes==0,"禁用后的旧展开请求仍写入");
+   field.IsEnabled=true;Command(session,"PopSubscribeWindowCommand");Pump();
+   var second=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();
+   var active=(ReferenceExpansionRequest)second.DataContext;
+   field.Visibility=Visibility.Collapsed;Pump();Require(!active.IsValid&&!second.IsVisible,"隐藏未退役当前展开窗");
+  });
+  Test("扩展来源递归父链精确筛选并恢复深层成员索引",()=>
+  {
+   var point=TypeRef.RecordOf("reference.point",new[]{new Port("x",DataType.Number),new Port("y",DataType.Number)});
+   var row=TypeRef.RecordOf("reference.row",new[]{new Port("center",point),new Port("area",DataType.Number),new Port("count",DataType.Integer)});
+   var output=new Port("objects",TypeRef.SequenceOf(row,CountConstraint.Exactly(2)));
+   var path=new[]{"center","x"};var captions=new[]{"质心点","X"};
+   DeclaredReferenceCandidate Candidate(string label,IReadOnlyList<string> members,IReadOnlyList<string> names)=>
+    new(label,"identity-deep","scope",output,members){NodeDisplayName="2 Blob分析",OutputDisplayName="Blob结果",MemberDisplayNames=names};
+   var inputs=new ReferenceCandidates(new[]{Candidate("整个输出",Array.Empty<string>(),Array.Empty<string>()),
+    Candidate("质心X",path,captions),Candidate("质心Y",new[]{"center","y"},new[]{"质心点","Y"}),
+    Candidate("面积",new[]{"area"},new[]{"面积"}),Candidate("计数",new[]{"count"},new[]{"计数"})},Array.Empty<DeclaredReferenceCandidate>());
+   var first=inputs.Sources.Single(candidate=>candidate.Label=="质心X");
+   path[0]="已改变";captions[0]="已改变";
+   var writes=0;using var field=new DeclaredFieldEditor(new("deep",DataType.Number,EditModes:FieldEditModes.Reference),"来源",
+    new ReferenceSetting(first.Reference(new BindingSelection.AtConstant(1))),_=>writes++,new ReferenceFieldOptions(_=>inputs,EditableIndex:true));
+   Show(field);var session=Visuals<ContentControl>(field).Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
+   object Property(string name)=>session.GetType().GetProperty(name)!.GetValue(session)!;
+   object[] Children(object node)=>((System.Collections.IEnumerable)node.GetType().GetProperty("EnumEntrysA")!.GetValue(node)!).Cast<object>().ToArray();
+   string Name(object node)=>(string)node.GetType().GetProperty("Name")!.GetValue(node)!;
+   Command(session,"DropDownCommand");
+   var roots=((System.Collections.IEnumerable)Property("SourceNodes")).Cast<object>().ToArray();
+   var root=Children(roots[1]).Single();var children=Children(root);
+   Require(roots.Length==2&&Name(root)=="Blob结果"&&children.Length==2,"结构根被平铺或int候选混入float来源");
+   var center=children.Single(node=>Name(node)=="质心点");var leaves=Children(center);
+   Require(leaves.Select(Name).SequenceEqual(new[]{"X","Y"})&&ReferenceEquals(Property("SelectedSourceNode"),leaves[0]),
+    "深层父链、快照显示名或正式身份选中恢复失败");
+   Command(session,"ClickCommand",center);Require(writes==0,"父分组被当普通数值来源提交");
+   Command(session,"ClickCommand",leaves[1]);
+   Require(writes==1&&field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:1}} selected
+    &&selected.Reference.MemberFieldPath.SequenceEqual(new[]{"center","y"}),"深层叶未保留正式成员身份与索引");
+   var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field).Single();
+   text.Text="质心Y [2]";Require(!field.TryCommitPending()&&writes==1,"投影序列索引越过声明上界");
+   text.Text="质心Y [0]";Require(field.TryCommitPending()&&writes==2,"深层索引合法修正不能恢复");
+   Command(session,"DropDownCommand");
+   Require(Name(Property("SelectedSourceNode"))=="Y","深层成员刷新后丢选中");
+  });
+  Test("扩展索引使用记录成员投影序列而非输出根类型",()=>
+  {
+   var record=TypeRef.RecordOf("reference.member.sequence",new[]{new Port("values",TypeRef.SequenceOf(DataType.Number,CountConstraint.Exactly(2)))});
+   var values=new DeclaredReferenceCandidate("集合","record-node",null,new Port("record",record),new[]{"values"})
+    {NodeDisplayName="记录来源",OutputDisplayName="记录",MemberDisplayNames=new[]{"集合"}};
+   var integer=new DeclaredReferenceCandidate("索引","index-node",null,new Port("index",DataType.Integer),Array.Empty<string>());
+   var writes=0;using var field=new DeclaredFieldEditor(new("member-sequence",DataType.Number,EditModes:FieldEditModes.Reference),"来源",
+    new ReferenceSetting(values.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
+    new ReferenceFieldOptions(_=>new(new[]{values},new[]{integer}),EditableIndex:true));
+   Show(field);var session=Visuals<ContentControl>(field).Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
+   Command(session,"DropDownCommand");
+   Require(Equals(session.GetType().GetProperty("CurValueA")!.GetValue(session),"集合 [0]"),"记录内序列未显示实际索引");
+   var focusType=typeof(SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs);var focus=Activator.CreateInstance(focusType)!;
+   focusType.GetProperty("Text")!.SetValue(focus,"集合 [0]");focusType.GetProperty("IsFocus")!.SetValue(focus,true);focusType.GetProperty("SelectionStart")!.SetValue(focus,4);
+   Command(session,"FocusedCommand",focus);
+   Require((bool)session.GetType().GetProperty("IsTextDropDownOpen")!.GetValue(session)!,"记录成员序列无法进入索引树");
+   var indices=(System.Collections.IEnumerable)session.GetType().GetProperty("IndexNodes")!.GetValue(session)!;
+   Command(session,"IndexClickCommand",Leaf(indices));
+   Require(writes==1&&field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtField{Reference.NodeId:"index-node"}},
+    "记录成员动态索引未沿同一正式writer接纳");
+  });
+  Test("扩展固定多项来源先补索引再经真实编译器一次接纳",()=>
+  {
+   var oldPort=new Port("value",DataType.Number);var fixedPort=new Port("values",TypeRef.SequenceOf(DataType.Number,CountConstraint.Exactly(2)));
+   var indexPort=new Port("index",DataType.Integer);
+   var snapshots=ReferenceBindingSnapshots(("old-source",oldPort,0d),("fixed-source",fixedPort,new[]{1d,2d}),("index-source",indexPort,0L));
+   var old=new DeclaredReferenceCandidate("旧来源","old-source",snapshots.Scope.Consumer.ScopeId,oldPort,Array.Empty<string>());
+   var fixedSource=new DeclaredReferenceCandidate("定长来源","fixed-source",snapshots.Scope.Consumer.ScopeId,fixedPort,Array.Empty<string>());
+   var integer=new DeclaredReferenceCandidate("索引来源","index-source",snapshots.Scope.Consumer.ScopeId,indexPort,Array.Empty<string>());
+   var target=new Port("selection.unit",DataType.Number,EditModes:FieldEditModes.Reference);
+   var resolver=new SunEyeVision.Plugin.Runtime.ParameterBindingService();var writes=0;var available=true;
+   ReferenceSetting accepted=new(old.Reference(BindingSelection.All));
+   using var field=new DeclaredFieldEditor(target,"来源",accepted,proposal=>
+   {
+    var reference=(ReferenceSetting)proposal;
+    var compilation=resolver.CompileBinding(reference.Reference,target,snapshots.Scope,reference.Conversion);
+    if(compilation.Plan is null)throw new ArgumentException(compilation.Diagnostic?.Message);
+    accepted=reference;writes++;
+   },new ReferenceFieldOptions(_=>new(available?new[]{old,fixedSource}:new[]{old},new[]{integer}),EditableIndex:true));
+   Show(field);var session=Visuals<ContentControl>(field).Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
+   object[] Roots(string property)=>((System.Collections.IEnumerable)session.GetType().GetProperty(property)!.GetValue(session)!).Cast<object>().ToArray();
+   object Find(string node)=>Roots("SourceNodes").SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>())
+    .Single(leaf=>leaf.GetType().GetProperty("Candidate")!.GetValue(leaf) is DeclaredReferenceCandidate candidate&&candidate.NodeId==node);
+   Command(session,"DropDownCommand");Command(session,"ClickCommand",Find("fixed-source"));
+   Require(writes==0&&accepted.Reference.NodeId=="old-source"&&field.HasPendingEdits&&!field.TryCommitPending(),
+    "未明确索引的定长来源提前写正式配置或被回落首项");
+   var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field).Single();
+   text.Text="定长来源 [1]";Require(field.TryCommitPending()&&writes==1&&accepted.Reference.NodeId=="fixed-source",
+    "索引补齐后未通过实际数量编译门禁一次接纳");
+   var plan=resolver.CompileBinding(accepted.Reference,target,snapshots.Scope).Plan!;
+   var result=resolver.ResolveBinding(plan,snapshots.Run);Require(result.Success&&Equals(result.Value,2d),"正式解析未取得显式第二项");
+   Command(session,"DropDownCommand");var clear=Roots("IndexNodes").First();Command(session,"IndexClickCommand",clear);
+   Require(writes==1&&field.HasPendingEdits&&!field.TryCommitPending(),"清除索引错误写入多项来源");
+   Command(session,"IndexClickCommand",Leaf(Roots("IndexNodes")));
+   Require(writes==2&&accepted.Reference.Selection is BindingSelection.AtField,"动态索引未补齐待确认来源");
+   plan=resolver.CompileBinding(accepted.Reference,target,snapshots.Scope).Plan!;result=resolver.ResolveBinding(plan,snapshots.Run);
+   Require(result.Success&&Equals(result.Value,1d),"正式动态索引解析未取得明确结果");
+   Command(session,"IndexClickCommand",Roots("IndexNodes").First());available=false;Command(session,"DropDownCommand");
+   text.Text="定长来源 [0]";Require(!field.TryCommitPending()&&writes==2,"刷新后已移除待选来源仍提交");
+   Command(session,"ClickCommand",Find("old-source"));Require(writes==3&&!field.HasPendingEdits,"失效待选来源不能通过新显式选择修复");
+  });
+  Test("扩展绑定编译与读取统一在第一层集合选择且不投影未选空记录",()=>
+  {
+   var row=TypeRef.RecordOf("binding.optional.row",new[]{new Port("value",DataType.Number,Required:false,Nullable:true)});
+   var rows=TypeRef.SequenceOf(row,CountConstraint.Exactly(2));
+   var values=new SequenceValue(rows,new object?[]{new RecordValue(row,new Dictionary<string,object?>{{"value",10d}}),
+    new RecordValue(row,new Dictionary<string,object?>())});
+   var holder=TypeRef.RecordOf("binding.holder",new[]{new Port("items",rows)});
+   var outer=TypeRef.RecordOf("binding.outer",new[]{new Port("nested",holder)});
+   var port=new Port("record",outer);var value=new RecordValue(outer,new Dictionary<string,object?>
+    {{"nested",new RecordValue(holder,new Dictionary<string,object?>{{"items",values}})}});
+   var target=new Port("target",DataType.Number);var resolver=new SunEyeVision.Plugin.Runtime.ParameterBindingService();
+   foreach(var dynamicIndex in new[]{0L,1L,2L})
+   {
+    var indexPort=new Port("index",DataType.Integer);var snapshots=ReferenceBindingSnapshots(("source",port,value),("index-source",indexPort,dynamicIndex));
+    var reference=new OutputReference("source",port.Id,port.Type,new[]{"nested","items","value"},
+     new BindingSelection.AtField(new OutputReference("index-source",indexPort.Id,indexPort.Type,scopeId:snapshots.Scope.Consumer.ScopeId)),snapshots.Scope.Consumer.ScopeId);
+    var compilation=resolver.CompileBinding(reference,target,snapshots.Scope);Require(compilation.Plan is not null,"记录内集合索引未贯通编译");
+    var result=resolver.ResolveBinding(compilation.Plan!,snapshots.Run);
+    Require(dynamicIndex==0?result.Success&&Equals(result.Value,10d):!result.Success&&result.Diagnostic?.Code==(dynamicIndex==1?"missing-value":"index-range"),
+     "记录内集合读取、缺失成员或越界未按同一合同处理");
+    var invalid=new OutputReference("source",port.Id,port.Type,reference.MemberFieldPath,new BindingSelection.AtConstant(2),reference.ScopeId);
+    Require(resolver.CompileBinding(invalid,target,snapshots.Scope).Plan is null,"成员集合声明上界未检查");
+   }
+   var rootPort=new Port("rows",rows);var root=ReferenceBindingSnapshots(("source",rootPort,values));
+   var oldReference=new OutputReference("source",rootPort.Id,rootPort.Type,new[]{"value"},new BindingSelection.AtConstant(0),root.Scope.Consumer.ScopeId);
+   var oldPlan=resolver.CompileBinding(oldReference,target,root.Scope).Plan!;var oldResult=resolver.ResolveBinding(oldPlan,root.Run);
+   Require(oldResult.Success&&Equals(oldResult.Value,10d),"原根集合选择因未选中记录缺成员而改变");
   });
  }
  static void VerifyRoiGroupSnapshots()
@@ -2300,7 +2764,7 @@ internal static class S2DocumentEditingCases
    using var fields=AdvancedFields(_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),initial);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
    var access=fields.Fields.Single(field=>field.FieldId=="a.value");var before=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
-   var window=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();var request=(ReferenceExpansionRequest)window.DataContext;
+   var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=(ReferenceExpansionRequest)window.DataContext;
    advanced.IsExpanded=false;Pump();Require(!window.IsVisible&&!request.IsValid&&writes==0&&before==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference),"折叠未关扩展窗或清除了引用");
    advanced.IsExpanded=true;Pump();Require(access.Setting is ReferenceSetting&&writes==0,"展开恢复成其他模式");Show(new TextBlock());
   });
@@ -2428,6 +2892,46 @@ internal static class S2DocumentEditingCases
    =>sample.Ports.Skip(2).ToDictionary(port=>port.Id,port=>(ParameterSetting)Source(sample,port.Id),StringComparer.Ordinal);
   void Same(IReadOnlyDictionary<string,AcceptedFieldValue> a,IReadOnlyDictionary<string,AcceptedFieldValue> b)
    =>Require(a.Count==b.Count&&a.All(entry=>b.TryGetValue(entry.Key,out var value)&&Equals(entry.Value,value)),"完整accepted/常量backup发生部分写入");
+  Test("正式设置视图Assist十五角色接纳及关闭同批清理",()=>
+  {
+   var draft=new FormalAssistDraft();var reject=false;var calls=0;
+   using var view=new DeclaredSettingsView(draft,new(ReferenceOptions:draft.References(),AssistCompositions:new[]{draft.Assist},AcceptCandidate:_=>{calls++;if(reject)throw new ArgumentException("禁止关闭");}));Show(view);
+   var fields=(DeclaredFieldsView)view.Content;Require(fields.Fields.Count==15&&draft.Writes==0,"正式设置入口未组装十五角色或初始化写入");
+   var changes=draft.Ports.Skip(2).ToDictionary(port=>port.Id,port=>(ParameterSetting)draft.Source(port.Id),StringComparer.Ordinal);
+   changes[draft.Assist.EnabledFieldId]=new ConstantSetting(true);changes[draft.Assist.ModeFieldId]=new ConstantSetting(1L);
+   Require(view.TrySetFields(changes)&&calls==1&&draft.Writes==1&&view.TryCapture(out _,out _),"正式草稿未一次接纳完整Assist");
+   var original=fields.CaptureAccepted();reject=true;
+   Require(!view.TrySetFields(new Dictionary<string,ParameterSetting>{{draft.Assist.EnabledFieldId,new ConstantSetting(false)}}),"宿主拒绝后关闭仍被接纳");
+   var rejected=fields.CaptureAccepted();Require(draft.Writes==1&&rejected.Count==original.Count&&original.All(pair=>rejected.TryGetValue(pair.Key,out var value)&&Equals(pair.Value,value)),"拒绝关闭造成状态半写");
+   reject=false;Require(view.TrySetFields(new Dictionary<string,ParameterSetting>{{draft.Assist.EnabledFieldId,new ConstantSetting(false)}})&&draft.Writes==2&&calls==3,"正式关闭未一次接纳");
+   var cleared=draft.Ports.Skip(2).Where(port=>port.Id!=draft.Assist.BasePointFieldId).ToArray();var captured=draft.CaptureFields();
+   Require(draft.LastChanges!.Count==13&&cleared.All(port=>draft.LastChanges[port.Id] is UnsetSetting&&captured.Read(port.Id) is UnsetSetting)
+     &&captured.Read(draft.Assist.BasePointFieldId).Equals(original[draft.Assist.BasePointFieldId].Setting)&&captured.Read(draft.Assist.ModeFieldId).Equals(original[draft.Assist.ModeFieldId].Setting)
+     &&view.TryCapture(out _,out _),"正式关闭未清十二来源或破坏保留字段");
+  });
+  Test("正式设置视图Assist接纳和验证重绑退役旧草稿",()=>
+  {
+   foreach(var inValidation in new[]{false,true})
+   {
+    var oldDraft=new FormalAssistDraft();var next=new FormalAssistDraft();DeclaredSettingsView? view=null;var armed=false;var acceptCalls=0;
+    var nextOptions=new ToolSettingsViewOptions(ReferenceOptions:next.References(),AssistCompositions:new[]{next.Assist});
+    var oldOptions=new ToolSettingsViewOptions(ReferenceOptions:oldDraft.References(),AssistCompositions:new[]{oldDraft.Assist},
+     ValidateComposition:_=>{if(armed&&inValidation){armed=false;view!.Bind(next,nextOptions);}return null;},
+     AcceptCandidate:_=>{acceptCalls++;if(armed&&!inValidation){armed=false;view!.Bind(next,nextOptions);}});
+    using(view=new DeclaredSettingsView(oldDraft,oldOptions))
+    {
+     Show(view);var oldFields=(DeclaredFieldsView)view.Content;var oldField=oldFields.Fields.Single(field=>field.FieldId==oldDraft.Assist.EnabledFieldId);armed=true;
+     var proposals=new Dictionary<string,ParameterSetting>{{oldDraft.Assist.EnabledFieldId,new ConstantSetting(true)},
+      {oldDraft.Assist.ModeFieldId,new ConstantSetting(0L)},{oldDraft.Assist.FixturePort.Id,oldDraft.Source(oldDraft.Assist.FixturePort.Id)}};
+     bool accepted;try{accepted=oldFields.TrySetFields(proposals);}catch(InvalidOperationException){accepted=false;}
+     Require(!accepted&&ReferenceEquals(view.Draft,next)&&oldDraft.Writes==0&&next.Writes==0&&!oldField.TrySetConstant(true)
+      &&(!inValidation||acceptCalls==0),"重绑期间旧Assist提案写入草稿或旧字段未退役");
+     Require(view.TrySetFields(new Dictionary<string,ParameterSetting>{{next.Assist.EnabledFieldId,new ConstantSetting(true)},
+      {next.Assist.ModeFieldId,new ConstantSetting(0L)},{next.Assist.FixturePort.Id,next.Source(next.Assist.FixturePort.Id)}})&&next.Writes==1,"重绑后新Assist不能编辑");
+    }
+    Show(new TextBlock());
+   }
+  });
   Test("原Assist十五角色三方式复用原五槽及十三来源并保实际行序",()=>
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample{Width=510};Show(sample);
@@ -2447,7 +2951,7 @@ internal static class S2DocumentEditingCases
     foreach(var port in visible)
     {
      var field=Field(sample,port.Id);seen.Add(port.Id);
-     Require(Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Any(popup=>popup.Name=="rt"),"未消费原订阅槽："+port.Id);
+     Require(Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Any(popup=>popup.Name=="rt"),"未消费原订阅槽："+port.Id);
      Require(!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Any(),"Assist错误生成滑条："+port.Id);
      var y=field.View.TransformToAncestor(sample).Transform(new Point()).Y;
      Require(y>previous,"原角色行序或布局重叠："+port.Id);previous=y;
@@ -2516,10 +3020,10 @@ internal static class S2DocumentEditingCases
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);sample.PreviewMode=0;Pump();
    var field=Field(sample,sample.Assist.FixturePort.Id);
-   var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");
+   var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Single(item=>item.Name=="rt");
    popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
    var content=(Popup)popup.Template.FindName("PART_Popup",popup);
-   var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
+   var tree=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
    TreeViewItem? Find(ItemsControl parent)
    {
     for(var i=0;i<parent.Items.Count;i++)
@@ -2794,8 +3298,13 @@ internal static class S2DocumentEditingCases
    owner.UpdateLayout();Pump();
    oldText.Text="过期输入";oldEye.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
    Require(writes==1&&((ConstantSetting)text.Setting).Value.Equals("accepted")&&((ConstantSetting)eye.Setting).Value.Equals(true),"旧控件回调写入新渲染");
-   ((TextBox)text.InputElement!).Text="current";Require(text.TryCommitPending(),"新原文本未提交");((ToggleButton)eye.InputElement!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-   Require(writes==3&&((ConstantSetting)text.Setting).Value.Equals("current")&&((ConstantSetting)eye.Setting).Value.Equals(false),"新控件不能继续编辑");Show(new TextBlock{Text="完成"});
+   ((TextBox)text.InputElement!).Text="current";Require(text.TryCommitPending(),"新原文本未提交");
+   // The accepted group recreates both editors. Exercise the newly loaded eye,
+   // after layout, as a user can; a Click raised before Loaded is rejected.
+   fields.SelectedPageIndex=1;owner.UpdateLayout();Pump();var currentEye=(ToggleButton)eye.InputElement!;
+   Require(currentEye.IsLoaded&&currentEye.IsVisible,"接纳后新眼睛未进入可交互可视树");
+   currentEye.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+   Require(writes==3&&((ConstantSetting)text.Setting).Value.Equals("current")&&((ConstantSetting)eye.Setting).Value.Equals(false),$"新控件不能继续编辑：writes={writes},text={text.Setting},eye={eye.Setting}");Show(new TextBlock{Text="完成"});
   });
   Test("整组范围接纳后观察异常仍投影规范值且不重新提交旧原文",()=>
   {
@@ -2859,10 +3368,10 @@ internal static class S2DocumentEditingCases
    var source=sample.Fields.Fields.Single(x=>x.FieldId=="detect.source");var mode=sample.Fields.Fields.Single(x=>x.FieldId=="detect.mode");
    bool Choose(string? node)
    {
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(source.View).Single(x=>x.Name=="rt");
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(source.View).Single(x=>x.Name=="rt");
     popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
     var content=(Popup)popup.Template.FindName("PART_Popup",popup);
-    var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
+    var tree=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
     TreeViewItem? Find(ItemsControl parent)
     {
      for(var i=0;i<parent.Items.Count;i++)
@@ -2893,7 +3402,7 @@ internal static class S2DocumentEditingCases
    var writes=0;var candidate=new DeclaredReferenceCandidate("文本序列","texts",null,new Port("values",TypeRef.SequenceOf(DataType.Text)),Array.Empty<string>());
    using var fields=new DeclaredFieldsView(new[]{(new Port("text",DataType.Text,Required:false,EditModes:FieldEditModes.Reference),new FieldPresentation("text","文本来源","组合",0,FieldEditorKind.Scalar),(ParameterSetting)new ReferenceSetting(candidate.Reference(new BindingSelection.AtConstant(0))))},_=>writes++,
     new ReferenceFieldOptions(_=>new(new[]{candidate},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true),validateComposition:group=>group.Proposed["text"] is UnsetSetting?"拒绝清除":null);
-   Show(fields);var access=fields.Fields.Single();var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(access.View).Single(x=>x.Name=="rt");
+   Show(fields);var access=fields.Fields.Single();var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(access.View).Single(x=>x.Name=="rt");
    popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();var session=popup.DataContext;var type=session.GetType();
    var current=(string)type.GetProperty("CurValueA")!.GetValue(session)!;var pending=current[..current.LastIndexOf('[')]+"[1]";
    type.GetMethod("ObserveText")!.Invoke(session,new object[]{pending});type.GetProperty("CurValueA")!.SetValue(session,"");
@@ -3282,6 +3791,33 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyNativeTextPixels()
  {
+  Test("独立原显示样例的图形样式驱动同一图像视口",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeDisplaySample();Show(sample);Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)sample.Preview;
+   Native.Dependencies.VMControls.RenderInterface.IRectangle Rectangle()
+    =>native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IRectangle>().Single();
+   Native.Dependencies.VMControls.RenderInterface.IText Text()
+    =>native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IMultiText>()
+      .SelectMany(group=>group.Texts).Single();
+   Require(native.ImageDataSource is not null&&Rectangle().StrokeThickness==1&&Text().Content=="aa{}bb",
+    "样例未在同一原视口呈现实际图形与文字");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{
+    ["outline.width"]=new ConstantSetting(4d),["outline.opacity"]=new ConstantSetting(.5d),
+    ["outline.ok"]=new ConstantSetting(PresentationDeclarations.Color(255,0,0))}),"图形样式未接纳");
+   Pump();var shape=Rectangle();Require(shape.StrokeThickness==4&&Math.Abs(shape.Opacity-.5)<.001
+    &&shape.Stroke.Contains("FF0000",StringComparison.OrdinalIgnoreCase)&&Text().Content=="aa{}bb",
+    "样式未投影到同一原图形或图形更新丢失文字");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"text.content",new ConstantSetting("更新文字")}}),"文字未接纳");
+   Pump();Require(Text().Content=="更新文字"&&Rectangle().StrokeThickness==4,"文字更新丢失同帧图形或其样式");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"outline.ng",new ConstantSetting(PresentationDeclarations.Color(0,0,255))}}),"NG颜色未接纳");
+   var writes=sample.Writes;sample.SetResultStatus(false);Pump();
+   Require(Rectangle().Stroke.Contains("0000FF",StringComparison.OrdinalIgnoreCase)&&Text().Content=="更新文字"&&sample.Writes==writes,
+    "NG状态未使用独立颜色或错误写入参数");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"outline.visible",new ConstantSetting(false)}}),"眼睛关闭未接纳");
+   Pump();Require(!native.ShapeList!.Cast<object>().OfType<Native.Dependencies.VMControls.RenderInterface.IRectangle>().Any()
+    &&native.ImageDataSource is not null&&Text().Content=="更新文字","关闭图形时未移除原几何或错误清除图像及文字");
+  });
   byte[] Pixels(BitmapSource source){var rgb=new FormatConvertedBitmap(source,PixelFormats.Rgb24,null,0);var bytes=new byte[rgb.PixelWidth*rgb.PixelHeight*3];rgb.CopyPixels(bytes,rgb.PixelWidth*3,0);return bytes;}
   (int Count,int X,int Y,int Peak) Ink(BitmapSource source,bool green)
   {
@@ -3334,14 +3870,14 @@ internal static class S2DocumentEditingCases
   DeclaredFieldsView Create(Func<SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionSnapshot> read,Action<IReadOnlyDictionary<string,ParameterSetting>> write)=>new(new[]{
    (new Port("text",DataType.Text,EditModes:FieldEditModes.Constant),new FieldPresentation("text","内容","原文本",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting("aa{}bb"))},write,
    textExpressions:new Dictionary<string,SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions>{{"text",new(read)}});
-  Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox Text(DeclaredFieldsView fields)=>(Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox)fields.Fields.Single().InputElement!;
-  (Native.Input.Apps.PcUI.Controls.PopupButton Popup,TreeViewItem Group,TreeViewItem Leaf) Open(DeclaredFieldsView fields)
+  SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox Text(DeclaredFieldsView fields)=>(SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox)fields.Fields.Single().InputElement!;
+  (SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton Popup,TreeViewItem Group,TreeViewItem Leaf) Open(DeclaredFieldsView fields)
   {
    var text=Text(fields);text.Focus();Require(text.IsKeyboardFocused,"原文本未取得真实键盘焦点");text.Select(0,0);text.Select(3,0);Pump();
-   var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(fields).Single(item=>item.Name=="et");
+   var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(fields).Single(item=>item.Name=="et");
    Require(popup.IsDropDownOpen,"空{}内光标未打开原Popup");
    var part=(Popup)popup.Template.FindName("PART_Popup",popup);
-   var view=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(part.Child).Single();
+   var view=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>(part.Child).Single();
    var tree=(TreeView)view.FindName("treeView");tree.UpdateLayout();
    var group=(TreeViewItem)tree.ItemContainerGenerator.ContainerFromIndex(0);group.IsExpanded=true;group.UpdateLayout();Pump();
    return(popup,group,(TreeViewItem)group.ItemContainerGenerator.ContainerFromIndex(0));
@@ -3353,7 +3889,61 @@ internal static class S2DocumentEditingCases
    using var fields=Create(()=>new(new[]{source},candidate=>{Require(ReferenceEquals(candidate,source),"formatter收到克隆候选");formatted++;return "source.value";},()=>true),_=>writes++);
    Show(fields);var opened=Open(fields);DoubleClick(opened.Group);Require(writes==0,"组双击写入");DoubleClick(opened.Leaf);
    Require(writes==1&&formatted==1&&fields.Fields.Single().Setting is ConstantSetting{Value:"aa{source.value}bb"}&&!opened.Popup.IsDropDownOpen,"原叶未单次插入或前后缀丢失");
-   Require(Text(fields).Text=="aa{source.value}bb","接纳未投影真实原文本");
+   Require(Text(fields).Text=="aa{source.value}bb"&&Text(fields).SelectionStart=="aa{source.value".Length,
+    "接纳未投影真实原文本或光标未落在来源后");
+  });
+  Test("原文本来源接纳重入新原文不恢复旧光标",()=>
+  {
+   var writes=0;using var fields=Create(()=>new(new[]{source},_=>"source.value",()=>true),_=>writes++);
+   Show(fields);var opened=Open(fields);var field=fields.Fields.Single();var text=Text(fields);var reentered=false;
+   field.Changed+=()=>
+   {
+    if(reentered||field.Setting is not ConstantSetting{Value:"aa{source.value}bb"})return;
+    reentered=true;text.Text="new raw";text.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();text.Select(1,0);
+   };
+   DoubleClick(opened.Leaf);
+   Require(reentered&&writes==1&&text.Text=="new raw"&&text.SelectionStart==1,"旧插入覆盖新原文或光标");
+   Require(field.TryCommitPending()&&writes==2&&field.Setting is ConstantSetting{Value:"new raw"},"未保留重入原文待提交");
+  });
+  Test("原文本来源接纳重入同文本的新选择不被旧光标覆盖",()=>
+  {
+   var writes=0;using var fields=Create(()=>new(new[]{source},_=>"source.value",()=>true),_=>writes++);
+   Show(fields);var opened=Open(fields);var field=fields.Fields.Single();var text=Text(fields);var reentered=false;
+   field.Changed+=()=>
+   {
+    if(reentered||field.Setting is not ConstantSetting{Value:"aa{source.value}bb"})return;
+    reentered=true;text.Text="aa{source.value}bb";text.Select(1,0);
+   };
+   DoubleClick(opened.Leaf);
+   Require(reentered&&writes==1&&text.Text=="aa{source.value}bb"&&text.SelectionStart==1,
+    "旧插入覆盖接纳通知中的新选择");
+  });
+  Test("原文本来源投影回调中新选择不被旧光标覆盖",()=>
+  {
+   var writes=0;using var fields=Create(()=>new(new[]{source},_=>"source.value",()=>true),_=>writes++);
+   Show(fields);var opened=Open(fields);var text=Text(fields);var reentered=false;
+   text.TextChanged+=(_,_)=>
+   {
+    if(reentered||text.Text!="aa{source.value}bb")return;
+    reentered=true;text.Select(1,0);
+   };
+   DoubleClick(opened.Leaf);
+   Require(reentered&&writes==1&&text.Text=="aa{source.value}bb"&&text.SelectionStart==1,
+    "文本投影回调的新选择被旧插入覆盖");
+  });
+  Test("原文本来源接纳时换绑定保留新绑定",()=>
+  {
+   var writes=0;using var fields=Create(()=>new(new[]{source},_=>"source.value",()=>true),_=>writes++);
+   Show(fields);var opened=Open(fields);var field=fields.Fields.Single();var text=Text(fields);var external=new TextBlock{Text="aa{}bb"};
+   BindingExpression? replacement=null;
+   field.Changed+=()=>
+   {
+    if(replacement is not null||field.Setting is not ConstantSetting{Value:"aa{source.value}bb"})return;
+    replacement=(BindingExpression)text.SetBinding(TextBox.TextProperty,new Binding(nameof(TextBlock.Text)){Source=external,Mode=BindingMode.OneWay});
+   };
+   DoubleClick(opened.Leaf);
+   Require(writes==1&&replacement is not null&&ReferenceEquals(replacement,text.GetBindingExpression(TextBox.TextProperty))
+    &&text.Text=="aa{}bb"&&field.Setting is ConstantSetting{Value:"aa{source.value}bb"},"旧插入覆盖新绑定或丢失接纳值");
   });
   Test("原文本receipt失败退休旧树且纯文本可恢复",()=>
   {
@@ -3423,7 +4013,7 @@ internal static class S2DocumentEditingCases
   {
    var writes=0;using var fields=Create(()=>new(new[]{source},_=>"source.value",()=>true),_=>writes++);Show(fields);
    var old=Text(fields);old.Text="draft";old.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();
-   var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(fields).Single(item=>item.Name=="et");
+   var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(fields).Single(item=>item.Name=="et");
    DependencyObject? parent=VisualTreeHelper.GetParent(popup);ContentControl? content=null;
    while(parent is not null){if(parent is ContentControl control&&control.ContentTemplate is not null){content=control;break;}parent=VisualTreeHelper.GetParent(parent);}
    Require(content is not null,"无真实原模板宿主");var template=content!.ContentTemplate;
@@ -3510,7 +4100,7 @@ internal static class S2DocumentEditingCases
   Test("c17-window 原窗口模板重装退订旧按钮只关闭一次",()=>
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var window=sample.Crosshairs.OpenSettings(owner);Pump();var old=(Button)window.Template.FindName("CloseWinButton",window);
-   var resources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",UriKind.Relative)};window.Template=(ControlTemplate)resources["MetroWindowTemplate"];window.ApplyTemplate();Pump();
+   var resources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Foundation/BaseWindow.xaml",UriKind.Relative)};window.Template=(ControlTemplate)resources["MetroWindowTemplate"];window.ApplyTemplate();Pump();
    old.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(window.IsVisible,"旧模板按钮仍关闭新窗");var calls=0;window.Closed+=(_,_)=>calls++;var current=(Button)window.Template.FindName("CloseWinButton",window);current.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(!window.IsVisible&&calls==1,"新模板关闭重复或失效");
   });
   Test("c17-window 来源proof抛错退役本层并保留错误",()=>
@@ -3947,6 +4537,24 @@ internal static class S2DocumentEditingCases
     Click((ButtonBase)number.FindName("UpButton"));Pump();
     Require(value==3&&writes==1,"原箭头未按单位步长单次提交");
    });
+   Test("原图形只显示眼睛时样式按钮隐藏且可见性仍可编辑",()=>
+   {
+    var draft=new ColorLifetimeDraft();var role=ColorLifetimeDraft.Graphics.Single() with {ShowStyleButton=false};
+    using var settings=new DeclaredSettingsView(draft,new(GraphicDisplays:new[]{role}));Show(settings);Pump();
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));
+    var eye=Visuals<ToggleButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicVisibility"));
+    Require(popup.Visibility==Visibility.Collapsed&&eye.IsVisible,"隐藏样式按钮同时隐藏眼睛或未应用原可见性");
+    popup.IsDropDownOpen=true;Pump();Require(!popup.IsDropDownOpen&&draft.Writes==0,"隐藏按钮仍允许打开或写入");
+    eye.IsChecked=false;Click(eye);Pump();Require(draft.Writes==1&&!draft.CaptureFields().Get<bool>("visible"),"眼睛未写入正式字段");
+   });
+   Test("原图形隐藏样式按钮时眼睛拒绝恢复并可重试",()=>
+   {
+    var draft=new ColorLifetimeDraft();var reject=true;var role=ColorLifetimeDraft.Graphics.Single() with {ShowStyleButton=false};
+    using var settings=new DeclaredSettingsView(draft,new(GraphicDisplays:new[]{role},ValidateComposition:_=>reject?"拒绝更改":null));Show(settings);Pump();
+    var eye=Visuals<ToggleButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicVisibility"));
+    eye.IsChecked=false;Click(eye);Pump();Require(draft.Writes==0&&eye.IsChecked==true&&draft.CaptureFields().Get<bool>("visible"),"拒绝后眼睛或草稿未恢复");
+    reject=false;eye.IsChecked=false;Click(eye);Pump();Require(draft.Writes==1&&eye.IsChecked==false&&!draft.CaptureFields().Get<bool>("visible"),"解除拒绝后无法接纳");
+   });
    Test("原完整样式弹层草稿编辑校验及卸载关闭",()=>
    {
     var draft=new ColorLifetimeDraft();var reject=false;
@@ -3958,7 +4566,7 @@ internal static class S2DocumentEditingCases
      ((TextBox)line.InputElement!).Text="7";Require(line.TryCommitPending()&&((ConstantSetting)line.Setting).Value.Equals(7d),"粗细未更新调用方草稿");
      Require(draft.Writes==1&&draft.CaptureFields().Get<double>("width")==7d,"粗细未恰一次写真实draft");
      var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)rgba.InputElement!;var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();
-     var parent=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));Require(parent.IsDropDownOpen,"原色板关闭父层");
+     var parent=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(settings).Single(item=>Equals(item.Tag,"NativeGraphicStylePopup"));Require(parent.IsDropDownOpen,"原色板关闭父层");
      Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute(new SolidColorBrush(Color.FromArgb(123,32,64,128)),picker);
      var color=(RecordValue)((ConstantSetting)rgba.Setting).Value!;Require(color.Get<long>("a")==123&&color.Get<long>("b")==128,"颜色未进入同一草稿或丢alpha");
      var accepted=draft.CaptureFields().Get<RecordValue>("rgba");Require(draft.Writes==2&&accepted.Get<long>("a")==123&&accepted.Get<long>("b")==128,"颜色未恰一次写真实draft");
@@ -3978,6 +4586,86 @@ internal static class S2DocumentEditingCases
     });
     var popup=OpenStyle(settings);Show(new TextBlock{Text="卸载"});Require(!popup.IsDropDownOpen,"卸载原样式未关闭");
     Require(draft.Writes==2,"关层卸载重复提交真实草稿");
+   });
+   Test("原完整样式更多色板同草稿接纳拒绝与重绑退役",()=>
+   {
+    var draft=new ColorLifetimeDraft();var reject=false;
+    using var settings=new DeclaredSettingsView(draft,new(GraphicDisplays:ColorLifetimeDraft.Graphics,ValidateComposition:_=>reject?"范围失效":null));Show(settings);
+    var fields=(DeclaredFieldsView)settings.Content;var parent=OpenStyle(settings);Pump();
+    Slider? retired=null;
+    foreach(var id in new[]{"rgba","ng"})
+    {
+     var field=fields.Fields.Single(item=>item.FieldId==id);var other=fields.Fields.Single(item=>item.FieldId== (id=="rgba"?"ng":"rgba"));
+     var otherBefore=(RecordValue)((ConstantSetting)other.Setting).Value!;var beforeR=otherBefore.Get<long>("r");var beforeG=otherBefore.Get<long>("g");var beforeB=otherBefore.Get<long>("b");
+     var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)field.InputElement!;var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();
+     var popup=(Popup)palette.Template.FindName("PART_Popup",palette);var tabs=Visuals<TabControl>(popup.Child).Single();tabs.SelectedIndex=1;Pump();
+     var advanced=Visuals<Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>(popup.Child).Single();var slider=(Slider)advanced.FindName("brightnessSlider");
+     var initial=picker.CurrentColor.Color;var expected=Color.FromScRgb(1f,initial.ScR*.5f,initial.ScG*.5f,initial.ScB*.5f);var writes=draft.Writes;
+     slider.Value=.25;Pump();var accepted=(RecordValue)((ConstantSetting)field.Setting).Value!;
+     Require(draft.Writes==writes+1&&accepted.Get<long>("r")==expected.R&&accepted.Get<long>("g")==expected.G&&accepted.Get<long>("b")==expected.B&&accepted.Get<long>("a")==255,"图形样式更多色板未按原公式写入同草稿："+id);
+     var otherAfter=(RecordValue)((ConstantSetting)other.Setting).Value!;
+     Require(otherAfter.Get<long>("r")==beforeR&&otherAfter.Get<long>("g")==beforeG&&otherAfter.Get<long>("b")==beforeB&&draft.CaptureFields().Get<double>("width")==3&&draft.CaptureFields().Get<double>("opacity")==1&&parent.IsDropDownOpen&&palette.IsDropDownOpen,"更多页污染其他颜色或关闭父子层");
+     reject=true;writes=draft.Writes;slider.Value=.75;Pump();
+     Require(draft.Writes==writes&&picker.CurrentColor.Color.R==expected.R&&picker.CurrentColor.Color.G==expected.G&&picker.CurrentColor.Color.B==expected.B&&advanced.SelectedCurrentColor.Color.R==expected.R&&advanced.SelectedCurrentColor.Color.G==expected.G&&advanced.SelectedCurrentColor.Color.B==expected.B,"图形样式拒绝未恢复全部原颜色："+id);
+     reject=false;palette.IsDropDownOpen=false;Pump();retired=slider;
+    }
+    var writesBefore=draft.Writes;var next=new ColorLifetimeDraft();settings.Bind(next,ColorLifetimeDraft.Options());Pump();
+    retired!.Value=.9;Pump();Require(draft.Writes==writesBefore&&next.Writes==0,"重绑后旧更多色板写入旧或新草稿");
+   });
+   if(Environment.GetEnvironmentVariable("O06_ALLOW_SYSTEM_POINTER_TEST")=="1") Test("原色板图表系统鼠标输入点选拖动",()=>
+   {
+    var draft=new ColorLifetimeDraft();using var settings=new DeclaredSettingsView(draft,ColorLifetimeDraft.Options());Show(settings);
+    owner.Activate();Pump();var fields=(DeclaredFieldsView)settings.Content;OpenStyle(settings);Pump();
+    var field=fields.Fields.Single(item=>item.FieldId=="rgba");var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)field.InputElement!;
+    var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();var popup=(Popup)palette.Template.FindName("PART_Popup",palette);
+    var tabs=Visuals<TabControl>(popup.Child).Single();tabs.SelectedIndex=1;Pump();
+    var advanced=Visuals<Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>(popup.Child).Single();
+    var chart=Visuals<Image>(advanced).Single();var bitmap=(BitmapSource)chart.Source;
+    Require(chart.Stretch==Stretch.None&&Math.Abs(bitmap.DpiX-96)<.01&&Math.Abs(bitmap.DpiY-96)<.01&&Math.Abs(chart.ActualWidth-bitmap.PixelWidth)<.01&&Math.Abs(chart.ActualHeight-bitmap.PixelHeight)<.01,"图表显示尺寸与像素坐标不一致，未注入系统输入");
+    var source=(System.Windows.Interop.HwndSource)PresentationSource.FromVisual(chart)!;var paletteSource=(System.Windows.Interop.HwndSource)PresentationSource.FromVisual(palette)!;var ownerHandle=new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+    var foreground=GetForegroundWindow();GetWindowThreadProcessId(foreground,out var foregroundPid);
+    var buttonState=string.Join(",",new[]{1,2,4,5,6}.Select(key=>$"{key}:{((GetAsyncKeyState(key)&0x8000)!=0)}"));
+    var initialCapture=GetCapture();var ownPaletteCapture=ReferenceEquals(Mouse.Captured,palette)&&initialCapture==paletteSource.Handle;
+    Require(foregroundPid==Environment.ProcessId&&(foreground==ownerHandle||foreground==source.Handle)&&((Mouse.Captured is null&&initialCapture==IntPtr.Zero)||ownPaletteCapture)&&new[]{1,2,4,5,6}.All(key=>(GetAsyncKeyState(key)&0x8000)==0),$"测试窗口未在前台或鼠标按键/捕获忙，不注入系统输入：foreground={foreground} pid={foregroundPid} testPid={Environment.ProcessId} owner={ownerHandle} popup={source.Handle} paletteWindow={paletteSource.Handle} capture={initialCapture} paletteOwnsCapture={ReferenceEquals(Mouse.Captured,palette)} wpfCapture={Mouse.Captured} keys={buttonState}");
+var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(new Point(75,70));
+    var a=new NativePoint{X=(int)Math.Round(first.X),Y=(int)Math.Round(first.Y)};var b=new NativePoint{X=(int)Math.Round(second.X),Y=(int)Math.Round(second.Y)};
+    var chartDown=0;var chartPreview=0;chart.AddHandler(UIElement.MouseDownEvent,new MouseButtonEventHandler((_,_)=>chartDown++),true);chart.AddHandler(UIElement.PreviewMouseDownEvent,new MouseButtonEventHandler((_,_)=>chartPreview++),true);
+    var trace=new List<string>();
+    PreProcessInputEventHandler traceInput=(_,args)=>
+    {
+     if(trace.Count>=50||args.StagingItem.Input is not MouseEventArgs input)return;
+     var inputSource=input.OriginalSource as DependencyObject;var inputElement=inputSource as FrameworkElement;
+     trace.Add($"input={input.RoutedEvent?.Name} source={inputSource?.GetType().Name} name={inputElement?.Name} pos={(chart.IsLoaded?Mouse.GetPosition(chart).ToString():"unloaded")} left={Mouse.LeftButton} popup={popup.IsOpen}");
+    };
+    var colorDescriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,picker.GetType());
+    EventHandler traceColor=(_,_)=>{if(trace.Count<55)trace.Add($"color={picker.CurrentColor.Color} popup={popup.IsOpen} stack={Environment.StackTrace}");};
+    InputManager.Current.PreProcessInput+=traceInput;colorDescriptor.AddValueChanged(picker,traceColor);
+    Require(GetCursorPos(out var original),"无法保存原指针位置");var pressed=false;var last=original;
+    try
+    {
+     Require(WindowFromPoint(a)==source.Handle&&WindowFromPoint(b)==source.Handle,$"图表测试目标不是色板窗口，不注入点击：first={first} second={second} target={source.Handle} firstWindow={WindowFromPoint(a)} secondWindow={WindowFromPoint(b)} foreground={GetForegroundWindow()}");
+     var actual=new NativePoint();Require(SetCursorPos(a.X,a.Y)&&GetCursorPos(out actual)&&actual.X==a.X&&actual.Y==a.Y,"无法把指针定位到色板图表");last=actual;
+     Require(advanced.IsVisible&&palette.IsDropDownOpen&&ReferenceEquals(PresentationSource.FromVisual(chart),source)&&WindowFromPoint(actual)==source.Handle,"色板身份已改变，不注入按下");
+     var local=chart.PointFromScreen(new Point(actual.X,actual.Y));var data=new byte[4];new CroppedBitmap(bitmap,new Int32Rect((int)local.X,(int)local.Y,1,1)).CopyPixels(data,4,0);
+     var expected=Color.FromRgb(data[2],data[1],data[0]);var before=draft.Writes;
+     mouse_event(0x0001,0,0,0,UIntPtr.Zero);mouse_event(0x0002,0,0,0,UIntPtr.Zero);pressed=true;Pump();
+     Require(GetCursorPos(out actual)&&actual.X==a.X&&actual.Y==a.Y&&advanced.IsVisible&&palette.IsDropDownOpen,"按下后指针或色板已变化");
+     local=chart.PointFromScreen(new Point(actual.X,actual.Y));new CroppedBitmap(bitmap,new Int32Rect((int)local.X,(int)local.Y,1,1)).CopyPixels(data,4,0);expected=Color.FromRgb(data[2],data[1],data[0]);
+     var selected=draft.CaptureFields().Get<RecordValue>("rgba");
+     Require(chartDown>0&&chartPreview>0&&draft.Writes>=before+1&&selected.Get<long>("r")==expected.R&&selected.Get<long>("g")==expected.G&&selected.Get<long>("b")==expected.B,$"实际注入按下未按当前图表像素写入：screen={first} local={local} mouse={Mouse.GetPosition(chart)} expected={expected} selected={selected.Get<long>("r")},{selected.Get<long>("g")},{selected.Get<long>("b")} writes={draft.Writes-before} down={chartDown} preview={chartPreview} popup={popup.IsOpen} palette={palette.IsDropDownOpen} capture={GetCapture()} wpfCapture={Mouse.Captured} direct={Mouse.DirectlyOver} activeSource={Mouse.PrimaryDevice.ActiveSource}");
+     second=chart.PointToScreen(new Point(75,70));b=new NativePoint{X=(int)Math.Round(second.X),Y=(int)Math.Round(second.Y)};
+     foreground=GetForegroundWindow();GetWindowThreadProcessId(foreground,out foregroundPid);
+     var captured=GetCapture();var capturedVisual=Mouse.Captured as Visual;
+     Require(foregroundPid==Environment.ProcessId&&(foreground==ownerHandle||foreground==source.Handle)&&advanced.IsVisible&&palette.IsDropDownOpen&&ReferenceEquals(PresentationSource.FromVisual(chart),source)&&WindowFromPoint(b)==source.Handle&&((captured==IntPtr.Zero&&capturedVisual is null)||(captured==source.Handle&&capturedVisual is not null&&ReferenceEquals(PresentationSource.FromVisual(capturedVisual),source))||(captured==paletteSource.Handle&&ReferenceEquals(Mouse.Captured,palette))),"第一次输入后色板、捕获或前台改变，终止拖动");
+     Require(SetCursorPos(b.X,b.Y)&&GetCursorPos(out actual)&&actual.X==b.X&&actual.Y==b.Y&&WindowFromPoint(actual)==source.Handle,"无法移动色板拖动指针");last=actual;
+     local=chart.PointFromScreen(new Point(actual.X,actual.Y));new CroppedBitmap(bitmap,new Int32Rect((int)local.X,(int)local.Y,1,1)).CopyPixels(data,4,0);expected=Color.FromRgb(data[2],data[1],data[0]);
+     mouse_event(0x0001,0,0,0,UIntPtr.Zero);Pump();mouse_event(0x0004,0,0,0,UIntPtr.Zero);pressed=false;Pump();
+     Require(popup.IsOpen&&palette.IsDropDownOpen&&advanced.IsVisible&&GetCursorPos(out actual)&&actual.X==b.X&&actual.Y==b.Y,"拖动释放后色板关闭或指针变化");
+     local=chart.PointFromScreen(new Point(actual.X,actual.Y));new CroppedBitmap(bitmap,new Int32Rect((int)local.X,(int)local.Y,1,1)).CopyPixels(data,4,0);expected=Color.FromRgb(data[2],data[1],data[0]);
+     selected=draft.CaptureFields().Get<RecordValue>("rgba");
+     Require(draft.Writes>before+1&&selected.Get<long>("r")==expected.R&&selected.Get<long>("g")==expected.G&&selected.Get<long>("b")==expected.B,$"实际注入拖动未按当前图表像素写入：screen={second} local={local} mouse={Mouse.GetPosition(chart)}");
+    }
+    finally{if(pressed)mouse_event(0x0004,0,0,0,UIntPtr.Zero);if(GetCursorPos(out var atEnd)&&atEnd.X==last.X&&atEnd.Y==last.Y)SetCursorPos(original.X,original.Y);InputManager.Current.PreProcessInput-=traceInput;colorDescriptor.RemoveValueChanged(picker,traceColor);foreach(var item in trace)Console.WriteLine("POINTER_TRACE "+item);}
    });
    Test("原完整样式绑定错误观察者新原文不被旧提交覆盖",()=>
    {
@@ -4059,9 +4747,25 @@ internal static class S2DocumentEditingCases
     foreach(var name in new[]{"FilterCircularityMin","FilterCircularityMax","FilterRectangularityMin","FilterRectangularityMax"})Require(Metadata(name).Layout!.Increment==.01,"浮点步进丢失");
     tabs.SelectedIndex=1;Pump();var threshold=fields.Fields.Single(f=>f.FieldId==Metadata("Threshold").FieldId);
     var text=(TextBox)threshold.InputElement!;text.Text="201";
-    Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&text.Text=="201","尚未提交的原文提前写入草稿");
+    Require(root.HasPendingEdits&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&text.Text=="201","合法未提交原文未标记待编辑或提前写入草稿");
     Require(threshold.TryCommitPending(),"真实原数值不能提交："+threshold.Error);
     Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==201,"数值没有隔离草稿");
+    var minId=Metadata("FilterAreaMin").FieldId;var maxId=Metadata("FilterAreaMax").FieldId;
+    var low=fields.Fields.Single(field=>field.FieldId==minId);var high=fields.Fields.Single(field=>field.FieldId==maxId);
+    Require(low.TrySetConstant(100d)&&high.TrySetConstant(200d),"正式草稿不能设置有效范围");Pump();
+    var highText=(TextBox)high.InputElement!;highText.Text="250";
+    Require(low.TrySetConstant(150d)&&highText.Text=="250"&&high.Setting is ConstantSetting{Value:200d}&&root.HasPendingEdits,
+        "单端接纳时宿主提交或丢失了另一端合法原文");
+    highText.Text="200";Require(high.TryCommitPending()&&low.TrySetConstant(100d),"无法恢复范围验证前置");Pump();
+    var range=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
+    var rightToggle=Visuals<ToggleButton>(range).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeRight");
+    rightToggle.IsChecked=true;Click(rightToggle);Pump();
+    Require(high.HasInvalidText&&root.HasPendingEdits,"上限待选订阅没有作为未完成编辑");
+    var privateFields=Find<DeclaredSettingsView>(root).Single().Draft!.CaptureFields();
+    Require(privateFields.Get<double>(minId)==100&&privateFields.Get<double>(maxId)==200,"未选订阅时原常量草稿发生变化");
+    var frozen=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings();
+    Require(frozen.FilterAreaMin==100&&frozen.FilterAreaMax==200,"未完成编辑污染正式节点配置");
+    Require(!root.TryValidateEditor(out _)&&root.HasPendingEdits,"未选订阅的范围被最终捕获");
     context.Discard();edits.Close();
     // 旧SDK显示对象/ROI组合用例已退出；新Runtime对应完整显示及本地ROI仍未实现，不能按旧成绩算通过。
    });
@@ -4103,7 +4807,7 @@ internal static class S2DocumentEditingCases
      (new Port("text",DataType.Text,Required:false,EditModes:FieldEditModes.Reference),new FieldPresentation("text","来源","组合",1,FieldEditorKind.Scalar),(ParameterSetting)new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))))},_=>writes++,
      new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true),parentConditions:new Dictionary<string,IReadOnlyList<FieldCondition>>{["text"]=new[]{new FieldCondition("mode",0L)}});
     Show(fields);var field=fields.Fields.Single(item=>item.FieldId=="text");
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Single(item=>item.Name=="rt");
     popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();var session=popup.DataContext;var type=session.GetType();
     var current=(string)type.GetProperty("CurValueA")!.GetValue(session)!;var pending=current[..current.LastIndexOf('[')]+"[1]";
     type.GetMethod("ObserveText")!.Invoke(session,new object[]{pending});
@@ -4139,11 +4843,11 @@ internal static class S2DocumentEditingCases
     foreach(var id in ids)
     {
      var field=fields.Fields.Single(item=>item.FieldId==id);
-     Require(field.View.IsVisible&&Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Any(popup=>popup.Name=="rt")&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"参数继承槽误用数值条或未显示："+id);
+     Require(field.View.IsVisible&&Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Any(popup=>popup.Name=="rt")&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"参数继承槽误用数值条或未显示："+id);
      if(id==ids[0])
      {
-      var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
-      var content=(Popup)popup.Template.FindName("PART_Popup",popup);var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actualTree=(TreeView)tree.FindName("treeView");
+      var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Single(item=>item.Name=="rt");popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+      var content=(Popup)popup.Template.FindName("PART_Popup",popup);var tree=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>(content.Child).Single();var actualTree=(TreeView)tree.FindName("treeView");
       var group=(TreeViewItem)actualTree.ItemContainerGenerator.ContainerFromIndex(1);group.IsExpanded=true;group.UpdateLayout();Pump();
       var leaf=(TreeViewItem)group.ItemContainerGenerator.ContainerFromIndex(0);leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
       Require(field.Setting is ReferenceSetting selected&&selected.Reference.NodeId==sample.ComponentReference(id).NodeId,"原分量来源树双击未接纳");
@@ -4219,7 +4923,7 @@ internal static class S2DocumentEditingCases
     var member=new DeclaredReferenceCandidate("成员","record",null,new Port("record",TypeRef.SequenceOf(record)),path);var frozen=new ReferenceCandidates(new[]{member},Array.Empty<DeclaredReferenceCandidate>());path[0]="missing";
     Require(frozen.Sources[0].SelectedType==TypeRef.SequenceOf(DataType.Number)&&frozen.Sources[0].SelectedStorage==NumericStorage.Float32&&frozen.Sources[0].Reference(BindingSelection.All).Storage is null,"成员存储未投影或污染根引用");
     var writes=0;using var field=new DeclaredFieldEditor(new("value",DataType.Number,EditModes:FieldEditModes.Reference),"值",new ReferenceSetting(sequence.Reference(BindingSelection.All)),_=>writes++,new ReferenceFieldOptions(_=>snapshot,EditableIndex:true));Show(field);
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
     object Leaf(string property)=>((System.Collections.IEnumerable)type.GetProperty(property)!.GetValue(session)!).Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).Single();
     var sourceNode=Leaf("SourceNodes");var indexNode=Leaf("IndexNodes");
     ((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(indexNode);((ICommand)type.GetProperty("IndexClickCommand")!.GetValue(session)!).Execute(sourceNode);Require(writes==0,"跨通道节点被接纳");
@@ -4229,7 +4933,7 @@ internal static class S2DocumentEditingCases
    {
     var source=new DeclaredReferenceCandidate("来源","producer",null,new Port("value",DataType.Number),Array.Empty<string>());var fail=false;var reenter=false;var calls=0;ICommand? refresh=null;
     var writes=0;using var field=new DeclaredFieldEditor(new("value",DataType.Number,Required:false,EditModes:FieldEditModes.Reference),"值",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,new ReferenceFieldOptions(_=>{calls++;if(reenter)refresh!.Execute(null);if(fail)throw new InvalidOperationException("目录失败");return new(new[]{source},Array.Empty<DeclaredReferenceCandidate>());}));Show(field);
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();refresh=(ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!;refresh.Execute(null);
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();refresh=(ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!;refresh.Execute(null);
     var roots=((System.Collections.IEnumerable)type.GetProperty("SourceNodes")!.GetValue(session)!).Cast<object>().ToArray();var clear=roots[0];fail=true;refresh.Execute(null);
     ((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(clear);Require(writes==0&&field.Setting is ReferenceSetting&&field.HasInvalidText,"刷新失败旧清除叶仍写入");
     fail=false;reenter=true;var prior=calls;refresh.Execute(null);Require(calls==prior+1&&!field.HasInvalidText&&writes==0,"provider递归刷新或恢复擅自写入");
@@ -4238,17 +4942,17 @@ internal static class S2DocumentEditingCases
    {
     var source=new DeclaredReferenceCandidate("来源","producer",null,new Port("value",DataType.Number,Storage:NumericStorage.Float32),Array.Empty<string>());var writes=0;
     using var fields=new DeclaredFieldsView(new[]{(new Port("value",DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("value","值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new UnsetSetting())},_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),inlineConstants:new HashSet<string>{"value"});Show(fields);var field=fields.Fields.Single();
-    var text=Visuals<Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(field.View).Single();Require(!text.IsReadOnly&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"同槽常量未使用原可编辑文本");
+    var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field.View).Single();Require(!text.IsReadOnly&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"同槽常量未使用原可编辑文本");
     text.Focus();text.Text="0.1";SendKey(text,Key.Enter,true);Pump();Require(writes==1&&field.Setting is ConstantSetting{Value:double value}&&value==(double).1f&&!text.IsKeyboardFocusWithin,"Float32常量未单次接纳/失焦");
     text.Focus();text.Text="NaN";SendKey(text,Key.Enter,true);Require(writes==1&&text.Text=="NaN"&&text.IsKeyboardFocusWithin&&field.HasInvalidText,"非法常量丢原文或提交");
     text.Text="0.2";SendKey(text,Key.Enter,true);Require(writes==2&&!field.HasInvalidText,"纠正常量失败");
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
     var root=((System.Collections.IEnumerable)type.GetProperty("SourceNodes")!.GetValue(session)!).Cast<object>().Last();var leaf=((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>().Single();((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(leaf);Require(writes==3&&field.Setting is ReferenceSetting,"常量态不能重新选择来源");
     text.Focus();text.Text="0.3";SendKey(text,Key.Enter,true);Require(writes==4&&field.Setting is ConstantSetting,"引用不能改为常量");text.Focus();text.Text="";Pump();Require(writes==5&&field.Setting is UnsetSetting,"常量清空未接纳Unset");
    });
    Test("订阅常量拒绝及接纳后观察异常不倒退accepted原文",()=>
    {
-    var reject=true;var writes=0;using var fields=new DeclaredFieldsView(new[]{(new Port("value",DataType.Number,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("value","值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(1d))},_=>writes++,ReferenceFieldOptions.Empty,validateComposition:_=>reject?"拒绝常量":null,inlineConstants:new HashSet<string>{"value"});Show(fields);var field=fields.Fields.Single();var text=Visuals<Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(field.View).Single();text.Focus();text.Text="1.23456789";SendKey(text,Key.Enter,true);Require(writes==0&&text.Text=="1.23456789"&&field.Setting is ConstantSetting{Value:1d},"拒绝丢原文或忽略宿主");
+    var reject=true;var writes=0;using var fields=new DeclaredFieldsView(new[]{(new Port("value",DataType.Number,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("value","值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(1d))},_=>writes++,ReferenceFieldOptions.Empty,validateComposition:_=>reject?"拒绝常量":null,inlineConstants:new HashSet<string>{"value"});Show(fields);var field=fields.Fields.Single();var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field.View).Single();text.Focus();text.Text="1.23456789";SendKey(text,Key.Enter,true);Require(writes==0&&text.Text=="1.23456789"&&field.Setting is ConstantSetting{Value:1d},"拒绝丢原文或忽略宿主");
     reject=false;Action broken=()=>throw new InvalidOperationException("常量观察异常");field.Changed+=broken;var threw=false;
     try{field.TryCommitPending();}catch(InvalidOperationException error){threw=error.Message.Contains("常量观察异常");}finally{field.Changed-=broken;}
     Pump();Require(threw&&writes==1&&field.Setting is ConstantSetting{Value:1.23456789d}&&text.Text=="1.23456789"&&!field.HasInvalidText,"接纳后异常恢复了旧原文或接受模型");
@@ -4258,7 +4962,7 @@ internal static class S2DocumentEditingCases
    {
     var source=new DeclaredReferenceCandidate("来源","producer",null,new Port("value",TypeRef.SequenceOf(DataType.Number)),Array.Empty<string>());var index=new DeclaredReferenceCandidate("索引","index",null,new Port("index",DataType.Integer),Array.Empty<string>());var writes=0;
     using var field=new DeclaredFieldEditor(new("value",DataType.Number,EditModes:FieldEditModes.Reference),"值",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},new[]{index}),EditableIndex:true));Show(field);
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();var refresh=(ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!;refresh.Execute(null);
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field).Single(item=>item.Name=="rt");var session=popup.DataContext;var type=session.GetType();var refresh=(ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!;refresh.Execute(null);
     object Leaf(string property)=>((System.Collections.IEnumerable)type.GetProperty(property)!.GetValue(session)!).Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).Single();
     var oldSource=Leaf("SourceNodes");var oldIndex=Leaf("IndexNodes");var seen=new HashSet<string>();var once=true;
     System.ComponentModel.PropertyChangedEventHandler broken=(_,args)=>{seen.Add(args.PropertyName!);if(once&&args.PropertyName=="SelectedSourceNode"){once=false;throw new InvalidOperationException("刷新观察异常");}};
@@ -4276,7 +4980,7 @@ internal static class S2DocumentEditingCases
     foreach(var invalid in new[]{new ConstantSetting(2d),new ConstantSetting((double).123f)})
     {var rejected=false;try{using var bad=Create(Presentation(2),invalid,_=>throw new Exception("非法初值不得写入"));}catch(ArgumentException){rejected=true;}Require(rejected,"非法范围或精度初值未拒绝");}
     var writes=0;using(var fields=Create(Presentation(2),new ConstantSetting((double).1f),_=>writes++))
-    {Show(fields);var field=fields.Fields.Single();Require(!field.TrySetConstant((double).123f)&&!field.TrySetConstant(2d)&&writes==0,"程序写绕过声明");var text=Visuals<Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(field.View).Single();text.Focus();text.Text="0.123";SendKey(text,Key.Enter,true);Require(field.HasInvalidText&&text.Text=="0.123"&&writes==0,"键盘绕过精度或丢原文");text.Text="0.2";SendKey(text,Key.Enter,true);Require(writes==1&&!field.HasInvalidText,"规范Float32小数被尾数误拒");}
+    {Show(fields);var field=fields.Fields.Single();Require(!field.TrySetConstant((double).123f)&&!field.TrySetConstant(2d)&&writes==0,"程序写绕过声明");var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field.View).Single();text.Focus();text.Text="0.123";SendKey(text,Key.Enter,true);Require(field.HasInvalidText&&text.Text=="0.123"&&writes==0,"键盘绕过精度或丢原文");text.Text="0.2";SendKey(text,Key.Enter,true);Require(writes==1&&!field.HasInvalidText,"规范Float32小数被尾数误拒");}
     using(var fields=Create(Presentation(null),new UnsetSetting(),_=>writes++))
     {Show(fields);var field=fields.Fields.Single();Require(field.TrySetConstant((double)1e-20f)&&field.TrySetConstant((double)float.Epsilon),"不限固定小数位错误截断合法微小Float32");}
     var invalidLayout=false;try{using var bad=Create(Presentation(16),new UnsetSetting(),_=>{});}catch(ArgumentException){invalidLayout=true;}Require(invalidLayout,"空初值绕过非法精度声明");
@@ -4291,9 +4995,9 @@ internal static class S2DocumentEditingCases
     Require(sample.Fields.TrySetFields(proposal)&&sample.Revision==1&&binding.Calls==1&&binding.Resolutions==5,"五槽未一次解析接纳");var item=sample.Session.Items.Single(row=>row.Group=="detect");var stable=item.Id;
     Require(RoiGeometryEditing.Center(ComponentGeometry(sample)).X==200&&ComponentGeometry(sample).Get<double>("width")==100,"正式序列及记录成员解析未驱动原ROI");
     var calls=binding.Calls;Require(sample.TryCapture(out var captured,out _)&&binding.Calls==calls&&captured!.Stamp==sample.Session.Stamp,"普通Read/捕获重复创建分量运行快照");
-    var width=sample.Fields.Fields.Single(field=>field.FieldId==ids[2]);var text=Visuals<Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(width.View).Single();text.Focus();Pump();var raw=text.Text;var bracket=raw.LastIndexOf('[');Require(bracket>=0&&raw.EndsWith("]",StringComparison.Ordinal),"实际来源文本无索引槽");text.Text=raw[..(bracket+1)]+"3]";SendKey(text,Key.Enter,true);Pump();
+    var width=sample.Fields.Fields.Single(field=>field.FieldId==ids[2]);var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(width.View).Single();text.Focus();Pump();var raw=text.Text;var bracket=raw.LastIndexOf('[');Require(bracket>=0&&raw.EndsWith("]",StringComparison.Ordinal),"实际来源文本无索引槽");text.Text=raw[..(bracket+1)]+"3]";SendKey(text,Key.Enter,true);Pump();
     Require(sample.Revision==2&&binding.Calls==calls+1&&ComponentGeometry(sample).Get<double>("width")==80&&!text.IsKeyboardFocusWithin,"原文本固定索引未驱动同批几何或Enter未失焦");
-    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(width.View).Single(view=>view.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
+    var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(width.View).Single(view=>view.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
     object[] Leaves(string name)=>((System.Collections.IEnumerable)type.GetProperty(name)!.GetValue(session)!).Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).ToArray();
     Require(Leaves("SourceNodes").Length==2&&Leaves("IndexNodes").Length==1,"VM来源Float32/索引Int32过滤未落实");
     ((ICommand)type.GetProperty("IndexClickCommand")!.GetValue(session)!).Execute(Leaves("IndexNodes").Single());Pump();

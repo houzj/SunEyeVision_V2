@@ -1,0 +1,28 @@
+{
+  "scope": "工作流询问主仓正式多图像叠层能力",
+  "verified": [
+    "BindImage仅单_frame，换帧退役旧层",
+    "RegionLayer.Present接收IReadOnlyRegion",
+    "Shapes仅Geometry/Selection/Text",
+    "队列背景+三叠层条目为证据/后续范围，非实现"
+  ],
+  "decision": "无正式可交接多IReadOnlyImage叠层或近期已接线交付；按暂停公共显示合同扩展保留明确占位/依赖，不借RegionLayer替代，不阻止工作流有基础部分继续",
+  "sources": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "9571FBCB093C435B5822E84C8B954FBB2D59AD0EE410CBEC0A88E805E3C4F600"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+      "sha256": "CF814431D2C0A178AA3AC49D45DF149438F6F1B70CE2F3765A8B4DAE75452FAB"
+    },
+    {
+      "path": "docs/collaboration/VM_CONTROL_BATCH_QUEUE_20261029.md",
+      "sha256": "262CFDA52C1FD5EA0641E5AC095134B8257B38FBB2783BECF9C3F7EA7D93A224"
+    }
+  ],
+  "replyThread": "01a176b8-278f-77f3-8093-20a80f11403b",
+  "replyDelivered": true,
+  "workflowWorktreeChanged": false,
+  "productChangedForThisInquiry": false
+}

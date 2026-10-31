@@ -213,13 +213,15 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     {
         var cancellation=new CancellationTokenSource();var token=cancellation.Token;_previewCancellation=cancellation;
         var paneGeneration=++_output.Generation;++_selectionGeneration;
+        var openingStatus=_main.StatusText;
         try
         {
             using var decoded=await LocalResultImagePreview.LoadAsync(path,token);
             bool Current()=>!_disposed&&!token.IsCancellationRequested&&epoch==_epoch&&_output.Generation==paneGeneration&&_main.NativePreviewPath==path;
             if(!Current())return;
             if(!_output.Image.TryPresentPreview(decoded.Image,Current,out var error))_main.AddLog("文件预览未显示："+error);
-            else _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
+            else if(_main.StatusText==openingStatus&&!openingStatus.StartsWith("图像源配置已接纳，",StringComparison.Ordinal))
+                _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
         }
         catch(OperationCanceledException){}
         catch(Exception error){if(!_disposed&&epoch==_epoch)_main.AddLog("文件预览失败："+error.Message);}

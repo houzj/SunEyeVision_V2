@@ -3,10 +3,9 @@ using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
-internal sealed record NativeGraphicTemplateData(string DisplayNameA,NativeGraphicBridge BridgeObjA)
+internal sealed record NativeGraphicTemplateData(string DisplayNameA,NativeGraphicBridge BridgeObjA,bool PanVisibleA)
 {
     public string DescriptionA=>DisplayNameA;
-    public bool PanVisibleA=>true;
 }
 
 /// <summary>Original-template staging properties. Accepted values live in the caller's field states.</summary>

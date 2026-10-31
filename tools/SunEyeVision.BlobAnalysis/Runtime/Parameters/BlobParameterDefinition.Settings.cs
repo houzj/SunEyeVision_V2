@@ -12,6 +12,9 @@ public sealed partial class BlobParameterDefinition
     private sealed record SettingBinding(Port Port,FieldPresentation Presentation,
         Func<BlobSettings,object?> Read,Func<BlobSettings,object?,BlobSettings> Write);
     public ToolSchema SettingsSchema { get; }
+    public IReadOnlyDictionary<string,string> ParameterBindingNames=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(
+        _fields.Values.Where(item=>Boolean(item,"allowReference")).ToDictionary(item=>FieldId(item,"fieldId"),
+            item=>Required(item,"bindingName"),StringComparer.Ordinal));
 
     private static string FieldId(XElement item,string attribute)
     {
@@ -46,7 +49,7 @@ public sealed partial class BlobParameterDefinition
             string? pair=null;
             if(item.Attribute("pairWith") is { } partner)
             {if(!_fields.TryGetValue(partner.Value,out var endpoint))throw new InvalidDataException("Unknown Blob range endpoint.");pair=FieldId(endpoint,"fieldId");}
-            var layout=new FieldLayout(Page(name),Section(name),condition,pair,Minimum:Minimum(name),Maximum:Maximum(name),
+            var layout=new FieldLayout(Page(name),Section(name),condition,pair,Advanced:Advanced(name),Minimum:Minimum(name),Maximum:Maximum(name),
                 DecimalPlaces:DecimalPlaces(name),AllowReference:Boolean(item,"allowReference"),Increment:Increment(name));
             var presentation=new FieldPresentation(port.Id,Label(name),Section(name),bindings.Count,type.IsEnum?FieldEditorKind.Choice:FieldEditorKind.Scalar,
                 type.IsEnum?choices.Keys:null,type.IsEnum?choices:null){Layout=layout};

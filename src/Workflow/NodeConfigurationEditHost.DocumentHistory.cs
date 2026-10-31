@@ -61,11 +61,11 @@ public sealed partial class NodeConfigurationEditHost
             SolutionExecutionDependencyGraph.Compile(configuration, checkReadiness: false));
     }
 
-    private BindingConfigurationSnapshot ReplayHistoryConfiguration(BindingConfigurationSnapshot target)
+    private BindingConfigurationPublication ReplayHistoryConfiguration(BindingConfigurationSnapshot target)
     {
         try
         {
-            BindingConfigurationSnapshot accepted;
+            BindingConfigurationPublication accepted;
             List<(GlobalVariable Variable, bool ValueChanged)> notifications;
             lock (_gate)
             {
@@ -104,7 +104,7 @@ public sealed partial class NodeConfigurationEditHost
         }
     }
 
-    private sealed class ConfigurationOperation : IDocumentHistoryOperation, IDocumentHistoryReplayGuard
+    private sealed class ConfigurationOperation : IDocumentHistoryOperation, IDocumentHistoryReplayGuard, IDocumentHistoryReplayEffects
     {
         private readonly NodeConfigurationEditHost _host;
         private readonly IReadOnlyList<NodeConfigurationEditDraft> _nodes;
@@ -116,6 +116,7 @@ public sealed partial class NodeConfigurationEditHost
         public string Description => _roots?.Count > 0 ? "修改流程配置" : _variables is not null ? "修改变量定义" : "修改节点参数";
         public IReadOnlyList<DocumentHistoryScope> Scopes { get; }
         public BindingConfigurationPublication? Publication { get; private set; }
+        public IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; private set; } = Array.Empty<ScopedNodeIdentity>();
         public ConfigurationHistoryReceipt Receipt => new(_commitId, _before!, _after!, Array.AsReadOnly(Scopes.ToArray()));
 
         internal ConfigurationOperation(NodeConfigurationEditHost host, IReadOnlyList<NodeConfigurationEditDraft> nodes,
@@ -139,12 +140,13 @@ public sealed partial class NodeConfigurationEditHost
                     Publication = _host.CommitBatchCore(_nodes, _variables, _roots, recordHistory: false);
                     _after = _host.CaptureHistoryConfiguration();
                 }
-                else _host.ReplayHistoryConfiguration(direction == DocumentHistoryDirection.Backward ? _before! : _after!);
+                else InvalidatedNodes = _host.ReplayHistoryConfiguration(direction == DocumentHistoryDirection.Backward ? _before! : _after!).InvalidatedNodes;
                 _expected = DocumentHistorySignature(_host._design);
             }, () =>
             {
                 if (DocumentHistorySignature(_host._design) != expected) _host.ReplayHistoryConfiguration(checkpoint);
                 _expected = expected;
+                InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
                 if (initial)
                 {
                     _before = null; _after = null;

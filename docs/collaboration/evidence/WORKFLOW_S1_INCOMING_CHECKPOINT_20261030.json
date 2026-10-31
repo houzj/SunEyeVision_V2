@@ -1,0 +1,47 @@
+{
+  "source": "工作流独立对话主动回件，未在本线独立复验",
+  "checkpoint": "6f52c348",
+  "parent": "35039526",
+  "branch": "codex/workflow-toolbox-dataflow",
+  "mergedIntoMain": false,
+  "reportedBuild": "0错误/3493警告",
+  "reportedValidation": "ImageSourceRecovery attempt019 350通过/0失败",
+  "sharedHunks": [
+    "WorkflowExecutionManager.cs单次运行UI状态投影4增1删",
+    "LocalImages游标/选择/消费",
+    "MainWindowImageSourceEditing",
+    "ImageInputSource"
+  ],
+  "remaining": [
+    "配置显示条件",
+    "剩余原件闭包",
+    "实际VS设计器及人工验收",
+    "WorkflowHost补充轨旧测试合同障碍"
+  ],
+  "decision": "只记录候选，不改独立目录、不合并或代签S1；本线命名变更集成时须重核类型消费者",
+  "laterReportedCheckpoint": {
+    "reportedBuild": "0错误/3391警告",
+    "commit": "abf7327e",
+    "scope": "配置接纳与仅显示像素保留分离",
+    "reportedTests": "attempt026 352通过/0失败；本线未独立复验",
+    "parent": "6f52c348"
+  },
+  "inProgressStructuralBatch": {
+    "mainDecision": "只记共享边界；主仓未合并、未构建，B08目标继续blocked",
+    "reportedBuild": "0错误/6198警告",
+    "sharedHunks": [
+      "MainWindowViewModel投影后同步一行",
+      "LocalImages新增同步方法",
+      "LocalImageSequenceService私有状态"
+    ],
+    "changes": [
+      "导入不强选新项、不发RawPreview，投影后同步根/源运行游标",
+      "删当前游标置-1、删前减1、删后保持；首项回退不写回游标",
+      "序列私有HasCursor处理无选择首读，不扩公共接口或Group",
+      "首图临时视图标志与运行游标回写分开，恢复拖放文件资格检查"
+    ],
+    "status": "工作流主动报告在制；未提供本批提交，未交付/启动/合并",
+    "baseline": "abf7327e",
+    "reportedTests": "ImageSourceRecovery在跑；仅来信状态，本线没有独立验证活跃进程句柄，不记通过"
+  }
+}

@@ -17,10 +17,30 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             var source=CompileReference(reference,scope,dependencies);
             var issue=scope.ValidateDependencies(dependencies.Distinct().ToArray());
             if(issue is not null)return new(BindingCompatibility.Incompatible,null,issue);
-            var from=source.SelectedType;var to=target.Type;
+            var compatibility=CompareValueSource(new Port("source",source.SelectedType,Storage:source.Storage),target,conversion,out var compatibilityIssue);
+            if(compatibilityIssue is not null)return new(compatibility,null,compatibilityIssue);
+            var conditional=source.Conditional||compatibility==BindingCompatibility.Conditional;
+            var root=source.Source.Schema.Outputs.Single(p=>p.Id==reference.PortId);
+            conditional|=root.Nullable||!root.Required;
+            return new(conditional?BindingCompatibility.Conditional:BindingCompatibility.Compatible,
+                new BindingPlan(scope.Consumer,scope.DocumentSessionId,scope.DocumentRevision,source,target,conversion,dependencies),null);
+        }
+        catch(BindingFault fault){return new(fault.Unresolved?BindingCompatibility.Unresolved:BindingCompatibility.Incompatible,null,new(fault.Code,fault.Message));}
+        catch(ArgumentException fault){return new(BindingCompatibility.Incompatible,null,new("invalid-declaration",fault.Message));}
+    }
+
+    /// <summary>Value-only declaration compatibility shared by module and variable sources. No graph identity is fabricated.</summary>
+    public BindingCompatibility CompareValueSource(Port source,Port target,BindingConversion conversion,out Diagnostic? diagnostic)
+    {
+        diagnostic=null;
+        try
+        {
+            NumericStorageRules.ValidateDeclaration(source);NumericStorageRules.ValidateDeclaration(target);
+            if(!Enum.IsDefined(conversion))throw new BindingFault("conversion","Unknown conversion operation.");
+            var from=source.Type;var to=target.Type;
             var sourceMany=from.Shape==ValueShape.Sequence;var targetMany=to.Shape==ValueShape.Sequence;
             var elementFrom=sourceMany?from.Element!:from;var elementTo=targetMany?to.Element!:to;
-            bool conditional=source.Conditional||target.Choices is not null;
+            bool conditional=source.Nullable||!source.Required||target.Choices is not null;
             if(elementFrom!=elementTo)
             {
                 if(elementFrom.Scalar==ScalarKind.Int64 && elementTo.Scalar==ScalarKind.Float64)
@@ -34,15 +54,11 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             var countState=(sourceMany?from.Count:CountConstraint.Exactly(1)).CompatibilityWith(targetMany?to.Count:CountConstraint.Exactly(1));
             if(countState==BindingCompatibility.Incompatible)throw new BindingFault("count","Declared count ranges do not intersect.");
             conditional|=countState==BindingCompatibility.Conditional;
-            var root=source.Source.Schema.Outputs.Single(p=>p.Id==reference.PortId);
-            conditional|=root.Nullable||!root.Required;
-            return new(conditional?BindingCompatibility.Conditional:BindingCompatibility.Compatible,
-                new BindingPlan(scope.Consumer,scope.DocumentSessionId,scope.DocumentRevision,source,target,conversion,dependencies),null);
+            return conditional?BindingCompatibility.Conditional:BindingCompatibility.Compatible;
         }
-        catch(BindingFault fault){return new(fault.Unresolved?BindingCompatibility.Unresolved:BindingCompatibility.Incompatible,null,new(fault.Code,fault.Message));}
-        catch(ArgumentException fault){return new(BindingCompatibility.Incompatible,null,new("invalid-declaration",fault.Message));}
+        catch(BindingFault error){diagnostic=new(error.Code,error.Message);return BindingCompatibility.Incompatible;}
+        catch(ArgumentException error){diagnostic=new("invalid-declaration",error.Message);return BindingCompatibility.Incompatible;}
     }
-
     private static BindingReferencePlan CompileReference(OutputReference reference,IBindingCompilationScope scope,List<BindingNodeId> dependencies)
     {
         var node=new BindingNodeId(reference.ScopeId??scope.Consumer.ScopeId,reference.NodeId);
@@ -54,9 +70,12 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         if(NumericStorageRules.Effective(port.Type,port.Storage)!=reference.Storage)
             throw new BindingFault("schema-changed","Source physical numeric declaration changed; rebind explicitly.");
         dependencies.Add(node);
-        var selected=port.Type;BindingReferencePlan? index=null;bool conditional=false;
+        var selected=port.Type;BindingReferencePlan? index=null;BindingVariableSource? variableIndex=null;bool conditional=false;
+        var storage=port.Storage;var memberPosition=0;
         if(reference.Selection is not BindingSelection.AllItems)
         {
+            while(selected.Shape!=ValueShape.Sequence&&memberPosition<reference.MemberFieldPath.Count)
+                selected=ProjectType(selected,reference.MemberFieldPath[memberPosition++],ref conditional,ref storage);
             if(selected.Shape!=ValueShape.Sequence)throw new BindingFault("index-shape","Index selection requires a sequence declaration.");
             if(reference.Selection is BindingSelection.AtConstant fixedIndex)
             {
@@ -70,12 +89,21 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 if(index.SelectedType!=TypeRef.ScalarOf(ScalarKind.Int64))throw new BindingFault("index-type","Dynamic index must be an Int64 scalar.");
                 conditional=true;
             }
+            else if(reference.Selection is BindingSelection.AtVariable variable)
+            {
+                if(!scope.TryGetVariable(variable.Reference,out variableIndex)
+                    ||variableIndex.Reference.SolutionId!=variable.Reference.SolutionId||variableIndex.Reference.VariableId!=variable.Reference.VariableId
+                    ||variableIndex.Reference.Type!=variable.Reference.Type||variableIndex.Reference.Storage!=variable.Reference.Storage)
+                    throw new BindingFault("index-variable","Variable index declaration is missing or changed.",true);
+                if(variableIndex.Producer is {} producer&&producer.ScopeId==scope.Consumer.ScopeId)dependencies.Add(producer);
+                conditional=true;
+            }
             else throw new BindingFault("selection","Unknown selection operation.");
             selected=selected.Element!;
         }
-        var storage=port.Storage;
-        foreach(var member in reference.MemberFieldPath)selected=ProjectType(selected,member,ref conditional,ref storage);
-        return new(reference,source,selected,index,conditional,storage);
+        for(;memberPosition<reference.MemberFieldPath.Count;memberPosition++)
+            selected=ProjectType(selected,reference.MemberFieldPath[memberPosition],ref conditional,ref storage);
+        return new(reference,source,selected,index,conditional,storage,variableIndex);
     }
 
     private static TypeRef ProjectType(TypeRef type,string field,ref bool conditional,ref NumericStorage? storage)
@@ -106,8 +134,20 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
             if(snapshot.Consumer!=plan.Consumer || snapshot.DocumentRevision!=plan.DocumentRevision || snapshot.ConsumerIdentity.DocumentSessionId!=plan.DocumentSessionId)
                 throw new BindingFault("document-changed","Binding plan belongs to another consumer or document revision.");
             var source=ReadReference(plan.Source,snapshot,published);
-            if(source is null)return new(true,ValueRules.Freeze(plan.Target,null),null);
-            var from=plan.Source.SelectedType;var target=plan.Target.Type;
+            return ResolveValue(source,plan.Source.SelectedType,plan.Target,plan.Conversion);
+        }
+        catch(BindingFault fault){return new(false,null,new(fault.Code,fault.Message));}
+        catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException)
+        {return new(false,null,new("invalid-value",fault.Message,plan.Target.Id));}
+    }
+
+    /// <summary>Resolve a normalized declared value using the same quantity and numeric rules for every source kind.</summary>
+    public BindingResolution ResolveValue(object? source,TypeRef sourceType,Port targetPort,BindingConversion conversion=BindingConversion.Automatic)
+    {
+        try
+        {
+            if(source is null)return new(true,ValueRules.Freeze(targetPort,null),null);
+            var from=sourceType;var target=targetPort.Type;
             object? value;
             if(target.Shape==ValueShape.Sequence)
             {
@@ -116,10 +156,10 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 var elementFrom=from.Shape==ValueShape.Sequence?from.Element!:from;
                 var converted=elements.Select((item,index)=>
                 {
-                    var convertedItem=ConvertElement(item,elementFrom,target.Element!,plan.Conversion,plan.Target.Storage);
-                    try{return ValueRules.Freeze(new Port(plan.Target.Id,target.Element!,Storage:plan.Target.Storage),convertedItem);}
+                    var convertedItem=ConvertElement(item,elementFrom,target.Element!,conversion,targetPort.Storage);
+                    try{return ValueRules.Freeze(new Port(targetPort.Id,target.Element!,Storage:targetPort.Storage),convertedItem);}
                     catch(ArgumentException fault)
-                    {throw new BindingFault("invalid-element",$"Field {plan.Target.Id}, item {index}: {fault.Message}");}
+                    {throw new BindingFault("invalid-element",$"Field {targetPort.Id}, item {index}: {fault.Message}");}
                 }).ToArray();
                 value=target.Element==TypeRef.ScalarOf(ScalarKind.Float64)
                     ?converted.Cast<double>().ToArray():new SequenceValue(target,converted);
@@ -132,15 +172,14 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                     if(elements.Length!=1)throw new BindingFault("exactly-one","This consumer requires exactly one item; zero or multiple items cannot be used.");
                     source=elements[0];from=from.Element!;
                 }
-                value=ConvertElement(source,from,target,plan.Conversion,plan.Target.Storage);
+                value=ConvertElement(source,from,target,conversion,targetPort.Storage);
             }
-            return new(true,ValueRules.Freeze(plan.Target,value),null);
+            return new(true,ValueRules.Freeze(targetPort,value),null);
         }
-        catch(BindingFault fault){return new(false,null,new(fault.Code,fault.Message));}
-        catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException)
-        {return new(false,null,new("invalid-value",fault.Message,plan.Target.Id));}
+        catch(BindingFault error){return new(false,null,new(error.Code,error.Message));}
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException or OverflowException)
+        {return new(false,null,new("invalid-value",error.Message,targetPort.Id));}
     }
-
     private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published)
     {
         if(!snapshot.TryGetExpectedSourceIdentity(plan.Source.Node,out var expected) || expected.RequestId==Guid.Empty)
@@ -156,17 +195,39 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         if(!result.Values.Contains(plan.Reference.PortId))throw new BindingFault("missing-value","Source did not publish the required field.");
         var root=plan.Source.Schema.Outputs.Single(p=>p.Id==plan.Reference.PortId);
         object? value=ValueRules.Freeze(root,result.Values.Get<object?>(plan.Reference.PortId));
+        var type=root.Type;var memberPosition=0;
         if(plan.Reference.Selection is not BindingSelection.AllItems)
         {
+            while(type.Shape!=ValueShape.Sequence&&memberPosition<plan.Reference.MemberFieldPath.Count)
+            {
+                var member=plan.Reference.MemberFieldPath[memberPosition++];
+                value=ProjectValue(value,member);
+                if(type.Shape!=ValueShape.Record)throw new BindingFault("member-shape","Member projection requires declared record fields.");
+                type=type.Fields.SingleOrDefault(field=>field.Id==member)?.Type
+                    ??throw new BindingFault("missing-member","Declared member field no longer exists.",true);
+            }
             if(value is null)throw new BindingFault("index-null","Cannot select an item from null.");
             long index=plan.Reference.Selection is BindingSelection.AtConstant fixedIndex?fixedIndex.Index:
+                plan.VariableIndex is {} variable?ReadVariableIndex(variable,snapshot):
                 ReadReference(plan.Index!,snapshot,published) is long dynamicIndex?dynamicIndex:throw new BindingFault("index-value","Dynamic index is unavailable or is not an Int64 scalar.");
             var elements=Elements(value);
             if(index<0 || index>=elements.Length)throw new BindingFault("index-range","Index is outside this invocation's sequence; no fallback item is used.");
             value=elements[(int)index];
         }
-        foreach(var member in plan.Reference.MemberFieldPath)value=ProjectValue(value,member);
+        for(;memberPosition<plan.Reference.MemberFieldPath.Count;memberPosition++)
+            value=ProjectValue(value,plan.Reference.MemberFieldPath[memberPosition]);
         return value;
+    }
+
+    public static long ReadVariableIndex(BindingVariableSource source,IBindingRunSnapshot snapshot)
+    {
+        if(!snapshot.TryGetVariable(source.Reference,out var captured)||captured.ConsumerIdentity!=snapshot.ConsumerIdentity
+            ||captured.Source.Reference.SolutionId!=source.Reference.SolutionId||captured.Source.Reference.VariableId!=source.Reference.VariableId
+            ||captured.Source.Reference.Type!=source.Reference.Type||captured.Source.Reference.Storage!=source.Reference.Storage
+            ||captured.Source.Producer!=source.Producer)
+            throw new ArgumentException("Variable index is missing from this consumer's frozen invocation.");
+        if(captured.Issue is {} issue)throw new ArgumentException(issue.Message);
+        return captured.Value is long index?index:throw new ArgumentException("Variable index must be an integer scalar.");
     }
 
     private static object? ProjectValue(object? value,string field)

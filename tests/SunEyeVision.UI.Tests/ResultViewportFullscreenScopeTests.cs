@@ -254,16 +254,5 @@ public sealed class ResultViewportFullscreenScopeTests
         Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => frame.Continue = false));
         Dispatcher.PushFrame(frame);
     }
-    private static void Sta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); } catch (Exception error) { failure = error; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "原图像全屏移动测试超过30秒。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void Sta(Action action) => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
 }

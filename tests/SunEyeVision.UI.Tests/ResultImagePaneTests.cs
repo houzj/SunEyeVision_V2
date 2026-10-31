@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Threading;
@@ -342,16 +342,5 @@ public sealed class ResultImagePaneTests
         public ImageFrameAddress SourceFrame => wrongCoordinates ? original.SourceFrame : new(Guid.NewGuid(), "foreign");
         public IRegionReadLease AcquireReader() => original.AcquireReader();
     }
-    private static void Sta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); } catch (Exception error) { failure = error; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "原结果图像pane测试超过20秒。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void Sta(Action action) => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
 }

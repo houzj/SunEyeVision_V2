@@ -67,11 +67,13 @@ public sealed class ToolExecutionOwner
     {
         lock (_gate)
         {
-            if (_retired || (callback && !identity.CallbacksOpen) || identity.CancellationToken.IsCancellationRequested ||
-                !_domains.TryGetValue(identity.NodeId, out var generation) || generation != identity.NodeGeneration ||
-                !_latest.TryGetValue(identity.NodeId, out var admitted) || admitted.Root!=identity.RootRunId ||
-                !admitted.Requests.TryGetValue(identity.RunId,out var request) || request != identity.RequestId || identity.Admission?.Invoke() == false)
-                return false;
+            bool Current() => !_retired && (!callback || identity.CallbacksOpen) && !identity.CancellationToken.IsCancellationRequested &&
+                _domains.TryGetValue(identity.NodeId, out var generation) && generation == identity.NodeGeneration &&
+                _latest.TryGetValue(identity.NodeId, out var admitted) && admitted.Root == identity.RootRunId &&
+                admitted.Requests.TryGetValue(identity.RunId, out var request) && request == identity.RequestId;
+            // Admission can synchronously reenter and retire, replace or cancel this identity.
+            // Never publish under a verdict obtained before that callback completed.
+            if (!Current() || identity.Admission?.Invoke() == false || !Current()) return false;
             publish?.Invoke();
             return true;
         }

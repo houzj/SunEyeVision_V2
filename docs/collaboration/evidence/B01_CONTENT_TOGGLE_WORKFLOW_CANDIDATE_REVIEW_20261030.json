@@ -1,0 +1,66 @@
+{
+  "status": "独立工作流在制消费者接入已有实际回执及源码审阅；未主仓合并，不代本线生产验收",
+  "workerRoot": "C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2",
+  "receipt": {
+    "stage": "S4",
+    "attempt": 35,
+    "pid": 125868,
+    "exit": 0,
+    "timeoutMs": 900000,
+    "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "I2ImageSourceRecoveryCases.cs",
+    "caseSourceSha256": "BC6A9EE31C3748EDAD0EB2F44655FDE89CC74D869E5119C4192BCF0B705BA876",
+    "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+    "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-035"
+  },
+  "checks": 359,
+  "failed": 0,
+  "sharedOriginalIdentity": [
+    {
+      "path": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+      "main": "09F3ACC0D43FE730D2612B81F7B7158513452706A0C3D0F42A80071FCB439936",
+      "worker": "09F3ACC0D43FE730D2612B81F7B7158513452706A0C3D0F42A80071FCB439936",
+      "equal": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+      "main": "D4E4E02178190D26209ABCEBBA422F86AD9B5AD0B90931386753420E38FC51C6",
+      "worker": "D4E4E02178190D26209ABCEBBA422F86AD9B5AD0B90931386753420E38FC51C6",
+      "equal": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/off-dark.png",
+      "main": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3",
+      "worker": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3",
+      "equal": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/on-dark.png",
+      "main": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403",
+      "worker": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403",
+      "equal": true
+    }
+  ],
+  "consumers": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\ImageSources\\ImageSourceStrip.xaml",
+      "sha256": "7006E94A79863C6236A2F0304934ADCE474DD092051E948EC56619568BF7FE47"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\ImageSources\\ImageSourceStrip.xaml.cs",
+      "sha256": "89229D7B08EEE180818A638ABDDFB2800B9401BF479D97FFA8DDADFC94910D86"
+    }
+  ],
+  "observed": [
+    "真实ContentToggleSwitch，显式TwoWay、每实例dark图及Stretch=None",
+    "AutoSwitchChanged读取内部ToggleButton sender；投影门禁、当前会话、Loaded与可交互检查",
+    "Attach/Detach配对原事件，清理旧生命周期并维护当前代次",
+    "Refresh显式UpdateTarget置于_refreshing门禁，不改事件原语义"
+  ],
+  "limitations": [
+    "本线只读审阅源码/身份及独立回执，没有在主线执行359项",
+    "最终工作流源码提交和人工/VS/正式主仓集成仍待",
+    "B08及Blob功能不由此完成"
+  ],
+  "productChanged": false
+}

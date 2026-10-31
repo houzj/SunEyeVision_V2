@@ -16,7 +16,6 @@
         xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
 
         xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
-        xmlns:panels="clr-namespace:SunEyeVision.UI.Shell.Controls.Panels"
         xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
@@ -72,90 +71,9 @@
                                            CollapsedSize="0"
                                            x:Name="RightPanelSplitter"/>
 
-            <!-- ========== 右侧面板：图像显示 + 数据分析 + 日志 ========== -->
+            <!-- 结果工作区统一承载图像、源条及当前结果/历史结果/帮助。 -->
             <Border Grid.Column="3" Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0">
-                <Grid x:Name="RightPanelGrid">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" MinHeight="40" MaxHeight="1000"/>  <!-- Row 0: 图像显示区域（自适应） -->
-                        <RowDefinition Height="Auto" MinHeight="4" MaxHeight="4"/>  <!-- Row 1: 分隔条（可拖动） -->
-                        <RowDefinition Height="200" MinHeight="200" MaxHeight="600"/>  <!-- Row 2: 数据分析和日志面板（默认高度200px，可拖动调整） -->
-                    </Grid.RowDefinitions>
-
-                            <!-- 图像结果区：图像显示 + 模块结果 + 图像预览 -->
-                            <shell:ImageResultControl x:Name="ImageResultHost" DataContext="{Binding ImageResult}"/>
-
-                    <!-- 右侧面板内部分隔器 - 支持拖动调整并保存 -->
-                    <GridSplitter Grid.Row="1" Height="4" Width="Auto"
-                                 ResizeDirection="Rows"
-                                 Background="{DynamicResource {x:Static base:ThemeKeys.SplitterBackgroundBrush}}"
-                                 ShowsPreview="False"
-                                 ResizeBehavior="PreviousAndNext"
-                                 HorizontalAlignment="Stretch"
-                                 DragStarted="ImagePropertySplitter_DragStarted"
-                                 DragCompleted="ImagePropertySplitter_DragCompleted"
-                                 DragDelta="ImagePropertySplitter_DragDelta"
-                                 Cursor="SizeNS">
-                        <GridSplitter.Style>
-                            <Style TargetType="GridSplitter">
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SplitterHoverBrush}}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </GridSplitter.Style>
-                    </GridSplitter>
-
-                    <!-- ========== Row 2: 数据分析和日志 ========== -->
-                    <Border Grid.Row="2" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderThickness="0">
-                        <TabControl x:Name="BottomPanelTabControl"
-                                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
-                                    BorderThickness="0">
-                            <TabControl.Resources>
-                                <!-- TabItem 头样式（随主题：未选中灰字 / 悬停有底 / 选中主题色指示线） -->
-                                <Style TargetType="TabItem">
-                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="TabItem">
-                                                <Border x:Name="Bd"
-                                                        Background="Transparent"
-                                                        BorderThickness="0,0,0,2"
-                                                        BorderBrush="Transparent"
-                                                        Padding="12,6">
-                                                    <ContentPresenter ContentSource="Header"
-                                                                      HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
-                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </TabControl.Resources>
-                            <!-- 第一个TabItem: 数据分析（动态显示） -->
-
-
-                            <!-- 第二个TabItem: 日志 -->
-                            <TabItem Header="日志" Padding="12,6">
-                                <panels:LogPanelControl x:Name="LogPanelContent"
-                                                         VerticalAlignment="Stretch"
-                                                         HorizontalAlignment="Stretch"/>
-                            </TabItem>
-                        </TabControl>
-                    </Border>
-
-
-                </Grid>
+                <shell:ImageResultControl x:Name="ImageResultHost" DataContext="{Binding ImageResult}"/>
             </Border>
 
             <!-- ========== 状态栏 (24px) ========== -->

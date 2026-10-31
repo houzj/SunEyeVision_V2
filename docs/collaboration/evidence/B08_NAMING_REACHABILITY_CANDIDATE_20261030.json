@@ -1,0 +1,2223 @@
+{
+  "status": "语法类型/委托/扩展方法及异目录XAML的保守候选；尚非完整语义/动态资源闭包，禁止直接执行改名",
+  "parserAssembly": "Microsoft.CodeAnalysis.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "roots": [
+    "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+    "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml"
+  ],
+  "includedFileCount": 75,
+  "includedFiles": [
+    "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+    "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+    "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+    "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+    "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+    "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+    "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+    "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+    "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+    "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+    "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/PageNumberItem.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+    "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+    "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+    "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+    "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+    "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+    "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+    "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+    "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+    "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle2.xaml",
+    "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle3.xaml",
+    "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+    "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+    "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+    "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+    "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+    "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+    "src/Plugin.Wpf/Themes/References/VariableSelectionStyles.xaml"
+  ],
+  "edges": [
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "from": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "同目录code-behind"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/References/VariableSelectionStyles.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "from": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "reason": "同目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "from": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "reason": "同目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/PageNumberItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "reason": "同目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "reason": "同目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+      "from": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "原代码ResourceRoot与名称白名单拼接"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "原代码ResourceRoot与名称白名单拼接"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle2.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "原代码ResourceRoot与名称白名单拼接"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle3.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "reason": "原代码ResourceRoot与名称白名单拼接"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "按x:Class匹配异目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "reason": "同目录XAML"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "同目录code-behind"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/PageNumberItem.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/PageNumberItem.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "同目录code-behind"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "reason": "同目录code-behind"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "XAML前缀类型"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "x:Class对应partial声明"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "同目录code-behind"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
+      "from": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "from": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+      "reason": "静态资源URI"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    },
+    {
+      "to": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "from": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "reason": "语法类型索引+保守文本使用；不是语义符号绑定"
+    }
+  ],
+  "unresolvedResourceReferences": [],
+  "namespaceCandidateCount": 321,
+  "selectedNamingCandidateCount": 18,
+  "selectedNamingFiles": [
+    {
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+      "sourceSha256": "F39D64DE32774515549F8F655FF6D36826AE77A054803CFA78E4555B6BE146A7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+      "sourceSha256": "01C5FF533F78E8E834FCD484BFED5EA3FB4A9499A954D016E74B7E49829CE3C0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
+      "sourceSha256": "76B3216F56C985282109C1ABB4E5D7EB6C5F06FA1F6CA5453D66247941D62F3B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ListItemBackgroundConverter.cs",
+      "sourceSha256": "46747C422553BD2F23978E383F4A140C2C5720C810C92EF7165E53AEEA81F8DF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+      "sourceSha256": "D743AEE3CBB11458F82150B0DB20DCBDEEF83A4926112BC0A0C0C90E5E6DB306",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+      "sourceSha256": "D323945AED4D2F54C76709D982DFAC0379CD66E0438EC9C52E6EB98A0AE0ADDE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
+      "sourceSha256": "0F163459A3DD2E1D1D296DC8FF5FDC7A377CAE982FE044497B016265D92EA9D7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WindowHelper.cs",
+      "sourceSha256": "6A67D64471F57DB097A1F307F9FF21973C7C136164FEAB673F0D3D2C0C39AC69",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/UlementEx.cs",
+      "sourceSha256": "ED17EB097CBB634DFC5ED76BD4D95249780D099BF994B922879203528891D20F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert2.cs",
+      "sourceSha256": "C0354DACB0238A0F624BEB6D393D69A3E1942B5B6E7F3ECFD7D9BAD2DCCB597D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert.cs",
+      "sourceSha256": "39E5BF652BDF99FBD3C7D49957132F016F902E699F88F07A93716F475AD1A1C2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopCornerRadiusConvert.cs",
+      "sourceSha256": "15BE653F2D408ADCB53C11B539D39C51B39FAE075F13E5F5F31999A7C2F2765C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Location.cs",
+      "sourceSha256": "0CA1C9F677223CFF5E314850A695047DA8F93A67582B743221AAA35614A29A4E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/FouerColorBorder.cs",
+      "sourceSha256": "9A110D549E20F28FBA8FF741AF30CE9015CF750530E35B4C1CAFB087B703E041",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DoubleUtil.cs",
+      "sourceSha256": "B13E6073441465062B241C08D853A796438EEC7A1D49BF015F43381C4CBC499F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BottomCornerRadiusConvert.cs",
+      "sourceSha256": "2B9355702CBBC2517B77C4D217105EB17A6CFDDA12458FAFF3CFDFDAD4886662",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
+      "sourceSha256": "E51CF94600878FC06BCCC61FBE66AD07CA2D67A32CC02A00D73CA03D0B8DA088",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
+      "sourceSha256": "98D950E46782FBD44BD1875A0E45F4E051AC4C31C8DAB22D07B898BB2B96B245",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    }
+  ],
+  "remainingAccuracyGates": [
+    "别名、同名类型与局部遮蔽须语义核对",
+    "动态资源/资产/LogicalName/ResourceManager",
+    "外部消费者及Catalog原件身份"
+  ],
+  "productChanged": false
+}

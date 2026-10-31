@@ -18,12 +18,12 @@
                 <ColumnDefinition Width="22" />
               </Grid.ColumnDefinitions>
               <ContentPresenter Name="cp" Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
-              <Image Name="icon" Grid.Column="1" Margin="6,5,4,5" Stretch="None" Height="12" Width="12" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/btn_高级参数_downarrow.png" />
+              <Image Name="icon" Grid.Column="1" Margin="6,5,4,5" Stretch="None" Height="12" Width="12" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/btn_高级参数_downarrow.png" />
             </Grid>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="ToggleButton.IsChecked" Value="True">
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/btn_高级参数_uparrow.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/btn_高级参数_uparrow.png" />
               <Setter TargetName="cp" Value="{DynamicResource 收起}" Property="ContentPresenter.Content" />
               <Setter TargetName="cp" Property="HorizontalAlignment" Value="Right" />
               <Setter TargetName="bd" Property="Width" Value="54" />

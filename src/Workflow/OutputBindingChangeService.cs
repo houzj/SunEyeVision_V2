@@ -171,7 +171,8 @@ public sealed class OutputBindingChangeService
 
     private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema)=>schema.Outputs.Select(port=>new OutputVariable
     {
-        PortId=port.Id,Name=port.Id,DisplayName=port.Id,ValueDeclaration=port.Type,AllowsNull=port.Nullable,
+        PortId=port.Id,Name=port.Id,DisplayName=schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,
+        DisplayMembers=schema.FindOutputDisplay(port.Id)?.Children??Array.Empty<OutputDisplayNode>(),ValueDeclaration=port.Type,AllowsNull=port.Nullable,
         DeclaredType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?typeof(IReadOnlyImage):null,
         VariableType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?"Image":"",
         IsCollection=port.Type.Shape==ValueShape.Sequence,Kind=OutputVariableKind.Data

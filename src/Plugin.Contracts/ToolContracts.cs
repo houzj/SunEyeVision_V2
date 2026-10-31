@@ -8,7 +8,7 @@ public sealed class PluginContractAttribute(int major, int minor) : Attribute
 }
 public static class FoundationContract
 {
-    public const int Major = 5, Minor = 0;
+    public const int Major = 6, Minor = 0;
     public static void RequireCurrent(Assembly assembly)
     {
         var v = assembly.GetCustomAttribute<PluginContractAttribute>();
@@ -96,6 +96,12 @@ public sealed class OutputValueRequest
         }
         return type;
     }
+}
+/// <summary>Host-provided, single-invocation capability for committing an actual
+/// frozen local-image read. The returned address is the admitted entry, not a UI selection.</summary>
+public interface ILocalImageReadContext
+{
+    string AcceptLocalImage();
 }
 /// <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
 public interface IToolExecutionContext

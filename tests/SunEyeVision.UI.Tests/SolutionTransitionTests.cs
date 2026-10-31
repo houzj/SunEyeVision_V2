@@ -82,4 +82,38 @@ public sealed class SolutionTransitionTests
         await manager.StopAndWaitAsync(TimeSpan.FromSeconds(3));
         Assert.True(source.IsCancellationRequested); Assert.False(manager.IsAnyRunning());
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Single_and_all_stop_do_not_hold_execution_lock_during_cancellation(bool stopAll)
+    {
+        var manager=Manager();
+        var tokens=(Dictionary<string,CancellationTokenSource>)typeof(WorkflowExecutionManager)
+            .GetField("_cancellationTokens",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(manager)!;
+        using var source=new CancellationTokenSource();tokens.Add("running",source);
+        using var registration=source.Token.Register(()=>
+        {
+            var otherThread=Task.Run(()=>manager.IsRunning("running"));
+            Assert.True(otherThread.Wait(TimeSpan.FromSeconds(2)),"停止时取消回调被执行锁阻塞");
+        });
+        var tab=new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel{Id="running",Name="running"};
+        if(stopAll)manager.StopAllContinuousRun();else Assert.True(manager.StopContinuousRun(tab));
+        Assert.True(source.IsCancellationRequested);
+        tokens.Clear();manager.Dispose();
+    }
+
+    [Fact]
+    public void Stop_all_requests_cancellation_for_remaining_runs_when_one_callback_fails()
+    {
+        var manager=Manager();
+        var tokens=(Dictionary<string,CancellationTokenSource>)typeof(WorkflowExecutionManager)
+            .GetField("_cancellationTokens",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(manager)!;
+        using var failing=new CancellationTokenSource();using var other=new CancellationTokenSource();
+        tokens.Add("first",failing);tokens.Add("second",other);
+        using var registration=failing.Token.Register(()=>throw new InvalidOperationException("callback"));
+        Assert.Throws<AggregateException>(()=>manager.StopAllContinuousRun());
+        Assert.True(failing.IsCancellationRequested);Assert.True(other.IsCancellationRequested);
+        tokens.Clear();manager.Dispose();
+    }
 }

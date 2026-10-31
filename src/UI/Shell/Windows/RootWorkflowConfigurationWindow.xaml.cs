@@ -77,7 +77,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private string FormatReference(OutputReference reference)
  {
   var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.Query.FormalOutputContractReader?.Invoke(reference.NodeId)?.FirstOrDefault(o=>BindingClrAdapter.OutputPortId(o)==reference.PortId);
-  return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??output?.Name??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",reference.MemberFieldPath));
+  return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??output?.Name??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
  }
  private void EditParametersClick(object sender,RoutedEventArgs e)=>Safe(()=>
  {

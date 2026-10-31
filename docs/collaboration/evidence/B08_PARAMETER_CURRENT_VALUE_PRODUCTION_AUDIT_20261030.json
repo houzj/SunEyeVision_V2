@@ -1,0 +1,177 @@
+{
+  "status": "生产调用链盘点完成；整体修正设计尚有接纳点与历史合并合同待闭合，未实施、未验收",
+  "scope": "B08参数引用的当前值、成功消费、解绑、私有调试、取消、正式发布、保存重开与退役；不是仅修复TryUseConstant",
+  "vmEvidence": "B08_ORIGINAL_BINDING_RUNTIME_AUDIT_20261030.json",
+  "confirmedVmSample": {
+    "field": "Blob LowThreshold，整数局部变量固定索引",
+    "beforeBinding": 37,
+    "source": 173,
+    "afterBindingBeforeRun": 37,
+    "afterConsumed": 173,
+    "afterNativeUnbind": 173,
+    "afterSaveReopen": 173,
+    "limit": "不是所有类型、所有UI解绑动作或多参数失败回滚的证明；参数写入先于算法，不能将算法成功结果当作唯一参数接纳点"
+  },
+  "productionChain": [
+    {
+      "files": [
+        "src/Plugin.Contracts/FieldSettings.cs",
+        "src/Workflow/RuntimeToolConfiguration.cs"
+      ],
+      "existing": "单一稳定字段配置、常量/引用/变量关系、冻结及类型化投影；序列化严格只含ToolId和Fields",
+      "difference": "引用关系取代常量后，没有独立可持久化的已消费参数当前值",
+      "decision": "复用FieldSettings配置语义；不得把resolved invocation resources塞进该快照。参数当前值须单独定义所有权与序列化边界"
+    },
+    {
+      "files": [
+        "src/Workflow/WorkflowPublishedConfiguration.cs",
+        "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+        "src/Workflow/WorkflowExecutionEngine.cs"
+      ],
+      "existing": "正式版本在异步等待前冻结；执行节点是克隆，携带真实ExecutionOwner；运行不得接受编辑草稿",
+      "difference": "把当前值只写执行节点克隆无法到达正式文档；把设计节点引用塞进RunRequest破坏现有冻结边界",
+      "decision": "复用现有Owner身份准入；需要宿主接纳的非视觉值路径，禁止运行直接改WPF或正式节点属性"
+    },
+    {
+      "files": [
+        "src/Workflow/AlgorithmNode.Runtime.cs",
+        "src/Workflow/RuntimeDebugInvocation.cs",
+        "src/Plugin.Runtime/ToolRuntimeExecutor.cs"
+      ],
+      "existing": "解析引用/变量、MaterializeSettings、FreezeSettings、Validate、取消门禁、CreateSession/ExecuteAsync/DisposeAsync",
+      "difference": "解析值仅用于调用，无当前参数值接纳通知；调试候选与正式运行不能共用不分所有者的回写",
+      "decision": "解析失败不写当前值；成功接纳须在参数校验及取消门禁后、算法开始前明确。不可只在ToolOutcome成功时回写"
+    },
+    {
+      "files": [
+        "src/Plugin.Runtime/Execution/ToolExecutionIdentity.cs"
+      ],
+      "existing": "Owner/generation/root/run/request准入、退役、发布重检、取消与回调关闭门禁",
+      "difference": "执行结束后TryPublish会拒绝已取消的身份，可能丢弃取消前已消费的参数",
+      "decision": "接纳点应当场落到正确Owner；不靠延迟完成回调补写，也不放松现有取消及退役门禁"
+    },
+    {
+      "files": [
+        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+        "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+        "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs"
+      ],
+      "existing": "私有编辑候选、原子提案、ConstantBackup、投影防重入及会话有效性检查",
+      "difference": "TryUseConstant回到ConstantBackup，不能给出原样本消费后173；只改State也会遗漏范围/数值协调消费者",
+      "decision": "保留正确提案与生命周期机制；宿主提供对应候选的已接纳当前值。不能有当前值缺失时静默回退旧常量/默认值"
+    },
+    {
+      "files": [
+        "src/Workflow/NodeConfigurationEditHost.cs",
+        "src/Workflow/BindingConfigurationStore.cs",
+        "src/Workflow/DocumentEditSession.cs"
+      ],
+      "existing": "唯一正式发布入口、私有草稿签名、冲突检查、原子投影、AcceptRuntimeValues同版本值接纳与文档历史",
+      "difference": "现有AcceptRuntimeValues快路径仅识别全局变量值编辑；NodeEditSignature和ShapeSignature序列化整个Runtime配置，直接加当前值会被当成配置编辑/冲突",
+      "decision": "复用发布和历史框架，但必须显式分离配置签名与参数当前值；不能直接把新值塞进Runtime JSON就宣称链路完成"
+    },
+    {
+      "files": [
+        "src/Workflow/SolutionSession.cs",
+        "src/Workflow/Persistence/SolutionSnapshot.cs"
+      ],
+      "existing": "正式保存快照、保存内容基线、原文件提交机制；变量已做单代值捕获",
+      "difference": "参数当前值暂无同代捕获；仅让编辑器缓存173仍不能保存重开保留173",
+      "decision": "保存与运行从同一正式参数值Owner冻结；序列化在释放值锁后进行，不保存控件、图像句柄或来源资源"
+    }
+  ],
+  "designGates": [
+    "完整明确正式Owner和私有编辑Owner的当前值存储、身份与退役；不要新增静态最近值缓存",
+    "明确参数验证/接纳写入点和失败结果，不借算法成功推导；多字段部分写入与取消边界的未证项如实保留",
+    "明确配置签名、值版本及CAS冲突，运行不产生编辑撤销项，撤销不重放运行，编辑取消不把私有值写正式文档",
+    "明确绑定改源、解绑、复制/删除、撤销重做、保存重开与并发晚回调的合并规则，再一次性修改全部消费者"
+  ],
+  "acceptanceMatrix": [
+    "37常量→绑定173但不执行仍37→执行接纳173→解绑173→保存重开173",
+    "绑定来源90→173连续更新；无效索引解析失败保留此前已接纳值且不伪造成功结果",
+    "正式运行与私有调试各自值Owner；私有取消无正式变更，确认经过唯一发布入口",
+    "取消前/后接纳、算法异常、校验拒绝、旧generation和退役回调不得越权写入",
+    "数值/范围两端/变量来源等真实消费者同步；组合操作原子提案不被破坏",
+    "复制删除/撤销重做/保存重开按明确规则验证；资源值不进入纯值缓存或序列化",
+    "正式Release全量构建及相称生产链回归；WPF运行、VS设计时和人工验收分别记录"
+  ],
+  "nativeRuntimeBoundary": "双方暂不新启原SDK：其资源线程读取共享历史目录并尝试删除其他已退出探针的缓存。先核可控目录及清理所有权；该限制不阻止产品源码盘点与设计，不修改共享清理列表/许可/原二进制。",
+  "productChanged": false,
+  "buildRun": false,
+  "functionalAcceptance": false,
+  "sourceIdentities": [
+    {
+      "path": "src/Plugin.Contracts/FieldSettings.cs",
+      "sha256": "28545DAA71FAB9114CB3044D3A60040AF29CF668162F02F691D7BDFA7BDA61BC"
+    },
+    {
+      "path": "src/Plugin.Runtime/Execution/ToolExecutionIdentity.cs",
+      "sha256": "CBA78F67DE709A5F1B552D558413425DBC16D43B3F9A6A09991BC62563B43471"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolRuntimeExecutor.cs",
+      "sha256": "BF497635D223CE2C4C0FF66588E91B51C7E75DFE06D496D35A653CE64A44DFCC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "5F486E13AD39325C8FA9CBADBCCE1FD206D7DB4ECA8D3D84D7F826081B71968B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+      "sha256": "13B48E53868D10B8B844DB265242CF0C9199EBBB260C008D8203A0E619809A06"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "F7B37AF2F94E4959330761E52F0F25E5E43F29038F1270224880CDE2F6CA8B9E"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "BDEA623720BBE939FCA2B3E1704E395F8EBB45C043753B52CC375DB1CB67C852"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "73DB4E27F1E35ABC3E0CF02CF92352F5489DB0B409D5E426D8C845538247F25B"
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "A4041B035E8CB717DEB5948864B99495B5A40564A1DED595750C87E72F294B0C"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "BBC08D190E0183BED6F86D607E60CCA149025D363A3CEA05412795271384B46B"
+    },
+    {
+      "path": "src/Workflow/DocumentEditSession.cs",
+      "sha256": "33A5F802817B177F4536FEF2790AC541723305FF75E5D2748E0758168B31D314"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "F333B581B6648FBBEB09A7EA617AA105F48818D6D78BD1A96DC8446C3AA1B88A"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionSnapshot.cs",
+      "sha256": "861AE1C630CC6F8FF0D59764FB13A3F42528991DA6940125D63AA308E7EC98BD"
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "BD285214F292E15EC45625208183F1E780124F89EE3BCC2EA7450E9B196985C1"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "3DF8E48D554B54B7163462523BFC8BD75ED927E0489259CA4BCF62D33C2800D8"
+    },
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "sha256": "D5ECD6159EF5660739B4AA84F4A56E31349C285C53EE9CC1D1E88534CF2B47F2"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "17EE5F2882A2DD4F8004E68561EB1711459A39D4F29DCA8532D8BDD911384E44"
+    },
+    {
+      "path": "src/Workflow/WorkflowPublishedConfiguration.cs",
+      "sha256": "492BA3B9828EFC1FC7D27FA9E4B7B2BAACA079618BAAD931F92A8C62D5224E06"
+    }
+  ]
+}

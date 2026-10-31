@@ -1,0 +1,60 @@
+{
+  "status": "源码命名批已实施并构建；窗口回归有失败，未整体验收",
+  "fileMoves": 64,
+  "typeMoves": 28,
+  "assetsUnchanged": 24,
+  "uiBuild": {
+    "firstFailure": "b08-neutral-naming-ui-build.log：83扩展方法消费者错误，已修正后重建",
+    "warnings": 6508,
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-neutral-naming-ui-build-02.log",
+    "exit": 0
+  },
+  "fullBuild": {
+    "warnings": 6511,
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-neutral-naming-full-build.log",
+    "exit": 0
+  },
+  "passed": {
+    "RuntimeEditorUiStage": 6,
+    "VariableFields": 13,
+    "DesignTime": 306,
+    "FieldEditing": 34,
+    "VariableDialog": 8
+  },
+  "windowRegression": {
+    "redrawAttempt": 347,
+    "failuresBeforeTimeout": 34,
+    "subscriptionPassed": 15,
+    "subscriptionFailed": 2,
+    "fullAttempt": 345,
+    "passedBeforeTimeout": 212,
+    "redrawFailed": 1,
+    "terminal": "90秒检查进程超时后由runner结束，不是完整结果",
+    "subscriptionAttempt": 346,
+    "redrawPassed": 0,
+    "rootCause": "尚未最终归因；部分捕获失败，范围键事件inputSource为空，整组重绘后新输入未达到预期；不能宣称全部为环境或测试缺陷"
+  },
+  "resourceAudit": "B08_NEUTRAL_NAMING_RESOURCE_AUDIT_20261030.json：2037资源键、333条本地记录通过；初次两项中文资源误报，经核程序集URI编码后修正审计解码，未修改产品",
+  "originalIdentity": "B08_NAMING_CATALOG_IDENTITY_20261030.json：与2aa8959d比较1278项原件身份字段无差异",
+  "manual": "本批新命名后的实际VS与用户运行验收未进行；此前用户设计时结论保留，不代签本批",
+  "remaining": [
+    "B08解绑实际参数值与触发字符串全生命周期仍缺证",
+    "Blob可见S1占位未接功能链",
+    "窗口回归失败需闭合，不以其他通过项替代",
+    "S3未开始"
+  ],
+  "assemblyHashes": [
+    {
+      "name": "SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "B20335EFAFBA4B9324CCAFB0ADC367B96115D62779C418D2FBB8D35D6EE5C748"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "E15DA1F2A436E84D0B5A5F7643491F7FBAF99D77AB2D1F256132F48A51350149"
+    },
+    {
+      "name": "SunEyeVision.UI.dll",
+      "sha256": "3A84FC57F527E3FD2C2F29B4CB353B3EDB367A9830C8C64E4C924D888CE496B7"
+    }
+  ]
+}

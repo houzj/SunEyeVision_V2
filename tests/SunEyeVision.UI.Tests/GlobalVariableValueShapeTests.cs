@@ -68,7 +68,7 @@ public sealed class GlobalVariableValueShapeTests
         var validation = GlobalProducerBindingRules.Validate(frozen, frozenVariable.ProducerBinding!, frozenVariable);
         Assert.True(validation.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional, validation.Reason);
         Assert.True(GlobalProducerBindingRules.TryDescribeTarget(frozenVariable.Type, out var target, out var clr, out var reason), reason);
-        using var values = new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string, object?>>());
+        using var values = new WorkflowGlobalRunValues(frozen.Id,frozen.GlobalVariables,Array.Empty<KeyValuePair<string, object?>>());
         var service = new WorkflowGlobalVariableReceiveService(new CommunicationReceiveService(), values, GlobalVariable.CaptureDefinitions(frozen.GlobalVariables));
         var catalog = new WorkflowEngine(VisionLogger.Instance); catalog.RegisterWorkflow(reopened.Workflows.Single());
         var engine = new WorkflowExecutionEngine(catalog, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);

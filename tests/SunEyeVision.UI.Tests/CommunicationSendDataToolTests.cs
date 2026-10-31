@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -259,7 +259,7 @@ public sealed class CommunicationSendDataToolTests
         var capture = new NodeConfigurationEditHost(solution).Capture();
         var published = capture.CopyConfiguration();
         var publishedVariable = published.GlobalVariables.Single(value => value.Id == variable.Id);
-        using var values=new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        using var values=new WorkflowGlobalRunValues(published.Id,published.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
         var definitions=GlobalVariable.CaptureDefinitions(published.GlobalVariables);
         var reader=new WorkflowGlobalVariableReceiveService(new CommunicationReceiveService(),values,definitions);
         Assert.True(GlobalProducerBindingRules.TryDescribeTarget(publishedVariable.Type,out var target,out var clr,out var reason),reason);

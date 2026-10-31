@@ -1,0 +1,54 @@
+{
+  "unit": "B01缺口：PCUI内容开关原件家族",
+  "scope": "公共视觉基础原件及dark图；不接管工作流宿主业务，不代替Apps.XmlUI家族",
+  "type": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+  "baseline": "55507bce",
+  "moves": [
+    {
+      "kind": "xaml",
+      "target": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+      "sourceSha256": "6E8ABA64471BC45309ECCD304D0C47D32A40EF3F8016D1A8AFA87D2BE4EA72B7",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml"
+    },
+    {
+      "kind": "code",
+      "target": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+      "sourceSha256": "86577ECED34A329EF5FB6C2D91A6799FD194EF1BF20C917702B6D17D1D0DCB10",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs"
+    },
+    {
+      "kind": "asset",
+      "target": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/off-dark.png",
+      "sourceSha256": "50CEDF155ED40FE7AE44CF69242477F5F3EC25AA343A429156E6B4705FB8C0C3",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_off_dark.png"
+    },
+    {
+      "kind": "asset",
+      "target": "src/Plugin.Wpf/Themes/Assets/Inputs/Switch/on-dark.png",
+      "sourceSha256": "344BB5E462E60D1B3DDF84EC83F4E4D8A07DE41B02F7C5DF64B07504A2128403",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on_dark.png"
+    }
+  ],
+  "original": {
+    "codeSha256": "733AB6A61C89F24572E0724C4E994F35D646015CFCCB94C19993290629E3B83E",
+    "assembly": "VM.PcUI",
+    "type": "HikPcUI.ListView.BooleanControl",
+    "xamlSha256": "EE87125A5DDD8156F17EBD08F8A7B88454A0689C7B42DBF91CDCDA9691B6A3E7"
+  },
+  "design": [
+    "保留UserControl、bool IsChecked DP默认false、object OffContent/OnContent、OnCheckedChange及原TO模板",
+    "原事件覆盖Checked/Unchecked和程序回填；初始化是否写宿主由消费者以当前正式值/投影门禁处理，不能假造原件从不发初始化事件",
+    "OffContent/OnContent由调用者提供独立Image，保持原Stretch=None；不使用共享Style实例化同一个Image或复制旧SDK ToggleSwitch",
+    "控制树仅持有自身事件，无VM全局服务、调度、引用或自定义Dispose；消费者退役必须解绑其外部监听",
+    "原件身份留Catalog；更新本地目标、sha和资源URI；无旧类型别名、无原件家族合并"
+  ],
+  "validation": [
+    "独立XAML构造与正式dark图资源",
+    "外部bool TwoWay绑定、原TO用户切换事件、同值去重及程序回填",
+    "off/on内容切换与双实例互不共享UIElement",
+    "消费者退役解绑、卸载重载无额外业务写入、禁用UI Automation拒绝",
+    "原图片哈希、原模板及代码仅中立命名差异",
+    "UI与全量正式Release、相关设计组装与阶段保护；VS和人工另记"
+  ],
+  "status": "整体设计已明确，准备整批写入"
+}

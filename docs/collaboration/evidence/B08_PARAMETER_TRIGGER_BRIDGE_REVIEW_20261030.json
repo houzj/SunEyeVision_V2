@@ -1,0 +1,72 @@
+{
+  "status": "在制回件正文与七份选定原指令SHA已核；未代全部语义审核或本批最终交付",
+  "reports": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08普通参数回读SDK代理桥证据-20261030.md",
+      "sha256": "C4DAD56461E575743C7F2E866D9040F9D8177F1F568D8B792116C4A9509AE6B7",
+      "bodyRead": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08触发文本流程与任务对象传播-20261030.md",
+      "sha256": "A056A65B925690E99862F175D8FC04E7027B38FA9FD3FEAFC7907BAA481EDA06",
+      "bodyRead": true
+    }
+  ],
+  "instructions": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-bridge-20261030\\output\\0x1805e16f0-1805e16f0.asm.txt",
+      "expected": "0D3CD3254C9E7363EF105A89226F478AF5413A77E5DD94B14D61E849AC7017DF",
+      "actual": "0D3CD3254C9E7363EF105A89226F478AF5413A77E5DD94B14D61E849AC7017DF",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-bridge-20261030\\output2\\0x1805e1820-1805e1820.asm.txt",
+      "expected": "74F02B225422D847A3EC58AA81E8FF6D7256019D0F16D7758CDDB15A58127784",
+      "actual": "74F02B225422D847A3EC58AA81E8FF6D7256019D0F16D7758CDDB15A58127784",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-bridge-20261030\\output3\\0x18066bfd0-18066bfd0.asm.txt",
+      "expected": "90CD0F4722B818D2B0504212257F3CB0664A0EB020974F21CA89B2DF8EBC9772",
+      "actual": "90CD0F4722B818D2B0504212257F3CB0664A0EB020974F21CA89B2DF8EBC9772",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-bridge-20261030\\proxy\\0x180024370-180024370.asm.txt",
+      "expected": "1CFBE4D5B645375DD9ABA2396E131BCB6BFB5F0E4A6440E55761DEDD6AD4591A",
+      "actual": "1CFBE4D5B645375DD9ABA2396E131BCB6BFB5F0E4A6440E55761DEDD6AD4591A",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\vm-framework-architecture-20261030\\module-frame-worker-inner-calls\\output\\1800e1f80.asm.txt",
+      "expected": "DCC7D5EC79BC303137AC91FE14AD40F46E7057852EB3D550B8211A6FEFE9429D",
+      "actual": "DCC7D5EC79BC303137AC91FE14AD40F46E7057852EB3D550B8211A6FEFE9429D",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-lifetime-more-20261030\\0x180046b20-180046b20.asm.txt",
+      "expected": "FDF77063422CF5D7A0027565C28EDA23B0D5E69D1D3B43580BDE2511B2FDA50E",
+      "actual": "FDF77063422CF5D7A0027565C28EDA23B0D5E69D1D3B43580BDE2511B2FDA50E",
+      "match": true
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-lifetime-more-20261030\\second\\0x180108c30-180108c30.asm.txt",
+      "expected": "B1CCF96FE505DC5B528878BF108590F407C34FBBFCC9600114FA5813C86E1805",
+      "actual": "B1CCF96FE505DC5B528878BF108590F407C34FBBFCC9600114FA5813C86E1805",
+      "match": true
+    }
+  ],
+  "allSelectedHashesMatch": true,
+  "confirmed": [
+    "普通参数Get请求经0xbc0进入候选GetModuleParam工具读取虚表；运行加载身份未实测",
+    "正常执行路径存在流程+a8到关联任务集合对象+100复制边"
+  ],
+  "unresolved": [
+    "实际Blob算法字段存储与执行写入、解绑间接通知",
+    "c8执行对象与118任务集合身份",
+    "关闭删除helper/剩余引用/析构/重开实际值"
+  ],
+  "productChanged": false,
+  "reverseTurn": "01a18ce7-b7ef-7ec0-822e-3b08b55d0c9f",
+  "reverseStillInProgress": true
+}

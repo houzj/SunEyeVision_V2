@@ -1,0 +1,102 @@
+using SunEyeVision.Plugin.Wpf.Controls.Popups;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Controls.Popups;
+
+public partial class PopupButton : ComboBox, IComponentConnector
+{
+	public static readonly DependencyProperty ButtonStyleProperty = DependencyProperty.Register("ButtonStyle", typeof(Style), typeof(PopupButton), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty SubContentProperty = DependencyProperty.Register("SubContent", typeof(DataTemplate), typeof(PopupButton), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty HorizontalOffsetValProperty = DependencyProperty.Register("HorizontalOffsetVal", typeof(double), typeof(PopupButton), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty VerticalOffsetValProperty = DependencyProperty.Register("VerticalOffsetVal", typeof(double), typeof(PopupButton), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsPopupOpenProperty = DependencyProperty.Register("IsPopupOpen", typeof(bool), typeof(PopupButton), new PropertyMetadata(false, OnIsOpenPopupChanged));
+
+	public Style ButtonStyle
+	{
+		get
+		{
+			return (Style)GetValue(ButtonStyleProperty);
+		}
+		set
+		{
+			SetValue(ButtonStyleProperty, value);
+		}
+	}
+
+	public DataTemplate SubContent
+	{
+		get
+		{
+			return (DataTemplate)GetValue(SubContentProperty);
+		}
+		set
+		{
+			SetValue(SubContentProperty, value);
+		}
+	}
+
+	public double HorizontalOffsetVal
+	{
+		get
+		{
+			return (double)GetValue(HorizontalOffsetValProperty);
+		}
+		set
+		{
+			SetValue(HorizontalOffsetValProperty, value);
+		}
+	}
+
+	public double VerticalOffsetVal
+	{
+		get
+		{
+			return (double)GetValue(VerticalOffsetValProperty);
+		}
+		set
+		{
+			SetValue(VerticalOffsetValProperty, value);
+		}
+	}
+
+	public bool IsPopupOpen
+	{
+		get
+		{
+			return (bool)GetValue(IsPopupOpenProperty);
+		}
+		set
+		{
+			SetValue(IsPopupOpenProperty, value);
+		}
+	}
+
+	public PopupButton()
+	{
+		InitializeComponent();
+	}
+
+	private static void OnIsOpenPopupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is PopupButton { IsKeyboardFocusWithin: not false } popupButton)
+		{
+			popupButton.IsDropDownOpen = popupButton.IsPopupOpen;
+		}
+	}
+
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		string name = e.Property.Name;
+		if (name == "IsDropDownOpen")
+		{
+			IsPopupOpen = IsDropDownOpen;
+		}
+		base.OnPropertyChanged(e);
+	}
+}

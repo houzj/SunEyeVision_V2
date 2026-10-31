@@ -4,9 +4,9 @@ using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using NativeBoolean=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl;
-using NativeTree=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView;
-using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox;
-using AppsPopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
+using NativeTree=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView;
+using NativeText=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox;
+using AppsPopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
 using System.IO;
 using System.Reflection;
 using System.ComponentModel;
@@ -54,6 +54,7 @@ internal static class S2DocumentEditingCases
 
             var choiceValue="Binary";var choice=new DeclaredFieldEditor(new("type",DataType.Text,Choices:new TextChoiceConstraint(new[]{"Binary","BinaryInv"})),"极性",
                 new ConstantSetting(choiceValue),next=>choiceValue=(string)((ConstantSetting)next).Value!);
+            Show(choice);
             ((ComboBox)choice.InputElement!).SelectedValue="BinaryInv";Require(choiceValue=="BinaryInv","已声明选项未提交到草稿");
             Require(((ComboBox)choice.InputElement!).Items.Count==2,"选项不是来自正式闭合声明");
             Console.WriteLine("通过：下拉选项直接消费正式声明");
@@ -73,6 +74,7 @@ internal static class S2DocumentEditingCases
             Require(BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"原调色命令切断双向绑定");
             colorInput.SelectedColor=Color.FromArgb(200,255,20,30);
             Require(colorInput.NativeView.CurrentColor.Color==colorInput.SelectedColor,"外部颜色恢复没有同步原件");
+            Pick(colorInput,Colors.Red);
             colorInput.Palette.IsDropDownOpen=true;Pump();
             var palettePopup=(Popup)colorInput.Palette.Template.FindName("PART_Popup",colorInput.Palette);
             var paletteTabs=NativeDescendants(palettePopup.Child).OfType<TabControl>().Single();
@@ -84,7 +86,76 @@ internal static class S2DocumentEditingCases
                 using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,file));encoder.Save(stream);
             }
             paletteTabs.SelectedIndex=1;Pump();CapturePalette("native-palette-more.png");
-            Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Any(),"更多页未接原AdvancedColorPickerDialog");
+            var advanced=NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            var brightness=(Slider)advanced.FindName("brightnessSlider");
+            var beforeMoreWrites=colorWrites;
+            var redBase=Color.FromRgb(255,0,0);
+            var redHalf=Color.FromScRgb(1f,redBase.ScR*.5f,redBase.ScG*.5f,redBase.ScB*.5f);
+            brightness.Value=.25;Pump();
+            Require(colorWrites==beforeMoreWrites+1 && color.Get<long>("r")==redHalf.R && color.Get<long>("g")==redHalf.G && color.Get<long>("b")==redHalf.B && color.Get<long>("a")==255,
+                "首次打开更多页调亮度未按原公式基于已接受红色写入");
+            Require(BindingOperations.IsDataBound(advanced,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty)
+                && BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"更多页操作断开颜色绑定");
+            brightness.Value=.75;Pump();
+            var redLight=Color.FromScRgb(1f,redBase.ScR+(1f-redBase.ScR)*.5f,redBase.ScG+(1f-redBase.ScG)*.5f,redBase.ScB+(1f-redBase.ScB)*.5f);
+            Require(colorWrites==beforeMoreWrites+2 && color.Get<long>("r")==redLight.R && color.Get<long>("g")==redLight.G && color.Get<long>("b")==redLight.B && color.Get<long>("a")==255,"更多页第二次调亮度未按原公式继续写入：实际="+color.Get<long>("r")+","+color.Get<long>("g")+","+color.Get<long>("b")+","+color.Get<long>("a")+" 预期="+redLight+" writes="+colorWrites+" before="+beforeMoreWrites);
+            Pick(colorInput,Colors.Blue);Pump();beforeMoreWrites=colorWrites;brightness.Value=.25;Pump();
+            Require(colorWrites==beforeMoreWrites+1 && color.Get<long>("r")==0 && color.Get<long>("g")==0 && color.Get<long>("b")>0,"外部选蓝后亮度仍沿用旧基色");
+            var nativeColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty;
+            var descriptor=DependencyPropertyDescriptor.FromProperty(nativeColorProperty,colorInput.NativeView.GetType());
+            var reenter=true;Color reenteredProposal=default;
+            EventHandler reentrant=(_,_)=>
+            {
+                if(!reenter)return;reenter=false;reenteredProposal=colorInput.NativeView.CurrentColor.Color;
+                colorInput.NativeView.SetCurrentValue(nativeColorProperty,new SolidColorBrush(Colors.Green));
+                colorInput.NativeView.SetCurrentValue(nativeColorProperty,new SolidColorBrush(Color.FromArgb(reenteredProposal.A,reenteredProposal.R,reenteredProposal.G,reenteredProposal.B)));
+            };
+            descriptor.AddValueChanged(colorInput.NativeView,reentrant);
+            try{brightness.Value=.75;Pump();}finally{descriptor.RemoveValueChanged(colorInput.NativeView,reentrant);}
+            var baseBytes=(byte[])advanced.GetType().GetField("_pixels",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(advanced)!;
+            Require(!reenter&&baseBytes[2]==reenteredProposal.R&&baseBytes[1]==reenteredProposal.G&&baseBytes[0]==reenteredProposal.B,
+                "外部颜色重入后更多页基色不是最后接纳的颜色");
+            var reentryBase=Color.FromRgb(reenteredProposal.R,reenteredProposal.G,reenteredProposal.B);
+            var reentryHalf=Color.FromScRgb(1f,reentryBase.ScR*.5f,reentryBase.ScG*.5f,reentryBase.ScB*.5f);
+            brightness.Value=.25;Pump();
+            Require(color.Get<long>("r")==reentryHalf.R&&color.Get<long>("g")==reentryHalf.G&&color.Get<long>("b")==reentryHalf.B,"重入后的下次亮度仍使用旧颜色");
+            var advancedColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty;
+            var sliderBorder=(Border)advanced.FindName("brightnessSliderBorder");var signal=true;
+            RoutedPropertyChangedEventHandler<double> throwingSlider=(_,eventArgs)=>{if(signal&&eventArgs.NewValue==.5){signal=false;throw new InvalidOperationException("亮度观察者故障");}};
+            brightness.ValueChanged+=throwingSlider;var failureObserved=false;
+            try{advanced.SetCurrentValue(advancedColorProperty,new SolidColorBrush(Colors.Blue));}catch(InvalidOperationException sliderFailure)when(sliderFailure.Message=="亮度观察者故障"){failureObserved=true;}
+            finally{brightness.ValueChanged-=throwingSlider;}
+            var middle=((LinearGradientBrush)sliderBorder.Background).GradientStops[1].Color;
+            Require(failureObserved&&middle.R==0&&middle.G==0&&middle.B==255&&BindingOperations.IsDataBound(advanced,advancedColorProperty),"观察者异常后已接纳颜色的渐变未同步或异常丢失");
+            brightness.Value=.25;Pump();var nested=true;
+            RoutedPropertyChangedEventHandler<double> nestedSlider=(_,eventArgs)=>{if(nested&&eventArgs.NewValue==.5){nested=false;advanced.SetCurrentValue(advancedColorProperty,new SolidColorBrush(Colors.Green));}};
+            brightness.ValueChanged+=nestedSlider;
+            try{advanced.SetCurrentValue(advancedColorProperty,new SolidColorBrush(Colors.Blue));}finally{brightness.ValueChanged-=nestedSlider;}
+            middle=((LinearGradientBrush)sliderBorder.Background).GradientStops[1].Color;
+            Require(!nested&&middle.R==Colors.Green.R&&middle.G==Colors.Green.G&&middle.B==Colors.Green.B&&advanced.CurrentColor.G==Colors.Green.G,"颜色通知重入后旧同步覆盖新颜色");
+            BindingOperations.GetBindingExpression(advanced,advancedColorProperty)!.UpdateTarget();Pump();
+            brightness.Value=.25;Pump();signal=true;brightness.ValueChanged+=throwingSlider;failureObserved=false;
+            try{advanced.GetType().GetMethod("CommitChartPixel",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(advanced,new object[]{new byte[]{30,60,90,255},new Point(20,20)});}
+            catch(TargetInvocationException chartFailure)when(chartFailure.InnerException is InvalidOperationException inner&&inner.Message=="亮度观察者故障"){failureObserved=true;}
+            finally{brightness.ValueChanged-=throwingSlider;}
+            middle=((LinearGradientBrush)sliderBorder.Background).GradientStops[1].Color;
+            Require(failureObserved&&color.Get<long>("r")==90&&color.Get<long>("g")==60&&color.Get<long>("b")==30&&middle.R==90&&middle.G==60&&middle.B==30,"图表颜色已接纳但异常后缓存/渐变不一致或异常丢失");
+            var markerShape=(System.Windows.Shapes.Ellipse)advanced.FindName("colorMarker");var markerTransform=(TranslateTransform)markerShape.RenderTransform;
+            var markerDescriptor=DependencyPropertyDescriptor.FromProperty(TranslateTransform.XProperty,typeof(TranslateTransform));var markerArmed=true;
+            EventHandler markerReentry=(_,_)=>{if(markerArmed){markerArmed=false;colorInput.NativeView.SetCurrentValue(nativeColorProperty,new SolidColorBrush(Colors.Green));}};
+            markerDescriptor.AddValueChanged(markerTransform,markerReentry);
+            try{advanced.GetType().GetMethod("CommitChartPixel",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(advanced,new object[]{new byte[]{80,70,60,255},new Point(38,25)});}
+            finally{markerDescriptor.RemoveValueChanged(markerTransform,markerReentry);}
+            middle=((LinearGradientBrush)sliderBorder.Background).GradientStops[1].Color;
+            Require(!markerArmed&&color.Get<long>("r")==Colors.Green.R&&color.Get<long>("g")==Colors.Green.G&&color.Get<long>("b")==Colors.Green.B&&middle.G==Colors.Green.G&&advanced.CurrentColor.G==Colors.Green.G,"图表标记通知重入后旧颜色覆盖新接纳");
+            markerArmed=true;EventHandler markerThrow=(_,_)=>{if(markerArmed){markerArmed=false;throw new InvalidOperationException("标记观察者故障");}};
+            markerDescriptor.AddValueChanged(markerTransform,markerThrow);failureObserved=false;
+            try{advanced.GetType().GetMethod("CommitChartPixel",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(advanced,new object[]{new byte[]{33,22,11,255},new Point(55,25)});}
+            catch(TargetInvocationException markerFailure)when(markerFailure.InnerException is InvalidOperationException inner&&inner.Message=="标记观察者故障"){failureObserved=true;}
+            finally{markerDescriptor.RemoveValueChanged(markerTransform,markerThrow);}
+            middle=((LinearGradientBrush)sliderBorder.Background).GradientStops[1].Color;
+            Require(failureObserved&&color.Get<long>("r")==11&&color.Get<long>("g")==22&&color.Get<long>("b")==33&&middle.R==11&&middle.G==22&&middle.B==33,"标记观察者异常后已接纳颜色未同步或异常丢失");
+            Console.WriteLine("通过：更多页连续亮度、双向绑定、外部颜色同步、接纳及标记重入和异常清理；图表像素由测试注入");
             paletteTabs.SelectedIndex=0;Pump();CapturePalette("native-palette-default.png");
             Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerFirstItem>().Any(),"默认页未接原主题/标准色板");
             var originalHeader=NativeDescendants(palettePopup.Child).OfType<Label>().First();
@@ -92,13 +163,35 @@ internal static class S2DocumentEditingCases
             Require(headerText.Foreground is SolidColorBrush headerBrush&&headerBrush.Color==Color.FromRgb(0,0,139)&&headerText.FontWeight==FontWeights.Bold,"宿主全局文字样式覆盖原色板标题");
             Require(typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Fields.ColorField")==null&&typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Controls.VmColorPicker")==null,"自制色板仍作为产品后备路径");
             colorInput.ClosePalette();
-            var rejectColor=true;var guardedColor=PresentationDeclarations.Color(1,2,3);
+            var rejectColor=true;var guardedAttempts=0;var guardedColor=PresentationDeclarations.Color(1,2,3);
             var guardedEditor=new DeclaredFieldEditor(new("guarded-color",PresentationDeclarations.Rgba),"拒绝颜色",new ConstantSetting(guardedColor),next=>
-            {if(rejectColor)throw new InvalidOperationException("颜色草稿已失效");guardedColor=(RecordValue)((ConstantSetting)next).Value!;});
+            {guardedAttempts++;if(rejectColor)throw new InvalidOperationException("颜色草稿已失效");guardedColor=(RecordValue)((ConstantSetting)next).Value!;});
             colorInput.Palette.IsDropDownOpen=true;Show(guardedEditor);Require(!colorInput.Palette.IsDropDownOpen,"卸载未关闭原色板");
-            var guardedPicker=(NativeColorPresenter)guardedEditor.InputElement!;Pick(guardedPicker,Colors.Red);
-            Require(guardedEditor.HasInvalidText&&guardedColor.Get<long>("r")==1&&guardedPicker.SelectedColor==Color.FromRgb(1,2,3)&&guardedPicker.NativeView.CurrentColor.Color==Color.FromRgb(1,2,3),"拒绝颜色未回滚原件或污染草稿");
+            var guardedPicker=(NativeColorPresenter)guardedEditor.InputElement!;
+            guardedPicker.Palette.IsDropDownOpen=true;Pump();
+            var guardedPopup=(Popup)guardedPicker.Palette.Template.FindName("PART_Popup",guardedPicker.Palette);
+            var guardedTabs=NativeDescendants(guardedPopup.Child).OfType<TabControl>().Single();guardedTabs.SelectedIndex=1;Pump();
+            var guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            var guardedBrightness=(Slider)guardedAdvanced.FindName("brightnessSlider");guardedBrightness.Value=.25;Pump();
+            Require(guardedEditor.HasInvalidText&&guardedColor.Get<long>("r")==1&&guardedPicker.SelectedColor==Color.FromRgb(1,2,3)
+                &&guardedPicker.NativeView.CurrentColor.Color==Color.FromRgb(1,2,3)&&guardedAdvanced.SelectedCurrentColor.Color==Color.FromRgb(1,2,3),"更多页写入拒绝未恢复完整颜色链");
+            rejectColor=false;guardedBrightness.Value=.75;Pump();
+            var originalGuarded=Color.FromRgb(1,2,3);
+            var expectedGuarded=Color.FromScRgb(1f,originalGuarded.ScR+(1f-originalGuarded.ScR)*.5f,originalGuarded.ScG+(1f-originalGuarded.ScG)*.5f,originalGuarded.ScB+(1f-originalGuarded.ScB)*.5f);
+            Require(!guardedEditor.HasInvalidText&&guardedColor.Get<long>("r")==expectedGuarded.R&&guardedColor.Get<long>("g")==expectedGuarded.G&&guardedColor.Get<long>("b")==expectedGuarded.B,"拒绝回滚后亮度没有基于已接纳颜色恢复写入");
+            rejectColor=true;Pick(guardedPicker,Colors.Red);
+            Require(guardedEditor.HasInvalidText&&guardedPicker.SelectedColor.R==expectedGuarded.R&&guardedPicker.SelectedColor.G==expectedGuarded.G&&guardedPicker.SelectedColor.B==expectedGuarded.B&&guardedPicker.NativeView.CurrentColor.Color==guardedPicker.SelectedColor,"默认色板拒绝没有恢复已接纳颜色");
             rejectColor=false;Pick(guardedPicker,Colors.Blue);Require(!guardedEditor.HasInvalidText&&guardedColor.Get<long>("b")==255,"拒绝回滚后原色板不能恢复写入");
+            guardedPicker.ClosePalette();Pump();var closedAttempts=guardedAttempts;guardedBrightness.Value=.9;Pump();
+            Require(guardedAttempts==closedAttempts&&guardedColor.Get<long>("r")==0&&guardedColor.Get<long>("g")==0&&guardedColor.Get<long>("b")==255,"已关闭的更多页改变草稿");
+            guardedPicker.Palette.IsDropDownOpen=true;Pump();guardedPopup=(Popup)guardedPicker.Palette.Template.FindName("PART_Popup",guardedPicker.Palette);
+            guardedTabs=NativeDescendants(guardedPopup.Child).OfType<TabControl>().Single();guardedTabs.SelectedIndex=1;Pump();
+            guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            guardedBrightness=(Slider)guardedAdvanced.FindName("brightnessSlider");
+            Require(guardedBrightness.Value==.5&&guardedAdvanced.SelectedCurrentColor.Color.R==0&&guardedAdvanced.SelectedCurrentColor.Color.G==0&&guardedAdvanced.SelectedCurrentColor.Color.B==255,"重新打开未恢复已接纳颜色及亮度");
+            guardedBrightness.Value=.25;Pump();Require(guardedColor.Get<long>("r")==0&&guardedColor.Get<long>("g")==0&&guardedColor.Get<long>("b")>0&&guardedColor.Get<long>("b")<255,"重新打开后沿旧颜色调亮度");
+            guardedPicker.ClosePalette();Show(record);var retiredAttempts=guardedAttempts;var retiredR=guardedColor.Get<long>("r");var retiredG=guardedColor.Get<long>("g");var retiredB=guardedColor.Get<long>("b");var retiredA=guardedColor.Get<long>("a");guardedBrightness.Value=.25;Pump();
+            Require(guardedAttempts==retiredAttempts&&guardedColor.Get<long>("r")==retiredR&&guardedColor.Get<long>("g")==retiredG&&guardedColor.Get<long>("b")==retiredB&&guardedColor.Get<long>("a")==retiredA,"关闭卸载后的旧更多页仍可写入");
             Console.WriteLine("通过：原VM色板默认/更多、重复原调色命令、外部恢复、RGBA、拒绝回滚及卸载关闭");
             var channelType=TypeRef.RecordOf("test.channel",new[]{new Port("r",DataType.Integer,Storage:NumericStorage.UInt8)});
             var channelValue=new RecordValue(channelType,new Dictionary<string,object?>{{"r",10L}});var channelWrites=0;
@@ -193,13 +286,26 @@ internal static class S2DocumentEditingCases
             var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
             using var control=new SunEyeVision.UI.Services.Editing.RuntimeNodeConfigurationControl(node);
             using var context=new SunEyeVision.UI.Services.Editing.ProductionEditorContext(edits.Host,flow.Id,node,()=>true,control.BindDraft,documentEdits:edits);
+            typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("PrepareView",BindingFlags.Instance|BindingFlags.NonPublic)!
+                .SetValue(context,(Func<string?>)(()=>control.TryCapture(out var error)?null:error));
+            typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("HasPendingViewEdits",BindingFlags.Instance|BindingFlags.NonPublic)!
+                .SetValue(context,(Func<bool>)(()=>control.HasPendingEdits));
             control.BindDraft(context.DraftNode);SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.AttachDraftContext(control,context);
             Show(control);var fields=Descendants(control).OfType<DeclaredFieldsView>().Single();
             var thresholdId=access.Presentation!.Fields.Single(f=>f.DisplayName==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
             ((TextBox)fields.Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="201";
             int Threshold()=>((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
             Require(Threshold()==128,"公共控件提前写入正式配置");
-            Require(control.TryValidateEditor(out var validationError),"Runtime草稿不能校验："+validationError);
+            var valid=control.TryValidateEditor(out var validationError);
+            if(!valid&&validationError=="当前阈值为纯界面试用，功能接入前不能执行或保存。")
+            {
+                Require(!context.TryCommitEditor(out _)&&Threshold()==128,"纯UI阈值绕过保护发布正式配置");
+                context.Discard();Require(Threshold()==128,"纯UI取消改变正式配置");edits.Close();
+                Console.WriteLine("通过：纯UI阈值明确拒绝正式确认，取消不改变现行配置；真实功能确认链待S2接通后验收。");
+                Console.WriteLine("字段组件及现行UI阶段保护检查通过，不代表Blob功能确认、保存重开或人工验收完成。");
+                return 0;
+            }
+            Require(valid,"Runtime草稿不能校验："+validationError);
             Require(context.TryCommitEditor(out var error),"Runtime草稿不能确认："+error);Require(Threshold()==201,"确认没有发布");
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
@@ -252,6 +358,38 @@ internal static class S2DocumentEditingCases
         var sessionType=session.GetType();
         object Property(string name)=>sessionType.GetProperty(name)!.GetValue(session)!;
         void Command(string name,object? argument)=>((ICommand)Property(name)).Execute(argument);
+        var changedDuringAccept=false;
+        void NewPending()
+        {
+            if(changedDuringAccept||accepted is not ReferenceSetting {Reference.Selection:BindingSelection.AtConstant {Index:20}})return;
+            changedDuringAccept=true;text.Text="来源 [21]";
+        }
+        field.Changed+=NewPending;
+        try
+        {
+            text.Focus();text.Text="来源 [20]";var before=writes;Enter();
+            Require(changedDuringAccept&&writes==before+1&&text.Text=="来源 [21]",
+                "接纳回调中新索引原文被旧提交清除");
+            Require(field.TryCommitPending()&&writes==before+2
+                &&accepted is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant {Index:21}},
+                "回调中的新索引未保留为待提交编辑");
+        }
+        finally{field.Changed-=NewPending;}
+        text.Focus();sourceButton.IsDropDownOpen=true;Pump();var reopened=false;
+        PropertyChangedEventHandler reopen=(_,args)=>
+        {
+            if(reopened||args.PropertyName!="IsDropDownOpen"||(bool)Property("IsDropDownOpen"))return;
+            reopened=true;sourceButton.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);
+        };
+        ((INotifyPropertyChanged)session).PropertyChanged+=reopen;
+        try
+        {
+            text.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(owner)!,Environment.TickCount,Key.Escape)
+                {RoutedEvent=Keyboard.PreviewKeyDownEvent});Pump();
+            Require(reopened&&sourceButton.IsDropDownOpen&&sourceButton.Template.FindName("PART_Popup",sourceButton) is Popup {IsOpen:true},
+                "关闭通知重开后的新来源Popup被旧关闭操作覆盖");
+        }
+        finally{((INotifyPropertyChanged)session).PropertyChanged-=reopen;sourceButton.IsDropDownOpen=false;Pump();}
         sourceButton.Focus();sourceButton.IsDropDownOpen=true;Pump();
         var clear=((System.Collections.IEnumerable)Property("SourceNodes")).Cast<object>().Single(node=>(bool)node.GetType().GetProperty("Clear")!.GetValue(node)!);
         var beforeClear=writes;Command("ClickCommand",clear);Pump();
@@ -315,8 +453,10 @@ internal static class S2DocumentEditingCases
         FieldSettings Initial()=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
         var draft=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial());
         var schema=draft.Schema;
-        string Id(string label)=>schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
-        var low=Id("阈值");var high=Id("阈值上限");var highPort=schema.Inputs.Single(port=>port.Id==high);
+        using var declaration=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
+        var xml=System.Xml.Linq.XDocument.Load(declaration);
+        string Id(string parameter)=>(string)xml.Descendants("Parameter").Single(item=>(string?)item.Attribute("id")==parameter).Attribute("fieldId")!;
+        var low=Id("Threshold");var high=Id("UpperThreshold");var highPort=schema.Inputs.Single(port=>port.Id==high);
         var source=new DeclaredReferenceCandidate("来源","producer",null,highPort,Array.Empty<string>());
         var calls=0;var reject=true;var rebind=false;
         using var view=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();
@@ -337,14 +477,20 @@ internal static class S2DocumentEditingCases
         try{Apply();throw new Exception("整组宿主拒绝被忽略");}
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"整组候选拒绝"}){}
         Require(calls==1&&view.TryCapture(out var captured,out _)
+            &&view.AcceptedFieldOrder.Count==0
             &&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "混合常量和引用拒绝后缓存已污染");
         reject=false;rebind=true;
         try{Apply();throw new Exception("候选回调重绑仍接纳旧提案");}
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException){}
         Require(draft.CaptureFields().Get<long>(low)==128
+            &&view.AcceptedFieldOrder.Count==0
             &&view.TryCapture(out captured,out _)&&captured.Get<long>(low)==128&&captured.Capture().Values.All(value=>value is ConstantSetting),
             "候选回调重绑污染旧草稿或新视图");
+        view.Bind(draft,options with{AcceptCandidate=null});
+        Apply();
+        Require(view.AcceptedFieldOrder.SequenceEqual(new[]{low,high})&&view.AcceptedRevision==1,
+            "完整快照提交丢失本次已接纳的字段提案顺序");
         Console.WriteLine("通过：混合设置与引用候选一次预检，宿主拒绝及同步重绑不污染草稿或引用缓存");
     }
     private static void VerifyAtomicFieldGroup()
@@ -463,8 +609,8 @@ internal static class S2DocumentEditingCases
 
         using var missing=new DeclaredFieldEditor(new("required",DataType.Integer),"必填",new UnsetSetting(),_=>{});
         Require(missing.HasInvalidText&&missing.Error.Contains("必填"),"必填未设置状态被当作合法");
-        Require(Descendants(missing).OfType<TextBlock>().Any(text=>text.Text==missing.Error),"初始错误没有投影到实际错误文字");
-        Console.WriteLine("通过：必填未设置明确阻断确认，不猜默认值");
+        Require(!Descendants(missing).OfType<TextBlock>().Any(text=>text.Text==missing.Error),"字段下方仍显示行内错误文字");
+        Console.WriteLine("通过：必填未设置阻断确认且不显示行内提示，不猜默认值");
     }
     private static void VerifyNativeInputs()
     {
@@ -489,13 +635,16 @@ internal static class S2DocumentEditingCases
         choiceReject=false;combo.SelectedValue="b";Require(Equals(((ConstantSetting)choice.Setting).Value,"b")&&choiceWrites==1&&!choice.HasInvalidText,"同名显示标签影响正式枚举键");
         combo.SelectedValue="b";Require(choiceWrites==1,"枚举同值重复提交");
         var oldCombo=combo;Require(choice.TrySetConstant("a"),"枚举重绘提案未接纳");
+        owner.UpdateLayout();Pump();
         combo=(ComboBox)choice.InputElement!;var beforeOld=choiceWrites;oldCombo.SelectedValue="a";
         Require(choiceWrites==beforeOld&&Equals(combo.SelectedValue,"a"),"旧枚举回调污染新状态");
         combo.SelectedValue="b";Require(choiceWrites==beforeOld+1,"新枚举实例不能继续选择");
         using var missingChoice=new DeclaredFieldEditor(new("enum-missing",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"未知枚举",new ConstantSetting("removed"),_=>choiceWrites++);
+        Show(missingChoice);
         Require(missingChoice.HasInvalidText&&((ComboBox)missingChoice.InputElement!).SelectedIndex==-1,"未知初值被静默替换");
         ((ComboBox)missingChoice.InputElement!).SelectedValue="b";
         Require(!missingChoice.HasInvalidText&&Equals(((ConstantSetting)missingChoice.Setting).Value,"b"),"未知枚举不能显式修复");
+        Show(choice);
         owner.UpdateLayout();Pump();
         Require(NativeDescendants(combo).OfType<TextBlock>().Any(text=>text.Text=="同名"),"原枚举实际选中标签未渲染");
         Require(NativeDescendants(combo).OfType<TextBlock>().Where(text=>text.Text=="同名").All(text=>

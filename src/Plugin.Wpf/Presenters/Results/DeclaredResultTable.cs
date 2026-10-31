@@ -89,8 +89,16 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         object? RootValue(string id)=>values.Contains(id)?values.Get<object?>(id):null;
         if(_projection.Rows is {} source)
         {
-            var sequence=Read(RootValue(source.PortId),source.MemberFieldPath) as SequenceValue
-                ??throw new ArgumentException("The declared result rows are missing.");
+            var rowValue=Read(RootValue(source.PortId),source.MemberFieldPath);
+            if(rowValue is null)
+            {
+                // An omitted optional or null parent yields no rows for this publication.
+                // Install an empty scene so the previous row selection cannot survive.
+                if(Current())Install(rows.AsReadOnly(),expected,publication);
+                return;
+            }
+            var sequence=rowValue as SequenceValue
+                ??throw new ArgumentException("The declared result rows must be a sequence.");
             var identities=new HashSet<object>();
             foreach(var value in sequence)
             {

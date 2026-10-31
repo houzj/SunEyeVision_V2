@@ -1,0 +1,30 @@
+{
+  "status": "中立原件及dark资源、13项组件检查和同版回归通过；工作流接入、VS和人工待验",
+  "productType": "SunEyeVision.Plugin.Wpf.Controls.Inputs.ContentToggleSwitch",
+  "assembly": "SunEyeVision.Plugin.Wpf",
+  "xaml": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
+  "code": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs",
+  "originalIdentity": "VM.PcUI / HikPcUI.ListView.BooleanControl，UserControl家族；与Apps.XmlUI.ToggleButton家族分开",
+  "publicApi": {
+    "OnCheckedChange": "原委托IsCheckedChange(object sender,RoutedEventArgs e)，sender是内部TO ToggleButton；Checked/Unchecked均转发",
+    "OnContent": "object DependencyProperty；原默认null",
+    "IsChecked": "bool DependencyProperty，原默认false；外部绑定必须显式Mode=TwoWay",
+    "OffContent": "object DependencyProperty；原默认null，调用者提供每实例自己的Image/内容"
+  },
+  "resources": {
+    "template": "控件自身资源ToggleButtonStyle1和内部TO，无外部业务字典或VM服务",
+    "on": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/on-dark.png",
+    "contentRule": "两面Image均Stretch=None；不在共享Style.Setter中共享同一个可视Image对象",
+    "off": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/off-dark.png"
+  },
+  "sampleXaml": "<input:ContentToggleSwitch xmlns:input=\"clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf\"\n IsChecked=\"{Binding AutoSwitch, Mode=TwoWay}\" OnCheckedChange=\"AutoSwitchChanged\">\n <input:ContentToggleSwitch.OffContent><Image Stretch=\"None\" Source=\"/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/off-dark.png\"/></input:ContentToggleSwitch.OffContent>\n <input:ContentToggleSwitch.OnContent><Image Stretch=\"None\" Source=\"/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/on-dark.png\"/></input:ContentToggleSwitch.OnContent>\n</input:ContentToggleSwitch>",
+  "hostResponsibilities": [
+    "原控件程序回填也会转发Checked/Unchecked；初始化是否写配置、拒绝恢复和去重由既有宿主投影/当前代次门禁承担",
+    "事件时读取sender ToggleButton的IsChecked可取得原事件状态；不要假定事件触发时所有外层Binding已传播完毕",
+    "消费会话退役时解绑OnCheckedChange及其外部Binding，控制借用的Model/命令/内容寿命；组件不增加自定义Dispose或持有全局服务",
+    "用既有配置接纳入口落业务值，控件不得执行工作流或持有图像",
+    "未使用旧SDK ToggleSwitch、旧类型别名或双轨回退"
+  ],
+  "validation": "B01_CONTENT_TOGGLE_VALIDATION_20261030.json：正式UI/全量0错误，DesignTime319（新增13）、FieldEditing34、RuntimeEditorUiStage6；首轮超时保留；工作流/VS/人工未验",
+  "basis": "B01_CONTENT_TOGGLE_MIGRATION_PLAN_20261030.json与B01_CONTENT_TOGGLE_ORIGINAL_PARITY_20261030.json"
+}

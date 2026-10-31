@@ -1,0 +1,51 @@
+{
+  "status": "可审核单次取证程序及输入已准备；独占窗口问题待用户答复，不执行SDK",
+  "runner": "scripts/analysis/Run-B08SourceQualification.ps1",
+  "runnerSha256": "4C26B90945B4A2409B7E5C4CA0AB4D35829DFB788C93C9C6D3530AEF7FA2A34F",
+  "captureSourceSha256": "2B59CFD44C56F1F5151CBD93DDBA2B586E17D356EDA8DD44619B4D6B6EBDA02B",
+  "plan": "Release/_validation/B08SourceQualification-20261031-attempt01/plan.json",
+  "planSha256": "D9273F50A18F2A295C4464BC8C58AC1AEC1B0A81631CCC01445C3BEB1FB33E18",
+  "compile": "Release/_validation/B08SourceQualification-20261031-attempt01/compile-source-tree-002.log",
+  "compileExit": 0,
+  "gates": [
+    "当前共享清单精确SHA及唯一指定历史行",
+    "原ModuleProxy.dll身份及目录链无重解析",
+    "自有缓存仅两个已核BMP，原件和保全副本SHA相等，无未核子目录",
+    "旧PID不存在且没有其他原VM客户端/探针",
+    "程序/源/方案/图像输入与准备计划身份匹配",
+    "用户确认独占窗口后才可设置子进程运行标志；不设全局环境、不关闭其他任务",
+    "不改共享清单、不复制厂商程序/算法库、不修改安装文件",
+    "原SDK/Core/XmlParser程序集三份SHA与已核MVID/接口审计一致"
+  ],
+  "gateValidation": {
+    "result": "执行开关但无独占确认时，在创建进程前拒绝；没有receipt或init-observations",
+    "log": "Release/_validation/B08SourceQualification-20261031-preparation/missing-exclusive-window-gate.log",
+    "productOrOriginalSdkStarted": false
+  },
+  "actualQueries": [
+    "原SDK GetModuOutputIOInfo及原wrapper递归元数据",
+    "实际VmIO叶属性/父子树",
+    "原GetMultiModuleConnect及GetPreModules",
+    "直接调用原GetFrontFilterTree的普通int与float树；非本方重造谓词"
+  ],
+  "limits": [
+    "前检不是原子隔离，需要人工独占窗口",
+    "当前ServerPath是平台根/ServerSetting是地址，不宣称已证明独占缓存公开配置",
+    "IMAGE组合选择、StringConfig及Group专用入口不套普通数值树",
+    "准备编译通过不代表运行/原厂行为通过"
+  ],
+  "failuresPreserved": [
+    "prepare-attempt01.log：PowerShell多行逻辑运算符位置错误，已修正",
+    "prepare-attempt01-002.log：准备通过"
+  ],
+  "staticMetadata": {
+    "methods": 19,
+    "audit": "B08_PROBE_STATIC_METADATA_20261031.json",
+    "sha256": "8E6DA54D847982A5BCDD78918852BDB3565F563820A96F47615E6D0A4A18FDAF",
+    "scope": "静态声明/Marshal形状，不是native ABI或执行证明",
+    "reaLimit": "B08_PROBE_REA_METADATA_LIMIT_20261031.json",
+    "fields": 20,
+    "oldPlanSha256": "4559E279B5662EF7DD2EFF7A0348B45EADC7E31231913F96C6E0E4092B715815",
+    "oldRunnerSha256": "361ACBE6B680026273DB7AE61287A1EE39F362A968ADEEA35B84957DA36BB936"
+  }
+}

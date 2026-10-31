@@ -106,7 +106,7 @@ public sealed class BindingConfigurationStore
 
     // A session journal replays the exact accepted configuration, not whichever item happens
     // to be on this store's standalone history. Structure is restored by its preceding operation.
-    internal BindingConfigurationSnapshot ReplayAccepted(BindingConfigurationSnapshot target,
+    internal BindingConfigurationPublication ReplayAccepted(BindingConfigurationSnapshot target,
         Action<BindingConfigurationSnapshot> accept)
     {
         lock(_gate)
@@ -114,11 +114,20 @@ public sealed class BindingConfigurationStore
             if(_accepting)throw new InvalidOperationException("配置接受过程中不能重入恢复。");
             if(target.SolutionId!=_published.SolutionId)throw new InvalidOperationException("配置回执属于另一方案。");
             var configuration=target.CopyConfiguration();
+            PreserveCurrentParameterValues(configuration,_published.CopyConfiguration());
             var graph=SolutionExecutionDependencyGraph.Compile(configuration,checkReadiness:false);
             var validator=new OutputBindingChangeService();validator.Reset(configuration);
             var next=new BindingConfigurationSnapshot(checked(_published.Version+1),configuration,graph);
+            // History never restores live values. Compare definition changes only, otherwise
+            // a snapshot with cleared live values would invalidate unrelated consumers.
+            var previous=_published.CopyConfiguration();
+            var replayed=next.CopyConfiguration();
+            foreach(var variable in previous.GlobalVariables)variable.Value=null;
+            foreach(var variable in replayed.GlobalVariables)variable.Value=null;
+            var invalidated=ChangedNodes(previous,replayed,_published.Dependencies,graph.Dependencies,Array.Empty<ScopedNodeIdentity>());
+            var publication=new BindingConfigurationPublication(next,Array.Empty<OutputBindingChange>(),Array.AsReadOnly(invalidated));
             Accept(next,accept);_validator=validator;_published=next;
-            return next;
+            return publication;
         }
     }
 
@@ -176,16 +185,21 @@ public sealed class BindingConfigurationStore
 
     /// <summary>Accept explicit live-value CAS without creating configuration history or a new configuration revision.</summary>
     internal BindingConfigurationPublication AcceptRuntimeValues(BindingConfigurationDraft draft,
-        Action<BindingConfigurationSnapshot> accept, Action<Solution> validate)
+        Action<BindingConfigurationSnapshot> accept, Action<Solution> validate,Func<Action,bool>? admit=null)
     {
         lock (_gate)
         {
             var prepared = Prepare(draft, validate);
             var next = new BindingConfigurationSnapshot(_published.Version, prepared.Configuration, prepared.Graph);
             var publication = new BindingConfigurationPublication(next, Array.Empty<OutputBindingChange>(), Array.Empty<ScopedNodeIdentity>());
-            Accept(next, accept);
-            _validator = prepared.Validator;
-            _published = next;
+            void Install()
+            {
+                Accept(next, accept);
+                _validator = prepared.Validator;
+                _published = next;
+            }
+            if(admit is null)Install();
+            else if(!admit(Install))throw new InvalidOperationException("参数值写入的运行身份已取消或退役。");
             return publication;
         }
     }
@@ -271,7 +285,7 @@ public sealed class BindingConfigurationStore
     internal static string NodeSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
-        Runtime = node.RuntimeConfiguration,
+        Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
         ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplaySource
     }, WorkflowSerializationOptions.Compact);
@@ -307,6 +321,7 @@ public sealed class BindingConfigurationStore
             // Restore the entire accepted payload, not just canvas nodes. Do not reconcile
             // against the discarded newer contract and detach the restored bindings again.
             var configuration = source.Peek().CopyConfiguration();
+            PreserveCurrentParameterValues(configuration,_published.CopyConfiguration());
             var graph = SolutionExecutionDependencyGraph.Compile(configuration, checkReadiness: false);
             var validator = new OutputBindingChangeService();
             validator.Reset(configuration);
@@ -317,6 +332,18 @@ public sealed class BindingConfigurationStore
             _validator = validator; _published = next;
             return next;
         }
+    }
+
+    private static void PreserveCurrentParameterValues(Solution target,Solution live)
+    {
+        var values=live.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node)))
+            .ToDictionary(entry=>entry.Id,entry=>entry.Node.RuntimeConfiguration);
+        foreach(var flow in target.Workflows)
+        foreach(var node in flow.Nodes)
+            if(node.RuntimeConfiguration is {} restored&&values.TryGetValue(new(flow.Id,node.Id),out var current)&&current is not null
+                &&restored.ToolId==current.ToolId&&restored.Schema.Fingerprint==current.Schema.Fingerprint
+                &&restored.SettingsSchema.Fingerprint==current.SettingsSchema.Fingerprint)
+                node.RuntimeConfiguration=restored.PreserveCurrentValuesFrom(current);
     }
 
     private void Accept(BindingConfigurationSnapshot snapshot, Action<BindingConfigurationSnapshot>? accept)

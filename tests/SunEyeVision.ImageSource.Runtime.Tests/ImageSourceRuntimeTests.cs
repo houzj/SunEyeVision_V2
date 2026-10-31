@@ -12,9 +12,10 @@ namespace SunEyeVision.ImageSource.Runtime.Tests;
 
 public sealed class ImageSourceRuntimeTests
 {
-    private static IToolExecutionContext Context(FrozenOutputResources resources,CancellationToken token=default)
+    private static IToolExecutionContext Context(FrozenOutputResources resources,CancellationToken token=default,string? localAddress=null)
     {
-        var context=Substitute.For<IToolExecutionContext>();
+        var context=Substitute.For<IToolExecutionContext,ILocalImageReadContext>();
+        ((ILocalImageReadContext)context).AcceptLocalImage().Returns(_=>localAddress??throw new InvalidOperationException("测试缺少读取接纳地址。"));
         context.Identity.Returns(new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"source",Guid.NewGuid()));
         context.Cancellation.Returns(token);context.Resources.Returns(resources);return context;
     }
@@ -67,7 +68,7 @@ public sealed class ImageSourceRuntimeTests
     [Fact]
     public async Task Local_file_decode_has_explicit_address_and_fresh_run_frame_identity()
     {
-        var directory=Path.Combine(Path.GetTempPath(),"image-source-runtime-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        var directory=Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot,"test-data","image-source","runtime-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
         try
         {
             var path=Path.Combine(directory,"image.png");var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();
@@ -75,7 +76,7 @@ public sealed class ImageSourceRuntimeTests
                 2,1,96,96,System.Windows.Media.PixelFormats.Gray8,null,new byte[]{20,90},2)));
             using(var file=File.Create(path))encoder.Save(file);
             using var resources=new FrozenOutputResources();await using var session=new ImageSourceTool().CreateSession();
-            var context=Context(resources);var input=Input(new Dictionary<string,object?>{{ImageSourceTool.LocalAddress,path},{ImageSourceTool.Sequence,11L}});
+            var context=Context(resources,localAddress:path);var input=Input(new Dictionary<string,object?>{{ImageSourceTool.LocalAddress,Path.Combine(directory,"stale.png")},{ImageSourceTool.Sequence,11L}});
             var result=await session.ExecuteAsync(new(new ImageSourceSettings(),input,context));
             Assert.True(result.Success,string.Join(";",result.Diagnostics.Select(d=>d.Message)));
             using var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(values[ImageSourceOutput.Image]);
@@ -86,6 +87,44 @@ public sealed class ImageSourceRuntimeTests
         finally{Directory.Delete(directory,true);}
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CancellationAfterLocalReadAcceptanceRemainsCancellation(bool exists)
+    {
+        var directory=Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot,"test-data","image-source","cancel-"+Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path=Path.Combine(directory,"image.png");var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(System.Windows.Media.Imaging.BitmapSource.Create(
+                1,1,96,96,System.Windows.Media.PixelFormats.Gray8,null,new byte[]{42},1)));
+            if(exists)using(var file=File.Create(path))encoder.Save(file);
+            using var cancellation=new CancellationTokenSource();using var resources=new FrozenOutputResources();
+            var context=Context(resources,cancellation.Token,path);
+            ((ILocalImageReadContext)context).AcceptLocalImage().Returns(_=>{cancellation.Cancel();return path;});
+            var input=Input(new Dictionary<string,object?>{{ImageSourceTool.LocalAddress,path},{ImageSourceTool.Sequence,1L}});
+            await using var session=new ImageSourceTool().CreateSession();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async ()=>await session.ExecuteAsync(new(new ImageSourceSettings(),input,context)));
+            ((ILocalImageReadContext)context).Received(1).AcceptLocalImage();
+        }
+        finally{Directory.Delete(directory,true);}
+    }
+    [Fact]
+    public async Task Local_file_without_read_admission_fails_without_falling_back_to_the_input_address()
+    {
+        using var resources=new FrozenOutputResources();
+        var context=Substitute.For<IToolExecutionContext>();
+        context.Identity.Returns(new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"source",Guid.NewGuid()));
+        context.Resources.Returns(resources);
+        await using var session=new ImageSourceTool().CreateSession();
+        var input=Input(new Dictionary<string,object?> {
+            [ImageSourceTool.LocalAddress]=Path.GetFullPath("unused.png"),[ImageSourceTool.Sequence]=1L
+        });
+        var outcome=await session.ExecuteAsync(new(new ImageSourceSettings(),input,context));
+        Assert.False(outcome.Success);
+        Assert.Contains(outcome.Diagnostics,item=>item.Code=="IMAGE_SOURCE_ADMISSION");
+    }
     [Theory]
     [InlineData("local",false,false)]
     [InlineData("camera",false,false)]

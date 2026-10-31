@@ -1,0 +1,91 @@
+{
+  "status": "原公开Ex初始化/Destroy返回成功；显式卸载未返回、超时结束；不是完整生命周期通过",
+  "identity": {
+    "pid": 126128,
+    "appBase": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\bin\\Release\\net9.0\\",
+    "cwd": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030",
+    "dll": "D:/Program Files/VisionMaster4.4.0\\MVDAlgorithmSDK/Runtime/x64/MVDGlobalInitCpp.dll",
+    "sha256": "842AA169A563C0CAE74E1F164601EFE7951580D7A0CC843513771E8DA09DEF32",
+    "optionsSize": 36,
+    "scope": "Original public Ex initialization only; no VM.Core, solution, lock configuration or desktop access"
+  },
+  "create": {
+    "code": 0,
+    "hex": "0x00000000",
+    "handle": "0x7FFDD90445C8",
+    "admitted": true
+  },
+  "destroy": {
+    "code": 0,
+    "hex": "0x00000000"
+  },
+  "receipt": {
+    "pid": 126128,
+    "finished": false,
+    "exit": -1,
+    "timeoutMs": 60000,
+    "root": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030",
+    "scope": "Original public native initialization; not Blob or product acceptance"
+  },
+  "modules": [
+    {
+      "name": "MVDGlobalInitCpp.dll",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVDGlobalInitCpp.dll",
+      "sha256": "842AA169A563C0CAE74E1F164601EFE7951580D7A0CC843513771E8DA09DEF32"
+    },
+    {
+      "name": "MVDCommon.dll",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVDCommon.dll",
+      "sha256": "9C3E9C40305E9E892BE97FE1C5428474B2885D6FE8AC5DAFAF7EC1395486970B"
+    },
+    {
+      "name": "MVD_Algorithm.dll",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVD_Algorithm.dll",
+      "sha256": "85D17ECC87D52E9A62D8BB86C8D5208AC999BCD31EC6D0806453F8165733F549"
+    },
+    {
+      "name": "MVDSDKLogC.dll",
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVDSDKLogC.dll",
+      "sha256": "9EB62A8DC3AC9B35151E70D50910125F62C463777F17A8EB4304653B07405A13"
+    }
+  ],
+  "sourceAndRaw": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\Program.cs",
+      "sha256": "5810FBDF4D37638D5EF8597CED410D7BBAD1A07C496D8CD0913E45D5215E21B2"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\Run.ps1",
+      "sha256": "E329B15B97E1E7309ED244C6CC23298F07F69E67FE5F7D813BB21E38BD758BEC"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\InitProbe.csproj",
+      "sha256": "882F71C67EE35A1622284D75A976BAC462ADF9D1579B9580E8F5BBE812FE7C3D"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\observations.json",
+      "sha256": "51D278CB9FD509E8F0E844BA14D947AA71201BAC4142E04D9D8388D994A1A9E6"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalGlobalInit-20261030\\receipt.json",
+      "sha256": "6C8699A45D966F508D77FAB1D38CC13A41847E3BE7150C6312DB104CE11E8BEF"
+    }
+  ],
+  "processVisibleNow": false,
+  "staticAlgorithmSha256": "85D17ECC87D52E9A62D8BB86C8D5208AC999BCD31EC6D0806453F8165733F549",
+  "sameAlgorithmAsStaticReport": true,
+  "observed": [
+    "专有非界面进程无VM.Core/方案/桌面/锁配置",
+    "原InitOptions ABI36字节，全零且GPU不预热",
+    "Ex返回0、handle非零，Destroy返回0",
+    "未到owned-process-end记录；代码下一步是NativeLibrary.Free，60秒自有watchdog结束该进程"
+  ],
+  "limits": [
+    "未证明卸载挂起根因",
+    "未创建Blob，不解释绑定或解绑值",
+    "独立进程成功不能当另一SDK进程的全局状态成功",
+    "不是本方正式Release产品验收"
+  ],
+  "handoff": "同原B08授权已将实际返回、原始证据、超时及实例退出送逆向负责人，完整Blob样本由其恢复独占",
+  "productChanged": false
+}

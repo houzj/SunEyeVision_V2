@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M14 流程Tab连续运行/停止</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#e88d8d;
+}
+*{box-sizing:border-box}
+body{
+  max-width:700px;margin:0 auto;padding:40px 26px 90px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.75 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:#8fd3e4}
+
+.crumb{font-size:12px;color:var(--faint);margin-bottom:12px}
+.crumb a{text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+
+h1{margin:0 0 10px;font-size:22px;font-weight:600;line-height:1.4}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.tag{font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--dim)}
+.tag.st{color:var(--ok);border-color:#3a6b58}
+.tag.st.partial{color:var(--warn);border-color:#6b553a}
+.tag.st.none{color:var(--bad);border-color:#6b3a3a}
+
+.lead{font-size:15.5px;color:#eef6fa;margin:0 0 20px}
+
+/* 流程图 */
+.flow{margin:0 0 26px;padding:0;list-style:none}
+.flow li{
+  position:relative;padding:5px 0 5px 30px;
+  font-family:Consolas,monospace;font-size:12.5px;color:#a8c6d6;line-height:1.5;
+}
+.flow li::before{
+  content:attr(data-i);position:absolute;left:0;top:5px;
+  width:20px;height:20px;line-height:20px;text-align:center;
+  font-size:10.5px;color:var(--accent);
+  background:#0a1b29;border:1px solid #2c4a5f;border-radius:50%;
+}
+.flow li::after{
+  content:"";position:absolute;left:9.5px;top:25px;bottom:-1px;
+  width:1px;background:#2c4a5f;
+}
+.flow li:last-child::after{display:none}
+
+.blk{margin:0 0 18px}
+.blk h2{
+  font-size:12.5px;font-weight:600;color:#7fa8bd;letter-spacing:.04em;
+  margin:0 0 7px;
+}
+.blk p{margin:0 0 6px}
+.blk .more{display:none}
+.blk.open .more{display:block}
+
+/* 分号拆成的清单 */
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{
+  position:relative;padding:2px 0 2px 15px;color:var(--text);line-height:1.65;
+}
+ul.pts li::before{
+  content:"";position:absolute;left:2px;top:12px;
+  width:4px;height:4px;border-radius:50%;background:#3f6b80;
+}
+
+.toggle{
+  background:none;border:0;padding:0;margin-top:2px;
+  font-size:11.5px;color:var(--faint);cursor:pointer;
+}
+.toggle:hover{color:var(--accent)}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0;list-style:none}
+.chips li{font-size:11px;padding:2px 7px;border-radius:3px;background:#12293a;border:1px solid var(--line);color:#9dbdcd}
+
+details{border-top:1px solid var(--line);margin-top:10px;padding-top:9px}
+details summary{cursor:pointer;list-style:none;font-size:12px;color:var(--faint)}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--accent)}
+details[open] summary{margin-bottom:8px}
+details .bd{font-size:13px;color:var(--dim);line-height:1.75}
+details .bd p{margin:0 0 7px}
+
+footer{margin-top:36px;padding-top:13px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+footer a{color:var(--dim)}
+
+@media(max-width:600px){ body{padding:28px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb">
+  <a href="../index.html">目录</a> ›
+  <a href="../index.html#g-能力对照">能力对照</a> ›
+  M14
+</div>
+
+<div id="page"></div>
+
+<script>
+const D = {"id":"M14","group":"main","title":"流程Tab连续运行/停止","state":"partial","chain":["TabItem_ContinuousRun_Click","WorkflowTabViewModel.ToggleContinuous","Start/StopContinuousWorkflow"],"current":"Tab入口依据之前运行态显示开始/停止中。","gap":"Start/Stop委托→执行管理器会话的身份/完成接收；共相机准入/排队；已请求停止→允许同Tab再次运行","vm":"ProcessManager与流程运行状态/原生回调协作，不等调试窗口循环。","vmDoc":"MF05-CONTINUOUS-RUN-CALLCHAIN.md","vmLimit":"VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。","choice":"暂不能判断","reason":"依据：按流程连续已见，但与全部连续重入的服务准入及设备共享需核。 VM参考边界：借鉴所属流程身份寻址，而非切换当前显示流程。 结论仅针对列明范围，不作整体优胜排名。","change":"补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。 保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。","accept":"双流程争用单相机、慢工具、取消队列、重启均可追踪。","sourceIds":["S032","S033","R021","R022","R023"],"optimization":"O02","validation":"仅静态复核；未运行产品/设备/故障注入","review":{"id":"M14","before":"partial","after":"partial","confirmed":"TabItem_ContinuousRun_Click调用ToggleContinuous；后者依运行态StartContinuous或StopWorkflow。","missingEdges":["Start/Stop委托→执行管理器会话的身份/完成接收","共相机准入/排队","已请求停止→允许同Tab再次运行"],"cause":"证据缺口+并发验证","change":"保留逐流程会话，核对StartContinuousExecution/StopContinuousExecution装配消费者；同资源使用租约策略，Stopping时不得通过IsRunning假重启。","acceptance":"双流程争用单相机、慢工具、取消队列、重启均可追踪。","sourceIds":["S032","S033","R021","R022","R023"],"decision":"仅明确证据与缺口，不因复核次数或材料交付自动升级"},"previousRecommendation":{"choice":"保留按流程会话，补共享仲裁","reason":"逐流程有独立身份有利归属，但共相机/工具要统一资源策略。"},"defect":"按流程连续已见，但与全部连续重入的服务准入及设备共享需核。","vmBorrow":"借鉴所属流程身份寻址，而非切换当前显示流程。","difference":"待核实","differenceBasis":"VM或自研对应实现/运行证据未齐，暂不分大小。","adoption":"暂缓决策","adoptionBasis":"等待证据/需求后评审，没有已经选定的最终实现。","selectionStatus":"方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目","reviewDecision":{"category":"暂不能判断","defect":"按流程连续已见，但与全部连续重入的服务准入及设备共享需核。","borrow":"借鉴所属流程身份寻址，而非切换当前显示流程。","action":"补每流程运行会话键和共享资源冲突规则；根据实际锁与消费者决定迁移，不预判需全引擎重写。","difference":"待核实","adoption":"暂缓决策","confidence":"选型暂缓；已见局部代码不等全部闭合","sourceIds":["S032","S033","R021","R022","R023"]}};
+
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const stMap = {"implemented":["已实现","st"],"partial":["部分实现","st partial"],"unimplemented":["未实现","st none"],"unknown":["未确认","st none"]};
+
+/* 按分号拆句：长报告腔拆成一条一句 */
+function pts(s){
+  if(!s) return "";
+  const arr = s.split(/[；;]/).map(x=>x.trim()).filter(Boolean);
+  if(arr.length < 2) return '<p>'+esc(s)+'</p>';
+  return '<ul class="pts">'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+}
+/* 摘要：第一句，压到 50 字内 */
+function brief(s){
+  if(!s) return "";
+  const first = s.split(/[；;。]/)[0].trim();
+  return first.length > 52 ? first.slice(0,52)+"…" : first;
+}
+/* 需要“展开”的长内容 */
+function moreBox(fullHtml){
+  return '<div class="more">'+fullHtml+'</div><button class="toggle">展开全文</button>';
+}
+
+const st = stMap[D.state] || [D.state||"未标注","st"];
+const out = [];
+
+out.push('<h1>'+esc(D.title)+'</h1>');
+out.push('<div class="meta"><span class="tag">'+esc(D.id)+'</span><span class="tag '+st[1]+'">'+esc(st[0])+'</span>'+
+  (D.optimization?'<span class="tag">影响 '+esc(D.optimization)+'</span>':'')+'</div>');
+
+if(D.current) out.push('<p class="lead">'+esc(D.current)+'</p>');
+
+/* 调用顺序：流程图 */
+if(D.chain && D.chain.length){
+  out.push('<ul class="flow">'+D.chain.map((c,i)=>'<li data-i="'+(i+1)+'">'+esc(c)+'</li>').join('')+'</ul>');
+}
+
+/* 差在哪 */
+let gapFull = '';
+if(D.gap) gapFull += pts(D.gap);
+if(D.defect) gapFull += '<p><b>缺陷：</b>'+esc(D.defect)+'</p>';
+if(D.vm) gapFull += '<p><b>VM 的做法：</b>'+esc(D.vm)+'</p>';
+if(D.vmLimit) gapFull += '<p><b>对照边界：</b>'+esc(D.vmLimit)+'</p>';
+out.push('<div class="blk"><h2>差在哪</h2>'+pts(brief(D.gap))+moreBox(gapFull)+'</div>');
+
+/* 怎么改 */
+let chgFull = '';
+if(D.change) chgFull += pts(D.change);
+if(D.choice) chgFull += '<p><b>取舍：</b>'+esc(D.choice)+'</p>';
+if(D.reason) chgFull += '<p><b>依据：</b>'+esc(D.reason)+'</p>';
+if(D.vmBorrow) chgFull += '<p><b>可借鉴：</b>'+esc(D.vmBorrow)+'</p>';
+out.push('<div class="blk"><h2>怎么改</h2>'+pts(brief(D.change))+moreBox(chgFull)+'</div>');
+
+/* 怎么验 */
+out.push('<div class="blk"><h2>怎么验</h2>'+pts(brief(D.accept))+moreBox(pts(D.accept))+'</div>');
+
+/* 证据 */
+if(D.sourceIds && D.sourceIds.length){
+  out.push('<div class="blk"><h2>证据'+(D.validation?' · '+esc(D.validation):'')+'</h2><ul class="chips">'+
+    D.sourceIds.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>');
+}
+
+/* 复核与历史，默认收起 */
+if(D.review){
+  const r=D.review; let b='';
+  if(r.confirmed) b+='<p><b>已确认：</b>'+esc(r.confirmed)+'</p>';
+  if(r.missingEdges&&r.missingEdges.length) b+='<p><b>缺口：</b>'+r.missingEdges.map(x=>'<br>· '+esc(x)).join('')+'</p>';
+  if(r.decision) b+='<p><b>结论：</b>'+esc(r.decision)+'</p>';
+  out.push('<details><summary>复核记录（'+esc(r.before||'')+' → '+esc(r.after||'')+'）</summary><div class="bd">'+b+'</div></details>');
+}
+if(D.previousRecommendation){
+  const p=D.previousRecommendation;
+  out.push('<details><summary>以前的想法（'+esc(p.choice||'')+'）</summary><div class="bd"><p>'+esc(p.reason||'')+'</p></div></details>');
+}
+
+document.getElementById("page").innerHTML = out.join('');
+
+document.getElementById("page").addEventListener("click", e => {
+  if(!e.target.classList.contains("toggle")) return;
+  const blk = e.target.closest(".blk");
+  const on = blk.classList.toggle("open");
+  e.target.textContent = on ? "收起" : "展开全文";
+});
+</script>
+
+<footer>
+  原始详细材料：<a href="../现状分析/suneye-entry-architecture-comparison.html">主界面架构</a>
+</footer>
+
+</body>
+</html>

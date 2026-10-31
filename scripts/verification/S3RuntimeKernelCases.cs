@@ -16,7 +16,7 @@ internal static class S2DocumentEditingCases
     }
     private static FieldSettings Initial(IToolSettingsFields definition,object settings)=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
     private static IReadOnlyDictionary<string,ParameterSetting> Constants(Dictionary<string,object?> values)=>values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value));
-    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureFields().Materialize(new Dictionary<string,object?>()));
+    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureValidatedFields().Materialize(new Dictionary<string,object?>()));
     private static int _passed;
     private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, IsBlobCountFilterEnabled = false };
     private static int Main()
@@ -34,7 +34,10 @@ internal static class S2DocumentEditingCases
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),_=>{});
                 Require(Materialize(draft).Threshold==73&&original.Threshold==128
                     &&draft.CaptureFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
-                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}),_=>{}));
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}),_=>{});
+                Require(draft.CaptureFields().Get<long>(threshold)==220,"编辑中间态未保留在私有草稿");
+                Throws<ArgumentException>(()=>draft.CaptureValidatedFields());
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L}}),_=>{});
                 Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,300L}}),_=>{}));
                 Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{mode,"undefined"}}),_=>{}));
                 Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{"unknown",1L}}),_=>{}));
@@ -65,6 +68,15 @@ internal static class S2DocumentEditingCases
                     "回调重入污染整组草稿");
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>{});
                 Require(Materialize(draft).Threshold==221,"拒绝后提交门没有恢复");
+            });
+            Case("完整捕获期间重入接纳新值时拒绝旧快照",()=>{
+                var schema=new ToolSchema(new[]{new Port("value",DataType.Integer)},Array.Empty<Port>());
+                FieldSettingsDraft? draft=null;var armed=false;
+                draft=new FieldSettingsDraft(schema,new FieldSettings(schema.Inputs,new Dictionary<string,ParameterSetting>{{"value",new ConstantSetting(1L)}}),_=>{
+                    if(!armed)return;armed=false;draft!.ApplyFields(new Dictionary<string,ParameterSetting>{{"value",new ConstantSetting(2L)}},_=>{});
+                });
+                armed=true;Throws<InvalidOperationException>(()=>draft.CaptureValidatedFields());
+                Require(draft.CaptureFields().Get<long>("value")==2&&draft.Revision==1,"旧捕获覆盖或丢失回调接纳的新值");
             });
             Case("完整字段物化校验禁用参数标量域且不吞Boolean结构",()=>{
                 var tool=new BlobTool();var provider=(IToolSettingsFields)tool;

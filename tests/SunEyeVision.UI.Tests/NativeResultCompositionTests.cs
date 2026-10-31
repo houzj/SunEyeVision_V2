@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -252,20 +252,7 @@ public sealed class NativeResultCompositionTests
         Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => frame.Continue = false));
         Dispatcher.PushFrame(frame);
     }
-    private static void Sta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); }
-            catch (Exception error) { failure = error; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        }) { IsBackground = true };
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(35)), "真实 WPF 组合验证未在限定时间退出。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void Sta(Action action) => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
     private sealed class LoadedHost : IDisposable
     {
         private readonly Window _window = new() { Width = 920, Height = 780, ShowInTaskbar = false, WindowStyle = WindowStyle.None, Left = -10000, Top = -10000 };

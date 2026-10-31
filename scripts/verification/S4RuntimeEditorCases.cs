@@ -14,8 +14,12 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
-using AppsPopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
+using AppsPopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Shell.Windows;
@@ -49,7 +53,7 @@ internal static class S2DocumentEditingCases
         var shell=new Window{Width=620,Height=400,Content=resultHost,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);
         node.DebugWindowStyle=DebugWindowStyle.Custom;
-        var threshold=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;
+        var threshold=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
         DefaultDebugWindow Open()
         {
             vm.OpenDebugWindowCommand.Execute(node);Pump();
@@ -79,16 +83,104 @@ internal static class S2DocumentEditingCases
             sourcePolicy.FilePaths=new(){imageFile};sourcePolicy.CurrentIndex=0;sourcePolicy.ForRunPaths=new(){imageFile};sourcePolicy.SNInitialValue=1;sourcePolicy.ApplyTo(source);
             vm.AddNodeToWorkflow(source);
 
+        GlobalVariable? uiVariable=null;
+        if(Environment.GetEnvironmentVariable("S4_EDITOR_UI_ONLY")=="1")
+        {
+            var host=solutions.Session!.Editing.Host;var variables=host.BeginVariableEdit();
+            uiVariable=new GlobalVariable("验收阈值",77d,"Double","验收参数");
+            variables.Configuration.GlobalVariables.Add(uiVariable);
+            host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),variables);
+        }
         var first=Open();
+        if(Environment.GetEnvironmentVariable("S4_EDITOR_UI_ONLY")=="1")
+        {
+            var formalOpening=node.RuntimeConfiguration!;
+            var savedOpening=File.ReadAllBytes(path);
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
+            var tabs=Logical(Control(first)).OfType<TabControl>().Single();
+            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
+            var combo=(ComboBox)input.InputElement!;
+            Case("S1真实MainWindow打开基本页与正式来源下拉",()=>
+            {
+                Require(tabs.SelectedIndex==0&&combo.IsLoaded&&combo.IsVisible,"实际参数窗未从基本页打开或来源控件未加载");
+                Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未注册唯一编辑范围");
+                Require(combo.Items.OfType<ComboBoxItem>().Any(item=>item.Tag is ReferenceSetting reference
+                    &&reference.Reference.NodeId==source.Id&&reference.Reference.PortId=="output.image"),"正式图像源输出没有进入真实下拉");
+                Capture(first,"runtime-editor-ui-stage.png");
+            });
+            Case("S1来源选择仅写私有字段且展示中文声明",()=>
+            {
+                combo.IsDropDownOpen=true;Pump();
+                var choice=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting reference
+                    &&reference.Reference.NodeId==source.Id&&reference.Reference.PortId=="output.image");
+                combo.SelectedItem=choice;combo.IsDropDownOpen=false;Pump();
+                Require(context.DraftNode.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is ReferenceSetting selected
+                    &&selected.Reference.NodeId==source.Id&&selected.Reference.PortId=="output.image"
+                    &&node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"真实来源选择未写私有草稿或污染正式配置");
+                Require(choice.Content?.ToString()?.Contains("图像",StringComparison.Ordinal)==true
+                    &&choice.Content?.ToString()?.Contains("output.image",StringComparison.Ordinal)!=true,"来源下拉没有消费正式中文显示声明");
+            });
+            Case("真实Blob阈值仍为明确S1占位，不能冒充变量功能链已接入",()=>
+            {
+                Threshold(first);var field=Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Single(item=>item.FieldId==threshold);
+                Require(!field.View.IsLoaded&&!field.View.IsVisible,"原正式阈值字段已经呈现，必须改为真实功能接纳验收，不能沿用占位结论");
+                Require(Visual(Control(first)).OfType<FrameworkElement>().Any(element=>element.GetType().Name=="NativeThresholdUiDraftControls"&&element.IsVisible),"可见页没有明确S1阈值组合");
+                Require(solutions.Session!.Editing.Host.GetVariableNames(solutions.CurrentSolution!.Id).ContainsKey(uiVariable!.Id)
+                    &&node.RuntimeConfiguration!.Fields.Read(threshold) is ConstantSetting
+                    &&context.DraftNode.RuntimeConfiguration!.Fields.Read(threshold) is ConstantSetting,"候选准备或页面显示擅自写入变量引用");
+                Capture(first,"runtime-editor-variable-boundary.png");tabs.SelectedIndex=0;Pump();
+            });
+            Case("S1纯UI阻止调试与确定，不取得算法运行租约",()=>
+            {
+                var before=Context().GetNodeResult(node.Id)?.Result;
+                var task=Control(first).RunDebugAsync();PumpUntil(()=>task.IsCompleted);
+                var rejected=false;
+                try{task.GetAwaiter().GetResult();}
+                catch(InvalidOperationException failure) when(failure.Message.Contains("界面试用",StringComparison.Ordinal)){rejected=true;}
+                Require(rejected&&context.DebugOwner.ActiveRuns==0&&ReferenceEquals(before,Context().GetNodeResult(node.Id)?.Result),
+                    "纯UI调试未明确拒绝、遗留运行租约或修改正式结果");
+                Require(!first.TryConfirm(out var error)&&error.Contains("界面试用",StringComparison.Ordinal)
+                    &&first.IsVisible&&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"纯UI确定未拒绝或提前关闭/发布");
+            });
+            Case("S1未接入界面状态阻断保存，磁盘与正式字段保持不变",()=>
+            {
+                vm.SaveCurrentSolutionCommand.Execute(null);Pump();
+                Require(savedOpening.SequenceEqual(File.ReadAllBytes(path))
+                    &&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"S1界面试用修改写入文件或正式配置");
+            });
+            var retiredDraft=context.DraftNode;var retiredConfiguration=retiredDraft.RuntimeConfiguration;
+            first.Close();Pump();
+            var reopened=Open();var reopenedContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(reopened))!;
+            Case("S1取消重开回读正式配置且旧来源控件不能写新会话",()=>
+            {
+                Require(!context.IsValid&&solutions.Session!.Editing.RegisteredScopeCount==1
+                    &&reopenedContext.DraftNode.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting,"旧范围未退役或重开继承了已取消的来源");
+                combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().FirstOrDefault(item=>item.Tag is ReferenceSetting reference
+                    &&reference.Reference.NodeId==source.Id&&reference.Reference.PortId=="output.gray-image");Pump();
+                Require(ReferenceEquals(retiredDraft.RuntimeConfiguration,retiredConfiguration)
+                    &&reopenedContext.DraftNode.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting
+                    &&ReferenceEquals(node.RuntimeConfiguration,formalOpening),"退役来源回调写入旧草稿、新范围或正式配置");
+                Require(Logical(Control(reopened)).OfType<TabControl>().Single().SelectedIndex==0,"重开未回到基本参数页");
+            });
+            reopened.Close();Pump();
+            Require(solutions.Session!.Editing.RegisteredScopeCount==0,"真实窗口全部关闭后编辑范围未清空");
+            shell.Close();dialogs.Stop();
+            File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"ui-stage-report.json"),
+                System.Text.Json.JsonSerializer.Serialize(new{stage="S1Ui",passed=_passed,fullFunctionalAcceptance=false,
+                    remaining=new[]{"阈值及控件功能执行","正式功能确认与保存重开","实际VS与人工验收"}}));
+            Console.WriteLine($"S1真实编辑窗口UI链：{_passed}组通过；fullFunctionalAcceptance=false，旧RuntimeEditor功能用例保留，未运行Blob算法。");
+            return 0;
+        }
         Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
         {
             Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&first.EditorControl is null
                 &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");
             Require(Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Select(field=>field.FieldId).Distinct().Count()==54&&Logical(Control(first)).OfType<DeclaredInputFieldsView>().Single().Fields.Count==4,"XML输入及设置字段未进入真实窗口");
             Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未登记文档事务");
-            // Inspect rendered input controls on their actual page, independently of the
-            // user's saved designer SelectedPageIndex.
-            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;
+            // The XAML design page may be saved on another tab; a real editor
+            // must still open on the image input page.
+            Require(Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex==0,
+                "实际Blob窗口未从基本参数和输入源开始");
             first.UpdateLayout();Pump();
             var sourceButtons=Visual(Control(first)).OfType<AppsPopup>().Where(b=>b.Name=="rt").ToArray();
             Require(sourceButtons.Length==3&&sourceButtons.All(b=>Visual(b).OfType<Image>().Any(i=>i.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&i.ActualWidth>0)),
@@ -254,6 +346,10 @@ internal static class S2DocumentEditingCases
         private bool _called;
         public FrameworkElement View=>inner.View;
         public bool HasInvalidInput=>inner.HasInvalidInput;
+        public bool HasPendingEdits=>inner.HasPendingEdits;
+        public long AcceptedRevision=>inner.AcceptedRevision;
+        public IReadOnlyList<string> AcceptedFieldOrder=>inner.AcceptedFieldOrder;
+        public FieldSettings CaptureAcceptedFields()=>inner.CaptureAcceptedFields();
         public event Action? Changed {add=>inner.Changed+=value;remove=>inner.Changed-=value;}
         public bool TryCapture(out FieldSettings settings,out string error)
         {

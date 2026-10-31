@@ -1,0 +1,51 @@
+{
+  "status": "实际Blob创建失败，未进入绑定或执行，不能解释解绑值",
+  "root": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-owned-runtime-20261030",
+  "identity": {
+    "phase": "identity",
+    "utc": "2026-10-30T13:50:21.7696344Z",
+    "pid": 125252,
+    "appBase": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-owned-runtime-20261030\\",
+    "solution": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-owned-runtime-20261030\\fixture.sol",
+    "solutionSha256": "B91A7736F467757E15A55AF7836E22364AE153478E17C69AAEB69E0C30674D0B",
+    "applications": "D:\\Program Files\\VisionMaster4.4.0\\Applications",
+    "blob": "@create",
+    "source": "Flow1.Image Source1",
+    "sourceOutput": "B08Var",
+    "a": 37,
+    "b": 173,
+    "xmlDefault": 100
+  },
+  "failure": {
+    "phase": "error",
+    "at": "create-blob",
+    "error": "VM.PlatformSDKCS.VmException: 应用程序中的错误。\r\n   在 VM.PlatformSDKCS.ModuleManager.SyncAddOneModule(IMVS_SYNC_ADD_ONE_MODULE_INFO stSyncAddModuInput)\r\n   在 VM.Core.VmModule.CreateToModuleSet(ModelBase vmModuleSet, String typeName, UInt32 SetNodeType, UInt32 mID)\r\n   在 VM.Core.VmModule..ctor(Object param, String typeName)"
+  },
+  "observationsSha256": "098CAE468D0038CC96C2C25DE25D5B05611F69425B21B70DC73602CF94BBC968",
+  "moduleLogSha256": "07323780654F784C2CEE97CBA70EDF56C8AD2994D4187BC7773329ABA30F0AEB",
+  "frameLogSha256": "8D4F9373E67E1FA8B7F3B140F37FBD85EB4717FF15F02E815662CBADACADD4DB",
+  "confirmed": [
+    "图像源加载0x00000000",
+    "CircleFind与Blob的CreateToolInstance均返回0x80100015",
+    "同步添加Blob失败，观察日志包含owned-solution-disposed"
+  ],
+  "extraLog": "GlobalScript日志含原安装GlobalUserScript.csproj写入拒绝；保留实际错误，不直接当算法失败根因",
+  "hypothesis": "与既有算法全局状态无效码相同值得核正常初始化；同码不证明同一失败点或许可缺失",
+  "next": "使用正常原厂入口完成初始化，或按原实际调用补齐SDK初始化；新样本目录复测，失败原记录保留",
+  "notProved": [
+    "Blob实例建立成功",
+    "绑定/执行/解绑或A/B恢复值",
+    "触发文本语义",
+    "本方产品缺陷"
+  ],
+  "recordingFailure": "首轮证据脚本误用只读自动变量Error，序列化已中止；改为专用probeFailure后重写此记录，不涉及产品或原探针",
+  "productChanged": false,
+  "initializationHeaderReview": {
+    "path": "D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/Includes/Algorithms/GlobalInitCpp.h",
+    "sha256": "99E8D1257BDFD4715422D92720CBC0A04238C8B62FB44E2AE7612151750C3FCF",
+    "old": "CreateGlobalInitToolInstance/DestroyGlobalInitToolInstance原头注明V4.4后废弃，并说明首算子可自动初始化",
+    "current": "CreateGlobalInitToolInstanceEx带MVD_GLOBAL_INIT_PARAM，可控制初始化选项；x64原DLL在MVDAlgorithmSDK/Runtime/x64/MVDGlobalInitCpp.dll",
+    "decision": "不能仅因探针未显式调用旧Init就判根因；须核正常原厂调用/实际返回和环境错误，不改许可检查或使用未知ABI",
+    "execution": "仅只读头文件和路径，未在本线加载/执行厂商DLL"
+  }
+}

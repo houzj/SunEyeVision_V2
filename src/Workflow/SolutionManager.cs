@@ -503,7 +503,7 @@ public class SolutionManager
             savePath = Path.GetFullPath(savePath);
             SolutionSaving?.Invoke(this, session.Document);
             if (!ReferenceEquals(Session, session)) return SaveFailure("保存准备期间方案已切换，请重试。");
-            snapshot = SolutionSnapshot.Prepare(session.Document, savePath);
+            snapshot = SolutionSnapshot.PrepareSession(session, savePath);
             written = snapshot.Json;
             var result = _repository.WriteSnapshot(snapshot, overwrite);
             if (!result.FileWritten)

@@ -325,7 +325,7 @@ namespace SunEyeVision.UI.Features.Camera
             Cameras = new ObservableCollection<CameraDevice>();
             Cameras.CollectionChanged += Cameras_CollectionChanged;
             _runtime = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime;
-            CameraDetailViewModel = new CameraDetailViewModel(_runtime);
+            CameraDetailViewModel = new CameraDetailViewModel(_runtime.Runtime);
             
             LoadCameraList();
             

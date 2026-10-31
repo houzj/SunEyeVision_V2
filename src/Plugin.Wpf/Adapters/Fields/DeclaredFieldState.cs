@@ -11,25 +11,41 @@ internal sealed class DeclaredFieldState : IDisposable
     private Func<ParameterSetting,bool>? _propose;
     private ParameterSetting _accepted;
     private ConstantSetting? _constantBackup;
+    private Func<ConstantSetting?>? _readCurrentValue;
     private readonly bool _allowUnboundReference;
     private bool _writing;
     private bool _referenceCleared;
     public Port Port { get; }
     public ParameterSetting Accepted => CopySetting(_accepted);
-    public ConstantSetting? ConstantBackup => _constantBackup is null ? null : (ConstantSetting)CopySetting(_constantBackup);
+    public ConstantSetting? ConstantBackup
+    {
+        get
+        {
+            if(IsDisposed)return null;
+            // A production host owns current values. Missing host data must not silently
+            // resurrect a pre-subscription backup or an XML default.
+            if(_readCurrentValue is {} read&&_accepted is ReferenceSetting or VariableSetting)
+            {
+                var value=read();
+                return IsDisposed||value is null?null:(ConstantSetting)CopySetting(value);
+            }
+            return _constantBackup is null?null:(ConstantSetting)CopySetting(_constantBackup);
+        }
+    }
     public bool IsReferenceMode { get; private set; }
     public string EditError { get; private set; } = "";
     public string SourceError { get; private set; } = "";
     public bool IsDisposed { get; private set; }
     internal long AcceptanceVersion {get;private set;}
     public bool ReferenceCleared => _referenceCleared;
-    public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not ReferenceSetting)
+    public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not (ReferenceSetting or VariableSetting))
         && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting);
     public bool HasInvalidInput => MissingReference || (_accepted is UnsetSetting && Port.Required && !_allowUnboundReference)
-        || (IsReferenceMode && _accepted is ReferenceSetting {RebindingReason:{Length:>0}})
+        || (IsReferenceMode && (_accepted is ReferenceSetting {RebindingReason:{Length:>0}} or VariableSetting {RebindingReason:{Length:>0}}))
         || EditError.Length != 0 || SourceError.Length != 0;
     public string Error => EditError.Length!=0?EditError:SourceError.Length!=0?SourceError
         : IsReferenceMode && _accepted is ReferenceSetting {RebindingReason:{Length:>0} reason} ? reason
+        : IsReferenceMode && _accepted is VariableSetting {RebindingReason:{Length:>0} variableReason} ? variableReason
         : MissingReference ? "请选择订阅来源，或切回数值模式。"
         : _accepted is UnsetSetting && Port.Required && !_allowUnboundReference ? "必填项尚未设置。" : "";
     public event Action? Changed;
@@ -37,13 +53,13 @@ internal sealed class DeclaredFieldState : IDisposable
 
     public DeclaredFieldState(Port port, ParameterSetting initial, Action<ParameterSetting> write,
         ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null,
-        Func<ParameterSetting,bool>? propose=null)
+        Func<ParameterSetting,bool>? propose=null,Func<ConstantSetting?>? readCurrentValue=null)
     {
-        Port = port; _write = write;_validate=validate;_propose=propose;
+        Port = port; _write = write;_validate=validate;_propose=propose;_readCurrentValue=readCurrentValue;
         _accepted = PrepareInitial(initial);
         _constantBackup = initial is ConstantSetting ? (ConstantSetting)CopySetting(_accepted)
             : constantBackup is null ? null : (ConstantSetting)PrepareInitial(constantBackup);
-        IsReferenceMode = initial is ReferenceSetting || port.EditModes == FieldEditModes.Reference;
+        IsReferenceMode = initial is ReferenceSetting or VariableSetting || port.EditModes == FieldEditModes.Reference;
         _allowUnboundReference = allowUnboundReference;
     }
 
@@ -76,7 +92,7 @@ internal sealed class DeclaredFieldState : IDisposable
                 var state=entry.State;var value=entry.Value;
                 var setting=value.Setting is UnsetSetting?new UnsetSetting():state.PrepareProposal(value.Setting);
                 var backup=value.ConstantBackup is null?null:(ConstantSetting)state.PrepareProposal(value.ConstantBackup);
-                if(setting is ReferenceSetting&&!value.ReferenceMode
+                if(setting is (ReferenceSetting or VariableSetting)&&!value.ReferenceMode
                     ||value.ReferenceMode&&(state.Port.EditModes&FieldEditModes.Reference)==0)
                     throw new ArgumentException("回放的编辑模式与正式设置不符。");
                 return (State:state,Value:new AcceptedFieldValue(CopySetting(setting),value.ReferenceMode,backup));
@@ -143,8 +159,9 @@ internal sealed class DeclaredFieldState : IDisposable
             if(!Current())return false;
             foreach(var (state,value) in prepared)
             {
-                var referenceMode=value is ReferenceSetting||value is UnsetSetting&&state.IsReferenceMode;
-                var clearSourceError=value is ConstantSetting or UnsetSetting && state.SourceError.Length!=0;
+                var referenceMode=value is ReferenceSetting or VariableSetting||value is UnsetSetting&&state.IsReferenceMode;
+                // Prepared proposals passed the current host validation and write. Retire the old source diagnostic atomically.
+                var clearSourceError=state.SourceError.Length!=0;
                 if(replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0||clearSourceError)
                     notifications.Add(state);
                 state._accepted=value;
@@ -199,9 +216,9 @@ internal sealed class DeclaredFieldState : IDisposable
                 throw new ArgumentException("此字段不允许常量。");
             return new ConstantSetting(ValueRules.Freeze(Port,constant.Value));
         }
-        if(proposal is ReferenceSetting reference)
+        if(proposal is ReferenceSetting or VariableSetting)
         {
-            if(reference.Reference is null)throw new ArgumentException("订阅设置缺少正式引用。");
+            if(proposal is ReferenceSetting {Reference:null} or VariableSetting {Reference:null})throw new ArgumentException("订阅设置缺少正式引用。");
             if((Port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("此字段不允许订阅。");
             return proposal;
         }
@@ -256,6 +273,8 @@ internal sealed class DeclaredFieldState : IDisposable
         (ConstantSetting a, ConstantSetting b) => SameValue(a.Value, b.Value),
         (ReferenceSetting a, ReferenceSetting b) => a.Conversion == b.Conversion && a.OriginId == b.OriginId
             && a.RebindingReason == b.RebindingReason && SameReference(a.Reference, b.Reference),
+        (VariableSetting a, VariableSetting b) => a.Conversion==b.Conversion&&a.RebindingReason==b.RebindingReason
+            &&SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceSettingParts.SameSource(a.Reference,b.Reference)&&SameSelection(a.Reference.Selection,b.Reference.Selection),
         _ => false
     };
 
@@ -284,6 +303,8 @@ internal sealed class DeclaredFieldState : IDisposable
         (BindingSelection.AllItems, BindingSelection.AllItems) => true,
         (BindingSelection.AtConstant x, BindingSelection.AtConstant y) => x.Index == y.Index,
         (BindingSelection.AtField x, BindingSelection.AtField y) => SameReference(x.Reference, y.Reference),
+        (BindingSelection.AtVariable x, BindingSelection.AtVariable y) => x.Reference.SolutionId==y.Reference.SolutionId
+            &&x.Reference.VariableId==y.Reference.VariableId&&x.Reference.Type==y.Reference.Type&&x.Reference.Storage==y.Reference.Storage,
         _ => false
     };
 
@@ -307,6 +328,6 @@ internal sealed class DeclaredFieldState : IDisposable
     public void Dispose()
     {
         if (IsDisposed) return;
-        IsDisposed = true; Changed = null;ExplicitlyAccepted=null; _write = null;_validate=null;_propose=null;
+        IsDisposed = true; Changed = null;ExplicitlyAccepted=null; _write = null;_validate=null;_propose=null;_readCurrentValue=null;
     }
 }

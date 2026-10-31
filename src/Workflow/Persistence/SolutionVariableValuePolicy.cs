@@ -21,6 +21,15 @@ internal static class SolutionVariableValuePolicy
                 throw new JsonException("Unknown variable value field.", path + ".Value." + property.Key, null, null);
         var declared = variable["Type"]?.GetValue<string>()
             ?? throw new JsonException("Variable Type is required.", path + ".Type", null, null);
+        if(!legacy&&declared is "Integer[]" or "Double[]" or "String[]" or "Boolean[]")
+        {
+            var element=declared[..^2];
+            if(type!=element||canonicalType(type)!=canonicalType(element))
+                throw new JsonException("Explicit sequence declaration disagrees with the canonical value element type.",path+".Value.Type",null,null);
+            if(wrapper["Value"] is not null&&wrapper["Value"] is not JsonArray)
+                throw new JsonException("Explicit sequence variables require an array value; scalar promotion is forbidden.",path+".Value.Value",null,null);
+            return;
+        }
         var canonical = canonicalType(type);
         if (canonicalType(declared) != canonical)
             throw new JsonException("Variable Type disagrees with value Type.", path + ".Value.Type", null, null);

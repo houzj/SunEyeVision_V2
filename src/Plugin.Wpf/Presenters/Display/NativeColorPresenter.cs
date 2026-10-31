@@ -45,7 +45,7 @@ public sealed class NativeColorPresenter : Decorator, IDisposable
     public NativeColorPresenter()
     {
         Resources.MergedDictionaries.Add(new ResourceDictionary
-        {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",UriKind.Relative)});
+        {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml",UriKind.Relative)});
         NativeView.SetBinding(NativePicker.CurrentColorProperty,new Binding(nameof(SelectedColor))
         {Source=this,Mode=BindingMode.TwoWay,Converter=new ColorBrushAdapter()});
         Child=NativeView;

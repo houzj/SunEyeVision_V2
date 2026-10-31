@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
+using SunEyeVision.Tool.ImageSource.Runtime;
 
 namespace SunEyeVision.Tool.ImageSource.Wpf.Views;
 
@@ -56,7 +57,8 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
             EnsureCurrentBinding();
             options.AcceptCandidate?.Invoke(candidate);
         });
-        Editor.Bind(draft, options with { InputSection = InputPage });
+        Editor.Bind(draft, options with { InputSection = null, InputAfterField = ImageSourceFields.SourceKind,
+            InputCondition = new FieldCondition(ImageSourceFields.SourceKind,"camera") });
         EnsureCurrentBinding();
         Editor.Changed+=OnFieldsChanged;
         if(_source is not null)_source.Changed+=OnSourceChanged;
@@ -64,6 +66,10 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
 
     public FrameworkElement View => this;
     public bool HasInvalidInput => Editor.HasInvalidInput;
+    public bool HasPendingEdits=>Editor.HasPendingEdits;
+    public long AcceptedRevision=>Editor.AcceptedRevision;
+    public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
+    public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
     public event Action? Changed { add => ViewChanged += value; remove => ViewChanged -= value; }
     private void OnFieldsChanged(){_source?.RefreshSourceDraft();ViewChanged?.Invoke();}
     private void OnSourceChanged()

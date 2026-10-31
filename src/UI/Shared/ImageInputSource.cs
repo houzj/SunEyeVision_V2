@@ -8,6 +8,9 @@ namespace SunEyeVision.UI.Shared;
 
 /// <summary>One transient edit request; selection intent is not persisted as configuration.</summary>
 public sealed record ImageSourceEditProposal(ImageSourcePolicy Configuration,bool SelectStart);
+/// <summary>Formal acceptance and the continued validity of this projection are distinct facts.</summary>
+public readonly record struct ImageSourceEditReceipt(bool FormalAccepted,long? ProjectionVersion,string? ExecutionError = null)
+{ public bool RuntimeReady => ExecutionError is null; }
 public sealed class ImageSourceSelectionEventArgs(long version,ImageInfo image,int index):EventArgs
 {
     public long Version {get;}=version;
@@ -28,6 +31,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     private int _currentIndex = -1, _configuredIndex = -1;
     private ImageRunMode _runMode;
     private bool _autoSwitch = true, _readOnly, _committing, _requiresWriter;
+    private string? _acceptedRuntimeError;
     private List<string> _runReferences = new();
     public string NodeId { get; }
     public long EditVersion { get; private set; }
@@ -35,6 +39,12 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     public ReadOnlyObservableCollection<ImageInfo> Images { get; }
     /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
     public Action<ImageSourceEditProposal>? ConfigurationWriter { get; set; }
+    internal Func<IDisposable>? ConfigurationLeaseProvider { get; set; }
+    internal void RecordAcceptedRuntimeFailure(string message)
+    {
+        if(!_committing)throw new InvalidOperationException("只能在正式接纳期间记录运行准备失败。");
+        _acceptedRuntimeError=string.IsNullOrWhiteSpace(message)?"图像运行游标不可用。":message;
+    }
     public event EventHandler<int>? CurrentImageChanged;
     public event EventHandler? ConfigurationEdited;
     public event EventHandler<ImageSourceSelectionEventArgs>? ExplicitSelectionAccepted;
@@ -44,8 +54,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nodeId); NodeId = nodeId; Images = new(_entries);
     }
-    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
-    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
+    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
+    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
     public int Count => _entries.Count;
     public bool HasImages => Count != 0;
     public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
@@ -57,10 +67,10 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     }
     public bool CanSelectImage(int index)=>index>=0&&index<Count&&
         (_runMode!=ImageRunMode.运行选择||_runReferences.Contains(Reference(_entries[index]),StringComparer.Ordinal));
-    public void SelectImage(int index)
+    public ImageSourceEditReceipt SelectImage(int index)
     {
         if(index>=0&&!CanSelectImage(index))throw new InvalidOperationException("运行选择模式只能选择已勾选的图像。");
-        Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
+        return Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
     }
     public ImageRunMode RunMode
     {
@@ -86,36 +96,48 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         for(var i=0;i<rows.Count;i++)if(Reference(rows[i])==reference&&occurrence--==0)return i;
         return fallback;
     }
-    private void Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected,bool selectStart=false)
+    private ImageSourceEditReceipt Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected,bool selectStart=false)
     {
         if (_committing) throw new InvalidOperationException("图像源编辑不能重入。");
         if (_readOnly) throw new InvalidOperationException("图像输入源已锁定。");
         if (_requiresWriter && ConfigurationWriter is null) throw new InvalidOperationException("图像源尚未连接当前方案的正式编辑会话。");
+        if (_requiresWriter && ConfigurationLeaseProvider is null) throw new InvalidOperationException("图像源尚未连接正式执行门禁。");
         if (index < -1 || index >= rows.Length || !Enum.IsDefined(mode) || rows.Any(row=>row is null||string.IsNullOrWhiteSpace(row.Id)) || rows.Select(row=>row.Id).Distinct(StringComparer.Ordinal).Count()!=rows.Length)
             throw new InvalidOperationException("图像源条目身份、选择或模式无效。");
+        using var configurationLease = ConfigurationLeaseProvider?.Invoke();
         var configuration=Configuration(rows,index,mode,auto,selected);
         var displayIndex=selectStart?index:RemapDisplay(rows,index);
         var version=EditVersion;
+        var writer=ConfigurationWriter;
+        var formalAccepted=_requiresWriter && writer is not null;
+        if (_requiresWriter && writer is null) throw new InvalidOperationException("图像源所属正式编辑会话已失效。");
         _=checked(version+1);
         ImageSourceSelectionEventArgs? acceptedSelection=null;
+        _acceptedRuntimeError=null;
         _committing=true;
         try
         {
             // The writer may reject. Nothing visible or owned has changed yet.
-            ConfigurationWriter?.Invoke(new(Configuration(rows,index,mode,auto,configuration.ForRunPaths),selectStart));
+            writer?.Invoke(new(Configuration(rows,index,mode,auto,configuration.ForRunPaths),selectStart));
             // An accepted publication may synchronously replace this projection. Do not revive it.
-            if (version!=EditVersion) return;
+            if (version!=EditVersion) return new(formalAccepted,null,_acceptedRuntimeError);
             Install(rows,configuration,true,displayIndex);
             if(selectStart&&EditVersion==version+1&&index>=0&&index<Count&&ReferenceEquals(CurrentImage,rows[index]))
                 acceptedSelection=new(EditVersion,rows[index],index);
         }
         finally { _committing=false; }
+        var runtimeError=_acceptedRuntimeError;
         if(acceptedSelection is not null)
             foreach(var callback in ExplicitSelectionAccepted?.GetInvocationList()??Array.Empty<Delegate>())
             {
                 if(EditVersion!=acceptedSelection.Version||!ReferenceEquals(CurrentImage,acceptedSelection.Image))break;
                 Notify(()=>((EventHandler<ImageSourceSelectionEventArgs>)callback)(this,acceptedSelection));
             }
+        // Notifications may replace the projection or select a different image reentrantly.
+        // The formal edit was accepted, but that older projection must not start a run.
+        var current=EditVersion==version+1 && (!selectStart || index<0 ||
+            (index<Count && CurrentIndex==index && ReferenceEquals(CurrentImage,rows[index])));
+        return new(formalAccepted,current?EditVersion:null,runtimeError);
     }
     private void Notify(Action action)
     { try { action(); } catch(Exception error) { LastNotificationError ??= error.Message; } }
@@ -168,10 +190,10 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
     }
     public void AddImage(ImageInfo image)=>AddImages(new[]{image});
-    public void AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
+    public ImageSourceEditReceipt AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
     {
-        var additions=images.ToArray();if(additions.Length==0)return;
-        Commit(_entries.Concat(additions).ToArray(),selectFirstAdded?Count:_configuredIndex,_runMode,_autoSwitch,
+        var additions=images.ToArray();if(additions.Length==0)return new(false,null);
+        return Commit(_entries.Concat(additions).ToArray(),selectFirstAdded?Count:_configuredIndex,_runMode,_autoSwitch,
             _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal),selectFirstAdded);
     }
     public void RemoveImage(ImageInfo image)

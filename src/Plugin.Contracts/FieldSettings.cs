@@ -62,7 +62,7 @@ public sealed class FieldSettings
             else if (resolved.TryGetValue(id, out var value)) values.Add(id, value);
             else throw new ArgumentException("A configured reference has not been resolved: " + id);
         }
-        if (resolved.Keys.Any(id => !_values.TryGetValue(id, out var setting) || setting is not ReferenceSetting))
+        if (resolved.Keys.Any(id => !_values.TryGetValue(id, out var setting) || setting is not (ReferenceSetting or VariableSetting)))
             throw new ArgumentException("Resolved values must name configured references only.");
         return new(_ports.Values, values);
     }
@@ -70,7 +70,11 @@ public sealed class FieldSettings
     {
         ArgumentNullException.ThrowIfNull(map);
         return new(_ports.Values, _values.ToDictionary(pair => pair.Key,
-            pair => pair.Value is ReferenceSetting reference ? (ParameterSetting)(reference with { Reference = map(reference.Reference) }) : pair.Value,
+            pair => pair.Value switch {
+                ReferenceSetting reference=>reference with {Reference=map(reference.Reference)},
+                VariableSetting variable when variable.Reference.Selection is BindingSelection.AtField index=>variable with {
+                    Reference=new VariableReference(variable.Reference.SolutionId,variable.Reference.VariableId,variable.Reference.Type,new BindingSelection.AtField(map(index.Reference)),variable.Reference.Storage)},
+                _=>pair.Value},
             StringComparer.Ordinal));
     }
     public static ParameterSetting Freeze(Port port, ParameterSetting setting)
@@ -90,6 +94,14 @@ public sealed class FieldSettings
             if (!Enum.IsDefined(reference.Conversion)) throw new ArgumentException("Unknown binding conversion.");
             ArgumentNullException.ThrowIfNull(reference.Reference);
             return reference;
+        }
+        if(setting is VariableSetting variable)
+        {
+            if(port.EditModes!=FieldEditModes.None&&(port.EditModes&FieldEditModes.Reference)==0)
+                throw new ArgumentException("This field does not allow references: "+port.Id);
+            ArgumentNullException.ThrowIfNull(variable.Reference);
+            if(!Enum.IsDefined(variable.Conversion))throw new ArgumentException("Unknown binding conversion.");
+            return variable;
         }
         throw new ArgumentException("Configuration requires Constant or Reference; Unset is an edit proposal.");
     }

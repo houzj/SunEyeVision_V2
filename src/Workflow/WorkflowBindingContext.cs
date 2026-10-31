@@ -18,11 +18,13 @@ internal sealed class WorkflowBindingContext : IDisposable
     private readonly Dictionary<string,AlgorithmNode> _nodes;
     private readonly IReadOnlyDictionary<BindingNodeId,RunIdentity> _expected;
     private readonly string _scope;
+    private readonly RuntimeParameterValueAcceptance? _parameterValues;
     private readonly long _documentRevision;
     private readonly WorkflowRunSession _session;
     private readonly WorkflowRunScope _executionScope;
     private readonly IReadOnlyList<WorkflowGlobalProducerOperation> _globalProducers;
     private readonly WorkflowGlobalRunValues? _producedGlobals;
+    private readonly Dictionary<string,IReadOnlyDictionary<string,RuntimeVariableBindingPlan>> _variablePlans=new(StringComparer.Ordinal);
 
 
     private static Dictionary<string,Declaration> CaptureDeclarations(Workflow workflow,string scope,Guid executionScope)
@@ -49,7 +51,13 @@ internal sealed class WorkflowBindingContext : IDisposable
                     // adapter remains responsible until its explicit canonical bridge is implemented.
                 }
             }
-            var schema=new ToolSchema(Array.Empty<Port>(),ports);
+            var schema=new ToolSchema(Array.Empty<Port>(),ports,outputDisplay:ports.Select(port=>
+            {
+                var output=outputs[port.Id];
+                var name=!string.IsNullOrWhiteSpace(output.DisplayName)?output.DisplayName:
+                    !string.IsNullOrWhiteSpace(output.Name)?output.Name:port.Id;
+                return new OutputDisplayNode(port.Id,name,output.DisplayMembers);
+            }));
             result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),new ReadOnlyDictionary<string,OutputVariable>(outputs),complete));
         }
         return result;
@@ -117,19 +125,29 @@ internal sealed class WorkflowBindingContext : IDisposable
         return compiled is null?new(BindingCompatibility.Unresolved,"Binding declaration is unavailable.")
             :new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
     }
-    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId)
+    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId,Solution? solution=null)
     {
         if(ReferenceOwnershipError(workflow,node,fieldId,setting,scopeId) is {} ownershipError)
             return new(BindingCompatibility.Incompatible,ownershipError);
         var declarations=CaptureDeclarations(workflow,scopeId,Guid.Empty);
+        using var variables=solution is null?null:new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
         var scope=new BindingScopeSnapshot(new(scopeId,node.Id),workflow.ExecutionOwner.Id,0,
             declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
-            Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+            Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),variables?.CaptureBindingSources());
         var target=node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId);
         var compiled=new ParameterBindingService().CompileBinding(setting.Reference,target,scope,setting.Conversion);
         return new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
     }
 
+    internal static void ValidateVariable(Solution solution,Workflow workflow,WorkflowNodeBase node,string fieldId,VariableSetting setting)
+    {
+        using var globals=new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
+        var declarations=CaptureDeclarations(workflow,workflow.Id,Guid.Empty);
+        var scope=new BindingScopeSnapshot(new(workflow.Id,node.Id),workflow.ExecutionOwner.Id,0,
+            declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
+            Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),globals.CaptureBindingSources());
+        _=RuntimeVariableBindings.Compile(setting,node.RuntimeConfiguration!.BindingTargets.Single(port=>port.Id==fieldId),globals,scope);
+    }
     internal static string? ReferenceOwnershipError(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId)
     {
         if(!string.IsNullOrEmpty(setting.RebindingReason))return setting.RebindingReason;
@@ -161,6 +179,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables=null,WorkflowRunRequest? request=null)
     {
         _scope=scope.WorkflowId;_session=session;_executionScope=scope;
+        _parameterValues=request?.ParameterValues;
         _globalProducers=Array.AsReadOnly((request?.GlobalProducers??Array.Empty<WorkflowGlobalProducerOperation>()).Where(item=>item.Source.ScopeId==_scope).ToArray());
         _producedGlobals=request?.ProducedGlobals;
         if(_globalProducers.Count>0&&_producedGlobals is null)
@@ -175,11 +194,24 @@ internal sealed class WorkflowBindingContext : IDisposable
         foreach(var node in _nodes.Values)
         {
             var compilationScope=new BindingScopeSnapshot(new(_scope,node.Id),owner.Id,_documentRevision,
-                _declarations.Values.Select(d=>d.Source),_declarations.Values.Select(d=>d.Source.Node),predecessors);
+                _declarations.Values.Select(d=>d.Source),_declarations.Values.Select(d=>d.Source.Node),predecessors,_producedGlobals?.CaptureBindingSources());
             var plans=new Dictionary<string,BindingPlan>(StringComparer.Ordinal);
             var errors=new List<ExecutionInputIssue>();
             if(node.RuntimeConfiguration is {} runtime)
             {
+                var variablePlans=new Dictionary<string,RuntimeVariableBindingPlan>(StringComparer.Ordinal);
+                foreach(var (id,setting) in runtime.Fields.Capture().Where(pair=>pair.Value is VariableSetting))
+                {
+                    try
+                    {
+                        var variable=RuntimeVariableBindings.Compile((VariableSetting)setting,runtime.BindingTargets.Single(port=>port.Id==id),_producedGlobals,compilationScope);
+                        variablePlans.Add(id,variable);
+                        if(variable.Index is {} index)plans.Add(id,index);
+                    }
+                    catch(Exception failure)when(failure is ArgumentException or InvalidOperationException)
+                    {errors.Add(new(id,id,failure.Message));}
+                }
+                _variablePlans.Add(node.Id,new ReadOnlyDictionary<string,RuntimeVariableBindingPlan>(variablePlans));
                 foreach(var (id,setting) in BindingRelationCatalog.References(node))
                 {
                     if(ReferenceOwnershipError(workflow,node,id,setting,_scope) is {} ownershipError)
@@ -287,7 +319,14 @@ internal sealed class WorkflowBindingContext : IDisposable
             catch(Exception fault) when(fault is ArgumentException or InvalidOperationException or OverflowException or KeyNotFoundException)
             { /* A malformed source is unavailable; never fall back to old or inferred values. */ }
         }
-        return new BindingRunSnapshot(new(_scope,consumer.Id),consumer.AdmittedIdentity!.ToInvocationIdentity(consumer.Id),_documentRevision,candidates,_expected);
+        var identity=consumer.AdmittedIdentity!.ToInvocationIdentity(consumer.Id);
+        return new BindingRunSnapshot(new(_scope,consumer.Id),identity,_documentRevision,candidates,_expected,_producedGlobals?.CaptureBindingValues(identity));
+    }
+    internal BindingResolution ResolveVariable(AlgorithmNode consumer,string fieldId,IBindingRunSnapshot snapshot)
+    {
+        if(_producedGlobals is null||!_variablePlans.TryGetValue(consumer.Id,out var fields)||!fields.TryGetValue(fieldId,out var plan))
+            return new(false,null,new("variable-unplanned","Runtime变量字段没有本批已编译计划。",fieldId));
+        return RuntimeVariableBindings.Resolve(plan,_producedGlobals,snapshot);
     }
     internal Func<ToolOutcome,IDisposable,double,DeclaredOutputSnapshot> PrepareResult(AlgorithmNode node)
     {
@@ -306,6 +345,13 @@ internal sealed class WorkflowBindingContext : IDisposable
         return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,
             node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete,node.AdmittedIdentity);
     }
+    internal void AcceptParameterValue(AlgorithmNode node,RuntimeToolConfiguration configuration,string fieldId,object? value)
+    {
+        var identity=node.AdmittedIdentity??throw new InvalidOperationException("参数接纳缺少原始执行身份。");
+        (_parameterValues??throw new InvalidOperationException("引用参数缺少正式宿主的当前值接纳入口。"))
+            .Accept(_scope,node.Id,identity,configuration,fieldId,value);
+    }
+
     internal void CompleteGlobalProducers(string completedNode,WorkflowContext context)
     {
         if(_producedGlobals is null)return;

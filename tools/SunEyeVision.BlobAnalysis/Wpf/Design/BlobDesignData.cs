@@ -4,7 +4,9 @@ using System.ComponentModel;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
-using SunEyeVision.Tool.BlobAnalysis.Presentation;
+using System.Windows.Controls;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design;
 
@@ -25,13 +27,14 @@ public static class BlobDesignData
     {
         var draft=new DesignDraft();var schema=draft.Tool.Describe();
         var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
-        return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
+        var pose=BlobRoiUi.Add(inputs);
+        const string position="field:c95f3a26edf55097863a7ec47d17cce5";
+        return(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs,
+            AdditionalAfterField:position,AdditionalAfterContent:pose,AdditionalAfterCondition:new(position,true),
+            HeaderlessSectionAnchors:new HashSet<string>{position},
+            FieldVisibilitySources:new Dictionary<string,FrameworkElement>{{position,
+                ((SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeAssistUiDraftControls)pose).GraphicVisibilitySource!}})),draft.Schema));
     }
-    // Existing presentation row type, never a second settings/output model or a native execution result.
-    public static IReadOnlyList<BlobAnalysisRow> ResultRows {get;}=Array.AsReadOnly(new[] {
-        new BlobAnalysisRow(1,1,240,64,80,60,0.74,0.91,new Rect(70,52,20,16)),
-        new BlobAnalysisRow(2,2,96,40,140,100,0.67,0.83,new Rect(134,96,12,10))
-    });
     private sealed class DesignDraft : IToolSettingsDraft
     {
         internal BlobTool Tool {get;}=new();
@@ -43,20 +46,84 @@ public static class BlobDesignData
                 declaration.ReadSettings(new BlobSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
         }
         public ToolSchema Schema=>_draft.Schema;
+        public long Revision=>_draft.Revision;
         public FieldSettings CaptureFields()=>_draft.CaptureFields();
+        public FieldSettings CaptureValidatedFields()
+        {
+            var fields=_draft.CaptureValidatedFields();
+            if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
+            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Materialize(new Dictionary<string,object?>()));
+            var errors=((IToolDefinition)Tool).Validate(settings);
+            if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
+            return fields;
+        }
         public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
     }
 }
 
-/// <summary>Designer-only values for bindings in the actual result XAML; not a Runtime output.</summary>
-public sealed class BlobResultDesignData
+/// <summary>Designer uses the same declared table as runtime, without a workflow or algorithm session.</summary>
+public static class BlobResultDesignData
 {
-    private readonly BlobSettings _defaults=new();
-    public IReadOnlyList<BlobAnalysisRow> FilteredBlobs=>BlobDesignData.ResultRows;
-    public int FilteredBlobCount=>2;
-    public double FilteredTotalArea=>336;
-    public double AverageArea=>168;
-    public double MaxArea=>240;
-    public string ThresholdRangeText=>$"{_defaults.Threshold}–{_defaults.UpperThreshold}";
-    public string ThresholdTypeText=>_defaults.Type==BlobThresholdMode.Binary?"正向阈值":"反向阈值";
+    public static readonly DependencyProperty DeclarationPreviewProperty=DependencyProperty.RegisterAttached(
+        "DeclarationPreview",typeof(bool),typeof(BlobResultDesignData),new PropertyMetadata(false,Attach));
+    public static bool GetDeclarationPreview(DependencyObject target)=>(bool)target.GetValue(DeclarationPreviewProperty);
+    public static void SetDeclarationPreview(DependencyObject target,bool value)=>target.SetValue(DeclarationPreviewProperty,value);
+    private static void Attach(DependencyObject target,DependencyPropertyChangedEventArgs args)
+    {
+        if(target is not ContentControl host)throw new ArgumentException("结果预览需要内容宿主。");
+        if(args.NewValue is true&&DesignerProperties.GetIsInDesignMode(host))
+        {
+            var tool=new BlobTool();
+            var schema=tool.ResultSchema;
+            var table=new DeclaredResultTable(schema,tool.ResultProjection);
+            var region=new SampleRegion();
+            var points=new[]{new Point2(20,20),new Point2(40,20),new Point2(40,32),new Point2(20,32)};
+            var secondPoints=new[]{new Point2(49,33),new Point2(61,33),new Point2(61,41),new Point2(49,41)};
+            var records=new[] {
+                new BlobMeasurement(1,1,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),points,Array.Empty<BlobBoundaryPath>(),region,true),
+                new BlobMeasurement(2,2,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
+            };
+            object? Sample(Port port)
+            {
+                if(port.Id==BlobSchema.BlobsPort)
+                    return new SequenceValue(BlobSchema.BlobsType,records.Select(record=>(object?)BlobSchema.Freeze(record)));
+                if(port.Nullable)return null;
+                return port.Type.Shape switch {
+                    ValueShape.Resource when port.Type.Resource==ResourceKind.Region=>region,
+                    ValueShape.Scalar=>port.Type.Scalar switch {
+                        ScalarKind.Boolean=>true,ScalarKind.Int64=>0L,ScalarKind.Float64=>0d,ScalarKind.Text=>string.Empty,
+                        _=>throw new NotSupportedException("未知结果示例标量类型。")},
+                    ValueShape.Sequence when port.Type.Element==(TypeRef)DataType.Number=>Array.Empty<double>(),
+                    ValueShape.Sequence=>new SequenceValue(port.Type,Array.Empty<object?>()),
+                    _=>throw new NotSupportedException("未知结果示例声明类型。")};
+            }
+            var values=new InputValues(schema.Outputs,schema.Outputs.ToDictionary(port=>port.Id,Sample,StringComparer.Ordinal));
+            var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"design",Guid.NewGuid());
+            var publication=new ResultPublication(schema,new(Guid.NewGuid(),run,0,schema.Fingerprint),
+                ResultViewState.Success,values,null,()=>true);
+            table.Present(publication);
+            host.Content=table;
+        }
+    }
+
+    // Managed-only sample: no image acquisition, native handle, workflow or algorithm execution.
+    private sealed class SampleRegion : IReadOnlyRegion
+    {
+        public CoordinateFrame Frame=>BlobSchema.ImageFrame;
+        public ImageFrameAddress SourceFrame {get;}=new(Guid.NewGuid(),"design-result");
+        public IRegionReadLease AcquireReader()=>new Reader(this);
+        private sealed class Reader(SampleRegion region) : IRegionReadLease
+        {
+            public CoordinateFrame Frame=>region.Frame;
+            public ImageFrameAddress SourceFrame=>region.SourceFrame;
+            public bool IsEmpty=>true;
+            public int RunCount=>0;
+            public ReadOnlyMemory<RegionRun> ReadRuns(int offset,int maximumCount)
+            {
+                ResourceContractRules.ValidateBatch(offset,maximumCount,0);
+                return ReadOnlyMemory<RegionRun>.Empty;
+            }
+            public void Dispose() { }
+        }
+    }
 }

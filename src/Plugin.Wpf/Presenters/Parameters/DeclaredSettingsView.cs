@@ -14,6 +14,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
 {
     private DeclaredFieldsView? _fields;
     private FrameworkElement? _inputContent;
+    private IReadOnlyList<FrameworkElement> _additionalContents=Array.Empty<FrameworkElement>();
     private long _generation;
     private bool _binding;
     private bool _disposed;
@@ -27,12 +28,25 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public ToolSettingsViewOptions? Options {get=>(ToolSettingsViewOptions?)GetValue(OptionsProperty);set=>SetValue(OptionsProperty,value);}
     public FrameworkElement View=>this;
     public bool HasInvalidInput=>!_disposed&&_fields?.HasInvalidActiveFields==true;
+    public bool HasPendingEdits=>!_disposed&&_fields?.HasPendingActiveFields==true;
+    public long AcceptedRevision=>Draft?.Revision??throw new InvalidOperationException("A settings draft is required.");
+    public IReadOnlyList<string> AcceptedFieldOrder {get;private set;}=Array.Empty<string>();
+    public FieldSettings CaptureAcceptedFields()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var draft=Draft??throw new InvalidOperationException("A settings draft is required.");
+        var generation=_generation;var revision=draft.Revision;var fields=draft.CaptureFields();
+        if(_disposed||generation!=_generation||!ReferenceEquals(Draft,draft)||revision!=draft.Revision)
+            throw new InvalidOperationException("参数草稿捕获期间已改变或重新绑定。");
+        return fields;
+    }
     public event Action? Changed;
     public DeclaredSettingsView() { }
     public DeclaredSettingsView(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)=>Bind(draft,options);
     public void Bind(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(draft);
+        AcceptedFieldOrder=Array.Empty<string>();
         _binding=true;
         try {SetCurrentValue(DraftProperty,draft);SetCurrentValue(OptionsProperty,options);}
         finally {_binding=false;}
@@ -40,10 +54,12 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     }
     private static void Rebind(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(!view._binding)view.Rebuild();}
-    private void Detach(FrameworkElement? retainInput=null)
+    private void Detach(FrameworkElement? retainInput=null,IReadOnlySet<FrameworkElement>? retainAdditional=null)
     {
         _generation++;
         var fields=_fields;var input=_inputContent;
+        var additional=_additionalContents;
+        _additionalContents=additional.Where(item=>retainAdditional?.Contains(item)==true).ToArray();
         _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;
         var cleanup=new List<Action>{()=>Content=null};
         if(fields is not null)
@@ -52,19 +68,32 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             fields.PageChanged-=OnPageChanged;cleanup.Add(fields.Dispose);
         }
         if(input is IDisposable disposable&&!ReferenceEquals(input,retainInput))cleanup.Add(disposable.Dispose);
+        cleanup.AddRange(additional.Where(item=>retainAdditional?.Contains(item)!=true).OfType<IDisposable>().Select(item=>(Action)item.Dispose));
         ParameterCleanup.Run(cleanup);
     }
     private void Rebuild()
     {
+        AcceptedFieldOrder=Array.Empty<string>();
         ObjectDisposedException.ThrowIf(_disposed,this);
         var draft=Draft;var options=Options??new();var optionsIdentity=Options;
         var nextInput=draft is null?null:options.InputContent;
+        var additions=draft is null?Array.Empty<KeyValuePair<string,FrameworkElement>>():(options.AdditionalPageContents?.ToArray()??[]);
+        var anchored=draft is null?Array.Empty<AnchoredSettingsContent>():(options.AdditionalAnchoredContents?.ToArray()??[]);
+        if(anchored.Any(entry=>entry is null||string.IsNullOrWhiteSpace(entry.FieldId)||entry.Content is null))
+            throw new ArgumentException("附加内容必须有有效锚点和视图实例。");
+        var owned=additions.Select(entry=>entry.Value).Concat(anchored.Select(entry=>entry.Content)).ToArray();
+        if(additions.Any(entry=>string.IsNullOrWhiteSpace(entry.Key)||entry.Value is null)
+            ||owned.Distinct(ReferenceEqualityComparer.Instance).Count()!=owned.Length
+            ||owned.Any(entry=>ReferenceEquals(entry,nextInput)||ReferenceEquals(entry,options.AdditionalAfterContent)))
+            throw new ArgumentException("附加内容必须有有效锚点和唯一视图实例。");
+        var retained=owned.ToHashSet<FrameworkElement>(ReferenceEqualityComparer.Instance);
         var generation=_generation+1;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,optionsIdentity);
         DeclaredFieldsView? candidate=null;
         try
         {
-            Detach(nextInput);if(!Current()||draft is null)return;
+            Detach(nextInput,retained);if(!Current()||draft is null)return;
+        _additionalContents=owned;
         var schema=draft.Schema;var values=draft.CaptureFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
         var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
@@ -104,12 +133,34 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 var result=pair.Value();
                 if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
                 return result;
-            }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants,texts,options.GraphicDisplays?.ToArray(),options.TextDisplays?.ToArray());
+            }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants,texts,options.GraphicDisplays?.ToArray(),options.TextDisplays?.ToArray(),
+            options.AssistCompositions?.ToArray(),options.HeaderlessSectionAnchors,options.PageLabelWidths);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)
-                candidate.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),nextInput,0);
+            {
+                if(options.InputAfterField is { } anchor)
+                    candidate.AddAfterField(anchor,nextInput,options.InputCondition);
+                else
+                    candidate.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),nextInput,0,options.InputCondition);
+            }
+            if(options.AdditionalAfterContent is {} after)
+                candidate.AddAfterField(options.AdditionalAfterField??throw new ArgumentException("附加输入需要关联字段。"),after,options.AdditionalAfterCondition);
+            else if(options.AdditionalAfterField is not null||options.AdditionalAfterCondition is not null)
+                throw new ArgumentException("附加输入内容缺失。");
+            foreach(var addition in anchored.Where(item=>!item.InsertBefore).Reverse().Concat(anchored.Where(item=>item.InsertBefore)))
+            {
+                if(!Current()){candidate.Dispose();return;}
+                candidate.AddAfterField(addition.FieldId,addition.Content,addition.Condition,addition.FollowAnchorVisibility,addition.InsertBefore);
+            }
+            foreach(var addition in additions)
+            {
+                if(!Current()){candidate.Dispose();return;}
+                candidate.AddToGroup(addition.Key,addition.Value);
+            }
             if(!Current()){candidate.Dispose();return;}
+            foreach(var source in options.FieldVisibilitySources??new Dictionary<string,FrameworkElement>())candidate.BindFieldVisibilityTo(source.Key,source.Value);
+            if(options.SuppressedFieldRows is {} suppressed)candidate.SuppressFieldRows(suppressed);
             candidate.SelectedPageIndex=SelectedPageIndex;
             foreach(var field in candidate.Fields)field.Changed+=OnChanged;
             candidate.PageChanged+=OnPageChanged;
@@ -140,6 +191,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var draft=Draft??throw new InvalidOperationException("A settings draft is required.");
         var generation=_generation;var options=Options;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,options);
+        var order=Array.AsReadOnly(proposals.Keys.ToArray());
         draft.ApplyFields(proposals,candidate=>
         {
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
@@ -147,6 +199,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
         });
         if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
+        AcceptedFieldOrder=order;
     }
     private void OnChanged()=>Changed?.Invoke();
     public bool TryCapture(out FieldSettings fields,out string error)
@@ -160,10 +213,17 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         {
             var draft=Draft;var view=_fields;var generation=_generation;
             bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(draft,Draft)&&ReferenceEquals(view,_fields);
+            var uiError=Options?.ValidateUiState?.Invoke();
+            if(!Current()){error="界面校验期间参数视图已重新绑定或释放。";return false;}
+            if(!string.IsNullOrEmpty(uiError)){error=uiError;return false;}
             if(!view.TryValidate(out error))return false;
             if(!Current()){error="参数视图已经重新绑定。";return false;}
-            fields=draft.CaptureFields();
-            if(!Current()){fields=null!;error="参数捕获期间视图已重新绑定。";return false;}
+            var revision=draft.Revision;
+            try{fields=draft.CaptureValidatedFields();}
+            catch(Exception failure)when(failure is ArgumentException or InvalidOperationException or FormatException or OverflowException)
+            {error=failure.Message;return false;}
+            if(!Current()||revision!=draft.Revision||view.HasPendingActiveFields)
+            {fields=null!;error="参数捕获期间视图已重新绑定或发生新的编辑。";return false;}
             return true;
         }
         finally{_capturing=false;}

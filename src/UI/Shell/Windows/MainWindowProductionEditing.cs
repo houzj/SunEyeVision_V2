@@ -98,7 +98,7 @@ public partial class MainWindowViewModel
         _productionEditorSession = null;
     }
     private void RefreshProductionPublication(SolutionSession session, BindingConfigurationPublication publication,
-        DataSourceQueryService? query = null)
+        DataSourceQueryService? query = null, bool resultsAlreadyRefreshed = false)
     {
         if (!ReferenceEquals(DocumentManager.Session, session)) return;
         SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Reset(session.Document);
@@ -106,11 +106,22 @@ public partial class MainWindowViewModel
         query?.SetGlobalVariables(globals);
         foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
         ToolEditorCommit.RefreshCommittedBindings();
-        if (!IsRunning)
+        if (!resultsAlreadyRefreshed && !IsRunning)
             foreach (var affected in publication.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id))
                 CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
-        if (SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
+        if (!resultsAlreadyRefreshed && SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
             UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters);
+        else if (!resultsAlreadyRefreshed && !IsRunning && ReferenceEquals(DocumentManager.Session, session)
+            && SelectedNode is { RuntimeConfiguration: not null } runtimeNode
+            && publication.InvalidatedNodes.Any(affected => affected.NodeId == runtimeNode.Id
+                && affected.WorkflowId == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId)
+            && session.Document.Workflows.Any(flow => flow.Id == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId
+                && flow.Nodes.Any(node => ReferenceEquals(node, runtimeNode))))
+        {
+            var current=CurrentWorkflowContext?.GetNodeResult(runtimeNode.Id)?.Result;
+            if(current?.ExecutionIdentity?.IsCurrent!=true)
+                UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
+        }
         RefreshCurrentResultBindings();
         RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));

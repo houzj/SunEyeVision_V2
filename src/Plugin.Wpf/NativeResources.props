@@ -1,11 +1,11 @@
 <Project>
   <ItemGroup>
-    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
-    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
-    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle2.xaml" />
-    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle2.xaml" />
-    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle3.xaml" />
-    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle3.xaml" />
+    <Page Remove="Themes/Palettes/colorstyle1.xaml" />
+    <Resource Include="Themes/Palettes/colorstyle1.xaml" />
+    <Page Remove="Themes/Palettes/colorstyle2.xaml" />
+    <Resource Include="Themes/Palettes/colorstyle2.xaml" />
+    <Page Remove="Themes/Palettes/colorstyle3.xaml" />
+    <Resource Include="Themes/Palettes/colorstyle3.xaml" />
     <EmbeddedResource Update="Controls/Native/Display/VMControls/VM.Controls.Core.ErrorMessages.resx">
       <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.ErrorMessages.resources</LogicalName>
     </EmbeddedResource>

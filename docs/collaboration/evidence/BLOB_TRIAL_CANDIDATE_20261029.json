@@ -1,0 +1,393 @@
+{
+  "baseCommit": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "identity": "工作树含未提交候选及用户XAML；不是纯提交产物",
+  "payloadSha256": "CF8ACBC1A3FD2FD02E141689D8852662CF18A66F1A8891428D4D9C373A1DF372",
+  "files": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "sha256": "dc6497ff0fae38457531c56dc6ccd92b82e5074322b362cc9e3c241437e3ea29"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "06cde0d149319798da9c8d5ec336ce1a209e9047a4db35cbccc9ebaadf841db4"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "sha256": "87ebd73c7f5b86b4cc9fb3fdbaab37edcfabb92a51b0707209267a0cacf73cd9"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-163/document/input.png",
+      "sha256": "46e9f95121f20440bd86ae8dde91c67417c91db4bb197b0a4b275409d6e88daa"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "f43009e5851b1439c81ec60ad82f11166a2443a5ded742f8fc176cf57e2679fa"
+    },
+    {
+      "path": "scripts/verification/S4RuntimeEditorCases.cs",
+      "sha256": "7c8f2e31dc9b7d005e1754fd94aab86e38a1f06c0d48d634936355b735726c8e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "beb5ba5cbbee17db64ed2680321ef1a05379bdf3900efb88983637365898f53f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "fe137a390ededbc70c2ec5b46f5cc3e5f1d26c93e2ad93d665a1022af89a8eb0"
+    }
+  ],
+  "builds": {
+    "ui": {
+      "log": "artifacts/blob-trial-ui-build-20261029-001.log",
+      "errors": 0,
+      "warnings": 6423
+    },
+    "full": {
+      "log": "artifacts/blob-trial-full-build-20261029-001.log",
+      "errors": 0,
+      "warnings": 6347
+    }
+  },
+  "checks": {
+    "runtimeEditor": "S4-20261025/RuntimeEditor/attempt-099: 10/0",
+    "fullChain": "S4-20261025/FullChain/attempt-163: 19/0",
+    "fieldEditing": "S4-20261025/FieldEditing/attempt-106: 31/0",
+    "designTime": "S4-20261025/DesignTime/attempt-088: 108/0",
+    "assist": "S4-20261025/WindowPresentation/attempt-336: 2/0",
+    "style": "S4-20261025/WindowPresentation/attempt-337: 3/0",
+    "components": "S3-20261025/Components/attempt-226: 9/0",
+    "product": "ProductIsolation-20261028/attempt-024: 8/0"
+  },
+  "notVerified": [
+    "真实VS设计器及VM逐态",
+    "用户人工试用",
+    "本地ROI双向编辑",
+    "Blob图文显示生产接入",
+    "实际色板指针拖动",
+    "工作流独立分支候选"
+  ],
+  "sourceSnapshot": [
+    {
+      "path": "scripts/verification/BlobFieldSchemaCases.cs",
+      "sha256": "17ee2821bd4c1f9564dca49dce3cae494cd4531073a378fc970b50f2f13d9bb0"
+    },
+    {
+      "path": "scripts/verification/O06AlgorithmCases.cs",
+      "sha256": "c7684849d3f0faece9ca8f06d502fa1f356687fdd4c60195e4006f639b900e56"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "4405441f5484af594b5070969ea4651d619f30e75f1a2a046499db0f468d3096"
+    },
+    {
+      "path": "scripts/verification/S3ComponentCases.cs",
+      "sha256": "02c51a41e8bb5d1592fd72a1cfadc4a2342adb958f00d1c0bb44a8f444fff471"
+    },
+    {
+      "path": "scripts/verification/S3RuntimeKernelCases.cs",
+      "sha256": "3429614d878834fba8371f789ad397ade8e1b08e5d896ba85d4fd6489aefd5f6"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "143a0c7fc542fd1ac67ee662a0fbad75c8b2b6ccb6581c54d46adc277decce66"
+    },
+    {
+      "path": "scripts/verification/S4FieldEditingCases.cs",
+      "sha256": "62868b7734e396681f41333d3ce82e1729c2096d7e5168fc2b4cc9e9ecf7333b"
+    },
+    {
+      "path": "scripts/verification/S4FullChainCases.cs",
+      "sha256": "b36d1dc22d7ca7185b6b92acd1709b44f8ef5dfdd6f7db768c818fb0698cc334"
+    },
+    {
+      "path": "scripts/verification/S4RuntimeEditorCases.cs",
+      "sha256": "7c8f2e31dc9b7d005e1754fd94aab86e38a1f06c0d48d634936355b735726c8e"
+    },
+    {
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "sha256": "02bb7f857839632c066b473934da06261c8d1446915ee8ee8b09fc03c084d3ff"
+    },
+    {
+      "path": "src/Plugin.Contracts/FieldSettings.cs",
+      "sha256": "c99b284e56ea5cd8208a9487ac1a3810e4a4dfa0e393aad032b500c6d535e03d"
+    },
+    {
+      "path": "src/Plugin.Contracts/RuntimeEntry.cs",
+      "sha256": "804b622f5004558ceb9992e75a961dc9d3e9f1feb67b09f6e195a91b8ed6482d"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "fb5de6bee59a6602f934fb5245280042e9b0aa1f80fc093ddf6b592d73aae80b"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolSettingsFields.cs",
+      "sha256": "a15f72b161440824101c97a4bc5f43cac3cb251fd0d7e5ddfff18d656753247b"
+    },
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.Components.cs",
+      "sha256": "1b07911718cf9229dc0bfa94f715574d9ddd0457e310cd8015e87564a2ffdec3"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolRuntimeExecutor.cs",
+      "sha256": "bf497635d223ce2c4c0ff66588e91b51c7e75dfe06d496d35a653ce64a44dfcc"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolSettingsEditSession.cs",
+      "sha256": "cdf4bba799a77cc37cec2519649c53978aa842e611f59b01dda96c47ccae4221"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "9a3f00ab5336c7d79dcf5f26c65d8a8f565b424163a8319498b349e68c2fd517"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "06ad8b51d8c2f162566c5431d0179f4ae3eef3ad0d11cf20be7707bb60e0dfa5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+      "sha256": "964689623d85e2cf16a9edd08b34e7acbcda2a8ab423adddc19918567f709ee8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "a3d01c8cde471c002e9ee823fd2522e5209fab5163726ffc3dc2e2a6e3858362"
+    },
+    {
+      "path": "src/Plugin.Wpf/Catalog/controls.json",
+      "sha256": "3dba1dc20d94e8912b132ed98db0f717c7eb04a87a9e18a7e854292269105918"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
+      "sha256": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+      "sha256": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
+      "sha256": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeDisplaySample.cs",
+      "sha256": "12340f0dcaba306d0c1782e60b9c92e492386ab85c79615fb6b74ea6ced44d07"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
+      "sha256": "28e29aaf1f28310b4846b66f11c9175600d40cd0d5f2a728e7263cc435670c69"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "sha256": "f97b7be6ebc349d459b1ce261f862e9e1ed571391d8ea9f4db074276b5bda1c0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Input/ImageSources/IImageSourceSettingsContent.cs",
+      "sha256": "fffa847c1ed54c9fe844f899f57813267eabd93d88a2666dc0b75cd6e2579cc7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "1e17a7e6a4ffa9f4f1d05893fcd43e8c6d6798eea66824467b65c26f6707e73d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sha256": "155beab65e20a27f35d09eba6c0d6346f062db47236b808c27eb9be571a6cb03"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sha256": "42e143d75afdf11b4b3d70f4523a40250360e855c751f65d00a79b9abd30e287"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "fe137a390ededbc70c2ec5b46f5cc3e5f1d26c93e2ad93d665a1022af89a8eb0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "beb5ba5cbbee17db64ed2680321ef1a05379bdf3900efb88983637365898f53f"
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/Commands/EditConnectionPortsCommand.cs",
+      "sha256": "2163f733fda9b8f0869d7f44a3bcc59e05b82881ece4e01b8dbdee1fa380a4a0"
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/Commands/InsertNodeIntoConnectionCommand.cs",
+      "sha256": "620dd0d798ee66a4f976aabd5c1d8a717307c5e349ef1353931c2644cf370ecc"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/ImageSourceDraftContent.cs",
+      "sha256": "60cf17804676a5cafe27c0b7915dcc111cedd3e78d473f49bcd1b21f188a1ba1"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "c9f7bcd81fb8b34fcf9e5ad808b6ed44d8edc547296fdcf1a603a6bbd5685f68"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootResourceProxyBinding.cs",
+      "sha256": "2b64b46564027cdb770ba901f84ad189605beacfd87b56ba3863f09b8da62b0d"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs",
+      "sha256": "8e58360e0d55b84fa8f58d6759e0b91a97239cf5780c849ab3ea50e4ef3474f4"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+      "sha256": "4c96db65d154950fd9567e160095a6a028685b115b0f34f4aa377224d4e2e9d3"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs",
+      "sha256": "adbe4b0463e3d79ce573284adc17bf544b3ce8c81e3c836555d51dffa5d4a7a1"
+    },
+    {
+      "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+      "sha256": "3bf507a2aa72b7e59515efc8982d829f9977c015ee53c858a22b63b9362c748f"
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "24caf48f536187ace6bcf147e6f4f73d46eb3692d53b99a21a9b4a87fa8982e1"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "19c9d141ef15fa40e01cdcc721073505f7ca3dad8c3bbb96ed68c4e7f19032b4"
+    },
+    {
+      "path": "src/Workflow/BindingRelationCatalog.cs",
+      "sha256": "908535b975c027c79a8a0cb22dd800ba25083cd25e5450c06a22d99687ba2e1c"
+    },
+    {
+      "path": "src/Workflow/ConnectionBindingPolicy.cs",
+      "sha256": "a7a4e6ed7c207dc7d00af4c33d093c7dd0f378777007c498981b71088d2be280"
+    },
+    {
+      "path": "src/Workflow/GraphBindingUndoSnapshot.cs",
+      "sha256": "93581f847f42f251a40db9678c0d5251fddce56a872bca9f213dafdc5d6a3a18"
+    },
+    {
+      "path": "src/Workflow/OutputBindingChangeService.cs",
+      "sha256": "56e36ee1341de85d5e0c5dffd0ee65f9f3d994740519baf10c76b528882305b1"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionLegacyBindingMigration.cs",
+      "sha256": "5cf826f789d2937c990ae2550c556190cb0fbbf11d5ad56d86e73d9e0ef8fb2d"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+      "sha256": "51da29205adbeb4003e9d27f02f8ec19cfeeeba58e362575c45e4aa8933633de"
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "7e272c349fb266ccb9476abae2b65b5f025c8ec53e88cabfaf62f66938884683"
+    },
+    {
+      "path": "src/Workflow/RuntimeFieldJson.cs",
+      "sha256": "2ee54020cc82f2d301bdf6e2110a454568fd0eadf17b77aed64216522f0fd92e"
+    },
+    {
+      "path": "src/Workflow/RuntimeInputBindings.cs",
+      "sha256": "20b4dcca7470bb55946ef40461e906ba882f61da933dc6bd144c22b29ec87b3a"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "ea05fde11a35c897b93eb40a4f6eeba5a12c8a00a05bf811a630807a990e274c"
+    },
+    {
+      "path": "src/Workflow/WorkflowBindingContext.cs",
+      "sha256": "a885da5c71ff5cf5df1edd178b15f68c8bd9c5c7cc195ad547e75c9c3b427d38"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionDependencyGraph.cs",
+      "sha256": "82184f4a6364bca1f8208926b047a1cae3baf1ad38d16a8cae9ccec7365b8cac"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "0906f69a4c91e7fdac11179b407288ba6d97463ce309a3359d9b3c612137f877"
+    },
+    {
+      "path": "src/Workflow/WorkflowFragmentCopy.cs",
+      "sha256": "e529883e24c959192c1b66099d16b12a441ab2cfe56d0bb98d253319b4070d6e"
+    },
+    {
+      "path": "src/Workflow/WorkflowJsonConverter.cs",
+      "sha256": "1d117b42e6caa88ba0a8e134d92c99f4de8553dfe786944333aa9b43d3eec80c"
+    },
+    {
+      "path": "src/Workflow/WorkflowNode.cs",
+      "sha256": "3030a2b978b04b07507cdadc466bafb85de09bd4490ff22dc18da1cb01581398"
+    },
+    {
+      "path": "src/Workflow/WorkflowSerializationOptions.cs",
+      "sha256": "43d5431f418e26c588fbb87b0d50644106e867af970e56289f05dfc69823576e"
+    },
+    {
+      "path": "tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs",
+      "sha256": "70038283845fabad8c4bbc06ccd10dafc99712ca5dbe8fb7f98c8f9c4c8f0e0b"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
+      "sha256": "fbdfa7c53d7d64c66a483c71822bb3a3537b9b52e684eda429e8bb0085a72e57"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/RootResourceProductionTests.cs",
+      "sha256": "6e308edcd1a717f9279870534cb44033f29c403b84e97cc287f89fb86cdebb6e"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/RootResourceProxyTests.cs",
+      "sha256": "beb192617f67e719c5ab30007a769a5f411745e378ceb1e348a40f170df630f5"
+    },
+    {
+      "path": "tests/_shared/ResultWorkspaceRuntimeProbe.cs",
+      "sha256": "c69ebe9aabb88d8d73eeee4d0a1d3afe8cb04c5d195439b630160d6136308045"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+      "sha256": "40a624c99d888583722b997ffb518921f374a29a972ce0c94f8802bba4d7f962"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "f5ec64b7805ce4242a9adc6bbefc10002876db9eadeabe5277cfba8c83f3fec9"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobParameterDefinition.Settings.cs",
+      "sha256": "0ede0f8df1e8b2f2017e68b098506414909bfe5768aa41019aa88af2cf1d86cf"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs",
+      "sha256": "4e44b7876a7b4020829a992006a8a1341cb730249866714881a2918f9c229b4a"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobDisplayDefinition.cs",
+      "sha256": "27634930370a60bd94fbba3339734327904a436d5dfc555a9e4e46b8b8dd798e"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "5da6661166c1b47e552ddc85f4e5d69b08860b19c04aca4166808149581d27a3"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "f43009e5851b1439c81ec60ad82f11166a2443a5ded742f8fc176cf57e2679fa"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+      "sha256": "0811eb2118d8460793223273e6b3c62a6859265ac21cbe89b2f7c5b0d55103e0"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs",
+      "sha256": "67a0e9d39c9382755122ad8c610cf7c536e341a5bbd1c47761d87389f687cc99"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Design/ImageSourceDesignData.cs",
+      "sha256": "05b3765b4b900b800fb756a64369711109e7757b57c663005a7828553ef8ba67"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+      "sha256": "dffc4c520747a32cc2ec69c7d1f633c561fe137f782b0a3da7b84b25ef1e6795"
+    }
+  ],
+  "sourceSnapshotDescription": "上批候选源码清单与当前所有已跟踪源码及验证源码增量，逐项当前SHA；保留用户XAML并单列身份。",
+  "previousCandidate": "docs/collaboration/evidence/NATIVE_COLOR_POPUP_CANDIDATE_20261029.json"
+}

@@ -8298,7 +8298,7 @@
       "source_sha256": "EE87125A5DDD8156F17EBD08F8A7B88454A0689C7B42DBF91CDCDA9691B6A3E7",
       "reasons": [],
       "status": "transplanted_unbuilt",
-      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml",
+      "output": "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml",
       "output_sha256": "3D5F622B74B144A26B518BE41D043069A620EE271F100A73CA6008E98EEDDBBB"
     },
     {

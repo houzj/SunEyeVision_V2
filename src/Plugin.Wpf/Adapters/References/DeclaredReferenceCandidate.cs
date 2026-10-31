@@ -5,6 +5,23 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 public sealed record DeclaredReferenceCandidate(string Label,string NodeId,string? ScopeId,Port Output,
     IReadOnlyList<string> MemberPath)
 {
+    /// <summary>Display metadata only; grouping and binding retain ScopeId/NodeId identity.</summary>
+    public string NodeDisplayName { get; init; } = NodeId;
+    public string OutputDisplayName { get; init; } = Label;
+    public IReadOnlyList<string> MemberDisplayNames { get; init; } = Array.Empty<string>();
+    internal DeclaredReferenceCandidate Freeze()
+    {
+        ArgumentNullException.ThrowIfNull(MemberPath);
+        ArgumentNullException.ThrowIfNull(MemberDisplayNames);
+        if(string.IsNullOrWhiteSpace(NodeDisplayName)||string.IsNullOrWhiteSpace(OutputDisplayName))
+            throw new ArgumentException("来源节点及输出显示名称不能为空。");
+        if(MemberDisplayNames.Count!=0&&MemberDisplayNames.Count!=MemberPath.Count
+            ||MemberDisplayNames.Any(string.IsNullOrWhiteSpace))throw new ArgumentException("来源成员显示路径与声明身份不匹配。");
+        var frozen=this with{MemberPath=Array.AsReadOnly(MemberPath.ToArray()),
+            MemberDisplayNames=Array.AsReadOnly(MemberDisplayNames.ToArray())};
+        _=frozen.SelectedType;_=frozen.SelectedStorage;_=frozen.Reference(BindingSelection.All);
+        return frozen;
+    }
     public override string ToString()=>Label;
     public NumericStorage? SelectedStorage=>ProjectStorage(Output.Type,Output.Storage,0).Storage;
     private (TypeRef Type,NumericStorage? Storage) ProjectStorage(TypeRef type,NumericStorage? storage,int position)
@@ -23,10 +40,13 @@ public sealed record DeclaredReferenceCandidate(string Label,string NodeId,strin
     {
         get
         {
-            var type=Output.Type;
-            foreach(var member in MemberPath)type=Project(type,member);
-            return type;
+            return ProjectType(Output.Type,MemberPath);
         }
+    }
+    internal static TypeRef ProjectType(TypeRef type,IReadOnlyList<string> members)
+    {
+        foreach(var member in members)type=Project(type,member);
+        return type;
     }
     private static TypeRef Project(TypeRef type,string member)
         =>type.Shape==ValueShape.Sequence?TypeRef.SequenceOf(Project(type.Element!,member),type.Count)

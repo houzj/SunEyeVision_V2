@@ -12,6 +12,22 @@ public sealed record ScopedBindingRelation(ScopedNodeIdentity Target, WorkflowNo
 
 public static class BindingRelationCatalog
 {
+    internal static IEnumerable<VariableReference> IndexVariables(BindingSelection selection)
+    {
+        if(selection is BindingSelection.AtVariable variable)yield return variable.Reference;
+        if(selection is BindingSelection.AtField field)
+            foreach(var index in IndexVariables(field.Reference.Selection))yield return index;
+    }
+    internal static IEnumerable<(string FieldId,VariableReference Reference)> VariableReferences(WorkflowNodeBase node)
+    {
+        if(node.RuntimeConfiguration is not {} runtime)yield break;
+        foreach(var (fieldId,setting) in runtime.Fields.Capture())
+        {
+            if(setting is VariableSetting variable)yield return (fieldId,variable.Reference);
+            var selection=setting switch{VariableSetting value=>value.Reference.Selection,ReferenceSetting value=>value.Reference.Selection,_=>null};
+            if(selection is not null)foreach(var index in IndexVariables(selection))yield return (fieldId,index);
+        }
+    }
     /// <summary>Typed settings live in their owning model slot; a name projection must not hide an ROI reference.</summary>
     public static ParamSetting? GetSetting(WorkflowNodeBase node,string key)
         =>node.RuntimeConfiguration is not null?null:node.ParamSettings.GetSetting(key)??RoiBindingInputs.Settings(node.Parameters).SingleOrDefault(setting=>setting.ParameterName==key);

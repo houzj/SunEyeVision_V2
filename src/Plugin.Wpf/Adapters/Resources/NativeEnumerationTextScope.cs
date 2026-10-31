@@ -7,11 +7,12 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.Resources;
 
     // Default DisplayMember templates generate TextBlocks. Restore the native inherited
     // foreground/font if a host implicit TextBlock style shadows them, including in the Popup.
-internal sealed class NativeEnumerationTextScope
+internal sealed class NativeEnumerationTextScope : IDisposable
     {
         private readonly ComboBox _combo;
         private DispatcherOperation? _pending;
         private long _generation;
+        private bool _disposed;
         public NativeEnumerationTextScope(ComboBox combo)
         {
             _combo=combo;
@@ -25,14 +26,20 @@ internal sealed class NativeEnumerationTextScope
         private void Cancel(){_generation++;_pending?.Abort();_pending=null;}
         private void Queue()
         {
-            Cancel();if(!_combo.IsLoaded)return;
+            Cancel();if(_disposed||!_combo.IsLoaded)return;
             var generation=_generation;
             _pending=_combo.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
             {
-                if(generation!=_generation||!_combo.IsLoaded)return;
+                if(_disposed||generation!=_generation||!_combo.IsLoaded)return;
                 _pending=null;NativeTextInheritance.Restore(_combo);
                 if(_combo.IsDropDownOpen&&_combo.Template?.FindName("Popup",_combo) is System.Windows.Controls.Primitives.Popup {Child:{} child})
                     NativeTextInheritance.Restore(child);
             }));
+        }
+        public void Dispose()
+        {
+            if(_disposed)return;_disposed=true;Cancel();
+            _combo.Loaded-=OnLoaded;_combo.Unloaded-=OnUnloaded;
+            _combo.SelectionChanged-=OnSelectionChanged;_combo.DropDownOpened-=OnDropDownOpened;
         }
     }

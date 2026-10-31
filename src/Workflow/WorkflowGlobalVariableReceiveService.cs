@@ -51,7 +51,7 @@ public sealed class WorkflowGlobalVariableReceiveService : ICommunicationReceive
             if (!_sources.TryGetValue(id, out var source)) throw new InvalidOperationException("所选变量不属于本次运行快照。");
             if (_invalid.TryGetValue(id, out var invalid)) throw new InvalidOperationException(invalid);
             if (issues.TryGetValue(id, out var issue)) throw new InvalidOperationException(issue.Message);
-            if (!snapshot.TryGetValue(source.Name, out var value) || value == null)
+            if (!snapshot.TryGetValue(id, out var value) || value == null)
                 throw new InvalidOperationException("变量在本次运行尚无有效值：" + source.Name);
             if (source.DataType is not ("String" or "Integer" or "Double" or "Boolean"))
                 throw new NotSupportedException("通信接收目前只支持已声明的单项文本、整数、浮点及布尔变量；序列和其它存储尚未接入，不能隐式展平。");

@@ -1,0 +1,553 @@
+{
+  "unit": "B08 来源与索引选择完整单元",
+  "status": "合同6.0来源/变量/整数变量索引、实际闭包中立命名及范围布局修复已定向验证；B08解绑/通讯/Blob占位和人工未完",
+  "decision": "复用原两Popup/文本/树/展开窗及现有非视觉适配；节点显示元数据与正式ScopeId/NodeId分离",
+  "validation": {
+    "windowChecks": 8,
+    "designAttempt": 127,
+    "fieldAttempt": 116,
+    "windowFilter": "扩展",
+    "fullBuild": "0错误/6490警告",
+    "windowAttempt": 339,
+    "scope": "真实展开窗及Owner/互斥/禁用隐藏/失效/同名身份，完整字段索引拒绝与纯UI保护；不能代替VS与人工",
+    "uiBuild": "0错误/6488警告",
+    "designChecks": 302,
+    "validatedSourceSnapshot": "d7e98fb7e00856aea6743635cfae319d4dc5d91d"
+  },
+  "pending": [
+    "候选节点前序/父模块范围与宿主图策略差异核对，保留Group暂停边界",
+    "可订阅/可见/私有/时间戳等资格及变量管理/通讯特殊叶逐项盘点，不擅自宣称已迁完",
+    "VM数组索引原生后端未知，当前单项整数合同保留且不称原厂等价",
+    "旧RuntimeEditor脚本按稳定字段合同、实际行和S1纯UI保护整批重审",
+    "实际VS、人工对照与Blob完整生产链；最终中立命名治理仍未完成"
+  ],
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs",
+      "sha256": "A04C04DC557328269A06D67C194F6C3A64B68659ACC1F76E4DE778F5DA858931"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetFrontFilterTreeOperation.cs",
+      "sha256": "859B7C4EC74F7843623BC4923E797C898052E8E2A315B061FB4251C74A0446E7"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "sha256": "1B826BF533AFB8CD239B6F76E425AA27D0C07E8DF33172DD9F1A1CBB4C4071E5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "D055947337A81E5823B1B555B434D9A76EAA1691E150D7C437D99F39FF723899"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "sha256": "4BA452C9BACCEEB394D7EAE02E68BBF87A7F9666FC4E09BEBC3CB118464DD143"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "sha256": "D142C141D01385EF3A8B842A834BC7730F2486856E723C28DE195CDBAC11B379"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "sha256": "73E3A210246C3477DC96D7D30C525D3150A41C71946D6E57CB7888EBC8A13FEF"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
+      "sha256": "C78A1C4B054AB2047360B182A3F8381C4606BF3702EC0DC920757BF7807C65D7"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "A308BFF8A17BA85722236AA557CA8CC663543FB28E0BA1B444A25FF35208F700"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+      "sha256": "9071A8EBCC40F8D6556C4017C9EBF3D92ED3404EE974353A47CFDCC0BFCD2CA9"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+      "sha256": "9562C9F701F231BD8456247675BB37507439BBE113F231B20228842C6F6FEEF3"
+    }
+  ],
+  "externalEvidence": [
+    {
+      "sha256": "EC7759F40A0BD81CFCCE44384DA50847FCEC63E1A21AA90340C404EBE73F2761",
+      "path": "D:/MyWork/REA逆向测试/docs/joint-audit/VM来源与索引选择树生产消费链-B08-20261030.md"
+    },
+    {
+      "sha256": "61E71873E5994C40D3FDE855501B804B075CDDEE0C967B9F82A89D611EC8FCCA",
+      "path": "D:/MyWork/REA逆向测试/docs/joint-audit/B08-Blob索引后端补证边界-20261030.md"
+    }
+  ],
+  "sourceCandidate": {
+    "files": [
+      {
+        "sha256": "A1D1C3F058C7DF8E3E66A55EF01B28D507D783D6EE14A02410300CF297833442",
+        "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs"
+      },
+      {
+        "sha256": "8F8D8407C4DC0817623125ADB84E9A20F7830C1C11677C2DB4DE2F9382AE29C9",
+        "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs"
+      },
+      {
+        "sha256": "3BA1A321010F2D4C9B2F7C9174F9B81DF4131B3B5DC8B0A739CBA79ACEB2E7D3",
+        "path": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs"
+      },
+      {
+        "sha256": "55C3110FA25430955BA50314CCD255B7ECE82DA63A8C011933F61F040E12014E",
+        "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs"
+      },
+      {
+        "sha256": "21C57868B8960DFEFDE199A4E08F03A8E3D3D2303E081D2CCF268C8F5CABDAC6",
+        "path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs"
+      },
+      {
+        "sha256": "280FEC9CC681829E75202A02782D9497233CBD32C4C78DBD6C2181C59B936EB4",
+        "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs"
+      },
+      {
+        "sha256": "DF16DCDEBA0D036859C1BD87459F765313A19DF256B9C8B4346EE723A7CE6846",
+        "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs"
+      },
+      {
+        "sha256": "14345A3E4E3B300277C85EA488781F4E33B904C4B4FE865979DD78475B0D8D6D",
+        "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs"
+      },
+      {
+        "sha256": "110127FACD8FD3149B1CBBBF20D41957957115EF209EDC70E2A3861403DBB498",
+        "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs"
+      },
+      {
+        "sha256": "7701500EB4120DE5FDC31C2AD1877CC4451478EE90CC7A17EA6AC11A64AA0DA9",
+        "path": "scripts/verification/O06WindowPresentationCases.cs"
+      },
+      {
+        "path": "src/Plugin.Runtime/ParameterBindingService.cs",
+        "sha256": "039720D52C40AE7343D397D579B424BF81531240D8FF588855E0B9D5AE18B4CE"
+      },
+      {
+        "path": "src/Workflow/WorkflowExecutionEngine.cs",
+        "sha256": "DE7B72B710773463739C9386DFA7F738D43B6DA27D358EA45C3653FDBC758E5E"
+      },
+      {
+        "path": "scripts/verification/S3RuntimeWorkflowCases.cs",
+        "sha256": "C58AA83095B8765D9FC98F6B781C278B84989BD99E45EEDF1E180A0A0E629DE8"
+      },
+      {
+        "path": "scripts/verification/S3RuntimeDebugCases.cs",
+        "sha256": "94263214DA46635F5B423617F10DC32ED4C5B1F5079B1F091801F1E0E67F466E"
+      }
+    ],
+    "baseSnapshot": "d7e98fb7e00856aea6743635cfae319d4dc5d91d",
+    "runtimeTests": "Window340 12/0；Field117通过；Design128 302；Workflow047 10；Debug024 7；Recovery035 342/0",
+    "build": "正式UI与全量Release通过，日志Release/_validation/ImageSourceIntegration-20261029/b08-*-build.log",
+    "readOnlySyntax": "BLOB_B08_TREE_SYNTAX_20261030.json，10文件无语法诊断；不是类型检查或构建"
+  },
+  "currentValidation": {
+    "designChecks": 306,
+    "fullBuild": "枚举合同批：0错误/1023警告",
+    "fieldResult": "通过",
+    "windowChecks": 16,
+    "manual": "本轮尚未人工验收",
+    "runtimeWorkflow": "052：10组通过",
+    "runtimeEditor": "100：旧阈值显示项查找失败；该脚本还假定S1阈值真实提交，需按当前阶段及稳定字段合同整体重审，不继承其旧结论",
+    "uiBuild": "声明只读目录02：0错误/724警告（增量）；首轮CurrentNode静态object访问Id失败已修",
+    "fieldAttempt": 121,
+    "windowFailures": 0,
+    "snapshotNote": "d7e仅为此前基线，不含本轮新改动",
+    "runtimeDebug": "027：7组通过，包含真实调试结果成员名称断言",
+    "windowAttempt": 344,
+    "designAttempt": 133,
+    "imageSourceRecovery": "036：此前名称批342通过/0失败；不将其称本次声明只读目录同版验证",
+    "implementation": "Runtime执行快照入口拒绝旧ParamSettings，避免静默丢弃，与复制/保存的唯一Fields合同一致"
+  },
+  "booleanTemplate": {
+    "originalBooleanCount": 31,
+    "design": "131：304项通过；129夹具类型编译失败、130错误遍历不含实际字段视图失败保留，131通过正式DeclaredFieldAccess.View核对",
+    "changedBlobDeclarations": 7,
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08-Blob布尔订阅与成员名称证据-20261030.md",
+    "decision": "Blob普通Boolean只允许Constant；不全局禁止通用控件Boolean引用，不猜原生int转bool",
+    "productResourceHash": "62DCBA81265A28458BAB68C482A9C7FD2237ADD5523FC722E9EE0F78E78E0552",
+    "workflow": "048：10组通过",
+    "build": "0错误/726警告，b08-boolean-full-build.log",
+    "fields": "118：通过",
+    "sha256": "CC70BD3294440806698659BCE25A09153C23F4CF89318BD2FD58207FA4A8ABEE"
+  },
+  "outputNameEvidence": {
+    "unknown": "XML到原生返回结构生成/合并和实际语言实例未证",
+    "sha256": "5809CB2AAAD3D77987D63D2053B171D82FE9323F45F5AF510B2CCDAAAB167ACD",
+    "hostGap": "OutputBindingChangeService.DescribeRuntimeOutputs当前Name/DisplayName均为port.Id，记录成员仅有稳定ID，没有显示元数据；需统一非视觉声明生产链，不在三个UI消费者各写Blob翻译字典",
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08-Blob输出元数据与语言映射-20261030.md",
+    "confirmed": "SDK返回树按nDataType/pstCombInfo递归；名称由szParamName，语言ResourceBinding Name"
+  },
+  "outputDisplayChain": {
+    "decision": "不可变显示树与语义类型、值和身份分离；三个来源生产入口、结果树、目录复制和运行快照共用",
+    "files": [
+      {
+        "path": "src/Plugin.Contracts/OutputDisplayNode.cs",
+        "sha256": "58E6BE8E5A74EB566ED2A389ED0714D62A8363670E8DBA485C203E25E1ADEC5D"
+      },
+      {
+        "path": "src/Plugin.Contracts/Values.cs",
+        "sha256": "5E1A2498DEA53955946D8BD5E9F89C8204697129FB90CF896E8A088D90867B7B"
+      },
+      {
+        "path": "src/Plugin.SDK/Execution/Results/OutputVariable.cs",
+        "sha256": "9FB66071841A7007581AEEDDCD24F1C63E11E9CCA6AF0E71F518CBB012CEE399"
+      },
+      {
+        "path": "src/Workflow/OutputBindingChangeService.cs",
+        "sha256": "86FA3F1AE4A6F93F0F649B58C84776BE0E8A350A0DFC6AB92031945A4C4ACC4B"
+      },
+      {
+        "path": "src/Plugin.Runtime/Results/DeclaredOutputSnapshot.cs",
+        "sha256": "31BBED1F5CCCE172783C7C755FB266607B308A92340BD4402015545583504E17"
+      },
+      {
+        "path": "src/UI/Services/Editing/DeclaredReferenceCandidateBuilder.cs",
+        "sha256": "F0D1DF6DD722E8295A72BF9DA83E81B88A45B0CE2B0B7484541B686A8B5DFC4F"
+      },
+      {
+        "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+        "sha256": "0A63D2CC432B005E273DFA8CCE33CBA317AB6C482EE0E0E15F19197E89EA9990"
+      },
+      {
+        "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+        "sha256": "6DA826FE895294DD129B382549778E2A957A086CD399FE83B76DCF3B88E814B1"
+      },
+      {
+        "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+        "sha256": "DEB1CD4C307D31C628F73EC11BDF3C52A8A24B9B76B1164A11B93ADD1EE4FF1A"
+      },
+      {
+        "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+        "sha256": "7D96E18EB3FB431B17C8440D4208F1014C4DDBFA7A57EC8FE5176B6D8FA7D561"
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "sha256": "598668D02CA82CADCC4473920D68189614A6C9B7890CE87CF6D42D85F302E6BC"
+      },
+      {
+        "path": "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+        "sha256": "E09C09F8F9CCF993448C84EDF11E710AE17FADD9CF9730557DC7F8ED9D423C9B"
+      },
+      {
+        "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs",
+        "sha256": "A8D09F71C4D60FE6EED3020A3204E5CE794C93DB693BB882BB1995C045C4AB5D"
+      },
+      {
+        "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobSchema.cs",
+        "sha256": "27F4EE33807682E59FD93CC0D333A1F2F18225A5014863D72843707376601DC1"
+      },
+      {
+        "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+        "sha256": "1495EFEB73412F29D101E321C0CA47274CFC4E0064697344CFD637784558D090"
+      },
+      {
+        "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs",
+        "sha256": "A9E76D630A0C37BAB2FEA3E5871ADE97577C228A538C090E1691BEC79393FEC8"
+      },
+      {
+        "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceOutput.cs",
+        "sha256": "FFEDE953DAA02542CC1564A0B8C35628D2D4545F48366BE09FAC602E4AFEA31D"
+      },
+      {
+        "path": "scripts/verification/O06WindowPresentationCases.cs",
+        "sha256": "A81215473327F1835043694BF3D7ED268B563353AB94E9D74C794D04585BAED5"
+      }
+    ],
+    "recovery": "036：342通过/0失败，72604ms，正式同版退出0",
+    "workflow": "049：10组通过",
+    "uiBuild": "0错误/6487警告",
+    "fullBuild": "0错误/6489警告",
+    "debug": "025：7组通过",
+    "design": "132：304项通过",
+    "window": "342：15通过/0失败；341夹具访问内部类型编译失败保留，改用同一公共ResultPublication",
+    "field": "119：通过",
+    "status": "名称批已有验证；后补真实WorkflowBindingContext与声明只读目录验证见declarationOnlyAudit，不以直接Capture替代完整调度"
+  },
+  "userComparisonSnapshot": {
+    "path": "C:/Users/houzhongjie/.codex/visualizations/2026/10/30/01a18a1d-18c3-7653-a62c-582888fa8fa2/B08-VM与当前实现完整逻辑对照.html",
+    "sha256": "D52A660E95DEE98C03852C623B2842EC8AD2632856B5218D2B4F39BD8EFE703E",
+    "review": "全文及树/选择/索引分节已读；作为本轮源码之前快照，不改外部文件；名称缺口已有新实施，其他差异保留"
+  },
+  "declarationOnlyAudit": {
+    "test": "Window344含范围/SSOT与输出查询抛错/可变目录快照/上游范围；Workflow051和Debug027保留成员显示名",
+    "files": [
+      {
+        "sha256": "F2AD7532914F1B1E3FEBFBF76A673FD109A12F0CD9CA9EBC625D2BB5B9CE3AAA",
+        "path": "src/Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs"
+      },
+      {
+        "sha256": "89CDF56D266EFCE8F8FFC3F2B13F9466C12F6BB3F619E915AE104D7FD3886797",
+        "path": "src/Workflow/WorkflowBindingContext.cs"
+      },
+      {
+        "sha256": "0A63D2CC432B005E273DFA8CCE33CBA317AB6C482EE0E0E15F19197E89EA9990",
+        "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs"
+      },
+      {
+        "sha256": "6DA826FE895294DD129B382549778E2A957A086CD399FE83B76DCF3B88E814B1",
+        "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs"
+      },
+      {
+        "sha256": "DEB1CD4C307D31C628F73EC11BDF3C52A8A24B9B76B1164A11B93ADD1EE4FF1A",
+        "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs"
+      },
+      {
+        "sha256": "A81215473327F1835043694BF3D7ED268B563353AB94E9D74C794D04585BAED5",
+        "path": "scripts/verification/O06WindowPresentationCases.cs"
+      },
+      {
+        "sha256": "16297BEEB5226FB4AFBB6D32BE1CD83CE2686CEE1400F1B774E16C865E21AA2C",
+        "path": "scripts/verification/S3RuntimeWorkflowCases.cs"
+      },
+      {
+        "sha256": "D0F903FBE4D15B9756FBF0A765A35DE03071AC9260F54F7C86FA6AFC927DA256",
+        "path": "scripts/verification/S3RuntimeDebugCases.cs"
+      }
+    ],
+    "decision": "候选仅取冻结节点名称与正式输出目录，不观察SSOT值；实际WorkflowBindingContext重建声明保留显示树"
+  },
+  "sourceCheckpoint": {
+    "commit": "d2dda53ae608df9c3e83e89bc070c80d96f07304",
+    "mainHead": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+    "selectedFiles": 35,
+    "handoff": "docs/collaboration/B08_DECLARATION_CHAIN_HANDOFF_20261030.md",
+    "parent": "d7e98fb7e00856aea6743635cfae319d4dc5d91d",
+    "scope": "已验证声明目录、来源/索引及名称链；不是B08整体完成",
+    "contentVerified": true,
+    "branch": "codex/b08-declaration-chain-20261030",
+    "realIndexUnchanged": true
+  },
+  "remainingEntryAudit": {
+    "externalCommunication": {
+      "gap": "原ExternIO/SUBSCRIBE_VAR_GLOBAL静态提交闭包已取得；尚未接入本方普通字段与执行快照，消息来源/时序未证，不能以SelectReceiveVariable替代",
+      "native": "GetFrontFilterTree在isNeedTS且ValueType含string时加入VmSolution.ExternIO",
+      "existing": "DataSourceQueryService通讯服务与SelectReceiveVariable存在，后者当前打开本方全局选择对话框"
+    },
+    "next": "继续按原完整B08消费者清单核收；原生缺口按需补证，不重复请求已取得的静态材料",
+    "variableManagement": {
+      "gap": "公共变量选择及字段视觉联合已接入并验证；Blob可见阈值等S1组合尚未功能接入，变量动态索引/原生未知/实际VS人工仍待核",
+      "resources": "全局运行槽只接纳纯标量及一维纯标量数组，不持有资源/组合",
+      "native": "GetFrontFilterTree按兼容global/local变量存在显示Lang_VariableManager；ButtonSelecter→GlobalVarDlgHelper.ShowVarSelectDlg→返回VmIO",
+      "existing": "GlobalVariable/ProducerBinding/ConsumerBinding、全局管理对话框、WorkflowGlobalProducerOperation/RunValues、依赖图存在"
+    }
+  },
+  "remainingEntryEvidence": {
+    "review": "全文已读；静态证据，未运行VM",
+    "communication": "string且isNeedTS；TRIGGER_STRING；moduleId=0，SUBSCRIBE_VAR_GLOBAL；不是普通变量输出",
+    "path": "D:/MyWork/REA逆向测试/docs/joint-audit/B08变量管理与外部通讯来源链-20261030.md",
+    "variable": "兼容global/local出现条件；返回Owner的真实VmIO；列表显示首项不证明执行首项",
+    "sha256": "2F9EB2F43947B5432A4BBE4D887982176E5F877B3481591491D4EF9A7E21909E",
+    "unknown": [
+      "数组实际执行",
+      "原生通讯内容与时序",
+      "跨作用域复制/重开"
+    ]
+  },
+  "enumerationBoundary": {
+    "changed": [
+      "Type",
+      "SortMode"
+    ],
+    "status": "正式全量构建与字段/设计/工作流验证通过",
+    "snapshotNote": "d2dda53a为此前保存点，不含本次两项枚举声明修正及新增检查",
+    "source": "原Enumeration.cs继承NameValueItem，原Enumeration模板仅下拉，Blob原实例无自定义订阅模板",
+    "decision": "Blob三个普通枚举均Constant；保留数值与EnumerationG独立合同",
+    "validation": {
+      "manual": "未新增实际VS或人工验收",
+      "workflow": "052：10组通过",
+      "design": "133：306项通过",
+      "fullBuild": "0错误/1023警告，b08-enum-contract-full-build.log",
+      "field": "121：通过"
+    },
+    "sourceHash": "96F60EEE654BA3F9D78A26DB4C81AAC58CC67A306C6492729CDA2F99F32E599B"
+  },
+  "stableVariableSlot": {
+    "status": "已实施基础，完整B08未接入",
+    "fullBuild": "0错误/829警告",
+    "workflow": "053：10组通过",
+    "runtimeGlobals": {
+      "attempt": 1,
+      "passed": 6,
+      "failed": 8,
+      "report": "Release/_validation/S3-20261025/RuntimeGlobals/attempt-001/runtime-global-report.json",
+      "remaining": "8项旧SDK生产探针需迁真实Runtime；原断言保留"
+    },
+    "fullTestProject": "编译002：71错误，未通过",
+    "workflowDllSha256": "64F866B0A1BC12C1360050C9C8E8D568524B40F9B12E95AD15EE4A9752F1F35A",
+    "manual": "未新增VS/人工",
+    "runtimeProducerMigration": {
+      "attempt": 3,
+      "passed": 12,
+      "failed": 2,
+      "report": "Release/_validation/S3-20261025/RuntimeGlobals/attempt-003/runtime-global-report.json",
+      "probe": "tests/_shared/GlobalProductionRuntimeProbe.cs",
+      "remaining": "同流与跨流消费者仍为旧ParamSettings；待Runtime变量字段整链接入",
+      "previousFailure": "002误编译probe/obj重复特性，保留记录",
+      "productChanged": false
+    }
+  },
+  "runtimeVariableFields": {
+    "status": "非视觉链已实现验证，B08整体未完成",
+    "fullBuild": "004：0错误/830警告",
+    "globals": "008：21通过/0失败",
+    "workflow": "056：10组",
+    "kernel": "047：19组",
+    "field": "123：通过",
+    "report": "Release/_validation/S3-20261025/RuntimeGlobals/attempt-008/runtime-global-report.json",
+    "sources": [
+      {
+        "path": "src/Plugin.Contracts/VariableReference.cs",
+        "sha256": "80CFE57515231DE39F10B54EC0E8D77075A746233D27C5CFDC7408A9A2C8E796"
+      },
+      {
+        "path": "src/Plugin.Contracts/FieldSettings.cs",
+        "sha256": "28545DAA71FAB9114CB3044D3A60040AF29CF668162F02F691D7BDFA7BDA61BC"
+      },
+      {
+        "path": "src/Plugin.Runtime/BindingReferenceSerializer.cs",
+        "sha256": "E722705D553E0AACA96D52E626CD3D890E458007216DF48CD0FA0F644FD64A4E"
+      },
+      {
+        "path": "src/Plugin.Runtime/ParameterBindingService.cs",
+        "sha256": "AC01EA12586D6B5B04B8388B4ADD7DC89EE50BCC1F139ED22233A2ED57F611DE"
+      },
+      {
+        "path": "src/Workflow/RuntimeVariableBindings.cs",
+        "sha256": "3D328663A3BCDBA2F1418B6648BFA6268FD1CFB11EE26B113FEED6E2E551BAAE"
+      },
+      {
+        "path": "src/Workflow/RuntimeFieldJson.cs",
+        "sha256": "DE2FCA11243FD10259A3872FD29830DD6CD86C687672DDFCCA216842AB699767"
+      },
+      {
+        "path": "src/Workflow/WorkflowGlobalProduction.cs",
+        "sha256": "CEBD143FF6F7F056580EEE7230D8BB20B8F779F928D8576AD7357123D835C067"
+      },
+      {
+        "path": "src/Workflow/WorkflowBindingContext.cs",
+        "sha256": "AC752F97FBF363C7FC7D3ECC06E7419DC8EA6679A1158DF0BAB26AFA0F7D79B4"
+      },
+      {
+        "path": "src/Workflow/NodeConfigurationEditHost.cs",
+        "sha256": "9115B90BFBE7960AAD79CBF23A2F7D4314A59D2D5D3283BE3FF148CE15CC6BDF"
+      },
+      {
+        "path": "tests/SunEyeVision.UI.Tests/WorkflowGlobalProductionTests.cs",
+        "sha256": "DC4D57369842CE9A6753BE64CD281C8B2BD5A6FBF79D8A1D6EF4E56EE35B6027"
+      }
+    ],
+    "pending": [
+      "变量选择UI与来源联合",
+      "更名删除对账及全部弹窗生命周期",
+      "ParameterEditSession变量准入",
+      "TRIGGER_STRING",
+      "变量作为动态索引/Group",
+      "VM原生等价及VS人工",
+      "完整测试项目历史71错误"
+    ],
+    "sourceSnapshot": "未创建本批新保存点，d2不含本批"
+  },
+  "currentVariableVisualChain": {
+    "status": "公共字段与实际模态/展开转交定向验证；非B08完整封版",
+    "fullBuild": "b08-source-replacement-full-build.log：0错误/6092警告",
+    "variableFields": "attempt-005：10组通过",
+    "fieldEditing": "attempt-125：通过",
+    "blobUiBoundary": "attempt-011：6组，fullFunctionalAcceptance=false",
+    "wpfSha256": "D47FB57BCCB3DAF24887AA3F37AAA6BC2A38E82181BDDBE9ED7295B23335388F",
+    "remaining": [
+      "Blob可见S1组合功能接入",
+      "通讯触发源执行与UI",
+      "变量动态索引",
+      "原生未知及实际VS人工"
+    ],
+    "history": "其他较早批次结果保留为历史，不表示本版重新执行"
+  },
+  "variableConsumerLifecycle": {
+    "original": "VariableManager.cs DeleteIO→SetRunParamBind→DelModuleParamBinding/@false/SetInit",
+    "originalSha256": "1BE5F6B78FC53CE0FCAD229DDEC4B1943818EFCA32331A2B599706DD4905AC38",
+    "runtimeGlobals": "010：23通过/0失败",
+    "rename": "真实宿主更名，稳定身份保留，实际执行读取同批值",
+    "deletion": "当前宿主拒绝已引用变量删除/改类型，保留原状态；不同于VM解绑，未对齐",
+    "remaining": "统一Runtime字段消费者与管理记录、完整删除/解绑事务；SetInit不擅自解释为算法默认值"
+  },
+  "currentContract6Validation": {
+    "date": "2026-10-30",
+    "contract": "6.0",
+    "status": "变量动态索引定向验证通过，B08整体未完",
+    "fullBuild": "0错误/6511警告，b08-variable-index-contract6-full-build.log",
+    "checks": {
+      "RuntimeGlobals": "017:31通过/0失败",
+      "FieldEditing": "128通过",
+      "DesignTime": "306组，不代VS实际验证",
+      "RuntimeEditorUiStage": "013:6组，fullFunctionalAcceptance=false",
+      "RuntimeWorkflow": "059:10组",
+      "VariableFields": "010:12组",
+      "RuntimeKernel": "050:19组"
+    },
+    "pending": [
+      "原厂删除解绑及参数回读",
+      "TRIGGER_STRING通讯来源",
+      "Blob可见S1占位功能接入",
+      "本批VS与人工",
+      "原生VM运行等价证明"
+    ],
+    "nativeRuntimeVerified": false
+  },
+  "fragmentCopyValidation": {
+    "productRebuilt": false,
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-fragment-copy-RuntimeGlobals.log",
+    "passed": 32,
+    "newCase": "Fragment_copy_remaps_module_indices_and_preserves_solution_variable_identities",
+    "failed": 0,
+    "track": "RuntimeGlobals018",
+    "combinations": 4,
+    "scope": "真实WorkflowFragmentCopy.Prepare保留变量身份/重映射模块来源及动态索引，不证明跨方案变量迁移或原厂解绑"
+  },
+  "historicalValidationNote": "validation保留旧声明批次结果；当前结果见currentContract6Validation与fragmentCopyValidation，源码保存点2aa8959d。",
+  "indexRefreshValidation": {
+    "fullB08Acceptance": false,
+    "sourceSavepoint": "2aa8959d不含该新增验证源码",
+    "track": "VariableFields011",
+    "passed": 13,
+    "productRebuilt": false,
+    "newCoverage": "真实公共字段：模块/变量主来源的变量索引更名不写配置、目录删除标失效、迟到选择退役、有效替换索引恢复且保持主来源",
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-index-refresh-VariableFields.log"
+  },
+  "currentBaseline": {
+    "WpfSha256": "5F61FA357D3F34B92405CE2F1BAEC3CB92CCE557DD7F774600C2C7D4AC1C6667",
+    "fullBuild": "0错误/6420警告",
+    "parent": "2aa8959d",
+    "fullFunctionalAcceptance": false,
+    "namingFiles": 64,
+    "records": [
+      "B08_NEUTRAL_CONTROLS_SOURCE_SAVEPOINT_20261030.json",
+      "B08_RANGE_CONSTANT_LAYOUT_REPAIR_20261030.json",
+      "B08_NEUTRAL_NAMING_RESOURCE_AUDIT_20261030.json"
+    ],
+    "namingTypes": 28,
+    "uiBuild": "0错误/6509警告",
+    "checks": {
+      "RuntimeEditorUiStage": 6,
+      "VariableFields": 13,
+      "RangeMatrixCombinations": 4,
+      "RangeTargeted": 7,
+      "FieldEditing": 34,
+      "DesignTime": 306
+    },
+    "sourceSnapshot": "55507bce44a793f1f5f18b40dcb16746606e05b6",
+    "olderSections": "原validation/sources/sourceCandidate为其各自批次历史证据，不能当本次当前源SHA或当前产物结果",
+    "originalWindowRegression": "attempt345全轨失败/超时保留；只修复并重验已定位项，不以定向通过冒充整轨通过"
+  },
+  "currentPending": [
+    "真实解绑回读和删除清理仍缺最终证据，当前原子拒绝不等同VM解绑实现",
+    "TRIGGER_STRING入口、读取、取消/异常/重开完整寿命仍未闭合，不用GLOBAL=2与命名项互代",
+    "前序节点与本方DAG防环候选范围、可见/可订阅/私有/时间戳资格映射未证明整体等价，公共树不能凭显示名猜资格",
+    "Blob可见S1占位仍未接正式完整引用/执行/保存链",
+    "新命名及完整控件的实际VS、键鼠和人工VM同态验收仍未完成；S3未开始"
+  ]
+}

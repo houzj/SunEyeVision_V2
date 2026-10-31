@@ -27,6 +27,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
 
         /// <summary>中文显示名（用于 UI 展示，空则回退 Name）</summary>
         public string DisplayName { get; set; } = string.Empty;
+        private System.Collections.Generic.IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputDisplayNode> _displayMembers
+            =System.Array.Empty<SunEyeVision.Plugin.Contracts.OutputDisplayNode>();
+        /// <summary>Immutable display-only member tree, never a binding path inferred from a caption.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public System.Collections.Generic.IReadOnlyList<SunEyeVision.Plugin.Contracts.OutputDisplayNode> DisplayMembers
+        {get=>_displayMembers;set=>_displayMembers=SunEyeVision.Plugin.Contracts.OutputDisplayNode.Freeze(value);}
 
         /// <summary>分组（用于树形分组，null 表示无分组）</summary>
         public string? Group { get; set; }
@@ -49,7 +55,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         {
             PortId=PortId,
             FieldId=FieldId,DeclaredType=DeclaredType,ValueDeclaration=ValueDeclaration,AllowsNull=AllowsNull,
-            IsCollection=IsCollection,FixedCount=FixedCount,Name=Name,VariableType=VariableType,DisplayName=DisplayName,
+            IsCollection=IsCollection,FixedCount=FixedCount,Name=Name,VariableType=VariableType,DisplayName=DisplayName,DisplayMembers=DisplayMembers,
             Group=Group,IsGroupPlaceholder=IsGroupPlaceholder,DisplayInResultPanel=DisplayInResultPanel,Kind=Kind
         };
     }

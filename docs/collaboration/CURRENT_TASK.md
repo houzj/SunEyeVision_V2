@@ -1,3 +1,863 @@
+## 2026-10-31 同一独占窗口阻塞复核达到三轮，目标待用户答复
+
+- 原独占窗口问题发出后连续三轮仍无用户答复：首轮完成运行计划/输入和门禁；第二轮完成原程序集19方法/20字段静态核对；本轮复核计划及静态审计存在，而attempt01无receipt.json或init-observations.json。前两轮属于具体进展，本轮没有把状态复述当进展或把已结束对话当活跃等待。
+- 本批可在不启动SDK前完成的准备和相称静态核对已完成。下一依赖动作是同一自有方案五状态原机取证，需要用户确认原版VM独占窗口及已保全两张旧自有缓存的正常清理。自动续跑/时间经过不算答复；不通过改谓词、套XML默认或跳下一控件/S3规避原范围。
+- 按持续目标阻塞规则将目标置blocked，完整目标及全部未验收范围保持，不记complete或paused。用户回答现有问题后再恢复该窗口；启动前仍重新核共享清单/原件/缓存/进程，任何变化拒绝。主产品和工作流独立目录未改，本轮不构建、不启SDK。
+## 2026-10-31 独占窗口待答复期间完成取证程序静态接口核对
+
+- 上轮有进展：完整运行脚本/输入、原int/float来源树捕获及门禁验证。本轮没有收到独占窗口问题答复，不运行原SDK，也不将已完成的逆向对话当活跃任务。
+- 使用REA只读inspect_managed_members读取实际PublicFile/x64/VM.PlatformSDKCS.dll，ev_de13b657e3113b360efba931e280afdfd22fb5cd1901b38dcf2f58204aa718b7明确unavailable：完整成员表示超过67108864预算；没有重复同一失败操作或当作成员不存在。B08_PROBE_REA_METADATA_LIMIT_20261031.json保留限制。
+- 新Inspect-B08ProbeMetadata.ps1用.NET自带System.Reflection.Metadata直接读取CLI，不Assembly.Load或执行目标。真实安装SDK/Core/XmlParser三份MVID及SHA、目标11类型记录；19个必需公开方法与20字段/固定数组Marshal声明核对通过，原始签名blob/布局声明保留，未冒称全部类型解码或native ABI运行通过。日志static-metadata-001/002、B08_PROBE_STATIC_METADATA_20261031.json可核；首轮误找SDK在myLibs，已核实际解析路径PublicFile/x64，未选示例旧版程序集。
+- Run-B08SourceQualification计划及前检加入三份程序集/静态审计SHA，与已准备程序和输入身份一致；默认准备重新检查通过，无SDK执行回执。B08_SOURCE_QUALIFICATION_RUN_WINDOW及原O06已同步新旧身份/限制，未改主产品、未构建或打扰工作流程序。
+- 当前下一步仍需要用户回答已发的独占原版VM窗口及自有缓存清理问题；不能以静态检查代实机，不能以时间代授权。B08/S2未完成，S3未开始。
+## 2026-10-31 完整原厂取证单次窗口已准备，等用户独占窗口答复
+
+- 上轮有进展：纠正路径推断、保全自有缓存、五状态程序编译。本轮实查逆向回合已completed/idle，没有继续把它当活跃等待。实读原CVmObjectBase：ServerSetting为地址，ServerPath交平台CreateHandle，未凭名字认定独占清单配置。
+- 新Run-B08SourceQualification.ps1默认仅准备；主仓正式Release/_validation/B08SourceQualification-20261031-attempt01已冻结完整程序/源/原自有fixture.sol及4150字节图输入，未复制厂商程序/算法库。取证另直接调用原GetFrontFilterTree int/float两树，记录Holder/稳定叶身份；与五状态原元数据及连接表一起观察，不重造来源谓词。完整编译compile-source-tree-002为0。
+- 启动前检查原ModuleProxy及共享历史SHA、唯一指定自有历史行、全部已核缓存/保全SHA、路径祖先无重解析且无未核子项、旧PID和其他原客户端；人工独占窗口用于弥补文件前检非原子限制。已实测-Execute但无独占确认在创建进程前拒绝，没有receipt/init-observations；原SDK未启动。首轮PowerShell逻辑换行解析失败保留，修正后准备通过。
+- 已向用户发一项异步问题：是否现在可独占原VM，不启动/操作其他原版实例，并允许SDK正常清理已保全的VM127868ImgSrcTemp两BMP。问题仍待回复，不能将经过时间当授权；答复前不执行依赖动作。不关闭独立工作流/厂商服务，不改安装或共享清单。B08_SOURCE_QUALIFICATION_RUN_WINDOW_20261031.json及原O06已同步；主产品本轮未改、不重复产品构建，B08/S2仍未完成，S3未开始。
+## 2026-10-31 ProxyPath错误推断已纠正，五状态完整取证程序编译准备完成
+
+- 上轮为进展：确认捕获产品出口修复与正式UI验证、四报告核收。本轮实查逆向回合01a18e16-e0a2-78d0-a0f7-96e2132661e5在进行，收到完整更正：原R8把this+0x118传给路径函数再写入，旧“仅日志、不写ProxyPath”错误。主线独立读关键LEA/MOV/CALL并核三个原汇编SHA；三份更正报告核SHA归档B08_PROXY_PATH_CORRECTION_20261031，CORRECTION_REVIEW/ASM记录适用成功分支与未证边界。旧报告历史保留，不沿用错误结论。
+- 当前共享ImageSourceTempPath.txt只读SHA ABC3...7823，唯一行是本线attempt03/PID127868自有缓存；原PID实查未活跃，现有厂商进程MVDLogServer7476、vServerApp115652仍在，未干预。两BMP共约4MB限量保全在同一Release原attempt目录cache-preserved-20261031并核SHA，未改共享清单/清理原件。时点不等于并发/重解析隔离，公开配置与完整单次窗口待定。
+- scripts/analysis/B08SourceQualificationCapture.cs已实现SDK原元数据/纯树副本、托管叶标志、原GetMultiModuleConnect及前驱采集，复用原实例管理器及返回内存所有者，数量/深度/指针校验，不自行释放SDK内存。复用已有成功探针，在五个相互区分状态插入完整采集；原全局Ex初始化/Dispose/Destroy生命周期保留，无显式FreeLibrary。主仓Release/_validation/B08SourceQualification-20261031-preparation完整程序compile-complete-003为0，启动门禁默认拒绝，未运行原SDK。首轮旧csc相对路径失败保留，绝对路径编译通过；编译不代表反射、ABI或现场行为通过。
+- 具体五状态矩阵、源码/程序SHA、初始化所有权和未覆盖见B08_SOURCE_QUALIFICATION_PROBE_PREPARATION_20261031.json。原O06已同步更正与准备，不只更任务账本；主产品/工作流独立目录本轮未改、未重复产品构建。B08/S2仍未完成，S3未开始。下一步核公开路径/单次运行窗口条件后取真实元数据与图关系，不凭XML默认造资格合同。
+## 2026-10-31 B08来源集中回件核收，显式确认捕获出口顺序补齐
+
+- 上轮有进展：75/17叶实际盘点、集中请求和原O06更新。本轮实查同一逆向回合仍活跃，随后四份报告已收到；主线读报告并核四个SHA原样归档B08_SOURCE_QUALIFICATION_20261031，三个原指令SHA另核，不冒称独立重核全部指令。记录见B08_SOURCE_QUALIFICATION_RECEIPTS/ASSEMBLY_IDENTITIES_20261031及更新后的SOURCE_QUALIFICATION_REVIEW。
+- 证实SDK Outputs先置loaded再查询，失败不能当无输出/自动重试；叶与组合的标记解析分支不同，手动筛选与自动连接/结果可见分开。原前驱由GetMultiModuleConnect连接表填充，数据订阅和控制连接的已读托管入口可分开；DynamicOutData生产/覆盖与原生隐式关系未闭合。本方非后继DAG范围未偷偷改成原厂等价。
+- 完整出口自审发现RuntimeNodeConfigurationControl.TryCapture尚未像Changed一样带AcceptedFieldOrder，已补齐，原设计同步。主仓实际仅见独立工作流PID130856，未关闭/改其目录。UI Release ui-build-005为0错/6524警告，RuntimeEditorUiStage018为6组S1保护通过；证据B08_CAPTURE_ORDER_EXIT_VALIDATION_20261031.json。前版全量和参数/字段各结果身份保持，不冒称本次全量。原O06已整段同步。
+- 已在原B08集中补证授权范围继续交逆向负责人：优先查ProxyPath构造后实际写入、规范化及公开隔离入口，解除共享ImageSourceTempPath历史清理这一原机验证前置。只读离线，不改共享清单、安装/注册/许可，不复制程序/算法库，不启SDK。B08/S2全范围仍未完成，S3未开始；有证据支持的正确代码复用，不造未确定的插件资格合同。
+## 2026-10-31 B08来源资格完整盘点与集中离线补证已推进
+
+- 上轮为进展：组合提案顺序产品修改、正式构建/定向测试及原方案同步完成。本轮复用已有来源资格审计，不重做已核顺序；实读GetFrontFilterTreeOperation、VmModule.GetFrontParamItems、VmModuleExtern.GetOutputTreeNode及本方所有候选入口。
+- 原Blob输出XML共75叶、ImageSource共17叶，完整路径/类型/显式资格属性与SHA已记录B08_OUTPUT_QUALIFICATION_INVENTORY_20261031.json。Blob10叶显式Visible=false均属输出位置修正信息；CustomVisible与Visible分开。初次提取器PowerShell XML.Name属性冲突失败另存，已改XmlElement.LocalName严格校验Output归属及唯一路径，不采用错误路径。
+- 当前DeclaredReferenceTree普通数值基础种类过滤已与原ComType对应，正确部分复用。实际未决是前序范围对非后继DAG候选、逐叶资格对公开Schema，以及原模块名称排序对当前枚举顺序。B08_SOURCE_QUALIFICATION_REVIEW_20261031.json列出完整生产消费者及集中实施边界；没有先造插件资格字段、改调度或单独修排序。
+- 在既有用户授权B08集中请求范围已成功通知逆向负责人；实查其回合01a18e0a-2e28-7430-9ffa-b70fe137ae4b为inProgress，任务是原实际IO元数据生成/覆盖以及PreModules是否含纯订阅边。仍冻结新SDK进程，主仓产品和工作流独立目录本轮未改，未重复构建。回件后据完整方案集中实施；原全部B08/S2范围及S3未开始状态保持。
+## 2026-10-31 B08组合提案顺序回执贯通及正式验证，原O06与队列已同步
+
+- 上轮为进展：实际修改工作流回归并取得10组正式通过。本轮先核现状，build-003字段回归133为34项通过；发现生产字段没有独立Undo栈，TryReplayAccepted仅ROI设计样例调用，不为此新造历史。
+- 真实缺口是WriteGroup有提案顺序，但Changed只有完整快照。已先写完整消费者设计，再整批实现AcceptedFieldOrder不可变接纳回执，Blob/ImageSource及测试包装透传，Runtime宿主Changed按该序调用WithSettingsFields；重绑清空、拒绝不安装，未知/重复字段拒绝。参数回归新增快照A/B而提案B/A的区分断言，字段回归验证拒绝、重绑与成功接纳回执。
+- 全量Release build-004终态0错/6237警告；同版ParameterValues003为10组、FieldEditing134为34项、RuntimeEditorUiStage017为6组通过。RuntimeWorkflow061属于前build-003，未冒称同版。证据B08_BINDING_ORDER_VALIDATION_20261031.json记录回执、PID、源码及五程序集SHA；历史失败不覆盖。实际CIM只见独立工作流PID130856，未关闭、不动其目录；主仓不自动启动桌面。
+- 原O06当前值/顺序节及VM_CONTROL_BATCH_QUEUE已整段同步实现、验证和未做范围。Blob阈值仍S1占位保护，完整生产接入未验；来源前序/父范围/资格、原厂多绑定其他分支、类型异常和原完整未证清单保留，VS/人工单列。S2/B08未完成，S3未开始；下一步集中核来源资格与实际宿主消费者，不在已通过顺序链反复加无关局部测试。
+## 2026-10-31 B08绑定顺序已实施，正式定向及工作流回归通过，整批未闭合
+
+- 用户再次确认原VM仅测试、无生产任务；该前提已记录，不重复询问。但共享ModuleProxy历史缓存所有权风险尚未消除，继续冻结原SDK新进程，不把用途确认当作清理隔离已完成。
+- 本方以显式参数绑定名、独立活跃队列贯通配置复制/改源/删除重绑、逐项执行及名称顺序保存重开；Blob九个可引用参数与原XML键核对。全量Release build-003为0错/6511警告，ParameterValues attempt-002实际正式产物10组通过；不能泛化为原厂多绑定动态顺序已实测。
+- 既有RuntimeWorkflow测试改用正式宿主发布和参数当前值接纳合同，补成功消费保留关系、正式关系改变后拒绝旧运行写入。首轮新断言误把Field(11)的Count当TotalArea，已查实际BlobOutput改为1，失败保留；第二轮10组通过，产品源码未为测试回退。验证脚本Stage S3是历史轨道名，不代表算法阶段已开始。
+- 下一步仍须核私有字段历史与多字段组合顺序、来源资格等原范围及新版本FieldEditing回归；完整Blob生产接入、VS/人工和原厂未证边界分别保留。原O06/队列待整批验证后统一更新，不以本条账本代阶段交付。
+## 2026-10-31 B08当前值生产链正式构建与定向验证通过，顺序链仍未闭合
+
+- 全量Release首轮1错/5768警告：误用SerializeVariable，改现有Serialize(VariableReference)重载；失败日志保留。第二轮0错/830警告，包含UI及插件。ParameterValues001用正式产物实际调度及HALCON简单输入检查7组通过：37绑定前不消费、运行173、关系/版本保持、解绑及绑定/解绑保存重开、未改草稿保留正式值、私有回执确认取消/后项失败、取消未消费、同值ABA冲突及关闭后的旧回调拒绝。FieldEditing132既有34项通过；都不是完整Blob/原厂算法/VS人工验收。
+- 当前产物及五程序集SHA、两个真实终态回执见B08_PARAMETER_CURRENT_VALUE_VALIDATION_20261031.json；build-001/002与parameter-values-001/field-editing-001在Release/_validation/B08ParameterCurrentValue-20261030。试用PID130856经标准审批的只读CIM实际核在工作流87f4独立Release，未关闭、不动该目录；主仓未启动桌面程序。
+- 已核原Blob AlgorithmTab SHA34A0...有0个普通String，Group.xml也无普通String；TextDisplayGroup实际链接StringConfig Content。当前本方可订阅参数为Integer3、Number6，枚举不可订阅。此前把普通String.IsSubA/MaxLen截断列为Blob数值链前置属于范围放大，现纠正：普通String/TS原完整清单保留待对应消费者，不删未证项，不往StringConfig套错机制；Blob文本表达式仍按独立完整组合推进。证据B08_BLOB_STRING_FAMILY_SCOPE_20261031.json。
+- 两份完整顺序回件已读、三份报告冻结及四份原汇编SHA核对，B08_BINDING_ORDER_REVIEW_20261031.json：运行独立模块链表，特定成功改源删旧尾插；保存另按名称树所存字节导出并过滤、导入按记录插入。首次建链/其他来源及多项原机重开仍未证，稳定字段ID的JSON排序不等价原参数名排序。本方绑定顺序尚需整体设计/实现与失败、改源、删除重绑和重开验收；旧RuntimeWorkflow合同同步亦待，不能以7/34通过封B08或进入下一控件/S3。
+## 2026-10-31 工作流多图像能力询问已答复，B08顺序新证据待完整核收
+
+- 主仓实读NativeResultViewport单_frame/BindImage、RegionLayer.Present(IReadOnlyRegion)及Shapes的Geometry/Selection/Text，确认无正式多IReadOnlyImage叠层/多图租约与布局链，无近期已接线候选。已在既有授权范围成功回复工作流对话：按暂停公共显示合同扩展约束保留明确占位及依赖，不能用RegionLayer或底层AddImageLayer冒充；继续其完整设计与有基础部分，不等主线、不停工、不动独立目录/冻结产物。记录WORKFLOW_MULTI_IMAGE_CAPABILITY_HANDOFF_20261031.json，未扩产品范围。
+- 逆向负责人新报告原1800be020已存在模块项的特定分支先按模块ID+目标名移除旧节点，再尾插；执行链从manager+0x28链表向后遍历，故该分支改源/删除重绑移末。保存另走manager+0x10树，导入按记录次序调用；多项重开及树比较器仍待完整地址/SHA回件。仅收到阶段性结论，未当完整证据核收，不把当前schema/JSON顺序当VM同态，不先猜排序实现。
+## 2026-10-31 B08私有调试变量、逐项回执及值代次合并接线（未编译）
+
+- RuntimeDebugInvocation从捕获时一次解析改为执行时逐项解析/接纳。私有回执与算法结果分开，算法或后项解析失败后仍可由原有效草稿接纳此前参数写入；UI核原节点/配置/视图代次，取消关闭不发布正式值。正式和私有接纳使用CallbacksOpen门禁，已结束回调不得补写，正式还要求执行已开始。
+- 调试复用RuntimeVariableBindings及WorkflowGlobalRunValues，冻结变量声明/纯值、变量动态索引依赖和明确的生产输出；有生产者的变量不借旧显示Value。跨流程变量生产源核当前方案、原始执行Owner/身份及声明，保留结果租约；普通直接引用仍限当前流程。PublishedBindingSnapshot携带冻结变量，动态索引用发布预览解析，不重标来源身份或执行上游。捕获或失败均沿现有读租约/退役清理。
+- Node草稿保留原参数值基线，Freeze/Rebase和确认同步；按字段比较私有/正式当前值，未改字段保留正式最新值，双方不同修改拒绝覆盖。增加纯运行期逐字段接纳代次，识别值回到原值的ABA情况；复制保留，保存只存纯值、不把运行代次当磁盘合同。仅值接纳不加配置版本/撤销项。控件回读经既有ProductionEditorContext取得正确Owner值，不把旧草稿备份当正式最新值。
+- 25份源码Roslyn语法0错误，syntax-004.json记录最新SHA；未语义编译、构建或功能验收。已发现旧RuntimeWorkflow用例含“订阅不回写任何设计值”的旧断言及无正式值Owner入口，需按新配置/当前值分离合同同步，不保留错误产品逻辑凑旧测试。String独立解绑/元数据及原绑定消费顺序仍待；后者已在既有授权集中补证范围发给逆向负责人，不新启SDK。整批未交付，不切下一控件或S3。
+## 2026-10-31 B08正式逐项接纳、保存捕获与WPF回读源码接线（未构建）
+
+- 新RuntimeParameterValueAcceptance作为已冻结发布的非视觉宿主能力，从MainWindow正式捕获、PublishedRunInputs及两类WorkflowRunRequest传至BindingContext；AlgorithmNode对引用/变量设置逐项解析成功后接纳，不等完整物化或算法成功。缺正式入口明确拒绝，不用旧缓存冒充消费。
+- NodeConfigurationEditHost保留唯一写者：核方案Owner、原节点实例、冻结配置与声明，准备纯值候选后才经真实ToolExecutionIdentity准入；准入可重入，因此安装前再次核发布快照/当前根/节点实例。BindingConfigurationStore值接纳保留版本、不增加配置历史；身份锁内仅原始根赋值，不通知WPF。
+- 保存改为由SolutionSession捕获同代不可变参数根，节点JSON使用捕获根，编码及IO在锁外。捕获实际文档节点避免画布已新增而参数范围尚未同步时漏身份；不触发接受草稿或结构同步。WPF ReferenceFieldOptions新增非视觉当前值读取，数值与范围通过共享DeclaredFieldState读取宿主值，缺值不退旧ConstantBackup；退役清理委托。
+- 本轮20份在制文件Roslyn语法0错误，回执Release/_validation/B08ParameterCurrentValue-20261030/syntax-003.json。没有语义编译或正式Release构建；以上是源码接线，不是运行通过。私有调试变量/回执、编辑值CAS及确认取消合并、String分类型解绑和整批回归仍待；不进入下一控件/算法，不关闭未知试用进程，不动工作流独立目录。
+## 2026-10-30 B08参数当前值整批源码实施中（未构建）
+
+- 已开始产品源码修改：RuntimeToolConfiguration增加独立不可变CurrentValues，仅存引用设置参数的声明约束纯值，常量仍唯一存Fields；绑定时从已有常量种入，改源保留，Copy/MapReferences/字段恢复及设置替换同步。JSON严格要求ToolId/Fields/CurrentValues，不加旧格式兼容回退；实际运行接纳仍待接通，不能称解绑已修复。
+- 配置/依赖/编辑签名改为排除当前值且包含声明身份，原投影补当前值变化判断；BindingConfigurationStore两类历史恢复按现行参数值合并，不重放运行。后续还必须接通正式值接纳、私有调试变量/回执、所有WPF消费者、值代次CAS和保存捕获，整批未交付，不切下一控件。
+- 四文件Roslyn语法检查0错误，回执Release/_validation/B08ParameterCurrentValue-20261030/syntax-002.json。首轮显式加载SDK10程序集报版本不匹配，实际解析使用PowerShell已载入Roslyn5.0；失败输出及syntax-001保留，002明确真实程序集。未做语义编译、全量构建或功能验收。
+- 检测到SunEyeVision.UI PID128724但Path不可读且无窗口标题，未关闭、未据此断言用户试用已结束或认定所属分支；正式Release未重建。原SDK探针继续不启动，独立工作流目录未改。
+## 2026-10-30 B08整批修正设计及集中失败/UI回件核收
+
+- 已形成B08_PARAMETER_CURRENT_VALUE_IMPLEMENTATION_DESIGN_20261030.json，明确配置关系/参数当前值、唯一正式接纳、私有调试回执、签名/历史/保存和整批消费者。另核RuntimeDebugInvocation只收ReferenceSetting、非常量分支直接索引该字典，VariableSetting及其动态索引缺完整调试捕获，须复用RuntimeVariableBindings和冻结变量合同一起修，不能只改解绑按钮。
+- 逆向新回件四份已读并冻结原文/SHA；五份原反编译源码SHA与报告一致，直接复核ValueBase和String的IsSubA分支。B08_PARAMETER_FAILURE_AND_UI_BOUNDARY_REVIEW_20261030.json区分本线实际复核与来件原生汇编。关键修正：原运行绑定逐项读/写，失败停止后项，不能以全部先验证后原子提交冒充；UI原子提案保持。setter有缓存写后再返回失败的路径，不把非零当未写。String解绑有独立UTF8截断及写回，Boolean模板没有通用订阅，Float的CLR double不等于原订阅double。
+- 实现设计已据此修正：接纳和算法结果分离，数值/字符串不误合并，配置历史不重放运行。算法异常/取消最终值、TRIGGER_STRING寿命和SDK历史清理公开隔离入口仍未证。实际核到逆向revision176、回合01a18d6b-b717-7ce1-8ae8-0fd5cc7d310c为inProgress；非全目标阻塞，不恢复SDK探针。
+- 本批仍是设计与证据收敛，无产品源码改动或构建，不计S2完成。下一步据整批设计实现，未证行为保留明确边界，不扩展Group、算法或改工作流独立目录。
+## 2026-10-30 B08参数当前值完整生产链盘点
+
+- 核清正式配置冻结→执行克隆→引用解析→参数校验→算法调用、私有调试、编辑解绑、唯一发布、历史和保存链，记录B08_PARAMETER_CURRENT_VALUE_PRODUCTION_AUDIT_20261030.json及逐文件SHA。当前引用成功消费没有参数当前值接纳，TryUseConstant仍取绑定前ConstantBackup，与原整数样本173不符。
+- 复用FieldSettings、ExecutionOwner准入、NodeConfigurationEditHost与保存框架，不新建并行事务/静态最近值缓存。关键新增发现：直接给Runtime配置加值会进入NodeEditSignature/ShapeSignature，误算编辑冲突与历史；仅在算法成功或执行完成后TryPublish又会漏掉取消前已消费值。接纳点、私有/正式值Owner及值与配置历史合并须整体确定，不能先局部修按钮。
+- 本批完成源码证据与整体修正的实施门槛/验收矩阵，尚未修改产品、未构建、未称B08完成。原SDK共享历史缓存清理边界仍待，不新启原SDK；不影响独立工作流或本线产品设计。下一步沿现有正式接纳和私有编辑生命周期闭合值Owner与保存/历史合同，再统一实施。
+## 2026-10-30 B08整数订阅—执行—解绑—保存重开真实区分结果已取得
+
+- 用户已确认原VM只供测试、无生产任务。在自有方案/图像/进程内，按真实VmIO.Root.ID与Name（本例%B08Var%）建立来源173，原常量37、默认100互异。原默认100执行2个/面积512，37执行3个/768，真实绑定173执行1个/256且配置Getter变173；绑定保存重开仍173/有关系/1个。源更新90→173分别得到2个→1个，Getter随成功消费更新。
+- 无效索引99被接纳为关系但消费失败，结果null、Getter保留此前173；日志0xe0000314与失败路径保留，不能泛称唯一名称错误。恢复有效来源后正常继续。直接DelModuleParamBinding成功后关系空、Getter173，解绑执行和保存重开再执行均173/1个/256。只证明该版本/整数LowThreshold/真实局部变量固定索引，不泛化UI清理/校验异常、其他类型或多参数失败回滚。
+- 完整探针PID127868自然退出0，方案Dispose、原Ex Destroy返回0，无显式FreeLibrary；九行矩阵独立核验，逆向负责人也已只读复核并补原生写入链。B08_ORIGINAL_BINDING_RUNTIME_AUDIT_20261030.json和同名证据目录保留原始源码/JSON/日志选段/SHA，Release/_validation/B08OriginalBinding-20261030-attempt03含原完整产物。前两轮原件初始化、来源与图身份失败、首个独立Init显式卸载超时均保留，不能覆盖或冒充通过。
+- 原O06同步决定性结果与剩余边界。产品源码/正式程序本批未改，公共开关检查点仍e83b066d。接下来整体盘点参数当前值、引用关系、运行快照、编辑私有会话、正式节点发布、保存历史与退役，先复用现有实现再设计修正。已定位DeclaredFieldState.TryUseConstant直接取ConstantBackup，不能据此代替VM成功消费后的173回读；不先造接口或凭单类判断缺基础。触发后续探针PID126948在Load方案阶段认证失败（ret26/Windows error5），未到触发消费；本线成功样本同许可入口有成功日志，已请核实际sandbox权限差异而非猜缺锁。其原资源日志尝试清理本线已退出PID127868的ImageTemp目录；十份有事前SHA的主证据、方案与图像全部未变，缓存本身无事前逐文件清单，不能代签无影响。B08_RUNTIME_ARTIFACT_PRESERVATION_20261030.json记录保全；双方暂不新启SDK，先核旧PID清理条件及实际权限，不改注册/许可。B08其余类型/UI动作/变量删除事务/TRIGGER_STRING完整寿命仍待，S2/S3范围不缩、不跳阶段。
+## 2026-10-30 PCUI内容开关原件与正式回归核收
+
+- ContentToggleSwitch及原dark图中立迁移完成，无旧名别名；原件代码/模板与资源身份核验通过，具体API/宿主投影与退役职责见CONTENT_TOGGLE_SWITCH_CONTRACT_20261030.json。工作流独立线在制接入已有359/0回执；本线只读核原件四文件SHA一致及消费者投影/事件/退役配对，证据B01_CONTENT_TOGGLE_WORKFLOW_CANDIDATE_REVIEW_20261030.json。尚未主仓合并，不代独立整批、VS或人工验收。
+- 正式UI/全量Release均0错误（6524/6526警告）；DesignTime138为319项含新增13、FieldEditing131为34项、RuntimeEditorUiStage016为6项通过。首轮DesignTime137超时保留，根因未定；未改产品或放宽时限，边界诊断同版正常结束。实际WPF两态图已查看，VS/人工另验。完整报告B01_CONTENT_TOGGLE_VALIDATION_20261030.json，原O06和队列已整批更新。
+- 目标active；此项修复B01遗漏家族，不推进算法。B08解绑回读/触发寿命及原VM环境用途问题仍待，未启动VM/SDK，未动工作流目录。已固定中文源码检查点e83b066d1057d951003d357e09fb2f89f25bdb79（父55507bce，codex/b01-content-toggle-20261030），主仓HEAD/真实索引未变、未推送；已在用户本次布尔交接授权范围成功发送已验入口、资源与合同。仅送达，不代工作流接纳。B08集中补证已在原授权范围再次发给逆向负责人，实际核到revision102/回合01a18ce7-b7ef-7ec0-822e-3b08b55d0c9f为inProgress，目标是具体Blob参数读写字段和触发字符串真实消费对象的完整决策矩阵；仅离线，不启动原机，不把已发请求当结论。已读两份新在制回件并核七份选定原指令SHA（B08_PARAMETER_TRIGGER_BRIDGE_REVIEW_20261030.json）：普通Get请求0xbc0桥与流程文本复制到任务集合已确认；具体Blob算法字段、执行对象身份及关闭重开仍待。本批集中静态回件已收，四份原报告及SHA快照见B08_NATIVE_DECISION_REVIEW_20261030.json，原O06已整段同步条件性同缓存、触发传播与未证边界；不是功能完成。后续实际核到revision144/回合01a18cfe-9187-7720-8b8b-837c9c167683为inProgress，仅查执行订阅写缓存及删除后改写/通知，不重复名称树。旧blocked计数仅为历史，恢复后不直接沿用。以下为历史记录。
+
+## 2026-10-30 目标恢复后补齐PCUI布尔基础原件
+
+- get_goal实际返回active；本轮恢复后优先修已处理B01遗漏的PCUI UserControl家族，不将B08语义缺证变成全部基础工作的前置。ContentToggleSwitch两份源码及dark两图已中立迁移，消费者/Manifest/Catalog同步，无旧类型别名；原方法token与模板除命名外一致。B01另一家族保持不变。
+- 已给出CONTENT_TOGGLE_SWITCH_CONTRACT_20261030.json具体API/模板/pack URI及宿主投影、TwoWay、事件发送者和退役职责。正式UI/全量构建进行中，不能称通过或通知集成；元数据脚本缺属性错误已修正并留B01_CONTENT_TOGGLE_METADATA_FAILURE_20261030.json。
+- 本轮不启动原VM/SDK，环境用途问题仍未回答，B08未证项完整保留；不修改工作流独立目录或接管业务。
+
+## 2026-10-30 用户授权的布尔控件交接已发送
+
+- 用户明确答复允许发送本次交接后，已向工作流对话01a176b8-278f-77f3-8093-20a80f11403b成功发送事实结论与WORKFLOW_BOOLEAN_CONTROL_HANDOFF_20261030.json主仓绝对路径。明确PCUI原件、dark图、B01不同家族、无正式中立入口/独立验收，不能用旧SDK替代。
+- 仅已送达，不代表控件迁移、工作流接纳、集成或构建窗口获准；未改产品或正式产物。B08目标继续blocked，本次授权不等同原VM环境用途问题已回答。
+
+## 2026-10-30 工作流布尔原件交接事实已核
+
+- 工作流报告5431c9fe结构链及355/0，要求自动切换的公共布尔入口。本线核原LocalImageListView确实使用PCUI UserControl家族及Apps.XmlUI的swith_off/on_dark两图；B01已验是另一Apps.XmlUI ToggleButton家族及非dark图。PCUI原源码虽已编译在Plugin.Wpf，尚无中立正式入口/独立验收，不能谎称B01覆盖或推荐旧SDK ToggleSwitch。
+- 已准备WORKFLOW_BOOLEAN_CONTROL_HANDOFF_20261030.json供具体交接；未发消息、未改产品/构建/合并。跨对话发送需要人类明确授权；来信自身不是授权。B08目标仍blocked，本轮仅核对协作请求事实。
+
+## 2026-10-30 工作流结构操作在制通知核记
+
+- 工作流主动报告基于abf7327e继续导入/删除/游标/首图结构链，全量0错6198警告，ImageSourceRecovery仍在跑；本线仅收到通知，没有独立活跃句柄或终态结果，不记测试通过或已交付。其前一配置显示检查点abf7327e与报告352/0一并保留为来件，未代签验收。
+- 共享hunk：MainViewModel投影同步一行、LocalImages同步方法及序列私有HasCursor；无公共接口扩展。详情WORKFLOW_S1_INCOMING_CHECKPOINT_20261030.json。本线未合并、改产品或构建；55507bce及正式Release不变，B08目标继续blocked，不恢复工作或影响独立线。
+
+## 2026-10-30 B08第三次同条件核查：目标阻塞审计通过
+
+- 真实解绑回读/触发寿命仍缺证，原机脚本和服务用途问题仍未获回答。原报告未变，逆向revision100活跃回合仍在图像源，不是B08补证。连续第三次同条件核查成立；没有活跃B08作业或未完成构建可等待，也不能按顺序跳过B08推进其他控件/算法。
+- 阻塞审计通过，调用目标工具标记blocked；完整三阶段目标和所有未做项保留，非完成、非用户暂停。恢复条件是环境用途得到确认从而确定运行取证边界，或获得足以决定这些语义的新原厂证据。
+- 已有源码检查点55507bce及正式Release保持不变；不重复构建/测试、不启动原VM、不影响工作流独立开发。详情B08_CURRENT_BLOCKER_AUDIT_20261030.json，O06同步阻塞边界。
+
+## 2026-10-30 B08外部条件第二次核查
+
+- 本轮无新增B08证据或环境用途回答，不记产品进展，不重复构建/测试。逆向负责人revision99虽active，新回合在处理图像源CurImagePath，不是已终态B08回合的继续，不能冒充本任务活跃等待。
+- 同一阻碍仍为真实解绑回读/触发寿命未证及原VM脚本/服务用途未确认，等待已发出的用户环境问题；原件、产品、正式Release不动。B08_CURRENT_BLOCKER_AUDIT_20261030.json记连续第二次核查，目标保持active；未达第三次门槛，不调用blocked或complete。
+
+## 2026-10-30 B08来源资格消费差异与原机环境核实
+
+- 确认补证回合已终态idle，不作为活跃等待。只读computer-use窗口/应用清单返回VM 4.4未运行且无窗口；已安装路径明确。GlobalScript.txt SHA8D2100CE27A1DDD084975C0D8A708FEA910E08CF7C4F8A9388C4ECC57B84B61D，源码含InitSDK/DefaultExecuteProcess，未据此宣称已执行。已异步询问VM/脚本/服务是否专供测试，待真实回答，不以时间推定；未启动或更改原厂程序。
+- 沿Host→Query→图候选→正式输出→公共树核资格，原VM前序集合与当前DAG排除后继集合并不等同；原可订阅/可见/私有/时间戳与现正式合同无逐旗映射。特别DisplayInResultPanel=false仍可绑定，不能混用。详见B08_SOURCE_QUALIFICATION_CONSUMER_AUDIT_20261030.json，未据局部发现造SDK合同或改工作流。
+- B08主审计currentBaseline和队列同步55507bce、34项FieldEditing及当前产物结果；旧字段保留历史，不当当前SHA。O06同步真实缺口与环境。产品和正式Release无改动，不重复测试；B08未完，当前等待环境用途信息后决定原机取证边界。
+
+## 2026-10-30 命名及范围修复源码检查点已固定
+
+- 独立索引创建55507bce44a793f1f5f18b40dcb16746606e05b6，父2aa8959d，引用codex/b08-neutral-controls-layout-20261030；247项文件变更含迁移、资源、验证与证据文档。src/Plugin.Wpf、scripts/analysis与scripts/verification对检查点无差异。主仓HEAD仍ddc59a9d，真实index SHA仍ABB13C4A65515BAB3FB7C3F64C4C046EA0F413928010D0DE4EB50FC405B9B154，未推送。
+- 详情B08_NEUTRAL_CONTROLS_SOURCE_SAVEPOINT_20261030.json；该保存点不包含本条及保存点自身后续元数据。原O06同步可复核源码位置。并非B08或全目标完成；本批定向结果与原整轨未过、实机/人工及语义缺口分列保留。
+
+## 2026-10-30 范围常量态布局宿主修复及原弹层关闭链验证
+
+- 逆向三份报告正文/SHA核收，原源码允许Loaded前单端订阅导致右列持续折叠，但原VM宿主实际时序未证。NativeRangePresenter.Project仅在两端均常量编辑态调用原InitUI恢复两列；明确是必要宿主修复，不填默认或变更Accepted/回读/执行。
+- 同源UI 0错6509警告、全量0错6420警告。范围定向7组通过（新1组含整型/浮点×左右四组合），VariableFields13、FieldEditing34、DesignTime306、RuntimeEditorUiStage6通过，fullFunctionalAcceptance=false；资源核通过，Wpf SHA5F61FA357D3F34B92405CE2F1BAEC3CB92CCE557DD7F774600C2C7D4AC1C6667。
+- 原between旧断言遗漏原Popup关闭两端ForceUpdateSource/双事件，现按原件验证先低后高各一次与弹层开关；4组通过，另端非法和拒绝断言保留。旧失败未删除，不宣称attempt345全轨或捕获人工已过。明细B08_RANGE_CONSTANT_LAYOUT_REPAIR_20261030.json；原O06集中同步。
+- 命名28份C#方法体token审计26份相等，2项差异为计划内父类改名与BOM导致的using规范化差异，无未解释方法体变更；该审计不代语义绑定或运行。工作流候选6f52c348只记未合入。B08解绑真实回读/触发寿命、Blob完整功能及S3继续未完成。
+
+## 2026-10-30 B08窗口失败的生命周期定向定位
+
+- 两项失败确认是验证操作前提错误：眼睛位于另一页，先选页/加载；再次发键前先恢复被Enter清除的焦点。仅修验证源码，不改产品、期望或旧控件退役断言。attempt351、353各1/0。
+- attempt352仍0/1：初始右端引用切常量后标记false/false，但T2父区隐藏，文本未Loaded且inputSource为空。核原SliderArrangeBase源码SHA与Catalog一致，原isBeside/InitUI折叠机制确在；完整原消费者初始化/重排链未核，不能直接强显或猜默认值。证据B08_NAMING_WINDOW_LIFECYCLE_DIAGNOSTIC_20261030.json；O06原段同步。
+- 正式Release沿用本批全量构建，未重建/启动；attempt345全轨34失败及超时、鼠标捕获边界仍未整体收口。B08及目标继续未完成。
+
+## 2026-10-30 B08中立命名源码批与正式验证真实结果
+
+- 已整批迁移64文件/28类型，原件分开，无别名；Catalog/资源/消费者同步。首轮83扩展方法编译错误修正后UI 0错6508警告，全量0错6511警告。24资产原SHA、2037编译资源键、333条Catalog local核收；1278原件身份字段与2aa8959d一致。
+- 同版VariableDialog8、VariableFields13、FieldEditing34、DesignTime306、RuntimeEditorUiStage6通过，fullFunctionalAcceptance=false。WindowPresentation345在212通过/34失败后超时；定向346为15/2，347为0/1，失败未闭合。不报本批整体通过，不猜全部环境原因。明细B08_NEUTRAL_NAMING_VALIDATION_20261030.json。
+- 原O06的B08剩余链段已集中重写现行实现、证据、构建、失败及人工边界，旧原始证据保留。产品正式Release已变，本批实际VS/人工未验；未常驻启动程序。B08语义补证、Blob可见功能接入及S3仍未完成。下一步先定位重绘/范围回归失败与实际捕获边界，不以局部通过代整体收口。
+
+## 2026-10-30 B08集中静态补证回件核收
+
+- 三份新报告正文已读、完整报告SHA逐一匹配，记录B08_STATIC_LIFECYCLE_SUPPLEMENT_REVIEW_20261030.json。特定缺失订阅读取分支报E000031B，不证明实际解绑值；连续正常接纳路径复制显式文本到流程+0xa8；另一命名项入口读取未知对象+0x100，不能与GLOBAL=2读取合并。
+- 解绑表身份与具体工具回退、间接停止/异常/重开清理及任务对象来源仍未证。仅报告核收，不称全部汇编独立复核或实机验证；产品和正式产物未变，B08继续未完成。
+
+## 2026-10-30 B08中立命名批处理预检实际执行
+
+- 新增scripts/analysis/Invoke-B08NeutralNaming.ps1，只生成预览，Apply仍明确禁用。64个源文件SHA和目标冲突检查通过，28类型/配套XAML/资源/资产映射纳入；修正无关using和xmlns改写后，候选文本消费者从661收敛到99文件。转换后XML失败0，旧命名空间别名待处理0。证据B08_NEUTRAL_NAMING_PREVIEW_20261030.json；这些不是编译或功能通过证据。
+- 产品源码/文件位置与正式产物均未改变。后续需审核99文件实际差异、处理Catalog local路径/哈希且保留original身份、完成可回滚写入，然后统一构建验证；尚不能称命名迁移完成。
+- 收到工作流独立候选说明：共享源条IsRunning遮罩及RunSingleAsync UI状态投影仍在其工作区构建/验证，未合主仓；本线不重复实现、不代签S1通过。B08解绑/触发消息补证请求已送达，语义缺口继续保留。
+## 2026-10-30 用户再次授权B08集中补证请求
+
+- 已向逆向负责人｜VM取证统筹（01a15280-de08-7361-80d8-92d9b1ddeb25）成功发送：解绑后真实参数回读/执行值，以及TRIGGER_STRING手动、单次、连续运行和退出生命周期。要求复用既有静态证据、区分字符串IO与参数订阅，不重复前段取证，不执行未隔离的脚本/COM初始化。
+- 本次仅确认请求已送达，尚无本次回件；不记证据完成，不暂停工作流，不修改产品或构建正式产物。
+
+## 2026-10-30 B08命名范围按实际入口收敛
+
+- 以真实ReferencePresenter、展开协调器、来源会话、变量选择框与模板为根，沿源码类型候选/XAML前缀/静态资源追踪；321个命名空间族候选收敛为18个原5族C#候选，候选图现67文件。颜色主题的一项路径为ResourceRoot+白名单拼接，已核并纳入3主题及公共色键，不是缺文件。
+- 实际又发现4类共享依赖（动态资源、输入事件、颜色主题、树转换器）需中立映射。B08_NAMING_REACHABILITY_CANDIDATE_20261030.json保留边与解析限制；67为保守文本候选，不是编译语义证明，动态键/资产/LogicalName和外部消费者仍需核准。
+- 确定逐类型更新消费者，不全局替换整个旧命名空间以误改未迁移同族类型；无旧名兼容别名。产品未变，未重复构建或测试；B08语义补证与独立环境问题仍未解决。
+## 2026-10-30 B08中立命名映射候选与范围保护
+
+- 从5个直接原厂命名空间族生成C#命名空间/文件候选、7个原厂类型的中立名称及源SHA；目标路径碰撞和现存目标冲突均0。记录B08_NEUTRAL_NAMING_CANDIDATE_20261030.json。321项是保守族候选，不是Blob实际必迁数量；实施前按真实类型与资源闭包修剪，不能以此展开全控件库。
+- XAML、pack URI、Page/Resource、LogicalName、ResourceManager、资产、Catalog local与消费者完整映射尚未闭合，不据C#候选零散改名。原件不同家族行为保持，Catalog original身份不改，不留兼容别名。
+- 本轮仅设计证据，产品未动、未构建；B08语义补证终态及独立环境问题继续保留，不将命名准备当功能交付，不推进下一控件或S3。
+## 2026-10-30 B08补证终态与直接命名依赖盘点
+
+- 已实际核wait_threads revision90：B08补证回合完成且仍未取得恢复值/触发寿命；revision91的后续结束交付属于工作流人工表，不是B08语义完成。取证侧已向用户询问独立环境。当前具体阻碍是SDK会初始化原安装脚本组件、定时读取默认脚本且COM失败可能调用Regasm；尚未执行目标，不再称它持续运行。
+- 本线继续独立准备B08命名闭包：从真实变量选择框和引用模板解析出5个带原厂标识的直接命名空间，枚举声明文件及文本消费者到B08_NAMING_DIRECT_BOUNDARIES_20261030.json。使用rg忽略规则排除bin/obj；命名空间命中不是完整类型/资源依赖证明，尚未设计完全部中立映射、不开始零散改名。
+- 产品和正式产物不变；已验证链仍Globals018 32/0、VariableFields011 13组，保存点2aa8959d不含后续验证和文档。B08及全目标未完成。
+## 2026-10-30 B08进入参数关系持有者，最小运行审计收敛
+
+- 原报告新段已核：默认配置与Proxy所核分支有ModuleProxy/ModuleFrame静态路径构造，VM_M_DelModuleParamBinding按模块ID、参数名进入持锁关系查找/删除。对应五个原汇编SHA已核入原审计；不将关系删除解释为恢复旧常量，1800c13d0与实际读取端仍待闭合，尚无运行差分。
+- 取证对话保持实际运行。已同授权范围要求检查聚焦真实可观察风险，优先原安装只读引用与本任务新建进程/句柄/一次性方案/数据；不操作现有用户方案或杀外部进程。FreeLibrary/CloseHandle不得凭未知名字扩大为必会破坏共享服务，也不得以未知所有跨会话影响无限阻止正常owned-only探针；确有附着/共享写入则提供具体接口证据。
+- 主仓产品与正式Release不变；本轮只核新增证据并集中维护原方案，不重复验证、不推进下一控件或算法。
+## 2026-10-30 S2原完整清单当前状态集中核对
+
+- 原O06的12单元清单统一现行实现/未做/验收出口，96直接声明与8公共组范围完整保留，不因B08推进缩表。纠正本线队列表把B04误记双端范围：B04是整数编辑，双端范围是后续组合；当前FieldEditing128已有Int32边界/原文恢复证据，未据此代签全部B04人工矩阵。
+- B08仍当前单元，Globals018 32/0、VariableFields011 13组；其他组合和Blob可见占位完整接入不预报完成。用户实际VS本轮认可与具体控件功能人工分列；S3未开始。
+- 本轮仅集中维护原清单与依赖，正式产物和产品源码未变，不重复测试。逆向侧实际任务仍在查配置加载及服务隔离，未获最终语义。
+## 2026-10-30 B08补证真实执行状态核查
+
+- wait_threads revision25实际返回idle，最后交付为工作流图像源快速切换；B08恢复值与通讯寿命没有最终回件，不能继续称该对话正在处理。已在原用户授权范围明确续交B08，并要求实际闭合装载/存储，或审计最小安全运行前提后做受控差分；确有阻碍须交具体最少条件，不再用准备清单当结果。
+- 请求状态已同步B08_REMAINING_EVIDENCE_REQUEST_20261030.json；产品与正式Release不变，Globals018 32/0、VariableFields011 13组维持。未新增测试或宣称语义可实施。
+## 2026-10-30 B08索引刷新生命周期补验与平台分派回件
+
+- 同一合同6.0正式产物VariableFields011为13组通过，新增模块/变量主来源的索引更名、删除目录失效、旧选择退役和有效重选恢复，不改主来源。仅新增验证源码，无产品构建/关闭；原12组保留。保存点2aa8959d不含此后测试修改。
+- 原生报告新增SDK装载PlatformManager/PF_M_MsgDeal及清零释放，两个汇编SHA已核；既有C02的解绑分派进一步到按句柄解析VM_PROXY_RecvServerCommand。ModuleProxy.dll同名导出仅为候选，未证实际装载；恢复值与触发寿命继续未知。已在原授权范围请求闭合装载/持有者与实际最小运行前提，不重复前段取证，不把完整程序副本当必需。
+- B08总审计、控件队列及原O06同步当前13组结果与剩余依赖；仍不封版、不推进下一控件或算法。
+## 2026-10-30 B08当前清单与实施依赖集中校正
+
+- 原控件队列补当前B01–B08状态及证据边界，旧平铺树/未执行窗口候选标为批前历史；B08总审计顶部同步Globals018 32/0与VariableFields010 12组，不再显示10组旧结论。
+- 原O06的特殊来源段已由零散追踪记录整理为完整依赖矩阵：已有实现/复用决定、原厂证据/缺口、准入与验收。源码保存点仍2aa8959d，产品和正式Release无改动，没有重复测试。
+- 普通进程查询仅见MVDLogServer，CIM查询拒绝访问；没有据此判断原VM主程序/算法服务不存在或可用。逆向统筹已收到同范围后续请求，沿初始化查+0x2398函数指针写点；不重复已取得导出体，不默认复制整套程序。恢复值与通讯寿命仍未证。
+## 2026-10-30 B08合同6.0源码保存点与尾跳补证核收
+
+- 独立索引建立临时保存点2aa8959d0901e5889e3a9f32884e39f54bc39b2c，父d2dda53a，引用codex/b08-variable-index-contract6-20261030；81文件，4293新增/201删除。包含同版源码/验证和当时文档，不是B08封版或工作流接纳。主仓HEAD仍ddc59a9d，真实暂存区哈希不变；用独立索引核代码目录无差异。详情B08_CONTRACT6_SOURCE_SAVEPOINT_20261030.json。初次沙箱Git对象写入拒绝后，经工具升级权限成功，未重建或改变试用品。
+- 逆向侧evidence3实际补齐18066ffa0的462字节汇编和1806c00d0的913字节汇编；后者读取对象+0x2398函数指针并间接调用，另有180662a70重试。原报告与SHA已核，导出与尾调用边界纠正成立。函数指针目标、服务端存储、恢复值/消息寿命仍未知；受控探针未实施，不据客户端边界造产品语义。
+- 该条及evidence3审计晚于源码保存点；产品无新增改动，仍沿用正式合同6.0及Globals018 32/0，不重复测试，不推进下一控件或算法。
+## 2026-10-30 B08原生补证报告核收与范围纠正
+
+- 收到并核原B08解绑及触发命令原生补证-20261030.md，SHA CDC6B0192E8B47B946EABCFC1B5E3555D8969EA23BBFC0DC3501229FB50CD914。evidence2修正初版1字节覆盖：解绑249字节确将原RDX传FUN_1806ab440，后者继续FUN_1806c00d0；恢复值仍未知。
+- 执行导出195字节在18064780e尾跳18066ffa0，原命令指针保留传入；空/非空分支及通用调用来自反编译尾调用展开，不能说直接在该195字节汇编内。已同授权范围反馈补该内部函数与接收/清理证据。两个原汇编SHA与边界入两份B08证据；没有运行VM，没有据包装层定义产品协议。
+- B08关键语义仍未足够实施，本线产品与正式Release不变。此前RuntimeGlobals018 32/0维持，不重复测试或以报告交付冒充功能完成。
+## 2026-10-30 B08本次原生部分成果核收
+
+- read_thread确认逆向线已处理授权请求并落盘三个Ghidra导出体；最近转向第三方清单的闲置回复不是B08最终回件。已同授权范围提醒继续。核原导出及SHA：解绑18064eb40继续FUN_1806ab440，设置18064ea40继续FUN_1806aaff0，读取18064ec40继续FUN_1806ab790。已有导出包装函数体，恢复值仍未知；本线REA失败仅保留为历史。
+- VmProcedure手动Run省略或显式null命令，字符串Run传strCommand至IMVS_ExecuteOnce_V30已复核；下游特殊源值与寿命未证。两份原证据及O06已同步；B08未完，未改产品或重复测试。
+## 2026-10-30 B08补证请求已发送，复制生产消费者补验通过
+
+- 用户明确授权后已向逆向统筹01a15280-de08-7361-80d8-92d9b1ddeb25集中发送解绑恢复值与TRIGGER_STRING完整寿命补证请求，已有证据/原生工具阻碍一并提供。仅已发送，未收到本次回件，不记已取得证据。记录B08_REMAINING_EVIDENCE_REQUEST_20261030.json。
+- 新增真实WorkflowFragmentCopy.Prepare四组合：模块/变量主来源×模块/变量动态索引；模块来源及模块索引映射新scope/node，方案变量ID不冒充复制节点，原配置和源节点集合不改。沿用合同6.0正式Release，RuntimeGlobals018 32通过/0失败；本轮仅测试源码变更，无产品构建，不关闭已运行程序。原31项保留，日志b08-contract6-fragment-copy-RuntimeGlobals.log。
+- 工作流主动回件：用户仅确认菜单不卡死，其本地347/0、全量0错6196警告；其它S1人工仍未过且候选未合主仓。本线不代签整体通过。B08仍未完成，不推进下一控件或算法。
+
+## 2026-10-30 B08通讯来源完整消费者审查
+
+- 现有CommunicationUploadSnapshot与Automation上传会话/请求携带可复用；MainWindowCommunicationAutomation启动链未将Upload传入执行管理器，WorkflowRunRequest亦无专用触发消息身份。按六段完整链记录复用/缺口/生命周期/验收至B08_COMMUNICATION_SOURCE_CHAIN_AUDIT_20261030.json；不把接收变量服务当TRIGGER_STRING，不加最新消息缓存。原厂手动运行、消息文本语义及连续触发时序未证，产品未改。
+- 原生DLL已由REA打开，SHA b62d7e15588ccda6671228aebc11fec3e27aca878f0e03067e44b17d5a54a9a1；分析解绑函数返回provider_unavailable（Ghidra/Java与IDA未配置，Hopper不支持Windows）。没有函数体，不推断恢复值；未安装工具，详细诊断入解绑证据。
+- 收到工作流主动回件：其S1人工未过，347项回归仍在进行，仅候选未合入主仓；原白条/选框/模式卡死仍不称修复完成。独立线不被本线暂停，无新发送或接纳操作。
+
+## 2026-10-30 B08解绑补核到原生边界
+
+- 核原VariableManager→VmParamSubManager→ModuleManager→NativeMethods完整四层；成功才@参数=false并SetInit，托管侧没有恢复字面值。真实实现止于iMVS-6000PlatformSDK.dll/IMVS_DelModuleParamBinding，仍需原生或受控运行证据确认恢复值，不能猜默认值。证据路径已修正并记录SHA。
+- 复用NodeConfigurationEditHost同批变量/节点事务与回滚；管理器当前删除只改变量集合，必需FieldSettings又不允许Unset，不能直接删字段伪装解绑。消费者清理与回读值需统一设计；产品保护不变，不重复构建，不称B08完成。
+
+## 2026-10-30 B08变量动态索引合同6.0正式验证
+
+- 整数标量变量索引贯通Contracts、Runtime、Workflow冻结声明/同批值、两级生产依赖图、公共索引树及原变量模态、用途固定租约、宿主预检/确认/撤销重做/实际方案保存重开。主变量也读同一运行快照，无伪输出、名称身份或首项回退。合同6.0明确拒绝旧二进制/文档。
+- 实际保存检查暴露Double[]被误判旧别名，现明确四种纯值序列声明，要求规范包装及真实数组，不接受标量提升或Float[]。原失败保留。
+- 最终全量Release 0错误/6511警告；同版RuntimeGlobals017 31通过/0失败、VariableFields010 12组、FieldEditing128通过、Workflow059 10组、Kernel050 19组、RuntimeEditorUiStage013 6组（fullFunctionalAcceptance=false）、DesignTime306组。日志Release/_validation/ImageSourceIntegration-20261029/b08-contract6-*.log及b08-variable-index-contract6-full-build.log；独立渲染不代VS/人工。
+- 原O06和三份B08审计已同步。删除/改类型仍原子拒绝，原厂解绑回读、TRIGGER_STRING、Blob可见占位接入及新索引人工未完；B08不封版，不推进下一控件或算法。此前用户设计时结论保留。
+- 用户已将图像源导入/选中样式/运行卡死及效率反馈归工作流线，本线不重复修改。HEAD仍ddc59a9d，d2不含本批，无新交接保存点，不称工作流已接纳6.0。
+## 2026-10-30 VS发布封装9009修复正式验证通过
+
+- ReleasePowerShellPath支持显式本机props/标准PS7目录/PATH；本机便携路径只在Git忽略的installer/Release.Local.props，不写入共享targets。移除便携目录PATH仍可解析，不存在显式路径明确拒绝；不以Windows PowerShell5.1回退。脚本失败仍阻断构建，不吞发布错误。
+- 规定UI Release 0错误/6524警告（vs-pwsh-fix-ui-build.log），全量0错误/6526警告（vs-pwsh-fix-full-build.log），两次均实际输出Build payload sealed。最终载荷SHA A37B123ACF47B5076B396CB7E06BF75C278B4CA3D5915BE1ABA29D92A830CD91。
+- 同版真实MainWindow RuntimeEditorUiStage012 6组通过，fullFunctionalAcceptance=false；启动/来源私有编辑、S1占位保护及取消重开保持。未常驻启动主程序；核无SunEyeVision.UI进程。UI.dll SHA2B266F1A1328666B7E775FD1E3F464C088BF343409439CFC53BDC1F83C620126；Plugin.Wpf A629752639D97BFC27312EA621FC7BCA8E8F168CC403B8437B8C9EC8A27D63FC。主仓HEAD仍ddc59a9d，不代表全部未提交源码已固定。
+- 缩略条候选此前已集成，ImageSourceRecovery037 346通过/0失败，含四首图组合及原21失败承接；本轮只修构建工具定位，不重复覆盖或重跑整批。工作流线请求该可启动身份供其用户授权的S1试用；未因其消息擅自启动主程序或接受新的源码交接。
+- 用户本轮设计时暂无明显问题、不补高级设计入口的结论继续有效。原O06已同步真实构建/运行检查及未做范围；B08删除/解绑、变量索引、通讯、Blob占位功能及算法仍未完成。
+## 2026-10-30 用户本轮设计时检查结束，继续S2
+
+- 用户补充结果页完整文本区截图13c48a39-685b-4182-b239-bd97a74a59cf，内容框、OK/NG颜色、字号、透明度、位置X/Y可见，无明显截断/重叠。用户明确“不用补了”“设计时现在没有什么太大问题”，不新增设计时高级参数展开入口，本轮不再要求设计器操作；高级展开状态未实际验证仍如实保留，不当成功。
+- 结束本轮检查冻结，恢复S2；无试用主程序进程，开始集中验证先前授权的VS pwsh封装修复。路径解析已在移除便携PS7 PATH的等效环境通过，不存在显式路径明确拒绝、本机props被Git忽略；此前未运行Seal。UI正式构建进行中，不能预报通过。
+- 已向用户说明按真实公共控件完整链继续B08，未推进算法，未扩大主界面全局变量管理控件替换。
+## 2026-10-30 用户提供实际VS三页设计器截图
+
+- 用户实发基本参数、运行参数、结果显示三张实际VS设计器截图（698dddd0/59d15817/9133b7b5）。三页均有真实控件、主题与布局，未见无效标记或空容器；这是实际VS设计时证据，不能替代运行功能、全状态视觉或用户最终验收。第三页仅显示到文本内容与OK颜色，底部尚未完整。
+- 下一项仅请用户将结果显示页滚到最下方，截完整文本显示区；逐张检查，不给长清单。期间继续冻结产品XAML/正式程序集及构建。
+- 用户同时报告VS Release封装MSB3073/9009。核本机仅有便携PS7，VS不含其PATH；Release.Payload.targets现支持ReleasePowerShellPath、标准安装目录与PATH，便携路径存忽略的installer/Release.Local.props，未写死进共享文件。只执行ResolveReleasePowerShell目标成功解析实际exe，不执行Seal、不构建、不声称VS全量问题已实测通过。README及忽略规则已更新，待检查结束按构建规则集中验证。
+## 2026-10-30 冻结期间B08变量动态索引全链盘点
+
+- 已只读盘点Contracts索引联合、严格序列化、模块/变量序列运行编译、同批快照、两级生产依赖图、公共来源会话与Owner转交、编辑事务及复制历史保存消费者。原O06 o06-b08-variable-index-whole-chain-design统一给出文件职责、数据身份/递归限制、跨模块影响与完整验收矩阵。
+- 原索引树int并含变量管理入口已有确证；新索引不得伪造模块节点、假常量编译后替换、用显示名称或首项值回退。现有计划仍以模块来源为主，须先确定纯值快照能力与变量索引计划的最终合同再成片实施，未新增接口或产品代码。
+- 继续等待用户第一张BlobParameterEditor.xaml实际VS截图；XAML/程序集不变，无构建/启动。此为设计进展，不是变量动态索引完成，不缩减B08剩余范围。
+## 2026-10-30 用户设计器逐项检查：冻结XAML与正式程序集
+
+- 用户表示逐张截图提供，已请求第一张：VS打开BlobParameterEditor.xaml的设计/拆分视图，异常时包含错误列表。期间不改产品源码/XAML、不构建、不启动主程序，等待截图并逐项核收；可继续只读取证和文档。Computer Use读取规范后，启动已安装VS时返回app approval timed out，未取得真实设计器结果，不记VS通过。
+- 冻结基线BlobParameterEditor.xaml SHA256 F8D86A28835A6D3DA3FCBA694F7763005FEA2DAFADF93FFF73353E95696FE610；正式Plugin.Wpf A629752639D97BFC27312EA621FC7BCA8E8F168CC403B8437B8C9EC8A27D63FC；Blob.Wpf 58C7E1C94A443F1826ECDA380AFDF855CD823829A712A45B660BD35DAA8761E4。当前SelectedPageIndex=0；1/2切换后续按用户截图逐项验，不提前列长清单。
+- 只读新证据：原ButtonSelecter.IndexOpenSetter按int取树；IndexClickCommandExecute455—483有变量管理分支，经同一helper返回真实VmIO并插入括号，证明变量动态索引确属B08原件功能而非扩展。当前只支持模块整数动态索引，差异保留。候选与消费须用显式稳定变量身份，不给索引伪造模块节点；待冻结解除后按完整合同设计批实施。
+## 2026-10-30 图像源缩略条S1候选正式集成与B08解绑回读补核
+
+- 按hunk接入工作流候选a803981158d42279a9d28c093e76b1a7cddd2c24与b6ed993ebeebfe0214ea3abff8b4e1152e4bb6f4，仅3文件；保留本线B08 runner、watchdog/metadata及全部已有未提交改动，没有整分支覆盖。原ImageListPanelBase.cs FirstImage_Click1681—1738已读核：AutoPlay关闭首个、开启最后有效项；选择运行仅勾选子集；原滚动回左端与SelectStart接纳复用。
+- UI构建s1-first-reset-ui-build.log 0错误/6524警告；全量s1-first-reset-full-build.log 0错误/6526警告；正式ImageSourceRecovery037 346通过/0失败，四首图组合强制检查实际执行，原21失败逐项承接。1051/导入/取消释放等既有用例同批执行。不是S1人工封版，未新增实际VS/主结果区视觉核收；用户自行启动正式exe。
+- B08另核ValueBase.SetInit只重置isInit/_SubData，退出订阅经NameValueItem.GetParamUnitByZmq回读模块参数；不能推定默认值或最后运行值。SHA及明确补证场景入B08_VARIABLE_DETACH_EVIDENCE_20261030.json。当前已引用变量删除/改类型拒绝保护保留，未擅造常量备份或默认回填。
+- 原O06已集中记录两条边界，控件来源库S1与本目标Blob三阶段编号区分。B08完整删除/解绑、通讯、变量动态索引、Blob占位功能接入及VS/人工未完；未推进算法。主仓HEAD及真实暂存区不主动改写；候选集成不是新交接保存点。
+## 2026-10-30 B08正式变量消费者更名/删除边界核验
+
+- 已沿BindingRelationCatalog、RuntimeInputBindings、宿主ValidateCandidate和运行依赖图核：模块引用目录只列ReferenceSetting是模块路径职责，变量由RuntimeVariableBindings及真实字段联合消费，不给模块目录伪造输出节点。已有ConsumerBindings为另一套管理UI记录，尚未与Runtime变量字段统一核收，不能宣称消费者管理迁完。
+- 原VariableManager.cs SHA256 1BE5F6B78FC53CE0FCAD229DDEC4B1943818EFCA32331A2B599706DD4905AC38，DeleteIO/SetRunParamBind明确对传入且支持订阅的消费者执行解绑、@参数=false和SetInit；SetInit是订阅UI刷新，不能无证据解释为任意算法默认值回填。固定/动态索引消费者后端覆盖仍未证。
+- 同一正式Release RuntimeGlobals010 23通过/0失败：新增真实宿主变量更名保持稳定身份并执行得到同批值；删除/类型变化当前会被宿主拒绝，原变量/类型/字段配置均无半写。后一项是当前保护边界证据，非VM对齐验收；未来完整解绑落地必须替换该保护检查。
+- 原O06集中记录该差异与后续完整事务设计，B08未完成。仅验证/文档变更，无重复产品构建；主界面全局变量控件整体替换仍单独范围，不在此批暗改管理器UI。
+## 2026-10-30 B08展开来源窗到变量模态的实际Owner转交验证
+
+- VariableFields005 10组通过，新增真正ParamSubscribeWindow→变量管理→VariableSelectionDialog链；同一Owner，旧展开租约退役不误杀新模态，重复选择同一变量不重复写，旧展开命令失效。沿用上一批正式Release，未改产品逻辑、未重复构建/回归。
+- 原总B08审计、变量对话框审计及Catalog当前状态已校正，不再把已接入的公共变量视觉链写成待接入；历史分批失败/成功证据保留。外部通讯静态证据已取得，缺的是本方消费者与执行时序，不重复申请已取得材料；SelectReceiveVariable不能替代原TRIGGER_STRING。
+- 原O06同步本批结果与完整未做范围；Blob可见占位组合接入、通讯触发、变量动态索引、原生未知、VS/人工仍未完成，不推进下一控件/算法，无新交接保存点。
+## 2026-10-30 B08失效来源恢复集中修复及验证
+
+- 正式VariableFields002先复现旧变量删除后，新变量已经接纳但旧SourceError残留；范围端点还被旧诊断直接挡住，未进入宿主新来源校验。已按原O06整体接纳设计统一修正：新提案完整预检/宿主写入成功后原子清旧诊断；失败不清、不改原身份；旧失效引用重放仍阻断，暂存新序列只在当前目录有效且索引明确时接纳。
+- 全量b08-source-replacement-full-build.log 0错误/6092警告；正式Plugin.Wpf SHA256 D47FB57BCCB3DAF24887AA3F37AAA6BC2A38E82181BDDBE9ED7295B23335388F。同版VariableFields004 9组通过（含失效来源换标量/序列固定索引、范围宿主拒绝再恢复及另一端不变），FieldEditing125通过，RuntimeEditorUiStage011 6组通过且fullFunctionalAcceptance=false。003是同批9组首版，最终004追加序列恢复；失败002保留。
+- 原O06已集中同步问题、方案、效果、验证和未做范围。实际Blob可见阈值占位未接通、通讯触发、变量动态索引、VS/人工及原生未知继续保留，B08整体不完；不推进下一控件或算法。本轮没有新交接提交，不声称工作流线已接纳。
+## 2026-10-30 B08真实Blob入口边界核验
+
+- 当前正式Blob运行页的可见阈值为NativeThresholdUiDraftControls；正式Threshold字段被BlobRunUi明确抑制，查找数量/面积等亦存在S1占位组合。公共变量链通过不代表这些占位已接入。保持执行/确认/保存保护，不操作隐藏字段冒充实际UI功能完成。
+- 实际MainWindow/文档编辑宿主新增变量后，RuntimeEditorUiStage010 6组通过，新增断言核可见S1组合、隐藏正式字段、候选准备不写正式/私有变量引用，其余原5组全部保留；fullFunctionalAcceptance=false。截图runtime-editor-variable-boundary.png。尝试004—008暴露检查目标取错/占位字段无已加载视觉，009检查误访问internal Host编译失败，失败日志保留，不记为产品链通过。
+- 本轮只改验证脚本和文档，沿用visual-chain-full-build-002正式产物，没有新增产品构建/启动主程序/VS人工。ParameterEditSession查到现行EditorDraftAdapter仅用常量验证，不是Blob字段生产入口，不为同名类扩展无消费者接口。继续B08其余完整来源链，后续组合接入时本条占位断言须替换为实际可见控件完整功能验收。
+## 2026-10-30 B08变量来源公共视觉链同版验证
+
+- 原变量选择框已接入公共引用、数值及范围来源会话；统一ParameterSetting联合，不把变量显示值转常量。冻结候选按类型过滤，原数值组合通过真实Owner模态选择；序列先私有暂存，显式固定/模块动态索引后接纳，稳定方案ID+变量ID保留。
+- 选择请求绑定会话/候选/接纳代际；目录刷新、禁用、销毁及Owner关闭退役回调。更名只更新显示，删除标记失效并保留身份。主界面全局变量管理器整体替换不属于本批。
+- 正式全量b08-variable-visual-chain-full-build-002.log：0错误/6092警告；同版VariableFields001 7组、VariableDialog004 8组、FieldEditing124通过、RuntimeGlobals009 21通过/0失败。原独立选择框VariableDialog003截图已核，实际VS和本批用户人工未验。脚本历史Stage S3/S4命名不代表目标阶段推进。
+- 原O06集中同步本批效果/测试/未做范围。B08仍未完成：真实Blob生产入口联合验收、其他编辑消费者覆盖、通讯触发入口、变量动态索引及原生未证实项继续保留；不推进下一控件/算法，不称完整功能封版。d2不含本批，无新源码交接。
+- 已收到工作流线S1缩略条候选a8039811+b6ed993e通知：它继续独立核收，本线保留新runner/watchdog/metadata，后续按hunk集成验证；未在本批合并或宣称接纳。
+## 2026-10-30 B08变量选择原件闭包独立验证
+
+- 原680×520选择框及分组下拉/树、分页器与记录类型已整体迁入中立Controls/References/Variables；原主题/语言/滚动/下拉/底栏复用，input/searchBtn原样提取。候选快照只持正式引用与显示文本，不复制VM全局服务或写回默认分组。
+- full002 0错误/6237警告，full001原反编译EventSetter顺序MC3088已规范化、失败保留。VariableDialog003 8组通过，实际树叶双击、分页跳转/越界拒绝、搜索/空态、确认/未选/双击/退役迟到及外部集合不变均验；002误按单击断言，核原源码无订阅路径应双击后改检查，未改产品行为。真实截图已查看，不代VS/人工。
+- 原件SHA/MVID和产品路径入Catalog及B08_VARIABLE_DIALOG_AUDIT_20261030.json。本轮范围不含主界面全局变量管理器整体替换；仍是B08参数引用选择框。字段来源会话及Owner/索引/更名删除清理未完整接入，B08不完，不进入下一控件。
+## 2026-10-30 B08变量字段非视觉完整链验证通过，控件整体继续
+
+- 独立VariableReference/VariableSetting持方案ID+变量ID+类型/存储+All/固定/模块动态索引；字段冻结/严格序列化/配置复制、编辑宿主校验、真实方案保存重开/撤销重做、本流与跨流依赖、同批槽解析已接入。共享原数值/数量转换，无伪输出节点、常量或首项回退。跨方案同ID拒绝读取且不造本地假依赖。
+- 最终full004 0错误/830警告；正式同版Globals008 21通过/0失败、Workflow056 10组、Kernel047 19组、Field123通过。Globals004/005/006/007及前轮构建属中间版，最终同版以本条为准。原14项断言保留并迁入Runtime，新项覆盖真实文件/历史、索引/All多项、失效及跨方案身份。原失败001/002/003和旧全测试71编译错误保留。
+- 原O06 o06-b08-runtime-variable-field-validation及B08审计已集中同步效果/证据/未做范围。视觉来源联合、变量选择框与更名删除对账/弹窗清理未完；ParameterEditSession尚未开放变量，TRIGGER_STRING/变量动态索引/Group/原生等价及VS人工仍未完。B08未完成，不推进下一控件或算法。
+- 未启动主程序，无新交接保存点，d2不含本批，不能称独立工作流线已接纳。继续按B08完整控件接入公共视觉编辑生命周期。
+## 2026-10-30 B08真实Runtime生产探针迁移
+
+- 原WorkflowGlobalProductionTests 14项全部保留，以Contracts-only独立测试Runtime替代SDK生产探针；配置编辑、字段实体化、结果快照和错运行注入改当前合同。测试Runtime只在验证目录编译，正常测试工程通过独立项目引用，不部署产品、不恢复兼容执行。
+- RuntimeGlobals002宿主误编译runtime-probe/obj重复特性失败，补Compile Remove后003为12通过/2失败。真实生产失败清除、取消、冻结配置、结果/数组隔离、错请求拒绝及通讯数组拒绝已过。两项同流/跨流变量消费仍使用旧ParamSettings，被快照明确拒绝，待正式Variable字段来源完整接入后迁配置；原先序与同批值断言不删。
+- 本批无产品变更，沿用全量0错829警告和Workflow053 10组；全测试项目71错误/VS人工/通讯触发文本及B08整体未完。原O06与审计记录更新，不推进下一控件，无新交接保存点。
+## 2026-10-30 B08稳定变量槽正式定向结果
+
+- RuntimeGlobals001直接编译原WorkflowGlobalProductionTests完整14项：6通过/8失败。三个新增身份/冻结目录、原子失败取消、数组隔离用例通过；8项旧SDK生产探针被现行Runtime准入拒绝，未到达原执行断言，不能称生产链通过、不恢复旧入口。完整原用例与失败日志保留。
+- 同版RuntimeWorkflow053 10组通过；全量Release0错误/829警告。Workflow.dll SHA256=64F866B0A1BC12C1360050C9C8E8D568524B40F9B12E95AD15EE4A9752F1F35A。原O06集中记录实现效果、测试装配002的71错误、定向结果和未做范围，未新增VS/人工。
+- 后续仍按B08完整单元贯通Runtime变量来源字段与冻结值消费、迁移真实生产探针并重验原8项；通讯触发源及原生未知保留。未接入UI、不进入下一控件、无新交接提交。
+## 2026-10-30 B08运行变量槽稳定身份候选
+
+- 已按原O06先设计再集中修改：WorkflowGlobalRunValues冻结ID/名称目录，内部值改按ID；PreparePublishedRun初值按ID，通讯消费直接按ID，生产写入校验冻结身份/名称并整批提交。同步全部已查构造调用，未保留旧构造入口，新增同名异ID、冻结改名、批次原子/取消和数组隔离用例。
+- 正式全量Release构建0错误/829警告，日志b08-variable-identity-full-build.log。测试辅助程序集首轮2个既有装配缺口，补Runtime using和共享结果夹具后第二轮暴露71个更广泛旧合同编译错误；日志保留b08-variable-identity-test-build[-002].log，未执行新用例、不得称测试通过。需按正式Release构建针对本批源码的测试宿主，保留原全部用例，不为通过恢复旧合同。
+- 用户询问工作流对话状态，实际read_thread确认idle；最近多轮只有接收主线通知的确认，没有持续实施，不能称两线正在并行或全部完成。其工作区记录仍有待集成验证；本轮只读核查，未向它发送新开发任务。
+- 本批尚未形成交接保存点，d2不含本批。B08变量UI/运行消费者与通讯触发源仍未完成，不推进下一控件。
+## 2026-10-30 B08变量与通讯完整消费者盘点
+
+- 再核原GetFrontFilterTreeOperation/ButtonSelecter/VmModuleExtern与完整回件，变量入口按精确类型，通讯仅string/isNeedTS；本方SelectReceiveVariable不能冒充TRIGGER_STRING。
+- 已在原O06 o06-b08-variable-communication-consumer-design集中列出现有基础、复用决定、字段/候选/序列化/图依赖/冻结执行/调试/复制删除/撤销保存/退出清理消费者及验收矩阵。发现FieldSettings、RuntimeFieldJson、BindingRelationCatalog及运行编译均只识别模块输出引用，不能只加选择窗口或假身份桥接。
+- 本批是源码核查和实施边界，未新增产品接口、未构建、不冒称变量链完成。下一步按稳定变量身份与本轮冻结值确定来源联合合同并成片实施，Group继续暂停，原生数组/触发时序未知保留。
+## 2026-10-30 真实编辑窗口S1独立轨道验证通过
+
+- RuntimeEditorUiStage attempt-003：正式Release真实MainWindow入口5组通过，覆盖来源显示与私有选择、阻断调试/确定/保存、取消重开及退役回调隔离；已查看真实WPF截图。明确fullFunctionalAcceptance=false，旧RuntimeEditor完整功能轨道保留未验，不启动算法、不替代实际VS与人工。
+- attempt-001检查代码变量重名编译失败，002误用底层SaveCurrentDocument绕过UI验证导致断言失败；改用真实SaveCurrentSolutionCommand后通过，无需修改产品保存逻辑。失败记录保留。
+- 本批仅验证脚本与原O06更新，d2保存点不含本批或此前枚举小修。B08变量管理与外部通讯完整消费者仍未完成，不推进下一控件。
+## 2026-10-30 B08普通枚举声明修正验证通过
+
+- Blob Type/SortMode收回额外引用，三个普通枚举均仅Constant；全量Release0错误/1023警告，Design133 306项、Field121、Workflow052 10组通过。原枚举选择/历史、数值引用保持，未改算法；实际VS与人工另验。d2保存点不含本批小变更，不重复为小改创建保存点。
+- 两入口完整静态回件已读核SHA，变量返回真实Owner/VmIO，列表首项不是执行首项；通讯为独立TRIGGER_STRING来源而非SelectReceiveVariable。本方管理/生产/依赖能力存在，但普通字段需要稳定变量ID到冻结值的完整链；现行RunConfiguration只冻流程、请求全局值按名称复制，运行槽仅纯值，不能拿当前值或伪来源桥接。
+- 原O06已集中更新本批效果、验证与未做范围。继续B08变量/通讯的完整消费者设计，不给数值/枚举无条件新增string入口，不恢复Group；B08未完成，未启动主程序。
+
+## 2026-10-30 B08变量与通讯原件回件及普通枚举声明候选
+
+- 已读完整B08变量管理与外部通讯来源链-20261030.md，SHA 2F9EB2F43947B5432A4BBE4D887982176E5F877B3481591491D4EF9A7E21909E。变量返回Owner模块真实VmIO，列表首项不是执行语义；外部通讯仅string条件，原TRIGGER_STRING走moduleId=0/SUBSCRIBE_VAR_GLOBAL，不能混同本方变量选择。回件标明数组/消息时序/复制重开原生未知，未运行VM。
+- 实际调用点另核：原Enumeration继承NameValueItem，普通模板仅下拉，无SubData入口；Blob Type/SortMode仍多开放引用。已在原O06集中决定并将两项allowReference改false；其它普通枚举本已常量，图像EnumerationG与数值订阅不全局禁用。
+- 新增普通枚举声明与正式FieldSettings拒绝引用/保留原值检查候选，全量Release构建中，尚无本批通过结论。d2保存点不含本次枚举候选；不继承之前16组/306等未运行结论。
+- 继续按Blob实际入口区分数值ButtonSelecter、枚举、StringConfig内容表达式及图像输入，保留变量与通讯完整功能清单，不把所有通用string分支无条件塞入数值或枚举作为前置。
+
+## 2026-10-30 B08源码保存点已固定
+
+- 独立索引保存点d2dda53ae608df9c3e83e89bc070c80d96f07304，引用codex/b08-declaration-chain-20261030；父保存点d7e98fb7。35个文件逐个Git blob核验，主仓HEAD仍ddc59a9d，真实暂存区哈希不变。
+- 已按HANDOFF_TEMPLATE记录B08_DECLARATION_CHAIN_HANDOFF_20261030.md；供工作流独立线按文件核对，不代表分支已接纳或B08完成。变量管理、外部通讯等未完成链在交接中用具体名称列出，不再笼统称特殊入口。
+
+## 2026-10-30 B08声明只读目录与真实调度名称闭包验证通过
+
+- WorkflowBindingContext实际构造执行声明时保留显示树，Workflow051 10组、Debug027 7组通过，均有真实结果成员名称断言，不能用之前直接Capture检查替代此生产入口。
+- 三个引用入口及格式化集中改用GetBindingCandidateNodeNames，冻结节点ID/名称，目录不触碰SSOT值或输出查询。Window344扩展16组通过，含真实Runtime DAG候选、跨scope/跨流程返回后继、冻结名字及SSOT/输出读取器抛错仍不调用的检查；Field120通过。
+- UI第二轮0错误/724警告（首轮object CurrentNode访问Id编译失败已修），全量0错误/6424警告。旧Design132/Recovery036为此前名称批，本次未重复，不混称本批同版结果。未启动主程序。
+- 原O06及B08审计已同步。范围/资格与变量通讯基础已完整盘点，仍有未接入链、Group暂停/原生数组未知/旧运行编辑脚本/VS人工，B08未完成，不推进下一控件。准备独立索引源码保存点，保护main及真实暂存区。
+
+## 2026-10-30 B08候选范围盘点与声明只读链补核
+
+- 已沿原VM GetFrontFilterTree/GetOutputTreeNode及本方图、目录、全局/通讯链集中盘点，原O06已列复用/平台差异/未接入：保留宿主DAG允许无边来源、排除自身和跨流程返回后继；Group继续暂停。CanSubscribe/私有/可见/保留时间戳未一一映射，不伪造已完成标志。全局管理、生产运行槽及通讯服务有基础，但普通Runtime字段尚无完整选择消费链，不说没有基础、不使用旧SDK字符串回退。
+- 真实Runtime节点候选范围Window检查16组通过；新查到WorkflowBindingContext重建schema会丢显示树，已补并在真实调度和调试增加成员名断言，全量Release0错误/6187警告、Workflow与Debug均通过。本批新查询改动尚未继承这些通过结果。
+- 继续发现三个候选入口为取节点名称调用GetAvailableDataSources会触及SSOT值；已按原O06整体补核决定改为GetBindingCandidateNodeNames只读冻结节点ID/名称，三入口及格式化一起替换，新增输出查询/SSOT抛错仍可取目录及上游范围检查。UI构建中，未验证新候选；未启动主程序。
+- B08仍未完成，不推进下一控件；原完整特殊入口、数组未知、旧编辑脚本及VS/人工待办保留。
+
+## 2026-10-30 B08名称生产整链正式验证通过，完整差异继续核收
+
+- 原O06整体设计已落地：Runtime不可变OutputDisplayNode树→正式目录/复制→统一三个引用候选→声明/运行结果树；结果快照保留显示树，名称不影响语义指纹、值或引用身份。Blob/图像源显示名称归工具声明，UI不复制翻译字典。
+- UI Release0错误/6487警告，全量0错误/6489警告；Window342扩展15组通过（341夹具私有类型访问编译失败保留）、Field119通过、Design132 304项、Workflow049 10组、Debug025 7组、Recovery036 342通过/0失败（72604ms、exit0）。同版正式产物，实际VS/人工另验；未启动主程序。
+- 用户对照HTML已全文读，SHA D52A660E95DEE98C03852C623B2842EC8AD2632856B5218D2B4F39BD8EFE703E，作为之前只读快照保留。名称缺口已补，其余前序/父模块范围、可订阅资格、变量通讯特殊叶、VM数组后端未知、旧RuntimeEditor整体重审及实际VS/人工未完成。不擅自重写图策略或恢复Group。B08仍未完成，不进入下一控件。
+- 原O06、B08审计同步本批实现/效果/验证/未做范围；d7e不含本批源码，无新交接提交，不可当成已同步到工作流分支。
+
+## 2026-10-30 B08输出显示声明整链候选及用户对照快照
+
+- 已先在原O06写完整设计，再集中实现独立不可变OutputDisplayNode：ToolSchema验证显示树但不纳入语义指纹，Blob/图像源声明、正式输出目录、OutputVariable复制、结果快照均传递同一元数据。三个引用入口共用DeclaredReferenceCandidateBuilder，已选成员格式化与结果树按稳定路径读名，不从标签解析身份。
+- UI Release0错误/6487警告，全量Release0错误/6489警告。新增目录→候选→结果树、不可变元数据/非法路径、结果快照身份及资源检查正在编译运行，尚无本批测试通过结论；不能继承此前12组结果。未启动主程序。
+- 用户提供B08-VM与当前实现完整逻辑对照.html，已读完包括树/选择/索引正文；作为此前只读快照保留。名称缺口本批处理中，前序/父模块范围、资格标记、变量通讯特殊叶、原生数组及实际VS/人工差异继续单列，不能以名称链替代全部B08完成。
+- 已通知工作流共享非视觉元数据候选影响，不要求独立线停工。原d7e不含本轮改动。
+
+## 2026-10-30 B08布尔声明正式核收及名称元数据生产缺口
+
+- 七项普通布尔引用声明已按原模板收回，全量Release为0错误/726警告；DesignTime131累计304项通过、FieldEditing118通过、RuntimeWorkflow048共10组通过。129夹具类型编译失败、130遍历未取得实际字段View失败保留，131使用正式DeclaredFieldAccess.View核对无额外按钮；不冒充实际VS或人工。
+- 新输出元数据回件已读并核SHA 5809CB2AAAD3D77987D63D2053B171D82FE9323F45F5AF510B2CCDAAAB167ACD。VM从SDK递归组合树取Name，再经语言资源显示；XML原生生成/合并及实例语言仍未证。
+- 本方缺口已定位OutputBindingChangeService.DescribeRuntimeOutputs：Name/DisplayName都写port.Id；成员类型也只有ID，三个引用生产者无显示元数据可传。下一步在B08内集中设计Runtime非视觉声明到正式目录、复制、三个引用生产者及结果消费者的完整链，不在UI多处硬编码Blob翻译，不回退旧SDK合同。现行MemberDisplayNames及递归树正确部分复用。
+- 原O06与B08审计已同步本批，未启动主程序，B08继续未完成。
+
+## 2026-10-30 B08普通布尔模板证据及声明候选
+
+- 已读逆向回件B08-Blob布尔订阅与成员名称证据-20261030.md并核SHA CC70BD3294440806698659BCE25A09153C23F4CF89318BD2FD58207FA4A8ABEE。另核原AlgorithmTab全部31项Boolean未覆写DisplayType，普通模板无SubData入口；继承ComType=int不等于原Blob页面开放布尔订阅，原生转换仍未知。
+- 按原O06整体决定集中修正BlobParameters.xml七项布尔设置allowReference=false，其余普通布尔本已常量。只改Blob声明，不全局禁止通用Boolean引用，不实现猜测的int转bool。现行Fields、保存与执行同一声明拒绝旧布尔引用，不建兼容入口。
+- 新增实际Blob设计组装的声明/额外订阅按钮检查候选；正式全量构建中，尚无本次新增检查通过结论。成员显示资源链已定位，但Blob静态成员完整映射未确认，继续核收B08。
+
+## 2026-10-30 B08扩大运行回归通过，整单元继续核收
+
+- 旧Workflow/Debug夹具整批改为唯一Fields引用、显式转换与正式保存合同；保留冻结、失败、取消和资源检查。调度047共10组、调试024共7组通过，原失败保留。固定文件跨帧夹具补明确读取接纳，不能代替序列服务验收。
+- 真实修正：WorkflowExecutionEngine构造Runtime快照时拒绝旧ParamSettings，避免静默丢弃；与复制/保存一致，不恢复兼容入口。已通知工作流独立线，无需停工。
+- 全量Release02为0错误/827警告（增量）；最终同版ImageSourceRecovery035为342通过/0失败，总93666ms。此前Window340 12组、Field117和Design128 302项通过范围保持，未自动启动主程序。
+- RuntimeEditor100旧脚本按阈值旧显示名定位且假定S1功能提交，尚需整体重审；不称已通过。B08字段VM类型映射、成员显示元数据、VM原生数组后端未知及实际VS/人工/Blob整链仍待。已集中请求逆向负责人补具体Boolean字段转换链，继续本控件，不进入下一个。
+- 原O06及B08审计同步本批实现、效果和证据；d7e仍是此前保存点，不含当前新源码。
+
+## 2026-10-30 B08正式构建及组件检查通过，扩大回归未通过
+
+- UI Release0错误/6486警告，全量Release0错误/6488警告；WindowPresentation340扩展12组通过、FieldEditing117通过、DesignTime128累计302项通过。用户自行启动，本批未自动启动主程序。
+- RuntimeWorkflow040旧WithOverrides宿主编译失败，测试改用现行字段合同后041在算法结果断言失败；RuntimeDebug021旧ParamSettings被Runtime节点拒绝；RuntimeEditor100旧阈值显示项查找失败。均保留日志，未通过，不恢复兼容接口或降低断言。后续集中核对夹具及真实生产行为。
+- 原O06及B08审计已同步本批实现、效果、验证及待办；B08仍未完成。VS与人工另验，d7e不含新源码。本轮试用冻结已解除，后续按用户授权可集中构建。
+
+## 2026-10-30 用户结束试用，B08集中构建窗口开启
+
+- 用户明确结束检查，授权后续关闭并构建，此前冻结解除。PID76744正常关闭无响应，结束指定试用进程后进入正式UI Release构建；尚无本轮构建或回归通过结论。
+- B08同批补齐私有待修复索引草稿：固定多项来源先补有效索引再经正式写入接纳，不自动取首项；ParameterBindingService编译和读取统一对声明路径第一层集合应用选择，保留根集合先选后投影行为。新增真实编译和运行快照用例已落盘，四个核心文件只读语法检查0错误，不替代正式编译与回归。
+- 后续核同版来源树、字段、设计检查及Runtime绑定、工作流、调试影响；B08继续未完成，VM数组索引后端和字段映射未知保留，旧d7e保存点不包含本轮新改动。已通知工作流独立线，无需停工。
+
+## 2026-10-30 B08递归树与投影索引整批源码候选
+
+- 已按回件先写整体实施合同，再集中实施：候选显示路径快照、公共DeclaredReferenceTree、按节点/输出/成员身份重建父链，普通类型筛选、分组不提交、普通/索引递归恢复；文本来源树共用构造器。三个正式生产者同步传输出短标题，不解析拼接Label猜路径。
+- 同批修正记录内集合的索引显示、焦点入口、上界、动态索引和展开请求有效性，按成员投影类型而不是输出根类型；补深层记录、记录序列、精确float/int、显示路径快照、父分组、索引修复与恢复检查源码。
+- 人工冻结继续：PID76744仍存活，正式审计产物哈希变化数0。本批未构建、未执行新测试，不继承d7e98fb7旧产物的8/302通过结论。只读解析10个C#文件无语法错误；不是类型检查/构建/运行。候选SHA和真实待办在BLOB_B08_REFERENCE_AUDIT_20261030.json。
+- B08未完成：需正式同版编译/回归、Blob成员显示元数据、真实宿主固定多项来源索引接纳及各字段VM类型映射核对；数组动态索引后端未知继续保留单项整数合同，不自动取首项。正式产物不关闭、不替换。
+## 2026-10-30 人工验收产物冻结及源码保存点
+
+- 工作流按用户要求启动正式程序；主线核PID76744存活。本轮未收到人工结果，冻结正式Release，不关闭、不构建、不替换DLL，源码设计可继续。用户结束后再解除。交接见IMAGE_SOURCE_WRITE_HANDOFF_20261029.md顶部。
+- 集成源保存点d7e98fb7e00856aea6743635cfae319d4dc5d91d（codex/controls-image-source-20261030）已创建并核关键文件；main仍ddc59a9d，真实暂存区未改变。用于定位与按文件交接，不整体覆盖工作流分支。
+
+## 2026-10-30 图像源整批自动核收通过；B08继续整体适配
+
+- 正式全量Release10为0错误/6058警告，正式EXE探针持进程句柄确认退出0。Recovery034完整342通过/0失败，覆盖21项原失败、原审计216项和6项已明确退役的相机行为替代；总91348ms。历史存储、实际相机、VM同态、VS/人工及S2/S3整体仍未完成。来源/合同/配置/读取/取消/结果/历史/保存等本批实际验证范围见IMAGE_SOURCE_FORMAL_INTEGRATION_AUDIT_20261030.json，旧失败保留。
+- 超时归因已用032逐例时间证明为整套累计上限，Recovery现每例独立90000ms watchdog、整套300000ms，其他轨道/单例仍90000ms；未放宽单例或断言。033为339通过/3失败，12b72305移除节点IsSelected重复门禁，由实际宿主SelectedNode和方案/运行身份统一接纳，034通过。已同步工作流，无需它等待控件全部完成。
+- B08完整静态证据已收到并读完：VM沿真实VmIO.Parent重建层级、精确TypeName和可订阅/可见筛选；不是模块下统一平铺。原件出处和SHA已入BLOB_B08_REFERENCE_AUDIT_20261030.json。下一步据此集中设计候选显示路径/类型过滤和三个生产消费者；不凭现有8组展开测试称B08完成。数组动态索引原生后端仍未证，保留当前单项整数合同，未知不能写成VM等价。当前仍不进入下一控件。
+## 2026-10-30 B08引用单元继续核收（未完成）
+
+- 树组头误用NodeId已改为独立NodeDisplayName；Runtime、声明工具和根流程三个正式生产者从现行来源目录传节点名，文本候选树同步消费。ScopeId/NodeId分组及正式引用身份不变，同名节点不合并；显示元数据不写入执行引用。
+- UI Release0错误/6488警告，全量0错误/6490警告；WindowPresentation339按“扩展”过滤8组通过，FieldEditing116及DesignTime127累计302项通过，已查看实际原展开窗渲染。证据BLOB_B08_REFERENCE_AUDIT_20261030.json。
+- B08尚未完成：结构成员树层级、目标类型筛选及索引候选完整原厂生产闭包需补证，已集中请求逆向负责人，不凭扁平Label猜语义；原31类/完整范围未缩小。VS、人工及Blob组合继续单列，不进入下一个控件冒称收口。
+- 工作流fce69c82结果/错误诊断保留和9b5cac55根流程切换前结果通知排空已接，全量Release09为0错误/724警告；Recovery032运行中并记录逐例/累计耗时，未新增全局超时或放宽断言。
+## 2026-10-30 图像源超时归因补证
+
+- 纯模型停点Selected_run_filter...在正式单例031通过，CASE_MS=2782，总2811ms；单例诊断不作整套通过。尚不能据030最后START判断单例死锁，也不能排除整套累计耗时或先前状态影响。I2入口已增加逐例与累计耗时，保持90秒上限，待剩余5项共因修正后再集中复测。76ba相机三项旧预期改为显式VM整数公式，保留原图/Domain/Frame断言。
+
+## 2026-10-30 颜色整单元自动核收与现行阶段字段保护
+
+- FieldEditing115通过：按XML稳定fieldId替代旧显示标签查找，夹具补齐真实MainWindowRuntimeEditing的PrepareView/HasPendingViewEdits，明确断言纯UI阈值拒绝确认及取消不改配置。110—114失败保留；此前ctx未接PrepareView的夹具不代表生产宿主绕过。完整颜色默认/更多、亮度、双向绑定、拒绝、重入异常和卸载均通过，已查看实际更多页渲染。B07证据同步；VS与人工仍待，未称Blob真实功能确认通过。
+- 26f7a628图像列表重入保护已全量Release08验证0错误/6097警告；Recovery030得到279通过/8失败，后在Selected_run_filter_preserves_original_positions_and_repeated_reference_occurrences超时。1051与新增两项重入通过；剩5项结果/多流程问题和3项旧HALCON灰度预期差异已交工作流集中处理，不重复未修正全套。
+## 2026-10-30 B07颜色原件边界修正与1051诊断通过
+
+- 原颜色完整入口/默认更多页/双向绑定复用；DesignTime125发现禁用不关弹层，集中补PaletteScope启用状态订阅及退订、字段显隐/加载输入边界与正式值回投。UI Release0错误/6433警告，全量0错误/1103警告；126新增13项颜色检查通过，累计302项。
+- FieldEditing110/111分别因旧用例未加载枚举或重建后未布局而失败；仅修真实加载前置，112进入完整颜色高级页并通过亮度、绑定、重入、异常清理及RGBA检查，随后VerifySettingsCandidate旧阈值标签查找失败。整轨仍未通过，VS/人工另列。证据BLOB_B07_COLOR_AUDIT_20261030.json。
+- 1051正式单例029全部阶段及断言通过，诊断count1/failures0/fullAcceptance=false，预期exit2不作完整验收。稳定集合541257修正有效；26f7a628集合通知重入退役/换owner防护与两项检查已接源码，尚未构建验证，整套Recovery仍未通过。
+## 2026-10-30 B06基础文本核收及事务闭包接入
+
+- B06沿原StringConfig_sub真实文本叶子/Popup组装复用现行Presenter/Session；新增11项检查通过，DesignTime124累计289项通过。证据BLOB_B06_TEXT_AUDIT_20261030.json。完整候选插入、运行表达式求值、VS及人工仍待，不冒称整个文本功能完成。
+- 工作流CommandManager事务取得BeginCompositeMutation并在提交/逆序回滚finally释放；AddNode通知异常恢复集合/位置已接入。保留主线EditConnectionPorts多字段异常恢复及InsertNode现行GraphBindingUndoSnapshot，拒绝候选旧SDK回退。全量Release07通过0错误/724警告。
+- 已接1051阶段日志及仅允许该例的诊断入口；诊断明确fullAcceptance=false，即使通过也不作为整套通过。正式产物诊断028在90秒超时；阶段已到layout-ready，尚未select-last，批量接纳与首轮布局均返回。停点已交工作流集中核横向滚动/虚拟化通知链，未重复027未修整套。
+## 2026-10-30 B05浮点原件自动核收及图像源027状态
+
+- B05沿原Float_sub、SliderArrangeFloat、NumericControl及Popup提交链复用现行正确实现，不重写控件；新增15项真实加载原件检查通过，DesignTime123累计278项通过。源码/证据哈希见BLOB_B05_FLOAT_AUDIT_20261030.json。引用、范围组合、Blob整链、实际VS与人工验收仍单列。
+- 接入efc77ae0相机灰度整数式与末项环回损坏图夹具，898dc579整组Dispatcher等待；全量Release06通过0错误/6058警告。Recovery027得到66通过/8失败后在1051图像源横向滚动检查超时；已交工作流集中分析，未重复跑未修正整套，不能声称图像源完成。
+## 2026-10-30 图像源历史宿主所有权整批整合
+
+- 按hunk接入957673af/862d61ac：历史门禁按注册delegate释放、成功注册后记录归属、构造失败回滚、实际窗口关闭释放、结果工作区夹具隔离并恢复SolutionManager；补入0ac0c783两处真实编辑门禁夹具。主线另外将SolutionSaved匿名订阅改成具名并配对退订，防止退役宿主继续响应。
+- 全量Release05通过0错误/3496警告，正式Recovery026得到45通过/3失败后超时，停在Active_communication_prevents_history_mutation_without_advancing_or_losing_the_result；原构造门禁失败已越过，但整套未通过。已将完整日志交工作流集中核对STA等待、结果排空与真实互斥，不增超时、不删断言。其余灰度公式、手动损坏图和整方案多源共因继续由工作流独立线取证处理。
+## 2026-10-30 B04整数编辑修正及正式验证
+
+- 用户再次明确检查结束，后续可关闭并构建。B04 UI Release通过0错误/6473警告，全量Release通过0错误/6490警告；DesignTime122累计263项通过，新增16项整数编辑原件检查。
+- 121实际发现禁用后迟到箭头仍写入；共享NativeNumberCoordinator集中修正禁用、恢复、待提交原文、延迟任务及释放边界，122确认通过。保留121失败证据，不把独立测试当VS或完整Blob人工验收。
+- 工作流957673af文档宿主释放候选尚未接入：已要求按实际provider所有权释放并处理注册失败，不能无条件清掉其他宿主门禁。图像源Recovery025的291通过/48失败仍是最近整套结果，未报告整链完成。
+## 2026-10-29 B03整数单选自动核收及图像源整套失败归组
+
+- 整数单选现有正确原模板/状态适配直接复用，不改产品实现；新增14项完整组件检查通过，DesignTime120累计247项。原O06及BLOB_B03_INTEGER_RADIO_AUDIT_20261029.json同步；实际VS/键鼠/语言与Blob组合集成另记。
+- 图像源Recovery025整套完成291PASS/48FAIL，原21失败完整覆盖；42项同一历史门禁宿主重复注册，剩6项分属手动缺图、整方案多源回调、原厂灰度整数式、请求参数覆盖、两处无门禁保存夹具。完整报告已发工作流集中修正，不能删用例或移除单写/运行互斥门禁。
+- bccf458e设置字段白名单逻辑已按现行FieldSettings接入主线WorkflowExecutionEngine，请求含调用输入端口时抛ArgumentException；该生产修正尚未构建，等余下共因集中修正后一起验证，未重复跑未修正全套。
+
+## 2026-10-29 B02自动核收及图像源024真实停点
+
+- B02普通枚举新增17项检查通过，DesignTime119共233项通过；事件/Popup/文字作用域/延迟任务和正式键的草稿、发布、历史、配置重开核收通过，实际VS/人工另记。证据BLOB_B02_ENUMERATION_AUDIT_20261029.json及原O06已同步。整数单选保留独立下一单元。
+- 图像源主窗口唯一结果区域已整合，旧Panels无效using清理后全量04为0错误/999警告，正式EXE探针退出0。Recovery024已有26PASS、Frozen_execution...无结果失败，最后START精确停在Manual_execution_does_not_advance_but_default_successful_execution_does。结果通知排空使Explicit_source_choice...已PASS；继续要求工作流成片修复所有相关partial的STA同步阻塞，并核运行期编辑互斥，未增大超时/删用例。
+- 原O06新增同一集成状态节，完整失败和范围已记录；图像源综合回归仍未通过。下一步接工作流集中修正并复测，不重复跑未修正同一套。
+
+## 2026-10-29 图像源正式集成构建与回归进展
+
+- 已整合工作流106e6/67079、前序读取/调试/历史闭包、主窗口实际接纳导航消费者、相机RuntimeManager/Session与四个相机UI消费者；主线Blob/S1/B01参数链保持。当前集成前保存点扩充至6650edf3，原始实现与失败均保留。精确来源清单见Release/_validation/ImageSourceIntegration-20261029/plan.json。
+- 工具页维持相机专属行，本地条仅主结果区。主窗口切为唯一结果工作区，并接左右图像导航；旧重复日志UI及旧UI序列服务移除，残余无效using已清理。相机管理界面整体迁移不在本批范围，只接预览与工作流采集所有权。
+- UI第三轮0错误/846警告；全量01为0错误/6394警告，补相机后02为0错误/6453警告；统一结果宿主03因删旧Panels后的4条无效using失败，修正后04为0错误/999警告（增量口径）。图像源首批整合后的DesignTime 216通过。
+- Recovery021测试宿主26编译错误来自相机闭包和File限定名，已处理；022实际运行到旧STA取消用例，90秒超时。工作流定位为同步等待阻塞WPF调度，已接入b0af794d整组DispatcherFrame等待/取消排空修正，保留原超时断言；023复测进行中。不能将本条构建/设计检查称图像源全链通过或人工验收。
+
+## 2026-10-29 图像源整批候选实际集成中
+
+- 已收到工作流106e6bbc及67079c5b相机专属UI修正，优先进入正式集成窗口；本线B02普通枚举只保留未验证候选，不继续扩展。保留现行Blob、参数/输入视图、IToolSettingsView、RuntimeNodeConfigurationControl与NativeDisplaySample。
+- 集成前保存点491fdfe8，补充消费者保存点d1208584（codex/image-source-preintegration-20261029），不移动main、不改现有暂存区。精确选择清单及逐文件测试合并状态在Release/_validation/ImageSourceIntegration-20261029。
+- 已整合19个读取、调试、历史、导入和验证入口；首轮UI正式构建发现4个真实接缝：旧UI层LocalImageSequenceService遮蔽Workflow唯一服务、缺读取接纳方法、AddImages未返回接纳回执。已保全后移除旧UI重复服务，整合ImageInputSource与主窗口7个真实消费者，第二轮UI构建进行中。
+- 测试按三方保留主线FieldSettings与生命周期新增案例；部分冲突没有写入产品或测试原文件。已请工作流在独立目录集中补齐测试接缝，双方不在同一工作目录写入。未完成全量构建、正式图像源回归或人工验收，不称迁移完成。
+
+## 2026-10-29 B01 基础开关实现及自动核收通过
+
+- 用户已批准结束试用；57964正常退出。图像源候选尚未就绪时，本线使用空闲窗口集中验证，已通知工作流无需停工；图像源就绪后优先下一集成窗口。没有合入其未交付源码。
+- UI Release 0错误/6494警告；全量Release 0错误/6496警告。DesignTime attempt-117共216项通过，含15项开关事件/回填/释放及9项正式节点配置/历史/复制/Runtime配置序列化/取消检查。原115解绑失败、116生产检查过早加载Workflow污染独立预览断言的失败均保留；调整检查顺序后通过，没有弱化断言。
+- 正式EXE探针用Start-Process持有句柄确认退出0；已查看117结果页独立渲染。首次GUI直接调用没有可靠退出码，不算探针通过。用户自行启动，本批未自动打开主窗口。
+- 基础开关实现及自动核收通过；实际VS、人工键鼠、完整Blob页面与完整方案保存验收继续单列。原O06 B01节已集中更新，证据及产物哈希见evidence/BLOB_B01_BOOLEAN_AUDIT_20261029.json。下一基础组件按顺序核收；不能把临时Blob组合当成S2完成。
+
+## 2026-10-29 人工检查结束及 B01 生产合同检查候选
+
+- 用户明确同意后续正常关闭程序并构建，人工冻结解除；已通知工作流，下一正式集成窗口仍优先其图像源候选，暂未替换产品。
+- B01 补正式私有草稿、节点配置确认、撤销重做、复制、Runtime配置序列化重开原件及取消检查候选，使用现有生产合同，不解除Blob纯UI阈值拦截；不把此测试当成完整Blob窗口或完整方案保存验收。
+- 验证宿主扩展后编译0错误/601警告；初次两个命名空间错误已修正，失败日志保留。产品修正仍未构建/运行，B01保持未完成。
+
+## 2026-10-29 B01 开关原件核收及释放修正候选
+
+- 已核原 BooleanControl、Boolean_sub/Ex 模板、两张原图片及 Boolean 值/命令接纳源码，沿用已有正确实现。两图哈希与原件相同。
+- 正式旧产物 DesignTime attempt-115 前三项通过，第四项退役原件解绑失败。DeclaredFieldEditor 已增加普通开关和眼睛按钮在重渲染/释放时解除事件；补齐方法及真实加载原件点击、拒绝回填、禁用/隐藏和关闭后事件检查候选。
+- 未构建修正、未运行新增完整检查，不称B01完成，不提前推进下一控件。O06 B01节及 evidence/BLOB_B01_BOOLEAN_AUDIT_20261029.json 同步；正式构建仍优先图像源窗口。
+
+## 2026-10-29 图像源交接已批准，工作流立即继续
+
+- 单写边界和正式构建安排见 IMAGE_SOURCE_WRITE_HANDOFF_20261029.md。图像源归工作流独立线，本对话停止该范围新增写入；Blob 与其他公共组件继续本线。
+- 主线基线 ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c；图像源保全提交 89f57f656d334119e5864778a0d0fb271e78c452。下一正式集成构建窗口优先图像源，不等待 Blob；当前试用产物暂不替换。
+
+## 2026-10-29 最新决定：S2 先基础组件，再组合
+
+- 从开关组件开始，随后选择、数值、基础文本与颜色，再引用、范围、ROI、位置修正和参数页等组合，最后接通 Blob。每个控件完整取证、实施、自审和测试后再进入下一个，不按局部功能拆散交付。
+- 下方参数页宿主首项安排已被本条覆盖；未构建修正和检查候选保留到组合阶段。原 O06 已同步顺序；本次没有新增构建或验收结论。
+
+## 2026-10-29 最新指令：恢复 S1 三页整批纯 UI 优化
+
+- 根据用户“UI 暂时没有明显问题”的反馈，S1 当前版本先保留，未验项不消除，开始 S2 第一个完整单元（参数页/分组/页签/高级展开）的源码核收。发现 UI 校验回调在捕获锁之外的重入风险，源码候选已将其放入同一捕获锁并在回调后检查视图身份；此 S2 修正尚未构建验证。
+
+- 人工试用反馈：用户原话“UI暂时我觉得暂时没有什么他打问题”，按“暂未发现明显问题”记录，不等于全部逐项验收通过。已收到基本页图像类型、四种继承方式、屏蔽继承及位置修正三方式截图；按坐标十项及底部完整可见。输入源仍暴露 output.image/output.gray-image 的可读名称问题已记录。运行参数、结果显示和实际 VS 尚未逐项人工核收；当前停止催促逐张截图，保留后续待验项。
+
+- 本批正式 Release 已构建并验证：最终 UI 构建 0 错误/6468 警告，全量 0 错误/6368 警告。attempt-111 旧捕获断言不适用于纯 UI 阶段，修正检查后 attempt-112 183 项通过；图像检查发现结果页贴边，attempt-113 的首版边距未生效，改为同宿主显式行绑定后 attempt-114 再次 183 项通过。已实际查看 parameters-1.png 与最终 parameters-2.png，最终图形/文字行左侧与标题对齐。正式程序 toolbox-probe 退出 0。
+- 本批说明仅覆盖构建、独立组装/状态检查和已查看的渲染图；VS 实际设计器、主窗口完整鼠标/弹层操作、全部滚动位置和用户人工验收仍待。不得报告 S1 全部完成，也不能把临时 UI 阈值当作算法接入。原失败记录保留。
+
+- 用户已答复“试用结束，可以关闭并构建”；PID 32504 已正常关闭并确认退出，解除本批构建冻结，正在执行 UI Release 构建。下方构建等待条目为历史，不再作为阻塞。
+
+- 构建等待审计：连续三轮核对同一试用进程 PID 32504 仍运行，关闭/构建确认尚未答复。18 文件候选摘要复核变化数为 0。当前进入等待用户确认试用结束的阻塞状态；下一步是关闭获准关闭的试用程序、UI/全量正式 Release 构建、独立渲染、实际 VS/运行界面对照和人工验收，不能把源码准备视为 S1 完成。
+
+- 当前整批源码候选已经包含六种阈值及全部直接依赖字段、原厂查找数量/排序/面积/二值图入口，结果判定四项基础及十二项高级组合、九项图形声明；图像类型隐藏位置修正及结果点配置的跨页显隐已接入。下方关于这些项尚未接入的条目保留为历史，不作为最新状态。
+- 新增源码及检查候选尚未经过本批构建和运行，不能继承 attempt-110 的通过结论。阈值组明确为纯 UI，当前编辑器执行/保存受拦截；真实功能链继续归 S2。正式程序 PID 32504 仍运行，保持试用产物稳定，构建授权问题仍待用户答复。
+
+- 基本页集中复核发现仍需修正的显隐：Group.xml 的 InputMaskImageGroup 在图像类型时除隐藏 ROI/屏蔽绘制选择外，还隐藏 Assist0；当前 UI-only 组合尚未把图形类型状态联动到真实位置修正行，不能称全部基本页状态通过。原屏蔽仅多边形且 FullScreenEnable=False，用户明确要求的多形状/全屏保留为差异，不按原件回退。
+
+- ROI 展开条件复核：原 RoiSelectControl 模板要求 IsHaveData=True、图像宽高有效且 CurROIData 非空才显示参数区；仅选形状按钮不应凭空生成几何数据。当前 UI-only 组合未接视口和 ROI 数据，保持此条件，不把参数区缺失伪装为已完成。设计时完整几何布局应通过已有真实 ROI 控件的示例数据核验，实际绘制/双向数据链仍归 S2。
+
+- 运行页 16 个临时入口已准备可操作 UI 状态及统一提交拦截；恢复初值可解除，尚未接功能链。新增七组原双端范围组合及开关联动，默认值取自原范围子项；补充同页边距/标签列绑定与幂等清理。上述均为源码候选，未构建/实测；既有 attempt-110 不覆盖这些变更，原数值显示换算、完整来源切换及其他状态仍须核对。
+
+- 正式 Release 使用完整参数重新执行 toolbox-probe 已退出 0，输出在 Release/_validation/S4-20261025/DesignTime/attempt-110/toolbox-probe-corrected.json，确认 Blob Runtime/Wpf 均可加载；此前误启动记录保留，不将本次组件加载视为整窗 UI 验收。
+- 三页直接声明类型已核：31 开关、6 枚举、2 展开、18 浮点范围、9 整数范围、12 整数、9 图形配置、1 ROI 选择器、8 公共组引用。需按原声明顺序与条件统一组合现有 Presenter，不能以已有基础控件的存在推断整页已完成，也不需为 S1 迁入 VM 业务全局服务。
+
+- 用户在“S1 先这样”后明确要求“批量完成UI的优化，按照VM逆向，不要一个一个修了”“最短的时间完成S1，S1是纯UI的工作”。该最新要求覆盖下方暂缓 S1 和提前进入 S2 的安排。
+- 当前批次统一覆盖基本参数、运行参数、结果显示三页的控件组合、顺序、样式、布局、页签/展开/开关和条件显隐；依据已有三页 96 声明与 8 公共组完整取证集中实施，不按单个控件逐项交付。
+- 数据读写、引用接通、保存与执行功能链保留到 S2，HALCON 算法归 S3；不以这些后续工作阻挡 UI 组装。现有正确真实控件复用，禁用占位不等于交互完成。当前正式程序 PID 32504 仍运行，源码准备可继续，正式产物不替换。
+
+## 2026-10-29 用户决定：S1 先保持现状（后续指令已覆盖）
+
+- 用户原话：“S1 先这样”。停止继续扩展本轮 S1 UI，保留当前实现及未完成项，不将该决定记为全部 UI 或人工验收通过。
+- 后续按已制定目标转入 S2：先列 Blob 所需控件及当前状态，再逐个控件完整取证、实施、自审及测试；算法优化仍归 S3。当前试用程序运行中，继续保持构建冻结。
+
+## 2026-10-29 S1 位置修正 UI 候选
+
+- 根据原 Group.xml 的 AssistGroup 三方式，将真实修正信息行接入共享原单选模板，补齐按点和按坐标的全部来源行及显隐。尚未接入的来源行不可编辑；选择未实现方式时阻止当前编辑器提交，不能将其称为真实位置修正或来源链完成。关闭位置修正时不拦截其他设置。
+- UI Release 构建 0 错误 / 6490 警告；全量 Release 0 错误 / 6492 警告；独立设计组装 attempt-110 共 143 项通过，含三种模式、显隐和禁用状态，不能代替 VS 实际设计器、鼠标、运行链与用户视觉验收。第一次用 Windows PowerShell 执行验证脚本因 UTF-8 编码解析失败，使用 PowerShell 7 重试通过。
+- 正式程序启动尝试误只传入 `--toolbox-probe`，源码要求同时传输出路径，故实际上未进入探针模式，不能计为探针通过；目前观察到桌面 SunEyeVision 数据目录窗口，保留现有窗口，不再构建或关闭。运行参数和结果判定的整体 UI、S1 阶段验收及后续 S2/S3 均未完成。
+
+## 2026-10-29 新目标：Blob 三阶段
+
+- S1：快速完成 Blob 三页真实 UI 组装、VM 样式和界面交互，不以控件功能链和算法为前置；未接入能力如实标明且不可误用。先交付可在设计器与正式程序中检查的 UI。
+- S2：先列出 Blob 所需控件与组合的完整清单及当前状态，再按一个完整控件为单位，依次完成 VM 取证、实现、功能链、自审和测试；一个完成后再推进下一个，最终接通 Blob。该顺序是用户本次明确要求。
+- S3：以已取得的 VM 算法证据为基准，用 HALCON 对标实现并验证；不能实现或不能证明等价的项目明确标记、说明原因和影响。
+- 每阶段独立记录完成、验证及待办。保持公共视觉控件位于 Plugin.Wpf，Blob.Wpf 负责组装；保留用户指定的屏蔽区多形状差异。工作流独立线继续按既定写入边界推进。
+
+## 2026-10-29 Blob UI 与算法分阶段约束
+
+- 用户再次明确：先完成 UI 外观、控件组合和显隐交互，再实现控件真实数据、引用与保存等链路，最后优化算法。UI 层不要过度设计，界面和交互与 VM 保持一致；算法差异在后续算法优化批次处理。继续优先使用原厂控件和组装、状态显隐，以及现有宿主的必要非视觉适配，不为尚未实现的算法引入额外的 UI 领域模型或复杂临时执行机制。各阶段分别验收，界面完成不等于功能或算法完成。
+- 已收到逆向负责人 VM 4.4 Blob 三页集中取证：[实施证据](D:/MyWork/REA逆向测试/docs/joint-audit/VM-Blob参数窗口组装与界面实施证据-20261029.md) SHA-256 72BB3DE17CAE1A4D9CD217C7258546D5BB9AE4FEBDF6CD30901327843F1BA97C，[完整资源索引](D:/MyWork/REA逆向测试/docs/joint-audit/Blob参数资源索引-20261029.json) SHA-256 999B170188E1F1311F4E5F465B7FF4F20E361340392B8969DBB85C6E1F725EE4。三页共 96 个直接项、8 个引用组；静态取证不代替运行对照，高级 CustomVisible 的运行时设置及交互像素细节仍待证。结果判定原件与当前本方字段清单不同，需整体重组；本轮尚未完成界面代码、构建或验收。
+- 原声明显示阈值方式六项且各自显隐不同；当前算法仅实现三项，双阈值极性语义也与原页面待核对。不能仅改文字或隐藏现有行为就声称对齐，更不能据此断言 HALCON 无法实现。尚未接入的功能应如实标明、避免误用；UI 同态、实际算法与执行验收分别记录。
+
+## 2026-10-29 VM 运行参数高级区界面补充
+
+- 按 Blob AlgorithmTab 的 Expert 展开目标及 zh-cn.xaml 原厂文字，在现有真实圆度/矩形度/排序字段前后增加 13 个缺失的禁用 UI 入口：直方图、角度、RECT 宽高、周长、长短轴、质心偏移、轴比、排序特征、连通性、最大内接矩形数量、像素超界。原高级区有其他依赖字段；这些入口尚未接草稿/算法/保存，且禁用意味着其 UI 交互尚未完成，不能称 VM 完整页面。
+- 公共锚点内容支持相同锚点之前及之后保持顺序和高级区显示租约；基础三项保持原顺序和独立显隐。原轮廓枚举的两条中文文字直接来自 VM Applications/Lang/zh-cn.xaml。UI Release 0 错误/6490 警告、全量 0 错误/6390 警告；DesignTime attempt-109 为 139 项通过，含展开后入口可见、收起以及草稿不变，正式程序 toolbox-probe 退出 0。独立截图只覆盖高级区首屏，其余、VS、真实鼠标、用户视觉及功能链未验。
+- 工作流对话提出图像源单写交接及 FieldSettings 合同风险；当前未发送跨对话消息，独立工作区候选和主仓未覆盖。相关共享代码整合需按已授权沟通与各方基线核对。
+
+## 2026-10-29 运行参数标签列宽
+
+- 运行参数页的真实字段及禁用入口使用同一 120 DIP 标签列；优先保持原宿主可配置列宽与消费者显式值。attempt-108 独立截图的“二值化图像输出”完整显示；并未证明其他窗口尺寸或 VM 像素一致。
+- UI Release 0 错误/6433 警告、全量 0 错误/6475 警告，DesignTime attempt-108 为 139 项通过，正式程序 toolbox-probe 退出 0；实际 VS、用户人工和运行参数完整功能尚未验。C13 目录相关当前哈希更新，旧值留 evidence/BLOB_RUN_LABEL_WIDTH_20261029.json。
+
+## 2026-10-29 运行参数三项 UI 入口
+
+- 保留真实单一设置草稿，以原模板在查找个数之后添加填充面积阈值，在面积范围之后添加轮廓类型与 Blob 图像输出。三项缺真实算法/合同，禁用并淡化，不写草稿；面积范围或数量字段隐藏不应连带隐藏独立入口。为公共参数组合加入多个锚点内容的视图所有权、重绑和独立显隐。
+- attempt-106 截图暴露轮廓类型显示内部英文键、禁用状态不明显；修正中文显示和淡化。最终 UI Release 0 错误/6420 警告、全量 0 错误/3784 警告，DesignTime attempt-107 为 138 项通过，含同实例重绑、三项禁用、面积关闭后输出保持可见；正式程序探针退出 0。独立截图显示二值化图像标签被截断，实际窗口及 VS 与用户验收待做。
+- 自动阈值和两种软阈值、轮廓类型真实行为、填洞和 Blob 图像、其余高级项、保存/资源和 VM 数值等价仍缺，不称运行页或阶段完成。证据见 evidence/BLOB_RUN_PLACEHOLDERS_20261029.json。
+
+## 2026-10-29 运行参数设计时边距修复
+
+- 诊断 attempt-104：列表 ChildMargin 为 32，但未加载真实视图的参数行 Margin 为 0、祖先绑定 PathError、X=1。现使用当前真实页面作为来源绑定原 ChildMargin，只覆盖原有匹配的祖先表达式，显式自定义值不改；普通字段和范围行独立截图均已显示页内缩进。诊断测试尝试 attempt-102 曾因局部变量同名编译失败，修正后保留该失败记录。
+- UI Release 0 错误/6433 警告、全量 0 错误/6475 警告；DesignTime attempt-105 为 135 项通过，未加载时行边距 32、X=33，包含高级区显隐与草稿不变；正式 EXE toolbox-probe 退出 0。独立截图不是实际 VS 或用户验收，完整运行参数/真实算法未完成。
+- C13 目录的 DeclaredFieldsView 当前哈希同步；旧 attempt-099 文本检查仍按历史保存，新边距证据见 evidence/BLOB_PARAMETER_MARGIN_20261029.json。
+
+## 2026-10-29 运行参数现有字段分组
+
+- 依据原 Expand 控制目标及现有字段行为，将现有圆度、矩形度、排序字段放入原高级展开区；基础字段调整到同一运行参数组，沿用现有字段、条件、默认值与算法，不伪装为 VM 的缺失参数。原数量使能、灰度图像输出及布尔轮廓仍是现行差异，填充面积阈值、轮廓类型、Blob图像和三个阈值方式等仍未补齐。
+- UI Release 0 错误/3795 警告、全量 Release 0 错误/6463 警告；DesignTime attempt-101 为 134 项通过，包含高级区默认收起/展开/收起及草稿修订不变；正式程序 toolbox-probe 退出 0。独立截图 parameters-1.png 的左侧标签贴边问题待在真实宿主/VS 核查，不视为用户视觉验收。VM/VS/实际执行和人工验收未完成。
+
+## 2026-10-29 C13 文本控件目录同步
+
+- 对 C13 目录逐项核对现有文件：将 19 条旧摘要对应的原值与当前值保存在 evidence/C13_BLOB_TEXT_UI_20261029.json，再更新 C13 当前源码哈希、Blob UI 实际消费者及 attempt-099 局部验证。当前 C13 中存在的本地源/依赖路径复核哈希不匹配为 0；该检查不证明缺失路径、许可、依赖闭包、整控件行为或 VM/VS/人工验收。
+- 文本 UI 仍使用私有临时状态，不能记作正式 Blob 显示配置和保存完成。运行参数整页、第一阶段及第二阶段保持未完成。
+
+## 2026-10-29 文本显示组验证
+
+- 用户确认试用检查结束并允许构建。第一次 UI/全量构建 0 错误，DesignTime attempt-098 为 129 项通过，但真实控件组截图显示内容框仅约 19 DIP，与原 32 DIP 不符；保留失败截图，不以首轮通过替代视觉检查。
+- 修改原文本 Presenter 宿主纵向伸展后重新构建：UI 0 错误/6333 警告、全量 0 错误/6347 警告；DesignTime attempt-099 为 130 项通过，含内容框实际高度与文本七行检查，blob-text-settings.png 可对照。正式程序 toolbox-probe 退出 0 并识别 Blob/图像源组件。该探针不是主窗口交互验收；真实 VS 设计器、鼠标和用户视觉验收仍待。
+- 文本内容、坐标、颜色均为当前 UI 私有状态，未连正式显示配置、输出、引用候选和保存；不能宣称功能完整。VM 运行参数高级展开的 16 个直接目标已补入运行参数证据；范围项等仍需按各自原触发递归处理。
+
+## 2026-10-29 运行参数算法默认值补证
+
+- 对照原 IMVSBlobFindModuAlgorithm.xml（并入运行参数证据及 SHA）：LowThreshold=100、HightThreshold=150、FindNum=100、HoleMinArea=0；这些是算法声明值，不能直接以页面截图作为默认值证据。本方当前阈值/数量默认值不同，属于待统一的实际运行语义，UI 优先阶段不擅自更改算法默认值。
+- 已将现有 BlobCountLimit 的中文标签改为原页面“查找个数”，字段身份及行为不变；完整原顺序、数量开关差异和填充阈值尚未重组。本次源码未构建；用户仍在试用。
+
+## 2026-10-29 VM 运行参数完整声明清单
+
+- 读取实际 Blob AlgorithmTab 的运行参数类别，将原顺序 46 个元素（包括高级展开元素）、选项、默认值、条件 XML 与现有 XML 候选字段映射写入 evidence/BLOB_VM_RUN_PARAMETERS_20261029.json，并记录两份源文件 SHA。13 项存在候选声明仅表示有待核对的字段，不代表行为等价；无对应项也不等于 HALCON 无能力。此清单用于整页设计和补齐，原 XML 未裁剪。
+- 当前试用仍进行，不构建、不替换正式产物。运行参数整页及其算法、来源、保存仍未完成；先按用户要求完成 UI 与条件，再接真实功能，未实现入口不可误用。
+
+## 2026-10-29 文本显示同源渲染准备
+
+- 原模板逐项复核：StringConfig、ColorConfig、FloatConfig、ButtonSelecter 组均为 32 DIP；源模板 ButtonSelecter 同槽包含文本与订阅入口。当前候选让文本 X/Y 使用原同槽引用 Presenter 并显示临时 0，未连接真实显示配置、订阅候选或保存；源码增补七行高度、坐标数量/原 Presenter 与同一真实组合的独立渲染检查候选。
+- 试用进程 PID 74344 仍在；本批未构建、运行或视觉验收，不能将截图测试候选算通过。用户要求内容暂不处理。
+
+## 2026-10-29 ROI UI 构建及文本显示反馈
+
+- 现有 Release：UI 0 错误/6488 警告，全量 0 错误/6388 警告，DesignTime attempt-097 为 127 项通过；正式程序 toolbox-probe 退出 0。独立渲染显示单一 ROI 标题、输出掩膜、检测及屏蔽全屏入口，四种继承状态有截图。输出掩膜、全屏和新增继承字段尚为 UI 状态，部分来源禁用，未接真实执行、保存；VS 实际设计器和用户验收未通过。
+- 用户提供原 VM 文本显示截图。核 Apps.XmlUI 的 StringConfig、ColorConfig、FloatConfig、ButtonSelecter 原模板均采用 32 DIP 行高；当前文本组已准备统一行高源码候选，位置 X/Y 以临时零值与同槽来源入口显示，内容仍按用户要求暂不处理。临时值并非已证的 VM 默认值或实际结果。当前用户试用进程运行中，此文本组候选及相关验证尚未构建或运行。
+- 工作流线转来对照：VM RefreshImageList 按 Display 声明与输入输出映射建立候选，并非简单按运行值有无筛选；实际选择空图撤销选中及订阅并提示。仅为对方源码证据，未集成或确认所有操作时序。
+
+## 2026-10-29 Assist 组承接核查
+
+- 原公共 NativeAssistOptions/DeclaredFieldsView.Assist 已支持启用开关、三方式与十三个来源角色的原模板及清理/条件。当前 Blob 正式合同只声明启用开关及 input.pose，尚不具备其余角色；不得把设计样例或第二份草稿当成正式数据。需要先明确统一字段、来源与草稿所有权，再组合原控件，算法/持久化仍按用户 UI 优先安排后接。
+- 当前 UI 批增加四个继承状态的独立真实视图渲染检查候选；输出掩膜和单一 ROI 标题候选仍未构建。试用中不触碰正式产物；此条只记录源码和证据，不代表 VS 或运行验证通过。
+
+## 2026-10-29 输出掩膜与分组源码候选
+
+- 在 ROI 组合首部加入原开关样式的输出掩膜临时界面状态；通过声明的锚点压掉位置修正行重复的 ROI 标题，生产与设计入口共用。此状态尚不输出掩膜、不持久化；位置修正仍不是 VM 完整 Assist 三方式。新增开关切换检查候选及锚点合法性检查。
+- 检测到用户试用进程仍在，本批未构建、运行或验证实际视觉，正式 Release 仍为 attempt-096 对应版本。源代码和 UI 与实际功能不得混称完成。
+- 工作流线纠正图像源条件复用判断：ParentConditions 为 AND，OutMono8 条件包含 OR，不能只以单组现有条件表达；源码与原件整体交叉核对后处理，不把通知视为已集成实现。
+
+## 2026-10-29 ROI UI 候选构建与独立验证
+
+- 用户确认检查结束、允许构建。当前正式 Release：UI 构建 0 错误/6474 警告，全量构建 0 错误/6450 警告；DesignTime attempt-096 共 124 组通过，覆盖真实设计视图创建/切页、四种继承方式的 UI 显隐、屏蔽全屏入口与位置开关来源显隐。toolbox-probe 正式程序退出 0，识别 Blob/ImageSource Runtime 和 Wpf，未验证完整主窗口运行链。
+- 源码使用真实来源行并按 UI 分支调整位置，矩形五项、圆形六项及圆形区域来源为未接宿主的禁用界面字段；不写正式参数、不解析来源、不代表功能完成。位置修正旁订阅按钮由声明禁用，屏蔽全屏为临时 UI 选择，未执行域运算。
+- 独立渲染 parameters-0.png 显示仍有两个 ROI 标题，输出掩膜缺失；位置修正未按原 Assist 三方式实现。运行参数、结果页、VS 设计器与用户视觉和真实执行/持久化均未完成，不称整页通过。截图是独立渲染不是 VS 人工验收。
+
+## 2026-10-29 ROI 来源顺序源码候选
+
+- 根据用户 VM 实机截图和 InheritWayGroup2，源码候选将检测及屏蔽来源从输入组移入对应 ROI 组合，检测来源放在继承方式之后，区域继承时显示；矩形或圆形参数继承时隐藏该来源。对应增加设计检查候选。原组的矩形五项、圆形六项及切换清空尚未接入，两个 ROI 标题和输出掩膜等仍待完整重组；不能称基本页完成。
+- 上述变更与位置修正按钮、屏蔽全屏入口同属未经编译和运行的候选。用户仍处于试用检查流程，本次未覆盖正式 Release；git diff --check 未发现空白错误。截图、VS 设计器、源码运行和人工验收均待集中验证。
+
+## 2026-10-29 Blob 原厂继承链复核
+
+- 已核 VM 原件：Blob AlgorithmTab 的 InheritWayGroup 链接 InheritWayGroup2，而不是同名 InheritWayGroup。原 Group.xml 的 InheritWayGroup2 明确四个枚举和全部目标：0 Region；1 ROICenterX、ROICenterY、ROIWidth、ROIHeight、ROIAngle；2 Region2；3 ROIAnnulusCenterX、ROIAnnulusCenterY、ROIAnnulusInnerRadius、ROIAnnulusOuterRadius、ROIAnnulusStartAngle、ROIAnnulusAngleExtend。触发还规定切换时清空另一组；需连同宿主草稿和释放合同整体适配，不只补文本。
+- 原文件 SHA-256：Blob AlgorithmTab 34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC；Group.xml 9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC。用户指出文本内容目前为空暂不管，现只对齐文本控件和布局；原 TextDisplayGroup 的字符串默认值为空，实际内容经显示对象桥取得，截图内容不可断言为默认值。
+- 用户试用进程仍在；源码候选未构建、未运行。实际正式版和 VS 人工设计验证仍待。
+
+## 2026-10-29 用户实机截图纠正继承方式
+
+- 用户提供 VM 真实 Blob 页面：继承有按矩形区域、按矩形参数、按圆形区域、按圆形参数四项；区域来源位于继承方式下方，按矩形参数时显示中心 X/Y、宽、高、角度五项。此前根据通用 Group.xml 误称四项不符，该结论撤回。已确认 Blob AlgorithmTab 的 GroupLinkItem 名称为 InheritWayGroup，但 LinkName 实际指向 InheritWayGroup2，正是四项原组。
+- 用户还指出位置修正右侧多余订阅按钮、屏蔽区缺全屏。源码候选已将位置修正声明设为不可订阅，并为屏蔽区原形状控件提供全屏入口（默认不选择全屏），补设计检查候选；用户正在试用，尚未构建、运行或验收，不能称已修复正式程序。屏蔽全屏的实际域语义仍待连接和验证。
+
+## 2026-10-29 Blob 基本页组装证据复核（续）
+
+- 根据用户截图，input.pose 已从基本页前部移至位置修正开关后，开关控制显隐；UI 和全量 Release 分别 0 错误，S4 DesignTime attempt-095 为 121 组通过。这只证明现有来源行的定位和独立组装，未证明 VM 原厂位置修正完整交互、VS 实际设计器或用户验收。
+- 再核本机原厂 IMVSBlobFindModuAlgorithmTab.xml 和 Group.xml：基本页只有一个 ROI 分组，依次包含输出掩膜、区域类型、ROI 创建/形状/继承、屏蔽区及 AssistGroup。AssistGroup 有信息/点/坐标三种选择及各自输入；不能将当前单个“位置来源”解释成完整原厂实现。此前描述仅指当前候选行为，不能作为原厂结论。
+- 当前页面有两个同名 ROI 标题，缺输出掩膜；通用 Group.xml 显示两项，但用户提供的 VM Blob 实机截图明确显示按矩形区域、矩形参数、圆形区域、圆形参数四项，不能以通用组替代专用实际页面；来源和参数的顺序及位置修正方式条件仍未齐。下批以真实原组为整体重新组装并同步声明/适配；用户要求的屏蔽区多形状保留为显式差异。完整运行页、结果页及算法/保存仍未完成。
+- 工作流线转来图像源原件整链迁移提醒；其候选未编译且尚未集成。公共控件应沿 LocalImageListView、ImageListPanel 及资源/宿主完整闭包核对，避免保留旧双轨；本对话尚未据该消息更改图像源产品代码。
+
+## 2026-10-29 VM优先协作合同与中断交接
+
+- 用户进一步明确：优先完整实现Blob三页的UI及UI层交互、控件显隐，算法、真实图像与持久化后接；并要求直接沿VM逆向的完整Blob原始组装链加速，不接受长期置灰占位。已复核安装件 `IMVSBlobFindModuAlgorithmTab.xml`、`Group.xml` 和原图形声明：三页原始组、各项与触发条件需整体覆盖。当前新增候选将ROI模式/形状改为明确的临时UI状态并按图形/图像、绘制/继承切换可见性，结果图形、颜色、文本和数值行改用原控件临时UI状态；这些状态不参与执行与保存，当前候选仍未编译、运行或显示，不能称完整页面已实现。当前试用进程仍应保护，批量完成后统一构建；旧“整组置灰”仅为上一版历史。
+- 用户再次要求先显示完整UI，并发来试用截图：左侧工具箱只见采集与定位，完整目录及未加载置灰仍是工作流线待办。本轮未重建其正在查看的正式产物。结果显示页源码候选按原 `IMVSBlobFindModuAlgorithmTab.xml` 图像显示组，使用公共原 `ImageViewConfig` 模板补Blob、最大内接矩形、ROI、轮廓点、文本、屏蔽区域与扇环七行；因没有正式显示配置owner，整组置灰、不写入或宣称功能。为真实设置视图增加按页承接附加内容与重绑释放合同，设计与运行入口同一组合；仍需核资源、旧视图重绑、显示字段及文本组，未编译、未运行、未替换Release。当前用户试用中，集中完成后再安排一次验证。
+- 用户明确先补可见UI并要求最快看到效果。本批将公共原两项单选与ROI形状控件组合接入Blob真实基本页：ROI区域类型、检测创建及形状、屏蔽创建及多形状，尚无正式owner所以整体置灰且悬停提示未接入，不生成参数或伪造功能。实际已有来源行仍显示，顺序及整页与VM仍有差异；运行参数、结果显示、选中ROI参数栈和正式执行保存链尚未完成。UI Release 0错误/6448警告、全量Release 0错误/6464警告；独立真实设计组装attempt-092为113项通过，实际页面图 `parameters-0.png` 可供布局检查，VS与用户人工、运行宿主及功能验收尚未做。先前 WindowPresentation 检查自有进程超时结束，不算通过；ResultChain共24通过，仅覆盖快照与通知生命周期，不代表Blob完整执行链。
+- 工作流独立线请求区分首张与普通选图。复核原 `ImageListPanelBase.FirstImage_Click` 的SHA及代码：AutoPlay开时当前路径置合格序列末项，关时置首项，另置 `IsReturnFirstForce` 并滚动；结果刷新分支清标志，原XAML用其显示选中样式。主仓 `SelectStart` 与普通选图共用，`IsFirstConfigured` 无法表达该状态；左右按钮公共命令已声明及绑定。`VM_IMAGE_SOURCE_CONSUMPTION_HANDOFF_20261029.md` 已记录 `RestartFromFirst` 意图和 `IsReturnToFirstPending` 会话状态候选、消费者及验收；尚未改公共接口或宿主、未集成实测，避免单方提前接线破坏现行试用。工作流线继续自身执行候选，两边集成时定稿并整体替换。
+- 用户确认可以构建。UI Release首轮被后台无窗口 `SunEyeVision.UI` PID 37464占用 `SunEyeVision.Plugin.Contracts.dll`，关闭该进程后重试：UI Release 0错误/6474警告；全量Release 0错误/3812警告。正式程序 `--toolbox-probe` PID 19776退出0，识别Blob及图像源Runtime/Wpf组件，仅为启动及注册探针。S4 DesignTime attempt-090因测试按旧“阈值”文本查找失败，改用稳定字段ID后attempt-091为112组通过；不代替VS实际设计器。ImageSourceRecovery attempt-020为55通过、0失败，含原21失败及新增五项导入和会话生命周期检查。均使用当前正式产品，用户视觉、1051图滚动、真实执行及两线集成未验。O06已集中更新当前状态和验证边界。
+- Blob运行页声明纠正一处误导：`OutputGrayImage` 实际由 `BlobSession` 输出灰度快照，当前没有证据证明它是VM `BlobImageComb`；将标签由“Blob图像输出”改为“灰度图像输出”，其字段身份及行为不变。此为当前未完整迁移状态的显式差异，不代表原Blob图像已实现；真实Blob图像与二值图/掩膜语义仍按原O06整链完成。未经构建或运行。
+- 图像源缩略条刷新重入源码候选：刷新捕获会话、生命周期与刷新代次，每个通知和控件更新后复核；回调重绑时旧刷新停止，嵌套刷新保留原有事件抑制状态，勾选恢复也检查当前代次。补WPF会话切换重入回归候选。语法及diff空白检查通过；未构建运行，不能代替整条缩略图交互和人工验收。
+- 图像源缩略条补两项真实WPF回归候选：旧视口归还回调重入换会话后，新会话保持监听；旧首张异步请求完成后不得滚动新会话列表。首张点击逻辑提取可等待的同一内部方法，按钮仍走该方法。C#语法及差异空白检查通过，回归尚未构建运行，横向虚拟滚动与失败/取消语义仍需正式版本验证。
+- 图像源缩略条生命周期源码候选：首次定位请求返回后核对原会话、生命周期、取消和已配置的图像身份，再滚动，避免旧会话异步完成滚动新列表。解绑先退役并捕获旧会话，分项解除监听、取消和释放，再归还旧视口；异常汇总，重入后的新会话不被旧清理覆盖。新增视口归还异常仍解绑及取消的真实控件测试候选。C#语法和diff空白检查通过；尚未构建或运行，真实滚动、重入及VM交互未验，图像源消费/接纳仍由工作流线按集成合同完成。
+- Blob结果表设计数据源码候选：通过正式 `BlobSchema`、`BlobMeasurement`、`InputValues` 和 `ResultPublication` 提供两行纯托管示例，实际 `DeclaredResultTable.Present` 与运行时同链；设计期不调用工作流或算法。结果XAML独立渲染回归候选改为检查两行。设计状态下使用带声明构造器时先释放附加预览表。Roslyn语法解析及diff空白检查通过，尚未语义编译、运行或在VS实测；完整VM结果列、外观与人工验收仍未完成，正式Release冻结不变。
+- Blob当前结果源码候选集中改为 `BlobResultView` 组合公共 `DeclaredResultTable`，正式工厂与设计时XAML入口共用声明及表模板；删除旧专用摘要表和行投影源码，设计检查候选同步调整。无参入口在非设计环境也按正式Blob声明创建表，清理时确保表释放。静态检索未发现已删除类型的生产引用；仅源码候选，未编译、运行或VS验证。设计预览目前仅有列、无示例结果行，完整VM列和样式及运行链仍待补齐，不能视为设计时或运行时验收通过；用户试用冻结期间不构建。
+- 用户追问是否修改协作协议：已更新主仓 `JOINT_COLLABORATION_PROTOCOL.md` 与 `EVIDENCE_AGREEMENT.md`，消除“实施前须双方共同核定”可能造成等待的表述：负责线可先在独立工作区完整设计实施，双方在正式集成前核对。工作流对话已确认收到分工并恢复进行；协议文件变更尚未自动同步到其分支。
+- 用户质疑两条独立线频繁互相阻塞。只读核对发现工作流对话已因图像源共享合同和写入归属未明确而停下；此前主线称其正在工作未反映后续状态。现将图像源取用/游标/运行调试链及其必要Contracts/Runtime变更指定工作流独立线牵头，本线继续Blob及公共视觉控件；其他独立工作不等回复，正式共享接口和Release仅在集成时集中核对。主仓已有 `ToolSettingsFields.cs`、`ToolSettingsEditSession.cs`、`NodeConfigurationEditHost.cs` 未提交变更，必须保留；工作流线的候选也保留，不直接覆盖。用户明确授权后，已向工作流对话发送此分工及边界；消息发送成功不代表其已实施或验收，协议文件也不会自动进入对方分支。
+- Blob正式运行页UI源码候选按VM先后顺序调整已有声明：阈值方式、极性、低阈值、高阈值；字段ID、默认值、真实算法模式与绑定保持原合同。XML解析和差异空白检查通过，未构建或运行；这只是整页的一部分，原版其余阈值模式、条件显隐与筛选/输出组合仍未完成，不代表正确整页。用户此前表示仍在检查，现进程82552已不在，但没有明确解除本轮试用冻结，不启动构建。
+- 用户再次确认工具箱应展示完整目录、已注册加载成功项可用、其余变暗禁用。源码核实提交 `70d8032a` 在产品隔离时删掉完整目录合并、按 `CountCategory>0` 过滤分类并只枚举当前部署项，违背此前明确选择；当前截图“采集”仅图像源与该路径一致。应恢复完整目录展示与按实际部署/加载结果分级，不能因此加载旧组件或把占位视为可用；主界面/工具箱由工作流线负责，后续集中同步验证，当前试用中不构建、不改其分支。
+- 按UI先行补公共固定底栏源码候选：原 `Apps.XmlUI` 的 `Button_ResetAlgoParams` 使用 `Apps.Style/ResetBtnStyle`；两枚原图本地SHA与取证原件一致。`NativeToolEditorFrame` 增加左侧重置入口与借用命令，未提供命令时禁用；独立真实视图样例仅运行参数页显示。XAML XML、C#语法与差异空白检查通过，设计器用例候选未运行；尚未接正式Blob窗口或实现重置事务，不称交付完成。试用仍在进行，不构建。
+- 用户进一步要求先补齐Blob所需全部UI及共享控件UI，并保证正式Blob按正确架构显示：公共库负责控件/模板，Blob负责声明和组合，缺真实能力明确不可用。当前正式入口仅把`IToolSettingsDraft`和宿主`ToolSettingsViewOptions`交给通用视图；ROI设计样例有独立预览owner，不能直接拿它冒充生产状态；图文样式同样依赖正式显示字段与持久owner。当前用户检查中，不关闭或构建；下一批以实际三页组装和正式合同为目标，不将样例或空占位算作功能完成。
+- 按用户要求优先正式页面、分批试用：复核 `BlobEditorFactory → BlobParameterEditor → DeclaredSettingsView` 和参数XML；基本页缺ROI创建/形状正式字段与会话，运行页仅三种真实算法模式，结果显示页仍由Judgments生成且未提供图文显示配置owner。下一批要将可用公共控件接真实草稿、同帧视口、执行与持久化；未实现能力不可伪造，完整三页差异及准入写入 `VM_CONTROL_BATCH_QUEUE_20261029.md`。用户正在检查，未修改程序集或构建。
+- 用户授权结束旧试用并构建：旧进程84776正常关闭；UI Release首轮3个缺少 `ParameterCleanup` 命名空间编译错误，补引用后重试0错误/6472警告；全量Release 0错误/6494警告。日志在 `artifacts/verify-ui-release-20261029-current.log`、`artifacts/verify-ui-release-20261029-retry.log`、`artifacts/verify-full-release-20261029-current.log`。正式Release进程82552响应，主窗口“太阳眼视觉 - 机器视觉平台”，用户正在检查，重新冻结构建/关闭。单个新增图像源测试以 `--no-build` 未发现测试，不能计为通过；无UI外观或设计器验收。
+- 按用户要求先集成可试控件：Blob正式结果工厂源码已切公共原样式声明表，判定失败不再当作各字段无值；公共表缺失可选行源码候选清空旧结果。仍为八列，缺原版角度/长轴/短轴等正式指标；旧 `BlobResultView` 源码与旧设计验证仍在工作树，正式工厂不再使用，需同批清理和调整测试，不能宣称完整结果迁移或没有遗留源码。
+- 用户本次试用截图显示Blob基本页仍是旧来源布局，缺VM ROI类型、绘制/继承及形状；运行页仍是旧分割/筛选/输出组合；结果显示页仍为判定开关，未组装VM图形/文字/颜色。三页均不等同控件库整体接入，继续记录反馈，人工检查进行中。
+- 用户反馈图像源添加菜单与VM本地模式不同：已核原 `ImageListPanelBase` 的 `Islocal` 与两个按钮入口；公共缩略条源码候选改为直接发送本地文件/目录导入请求，删除多余Popup与旧处理器，保留异常Status。真实按钮回归候选已写；XAML XML与C#语法、diff空白检查通过，尚未构建或运行。主界面空列表提示、旧日志/重复区由工作流线协调：对方确认旧名 `SelectedNodeDataAnalysisControl` 在其分支可能承载正式声明式结果视图，不按名称删除；尚未集成。
+- 用户再次明确“仍在检查，暂不构建”；正式Release、试用进程与程序集继续冻结。只读复核截图中的订阅提示：当前 `DeclaredFieldEditor` 保留 `Error` 供提交校验，但 `_error` TextBlock 没有加入该编辑器视觉树；源码状态尚未构建运行，不能据此称用户截图所见版本已修复或验收通过。
+- 参数窗口整批生产入口复核：`InitializeRuntimeEditor` 仍强依赖SDK `DefaultDebugWindow` 与Runtime控件，实际单次调试由RuntimeDebugInvocation承接；公共Frame目前为独立样例，四命令无Reset。已在 `VM_CONTROL_BATCH_QUEUE_20261029.md` 记录生产接入、草稿所有权、Reset、停止排空与完整验收边界；尚未改产品或运行测试。
+- 独立显示样例回归候选补同视口图文联动：检查文字与几何共同存在、图形样式更新保留文字、文字修改保留几何及其样式、NG切换和隐藏几何保留文字。仅语法解析与差异空白检查通过；未编译、运行或证明外观达标，正式Blob未接入。
+- 控件Catalog静态盘点：26项的716条带本地SHA引用中，100条（涉及28个不同文件；90条依赖、10条原件本地文件）与当前工作树不符，缺文件0。计数是引用数而非未完成控件数；含现有未验收源码变更，未改写哈希或原始来源。成批实施、构建和核验后应逐文件更新本地身份并如实区分验证状态。当前观察到两个SunEyeVision进程（84776和14568），继续不关闭、不构建。
+- 来源树与同轮结果展示合同整批复核：三个生产入口已递归枚举record成员，Popup仍平铺且选中恢复只查一层；结果捕获重建输出schema、publication仅承载顶层显示元数据。已将需要同时贯通的入口、冻结、身份、类型指纹及递归恢复写入 `VM_OUTPUT_DISPLAY_CONTRACT_HANDOFF_20261029.md`，尚未实施或验收。用户桌面快捷方式已创建；旧进程73192已不存在，新尝试进程84776停在“SunEyeVision 数据目录”窗口，用户可自行启动；仍未获解除构建冻结。
+- 独立显示样例构造期资源收口：将图层创建、真实设置视图组装、绑定和初次绘制纳入统一异常清理；按已创建状态解绑与释放设置视图、视口及图像，保留构造异常和清理异常。仅C#语法解析及差异空白检查通过，尚未语义编译、运行或VS验收；试用进程73192仍在运行，不关闭或构建。工作流线报告锁外取消的源码候选和回归候选，尚未构建，集成时需逐项核对共享文件。
+- 用户选择保持主仓和工作流两个对话并行，不恢复本对话内子智能体；主仓继续唯一写者。独立原显示样例的同视口测试候选补充NG颜色切换且不写参数，尚未构建运行。
+- 工作流线补充共享接口静态风险：`ToolExecutionIdentity.ToInvocationIdentity` 的DocumentSessionId来源与`DocumentHistoryCoordinator.SessionId`不同，不能默认同一会话；`WorkflowRunRequest.SourceInputs`按节点ID索引，作用域唯一性待核。连续停止路径在执行管理器锁内同步Cancel，未来接纳/退役回调的锁序需整体设计；尚未复现或修改共享接口。
+- 订阅组合候选继续覆盖完整会话及数值范围调用链：引用编辑记录pending版本和Popup展示代次，接纳回调中新原文/新弹层不由旧提交清除；关闭通知分项清理；禁用时暂停来源操作；双端范围隐藏、卸载和释放分项清理；引用Presenter构造失败回收会话。补真实索引输入重入测试候选。仅做源码/差异检查，未编译、运行或人工验收；范围原件跨端夹值仍待VM同态确认，来源显示元数据/递归树与双端异常重入仍需完整批次收口。
+- 已对当前Blob工厂/参数视图、`BlobDisplay.xml`、`BlobSettings.cs`与公共ROI、订阅、图形样式/文本及C01—C17清单做首轮源码盘点，并将已有位置、生产缺口、验收依赖及先库后Blob试用顺序集中写入原O06首屏；这不是完成率或全面验收。确认正式结果工厂仍创建自有BlobResultView、显示XML为8列、分割只有三模式；当前控件源码及工作流线候选仍未经同源构建。逐项源闭包、共享接口消费者和实际整链耗时尚未盘清，暂无有依据日期。
+- 按用户经侧边对话授权提出的协作整理，已更新现有 `EVIDENCE_AGREEMENT.md`、`JOINT_COLLABORATION_PROTOCOL.md`、`JOINT_TASK_ROLES.json`、`ACTIVE_GOAL.md`、S4计划和原O06首屏：明确VM优先、按完整链批量实施、现行两worktree各唯一写者、共享接纳/消费/输出身份合同、实际成果分级与试用冻结。旧四路角色不再作现行写权，旧目标与证据由Git及历史保留；S4的`s4GoalPlan`、`blobFileStructure`、`G2Acceptance`与控件清单未缩减。协议更新不算产品交付，完整源码剩余工作盘点及有依据估时仍待完成；先前3—5天估算已收回。
+- 工作流对话反馈独立分支新增宿主选择回执源码候选：区分正式写入与旧投影失效，并在仍匹配来源、版本及图像时继续预览；未构建或执行，不等同公共缩略条请求回执或图像读取消费。具体接口及两线候选需按共同基线、全部消费者和异常回调协调后集成。
+- 用户明确授权后已向工作流对话发送更新后的协议位置、完整批次规则、两类图像源回执和冻结边界；主仓文件未自动同步到其分支。工作流对话另报告VM自动预步进与显式选图一次性导航不同，当前其 `CaptureIteration` 固定地址，需对 `AlgorithmNode` 与 `RuntimeDebugInvocation` 同时核真实读取接纳；多源停止语义未证。此为对方静态证据及候选，尚未联合实施或构建。
+- 工作流对话等待的是图像源消费/接纳及输出身份的共享合同，而非整个工作流开发所需的前置条件。用户明确授权后已发送交接：工作流对话在其独立worktree作为唯一写者，负责图像源运行消费、宿主接纳与其主界面；本对话在主仓负责Blob所需公共控件和独立样例。图像源接纳合同尚未完成，正式输出展示声明仍待两线统一；两边共享接口/文件应记录变更和基线，集成前逐消费者协调，不覆盖彼此候选。试用期间不关闭或构建主仓正式产物；独立工作无需等另一线完整结束，正式构建及同源验收再集中安排。发送成功不代表实施、合并或验收完成。
+- 订阅控件当前源码候选：展开窗采用旧窗口/请求租约和分项释放，原窗口增加幂等Owner解绑，字段Presenter分项Dispose；Popup会话集中关闭两通道并记录展示代次、scope按旧代关闭及卸载清理。均尚在实施中，未经编译或运行；共享目录当前仍单写者。
+- 文本控件已按独立WPF探针方向加入源码候选：接纳后携带原文/选择/接纳/控件及原绑定身份票据，关闭和聚焦后在同一BeginChange/EndChange中通知原绑定、同步目标并设置光标；结束后不再覆盖外部TextChanged回调。焦点异常仍尝试投影，project和EndChange双异常聚合；正常、接纳重入、TextChanged重入及回调换绑用例均未执行，尚需完整审查、构建和WPF验收。
+- `NativeDisplaySample` 新增仅眼睛的真实第三组合，设计测试候选检查20字段、三眼睛、两个可见样式按钮和一个折叠按钮、切页零写；其后已将样例文字与图形投影到同一 `NativeResultViewport`，以实际几何连接颜色、粗细、透明度和眼睛，并补样例交互回归候选。尚未构建、运行或在VS实机验证，不代表正式Blob已接入或视觉验收通过。
+- 工作流对话补充VM首张按钮证据：`IsReturnFirstForce` 为按钮选中图标与边框的视觉状态，不能作为持久起点或读取接纳；自动模式按原行为写末项供下次预步进，不直接执行。此为对方证据，双方候选尚未集成验证。
+- 独立WPF TextBox探针验证：直接文本赋值的 `TextChanged` 发生在最终 `SelectionChanged` 前；外层BeginChange内赋文本和选择15、EndChange时外部回调选1，最终保留1。逆向/静态审查给出带接纳票据、投影与光标同一change block、结束后不再旧恢复的方向；尚未接入真实绑定或产品，不代表文本回归通过。原来源Popup、展开窗及Presenter另发现异常可能中断监听/请求释放，已明确应同批处理旧代冻结与异常聚合，尚未实施。
+- 文本候选复核已证普通 `_propose → SubmitFields(replacePending:false) → Changed → afterWrite → OnAccepted投影` 的顺序；但投影期间外部 `TextChanged` 回调自行选择光标仍可能被旧恢复覆盖，已新增真实入口回归候选，预计当前代码不能满足，尚未运行。下一步需区分受控投影与投影回调内外部选择，不得用屏蔽整段SelectionChanged掩盖；正常光标15、Changed同文本选择1及TextChanged选择1须一起验。
+- 图形样式整批静态复核确认原Blob轮廓与Text行可只显示眼睛，样式按钮由 `PanVisible` 独立控制；公共库候选增加 `ShowStyleButton` 并接原模板，添加仅眼睛可编辑回归候选。色板、按钮状态、实际Blob显示声明和资源闭包仍需同批接入/集中验收；未经构建运行。
+- 文本候选进一步按接纳通知与文本投影区分选择变化：在写入返回后、受控投影前记录选择变更，投影后重新建立票据；新增正常插入15位光标及接纳回调同文本改选择的用例候选。实际WPF绑定和 `_propose` / `ExplicitlyAccepted` 回调顺序仍需验证，不能认定两用例已通过。
+- 文本控件候选新增单调选择版本，覆盖接纳与关闭/焦点期间的光标ABA及关闭后新浏览校验；补正常插入光标和接纳回调同文本新选择的测试候选。文本绑定自动投影是否触发 `SelectionChanged` 并导致正常光标恢复被误拒仍须真实WPF验证，当前不可称修复通过。图像源接纳回执已追到 `ImageInputSource.Commit → ConfigurationWriter → NodeConfigurationEditHost.Commit`，须区分正式已接纳与旧投影退役，后续按完整列表/消费批次实施。
+- 文本表达式原组合批次：静态证实原候选包含前序/自身/内部int、float、string，不能复用排除自身的普通参数来源筛选。主线候选在 `NativeTextSession` / `NativeTextPresenter` 补接纳、选择和焦点恢复身份门槛、允许焦点回调保留新原文、关闭和卸载分项清理及加载代次，并新增接纳重入用例；尚未构建运行。独立复核后进一步补了选择位置与焦点检查、卸载先退旧监听；同文本新光标、关闭时重开及卸载重挂仍需实测和更多用例，正式Blob文本候选及同轮求值仍未接，不能称整批完成。保留用户试用进程及Blob XAML。
+- 图像源缩略条只读补证：原选择变化触发运行，首张按AutoPlay预设下一次消费游标；本方Task正常完成可包含拒绝或过期，不能用无异常推断接纳。需正式接纳点回执及会话代次，联合A03消费合同实施，尚未改此链；工作流分支的共享合同不自动同步。
+- 本轮重新确认试用进程73192存活且响应，继续冻结构建与关闭。三路只读自动补位分别核图像源缩略条、ROI参数栈及订阅来源树；主线依据原件静态证据补充展开窗非模态即时选择和图像背景+三叠层的完整状态、精确alpha、owner及验收边界至 `VM_CONTROL_BATCH_QUEUE_20261029.md`。这些是方案证据，未实现或运行验证；不得因个别原件已存在进入Blob重组。
+- 来源树批次已追到原递归本地化名称和本方输出声明缺口，实施顺序写入 `VM_OUTPUT_DISPLAY_CONTRACT_HANDOFF_20261029.md`：输出声明、目录、同轮publication及来源/文本/结果树须同批贯通，不能拿表列反推。ROI只读核查确认库已有四类投影和统一session基础，正式Blob尚未接入，圆环与扇形参数栈不可混同。缩略条新增待核差异：原选择变化触发运行，首张涉及下一轮游标；本方重复点击及异步旧会话滚动需与消费合同整批处理，不能仅凭静态证据更改游标语义。
+- 用户进一步要求按完整控件或完整功能链整批推进：先集中形成VM证据与方案，再统一实施、集中测试；测试暴露缺口后定向补证修复并复测。工作流独立线也遵守；不同批次可按唯一写者约束并行准备。已更新协作合同，不把正在进行的范围候选或旧局部测试称为完整批次交付。
+- 完整控件批次复核新增证据：VM `SliderArrangeBase.cs:1032–1100,1184–1218` 的滑条/失焦夹值未按另一端订阅状态跳过，本方候选加了跳过条件；订阅值是否另行投影及完整交互尚未查清，不可把该条件称为VM等价。已纠正范围交接文件，将其列为待证的候选差异；本批三路分别只读准备范围、来源树、样式/色板的完整方案。
+- 原范围批次完整静态证据和验收列于 `VM_RANGE_CONTROL_BATCH_20261029.md`。已撤回原控件候选中六处无证的跳过夹值条件，Presenter的订阅端边界仍待完整链确认；先前“300必须接纳”的未运行测试断言已移除，保留真实VM同态补证要求。完整捕获补加pending及节点配置身份后置检查、相应重入测试候选；均未经构建运行。
+- 已集中整理范围、订阅树、图形/色板、图像输入、窗口、ROI、图像源及结果树表的批次证据、依赖、差异与验收至 `VM_CONTROL_BATCH_QUEUE_20261029.md`；本表为未完成候选与后续实施入口，不覆盖原O06或宣称验收。只读成员完成一项即自动补位；工作流仍独立写入其分支。
+- 按完整开关/枚举批次的只读核查，主线在字段叶候选增加隐藏/卸载/旧叶写入门槛及重新显示时投影已接纳状态，新增针对两类原件的隐藏→恢复回归候选。图像源缩略条只读发现旧会话异步首张滚动及viewport归还异常/重入风险，暂未实施。均未经构建或运行。
+- 工作流独立线报告共同祖先36bcd14f、其HEAD 320e59ad；两线同改 `ImageSourceDraftContent.cs`、`BindingConfigurationStore.cs`，且跨文件存在 `IToolDefinition.Describe` 签名分叉。当前主仓含未提交草稿候选及用户XAML，不可按文件数判断可直接合并；后续固定基线后以完整链逐消费者协调，当前不合并、不覆盖试用程序。
+- 已读取并重核逆向负责人图像源根流程完整交付 SHA `229ED6E42D045F173B874F40E62135814FB03843992DC30E086BF46C98145352`，其覆盖三来源、输入输出、游标/SN、流程与资源及11组验收；多源、相机物理帧、竞态、完整桌面及保存重开仍有未知。原生目录模式与UI手动导入是不同入口，不混用排序/递归规则。已更新图像源交接，尚未据此声称两条代码线实现完毕。
+- 用户明确授权后，已将本次VM优先和整批取证→实施→测试规则发送“工作流、工具箱与数据流优化”对话；该线处于独立worktree，主仓未提交合同不会自动出现在其分支，需按既定基线同步流程处理。发送成功不代表其已经完成实施或核验。
+- 用户明确：VM是设计和验收的第一基准，先核入口、组装、状态、数据流与退出清理，优先原件，本方宿主以非视觉方式适配，用户指定和平台必要差异须显式记录；同页面、同状态、同操作先做VM对照，再核本方执行、保存与资源。已更新 `EVIDENCE_AGREEMENT.md`、`JOINT_COLLABORATION_PROTOCOL.md` 和 `JOINT_TASK_ROLES.json`；同时适用于工作流，不改变独立分支及唯一写者边界。
+- 上一轮被中断前已在Contracts、Runtime、Wpf、工作流宿主及真实页面测试加入草稿增量/完整捕获、单字段引用准入、非提交同步、待编辑状态候选；下面更早条目所述“未实施”仅反映当时状态。上述候选尚未构建或运行，不能称已完成或安全交付；用户试用进程73192仍在使用，不得构建、关闭或替换。
+- 两路静态审查新发现：完整校验回调可能改变未提交raw但不改变草稿修订，仍需捕获版本/待编辑后置检查；宿主完整验证回调可能重入替换节点配置，需在安装前核previous、验证后核next，失败时保留较新配置。先修并加入真实反例，再在用户结束检查后集中构建和验证。设计时样例与正式编辑会话的校验实现仍需核一致性。
+
+## 2026-10-29 范围单端编辑候选与正式草稿缺口
+
+- VM 原控件左右订阅独立。本轮在 `NativeRangePresenter` 候选中分离单端提交与最终双端捕获，单端只提交本端、保留对端原文；本端绑定校验避免重复初始化双端，临时边界逐项恢复，双端事务增加模式戳；原范围控件在另一端订阅时不再用其旧数值夹回当前输入。无常量备份解除订阅进入空白待输入态，不伪造常量。以上均为源码候选，未经构建或执行，不能称修复完成。
+- 并行静态审查确认尚有关键产品链缺口：另一端进入引用模式但尚未选源时，其 Accepted 仍是旧常量；`ToolSettingsEditSession`、`RuntimeToolConfiguration` 与 `RuntimeNodeConfigurationControl` 会按旧常量做完整语义校验。例如面积 [100,200] 上限待选引用，下限改300仍会被正式草稿拒绝。须区分临时编辑候选与正式捕获，保持保存/运行完整校验；未实施解决方案，不以控件单测替代正式 Blob 草稿验证。
+- 只读审查的候选方向：以现有 `FieldSettingsDraft` 作为唯一私有编辑权威，允许暂不满足跨字段完整语义；在正式捕获时对稳定快照执行完整校验后投影节点，保持 `RuntimeToolConfiguration`、保存、调试和执行门禁。`ValidateProposal` 的真实引用作用域/类型准入不得移除；需要同时跟踪未投影修订、捕获失败、合法但未提交原文及重入，否则 `HasPendingEdits` 会漏报。这是待实现方案，不是已验证设计；须覆盖合法/失效引用、保存/关闭/取消/重绑及回调重入。
+- 已补另一端非法原文、无备份左右镜像测试候选，并保留最终捕获与宿主拒绝测试；尚未运行。静态 C# 语法检查通过，`git diff --check` 通过；不代表编译、设计器或运行时验收。用户正在使用进程73192，未关闭、重建或替换程序；BlobParameterEditor.xaml SHA 仍为 118128FB08EA3163B353620A91359B08B4D5CB1D36A58E37EAA9BF5C83DA67ED。
+- 本次续做发现解除订阅时同步通知可能重入并接纳新常量或键入新原文，旧回调会将其清空；候选增加接纳代次、输入代次和实例检查，新增左右无备份及回调重入用例。正式 Blob 页面用例新增面积上下限 [100,200]、上限待选订阅、下限300以及正式节点不变/最终捕获拒绝的反例；这些用例尚未运行。
+- 宿主另有独立问题：`RuntimeNodeConfigurationControl.Changed` 遇字段状态通知即整页 `TryCapture`，可能顺带提交另一端原文；`HasPendingEdits` 又只检查错误，漏掉合法未提交原文。并行审查建议原 Changed 保留状态通知，新增不提交原文的已接纳快照读取和逐层 pending 查询；相机内容直接操作同一 draft 并经现有 `ImageSourceParameterEditor.OnSourceChanged` 通知，不能只监听普通参数写入。该建议仍须核对重绑丢原文、语义比较、回调代次与相机路径后整体实施。
+- 工作合同与下一批验证矩阵见 `VM_RANGE_DRAFT_CONTRACT_20261029.md`；可复用单字段 `WorkflowBindingContext.ValidateTyped`，但它不是完整依赖图循环校验，正式提交仍需完整图验证。未增加任何宿主接口或宣称草稿链完成。
+- 工作流独立线只读补证：追加导入后当前项、删除当前项后实际游标、点击缩略图时其他自动源是否推进、首张按钮的下一轮行为仍须分别实机核实，不能仅凭 UI 或当前实现断言等同 VM；涉及独立线的源码由其唯一写入者处理。
+
+## 2026-10-29 原厂证据与下一批统一合同
+
+- 已重新读取原厂图像源探针、反编译及源码：自动从A读取缺失B后下一次为C；连续流程末项成功或失败时AutoStop开启均停止，关闭则继续；连续开关关闭不等于在途轮次已排空。UI XML的AutoStop默认true与算法XML默认false冲突，原生Init加载算法默认，不凭UI声明改运行默认。详 `VM_IMAGE_SOURCE_CONSUMPTION_HANDOFF_20261029.md`。
+- 工作流独立线补充通信单节点/整流程、方案执行、缩略图执行及私有调试为不同入口；其中原版游标和one-shot归属尚未全部证实，不能全部套普通连续模式。已将证据与入口交接给独立线；公共一次性消费合同仍待完整设计、实施及验证。
+- 模块输出树、来源树、文本树及表格的共用显示元数据职责与精确绑定身份整理在 `VM_OUTPUT_DISPLAY_CONTRACT_HANDOFF_20261029.md`；当前候选只将清除项改为“无”，名称/层级/成员声明未完成。
+- 原范围控件左右订阅独立，当前组合会因另一端未完成而阻塞本端，也会顺带提交另一端原文。单端编辑、双端最终捕获、引用和常量边界、相反旧测试及验收记录在 `VM_RANGE_SUBSCRIPTION_HANDOFF_20261029.md`；未实施，不称修好。
+- 三路只读并行完成对应核查；逆向负责人对本批请求已受理，尚无完整方案交付，不将其其他回答当交付。用户正在检查正式程序，不重建、不重启、不触碰产物。
+
+## 2026-10-29 VM 逆向与实施协作调整
+
+- 用户指出实施时反复猜测、局部试错和重建浪费时间，并要求控件/Blob及工作流都由逆向负责人提供可实施的原件方案。已向“逆向负责人｜VM取证统筹”发送分批取证请求，并向“工作流、工具箱与数据流优化”同步；这只是已派发，尚未收到本轮交付。
+- 第一批优先图像源的来源模式、列表、相机与订阅，来源树和范围双端订阅；并覆盖工作流运行、停止、失败、结果发布及图像源消费时序。后续覆盖Blob三页、ROI、图文与结果树表。每项要求引用原证据、行为/条件/数据流和验收，区分已证与未知；本方合同和实现由主线结合证据负责。
+- 工作流独立线提出 A03 图像消费接纳点：原件证据显示实际取图前推进、失败也消费；当前主线和独立线尚未统一公共合同，不得各自造接口或把候选当通过。该线另报告画布复合事务的通知异常回滚仍未闭环，尚未集成。
+- 工作流线只读指出旧图像执行回归与 VM 实测不一致：缺图预过滤并拒绝、只停在最后有效图等旧断言不能作为 A03 对齐证据；另有冻结执行期间修改正式源配置的测试需结合运行互斥新合同重设计。捕获之前取消不推进仍是独立有效场景，不能推及取图已接纳之后。以上均待统一合同和正式验证，不能仅改测试名或删断言。
+- 试用仍在进行，用户程序和正式Release不受影响；不在此期间重建或改写测试产物。收到证据后先核清一致行为与独立源码责任，再集中实施及统一验收。
+
+## 2026-10-29 图像源反馈候选构建与试用
+
+- 用户确认结束上一轮检查并要求修复后启动。旧进程29496已请求正常关闭并退出；当前本仓正式Release程序进程73192已启动，窗口标题“SunEyeVision 数据目录”、响应正常。用户可继续检查，不在其检查时重建/替换程序集。
+- 已进入本次试用的候选：普通图像源参数页去除重复缩略条；相机选择置于来源字段后；本地格式只影响本地输入；结果区与独立设计源条移除可能裁切横条的高度限制；字段/范围/来源组合不显示控件下方橙色提示，原错误状态保留；来源树清除项显示“无”。未完成来源树模块名和成员层次，未完成范围双端独立订阅和Blob图文显示，不能把本次试用称完整VM迁移。
+- UI构建0错6474警告；全量构建0错6490警告。字段回归最终31组、独立设计108组通过。相机真实格式测试首次因测试工程重建覆盖了发布程序集而触发清单SHA不匹配、未进入测试；已保留失败日志，随后重新全量构建0错1066警告、核18个产品程序集与清单一致，no-build复测相机6组通过。用户Blob XAML SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed未变。
+- 自动化检查不代表VS设计器或用户视觉验收；1051张图横向滚动及真实相机、曝光/增益、目录订阅、来源树和Blob完整参数/结果链仍需完成并验证。工作流独立线候选未合入，仍需按文件与合同协调；不推送。
+
+## 2026-10-29 人工检查继续：来源树、提示和模块结果
+
+- 用户正在检查，明确要求暂不关闭程序或构建；不得重启、重建或替换其正在使用的版本。新发来源树、字段橙色提示、Blob阈值/极性及模块结果连续截图已归档原方案 references。用户明确指出应主动完成 VM 逆向，不依赖其逐项截图。
+- 来源树问题已找到根因：按Scope/Node分组后以NodeId显示根，候选完整Label被用作叶；Runtime输出合同又将DisplayName设为port.Id，成员层级被压平。应由正式输出声明提供唯一显示元数据，模块→输出→成员组树并递归恢复选择，保持Scope/Node/Port/MemberPath/类型/选择身份，不按文字推测身份、不虚造未声明结果。来源树/模块结果树/结果表应同源。
+- 橙色行内文字用户要求去掉；字段、范围和来源选择组合的候选已移除可视提示行，错误状态和提交校验保留。尚未编译或验证。
+- 已确认VM相机曝光/增益为上游float引用；相机Mono8是附加灰度输出，不能等同改变主图像。候选中相机主图保留采集格式，避免隐藏的本地格式影响相机；独立灰度输出开关及曝光/增益完整执行链尚缺，未构建或运行。
+- 新截图的结果树显示嵌套几何和按字段展示的集合；只按真实输出声明与同次结果填充，未实现的项目不得填假值。原输出资料和实际字段需继续逐项核对。
+
+## 2026-10-29 图像源本地/相机模式对照与修改中
+
+- 用户继续提供 VM 本地与相机模式参数页截图，并要求逆向完整交互；截图已归档原方案 references/image-source-feedback-20261029/。普通 VM 工具参数窗不显示本地图像缩略条，相机模式在图像源后显示关联相机、曝光及增益来源；SDK 宿主模式与来源枚举 SDK 是两个概念，不能混同。
+- 用户已要求直接优化，本线开始源码候选，但不重启、关闭或重建用户当前试用版。参数页去除重复源条会话、相机组合锚定图像源之后并受来源条件控制；主结果区移除高度上限候选与设计预览同步。尚未编译或运行，滚动条根因和实机效果未验。
+- VM 本地的方案存图、显示图像名称、图片缓存、拼接、字符过滤、订阅文件夹等，以及相机曝光/增益来源、输出Mono8等尚未全部有真实能力；不得以空控件宣称完整迁移。按正式草稿、设备和执行合同逐项补齐并核作用域。设计器及 1051 图滚动、切换、取消/提交、真实VM/用户验收待集中验证。
+- 工作流独立线仍在推进源执行与历史；共享 ImageSourceDraftContent 存在交叉修改，合并按实际内容处理，不整文件覆盖。用户的 BlobParameterEditor.xaml 不改不暂存；不推送。旧试用冻结条目表示当时状态，本条为最新进度。
+
+## 2026-10-29 用户反馈：图像源滚动及Blob输入源
+
+- 用户实际试用反馈图像源条看不到横向滚动条，VM/本方Blob输入源截图还指出内部ID及ROI组合差异；截图存原方案references/image-source-feedback-20261029/。
+- 已核VM实际主窗使用VMControls.WPF ImageListPanel横向虚拟列表及原10px滚动条，本方模板已迁入。发现本方ImageSourceStrip展开125px而宿主上限110px，存在裁切风险；原宿主结构不同，尚未运行证实根因。不得取消虚拟化或称已修；详IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.md及同名证据JSON。
+- 正式试用用户仍在检查，不改源码、XAML、程序集或重建；下一集中修改高度/布局并核1051图真实可滚动、容器回收、手动/自动及原图。输入显示名沿同一正式合同修，ROI不冒称已接。
+
+## 2026-10-29 用户验收反馈：VM统一结果区与图像来源名称
+
+- 用户截图对比确认：只保留一套当前结果/历史结果/帮助，移除主界面重复旧日志/数据分析可视区；Blob自制摘要及表格改用VM逆向公共表。历史按VM执行序号、时间、模块数据记录并提供清空/保存，当前未实现，不冒称旧图像回放。
+- 工作流独立分支主窗候选f2dbc926已移除第二套旧日志区及相关分隔/初始化，保留当前结果接线和后台日志；仅静态检查，未合入、未构建或运行，历史/叠层/真实帮助仍未实现。试用版不变。
+- 已经用户明确授权，将主界面需求发送“工作流、工具箱与数据流优化”对话，其独立工作区处理；本线负责公共原表及Blob对接。主仓正在试用，尚未改源码/重建/合入，不代表完成。
+- 原VM Blob结果表为序号加9指标共10列，现本方8列缺角度、长轴、短轴且有额外边框；现有最小外接矩形参数不能未经证据直接当原轴定义。目标需补真实输出及声明，不以8列换皮算完成。
+- 深入核对发现Blob表当前投影把judgment-passed作为全部列ValidWhen；直接换公共表会清空NG行数值及高亮。必须先区分判定与数值可用性并用真实NG结果验证，再接原表；不能直接换工厂冒称完成。
+- VM复选框是图像叠层而非普通来源选择；现有输出CanOverlay/IsCheck/IsBackgroundImage均false、背景命令未接。原背景+最多3叠层及确认/非运行门槛已有取证，本方缺正式受管图像叠层owner，不能只改勾选。原Blob历史还依赖独立datarecord声明，本方现无，不能拿当前表拼接冒充。
+- 用户新截图：图像来源列表暴露output.image等内部ID，当前图像时复选状态与VM截图不同；显示元数据、同源身份和实际复选/背景交互一并核证，不把显示文本当内部身份。详VM_RESULT_PANEL_COMPARISON_20261029.md及同名证据JSON；四张图已归档原方案references/result-panel-20261029/。
+
+## 2026-10-29 试用冻结期下一批只读核查
+
+- 试用版继续冻结：不修改主仓源码、XAML、正式Release或设计器程序集；用户尚未人工验收。原目标active，控件库第一阶段未完成，Blob重组未准入。
+- ROI公共Session/参数栈/视口手柄已有基础；正式视图与ROI/Assist联合捕获、同帧、检测屏蔽状态和历史仍缺。AssistCompositions已在当前候选进入正式设置视图，Window336 2过，不重复称接口未传。
+- 产品命名清单：Catalog 359个本地路径中106个含原厂名，源码/XAML/props 895个文件命中只作宽口径检索；逐闭包、身份映射和资源联动，不把搜索数称迁移数。removedFiles历史项不计缺失；详BLOB_NATIVE_NAMING_INVENTORY_20261029.json。
+- Blob图文显示的同次输入ROI、样式owner、完整边界及crossSize/Bold绘制合同仍待阶段二；现有结果树表同publication，不冒称已接常驻图形文字。下一批与证据详BLOB_NEXT_CHAIN_AUDIT_20261029.md。
+- 工作流分支87a8af0c声明恢复静态候选仅针对本次失效当前Runtime节点，尚未构建/合入；工作流另提供1e0ff757历史回放待修回归，Undo/Redo/Navigate可能未同步结果失效，尚未运行；变量绑定历史保活不可一概清空，待精确受影响节点整链核验。试用结束后再处理，不整分支覆盖本仓。
+
+## 2026-10-29 Blob 基础链路试用候选与验收隔离
+
+- 本地 ddc59a9d 加未提交候选和用户XAML，非纯提交版；用户BlobParameterEditor.xaml原SHA 118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。运行时参数页从基本参数开始，设计器保用户所选页；该小修不是Blob重组或阶段完成。
+- 集中构建：UI 0错6423警告、全量0错6347警告；同源RuntimeEditor099=10、FullChain163真实HALCON=19、FieldEditing106=31、Design088=108、Window336 Assist=2、Window337样式=3、Components226=9、实际EXE准入024=8通过。详BLOB_TRIAL_CANDIDATE_20261029.json；独立设计不代VS/人工、样例不代表Blob已接入。
+- 试用范围及操作详BLOB_TRIAL_20261029.md、原O06试用入口；测试输入为FullChain163生成的图像。期间冻结主仓正式Release、XAML及相关设计器程序集，不在用户验收期间重新构建；工作流线可在其已有独立分支开发，主线其他核查只读。用户尚未验收，目标仍active、第一阶段未通过、Blob重组不准入。
+- 正式Blob本地ROI双向编辑、位姿组合和结果图文常驻显示尚未贯通；结果树/表同一publication，表选中高亮不代表树高亮。工作流线报告D01来源声明恢复候选及80354f05整批回归，仅静态、未合入未验，试用期间不覆盖正式产物。人工结束后再集成检查共享文件及公共合同，完成统一构建和回归。
+
+## 2026-10-29 原色板Popup归属、图表重入候选与系统输入诊断
+
+- 上轮色板候选及正式构建/五轨核收为实际进展。本轮一主写三路只读；无Blob业务/算法重组，无相机候选合入，不改用户BlobParameterEditor.xaml（SHA 118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed），未推送。
+- 保留Field103验证宿主编译错，104/105通过31组：色板关闭后旧滑条零写、重开恢复、亮度通知异常/嵌套接纳、图表提交与marker通知异常及重入；图表像素由测试注入，不能算真实指针。
+- 系统输入前台、捕获、坐标、安全窗口与按钮门禁独立opt-in。Window329输入调用栈证实图表MouseMove已写目标色，随后GraphicStylePresenter.OnInput把嵌套Popup视作外部点击并关闭；现每次只认当前打开色板的Popup.Child根，退役根不保留。Window330中系统按下实际到达图表且Popup仍开，但测试预期坐标和WPF鼠标位置不一致，断言失败；尚不能确定布局变化原因。Window331前台为其他进程，门禁拒绝注入。全部原失败及源/加载身份保留，真实拖动和外点关闭未算通过。
+- 当前正式产物为ddc59a9d基线加未提交本批源码与用户XAML：UI001=0错6488警告、全量001=0错6373警告；Field105=31、Window332原完整样式=3、Window333颜色=3、独立设计087=108、真实HALCON整链162=19、正式EXE准入023=8通过并恢复。核78源码、569载荷、5轨39加载SHA，详 NATIVE_COLOR_POPUP_CANDIDATE_20261029.json；独立设计不代真实VS/VM/用户视觉验收。
+- 下一继续同条件系统图表点击/拖动/释放与真实外点配对；坐标来源先核，不强抢用户前台。再做ROI+Assist同一正式编辑会话（现DeclaredFieldsView有Assist组合，但ToolSettingsViewOptions/DeclaredSettingsView未传递；原位姿公式未证不伪造）。用户要求中性命名、C17原导出及C01—C17/完整阶段门禁仍保留。
+- 工作流独立线报告相机d820与后续回归ad60，仅静态，未合入；独立只读核查：切设备状态串写已修，但管理器Dispose后在途Open、详情Dispose后Apply/Connect仍可接纳，须继续收敛；不能套非本批正式结果。构建/验证句柄均终态，无live；目标active、第一阶段未过、第二阶段不准入。
+
+## 2026-10-29 原色板“更多”页候选与同提交基线核收
+
+- 上轮仅解释隔离，不算实现进展。本轮主仓唯一写、三路只读核源与反例；未推送、不改Blob业务/算法/用户BlobParameterEditor.xaml，用户文件SHA 118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持。
+- ddc59a9d正式身份已重新构建并核收：UI 0错6484警告，全量0错6344警告；数值/范围/图形/十字六轨、字段31、独立设计108、编辑10、真实HALCON整链19、组件9、正式EXE准入8通过。核75源码、569载荷及11轨93加载SHA，详 C09_DDC_COMMITTED_RELEASE_20261029.json；此产物含单列未提交用户XAML，不称纯净提交树。
+- 色板原模板反查：图形ImageViewConfig四行与文本ColorConfig都用VM.PcUI色板；Apps.XmlUI同名色板的命令/ClosedEvent不混入。更多页以前SetValue断绑定、缓存基色不随接纳变更，现由同一原色板提交颜色，区分ARGB字节等价与ScRGB内部精度；接纳/拒绝、外部更色、重入、绑定身份、失活和亮度缓存统一处理。图表选色业务异常不再被广域空catch吞掉，标记在同一有效提案接纳后更新；真实鼠标逐态仍未验。
+- 当前正式载荷是ddc基线加未提交色板源码候选及用户XAML；UI003=0错6442警告、全量003=0错6414警告；FieldEditing102=31、Window321原完整样式=3、Window322颜色=3、Design085=108、FullChain160真实HALCON=19、正式EXE准入021=8通过并恢复。核78源码/569发布项/5轨39加载SHA，详 NATIVE_COLOR_MORE_CANDIDATE_20261029.json；独立设计不代真实VS、VM或用户验收。
+- 保留Field094–097失败与100/101图表鼠标定位失败：101中Mouse.GetPosition(chart)=1399.25,55.47，测试坐标异常，尚未确定产品/测试原因；不得将取色、拖动、拒绝标记回滚或实物指针记为通过。下一继续图表命中/拖动真实交互、焦点关闭和重入异常；C08 Assist生产映射与会话、C17原导出、用户要求中性命名及全门禁继续。
+- 工作流独立线更新相机候选4039af8a；仅语法核查，未合入或按正式Release认定通过。只读复核发现连接等待中切换相机可能把A状态写到B，管理器Dispose枚举后仍可能接纳在途Open；需一并闭环。交叉文件只迁状态投影，保本主线FieldSettings。相机独立推进；主线保持唯一产品写者。所有本轮构建和验证句柄均终态，无live；阶段一未结束，Blob第二阶段不准入。
+
+## 2026-10-29 C09完整本地检查点ddc59a9d已保存，下一绑定同提交正式身份
+
+- 已保存中文检查点ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c（91路径：唯一字段Map整链、图历史/复制/插线、根参数代理、原数值重入及原方案/证据）。用户BlobParameterEditor.xaml未暂存且原SHA保持；无推送、无写者交接、无新工作区或产品副本。
+- git add曾因runtime/忽略规则返回提示；实际91路径均已暂存，逐项对比路径清单并核75源码索引规范内容后提交，未强加忽略目录或用户文件。提交后编译/验证源码未再改。
+- C09_NUMERIC_REENTRY_CANDIDATE_20261029.json是提交前36b基线加完整候选源码SHA的权威核收。当前正式manifest仍标36b，本地检查点不改变该证据事实，不能把旧产物改称ddc提交标签；旧报告/失败一律保留。用户XAML与提交内容差异单列，亦不称纯净提交树。
+- 下一首先按ddc串行UI及全量Release重新绑定正式提交身份并核必要同源回归/实际EXE；随后完整迁S3RuntimeWorkflow，再Debug/Image/Catalog及有无Wpf消费者，不能恢复旧API/ParamSettings双轨。A03公共消费接纳由本主线核定及唯一写，C05独立worktree可推进设备链，不改本主仓/公共合同/正式输出。
+- 本轮全部构建与验证真实终态，无live；源/测试冻结后只补本记录、计划当前检查点与原O06。目标active，阶段一仍未完成，Blob第二阶段继续冻结；真实VM/VS/人工及原完整两阶段要求均未代签。
+
 ## 2026-10-29 C09原数值完整重入候选核收，拟保存完整中文检查点
 
 - 上轮Root代理已有实际进展；本轮继续一主写三路只读逐项核收，Blob业务/算法/文件重组仍冻结。36bcd14faa43037fe00471bd56cfcb3101417c1f基线加完整未提交C09候选，不套旧成绩；用户BlobParameterEditor.xaml原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不改不暂存。
@@ -1649,3 +2509,19 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 已检查并快进6ae8639369dcc95b0f4288432ccf369d4f5f3835，仅测试准备改用现有私有setter，不扩大产品接口。全量Release006/session3804已终止exit0：0错误、6608警告、119.22秒，artifacts/image-source-baseline-release-build-20261028-006.log；UI009对应同产品源。Release005三处fixture私有setter错误保留，不以旧回归成绩覆盖当前未验状态。
 - 已向工作流对话交正式主仓同源产物测试窗口，要求最新ImageSources45项、WorkflowHost及适用EXE；主线产品/测试源码保持冻结，不构建，不覆盖产物。等待其明确回归结果及归还窗口；不是已完成或用户人工通过。用户Blob XAML保持未提交。
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
+
+- B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,159 @@
+{
+  "baseline": "2aa8959d",
+  "comparison": "Roslyn lexical tokens excluding using/file-scoped namespace and canonicalizing planned type/resource identities; not semantic binding or runtime equivalence",
+  "files": [
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+      "bodyTokensEquivalent": false
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ListItemBackgroundConverter.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "destination": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+      "bodyTokensEquivalent": false
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "destination": "src/Plugin.Wpf/Infrastructure/Resources/DynamicResourceDictionary.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "destination": "src/Plugin.Wpf/Interop/Windows/ObjectEventArgs.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "destination": "src/Plugin.Wpf/Interop/Windows/ObjectEventHandler.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "destination": "src/Plugin.Wpf/Interop/Windows/TextBoxFocusEventArgs.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "destination": "src/Plugin.Wpf/Interop/Windows/UIHelper.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/ColorThemesResourceDictionary.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BottomCornerRadiusConvert.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DoubleUtil.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/FouerColorBorder.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Location.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopCornerRadiusConvert.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert2.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/UlementEx.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WindowHelper.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "destination": "src/Plugin.Wpf/Converters/Tree/LeftMarginMultiplierConverter.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "destination": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "destination": "src/Plugin.Wpf/Converters/Tree/TreeViewItemExtensions.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "destination": "src/Plugin.Wpf/Utilities/MathHelper.cs",
+      "bodyTokensEquivalent": true
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "destination": "src/Plugin.Wpf/Utilities/UIHelper.cs",
+      "bodyTokensEquivalent": true
+    }
+  ],
+  "equivalent": 26,
+  "different": 2,
+  "explainedDifferences": [
+    {
+      "file": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+      "finding": "逐行对照唯一差异为继承HikTextBox改为已迁移的PopupTextBox；与类型映射一致，未改方法体"
+    },
+    {
+      "file": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+      "finding": "逐行对照差异为原文件BOM附着using System，旧规范化正则未去除该行；不代表方法体变化"
+    }
+  ],
+  "unexplainedDifferences": 0
+}

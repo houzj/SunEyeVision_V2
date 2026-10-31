@@ -1,0 +1,26 @@
+{
+  "nativeStartup": false,
+  "status": "旧仅日志/未找到写入者推断已撤回；成功分支为已加载ModuleProxy目录",
+  "boundaries": [
+    "正常成功路径已定位不等于正式公开配置已找到",
+    "DLL目录推导清单位置不限制历史整行递归目标",
+    "当前共享历史仅主线旧缓存是时点观察，不是并发或重解析隔离保证"
+  ],
+  "observedHistory": "B08_SHARED_HISTORY_READONLY_20261031.json",
+  "receiptWriteFailure": "首轮审计记录漏PowerShell布尔美元前缀，报告复制及哈希核对已执行，记录写入失败后更正；未启SDK",
+  "preservedCache": "B08_OWNED_CACHE_PRESERVATION_20261031.json",
+  "reports": [
+    {
+      "archive": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_PROXY_PATH_CORRECTION_20261031\\B08代理公开初始化与ProxyPath实写-20261031.md",
+      "sha256": "6FC840B2682C7A39DBB7F3C0597313797F3F50E9923FCCEF9EEB3AA886414668"
+    },
+    {
+      "archive": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_PROXY_PATH_CORRECTION_20261031\\B08代理路径与单次运行前检决策-20261031.md",
+      "sha256": "C9A6D05DA8DD0B1B54DF32D65DA1B8C334FD133D6808A3F05B13AB92FA93EE73"
+    },
+    {
+      "archive": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_PROXY_PATH_CORRECTION_20261031\\B08代理ProxyPath真实赋值与前检边界-20261031.md",
+      "sha256": "34DF41E6BFD71964BCA05CCAFB81949AC5D14E34BE7BF28837559E11B5B2F592"
+    }
+  ]
+}

@@ -141,7 +141,7 @@
             <Border.Resources>
               <ResourceDictionary>
                 <ResourceDictionary.MergedDictionaries>
-                  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
+                  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml" />
                 </ResourceDictionary.MergedDictionaries>
               </ResourceDictionary>
             </Border.Resources>

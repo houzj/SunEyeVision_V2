@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
-using NativePopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
+using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
 using NativePicker=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView;
 using NativeFloat=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat;
 using NativeArrange=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase;
@@ -41,7 +41,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     public object BridgeObjA=>_bridge;
     public string DisplayNameA {get;}
     public string DescriptionA=>DisplayNameA;
-    public bool PanVisibleA=>true;
+    public bool PanVisibleA=>_roles.ShowStyleButton;
     internal bool IsOpen=>_popup?.IsDropDownOpen==true;
     internal FrameworkElement? Surface=>_surface;
     internal NativeGraphicStylePresenter(NativeGraphicDisplayOptions roles,IReadOnlyDictionary<string,DeclaredFieldState> states,
@@ -51,7 +51,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
         DisplayNameA=presentations[roles.VisibleFieldId].Layout!.DialogTitle!;
         _bridge=new(roles.ThicknessFieldId is not null){opacityA=Number(roles.OpacityFieldId)};
         if(roles.ThicknessFieldId is {} thickness)_bridge.StrokeThicknessA=Number(thickness);
-        _host=new ContentControl{Content=new NativeGraphicTemplateData(DisplayNameA,_bridge),HorizontalContentAlignment=HorizontalAlignment.Stretch};
+        _host=new ContentControl{Content=new NativeGraphicTemplateData(DisplayNameA,_bridge,roles.ShowStyleButton),HorizontalContentAlignment=HorizontalAlignment.Stretch};
         try
         {
             Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Display/GraphicStyle.xaml",UriKind.Relative)});
@@ -200,6 +200,9 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
         var color=picker.CurrentColor.Color;Set(entry.Key,PresentationDeclarations.Color(color.R,color.G,color.B,color.A));
     }
     internal FrameworkElement? Input(string id)=>!HasCurrentParts?null:id==_roles.VisibleFieldId?_eye:_colors.TryGetValue(id,out var color)?color:_numbers.GetValueOrDefault(id)?.TextEditor;
+    internal bool HasPendingEdits(string id)=>!_disposed&&(_numbers.TryGetValue(id,out var number)&&number.HasPendingEdits
+        ||_pendingRaw.TryGetValue(id,out var pending)&&pending.Version==_states[id].AcceptanceVersion
+            &&pending.Raw is {} raw&&raw.Acceptance==_states[id].AcceptanceVersion);
     internal bool TrySetConstant(string id,object value)
     {Attach();return _numbers.TryGetValue(id,out var number)?number.TrySetConstant(value):Set(id,value);}
     internal bool TryCommitPending(string id)
@@ -229,7 +232,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     private void OnEnabled(object sender,DependencyPropertyChangedEventArgs args){if(!IsEnabled)Close();}
     private void OnOpened(object? sender,EventArgs args)
     {
-        if(!Editable){Close();return;}Attach();Project();if(!Editable)return;
+        if(!Editable||!_roles.ShowStyleButton){Close();return;}Attach();Project();if(!Editable)return;
         foreach(var number in _numbers.Values.ToArray())number.PrepareForVisibility(true);
         if(_listening)return;_listening=true;InputManager.Current.PreProcessInput+=OnInput;
         _owner=Window.GetWindow(this);if(_owner is not null){_owner.Deactivated+=OnOwnerClosed;_owner.Closed+=OnOwnerClosed;}
@@ -244,10 +247,16 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     private void OnInput(object sender,PreProcessInputEventArgs args)
     {
         if(args.StagingItem.Input is not MouseButtonEventArgs {ButtonState:MouseButtonState.Pressed} mouse)return;
+        // A WPF Popup has its own visual root, so its child cannot walk back to
+        // the graphic-style surface through LogicalTreeHelper or VisualTreeHelper.
+        var paletteRoots=_palettes.Select(scope=>scope.Palette)
+            .Where(palette=>palette.IsDropDownOpen)
+            .Select(palette=>(palette.Template?.FindName("PART_Popup",palette) as Popup)?.Child)
+            .OfType<DependencyObject>().ToHashSet();
         var node=Mouse.DirectlyOver as DependencyObject??mouse.OriginalSource as DependencyObject;var visited=new HashSet<DependencyObject>();
         while(node is not null&&visited.Add(node))
         {
-            if(ReferenceEquals(node,this)||ReferenceEquals(node,_surface))return;
+            if(ReferenceEquals(node,this)||ReferenceEquals(node,_surface)||paletteRoots.Contains(node))return;
             node=node is Popup popup?popup.PlacementTarget:LogicalTreeHelper.GetParent(node)??(node is Visual?VisualTreeHelper.GetParent(node):null);
         }
         Close();

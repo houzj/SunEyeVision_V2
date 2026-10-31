@@ -1,0 +1,2302 @@
+{
+  "unit": "B08共享命名依赖候选映射",
+  "status": "C#命名空间与文件候选已生成；资源闭包未完，不允许据此直接执行",
+  "namespaceMappings": [
+    {
+      "to": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "from": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab"
+    },
+    {
+      "to": "SunEyeVision.Plugin.Wpf.Controls.Parameters",
+      "from": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI"
+    },
+    {
+      "to": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls"
+    },
+    {
+      "to": "SunEyeVision.Plugin.Wpf.Controls.Popups",
+      "from": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls"
+    },
+    {
+      "to": "SunEyeVision.Plugin.Wpf.Controls.Interaction",
+      "from": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom"
+    }
+  ],
+  "typeRenames": {
+    "HikMenuItem": "StyledMenuItem",
+    "HikScrollBar": "ThemedScrollBar",
+    "HikMessageBox": "ToolMessageDialog",
+    "HikTextBox": "PopupTextBox",
+    "HikTabControl": "ThemedTabControl",
+    "HikScrollViewer": "ThemedScrollViewer",
+    "HikContextMenu": "StyledContextMenu"
+  },
+  "sourceFileCount": 321,
+  "files": [
+    {
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+      "sourceSha256": "F39D64DE32774515549F8F655FF6D36826AE77A054803CFA78E4555B6BE146A7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+      "sourceSha256": "01C5FF533F78E8E834FCD484BFED5EA3FB4A9499A954D016E74B7E49829CE3C0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ParamTabUI/SubUI/ExportAlgorithm/ExportMVDCode.cs",
+      "sourceSha256": "6A63A6D4F96562FF20722096E81783D47DA2D47A684207AEF24F6D7E2234DAE6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/ExportMVDCode.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/UserTempConverter.cs",
+      "sourceSha256": "FC9A3ED971992E7E44E09763DB644863C6989C74E29856E31BC93421AC2707DD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/UserTempConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/SectorROIStack.xaml.cs",
+      "sourceSha256": "525F2106889ABC6EEDFB24F38C02F63A0D88E791218FFE56709A92B2490BE38C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/SectorRingROIStack.xaml.cs",
+      "sourceSha256": "F499FED699761BBAF7A1D957D4F445E1412D3E76A1A8036224361AC71A36D43A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ROIStackControl.cs",
+      "sourceSha256": "26E5D6AFC35A954083AE46ACCF3B6E0BC5AFCD5E1CF2D8AC592FAEFA799CFAC6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/RoiSelectControl.xaml.cs",
+      "sourceSha256": "B80D9A93B0A6D00D8B1F20A42F08D8B5E021278F7D0253A2B0CE86DAB36F69FA",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/PolygonROIStack.xaml.cs",
+      "sourceSha256": "9958C7B4D3BCA7BEDBF839CB0A5360DA35C7A7F16675E57A7C664E20E8E440A0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ParamComboBox.cs",
+      "sourceSha256": "A4C3A77D9E7E2AACCFC8F755942670D5B34E37D630BD8981A1670140E6E79FDC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamComboBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ItemsControlExtension.cs",
+      "sourceSha256": "DA3AF8377DC9C19F0769467E75582DF40FC9D020512B5A2459B7CA40FD8AA8AA",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ItemsControlExtension.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/IPTextBox.xaml.cs",
+      "sourceSha256": "A0CA9328B2F9AD609FC8451589C8FE8369D2DBB15BC2F50BB51C43EA843B300E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IPTextBox.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/IndexConverter.cs",
+      "sourceSha256": "DDB076380A1DD95839490C640EBCD38F68D3C9BAF7E29CB146ACBB66CAA49464",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IndexConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/IImageSizeControl.cs",
+      "sourceSha256": "F350DDA3F3D83AD9EEEDC7F44E227BAC5C0A90636FBE812F60E89C7263BB9487",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IImageSizeControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/DialogResult.cs",
+      "sourceSha256": "29A37CCB34FDEF3E29AA954821C4609D27193A4225C55A212A651AE6FB6EFD87",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DialogResult.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/DialogEventArgs.cs",
+      "sourceSha256": "695C4828902C79ED22E547E804A6971E8E8B7AB6CA0355F6FD8AB7485E6D381B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DialogEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/DataGridExtension.cs",
+      "sourceSha256": "3D6425F7219339B79C870BC383D4781DCD6CE566CB1CB07CBE948F1F00F2B412",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DataGridExtension.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ClockSourceControl.xaml.cs",
+      "sourceSha256": "A8BA77616B1FEBA8226D51ECBEB2072D43DD019423F98F3EAAB1301E63BB4B46",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ClockSourceControl.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/ButtonControl.cs",
+      "sourceSha256": "C274AABEC40C5BA5DEE3AEC72DE8007F7278467F8878ADD6768A88EF2FC502E9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ButtonControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/BoxROIStack.xaml.cs",
+      "sourceSha256": "720A4510D243BA53A20FB4DF2339B80283A4C27CA172E6E485853EBC29FA00B8",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/BooleanControl.xaml.cs",
+      "sourceSha256": "2C4A929C76EDE0C7B1B2A3380BA85626D7BF5353C4B4ED28423133A3E8C6E642",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamTabControl/AdvancedColorPickerDialog.xaml.cs",
+      "sourceSha256": "3F1B99350A026106C60CD6731C8F36330D293158AA0F3D4B454BC9E47D551A7A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/AdvancedColorPickerDialog.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamTabControl"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ValueItem.cs",
+      "sourceSha256": "47AB4BDE2ED09E5CB0B027892C75A66E812F82F874D5F581B525D7503F0748C5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ValueItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
+      "sourceSha256": "76B3216F56C985282109C1ABB4E5D7EB6C5F06FA1F6CA5453D66247941D62F3B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/searchType.cs",
+      "sourceSha256": "B97083F6EF20E3D48F24D92E82D4598BD6F7564F7FB43D1ED6E977949AB35F39",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/searchType.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/NumInfo.cs",
+      "sourceSha256": "A19C41C3478AFE7D02BF5B316BFB191C3BA94C1264878482ABC497BCD548B67C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/NumInfo.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ListItemBackgroundConverter.cs",
+      "sourceSha256": "46747C422553BD2F23978E383F4A140C2C5720C810C92EF7165E53AEEA81F8DF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/LeftRightControl.xaml.cs",
+      "sourceSha256": "0BC17E188BB6A4671923A107C8828FEC757F2160DA3320370E3580CAF3EDA1A6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+      "sourceSha256": "D743AEE3CBB11458F82150B0DB20DCBDEEF83A4926112BC0A0C0C90E5E6DB306",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ComboBoxNoWheel.cs",
+      "sourceSha256": "0F17FDCBF47998EA8F042C4E3EC4AD3C2B0A4E907E5A637893728110AD9A8A4C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ComboBoxNoWheel.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ClearButtonTextBoxStyle.cs",
+      "sourceSha256": "ED9FA52F1ED302C97A8704E92C2DCE882F348E21B235DE3B078A0E2F138E2248",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ClearButtonTextBoxStyle.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Utility/HelpDocumentUtil.cs",
+      "sourceSha256": "ED6BD8BFADFFAC47AC2C652632B02DBD8347BE0BD7FDCC3DC517A624BEFC9E13",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Utility",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Utility/HelpDocumentUtil.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Utility"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/WidthConverter.cs",
+      "sourceSha256": "86FDF0B470C73B92D75DFE6C6D5D1D79A7D742AC2104E49A7006574E3C332716",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/WidthConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/UserTempConverter.cs",
+      "sourceSha256": "1A24EFB48465074879F84F17B493DA3AB68A29BA264EF3BEAFF08747AB4A6E7C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/UserTempConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/TabNumConverter.cs",
+      "sourceSha256": "CDD1E6D96A9EF07923627D6A23B218A65D230CE320090410E4BDDF88B48804C3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/TabNumConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/TabControlFx.cs",
+      "sourceSha256": "52B00439DDB7321542F8DFAAC0409D49DC48741C83EAD4406129DFD344845EB2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/TabControlFx.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/TabControlEx.cs",
+      "sourceSha256": "C455632658E4C8E8545561565AA1E742BAA49B0FF9939BA847F0CDDE5D3B50A8",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/TabControlEx.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ROITypeValueToBoolConvert.cs",
+      "sourceSha256": "91D941A17583D49F3347F051A412FD26F1535C274210AD93222B6B653FBF1308",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ROITypeValueToBoolConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ROIDefaultValueToVisibilityConvert.cs",
+      "sourceSha256": "FF6623A7E83D06C6DF697F9E6EDCD39F04D251C587CAEFA0E1D8E422015CD5AF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ROIDefaultValueToVisibilityConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ROIComDefaultValueToVisibilityConvert.cs",
+      "sourceSha256": "0F8737DAFD223C13D480D2494F5CF078F4E57DE3A17B7E34F86EB7B2C1E3AC50",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ROIComDefaultValueToVisibilityConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/RectHeightConverter.cs",
+      "sourceSha256": "8E82CC5FC402E5288A8DFE2EF18D95A14A7A83D0DF4FE031ED592056A31EDEA4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/RectHeightConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/RadiusConverter.cs",
+      "sourceSha256": "3AF49A6083EB75D51524F0F833EFAAC27BF5DA8F7D920984F0B1F107EA66A5CE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/RadiusConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/PasswordBoxBindingHelper.cs",
+      "sourceSha256": "5126002592D2EF9D6E642098B029A5AFCA66F0C47ABF7E46DD542F1EA4F7AC73",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/PasswordBoxBindingHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamUserControl.xaml.cs",
+      "sourceSha256": "586061953171D280F1DA36FA3464CB274C4D8C7349D404115562ABC5B862B3D7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+      "sourceSha256": "D323945AED4D2F54C76709D982DFAC0379CD66E0438EC9C52E6EB98A0AE0ADDE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamListView.xaml.cs",
+      "sourceSha256": "03A7CF66DA1BEDC4C82F096C278B5C6A11AA3EE248D189271ED0306EF59EC7EE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ObservableConcurrentQueue.cs",
+      "sourceSha256": "5A13F6B9A7454799424D2E3ED6DC727B2597B573C2BC6FAE6A622C2566798C82",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ObservableConcurrentQueue.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/MyDataTemplateSelector.cs",
+      "sourceSha256": "56174B79AD3A0191AC1EDF5EBCF1D48A38E76FA2F1D9429608718F1DD66BC260",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/MyDataTemplateSelector.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/LogManageTypeImageConvert.cs",
+      "sourceSha256": "C5C406FFDA575057A072B796A2E4675B1B767036DB0A1BE30729B85C498DEFA6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LogManageTypeImageConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/LogContect.cs",
+      "sourceSha256": "EBC7B50A4948CE0E80F021921F849C1754EF40F9CD91AE0269CD66DEFF05BAC9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LogContect.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/LogBindingModel.cs",
+      "sourceSha256": "DF2A6E679B729A2318631E7B01B287C79CAAE913E869A96605EE092F63C66729",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LogBindingModel.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/LockObservableCollection.cs",
+      "sourceSha256": "192F8436A510DC9E8BEB77D81B447FE2F16F2A39F6665A481F17F26E916347B9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LockObservableCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/LeftWidthConverter.cs",
+      "sourceSha256": "2D8913038690975EA3D3E0716EA26104D2F6C6359BFFAD83A8733BF853E8A95D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LeftWidthConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ItemCheckConverter.cs",
+      "sourceSha256": "46CAD9C1C6D855B1130392CD52BBADEAC4E540964363C341A0F2A2CBFBF4248D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ItemCheckConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/IsSectorRoiConverter.cs",
+      "sourceSha256": "47EB7344803FDF1F9C072BE7CC7D58F6CABDD9A099ED3BEE73D78FB36DC7B68D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/IsSectorRoiConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/IsCaliperRoiConverter.cs",
+      "sourceSha256": "6239BFD28BB0192091F2F3296C746A967824FBD61528E5675BA0CF2E1F4C568B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/IsCaliperRoiConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/IsBoxRoiConverter.cs",
+      "sourceSha256": "A4AC897E0F3F5E011798CD380817B9B1776C13A00A65DDF63DC435A92E2DF1BB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/IsBoxRoiConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/HeightConverter.cs",
+      "sourceSha256": "F4C2757FA01E27F1AE4B0809D6CF22020974F6BEB09C29F0BC41ADAE6D56959E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/HeightConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/GroupInfoConverter.cs",
+      "sourceSha256": "B2FDCC698C0F72DBA934341C76273AF65740234F0CB1479BAEB82A084100AD6C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/GroupInfoConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
+      "sourceSha256": "0F163459A3DD2E1D1D296DC8FF5FDC7A377CAE982FE044497B016265D92EA9D7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/EqualConverter.cs",
+      "sourceSha256": "48B8FC264962DE49B9E04D355B6E7711A0F6AFC051F53775A5BF3A70AE8CB0DF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/EqualConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/CircleSpaceConverter.cs",
+      "sourceSha256": "181F548138FFDD10F09E6D5E5AB4371359CECB38A4F3C17250D735E35D9AB35F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/CircleSpaceConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/BooleanToVisibilityConverterReverse.cs",
+      "sourceSha256": "823452AEB25B4DD8DA48244907FC471FB8B4B9F0E693B054BA98940B6DCEF220",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/BooleanToVisibilityConverterReverse.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/BitmapImageConverter.cs",
+      "sourceSha256": "0F45D3B17481C88269FF4614D32136E849804B9C5483EC9438F058406E206CF5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/BitmapImageConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/AddComboxVisbileConverter.cs",
+      "sourceSha256": "A90AEF578E8733C2C267F2ACFC9F5F913F9BFADCF93D5CB2EEBD6C06B2BEE8EC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/AddComboxVisbileConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Parameters/AddButtonMarginConverter.cs",
+      "sourceSha256": "A504CD26257657EBC608C91F4CFCCA93A496EC1275E3DE9A483313FC234E510C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/AddButtonMarginConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Themes/ResourceKeys.cs",
+      "sourceSha256": "B7A5055D68447DB5C1911383F877E553217EFC92D05273E5C640A8EAFE4F4D93",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Themes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Themes/ResourceKeys.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Themes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Properties/Settings.cs",
+      "sourceSha256": "59C0970CC80905295C1D4BD98F16719090CA85C2303E820D956D5361440BFCE7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Properties",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Properties/Settings.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Properties"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Commands/PropertyItemCommands.cs",
+      "sourceSha256": "CAF54C814D6B449B251853D643B98227569D3BEC4EBB286707834CC1FF0A2163",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Commands",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Commands/PropertyItemCommands.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Commands"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Commands/PropertyGridCommands.cs",
+      "sourceSha256": "E7E615BA0079D4D43513E53D01B90C7ABFB5A1B9CA7D4BCFA74379964DAF1D1B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Commands",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Commands/PropertyGridCommands.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Commands"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Properties/Resources.cs",
+      "sourceSha256": "5BF59561D530FC025073E7A899A4A611AB210888AEA1CAD130E98ECB6C7D36DB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Properties",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Properties/Resources.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Properties"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/TypeEditor.cs",
+      "sourceSha256": "BC36A45E101549DD53129E1E09A1202048464AB4E266CEC94DABEC3F559062EB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TypeEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/TimeSpanUpDownEditor.cs",
+      "sourceSha256": "CD8D8AB61A92F8DA7F9C855F26B6139EA7F4B1CA03640EB72AE45843E6893246",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TimeSpanUpDownEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/TextBoxEditor.cs",
+      "sourceSha256": "F889CB3F14D43F4C5EE3FB8C00BAB683558238F652535668FB102547194F0BC6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TextBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/TextBlockEditor.cs",
+      "sourceSha256": "5A919166BBC5809244A7027C9121CC21E75482AD7058F0D55E28402337AC8931",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TextBlockEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/SourceComboBoxEditorConverter.cs",
+      "sourceSha256": "B5CF51B935CD517CD48E58F79DB15AC67152AE6746C654E6854A22B60A4AEDCB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/SourceComboBoxEditorConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/SourceComboBoxEditor.cs",
+      "sourceSha256": "69CF50DB382DE3BF525FFAC84292A3131D4C240B7B66F8C151A68C339024206E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/SourceComboBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorTimeSpanUpDown.cs",
+      "sourceSha256": "691C719A065D82C2FA9352111DF356331C215638C2C0FBC4A29204D5FD1ABBB9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTimeSpanUpDown.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorTextBox.cs",
+      "sourceSha256": "E851E9CC71AFB1C145CDDD7ABFC30BD5ECDFB57F7A793D324FB04720B0803F32",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorTextBlock.cs",
+      "sourceSha256": "8E30A217BEFFCD38BD769BD9BBB1F82FD09A8271C405AFA837F21BCB61A86F0C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTextBlock.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorPrimitiveTypeCollectionControl.cs",
+      "sourceSha256": "4A68265AD59AEAA705E2292D6BDD406EA39AA0758E7594B4DE4326A1BC01FB03",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorPrimitiveTypeCollectionControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorDateTimeUpDown.cs",
+      "sourceSha256": "78DDAF2E3C42305A3D788199A54EC1FD58CAF2995DAB6796B14BDCBFD1C07127",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorDateTimeUpDown.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorComboBox.cs",
+      "sourceSha256": "6A7151811C9D99F8898ACF1FA505D46F95FDC8E2F526DB8030197EDDBDBB9256",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorComboBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorColorPicker.cs",
+      "sourceSha256": "738CB66EFB750315826FAE3DC8A0CC6A75DD3D671D6DD442AB173CAC39558BF4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorColorPicker.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorCollectionControl.cs",
+      "sourceSha256": "5B7B332FBF0806EB1BEC1B64F8976ACBDE643152797BD6D8CE8E11556D08514D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorCollectionControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PropertyGridEditorCheckBox.cs",
+      "sourceSha256": "DD1C352958A167C937B4CFD651BB2E1814429CA64F0727352658867B4076BBD6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorCheckBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/PrimitiveTypeCollectionEditor.cs",
+      "sourceSha256": "308D0F62830EBEDDFD5A184212C4CF7E333F56C65E030A72315B7E93D05EB42F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PrimitiveTypeCollectionEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/MaskedTextBoxEditor.cs",
+      "sourceSha256": "D195B55B8D85C0A59232CD0865E700C37E0295A03CF3CC213C3601F1CDFFBF3D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/MaskedTextBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/ITypeEditor.cs",
+      "sourceSha256": "D9664BF8CCCFBA3AA982098EF9E055F121D109BFCA1B1A722C87C3C4F2F0A000",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ITypeEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/ItemsSourceAttributeEditor.cs",
+      "sourceSha256": "BAD4E9143973ED7272075957CE0811F3AA9145891A2EDFC35ACF2E6EE2C6FD8B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ItemsSourceAttributeEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/FontComboBoxEditor.cs",
+      "sourceSha256": "6944CD9275A1BDE6E9052CFA7FADEA819F3608CAA272DE888AD27284395CC587",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/FontComboBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/EnumComboBoxEditor.cs",
+      "sourceSha256": "27E8F75C8D1CAB75610AC982300D31166487EFC766AEAF6257035E39436ADDAE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/EnumComboBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/DateTimeUpDownEditor.cs",
+      "sourceSha256": "57DADD02B2299C0720D8DC42005B573FCF624C2769F86A5DAE4047999BC579F0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/DateTimeUpDownEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/ComboBoxEditor.cs",
+      "sourceSha256": "75E90318B3B36EBA46B175DEF3405C0E1388F29D4730AC07D066FA1967D5686D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ComboBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/ColorEditor.cs",
+      "sourceSha256": "45485484B69D2C499B69B3FECDB1128817F4FEB95A6C5B14FD2674E7876212BD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ColorEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/CollectionEditor.cs",
+      "sourceSha256": "0031041F61088F506822DDC949300B0146A50E72A77B3F01E72F5E79A5AD21B3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/CollectionEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Editors/CheckBoxEditor.cs",
+      "sourceSha256": "CC8E96320C95C5C86997C5B2CFFF9D6A8B9167386C10A794604DAB26D3DD0FB0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/CheckBoxEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Editors"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/VisibilityToBoolConverter.cs",
+      "sourceSha256": "6633FD05A3805DC91DD3F62F8EECD7A861367B68CC347CBA3F0F9BA44642560C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/VisibilityToBoolConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ThicknessToDoubleConverter.cs",
+      "sourceSha256": "7DD0AD8D48BDA421E13EF9235807D57ABE84FB3B5CF31B486AE53491F0274ACC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ThicknessToDoubleConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Definitions/PropertyDefinitionBase.cs",
+      "sourceSha256": "0ED950027AAF2DE3391839AB40F913F7921F9B56C5D1C7BC562D8407DFE0F3B2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Definitions",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/PropertyDefinitionBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Definitions"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ThicknessSideRemovalConverter.cs",
+      "sourceSha256": "C85756EE33D3CF301065A5583C1FA3E38A9C7120ADA95180E8C78EE425835E3A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ThicknessSideRemovalConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/SolidColorBrushToColorConverter.cs",
+      "sourceSha256": "2A5B3FA29798ACC5609C8C32D0A48CD7C7BCB37EFCA65188193AF7B8980173EE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/SolidColorBrushToColorConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Definitions/EditorTemplateDefinition.cs",
+      "sourceSha256": "BAEEB831A63BC200A5ED0FE9A6E478F689DD6167455EAE337FC5CA2ADD3A3D36",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Definitions",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/EditorTemplateDefinition.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Definitions"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Definitions/EditorDefinitionBase.cs",
+      "sourceSha256": "792B66541F26924C1402F623E81964C9819AF6DB12340FC06CD7DB9DBD1A70AF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Definitions",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/EditorDefinitionBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Definitions"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Definitions/DefinitionBase.cs",
+      "sourceSha256": "80EC00424BF8F4A2022BF516E796CAA98B2C06F31A2EF28BFC15E526E707DDBC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Definitions",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/DefinitionBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Definitions"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/RoundedValueConverter.cs",
+      "sourceSha256": "8935C0C526CFD6464606EBDFB9EE012A5387A6B14DB4E136B936ED6DE117E321",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/RoundedValueConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ObjectTypeToNameConverter.cs",
+      "sourceSha256": "5FD653A9BECB25AC40A789A32492979B95AF1B6747A7B0B0F6A6C9BEBC7DC516",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ObjectTypeToNameConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/NullToBoolConverter.cs",
+      "sourceSha256": "690DB83A634944A8C6706C0A1C912E297C8CE7FFD39F873F3F0E4090A7DAD2AD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/NullToBoolConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/InverseBoolConverter.cs",
+      "sourceSha256": "541024A62BC2016ED866152369D5CF1ABEDFEE2402F5A3124855B35E0DED8BBD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/InverseBoolConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/IntToThicknessConverter.cs",
+      "sourceSha256": "D15C24023CE77CC9DB3A75E06C0D6AD2110B8689553145D5865163E6EA5F94D0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/IntToThicknessConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/HalfConverter.cs",
+      "sourceSha256": "962A247D21BD75DE704A4E9581137DBE809D0E12EDDF1BBD6C4C634F3CEA3DBC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/HalfConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/CornerRadiusToDoubleConverter.cs",
+      "sourceSha256": "D7F8D37A17D5FEB00B3F59E45729745C83917D994E1AA4799B467672D7935E92",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CornerRadiusToDoubleConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ColorToSolidColorBrushConverter.cs",
+      "sourceSha256": "12B567C91F38E8160BAD70FD416FAD03FB00670D17390A5967985AEAA7B4CE26",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorToSolidColorBrushConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ColorModeToTabItemSelectedConverter.cs",
+      "sourceSha256": "12D75888365B9BA6F7048330BDA3353C6A6564220F8D37653202D744D69BCBF1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorModeToTabItemSelectedConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/ColorBlendConverter.cs",
+      "sourceSha256": "229640D0CBE666D388779493E745A9C156D75A0542FC074B84F4354BCEFCA110",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorBlendConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/CenterTitleConverter.cs",
+      "sourceSha256": "4EB7B4ADF3A7BE7B97F7105F44A5EACFB4DF0D685F3AE6A94B642BBB7D39ADB6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CenterTitleConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/CalculatorMemoryToVisibilityConverter.cs",
+      "sourceSha256": "1E2ABC03C61D933F5FA7558030531891A11A0B4AEDF07C0C8AB38FE6F103D838",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CalculatorMemoryToVisibilityConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/BorderThicknessToStrokeThicknessConverter.cs",
+      "sourceSha256": "FC2BF2915508CFD6490E71F8D9E1F6D781C551B5130C83DE067446BB29F0AE30",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/BorderThicknessToStrokeThicknessConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Converters/AdditionConverter.cs",
+      "sourceSha256": "A8AE78D4D31A645B25C84A66CEE3FDD2EC5F06FA26CC9715141C561BA8C8A309",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/AdditionConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/SelectedObjectConverter.cs",
+      "sourceSha256": "B3A49E5438B9F21AB690C2F95E1C347A2D706290CC84D8910EA4092EE82EC231",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/SelectedObjectConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/ObjectToUIElementConverter.cs",
+      "sourceSha256": "A24C06E72A72ACE73D8B28BBAB814F74F627C10AB2443CB81181DA35E4780629",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ObjectToUIElementConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/ListConverter.cs",
+      "sourceSha256": "22FF6F8FC62AB5A8DAD76D38EC2E0E668D0982489D6C2B0B58030E3E93D40F62",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ListConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/IsStringEmptyConverter.cs",
+      "sourceSha256": "0A53FD6D35FE22AAC99E534EA763E0B36EF55F8AB15C224C1BB05C23474C7F02",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/IsStringEmptyConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/IsDefaultCategoryConverter.cs",
+      "sourceSha256": "2F263BF3B96440BAFE1E7DCA1A0CB1F4166ED4124F6CF7AFA12F5DF40A0FDE71",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/IsDefaultCategoryConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/ExpandableObjectMarginConverter.cs",
+      "sourceSha256": "BC87AA7C6C9570C37CE605D16A65B0B26E2CE28BCF5B0ED5E79CC71DA4D493D1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ExpandableObjectMarginConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Converters/EditorTimeSpanConverter.cs",
+      "sourceSha256": "7E1F27B3A954DAEEDFF370EA034E89AA6716E3B2B429B074DD251B5DA5DAE8BC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/EditorTimeSpanConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/WeakCollectionChangedWrapper.cs",
+      "sourceSha256": "225EC86E24504BF752C3CD1FECD64BACCDD39B13475B27D8892FBA34CEAE4AF5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/WeakCollectionChangedWrapper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/UIElementAdorner.cs",
+      "sourceSha256": "CFD3B01D06EB3FB811A500AC4FC208524A67F16417C585525EB496E392F8F786",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/UIElementAdorner.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/QueryValueFromTextEventArgs.cs",
+      "sourceSha256": "60C1A368084DDDDFF9A643672DE974BE7162E5F97C8D21ED454E259C4A06FF3C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/QueryValueFromTextEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/QueryTextFromValueEventArgs.cs",
+      "sourceSha256": "63306C2BA60456A5B95B0358A4F49D6C659F0B0D37600EC2A83A925EF634D1F6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/QueryTextFromValueEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/PropertyChangedEventHandler.cs",
+      "sourceSha256": "65AE10CB51A66248A975BAB1759DE08FCC8A34A37B8D46B0C8CD23B86218B7B0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/PropertyChangedEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/PropertyChangedEventArgs.cs",
+      "sourceSha256": "2A2BE4850A406F090693B13AA0CDDA49758D63674494D1CE3A2F3489B5820244",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/PropertyChangedEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Location.cs",
+      "sourceSha256": "178A6534A257E8E5C9EB1D2C7DED19E72F205AE723723999CBE7DF6F25ECB5D8",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/Location.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/InvalidTemplateException.cs",
+      "sourceSha256": "C4EF8E463283F253990A42A8B267B8240985F9BF9F03DBEF86CBF64F98C9E061",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/InvalidTemplateException.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/InvalidContentException.cs",
+      "sourceSha256": "EEA38F4A075A1325C07CA954A1E204AB4F23EF25A6F1372B3D3AE4657CA15DE0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/InvalidContentException.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/IndexChangedEventHandler.cs",
+      "sourceSha256": "51C90FD5A304102CC4C9A3FC7517123AE1857DA8ECEE67071EFA6CBB3CEB1917",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IndexChangedEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/IndexChangedEventArgs.cs",
+      "sourceSha256": "D6159DA9CC56EC6650B51DB94513035E45096BB6070EEBE189168C324F879CD0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IndexChangedEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/IAspectRatio.cs",
+      "sourceSha256": "6EFC9B9A1E3B2E4CF881DCFF30977E4FB0DAA2341096B3CB0A9C010B80C38B4C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IAspectRatio.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/ErrorMessages.cs",
+      "sourceSha256": "8992DEE1CDBEFF8543E02AD756EDE7694D2E3CF23F4BEF1C8AB07D1854F21E2F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/ErrorMessages.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/EditableKeyValuePair.cs",
+      "sourceSha256": "AC67B7C1236B5E9818070B39530492C8F390915B5C4ECCA873EDA602D837A71F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/EditableKeyValuePair.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/CancelRoutedEventHandler.cs",
+      "sourceSha256": "89F877323250976116D4DC04B06301E662DBEC7CB1F101DE7F3E435952644CCF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/CancelRoutedEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/CancelRoutedEventArgs.cs",
+      "sourceSha256": "B954F4F4B9791D123EEF969424CE6D564F3B86488F17A41E13314BB7B30A29E0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/CancelRoutedEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Converters/NewItemTypesComboBoxConverter.cs",
+      "sourceSha256": "6B0C40DA755DF4FF56778F7AFF871F3962E8C51F126FC05D34703359CEECF9AF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Converters",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Converters/NewItemTypesComboBoxConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Converters"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Chromes/ButtonChrome.cs",
+      "sourceSha256": "33FC5B8FCE4E7ABA7EC97F9468889BBCCE051AF9FF42327E36019ABEF4868439",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Chromes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Chromes/ButtonChrome.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Chromes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AttachedProperties/MenuItemBehavior.cs",
+      "sourceSha256": "5A2B4CF7545B76E0C89BBCAF2AF5AE31D2E68D7FA3697A9489C77580C7C86E59",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.AttachedProperties",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.AttachedProperties/MenuItemBehavior.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.AttachedProperties"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AttachedProperties/GroupBehavior.cs",
+      "sourceSha256": "90BB32E4A6B2DC7C86A7F5AECC1F9B3B38BD5DA36ECD755EA3A576E1929236C9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.AttachedProperties",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.AttachedProperties/GroupBehavior.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.AttachedProperties"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/ValueRangeTextBox.cs",
+      "sourceSha256": "6AD12051EAC565926982A0645C92632DAB3F3318AD9AF074B1B3F7D837826D82",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ValueRangeTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/UpDownBase.cs",
+      "sourceSha256": "5E8ED1DA5E2473F9D59BF8C8215B1615C986CFDA8060ED1A3AB19D8EB915C993",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/UpDownBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/ShapeBase.cs",
+      "sourceSha256": "F1155D6102149948C413D7668319284D9BAABD6FEA04B0E3539E4C591DD87EF4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ShapeBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/SelectorItem.cs",
+      "sourceSha256": "5ADF22B906C77DC7E231B7C848FCE95923D2517E4022DD05445FCE255263BAE9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/SelectorItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/Selector.cs",
+      "sourceSha256": "8B2F7846C0B4C0F101FDAEE7308405CAD98C89A977D8AF5B26B6E73DC007DB62",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/Selector.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/MouseWheelActiveTrigger.cs",
+      "sourceSha256": "AADA456F7BE2C0606E9E36DD6B150286A70363E29DB0FA12C205619489026CE5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/MouseWheelActiveTrigger.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/ItemSelectionChangedEventHandler.cs",
+      "sourceSha256": "5A41B7C0F905DC1347A2D3E232E31EDEA8B25C0B0AA38AD8B5734EF031C3AA40",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ItemSelectionChangedEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/ItemSelectionChangedEventArgs.cs",
+      "sourceSha256": "B6A91AB8422455919442E517A4F62A53A4F1D7578F52897B82BD65DDF2328ADE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ItemSelectionChangedEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/InputBase.cs",
+      "sourceSha256": "4887EA2B5C44CF1EED29D0B17F91E1C985AE700EC418DEADBEE31C6FAF57BE35",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/InputBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/HsvColor.cs",
+      "sourceSha256": "33A503374ADC9311A3153061BB0E8B0457092CA81FA3FACE2F9FE6826AA2C3FB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/HsvColor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/DateTimeUpDownBase.cs",
+      "sourceSha256": "F7B06A610D3FE37B0E2B6763BE68CCBEFDA14D1DEDE0672501845010A1877BFD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/DateTimeUpDownBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/DateTimePickerBase.cs",
+      "sourceSha256": "730C16EA2ED6BC34D0ECD51A7A2EFA0EEF7E493162E11494E5A3D5A651906C40",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/DateTimePickerBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Primitives/CachedTextInfo.cs",
+      "sourceSha256": "A62CBF7F0E629FE0AB826257592FAAB2F5C01FAA3AB4A1695F29005A0E8FC4F4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/CachedTextInfo.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Primitives"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/UsageContextEnum.cs",
+      "sourceSha256": "D2A3F2897269C9D42E3B28010C39EC61350AE5B44D6715A10D12ADC1F19BBE6D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/UsageContextEnum.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/PropertyOrderAttribute.cs",
+      "sourceSha256": "D115E191184758DCFC11B51BD843DC713C593493890F8C6B82304D35C9896CE2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/PropertyOrderAttribute.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/NewItemTypesAttribute.cs",
+      "sourceSha256": "AE3257AAA963BB3707C1D651EED2B359F7BFF71701C9E211CF58C743516FD17D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/NewItemTypesAttribute.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/ItemsSourceAttribute.cs",
+      "sourceSha256": "3D692913360ED8A34FC3CCB6CA764B7A2097B0A3A263E76089AC722063AF9E8A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ItemsSourceAttribute.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/ItemCollection.cs",
+      "sourceSha256": "79C31B96BBEEEB54E2305A46C412A9A6949076A0990DD415DB98CBE4A431AA82",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ItemCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/Item.cs",
+      "sourceSha256": "F256CAB2E48F19686047665CBAEBBB58B646B34EB4CE169DFAA84A4E339609E9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/Item.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/IItemsSource.cs",
+      "sourceSha256": "35EFC0022015E9637C9A68D8E3C7EB82D253E676A1DF72AC23DBA8C6C1F58263",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/IItemsSource.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/ExpandableObjectAttribute.cs",
+      "sourceSha256": "70B892B332BEAB554AB7426817290E0A4AA880E7B6A87C5225B51D9B88A3EABC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ExpandableObjectAttribute.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/Attributes/CategoryOrderAttribute.cs",
+      "sourceSha256": "E00681768DE47052E03770E808C5BF9EE048897528238BA908B2E77021549BB2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/CategoryOrderAttribute.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid.Attributes"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WNDPROC.cs",
+      "sourceSha256": "70C5CCC29E9282C8FA0E9C928F6694037F89490A0CB14C959FA10CE712E3FB60",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WNDPROC.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WindowHelper.cs",
+      "sourceSha256": "6A67D64471F57DB097A1F307F9FF21973C7C136164FEAB673F0D3D2C0C39AC69",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WatermarkTextBox.cs",
+      "sourceSha256": "EF3E39207AD9B79D009AA953862E017CA3F069465C035FBA7BB57BB6DE73EF65",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WatermarkTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ValidSpinDirections.cs",
+      "sourceSha256": "8C9705BCF62EE90D89942B75F782244802E488CB037C478A0132A603F36AB652",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ValidSpinDirections.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/UlementEx.cs",
+      "sourceSha256": "ED17EB097CBB634DFC5ED76BD4D95249780D099BF994B922879203528891D20F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert2.cs",
+      "sourceSha256": "C0354DACB0238A0F624BEB6D393D69A3E1942B5B6E7F3ECFD7D9BAD2DCCB597D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert.cs",
+      "sourceSha256": "39E5BF652BDF99FBD3C7D49957132F016F902E699F88F07A93716F475AD1A1C2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopCornerRadiusConvert.cs",
+      "sourceSha256": "15BE653F2D408ADCB53C11B539D39C51B39FAE075F13E5F5F31999A7C2F2765C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TimeSpanUpDown.cs",
+      "sourceSha256": "CEE8214D7D1842B75B40B555BF54A58900A91B73A1977065CF9562FCF0A7A748",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimeSpanUpDown.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TimePicker.cs",
+      "sourceSha256": "D4EC032584E0FD882273CD6B8ADABDA0F0E05F7E63AD26E4D9C77247E09D409B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimePicker.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TimelinePanel.cs",
+      "sourceSha256": "EE46AA7A86081EE460D3E29EAA70AF8F04764A89EC733CB93C6B45DB02F5D594",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimelinePanel.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TimeItem.cs",
+      "sourceSha256": "25D71B27F9CE224A885F3CE418F59DFF32BA967F844895D27807A722A96196F0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimeItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Spinner.cs",
+      "sourceSha256": "14301A46BE4AB5FB0D137D370983564DC33999824E8170A886222FAB440ED4D1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Spinner.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/SpinEventArgs.cs",
+      "sourceSha256": "C1AED69C4BD3409769D26A8B4E050F6A2D8D2C51C09CDF49C0AC2FBC8829E4BF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SpinEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/SpinDirection.cs",
+      "sourceSha256": "0F8C49057A6FACB0E7D03F02A0A08C3E2DEADDF86B5561C971AFC22836446AB0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SpinDirection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/SelectAbleTextBlock.cs",
+      "sourceSha256": "A358AA85DC46E27DCED419F38DB9A50CB8C6730A4DE57E5AEDC8CB53B6869390",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SelectAbleTextBlock.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/QueryMoveFocusEventHandler.cs",
+      "sourceSha256": "176648D1D58F319382539B214FF1253FDC4646185B11209E7EED4A94DE10C3B7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/QueryMoveFocusEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/QueryMoveFocusEventArgs.cs",
+      "sourceSha256": "0713A7BB10AF8C672B9528268BE397B1A635BD994720D55BB9FA4B4567FFBD97",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/QueryMoveFocusEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PrimitiveTypeCollectionControl.cs",
+      "sourceSha256": "5B713AD5ED311711A785975C60F29312ADCBB28A86C64B9067180774F369F97C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/PrimitiveTypeCollectionControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PasswordBoxWaterMark.cs",
+      "sourceSha256": "5DCE52D13A17090F8C83B4005EFC4900BEAD463654FCB275732A6A0EF5279858",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/PasswordBoxWaterMark.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/OverlapBehavior.cs",
+      "sourceSha256": "AD595C01BBEA646337F7D0BA6C46E5D8139F99E0109F0E7F3185BF0D9637A5EF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/OverlapBehavior.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/MultiLineTextEditor.cs",
+      "sourceSha256": "E60AF702A857987C9836289C88105DAD0674AF4E04ED462B13CB947851853CC0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MultiLineTextEditor.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/MessageIcons.cs",
+      "sourceSha256": "E5D362C120B7D371C565A4554B22084A478246818260944D6AB9CBE7AF67D96D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageIcons.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/MessageButtons.cs",
+      "sourceSha256": "CAE575E3D0E793764FA2E05C6B1F31E8580AB73C10DCABB59AF7140335B4F643",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageButtons.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/MaskFormat.cs",
+      "sourceSha256": "E6E4829F28F24220BC0F87172B381A7C776F8931307B5406E5E64B1A6F10B34A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MaskFormat.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/MaskedTextBox.cs",
+      "sourceSha256": "5DF55EEFC8E6CC95EABEB13FB3AEF11EE9C7507620B12F1717C9364644E429E7",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MaskedTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Location.cs",
+      "sourceSha256": "0CA1C9F677223CFF5E314850A695047DA8F93A67582B743221AAA35614A29A4E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ItemEventArgs.cs",
+      "sourceSha256": "D92214D63E69AE528CEF4BB24AC9C7C4D26A7CC006A42C1D71D2DF59C29950BF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ItemDeletingEventArgs.cs",
+      "sourceSha256": "60F3A05A7273B8CC8F537316B55F5DD44939864A147F06F19FC8F2A006D71613",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemDeletingEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ItemAddingEventArgs.cs",
+      "sourceSha256": "9063C15031623274BC01440DFACF88C079FDD76BD2CD8219AB869B0B0F73AA28",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemAddingEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/InsertKeyMode.cs",
+      "sourceSha256": "2E57D7518100B7E54107B4CEF36E0BBEBAAFFC4FE45AA6A161180F8F8A85EAB4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/InsertKeyMode.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/IconMenuItem.cs",
+      "sourceSha256": "A270A365F487D95F54953001DF71392DD9C43B2744A1577DE13338C357B35FE1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/IconMenuItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ThemedTabControl.cs",
+      "sourceSha256": "E845F90F766E91826D27D1030B1F4661F405B7C284B95D08F4EFE8B19B6B77BD",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikTabControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ThemedScrollViewer.cs",
+      "sourceSha256": "083AD704C6CDB35CCE64C9D7C3399DF6AEEC799992BC7E9DACC2CB40006DFC0B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikScrollViewer.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ThemedScrollBar.cs",
+      "sourceSha256": "4D7E5E70BD8F0201E9CCBBAFCC3F34AACC6188233872566EC9CF17AAF4B87CEF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikScrollBar.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ToolMessageDialog.xaml.cs",
+      "sourceSha256": "16408EC4A0C07A19ADF7296E02D5A281487D27E428C6CA264268550E2C3F6147",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/StyledMenuItem.cs",
+      "sourceSha256": "957619716D3CDB84EDB68A755724A07B63A2F37448F8D96554B1692FFD3134FA",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMenuItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/StyledContextMenu.cs",
+      "sourceSha256": "F68C23257C8B9828B5E2D086D1053B93DB54B9DDAFAE4CE14DB558D40504A44F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikContextMenu.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/FouerColorBorder.cs",
+      "sourceSha256": "9A110D549E20F28FBA8FF741AF30CE9015CF750530E35B4C1CAFB087B703E041",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ExpanderButton.cs",
+      "sourceSha256": "18EF53077888C13E65B4F4D25D7CDAC5AD781F1838B63C9C43F907A94DFBE930",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ExpanderButton.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ExpandDirection.cs",
+      "sourceSha256": "CD6AB47FA8CE5CE0C5E7158732A9B6DCBF5F4920F36534971F47BCD2F7E45FFA",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ExpandDirection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/EditableTextBlock.cs",
+      "sourceSha256": "AC2A75BE2EDCE6D4B11D5EF7FD84E2F5BF2D68F431496C7D03E47E58D3E5623B",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/EditableTextBlock.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DoubleUtil.cs",
+      "sourceSha256": "B13E6073441465062B241C08D853A796438EEC7A1D49BF015F43381C4CBC499F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DialogResult.cs",
+      "sourceSha256": "11EFA3211445DF2682F9FACC4FE0D76D536D9F720979759C1D4DA10F1D4F4FD5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DialogResult.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimeUpDown.cs",
+      "sourceSha256": "90DDE97E32FCD3A350640579985D020C66AB200393CC1053FDF4AA8D1DEBED90",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeUpDown.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimePicker.cs",
+      "sourceSha256": "F664745D609F393DFBA821333FFD83E9CB96B0F78281ECBB151B9F392172663C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimePicker.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimePart.cs",
+      "sourceSha256": "7F575591534E685F38FB8BA754BBAD34C55E3CBDA387812F2085A06554FC86CE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimePart.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimeParser.cs",
+      "sourceSha256": "D28553445E61443D71102D6AE307836F189A7ADF2A9EE34BB126467120C93A53",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeParser.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimeInfo.cs",
+      "sourceSha256": "10F54CF6571C8B2DD8AF1A2D10C4B5DD58B104CB109A481B79F1990B8D93C404",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeInfo.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateTimeFormat.cs",
+      "sourceSha256": "CC20259D674AFFAE6F71E899D3E42D41596A10F44D60D17AA52FC1B398679201",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeFormat.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DateElement.cs",
+      "sourceSha256": "AF297F271B3A8F2AA73DAF5A5C714DADB0EBFEF35FD1324AD11DD792F1FC1E41",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateElement.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorSpectrumSlider.cs",
+      "sourceSha256": "A7E4A60A0E77C95988C04DC160473CDB3B635C489BCBD69BC2BB95D5B4FD4001",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSpectrumSlider.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorSortingMode.cs",
+      "sourceSha256": "FAE0889E7374491F75F4958B7C2EA395D2FCAD535D1A82552CF0DE90B0763E44",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSortingMode.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorSorter.cs",
+      "sourceSha256": "3AB3F83C2727691914BE712A2A46C9EFF5F26763494D445739D3F80930775721",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSorter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorPickerTabItem.cs",
+      "sourceSha256": "AC805DB39157E12302D8659F645D5B1EE8F618219506DEE967BA46C5D2BC1924",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorPickerTabItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorPicker.cs",
+      "sourceSha256": "66FDD1566244D7B51F44FCBFE6ECB7C740FAB00B41C65640CD320FF3CA0FEF52",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorPicker.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorMode.cs",
+      "sourceSha256": "613AC88C5FF90A4524A55D741F7BF7E62035B9BABAB4F6F984653AC41B268003",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorMode.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorItem.cs",
+      "sourceSha256": "D00E83936A803B57CF416716E0CEAE34D33DB777142145663146416E72354CF5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ColorCanvas.cs",
+      "sourceSha256": "577B9B123E0E0E3A6FDE54C0F55075ABA68FECDA1C44286362A606878B8F140A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorCanvas.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/CollectionControlDialogBase.cs",
+      "sourceSha256": "8D918C744C89A4F8780F80E26933EBC60A656FF7E16B0DDFA84C379DEA6426B9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlDialogBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/CollectionControlDialog.xaml.cs",
+      "sourceSha256": "6B647B88A0EBE50E652ED8A4896F516D4CB0A2302A218E3DCD6C91A35D85D147",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlDialog.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/CollectionControlButton.cs",
+      "sourceSha256": "E3A57B82C5BC06FB1D95503EFDC2D78C76038AB0122C59F2DFCEAD5E707BA25A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlButton.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/CollectionControl.cs",
+      "sourceSha256": "02E7FCBE1047EC1F9263321BE519AEBFFA39636529BC5BE5535E8F90C022D487",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/ButtonSpinner.cs",
+      "sourceSha256": "747DFC3D262C4CC2575F56B2FA223B48B4E765A2622EACEA1E54A3F7530ABAF6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ButtonSpinner.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BottomCornerRadiusConvert.cs",
+      "sourceSha256": "2B9355702CBBC2517B77C4D217105EB17A6CFDDA12458FAFF3CFDFDAD4886662",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
+      "sourceSha256": "E51CF94600878FC06BCCC61FBE66AD07CA2D67A32CC02A00D73CA03D0B8DA088",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AutoSelectTextBox.cs",
+      "sourceSha256": "D32D5452BD063069A9BD118B245A0566C98162F4C2A42C94EAF68D4D4F5894AF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoSelectTextBox.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AutoSelectBehavior.cs",
+      "sourceSha256": "6D0414E6536CA91F21F06099DB19B314DACF0495D0904D69FF77B50EDA80B3D8",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoSelectBehavior.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AutoCompletingMaskEventArgs.cs",
+      "sourceSha256": "5A8EFA4CE91F4F8C9011E572CBFE81974D559F35BA3E93317E7230EE61986886",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoCompletingMaskEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/AllowedSpecialValues.cs",
+      "sourceSha256": "B776D2E34BCF4522992EC19D3371F25077A02D64DDA76217D42059BA269FD619",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AllowedSpecialValues.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/WindowUtilities.cs",
+      "sourceSha256": "EDA6845093E2766BB73B5C6BBBE5A0C74CA18530B6138A6B41C63731129BE2C0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/WindowUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/WeakEventListener.cs",
+      "sourceSha256": "94BB6B6A2C9036DC8765D0C0CC75F4B362DA146D5EB4F24DFB3A64FD18299E6D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/WeakEventListener.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/VisualTreeHelperEx.cs",
+      "sourceSha256": "5A6B28239D6198B18E682F42EB287969C5BE3A767DA0EF64C7D13C8F76E1A6F5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/VisualTreeHelperEx.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ValueChangeHelper.cs",
+      "sourceSha256": "AB6D66D0BF50EE315268B0B9E414E4A99BEBFFEBE771EB30D861285557AE6E53",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ValueChangeHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/WindowColors.cs",
+      "sourceSha256": "94454968B73DC739C8A5413CC5C6CCFE6A1E2DA16C0D6C122CF798D336954AEC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media/WindowColors.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/TreeHelper.cs",
+      "sourceSha256": "2AB732337E73508E57956A953F2E0F93F428DABA546349C73DBCC6A2B0CBCCFA",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/TreeHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/Segment.cs",
+      "sourceSha256": "13A113AE9A88AC66C41DB66EACFDEBAC4D5F516BBDCC5E524B38771D0DE63DF1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/Segment.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/RoutedEventHelper.cs",
+      "sourceSha256": "468CCEA7D4429C44FB39562C7095A007DABC717182EAAF4E70FE888FE5DCFCBE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/RoutedEventHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ResourceHelper.cs",
+      "sourceSha256": "0BBD55F3B10FCB553A82DF3A67858B72CD4B7FBD1FC96214668B20B7F081F8F4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ResourceHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ReflectionHelper.cs",
+      "sourceSha256": "03E232AD9F3B268A52EB4E9A2058C6AC83A1D03D1E9B05D6C123437F0779C464",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ReflectionHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/RectHelper.cs",
+      "sourceSha256": "D63F60D020556D2D60DEDBE0DC1790A04D661199713E499A0B02301FFB5FB2D5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/RectHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/PropertyChangedExt.cs",
+      "sourceSha256": "C2A65FE133C26AB7CA0B753BBEDB7DBDC7EFF670D943D2CF2DFBC9558B5C7F10",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/PropertyChangedExt.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/PointHelper.cs",
+      "sourceSha256": "3513BC4656283F8C95859E135C25E5A490F094E38D6B1FB54F8A2A9AC696656D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/PointHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ListUtilities.cs",
+      "sourceSha256": "F8455264987AD6F86E8FF7678154B4D5FADC0FCE977455C9A80394B77D9B1E60",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ListUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/KeyboardUtilities.cs",
+      "sourceSha256": "DD690E8DAED923337486A07541D77107F8CB0F16AED894F3CCF177BB84CAC07F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/KeyboardUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/GeneralUtilities.cs",
+      "sourceSha256": "E7D7468F9F9B4B78D73D908EA0877495E9F4889DCFD05FDA87DB7DB394237909",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/GeneralUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/FontUtilities.cs",
+      "sourceSha256": "F324EEC7A05686C199049E3177B73C2DE0B015F962B85E624B8705B2ABEF5211",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/FontUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/EllipseHelper.cs",
+      "sourceSha256": "DEFBB454FC7C5138431F5E160F0FBF4D4394E36FEF1ED2C408D1A8F1D0D7BE87",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/EllipseHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/DoubleHelper.cs",
+      "sourceSha256": "2221153328263516CC3055575511762CAA1C7C5A29E1CF1F106D9946A3D6FAB1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/DoubleHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/DateTimeUtilities.cs",
+      "sourceSha256": "B83AE5ADE1E445D9DEFE3589A5E2DDD9BFC353C4172146CF49EA981C295408F6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/DateTimeUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ContextMenuUtilities.cs",
+      "sourceSha256": "E416307E23AF9F0585CDC80C9296070B1ABE54A9FBDEB04355D104C163762D6D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ContextMenuUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ColorUtilities.cs",
+      "sourceSha256": "49A699B34637462CF7E5FC71F540A5F55625A2924B2D66ADA8975057D9A90400",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ColorUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Utilities/ChangeTypeHelper.cs",
+      "sourceSha256": "2D05266A328C7385837CF5E1F4F13CCB0448A9D683342FEAEA5D7E18D13CA1F2",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Utilities",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ChangeTypeHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Utilities"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/KeyModifierCollectionConverter.cs",
+      "sourceSha256": "6B0E372FDBF79EAD4F9E502873E8E1D2415437DB3C4354EBD5589845EF5DE8B3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifierCollectionConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/KeyModifierCollection.cs",
+      "sourceSha256": "59D6899E6BE8E96C7B81E8808BDE7C7982A0B44B2C20342C5103F710689BA28E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifierCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/KeyModifier.cs",
+      "sourceSha256": "5B1C769A1846AD9B937A5089335DE2100AF7D9DF07D5433C3033307D2439F01D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifier.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/IValidateInput.cs",
+      "sourceSha256": "9015B96EA2645097ADE36A523B14F4A801596886B2F62D85AA9E03D5DFE56EF0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/IValidateInput.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/InputValidationErrorEventHandler.cs",
+      "sourceSha256": "F622934D16F1553B5C7F609727195AC2B78A86A32370382907DEF62AAF1A93A6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/InputValidationErrorEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Input/InputValidationErrorEventArgs.cs",
+      "sourceSha256": "8EA96CBA23818EBA9700F97618B0665AC123048CEB651A5AB7EDE3DA37F2E5C9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/InputValidationErrorEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Input"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/PennerEquations.cs",
+      "sourceSha256": "F58D8737847EF6F99CD54A324CB65BC95236A8FCC0A06CE1D038039FEBFDE5E3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/PennerEquations.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/PennerEquation.cs",
+      "sourceSha256": "226CE15C560DF76B652FB89A4AB73AB3E3FCED31410F61896DC8172D44CBE992",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/PennerEquation.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/IterativeEquationConverter.cs",
+      "sourceSha256": "F5F71BCD0B6AA2295476E9360EC862F0BD4F62B33A5A48A8F271CB27F2610469",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeEquationConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/IterativeEquation.cs",
+      "sourceSha256": "FD68D829F5CF917247909F825DF83FF59FADE3EB80397579CAD81AFE844BB471",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeEquation.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/IterativeAnimationEquationDelegate.cs",
+      "sourceSha256": "6264ECCAC6EF2309D1365CBF95D886FE53CEE14E4B143D9B742E05C2440F363C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeAnimationEquationDelegate.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/AnimationRateConverter.cs",
+      "sourceSha256": "E96E104E84C206D18D9177724894FE2F141F259DB6B92B46084BCB4B9F8F273D",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/AnimationRateConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Core/Media/Animation/AnimationRate.cs",
+      "sourceSha256": "F908D0E2617DA3E2E12A7BC7CACAD674F01FA617B18F6B66F11B222766D42466",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Media.Animation",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/AnimationRate.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Core.Media.Animation"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/Thickness2DoubleConverter.cs",
+      "sourceSha256": "7488CB1C77D3255449E231DEBBD8B2EC811F3E49F724E0AE1E213C358D4FBB86",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/Thickness2DoubleConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/SuperRadioButton.xaml.cs",
+      "sourceSha256": "3A3F384C68E2FF6A7A8E02DA4FB931B789A118A3FE8CA7189A9AE5320F1DCFDF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/SuperRadioButton.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/SuperImageButton.xaml.cs",
+      "sourceSha256": "80C9A3073152A6DEE198FBD811D392FEB50F5C82913699B78F8F6E4963112CA1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/SuperImageButton.xaml.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
+      "sourceSha256": "98D950E46782FBD44BD1875A0E45F4E051AC4C31C8DAB22D07B898BB2B96B245",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/NegateThicknessConverter.cs",
+      "sourceSha256": "0E73716228A23EC9FA41586360192B914BE017DE0675CE4003E033196C308B16",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/NegateThicknessConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/NegateDoubleConverter.cs",
+      "sourceSha256": "54A7D02C2FDF6ADF1BDD3F5707E79B1963D9DDB068DBE72F5FE7DF63F5B0B9BC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/NegateDoubleConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/NegateConverter.cs",
+      "sourceSha256": "C1ADE8015C966B4EEA3BD619DE8A621C29A26C4DCEEFA105C62EB4BD429AE4B9",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/NegateConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/IWindow.cs",
+      "sourceSha256": "38DEF6CB013EFEA77E551632B75AEA526D773B54FA570432BC996EC44E5CBC73",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/IWindow.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/IndexConverter.cs",
+      "sourceSha256": "644A996F1A540650A19DF8A03795AA06FD6C31AA367790DEA22C96001C7FF134",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/IndexConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/Hex2ColorConverter.cs",
+      "sourceSha256": "2DD9092AF65C4BA04B4C2EC5B74F8BFBA502501FDE7CB2C6AA33A48002009C28",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/Hex2ColorConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/DependencyPropertyExtensions.cs",
+      "sourceSha256": "B90ED13F8AECB1FEF757946DB4A4A00B850F13DF93908911492A3C61A724B7AC",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/DependencyPropertyExtensions.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/CurrentUIHelper.cs",
+      "sourceSha256": "E5A2F2A945F8418B9FBF8D96A0CAD945008AA22393E4F27CC84559D10687CACB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/CurrentUIHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/CommomDragHelper.cs",
+      "sourceSha256": "29B9E68706DB011382162C30BADF1A0000369908E3CBE345AD92B9FAF0073064",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/CommomDragHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/Brush2ColorConverter.cs",
+      "sourceSha256": "573DE35B8C11C972A1CAA8CC9021362C5CAE0E59AE31E38D544BA211CE141163",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/Brush2ColorConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/Bool2CollapesdConverter.cs",
+      "sourceSha256": "05A5E6245AE06E65D29671D410FD6991774D39463E4332F51A773944326C4AD4",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/Bool2CollapesdConverter.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Interaction/AttachBinding.cs",
+      "sourceSha256": "99D42126F187EFD4FA07B2EC64860643B68215B3DB1C8946F87FDE2500EA942A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/AttachBinding.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/DefinitionCollectionBase.cs",
+      "sourceSha256": "BC847889BC128E82A696F6A2E36797D55DAFAC72BD578F0E602FE80B6510516F",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DefinitionCollectionBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/CustomPropertyItem.cs",
+      "sourceSha256": "109ACDE3E0C5884E2A595ADDF8E78ED946B4A6BE7FB6DD6FEBA8E4ABDB38B241",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CustomPropertyItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/ContainerHelperBase.cs",
+      "sourceSha256": "04B91B421EA4FA41BF6ED05905204648AFF6122CFCE073F53D83805ACE436CC6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ContainerHelperBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/CommonPropertyExceptionValidationRule.cs",
+      "sourceSha256": "BF24C1043469447E5FE04BF68F64758379EF190ABA30F40939D7A7CD11A76BAF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CommonPropertyExceptionValidationRule.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/CategoryGroupStyleSelector.cs",
+      "sourceSha256": "4CCB33A393E8C5DE89F7BAFBAED5F9751EEFF769A78E482B06BC69BFD0C52BA0",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CategoryGroupStyleSelector.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/EditorDefinition.cs",
+      "sourceSha256": "A14AACAA80E16A3A10FB1D762B7B2722ACE46574BE278ED1927728EBA0BADC21",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/EditorDefinition.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/DescriptorPropertyDefinitionBase.cs",
+      "sourceSha256": "A015CA2A8C663A8D29F779787CFC2315B008A7DB3DCBF25B8071EB1A53F7344E",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinitionBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/DescriptorPropertyDefinition.cs",
+      "sourceSha256": "AD93F2EAA88BC6DDA2197FFACF4307BC8DD846710E1C70DC52AB47C6E28B7BF5",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinition.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/EditorDefinitionCollection.cs",
+      "sourceSha256": "5A2186765AE4740F60E83AFDDBC6903A79EF4807F68CE6D1A9B46CDE7D4A6EA6",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/EditorDefinitionCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/FilterInfo.cs",
+      "sourceSha256": "BA80F216AF39A173B72D71112FADE2DF302916735C6B15384EABB1405D420879",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/FilterInfo.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/IPropertyContainer.cs",
+      "sourceSha256": "26EE4A3D6EBB95FCAAB97A9662A80281DDAA9AEFE03E3AABE7175278E5467120",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IPropertyContainer.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/IsPropertyBrowsableArgs.cs",
+      "sourceSha256": "64044B96A0E1984043578D05B44E47E2325A96A7375649B3BEC5DC45781E0BBF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IsPropertyBrowsableArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/TrimmedTextBlock.cs",
+      "sourceSha256": "0A6FA1D011866B956C999A37409E05EB2C7D7B58CC854A5F6E96E2E39763F3D1",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/TrimmedTextBlock.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/TargetPropertyType.cs",
+      "sourceSha256": "846A673823898B9ABB6CB645DF9C9E906DF3E288C0312EEEFF8CA30878375A60",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/TargetPropertyType.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/StringConstants.cs",
+      "sourceSha256": "005B1A0062F0B9852F0D2BC7962092C3D612BD5CCCB3679D3DA205A42BB0DA94",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/StringConstants.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyValueChangedEventHandler.cs",
+      "sourceSha256": "048D480B8482B82CB2BC1B4B0B1122A4A67969FBFC8BFA24CE6EAF3951718658",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyValueChangedEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyValueChangedEventArgs.cs",
+      "sourceSha256": "145C822578AF8E6426858D29B31CBA022753AD333A2B021AB58CD4AC063823AE",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyValueChangedEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItemsControl.cs",
+      "sourceSha256": "D3EB92DEACC99ADB66AD14F24F5BD2EFD99FE375930749CAA261E88961A845E3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemsControl.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItemEventHandler.cs",
+      "sourceSha256": "CFBE5FD0CD033E7D922DC0829CD66A788B0480445AC5DAD4774AA6CC7BA76499",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemEventHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItemEventArgs.cs",
+      "sourceSha256": "6E2CD7A02BCF654F316B6C3A1A19508AF84E440E6DE3FE593E31E9494A25C9BB",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemEventArgs.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItemCollection.cs",
+      "sourceSha256": "C0136919E321AE3D3E6C4A4371C0E52119EFB95774445A78AF72578D03CAD7D3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItemBase.cs",
+      "sourceSha256": "48745240A1C16FDB3047BA6463DFD35FCF8D8FC71970F09236EAFF26001EF2DF",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyItem.cs",
+      "sourceSha256": "BB2AD5BB3A817131AB294A5A3A7762B3AA9C44E1B968213459D729C49124EB29",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItem.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyGridUtilities.cs",
+      "sourceSha256": "132C3C087BA3F74BF3CC7867A2D517AA4C12B05D09ABE9B374AF1D5AB7F01420",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyGridUtilities.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyGrid.cs",
+      "sourceSha256": "9F8F75FDC675643DCAB38019168EE1D0BDF2FE2D906BF13FE001E0932D2D23C3",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyGrid.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyDefinitionCollection.cs",
+      "sourceSha256": "9EDB949925828AEF2AA81B253908F4CEDBF9E997AE43F565370448A47DE17398",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinitionCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyDefinitionBaseCollection.cs",
+      "sourceSha256": "BFD2ECAFA17D1B5C8C26CA0FF6F2906EAF1974C78DD9E7C5DCEB5DB6612C8460",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinitionBaseCollection.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/PropertyDefinition.cs",
+      "sourceSha256": "6BC5E7771B78A2BA677B2A67B34476EAFDB1879D02F3E48413CAF01A57B78D00",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinition.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/ObjectContainerHelperBase.cs",
+      "sourceSha256": "781087077700F227A41ECACB0B44731921C403769AC0B5B191E06E3F77EF1D4C",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ObjectContainerHelperBase.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/ObjectContainerHelper.cs",
+      "sourceSha256": "9317ED72A9E0D6BF1856D94147F4E339BF17B244565F97747F4C3B884609BE0A",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ObjectContainerHelper.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    },
+    {
+      "destination": "src/Plugin.Wpf/Controls/Foundation/PropertyGrid/IsPropertyBrowsableHandler.cs",
+      "sourceSha256": "84B07803A1151CACE97599AF3535834784EC2686C9535FBD2D06C43AF6A5E687",
+      "originalNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid",
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IsPropertyBrowsableHandler.cs",
+      "proposedNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation.PropertyGrid"
+    }
+  ],
+  "destinationCollisions": [],
+  "existingDestinationConflicts": [],
+  "preserve": [
+    "原类型/程序集/MVID/SHA/来源许可只在Catalog与证据",
+    "原件行为差异不合并",
+    "单一实现，无旧命名兼容入口"
+  ],
+  "requiredBeforeImplementation": [
+    "XAML x:Class/类型前缀及所有C#消费者同步映射",
+    "Page/Resource路径、pack URI、LogicalName、ResourceManager与资产映射闭合",
+    "Catalog仅更新local字段，original字段保持身份",
+    "重复类名/类型冲突、资源键和运行查找逐项验证",
+    "全量Release、实际WPF引用/变量/数值/弹层/设计器相称回归"
+  ],
+  "productChanged": false,
+  "otherUnitsAdvanced": false,
+  "scopePruningRequired": "321项为五个命名空间族的保守候选，不是Blob必须迁移文件数。实施前须按真实类型/资源闭包与消费者修剪；不能因同一原程序集命名空间而迁全库或阻塞Blob。"
+}

@@ -15,7 +15,10 @@ public interface IToolSettingsFields
 public interface IToolSettingsDraft
 {
     ToolSchema Schema { get; }
+    long Revision { get; }
     FieldSettings CaptureFields();
+    /// <summary>Capture the current private edit snapshot after complete settings validation.</summary>
+    FieldSettings CaptureValidatedFields();
     /// <summary>Prepare the complete candidate, call the host once, then install it.
     /// A rejected or reentrant callback leaves this draft unchanged.</summary>
     void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate);
@@ -28,9 +31,16 @@ public sealed class FieldSettingsDraft : IToolSettingsDraft
     private readonly Action<FieldSettings>? _validate;
     private bool _applying;
     public ToolSchema Schema { get; }
+    public long Revision {get;private set;}
     public FieldSettingsDraft(ToolSchema schema,FieldSettings fields,Action<FieldSettings>? validate=null)
     {Schema=schema;_fields=fields.Select(schema.Inputs);_validate=validate;_validate?.Invoke(_fields);}
     public FieldSettings CaptureFields()=>new(Schema.Inputs,_fields.Capture());
+    public FieldSettings CaptureValidatedFields()
+    {
+        var revision=Revision;var snapshot=CaptureFields();_validate?.Invoke(snapshot);
+        if(revision!=Revision)throw new InvalidOperationException("Settings changed during capture.");
+        return snapshot;
+    }
     public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
     {
         ArgumentNullException.ThrowIfNull(changes);ArgumentNullException.ThrowIfNull(acceptCandidate);
@@ -41,6 +51,7 @@ public sealed class FieldSettingsDraft : IToolSettingsDraft
             var candidate=_fields.Apply(changes);_validate?.Invoke(candidate);
             acceptCandidate(new(Schema.Inputs,candidate.Capture()));
             _fields=candidate;
+            Revision++;
         }
         finally{_applying=false;}
     }

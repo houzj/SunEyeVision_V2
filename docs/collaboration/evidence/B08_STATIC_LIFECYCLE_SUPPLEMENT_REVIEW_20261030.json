@@ -1,0 +1,36 @@
+{
+  "status": "报告正文及报告SHA核验通过；未独立重核全部汇编；不足以定义最终解绑值或完整触发寿命",
+  "reports": [
+    {
+      "hash": "9922A2AB46692E546B545D80540CCCBFB692116B9C492C2B3C4CD86B261F6DC1",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08解绑后运行时读取缺失关系补证-20261030.md",
+      "actualHash": "9922A2AB46692E546B545D80540CCCBFB692116B9C492C2B3C4CD86B261F6DC1",
+      "name": "B08解绑后运行时读取缺失关系补证-20261030.md"
+    },
+    {
+      "hash": "2890F381503E20495C1A17D2C0DB603F0DBBA833B4F63B1E71BF96F4F6294ED5",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08触发字符串连续运行及停止补证-20261030.md",
+      "actualHash": "2890F381503E20495C1A17D2C0DB603F0DBBA833B4F63B1E71BF96F4F6294ED5",
+      "name": "B08触发字符串连续运行及停止补证-20261030.md"
+    },
+    {
+      "hash": "0AC1DE2CA36425C745FFBD7A0A14C308EFB2815EEDAC65C611A25EFDB37E36A9",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08触发命名项任务对象来源补证-20261030.md",
+      "actualHash": "0AC1DE2CA36425C745FFBD7A0A14C308EFB2815EEDAC65C611A25EFDB37E36A9",
+      "name": "B08触发命名项任务对象来源补证-20261030.md"
+    }
+  ],
+  "confirmed": [
+    "VM_M_GetString特定缺失订阅分支返回E000031B，不填旧值或默认值；不等于具体工具解绑后的最终行为",
+    "连续运行正常具体流程接纳路径复制显式触发文本至流程对象+0xa8；空指针入口转空串",
+    "GLOBAL=2字符串IO读取与执行后##TriggerCmd##命名项不是可直接互代的同一消费链；另一命名项写入读取尚未识别对象+0x100"
+  ],
+  "unresolved": [
+    "解绑表与运行读取表的对象同一性及具体工具错误回退",
+    "连续停止/取消/异常/重开全部间接清理、持久化和实际实例",
+    "任务对象+0x100写入者及与流程+0xa8的关系",
+    "不同托管手动入口实际传参不能统一推定空"
+  ],
+  "productDecision": "保留现行保护，不据局部分支猜默认值或新增触发消息缓存；B08仍未完成",
+  "productChanged": false
+}

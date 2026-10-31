@@ -33,7 +33,16 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
         if(settings.SourceKind=="camera"&&(!invocation.Inputs.Contains(ImageSourceTool.DeviceId)||
             !string.Equals(invocation.Inputs.Get<string>(ImageSourceTool.DeviceId),settings.CameraDeviceId,StringComparison.OrdinalIgnoreCase)))
             return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_CAMERA_IDENTITY","本轮帧与冻结的设备引用不一致。");
-        var address=settings.SourceKind=="local"?invocation.Inputs.Get<string>(ImageSourceTool.LocalAddress):string.Empty;
+        var address=string.Empty;
+        if(settings.SourceKind=="local")
+        {
+            if(invocation.Context is not ILocalImageReadContext reader)
+                return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_ADMISSION","本轮缺少正式本地图像读取接纳能力。");
+            try { address=reader.AcceptLocalImage(); }
+            catch(OperationCanceledException){throw;}
+            catch(Exception error){return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_ADMISSION",error.Message);}
+        }
+        cancellation.ThrowIfCancellationRequested();
         if(settings.SourceKind=="local"&&(!Path.IsPathFullyQualified(address)||!File.Exists(address)))
             return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_FILE","本轮图像文件地址无效或不可用。");
         IOutputResourceScope? resources=null;
@@ -45,13 +54,33 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             using var source=settings.SourceKind=="local"?new HImage(address):
                 HalconResourceBridge.CopyImage(invocation.Inputs.Get<IReadOnlyImage>(ImageSourceTool.CameraImage));
             cancellation.ThrowIfCancellationRequested();
-            using var converted=Convert(source,settings.OutputFormat);
+            // The format selector belongs to local files; camera output retains the captured frame format.
+            using var converted=Convert(source,settings.SourceKind=="local"?settings.OutputFormat:"original");
             resources=invocation.Context.Resources.CreateScope();
             ImageFrameAddress Frame(string port)=>new(Guid.NewGuid(),"image-source:"+invocation.Context.Identity.NodeId,
                 invocation.Context.Identity,port);
             var image=HalImageSnapshotSource.Capture(converted,Frame(ImageSourceOutput.Image),resources);
             IReadOnlyImage gray;
             if(image.Layout.Format==PixelLayout.Gray8)gray=image;
+            else if(settings.SourceKind=="camera")
+            {
+                var pixels=image.CopyPixels();var bytes=new byte[checked(image.Width*image.Height)];
+                for(var y=0;y<image.Height;y++)
+                {
+                    cancellation.ThrowIfCancellationRequested();
+                    for(var x=0;x<image.Width;x++)
+                    {
+                        var offset=y*image.Layout.RowStrideBytes+x*(image.Layout.Format==PixelLayout.Bgra32?4:3);
+                        bytes[y*image.Width+x]=(byte)((76*pixels[offset+2]+150*pixels[offset+1]+30*pixels[offset])>>8);
+                    }
+                }
+                var frame=Frame(ImageSourceOutput.GrayImage);
+                using var reader=image.EffectiveDomain.AcquireReader();var runs=new List<RegionRun>();
+                for(var offset=0;offset<reader.RunCount;offset+=4096)
+                    runs.AddRange(reader.ReadRuns(offset,4096).ToArray());
+                var domain=resources.CreateRegion(reader.Frame,frame,runs.ToArray());
+                gray=resources.CreateImage(new ImageLayout(image.Width,image.Height,image.Width,PixelLayout.Gray8),frame,domain,bytes);
+            }
             else
             {
                 using var grayNative=HalconImageAdmission.Gray(converted);

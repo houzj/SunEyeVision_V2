@@ -1,0 +1,17 @@
+{
+  "scope": "只读C#语法解析；不是类型检查、构建、执行或验收",
+  "parser": "Microsoft.CodeAnalysis.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "files": [
+    "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+    "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+    "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+    "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
+    "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+    "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+    "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+    "scripts/verification/O06WindowPresentationCases.cs"
+  ],
+  "errors": []
+}

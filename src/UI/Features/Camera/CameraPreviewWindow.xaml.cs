@@ -12,13 +12,21 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
 {
     private readonly CameraPreviewHost _host;
     private readonly CameraDetailViewModel _viewModel;
+    private readonly CameraDevice _camera;
+    private readonly CameraSession _session;
+    private readonly bool _ownsSession;
+    private Task? _closeResources;
 
-    public CameraPreviewWindow(CameraRuntimeComposition runtime, CameraDeviceRef cameraRef, CameraSession existingSession, CameraDetailViewModel viewModel)
+    public CameraPreviewWindow(CameraRuntimeManager runtime, CameraDeviceRef cameraRef, CameraSession existingSession,
+        CameraDevice camera, bool ownsSession, CameraDetailViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        _camera = camera ?? throw new ArgumentNullException(nameof(camera));
+        _session = existingSession ?? throw new ArgumentNullException(nameof(existingSession));
+        _ownsSession = ownsSession;
         DataContext = viewModel;
-        _host = new CameraPreviewHost(runtime ?? throw new ArgumentNullException(nameof(runtime)), cameraRef, existingSession);
+        _host = new CameraPreviewHost((runtime ?? throw new ArgumentNullException(nameof(runtime))), cameraRef, existingSession);
         _host.CaptureStateChanged += OnCaptureStateChanged;
         PreviewHostContainer.Content = _host;
         Loaded += (_, _) => UpdateCaptureControls();
@@ -122,11 +130,37 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
         TriggerButton.IsEnabled = !busy && _host.CanSoftwareTrigger;
     }
 
-    protected override async void OnClosed(EventArgs e)
+    internal bool Matches(CameraDevice camera, CameraSession session)
+        => ReferenceEquals(_camera, camera) && ReferenceEquals(_session, session);
+
+    internal Task CloseResourcesAsync()
+    {
+        if (_closeResources is not null) return _closeResources;
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _closeResources = completion.Task;
+        _ = CloseResourcesCoreAsync(completion);
+        return completion.Task;
+    }
+
+    private async Task CloseResourcesCoreAsync(TaskCompletionSource<bool> completion)
     {
         _host.CaptureStateChanged -= OnCaptureStateChanged;
-        await _host.DisposeAsync();
-        await _viewModel.ClosePreviewSessionAsync();
-        base.OnClosed(e);
+        var failures = new System.Collections.Generic.List<Exception>();
+        try { await _host.DisposeAsync(); } catch (Exception error) { failures.Add(error); }
+        try { await _viewModel.ClosePreviewSessionAsync(_camera, _session, _ownsSession); } catch (Exception error) { failures.Add(error); }
+        if (failures.Count == 0) completion.TrySetResult(true);
+        else completion.TrySetException(new AggregateException("相机预览关闭清理失败。", failures));
+    }
+
+    protected override async void OnClosed(EventArgs e)
+    {
+        try { await CloseResourcesAsync(); }
+        catch (Exception failure)
+        {
+            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
+                failure.Message, "CameraPreviewTrace", failure, SunEyeVision.Plugin.SDK.Logging.LogTarget.All);
+            if (ReferenceEquals(_viewModel.SelectedCamera, _camera)) _viewModel.ReportOperationStatus(failure.Message);
+        }
+        finally { base.OnClosed(e); }
     }
 }

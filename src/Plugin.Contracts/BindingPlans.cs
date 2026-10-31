@@ -12,11 +12,24 @@ public abstract class BindingSelection
     }
     public sealed class AtField(OutputReference reference):BindingSelection
     {public OutputReference Reference {get;}=reference??throw new ArgumentNullException(nameof(reference));}
+    public sealed class AtVariable:BindingSelection
+    {
+        public AtVariable(VariableReference reference)
+        {
+            ArgumentNullException.ThrowIfNull(reference);
+            if(reference.Type!=DataType.Integer||reference.Selection is not AllItems)
+                throw new ArgumentException("A variable index requires an integer scalar without a nested selection.");
+            Reference=reference;
+        }
+        public VariableReference Reference {get;}
+    }
 }
 public enum BindingCompatibility { Compatible, Conditional, Incompatible, Unresolved }
 public enum BindingConversion { Automatic, Float64ToInt64Checked }
 public readonly record struct BindingNodeId(string ScopeId,string NodeId);
 public sealed record BindingSource(BindingNodeId Node,Guid ExecutionScopeId,ToolSchema Schema,long SchemaRevision);
+public sealed record BindingVariableSource(VariableReference Reference,BindingNodeId? Producer=null);
+public sealed record BindingVariableValue(BindingVariableSource Source,RunIdentity ConsumerIdentity,object? Value,Diagnostic? Issue=null);
 
 /// <summary>Actual graph/scope owner supplies visibility and cycle checks; never infer them from last results.</summary>
 public interface IBindingCompilationScope
@@ -25,9 +38,10 @@ public interface IBindingCompilationScope
     Guid DocumentSessionId {get;}
     long DocumentRevision {get;}
     bool TryGetSource(BindingNodeId node,out BindingSource source);
+    bool TryGetVariable(VariableReference reference,out BindingVariableSource source);
     Diagnostic? ValidateDependencies(IReadOnlyList<BindingNodeId> sources);
 }
-public sealed record BindingReferencePlan(OutputReference Reference,BindingSource Source,TypeRef SelectedType,BindingReferencePlan? Index,bool Conditional,NumericStorage? Storage=null);
+public sealed record BindingReferencePlan(OutputReference Reference,BindingSource Source,TypeRef SelectedType,BindingReferencePlan? Index,bool Conditional,NumericStorage? Storage=null,BindingVariableSource? VariableIndex=null);
 /// <summary>Immutable compiled instructions. Execution belongs to the existing parameter resolution service.</summary>
 public sealed class BindingPlan
 {
@@ -50,6 +64,7 @@ public interface IBindingRunSnapshot
     long DocumentRevision {get;}
     bool TryGetExpectedSourceIdentity(BindingNodeId node,out RunIdentity identity);
     bool TryGetResult(BindingNodeId node,out BindingNodeResult result);
+    bool TryGetVariable(VariableReference reference,out BindingVariableValue value);
 }
 public sealed record BindingResolution(bool Success,object? Value,Diagnostic? Diagnostic);
 public interface IBindingPlanCompiler

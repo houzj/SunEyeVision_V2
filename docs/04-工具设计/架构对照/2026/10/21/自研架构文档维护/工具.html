@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>24 个工具</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#c96b6b;
+}
+*{box-sizing:border-box}
+body{
+  max-width:720px;margin:0 auto;padding:44px 26px 100px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+.crumb{font-size:12px;color:var(--faint);margin-bottom:14px}
+.crumb a:hover{text-decoration:underline;color:var(--accent)}
+
+h1{font-size:22px;font-weight:600;margin:0 0 7px}
+.lede{margin:0 0 22px;font-size:13.5px;color:var(--dim)}
+
+#q{
+  display:block;width:100%;margin:0 0 20px;padding:8px 11px;
+  background:#0a1621;border:1px solid #24404f;border-radius:4px;
+  color:inherit;font:inherit;font-size:13.5px;
+}
+#q:focus{outline:none;border-color:#4a7f96}
+#q::placeholder{color:#5c7385}
+
+h2{
+  font-size:12.5px;font-weight:600;color:#8fb4c8;letter-spacing:.04em;
+  margin:30px 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line);
+}
+h2:first-of-type{margin-top:6px}
+h2 i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:baseline;gap:10px;padding:3.5px 0}
+li a{flex:1;min-width:0;color:#cfe4ee}
+li a:hover{color:#fff;text-decoration:underline}
+li .id{font-family:Consolas,monospace;font-size:11px;color:var(--faint);width:30px;flex:none}
+li .st{font-size:11px;white-space:nowrap;width:56px;text-align:right;flex:none}
+li .st.ok{color:var(--ok)}
+li .st.partial{color:var(--warn)}
+li .st.none{color:var(--bad)}
+li .sz{font-size:11px;color:var(--warn);white-space:nowrap;flex:none}
+
+.none{display:none;font-size:13px;color:var(--dim);margin:16px 0}
+@media(max-width:600px){ body{padding:30px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb"><a href="index.html">架构文档</a> › 24 个工具</div>
+
+<h1>24 个工具</h1>
+<p class="lede">按工具分类排列。每个工具一页实际数据链，含 VM 对照与差异。</p>
+
+<input id="q" type="search" autocomplete="off" placeholder="筛选">
+<p class="none" id="none">没有匹配项。</p>
+
+<div id="list"></div>
+
+<script>
+const DATA = [{"h":"区域分析","items":[{"t":"Blob分析","f":"现状分析/tool-detail-BlobAnalysis.html","st":"","k":74,"id":""}]},{"h":"几何测量","items":[{"t":"圆-圆测量","f":"现状分析/tool-detail-CircleCircleMeasure.html","st":"","k":67,"id":""},{"t":"线-圆测量","f":"现状分析/tool-detail-LineCircleMeasure.html","st":"","k":67,"id":""},{"t":"线-线测量","f":"现状分析/tool-detail-LineLineMeasure.html","st":"","k":66,"id":""},{"t":"点-圆测量","f":"现状分析/tool-detail-PointCircleMeasure.html","st":"","k":57,"id":""},{"t":"点-线测量","f":"现状分析/tool-detail-PointLineMeasure.html","st":"","k":56,"id":""},{"t":"点-点测量","f":"现状分析/tool-detail-PointPointMeasure.html","st":"","k":45,"id":""}]},{"h":"特征定位","items":[{"t":"圆查找","f":"现状分析/tool-detail-CircleDetect.html","st":"","k":60,"id":""},{"t":"直线查找","f":"现状分析/tool-detail-LineDetect.html","st":"","k":57,"id":""},{"t":"轮廓匹配","f":"现状分析/tool-detail-ShapeMatch.html","st":"","k":77,"id":""}]},{"h":"流程控制","items":[{"t":"条件分支","f":"现状分析/tool-detail-Condition.html","st":"","k":45,"id":""},{"t":"子程序","f":"现状分析/tool-subroutine.html","st":"","k":48,"id":""}]},{"h":"图像预处理","items":[{"t":"图像滤波","f":"现状分析/tool-detail-ImageFilter.html","st":"","k":58,"id":""},{"t":"图像二值化","f":"现状分析/tool-detail-ImageThreshold.html","st":"","k":59,"id":""},{"t":"形态学处理","f":"现状分析/tool-detail-Morphology.html","st":"","k":55,"id":""},{"t":"图像阈值化","f":"现状分析/tool-standard.html","st":"","k":47,"id":""}]},{"h":"图像采集","items":[{"t":"图像源","f":"现状分析/tool-detail-ImageLoad.html","st":"","k":54,"id":""}]},{"h":"坐标标定","items":[{"t":"N点标定","f":"现状分析/tool-calibration.html","st":"","k":67,"id":""},{"t":"N点标定验证","f":"现状分析/tool-verification.html","st":"","k":52,"id":""}]},{"h":"通信工具","items":[{"t":"协议组装","f":"现状分析/tool-detail-ProtocolAssemble.html","st":"","k":43,"id":""},{"t":"协议解析","f":"现状分析/tool-detail-ProtocolParse.html","st":"","k":43,"id":""},{"t":"接收数据","f":"现状分析/tool-detail-ReceiveData.html","st":"","k":48,"id":""},{"t":"发送数据","f":"现状分析/tool-detail-SendData.html","st":"","k":63,"id":""}]},{"h":"脚本工具","items":[{"t":"Script","f":"现状分析/tool-script.html","st":"","k":405,"id":""}]}];
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const STL = {"implemented":["已实现","ok"],"partial":["部分实现","partial"],"unimplemented":["未实现","none"],"unknown":["未确认","none"]};
+
+let html = "";
+DATA.forEach(function(g){
+  if(!g.items.length) return;
+  html += '<h2>'+esc(g.h)+'<i>'+g.items.length+'</i></h2><ul>';
+  g.items.forEach(function(it){
+    const s = it.st ? STL[it.st] : null;
+    const sz = (it.k && it.k >= 500) ? '<span class="sz">'+(it.k>=1024?(it.k/1024).toFixed(1)+" MB":it.k+" KB")+'</span>' : '';
+    html += '<li><span class="id">'+esc(it.id||"")+'</span>'+
+            '<a href="'+esc(it.f)+'" data-k="'+esc(((it.t||"")+" "+(it.id||"")+" "+(it.f||"")).toLowerCase())+'">'+esc(it.t)+'</a>'+
+            (s ? '<span class="st '+s[1]+'">'+s[0]+'</span>' : '')+ sz +'</li>';
+  });
+  html += '</ul>';
+});
+
+document.getElementById("list").innerHTML = html;
+
+const qEl = document.getElementById("q");
+const noneEl = document.getElementById("none");
+
+qEl.addEventListener("input", function(){
+  const q = qEl.value.trim().toLowerCase();
+  let shown = 0;
+
+  document.querySelectorAll("li").forEach(function(li){
+    const a = li.querySelector("a");
+    const ok = !q || (a && a.dataset.k.indexOf(q) >= 0);
+    li.style.display = ok ? "" : "none";
+    if(ok) shown++;
+  });
+
+  document.querySelectorAll("h2").forEach(function(h){
+    const ul = h.nextElementSibling;
+    const vis = ul && ul.querySelector('li:not([style*="none"])');
+    h.style.display = vis ? "" : "none";
+    if(ul) ul.style.display = vis ? "" : "none";
+  });
+
+  noneEl.style.display = (q && !shown) ? "block" : "none";
+});
+
+document.addEventListener("keydown", function(e){
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); qEl.focus(); }
+  if(e.key === "Escape"){ qEl.value=""; qEl.dispatchEvent(new Event("input")); }
+});
+</script>
+</body>
+</html>

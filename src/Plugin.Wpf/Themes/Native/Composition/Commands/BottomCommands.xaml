@@ -2,6 +2,16 @@
 <!-- Original Apps.Style button styles and Apps.XmlUI four templates. Only host state/command/label paths adapted. -->
 <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/></ResourceDictionary.MergedDictionaries>
 <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
+  <!-- Apps.Style ResetBtnStyle: original image resources, with local pack URIs. -->
+  <Style x:Key="ResetBtnStyle" TargetType="{x:Type Button}">
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type Button}">
+      <Grid><Image x:Name="icon" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_btn_initialize_normal.png"/></Grid>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_btn_initialize_click.png"/></Trigger>
+        <Trigger Property="IsPressed" Value="True"><Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_btn_initialize_click.png"/></Trigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style x:Key="Orange_ButtonStyle" TargetType="{x:Type Button}">
     <Setter Property="Background" Value="{DynamicResource btnEditTemplateBorderBG}" />
     <Setter Property="BorderBrush" Value="{DynamicResource BottomLineBtnEnableBB}" />

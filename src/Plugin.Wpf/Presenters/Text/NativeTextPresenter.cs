@@ -6,8 +6,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
-using NativePopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
-using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox;
+using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
+using NativeText=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Text;
 
@@ -21,19 +21,23 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
     private Window? _owner;
     private DispatcherOperation? _pending;
     private bool _disposed,_hidden,_closing,_listening,_attaching;
-    private long _generation;
+    private long _generation,_loadGeneration;
     internal TextBox? TextEditor=>_text;
+    internal bool HasPendingEdits=>!_disposed&&_session.HasPendingEdits;
     internal NativeTextPresenter(DeclaredFieldState state,TextExpressionOptions? options,Func<bool> isCurrent)
     {
         _session=new(state,options,()=>!_disposed&&isCurrent()&&(_text is null
             ||Visuals<NativeText>(_content).Any(text=>ReferenceEquals(text,_text))));
-        _content=new ContentControl{Content=_session,HorizontalContentAlignment=HorizontalAlignment.Stretch};
+        // The original StringConfig host is 32 DIP and stretches its popup template vertically.
+        MinHeight=32;
+        _content=new ContentControl{Content=_session,HorizontalContentAlignment=HorizontalAlignment.Stretch,
+            VerticalContentAlignment=VerticalAlignment.Stretch};
         try
         {
             Resources.MergedDictionaries.Add(new ResourceDictionary
             {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Text/TextField.xaml",UriKind.Relative)});
             _content.ContentTemplate=(DataTemplate)FindResource("StringConfig_sub");Child=_content;
-            _session.RestoreCaretRequested+=RestoreCaret;
+            _session.ProjectInsertionRequested+=ProjectInsertion;
             Loaded+=OnLoaded;Unloaded+=OnUnloaded;LayoutUpdated+=OnLayout;
             IsVisibleChanged+=OnVisibility;IsEnabledChanged+=OnEnabled;
             PreviewKeyDown+=OnKey;LostKeyboardFocus+=OnLostFocus;
@@ -70,7 +74,7 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
     {if(!_disposed&&(_text is null||!Visuals<NativeText>(_content).Any(text=>ReferenceEquals(text,_text))))AttachInputs();}
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(_disposed)return;AttachInputs();
+        if(_disposed)return;++_loadGeneration;AttachInputs();
         if(!_listening){InputManager.Current.PreProcessInput+=OnInput;_listening=true;}
         if(_owner is not null)_owner.Deactivated-=OnDeactivate;
         _owner=Window.GetWindow(this);if(_owner is not null)_owner.Deactivated+=OnDeactivate;
@@ -130,12 +134,30 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
             TryCommitPending();if(!_disposed)Close();
         }));
     }
-    private void RestoreCaret(int caret)
+    private void ProjectInsertion(Action project,string proposed,int caret,Func<bool> ownsCaret)
     {
-        if(_disposed||_text is not {} text)return;
-        text.Focus();
-        if(_disposed||!ReferenceEquals(text,_text))return;
-        text.Select(Math.Clamp(caret,0,text.Text.Length),0);
+        if(_disposed||!ownsCaret()||_text is not {} text){project();return;}
+        var binding=text.GetBindingExpression(TextBox.TextProperty);
+        bool Current()=>!_disposed&&ReferenceEquals(text,_text)&&IsLoaded&&IsVisible&&IsEnabled
+            &&ReferenceEquals(binding,text.GetBindingExpression(TextBox.TextProperty))&&ownsCaret();
+        try{Close();}
+        catch(Exception failure){try{project();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
+        if(!Current()){project();return;}
+        try{text.Focus();}
+        catch(Exception failure){try{project();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
+        if(!Current()||!text.IsKeyboardFocused){project();return;}
+        text.BeginChange();
+        Exception? error=null;
+        try
+        {
+            project();
+            if(Current())binding?.UpdateTarget();
+            if(Current()&&text.Text==proposed)text.Select(Math.Clamp(caret,0,text.Text.Length),0);
+        }
+        catch(Exception failure){error=failure;}
+        try{text.EndChange();}
+        catch(Exception failure){error=error is null?failure:new AggregateException(error,failure);}
+        if(error is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
     }
     private bool Owns(DependencyObject? node)
     {
@@ -157,16 +179,23 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
     private void CancelPending(){_generation++;_pending?.Abort();_pending=null;}
     private void Close()
     {
-        CancelPending();_closing=true;
-        try{_session.Close();if(_popup is not null)_popup.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
-        finally{_closing=false;}
+        CancelPending();var wasClosing=_closing;_closing=true;
+        var popup=_popup;var generation=_generation;
+        try{ParameterCleanup.Run(new Action[]{_session.Close,()=>
+        {
+            if(generation==_generation&&ReferenceEquals(popup,_popup)&&!_session.IsTextDropDownOpen)
+                popup?.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
+        }});}
+        finally{_closing=wasClosing;}
     }
     private void OnDeactivate(object? sender,EventArgs args)=>Close();
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
-        _session.SetSuspended(true);Close();
-        StopListening();
-        if(_owner is not null)_owner.Deactivated-=OnDeactivate;_owner=null;
+        var generation=++_loadGeneration;var owner=_owner;_owner=null;
+        bool StillUnloaded()=>!_disposed&&generation==_loadGeneration&&!IsLoaded;
+        ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivate;},StopListening,
+            ()=>{if(StillUnloaded())_session.SetSuspended(true);},
+            ()=>{if(StillUnloaded())Close();}});
     }
     private void StopListening()
     {if(_listening)InputManager.Current.PreProcessInput-=OnInput;_listening=false;}
@@ -177,7 +206,7 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
             StopListening,
             ()=>{if(_owner is not null)_owner.Deactivated-=OnDeactivate;_owner=null;},
             ()=>{Loaded-=OnLoaded;Unloaded-=OnUnloaded;LayoutUpdated-=OnLayout;IsVisibleChanged-=OnVisibility;IsEnabledChanged-=OnEnabled;
-                PreviewKeyDown-=OnKey;LostKeyboardFocus-=OnLostFocus;_session.RestoreCaretRequested-=RestoreCaret;},
+                PreviewKeyDown-=OnKey;LostKeyboardFocus-=OnLostFocus;_session.ProjectInsertionRequested-=ProjectInsertion;},
             _session.Dispose,()=>{_content.Content=null;Child=null;_text=null;_popup=null;}});
     }
 }

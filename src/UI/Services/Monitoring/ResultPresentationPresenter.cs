@@ -242,7 +242,8 @@ public sealed class ResultPresentationPresenter : IDisposable
         {
             if(!Current(generation)){Abandon(generation);return;}
             var id = entry.Node.DeclaredPort!.Id;
-            entry.Row.DisplayName = names != null && names.TryGetValue(id, out var name) ? name : id;
+            entry.Row.DisplayName = _model?.Schema.FindOutputDisplay(id)?.DisplayName
+                ??(names != null && names.TryGetValue(id, out var name) ? name : id);
             if(!Current(generation)){Abandon(generation);return;}
         }
         foreach(var entry in _entries.Values.ToArray())
@@ -262,7 +263,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         var row = new FlatResultRow
         {
             Key=node.Key,
-            DisplayName = node.IsAllProjection?(node.DeclaredPort?.Id is {} field?field+" [All]":"All · 全部元素成员"):node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
+            DisplayName = DisplayName(node),
             DisplayValue = value, Level = level,
             IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = node.IsExpanded
         };
@@ -278,6 +279,14 @@ public sealed class ResultPresentationPresenter : IDisposable
         return entry;
     }
 
+    private string DisplayName(ResultPresentationNode node)
+    {
+        if(node.ElementIndex is {} index)return "["+index.ToString(CultureInfo.InvariantCulture)+"]";
+        var address=node.DeclarationAddress;
+        var name=address is null?null:_model?.Schema.FindOutputDisplay(address.RootPort.Id,address.MemberFieldPath)?.DisplayName;
+        name??=node.DeclaredPort?.Id;
+        return node.IsAllProjection?(name is null?"All · 全部元素成员":name+" [All]"):name??"";
+    }
     private bool ApplyBinding(Entry entry,int generation)
     {
         if(!Current(generation)){Abandon(generation);return false;}

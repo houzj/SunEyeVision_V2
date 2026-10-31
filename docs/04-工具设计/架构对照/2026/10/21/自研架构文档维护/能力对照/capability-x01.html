@@ -11,7 +11,7 @@ internal sealed class CameraWorkflowFrameFeed : ICameraFrameSink, IAsyncDisposab
 {
     private readonly CameraSession _session;
     private readonly CameraDeviceRef _cameraRef;
-    private readonly TimeSpan _timeout;</pre></details><details class="source-card"><summary>S103</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>﻿using System;
+    private readonly TimeSpan _timeout;</pre></details><details class="source-card"><summary>S103</summary><p><a title="src/UI/Services/Performance/ImageConverterPool.cs（取证时点路径，文件已重构移除）">src/UI/Services/Performance/ImageConverterPool.cs:1</a></p><p><code>(文件职责)</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -43,7 +43,7 @@ namespace SunEyeVision.UI.Services.Performance
         {
             if (_streamTask is not null)
             {
-                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }</pre></details><details class="source-card"><summary>R072</summary><p><a href="file:///D:/MyWork/SunEyeVision_V2/src/UI/Services/Performance/ImageConverterPool.cs">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
+                try { await _session.Adapter.StopStreamAsync(CancellationToken.None).ConfigureAwait(false); }</pre></details><details class="source-card"><summary>R072</summary><p><a title="src/UI/Services/Performance/ImageConverterPool.cs（取证时点路径，文件已重构移除）">src/UI/Services/Performance/ImageConverterPool.cs:36</a></p><p><code>ConvertToBitmapSource</code></p><p>SHA256 <code>d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707</code></p><pre>        public BitmapSource ConvertToBitmapSource(Mat mat)
         {
             if (mat == null || mat.Empty())
                 throw new ArgumentNullException(nameof(mat));

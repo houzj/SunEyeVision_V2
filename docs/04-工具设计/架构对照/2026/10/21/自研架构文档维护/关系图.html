@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>改动影响关系图</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#e88d8d;
+}
+*{box-sizing:border-box}
+body{
+  max-width:900px;margin:0 auto;padding:44px 26px 90px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+
+.crumb{font-size:12px;color:var(--faint);margin-bottom:14px}
+.crumb a:hover{text-decoration:underline}
+h1{font-size:22px;font-weight:600;margin:0 0 8px}
+.lede{margin:0 0 26px;font-size:14px;color:var(--dim);line-height:1.7}
+
+/* 状态总览条 */
+.bar{display:flex;height:26px;border-radius:4px;overflow:hidden;margin:0 0 8px;border:1px solid var(--line)}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#0d1b28;font-weight:600}
+.bar .b1{background:#7fd3a8}
+.bar .b2{background:#e0a06a}
+.bar .b3{background:#c96b6b}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--faint);margin:0 0 34px}
+.legend span::before{content:"■ ";font-size:9px}
+.legend .l1::before{color:#7fd3a8}
+.legend .l2::before{color:#e0a06a}
+.legend .l3::before{color:#c96b6b}
+
+h2{font-size:13px;font-weight:600;color:#8fb4c8;letter-spacing:.03em;
+   margin:0 0 14px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{
+  border:1px solid var(--line);border-radius:7px;padding:13px 15px;
+  background:#0f2233;
+}
+.card .hd{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+.card .oid{font-size:11px;color:var(--accent);font-family:Consolas,monospace}
+.card .nm{font-size:14px;font-weight:600}
+.card .cnt{font-size:11px;color:var(--faint);margin-left:auto;white-space:nowrap}
+.card .st-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:6px;vertical-align:2px}
+.card ul{margin:8px 0 0;padding:0;list-style:none}
+.card li{font-size:12.5px;padding:2.5px 0;color:#bcd3e0;display:flex;gap:7px;align-items:baseline}
+.card li a{flex:1;min-width:0}
+.card li a:hover{color:#fff;text-decoration:underline}
+.card li .c{font-family:Consolas,monospace;font-size:10.5px;color:var(--faint);width:26px;flex:none}
+
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+
+@media(max-width:720px){ .grid{grid-template-columns:1fr} body{padding:28px 15px 70px} }
+</style>
+</head>
+<body>
+
+<div class="crumb"><a href="index.html">目录</a> › 关系图</div>
+
+<h1>哪个改动会牵动哪里</h1>
+<p class="lede">12 个优化包，对应 49 项功能。改一个包之前，先看它下面挂着哪些功能，避免改一处塌一片。</p>
+
+<div class="bar" id="bar"></div>
+<div class="legend" id="legend"></div>
+
+<h2>优化包 → 影响的功能</h2>
+<div class="grid" id="grid"></div>
+
+<footer>点任一功能进入它的说明页；编号对应“能力对照”里的条目。</footer>
+
+<script>
+const OPS = [{"id":"O01","t":"入口、装配与编辑事务","caps":[{"id":"M01","t":"启动、方案恢复与主窗装配","st":"partial"},{"id":"M05","t":"新增、选中、重命名与删除流程Tab","st":"partial"},{"id":"M06","t":"节点选中、拖动与多选","st":"partial"},{"id":"M23","t":"系统设置命令占位（非已确认可见菜单）","st":"unimplemented"}]},{"id":"O02","t":"统一运行范围、连续与停止完成","caps":[{"id":"M09","t":"子程序/Group进入、返回及配置","st":"partial"},{"id":"M11","t":"主工具栏/F5单次运行","st":"implemented"},{"id":"M12","t":"流程Tab单次运行","st":"implemented"},{"id":"M13","t":"全部流程连续运行/停止","st":"partial"},{"id":"M14","t":"流程Tab连续运行/停止","st":"partial"},{"id":"M15","t":"停止/Shift+F5","st":"partial"},{"id":"T06","t":"窗口连续调试：停止","st":"partial"},{"id":"M24","t":"状态栏、运行耗时与执行快照","st":"partial"}]},{"id":"O03","t":"参数、绑定、变量和控制结构合同","caps":[{"id":"M07","t":"端口连线、断开与路径显示","st":"partial"},{"id":"M18","t":"全局变量管理与选择","st":"partial"},{"id":"T02","t":"输入图像/标量/数组绑定选择","st":"partial"},{"id":"T14","t":"重置参数与数据源恢复","st":"unimplemented"},{"id":"T16","t":"子程序：输入、输出与显示配置","st":"partial"}]},{"id":"O04","t":"生命周期、图像最后读者与退出","caps":[{"id":"M08","t":"删除节点、撤销与重做","st":"partial"},{"id":"M22","t":"关闭主窗/切方案时保存与资源退役","st":"partial"},{"id":"T08","t":"关闭/X：编辑收尾与事件解绑","st":"partial"},{"id":"X01","t":"图像缓冲、显示缓存与最后读者","st":"partial"}]},{"id":"O05","t":"标准工具窗口：执行、连续、提交和关闭","caps":[{"id":"T01","t":"打开工具界面与上下文注入","st":"implemented"},{"id":"T03","t":"参数编辑与提交输入控件","st":"partial"},{"id":"T04","t":"窗口执行按钮：单次调试","st":"implemented"},{"id":"T05","t":"窗口连续调试","st":"implemented"},{"id":"T07","t":"确定/应用：提交、验证、关闭","st":"implemented"}]},{"id":"O06","t":"图像、ROI、图形文字及坐标一致性","caps":[{"id":"M10","t":"小地图、画布缩放与主窗全屏","st":"implemented"},{"id":"M16","t":"显示图像源选择、预览与历史","st":"partial"},{"id":"T09","t":"ROI绘制、选择、移动与屏蔽","st":"partial"},{"id":"T10","t":"位置修正/Fixture预览","st":"partial"},{"id":"T11","t":"图像缩放、适应、平移、全屏","st":"implemented"},{"id":"T12","t":"图形与文字样式、叠加渲染","st":"partial"}]},{"id":"O07","t":"模块结果树与输出投影","caps":[{"id":"M17","t":"模块结果树/表及绑定到全局变量","st":"partial"},{"id":"T13","t":"调试结果回到主图与结果树","st":"partial"},{"id":"M25","t":"专业数据分析面板与图像高亮","st":"partial"}]},{"id":"O08","t":"方案、标定文件与恢复事务","caps":[{"id":"M02","t":"方案配置：新建、打开、切换","st":"partial"},{"id":"M03","t":"保存当前方案 / Ctrl+S","st":"implemented"},{"id":"T17","t":"标定：采样、求解、候选文件与验证","st":"partial"}]},{"id":"O09","t":"相机、通信和后台真实副作用","caps":[{"id":"M19","t":"相机管理：连接、参数、预览与正式采集","st":"partial"},{"id":"M20","t":"通信管理：连接、读写、事件与后台触发","st":"partial"}]},{"id":"O10","t":"插件、SDK、脚本和发布依赖","caps":[{"id":"M04","t":"工具箱分类、浏览与拖入","st":"partial"},{"id":"M21","t":"主题、主窗控制、帮助与诊断入口","st":"implemented"},{"id":"T15","t":"脚本：代码、动态输出、程序集与执行","st":"partial"},{"id":"X02","t":"SDK、插件部署与公共编辑控件","st":"partial"}]},{"id":"O11","t":"自有狗授权、文件保护与信任政策","caps":[{"id":"X03","t":"自有加密狗与功能授权","st":"unimplemented"},{"id":"X04","t":"方案文件加密、密钥恢复与插件信任","st":"unknown"}]},{"id":"O12","t":"专业工具逐项验收与同条件性能","caps":[{"id":"T18","t":"模板/匹配编辑与其他专业工具","st":"unknown"},{"id":"X05","t":"性能、长稳、日志与故障验证","st":"unknown"},{"id":"M26","t":"日志面板、筛选、搜索与诊断级别","st":"partial"}]}];
+const SUM = {"implemented":10,"partial":33,"unimplemented":3,"unknown":3};
+
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const COLOR = {implemented:"#7fd3a8", partial:"#e0a06a", unimplemented:"#c96b6b", unknown:"#5f7889"};
+const LABEL = {implemented:"已实现", partial:"部分实现", unimplemented:"未实现", unknown:"未确认"};
+
+/* 状态总览条 */
+const total = SUM.implemented + SUM.partial + SUM.unimplemented + SUM.unknown || 1;
+let bar = "", lg = "";
+[["implemented","b1","l1"],["partial","b2","l2"],["unimplemented","b3","l3"]].forEach(function(x){
+  const n = SUM[x[0]] || 0;
+  if(n) bar += '<div class="'+x[1]+'" style="width:'+(n/total*100)+'%">'+n+'</div>';
+  lg += '<span class="'+x[2]+'">'+LABEL[x[0]]+' '+n+' 项</span>';
+});
+if(SUM.unknown) lg += '<span>未确认 '+SUM.unknown+' 项</span>';
+document.getElementById("bar").innerHTML = bar;
+document.getElementById("legend").innerHTML = lg;
+
+/* 优化包卡片 */
+let html = "";
+OPS.forEach(function(op){
+  const n = op.caps.length;
+  html += '<div class="card"><div class="hd"><span class="oid">'+esc(op.id)+'</span>'+
+          '<span class="nm">'+esc(op.t)+'</span><span class="cnt">'+n+' 项</span></div><ul>';
+  op.caps.forEach(function(c){
+    html += '<li><span class="c">'+esc(c.id)+'</span>'+
+            '<a href="主题/'+esc(c.id)+'.html">'+esc(c.t)+'</a>'+
+            '<span class="st-dot" style="background:'+(COLOR[c.st]||COLOR.unknown)+'"></span></li>';
+  });
+  html += '</ul></div>';
+});
+document.getElementById("grid").innerHTML = html;
+</script>
+</body>
+</html>

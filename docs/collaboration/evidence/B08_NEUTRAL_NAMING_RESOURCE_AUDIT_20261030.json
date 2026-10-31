@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "movedFiles": 64,
+  "movedTypes": 28,
+  "unchangedAssets": 24,
+  "compiledResourceKeys": 2037,
+  "catalogLocalFiles": 333,
+  "assemblySha256": "5F61FA357D3F34B92405CE2F1BAEC3CB92CCE557DD7F774600C2C7D4AC1C6667",
+  "failures": [],
+  "limits": "Resource and consumer identity audit only; not functional, visual, VS designer, or manual acceptance."
+}

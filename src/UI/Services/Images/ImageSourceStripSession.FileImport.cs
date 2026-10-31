@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,7 +24,7 @@ public sealed partial class ImageSourceStripSession
         bool wasImporting = IsImporting; IsImporting = false;
         previous?.Cancel();
         if (generation != _fileImportGeneration) return;
-        if (wasImporting) SetStatus("导入已取消；已正式接纳的引用不回滚");
+        if (wasImporting) SetStatus("导入已取消；如有已接纳的引用将保留");
         if (!_disposed) PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(IsImporting)));
         // The owning ImportAsync scope disposes its CTS only after its work has returned.
     }
@@ -49,7 +49,7 @@ public sealed partial class ImageSourceStripSession
             paths = dialog.FileNames;
         }
         cancellationToken.ThrowIfCancellationRequested(); RequireCurrent(request.ExpectedVersion);
-        // Dragged directories use the existing top-level directory enumerator; no watcher or RP interpretation.
+        // Dragged directories use the same manual-folder enumeration as the button; no watcher or RP interpretation.
         var frozen = paths.ToArray();
         await ImportCoreAsync(async token =>
         {
@@ -127,9 +127,20 @@ public sealed partial class ImageSourceStripSession
                 if (additions.Length == 0) { SetStatus("没有找到新的可导入图像文件"); return; }
                 // One action, one acceptance. Notifications may cancel or retire this session after acceptance;
                 // no partially accepted chunks and no rollback of already accepted references.
-                _source.AddImages(additions, selectFirstAdded: true);
+                var receipt=_source.AddImages(additions, selectFirstAdded: true);
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !OwnerIsCurrent()) return;
-                SetStatus($"已导入 {additions.Length} 个图像引用");
+                if(receipt.ExecutionError is { } failure)
+                {
+                    SetStatus("图像引用已接纳，但运行游标不可用："+failure);
+                    if(OwnerIsCurrent())Refresh();
+                    return;
+                }
+                if (receipt.ProjectionVersion is not { } projection || _source.EditVersion!=projection)
+                {
+                    SetStatus(receipt.FormalAccepted?"图像引用已接纳；显示已更新":"私有草稿已更改；显示已更新");
+                    return;
+                }
+                SetStatus(receipt.FormalAccepted?$"已导入 {additions.Length} 个图像引用":$"已添加 {additions.Length} 个图像到私有草稿");
                 Refresh();
             }, DispatcherPriority.Background, cancellation.Token);
         }
@@ -137,7 +148,7 @@ public sealed partial class ImageSourceStripSession
         {
             if (!_dispatcher.HasShutdownStarted)
                 await _dispatcher.InvokeAsync(() =>
-                { if (generation == _fileImportGeneration && OwnerIsCurrent()) SetStatus("导入已取消；已正式接纳的引用不回滚"); });
+                { if (generation == _fileImportGeneration && OwnerIsCurrent()) SetStatus("导入已取消；如有已接纳的引用将保留"); });
         }
         catch (Exception ex)
         {

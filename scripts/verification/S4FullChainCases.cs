@@ -143,10 +143,10 @@ internal static class S2DocumentEditingCases
             var window=Open(blob);Field(window,"BlobCountLimit").Text="1";Pump();Require(window.TryConfirm(out var error),error);
             window=Open(downstream);var editor=Control(window);var inputField=Logical(editor).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.InspectionInput);
             Logical(editor).OfType<TabControl>().Single().SelectedIndex=0;window.UpdateLayout();Pump();
-            var popup=Visual(inputField).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton>().Single(item=>item.Name=="rt");
+            var popup=Visual(inputField).OfType<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>().Single(item=>item.Name=="rt");
             popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
             var nativePopup=(System.Windows.Controls.Primitives.Popup)popup.Template.FindName("PART_Popup",popup);
-            var tree=Visual(nativePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>().Single();
+            var tree=Visual(nativePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();
             var actual=(TreeView)tree.FindName("treeView");
             TreeViewItem? FindSource(ItemsControl parent)
             {

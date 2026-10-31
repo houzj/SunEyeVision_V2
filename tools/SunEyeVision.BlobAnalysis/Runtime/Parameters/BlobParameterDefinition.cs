@@ -31,14 +31,17 @@ public sealed partial class BlobParameterDefinition
             throw new InvalidDataException("Blob input editor declarations differ from the input model.");
         foreach(var group in root.Elements("Group"))
         {
-            Shape(group,["page","section"],["Parameter"]);
+            Shape(group,["page","section","advanced"],["Parameter"]);
             Required(group,"page");Required(group,"section");
+            if(group.Attribute("advanced") is not null)Boolean(group,"advanced");
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
-                Shape(field,["id","fieldId","allowReference","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
+                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
                 Required(field,"id");Required(field,"type");Required(field,"default");Required(field,"label");
                 Required(field,"fieldId");Boolean(field,"allowReference");
+                if(Boolean(field,"allowReference"))Required(field,"bindingName");
+                else if(field.Attribute("bindingName") is not null)throw new InvalidDataException("Non-reference parameters cannot declare binding names.");
                 foreach(var choice in field.Elements("Choice")){Shape(choice,["key","label"],[]);Required(choice,"key");Required(choice,"label");}
             }
         }
@@ -157,6 +160,7 @@ public sealed partial class BlobParameterDefinition
     public string Label(string id)=>Required(_fields[id],"label");
     public string Page(string id)=>Required(_fields[id].Parent!,"page");
     public string Section(string id)=>Required(_fields[id].Parent!,"section");
+    public bool Advanced(string id)=>_fields[id].Parent!.Attribute("advanced") is not null&&Boolean(_fields[id].Parent!,"advanced");
     public T Default<T>(string id)
     {
         if(typeof(BlobSettings).GetProperty(id)?.PropertyType!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);

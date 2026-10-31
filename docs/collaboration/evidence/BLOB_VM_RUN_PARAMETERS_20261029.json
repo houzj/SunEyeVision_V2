@@ -1,0 +1,1119 @@
+{
+  "description": "Blob运行参数：原厂声明顺序与现有字段候选映射；非功能等价证明",
+  "vmAlgorithmTab": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "vmSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "localDeclaration": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+  "localSha256": "80B0ABF969765AB5026BCB2326CD385EFF31DC9EAAE82DDEB7A996504D094AFB",
+  "entries": [
+    {
+      "originalName": "ThresholdType",
+      "originalType": "Enumeration",
+      "displayName": "RunParam_Threshold Mode",
+      "defaultValue": "0x2",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": "SegmentationMode",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "BinaryImage",
+          "value": "0x1",
+          "label": "RunParam_No Binarization"
+        },
+        {
+          "name": "SingleThreshold",
+          "value": "2",
+          "label": "Single Threshold"
+        },
+        {
+          "name": "DoubleThreshold",
+          "value": "3",
+          "label": "Double Threshold"
+        },
+        {
+          "name": "AutoThreshold",
+          "value": "4",
+          "label": "Auto Threshold"
+        },
+        {
+          "name": "FixedSoftThreshold",
+          "value": "5",
+          "label": "Soft Threshld(Fixed)"
+        },
+        {
+          "name": "RelativeSoftThreshold",
+          "value": "6",
+          "label": "Soft Threshold(Relative)"
+        }
+      ],
+      "triggerXml": "<Triggers><Trigger><Property>CurValue</Property><Value>0x1</Value><Setters><Setter><TargetName>Polarity</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>0x2</Value><Setters><Setter><TargetName>Polarity</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>LowThreshold</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>0x3</Value><Setters><Setter><TargetName>LowThreshold</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>HightThreshold</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>0x4</Value><Setters><Setter><TargetName>Polarity</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>0x5</Value><Setters><Setter><TargetName>Polarity</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>ThresholdRangArea</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>Softness</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>0x6</Value><Setters><Setter><TargetName>Polarity</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>Softness</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SoftLeftRatio</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SoftRightRatio</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SoftLowRatio</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SoftHighRatio</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger></Triggers>",
+      "algorithmDefault": "2",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "Polarity",
+      "originalType": "Enumeration",
+      "displayName": "Polarity",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "Type",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "DarkOnBright",
+          "value": "0",
+          "label": "Brighter Than Background"
+        },
+        {
+          "name": "BrightOnDark",
+          "value": "1",
+          "label": "Darker Than Background"
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "0",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "LowThreshold",
+      "originalType": "Integer",
+      "displayName": "Low Threshold",
+      "defaultValue": "0x64",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "Threshold",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "100",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "HightThreshold",
+      "originalType": "Integer",
+      "displayName": "High Threshold",
+      "defaultValue": "0x96",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "UpperThreshold",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "150",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "ThresholdRangArea",
+      "originalType": "IntegerBettween",
+      "displayName": "Threshold Range",
+      "defaultValue": "10000",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "Softness",
+      "originalType": "Integer",
+      "displayName": "Soft Threshold Softness",
+      "defaultValue": "254",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "254",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SoftLeftRatio",
+      "originalType": "Integer",
+      "displayName": "RunParam_Low Tail Ratio",
+      "defaultValue": "5",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "5",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SoftRightRatio",
+      "originalType": "Integer",
+      "displayName": "RunParam_High Tail Ratio",
+      "defaultValue": "5",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "5",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SoftLowRatio",
+      "originalType": "Integer",
+      "displayName": "Low Threshold Ratio",
+      "defaultValue": "40",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "40",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SoftHighRatio",
+      "originalType": "Integer",
+      "displayName": "High Threshold Ratio",
+      "defaultValue": "60",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "60",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "FindNum",
+      "originalType": "Integer",
+      "displayName": "RunParam_Number to Find",
+      "defaultValue": "100",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": "BlobCountLimit",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "100",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "HoleMinArea",
+      "originalType": "Integer",
+      "displayName": "Fill Area Threshold",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "0",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByArea",
+      "originalType": "Boolean",
+      "displayName": "Area Enable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": "IsAreaFilterEnabled",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><Trigger><Property>CurValue</Property><Value>False</Value><Setters><Setter><TargetName>RangArea</TargetName><OperationName>HiddenOperation</OperationName></Setter></Setters></Trigger></Triggers>",
+      "algorithmDefault": "True",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "RangArea",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_Area Range",
+      "defaultValue": "10000",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": [
+        "FilterAreaMin",
+        "FilterAreaMax"
+      ],
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "BlobContourType",
+      "originalType": "Enumeration",
+      "displayName": "RunParam_BlobContourType",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "True",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "NoneContour",
+          "value": "0",
+          "label": "RunParam_NoneContour"
+        },
+        {
+          "name": "NoneSequentialContour",
+          "value": "1",
+          "label": "RunParam_NoneSequentialContour"
+        },
+        {
+          "name": "SequentialContour",
+          "value": "2",
+          "label": "RunParam_SequentialContour"
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "0",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "BolbImageEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_BolbImageEnable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "True",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "BinaryImageEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_BinaryImageEnable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": "OutputBinaryImage",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "True",
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "Expert",
+      "originalType": "Expand",
+      "displayName": "",
+      "defaultValue": "",
+      "visibility": "",
+      "customVisible": "",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><Trigger><Property>CurValue</Property><Value>True</Value><Setters><Setter><TargetName>SelectByHistInfo</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>MaxAreaInnerRectNum</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByBoxAngle</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByRectWidth</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByRectHeight</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByPerimeter</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByShortAxis</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByLongAxis</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByCircularuty</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByRectangularity</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SelectByCentraBias</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>AxisRatioEnable</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SortFeature</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SortMode</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>connectivity</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>MaxOutPixelNumEnable</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger></Triggers>",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByHistInfo",
+      "originalType": "Boolean",
+      "displayName": "RunParam_SelectByHistInfoEnable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "SelectByBoxAngle",
+      "originalType": "Boolean",
+      "displayName": "Angle Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangBoxAngle</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangBoxAngle",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_Angle Range",
+      "defaultValue": "0x0",
+      "visibility": "Beginner",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByRectWidth",
+      "originalType": "Boolean",
+      "displayName": "RectWidth Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangRectWidth</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangRectWidth",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_RectWidth Range",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByRectHeight",
+      "originalType": "Boolean",
+      "displayName": "RectHeight Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangRectHeight</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangRectHeight",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_RectHeight Range",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByPerimeter",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Perimeter Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangPerimeter</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangPerimeter",
+      "originalType": "IntegerBettween",
+      "displayName": "Perimeter Range",
+      "defaultValue": "1000",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByShortAxis",
+      "originalType": "Boolean",
+      "displayName": "Minor Axis Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangShortAxis</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangShortAxis",
+      "originalType": "IntegerBettween",
+      "displayName": "Minor Axis Range",
+      "defaultValue": "1000",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByLongAxis",
+      "originalType": "Boolean",
+      "displayName": "Major Axis Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangLongAxis</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangLongAxis",
+      "originalType": "IntegerBettween",
+      "displayName": "Major Axis Range",
+      "defaultValue": "",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByCircularuty",
+      "originalType": "Boolean",
+      "displayName": "Circularity Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "IsCircularityFilterEnabled",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangCircularity</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangCircularity",
+      "originalType": "FloatBettween",
+      "displayName": "Circularity Range",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": [
+        "FilterCircularityMin",
+        "FilterCircularityMax"
+      ],
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByRectangularity",
+      "originalType": "Boolean",
+      "displayName": "Rectangularity Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "IsRectangularityFilterEnabled",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangRectangularity</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangRectangularity",
+      "originalType": "FloatBettween",
+      "displayName": "Rectangularity Range",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": [
+        "FilterRectangularityMin",
+        "FilterRectangularityMax"
+      ],
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SelectByCentraBias",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Barycenter Offset Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>RangCenterBias</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "RangCenterBias",
+      "originalType": "FloatBettween",
+      "displayName": "RunParam_Barycenter Offset Range",
+      "defaultValue": "10",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "AxisRatioEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Axial Ratio",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>AxisRatioRange</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "AxisRatioRange",
+      "originalType": "FloatBettween",
+      "displayName": "RunParam_Axial Ratio",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "SortFeature",
+      "originalType": "Enumeration",
+      "displayName": "Ranking",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "SortFeatureArea",
+          "value": "0x1",
+          "label": "Area"
+        },
+        {
+          "name": "SortFeaturePerimeter",
+          "value": "0x2",
+          "label": "Perimeter"
+        },
+        {
+          "name": "SortFeatureCircularity",
+          "value": "0x3",
+          "label": "CircleScore"
+        },
+        {
+          "name": "SortFeatureRect",
+          "value": "0x4",
+          "label": "RectScore"
+        },
+        {
+          "name": "SortFeatureCentroidX",
+          "value": "0x5",
+          "label": "Connectivity center X"
+        },
+        {
+          "name": "SortFeatureCentroidY",
+          "value": "0x6",
+          "label": "Connectivity center Y"
+        },
+        {
+          "name": "SortFeatureBoxAngle",
+          "value": "0x7",
+          "label": "box angle"
+        },
+        {
+          "name": "SortFeatureBoxWidth",
+          "value": "0x8",
+          "label": "box width"
+        },
+        {
+          "name": "SortFeatureBoxHeight",
+          "value": "0x9",
+          "label": "box height"
+        },
+        {
+          "name": "SortFeatureRectX",
+          "value": "0xA",
+          "label": "Rectangle left upper x"
+        },
+        {
+          "name": "SortFeatureRectY",
+          "value": "0xB",
+          "label": "Rectangle left upper y"
+        },
+        {
+          "name": "SortFeatureAxisAngle",
+          "value": "0xC",
+          "label": "Two step spindle angle"
+        },
+        {
+          "name": "SortFeatureAxisRatio",
+          "value": "0xD",
+          "label": "MinAxis / LongAxis"
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "1",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "SortMode",
+      "originalType": "Enumeration",
+      "displayName": "Sort Type",
+      "defaultValue": "2",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": "SortMode",
+      "fieldsPresent": true,
+      "mappingNote": "候选对应，行为及条件尚需逐项验证",
+      "enumEntries": [
+        {
+          "name": "SortModeAscend",
+          "value": "0x1",
+          "label": "Grade Up"
+        },
+        {
+          "name": "SortModeDecend",
+          "value": "0x2",
+          "label": "Grade Down"
+        },
+        {
+          "name": "SortModeNotSort",
+          "value": "0x3",
+          "label": "Donot Grade"
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "2",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "connectivity",
+      "originalType": "Enumeration",
+      "displayName": "Connectivity ",
+      "defaultValue": "0x8",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "Connected_8",
+          "value": "0x8",
+          "label": "8-connected"
+        },
+        {
+          "name": "Connected_4",
+          "value": "0x4",
+          "label": "4-connected"
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "8",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "MaxAreaInnerRectNum",
+      "originalType": "Integer",
+      "displayName": "RunParam_MaxAreaInnerRectNum",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "0",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "OverlapRatio",
+      "originalType": "Integer",
+      "displayName": "MinOverlap",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": null,
+      "shownByExpertExpand": false
+    },
+    {
+      "originalName": "MaxOutPixelNumEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_MaxOutPixelNumEnable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "<Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>MaxOutPixelNum</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers>",
+      "algorithmDefault": "False",
+      "shownByExpertExpand": true
+    },
+    {
+      "originalName": "MaxOutPixelNum",
+      "originalType": "Integer",
+      "displayName": "MaxOutPixelNum",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "existingFields": null,
+      "fieldsPresent": false,
+      "mappingNote": "无已核对的对应声明",
+      "enumEntries": [
+        {
+          "name": "",
+          "value": "",
+          "label": ""
+        }
+      ],
+      "triggerXml": "",
+      "algorithmDefault": "0",
+      "shownByExpertExpand": false
+    }
+  ],
+  "vmAlgorithmXml": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithm.xml",
+  "vmAlgorithmSha256": "D5DE2D5888D0767552C3077457EADD796171B4447F1C92F93BC9BB60854A7B2B",
+  "expertExpandedTargets": [
+    "SelectByHistInfo",
+    "MaxAreaInnerRectNum",
+    "SelectByBoxAngle",
+    "SelectByRectWidth",
+    "SelectByRectHeight",
+    "SelectByPerimeter",
+    "SelectByShortAxis",
+    "SelectByLongAxis",
+    "SelectByCircularuty",
+    "SelectByRectangularity",
+    "SelectByCentraBias",
+    "AxisRatioEnable",
+    "SortFeature",
+    "SortMode",
+    "connectivity",
+    "MaxOutPixelNumEnable"
+  ]
+}

@@ -38,9 +38,10 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     private readonly Dictionary<ImageInfo, ThumbnailRequest> _thumbnails = new();
     private readonly HashSet<ImageInfo> _subscribedImages = new();
     private HashSet<string> _visibleIds = new(StringComparer.Ordinal);
-    private IReadOnlyList<ImageSourceStripItem> _items = Array.Empty<ImageSourceStripItem>();
+    private readonly System.Collections.ObjectModel.ObservableCollection<ImageSourceStripItem> _items = new();
     private int _configuredStartIndex = -1;
     private bool _disposed, _refreshQueued;
+    private long _refreshGeneration;
     private string? _status;
     public ImageSourceStripSession(ImageInputSource source, Func<bool> isCurrent,
         Func<ImageInfo, int, long, Task>? activate = null, Dispatcher? dispatcher = null, Func<Window?>? dialogOwner = null)
@@ -87,6 +88,9 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     {
         _dispatcher.VerifyAccess();
         if (_disposed) return;
+        var generation=++_refreshGeneration;var version=_source.EditVersion;
+        bool Current()=>generation==_refreshGeneration&&version==_source.EditVersion&&OwnerIsCurrent();
+        if(!Current())return;
         var rows = _source.Images.ToArray();
         foreach (var old in _subscribedImages.Where(x => !rows.Contains(x)).ToArray())
         { old.PropertyChanged -= ImagePropertyChanged; _subscribedImages.Remove(old); RemoveThumbnail(old); }
@@ -96,18 +100,35 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         foreach (var row in rows.Where(row => _visibleIds.Contains(row.Id)))
             if (!_thumbnails.ContainsKey(row)) _thumbnails.Add(row, new(row, _lifetime.Token));
         _configuredStartIndex = _source.CapturePolicy().CurrentIndex;
-        _items = Array.AsReadOnly(rows.Select(row =>
+        var nextItems = rows.Select(row =>
         {
             _thumbnails.TryGetValue(row, out var thumbnail);
             return new ImageSourceStripItem(row.Id, row.Name,
                 thumbnail is null ? null : Frozen(row.Thumbnail) ?? thumbnail.Bitmap,
                 row.IsForRun, row.ResourceError ?? thumbnail?.Error);
-        }).ToArray());
-        NotifyAll();
-        if (!OwnerIsCurrent()) return;
+        }).ToArray();
+        // Keep ItemsSource identity during viewport/thumbnail refresh. Replacing
+        // the whole source resets virtualization and can scroll back to selection,
+        // which starts the opposite viewport request again.
+        for(var index=0;index<nextItems.Length;index++)
+        {
+            if(!Current())return;
+            if(index>=_items.Count)_items.Add(nextItems[index]);
+            else if(_items[index]!=nextItems[index])_items[index]=nextItems[index];
+            if(!Current())return;
+        }
+        while(_items.Count>nextItems.Length)
+        {
+            if(!Current())return;
+            _items.RemoveAt(_items.Count-1);
+            if(!Current())return;
+        }
+        NotifyAll(Current);
+        if (!Current()) return;
         foreach (var thumbnail in _thumbnails.Values.ToArray())
         {
-            if (_disposed || thumbnail.Started || thumbnail.Image.Thumbnail is not null) continue;
+            if(!Current())return;
+            if (thumbnail.Started || thumbnail.Image.Thumbnail is not null) continue;
             thumbnail.Started = true;
             _ = LoadThumbnailAsync(thumbnail, thumbnail.Cancellation.Token);
         }
@@ -159,11 +180,11 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         request.Cancellation.Cancel(); request.Cancellation.Dispose();
         // Never call ImageInfo.CancelThumbnail/ReleaseFullImage: that state may be consumed by another view.
     }
-    private void NotifyAll()
+    private void NotifyAll(Func<bool> current)
     {
         foreach (var name in new[] { nameof(Items), nameof(Version), nameof(DisplayIndex), nameof(ConfiguredStartIndex),
             nameof(IsReadOnly), nameof(IsSelectMode), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(Status) })
-        { if (_disposed) return; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)); }
+        { if (!current()) return; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)); }
     }
     private void SetStatus(string? status)
     { _status = status; if (!_disposed) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status))); }
@@ -233,11 +254,11 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     {
         if (!_dispatcher.CheckAccess()) { _dispatcher.Invoke(Dispose); return; }
         if (_disposed) return;
-        _disposed = true; _source.PropertyChanged -= SourcePropertyChanged; _source.CollectionChanged -= SourceCollectionChanged;
+        _disposed = true; ++_refreshGeneration; _source.PropertyChanged -= SourcePropertyChanged; _source.CollectionChanged -= SourceCollectionChanged;
         CancelFileImport(); _lifetime.Cancel();
         foreach (var row in _thumbnails.Keys.ToArray()) RemoveThumbnail(row);
         foreach (var row in _subscribedImages) row.PropertyChanged -= ImagePropertyChanged;
         _subscribedImages.Clear(); _visibleIds.Clear();
-        _items = Array.Empty<ImageSourceStripItem>(); _lifetime.Dispose();
+        _items.Clear(); _lifetime.Dispose();
     }
 }

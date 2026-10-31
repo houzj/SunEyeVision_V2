@@ -30,11 +30,19 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
     private long _drawRevision;
     private bool _isOk=true;
     public DeclaredSettingsView SettingsView {get;}
-    public NativeTextViewport TextViewport {get;}=new(){Height=320,VerticalAlignment=VerticalAlignment.Top};
+    private readonly NativeResultViewport _viewport=new();
+    private readonly NativeResultViewport.TextLayer _text;
+    private readonly NativeResultViewport.GeometryLayer _geometry;
+    public FrameworkElement Preview=>_viewport.View;
     public DeclaredFieldsView Fields=>(DeclaredFieldsView)SettingsView.Content;
     public int Writes=>_draft.Writes;
     public NativeDisplaySample()
     {
+        DeclaredSettingsView? created=null;
+        try
+        {
+        _text=_viewport.CreateTextLayer();_geometry=_viewport.CreateGeometryLayer();
+        Preview.Height=320;Preview.VerticalAlignment=VerticalAlignment.Top;
         var a=new DeclaredReferenceCandidate("同名数值","source-a",null,new Port("value",DataType.Number),Array.Empty<string>());
         var b=new DeclaredReferenceCandidate("同名数值","source-b",null,new Port("value",DataType.Integer),Array.Empty<string>());
         var tokens=new Dictionary<DeclaredReferenceCandidate,string>(ReferenceEqualityComparer.Instance){{a,"source-a.value"},{b,"source-b.value"}};
@@ -42,19 +50,28 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
             ReferenceOptions:new(_=>new ReferenceCandidates(new[]{a,b},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true),
             TextExpressions:new Dictionary<string,TextExpressionOptions>{{"text.content",new(()=>new(new[]{a,b},candidate=>tokens[candidate],()=>!_disposed))}},
             GraphicDisplays:new[]{new NativeGraphicDisplayOptions("outline","outline.visible","outline.ok","outline.ng","outline.opacity","outline.width"),
-                new NativeGraphicDisplayOptions("region","region.visible","region.ok","region.ng","region.opacity")},
+                new NativeGraphicDisplayOptions("region","region.visible","region.ok","region.ng","region.opacity"),
+                new NativeGraphicDisplayOptions("eyeonly","eyeonly.visible","eyeonly.ok","eyeonly.ng","eyeonly.opacity",ShowStyleButton:false)},
             TextDisplays:new[]{new NativeTextDisplayOptions("text.content","text.ok","text.ng","text.size","text.opacity","text.x","text.y")});
-        SettingsView=new(_draft,options);
+        SettingsView=created=new(_draft,options);
         SettingsView.SetBinding(DeclaredSettingsView.SelectedPageIndexProperty,new Binding(nameof(SelectedPageIndex)){Source=this,Mode=BindingMode.TwoWay});
         var layout=new Grid();layout.ColumnDefinitions.Add(new(){Width=new GridLength(600)});layout.ColumnDefinitions.Add(new());
-        layout.Children.Add(SettingsView);Grid.SetColumn(TextViewport,1);layout.Children.Add(TextViewport);Child=layout;
+        layout.Children.Add(SettingsView);Grid.SetColumn(Preview,1);layout.Children.Add(Preview);Child=layout;
         SettingsView.Changed+=OnChanged;
-        try
-        {
-            if(!TextViewport.BindImage(_image,()=>!_disposed))throw new InvalidOperationException("独立显示帧未接纳。");
+            if(!_viewport.BindImage(_image,()=>!_disposed))throw new InvalidOperationException("独立显示帧未接纳。");
             OnChanged();
         }
-        catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
+        catch(Exception failure)
+        {
+            _disposed=true;_drawRevision++;
+            try
+            {
+                ParameterCleanup.Run(new Action[]{()=>{if(created is not null)created.Changed-=OnChanged;},
+                    ()=>created?.Dispose(),_viewport.Dispose,_image.Dispose,()=>Child=null});
+            }
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     public void OpenGraphicStyle(string visibleFieldId)
         =>((NativeGraphicStylePresenter)Fields.Fields.Single(field=>field.FieldId==visibleFieldId).View).Open();
@@ -62,24 +79,39 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
     private void OnChanged()
     {
         if(_disposed)return;var revision=++_drawRevision;var values=_draft.CaptureFields();
+        var receipt=_viewport.CurrentFrame;if(receipt is null||receipt.Frame!=_image.Frame)return;
+        Color GraphicColor(string id)
+        {
+            var color=values.Get<RecordValue>(id+(_isOk?".ok":".ng"));
+            return Color.FromArgb((byte)color.Get<long>("a"),(byte)color.Get<long>("r"),(byte)color.Get<long>("g"),(byte)color.Get<long>("b"));
+        }
+        var shapes=new List<NativeGeometryOverlay>();
+        if(values.Get<bool>("outline.visible"))shapes.Add(new(_image.Frame,
+            new OrientedRectangleGeometry(receipt.Coordinates,new Point2(260,140),180,110,0),GraphicColor("outline"),
+            values.Get<double>("outline.width"),values.Get<double>("outline.opacity")));
+        if(values.Get<bool>("region.visible"))shapes.Add(new(_image.Frame,
+            new CircleGeometry(receipt.Coordinates,new Point2(420,190),45),GraphicColor("region"),1,values.Get<double>("region.opacity")));
+        if(values.Get<bool>("eyeonly.visible"))shapes.Add(new(_image.Frame,
+            new PointGeometry(receipt.Coordinates,new Point2(110,200)),GraphicColor("eyeonly"),1,values.Get<double>("eyeonly.opacity")));
+        _geometry.Present(receipt,revision,shapes,()=>!_disposed&&revision==_drawRevision);
         var x=Fields.Fields.Single(field=>field.FieldId=="text.x").Setting;
         var y=Fields.Fields.Single(field=>field.FieldId=="text.y").Setting;
         if(x is not ConstantSetting {Value:double px}||y is not ConstantSetting {Value:double py})
         {
             // This fixture has declarations, not a resolver. Never paint stale constant coordinates for a reference.
-            TextViewport.Present(_image.Frame,revision,Array.Empty<NativeTextOverlay>(),()=>!_disposed&&revision==_drawRevision);return;
+            _text.Present(receipt,revision,Array.Empty<NativeTextOverlay>(),()=>!_disposed&&revision==_drawRevision);return;
         }
         var color=values.Get<RecordValue>(_isOk?"text.ok":"text.ng");
         var rgba=Color.FromArgb((byte)color.Get<long>("a"),(byte)color.Get<long>("r"),(byte)color.Get<long>("g"),(byte)color.Get<long>("b"));
         // Host fixture policy: original IText requires an integer font size. The editor retains its real number.
         var font=checked((int)Math.Round(values.Get<double>("text.size"),MidpointRounding.AwayFromZero));
-        TextViewport.Present(_image.Frame,revision,new[]{new NativeTextOverlay(values.Get<string>("text.content"),new(px,py),font,rgba,values.Get<double>("text.opacity"))},
+        _text.Present(receipt,revision,new[]{new NativeTextOverlay(values.Get<string>("text.content"),new(px,py),font,rgba,values.Get<double>("text.opacity"))},
             ()=>!_disposed&&revision==_drawRevision);
     }
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_drawRevision++;
-        ParameterCleanup.Run(new Action[]{()=>SettingsView.Changed-=OnChanged,SettingsView.Dispose,TextViewport.Dispose,_image.Dispose,()=>Child=null});
+        ParameterCleanup.Run(new Action[]{()=>SettingsView.Changed-=OnChanged,SettingsView.Dispose,_viewport.Dispose,_image.Dispose,()=>Child=null});
     }
 
     private sealed class NativeDisplayDraft : IToolSettingsDraft
@@ -97,7 +129,7 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
             Add("text.opacity",DataType.Number,"透明度","文本显示",4,"文字样式",FieldEditorKind.Scalar,1d,0,1,.1);
             Add("text.x",DataType.Number,"位置X","文本显示",5,"文字样式",FieldEditorKind.Scalar,120d,modes:FieldEditModes.Constant|FieldEditModes.Reference,digits:null);
             Add("text.y",DataType.Number,"位置Y","文本显示",6,"文字样式",FieldEditorKind.Scalar,80d,modes:FieldEditModes.Constant|FieldEditModes.Reference,digits:null);
-            Graphic("outline","轮廓",10,true);Graphic("region","区域",20,false);
+            Graphic("outline","轮廓",10,true);Graphic("region","区域",20,false);Graphic("eyeonly","仅显示",30,false);
             Schema=new(ports,Array.Empty<Port>(),new ToolPresentation(presentations));_root=new(Schema,new FieldSettings(Schema.Inputs,values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
             void Graphic(string group,string title,int order,bool width)
             {
@@ -117,6 +149,8 @@ public sealed class NativeDisplaySample : Decorator,IDisposable
             }
         }
         public FieldSettings CaptureFields()=>_root.CaptureFields();
+        public long Revision=>_root.Revision;
+        public FieldSettings CaptureValidatedFields()=>_root.CaptureValidatedFields();
         public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)
         {_root.ApplyFields(changes,acceptCandidate);Writes++;}
 

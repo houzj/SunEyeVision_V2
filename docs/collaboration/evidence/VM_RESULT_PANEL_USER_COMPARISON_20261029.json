@@ -1,0 +1,41 @@
+{
+  "status": "用户确认目标，产品尚未实施；主界面工作流线，公共表/Blob本线",
+  "originalSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e"
+    }
+  ],
+  "userScreenshots": [
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/result-panel-20261029/vm-history.png",
+      "sha256": "78d01ce68167be80a58ac1699c87d177a371fb2550462b03286ca9f1033e94ba"
+    },
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/result-panel-20261029/suneye-result-and-log.png",
+      "sha256": "4f7e72d983759dabe5c5500c820a70512b8b5a51cc01331f1f580fe4a5863dac"
+    },
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/result-panel-20261029/vm-image-source-list.png",
+      "sha256": "0daf856b8b7c71fe08cace208713694ef7d0f27be5febfbb8e9f09e39df8c6a1"
+    },
+    {
+      "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/result-panel-20261029/suneye-image-source-list.png",
+      "sha256": "dc8b48296ba2ebb803629e4213d06b9a43cbe60a9db0833bf76ec6b7e83e961d"
+    }
+  ],
+  "notVerified": [
+    "当前结果各列VM实际逐态",
+    "图像来源复选框与背景切换真实语义",
+    "历史跨会话保留语义",
+    "当前试用版本的修改与人工验收"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "status": "完整原厂取证程序已编译，未启动SDK；尚无运行或行为通过证据",
+  "purpose": "同一自有方案记录实际SDK输出元数据/叶资格、托管IO树、原连接表与前驱，区分订阅与运行/控制连线",
+  "phases": [
+    "before-image-subscription",
+    "after-image-subscription-before-run",
+    "after-image-source-run",
+    "after-control-connection",
+    "after-first-run"
+  ],
+  "source": "scripts/analysis/B08SourceQualificationCapture.cs",
+  "sourceSha256": "3F16F14754F6D2C7E496328B6AE8790B767DDA2DEEDE371F83AD291049748494",
+  "programSource": "Release\\_validation\\B08SourceQualification-20261031-preparation\\B08BindingRuntimeProbe.cs",
+  "programSourceSha256": "08640C56F34004F351E4CE05EA2631284298100792087DDF025338A7C26D2BE9",
+  "entrySha256": "039E71A781BED6F55430C8904E6545C035E1B38511AA115D110C0CF6E29A6B81",
+  "executableSha256": "6F9B1BB99C327A1AAE1BB4A0DF775E87CE223318156B117BD183BA952D787DC1",
+  "compilation": {
+    "exit": 0,
+    "helper": "compile-002.log",
+    "firstFailure": "helper compile.log保留旧csc相对路径处理失败；改绝对路径后通过",
+    "program": "compile-complete-003.log"
+  },
+  "ownership": [
+    "使用原SDK已经实例化的ModuleManager，不再构造重复回调管理器",
+    "原SDK返回原生元数据由原wrapper持有/终结；观察只复制纯文本/标量/树，不自行FreeHGlobal",
+    "数量/深度/指针检查；直接读元数据不以XML拼造现场结果",
+    "复用既有已成功全局Ex初始化及方案Dispose/Destroy退出，无显式FreeLibrary",
+    "启动门禁默认拒绝，未设置运行窗口环境值，不执行原SDK入口"
+  ],
+  "limits": [
+    "编译不验证反射/ABI运行",
+    "仅普通参数来源范围；IMAGE组合入口另核",
+    "共享历史时点和自有缓存保全不构成原子并发隔离",
+    "当前旧PID不活跃，但已有MVDLogServer和vServerApp服务存在，不声称所有原厂进程均已退出"
+  ]
+}

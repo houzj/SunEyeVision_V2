@@ -12,7 +12,7 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
     public string ToolId=>Id;
     public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10);
     public ToolSchema SettingsSchema=>ImageSourceFields.Schema;
-    public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports);
+    public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports,outputDisplay:ImageSourceOutput.OutputDisplay);
     public ResultProjectionDescriptor ResultProjection {get;}=new(ResultProjectionKind.PropertyList,ResultCardinality.One,new[] {
         new ResultColumnDescriptor("image","图像",new(ImageSourceOutput.Image)),
         new ResultColumnDescriptor("gray-image","灰度图像",new(ImageSourceOutput.GrayImage)),
@@ -38,7 +38,7 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new Port(DeviceId,TypeRef.ScalarOf(ScalarKind.Text),Required:false),
         new Port(DeviceFrameId,TypeRef.ScalarOf(ScalarKind.Text),Required:false),
         new Port(DeviceTimestamp,TypeRef.ScalarOf(ScalarKind.Text),Required:false)
-    },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()));
+    },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()),outputDisplay:ImageSourceOutput.OutputDisplay);
     public IReadOnlyList<Diagnostic> Validate(ImageSourceSettings settings)=>settings.Validate();
     public ToolCapabilities Capabilities()=>new(new[]{"halcon"});
     public IToolSession<ImageSourceSettings,ImageSourceOutput> CreateSession()=>new ImageSourceSession();

@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
@@ -13,9 +13,10 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public const string PoseInput = "input.pose";
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10);
-    public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs);
+    public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;
+    public IReadOnlyDictionary<string,string> ParameterBindingNames=>BlobParameterDefinition.Instance.ParameterBindingNames;
     public InputValues ReadSettings(object settings)=>BlobParameterDefinition.Instance.ReadSettings(settings as BlobSettings??throw new ArgumentException("BlobSettings is required."));
     public object MaterializeSettings(InputValues values)=>BlobParameterDefinition.Instance.MaterializeSettings(values);
     public ToolSchema Describe()
@@ -27,7 +28,7 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         new Port(PoseInput, SpatialDeclarations.Affine2D, false, EditModes:FieldEditModes.Constant|FieldEditModes.Reference)
         };
         return new(inputs,BlobSchema.Outputs,new ToolPresentation(inputs.Select((port,index)=>BlobParameterDefinition.Instance.InputPresentation(port,index))),
-            workflowImageInputId:BlobParameterDefinition.Instance.WorkflowImageInputId);
+            workflowImageInputId:BlobParameterDefinition.Instance.WorkflowImageInputId,outputDisplay:BlobSchema.OutputDisplay);
     }
     public IReadOnlyList<Diagnostic> Validate(BlobSettings settings) => settings.Validate();
     public ToolCapabilities Capabilities() => new(new[] { "halcon" });

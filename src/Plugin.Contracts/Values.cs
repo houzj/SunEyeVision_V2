@@ -7,7 +7,8 @@ public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Null
     FieldEditModes EditModes=FieldEditModes.None,FieldDefaultPresence DefaultPresence=FieldDefaultPresence.Unset,TextChoiceConstraint? Choices=null);
 public sealed class ToolSchema
 {
-    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null)
+    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null,
+        IEnumerable<OutputDisplayNode>? outputDisplay=null)
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
@@ -24,6 +25,8 @@ public sealed class ToolSchema
                 ||!Enum.IsDefined(port.DefaultPresence))throw new ArgumentException("Unknown editing capability or default-presence policy.");
         if(Inputs.Concat(Outputs).Any(port=>port.Choices is not null&&port.Type!=TypeRef.ScalarOf(ScalarKind.Text)))throw new ArgumentException("Closed text choices require a scalar text port.");
         presentation?.Validate(Inputs);Presentation=presentation;
+        OutputDisplay=OutputDisplayNode.Freeze(outputDisplay??Array.Empty<OutputDisplayNode>());
+        OutputDisplayNode.Validate(OutputDisplay,Outputs);
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -51,6 +54,13 @@ public sealed class ToolSchema
     public IReadOnlyList<Port> Inputs { get; }
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
+    public IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}
+    public OutputDisplayNode? FindOutputDisplay(string portId,IEnumerable<string>? members=null)
+    {
+        var node=OutputDisplay.SingleOrDefault(item=>item.FieldId==portId);
+        foreach(var member in members??Array.Empty<string>())node=node?.Children.SingleOrDefault(item=>item.FieldId==member);
+        return node;
+    }
     public string? WorkflowImageInputId { get; }
     public string Fingerprint { get; }
 }

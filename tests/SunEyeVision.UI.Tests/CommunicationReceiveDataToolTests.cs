@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -287,7 +287,7 @@ public class CommunicationReceiveDataToolTests
         var runner = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
         var capture = new NodeConfigurationEditHost(solution).Capture();
         Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason),reason);
-        using var values = new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        using var values = new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
         var receive = new WorkflowGlobalVariableReceiveService(service,values,GlobalVariable.CaptureDefinitions(solution.GlobalVariables));
         using var run = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: receive)
         {
@@ -298,7 +298,7 @@ public class CommunicationReceiveDataToolTests
         Assert.True(run.Success, string.Join(";", run.Errors));
         Assert.Equal("CURRENT",Assert.Single(Assert.IsType<string[]>(Value(Assert.IsType<CommunicationToolResults>(run.NodeResults["receiver"].Result),p.Variables[0].Definition()))));
         Assert.Equal("DESIGN",variable.Value);
-        using var unrelatedValues = new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        using var unrelatedValues = new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
         var scoped = new RuntimeVariableReceiveService(new WorkflowGlobalVariableReceiveService(service,unrelatedValues,
             GlobalVariable.CaptureDefinitions(solution.GlobalVariables)),workflowId:"foreign-flow");
         result = await new ReceiveDataTool().ExecuteAsync(new ToolExecutionRequest(p) { CommunicationInputs = scoped,

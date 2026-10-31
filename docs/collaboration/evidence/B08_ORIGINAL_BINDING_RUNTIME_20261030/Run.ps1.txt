@@ -1,0 +1,38 @@
+$ErrorActionPreference='Stop'
+$probeRoot=$PSScriptRoot
+if(Test-Path -LiteralPath (Join-Path $probeRoot 'receipt.json')){throw 'Existing observation must not be overwritten'}
+if(Get-Process -Name B08Probe,OriginalImageSourceProbe,VisionMaster -ErrorAction SilentlyContinue){throw 'Visible competing vendor probe or application; stop before launch'}
+$imagePath=Join-Path $probeRoot 'image.bmp'
+$writer=[IO.BinaryWriter]::new([IO.File]::Create($imagePath))
+try{
+ $writer.Write([uint16]0x4d42);$writer.Write([uint32]4150);$writer.Write([uint32]0);$writer.Write([uint32]1078)
+ $writer.Write([uint32]40);$writer.Write([int32]96);$writer.Write([int32]32);$writer.Write([uint16]1);$writer.Write([uint16]8)
+ $writer.Write([uint32]0);$writer.Write([uint32]3072);$writer.Write([int32]0);$writer.Write([int32]0);$writer.Write([uint32]256);$writer.Write([uint32]256)
+ for($gray=0;$gray -lt 256;$gray++){ $writer.Write([byte]$gray);$writer.Write([byte]$gray);$writer.Write([byte]$gray);$writer.Write([byte]0) }
+ for($row=0;$row -lt 32;$row++){for($column=0;$column -lt 96;$column++){
+   $intensity=0
+   if($row -ge 8 -and $row -lt 24){if($column -ge 8 -and $column -lt 24){$intensity=50};if($column -ge 40 -and $column -lt 56){$intensity=120};if($column -ge 72 -and $column -lt 88){$intensity=220}}
+   $writer.Write([byte]$intensity)
+ }}
+}finally{$writer.Dispose()}
+$framework=Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319'
+$exe=Join-Path $probeRoot 'B08Probe.exe'
+& (Join-Path $framework 'csc.exe') /nologo /target:exe /platform:x64 /main:InitializedEntry /r:System.Core.dll /r:System.Web.Extensions.dll "/out:$exe" (Join-Path $probeRoot 'InitializedEntry.cs') (Join-Path $probeRoot 'B08BindingRuntimeProbe.cs') *> (Join-Path $probeRoot 'compile.log')
+if($LASTEXITCODE){Get-Content (Join-Path $probeRoot 'compile.log') -Tail 12;throw 'Owned observation host compilation failed'}
+$config='<configuration><startup><supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8"/></startup><appSettings><add key="ServerPath" value=""/><add key="IsRunBackground" value="0"/></appSettings></configuration>'
+[IO.File]::WriteAllText(($exe+'.config'),$config)
+$start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$exe;$start.WorkingDirectory=$probeRoot
+$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true
+foreach($value in @('D:/Program Files/VisionMaster4.4.0/Applications',$probeRoot,(Join-Path $probeRoot 'fixture.sol'),'@create','Flow1.Image Source1','B08Var',$imagePath)){$start.ArgumentList.Add($value)}
+$process=[Diagnostics.Process]::new();$process.StartInfo=$start
+if(!$process.Start()){throw 'Owned initialized binding process did not start'}
+Write-Output "Owned complete binding probe PID $($process.Id)"
+$stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
+$finished=$process.WaitForExit(180000)
+if(!$finished){$process.Kill($true);$process.WaitForExit()}
+[IO.File]::WriteAllText((Join-Path $probeRoot 'stdout.log'),$stdout.GetAwaiter().GetResult())
+[IO.File]::WriteAllText((Join-Path $probeRoot 'stderr.log'),$stderr.GetAwaiter().GetResult())
+[ordered]@{pid=$process.Id;finished=$finished;exit=$process.ExitCode;timeoutMs=180000;root=$probeRoot;scope='Original VM owned complete binding probe with original global Ex initialization; not product acceptance'}|ConvertTo-Json|Set-Content (Join-Path $probeRoot 'receipt.json') -Encoding utf8
+Get-Content (Join-Path $probeRoot 'receipt.json')
+if(!$finished){exit 3}
+exit $process.ExitCode

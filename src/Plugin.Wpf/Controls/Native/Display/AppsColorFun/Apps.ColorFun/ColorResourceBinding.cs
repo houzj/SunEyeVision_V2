@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Themes.Palettes;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;

@@ -2,8 +2,16 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "C09原数值同步重入候选核收：版本化pending、受控回写/绑定接管、文本及接纳ABA、普通接纳/模式通知延迟投影、范围异常后新原文保护；UI/全量0错。数值17(含9新例)/浮点2/between3/完整样式2/粗细1/十字窗18、字段31/设计108/编辑10/整链19/组件9和EXE8过；原完整阶段门禁继续。",
-  "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
+  "current": "第一阶段控件库未完成，第二阶段Blob重组未准入；先前自动验证对应旧版产物，当前未提交源码候选尚未同源构建。用户试用期间不关闭或重建，人工反馈和未证行为保留。",
+  "summaryStatus": "以VM为第一基准，按完整组合与调用链集中设计、实施和验证；主仓负责公共控件及Blob，已授权独立工作流worktree负责其执行、接纳及主界面，双方各自唯一写者，共享接口集中协调。",
+  "currentDeliveryStatus20261029": {
+    "verifiedPriorStage": "旧版本已有部分Release、HALCON和控件自动验证；仅对当时源码与产物有效，不能套用当前候选。",
+    "existingPendingIntegration": "原控件、样例、草稿及工作流独立线已有源码候选；引用、文本、显示及图像源共享合同未完成同源集成。",
+    "currentBatch": "先盘点Blob所需实际完整控件与依赖、VM证据及现行生产消费链，集中交付满足本轮试用的功能，不按回调或测试数量切分交付。",
+    "unimplementedAndDependencies": "完整来源显示声明与身份、图像源配置接纳和冻结图像读取回执、正式Blob ROI与显示接线及原目标其余未完成项按真实依赖逐链实施；禁止假能力和旧SDK视觉回退。",
+    "manualAcceptance": "正式候选固定后验证实际VS设计器、运行、VM同态外观与用户操作；当前试用程序不关闭不重建，人工未反馈不得代签。",
+    "estimate": "先形成真实剩余工作及依赖盘点，再提供有依据的批次与估时；无依据的3—5工作日估算已收回。"
+  },
   "rows": [
     [
       "C09 唯一字段状态整链",
@@ -6884,7 +6892,8 @@
         "C13文本显示全组合，当前仅area一项"
       ]
     ],
-    "parallelLanes": [
+    "parallelLanes": [],
+    "historicalParallelLanes": [
       [
         "A 输入引用（只读）",
         "已核AppsPopup四文件/HikTextBox父类/SubTree最小闭包；当前核正式树身份投影方案",
@@ -6906,7 +6915,7 @@
         "核收各路源身份/SHA/闭包/建议，串行构建验收；第一阶段不继续Blob业务重组。"
       ]
     ],
-    "parallelProtocol": "用户明确授权四路含主线。三个子智能体同目录只读逆向/分析/评审，每次一个控件或一个完整组合及其必要依赖；交付即核收并自动领取队列下一项。主线为唯一产品写者，集中实施、串行验证和维护原方案；不自行增加多写者、产品/算法库/仓库副本或旧审批岗位。静态核证完成、源码集成、运行通过、真实VS/用户验收分别记账。",
+    "parallelProtocol": "遵守现行AGENTS.md：不自行启用子智能体。主仓与用户授权的工作流独立worktree各自唯一写者；以完整功能链集中复用VM证据、实施并验证，共享接口及消费者按基线协调。历史四路记录仅供追溯，不代表当前写权。",
     "hostExitRows": [
       [
         "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs:114,170—172",
@@ -7009,7 +7018,7 @@
       "status": "已明确设计与验收要求，实际生产双向链尚未完成，不以HTML选中图标或静态参数行计完成。"
     },
     "twoStageGoal": {
-      "state": "新目标active，第一阶段执行中；本批P0修复通过，完整库与第二阶段仍未完成。",
+      "state": "第一阶段执行中、第二阶段未准入；当前源码候选未经同源构建，旧版P0成绩不可套用。",
       "stages": [
         [
           "第一阶段：Blob所需控件库",
@@ -9368,5 +9377,28 @@
         }
       }
     ]
+  },
+  "localCheckpoint": {
+    "commit": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+    "title": "统一字段状态并完善原数值编辑事务",
+    "productLabelStill": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+    "next": "按新检查点重绑正式Release身份，当前候选成绩不冒称新提交标签成绩。",
+    "pushed": false
+  },
+  "nativeColorMoreCandidate20261029": {
+    "evidence": "docs/collaboration/evidence/NATIVE_COLOR_MORE_CANDIDATE_20261029.json",
+    "baselineEvidence": "docs/collaboration/evidence/C09_DDC_COMMITTED_RELEASE_20261029.json",
+    "status": "IN_PROGRESS_MOUSE_AND_MANUAL_GATES_REMAIN",
+    "scope": "VM.PcUI图形样式及文本色板；不混用Apps.XmlUI同名控件",
+    "verification": "候选UI/全量Release均0错；Field102=31、原完整样式321=3、颜色322=3、Design085=108、HALCON FullChain160=19、EXE准入021=8；鼠标图表失败100/101保留",
+    "remaining": "真实取色/拖动/焦点、VM及VS/用户验收、其余库完整门禁仍需完成；相机候选未合入"
+  },
+  "nativeColorPopupCandidate20261029": {
+    "evidence": "docs/collaboration/evidence/NATIVE_COLOR_POPUP_CANDIDATE_20261029.json",
+    "priorEvidence": "docs/collaboration/evidence/NATIVE_COLOR_MORE_CANDIDATE_20261029.json",
+    "status": "IN_PROGRESS_POINTER_AND_MANUAL_GATES_REMAIN",
+    "verification": "UI/全量0错；Field105=31、原完整样式332=3、颜色333=3、Design087=108、HALCON FullChain162=19、EXE准入023=8",
+    "pointer": "329真实调用栈确证父层误关；330修复后图表收到按下且Popup保持打开，但坐标断言失败；331前台非测试程序，安全门禁拒绝。拖动/外点仍未通过。",
+    "next": "色板指针和外点成对核证，再ROI与Assist同正式会话；不伪造位姿公式。"
   }
 }

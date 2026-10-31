@@ -1,0 +1,72 @@
+{
+  "status": "集中回件已读及五份原反编译源码身份核验；原生汇编本批未独立重核",
+  "reports": [
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08解绑与触发文本迁移决策-20261030.md",
+      "archive": "docs\\collaboration\\evidence\\B08_PARAMETER_FAILURE_AND_UI_BOUNDARIES_20261030\\B08解绑与触发文本迁移决策-20261030.md",
+      "sha256": "EB2B84C0A432A88B3DD55ABFFE16F8ACC0916A69734CAA5107678F0F70A7263D"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08执行订阅失败与已写参数静态边界-20261030.md",
+      "archive": "docs\\collaboration\\evidence\\B08_PARAMETER_FAILURE_AND_UI_BOUNDARIES_20261030\\B08执行订阅失败与已写参数静态边界-20261030.md",
+      "sha256": "FEC6BCEE8551C73F148BBB441AAAAA909B72C23621FBC589D86B959DC75B4080"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08界面解绑生命周期和类型边界-20261030.md",
+      "archive": "docs\\collaboration\\evidence\\B08_PARAMETER_FAILURE_AND_UI_BOUNDARIES_20261030\\B08界面解绑生命周期和类型边界-20261030.md",
+      "sha256": "60546651E8A165D2070DED2AD9DD87B531670A6168ADB62202C9483C5AD262F0"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08代理历史清单根构造补证-20261030.md",
+      "archive": "docs\\collaboration\\evidence\\B08_PARAMETER_FAILURE_AND_UI_BOUNDARIES_20261030\\B08代理历史清单根构造补证-20261030.md",
+      "sha256": "EE553E8E4772DC6B3D73DECAE57F92089C463758F99F013530FC400D73DDD60D"
+    }
+  ],
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ValueBase.cs",
+      "sha256": "E60DB3CF3E18751803693CCE6EFE037183E46D629578064F9C65989ECA2472F7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\String.cs",
+      "sha256": "CC8A0C9F576BF4E6374B4E7101894941E338C23CAB1A82576AFBD62F899E3E8F"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Float.cs",
+      "sha256": "577DB9B9E5E53AD8F97FBF67F0ED006D294C488B94D4EB3E76F2C51253197EA5"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Boolean.cs",
+      "sha256": "6FF1C5F9C8D8F9DBFF3F2EEB207A50AF38EB12E1FFDC02BE22F0DB9C56C95FCC"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\AlgorithmTabRoot.cs",
+      "sha256": "31C8AAFDBCCD0E034316A54E2959F451E135298FAD9F618E8234BC6CBC1BC72E"
+    }
+  ],
+  "actualRead": [
+    "ValueBase.IsSubA完整分支",
+    "String.IsSubA完整分支",
+    "两份失败/UI报告正文",
+    "代理根构造报告"
+  ],
+  "designChanged": [
+    "运行逐项接纳与UI原子提案分开；禁止所有来源先验证后一次提交冒称VM",
+    "setter错误不等于未写缓存",
+    "String解绑独立校验及写回，不泛化整数样本",
+    "Boolean模板不追加通用订阅；Float物理类型不由CLR类型推定",
+    "私有调试变量解析缺口纳入整批"
+  ],
+  "nativeSdkStarted": false,
+  "productChanged": false,
+  "functionalAcceptance": false,
+  "remaining": [
+    "取消/算法异常/多项失败最终值的其他路径",
+    "String/UI异常实际实例",
+    "TRIGGER_STRING完整寿命",
+    "共享清理列表公开隔离入口"
+  ],
+  "reverseTurn": "01a18d6b-b717-7ce1-8ae8-0fd5cc7d310c",
+  "observedRevision": 176,
+  "observedStatus": "inProgress，不能把已收到回件当作整个取证回合终态"
+}

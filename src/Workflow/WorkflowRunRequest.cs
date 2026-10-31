@@ -8,7 +8,7 @@ using SunEyeVision.Plugin.SDK.Devices.Camera;
 namespace SunEyeVision.Workflow;
 
 /// <summary>一次根工作流运行的冻结输入。</summary>
-/// <remarks>此对象只承载运行态数据，不能引用或修改方案设计对象。</remarks>
+/// <remarks>冻结数据不能引用方案设计节点；宿主接纳能力只允许按原始运行身份提交纯参数值。</remarks>
 public sealed class WorkflowRunRequest
 {
     public WorkflowRunRequest(
@@ -69,6 +69,7 @@ public sealed class WorkflowRunRequest
         }
     }
     public WorkflowGlobalRunValues? ProducedGlobals {get;init;}
+    public RuntimeParameterValueAcceptance? ParameterValues {get;init;}
     public string WorkflowId { get; }
     public WorkflowRunConfiguration? Configuration { get; init; }
     public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; init; }

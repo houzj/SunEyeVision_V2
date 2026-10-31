@@ -1,0 +1,1335 @@
+{
+  "kind": "旧249真实原报告对照新链覆盖清单，不代表新测试通过",
+  "oldReport": {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSources\\attempt-013\\image-source-report.json",
+    "sha256": "61339cc2c3417b80579e8a949aed7a6e5f516503b3cf72f8f293553d63a70438",
+    "count": 249,
+    "failed": 21
+  },
+  "recoveryReport": {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-014\\image-source-recovery-report.json",
+    "sha256": "a8371597cbb872b5f9d5e6ee783bdc7f98fa10fc6e41f5f95279ed52e3210fe5",
+    "count": 50,
+    "failed": 0,
+    "originalFailuresCovered": 21
+  },
+  "groups": [
+    {
+      "class": "ImageSourceAcceptanceTests",
+      "originalCaseCount": 7,
+      "originalFailed": 0,
+      "sameNameInRecovery": 7,
+      "recoveryGroupCount": 9,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceAcceptanceTests.cs",
+          "sha256": "8a35a02f8f500d98571676c104dec2dd4fadba744950d765e94b0ace4b42a1b6",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceAcceptanceTests.Acceptance_callback_does_not_own_the_projected_candidate_collections()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Accepted_notification_failure_does_not_roll_back_or_repeat_the_writer()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Rejected_add_does_not_change_entries_selection_or_edit_version()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Removed_entries_cannot_submit_to_the_previous_owner()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Run_selection_is_accepted_before_the_live_item_changes()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Runtime_cursor_never_becomes_persisted_selection_through_a_binding_echo()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceAcceptanceTests.Scalar_edits_preserve_entry_enumeration_and_never_persist_the_runtime_cursor()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceRuntimeTests",
+      "originalCaseCount": 11,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.ImageSource.Runtime.Tests/ImageSourceRuntimeTests.cs",
+          "sha256": "77877eb834114c131e9c88fa449400855024f162ed3e6af695254675eb4b73a2",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceRuntimeTests.Already_cancelled_invocation_publishes_no_resources_and_session_can_be_disposed_twice()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Camera_copy_publishes_physical_frame_actual_domain_gray_alias_and_independent_reader_lease()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Camera_identity_is_checked_before_copying_and_empty_device_remains_editable()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Cancellation_after_output_scope_creation_releases_partial_capture_without_touching_input()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Fields_freeze_input_collections_and_invalid_edit_never_mutates_previous_settings()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Local_file_decode_has_explicit_address_and_fresh_run_frame_identity()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Missing_or_wrong_input_kind_never_falls_back_to_a_default_image(local,False,False)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Missing_or_wrong_input_kind_never_falls_back_to_a_default_image(camera,False,False)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Missing_or_wrong_input_kind_never_falls_back_to_a_default_image(local,True,True)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Missing_scheduler_sequence_is_reported_at_execution_not_fabricated_in_settings()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceRuntimeTests.Settings_defaults_and_full_payload_round_trip_only_through_runtime_configuration()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceDeclarationAndFormatTests",
+      "originalCaseCount": 10,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.ImageSource.Runtime.Tests/ImageSourceDeclarationAndFormatTests.cs",
+          "sha256": "767c909b1bf5783b17bc044b0fdd392f26d4eb3ea00b715278d2bd1de4ccac93",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Color_input_converts_real_pixels_without_changing_device_metadata_or_actual_domain(original)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Color_input_converts_real_pixels_without_changing_device_metadata_or_actual_domain(mono8)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Color_input_converts_real_pixels_without_changing_device_metadata_or_actual_domain(rgb24)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Every_output_port_has_its_current_resource_or_scalar_type_and_no_legacy_result_wrapper()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Gray_input_supports_all_three_formats_and_rgb_replication_preserves_actual_domain(original)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Gray_input_supports_all_three_formats_and_rgb_replication_preserves_actual_domain(mono8)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Gray_input_supports_all_three_formats_and_rgb_replication_preserves_actual_domain(rgb24)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Local_output_declares_empty_device_fields_even_if_unrelated_camera_metadata_is_present(False)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Local_output_declares_empty_device_fields_even_if_unrelated_camera_metadata_is_present(True)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDeclarationAndFormatTests.Runtime_declares_catalog_stable_tool_identity_and_the_actual_component_role()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceDebugInvocationTests",
+      "originalCaseCount": 15,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceDebugInvocationTests.cs",
+          "sha256": "addb6bb008fe09c5196c1700af1b3ca6a3b5930b2f75d796c345423f63a3a85b",
+          "containsLegacyResultName": true
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_cancel_before_debug_capture_does_not_admit_or_call_the_service()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_cancellation_disposes_late_frame_and_inflight_close_waits_for_drain()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_rejects_invalid_capture_without_success_publication_or_resource_leaks(wrong-device)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_rejects_invalid_capture_without_success_publication_or_resource_leaks(untyped)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_rejects_invalid_capture_without_success_publication_or_resource_leaks(missing-device)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_rejects_invalid_capture_without_success_publication_or_resource_leaks(service-failure)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Camera_debug_uses_frozen_device_timeout_metadata_and_releases_acquired_frame_before_returning()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Debug_snapshot_is_single_use_and_retained_output_readers_survive_result_close()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Direct_formal_borrowed_camera_frame_remains_host_owned_after_run_disposal()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Direct_formal_execution_rejects_missing_scheduler_input_and_persistent_constant_bypass()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Direct_formal_source_inputs_and_debug_share_pixels_domain_but_keep_distinct_run_and_frame_identities()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Invalid_local_debug_never_uses_a_default_or_upstream_image(empty)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Invalid_local_debug_never_uses_a_default_or_upstream_image(excluded)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Invalid_local_debug_never_uses_a_default_or_upstream_image(base)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceDebugInvocationTests.Local_debug_freezes_private_settings_base_and_sequence_without_publishing_formal_state()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ResultPresentationModelTests",
+      "originalCaseCount": 24,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ResultPresentationModelTests.cs",
+          "sha256": "94211086ab119e02d39b3071eec0da1427bb0e64d40a2f71bf6048e624acdea9",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ResultPresentationModelTests.Blob_style_mixed_records_page_nested_scalars_and_geometry_without_reading_resource_leaves()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Cached_mixed_paths_do_not_extend_resource_publication_or_lease_lifetimes()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Canonical_scalars_and_storage_are_preserved_without_culture_or_numeric_conversion()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Closing_publication_invalidates_cached_mixed_pages_even_while_the_lease_keeps_owner_alive()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Completed_value_states_preserve_their_published_scalar(3)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Completed_value_states_preserve_their_published_scalar(4)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Declaration_addresses_preserve_root_contract_and_all_members_without_sample_identity()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Declarations_preserve_ports_record_order_storage_and_unknown_sequence_observation()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Declared_zero_one_many_does_not_fabricate_runtime_elements(0)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Declared_zero_one_many_does_not_fabricate_runtime_elements(1)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Declared_zero_one_many_does_not_fabricate_runtime_elements(37)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Equal_length_outputs_remain_distinct_by_port_identity_and_input_dictionary_order_is_irrelevant()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Large_legacy_double_array_is_paged_without_a_full_copy_and_input_isolation_is_kept()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Nested_legacy_double_arrays_are_paged_with_the_same_reader_and_no_whole_array_copy()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Nested_record_sequence_values_follow_declaration_order_and_distinguish_missing_null_empty()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Pages_validate_bounds_and_empty_schema_is_a_valid_declaration()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Publication_stamp_and_current_guard_retire_old_lazy_pages_without_retaining_the_owner()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Record_pages_reuse_nodes_and_keys_follow_field_identity_across_reordering()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Resource_leaves_and_weak_mixed_containers_do_not_retain_borrowed_images_after_close()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Run_values_must_match_the_declared_type_and_success_requires_an_explicit_snapshot()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Schema_success_and_failed_runs_never_share_values_or_expansion_state()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Successful_sequence_values_have_observed_zero_one_many_counts_and_index_keys(0)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Successful_sequence_values_have_observed_zero_one_many_counts_and_index_keys(1)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationModelTests.Successful_sequence_values_have_observed_zero_one_many_counts_and_index_keys(131)",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ResultPresentationPresenterTests",
+      "originalCaseCount": 30,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ResultPresentationPresenterTests.cs",
+          "sha256": "9cd6c31f766558ba664a1e94bff480a4435b514105b6d4387f8b7351c246d9b2",
+          "containsLegacyResultName": true
+        }
+      ],
+      "cases": [
+        {
+          "name": "ResultPresentationPresenterTests.A_distinct_publication_with_the_same_run_replaces_old_diagnostics()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Declaration_null_invocation_and_new_publication_same_invocation_keep_distinct_diagnostics()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Display_flags_change_without_changing_the_binding_schema()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Empty_and_declaration_record_sequences_expose_explicit_All_members_but_never_sample_indices()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Empty_schema_and_reentrant_clear_cannot_republish_retired_rows()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Existing_grid_receives_declared_order_explicit_root_binding_and_lazy_record_fields()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Failed_reader_acquisition_leaves_no_old_rows_or_old_lease()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Helper_publication_owners_remain_current_until_the_fixture_finishes_and_then_retire()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Historical_snapshot_is_presentable_after_its_admission_is_retired()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Immutable_geometry_values_show_coordinates_frame_and_explicit_angle_units()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Immutable_scalar_formatting_uses_invariant_culture_without_unwrapping_sequences()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Large_immutable_polygon_summary_does_not_enumerate_or_clone_vertices()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Large_sequence_creates_only_clicked_pages_and_preserves_visited_rows()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Native_hierarchy_borrows_the_same_rows_and_loads_only_on_expansion()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Nested_sequences_wait_for_each_parent_expansion_and_keep_expanded_state()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Not_run_failed_missing_null_empty_and_successful_empty_sequence_remain_distinct()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Observed_record_samples_and_their_fields_never_masquerade_as_single_index_bindings()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Publication_replacement_during_lazy_page_guard_cannot_append_retired_children()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Published_non_success_outcomes_remain_distinct_without_reading_resource_values(3,失败)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Published_non_success_outcomes_remain_distinct_without_reading_resource_values(4,超时)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Published_non_success_outcomes_remain_distinct_without_reading_resource_values(5,已取消)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Queued_old_expansion_is_harmless_after_clear_or_disposal(False)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Queued_old_expansion_is_harmless_after_clear_or_disposal(True)",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Reentrant_borrow_keeps_new_publication_and_releases_only_the_abandoned_lease()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Reentrant_hierarchy_retirement_cannot_republish_old_rows()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Resource_leaves_stay_pending_while_mixed_record_scalars_remain_visible_without_reading_payloads()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Sdk_snapshot_drives_tree_and_table_together_and_retired_run_cannot_replace_either()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Shared_owner_is_not_disposed_and_stale_current_or_lease_stamp_cannot_supply_more_pages()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Successful_empty_output_keeps_its_published_status_visible()",
+          "passed": true
+        },
+        {
+          "name": "ResultPresentationPresenterTests.Switching_request_or_schema_retires_old_rows_and_old_reader_before_new_view()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "NativeResultCompositionTests",
+      "originalCaseCount": 7,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/NativeResultCompositionTests.cs",
+          "sha256": "f0c58094c94b79f6df4827dd4ce9e056885092b994d2e5eb6c471268ed7c6928",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "NativeResultCompositionTests.Actual_shell_reloads_same_image_views_and_preserves_independent_selection_and_layout()",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Hierarchical_binding_keeps_same_rows_and_restores_selection_without_user_command()",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Instance_palettes_update_real_result_surfaces_and_native_templates(Dark)",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Instance_palettes_update_real_result_surfaces_and_native_templates(Light)",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Read_only_tree_and_absent_variable_services_leave_real_link_buttons_disabled()",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Restoring_selection_reentry_keeps_new_target_and_null_clears_actual_tree_selection()",
+          "passed": true
+        },
+        {
+          "name": "NativeResultCompositionTests.Routed_user_selection_passes_actual_row_once_but_programmatic_selection_does_not()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ResultImagePaneTests",
+      "originalCaseCount": 22,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ResultImagePaneTests.cs",
+          "sha256": "197a2ab7c6405098214aa6b2428e84114beeb6342f5780e5f592c99cbfc823bb",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ResultImagePaneTests.Cancellation_during_native_capture_drains_candidate_without_closing_publication_owner()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Constant_index_one_uses_second_real_image_instead_of_first_or_latest()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Current_callback_reentry_and_close_never_restore_an_old_receipt()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Declared_record_leaf_and_sequence_constant_select_exact_physical_image(False)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Declared_record_leaf_and_sequence_constant_select_exact_physical_image(True)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.File_preview_survives_decoder_scope_close_but_cannot_authorize_formal_roi_borrow()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(scope)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(node)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(root-type)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(port)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(member)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(index)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(all-sequence)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(dynamic)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(cancel)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Invalid_source_clears_old_image_and_drains_only_its_own_borrows(retired)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Mutated_domain_coordinates_or_physical_frame_are_rejected_without_fallback(False)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Mutated_domain_coordinates_or_physical_frame_are_rejected_without_fallback(True)",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Old_owner_cleanup_failure_cannot_overwrite_reentrant_new_presentation()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Original_view_uses_actual_frame_domain_padding_and_independent_edit_borrow()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Real_loaded_native_view_renders_and_unload_clear_keeps_publication_owner_open()",
+          "passed": true
+        },
+        {
+          "name": "ResultImagePaneTests.Reentrant_borrow_and_native_image_notification_never_clear_the_new_frame()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "LocalResultImagePreviewTests",
+      "originalCaseCount": 4,
+      "originalFailed": 1,
+      "sameNameInRecovery": 4,
+      "recoveryGroupCount": 10,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/LocalResultImagePreviewTests.cs",
+          "sha256": "213eb1ad8156728a2df932fe077bd2868693095df2baac2d59213a1a62e5555c",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "LocalResultImagePreviewTests.Cancelled_missing_and_corrupt_file_loads_return_no_fake_result_and_next_decode_still_works()",
+          "passed": true
+        },
+        {
+          "name": "LocalResultImagePreviewTests.Real_color_and_alpha_files_keep_channel_order_alpha_and_full_decoded_raster_domain()",
+          "passed": false
+        },
+        {
+          "name": "LocalResultImagePreviewTests.Real_gray_file_preview_keeps_independent_pixel_and_domain_leases_after_decoder_owner_exits()",
+          "passed": true
+        },
+        {
+          "name": "LocalResultImagePreviewTests.Same_path_changed_bytes_and_different_paths_never_reuse_a_physical_frame()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ResultViewportFullscreenScopeTests",
+      "originalCaseCount": 17,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ResultViewportFullscreenScopeTests.cs",
+          "sha256": "aa497611d0668a89f54d85e0cdd57f38bbb8933822d4b8ab948dc31c0911b93d",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ResultViewportFullscreenScopeTests.Actual_roi_attachment_reloads_on_same_view_without_retiring_background_or_edit_borrow()",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Bound_content_slot_keeps_its_binding_expression_through_move_and_restore()",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.External_reparenting_wins_and_late_scope_does_not_detach_the_new_parent()",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Invalid_owner_leaves_view_in_place_and_loaded_reentrant_switch_preserves_new_scope()",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Main_window_close_restores_active_view_and_leaves_pane_lifetime_to_its_owner()",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Replaced_original_slot_is_never_overwritten_by_old_fullscreen_close(decorator)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Replaced_original_slot_is_never_overwritten_by_old_fullscreen_close(content)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(panel,dispose)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(panel,close)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(panel,escape)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(decorator,dispose)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(decorator,close)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(decorator,escape)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(content,dispose)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(content,close)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(content,escape)",
+          "passed": true
+        },
+        {
+          "name": "ResultViewportFullscreenScopeTests.Two_sides_are_mutually_exclusive_and_late_old_dispose_cannot_move_new_view()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ResultWorkspaceProductionTests",
+      "originalCaseCount": 16,
+      "originalFailed": 7,
+      "sameNameInRecovery": 15,
+      "recoveryGroupCount": 18,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
+          "sha256": "b0b3acadb6b34f5a808525b91015871ef9d73dbbc4937e534b7e648f9ef65c5b",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ResultWorkspaceProductionTests.Actual_file_selection_uses_preview_without_ROI_authority_and_clear_image_does_not_retire_table()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Explicit_clear_removes_highlight_after_publication_dispose_even_when_Main_still_holds_it()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Final_shutdown_cannot_recreate_presenter_or_borrowed_content_after_a_real_reload()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Foreign_workflow_or_document_results_never_supply_display_images()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Image_presentation_DP_exception_with_new_run_notification_eventually_displays_new_frame()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Loaded_real_workspace_uses_same_publication_in_two_independent_panes_and_switches_only_selected_side()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.New_run_notified_during_failed_capture_is_eventually_presented_after_the_exception()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Obsolete_or_unknown_selector_items_restore_current_choice_without_clearing_new_frames()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Original_shape_DP_reentry_installs_B_in_both_panes_and_old_A_cannot_clear_or_write_output()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Real_tree_paging_failure_retires_physical_images_or_preserves_a_synchronous_new_run(False)",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Real_tree_paging_failure_retires_physical_images_or_preserves_a_synchronous_new_run(True)",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Refresh_input_DP_observer_selects_current_output_and_preserves_new_intent_and_frame()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Restore_obsolete_output_DP_observer_clears_choice_and_physical_image_consistently()",
+          "passed": true
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Restoring_obsolete_input_choice_does_not_discard_a_synchronous_output_choice()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Undeclared_region_resources_do_not_draw_and_same_frame_selection_rejects_old_publication()",
+          "passed": false
+        },
+        {
+          "name": "ResultWorkspaceProductionTests.Unload_reload_reuses_original_views_and_final_shutdown_drains_publication_owners()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "RootResultImagePreviewTests",
+      "originalCaseCount": 3,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/RootResultImagePreviewTests.cs",
+          "sha256": "2f2301cc6261e2ee00f595954d8f89be80f554dd31794076a782e987b4c322f7",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "RootResultImagePreviewTests.Actual_node_selection_contract_failure_clears_old_physical_image_and_reports_the_error()",
+          "passed": true
+        },
+        {
+          "name": "RootResultImagePreviewTests.Actual_root_window_replaces_new_run_and_rejects_wrong_scope_and_document()",
+          "passed": true
+        },
+        {
+          "name": "RootResultImagePreviewTests.Actual_root_window_requires_explicit_port_reuses_snapshot_and_releases_on_close()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceDesignCompositionTests",
+      "originalCaseCount": 4,
+      "originalFailed": 4,
+      "sameNameInRecovery": 4,
+      "recoveryGroupCount": 4,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
+          "sha256": "4c54b80e666962e3572ea8f62a60607857429a43ac0bf953f239c0bc8dbd6ae2",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceDesignCompositionTests.Actual_field_edit_changes_same_draft_and_refreshes_source_visibility_and_auto_switch()",
+          "passed": false
+        },
+        {
+          "name": "ImageSourceDesignCompositionTests.Public_design_context_uses_actual_local_camera_composition_without_device_connection(False)",
+          "passed": false
+        },
+        {
+          "name": "ImageSourceDesignCompositionTests.Public_design_context_uses_actual_local_camera_composition_without_device_connection(True)",
+          "passed": false
+        },
+        {
+          "name": "ImageSourceDesignCompositionTests.Public_rebind_rejects_old_source_callbacks_and_releases_each_attached_input_once()",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "class": "OutputContractTreeSelectionTests",
+      "originalCaseCount": 27,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/OutputContractTreeSelectionTests.cs",
+          "sha256": "8b805c68f23c7cd10b9aa973e69ca7f25ee5950c46ca2dc3fc0acbefe7e01696",
+          "containsLegacyResultName": true
+        }
+      ],
+      "cases": [
+        {
+          "name": "OutputContractTreeSelectionTests.A_B_A_selection_epoch_rejects_the_old_queue_but_a_new_edit_refreshes()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.A_new_session_for_the_same_document_invalidates_the_old_editor_queue()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.A_notification_during_provider_read_supersedes_that_read_before_tree_publication()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Binding_preparation_failure_releases_the_snapshot_reader_before_presentation()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Closing_the_real_window_invalidates_queued_work_and_unsubscribes()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Current_empty_contract_clears_previous_declarations()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Declared_run_uses_frozen_values_pages_and_releases_owner_on_selection()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Delete_recreate_with_the_same_ID_cannot_validate_the_old_node_instance()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Expired_tree_expansion_or_initial_projection_failure_retires_the_whole_publication(False)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Expired_tree_expansion_or_initial_projection_failure_retires_the_whole_publication(True)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Open_A_editor_cannot_replace_B_tree_when_A_was_not_selected_at_notification()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Queued_A_notification_is_invalid_after_switching_to_B()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Removing_the_workflow_from_the_document_rejects_a_stale_tab_collection()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Replacing_parameters_rejects_old_work_and_close_unsubscribes_the_original_instance()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Replacing_the_displayed_collection_or_window_rejects_queued_work()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Same_snapshot_refresh_losing_admission_clears_tree_and_table_together(False)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Same_snapshot_refresh_losing_admission_clears_tree_and_table_together(True)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Selected_live_editor_refreshes_the_real_tree_and_coalesces_latest_notifications()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Selection_change_during_provider_read_cannot_publish_after_the_first_guard()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Selection_cleanup_reentry_keeps_the_last_selection_intent()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Snapshot_from_another_owner_scope_or_recreated_node_is_not_borrowed(document)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Snapshot_from_another_owner_scope_or_recreated_node_is_not_borrowed(workflow)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Snapshot_from_another_owner_scope_or_recreated_node_is_not_borrowed(instance)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Table_failure_retires_both_surfaces_and_does_not_leave_a_borrowed_publication()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Tree_and_table_share_the_same_publication_and_retire_before_releasing_the_last_lease()",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Tree_paging_observer_failure_retires_both_surfaces_but_never_a_reentrant_new_run(False)",
+          "passed": true
+        },
+        {
+          "name": "OutputContractTreeSelectionTests.Tree_paging_observer_failure_retires_both_surfaces_but_never_a_reentrant_new_run(True)",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceConfigurationHistoryTests",
+      "originalCaseCount": 15,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceConfigurationHistoryTests.cs",
+          "sha256": "88a1d9a6b6efae00eda0ed8efd3bbf8c5f42ede64085da074d78b8a8f62e3331",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Actual_image_source_can_edit_an_empty_list_without_fabricating_an_execution_path()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Copied_node_has_independent_runtime_source_settings_and_list_edits()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Failed_acceptance_restores_the_original_source_reference_and_keeps_the_candidate()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Formal_document_history_replays_source_configuration_on_the_same_node()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(identity)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(selection)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(mode)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(timeout)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(sequence)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(format)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Invalid_source_candidates_do_not_publish(sourceKind)",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Source_configuration_is_copied_accepted_and_replayed_with_the_same_formal_node()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Source_edit_does_not_waive_validation_of_changed_actual_tool_parameters()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Source_edit_stales_an_older_parameter_editor_instead_of_overwriting_it()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceConfigurationHistoryTests.Unrelated_structure_sync_preserves_source_history_and_the_added_node()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "LocalImageConfigurationSnapshotTests",
+      "originalCaseCount": 4,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/LocalImageConfigurationSnapshotTests.cs",
+          "sha256": "23b6675677b8a31fbd1cc9df1fc70044dad4d9dde0fbedd2a78a098eb63fd816",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "LocalImageConfigurationSnapshotTests.Plan_uses_formal_references_and_captured_base_without_any_preview_projection()",
+          "passed": true
+        },
+        {
+          "name": "LocalImageConfigurationSnapshotTests.Resource_resolution_keeps_the_captured_base_and_rejects_unresolved_references()",
+          "passed": true
+        },
+        {
+          "name": "LocalImageConfigurationSnapshotTests.Selected_run_filter_preserves_original_positions_and_repeated_reference_occurrences()",
+          "passed": true
+        },
+        {
+          "name": "LocalImageConfigurationSnapshotTests.Viewless_empty_source_remains_editable_but_not_ready_for_execution()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceSavePersistenceTests",
+      "originalCaseCount": 6,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceSavePersistenceTests.cs",
+          "sha256": "ad610f1edd95826faee885b43200643eeb7b9fdd91d4f4088cb4e1ce8727f640",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceSavePersistenceTests.AddImages_CapturePolicy_Serializes_And_Deserializes_FilePaths()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceSavePersistenceTests.AddImages_PopulatesTruthSource_CapturePolicy_HasNonEmptyFilePaths()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceSavePersistenceTests.CheckOnlyEditImmediatelySurvivesNodeSerialization()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceSavePersistenceTests.LocalPreviewChangesPreserveCameraSelectionAndSourceMode()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceSavePersistenceTests.RemovedOrResetEntriesCannotWriteBackToTheirOldSource()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceSavePersistenceTests.RuntimeCursorDoesNotPersistOrInvalidateItsOwnVersionButUserEditsRejectOldPresentation()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "ImageSourceResolverTests",
+      "originalCaseCount": 4,
+      "originalFailed": 0,
+      "sameNameInRecovery": 0,
+      "recoveryGroupCount": 0,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImageSourceResolverTests.cs",
+          "sha256": "a48462662420474c7831e8b4686223b5af7e9bbd11dbf3fe7a85d09ba88dfe96",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "ImageSourceResolverTests.CyclesTerminateAndSourceNodeResolvesItself()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceResolverTests.MultipleInputsRequireExplicitBranchAndIgnoreConnectionOrder()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceResolverTests.ParentInputRequiresUniqueCurrentCallSiteAndNeverReusesAnUnrelatedParent()",
+          "passed": true
+        },
+        {
+          "name": "ImageSourceResolverTests.RemovedOrUnrelatedExplicitSelectionDoesNotFallBackToAnotherInput()",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "class": "SolutionManagerUiTests",
+      "originalCaseCount": 23,
+      "originalFailed": 9,
+      "sameNameInRecovery": 9,
+      "recoveryGroupCount": 9,
+      "sources": [
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+          "sha256": "b5b3475045f0848ca7edde87a9276772452161a39f4c8969285758fbf2adc429",
+          "containsLegacyResultName": false
+        },
+        {
+          "path": "tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs",
+          "sha256": "e3ec3d57ca572648f3f6be660f547ee88581fc9fcacb83015a0291ee4a3c7096",
+          "containsLegacyResultName": false
+        },
+        {
+          "path": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
+          "sha256": "df9997ca16775366aec55a7b98f69924ded5367492f8082f4484c9229e561d12",
+          "containsLegacyResultName": false
+        }
+      ],
+      "cases": [
+        {
+          "name": "SolutionManagerUiTests.Adding_missing_or_duplicate_images_does_not_change_current_selection()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Cancellation_while_frozen_input_is_in_flight_never_advances_a_source()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Clearing_releases_cached_image_and_cancels_pending_thumbnail()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Continuous_sources_stop_at_last_valid_selected_entry_without_advancing_other_sources()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Frozen_execution_ignores_other_preview_and_does_not_overwrite_a_new_user_selection()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Import_cancel_after_atomic_acceptance_keeps_the_complete_committed_batch()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Import_cancel_before_acceptance_does_not_publish_or_change_selection()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Import_source_switch_during_commit_cannot_change_new_source_selection()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Manual_execution_does_not_advance_but_default_successful_execution_does()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Missing_images_can_be_cleared_and_empty_configuration_is_persisted()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Mode_edits_preserve_display_and_execution_cursor_but_explicit_choice_resets_it()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Repeated_single_runs_keep_execution_cursor_without_a_preview_and_explicit_choice_resets_only_its_source()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Replacing_and_removing_missing_reference_does_not_delete_real_file()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Restoring_images_preserves_missing_references_selection_and_run_flags_without_rewriting_configuration()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Right_click_and_programmatic_selection_do_not_execute_left_and_keys_execute_once()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Same_start_reset_during_a_round_restarts_only_that_source_on_the_next_round()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Selection_and_removal_preserve_current_image_identity_and_one_way_display()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Solution_execution_captures_each_workflow_source_and_does_not_auto_advance()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Stale_preview_list_cannot_replace_a_published_source_or_receive_its_cursor()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Success_advances_each_source_and_missing_or_empty_selection_is_rejected_before_dispatch()",
+          "passed": true
+        },
+        {
+          "name": "SolutionManagerUiTests.Unchecked_activation_in_selection_mode_preserves_start_history_and_execution()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Unloading_preview_does_not_clear_source_or_persisted_paths()",
+          "passed": false
+        },
+        {
+          "name": "SolutionManagerUiTests.Unresolved_relative_image_keeps_reference_and_can_be_resolved_without_current_directory_fallback()",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "同名仅供定位，不代表等价覆盖；检查声明、类型、断言及真实消费者",
+    "旧序列用例按整体成功/缺文件过滤的断言与VM证据相反，须整链按实际语义重写，不应照搬或删除",
+    "旧完整runner依赖已隔离工具测试项目；新验证须引用正式Release并承接原要求，不恢复旧产品依赖",
+    "记录源码是当前独立分支36b合入后的文件，其他主线未提交候选不计",
+    "真实VS、硬件、VM视觉及用户验收分别处理"
+  ]
+}

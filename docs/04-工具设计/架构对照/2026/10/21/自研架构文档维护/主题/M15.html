@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M15 停止/Shift+F5</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#e88d8d;
+}
+*{box-sizing:border-box}
+body{
+  max-width:700px;margin:0 auto;padding:40px 26px 90px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.75 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:#8fd3e4}
+
+.crumb{font-size:12px;color:var(--faint);margin-bottom:12px}
+.crumb a{text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+
+h1{margin:0 0 10px;font-size:22px;font-weight:600;line-height:1.4}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.tag{font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--dim)}
+.tag.st{color:var(--ok);border-color:#3a6b58}
+.tag.st.partial{color:var(--warn);border-color:#6b553a}
+.tag.st.none{color:var(--bad);border-color:#6b3a3a}
+
+.lead{font-size:15.5px;color:#eef6fa;margin:0 0 20px}
+
+/* 流程图 */
+.flow{margin:0 0 26px;padding:0;list-style:none}
+.flow li{
+  position:relative;padding:5px 0 5px 30px;
+  font-family:Consolas,monospace;font-size:12.5px;color:#a8c6d6;line-height:1.5;
+}
+.flow li::before{
+  content:attr(data-i);position:absolute;left:0;top:5px;
+  width:20px;height:20px;line-height:20px;text-align:center;
+  font-size:10.5px;color:var(--accent);
+  background:#0a1b29;border:1px solid #2c4a5f;border-radius:50%;
+}
+.flow li::after{
+  content:"";position:absolute;left:9.5px;top:25px;bottom:-1px;
+  width:1px;background:#2c4a5f;
+}
+.flow li:last-child::after{display:none}
+
+.blk{margin:0 0 18px}
+.blk h2{
+  font-size:12.5px;font-weight:600;color:#7fa8bd;letter-spacing:.04em;
+  margin:0 0 7px;
+}
+.blk p{margin:0 0 6px}
+.blk .more{display:none}
+.blk.open .more{display:block}
+
+/* 分号拆成的清单 */
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{
+  position:relative;padding:2px 0 2px 15px;color:var(--text);line-height:1.65;
+}
+ul.pts li::before{
+  content:"";position:absolute;left:2px;top:12px;
+  width:4px;height:4px;border-radius:50%;background:#3f6b80;
+}
+
+.toggle{
+  background:none;border:0;padding:0;margin-top:2px;
+  font-size:11.5px;color:var(--faint);cursor:pointer;
+}
+.toggle:hover{color:var(--accent)}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0;list-style:none}
+.chips li{font-size:11px;padding:2px 7px;border-radius:3px;background:#12293a;border:1px solid var(--line);color:#9dbdcd}
+
+details{border-top:1px solid var(--line);margin-top:10px;padding-top:9px}
+details summary{cursor:pointer;list-style:none;font-size:12px;color:var(--faint)}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--accent)}
+details[open] summary{margin-bottom:8px}
+details .bd{font-size:13px;color:var(--dim);line-height:1.75}
+details .bd p{margin:0 0 7px}
+
+footer{margin-top:36px;padding-top:13px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+footer a{color:var(--dim)}
+
+@media(max-width:600px){ body{padding:28px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb">
+  <a href="../index.html">目录</a> ›
+  <a href="../index.html#g-能力对照">能力对照</a> ›
+  M15
+</div>
+
+<div id="page"></div>
+
+<script>
+const D = {"id":"M15","group":"main","title":"停止/Shift+F5","state":"partial","chain":["StopWorkflowCommand","ExecuteStopWorkflow","StopContinuousRun(SelectedTab)","IsRunning=false/日志"],"current":"方法已发停止请求，但在此立即写已停止，无await排空。","gap":"Cancel返回→实际任务Completed/Cancelled；任务终态→回调/帧排空；排空后→UI允许重跑/释放 OnClosing先取消窗口关闭，异步PrepareSolutionTransitionAsync取得transition租约，StopAndWaitAsync最多30秒后再做保存决策。StopAndWait轮询IsAnyRunning；此前ReadyQueue退出finally未await全部running Task，故登记归零不单独证明所有原生任务排空。","vm":"停止命令→原生接收→完成事件与排空分阶段，未恢复边不推断。","vmDoc":"MF05-CONTINUOUS-RUN-CALLCHAIN.md","vmLimit":"VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。","choice":"必须整改","reason":"依据：ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。 VM参考边界：VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。 结论仅针对列明范围，不作整体优胜排名。","change":"停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。 将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。","accept":"取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。 取消退出、停止超时、不响应取消工具、保存失败分别验；未排空不进入设备断开；重复关闭只能共享一次过渡。","sourceIds":["S034","S035","R024","R025","N006","N007","N008","N037"],"optimization":"O02","validation":"仅静态复核；未运行产品/设备/故障注入","review":{"id":"M15","before":"partial","after":"partial","confirmed":"ExecuteStopWorkflow调用StopContinuousRun后立即IsRunning=false并记录已停止；StopContinuousRun只是Cancel并返回请求是否接受。","missingEdges":["Cancel返回→实际任务Completed/Cancelled","任务终态→回调/帧排空","排空后→UI允许重跑/释放"],"cause":"局部已确认实现缺口","change":"将请求返回与最终状态分开：停止按钮先显示Stopping，完成事件或可等待StopAsync/DrainAsync才恢复运行/释放；不能仅延长固定等待。","acceptance":"取消时有图像/回调/慢原生任务，UI不先显示已排空，资源最终只释放一次。","sourceIds":["S034","S035","R024","R025"],"decision":"仅明确证据与缺口，不因复核次数或材料交付自动升级"},"previousRecommendation":{"choice":"重构停止完成投影","reason":"保留合作取消，补可等待完成；强杀原生线程不是默认安全选项。"},"defect":"ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。","vmBorrow":"VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。","difference":"差异大","differenceBasis":"列明的业务范围、状态合同、数据/依赖或文件模型有重要差异；不同不自动等于较差。","adoption":"混合优化","adoptionBasis":"参考VM已确认的职责/行为，结合自有数据与服务实现；不复用VM二进制、协议或密钥。","selectionStatus":"方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目","reviewDecision":{"category":"必须整改","defect":"ExecuteStopWorkflow请求StopContinuousRun后立即置非运行并记录已停止，UI把请求误报为完成。另确认ReadyQueue取消退出只释放剩余租约、未等待全部running Task，外层返回与节点排空可能分离。","borrow":"VM流程有工作状态回调/等待标志；并未证明全部原生任务可中断。","action":"停止先进入Stopping，真实完成/超时后投影终态；引擎需持有并等待所有在途节点再释放资源；StopAndWaitAsync仅看宿主active不能补偿提前返回。不强杀线程；代价是会话任务集合、终态和超时保留策略联动。","difference":"差异大","adoption":"混合优化","confidence":"代码事实与设计要求分列；整改/借鉴范围不等产品已验收","sourceIds":["S034","S035","R024","R025","N006","N007","N008","N037"]}};
+
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const stMap = {"implemented":["已实现","st"],"partial":["部分实现","st partial"],"unimplemented":["未实现","st none"],"unknown":["未确认","st none"]};
+
+/* 按分号拆句：长报告腔拆成一条一句 */
+function pts(s){
+  if(!s) return "";
+  const arr = s.split(/[；;]/).map(x=>x.trim()).filter(Boolean);
+  if(arr.length < 2) return '<p>'+esc(s)+'</p>';
+  return '<ul class="pts">'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+}
+/* 摘要：第一句，压到 50 字内 */
+function brief(s){
+  if(!s) return "";
+  const first = s.split(/[；;。]/)[0].trim();
+  return first.length > 52 ? first.slice(0,52)+"…" : first;
+}
+/* 需要“展开”的长内容 */
+function moreBox(fullHtml){
+  return '<div class="more">'+fullHtml+'</div><button class="toggle">展开全文</button>';
+}
+
+const st = stMap[D.state] || [D.state||"未标注","st"];
+const out = [];
+
+out.push('<h1>'+esc(D.title)+'</h1>');
+out.push('<div class="meta"><span class="tag">'+esc(D.id)+'</span><span class="tag '+st[1]+'">'+esc(st[0])+'</span>'+
+  (D.optimization?'<span class="tag">影响 '+esc(D.optimization)+'</span>':'')+'</div>');
+
+if(D.current) out.push('<p class="lead">'+esc(D.current)+'</p>');
+
+/* 调用顺序：流程图 */
+if(D.chain && D.chain.length){
+  out.push('<ul class="flow">'+D.chain.map((c,i)=>'<li data-i="'+(i+1)+'">'+esc(c)+'</li>').join('')+'</ul>');
+}
+
+/* 差在哪 */
+let gapFull = '';
+if(D.gap) gapFull += pts(D.gap);
+if(D.defect) gapFull += '<p><b>缺陷：</b>'+esc(D.defect)+'</p>';
+if(D.vm) gapFull += '<p><b>VM 的做法：</b>'+esc(D.vm)+'</p>';
+if(D.vmLimit) gapFull += '<p><b>对照边界：</b>'+esc(D.vmLimit)+'</p>';
+out.push('<div class="blk"><h2>差在哪</h2>'+pts(brief(D.gap))+moreBox(gapFull)+'</div>');
+
+/* 怎么改 */
+let chgFull = '';
+if(D.change) chgFull += pts(D.change);
+if(D.choice) chgFull += '<p><b>取舍：</b>'+esc(D.choice)+'</p>';
+if(D.reason) chgFull += '<p><b>依据：</b>'+esc(D.reason)+'</p>';
+if(D.vmBorrow) chgFull += '<p><b>可借鉴：</b>'+esc(D.vmBorrow)+'</p>';
+out.push('<div class="blk"><h2>怎么改</h2>'+pts(brief(D.change))+moreBox(chgFull)+'</div>');
+
+/* 怎么验 */
+out.push('<div class="blk"><h2>怎么验</h2>'+pts(brief(D.accept))+moreBox(pts(D.accept))+'</div>');
+
+/* 证据 */
+if(D.sourceIds && D.sourceIds.length){
+  out.push('<div class="blk"><h2>证据'+(D.validation?' · '+esc(D.validation):'')+'</h2><ul class="chips">'+
+    D.sourceIds.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>');
+}
+
+/* 复核与历史，默认收起 */
+if(D.review){
+  const r=D.review; let b='';
+  if(r.confirmed) b+='<p><b>已确认：</b>'+esc(r.confirmed)+'</p>';
+  if(r.missingEdges&&r.missingEdges.length) b+='<p><b>缺口：</b>'+r.missingEdges.map(x=>'<br>· '+esc(x)).join('')+'</p>';
+  if(r.decision) b+='<p><b>结论：</b>'+esc(r.decision)+'</p>';
+  out.push('<details><summary>复核记录（'+esc(r.before||'')+' → '+esc(r.after||'')+'）</summary><div class="bd">'+b+'</div></details>');
+}
+if(D.previousRecommendation){
+  const p=D.previousRecommendation;
+  out.push('<details><summary>以前的想法（'+esc(p.choice||'')+'）</summary><div class="bd"><p>'+esc(p.reason||'')+'</p></div></details>');
+}
+
+document.getElementById("page").innerHTML = out.join('');
+
+document.getElementById("page").addEventListener("click", e => {
+  if(!e.target.classList.contains("toggle")) return;
+  const blk = e.target.closest(".blk");
+  const on = blk.classList.toggle("open");
+  e.target.textContent = on ? "收起" : "展开全文";
+});
+</script>
+
+<footer>
+  原始详细材料：<a href="../现状分析/suneye-entry-architecture-comparison.html">主界面架构</a>
+</footer>
+
+</body>
+</html>

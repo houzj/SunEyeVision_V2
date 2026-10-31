@@ -1,0 +1,55 @@
+{
+  "unit": "B02 普通下拉枚举；整数单选为下一独立单元",
+  "status": "实现与自动核收通过，实际VS/键鼠人工待验",
+  "basis": "Enumeration_Sub → ListViewComboBoxStyle → SelectionChanged/SelectedIndex → Enumeration.SelectedChangedCmdExecute → 参数接纳与预执行通知",
+  "adaptation": "用正式声明键替代原厂整数候选值；显示标签不是身份；调度归宿主",
+  "changes": [
+    "选择事件重建/释放解绑",
+    "明确管理文字样式作用域",
+    "取消原调度并关闭旧Popup",
+    "拒绝/回填/旧值修复沿正式字段合同"
+  ],
+  "validation": {
+    "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-119",
+    "total": 233,
+    "newEnumerationChecks": 17,
+    "exit": 0,
+    "product": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+    "production": "同版正式节点配置网关/撤销重做/Runtime JSON写盘重开；不是完整Blob页面及完整方案文件验收"
+  },
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/comboboxstyle/listviewcomboboxstyle.xaml",
+      "sha256": "E29B9D9FDB7FCF4F91EA3C7140A04A762B68AD3341D0DCAF84A5CB6769289A97"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Enumeration.cs",
+      "sha256": "F46D1BB8017207A2A517648E14004245B5843BBE3BEA697630E141A5172E6E28"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "306AED6B3317C53110D5F737D237A6A4540725B4DF143E7CFE9399AFC94D6ED5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+      "sha256": "E0185C9ED3294A431EA393FBCE678EE245A1C6E3C690C95502E9A778DFE81C48"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
+      "sha256": "1DF39CA3F400AFDAA3B68F3CCE180BCC885BFB7559E044EA2F7A62352D8A8554"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "6ACCCE58B12403796F520D24D6DA29FBAEB9B4F268EB42B434BA4765D314C8B5"
+    }
+  ],
+  "notDone": [
+    "实际VS与人工键鼠主题验收",
+    "整数单选、图像来源、相机选择和多选各自完整组合不由本单元代替",
+    "Blob临时六种阈值界面仍未接真实算法，不放开执行拦截"
+  ]
+}

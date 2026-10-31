@@ -1,0 +1,52 @@
+{
+  "reports": [
+    {
+      "source": "D:/MyWork/REA逆向测试/docs/joint-audit/B08参数绑定执行顺序原生证据-20261031.md",
+      "archive": "docs\\collaboration\\evidence\\B08_BINDING_ORDER_20261031\\B08参数绑定执行顺序原生证据-20261031.md",
+      "sha256": "B2D5E39B33EE1592B22B8FD095DD750A214B2306BED58615EB3D19A6E6D5C5BB"
+    },
+    {
+      "source": "D:/MyWork/REA逆向测试/docs/joint-audit/B08绑定序列化及重载顺序-20261031.md",
+      "archive": "docs\\collaboration\\evidence\\B08_BINDING_ORDER_20261031\\B08绑定序列化及重载顺序-20261031.md",
+      "sha256": "3419634ECA07DA505E7BEB99D6B2095E5AD65B5E9F98026DDC50493153798ECE"
+    },
+    {
+      "source": "D:/MyWork/REA逆向测试/docs/joint-audit/B08解绑与触发文本迁移决策-20261030.md",
+      "archive": "docs\\collaboration\\evidence\\B08_BINDING_ORDER_20261031\\B08解绑与触发文本迁移决策-20261030.md",
+      "sha256": "20E828F5BBCB930ACCE26019E5C8E82F4D97C136EABF8E030BB36CFA8EFB7706"
+    }
+  ],
+  "rawIdentities": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-order-20261031\\out\\be020-tail.asm.txt",
+      "sha256": "205C5BF2A85295EA9D8C150F952EDF898E4BF7B71B2B7D6DDB3F1DB5B397DD05"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-order-20261031\\out\\bd110-tail.asm.txt",
+      "sha256": "845863C8ED6647613BB6D66F82BF61D062854D792AB2FE914731019103B23201"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-order-20261031\\out2\\0x18009f110-18009f110.asm.txt",
+      "sha256": "212C3A40A70126B69E4E4DA46D0859D15B6CAA50CBCB14EC9BE0891163AC713B"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-order-20261031\\out\\0x18009e470-18009e470.asm.txt",
+      "sha256": "7E896A7A48969E34166F7FD23A558A4FB18208B55296904FD7A1C429E0CC3432"
+    }
+  ],
+  "reviewScope": "已读两份顺序报告及核四份原指令SHA，不冒称独立复核全部分支",
+  "confirmed": [
+    "运行manager+0x28模块链表前向",
+    "已存在链表/非零来源成功更新分支删除旧目标再尾插",
+    "保存另走manager+0x10名称树，按所存字节比较并过滤",
+    "导入按记录顺序调用绑定设置，失败break"
+  ],
+  "remaining": [
+    "首次链表构建/其他来源/失败并发",
+    "多绑定原机重开",
+    "产品稳定字段ID与原参数名排序映射"
+  ],
+  "productQueueNotEquivalent": "当前Fields字典/schema/JSON字段ID排序均不能冒称原执行链表同态",
+  "nativeSdkStarted": false,
+  "functionalAcceptance": false
+}

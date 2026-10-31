@@ -20,8 +20,8 @@ internal static class ToolResultViews
         if(declaredSchema is null||projection is null||
             new ToolSchema(Array.Empty<Port>(),declaredSchema.Outputs).Fingerprint!=new ToolSchema(Array.Empty<Port>(),schema.Outputs).Fingerprint||
             projection.Validate(schema).Count!=0)return names;
-        foreach(var group in projection.Columns.Where(column=>column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
-            .GroupBy(column=>column.Value.PortId,StringComparer.Ordinal))
+        foreach(var group in projection.Columns.Where(column=>column.Value is not null&&column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
+            .GroupBy(column=>column.Value!.PortId,StringComparer.Ordinal))
         {
             var labels=group.Select(column=>column.DisplayName).Distinct(StringComparer.Ordinal).ToArray();
             if(labels.Length==1&&names.ContainsKey(group.Key))names[group.Key]=labels[0];

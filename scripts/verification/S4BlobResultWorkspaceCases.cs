@@ -69,12 +69,12 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyWrapper(IResultPublication publication)
  {
-  var wrapper=ToolRegistry.CreateResultView(BlobTool.Id)!;var events=0;ResultSelection? last=null;object? sender=null;
+  var wrapper=ToolRegistry.CreateCurrentResultView(BlobTool.Id)!;var events=0;ResultSelection? last=null;object? sender=null;
   wrapper.SelectionHighlightChanged+=(source,selection)=>{sender=source;last=selection;events++;};wrapper.Present(publication);var host=new Window{Content=wrapper.View,Width=700,Height=350,ShowActivated=false,ShowInTaskbar=false};host.Show();Pump();var grid=Visuals<DataGrid>(wrapper.View).Single();grid.SelectedItem=grid.Items[0];
   Require(ReferenceEquals(sender,wrapper)&&last is {Targets.Count:1}&&last.Publication==publication.Stamp,"包装选中未保身份或Stamp");wrapper.Clear();Require(ReferenceEquals(sender,wrapper)&&last is {ElementIdentity:null,Targets.Count:0}&&last.Publication==publication.Stamp,"Clear未转发原Stamp空选择");
   wrapper.Present(publication);grid.SelectedItem=grid.Items[0];var count=events;wrapper.Dispose();Require(events==count+1&&last is {ElementIdentity:null,Targets.Count:0}&&ReferenceEquals(sender,wrapper),"Dispose遗漏最终空选择");wrapper.Dispose();Require(events==count+1,"重复释放重复通知");host.Content=null;host.Close();
   var rejected=false;try{wrapper.Present(publication);}catch(ObjectDisposedException){rejected=true;}Require(rejected,"释放后包装仍可呈现");
-  var faulty=ToolRegistry.CreateResultView(BlobTool.Id)!;faulty.Present(publication);faulty.SelectionHighlightChanged+=(_,_)=>throw new InvalidOperationException("预期观察者异常");var failed=false;try{faulty.Dispose();}catch(AggregateException){failed=true;}Require(failed,"释放观察者异常被吞");faulty.Dispose();
+  var faulty=ToolRegistry.CreateCurrentResultView(BlobTool.Id)!;faulty.Present(publication);faulty.SelectionHighlightChanged+=(_,_)=>throw new InvalidOperationException("预期观察者异常");var failed=false;try{faulty.Dispose();}catch(AggregateException){failed=true;}Require(failed,"释放观察者异常被吞");faulty.Dispose();
   Require(faulty.GetType().GetField("SelectionHighlightChanged",Flags)!.GetValue(faulty) is null,"异常释放保留包装观察者");Console.WriteLine("通过：Blob包装sender、Clear/Dispose空选择及异常退订。");
  }
  static void Run()
@@ -88,7 +88,7 @@ internal static class S2DocumentEditingCases
   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source.png");
   var source=new SunEyeVision.UI.Shared.WorkflowNode("source","图像源","图像源",ImageSourceTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(ImageSourceTool.Id).WithSettings(new ImageSourceSettings{FileReferences=new[]{path},StartIndex=0})};
   flow.Nodes.Insert(0,source);flow.Connections.Add(new WorkflowConnection("source-to-blob",source.Id,node.Id));
-  var imageType=TypeRef.ResourceOf(ResourceKind.Image);node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,ImageSourceOutput.Image,imageType,scopeId:flow.Id))}});
+  node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,ImageSourceOutput.Image,ImageSourceOutput.ImageType,new[]{ImageSourceOutput.ImageData},scopeId:flow.Id))}});
   MainWindowViewModel? main=null;ImageResultControl? view=null;Window? window=null;WorkflowContext? context=null;var runs=new List<ExecutionResult>();var borrowed=new List<IDisposable>();IReadOnlyImage? retainedImage=null;
   try
   {

@@ -170,7 +170,7 @@ internal static class S2DocumentEditingCases
                 var original=new WorkflowNodeBase("original","original","工作流图像",BlobTool.Id){RuntimeConfiguration=initial};
                 var consumer=new WorkflowNodeBase("consumer","consumer","混合ROI",BlobTool.Id){RuntimeConfiguration=initial};
                 var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
-                Bind(consumer,BlobTool.ImageInput,source.Id,imagePort.Id,imagePort.Type,mixed.Id);
+                consumer.RuntimeConfiguration=consumer.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{SunEyeVision.Tool.ImageSource.Runtime.ImageSourceOutput.ImageData},scopeId:mixed.Id))}});
                 Bind(consumer,BlobTool.InspectionInput,original.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),mixed.Id);
                 mixed.Nodes.Add(source);mixed.Nodes.Add(original);mixed.Nodes.Add(consumer);
                 using(var mismatch=Run(mixed))Require(!mismatch.Success&&mismatch.NodeResults[source.Id].Success&&mismatch.NodeResults[original.Id].Success&&!mismatch.NodeResults[consumer.Id].Success

@@ -77,7 +77,6 @@ internal static class S2DocumentEditingCases
         var addedImportCases=new[]{
             "SolutionManagerUiTests.Manual_folder_import_expands_one_level_in_vm_entry_order_as_one_edit()",
             "SolutionManagerUiTests.Folder_import_failure_after_an_earlier_directory_does_not_accept_a_partial_batch()",
-            "SolutionManagerUiTests.Import_reentrant_selection_keeps_formal_batch_without_reporting_the_old_projection()",
             "SolutionManagerUiTests.Import_preserves_current_selection_without_emitting_an_explicit_activation()",
             "SolutionManagerUiTests.Actual_source_run_check_restores_original_focus_states_and_theme_lifetime()"
         }.ToHashSet(StringComparer.Ordinal);

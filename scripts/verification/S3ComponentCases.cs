@@ -76,7 +76,7 @@ internal static class S2DocumentEditingCases
             var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){
                 RuntimeConfiguration=configuration.WithSettings(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)configuration.CaptureSettings()) with {Threshold=100,IsAreaFilterEnabled=false,OutputGrayImage=true})};
             EnsurePresentationApplication();VerifySettingsView(expectEditor);
-            using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
+            using var resultView=ToolRegistry.CreateCurrentResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
             if(expectEditor)
             {
                 Require(resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","可选Wpf结果视图错误");

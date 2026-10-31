@@ -4403,7 +4403,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if(!owner())return;
                 var projection=runtime.ResultProjection;
                 var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
-                    ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+                    ?projection.Columns.Where(column=>column.Value is not null).Select(column=>column.Value!.PortId).ToHashSet(StringComparer.Ordinal):null;
                 PresentDeclaration(schema,nodeName,names,DeclaredBindings(schema,nodeId),shown);
                 return;
             }

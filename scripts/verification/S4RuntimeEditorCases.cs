@@ -277,7 +277,7 @@ internal static class S2DocumentEditingCases
             {
                 var legacy=System.Text.Json.Nodes.JsonNode.Parse(modeBaseline)!;
                 var modeConfiguration=formalOpening.WithSettings(new BlobSettings{SegmentationMode=oldMode}).WithFieldSettings(
-                    new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,"output.image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:modeScope))}});
+                    new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(new OutputReference(source.Id,SunEyeVision.Tool.ImageSource.Runtime.ImageSourceOutput.Image,SunEyeVision.Tool.ImageSource.Runtime.ImageSourceOutput.ImageType,new[]{SunEyeVision.Tool.ImageSource.Runtime.ImageSourceOutput.ImageData},scopeId:modeScope))}});
                 var serialized=System.Text.Json.JsonSerializer.SerializeToNode(modeConfiguration);
                 var jsonNode=legacy["Workflows"]!.AsArray().SelectMany(flow=>flow!["Nodes"]!.AsArray()).Single(value=>value!["Id"]!.GetValue<string>()==node.Id)!;
                 jsonNode["RuntimeConfiguration"]=serialized;

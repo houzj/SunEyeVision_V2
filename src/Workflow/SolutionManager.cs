@@ -50,6 +50,7 @@ public class SolutionManager
 
     private string _dataRoot;
     public SolutionSession? Session { get; private set; }
+    private bool _changingSession;
     private string? _saveError;
     public string? LastSaveWarning { get; private set; }
     public string DataRoot => _dataRoot;
@@ -68,7 +69,21 @@ public class SolutionManager
     public Solution? CurrentSolution
     {
         get => Session?.Document;
-        private set => Session = value == null ? null : new SolutionSession(value);
+        private set
+        {
+            if(_changingSession)throw new InvalidOperationException("方案切换清理期间不能重入切换。");
+            if(ReferenceEquals(Session?.Document,value))return;
+            var next=value is null?null:new SolutionSession(value);
+            _changingSession=true;
+            try
+            {
+                // Retire the previous editing owner before exposing the new document.
+                // Cancellation observers cannot publish into either document during this transition.
+                Session?.CloseEditing();
+                Session=next;
+            }
+            finally{_changingSession=false;}
+        }
     }
 
     /// <summary>
@@ -578,8 +593,6 @@ public class SolutionManager
             throw new IOException("保存失败，方案保持打开：" + LastError);
         RetirePreviousExecutionOwners(null);
         CurrentSolution = null;
-        CurrentFilePath = null;
-        Session = null;
         _settings.CurrentSolutionId = "";
         MarkSettingsDirty();
         SolutionClosed?.Invoke(this, EventArgs.Empty);
@@ -588,7 +601,17 @@ public class SolutionManager
 
     private void RetirePreviousExecutionOwners(Solution? next)
     {
-        if (!ReferenceEquals(CurrentSolution, next)) CurrentSolution?.ExecutionOwner.Retire();
+        if (!ReferenceEquals(CurrentSolution, next) && CurrentSolution is {} previous)
+        {
+            try { previous.ExecutionOwner.Retire(); }
+            catch (AggregateException cleanup)
+            {
+                // Retire aggregates observer failures only after the owner is irreversibly
+                // retired and every domain has been attempted. Finish closing that document;
+                // an active-run refusal is an InvalidOperationException and still aborts here.
+                _logger.Log(LogLevel.Warning,"运行域已退役，部分清理通知失败；继续关闭旧编辑会话。","SolutionManager",cleanup);
+            }
+        }
         if (next != null)
             foreach (var workflow in next.Workflows) workflow.ExecutionOwner = next.ExecutionOwner;
     }

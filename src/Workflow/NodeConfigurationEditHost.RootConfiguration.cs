@@ -21,9 +21,9 @@ public sealed partial class NodeConfigurationEditHost
   finally{FlushStructureNotifications();}
  }
  public bool HasPendingChanges(RootWorkflowConfigurationEditDraft draft)=>RootSignature(draft.Configuration)!=draft.Signature;
- public bool OwnsRoot(RootWorkflowConfigurationEditDraft draft)=>_design.Workflows.Any(w=>ReferenceEquals(w,draft.Formal)&&!w.IsSubroutine);
+ public bool OwnsRoot(RootWorkflowConfigurationEditDraft draft)=>!_closed&&_design.Workflows.Any(w=>ReferenceEquals(w,draft.Formal)&&!w.IsSubroutine);
  public RootWorkflowConfigurationEditDraft Freeze(RootWorkflowConfigurationEditDraft draft)
- {lock(_gate){if(draft.Owner!=_owner||draft.Consumed)throw new InvalidOperationException("根配置草稿已提交或不属于当前方案。");draft.Configuration.Validate();return new(_owner,draft.Formal,draft.Configuration,draft.Signature);}}
+ {lock(_gate){EnsureOpen();if(draft.Owner!=_owner||draft.Consumed)throw new InvalidOperationException("根配置草稿已提交或不属于当前方案。");draft.Configuration.Validate();return new(_owner,draft.Formal,draft.Configuration,draft.Signature);}}
  public static bool SamePendingEdits(RootWorkflowConfigurationEditDraft left,RootWorkflowConfigurationEditDraft right)
  =>left.WorkflowId==right.WorkflowId&&RootSignature(left.Configuration)==RootSignature(right.Configuration);
  private void ComposeRoots(Solution candidate,IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots)

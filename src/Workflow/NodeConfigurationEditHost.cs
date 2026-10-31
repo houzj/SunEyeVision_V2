@@ -17,9 +17,10 @@ public sealed class NodeConfigurationEditDraft
     public ScopedNodeIdentity Identity { get; }
     public WorkflowNodeBase Node { get; }
     internal RuntimeToolConfiguration? RuntimeValueBaseline {get;}
-    internal NodeConfigurationEditDraft(Guid owner, ScopedNodeIdentity identity, WorkflowNodeBase node, string signature,
+    internal WorkflowNodeBase FormalInstance {get;}
+    internal NodeConfigurationEditDraft(Guid owner, ScopedNodeIdentity identity, WorkflowNodeBase node, string signature, WorkflowNodeBase formalInstance,
         RuntimeToolConfiguration? valueBaseline=null)
-    { Owner = owner; Identity = identity; Node = node; Signature = signature;RuntimeValueBaseline=valueBaseline?.Copy()??node.RuntimeConfiguration?.Copy(); }
+    { Owner = owner; Identity = identity; Node = node; Signature = signature;FormalInstance=formalInstance;RuntimeValueBaseline=valueBaseline?.Copy()??node.RuntimeConfiguration?.Copy(); }
 }
 
 /// <summary>A private variable/configuration candidate belonging to one document host generation.
@@ -69,6 +70,10 @@ public sealed partial class NodeConfigurationEditHost
     // This is host-local history backing, not a resource owner or a global registry.
     private readonly Dictionary<string, GlobalVariable> _variableInstances;
     private bool _projecting;
+    private bool _closed;
+    internal void Close() {lock(_gate)_closed=true;}
+    private void EnsureOpen()
+    {if(_closed)throw new InvalidOperationException("方案配置宿主已经退役。");}
     private readonly List<(GlobalVariable Variable, bool ValueChanged)> _structureNotifications = new();
     // Deterministic acceptance-failure injection only; disabled in production. Tests set
     // this private counter by reflection. It is not an observer/callback under ValueGate.
@@ -95,7 +100,7 @@ public sealed partial class NodeConfigurationEditHost
 
     /// <summary>Configuration/dependency history, never the authority for live runtime values.
     /// Save and run capture live values independently with GlobalVariable.CaptureValues.</summary>
-    public BindingConfigurationSnapshot Capture() => _store.Capture();
+    public BindingConfigurationSnapshot Capture() {lock(_gate){EnsureOpen();return _store.Capture();}}
     /// <summary>Frozen names only. Formatting an identity must not capture or inspect runtime variable values.</summary>
     public IReadOnlyDictionary<string,string> GetVariableNames(string solutionId)
     {
@@ -107,11 +112,11 @@ public sealed partial class NodeConfigurationEditHost
     }
     /// <summary>Private variable-picker snapshot; captures existing definitions and display values without modifying the document.</summary>
     public (string SolutionId,IReadOnlyList<GlobalVariable> Variables) CaptureVariablesForSelection()
-    {lock(_gate){if(!ReferenceEquals(_design.GlobalVariables,_variableCollection))throw new InvalidOperationException("变量目录归属已改变。");return(_design.Id,GlobalVariable.CaptureDefinitions(_variableCollection));}}
-    public bool CanUndo => _documentHistory?.CanUndo ?? _store.CanUndo;
-    public bool CanRedo => _documentHistory?.CanRedo ?? _store.CanRedo;
+    {lock(_gate){EnsureOpen();if(!ReferenceEquals(_design.GlobalVariables,_variableCollection))throw new InvalidOperationException("变量目录归属已改变。");return(_design.Id,GlobalVariable.CaptureDefinitions(_variableCollection));}}
+    public bool CanUndo => !_closed&&(_documentHistory?.CanUndo ?? _store.CanUndo);
+    public bool CanRedo => !_closed&&(_documentHistory?.CanRedo ?? _store.CanRedo);
     public bool OwnsNode(string workflowId, WorkflowNodeBase node)
-    { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
+    { lock (_gate) return !_closed&&_design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
 
     public void SynchronizeStructure()
     {
@@ -120,7 +125,7 @@ public sealed partial class NodeConfigurationEditHost
     }
     public bool HasPublishedNodeChanged(NodeConfigurationEditDraft editor)
     {
-        lock (_gate) return NodeEditSignature(Find(_store.Capture().CopyConfiguration(), editor.Identity)) != editor.Signature;
+        lock (_gate) return !IsCurrentNodeInstance(editor) || NodeEditSignature(Find(_store.Capture().CopyConfiguration(), editor.Identity)) != editor.Signature;
     }
 
     public NodeConfigurationEditDraft BeginEdit(string workflowId, string nodeId)
@@ -133,7 +138,7 @@ public sealed partial class NodeConfigurationEditHost
                 EnsureBaseline();
                 var identity = new ScopedNodeIdentity(workflowId, nodeId);
                 var node = Find(_store.Capture().CopyConfiguration(), identity);
-                return new(_owner, identity, node, NodeEditSignature(node));
+                return new(_owner, identity, node, NodeEditSignature(node),_nodeInstances[identity]);
             }
         }
         finally { FlushStructureNotifications(); }
@@ -214,7 +219,7 @@ public sealed partial class NodeConfigurationEditHost
     }
 
     public static bool SamePendingEdits(NodeConfigurationEditDraft left, NodeConfigurationEditDraft right)
-        => left.Identity == right.Identity && NodeEditSignature(left.Node) == NodeEditSignature(right.Node)
+        => left.Identity == right.Identity && ReferenceEquals(left.FormalInstance,right.FormalInstance) && NodeEditSignature(left.Node) == NodeEditSignature(right.Node)
             &&left.Node.RuntimeConfiguration?.CurrentValuesIdentity==right.Node.RuntimeConfiguration?.CurrentValuesIdentity;
     public NodeConfigurationEditDraft RebaseAcceptedDraft(NodeConfigurationEditDraft editor)
     {
@@ -225,10 +230,11 @@ public sealed partial class NodeConfigurationEditHost
             {
                 if (editor.Owner != _owner) throw new InvalidOperationException("草稿不属于当前文档。");
                 EnsureBaseline();
+                RequireCurrentNodeInstance(editor);
                 var accepted = Find(_store.Capture().CopyConfiguration(), editor.Identity);
                 editor.Consumed = true;
                 // Keep the same private object so raw view input and newer edits are not rebound away.
-                return new(_owner, editor.Identity, editor.Node, NodeEditSignature(accepted),accepted.RuntimeConfiguration);
+                return new(_owner, editor.Identity, editor.Node, NodeEditSignature(accepted),editor.FormalInstance,accepted.RuntimeConfiguration);
             }
         }
         finally { FlushStructureNotifications(); }
@@ -241,18 +247,20 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("节点草稿已接受或不属于当前文档。");
+            RequireCurrentNodeInstance(editor);
             var shell = new Solution();
             var flow = new Workflow(editor.Identity.WorkflowId, "prepared");
             flow.Nodes.Add(editor.Node);
             shell.Workflows.Add(flow);
             var copy = BindingConfigurationStore.Copy(shell).Workflows[0].Nodes[0];
-            return new(_owner, editor.Identity, copy, editor.Signature,editor.RuntimeValueBaseline);
+            return new(_owner, editor.Identity, copy, editor.Signature,editor.FormalInstance,editor.RuntimeValueBaseline);
         }
     }
     public GlobalVariableConfigurationEditDraft Freeze(GlobalVariableConfigurationEditDraft editor)
     {
         lock (_gate)
         {
+            EnsureOpen();
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("变量草稿已接受或不属于当前文档。");
             var copy = new GlobalVariableConfigurationEditDraft(_owner, editor.BaseVersion,
@@ -365,8 +373,8 @@ public sealed partial class NodeConfigurationEditHost
         finally { FlushStructureNotifications(); }
     }
 
-    public BindingConfigurationSnapshot Undo() => RestoreDocumentHistory(undo:true);
-    public BindingConfigurationSnapshot Redo() => RestoreDocumentHistory(undo:false);
+    public BindingConfigurationSnapshot Undo() {lock(_gate)EnsureOpen();return RestoreDocumentHistory(undo:true);}
+    public BindingConfigurationSnapshot Redo() {lock(_gate)EnsureOpen();return RestoreDocumentHistory(undo:false);}
     private BindingConfigurationSnapshot RestoreHistory(bool undo)
     {
         try
@@ -406,6 +414,7 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (editor == null || editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("编辑草稿已提交或不属于当前方案。");
+            RequireCurrentNodeInstance(editor);
             if (!byId.TryAdd(editor.Identity, editor)) throw new InvalidOperationException("同一节点有重复的编辑参与者。");
             var current = Find(baseline, editor.Identity);
             if (NodeEditSignature(current) != editor.Signature)
@@ -704,8 +713,21 @@ public sealed partial class NodeConfigurationEditHost
         lock (_gate) _lastRefreshError = errors.Count == 0 ? null : new AggregateException("配置已发布，但部分视图通知失败。", errors);
     }
 
+    // A stable Id identifies a document slot, not a replacement node instance. An old
+    // editor cannot attach to a recreated node merely because its values match.
+    private bool IsCurrentNodeInstance(NodeConfigurationEditDraft editor)
+        =>!_closed&&editor.Owner==_owner&&_nodeInstances.TryGetValue(editor.Identity,out var current)
+            &&ReferenceEquals(current,editor.FormalInstance)
+            &&_design.Workflows.Any(flow=>flow.Id==editor.Identity.WorkflowId
+                &&flow.Nodes.Any(node=>ReferenceEquals(node,editor.FormalInstance)));
+    private void RequireCurrentNodeInstance(NodeConfigurationEditDraft editor)
+    {
+        if(!IsCurrentNodeInstance(editor))throw new InvalidOperationException("节点已删除或正式实例已替换，请重新打开参数编辑。");
+    }
+
     private void EnsureBaseline()
     {
+        EnsureOpen();
         if (_projecting) throw new InvalidOperationException("配置投影过程中不能重入编辑或恢复。");
         if (!ReferenceEquals(_design.GlobalVariables, _variableCollection)) throw new InvalidOperationException("正式变量集合已被替换。");
         if (_variableCollection.Any(v => !_variableInstances.TryGetValue(v.Id, out var original) || !ReferenceEquals(original, v)))

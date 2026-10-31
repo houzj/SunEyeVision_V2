@@ -12,7 +12,9 @@ public sealed partial class NodeConfigurationEditHost
         ArgumentNullException.ThrowIfNull(editor);
         lock(_gate)
         {
+            EnsureOpen();
             if(editor.Owner!=_owner||editor.Consumed)throw new InvalidOperationException("参数当前值的编辑草稿已退役。");
+            RequireCurrentNodeInstance(editor);
             var formal=Find(_store.Capture().CopyConfiguration(),editor.Identity);
             if(NodeEditSignature(formal)!=editor.Signature)throw new InvalidOperationException("正式参数关系已改变，请重新确认编辑草稿。");
             var candidate=editor.Node.RuntimeConfiguration??throw new InvalidOperationException("编辑草稿没有Runtime参数。");
@@ -26,6 +28,7 @@ public sealed partial class NodeConfigurationEditHost
     {
         lock(_gate)
         {
+            EnsureOpen();
             var snapshot=new System.Collections.Generic.Dictionary<WorkflowNodeBase,RuntimeToolConfiguration?>(
                 System.Collections.Generic.ReferenceEqualityComparer.Instance);
             // Canvas history can add a node before configuration scopes synchronize. Capture
@@ -39,6 +42,7 @@ public sealed partial class NodeConfigurationEditHost
     {
         lock(_gate)
         {
+            EnsureOpen();
             if(!ReferenceEquals(snapshot,_store.Capture()))
                 throw new InvalidOperationException("参数值接纳入口必须对应当前正式配置快照。");
             var owner=_design.ExecutionOwner;
@@ -50,6 +54,7 @@ public sealed partial class NodeConfigurationEditHost
                 var key=new ScopedNodeIdentity(workflowId,nodeId);
                 lock(_gate)
                 {
+                    EnsureOpen();
                     // Structure and configuration validation happen before acquiring the execution
                     // identity gate. Inside that gate the prepared root is installed without observers.
                     if(!identity.HasStartedExecution||!ReferenceEquals(identity.Owner,owner)||identity.NodeId!=workflowId+"/"+nodeId
@@ -78,10 +83,12 @@ public sealed partial class NodeConfigurationEditHost
                         },
                         install=>identity.TryInvokeCallback(()=>
                         {
+                            EnsureOpen();
                             // Admission itself can reenter the host. Never install a verdict or root
                             // prepared before an admission callback changed its publication/instance.
                             if(!ReferenceEquals(_store.Capture(),baseline)||!ReferenceEquals(current.RuntimeConfiguration,prior)
-                                ||!_nodeInstances.TryGetValue(key,out var admittedNode)||!ReferenceEquals(admittedNode,current))
+                                ||!_nodeInstances.TryGetValue(key,out var admittedNode)||!ReferenceEquals(admittedNode,current)
+                                ||!_design.Workflows.Any(flow=>flow.Id==workflowId&&flow.Nodes.Any(node=>ReferenceEquals(node,current))))
                                 throw new InvalidOperationException("参数接纳期间正式状态已改变，拒绝旧候选。");
                             install();
                         }));

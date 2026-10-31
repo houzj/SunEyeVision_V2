@@ -12,8 +12,24 @@ public sealed class SolutionSession
 {
     public Solution Document { get; }
     private DocumentEditSession? _editing;
-    public DocumentEditSession Editing => _editing ??= new DocumentEditSession(Document);
+    private bool _closed;
+    public DocumentEditSession Editing
+    {
+        get
+        {
+            // Existing UI cleanup may call Editing.Close again after the manager retires
+            // this session. Return that closed object, but never create a new owner.
+            if(_closed&&_editing is null)throw new InvalidOperationException("方案会话已经关闭。");
+            return _editing ??= new DocumentEditSession(Document);
+        }
+    }
     public DocumentHistoryCoordinator History => Editing.History;
+    internal void CloseEditing()
+    {
+        if(_closed)return;
+        _closed=true;
+        _editing?.Close();
+    }
     public string? FilePath => Document.FilePath;
     public bool IsUntitled => string.IsNullOrEmpty(FilePath);
     private string? _savedContent;

@@ -123,10 +123,10 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         using var declaration=ToolResultViews.Declaration(schema,()=>true,new Dictionary<string,string>{["record"]="显示名称"});
         presenter.Present(declaration,new Dictionary<string,ResultBindingInfo>{["record"]=binding});
         Assert.Same(rows, grid.ItemsSource); Assert.True(has);
-        Assert.Equal(new[] { "结果", "显示名称", "scalar" }, rows.Select(row => row.DisplayName));
+        Assert.Equal(new[] { "结果", "显示名称", "z", "a", "加载下一页 [2…2]", "scalar" }, rows.Select(row => row.DisplayName));
         Assert.Null(rows[1].BindingInfo); // A record has no variable storage; its declared scalar members do.
-        Assert.Null(rows[2].BindingInfo); Assert.Null(rows[1].SourceNode);
-        rows[1].IsExpanded = true; // Same property changed by the existing control click handler.
+        Assert.Null(rows.Last().BindingInfo); Assert.Null(rows[1].SourceNode);
+        Assert.True(rows[1].IsExpanded); // VM TreeViewItem style initially expands declared groups.
         Assert.Equal(new[] { "z", "a" }, rows.Skip(2).Take(2).Select(row => row.DisplayName));
         Assert.Equal(new[]{"z"},rows[2].BindingInfo!.Reference.MemberFieldPath);
         Assert.Equal(new[]{"a"},rows[3].BindingInfo!.Reference.MemberFieldPath);
@@ -208,8 +208,8 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         var rows = new ObservableCollection<FlatResultRow>();
         using var presenter = new ResultPresentationPresenter(rows, _ => { }, 2);
         presenter.Present(run.Publication); rows[1].IsExpanded = true;
-        Assert.Equal(5, rows.Count); Assert.DoesNotContain(rows, row => row.DisplayName == "values");
-        var element = rows[2]; element.IsExpanded = true;
+        Assert.Equal(7, rows.Count); Assert.Equal(2,rows.Count(row=>row.DisplayName=="values"));
+        var element = rows[2]; Assert.True(element.IsExpanded);
         var values = rows[3]; Assert.Equal("values", values.DisplayName); Assert.False(values.IsExpanded);
         values.IsExpanded = true; Assert.Equal("a", rows[4].DisplayValue); Assert.Equal("b", rows[5].DisplayValue);
         element.IsExpanded = false; element.IsExpanded = true;

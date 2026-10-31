@@ -87,13 +87,13 @@ public sealed class ResultVariableBindingProductionTests
             {
                 main.ClearResultDisplay();
                 main.UpdateModuleResults(null,source.Name,source.ToolType,source.Id,source.Parameters);Pump();
-                Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+                Assert.True(Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded);
                 Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="图像宽度"&&item.SourcePropertyName=="output.image / width");
                 Assert.Equal(SunEyeVision.Plugin.Wpf.Presenters.Results.ResultViewState.Declaration,main.CurrentResultPublication!.State);
                 query.FormalOutputContractReader=_=>Array.Empty<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable>();
                 main.ClearResultDisplay();
                 main.UpdateModuleResults(null,source.Name,source.ToolType,source.Id,source.Parameters);Pump();
-                Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+                Assert.True(Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded);
                 Assert.Contains(main.FlatResultRows,item=>item.DisplayName=="图像宽度"&&item.SourcePropertyName=="output.image / width");
             }
             finally{query.FormalOutputContractReader=savedContractReader;}
@@ -114,7 +114,7 @@ public sealed class ResultVariableBindingProductionTests
             var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
             var session=manager.Session!;var initial=session.History.Position;
             var publication=Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication>(main.CurrentResultPublication);
-            Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded=true;Pump();
+            Assert.True(Assert.Single(main.FlatResultRows.Where(item=>item.DisplayName=="图像"&&item.IsGroup)).IsExpanded);
             var row=Assert.Single(main.FlatResultRows.Where(item=>item.SourcePropertyName=="output.image / width"));
             Assert.True(row.IsBindable);Assert.True(tree.BindVariableCommand!.CanExecute(row));
             Stage("结果路径复制反馈及清理");

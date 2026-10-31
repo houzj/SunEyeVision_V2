@@ -277,12 +277,16 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
         var value=ValueText(node);var childCount=node.ChildCount;
         if(!Current(generation)){Abandon(generation);return null;}
+        // VM's result-tree item style starts expanded. Materialize the first page of
+        // declared record groups, while sequences retain their bounded lazy paging.
+        var expanded=node.IsExpanded||(node.Declaration.Shape==ValueShape.Record&&childCount is > 0);
+        node.IsExpanded=expanded;
         var row = new FlatResultRow
         {
             Key=node.Key,
             DisplayName = DisplayName(node),
             DisplayValue = value, Level = level,
-            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = node.IsExpanded
+            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = expanded
         };
         var entry = new Entry(node, row);
         _entries.Add(node.Key, entry);
@@ -293,6 +297,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry);
             RefreshRows();
         });
+        if(expanded&&entry.Row.IsGroup)LoadPageCore(entry);
         return entry;
     }
 

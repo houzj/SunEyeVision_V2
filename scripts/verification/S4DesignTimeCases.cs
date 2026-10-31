@@ -935,8 +935,8 @@ internal static class S2DocumentEditingCases
                     Check(booleanPorts.Length>0&&booleanPorts.All(port=>port.EditModes==FieldEditModes.Constant),
                         "Blob普通Boolean声明仅开放原模板常量开关，不从继承SubData推定订阅能力");
                     var choicePorts=((IToolSettingsFields)new BlobTool()).SettingsSchema.Inputs.Where(port=>port.Choices is not null).ToArray();
-                    Check(choicePorts.Length==3&&choicePorts.All(port=>port.EditModes==FieldEditModes.Constant),
-                        "Blob三个普通枚举仅开放原下拉常量选择，不额外开放参数订阅");
+                    Check(choicePorts.Length==5&&choicePorts.All(port=>port.EditModes==FieldEditModes.Constant),
+                        "Blob五个普通枚举仅开放原下拉常量选择，不额外开放参数订阅");
                     var choice=choicePorts[0];var acceptedChoices=first.CaptureAcceptedFields();
                     var choiceRejected=false;
                     try{acceptedChoices.Apply(new Dictionary<string,ParameterSetting>{{choice.Id,

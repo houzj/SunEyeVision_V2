@@ -169,6 +169,13 @@ internal static class S2DocumentEditingCases
                 }
                 foreach(var advanced in Visual(Control(first)).OfType<NativeAdvancedPresenter>())advanced.IsExpanded=true;
                 var production=fields.Fields;var sortFeature=production.Single(field=>field.FieldId==SettingId("SortFeature"));var choices=(ComboBox)sortFeature.InputElement!;
+                first.UpdateLayout();Pump();
+                var advancedOrder=new[]{"ui-only-run.centroid-bias","ui-only-run.axis-ratio",SettingId("SortFeature"),SettingId("SortMode"),SettingId("Connectivity")};
+                var actualEditors=Logical(Control(first)).OfType<DeclaredFieldEditor>().ToArray();
+                var positions=advancedOrder.Select(id=>actualEditors.Single(field=>field.FieldId==id).TransformToAncestor(first).Transform(new Point()).Y).ToArray();
+                Require(positions.All(double.IsFinite)&&positions.Zip(positions.Skip(1),(left,right)=>left<right).All(value=>value),"真实高级区行序未保持质心偏移/轴比/排序特征/方向/连通："+string.Join(",",positions));
+                var judgment=Logical(Control(first)).OfType<NativeJudgmentUiDraftControls>().Single();
+                Require(!judgment.IsEnabled&&judgment.ToolTip is string&&ToolTipService.GetShowOnDisabled(judgment),"禁用判定组合未保留可用的未实现提示");
                 Require(choices.Items.Count==13&&choices.Items.Cast<DeclaredChoiceDisplayItem>().Count(item=>item.IsAvailable)==6,"原13项排序未保留或未实现项被开放");
                 Require(sortFeature.TrySetConstant("SortFeaturePerimeter")&&production.Single(field=>field.FieldId==SettingId("SortMode")).TrySetConstant("SortModeAscend")&&production.Single(field=>field.FieldId==SettingId("Connectivity")).TrySetConstant("Connected_4")&&production.Single(field=>field.FieldId==SettingId("OutputBinaryImage")).TrySetConstant(false),"正式排序/连通/二值开关未接纳同一草稿");
                 Require(!Logical(Control(first)).OfType<DeclaredFieldEditor>().Any(field=>field.FieldId is "ui-only-run.sort-feature" or "ui-only-run.sort-mode" or "ui-only-run.connectivity" or "ui-only-run.binary-output"),"正式字段仍被重复UI-only覆盖");

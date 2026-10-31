@@ -87,8 +87,8 @@ internal static class BlobRunUi
                 ("short-axis","短轴使能"),("long-axis","长轴使能")})
                 Toggle(id,label,circleAnchor,true);
 
-            Toggle("centroid-bias","质心偏移使能",sortAnchor,true);
-            Toggle("axis-ratio","轴比使能",sortAnchor,true);
+            Toggle("centroid-bias","质心偏移使能","field:8ca20000000040008000000000000004",true);
+            Toggle("axis-ratio","轴比使能","field:8ca20000000040008000000000000004",true);
             var sortFeatures=new Dictionary<string,string>(StringComparer.Ordinal);
             foreach(var (key,resource) in new[]{("SortFeatureArea","Area"),("SortFeaturePerimeter","Perimeter"),
                 ("SortFeatureCircularity","CircleScore"),("SortFeatureRect","RectScore"),

@@ -31,7 +31,12 @@ internal static class BlobDisplayUi
         var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
         foreach(var field in fields)suppressed.Add(field.FieldId);
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
-        if(fields.Length!=0)rows.Add(new(fields[0].FieldId,new NativeJudgmentUiDraftControls {IsEnabled=false,ToolTip="原厂判定聚合、空结果及比较语义尚未接通，当前不能编辑。"},FollowAnchorVisibility:false,InsertBefore:true));
+        if(fields.Length!=0)
+        {
+            var judgment=new NativeJudgmentUiDraftControls {IsEnabled=false,ToolTip="原厂判定聚合、空结果及比较语义尚未接通，当前不能编辑。"};
+            System.Windows.Controls.ToolTipService.SetShowOnDisabled(judgment,true);
+            rows.Add(new(fields[0].FieldId,judgment,FollowAnchorVisibility:false,InsertBefore:true));
+        }
         return options with {AdditionalPageContents=pages,AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed};
     }
 }

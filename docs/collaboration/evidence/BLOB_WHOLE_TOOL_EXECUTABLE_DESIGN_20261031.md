@@ -48,3 +48,11 @@
 build-001全量失败：遗漏一个仓内xUnit消费者旧BlobSort名称（CS0103），已同步唯一新模型；build-002同一候选全量0错。首次RuntimeKernel因旧二值默认false断言失败，按原XML默认True同步断言后通过。宿主新增整组用例两次失败分别为测试辅助函数仅识别九绑定名称、对仍含真实绑定的配置误用CaptureSettings要求未解析引用物化；均保留失败回执。最终用正式字段存储断言配置，同时保留实际调试/工作流执行断言，不放宽引用或产品规则。
 
 取消精确覆盖：算法专项是预取消，作用域安装后的恢复由缺pose异常覆盖；作用域安装后实际中途取消未测。后台通过不代表96项完成，也不代表真实页面、VS或人工验收。真实Loaded字段/整窗、结果表联动及独立设计组装仍待用户试用程序结束后按同一候选产物验证，不启动或关闭主仓用户程序。
+
+## 原顺序与真实窗口复核（build-003）
+
+VM为第一基准：原AlgorithmTab对应三页矩阵原行1145 SelectByCentraBias、1209 AxisRatioEnable、1274 SortFeature、1363 SortMode、1392 connectivity。候选XML和两组附加锚点已统一为此顺序；Loaded真实窗口断言五个控件的窗口坐标严格递增，不只核声明顺序。原声明的BinaryImageEnable=True、SortFeature=Area/SortMode=Decend、connectivity=8分别沿96项矩阵回链；原CustomVisible=false最终可见性、原生邻接/排序数值等价仍未证。
+
+禁用判定组合的ShowOnDisabled是本方保护提示承载适配，不称VM事实；不改原标签/样式、不新增红字区域。本轮实测禁用属性/Tooltip/ShowOnDisabled合同，未模拟真实鼠标悬停计时弹出。用户允许的屏蔽多形状扩展保留；本地ROI正式owner与物化缺口不因公共控件通过而消失。
+
+最终build-003全量0错误/6527警告，66.37秒。真实RuntimeEditorUiStage 13、BlobResultWorkspace 4、FieldEditing 38、DesignTime 290通过；DesignTime attempt-001旧枚举计数3失败保留，修正为正式5枚举且保留禁止引用断言，attempt-002通过。同版RuntimeKernel19及RuntimeWorkflow10通过。后台build-002五轨回执与本轮build-003分别记录，不能合称单版九轨。仍不代表96项全部实现、VM算法等价、真实VS设计器或人工验收。

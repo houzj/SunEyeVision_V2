@@ -1,9 +1,9 @@
 {
   "scope": "B08完整控件当前状态快照；旧清单保留作为历史，不以回归数量宣告整控件完成",
-  "baseline": "正式build-012产品4b61bbbd；后续提交仅测试或文档",
+  "baseline": "正式 Release：源码 232630453546a584cc25e80cedced94b1029289f；build development-eb1b10b24a094fee97f3f31600e3c198；载荷 SHA256 36DF0C891EA40C706EAF6EDEE2D0246DDD32C2632D4A4D29DB98BCE0FA849886。",
   "sourceChecklist": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
   "sourceChecklistSha256": "7CD20F28D7AFCA9CE586968A53795969F558A695456D129E186F87D101FDC357",
-  "formalEvidence": "docs/collaboration/evidence/B08_FORMAL_UNIFIED_20261031.json",
+  "formalEvidence": "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
   "updated": "2026-10-31",
   "items": [
     {
@@ -11,7 +11,7 @@
       "item": "同版产物与来源清单",
       "originalRequirements": "固定源码SHA、UI/full构建、发布清单与实际加载DLL/MVID/SHA；全轨同Release，不复制程序/算法库；targeted build改载荷后必须经标准全量规则重出一致清单再测。",
       "originalOracle": "版本不同、payload SHA不一致、产物根混用即拒收，不能只凭build成功。",
-      "currentStatus": "build-012正式同版；569项载荷哈希一致。"
+      "currentStatus": "自测闭口：同一正式 Release 源码23263045；载荷569项SHA256逐项核对0不一致。全量/UI构建均0错误；其余轨道通过与否按各项独立记录。"
     },
     {
       "id": "A01",
@@ -102,7 +102,7 @@
       "item": "窗口Owner/默认偏好/自动空窗",
       "originalRequirements": "按完整偏好设计核文档默认方式、当前编辑器展开、可空Target、WindowOwner四状态；pref=true新配置Loaded自动空窗，关闭不混同改默认。",
       "originalOracle": "不能用任意字段造空窗lease；不同方案同Window不串默认；同方案新Window是否共享按冻结合同；不用全局查询当前方案代owner。",
-      "currentStatus": "窗口Owner和会话临时默认方式已集成7b998242，候选原16组通过；与最终UI接线合并后的同版正式回归未完成。"
+      "currentStatus": "本次会话范围自测闭口：正式WindowSession attempt-144通过同Root目标、自动空窗、A到B和同ID重开；默认偏好仅当前编辑会话，保存/Dirty/Undo未实现并列A21。WindowPresentation attempt-360另有非Blob极大数值失败并超时，未计通过。"
     },
     {
       "id": "A14",

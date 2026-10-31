@@ -1,3 +1,13 @@
+## 2026-10-31 B08 正式同版引用与窗口回归
+
+- 正式产物源码23263045、payload SHA256 36DF0C891EA40C706EAF6EDEE2D0246DDD32C2632D4A4D29DB98BCE0FA849886；569项哈希0不一致。正式引用、字段、变量、数值、跨文档、窗口会话、运行页保护、独立设计与运行桥定向回归已通过，逐项receipt与产物身份见 B08_FORMAL_REFERENCE_INTEGRATION_20261031.json。
+- A13当前会话范围自测闭口；默认偏好保存/Dirty/Undo未实现并列A21，不能称原厂持久化等价。ROI和结果图文正式组合未接入，Blob整窗执行/确认/保存继续保护；不为本批扩展基础。
+- WindowPresentation attempt-360为旧有极大Float64上限未接纳后超时，未生成receipt，未通过；非Blob当前参数域，问题保留，不以其他回归替代。VS实际设计器与用户人工尚未执行；用户要求B08自测闭口后统一人工验收。
+## 2026-10-31 B08 正式整合回归进行中
+
+- UI 引用合同候选 0f9c0353 已集成为主线 23263045。正式全量 Release 构建 0 错/6527 警告；随后规定 UI Release 构建 0 错/6525 警告。最终 release-payload.json 源码 232630453546a584cc25e80cedced94b1029289f，SHA256 36DF0C891EA40C706EAF6EDEE2D0246DDD32C2632D4A4D29DB98BCE0FA849886。
+- 同一正式版 NumericIndexProduction 33、ManualReferenceQualification 19、ParameterValues 18、BlobParameterProduction 20、BehaviorUi、FieldEditing、VariableFields 13 与 NumericContract 已通过；它们不证明整窗、原厂算法或 B08 整体完成。
+- 正式 WindowPresentation attempt-360 未通过：包含“稳定Track四向极大域和原Thumb真实拖动保持有限映射：极大上限未接纳”失败，随后90秒超时，失败日志保留；根因只读分析进行中。跨文档、窗口会话、设计时及运行桥另行验证，不把本次失败视为通过。
 ## 2026-10-31 用户确定基础缺失时的闭口方式
 
 - 基础条件不具备的范围不为闭口扩展其他基础能力；明确语义标记未实现内容、基础依赖、影响和后续接入位置，确保入口不可误用。已具备基础的范围完成迁移和相称自测后，可按本次交付范围标为条件性闭口。

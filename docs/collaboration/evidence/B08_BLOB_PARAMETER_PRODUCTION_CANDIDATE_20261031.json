@@ -1,0 +1,175 @@
+{
+  "testCommit": "4696009e",
+  "status": "独立候选验证通过；主仓正式构建和窗口验收尚待",
+  "tracks": [
+    {
+      "exit": 0,
+      "track": "BlobParameterProduction",
+      "sha256": "878CBD8D1C1F8969BC8318E72AE5E64C9FF9B60F53693D3904A5C10CFCD0714E",
+      "receipt": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-007\\receipt.json",
+      "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "attempt": 7
+    },
+    {
+      "exit": 0,
+      "track": "ManualReferenceQualification",
+      "sha256": "97A93273647D6CA8AF286A83F47053942E9082E2BDACA394ACAFE0FE55A2334E",
+      "receipt": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-005\\receipt.json",
+      "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "attempt": 5
+    }
+  ],
+  "productCommit": "427f692d",
+  "preservedReports": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-007\\blob-parameter-production-report.json",
+      "sha256": "B01CA33FB09FFED9DBBFF340942CBB22D33121DED24D852A3002657276B04AF1",
+      "content": {
+        "scope": "真实Blob九参数非前台生产链；实际窗口、VS设计器、人工和VM算法另验",
+        "passed": 13,
+        "failed": 0,
+        "cases": [
+          {
+            "name": "真实九字段稳定名称、VM默认和面积整数存储",
+            "passed": true
+          },
+          {
+            "name": "整数面积两端边界接受并经真实宿主保存重开",
+            "passed": true
+          },
+          {
+            "name": "整数面积越界小数与倒置提案拒绝且正式九字段不半写",
+            "passed": true
+          },
+          {
+            "name": "阈值仍绑定且面积筛选关闭时已知面积越界拒绝且无半写",
+            "passed": true
+          },
+          {
+            "name": "九字段显式非空变量数组索引确认与保存重开",
+            "passed": true
+          },
+          {
+            "name": "无控制前序的真实Blob输出不能成为普通阈值来源",
+            "passed": true
+          },
+          {
+            "name": "真实Blob控制前序输出绑定经调度消费并保持稳定来源身份",
+            "passed": true
+          },
+          {
+            "name": "私有调试回执取消隔离、确认接纳及当前值重开",
+            "passed": true
+          },
+          {
+            "name": "后项索引失败仅保留私有已接纳前缀，正式九字段不变",
+            "passed": true
+          },
+          {
+            "name": "九参数配置编辑历史与运行值历史分离",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：None",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：DoubleThreshold",
+            "passed": true
+          },
+          {
+            "name": "窗口所属正式会话退役后旧草稿和私有回执不能确认",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-005\\manual-reference-report.json",
+      "sha256": "47E497AD198641B60F3FE13823C1CB2D43BB7312E02DFE36986F0D0D539902DC",
+      "content": {
+        "scope": "普通数值参数来源完整生产回归；IMAGE、Group、原厂全部动态资格及VS/人工另验",
+        "passed": 19,
+        "failed": 0,
+        "cases": [
+          {
+            "name": "并列节点不进普通候选，构造引用不能绕过宿主；控制直连后同一提案可确认并实际消费",
+            "passed": true
+          },
+          {
+            "name": "整数设置参数与浮点参数同用普通来源准入，隐藏整数叶不能借类型匹配绕过",
+            "passed": true
+          },
+          {
+            "name": "数值Schema.Input走一般候选及后端，不能被数值Settings普通资格误拦截",
+            "passed": true
+          },
+          {
+            "name": "传递控制闭包包含祖先，不包含自身、后继及无关并列节点",
+            "passed": true
+          },
+          {
+            "name": "已有数据订阅及保存JSON不能为自己创造控制前序",
+            "passed": true
+          },
+          {
+            "name": "逐叶资格支持真实record.allowed，拒绝hidden成员、未列顶层输出及未声明资格Runtime",
+            "passed": true
+          },
+          {
+            "name": "字段索引同样要求控制前序和逐叶资格，合法member索引实际选中第二项",
+            "passed": true
+          },
+          {
+            "name": "VariableSetting内AtField输出索引经过同一普通资格，变量值身份不套控制前序",
+            "passed": true
+          },
+          {
+            "name": "两层AtField递归索引必须逐级核控制范围，模块和变量序列同用正式编译执行链",
+            "passed": true
+          },
+          {
+            "name": "AtVariable整数标量与独立生产者可用，无控制前序的变量生产者不被误当普通订阅",
+            "passed": true
+          },
+          {
+            "name": "现有生产者可合法建立无设计初值的Double[]，批次产值和保存重开保持显式数组",
+            "passed": true
+          },
+          {
+            "name": "显式非空数组正式编辑隔离、拒绝回滚、元数据历史和保存重开贯通",
+            "passed": true
+          },
+          {
+            "name": "已有四类显式纯值数组可经正式宿主创建和保存，不误作原生复杂资源",
+            "passed": true
+          },
+          {
+            "name": "普通取消只退出私有提案，正式当前值、引用及文档历史不变",
+            "passed": true
+          },
+          {
+            "name": "真实断边保留失效引用，运行和新调试拒绝；图Undo恢复同一关系及实际消费",
+            "passed": true
+          },
+          {
+            "name": "打开后断边的旧草稿不能确认，Undo恢复控制条件后原草稿可继续确认",
+            "passed": true
+          },
+          {
+            "name": "改名及同显示名不同ID保持来源身份，整体保存重开沿真实宿主继续消费",
+            "passed": true
+          },
+          {
+            "name": "冻结运行保留捕获时控制资格，下一次正式捕获不能沿已断边继续消费",
+            "passed": true
+          },
+          {
+            "name": "已捕获私有调试冻结资格及读者，断边后的新捕获拒绝旧已发布结果",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

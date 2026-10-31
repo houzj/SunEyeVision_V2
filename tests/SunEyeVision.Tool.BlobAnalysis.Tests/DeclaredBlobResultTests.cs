@@ -72,7 +72,7 @@ public sealed class DeclaredBlobResultTests
         var executor=Engine(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true},out var flow,out var node);
         using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
         Assert.True(run.Success,string.Join(";",run.Errors));
-        Assert.Equal(128,((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold);
+        Assert.Equal(100,((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold);
         var publication=Assert.Single(run.DeclaredOutputs);Assert.Equal(BlobSchema.Outputs.Count,publication.Schema.Outputs.Count);
         var first=run.AcquireDeclaredOutput(publication.Identity);var second=run.AcquireDeclaredOutput(publication.Identity);
         var records=second.Values!.Read(BlobSchema.BlobsPort);Assert.Equal(count,records.Count);

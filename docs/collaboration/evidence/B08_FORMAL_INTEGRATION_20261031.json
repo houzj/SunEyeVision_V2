@@ -1,0 +1,52 @@
+{
+  "scope": "主仓正式Release定向验证，非完整Blob、VS或人工验收",
+  "sourceCommit": "1d7741b9f1e491a3b931467546d2cdf197fd3b1a",
+  "manifestSha256": "8D636FF130A8C66972D32F516FF45F16F5FCDBC449872530E538BC5D254DF0C3",
+  "manifestEntries": 569,
+  "manifestMismatches": 0,
+  "buildLog": "Release/_validation/B08BlobNumericContract-20261031/build-006.log",
+  "buildLogSha256": "11BBD1C1477237A9DDBCA97CF8102502D9835B9CC47C93DB749FECD04908C266",
+  "checks": [
+    {
+      "track": "BlobParameterProduction",
+      "attempt": "attempt-001",
+      "cases": 13,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-001\\receipt.json",
+      "receiptSha256": "D10DF81C93E0D0211CB606247583A3A5C47F23A2F75C16243B421C3FE8C77BD5",
+      "runLogSha256": "542DDEC993CD60D18A337A13983BA99BACFF74B137AD14443D671DC5BA683402",
+      "caseSourceSha256": "C0CC325210AA9AFA23A6BEA9F9EFCAB29DDEFB65481D583794EA37059D71BBEE"
+    },
+    {
+      "track": "ManualReferenceQualification",
+      "attempt": "attempt-003",
+      "cases": 19,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-003\\receipt.json",
+      "receiptSha256": "97C8F19BCB7FCA25068BF3C6FC33DCAC76F263B58727366D8511A3634A2D1320",
+      "runLogSha256": "92329740724B2FD452B77F2FA945985CC1FF4F0BB85959BBB055600EF2C0E457",
+      "caseSourceSha256": "A36BB263E260443AAFD59D4A9548DFBF0709CEF9355C86E4E69E42EBD45C3F70"
+    },
+    {
+      "track": "ParameterValues",
+      "attempt": "attempt-005",
+      "cases": 18,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-005\\receipt.json",
+      "receiptSha256": "4165123FD9CB44288CBFBC46C505A05997F814360CDDA7550F44724B5FA8951E",
+      "runLogSha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9",
+      "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+    },
+    {
+      "track": "FieldEditing",
+      "attempt": "attempt-135",
+      "cases": 37,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-135\\receipt.json",
+      "receiptSha256": "23BD1660FADB7A69A8F811A693F2D9EEC4A1185131E641D1D044BA0599F35398",
+      "runLogSha256": "CA91DB0F31B91F1D809AAFF6934A3CE3CBA58AE6DC78D092B33DDEE399B73AA6",
+      "caseSourceSha256": "1A2DD9AF7A7DB246DB1DCCECAF4703272EE7DBE6E106BE80214D37480A90AC14"
+    }
+  ],
+  "limitations": [
+    "ROI及结果显示组合尚未正式接入，真实窗口保存与执行保持保护",
+    "VM极性像素比较未证明",
+    "VS设计时与用户人工验收尚未完成"
+  ]
+}

@@ -33,12 +33,12 @@ public sealed class ManualReferenceProbeOutput(double value,long index):IToolOut
 // changes selection/admission, never whether the deterministic session produces a value.
 public abstract class ManualReferenceProbeDefinitionBase:IToolDefinition<ManualReferenceProbeSettings,ManualReferenceProbeOutput>,IToolSettingsFields,IToolCatalogProvider,IToolParameterBindingNames
 {
-    public const string NumberInput="input.number",IntegerInput="input.integer";
+    public const string NumberInput="input.number",IntegerInput="input.integer",GeneralInput="runtime.input.number";
     public static ConcurrentDictionary<string,ManualReferenceProbeState> States {get;}=new();
     public static TypeRef RecordType {get;}=TypeRef.RecordOf("manual-reference.record",new[] {
         new Port("allowed",DataType.Number),new Port("hidden",DataType.Number),new Port("index",DataType.Integer),new Port("hidden-index",DataType.Integer)});
     public static TypeRef IntegerSequence {get;}=TypeRef.SequenceOf(DataType.Integer);
-    public static ToolSchema OutputSchema {get;}=new(Array.Empty<Port>(),new[] {
+    public static ToolSchema OutputSchema {get;}=new(new[]{new Port(GeneralInput,DataType.Number,Required:false,EditModes:FieldEditModes.Reference)},new[] {
         new Port("output.number",DataType.Number),new Port("output.index",DataType.Integer),new Port("output.values",DataType.NumberArray),
         new Port("output.hidden",DataType.Number),new Port("output.record",RecordType),new Port("output.indices",IntegerSequence)});
     public abstract string ToolId {get;}
@@ -69,8 +69,10 @@ public abstract class ManualReferenceProbeDefinitionBase:IToolDefinition<ManualR
             invocation.Context.Cancellation.ThrowIfCancellationRequested();var settings=invocation.Settings;
             var state=States[settings.CaseId];state.Trace.Enqueue(settings.Label);
             invocation.Context.Cancellation.ThrowIfCancellationRequested();
+            var general=invocation.Inputs.Read(GeneralInput);
+            var number=settings.Source?settings.Value:general.IsMissing?settings.Input:general.GetScalar<double>();
             return ValueTask.FromResult(ToolOutcome<ManualReferenceProbeOutput>.Completed(
-                new(settings.Source?settings.Value:settings.Input,settings.Source?settings.Index:settings.IntegerInput)));
+                new(number,settings.Source?settings.Index:settings.IntegerInput)));
         }
         public ValueTask DisposeAsync()=>ValueTask.CompletedTask;
     }

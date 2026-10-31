@@ -77,6 +77,9 @@ internal static class S2DocumentEditingCases
             });
             Case("设置订阅接纳当前值且保留关系，正式关系改变后拒绝旧运行写入",()=>
             {
+                // Numeric settings require a control predecessor. The earlier image/ROI-only
+                // cases deliberately retain their separate data-reference contract without it.
+                flow.Connections.Add(new WorkflowConnection {Id="numeric-source-control",SourceNodeId=first.Id,TargetNodeId=second.Id});
                 var threshold=Setting("Threshold");
                 second.RuntimeConfiguration=secondOpening.WithFieldValues(new Dictionary<string,object?>{{threshold,200L}});
                 Bind(second,threshold,first.Id,BlobSchema.Field(11),DataType.Integer,flow.Id);

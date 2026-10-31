@@ -44,6 +44,16 @@ internal static class S2DocumentEditingCases
                 var hidden=f.Draft(f.Ref(f.Index,"output.record",new[]{"hidden-index"}),Probe.IntegerInput);
                 Reject(()=>f.Host.Validate(hidden));
             });
+            Case("数值Schema.Input走一般候选及后端，不能被数值Settings普通资格误拦截",()=>
+            {
+                using var f=new Fixture();var service=new OutputBindingChangeService();service.Reset(f.Document);
+                Require(service.GetCandidateNodeIds(f.Flow.Id,f.Target.Id).Contains(f.Undeclared.Id),"一般输入候选丢失并列来源");
+                Require(!service.GetManualParameterCandidateNodeIds(f.Flow.Id,f.Target.Id).Contains(f.Undeclared.Id),"普通设置候选混入并列来源");
+                Reject(()=>f.Host.Validate(f.Draft(f.Ref(f.Undeclared))));
+                var input=f.Draft(f.Ref(f.Undeclared),Probe.GeneralInput);f.Host.Validate(input);f.Host.Commit(input);
+                using var run=f.Run();f.Expect(run,70);
+                Require(f.Target.RuntimeConfiguration!.ReadCurrentParameter(Probe.NumberInput) is {Value:777d},"工具输入污染了同类型设置字段当前值");
+            });
             Case("传递控制闭包包含祖先，不包含自身、后继及无关并列节点",()=>
             {
                 using var f=new Fixture();f.Connect(f.Source,f.Bridge);f.Connect(f.Bridge,f.Target);f.Connect(f.Target,f.Index);
@@ -136,6 +146,58 @@ internal static class S2DocumentEditingCases
                     Require(!f.Candidates().Contains(f.Undeclared.Id),"独立变量生产者被加入普通控制前序");
                     Reject(()=>new BindingSelection.AtVariable(f.VariableReference(index,new BindingSelection.AtField(f.Ref(f.Source,"output.index")))));
                 }
+            });
+            Case("现有生产者可合法建立无设计初值的Double[]，批次产值和保存重开保持显式数组",()=>
+            {
+                using var f=new Fixture();var variable=f.AddVariable("produced-array",null,"Double[]",f.Ref(f.Undeclared,"output.values"));
+                f.Host.Commit(f.Draft(new VariableSetting(f.VariableReference(variable,new BindingSelection.AtConstant(1)))));
+                using(var run=f.Run())f.Expect(run,80);
+                Require(variable.Value is null,"批次生产值回写了设计初值");
+                var path=Path.Combine(f.Directory,"produced-array.solution");var saved=f.Manager.SaveCurrentDocument(path);
+                Require(saved.FileWritten,"合法数组生产者保存失败："+saved.Error);
+                var reopened=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("合法数组生产者重开失败");
+                Require(reopened.GlobalVariables.Single().Type=="Double[]"&&reopened.GlobalVariables.Single().Value is null,"重开缩减数组声明或填造设计值");
+                f.Manager.SetCurrentSolution(reopened,registerInCatalog:false);var host=f.Manager.Session!.Editing.Host;
+                using var reopenedRun=f.Run(reopened,host);f.Expect(reopenedRun,80);
+            });
+            Case("显式非空数组正式编辑隔离、拒绝回滚、元数据历史和保存重开贯通",()=>
+            {
+                using var f=new Fixture();var variable=f.AddVariable("literal-array",new double[]{41,42},"Double[]");
+                var illicit=f.Host.BeginVariableEdit();((double[])illicit.Configuration.GlobalVariables.Single().Value!)[0]=999;
+                Reject(()=>f.Host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),illicit));
+                Require(((double[])variable.Value!)[0]==41,"未经SetValue的数组修改泄漏正式值");
+                var wrongShape=f.Host.BeginVariableEdit();Reject(()=>wrongShape.SetValue(variable.Id,43d));
+                var nonFinite=f.Host.BeginVariableEdit();Reject(()=>nonFinite.SetValue(variable.Id,new double[]{double.NaN}));
+                var edit=f.Host.BeginVariableEdit();edit.Configuration.GlobalVariables.Single().Name="renamed-array";
+                var values=new double[]{43,44};edit.SetValue(variable.Id,values);values[0]=999;
+                f.Host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),edit);
+                Require(((double[])variable.Value!).SequenceEqual(new double[]{43,44}),"数组SetValue借用调用者存储");
+                f.Host.Undo();Require(variable.Name=="literal-array"&&((double[])variable.Value!).SequenceEqual(new double[]{43,44}),"Undo回放了数组运行值");
+                f.Host.Redo();Require(variable.Name=="renamed-array"&&((double[])variable.Value!).SequenceEqual(new double[]{43,44}),"Redo回放或丢失数组值");
+                var rejected=f.Host.BeginVariableEdit();rejected.Configuration.GlobalVariables.Single().Name="must-not-publish";
+                rejected.SetValue(variable.Id,new double[]{55,56});rejected.Configuration.GlobalVariables.Single().Type="Integer[]";
+                Reject(()=>f.Host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),rejected));
+                Require(variable.Name=="renamed-array"&&variable.Type=="Double[]"&&((double[])variable.Value!).SequenceEqual(new double[]{43,44}),"失败批次发布了部分数组配置/值");
+                f.Host.Commit(f.Draft(new VariableSetting(f.VariableReference(variable,new BindingSelection.AtConstant(1)))));
+                using(var run=f.Run())f.Expect(run,44);
+                var path=Path.Combine(f.Directory,"literal-array.solution");Require(f.Manager.SaveCurrentDocument(path).FileWritten,"显式数组保存失败");
+                var reopened=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("显式数组重开失败");
+                Require(reopened.GlobalVariables.Single().Type=="Double[]"&&((double[])reopened.GlobalVariables.Single().Value!).SequenceEqual(new double[]{43,44}),"保存重开改变显式数组基数或值");
+                f.Manager.SetCurrentSolution(reopened,registerInCatalog:false);using var restored=f.Run(reopened,f.Manager.Session!.Editing.Host);f.Expect(restored,44);
+            });
+            Case("已有四类显式纯值数组可经正式宿主创建和保存，不误作原生复杂资源",()=>
+            {
+                using var f=new Fixture();
+                f.AddVariable("integers",new long[]{1,2},"Integer[]");
+                f.AddVariable("numbers",new double[]{1.5,2.5},"Double[]");
+                f.AddVariable("texts",new string[]{"a,b",""},"String[]");
+                f.AddVariable("flags",new bool[]{true,false},"Boolean[]");
+                var path=Path.Combine(f.Directory,"pure-array-families.solution");Require(f.Manager.SaveCurrentDocument(path).FileWritten,"纯值数组保存失败");
+                var reopened=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("纯值数组重开失败");
+                Require(reopened.GlobalVariables.Single(variable=>variable.Type=="Integer[]").Value is long[] {Length:2},"整数数组声明或载体改变");
+                Require(reopened.GlobalVariables.Single(variable=>variable.Type=="Double[]").Value is double[] {Length:2},"浮点数组声明或载体改变");
+                Require(reopened.GlobalVariables.Single(variable=>variable.Type=="String[]").Value is string[] texts&&texts.SequenceEqual(new[]{"a,b",""}),"文本数组元素被拆分或丢失");
+                Require(reopened.GlobalVariables.Single(variable=>variable.Type=="Boolean[]").Value is bool[] {Length:2},"布尔数组声明或载体改变");
             });
             Case("普通取消只退出私有提案，正式当前值、引用及文档历史不变",()=>
             {
@@ -261,7 +323,7 @@ internal static class S2DocumentEditingCases
         }
         public void Accept(OutputReference reference)=>Host.Commit(Draft(reference));
         public string Relation()=>BindingReferenceSerializer.Serialize(((ReferenceSetting)Target.RuntimeConfiguration!.Fields.Read(Probe.NumberInput)).Reference);
-        public GlobalVariable AddVariable(string name,object value,string type,OutputReference? producer=null)
+        public GlobalVariable AddVariable(string name,object? value,string type,OutputReference? producer=null)
         {
             var draft=Host.BeginVariableEdit();var variable=new GlobalVariable(name,value,type);
             if(producer is not null)variable.ProducerBinding=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(producer)};

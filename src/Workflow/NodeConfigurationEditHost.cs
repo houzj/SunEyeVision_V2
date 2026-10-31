@@ -160,9 +160,9 @@ public sealed partial class NodeConfigurationEditHost
                 {
                     var captured = captures[variable.Id];
                     openings.Add(variable.Id, new(variable, captured.Revision));
-                    // The existing native/complex display remains read-only. Never inspect a
-                    // borrowed native payload to implement the four primitive value editors.
-                    if (!variable.IsComplexValue)
+                    // Pure scalar/sequence values follow their frozen declaration even when
+                    // the existing manager has no array text editor. Native values stay borrowed.
+                    if (GlobalVariable.IsPureValueDeclaration(variable.Type))
                         configuration.GlobalVariables.Single(v => v.Id == variable.Id).Value = GlobalVariable.CopyEditableValue(captured.Value);
                 }
                 return new(_owner, published.Version, configuration, BindingConfigurationStore.Copy(configuration), openings);
@@ -208,7 +208,7 @@ public sealed partial class NodeConfigurationEditHost
                         result.ExplicitValues[variable.Id] = GlobalVariable.CopyEditableValue(value);
                         result.ValueCommandRevisions[variable.Id] = revision;
                     }
-                    else if (fresh.Configuration.GlobalVariables.SingleOrDefault(v => v.Id == variable.Id) is { } current && !variable.IsComplexValue)
+                    else if (fresh.Configuration.GlobalVariables.SingleOrDefault(v => v.Id == variable.Id) is { } current && GlobalVariable.IsPureValueDeclaration(variable.Type))
                         variable.Value = GlobalVariable.CopyEditableValue(current.Value);
                 }
                 edited.Consumed = true;
@@ -459,7 +459,7 @@ public sealed partial class NodeConfigurationEditHost
             {
                 if (openingVariables.TryGetValue(variable.Id, out var openingVariable))
                 {
-                    if (!variable.IsComplexValue && !variables.ExplicitValues.ContainsKey(variable.Id) && !SameEditableValue(variable.Value, openingVariable.Value))
+                    if (GlobalVariable.IsPureValueDeclaration(variable.Type) && !variables.ExplicitValues.ContainsKey(variable.Id) && !SameEditableValue(variable.Value, openingVariable.Value))
                         throw new InvalidOperationException("当前值编辑必须通过变量草稿 SetValue 显式提交。");
                 }
                 else if (_variableInstances.ContainsKey(variable.Id))
@@ -553,6 +553,10 @@ public sealed partial class NodeConfigurationEditHost
                 : value is float[] fs ? fs.All(float.IsFinite) : value is double[] ds && ds.All(double.IsFinite),
             "String" => value is string or string[],
             "Boolean" => value is bool or bool[],
+            "Integer[]" => value is long[],
+            "Double[]" => value is double[] sequence && sequence.All(double.IsFinite),
+            "String[]" => value is string[] texts && texts.All(text=>text is not null),
+            "Boolean[]" => value is bool[],
             _ => false
         };
         if (!valid) throw new InvalidOperationException("当前值与变量类型不匹配，或该类型不支持文本值编辑。");
@@ -584,7 +588,14 @@ public sealed partial class NodeConfigurationEditHost
             var known = _variableInstances.TryGetValue(next.Id, out var existing);
             var value = known ? existing!.CaptureValueRaw().Value : next.CaptureValueRaw().Value;
             if (known && existing!.Type == next.Type) continue;
-            if (!next.IsComplexValue) ValidateEditableValue(next.Type, value);
+            if (GlobalVariable.IsPureValueDeclaration(next.Type))
+            {
+                // A declared sequence may have no design value; a producer fills the batch
+                // slot. Do not turn that absence into an empty or single-item sequence.
+                if(value is null&&GlobalProducerBindingRules.TryDescribeTarget(next.Type,out var declaration,out _,out _)
+                    &&declaration.Type.Shape==ValueShape.Sequence)continue;
+                ValidateEditableValue(next.Type, value);
+            }
             else if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.GetType()) != next.Type)
                 throw new InvalidOperationException("变量新类型与当前运行值不兼容，请显式编辑合法值后再提交。");
         }

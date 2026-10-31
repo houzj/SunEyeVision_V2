@@ -60,7 +60,7 @@
       "item": "All与数量/形状适配",
       "originalRequirements": "Scalar+All保持标量；Sequence All到Scalar在数量与1相交时可条件绑定，实际0/多项拒绝、1项解包；固定多项先补索引；All到Sequence保全并校验数量。",
       "originalOracle": "不得把所有Sequence说成必须索引；不得默认取首项；原[]/无括号提交ALL只属托管/条件回读，不证明消费。",
-      "currentStatus": "整数策略生产代码已集成4ebb87d9，候选专项29项通过；UI来源资格接线及同版正式验证未完成。"
+      "currentStatus": "整数策略生产代码已集成4ebb87d9，候选专项33项通过；UI来源资格接线及同版正式验证未完成。"
     },
     {
       "id": "A08",
@@ -74,7 +74,7 @@
       "item": "模块/变量动态索引",
       "originalRequirements": "模块或变量主源×AtField/AtVariable；索引0→1→越界→恢复；整型scalar、记录成员、同批快照、复制重映射/保存重开。",
       "originalOracle": "主源不被索引选择替代；变量ID/类型/存储/作用域及代次准确，旧请求不写；不把多值索引源擅取首项。",
-      "currentStatus": "整数动态索引生产代码已集成4ebb87d9，候选专项29项通过；UI接线及正式Release整链未验证。"
+      "currentStatus": "整数动态索引生产代码已集成4ebb87d9，候选专项33项通过；UI接线及正式Release整链未验证。"
     },
     {
       "id": "A10",

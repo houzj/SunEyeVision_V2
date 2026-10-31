@@ -18,7 +18,20 @@ public static class HalImageSnapshotSource
             return resources.CreateImage(layout, frame, domain, pixels);
         });
 
-    private static T CaptureCore<T>(HImage captured, ImageFrameAddress frame, Func<ImageLayout, CoordinateFrame, byte[], RegionRun[], T> create)
+    /// <summary>Capture an unchanged pixel grid in the caller's explicitly declared image coordinate slot.</summary>
+    public static IReadOnlyImage Capture(HImage captured,ImageFrameAddress frame,CoordinateFrame coordinates,IOutputResources resources)
+    {
+        ArgumentNullException.ThrowIfNull(coordinates);ArgumentNullException.ThrowIfNull(resources);
+        if(string.IsNullOrWhiteSpace(coordinates.Id)||coordinates.Domain!=CoordinateDomain.Image||coordinates.Unit!=CoordinateUnit.Pixel)
+            throw new ArgumentException("Explicit image coordinates must be a named image pixel frame.",nameof(coordinates));
+        return CaptureCore(captured,frame,(layout,actual,pixels,runs)=>
+        {
+            using var domain=new FrozenRegionResource(actual,frame,runs);
+            return resources.CreateImage(layout,frame,domain,pixels);
+        },coordinates);
+    }
+
+    private static T CaptureCore<T>(HImage captured, ImageFrameAddress frame, Func<ImageLayout, CoordinateFrame, byte[], RegionRun[], T> create, CoordinateFrame? declaredCoordinates=null)
     {
         ArgumentNullException.ThrowIfNull(frame);
         using var count=captured.CountChannels();
@@ -56,7 +69,7 @@ public static class HalImageSnapshotSource
             if(rows.Length!=first.Length || rows.Length!=last.Length)throw new InvalidOperationException("HALCON returned inconsistent Domain runs.");
             var runs=new RegionRun[rows.Length];
             for(int i=0;i<runs.Length;i++)runs[i]=new RegionRun(rows[i].I,first[i].I,last[i].I);
-            var coordinates=new CoordinateFrame("image:"+frame.SourceId,CoordinateDomain.Image,CoordinateUnit.Pixel);
+            var coordinates=declaredCoordinates??new CoordinateFrame("image:"+frame.SourceId,CoordinateDomain.Image,CoordinateUnit.Pixel);
             return create(layout,coordinates,pixels,runs);
         }
     }

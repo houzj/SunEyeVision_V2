@@ -114,12 +114,12 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var regionOutput = HalconResourceBridge.CaptureRegion(finalRegions, BlobSchema.ImageFrame, frame, outputResources);
             var okOutput = HalconResourceBridge.CaptureRegion(okRegions, BlobSchema.ImageFrame, frame, outputResources);
             var ngOutput = HalconResourceBridge.CaptureRegion(ngRegions, BlobSchema.ImageFrame, frame, outputResources);
-            var grayOutput = settings.OutputGrayImage || requested.HasFlag(BlobOutputRequest.GrayImage) ? HalImageSnapshotSource.Capture(gray, frame, outputResources) : null;
+            var grayOutput = settings.OutputGrayImage || requested.HasFlag(BlobOutputRequest.GrayImage) ? HalImageSnapshotSource.Capture(gray, frame, BlobSchema.ImageFrame, outputResources) : null;
             IReadOnlyImage? binaryOutput = null;
             if (settings.OutputBinaryImage || requested.HasFlag(BlobOutputRequest.BinaryImage))
             {
                 HOperatorSet.RegionToBin(binary, out var binObject, 255, 0, width, height);
-                using (binObject) using (var binImage = new HImage(binObject)) binaryOutput = HalImageSnapshotSource.Capture(binImage, frame, outputResources);
+                using (binObject) using (var binImage = new HImage(binObject)) binaryOutput = HalImageSnapshotSource.Capture(binImage, frame, BlobSchema.ImageFrame, outputResources);
             }
             HOperatorSet.AreaCenter(binary, out var whiteCount, out var whiteRow, out var whiteColumn);
             using var white = whiteCount; using var wr = whiteRow; using var wc = whiteColumn;

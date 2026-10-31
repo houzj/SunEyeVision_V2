@@ -109,6 +109,9 @@ internal sealed class NativeNumericCommit : IDisposable
                 if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
                 value=number;
             }
+            // Typed raw input must satisfy absolute bounds before display precision is applied.
+            // Paired endpoint ordering is validated later against the complete candidate pair.
+            ValidateBounds(value);
             value=PrepareValue(value).Value!;
             return true;
         }
@@ -124,13 +127,17 @@ internal sealed class NativeNumericCommit : IDisposable
             if(_layout?.DecimalPlaces is {} digits)value=Math.Round(number,digits,MidpointRounding.ToEven);
         }
         var frozen=ValueRules.Freeze(_state.Port,value)!;
-        var numeric=Convert.ToDouble(frozen,CultureInfo.InvariantCulture);
+        ValidateBounds(frozen);
+        return new(frozen);
+    }
+    private void ValidateBounds(object value)
+    {
+        var numeric=Convert.ToDouble(value,CultureInfo.InvariantCulture);
         if((_layout?.Minimum is {} minimum&&numeric<minimum)||(_layout?.Maximum is {} maximum&&numeric>maximum)
             ||(!_paired&&(numeric<_leaf.Minimum||numeric>_leaf.Maximum))
             ||(_paired&&_owner is not null&&(numeric<_owner.Minimum||numeric>_owner.Maximum))
             ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
             throw new ArgumentException("数值超出允许范围。");
-        return new(frozen);
     }
     public void ValidateStored(ConstantSetting setting)
     {

@@ -25,8 +25,9 @@ internal static class S2DocumentEditingCases
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             foreach(var source in new[]{.125,.135,0d,1d}){Scalar(source);Range(source,0);Range(source,1);}
             ScalarRejected();ScalarProposalRejected();ScalarInvalid();ScalarRetired();RangeRetired(0);RangeRetired(1);
-            foreach(var raw in new[]{"1.004","-0.004"}){RawBounds(raw,false);RawBounds(raw,true);}
-            if(Environment.GetEnvironmentVariable("S4_NUMERIC_LOADED")=="1"){Loaded(false,false);Loaded(true,false);Loaded(false,true);Loaded(true,true);Loaded(true,true,1);}
+            foreach(var raw in new[]{"1.004","-0.004"}){RawBounds(raw,false);RawBounds(raw,true);RawBounds(raw,true,1);}
+            RawEmpty(false);RawEmpty(true);RawEmpty(true,1);AtomicBounds();
+            if(Environment.GetEnvironmentVariable("S4_NUMERIC_LOADED")=="1"){Loaded(false,false);Loaded(true,false);Loaded(false,true);Loaded(true,true);Loaded(true,true,1);DesignBounds();}
             var file=System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"numeric-contract-report.json");
             System.IO.File.WriteAllText(file,JsonSerializer.Serialize(Rows,new JsonSerializerOptions{WriteIndented=true}));
             if(Rows.Any(row=>!(bool)row.GetType().GetProperty("Passed")!.GetValue(row)!))return 1;
@@ -151,16 +152,71 @@ internal static class S2DocumentEditingCases
         }
         finally{window.Close();Pump();}
     }
-    private static void RawBounds(string raw,bool range)
+    private static void RawBounds(string raw,bool range,int endpoint=0)
     {
         var writes=0;var accepted=.25d;
-        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==0?.25d:1d))),values=>{writes++;accepted=(double)((ConstantSetting)values["low"]).Value!;},Options(.125));
-        Prepare(fields);var field=fields.Fields.First();var text=(TextBox)field.InputElement!;
-        var leaf=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().First();
+        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==endpoint?.25d:i==0?0d:1d))),values=>{writes++;accepted=(double)((ConstantSetting)values[endpoint==0?"low":"high"]).Value!;},Options(.125));
+        Prepare(fields);var field=fields.Fields[endpoint];var text=(TextBox)field.InputElement!;
+        var leaf=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().ElementAt(endpoint);
         var original=new SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule{Container=leaf}.Validate(raw,System.Globalization.CultureInfo.InvariantCulture);
         text.Text=raw;var result=field.TryCommitPending();
         Check((range?"range":"scalar")+"原始越界不可借舍入进入范围"+raw,!original.IsValid&&!result&&writes==0&&accepted==.25d&&text.Text==raw,
-            new{Raw=raw,OriginalRangeRuleValid=original.IsValid,result,writes,accepted,RetainedRaw=text.Text,field.Error,fields.IsLoaded,HasPresentationSource=PresentationSource.FromVisual(fields)!=null});
+            new{Endpoint=endpoint,Raw=raw,OriginalRangeRuleValid=original.IsValid,result,writes,accepted,RetainedRaw=text.Text,field.Error,fields.IsLoaded,HasPresentationSource=PresentationSource.FromVisual(fields)!=null});
+        text.Text="0.376";var repaired=field.TryCommitPending();
+        Check((range?"range":"scalar")+endpoint+"越界原文修复后正常舍入",repaired&&writes==1&&accepted==.38d&&!field.HasInvalidText,new{writes,accepted,field.Error});
+        text.Text="1";var max=field.TryCommitPending()&&accepted==1d;text.Text="0";var min=field.TryCommitPending()&&accepted==0d;
+        Check((range?"range":"scalar")+endpoint+"绝对上下端点可接纳",max&&min&&writes==3,new{writes,accepted});
+    }
+    private static void RawEmpty(bool range,int endpoint=0)
+    {
+        var writes=0;
+        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==endpoint?.25d:i==0?0d:1d))),_=>writes++,Options(.125));
+        Prepare(fields);var field=fields.Fields[endpoint];var text=(TextBox)field.InputElement!;text.Text="";
+        var committed=field.TryCommitPending();
+        Check((range?"range":"scalar")+endpoint+"必填空原文不隐式变零",!committed&&writes==0&&field.Setting is ConstantSetting {Value:.25d}&&text.Text==""&&field.HasInvalidText,new{writes,field.Error,Raw=text.Text});
+    }
+    private static void AtomicBounds()
+    {
+        var writes=0;var low=.2d;var high=.4d;
+        using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Select((port,i)=>(port,Presentation(port.Id,i==0?"high":null),(ParameterSetting)new ConstantSetting(i==0?low:high))),values=>{writes++;low=(double)((ConstantSetting)values["low"]).Value!;high=(double)((ConstantSetting)values["high"]).Value!;},Options(.125));
+        Prepare(fields);var left=(TextBox)fields.Fields[0].InputElement!;var right=(TextBox)fields.Fields[1].InputElement!;
+        left.Text="0.604";right.Text="0.804";var accepted=fields.TryValidate(out var error);
+        Check("双端舍入提案不被另一端旧动态值拒绝",accepted&&writes==1&&low==.6d&&high==.8d,new{writes,low,high,error});
+        left.Text="0.404";right.Text="1.004";var rejected=!fields.TryValidate(out error);
+        Check("整组绝对越界拒绝且两端原文保持",rejected&&writes==1&&low==.6d&&high==.8d&&left.Text=="0.404"&&right.Text=="1.004",new{writes,low,high,error,Left=left.Text,Right=right.Text});
+    }
+    private static void DesignBounds()
+    {
+        var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
+        using var presenter=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();presenter.Bind(sample.Draft,sample.Options);presenter.SelectedPageIndex=1;
+        var fields=(DeclaredFieldsView)presenter.Content;
+        var tool=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool();var names=((IToolParameterBindingNames)tool).ParameterBindingNames;
+        foreach(var label in new[]{"圆度使能","矩形度使能"})
+        {
+            var enable=fields.Fields.Single(f=>f.FieldId==sample.Draft.Schema.Presentation!.Fields.Single(p=>p.DisplayName==label).FieldId);
+            if(!enable.TrySetConstant(true)||enable.Setting is not ConstantSetting {Value:true})throw new InvalidOperationException("设计上下文筛选开启前置失败："+enable.Error);
+        }
+        var window=new Window{Width=650,Height=650,Content=presenter,Title="真实设计上下文数值界限验证"};
+        try
+        {
+        window.Show();Pump();window.UpdateLayout();fields.SelectedPageIndex=1;Pump();
+        var advanced=Desc(presenter).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeAdvancedPresenter>().ToArray();
+        if(advanced.Length==0)throw new InvalidOperationException("设计上下文正式高级展开控件前置缺失。");
+        foreach(var section in advanced)section.IsExpanded=true;Pump();
+        foreach(var name in new[]{"MinCircularity","MaxCircularity","MinRectangularity","MaxRectangularity"})
+        {
+            var id=names.Single(pair=>pair.Value==name).Key;var field=fields.Fields.Single(f=>f.FieldId==id);var original=field.Setting;
+            field.View.BringIntoView();Pump();
+            var text=(TextBox)field.InputElement!;
+            if(!text.IsLoaded||!text.IsVisible)throw new InvalidOperationException("设计字段Loaded/可见/筛选开启前置失败："+name);
+            var raw=name.StartsWith("Min")?"-0.004":"1.004";text.Text=raw;
+            var result=field.TryCommitPending();var current=sample.Draft.CaptureFields().Read(id);
+            Check("真实设计上下文原文界限"+name,!result&&current is ConstantSetting c&&original is ConstantSetting previous&&Equals(c.Value,previous.Value)&&text.Text==raw&&field.HasInvalidText,
+                new{result,Raw=text.Text,field.Error,text.IsLoaded,text.IsVisible,ViewVisibility=field.View.Visibility.ToString(),Windows=Application.Current.Windows.Count,HasPresentationSource=PresentationSource.FromVisual(fields)!=null});
+            text.Text=Convert.ToString(((ConstantSetting)original).Value,System.Globalization.CultureInfo.InvariantCulture)!;field.TryCommitPending();
+        }
+        }
+        finally{window.Close();Pump();}
     }
     private static void Prepare(FrameworkElement element)
     {element.Measure(new Size(650,500));element.Arrange(new Rect(0,0,650,500));element.UpdateLayout();foreach(var item in Desc(element).OfType<Control>().ToArray())item.ApplyTemplate();element.UpdateLayout();}

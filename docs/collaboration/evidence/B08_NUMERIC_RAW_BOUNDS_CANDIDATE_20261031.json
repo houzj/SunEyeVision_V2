@@ -1,0 +1,443 @@
+{
+  "baseline": "c199a41eaa216edf5ed9f29bd0cedf4e34842b2d",
+  "scope": "Candidate独立构建，尚未正式集成验收",
+  "original": {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
+    "sha256": "b5cac6bc7a5db08954c29ac8c342bba39cb4dc1a999a737845591017b51eeaed",
+    "lines": "20原文double.Parse；31先比较原文的Minimum/Maximum与绝对XML MinValue/MaxValue",
+    "comparison": "实际探针对照迁移的原RangeRule；原件源码范围条件同源，未加载原厂程序集或SDK。数字采用小数点样本，不据此扩展文化格式合同。"
+  },
+  "productionChange": "ReadRaw先对键入/暂存原文核绝对界限，再调用PrepareValue舍入并核冻结值；成对动态关系仍按完整候选验证。PrepareValue供普通解绑/显式值先舍入的路径保持。",
+  "build": {
+    "log": "Release/_validation/numeric-raw-bounds-build.log",
+    "exit": 0,
+    "errors": 0,
+    "warnings": 6527,
+    "elapsed": "00:02:07.56"
+  },
+  "sourceSha256": {
+    "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs": "f5b0182eeae7a8b4b11185d055b5efa7610879cf0d1eac163b95bd90fa942a87",
+    "scripts/verification/S4NumericContractCases.cs": "e31518d59b79f351f314089a2e49fcfe7997b5c6e2a271fb806635bb09f88230"
+  },
+  "tracks": [
+    {
+      "track": "NumericContract",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 9,
+        "pid": 142616,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "E31518D59B79F351F314089A2E49FCFE7997B5C6E2A271FB806635BB09F88230",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-009"
+      },
+      "passed": 68,
+      "loadedProduct": [
+        "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\tC4BC2A16D2CEF1F5B1C249A57DCBE6E5EB2317BA84E9D0EFD48A64D879EF6196",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\t9EFE07759E182B21431F25EE7CB90869EF5414EF964F711FF87BA123D20A43BC",
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t3081AC28CCECC0B2682595A7AF99A77657FDD719211C3236DB47CE5A6700D85A",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\t637ADA05632F51E7CF24B0F5219A19741219207108D0FA15A590FFE455874CE5",
+        "SunEyeVision.Tool.BlobAnalysis.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll\tB3EA0220D1381880BB1EDA660587B379F174243D1F3F5D9E0902FAD066F142B5",
+        "SunEyeVision.Tool.BlobAnalysis.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll\t04A6E42E84C661EBE40D3DDCD44BF0B8616082C0E37CA983D72F80D896FDF2D1"
+      ],
+      "newBoundarySamples": [
+        {
+          "Name": "scalar原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "scalar0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "scalar0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 1,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range1越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range1绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "scalar原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "scalar0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "scalar0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 1,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range1越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range1绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "scalar0必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "range0必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "range1必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "双端舍入提案不被另一端旧动态值拒绝",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "low": 0.6,
+            "high": 0.8,
+            "error": ""
+          }
+        },
+        {
+          "Name": "整组绝对越界拒绝且两端原文保持",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "low": 0.6,
+            "high": 0.8,
+            "error": "数值超出允许范围。",
+            "Left": "0.404",
+            "Right": "1.004"
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MinCircularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MaxCircularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MinRectangularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MaxRectangularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        }
+      ],
+      "rawReportSha256": "b1f15dc551dd8b37ebfafc449c9dd2bbd861f68b391457f1c0ecda00317de9e0"
+    },
+    {
+      "track": "FieldEditing",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 130556,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-003"
+      },
+      "passed": 38,
+      "loadedProduct": [
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t3081AC28CCECC0B2682595A7AF99A77657FDD719211C3236DB47CE5A6700D85A",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\t637ADA05632F51E7CF24B0F5219A19741219207108D0FA15A590FFE455874CE5",
+        "SunEyeVision.Tool.BlobAnalysis.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll\t04A6E42E84C661EBE40D3DDCD44BF0B8616082C0E37CA983D72F80D896FDF2D1",
+        "SunEyeVision.Workflow\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll\t606CED3FAFAF482813A347065FC49AE1FFA2477F79A9A2C672149975D3E08D4A",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\t9EFE07759E182B21431F25EE7CB90869EF5414EF964F711FF87BA123D20A43BC",
+        "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\tC4BC2A16D2CEF1F5B1C249A57DCBE6E5EB2317BA84E9D0EFD48A64D879EF6196",
+        "SunEyeVision.Plugin.Infrastructure\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll\t943830E0D4C3C1024CACF82A7D90C06F5940D2A345DF7A9287513004F51B724B",
+        "SunEyeVision.Plugin.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll\t9E5D2C851DE7340109CAC72C8E9C06DF2A2AB4FC82185B1E45631100FA8CEBB9",
+        "SunEyeVision.Core\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll\t91AF79CD748D9DD4B835ACB006ACE71868DF69054D7BFD2EE9042EBE68379B11",
+        "SunEyeVision.Tool.BlobAnalysis.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll\tB3EA0220D1381880BB1EDA660587B379F174243D1F3F5D9E0902FAD066F142B5",
+        "SunEyeVision.Tool.ImageSource.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll\tA768CEF97455A1716A59982D5EED45A241E30D280D711937ED518CE7E1680455",
+        "SunEyeVision.Tool.ImageSource.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll\t2EC5E92B48B4F21882DA57EF690527C6B1EB71553419C38DA6324DBD64875F42"
+      ]
+    }
+  ],
+  "sameProductAcrossTracks": true,
+  "productFailureEvidence": "B08_NUMERIC_RAW_BOUNDS_BASELINE_20261031.json；提交ca51e66f033a8f32c41cb2bd5158948cc18d0f10，attempt006原始失败保留",
+  "preconditionFailures": [
+    {
+      "attempt": 7,
+      "classification": "测试前置失败，非产品失败",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 7,
+        "pid": 146736,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "2AF0382127FC875E761208318EEAFBDA8EE1AEDDB46A090C132D0C5FA0CD8606",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-007"
+      },
+      "passedBeforePrecondition": 42,
+      "failureLines": [
+        "失败：真实设计上下文原文界限MinCircularity，{\"result\":true,\"Raw\":\"-0.004\",\"Error\":\"\",\"Windows\":0,\"HasPresentationSource\":false}",
+        "失败：真实设计上下文原文界限MaxCircularity，{\"result\":true,\"Raw\":\"1.004\",\"Error\":\"\",\"Windows\":0,\"HasPresentationSource\":false}",
+        "失败：真实设计上下文原文界限MinRectangularity，{\"result\":true,\"Raw\":\"-0.004\",\"Error\":\"\",\"Windows\":0,\"HasPresentationSource\":false}",
+        "失败：真实设计上下文原文界限MaxRectangularity，{\"result\":true,\"Raw\":\"1.004\",\"Error\":\"\",\"Windows\":0,\"HasPresentationSource\":false}"
+      ],
+      "error": "",
+      "reason": "未Loaded且暂停的隐藏行",
+      "logSha256": "40c09debc91ddc4eb396ef042115c1150f8ebc9383342dddb5d01c4bd51d9d45"
+    },
+    {
+      "attempt": 8,
+      "classification": "测试前置失败，非产品失败",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 8,
+        "pid": 143328,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "B3705DF1176E4E9320ACEBF12034B9EC495BD9105201CCA62FD6FF1349E76B29",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-008"
+      },
+      "passedBeforePrecondition": 64,
+      "failureLines": [],
+      "error": "System.InvalidOperationException: 设计字段Loaded/可见/筛选开启前置失败：MinCircularity\n   at S2DocumentEditingCases.DesignBounds() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\Cases.cs:line 207\n   at S2DocumentEditingCases.Main() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\Cases.cs:line 30\n",
+      "reason": "已Loaded但高级分组未展开，IsVisible前置拦截",
+      "logSha256": "0075db67d0cb3b349cfc7a47c96ab99c590411ebfa1932bbacd3d4bd9c8c37b5"
+    }
+  ],
+  "reuseAndBoundaries": [
+    "完整68包含此前41项及新增27项；保持原解绑/禁用/重入/卸载/拒绝合同，不把增加数量当完整B08完成",
+    "空原文仍按平台必填合同拒绝，不采用原RangeRule空读0的默认行为",
+    "历史/撤销/保存宿主未修改；本批无新增文档历史轨，复用既有生命周期证据及本次FieldEditing取消/原子拒绝回归，不把控件写入计数称真实宿主Undo",
+    "设计检查实际使用BlobDesignData.CreateParameterContext→DeclaredSettingsView.Bind，开启正式筛选、选择运行页、展开真实高级控件、保证四字段Loaded/可见/有窗口源；不是VS实际设计器验收",
+    "S4DesignTimeCases由主线维护，未修改；ROI/结果整窗保护、人工外观/VS及完整B08清单仍待验",
+    "未运行原SDK或进入算法/自动图像连线文件；GUI已释放"
+  ]
+}

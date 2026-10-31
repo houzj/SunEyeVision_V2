@@ -18,7 +18,8 @@
       "模块或变量动态索引的原厂实际消费和失效恢复",
       "VariableManager删除UI额外关联清理、其他类型、多参数部分失败/取消",
       "多项/范围选择是否是本原控件的真实可达能力"
-    ]
+    ],
+    "entry": "attempt03直接调用SDK绑定固定索引0，不是托管UI输入[]后的运行证明"
   },
   "nativeManagedBoundary": [
     {
@@ -34,7 +35,7 @@
     {
       "file": "SetFilterSourceOperation.cs",
       "lines": "183-253",
-      "fact": "GetOutputInfo拆取第一[起的内容并移除方括号；GetBindIndex按含点路径或MathHelper.IsNumber建立VmIO/常量。没有从这些代码证明多项/范围语法；不新增该功能"
+      "fact": "GetOutputInfo拆取第一[起的内容并移除方括号；GetBindIndex按含点路径或MathHelper.IsNumber建立VmIO/常量。没有从这些代码证明多项/范围语法；不新增该功能；此为泛IO关系旁证，不代普通数值实际SetModuleParamBindOperation生产入口。"
     },
     {
       "file": "GetSelectedFilterOperation.cs",
@@ -42,9 +43,9 @@
       "fact": "已选显示来自真实RelateIO/SubscriptionInfo，不以当前界面文本反造身份"
     },
     {
-      "source": "主线本轮转述逆向负责人只读初查；原路径文件/SHA尚未发回，本线不称独立核验",
+      "source": "B08_ORIGINAL_INDEX_EVIDENCE_20261031.md（最终报告，SHA已核）",
       "fact": "一条托管重建路径中[]与无括号均提交ALL，[0]/[1]/[2]提交固定索引",
-      "level": "仅调用入参层，不能推成后端读取全部/首项/恰好一项，也不自动推广全部UI入口",
+      "level": "托管提交及按SDK结构条件回读层；实际多值消费仍待隔离原机证据，不证明保存文件格式",
       "effect": "Q1不重复要求识别ALL托管入参，主要补多元素来源的实际消费与错误；待主线补原证据身份后可挂接来源"
     }
   ],
@@ -157,7 +158,7 @@
       "id": "Q1",
       "priority": "先补",
       "question": "复用已知托管ALL/固定索引入参：同一可区分多元素整数源（建议37/90/173）绑定LowThreshold，ALL与固定[0]/[1]/[2]真正消费哪个值或报何错误？[]/无括号只核是否走该已确认重建路径，不重复泛查ALL入参。",
-      "capture": "记录源实际数组及元素数、原调用入参、Getter/区分图像结果/诊断；已有固定[0]单值、[99]失败、173解绑重开不再重复。托管入参不替代执行消费。",
+      "capture": "沿最终原报告隔离方案执行：先读回真实数组项数/顺序；记录托管UI与直接SDK两入口的表达式、结构/indexType、返回码、Get绑定列表与显示。运行前写不同标记值，交叉Getter和Blob结果，失败不凭旧Getter说消费；保存前后分别记录结构/显示，不能把重建字符串当格式。当前不启SDK。",
       "purpose": "界定空括号/All及索引基数；不是要求新增多项/范围选择",
       "boundary": "由主线去重后交既有逆向负责人；不授权本线启动SDK"
     },
@@ -238,5 +239,13 @@
       "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedFilterOperation.cs",
       "sha256": "1CF28C8B2ADCF10E2A6CEBDD8AFDFD2295AACB7E3FAF750F61A7325FEC8CF1CD"
     }
-  ]
+  ],
+  "finalReverseReport": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
+    "readFrom": "D:/MyWork/SunEyeVision_V2/docs/collaboration/evidence/B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
+    "sha256": "6FF23602F657FC1441A8A9E123B0B87347D27A1E4F5485CAD4B7ADE84F0EF628",
+    "review": "已全文读取并核SHA；其中原件SHA为报告列出身份，本线未再次反编译或启动SDK",
+    "confirmedLayer": "SetModuleParamBindOperation普通分支及VmModule.SetRunParamBind迁移/恢复分支：空索引提交ALL；[0]/[1]/[2]提交CONSTANT；含点且能解析的索引VmIO提交VARIABLE；GetModuleParamBinding仅按SDK返回结构条件重建",
+    "limits": "普通数值参数实际入口不能仅用SetFilterSourceOperation的泛IO关系分支替代；前版该条仅作文本拆分旁证。无多值实际消费、保存字节格式或负数/多项/范围能力证明"
+  }
 }

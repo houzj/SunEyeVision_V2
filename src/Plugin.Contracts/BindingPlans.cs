@@ -41,6 +41,11 @@ public interface IBindingCompilationScope
     bool TryGetVariable(VariableReference reference,out BindingVariableSource source);
     Diagnostic? ValidateDependencies(IReadOnlyList<BindingNodeId> sources);
 }
+/// <summary>Optional owner policy applied to every recursively compiled reference.</summary>
+public interface IBindingReferenceQualification
+{
+    Diagnostic? ValidateReference(OutputReference reference);
+}
 public sealed record BindingReferencePlan(OutputReference Reference,BindingSource Source,TypeRef SelectedType,BindingReferencePlan? Index,bool Conditional,NumericStorage? Storage=null,BindingVariableSource? VariableIndex=null);
 /// <summary>Immutable compiled instructions. Execution belongs to the existing parameter resolution service.</summary>
 public sealed class BindingPlan

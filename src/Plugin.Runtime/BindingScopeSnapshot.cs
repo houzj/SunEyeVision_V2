@@ -6,22 +6,31 @@ using SunEyeVision.Plugin.Contracts;
 namespace SunEyeVision.Plugin.Runtime;
 
 /// <summary>Frozen declarations, visibility and execution predecessors supplied by the owning workflow graph.</summary>
-public sealed class BindingScopeSnapshot:IBindingCompilationScope
+public sealed class BindingScopeSnapshot:IBindingCompilationScope,IBindingReferenceQualification
 {
+    private readonly Func<OutputReference,Diagnostic?>? _qualification;
     private readonly Dictionary<BindingNodeId,BindingSource> _sources;
     private readonly HashSet<BindingNodeId> _visible;
     private readonly Dictionary<BindingNodeId,BindingNodeId[]> _predecessors;
     private readonly Dictionary<(string Solution,string Variable),BindingVariableSource> _variables;
     public BindingScopeSnapshot(BindingNodeId consumer,Guid documentSessionId,long documentRevision,
         IEnumerable<BindingSource> sources,IEnumerable<BindingNodeId> visibleSources,
-        IEnumerable<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>> predecessors,IEnumerable<BindingVariableSource>? variables=null)
+        IEnumerable<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>> predecessors,IEnumerable<BindingVariableSource>? variables=null,Func<OutputReference,Diagnostic?>? qualification=null)
     {
-        Consumer=consumer;DocumentSessionId=documentSessionId;DocumentRevision=documentRevision;
+        Consumer=consumer;DocumentSessionId=documentSessionId;DocumentRevision=documentRevision;_qualification=qualification;
         _sources=sources.ToDictionary(source=>source.Node);
         _visible=new(visibleSources);
         _predecessors=predecessors.ToDictionary(pair=>pair.Key,pair=>pair.Value.ToArray());
         _variables=(variables??Array.Empty<BindingVariableSource>()).ToDictionary(value=>(value.Reference.SolutionId,value.Reference.VariableId));
     }
+    public BindingScopeSnapshot WithReferenceQualification(Func<OutputReference,Diagnostic?> qualification)
+    {
+        ArgumentNullException.ThrowIfNull(qualification);
+        return new(Consumer,DocumentSessionId,DocumentRevision,_sources.Values,_visible,
+            _predecessors.Select(pair=>new KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>(pair.Key,pair.Value)),
+            _variables.Values,qualification);
+    }
+    public Diagnostic? ValidateReference(OutputReference reference)=>_qualification?.Invoke(reference);
     public BindingNodeId Consumer {get;}
     public Guid DocumentSessionId {get;}
     public long DocumentRevision {get;}

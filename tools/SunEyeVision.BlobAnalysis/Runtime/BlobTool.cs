@@ -4,13 +4,15 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
     public const string InspectionInput = "input.inspection.region";
     public const string MaskInput = "input.mask.region";
     public const string PoseInput = "input.pose";
+    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;} =
+        Array.AsReadOnly(new[] {11,12,19,20,21,22,23,24}.Select(id=>new ManualReferenceSource(BlobSchema.Field(id))).ToArray());
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10);
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);

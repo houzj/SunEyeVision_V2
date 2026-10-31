@@ -130,6 +130,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 workflow.Nodes.Select(n=>new KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>(new(workflow.Id,n.Id),
                     graph.GetPredecessors(n.Id).Select(id=>new BindingNodeId(workflow.Id,id)).ToArray())),globals?.CaptureBindingSources());
             var settingsIds=configuration.SettingsSchema?.Inputs.Select(p=>p.Id).ToHashSet(StringComparer.Ordinal)??new();
+            var manualScope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,workflow.Id,node.Id).Validate);
             var resolver=new ParameterBindingService();
             if(globals is not null)
             {
@@ -174,10 +175,10 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 var target=configuration.BindingTargets.Single(port=>port.Id==fieldId);
                 if(setting is ReferenceSetting reference)
                 {
-                    var compiled=resolver.CompileBinding(reference.Reference,target,scope,reference.Conversion);
+                    var compiled=resolver.CompileBinding(reference.Reference,target,settingsIds.Contains(fieldId)?manualScope:scope,reference.Conversion);
                     plans.Add(fieldId,compiled.Plan??throw new InvalidOperationException(compiled.Diagnostic?.Message??"调试来源声明不可用。"));
                 }
-                else if(setting is VariableSetting variable)variablePlans.Add(fieldId,RuntimeVariableBindings.Compile(variable,target,globals,scope));
+                else if(setting is VariableSetting variable)variablePlans.Add(fieldId,RuntimeVariableBindings.Compile(variable,target,globals,settingsIds.Contains(fieldId)?manualScope:scope));
             }
             IReadOnlyImage? fallbackImage=null;
             if(configuration.Schema.WorkflowImageInputId is { } imagePort&&!settings.ContainsKey(imagePort)&&defaultImage is not null)

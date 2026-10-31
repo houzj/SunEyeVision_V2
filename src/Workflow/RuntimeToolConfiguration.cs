@@ -51,6 +51,10 @@ public sealed partial class RuntimeToolConfiguration
         {var errors=definition.Validate(CaptureSettings());if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));}
     }
 
+    internal IReadOnlyList<ManualReferenceSource> CaptureManualReferenceSources()
+        => (_definition as IToolManualReferenceSources)?.ManualReferenceSources
+            .Select(source => new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray()
+            ?? Array.Empty<ManualReferenceSource>();
     public string ToolId => _definition.ToolId;
     public Type SettingsType => _definition.SettingsType;
     /// <summary>Editing and dependency identity deliberately excludes live parameter values.</summary>

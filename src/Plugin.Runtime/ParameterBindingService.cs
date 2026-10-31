@@ -61,6 +61,8 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
     }
     private static BindingReferencePlan CompileReference(OutputReference reference,IBindingCompilationScope scope,List<BindingNodeId> dependencies)
     {
+        if(scope is IBindingReferenceQualification qualified && qualified.ValidateReference(reference) is { } denied)
+            throw new BindingFault(denied.Code,denied.Message);
         var node=new BindingNodeId(reference.ScopeId??scope.Consumer.ScopeId,reference.NodeId);
         if(!scope.TryGetSource(node,out var source))throw new BindingFault("unresolved-source","Source schema is missing or outside the visible scope.",true);
         if(source.Node!=node)throw new BindingFault("source-identity","Schema owner does not match its requested source.");

@@ -119,7 +119,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
         var referenceOptions=new ReferenceFieldOptions(_=>
         {
-            var candidates=ReadReferenceCandidates(generation);
+            var candidates=ReadReferenceCandidates(generation,manualParameters:true);
             if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
             return new(candidates,candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer),ReadVariableCandidates(generation));
         },(target,proposal)=>ValidateProposal(target,proposal,generation),FormatVariable:reference=>FormatVariable(reference,generation),
@@ -278,7 +278,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         return (sourceName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
             +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
     }
-    private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates(long generation)
+    private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates(long generation,bool manualParameters=false)
     {
         if(_disposed||generation!=_generation||_query is null||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true})
             return Array.Empty<DeclaredReferenceCandidate>();
@@ -290,6 +290,13 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             if(output.Kind!=OutputVariableKind.Data)continue;
             try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,_query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
             catch(ArgumentException){continue;}
+        }
+        if(manualParameters)
+        {
+            var workflow=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.Workflows.SingleOrDefault(flow=>flow.Id==_query.WorkflowId);
+            if(workflow is null)return Array.Empty<DeclaredReferenceCandidate>();
+            var eligible=OutputBindingChangeService.CaptureManualParameterEligibility(workflow,_node.Id);
+            candidates=candidates.Where(candidate=>eligible(candidate.Reference(BindingSelection.All))).ToList();
         }
         return candidates.AsReadOnly();
     }

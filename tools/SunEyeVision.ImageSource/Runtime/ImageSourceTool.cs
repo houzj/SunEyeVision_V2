@@ -4,11 +4,13 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.ImageSource.Runtime;
 
 /// <summary>One frozen file/frame invocation. Sequence and camera connection ownership stay in the host.</summary>
-public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider
+public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider,IToolManualReferenceSources
 {
     public const string Id="ImageLoad";
     public const string LocalAddress="input.local-address", CameraImage="input.camera-image", Sequence="input.sequence",
         DeviceId="input.device-id",DeviceFrameId="input.device-frame-id",DeviceTimestamp="input.device-timestamp";
+    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;} =
+        Array.AsReadOnly(new[] {new ManualReferenceSource(ImageSourceOutput.Width),new ManualReferenceSource(ImageSourceOutput.Height)});
     public string ToolId=>Id;
     public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10);
     public ToolSchema SettingsSchema=>ImageSourceFields.Schema;

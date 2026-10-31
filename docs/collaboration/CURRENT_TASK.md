@@ -1,3 +1,7 @@
+## 2026-10-31 原厂整数索引具体分支补证
+
+- 逆向负责人已复核 ModuleFrame GetBindingInt 来源类型3：内部索引按零基访问；动态索引来源按第0项读取，失败可能回落0；最终来源读取失败另按外层传播。报告 B08_ORIGINAL_INTEGER_INDEX_PATH_20261031.md SHA256 6352B78656C5AA5DCE100234CBFAD7FF8598CA3CB009E9EDA957A36697927749。仅限已核整数分支、静态证据；不能推广所有类型或说原机已测。
+- SDK 输入 strIndexConstant 与枚举到内部记录的转换仍有具体调用链可追，已请逆向负责人只读核对；现行本方对多值All/动态失败的严格合同与上述特定分支可能不同，未在全链闭合前擅改或称VM等价。
 ## 2026-10-31 B08 统一正式回归完成，整控件仍未闭合
 
 - 正式 build-012 产品源码 4b61bbbd：NumericContract 68、FieldEditing 38、VariableFields 13、RuntimeEditorUiStage 13、DesignTime 290、BlobParameterProduction 21、ManualReferenceQualification 19、ParameterValues 18、RuntimeWorkflow 10 均通过；真实 MainWindow 跨方案 A→B 及同 ID 重开 A 各5场景整组通过，含自动图像连线历史/断边/手动来源/复制/回滚。清单569项SHA一致；回执及保留失败见 B08_FORMAL_UNIFIED_20261031.json。

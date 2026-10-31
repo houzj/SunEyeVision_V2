@@ -25,6 +25,8 @@
          $(MSBuildThisFileDirectory) 恒等于 worktree 根, 与项目层级无关,
          天然满足"各 worktree 输出到各自 dev/"的设计意图, 故原 WorktreeName 分支冗余已删。 -->
     <WorktreeBasePath>$(MSBuildThisFileDirectory)</WorktreeBasePath>
+    <!-- 独立候选工作区可共用只读依赖源；产物仍由各工作区正常构建部署。 -->
+    <HalconSourceRoot Condition="'$(HalconSourceRoot)'==''">$(WorktreeBasePath)libs\halcon\</HalconSourceRoot>
     
     <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录
          同时设置 OutputPath 与 OutDir：

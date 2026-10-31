@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','ParameterValues','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
-      [ValidateSet('S2','S3','S4')][string]$Stage='S2')
+      [ValidateSet('S2','S3','S4')][string]$Stage='S2',
+      [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','ParameterValues','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
@@ -12,8 +13,11 @@ $commonDir = git -C $root rev-parse --git-common-dir
 if ($LASTEXITCODE -ne 0) { throw '无法识别正式验证仓库的公共 Git 目录。' }
 $gitDir = [IO.Path]::GetFullPath($gitDir, $root).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
 $commonDir = [IO.Path]::GetFullPath($commonDir, $root).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
-if (-not [string]::Equals($gitDir, $commonDir, [StringComparison]::OrdinalIgnoreCase)) {
+if ($ValidationScope -eq 'Formal' -and -not [string]::Equals($gitDir, $commonDir, [StringComparison]::OrdinalIgnoreCase)) {
     throw '正式验证必须从主仓工作目录执行，不能使用独立 worktree 的 Release。'
+}
+if ($ValidationScope -eq 'Candidate' -and [string]::Equals($gitDir, $commonDir, [StringComparison]::OrdinalIgnoreCase)) {
+    throw '候选验证必须在独立 worktree 执行，不能把主仓正式产物标作候选。'
 }
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -174,7 +178,7 @@ if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 [IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 if(-not $finished){throw 'S2自有检查进程超时，已停止该自有进程'}
-[ordered]@{stage=$Stage;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope='当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
+[ordered]@{stage=$Stage;validationScope=$ValidationScope;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope=$(if($ValidationScope -eq 'Formal'){'当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收'}else{'独立worktree自行构建产物的候选检查，尚未集成或正式验收'});logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}
 

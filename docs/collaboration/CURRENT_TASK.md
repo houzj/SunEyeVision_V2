@@ -1,5 +1,9 @@
 ## 2026-10-31 执行底栏、结果表与图像联动核查进行中
 
+- Blob表选择sender与派生灰/二值图坐标域已修复；主线fb6114ef产品经正式Release 18f981c8构建与同版真实两次运行表图专项3组、结果生命周期24组、publication7组、表1组和独立设计290组通过；回执见 BLOB_RESULT_WORKSPACE_FORMAL_20261031.json。此为派生图已验范围，原始上游图映射、正式底栏及缺失输出列仍未接入，整个单元未闭口。
+
+- 真实Blob表选择的sender不一致及派生灰/二值图坐标域不一致已在候选真实两次运行复现并修复，候选专项3组通过，集成主线fb6114ef并正在正式构建；同物理帧的原始上游图域映射仍缺明确输入槽proof，继续严格拒绝，不凭尺寸放宽校验。
+
 - 同源码正式Release 591db0a4 已验证公共原底栏6、publication7、通用结果表1、来源2及结果生命周期24组；见 RESULT_AND_FOOTER_BASELINE_FORMAL_20261031.json。它们不代表Blob正式窗口底栏、结果缺列或完整表图联动闭口。
 
 - 已有NativeToolEditorFrame及命令状态/退役合同，但Blob实际窗口当前仍由SDK调试宿主提供底栏，尚未消费公共原底栏；不得把独立样例当正式Blob接入，也不能新增第二套底栏。
@@ -2804,6 +2808,10 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
 
 - B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+
+
+
 
 
 

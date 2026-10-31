@@ -1,3 +1,11 @@
+## 2026-10-31 Blob灰度输出名称正式修正
+
+- 主线9d02762c将实际Field(5) GrayImage从误标“Blob图像”修正为“灰度图像”，正式来源目录、结果快照及图像选择器统一；字段身份、像素及资源不变。参数页原“Blob图像输出”仍保留原文和禁用提示；原厂连通域绘制图尚未实现。
+- 同源正式Release 87e052a9 UI/全量构建均0错；BlobResultWorkspace 4、RuntimeKernel 19、RuntimeWorkflow 10组通过，加载程序集均与正式产物哈希一致，详见 BLOB_GRAY_OUTPUT_NAMING_FORMAL_20261031.json。原图像逐像素语义、Domain、实际VS及人工未验。
+## 2026-10-31 原厂Blob图像及ROI链具体缺口
+
+- 逆向负责人确认原Blob图像为目标连通域绘制结果，区别于二值图；筛选范围、像素与Domain未证。现有Field(5)实际返回灰度图而展示名写Blob图像，属误导，现已按真实身份修正并正式验证；原Blob绘制图不得伪造，证据 BLOB_ORIGINAL_IMAGE_OUTPUT_20261031.json。
+- ROI已有公共编辑控件及Region引用执行，但Blob本地定义/owner、Geometry字段保存、IGeometryEditService实现、真实输入帧租约、部分圆环物化及冻结路径缺失；不扩其他基础，运行保护保留。图文显示同次配置owner/冻结/消费与缺失图元仍未接通。
 ## 2026-10-31 Blob结果表正式集成与验证
 
 - ea5e337a将真实结果表改为序号及原九项顺序；面积、周长、质心X/Y、圆度、矩形度读真实同次输出；角度、长轴、短轴作为不可订阅的显式未实现列，不创建数值Schema或假结果，空表零假行。公共投影合同要求真实字段与不可用原因互斥，保留element-id/运行stamp高亮。

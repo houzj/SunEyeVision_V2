@@ -519,26 +519,26 @@ internal static class S2DocumentEditingCases
             "开关正式配置序列化重开回填原件");
         Check(restored.TrySetConstant(true)&&!Formal(),"开关重开后未确认草稿不改变现行配置");
         restoredView.Dispose();Check(!Formal(),"开关取消编辑保留已确认配置");
-        const string enumId="field:8ca20000000040008000000000000001";
+        const string enumId="field:88b45ab61b965761b901670fd587903f";
         var enumEdit=host.BeginEdit(flow.Id,node.Id);var enumConfiguration=enumEdit.Node.RuntimeConfiguration!;
         using var enumView=new DeclaredSettingsView(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(definition,
             enumConfiguration.Fields.Select(definition.SettingsSchema.Inputs)));
         var enumEditor=((DeclaredFieldsView)enumView.Content).Fields.Single(field=>field.FieldId==enumId);
-        Check(enumEditor.TrySetConstant("DoubleThreshold")
-            &&node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"SingleThreshold"},
+        Check(enumEditor.TrySetConstant("BinaryInv")
+            &&node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"Binary"},
             "普通枚举正式字段草稿不提前发布正式配置");
-        Check(enumView.TryCapture(out var enumValues,out _)&&enumValues.Get<string>(enumId)=="DoubleThreshold",
+        Check(enumView.TryCapture(out var enumValues,out _)&&enumValues.Get<string>(enumId)=="BinaryInv",
             "普通枚举宿主捕获保存正式键而非本地化标签");
         enumEdit.Node.RuntimeConfiguration=enumConfiguration.WithSettingsFields(enumValues);host.Commit(enumEdit);
-        Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"DoubleThreshold"},"普通枚举沿正式节点网关确认");
-        host.Undo();Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"SingleThreshold"},"普通枚举撤销恢复原正式键");
-        host.Redo();Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"DoubleThreshold"},"普通枚举重做恢复新正式键");
+        Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"BinaryInv"},"普通枚举沿正式节点网关确认");
+        host.Undo();Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"Binary"},"普通枚举撤销恢复原正式键");
+        host.Redo();Check(node.RuntimeConfiguration!.Fields.Read(enumId) is ConstantSetting {Value:"BinaryInv"},"普通枚举重做恢复新正式键");
         var enumPath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"enumeration-runtime-configuration.json");
         File.WriteAllText(enumPath,System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration));
         var enumRestored=System.Text.Json.JsonSerializer.Deserialize<SunEyeVision.Workflow.RuntimeToolConfiguration>(File.ReadAllText(enumPath))!;
         using var enumRestoredView=new DeclaredSettingsView(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(definition,
             enumRestored.Fields.Select(definition.SettingsSchema.Inputs)));
-        Check(((ComboBox)((DeclaredFieldsView)enumRestoredView.Content).Fields.Single(field=>field.FieldId==enumId).InputElement!).SelectedValue is "DoubleThreshold",
+        Check(((ComboBox)((DeclaredFieldsView)enumRestoredView.Content).Fields.Single(field=>field.FieldId==enumId).InputElement!).SelectedValue is "BinaryInv",
             "普通枚举正式配置序列化重开回填同一候选键");
     }
     [STAThread] private static int Main()
@@ -813,8 +813,8 @@ internal static class S2DocumentEditingCases
                 &&native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<DeclaredInputFieldsView>().Any(view=>
                     view.Fields.Any(field=>field.FieldId==BlobTool.ImageInput)));
             Render(first,"parameters-initial.png",600,680);
-            Check(fields.Fields.Count==54&&replacementInputCount(fields)==4,
-                "独立无参真实参数视图包含54设置及4输入，未启动宿主");
+            Check(fields.Fields.Count==53&&replacementInputCount(fields)==4,
+                "独立无参真实参数视图包含53设置及4输入，未启动宿主");
             var inputFields=InputFields(fields);
             var image=inputFields.Single(field=>field.FieldId==BlobTool.ImageInput);
             Check(image.InputElement is ComboBox combo&&combo.Resources.MergedDictionaries.Any(dictionary=>dictionary.Source?.OriginalString.EndsWith("SourceComboBoxes.xaml")==true)
@@ -828,8 +828,8 @@ internal static class S2DocumentEditingCases
             var schema=presenter.Draft!.Schema;
 
             var oldField=fields.Fields.Single(field=>field.FieldId==threshold);
-            Check(!first.TryCapture(out _,out var previewError)&&previewError.Contains("界面试用",StringComparison.Ordinal),
-                "纯UI阶段明确阻止把试用阈值提交为算法配置");
+            Check(!first.TryCapture(out _,out var previewError)&&previewError.Contains("未接入",StringComparison.Ordinal),
+                "未接入的ROI和结果组合明确阻止整窗提交");
             var independent=second.CaptureAcceptedFields();
             Check(independent.Get<long>(threshold)==defaults.Threshold,
                 "两个设计视图不共享可变草稿");
@@ -916,33 +916,18 @@ internal static class S2DocumentEditingCases
                     var page=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView)((TabItem)tabs.Items[index]).Content;
                     var advanced=page.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()
                         .Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeAdvancedPresenter>().Single();
-                    var circle=replacement.Options.AdditionalAnchoredContents!
-                        .Single(item=>item.FieldId=="field:7d59f57f71c65911b88bae5f90d994d9"&&!item.InsertBefore).Content;
+                    var circle=fields.Fields.Single(field=>field.FieldId=="field:7d59f57f71c65911b88bae5f90d994d9").View;
                     var binaryOutput=fields.Fields.Single(field=>field.FieldId=="field:73f2c01e7b385e0ab2d35f739a88e718");
                     var binaryRow=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl)
                         ((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)binaryOutput.View).EditorBody;
-                    Check(page.ChildLeftWidth==120&&binaryRow.ChildLeftWidth==120,"运行参数页的标签使用足够宽的同一原控件列");
+                    Check(page.ChildLeftWidth==120&&binaryRow.ChildLeftWidth==120,"运行参数页标签使用同一原控件列");
                     var unavailable=replacement.Options.AdditionalAnchoredContents!.Select(item=>item.Content)
-                        .Where(view=>view is not SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls
-                            &&view is not SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeJudgmentUiDraftControls)
-                        .Where(view=>view is not SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor editor
-                            ||editor.FieldId is not ("ui-only-run.find-count" or "ui-only-run.sort-mode" or "ui-only-run.binary-output"))
-                        .Where(view=>view is not SunEyeVision.Plugin.Wpf.Presenters.Numeric.NativeUiDraftRange range
-                            ||((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)((StackPanel)range.Child).Children[0]).FieldId!="ui-only-run.area").ToArray();
-                    Check(unavailable.Length==18&&unavailable.Take(3).All(view=>view.IsEnabled&&view.Visibility==Visibility.Visible)
-                        &&unavailable.Skip(3).All(view=>view.IsEnabled&&view.Visibility==Visibility.Collapsed),
-                        "运行参数临时UI可操作且高级项保持折叠");
-                    var fillEditor=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)unavailable[0];
-                    Check(fillEditor.TrySetConstant(1L)&&replacement.Options.ValidateUiState?.Invoke() is {Length:>0},
-                        "界面试用值改变后阻止误提交为真实算法配置");
-                    Check(!first.TryCapture(out _,out var uiDraftError)&&uiDraftError.Contains("界面试用",StringComparison.Ordinal),
-                        "真实参数视图捕获入口执行界面试用状态拦截");
-                    Check(fillEditor.TrySetConstant(0L)&&replacement.Options.ValidateUiState?.Invoke() is {Length:>0},
-                        "恢复单项初值后整页纯UI阶段仍不能误执行算法");
-                    var contourEditor=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)unavailable[1];
-                    var contourItem=((ComboBox)contourEditor.InputElement!).SelectedItem!;
-                    Check(((string)contourItem.GetType().GetProperty("Label")!.GetValue(contourItem)!)=="不输出轮廓",
-                        "轮廓类型占位显示原厂中文名称");
+                        .OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>()
+                        .Where(editor=>editor.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();
+                    Check(unavailable.Length>0&&unavailable.All(editor=>!editor.IsEnabled&&editor.ToolTip is string),
+                        "尚未接入的运行参数显示为不可误用的占位控件");
+                    Check(!first.TryCapture(out _,out var uiDraftError)&&uiDraftError.Contains("未接入",StringComparison.Ordinal),
+                        "真实设计视图保持未接入组合的整窗提交保护");
                     var areaSwitch=fields.Fields.Single(field=>field.FieldId=="field:e9845ab7a46e5ee9b42310bef5a11c19");
                     var booleanPorts=((IToolSettingsFields)new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool()).SettingsSchema.Inputs
                         .Where(port=>port.Type==DataType.Boolean).ToArray();
@@ -963,41 +948,19 @@ internal static class S2DocumentEditingCases
                     Check(booleanEditors.Any(field=>field.FieldId=="field:e9845ab7a46e5ee9b42310bef5a11c19")
                         &&booleanEditors.All(field=>!Descendants<System.Windows.Controls.Primitives.ToggleButton>(field.View).Any(button=>button.Content is string action&&action is "⇄" or "✎")),
                         "真实Blob普通布尔行没有额外编辑订阅切换按钮");
-                    Check(areaSwitch.TrySetConstant(false)&&unavailable.Take(3).Skip(1).All(view=>view.Visibility==Visibility.Visible)
-                        &&areaSwitch.TrySetConstant(true),"关闭面积筛选不隐藏独立输出入口");
-                    var thresholdUi=replacement.Options.AdditionalAnchoredContents!.Select(item=>item.Content)
-                        .OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls>().Single();
-                    foreach(var (mode,visible) in new[]{("binary",2),("single",3),("double",3),("auto",2),("fixed",4),("relative",7)})
-                        Check(thresholdUi.TrySelectMode(mode)&&thresholdUi.Children.Cast<FrameworkElement>().Count(view=>view.Visibility==Visibility.Visible)==visible,
-                            "六种阈值界面依原触发切换字段："+mode);
-                    Check(thresholdUi.TrySelectMode("single"),"阈值界面恢复单阈值");
+                    Check(areaSwitch.TrySetConstant(false)&&areaSwitch.TrySetConstant(true),"正式面积开关可在独立设计草稿中切换");
+                    var mode=fields.Fields.Single(field=>field.FieldId=="field:8ca20000000040008000000000000001");
+                    var modeCombo=(ComboBox)mode.InputElement!;
+                    Check(modeCombo.Items.Count==6,"设计视图通过正式下拉显示六种阈值模式");
+                    Check(!mode.TrySetConstant("None")&&!mode.TrySetConstant("DoubleThreshold")&&mode.TrySetConstant("SingleThreshold"),
+                        "未实现模式不可写入设计草稿，单阈值可用");
+                    Check(!Descendants<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls>(first).Any(),
+                        "设计视图与运行时共用正式阈值控件而非旧替身");
                     Render(first,"parameters-six-thresholds.png",600,680);
-                    if(thresholdUi.Children.OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>().First() is {} thresholdEditor)
-                    {
-                        var body=(FrameworkElement)thresholdEditor.EditorBody;
-                        var marginBinding=System.Windows.Data.BindingOperations.GetBindingExpression(body,FrameworkElement.MarginProperty);
-                        Console.WriteLine($"运行参数布局诊断: 列表边距={page.ChildMargin} 行边距={body.Margin} 控件坐标={body.TransformToAncestor(first).Transform(new Point(0,0))} 加载={body.IsLoaded} 绑定={marginBinding?.Status.ToString()??"无"}");
-                        Check(body.Margin.Left==page.ChildMargin.Left&&body.TransformToAncestor(first).Transform(new Point(0,0)).X>=32,
-                            "脱离主窗口的运行参数行使用原列表边距");
-                    }
                     var beforeExpansion=replacement.Draft.Revision;
                     Check(!advanced.IsExpanded&&circle.Visibility==Visibility.Collapsed,"运行参数高级项默认收起");
                     advanced.IsExpanded=true;
-                    var draftRanges=unavailable.OfType<SunEyeVision.Plugin.Wpf.Presenters.Numeric.NativeUiDraftRange>().ToArray();
-                    Check(draftRanges.Length==10,"高级区包括十组原双端范围组合");
-                    foreach(var range in draftRanges)
-                    {
-                        var group=(StackPanel)range.Child;
-                        var toggle=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)group.Children[0];
-                        var body=(FrameworkElement)group.Children[1];
-                        Check(body.Visibility==Visibility.Collapsed&&toggle.TrySetConstant(true)
-                            &&body.Visibility==Visibility.Visible&&replacement.Options.ValidateUiState?.Invoke() is {Length:>0},
-                            "高级筛选展开原范围并阻止临时开关误提交："+toggle.FieldId);
-                        Check(toggle.TrySetConstant(false)&&body.Visibility==Visibility.Collapsed,
-                            "高级筛选关闭隐藏原范围："+toggle.FieldId);
-                    }
-                    Check(circle.Visibility==Visibility.Visible&&unavailable.Skip(3).All(view=>view.Visibility==Visibility.Visible),
-                        "运行参数高级展开显示现有筛选字段及未实现入口");
+                    Check(circle.Visibility==Visibility.Visible,"运行参数高级展开显示正式圆度筛选");
                     Render(first,"parameters-run-advanced.png",600,900);
                     advanced.IsExpanded=false;
                     Check(circle.Visibility==Visibility.Collapsed,"运行参数高级收起恢复隐藏");
@@ -1065,7 +1028,7 @@ internal static class S2DocumentEditingCases
             var markup=ReadRootMarkup("BlobParameterEditor.xaml");
             var root=(UserControl)XamlReader.Parse(markup);
             var markupPresenter=(DeclaredSettingsView)root.Content;
-            Check(markupPresenter.Draft is not null&&((DeclaredFieldsView)markupPresenter.Content).Fields.Count==54,
+            Check(markupPresenter.Draft is not null&&((DeclaredFieldsView)markupPresenter.Content).Fields.Count==53,
                 "根XAML不执行外层构造函数也能由真实子视图取得设计草稿");
             markupPresenter.Dispose();
             var resultRoot=(UserControl)XamlReader.Parse(ReadRootMarkup("BlobResultView.xaml"));

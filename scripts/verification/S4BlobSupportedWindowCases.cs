@@ -140,13 +140,16 @@ internal static class S2DocumentEditingCases
             Require(SelectRadio(radios[3],1L),"屏蔽继承不可切换");Pump();Visible("_maskShapes",false);Visible("_maskSource",true);
             Require(SelectRadio(radios[0],1L),"图像模式不可切换");Pump();Visible("_imageInput",true);Visible("_detectionSource",false);Visible("_circleSource",false);Visible("_rectangleParameters",false);Visible("_circleParameters",false);Visible("_maskSource",false);Visible("_maskRadio",false);
             foreach(var radio in radios)Require(SelectRadio(radio,0L),"四态恢复失败");Pump();Require(!roi.HasUiChanges&&control.TryCapture(out restored),"四态恢复不能捕获："+restored);
-            var shape=roi.Children.OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl>().First();
+            var editors=roi.Children.OfType<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiEditor>().ToArray();
+            Require(editors.Length==2&&editors.All(editor=>editor.NativeView.IsEnabled),"两组真实形状入口未保留");
+            var shape=editors[0].NativeView;
+            Require(context.DraftNode.RuntimeConfiguration!.Fields.Read(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobLocalRoi.InputId) is UnsetSetting,"无帧夹具不应已有本地几何");
             var command=(ICommand)shape.DataContext.GetType().GetProperty("ValueChangedCommand")!.GetValue(shape.DataContext)!;
             command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);Pump();
-            Require(roi.HasUiChanges&&!control.TryCapture(out _),"形状变更被丢弃");
+            Require(context.DraftNode.RuntimeConfiguration!.Fields.Read(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobLocalRoi.InputId) is UnsetSetting,"无真实匹配帧仍写入几何");
+            Require(!roi.HasUiChanges&&control.TryCapture(out restored),"无帧拒绝创建后破坏原基线："+restored);
             command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen);Pump();
-            Require(!roi.HasUiChanges&&control.TryCapture(out restored),"形状恢复不能捕获："+restored);
-        });
+            Require(!roi.HasUiChanges&&control.TryCapture(out restored),"全域基线不能捕获："+restored);        });
         Case("原图文眼睛颜色文本及样式pending均跟踪，不把默认眼睛当已绘制",()=>
         {
             tabs.SelectedIndex=2;first.UpdateLayout();Pump();

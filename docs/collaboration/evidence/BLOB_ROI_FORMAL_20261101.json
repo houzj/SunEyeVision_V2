@@ -1,0 +1,164 @@
+{
+  "candidateCommit": "2dd2032bcc376c912a6ce8b5ada349f675368276",
+  "mainBase": "6701e02f",
+  "sourceFiles": [
+    {
+      "path": "docs/collaboration/evidence/BLOB_ROI_CANDIDATE_RECEIPTS_20261101.json",
+      "sha256": "55CD11306457811E79D4488903738A1AD278814FAA23042200C320AB4A2D77AC"
+    },
+    {
+      "path": "docs/collaboration/evidence/BLOB_ROI_COMPLETE_CHAIN_DESIGN_20261101.md",
+      "sha256": "6BED3FC9983607B412EB23EA707CE8C0C0BA06352B69B769863FE4C56F37B9CE"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "E89D25AF40CFCB85A6DFB478C3EA51AB847F483859158E6F2A103E98E115329E"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "9081991DEB488D6EE9E1FC94795144FDC57822D0E3F8064D985F709060DA76E5"
+    },
+    {
+      "path": "scripts/verification/S4BlobRoiProductionCases.cs",
+      "sha256": "A7940B88F89AA0585672E243AE1B0F19DD7903D28B28005318017363246173D4"
+    },
+    {
+      "path": "scripts/verification/S4BlobSupportedWindowCases.cs",
+      "sha256": "61D23B0F6FA2501D8AE92ED053779AD8D63E6BA09B6A6A46080DAC02782817D5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiFrameLease.cs",
+      "sha256": "99614A4330B5ACF52DF55BBB3E9DCB575B4B7087ABAAAE11C41311395C63B8BE"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
+      "sha256": "51520E5696B9146F21F71C033D4F64C01E03CFB64B807BA3E66784C13ABD7E72"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sha256": "D2DC87D398F0D06E616704C6A43386C87EA79ED1B7ED79C2F87F778BE946590B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "F751BCA51DCAF49E12B0B263F81D40D99D15B3474A56A9C1133999F25A06336E"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativePolygonRoiInputs.cs",
+      "sha256": "8A99B0E49CDDD6A768F0133BA0CD2BC30AEDEC85F663D8470A86AF3D04A51D6D"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
+      "sha256": "CABB80412ADCB0C38CFB3936AEA9182D0B837A521FE8B643F0E98A86928AFD7B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiPendingInput.cs",
+      "sha256": "D0857289906C1F2F8871D724AE5F71CAE557C99ED430D866E44DC10DD3CA9401"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "FCC85B9EC071249D2C83E257756D5AEAE3C7AC089D6F1DA377BB2655650804D2"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "572B0A4A19B41DF7BD5DB1C8CFFD8A63095B35EF8E37E2EA730D544D709100C7"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultImagePane.cs",
+      "sha256": "DF8BF38D7E522F637CFE3F1A44C791958F2552AA79AC893D69CF0AA5FCA613F0"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.RoiEditing.cs",
+      "sha256": "DD11319E88163000EBABE850BE85ED2A93C4CC2743B0C352616BE8BAA384472E"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "sha256": "1C38A85F78AEE4AC6FB59A7F9807BCD4F3CE61B89EAD8109DF09B5EA6FF7CC4F"
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "sha256": "F9C5DB8A26BBCEA4FF8E3605A9F02DFAA4A3FD2BEDC8F980AA5FF7E3F45B524D"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs",
+      "sha256": "46BCBF36196DCBDB17B908EF74CF60830210CBE00BB3C1FFBC3E8F5DAD4C8677"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobLocalRoiRasterizer.cs",
+      "sha256": "9575C0238937CB9FE56200FF02B999B1E6BCE439803A1260710744784EE34543"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+      "sha256": "D98B11C0D829AA8DE200FE6DE38A46EAB843D6D83E75640233F1630607E2AA66"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "51BB699776F2295971B645B5DCE84B632F18514DAFCFBA685C161243174D1552"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobInput.cs",
+      "sha256": "A351712BC4236110FB276E3ECFADACCA7C45E847F49F6969C8789497D1FA00D3"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobLocalRoi.cs",
+      "sha256": "EAB3B800D1EB6A32C4499DCBCBE068F4C0A7D919B59284A657D97A72400E12C1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.cs",
+      "sha256": "E0BDBF39B4BD21C9F5BFA8AE4975892901A733A05EF8228C78053B22B0F5F552"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiProjection.cs",
+      "sha256": "6E4E363B2A3BFB56FCAB5DAF2A93E1036B091B272965BE521A0784B97527E609"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "E3FB4FC00E8F4F7EA027125A8F33E480CCDACD9E96D4A5B10EA7D4178CB8A301"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+      "sha256": "5A899321F6499B1F373E45A49A565FF3DD2E983567AD5372FC5F9E99B393F89A"
+    }
+  ],
+  "builds": {
+    "uiErrors": 0,
+    "solutionErrors": 0
+  },
+  "roiAttempts": [
+    {
+      "attempt": 1,
+      "exit": 0,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-001\\receipt.json"
+    },
+    {
+      "attempt": 2,
+      "exit": 0,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-002\\receipt.json"
+    },
+    {
+      "attempt": 3,
+      "exit": 0,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-003\\receipt.json"
+    },
+    {
+      "attempt": 4,
+      "exit": 0,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-004\\receipt.json"
+    }
+  ],
+  "limitations": [
+    "非自然鼠标与系统剪贴板操作",
+    "VM像素等价未证明",
+    "继承、图像mask、输出mask和位置修正未接通",
+    "候选Polygon隐藏桌面鼠标捕获失败",
+    "候选RoiBindings依赖未发布旧工具而失败",
+    "VS设计时及用户运行验收未执行"
+  ]
+}

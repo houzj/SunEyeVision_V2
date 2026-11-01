@@ -18,6 +18,7 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected int ImageWidth {get;}
     protected int ImageHeight {get;}
     public string Group=>Accepted.Group;
+    internal RecordValue AcceptedGeometry=>Accepted.Geometry;
     public Guid Id=>Accepted.Id;
     public string Kind=>Accepted.Geometry.Get<string>("kind");
     public bool Enabled=>Accepted.Enabled;

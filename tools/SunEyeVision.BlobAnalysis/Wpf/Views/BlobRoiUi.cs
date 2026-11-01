@@ -9,7 +9,7 @@ internal static class BlobRoiUi
     internal static FrameworkElement Add(DeclaredInputFieldsView inputs,bool supportedWindow=false,Action<NativeRoiUiDraftControls>? observe=null)
     {
         var controls=new NativeRoiUiDraftControls(geometryOnlyPresentation:supportedWindow);
-        if(supportedWindow)controls.ToolTip="仅预览，ROI绘制及几何继承尚未实现；修改后不能确认。";
+        if(supportedWindow)controls.ToolTip="几何继承、图像区域及输出掩膜尚未接入执行。";
         try
         {
             var detection=inputs.TakeField("input.inspection.region");

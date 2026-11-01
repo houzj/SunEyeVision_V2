@@ -10,7 +10,7 @@ using SunEyeVision.UI.Shell.Windows;
 namespace SunEyeVision.UI.Services.Images;
 
 /// <summary>Owns the two original Shell image views; result tables retain their independent publication.</summary>
-internal sealed class ResultWorkspacePresenter:IDisposable
+internal sealed partial class ResultWorkspacePresenter:IDisposable
 {
     private sealed class Pane:IDisposable
     {
@@ -94,6 +94,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     private void InputSelected(object? sender,EventArgs args)
     {
         if(_disposed||_restoringInput)return;
+        RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
@@ -105,6 +106,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     private void OutputSelected(object? sender,EventArgs args)
     {
         if(_disposed||_restoringOutput)return;
+        RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
@@ -186,6 +188,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     internal void Refresh()
     {
         if(_disposed)return;
+        RetireRoiPresentation();
         if(_refreshing){_refreshAgain=true;return;}
         _refreshing=true;
         try
@@ -344,7 +347,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
+        if(_disposed)return;RetireRoiPresentation();_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
         var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
         var cancellation=_previewCancellation;_previewCancellation=null;
         Run(new Action[]{

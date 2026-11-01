@@ -10,6 +10,7 @@ namespace SunEyeVision.UI.Shell.Windows;
 
 public partial class MainWindowViewModel
 {
+    internal Func<SunEyeVision.Plugin.Contracts.OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
     private void TryAutoBindRuntimeImageSource(SunEyeVision.Workflow.WorkflowNodeBase node,SunEyeVision.Workflow.WorkflowConnection? connection)
     {
         if(node.RuntimeConfiguration is not { } runtime||runtime.Schema.WorkflowImageInputId is not { } target||
@@ -62,6 +63,9 @@ public partial class MainWindowViewModel
         context.Deactivated+=control.Dispose;
         try
         {
+            control.SetRoiFrameProvider((reference,current)=>context.IsValid?RuntimeRoiFrameBorrow?.Invoke(reference,()=>context.IsValid&&current()):null);
+            void RefreshRoi()=>control.Dispatcher.BeginInvoke(new Action(()=>{if(context.IsValid)control.RefreshRoiFrame();}));
+            ResultWorkspaceChanged+=RefreshRoi;context.Deactivated+=()=>ResultWorkspaceChanged-=RefreshRoi;
             control.BindDraft(context.DraftNode);
             control.SetDebugCapture(draft=>
             {

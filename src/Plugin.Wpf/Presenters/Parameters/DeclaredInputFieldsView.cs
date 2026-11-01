@@ -19,6 +19,9 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
     private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
+    private readonly ToolSchema _schema;
+    private readonly Func<Port,ParameterSetting> _read;
+    private readonly Action<Port,ParameterSetting> _write;
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
@@ -27,6 +30,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         Func<OutputReference,string>? format=null,
         Func<Port,IReadOnlyList<DeclaredReferenceCandidate>>? referenceCandidates=null)
     {
+        _schema=schema;_read=read;_write=write;
         _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
         Fields=_fields.AsReadOnly();
         try
@@ -63,6 +67,26 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         {
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
+    }
+    /// <summary>A tool's nonvisual pure-value input uses the same formal owner callbacks; no extra field state is retained.</summary>
+    public ParameterSetting ReadUnpresentedInput(string id)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var port=Unpresented(id);return _read(port);
+    }
+    public void WriteUnpresentedInput(string id,ParameterSetting setting)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);var port=Unpresented(id);
+        if(setting is not UnsetSetting)_=FieldSettings.Freeze(port,setting);
+        else if(port.Required)throw new ArgumentException("必填输入不能清除。");
+        _write(port,setting);
+    }
+    private Port Unpresented(string id)
+    {
+        var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
+        if(_schema.Presentation!.Fields.Any(field=>field.FieldId==id)||port.Type.Shape==ValueShape.Resource
+            ||port.EditModes!=FieldEditModes.Constant)throw new ArgumentException("此入口仅供未呈现的纯值常量输入。");
+        return port;
     }
     /// <summary>Transfers ownership of a real extra composition into the specified input section.</summary>
     public void AddAfterField(string fieldId,FrameworkElement content,string? section=null)

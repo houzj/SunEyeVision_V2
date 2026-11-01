@@ -1,3 +1,8 @@
+## 2026-11-01 Blob本地ROI正式集成自测
+
+- 正式主仓已接通Blob本地检测区和屏蔽区四形的同一纯值owner、原公共编辑器、实际输入帧、组内历史、保存重开和执行；屏蔽区多形为用户指定扩展。UI与全量Release构建均0错；正式ROI Model 7、Window 5、Reentry 5、Frame 7组通过，四次各15个实际加载程序集哈希与正式目录一致；BlobSupportedWindow 14、BlobCrosshairWorkspace 7及RuntimeWorkflow 10组通过。
+- 非自然鼠标/系统剪贴板，VS设计时和用户运行验收未做；原厂像素等价未证明。继承、图像mask、输出mask及位置修正保持不可误用保护。候选Polygon 6过1失败（隐藏桌面鼠标捕获），旧RoiBindings依赖未发布的ImageThreshold/CircleDetect而失败，均不计通过；不称完整ROI、Blob或S2/S3闭口。 回执见 evidence/BLOB_ROI_FORMAL_20261101.json；候选原始失败和源码见 evidence/BLOB_ROI_CANDIDATE_RECEIPTS_20261101.json。
+
 ## 2026-11-01 VM Blob图像缓冲所有权补证
 
 - 原SDK图像初始化和真实虚表均支持：所核Blob两路结果图像引用算法缓冲而非深拷贝；池存在同尺寸复用、尺寸变化释放重分配、禁用输出清池。不能保证旧图跨运行可持有，也不能推断每次必同址；异常间接释放与全部上层恢复仍未穷尽。原件/报告SHA和限制见 BLOB_ORIGINAL_HOLE_THRESHOLD_20261101.md 的所有权补证。

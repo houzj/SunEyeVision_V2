@@ -31,9 +31,10 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes:FieldEditModes.Reference),
         new Port(InspectionInput, TypeRef.ResourceOf(ResourceKind.Region), false, EditModes:FieldEditModes.Reference),
         new Port(MaskInput, TypeRef.ResourceOf(ResourceKind.Region), false, EditModes:FieldEditModes.Reference),
-        new Port(PoseInput, SpatialDeclarations.Affine2D, false, EditModes:FieldEditModes.Constant|FieldEditModes.Reference)
+        new Port(PoseInput, SpatialDeclarations.Affine2D, false, EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+        BlobLocalRoi.Port
         };
-        return new(inputs,BlobSchema.Outputs,new ToolPresentation(inputs.Select((port,index)=>BlobParameterDefinition.Instance.InputPresentation(port,index))),
+        return new(inputs,BlobSchema.Outputs,new ToolPresentation(inputs.Where(port=>port.Id!=BlobLocalRoi.InputId).Select((port,index)=>BlobParameterDefinition.Instance.InputPresentation(port,index))),
             workflowImageInputId:BlobParameterDefinition.Instance.WorkflowImageInputId,outputDisplay:BlobSchema.OutputDisplay);
     }
     public IReadOnlyList<Diagnostic> ValidateKnownSettings(FieldSettings settings)

@@ -1860,6 +1860,7 @@
     },
     {
       "id": "C08.original-roi-scene",
+      "blobLocalRoiFormal20261101": {"status": "本地检测与屏蔽四形正式宿主自动自测通过，完整ROI未完成", "receipt": "docs/collaboration/evidence/BLOB_ROI_FORMAL_20261101.json", "limitations": "继承、图像及输出掩膜、位置修正未接通；自然鼠标、设计时和原厂像素等价未验证；屏蔽多形为用户扩展"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",

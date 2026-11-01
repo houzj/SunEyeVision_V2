@@ -12,6 +12,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
 {
     private NativeAssistUiDraftControls? _assistUi;
     private BlobSupportedWindowState? _supportedState;
+    private BlobLocalRoiOwner? _roiOwner;
     private NativeRoiUiDraftControls? _roiUi;
     private SunEyeVision.Plugin.Wpf.Presenters.Display.NativeDisplayUiDraftRows? _displayUi;
     private Action? _uiOnlyChanged;
@@ -31,6 +32,8 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
         if(options.InputContent is DeclaredInputFieldsView inputs)
         {
             var pose=BlobRoiUi.Add(inputs,supportedWindow:true,observe:value=>_roiUi=value);
+            _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,options.RoiFrames);
+            _roiOwner.Changed+=OnUiOnlyChanged;
             _supportedState=new BlobSupportedWindowState(draft,inputs){InformationHost=pose};
             _supportedState.Refresh();
             _assistUi=pose as NativeAssistUiDraftControls;
@@ -52,13 +55,14 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     }
     public FrameworkElement View=>this;
     public bool HasInvalidInput=>Editor.HasInvalidInput||HasUiOnlyChanges;
-    public bool HasPendingEdits=>Editor.HasPendingEdits||HasUiOnlyChanges;
-    public long AcceptedRevision=>Editor.AcceptedRevision;
+    public bool HasPendingEdits=>Editor.HasPendingEdits||HasUiOnlyChanges||_roiOwner?.HasPending==true;
+    public long AcceptedRevision=>Editor.AcceptedRevision+(_roiOwner?.Revision??0);
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
     public event Action? Changed {add{Editor.Changed+=value;_uiOnlyChanged+=value;}remove{Editor.Changed-=value;_uiOnlyChanged-=value;}}
     public bool TryCapture(out FieldSettings fields,out string error)
     {
+        if(_roiOwner is not null&&!_roiOwner.TryCapture(out error)){fields=null!;return false;}
         if(_assistUi is {Visibility:Visibility.Visible,IsUnimplementedMode:true})
         {
             fields=null!;error="按点和按坐标的位置修正尚未接入，请切回按信息。";return false;
@@ -74,6 +78,9 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
         if(_roiUi is not null)_roiUi.Changed-=OnUiOnlyChanged;
         if(_assistUi is not null)_assistUi.Changed-=OnUiOnlyChanged;
         if(_displayUi is not null)_displayUi.Changed-=OnUiOnlyChanged;_uiOnlyChanged=null;
-        try{_supportedState?.Dispose();}finally{Editor.Dispose();}
+        if(_roiOwner is not null)_roiOwner.Changed-=OnUiOnlyChanged;
+        var errors=new List<Exception>();
+        foreach(var action in new Action[]{()=>_roiOwner?.Dispose(),()=>_supportedState?.Dispose(),Editor.Dispose})try{action();}catch(Exception error){errors.Add(error);}
+        if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();if(errors.Count>1)throw new AggregateException(errors);
     }
 }

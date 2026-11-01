@@ -46,6 +46,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private string _captureError="";
     private bool _running;
     private Func<WorkflowNodeBase,RuntimeDebugInvocation>? _captureDebug;
+    private Func<OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiFrameProvider;
+    private SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? _roiFrames;
+    internal void SetRoiFrameProvider(Func<OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> provider)=>_roiFrameProvider=provider;
+    internal void RefreshRoiFrame(){if(!_disposed)_roiFrames?.Refresh();}
     public bool HasPendingEdits=>_view is {} view&&(view.HasPendingEdits||view.AcceptedRevision!=_syncedRevision||_captureError.Length!=0)
         ||_inputs.Any(editor=>editor.HasPendingEdits);
     public RuntimeNodeConfigurationControl(WorkflowNodeBase node)
@@ -165,13 +169,22 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
                 SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution)):null;
         FrameworkElement inputContent=(FrameworkElement?)sourceContent??panel!;
         void DisposeInput(){if(sourceContent is not null)sourceContent.Dispose();else panel?.Dispose();}
+        _roiFrames=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource(fieldId=>
+        {
+            bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+                &&ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext {IsValid:true};
+            if(!Current()||node.RuntimeConfiguration!.Fields.Read(fieldId) is not ReferenceSetting setting)return null;
+            var key=BindingReferenceSerializer.Serialize(setting.Reference);
+            bool SameInput()=>Current()&&node.RuntimeConfiguration!.Fields.Read(fieldId) is ReferenceSetting now&&BindingReferenceSerializer.Serialize(now.Reference)==key;
+            return _roiFrameProvider?.Invoke(setting.Reference,SameInput);
+        });
         IToolSettingsView? candidate=null;
         try
         {
         if(_disposed||generation!=_generation){DisposeInput();return;}
         candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.SettingsSchema.Inputs),
             new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
-                candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation)));
+                candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
         if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;_syncedRevision=candidate.AcceptedRevision;_captureError="";
         _view.Changed+=Changed;Content=_view.View;
@@ -394,7 +407,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         finally{if(ReferenceEquals(node.RuntimeConfiguration,proposed))node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;var view=_view;_view=null;_inputs.Clear();
+    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;_roiFrameProvider=null;_roiFrames=null;var view=_view;_view=null;_inputs.Clear();
         var errors=new List<Exception>();try{RetireReferencePresentation();}catch(Exception error){errors.Add(error);}
         try{Content=null;}catch(Exception error){errors.Add(error);}try{if(view is not null){view.Changed-=Changed;view.Dispose();}}catch(Exception error){errors.Add(error);}
         if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();if(errors.Count>1)throw new AggregateException(errors);}

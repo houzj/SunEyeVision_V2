@@ -36,7 +36,8 @@ public sealed record ToolSettingsViewOptions(
     Func<string?>? ValidateUiState=null,
     IReadOnlySet<string>? SuppressedFieldRows=null,
     IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
-    IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null)
+    IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null,
+    SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays

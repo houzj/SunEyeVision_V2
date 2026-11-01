@@ -33,8 +33,43 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public RoiSelectControl NativeView {get;}=new();
     public string Error {get;private set;}="";
     public bool HasInvalidText=>Error.Length!=0;
+    public bool HasPendingEdits=>!_disposed&&(_savedRaw?.Any(raw=>raw is not null)==true||_inputs.Any(input=>input.Raw is not null||DisplayBaseline(input)!=input.Baseline)||_polygon.HasPendingEdits);
+    public NativeRoiPendingInput? CapturePendingInput()
+    {
+        if(_disposed||_session is not {} session||session.CurROIData is not {} item||!HasPendingEdits)return null;
+        var raw=_savedRaw??_inputs.Select(input=>input.Raw??(DisplayBaseline(input)!=input.Baseline?input.Text.Text:null)).ToArray();
+        return new(this,session,item,raw,_polygon.CapturePending());
+    }
+    public bool RestorePendingInput(NativeRoiPendingInput pending)
+    {
+        if(_disposed||!ReferenceEquals(pending.Owner,this)||_session is not {IsCurrent:true} session||session.CurROIData is not {} item
+            ||pending.Group!=item.Group||pending.Id!=item.Id||pending.OriginalStamp.ScopeId!=session.Stamp.ScopeId
+            ||!item.MatchesGeometry(pending.Geometry,item.AcceptedGeometry))return false;
+        _projecting=true;
+        try
+        {
+            AttachInputs();
+            if(_inputs.Count!=0&&pending.Raw.Length!=_inputs.Count)return false;
+            if(!_polygon.RestorePending(pending.PolygonRaw))return false;
+            for(var i=0;i<_inputs.Count;i++)if(pending.Raw[i] is {} raw){_inputs[i].Raw=raw;_inputs[i].Text.SetCurrentValue(TextBox.TextProperty,raw);}
+            if(_suspended||_inputs.Count==0)_savedRaw=pending.Raw.ToArray();
+        }
+        finally{_projecting=false;}
+        PendingChanged?.Invoke();return true;
+    }
+    public Func<bool>? PrepareInteraction {get;set;}
+    private void OnPreparingFocus(object sender,KeyboardFocusChangedEventArgs args)
+    {if(!_disposed&&!_projecting&&!_committing&&PrepareInteraction?.Invoke()==false)args.Handled=true;}
+    public string? Title {get;set;}
+    public bool AllowUnboundFullDomain {get;set;}=true;
+    public bool UnboundFullDomain {get;set;}
+    public event Action? PendingChanged;
+    private void OnPendingChanged(object sender,TextChangedEventArgs args)
+    {if(!_disposed&&!_projecting&&!_committing&&!_suspended)PendingChanged?.Invoke();}
     public NativeRoiEditor()
     {
+        PreviewGotKeyboardFocus+=OnPreparingFocus;
+        AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnPendingChanged));
         _polygon=new(NativeView,()=>!_disposed&&!_projecting&&!_suspended&&(IsLoaded||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)));
         Language=XmlLanguage.GetLanguage("en-US");Child=NativeView;
         NativeView.LayoutUpdated+=OnLayout;PreviewKeyDown+=OnKey;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
@@ -64,9 +99,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
             Error="";foreach(var input in _inputs)input.Raw=null;
             var session=_session;
             _polygon.Bind(session,session?.CurROIData as NativePolygonRoiProjection);
-            NativeView.IsEnabled=session?.IsCurrent==true;
+            NativeView.IsEnabled=session?.IsCurrent==true||session is null&&PrepareInteraction is not null;
             NativeView.ImageWidth=session?.ImageWidth??0;NativeView.ImageHeight=session?.ImageHeight??0;
-            NativeView.DataContext=session is null?null:new Context(this,session,_generation,session.CurROIData);
+            NativeView.DataContext=session is null?(PrepareInteraction is null?null:new UnboundContext(this,_generation)):new Context(this,session,_generation,session.CurROIData);
             NativeView.ApplyTemplate();NativeView.UpdateLayout();AttachInputs();
             foreach(var input in _inputs)input.Baseline=DisplayBaseline(input);
             _projectedSession=session;_projectedItem=session?.CurROIData;_projectedStamp=session?.IsCurrent==true?session.Stamp:null;
@@ -83,10 +118,10 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         _projecting=true;
         try
         {
-            NativeView.DataContext=session is null?null:new Context(this,session,_generation,session.CurROIData);
+            NativeView.DataContext=session is null?(PrepareInteraction is null?null:new UnboundContext(this,_generation)):new Context(this,session,_generation,session.CurROIData);
             NativeView.UpdateLayout();AttachInputs();
             for(var i=0;i<Math.Min(raw.Length,_inputs.Count);i++)
-                if(raw[i] is {} value){_inputs[i].Raw=value;_inputs[i].Text.Text=value;}
+                if(raw[i] is {} value){_inputs[i].Raw=value;_inputs[i].Text.SetCurrentValue(TextBox.TextProperty,value);}
         }
         finally{_projecting=false;}
         var uiGeneration=_uiGeneration;var generation=_generation;
@@ -126,7 +161,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private void OnLeafLoaded(object sender,RoutedEventArgs args)
     {
         var input=_inputs.SingleOrDefault(input=>ReferenceEquals(input.Leaf,sender));
-        if(input?.Raw is {} raw){_projecting=true;try{input.Text.Text=raw;}finally{_projecting=false;}}
+        if(input?.Raw is {} raw){_projecting=true;try{input.Text.SetCurrentValue(TextBox.TextProperty,raw);}finally{_projecting=false;}}
     }
     private void OnText(object sender,TextChangedEventArgs args)
     {
@@ -180,7 +215,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
             item.Cancel();if(!Current())return false;
             foreach(var (i,value) in changed)
             {
-                var input=inputs[i];input.Text.Text=raw[i]??value.ToString("F2",CultureInfo.InvariantCulture);
+                var input=inputs[i];input.Text.SetCurrentValue(TextBox.TextProperty,raw[i]??value.ToString("F2",CultureInfo.InvariantCulture));
                 if(!Current())return false;
                 var inner=input.Text.GetBindingExpression(TextBox.TextProperty)??throw new ArgumentException("原Box内层文字绑定缺失。");
                 inner.UpdateSource();if(!Current())return false;
@@ -225,7 +260,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
             }
             for(var i=0;i<inputs.Length;i++)if(raw[i] is {} value)
             {
-                inputs[i].Raw=value;inputs[i].Text.Text=value;if(!Current())return;
+                inputs[i].Raw=value;inputs[i].Text.SetCurrentValue(TextBox.TextProperty,value);if(!Current())return;
             }
         }
         finally{_projecting=false;}
@@ -243,6 +278,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
         _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
+        PreviewGotKeyboardFocus-=OnPreparingFocus;
+        RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnPendingChanged));PrepareInteraction=null;PendingChanged=null;
         _inputs.Clear();_polygon.Dispose();NativeView.DataContext=null;Child=null;
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject
@@ -250,9 +287,35 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
         {var child=VisualTreeHelper.GetChild(root,i);if(child is T match)yield return match;foreach(var nested in Descendants<T>(child))yield return nested;}
     }
+    // This is only an original-toolbox command route. It contains no image or editable geometry.
+    private sealed class UnboundContext
+    {
+        private readonly NativeRoiEditor _owner;
+        public UnboundContext(NativeRoiEditor owner,long generation)
+        {
+            _owner=owner;
+            ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._suspended&&owner.IsLoaded&&generation==owner._generation,
+                value=>{if(owner.PrepareInteraction?.Invoke()==true&&owner.NativeView.DataContext is Context current)current.ValueChangedCommand.Execute(value);});
+        }
+        public object? CurROIData=>null;
+        public bool IsHaveData=>false;
+        public bool BoxEnable_ModuleEnableA=>false;public bool SectorEnable_ModuleEnableA=>false;
+        public bool SectorRingEnable_ModuleEnableA=>false;public bool PolygonEnable_ModuleEnableA=>false;
+        public bool BoxA {get=>false;set{}} public bool SectorA {get=>false;set{}}
+        public bool SectorRingA {get=>false;set{}} public bool PolygonA {get=>false;set{}}
+        public bool FullScreenEnableA=>_owner.AllowUnboundFullDomain;
+        public bool FullScreen_ModuleEnableA=>_owner.UnboundFullDomain;
+        public bool FullScreenA {get=>_owner.UnboundFullDomain;set{}}
+        public bool IsAvoid=>!_owner.AllowUnboundFullDomain;public bool Is3DROI=>false;
+        public string ROISelectionA=>"Box SectorRing Sector Polygon";
+        public string DisplayNameA=>_owner.Title??"ROI形状";public string DescriptionA=>DisplayNameA;
+        public ICommand ValueChangedCommand {get;}
+        public ICommand ROIValueChangedCommand=>ValueChangedCommand;
+    }
     private sealed class Context : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly NativeRoiSession _session;
+        private readonly NativeRoiEditor _owner;
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
         internal void RefreshTools()
         {
@@ -261,12 +324,12 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         }
         public Context(NativeRoiEditor owner,NativeRoiSession session,long generation,NativeRoiProjection? item)
         {
-            _session=session;var uiGeneration=owner._uiGeneration;
+            _owner=owner;_session=session;var uiGeneration=owner._uiGeneration;
             ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded
                 &&uiGeneration==owner._uiGeneration&&generation==owner._generation&&ReferenceEquals(owner._session,session)&&session.IsCurrent,
                 value=>
                 {
-                    try{session.ValueChangedCommand.Execute(value);}
+                    try{if(owner.PrepareInteraction?.Invoke()!=false&&!owner._disposed&&!owner._suspended&&uiGeneration==owner._uiGeneration&&ReferenceEquals(owner._session,session)&&session.IsCurrent)session.ValueChangedCommand.Execute(value);}
                     finally{RefreshTools();}
                 });
             ROIValueChangedCommand=new CommitCommand(()=>
@@ -288,7 +351,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
         public string ROISelectionA=>_session.ROISelectionA;
-        public string DisplayNameA=>_session.DisplayNameA;
+        public string DisplayNameA=>_owner.Title??_session.DisplayNameA;
         public string DescriptionA=>_session.DescriptionA;
         public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand {get;}

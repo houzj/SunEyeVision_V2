@@ -24,7 +24,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private readonly StackPanel _rectangleParameters=new(),_circleParameters=new();
     private readonly DeclaredFieldEditor _circleSource;
     private readonly DeclaredFieldState _area,_detection,_inherit,_mask;
-    private readonly FrameworkElement _imageInput,_detectionRadio,_inheritRadio,_detectionShapes,_maskRadio,_maskShapes;
+    private readonly FrameworkElement _imageInput,_detectionRadio,_inheritRadio,_maskRadio;
+    private FrameworkElement _detectionShapes,_maskShapes;
     private FrameworkElement? _detectionSource,_maskSource;
     private bool _disposed;
     private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _baseline=[];
@@ -32,7 +33,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     public bool HasUiChanges=>!_disposed&&(_states.Any(state=>state.Accepted is not ConstantSetting {Value:0L})
         ||_inheritEditors.Any(editor=>editor.HasPendingEdits||!DeclaredFieldState.SameSetting(editor.Setting,_baseline[editor]))
         ||(_imageInput is NativeRow {RightContent:ComboBox image}&&(!string.IsNullOrEmpty(image.Text)||image.SelectedIndex>=0))
-        ||((ShapeContext)_detectionShapes.DataContext).HasChanges||((ShapeContext)_maskShapes.DataContext).HasChanges);
+        ||(_detectionShapes.DataContext is ShapeContext detection&&detection.HasChanges)||(_maskShapes.DataContext is ShapeContext mask&&mask.HasChanges));
     private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
     private void OnShapeChanged(object? sender,PropertyChangedEventArgs args)=>OnUiChanged();
     private void OnImageSelection(object sender,SelectionChangedEventArgs args)=>OnUiChanged();
@@ -76,6 +77,17 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         ((ShapeContext)_maskShapes.DataContext).PropertyChanged+=OnShapeChanged;
         if(_imageInput is NativeRow {RightContent:ComboBox image})
         {image.SelectionChanged+=OnImageSelection;image.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
+        ProjectVisibility();
+    }
+    public bool IsLocalDrawing(string group)=>!_disposed&&Value(_area)==0&&Value(group=="inspection"?_detection:_mask)==0;
+    public void BindLocalEditors(NativeRoiEditor detection,NativeRoiEditor mask)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_detectionShapes is NativeRoiEditor||detection.Parent is not null||mask.Parent is not null)throw new InvalidOperationException("区域编辑器已经归属视图。");
+        if(_detectionShapes.DataContext is ShapeContext first)first.PropertyChanged-=OnShapeChanged;
+        if(_maskShapes.DataContext is ShapeContext second)second.PropertyChanged-=OnShapeChanged;
+        var firstIndex=Children.IndexOf(_detectionShapes);Children.RemoveAt(firstIndex);Children.Insert(firstIndex,detection);_detectionShapes=detection;
+        var secondIndex=Children.IndexOf(_maskShapes);Children.RemoveAt(secondIndex);Children.Insert(secondIndex,mask);_maskShapes=mask;
         ProjectVisibility();
     }
     private (DeclaredFieldState,FrameworkElement) AddRadio(string label,string[] choices)

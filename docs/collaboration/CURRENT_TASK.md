@@ -1,3 +1,27 @@
+## 2026-11-01 Blob受限真实窗口正式集成
+
+- 候选提交 5ccbd2a9 以 0e86b03d 为基线，已按文件哈希集成主仓。真实 Blob 窗口对已接入的图像、单阈值和无检测/屏蔽区域语义走正式草稿、确认、历史、保存重开和执行；VM 原 ROI 四态及图文临时交互保留，未接入或非安全默认项保值并拒绝捕获，非空像素 Region 不冒充原几何。
+- 主仓 UI、全量 Release 构建均 0 错误（分别 6535/6537 警告）；正式 BlobSupportedWindow attempt-001 14组、RuntimeWorkflow attempt-072 10组、RuntimeAlgorithm attempt-007 9组、BlobParameterProduction attempt-012 21组通过。窗口实际加载 15 DLL 哈希与正式目录全部一致；回执及日志位于 Release/_validation/BlobSupportedWindow-Formal-20261101 与各专项 attempt。未启动正式 GUI。
+- 限制：ROI正向窗口、图文正式结果层、原厂算法同态、跨文档/Root整合、真实鼠标和自然焦点未验；VS设计时及用户运行时按用户安排人工检查。本批不是 Blob 或 S2/S3 整体闭口。
+- 图像显示补证：VM 的主图、背景、勾选及独立输入视图和图像条追溯见 D:/MyWork/REA逆向测试/docs/joint-audit/VM图像显示身份与图像条切换补证-20261101.md；CheckedImages 原生读写和复制各有独立调用链，磁盘存储及复制重映射尚未证，本批未修改图像显示合同。
+## 2026-11-01 VM阈值优化路径补证
+
+- 原版4.4的四条已核单阈值优化路径和对应标量尾部，静态指令支持与p>=t、p<t端点规则一致；具体四函数/指令/原件SHA见 BLOB_ORIGINAL_THRESHOLD_OPTIMIZED_20261101.md。此结论细化此前“CPU优化路径未证”，不代表已运行CPU路径或穷尽异常尺寸/内存情况；UI极性名称到内核字段的写入边、原机像素差分和最终Domain仍未闭合。
+- 原厂内嵌元数据表中HoleMinArea/FindNum及SortFeature/SortMode分别是不同编号；UI资源重复索引不足以推断存储相同。原连通4/8校验另有对象字段条件，故4/8是必要条件而非完整准入。区域处理/填孔/排序顺序仍不凭函数名推断。
+- Blob受限窗口候选独立开发与运行验证进行中；本条为原厂静态证据，未开放双阈值、不改变算法、不计S3完成。
+## 2026-11-01 原厂阈值标量分支补证
+
+- 逆向负责人核 VM 4.4 原生8位标量分支：180724740 在 p>=t 写255，180724c20 在 p<t 写255；双阈值180724630包含上下端点。范围限所核函数，不代表所有CPU派发、界面极性映射或最终图像Domain。
+- 主仓正式 0e86b03d 的 RuntimeAlgorithm attempt-006 已产出阈值0/100/255、Binary/BinaryInv六组真实HALCON像素掩膜；本次离线逐字节对照上述两条标量公式全部匹配，见 BLOB_THRESHOLD_SCALAR_COMPARISON_20261101.json。VM未运行、无原机同图差分；双阈值正式保护继续保留，不称完整算法同态。原件报告及SHA见 BLOB_ORIGINAL_THRESHOLD_SCALAR_20261101.md。
+- 独立窗口候选仍在实施；该静态对照未修改产品或重建Release，不代S2或S3闭口。
+## 2026-11-01 Blob正式窗口可用范围候选
+
+- 按用户“缺其他基础标明、不扩展”的决定，从源码 0e86b03d 创建独立候选 `D:/MyWork/line-aiproject/blob-supported-window-20261101`，整批核对真实图像/单阈值正式字段、无检测Region和无屏蔽时的有效域执行与保存；本方像素Region不能冒称VM几何组合，已有引用保值且保护未解除，未实现的原几何/位置/图文不得伪装完成或默默丢失既有配置。
+- 候选由独立开发线完整设计实施，主线负责原厂证据、并行只读审查和集成。必须维持真实UI预览及不误用，验证取消确认、历史复制、保存重开、同/错帧、生命周期；不能只移除总保护。候选尚未完成，不影响正式版本、不代表S2闭口。
+## 2026-11-01 Blob直接执行模式保护正式验证
+
+- 主仓源码提交 0e86b03d：公开 Execute 与正式 ExecuteAsync 对非单阈值未就绪模式一致拒绝，未改变支持模式算法。正式 UI、全量 Release 构建均0错误；同版 RuntimeAlgorithm attempt-006 和 BlobParameterProduction attempt-011 通过，均加载相同正式 Blob Runtime SHA256 8EBCFCE5B5BCDB678B70BEA364EEDB948D69776D73BDDB5E617BEE685B002B96。日志及边界见 Release/_validation/BlobDirectModeGuard-20261101/receipt.json。
+- 仅防未就绪模式通过公开直接入口误用，不代表该模式或 ROI/Blob整链闭口，也不代表 VM 像素等价；旧 O06Algorithm 实验轨未运行、不计通过。真实程序界面未启动，由用户自行启动；VS设计器按用户决定手动检查，均未记为已验。
 ## 2026-11-01 Blob直接执行模式保护候选
 
 - 核实公开 BlobSession.Execute 原先可绕过 ExecuteAsync 对非单阈值模式的 BLOB_MODE_NOT_READY 保护；生产 UI/工作流未发现直接绕过调用，但公开入口可能错误执行未验证语义。现候选和主仓源码在冻结设置后、HALCON作用域及读图前拒绝其他模式；原异步诊断保持，未开放或宣称完成任何新阈值模式。

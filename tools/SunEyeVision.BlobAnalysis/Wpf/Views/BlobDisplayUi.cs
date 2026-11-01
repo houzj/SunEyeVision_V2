@@ -7,7 +7,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 internal static class BlobDisplayUi
 {
-    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,ToolSchema schema)
+    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,ToolSchema schema,bool supportedWindow=false,Action<NativeDisplayUiDraftRows>? observe=null)
     {
         var pages=options.AdditionalPageContents?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
             ??new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
@@ -22,10 +22,16 @@ internal static class BlobDisplayUi
             new NativeDisplayUiDraftEntry("文本",false),
             new NativeDisplayUiDraftEntry("屏蔽区域",true),
             new NativeDisplayUiDraftEntry("扇环检测区域",true)},includeTextSettings:true);
+        if(supportedWindow)
+        {
+            display.ToolTip="仅预览，图形和文本尚未接入执行；修改后不能确认。";
+            System.Windows.Controls.ToolTipService.SetShowOnDisabled(display,true);
+        }
         if(options.AdditionalAfterContent is {} assist)
         {
             display.BindEntryVisibility(4,assist);display.BindEntryVisibility(5,assist);
         }
+        observe?.Invoke(display);
         pages.Add("结果显示",display);
         var fields=schema.Presentation!.Fields.Where(field=>field.Group=="结果判定").ToArray();
         var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);

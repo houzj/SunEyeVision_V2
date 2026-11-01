@@ -34,7 +34,7 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
             Add("基准角度",3);Add("基准尺度X",3);Add("基准尺度Y",3);
             Add("运行点",1);Add("运行点X",2);Add("运行点Y",2);
             Add("运行角度",3);Add("运行尺度X",3);Add("运行尺度Y",3);
-            _mode.Changed+=ProjectVisibility;ProjectVisibility();
+            _mode.Changed+=ProjectVisibility;_mode.Changed+=OnUiChanged;foreach(var row in _rows)row.Editor.Changed+=OnUiChanged;ProjectVisibility();
         }
         catch{Dispose();throw;}
     }
@@ -47,6 +47,9 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
             {ToolTip="界面试用，来源功能尚未接入。"};
         _rows.Add((editor,visibleMode));Children.Add(editor);
     }
+    public event Action? Changed;
+    public bool HasUiChanges=>!_disposed&&(IsUnimplementedMode||_rows.Any(row=>row.Editor.HasPendingEdits||row.Editor.Setting is not UnsetSetting));
+    private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
     public bool IsUnimplementedMode=>!_disposed&&(long)((ConstantSetting)_mode.Accepted).Value! != 0;
     public bool TrySetMode(long mode)=>_radio.TrySetConstant(mode);
     private void ProjectVisibility()
@@ -60,7 +63,7 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        _mode.Changed-=ProjectVisibility;Children.Clear();
+        _mode.Changed-=ProjectVisibility;_mode.Changed-=OnUiChanged;foreach(var row in _rows)row.Editor.Changed-=OnUiChanged;Changed=null;Children.Clear();
         foreach(var (editor,_) in _rows)editor.Dispose();
         _radio.Dispose();_mode.Dispose();
     }

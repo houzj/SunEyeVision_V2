@@ -12,7 +12,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 /// <summary>Unavailable original-page roles; real settings continue to use the single host draft.</summary>
 internal static class BlobRunUi
 {
-    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options)
+    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,Func<string?>? validateSupportedState=null)
     {
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
         var created=new List<DeclaredFieldEditor>();
@@ -130,7 +130,7 @@ internal static class BlobRunUi
                 {
                     var previous=options.ValidateUiState?.Invoke();
                     if(!string.IsNullOrEmpty(previous))return previous;
-                    return "ROI绘制、继承模式及结果显示组合尚未接入正式状态，当前窗口不能执行或保存。";
+                    return validateSupportedState is not null?validateSupportedState():"ROI绘制、继承模式及结果显示组合尚未接入正式状态，当前窗口不能执行或保存。";
                 }};
         }
         catch(Exception failure)

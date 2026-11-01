@@ -1,0 +1,61 @@
+{
+  "scope": "VM 4.4 原生8位标量分支公式与本方正式HALCON六组既有像素样本对照；非原机差分",
+  "sourceCommit": "0e86b03ddb4e639e00029e3361e41312ea166d3b",
+  "vmEvidenceSha256": "E5DF0108FFC8EF97FAC9E44CE6CE279103832EDB20B53AC388538178252C9974",
+  "sunEyeMaskSha256": "2D86A9CB2E1701332EDAA377CABBDE2C5B98A8F7C5B9E0F7F716393C9ECAB24C",
+  "vmNativeFunctions": [
+    "180724740:p>=t",
+    "180724c20:p<t"
+  ],
+  "cases": [
+    {
+      "threshold": 0,
+      "polarity": "Binary",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "/////////w==",
+      "formulaMatches": true
+    },
+    {
+      "threshold": 0,
+      "polarity": "BinaryInv",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "AAAAAAAAAA==",
+      "formulaMatches": true
+    },
+    {
+      "threshold": 100,
+      "polarity": "Binary",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "AAAA/////w==",
+      "formulaMatches": true
+    },
+    {
+      "threshold": 100,
+      "polarity": "BinaryInv",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "////AAAAAA==",
+      "formulaMatches": true
+    },
+    {
+      "threshold": 255,
+      "polarity": "Binary",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "AAAAAAAA/w==",
+      "formulaMatches": true
+    },
+    {
+      "threshold": 255,
+      "polarity": "BinaryInv",
+      "inputBase64": "AAFjZGX+/w==",
+      "actualMaskBase64": "////////AA==",
+      "formulaMatches": true
+    }
+  ],
+  "notProven": [
+    "VM界面极性到原生分支映射",
+    "VM CPU优化分支端点",
+    "原机像素差分",
+    "最终二值图Domain",
+    "双阈值完整生产链"
+  ]
+}

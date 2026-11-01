@@ -1,0 +1,89 @@
+{
+  "baseline": "0e86b03ddb4e639e00029e3361e41312ea166d3b",
+  "scope": "独立候选，受限Blob真实窗口；不是Region正向窗口或S2整体完成",
+  "build": "Release/_validation/BlobSupportedWindow-20261101/build-final-006.log",
+  "errors": 0,
+  "warnings": 3444,
+  "hashCheck": {
+    "sourceCount": 9,
+    "sourceMismatch": 0,
+    "loadedCount": 15,
+    "loadedMismatch": 0
+  },
+  "receipts": [
+    {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 6,
+      "pid": 126592,
+      "exit": 0,
+      "timeoutMs": 180000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4BlobSupportedWindowCases.cs",
+      "caseSourceSha256": "D8A861F021B4F7FE929E2E5B2A38882C242F822CCF99CB61175E810A8026F4AE",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobSupportedWindow\\attempt-006"
+    },
+    {
+      "stage": "S3",
+      "validationScope": "Candidate",
+      "attempt": 1,
+      "pid": 137572,
+      "exit": 0,
+      "timeoutMs": 90000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S3RuntimeWorkflowCases.cs",
+      "caseSourceSha256": "5CD145C2439ED19762C2978352FF931DFD4AF9B442F42F020C54E169D1368765",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-001"
+    },
+    {
+      "stage": "S3",
+      "validationScope": "Candidate",
+      "attempt": 1,
+      "pid": 92692,
+      "exit": 0,
+      "timeoutMs": 90000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S3BlobRuntimeCases.cs",
+      "caseSourceSha256": "270B20167E8F4220B8DFD1B354FDFA90DB85D505C772A92629E90A6544B42F3B",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-001"
+    },
+    {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 1,
+      "pid": 36500,
+      "exit": 0,
+      "timeoutMs": 90000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4BlobParameterProductionCases.cs",
+      "caseSourceSha256": "2D59640E41FFD16B41B425A80372585B7013716F1865521CAB7F993B98B64C6F",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-001",
+      "track": "BlobParameterProduction",
+      "caseReport": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-001\\blob-parameter-production-report.json"
+    },
+    {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 7,
+      "pid": 140032,
+      "exit": 0,
+      "timeoutMs": 180000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4BlobSupportedWindowCases.cs",
+      "caseSourceSha256": "2CB7B0C68CB1E0B22B8BBF362421928830F0480BD55D225E6FEA51F40A4AC57D",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobSupportedWindow\\attempt-007"
+    }
+  ],
+  "unverified": [
+    "真实系统鼠标/自然焦点转移",
+    "非空Region真实窗口正向保存执行",
+    "跨文档/Root正式整合回归",
+    "VS实际设计器及其他DPI",
+    "原厂算法同态与ROI/图文生产链"
+  ]
+}

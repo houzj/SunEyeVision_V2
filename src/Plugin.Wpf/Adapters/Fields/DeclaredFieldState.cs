@@ -269,7 +269,7 @@ internal sealed class DeclaredFieldState : IDisposable
         SourceError = error; Changed?.Invoke();
     }
 
-    private static bool SameSetting(ParameterSetting left, ParameterSetting right) => (left, right) switch
+    internal static bool SameSetting(ParameterSetting left, ParameterSetting right) => (left, right) switch
     {
         (UnsetSetting, UnsetSetting) => true,
         (ConstantSetting a, ConstantSetting b) => SameValue(a.Value, b.Value),

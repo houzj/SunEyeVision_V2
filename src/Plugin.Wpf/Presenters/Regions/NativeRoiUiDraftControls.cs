@@ -27,8 +27,19 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private readonly FrameworkElement _imageInput,_detectionRadio,_inheritRadio,_detectionShapes,_maskRadio,_maskShapes;
     private FrameworkElement? _detectionSource,_maskSource;
     private bool _disposed;
+    private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _baseline=[];
+    public event Action? Changed;
+    public bool HasUiChanges=>!_disposed&&(_states.Any(state=>state.Accepted is not ConstantSetting {Value:0L})
+        ||_inheritEditors.Any(editor=>editor.HasPendingEdits||!DeclaredFieldState.SameSetting(editor.Setting,_baseline[editor]))
+        ||(_imageInput is NativeRow {RightContent:ComboBox image}&&(!string.IsNullOrEmpty(image.Text)||image.SelectedIndex>=0))
+        ||((ShapeContext)_detectionShapes.DataContext).HasChanges||((ShapeContext)_maskShapes.DataContext).HasChanges);
+    private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
+    private void OnShapeChanged(object? sender,PropertyChangedEventArgs args)=>OnUiChanged();
+    private void OnImageSelection(object sender,SelectionChangedEventArgs args)=>OnUiChanged();
+    private void OnImageText(object sender,TextChangedEventArgs args)=>OnUiChanged();
     public FrameworkElement GraphicVisibilitySource=>_detectionRadio;
-    public NativeRoiUiDraftControls()
+    public NativeRoiUiDraftControls():this(false){}
+    public NativeRoiUiDraftControls(bool geometryOnlyPresentation)
     {
         var outputMask=new DeclaredFieldEditor(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
             new ConstantSetting(false),_=>{});
@@ -48,7 +59,23 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         Children.Add(_rectangleParameters);Children.Add(_circleParameters);
         (_mask,_maskRadio)=AddRadio("屏蔽区创建",new[]{"绘制","继承"});
         _maskShapes=Shape("屏蔽区",true,initialFullScreen:false);Children.Add(_maskShapes);
+        if(geometryOnlyPresentation)
+        {
+            DeclaredFieldEditor Placeholder(string id,string label,TypeRef type)
+            {
+                var editor=new DeclaredFieldEditor(new Port(id,type,Required:false,EditModes:FieldEditModes.Reference),label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
+                    {ToolTip="仅预览，几何继承尚未接入执行。"};
+                _inheritEditors.Add(editor);return editor;
+            }
+            BindSourceRows(Placeholder("ui-only-rectangle-source","区域",RoiDeclarations.Shape),Placeholder("ui-only-mask-source","屏蔽区域",DataType.Text));
+        }
         _area.Changed+=ProjectVisibility;_detection.Changed+=ProjectVisibility;_inherit.Changed+=ProjectVisibility;_mask.Changed+=ProjectVisibility;
+        foreach(var editor in _inheritEditors){_baseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;}
+        foreach(var state in _states)state.Changed+=OnUiChanged;
+        ((ShapeContext)_detectionShapes.DataContext).PropertyChanged+=OnShapeChanged;
+        ((ShapeContext)_maskShapes.DataContext).PropertyChanged+=OnShapeChanged;
+        if(_imageInput is NativeRow {RightContent:ComboBox image})
+        {image.SelectionChanged+=OnImageSelection;image.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
         ProjectVisibility();
     }
     private (DeclaredFieldState,FrameworkElement) AddRadio(string label,string[] choices)
@@ -95,14 +122,17 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _inheritRadio.Visibility=graphic&&!draw?Visibility.Visible:Visibility.Collapsed;
         _maskRadio.Visibility=graphic?Visibility.Visible:Visibility.Collapsed;
         _maskShapes.Visibility=graphic&&maskDraw?Visibility.Visible:Visibility.Collapsed;
+
     }
     private static RoiSelectControl Shape(string title,bool fullScreen,bool initialFullScreen=true)
         =>new(){DataContext=new ShapeContext(title,fullScreen,initialFullScreen)};
     private sealed class ShapeContext : INotifyPropertyChanged
     {
         private RoiType _selected;
+        private readonly RoiType _initial;
+        public bool HasChanges=>_selected!=_initial;
         public ShapeContext(string name,bool fullScreen,bool initialFullScreen)
-        {DisplayNameA=name;FullScreenEnableA=fullScreen;_selected=fullScreen&&initialFullScreen?RoiType.FullScreen:RoiType.Default;ValueChangedCommand=new ShapeCommand(Select);}
+        {DisplayNameA=name;FullScreenEnableA=fullScreen;_selected=fullScreen&&initialFullScreen?RoiType.FullScreen:RoiType.Default;_initial=_selected;ValueChangedCommand=new ShapeCommand(Select);}
         public string DisplayNameA {get;}
         public string DescriptionA=>DisplayNameA;
         public bool FullScreenEnableA {get;}
@@ -137,6 +167,12 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
+        foreach(var editor in _inheritEditors)editor.Changed-=OnUiChanged;
+        if(_imageInput is NativeRow {RightContent:ComboBox image})
+        {image.SelectionChanged-=OnImageSelection;image.RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
+        foreach(var state in _states)state.Changed-=OnUiChanged;
+        if(_detectionShapes?.DataContext is ShapeContext detection)detection.PropertyChanged-=OnShapeChanged;
+        if(_maskShapes?.DataContext is ShapeContext mask)mask.PropertyChanged-=OnShapeChanged;Changed=null;
         _area.Changed-=ProjectVisibility;_detection.Changed-=ProjectVisibility;_inherit.Changed-=ProjectVisibility;_mask.Changed-=ProjectVisibility;
         _detectionSource=null;_maskSource=null;
         Children.Clear();_rectangleParameters.Children.Clear();_circleParameters.Children.Clear();

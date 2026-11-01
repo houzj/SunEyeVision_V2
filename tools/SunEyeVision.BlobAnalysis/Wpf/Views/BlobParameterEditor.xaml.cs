@@ -11,6 +11,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 public partial class BlobParameterEditor : UserControl,IToolSettingsView
 {
     private NativeAssistUiDraftControls? _assistUi;
+    private BlobSupportedWindowState? _supportedState;
+    private NativeRoiUiDraftControls? _roiUi;
+    private SunEyeVision.Plugin.Wpf.Presenters.Display.NativeDisplayUiDraftRows? _displayUi;
+    private Action? _uiOnlyChanged;
+    private bool _disposed;
+    private bool HasUiOnlyChanges=>_roiUi?.HasUiChanges==true||_assistUi?.HasUiChanges==true||_displayUi?.HasUiChanges==true;
+    private string? ValidateSupportedState()=>HasUiOnlyChanges?"尚未接入的界面设置已修改，请恢复原状态后再确认。":_supportedState?.Validate();
     public BlobParameterEditor()
     {
         InitializeComponent();
@@ -23,10 +30,12 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
         Editor.SetCurrentValue(DeclaredSettingsView.SelectedPageIndexProperty,0);
         if(options.InputContent is DeclaredInputFieldsView inputs)
         {
-            var pose=BlobRoiUi.Add(inputs);
+            var pose=BlobRoiUi.Add(inputs,supportedWindow:true,observe:value=>_roiUi=value);
+            _supportedState=new BlobSupportedWindowState(draft,inputs){InformationHost=pose};
+            _supportedState.Refresh();
             _assistUi=pose as NativeAssistUiDraftControls;
             const string position="field:c95f3a26edf55097863a7ec47d17cce5";
-            options=options with {AdditionalAfterField=position,AdditionalAfterContent=pose,AdditionalAfterCondition=new(position,true),
+            options=options with {AdditionalAfterField=position,AdditionalAfterContent=pose,
                 HeaderlessSectionAnchors=new HashSet<string>{position}};
             if(_assistUi?.GraphicVisibilitySource is {} source)
             {
@@ -35,15 +44,19 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
                 gates[position]=source;options=options with{FieldVisibilitySources=gates};
             }
         }
-        Editor.Bind(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(options),draft.Schema));
+        Editor.Bind(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(options,_supportedState is null?null:ValidateSupportedState),draft.Schema,supportedWindow:true,observe:value=>_displayUi=value));
+        Editor.Changed+=RefreshSupportedState;
+        if(_roiUi is not null)_roiUi.Changed+=OnUiOnlyChanged;
+        if(_assistUi is not null)_assistUi.Changed+=OnUiOnlyChanged;
+        if(_displayUi is not null)_displayUi.Changed+=OnUiOnlyChanged;
     }
     public FrameworkElement View=>this;
-    public bool HasInvalidInput=>Editor.HasInvalidInput;
-    public bool HasPendingEdits=>Editor.HasPendingEdits;
+    public bool HasInvalidInput=>Editor.HasInvalidInput||HasUiOnlyChanges;
+    public bool HasPendingEdits=>Editor.HasPendingEdits||HasUiOnlyChanges;
     public long AcceptedRevision=>Editor.AcceptedRevision;
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
-    public event Action? Changed {add=>Editor.Changed+=value;remove=>Editor.Changed-=value;}
+    public event Action? Changed {add{Editor.Changed+=value;_uiOnlyChanged+=value;}remove{Editor.Changed-=value;_uiOnlyChanged-=value;}}
     public bool TryCapture(out FieldSettings fields,out string error)
     {
         if(_assistUi is {Visibility:Visibility.Visible,IsUnimplementedMode:true})
@@ -52,5 +65,15 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
         }
         return Editor.TryCapture(out fields,out error);
     }
-    public void Dispose()=>Editor.Dispose();
+    private void RefreshSupportedState()=>_supportedState?.Refresh();
+    private void OnUiOnlyChanged(){if(!_disposed)_uiOnlyChanged?.Invoke();}
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;
+        Editor.Changed-=RefreshSupportedState;
+        if(_roiUi is not null)_roiUi.Changed-=OnUiOnlyChanged;
+        if(_assistUi is not null)_assistUi.Changed-=OnUiOnlyChanged;
+        if(_displayUi is not null)_displayUi.Changed-=OnUiOnlyChanged;_uiOnlyChanged=null;
+        try{_supportedState?.Dispose();}finally{Editor.Dispose();}
+    }
 }

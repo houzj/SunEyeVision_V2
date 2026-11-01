@@ -15,6 +15,15 @@ internal static class S2DocumentEditingCases
             var settings=new BlobSettings{Threshold=100,IsAreaFilterEnabled=false};
             HOperatorSet.SetSystem("max_connection",0);HOperatorSet.SetSystem("tsp_neighborhood",4);
             var bytes=new byte[64];bytes[18]=bytes[27]=200;using var input=HalImage.CreateFromBytes(bytes,8,8,1);
+            foreach(var unsupported in new[]{BlobSegmentationMode.None,BlobSegmentationMode.DoubleThreshold})
+            {
+                var modeRejected=false;
+                try { using var ignored=Run(input,settings with{SegmentationMode=unsupported}); }
+                catch(InvalidOperationException e) when(e.Message.Contains("BLOB_MODE_NOT_READY",StringComparison.Ordinal)) { modeRejected=true; }
+                Require(modeRejected,"直接执行入口允许尚未就绪的分割模式："+unsupported);
+            }
+            HOperatorSet.GetSystem("tsp_neighborhood",out var beforeReady);using(beforeReady)Require(beforeReady.I==4,"未就绪模式改变了HALCON调用线程设置");
+            Console.WriteLine("通过：直接执行拒绝所有未就绪分割模式且不改变调用线程");
             using(var output=Run(input,settings))Require(output.Count==1&&output.TotalArea==2,"不是8邻域连接");
             HOperatorSet.GetSystem("tsp_neighborhood",out var restored);using(restored)Require(restored.I==4,"没有恢复调用线程设置");
             Console.WriteLine("通过：Runtime真实HALCON固定8邻域并恢复原线程设置");

@@ -51,6 +51,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
+        if (settings.SegmentationMode != BlobSegmentationMode.SingleThreshold)
+            throw new InvalidOperationException("BLOB_MODE_NOT_READY: 该阈值模式尚未完成原厂语义对齐。");
         var errors = settings.Validate();
         if (errors.Count != 0) throw new ArgumentException(string.Join("; ", errors.Select(x => x.Message)));
         if ((requested & ~(BlobOutputRequest.GrayImage | BlobOutputRequest.BinaryImage | BlobOutputRequest.Boundary)) != 0)

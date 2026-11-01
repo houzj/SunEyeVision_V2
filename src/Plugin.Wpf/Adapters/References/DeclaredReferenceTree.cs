@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 
@@ -17,7 +18,7 @@ internal static class DeclaredReferenceTree
     internal static IReadOnlyList<ReferenceTreeNode> Build(IEnumerable<DeclaredReferenceCandidate> candidates,bool includeClear)
     {
         var roots=new List<ReferenceTreeNode>();
-        if(includeClear)roots.Add(new("无",Array.Empty<ReferenceTreeNode>(),Clear:true));
+        if(includeClear)roots.Add(new(AppLocalizationService.GetLang("None"),Array.Empty<ReferenceTreeNode>(),Clear:true));
         foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)).OrderBy(group=>group.First().NodeDisplayName))
         {
             var outputs=new Dictionary<string,Branch>(StringComparer.Ordinal);

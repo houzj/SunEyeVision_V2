@@ -32,6 +32,10 @@ B08此前已固定的命名修复源码检查点为 `55507bce44a793f1f5f18b40dcb
 
 完整静态原件、身份、依赖、已证行为及需实机补证见 `VM_RANGE_CONTROL_BATCH_20261029.md`。原控件与参数模型保留跨端约束，订阅回读时序仍未知；原控件候选中无证的六处跳过夹值条件已撤回，但Presenter整体行为未完成核定。正式草稿/引用准入、原文与宿主重入等候选未经构建运行；不要用旧测试或待证的300接纳断言代替VM对照。
 
+## 2026-11-01 C07 正式消费者回归
+
+正式Release中英文各12组通过，实际加载各15个程序集与正式目录哈希一致；真实树路由、字段接纳、保存重开和窗口退役已核。“无/None”复用正式语言资源。非物理键鼠；VS设计时、人工、语言热切换及原厂偏好持久化未验。FindNum样本结果为0，不证明限数算法；不称完整C07/B08或S2/S3完成。 旧容器断开后事件载荷为DisconnectedItem，旧request拒绝另行验证；详见 evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json。
+
 ## 来源订阅 Popup 与 SubTreeView
 
 原链：字段 → Apps.PcUI `ButtonSelecter_sub` 的两个Popup → `DeleteTextBox` / `SubTreeView` → 来源及索引选择；展开窗口与当前字段共享同一来源会话。Catalog中C07三条记录原Popup、文本、树及模板身份。

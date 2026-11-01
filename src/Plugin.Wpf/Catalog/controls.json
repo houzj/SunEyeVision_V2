@@ -1770,6 +1770,7 @@
     },
     {
       "id": "C07.original-expanded-reference-window",
+      "blobExpandedFormal20261101": {"receipt": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "status": "中英文各12组正式消费者回归通过；完整控件未闭口"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",

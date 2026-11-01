@@ -1,0 +1,144 @@
+{
+  "baseline": "5ccbd2a945f8902a0d82bc7eae9141f419f1633d",
+  "productChanged": false,
+  "conclusion": "只确认真实WPF焦点事件及pending恢复；未证原生Popup用户输入或真实鼠标；失败不作为产品问题",
+  "observations": [
+    {
+      "attempt": 8,
+      "exit": "180秒超时，runner已终止自有进程；无receipt",
+      "sourceSha256": "28C3C260E46377321758E514EBAB51DE7F7322512CAB3B01E79B3AE0992AF311",
+      "path": "Release\\_validation\\S4-20261025\\BlobSupportedWindow\\attempt-008",
+      "events": [
+        {
+          "phase": "open-baseline",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": false,
+          "got": 0,
+          "lost": 0,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204345270,
+          "HasUiChanges": false
+        },
+        {
+          "phase": "focus-result-True",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": true,
+          "got": 1,
+          "lost": 0,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204345270,
+          "HasUiChanges": false
+        },
+        {
+          "phase": "invalid-open",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": true,
+          "got": 1,
+          "lost": 0,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204345270,
+          "HasUiChanges": true
+        },
+        {
+          "phase": "invalid-real-focus-transfer",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": false,
+          "got": 1,
+          "lost": 1,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204345270,
+          "HasUiChanges": true
+        },
+        {
+          "phase": "invalid-closed",
+          "IsDropDownOpen": false,
+          "IsOpen": false,
+          "IsKeyboardFocused": false,
+          "got": 1,
+          "lost": 1,
+          "nativeFocus": 212409158,
+          "popupHwnd": null,
+          "HasUiChanges": true
+        },
+        {
+          "phase": "invalid-reopened",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": false,
+          "got": 1,
+          "lost": 1,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204410806,
+          "HasUiChanges": true
+        },
+        {
+          "phase": "baseline-raw-restored",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": true,
+          "got": 2,
+          "lost": 1,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204410806,
+          "HasUiChanges": true
+        },
+        {
+          "phase": "valid-real-focus-transfer",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": false,
+          "got": 2,
+          "lost": 2,
+          "nativeFocus": 212409158,
+          "popupHwnd": 204410806,
+          "HasUiChanges": false
+        },
+        {
+          "phase": "valid-closed",
+          "IsDropDownOpen": false,
+          "IsOpen": false,
+          "IsKeyboardFocused": false,
+          "got": 2,
+          "lost": 2,
+          "nativeFocus": 212409158,
+          "popupHwnd": null,
+          "HasUiChanges": false
+        }
+      ]
+    },
+    {
+      "attempt": 9,
+      "exit": "exit1",
+      "sourceSha256": "4A48598A4C90B681522F5C88964DFD067CC53C827F00098CE5F00560805CC321",
+      "path": "Release\\_validation\\S4-20261025\\BlobSupportedWindow\\attempt-009",
+      "events": [
+        {
+          "phase": "open-baseline",
+          "IsDropDownOpen": true,
+          "IsOpen": true,
+          "IsKeyboardFocused": false,
+          "got": 0,
+          "lost": 0,
+          "nativeFocus": 448403170,
+          "popupHwnd": 204935094,
+          "HasUiChanges": false
+        },
+        {
+          "phase": "native-popup-focus-attempt",
+          "IsDropDownOpen": false,
+          "IsOpen": false,
+          "IsKeyboardFocused": false,
+          "got": 0,
+          "lost": 0,
+          "nativeFocus": 36045546,
+          "popupHwnd": null,
+          "HasUiChanges": false
+        }
+      ]
+    }
+  ]
+}

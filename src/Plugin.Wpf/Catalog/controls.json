@@ -6756,12 +6756,29 @@
     }
   ],
   "currentIntegration": {
-    "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
-    "uncommittedCandidate": true,
-    "evidence": "docs/collaboration/evidence/C09_NUMERIC_REENTRY_CANDIDATE_20261029.json",
-    "status": "C09原数值同步重入同源候选核收；只读边界及完整阶段门禁保留，非阶段完成。"
+    "productCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+    "evidenceCommit": "300b924d",
+    "uncommittedCandidate": false,
+    "evidence": "docs/collaboration/evidence/B08_REFERENCE_WINDOW_CHAIN_FORMAL_20261101.json",
+    "status": "当前正式产品源15171638；低阈值真实窗口引用九组已在正式Release定向通过。各entry原validation保留为历史版本，不可直接视为当前整体验收；ROI、图文和其他完整能力仍有未完成。"
+  },
+  "currentStatusReview": {
+    "updated": "2026-11-01",
+    "scope": "仅纠正明确核查的条目；原件身份、资源SHA及历史validation保留；未列条目需依各自证据与产品源码核定。",
+    "entries": {
+      "C13.original-text-composition": "真实Blob页面有原文本显示组合，但正式文本配置与同次图层消费者尚未接通；旧CANDIDATE_UNBUILT_UNRUN为历史记录，不称生产功能完成。",
+      "C13.original-graphic-style-composition": "真实Blob页面有原图形样式组合；未接入配置由受限窗口保值拒绝。正式配置与同次显示消费者仍缺；实际键鼠未验。",
+      "B08.variable-selection-dialog": "正式BlobReferenceWindow attempt-001九组包含真实变量模态、固定和动态索引及保存重开实际执行；不是所有字段、剪贴板或跨文档全域通过。",
+      "C17.crosshair-settings-composition": "ResultWorkspacePresenter已有真实结果视口消费者；旧18项是候选公共视口检查，Blob生产消费者整链正在独立核收，尚无正式通过回执。"
+    }
   },
   "integrationHistory": [
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_NUMERIC_REENTRY_CANDIDATE_20261029.json",
+      "status": "历史C09原数值同步重入同源候选核收；只读边界及完整阶段门禁保留。"
+    },
     {
       "productCommit": "5780c062",
       "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",

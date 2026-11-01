@@ -1,3 +1,7 @@
+## 2026-11-01 ROI组合与结果辅助十字并行
+
+- 按300b924d核现状：ROI并非全部缺基础；NativeRoiSession、Record/Sequence持久、现有真实视口ROI图层及Blob区域执行可复用。真实Blob运行时参数视图尚无当前视口帧租约入口，旧SDK区域编辑链不可直接当生产接线；几何物化、帧身份与原厂形状语义须完整核对。独立工作区 D:/MyWork/line-aiproject/blob-reference-chain-20261101 已复用切分支 codex/blob-roi-chain-20261101，以完整ROI清单与用户要求屏蔽多形为单位先设计，再按已具备能力集中实施，不扩其他基础或伪造继承/位置/输出掩膜。
+- 结果辅助十字已有真实 ResultWorkspacePresenter→NativeResultViewport 接线；生产消费者范围是否与原件一致仍需验证。复用 D:/MyWork/line-aiproject/blob-supported-window-20261101，分支 codex/blob-crosshair-chain-20261101 独立核原件、真实Blob结果视口及换帧退役，实际缺陷才修复。两线均未集成、未正式验证，不启动或替换正式程序。
 ## 2026-11-01 B08低阈值数值引用真实窗口正式自测
 
 - 候选设计1f530c6e、测试bf2a5caf、候选回执0b551461；产品基线15171638未变。正式BlobReferenceWindow attempt-001对同一正式Release九组通过：真实前序成员来源和原变量模态、All/固定/AtField/AtVariable完整身份及重开后实际执行、变量快照、越界拒绝恢复和断边Undo；15个实际加载DLL与正式目录SHA一致。回执见 Release/_validation/S4-20261025/BlobReferenceWindow/attempt-001/receipt.json；候选失败001–006保留于对应独立工作区。

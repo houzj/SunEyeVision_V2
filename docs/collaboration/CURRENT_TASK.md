@@ -1,3 +1,7 @@
+## 2026-11-01 VM Blob图像缓冲所有权补证
+
+- 原SDK图像初始化和真实虚表均支持：所核Blob两路结果图像引用算法缓冲而非深拷贝；池存在同尺寸复用、尺寸变化释放重分配、禁用输出清池。不能保证旧图跨运行可持有，也不能推断每次必同址；异常间接释放与全部上层恢复仍未穷尽。原件/报告SHA和限制见 BLOB_ORIGINAL_HOLE_THRESHOLD_20261101.md 的所有权补证。
+- 本方HalImageSnapshotSource.CaptureCore逐通道复制像素和Domain到受管输出资源，是为跨运行/异步消费而做的生命周期适配，成本及语义不同于原厂；本方灰度图仍不能冒称原BlobImage。本轮未修改产品、不称像素同态。
 ## 2026-11-01 C17辅助十字真实Blob结果视口正式自测
 
 - 真实ImageSource→Blob由WorkflowExecutionEngine执行并将publication交NodeResultManager/MainWindowVM；真实shell.CrossLinesCommand打开当前结果Pane原双十字设置。正式BlobCrosshairWorkspace attempt-001七组通过：两实例坐标/颜色/锁定/居中命令、结果高亮共存、灰/二值切换、同尺寸新Run/Frame退役、空结果和关闭/图像租约释放。15个加载DLL与正式目录SHA一致；证据见 C17_BLOB_CROSSHAIR_CHAIN_FORMAL_20261101.json。无产品代码修改，无正式重建。

@@ -1,0 +1,63 @@
+# Blob三组范围与双端引用生产链设计
+
+基线914b2173285e2ef39caaf03cdf050bd654a7a8b3；唯一工作区blob-reference-chain-20261101；分支codex/blob-range-chain-20261101。先补整链测试，仅具体失败触发集中产品修复。
+
+最终候选结果：既有产品实现复用，无产品/共享合同修改。UI001 0错/6535警告，全量001 0错/6496警告；本工作区候选Release的Area/Circularity/Rectangularity All各16组自然exit0（attempt017/018/019），同一最终测试SHA `E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB`。每组实际加载15个DLL均来自且匹配本候选Root；父线已核这些DLL与主仓正式15个DLL全部不同，**本报告不作主仓正式同版或正式通过声明**。完整哈希、回执及原始路径见 `BLOB_RANGE_PRODUCTION_CANDIDATE_20261101.json`。
+
+最终期望直接用用例low/high和目标测量属性，其他筛选经真实字段关闭；本方前序量测只作本方集成oracle。三组窄下限/窄上限分别保留不同非空对象并各自确认保存重开执行，旧/新publication分别核实际集合及完整物理SourceFrame。未发现需修改产品的确定缺陷；不把现存模板全部原入口、原厂回读/夹值或S2/S3整体记为闭口。
+
+## 原件与当前合同
+
+原IMVSBlobFindModuAlgorithmTab.xml:456–492 RangArea/MinArea/MaxArea是IntegerBettween，子项默认10/999999999、范围1..999999999、步长1；父DefaultValue=10000不替代子项。:1046–1081 RangCircularity与:1110起RangRectangularity为FloatBettween，子项0.1/1、0..1、步长.01，原开关触发显隐。O06_VM_NUMERIC_CONSUMPTION_20261026与O06_BLOB_NATIVE_BETWEEN_CHECKPOINT_20261027保存原between模板、T1/T2独立订阅证据；RANGE_ROUNDTRIP_DESIGN/FORMAL_20261031记录普通格式保留、极值非指数往返、原文与重入边界。原[]/固定/动态索引托管提交与条件回读不证明所有原厂多值消费。
+
+当前唯一字段源Runtime/Resources/BlobParameters.xml定义六端点及三个使能；BlobPresentation按PairWith组装；DeclaredFieldsView→NativeRangePresenter复用SliderArrange/Float、左右DeclaredFieldState/ReferenceFieldSession、单端提交和SubmitRange原子接纳。ReferenceFieldOptions由RuntimeNodeConfigurationControl显式投影宿主候选、ValidateProposal和ReadBehavior，Wpf不查执行值或自行推资格。BlobTool仅面积两端属于五整数FirstItemWithIndexReadZeroFallback；圆度/矩形度保持默认StrictExactlyOne，禁止推广整数政策。
+
+正式数据链：原Popup/变量模态→同一字段state→ProductionEditorContext私有draft→RuntimeToolConfiguration.Fields/参数当前值→CaptureExecutionFields/WorkflowPublishedConfiguration冻结→BlobSettings.Materialize→BlobSession筛选。确认进入NodeConfigurationEditHost历史；取消不写正式/磁盘；Copy和RuntimeFieldJson保存完整OutputReference/VariableReference/Selection。无第二范围模型、无新公共合同。
+
+## 本批测试与边界
+
+三个真实消费者同一专项，按Area/Circularity/Rectangularity严格筛选分进程，在独立隐藏桌面真实DefaultDebugWindow/RuntimeNodeConfigurationControl执行。覆盖两端常量/引用独立切换、原按钮及Popup会话、变量与All/Fixed/AtField/AtVariable完整身份、严格浮点多值拒绝、面积首项政策、非法原文/倒序原子拒绝、禁用隐藏恢复、调试快照、确认取消、历史、配置复制、真实保存重开对象执行、候选失效与旧回调退役。使用真实ImageLoad→Blob生产结果和正式全局变量，不伪造工具结果。对每次运行记录实际冻结六端点值与Blob结果，不仅检查session存在。
+
+现低阈值BlobReferenceWindow九组不能代六端点；BlobParameterProduction九字段后台覆盖不能代双端原控件；RangeRoundtrip公共事务/极值不代真实Host。本批复用各自正确实现，新增真实组合回归补缺。测试选择原命令或控件事件，不冒称自然鼠标/键盘；不运行VM、不占用户桌面、不验证VS。原厂浮点多值/索引后端未证边界保留，本方严格合同验收不称原厂同态。
+
+先测试后修复：仅改专属脚本与runner入口，冻结后独立标准UI/全量构建；发现确定公共控件缺陷再统一修复对应Presenter/Reference生命周期并同版重建。若必要行为超出既有共享合同，先报主线，继续其余无冲突测试。
+
+已知差异：NativeRangePresenter仅以ConstantSetting对端计算原叶边界；原VM对端订阅仍比较夹值。当前本方引用对端在快照物化后验证范围并拒绝；原订阅回读时序未证，不称界面夹值等价，不盲改为静默修值。原禁用倒序保留也是本方合同，非已证VM行为。
+
+## 新补证与完整原清单保留
+
+复用 B08双端订阅夹值回读时机补证-20261101.md：原SliderArrangeBase比较控件StartValue/EndValue（各端CurValueA绑定），夹值函数不主动读取订阅源；ValueChanged经Dispatcher排队，弹层关闭ForceUpdateSource后触发端点事件。初开配置可GetItemsValueUnit；选订阅源未证必然回填；运行前后自动回读时机未闭合；切常量仅规定条件下本端GetParamUnit，所得普通参数值是否订阅前值/上次运行缓存未知。原XML SHA34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC，模板SHA96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63。
+
+本批只指面积/圆度/矩形度三个正式筛选消费者，不指全部Blob范围或全部原控件闭口。原ThresholdRangArea、角度/宽高/周长/轴长/轴比/偏移等筛选，以及RangBlobNumLimit、RangBlobAreaLimit等结果限制仍在原96项/8组清单；本批不扩阈值模式、其他筛选算法/正式输出或结果判定基础。正确公共事务可复用但不能因三组通过自动把其余原入口标已接入。浮点范围订阅的本方StrictExactlyOne、显示常量备份与执行当前值是显式平台适配；原自动回读未证部分不由本批猜测补全。
+
+## 中间验证与修订依据（最终以独立期望为准）
+
+专轨BlobRangeProduction；S4_BLOB_RANGE_SCOPE严格Area/Circularity/Rectangularity，S4_BLOB_RANGE_CASE_SET严格Core/Sensitivity/Publication/All，默认Core，按分组进程串行且各自回执。初轮001–004的当前参数/结果存在断言只记接口链证据；增强版另核实际筛选集合，不能用初轮代后续消费验证。
+
+六正式端点：面积fcdb01b095c25c6ea22384f993450aac/cdce3e942b555fa58489e08eeb39236f；圆度da4d70261e23551e9a5bd832b2a686d1/1a8be75176b350f09f3cd64506c136da；矩形度13d8c5e0c7445f1087497a21f4103a5e/c38989cfdf9e51799d27e0eeee34e726（均field:前缀）。真实同一NativeRangePresenter中左右独立会话，不靠单值低阈值控件代替。
+
+Debug与SaveReplay的结果oracle使用同次真实ImageLoad输入的前序Blob测量（本方HALCON结果），按本轮接受回执显式MaterializeSettings后构造预期集合，比较实际Count/面积/圆度/矩形度/中心坐标完整集合及ImageFrameAddress值身份。此oracle不代表VM像素同态，也不把当前值单独当作算法消费证明。固定白块面积64对[12,60]/[15,65]给出0/1；浮点变量快照若未跨敏感切点，只记本轮值与本轮实际集合一致，不声称两次集合必不同。
+
+Sensitivity用真实两个分离区域（96/136像素）测量每种指标，强制两个指标值与cut严格分离；分别仅改下限选高指标对象、仅改上限选另一低指标对象，非空且对象不同，恢复宽范围保留两对象。窄下限/窄上限/宽范围均经真实确认→文件保存→重开对象注册正式WorkflowEngine执行再比实际集合。Publication在调试捕获后通过真实主宿主执行替换图像/上游publication，核旧捕获仍用旧物理帧和值、下次用新帧和值；不向NodeResultManager塞假结果。
+
+AtField比较选择候选的完整BindingReferenceSerializer串（scope/port/member/type/storage/selection），AtVariable比较solution/variable/type/storage/All完整身份；Copy同时核Runtime配置及正式WorkflowFragmentCopy后的完整双端引用。RejectRun指定count/index/order诊断，拒绝任何成功输出事件且正式结果引用不改，不能以任意异常当通过。
+
+已保留测试辅助失败：attempt006错误直接调用CaptureSettings物化带引用配置，按其空resolved字典合同抛unresolved；生产RuntimeDebugInvocation.Prepare用解析fields调用MaterializeSettings，未走该误用入口。增强辅助改为显式已接纳回执物化，不改产品或放宽正式解析。001–004无该辅助调用，不受此失败影响，但亦不替代最终结果oracle。
+
+## 最终独立期望（F864B8F8冻结）
+
+中间005–015版通过不作为最终筛选消费闭口：其Settings(c)与生产MaterializeSettings有共因风险。最终AssertResult的目标谓词仅由用例直接给定low/high、scope指定实际测量属性计算，不调用MaterializeSettings产生期望；Enable通过同一真实字段控件显式关闭另外两种筛选并核原始ConstantSetting=false，目标原始使能=true。已接纳参数Pair只是另外一项观测，不替代实际输出验证。前序基准区域均≥10像素，基准生产者默认面积筛选不丢本批样本；本方测量oracle不代表VM数学同态。
+
+最终同一进程All含Core14+Sensitivity1+Publication1，三个实际消费者分别串行运行，每个独立480秒预算（新增原按钮返回常量、新窗口旧Click、敏感窄范围重开与换publication使All比原Core更长），产品仍为001构建。其他合同不改、不放宽任何原强断言。确认/Undo/Redo另比端点及使能完整字段身份，复制比Runtime配置与正式WorkflowFragmentCopy；两端原订阅按钮实际采用各自宿主当前值（与订阅前备份区别见016失败记录）；旧来源真实Click在新窗口打开后执行不得写旧/新草稿或正式方案。
+
+保留attempt016新增模式断言失败：测试错误期待回到订阅前XML备份；正式DeclaredFieldState.ConstantBackup在ReadCurrentValue存在时采用宿主当前值，运行后本例应回12/60而非10/999999999。按此既有合同改为两端原按钮独立采用本轮已消费当前值，禁复活旧默认；此为本方适配，不推断VM解绑普通参数回读语义。没有产品修改。
+
+## 交付与保留范围
+
+本批三个正式消费者已有可复用的完整链，最终自测覆盖原between/左右订阅与回常量、非法原文/整数与浮点精度、常量及左/右/双引用倒序拒绝恢复、固定/字段/变量索引完整身份、禁用/隐藏/Popup恢复、确认取消与新窗口旧Click、端点/使能Undo/Redo、配置与正式片段复制、保存重开新对象执行、变量快照和真实上游publication替换。未新增产品入口、可写模型或未消费接口，未改公共合同，实际产品diff为0。
+
+未验：自然键盘/鼠标/剪贴板、VS设计器/其他DPI/人工完整外观；现三张截图为实际窗口当前视口，浮点高级内容在滚动下方，不能作浮点整行完整视觉验收。已有通用无备份拒绝测试S4FieldEditingCases:1347–1364保留；正式reader返回null且同时存订阅前备份的组合本轮未另新增真实Host用例，现产品返回null不回旧值的保护未改。Publication直接变更主要来源用左端，变量快照覆盖两端，不冒称六端点所有组合的笛卡尔积均验。
+
+原件已证的模型值夹值与本方引用端执行校验策略不同；初开/运行回读、解绑后参数究竟等于何值仍按原报告保留未知，不因本方测试通过宣称VM同态。阈值范围、其他特征筛选和结果限制范围继续保留原96项/8组映射与保护，本批不扩基础或开放不支持功能。
+
+复现：同一工作区使用 `Run-S2ReleaseValidation.ps1 -Stage S4 -Track BlobRangeProduction -ValidationScope Candidate -TimeoutSeconds 480`，环境 `S4_BLOB_RANGE_CASE_SET=All`，依次 `S4_BLOB_RANGE_SCOPE=Area`、`Circularity`、`Rectangularity`。集成后主仓应改为 `-ValidationScope Formal` 对正式产物独立运行，不能以候选证据代替。全部自有进程已自然终态，GUI已释放。

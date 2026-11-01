@@ -1,0 +1,196 @@
+{
+  "scope": "Candidate only; not main formal Release validation",
+  "workspace": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101",
+  "branch": "codex/blob-range-chain-20261101",
+  "productSourceBaseline": "914b2173285e2ef39caaf03cdf050bd654a7a8b3",
+  "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "productChanges": [],
+  "caseSourceSha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+  "caseSet": "All",
+  "timeoutSeconds": 480,
+  "complete": true,
+  "buildLogs": [
+    {
+      "sha256": "D5256AFCF03AE850891DEDC63076BC2651F73B9277B14B637BDB5FDEC1ED1516",
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\BlobRangeProduction-20261101\\ui-build-001.log"
+    },
+    {
+      "sha256": "FD9E2A3F37CA61A02DEEC1C48DF0BD97713D5D04E7183EA1D7F8A6532C7C19CA",
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\BlobRangeProduction-20261101\\full-build-001.log"
+    }
+  ],
+  "formalEqualityClaim": false,
+  "formalDifference": "父线独立比对候选15 DLL与正式全部不同；本回执仅核对当前候选自己的构建载荷",
+  "results": [
+    {
+      "attempt": "017",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 17,
+        "pid": 89524,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRangeProductionCases.cs",
+        "caseSourceSha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017"
+      },
+      "sourceMatchesCurrent": true,
+      "passed": 16,
+      "failed": 0,
+      "loadedCount": 15,
+      "loadedMismatch": [],
+      "artifacts": [
+        {
+          "sha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\cases.cs.txt"
+        },
+        {
+          "sha256": "668D5E18FDA92C3820719E0A39629D8C02369F5C82C587701A3302F4D678EA0A",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\loaded-product.tsv"
+        },
+        {
+          "sha256": "CDA0B97A557ADF8E404DA98DD04765EDDC0C08F322B6F9F257BC9769F92B3673",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\range-Area.png"
+        },
+        {
+          "sha256": "AB3AE3F4BBF09C5E8CF412B62C006EA247EB86C831814B4717819A9550BF56AD",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\range-consumption.jsonl"
+        },
+        {
+          "sha256": "A314E7F5BFBF2FA99A07947084A936092A30CAC64E9AD6060FBE7EA16F42B7A7",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\range-rejections.jsonl"
+        },
+        {
+          "sha256": "61F047EF867EF6A409AFE47AA2D96D3B4F16B0CCDC2C42BB8936BA722565FAF8",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\receipt.json"
+        },
+        {
+          "sha256": "8183E0B7EDFAEB46EEDFE9CAA83AB7B4D627B78BA7E290F01D82DE34719CC7BA",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\reference-chain-progress.log"
+        },
+        {
+          "sha256": "791BAD39985468872166A533203C641AEBE7C9B9FA34D16C4C8D96B4DED79438",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-017\\run.log"
+        }
+      ]
+    },
+    {
+      "attempt": "018",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 18,
+        "pid": 57068,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRangeProductionCases.cs",
+        "caseSourceSha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018"
+      },
+      "sourceMatchesCurrent": true,
+      "passed": 16,
+      "failed": 0,
+      "loadedCount": 15,
+      "loadedMismatch": [],
+      "artifacts": [
+        {
+          "sha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\cases.cs.txt"
+        },
+        {
+          "sha256": "668D5E18FDA92C3820719E0A39629D8C02369F5C82C587701A3302F4D678EA0A",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\loaded-product.tsv"
+        },
+        {
+          "sha256": "151AB4FF5348777A12FCF79D2867766F7AF3E5B6A2A27B117EA7AA8A6EE146BD",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\range-Circularity.png"
+        },
+        {
+          "sha256": "E9420819F3D05327A282C55B9FBE859326698C84F45AB69552C6EAFF789243CA",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\range-consumption.jsonl"
+        },
+        {
+          "sha256": "FA2628E56986341FDE52AE061929E0AC9F44623604D0C1F53CB9BB585EDC0FB4",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\range-rejections.jsonl"
+        },
+        {
+          "sha256": "F609A5BA2D72B8E08AE39FD90625E88FCBD0D91257D58665B587B36B978EFA00",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\receipt.json"
+        },
+        {
+          "sha256": "E11C2D9CD42192C1211BB8FEA99435DB9C962EAD6285532D571C1388C9BB6439",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\reference-chain-progress.log"
+        },
+        {
+          "sha256": "3B8A8B8A24FD42E9D8BDDFAEF13DD18D6E5B80C25EC7AAD10DAA7DD866B318C9",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-018\\run.log"
+        }
+      ]
+    },
+    {
+      "attempt": "019",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 19,
+        "pid": 132840,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRangeProductionCases.cs",
+        "caseSourceSha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019"
+      },
+      "sourceMatchesCurrent": true,
+      "passed": 16,
+      "failed": 0,
+      "loadedCount": 15,
+      "loadedMismatch": [],
+      "artifacts": [
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\cases.cs.txt",
+          "sha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\loaded-product.tsv",
+          "sha256": "668D5E18FDA92C3820719E0A39629D8C02369F5C82C587701A3302F4D678EA0A"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\range-consumption.jsonl",
+          "sha256": "E5AFFDE5C3DBCA609E1A84F3547DA979563BFD32E7B5C140334A0A0FE093C9E1"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\range-Rectangularity.png",
+          "sha256": "151AB4FF5348777A12FCF79D2867766F7AF3E5B6A2A27B117EA7AA8A6EE146BD"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\range-rejections.jsonl",
+          "sha256": "0A2DDFB94100A3FE14EDE2A96EC9892E96E57D2ECE5749F8431A8A56AD583D5A"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\receipt.json",
+          "sha256": "E80EDEEB9ADD772CD8EE575A067DAC3B8DB53A4B9FD89A3307E939E83CD15708"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\reference-chain-progress.log",
+          "sha256": "73273B8E308DDECD3EA2BB9208098DC40BF92B3A72F3342CD740DEC9C54D9031"
+        },
+        {
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-019\\run.log",
+          "sha256": "CAD799751C8C7FB2D62750A3A6BD2BF2F559FEA6EC6EB009DDB58C53F8AC86CA"
+        }
+      ]
+    }
+  ],
+  "payloadSha256": "EC2D26D074212ACD4187653E630194E7E5BE327CA3FA7F4894229AE082EE516E",
+  "failuresRetained": {
+    "attempt016": "测试期待订阅前备份，既有正式合同采用宿主当前值",
+    "attempt006": "测试oracle误用CaptureSettings空resolved，非生产调用"
+  }
+}

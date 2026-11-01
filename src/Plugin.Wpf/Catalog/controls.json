@@ -1468,6 +1468,7 @@
     },
     {
       "id": "C06.original-between-composition",
+      "blobFilterRangeFormal20261101": {"status": "面积/圆度/矩形度真实宿主各16组通过；完整控件未闭口", "receipt": "docs/collaboration/evidence/BLOB_RANGE_PRODUCTION_FORMAL_20261101.json", "limitations": "VM订阅对端回读及夹值时序与本方当前值策略仍有差异/未证；原阈值、结果判定等其余双端范围未由本批覆盖。自然键鼠、系统剪贴板、真实VS设计时和用户运行验收未执行；同一Blob未筛选测量只作集成基准，不证明VM算法数值等价。不称完整B08、范围控件或S2/S3闭口。"},
       "assembly": "VM.PcUI",
       "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
       "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",

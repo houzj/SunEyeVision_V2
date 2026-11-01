@@ -16,7 +16,7 @@ internal static class RuntimeInputBindings
         if(node.ParamSettings.Settings.Any())issues.Add(new("runtime-configuration","Runtime","Runtime nodes cannot contain SDK ParamSettings."));
         foreach(var diagnostic in validateAdmission?configuration.Validate():Array.Empty<Diagnostic>())
             issues.Add(new(diagnostic.FieldId??"runtime-settings",diagnostic.FieldId??"Runtime",diagnostic.Message));
-        foreach(var (id,setting) in configuration.Fields.Capture())
+        foreach(var (id,setting) in configuration.CaptureExecutionFields())
         {
             try
             {

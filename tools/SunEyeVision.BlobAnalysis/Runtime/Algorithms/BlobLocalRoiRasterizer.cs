@@ -6,9 +6,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 /// <summary>One invocation-local rasterization of the persistent input-slot geometry. No resource escapes.</summary>
 internal static class BlobLocalRoiRasterizer
 {
-    internal static HRegion Build(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation)
+    internal static HRegion Build(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,int maximumInspectionCount=16)
     {
-        BlobLocalRoi.Validate(definition);
+        BlobLocalRoi.Validate(definition,maximumInspectionCount);
         var coverage=BlobLocalRoi.Coverage(definition,group);
         if(coverage==BlobLocalRoi.FullDomain)return inputDomain.Clone();
         HOperatorSet.GenEmptyRegion(out var empty);

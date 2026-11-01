@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -128,12 +128,23 @@ public sealed class SolutionExecutionDependencyGraph
                 var target = ResolveNode(consumer.WorkflowId, consumer.NodeId,
                     $"全局变量 {variable.Name} 的目标输出");
                 if (target == null) continue;
+                var consumerNode=nodeLookup[target];
+                if(consumerNode?.RuntimeConfiguration is {} runtime)
+                {
+                    // These registrations remain in the document. They do not make a sleeping
+                    // runtime input an execution dependency; runtime field identities are exact.
+                    var matches=BindingRelationCatalog.Describe(consumerNode).Where(input=>consumer.InputKey is not null
+                        ?input.Key==consumer.InputKey:input.Key==consumer.ParameterName||input.Name==consumer.ParameterName).ToArray();
+                    // Unknown or ambiguous registration identities retain the existing conservative
+                    // dependency. Only one positively identified sleeping field can be omitted.
+                    if(matches.Length==1&&!runtime.IsExecutionFieldActive(matches[0].Key))continue;
+                }
                 AddDependency(producer, target, SolutionDependencyKind.GlobalVariable,
                     variable.Name, consumer.ParameterName);
             }
             foreach (var workflow in workflows)
                 foreach (var node in workflow.Nodes)
-                    foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
+                    foreach (var input in BindingRelationCatalog.DescribeExecution(node).Where(i => i.Active))
                         if (SunEyeVision.Plugin.SDK.Execution.Parameters.BindingInputCatalog.TryReference(input.Read(), workflow.Nodes.Select(n => n.Id), input.ReferenceOnly, out var id, out var path) &&
                             (id == "__VariableId__" && path == variable.Id || id == "__GlobalVars__" && SunEyeVision.Plugin.SDK.Execution.Parameters.PropertyPathParser.ExtractPropertyName(path) == variable.Name))
                             AddDependency(producer, GetScopedNodeId(workflow.Id, node.Id), SolutionDependencyKind.GlobalVariable, variable.Name, input.Key);
@@ -147,7 +158,7 @@ public sealed class SolutionExecutionDependencyGraph
             if(producer is null)continue;
             foreach(var workflow in workflows)
                 foreach(var node in workflow.Nodes.Where(node=>node.RuntimeConfiguration is not null))
-                    foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node))
+                    foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node,executionOnly:true))
                         if(reference.SolutionId==solution.Id&&reference.VariableId==variable.Id)
                             AddDependency(producer,GetScopedNodeId(workflow.Id,node.Id),SolutionDependencyKind.GlobalVariable,variable.Name,fieldId);
         }

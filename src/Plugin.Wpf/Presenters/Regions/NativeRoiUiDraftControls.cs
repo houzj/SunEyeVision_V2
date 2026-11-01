@@ -28,9 +28,10 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private FrameworkElement _detectionShapes,_maskShapes;
     private FrameworkElement? _detectionSource,_maskSource;
     private bool _disposed;
+    private readonly NativeRoiInheritanceBinding? _inheritance;
     private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _baseline=[];
     public event Action? Changed;
-    public bool HasUiChanges=>!_disposed&&(_states.Any(state=>state.Accepted is not ConstantSetting {Value:0L})
+    public bool HasUiChanges=>!_disposed&&(_states.Any(state=>(_inheritance is null||state!=_detection&&state!=_inherit)&&state.Accepted is not ConstantSetting {Value:0L})
         ||_inheritEditors.Any(editor=>editor.HasPendingEdits||!DeclaredFieldState.SameSetting(editor.Setting,_baseline[editor]))
         ||(_imageInput is NativeRow {RightContent:ComboBox image}&&(!string.IsNullOrEmpty(image.Text)||image.SelectedIndex>=0))
         ||(_detectionShapes.DataContext is ShapeContext detection&&detection.HasChanges)||(_maskShapes.DataContext is ShapeContext mask&&mask.HasChanges));
@@ -40,23 +41,37 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private void OnImageText(object sender,TextChangedEventArgs args)=>OnUiChanged();
     public FrameworkElement GraphicVisibilitySource=>_detectionRadio;
     public NativeRoiUiDraftControls():this(false){}
-    public NativeRoiUiDraftControls(bool geometryOnlyPresentation)
+    public NativeRoiUiDraftControls(bool geometryOnlyPresentation):this(geometryOnlyPresentation,null){}
+    public NativeRoiUiDraftControls(bool geometryOnlyPresentation,NativeRoiInheritanceBinding? inheritance)
     {
+        _inheritance=inheritance;
+        if(inheritance is not null&&(inheritance.InitialMode is <0 or >3||inheritance.RectangleParameters.Count!=5||inheritance.AnnulusParameters.Count!=6))
+            throw new ArgumentException("继承组合需要四种模式、五个矩形参数和六个圆环参数。");
         var outputMask=new DeclaredFieldEditor(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
             new ConstantSetting(false),_=>{});
         _inheritEditors.Add(outputMask);Children.Add(outputMask);
         (_area,_)=AddRadio("ROI区域类型",new[]{"图形类型","图像类型"});
         _imageInput=new NativeRow{LeftContent=new TextBlock{Text="屏蔽图像",VerticalAlignment=VerticalAlignment.Center},
             RightContent=NativeInputFactory.Enumeration()};Children.Add(_imageInput);
-        (_detection,_detectionRadio)=AddRadio("ROI创建",new[]{"绘制","继承"});
+        (_detection,_detectionRadio)=AddRadio("ROI创建",new[]{"绘制","继承"},inheritance?.InitialMode is null?0:1,
+            value=>inheritance?.AcceptMode(value==0?null:(int)Value(_inherit)));
         _detectionShapes=Shape("形状",true);Children.Add(_detectionShapes);
-        (_inherit, _inheritRadio)=AddRadio("继承方式",new[]{"按矩形区域","按矩形参数","按圆形区域","按圆形参数"});
-        _circleSource=new DeclaredFieldEditor(new Port("ui-only-circle-region",RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
+        (_inherit, _inheritRadio)=AddRadio("继承方式",new[]{"按矩形区域","按矩形参数","按圆形区域","按圆形参数"},inheritance?.InitialMode??0,
+            value=>{if(Value(_detection)==1)inheritance?.AcceptMode((int)value);});
+        _circleSource=inheritance?.AnnulusSource??new DeclaredFieldEditor(new Port("ui-only-circle-region",RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
             "区域",new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
             {ToolTip="界面试用，来源功能尚未接入。"};
-        _inheritEditors.Add(_circleSource);Children.Add(_circleSource);
-        AddParameterRows(_rectangleParameters,new[]{"ROI中心点X","ROI中心点Y","ROI宽度","ROI高度","ROI角度"});
-        AddParameterRows(_circleParameters,new[]{"圆心点X","圆心点Y","内径","外径","起始角度","角度范围"});
+        if(inheritance is null)_inheritEditors.Add(_circleSource);Children.Add(_circleSource);
+        if(inheritance is null)
+        {
+            AddParameterRows(_rectangleParameters,new[]{"ROI中心点X","ROI中心点Y","ROI宽度","ROI高度","ROI角度"});
+            AddParameterRows(_circleParameters,new[]{"圆心点X","圆心点Y","内径","外径","起始角度","角度范围"});
+        }
+        else
+        {
+            foreach(var editor in inheritance.RectangleParameters)_rectangleParameters.Children.Add(editor);
+            foreach(var editor in inheritance.AnnulusParameters)_circleParameters.Children.Add(editor);
+        }
         Children.Add(_rectangleParameters);Children.Add(_circleParameters);
         (_mask,_maskRadio)=AddRadio("屏蔽区创建",new[]{"绘制","继承"});
         _maskShapes=Shape("屏蔽区",true,initialFullScreen:false);Children.Add(_maskShapes);
@@ -68,11 +83,12 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
                     {ToolTip="仅预览，几何继承尚未接入执行。"};
                 _inheritEditors.Add(editor);return editor;
             }
-            BindSourceRows(Placeholder("ui-only-rectangle-source","区域",RoiDeclarations.Shape),Placeholder("ui-only-mask-source","屏蔽区域",DataType.Text));
+            BindSourceRows(inheritance?.RectangleSource??Placeholder("ui-only-rectangle-source","区域",RoiDeclarations.Shape),Placeholder("ui-only-mask-source","屏蔽区域",DataType.Text));
         }
         _area.Changed+=ProjectVisibility;_detection.Changed+=ProjectVisibility;_inherit.Changed+=ProjectVisibility;_mask.Changed+=ProjectVisibility;
         foreach(var editor in _inheritEditors){_baseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;}
         foreach(var state in _states)state.Changed+=OnUiChanged;
+        if(inheritance is not null)foreach(var editor in InheritanceEditors())editor.Changed+=OnUiChanged;
         ((ShapeContext)_detectionShapes.DataContext).PropertyChanged+=OnShapeChanged;
         ((ShapeContext)_maskShapes.DataContext).PropertyChanged+=OnShapeChanged;
         if(_imageInput is NativeRow {RightContent:ComboBox image})
@@ -90,9 +106,11 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         var secondIndex=Children.IndexOf(_maskShapes);Children.RemoveAt(secondIndex);Children.Insert(secondIndex,mask);_maskShapes=mask;
         ProjectVisibility();
     }
-    private (DeclaredFieldState,FrameworkElement) AddRadio(string label,string[] choices)
+    private IEnumerable<DeclaredFieldEditor> InheritanceEditors()=>_inheritance is {} binding
+        ?binding.RectangleParameters.Concat(binding.AnnulusParameters).Append(binding.RectangleSource).Append(binding.AnnulusSource):Array.Empty<DeclaredFieldEditor>();
+    private (DeclaredFieldState,FrameworkElement) AddRadio(string label,string[] choices,long initial=0,Action<long>? accept=null)
     {
-        var state=new DeclaredFieldState(new Port("ui-only-roi-"+_states.Count,DataType.Integer),new ConstantSetting(0L),_=>{});
+        var state=new DeclaredFieldState(new Port("ui-only-roi-"+_states.Count,DataType.Integer),new ConstantSetting(initial),proposal=>accept?.Invoke((long)((ConstantSetting)proposal).Value!));
         _states.Add(state);
         var radio=new NativeIntegerRadioPresenter(state,label,
             new NativeIntegerRadioOptions(choices.Select((value,index)=>new NativeIntegerRadioChoice(index,value)),useFiveSlotTemplate:choices.Length>2));
@@ -180,6 +198,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     {
         if(_disposed)return;_disposed=true;
         foreach(var editor in _inheritEditors)editor.Changed-=OnUiChanged;
+        foreach(var editor in InheritanceEditors())editor.Changed-=OnUiChanged;
         if(_imageInput is NativeRow {RightContent:ComboBox image})
         {image.SelectionChanged-=OnImageSelection;image.RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
         foreach(var state in _states)state.Changed-=OnUiChanged;

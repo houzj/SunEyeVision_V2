@@ -73,6 +73,7 @@ internal static class DeclaredReferenceTree
         return type.Shape switch
         {
             ValueShape.Scalar=>type.Scalar==expected.Scalar
+                ||type.Scalar==ScalarKind.Int64&&expected.Scalar==ScalarKind.Float64
                 ||conversion==BindingConversion.Float64ToInt64Checked&&type.Scalar==ScalarKind.Float64&&expected.Scalar==ScalarKind.Int64,
             ValueShape.Resource=>type.Resource==expected.Resource,
             ValueShape.Geometry=>type.Geometry==expected.Geometry,

@@ -22,6 +22,8 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly ToolSchema _schema;
     private readonly Func<Port,ParameterSetting> _read;
     private readonly Action<Port,ParameterSetting> _write;
+    private readonly ReferenceFieldOptions _references;
+    private readonly Func<OutputReference,string>? _formatReference;
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
@@ -32,6 +34,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     {
         _schema=schema;_read=read;_write=write;
         _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
+        _references=references;_formatReference=format;
         Fields=_fields.AsReadOnly();
         try
         {
@@ -73,6 +76,18 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var port=Unpresented(id);return _read(port);
+    }
+    /// <summary>Creates a real declared input editor for a tool's original composite layout.
+    /// The view retains the editor and the same host write/reference callbacks; no second field owner is created.</summary>
+    public DeclaredFieldEditor ComposeInputEditor(string id,string label,bool numericSequence=false)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
+        if(_fields.Any(field=>field.FieldId==id)||_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
+            throw new ArgumentException("输入已有编辑器。");
+        var editor=new DeclaredFieldEditor(port,label,_read(port),setting=>_write(port,setting),_references,
+            formatReference:_formatReference,allowUnboundReference:!port.Required,numericSequence:numericSequence);
+        _fields.Add(editor);return editor;
     }
     public void WriteUnpresentedInput(string id,ParameterSetting setting)
     {

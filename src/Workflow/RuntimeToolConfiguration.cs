@@ -31,6 +31,7 @@ public sealed partial class RuntimeToolConfiguration
             throw new ArgumentException("Runtime input and settings field identities must be distinct.");
         _referenceBehaviors=frozenBehaviors??ParameterReferenceRules.Freeze(definition);
         Fields=new(BindingTargets,settings);
+        _executionInputs=FreezeExecutionInputs();
         foreach(var pair in Fields.Capture())
         {
             var selection=pair.Value switch{ReferenceSetting reference=>reference.Reference.Selection,VariableSetting variable=>variable.Reference.Selection,_=>null};
@@ -193,6 +194,14 @@ public sealed partial class RuntimeToolConfiguration
         return new(ValueRules.Freeze(port,value));
     }
     public IReadOnlyList<Diagnostic> Validate()
+    {
+        var inputs=(_definition as IToolExecutionInputs)?.ValidateExecutionInputs(Fields)??Array.Empty<Diagnostic>();
+        if(inputs.Count!=0)return inputs;
+        return ValidateSettings();
+    }
+    /// <summary>Known parameter constraints for an editing proposal, before conditional
+    /// input groups are complete. Final admission always uses Validate.</summary>
+    internal IReadOnlyList<Diagnostic> ValidateSettings()
     {
         var settings=Fields.Select(SettingsSchema.Inputs);
         var known=(_definition as IToolKnownSettingsValidation)?.ValidateKnownSettings(settings)??Array.Empty<Diagnostic>();

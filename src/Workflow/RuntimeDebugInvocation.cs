@@ -49,7 +49,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
         if(errors.Count>0)throw new InvalidOperationException(errors[0].Message);
         var graph=WorkflowExecutionDependencyGraph.Compile(workflow);
-        var settings=configuration.Fields.Capture();
+        var settings=configuration.CaptureExecutionFields().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         var references=settings.Where(pair=>pair.Value is ReferenceSetting).ToDictionary(pair=>pair.Key,pair=>((ReferenceSetting)pair.Value).Reference,StringComparer.Ordinal);
         var outputReferences=new List<OutputReference>();var variableReferences=new Dictionary<string,VariableReference>(StringComparer.Ordinal);
         var variableSelections=new HashSet<string>(StringComparer.Ordinal);

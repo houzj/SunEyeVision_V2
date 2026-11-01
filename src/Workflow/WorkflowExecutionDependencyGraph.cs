@@ -110,7 +110,7 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
-            foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
+            foreach (var input in BindingRelationCatalog.DescribeExecution(node).Where(i => i.Active))
             {
                 if(BindingRelationCatalog.GetReference(node,input.Key) is not null)continue;
                 if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
@@ -130,7 +130,7 @@ public sealed class WorkflowExecutionDependencyGraph
                     throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
                 AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
             }
-            foreach(var (fieldId,setting) in BindingRelationCatalog.References(node))
+            foreach(var (fieldId,setting) in BindingRelationCatalog.References(node,executionOnly:true))
             {
                 if(inputIssues?.TryGetValue(node.Id,out var failures)==true&&failures.Any(f=>f.InputKey==fieldId))continue;
                 var reference=setting.Reference;
@@ -149,7 +149,7 @@ public sealed class WorkflowExecutionDependencyGraph
                         AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
                 }
             if(node.RuntimeConfiguration is not null)
-                foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node))
+                foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node,executionOnly:true))
                 {
                     if(reference.SolutionId!=solutionId)continue;
                     var variable=variables?.FirstOrDefault(item=>item.Id==reference.VariableId);

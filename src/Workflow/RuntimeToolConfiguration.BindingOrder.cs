@@ -13,6 +13,20 @@ public sealed partial class RuntimeToolConfiguration
     private readonly IReadOnlyDictionary<string,string> _bindingNames;
     private readonly IReadOnlyList<string> _bindingOrder;
     public IReadOnlyList<string> ParameterBindingOrder=>_bindingOrder;
+    private readonly IReadOnlySet<string> _executionInputs;
+    private IReadOnlySet<string> FreezeExecutionInputs()
+    {
+        var inputs=Schema.Inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        var selected=(_definition as IToolExecutionInputs)?.SelectExecutionInputs(Fields)?.ToArray()
+            ??(_definition is IToolExecutionInputs?throw new ArgumentException("Execution input selection cannot be null."):inputs.Keys.ToArray());
+        var ids=selected.ToHashSet(StringComparer.Ordinal);
+        if(ids.Count!=selected.Length||selected.Any(id=>id is null||!inputs.ContainsKey(id))
+            ||inputs.Values.Any(port=>port.Required&&!ids.Contains(port.Id)))
+            throw new ArgumentException("Execution input selection must contain unique declared inputs and every required input.");
+        return ids;
+    }
+    public bool IsExecutionFieldActive(string id)=>BindingTargets.Any(port=>port.Id==id)
+        &&(!Schema.Inputs.Any(port=>port.Id==id)||_executionInputs.Contains(id));
     private IReadOnlyDictionary<string,string> FreezeBindingNames()
     {
         var names=(_definition as IToolParameterBindingNames)?.ParameterBindingNames??new Dictionary<string,string>();
@@ -58,8 +72,9 @@ public sealed partial class RuntimeToolConfiguration
     /// by the caller before this loop; dictionary/layout order is never parameter execution order.</summary>
     internal IReadOnlyList<KeyValuePair<string,ParameterSetting>> CaptureExecutionFields()
     {
-        var fields=Fields.Capture();var references=_bindingOrder.ToHashSet(StringComparer.Ordinal);
-        return Array.AsReadOnly(_bindingOrder.Select(id=>new KeyValuePair<string,ParameterSetting>(id,fields[id]))
+        var fields=Fields.Capture().Where(pair=>IsExecutionFieldActive(pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        var references=_bindingOrder.ToHashSet(StringComparer.Ordinal);
+        return Array.AsReadOnly(_bindingOrder.Where(fields.ContainsKey).Select(id=>new KeyValuePair<string,ParameterSetting>(id,fields[id]))
             .Concat(fields.Where(pair=>!references.Contains(pair.Key))).ToArray());
     }
     internal void WriteBindingOrder(Utf8JsonWriter writer,bool export)

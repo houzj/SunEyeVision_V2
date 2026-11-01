@@ -30,9 +30,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
             var input=BlobInput.Read(invocation.Inputs);
-            var output=Execute(invocation.Settings,input.Image,invocation.Context.Resources,
-                input.Inspection,input.Mask,input.Pose,
-                invocation.Context.Cancellation,requested,input.LocalRoi);
+            var output=Execute(invocation.Settings,input,invocation.Context.Resources,invocation.Context.Cancellation,requested);
             IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
                 ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}
                 :Array.Empty<Diagnostic>();
@@ -47,6 +45,11 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
     public BlobOutput Execute(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection = null,
         IReadOnlyRegion? mask = null, RecordValue? pose = null, CancellationToken cancellation = default,
         BlobOutputRequest requested = BlobOutputRequest.None,RecordValue? localRoi=null)
+        =>ExecuteCore(settings,input,resources,inspection,mask,pose,cancellation,requested,localRoi,16);
+    public BlobOutput Execute(BlobSettings settings,BlobInput input,IOutputResources resources,CancellationToken cancellation=default,BlobOutputRequest requested=BlobOutputRequest.None)
+        =>ExecuteCore(settings,input.Image,resources,input.Inspection,input.Mask,input.Pose,cancellation,requested,input.LocalRoi,input.IsInheritedRoi?64:16);
+    private BlobOutput ExecuteCore(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection,
+        IReadOnlyRegion? mask, RecordValue? pose, CancellationToken cancellation,BlobOutputRequest requested,RecordValue? localRoi,int maximumInspectionCount)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
@@ -68,7 +71,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         var frame = input.Frame;
         if(localRoi is not null)
         {
-            BlobLocalRoi.Validate(localRoi);
+            BlobLocalRoi.Validate(localRoi,maximumInspectionCount);
             if(inspection is not null||mask is not null||settings.IsPositionCorrectionEnabled)
                 throw new ArgumentException("本地几何不能与像素区域或未接通的位置修正同时执行。");
         }
@@ -82,9 +85,9 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
         using var gray = HalconImageAdmission.Gray(image);
         using var domain = gray.GetDomain();
-        using var inspectionRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Inspection,domain,cancellation)
+        using var inspectionRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Inspection,domain,cancellation,maximumInspectionCount)
             :inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
-        using var maskRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Mask,domain,cancellation)
+        using var maskRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Mask,domain,cancellation,maximumInspectionCount)
             :mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
         using var correctedInspection = inspection is null ? inspectionRegion.Clone() : HalconResourceBridge.TransformRegion(inspectionRegion, pose);
         using var correctedMask = HalconResourceBridge.TransformRegion(maskRegion, pose);

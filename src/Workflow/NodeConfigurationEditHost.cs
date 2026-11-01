@@ -275,7 +275,8 @@ public sealed partial class NodeConfigurationEditHost
 
     public void Validate(NodeConfigurationEditDraft editor)
     { ArgumentNullException.ThrowIfNull(editor); ValidateBatch(new[] { editor }, null); }
-    /// <summary>Validate only the proposed Runtime settings fields against current declarations.
+    /// <summary>Validate proposed Runtime fields against current declarations, known settings
+    /// and the complete candidate dependency graph, without requiring unfinished input groups.
     /// This does not publish a candidate or replace the complete validation at capture/commit.</summary>
     public void ValidateRuntimeFieldProposals(NodeConfigurationEditDraft editor,IReadOnlyDictionary<string,ParameterSetting> changes)
     {
@@ -288,17 +289,23 @@ public sealed partial class NodeConfigurationEditHost
                 var flow=batch.Draft.Configuration.Workflows.Single(workflow=>workflow.Id==editor.Identity.WorkflowId);
                 var node=Find(batch.Draft.Configuration,editor.Identity);
                 var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点没有Runtime配置。");
-                var schema=runtime.SettingsSchema??throw new InvalidOperationException("节点没有Runtime设置声明。");
-                var prepared=runtime.Fields.Select(schema.Inputs).Apply(changes);
-                foreach(var id in changes.Keys)
+                _=runtime.Fields.Apply(changes); // Freeze every proposed value against its actual declaration.
+                var proposed=runtime.WithFieldSettings(changes);node.RuntimeConfiguration=proposed;
+                var settingsErrors=proposed.ValidateSettings();
+                if(settingsErrors.Count!=0)throw new ArgumentException(settingsErrors[0].Message);
+                foreach(var (id,setting) in proposed.CaptureExecutionFields())
                 {
-                    if(prepared.Read(id) is VariableSetting variable)
+                    if(setting is VariableSetting variable)
                     {WorkflowBindingContext.ValidateVariable(batch.Draft.Configuration,flow,node,id,variable);continue;}
-                    if(prepared.Read(id) is not ReferenceSetting reference)continue;
+                    if(setting is not ReferenceSetting reference)continue;
+                    if(reference.RebindingReason is {Length:>0} reason)throw new ArgumentException(reason);
                     var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id,batch.Draft.Configuration);
                     if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
                         throw new ArgumentException(result.Reason);
                 }
+                // No readiness filtering: every configured active edge, including a proposed
+                // variable producer or dynamic index, must participate in cycle detection.
+                _=SolutionExecutionDependencyGraph.Compile(batch.Draft.Configuration,checkReadiness:false);
                 EnsureBaseline();
                 if(_store.Capture().Version!=version)throw new InvalidOperationException("来源声明或方案已变化，请重试。");
             }

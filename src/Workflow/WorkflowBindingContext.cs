@@ -212,7 +212,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                 var manualScope=compilationScope.WithReferenceQualification(new ManualReferenceQualification(workflow,_scope,node.Id).Validate);
                 var settingsIds=runtime.SettingsSchema.Inputs.Where(OutputBindingChangeService.IsOrdinaryNumericParameter).Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
                 var variablePlans=new Dictionary<string,RuntimeVariableBindingPlan>(StringComparer.Ordinal);
-                foreach(var (id,setting) in runtime.Fields.Capture().Where(pair=>pair.Value is VariableSetting))
+                foreach(var (id,setting) in runtime.CaptureExecutionFields().Where(pair=>pair.Value is VariableSetting))
                 {
                     try
                     {
@@ -224,7 +224,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                     {errors.Add(new(id,id,failure.Message));}
                 }
                 _variablePlans.Add(node.Id,new ReadOnlyDictionary<string,RuntimeVariableBindingPlan>(variablePlans));
-                foreach(var (id,setting) in BindingRelationCatalog.References(node))
+                foreach(var (id,setting) in BindingRelationCatalog.References(node,executionOnly:true))
                 {
                     if(ReferenceOwnershipError(workflow,node,id,setting,_scope) is {} ownershipError)
                     {errors.Add(new(id,id,ownershipError));continue;}
@@ -261,7 +261,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             foreach(var plan in consumer.CompiledBindings.Values)CollectDemand(plan.Source);
             // Existing image/geometry source slots have dedicated CLR adapters rather than a
             // writable canonical property. Their frozen relation descriptors are still real consumers.
-            foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&!i.InternalProjection))
+            foreach(var input in BindingRelationCatalog.DescribeExecution(consumer).Where(i=>i.Active&&!i.InternalProjection))
             {
                 if(BindingRelationCatalog.GetReference(consumer,input.Key) is not null)continue;
                 if(BindingRelationCatalog.SourceWorkflowId(consumer,input,_scope)!=_scope)continue;
@@ -279,7 +279,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                     variableDemand.Add(new(variable.ProducerField));
         foreach(var caller in session.Configuration?.Definitions??Array.Empty<Workflow>())
             foreach(var consumer in caller.Nodes.Where(n=>n.IsEnabled))
-                foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&i.InternalProjection))
+                foreach(var input in BindingRelationCatalog.DescribeExecution(consumer).Where(i=>i.Active&&i.InternalProjection))
                     if(BindingRelationCatalog.SourceWorkflowId(consumer,input,caller.Id)==_scope
                         &&BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
                         CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());

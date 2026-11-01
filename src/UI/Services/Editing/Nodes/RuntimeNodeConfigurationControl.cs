@@ -260,10 +260,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         {
         foreach(var input in _inputs.ToArray())
         {
+            if(node.RuntimeConfiguration?.IsExecutionFieldActive(input.FieldId)==false)continue;
             if(!input.TryCommitPending()){error=input.Error;return false;}
             if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
         }
-        if(_inputs.FirstOrDefault(f=>f.HasInvalidText) is { } invalid){error=invalid.Error;return false;}
+        if(_inputs.FirstOrDefault(f=>node.RuntimeConfiguration?.IsExecutionFieldActive(f.FieldId)!=false&&f.HasInvalidText) is { } invalid){error=invalid.Error;return false;}
         if(view is null){error="配置尚未初始化。";return false;}
         if(!view.TryCapture(out var settings,out error))return false;
         if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
@@ -273,14 +274,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         try
         {
             next=previous.WithSettingsFields(settings,view.AcceptedFieldOrder);
-            if(!IsCurrent()||revision!=view.AcceptedRevision||view.HasPendingEdits||_inputs.Any(editor=>editor.HasPendingEdits)
+            if(!IsCurrent()||revision!=view.AcceptedRevision||view.HasPendingEdits||_inputs.Any(editor=>node.RuntimeConfiguration?.IsExecutionFieldActive(editor.FieldId)!=false&&editor.HasPendingEdits)
                 ||!ReferenceEquals(node.RuntimeConfiguration,previous))
             {error="参数页已重新绑定或发生新的编辑。";return false;}
             node.RuntimeConfiguration=next;
             if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
                 throw new InvalidOperationException("当前编辑会话尚未就绪或已经失效。");
             context.Host.Validate(context.PreparedDraft);
-            if(!IsCurrent()||revision!=view.AcceptedRevision||view.HasPendingEdits||_inputs.Any(editor=>editor.HasPendingEdits)
+            if(!IsCurrent()||revision!=view.AcceptedRevision||view.HasPendingEdits||_inputs.Any(editor=>node.RuntimeConfiguration?.IsExecutionFieldActive(editor.FieldId)!=false&&editor.HasPendingEdits)
                 ||!ReferenceEquals(node.RuntimeConfiguration,next)||!context.IsValid
                 ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context))
             {error="参数页已重新绑定或发生新的编辑。";return false;}
@@ -393,18 +394,15 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             ||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
             return "来源编辑已失效，请使用当前参数页。";
         if(proposal is not (ReferenceSetting or VariableSetting))return null;
-        var node=_node;var priorConfiguration=node.RuntimeConfiguration!;RuntimeToolConfiguration? proposed=null;
+        var node=_node;
         try
         {
-            proposed=priorConfiguration.WithFieldSettings(new Dictionary<string,ConfigurationSetting>{[target.Id]=proposal});
-            node.RuntimeConfiguration=proposed;
-            context.Host.Validate(context.PreparedDraft);
+            context.Host.ValidateRuntimeFieldProposals(context.PreparedDraft,new Dictionary<string,ConfigurationSetting>{[target.Id]=proposal});
             return _disposed||generation!=_generation||!context.IsValid||!ReferenceEquals(_node,node)
                 ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)
                 ?"来源编辑已失效，请使用当前参数页。":null;
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
-        finally{if(ReferenceEquals(node.RuntimeConfiguration,proposed))node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
     {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;_roiFrameProvider=null;_roiFrames=null;var view=_view;_view=null;_inputs.Clear();

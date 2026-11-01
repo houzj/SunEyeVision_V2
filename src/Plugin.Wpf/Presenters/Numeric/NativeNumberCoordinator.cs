@@ -171,7 +171,10 @@ internal sealed class NativeNumberCoordinator : IDisposable
             if(_commit is not {IsDirty:true})_commit?.ProjectAccepted();
             else if(_state.IsReferenceMode)_commit?.ProjectAccepted();
             if(_commit is null&&(_state.Accepted as ConstantSetting??_state.ConstantBackup) is {} initial&&_arrange is not null)
-                _arrange.StartValue=Convert.ToDouble(initial.Value,CultureInfo.InvariantCulture);
+            {
+                try{_arrange.StartValue=Convert.ToDouble(NativeNumericSequenceProjection.Single(_state.Port,initial.Value!),CultureInfo.InvariantCulture);}
+                catch(ArgumentException failure){_state.SetSourceError(failure.Message);}
+            }
             ApplySliderVisibility();
         }
         finally{_syncing=false;DrainAcceptedProjection();}

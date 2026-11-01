@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
@@ -34,9 +34,11 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         new Port(PoseInput, SpatialDeclarations.Affine2D, false, EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
         BlobLocalRoi.Port
         };
-        return new(inputs,BlobSchema.Outputs,new ToolPresentation(inputs.Where(port=>port.Id!=BlobLocalRoi.InputId).Select((port,index)=>BlobParameterDefinition.Instance.InputPresentation(port,index))),
+        return new(inputs.Concat(BlobRoiInheritance.Ports),BlobSchema.Outputs,new ToolPresentation(inputs.Where(port=>port.Id!=BlobLocalRoi.InputId).Select((port,index)=>BlobParameterDefinition.Instance.InputPresentation(port,index))),
             workflowImageInputId:BlobParameterDefinition.Instance.WorkflowImageInputId,outputDisplay:BlobSchema.OutputDisplay);
     }
+    public IReadOnlyList<string> SelectExecutionInputs(FieldSettings configuration)=>BlobRoiInheritance.ActiveInputs(configuration,Describe().Inputs);
+    public IReadOnlyList<Diagnostic> ValidateExecutionInputs(FieldSettings configuration)=>BlobRoiInheritance.ValidateConfiguration(configuration);
     public IReadOnlyList<Diagnostic> ValidateKnownSettings(FieldSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);

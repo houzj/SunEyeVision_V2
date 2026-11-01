@@ -68,6 +68,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private Action? _detachBooleanInput;
     private Action? _detachChoiceInput;
     private bool _inlineConstantReference;
+    private readonly bool _numericSequence;
     private bool _disposed;
     private long _renderGeneration;
     private string _editError => _state.EditError;
@@ -114,22 +115,24 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         ReferenceFieldOptions? references = null, ConstantSetting? constantBackup = null,
         Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,
-        NativeIntegerRadioOptions? integerRadioOptions=null,DeclaredChoiceDisplayOptions? choiceDisplay=null)
+        NativeIntegerRadioOptions? integerRadioOptions=null,DeclaredChoiceDisplayOptions? choiceDisplay=null,bool numericSequence=false)
         : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>choiceDisplay?.ValidateProposal(proposal)??integerRadioOptions?.Validate(proposal)??references?.ValidateProposal?.Invoke(port,proposal),
             readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(port):null,referenceBehavior:references?.ReadBehavior?.Invoke(port)??ParameterReferenceBehavior.StrictExactlyOne),label,
-            references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true,choiceDisplay:choiceDisplay)
+            references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true,choiceDisplay:choiceDisplay,numericSequence:numericSequence)
     { }
 
     internal DeclaredFieldEditor(DeclaredFieldState state,string label,
         ReferenceFieldOptions? references=null,Func<OutputReference,string>? formatReference=null,
         IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,NativeIntegerRadioOptions? integerRadioOptions=null,bool ownsState=false,
-        bool inlineConstantReference=false,DeclaredChoiceDisplayOptions? choiceDisplay=null)
+        bool inlineConstantReference=false,DeclaredChoiceDisplayOptions? choiceDisplay=null,bool numericSequence=false)
     {
         var port=state.Port;
         _state=state;_port=state.Port;_referenceOptions=references;_ownsState=ownsState;
         _formatReference=formatReference;_choiceLabels=choiceLabels;_presentation=presentation;_choiceDisplay=choiceDisplay;
         _integerRadioOptions=integerRadioOptions;
         _allowUnboundReference=allowUnboundReference;
+        _numericSequence=numericSequence;
+        if(numericSequence&&!NativeNumericSequenceProjection.Applies(port))throw new ArgumentException("原数值序列投影需要正式浮点序列声明。");
         try
         {
         _choiceDisplay?.ValidatePort(port);
@@ -203,8 +206,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             _integerRadio=new NativeIntegerRadioPresenter(_state,_label.Text,_integerRadioOptions);
             InputElement=_integerRadio;_body.Children.Add(_integerRadio);return;
         }
-        var numeric=_port.EditModes!=FieldEditModes.Reference&&_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
-        var composedNumeric=numeric&&NativeNumberPresenter.UsesOriginalModes(_port,_presentation);
+        var numeric=_numericSequence||_port.EditModes!=FieldEditModes.Reference&&_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+        var composedNumeric=numeric&&NativeNumberPresenter.UsesOriginalModes(_port,_presentation,_numericSequence);
         var canReference=_referenceOptions is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is (ReferenceSetting or VariableSetting));
         if(canReference&&!composedNumeric&&(_port.EditModes&FieldEditModes.Constant)!=0)
         {
@@ -212,14 +215,14 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             mode.SetResourceReference(StyleProperty,"EditLinkButton");
             mode.Click+=(_,_)=>{if(!CurrentRender()||!mode.IsEnabled)return;if(_referenceMode){if(!_state.TryUseConstant())return;}else _state.EnterReferenceMode();Render();};_actions.Children.Add(mode);
         }
-        if(!_port.Required&&_setting is not UnsetSetting&&_port.EditModes!=FieldEditModes.Reference)
+        if(!_numericSequence&&!_port.Required&&_setting is not UnsetSetting&&_port.EditModes!=FieldEditModes.Reference)
         {
             var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
             clear.Click+=(_,_)=>{if(CurrentRender()&&clear.IsEnabled&&Set(new UnsetSetting()))Render();};_actions.Children.Add(clear);
         }
-        if(composedNumeric&&(_setting is not UnsetSetting||_referenceMode))
+        if(composedNumeric&&(_numericSequence||_setting is not UnsetSetting||_referenceMode))
         {
-            _numeric=new NativeNumberPresenter(_state,_presentation,_referenceOptions,_formatReference);
+            _numeric=new NativeNumberPresenter(_state,_presentation,_referenceOptions,_formatReference,_numericSequence);
             InputElement=_numeric;_body.Children.Add(_numeric);return;
         }
         if(_referenceMode||_setting is (ReferenceSetting or VariableSetting)||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)

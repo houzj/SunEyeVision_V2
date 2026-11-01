@@ -7,7 +7,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 /// constructing this view does not copy or dispose image/region resources.
 /// </summary>
 public sealed record BlobInput(IReadOnlyImage Image, IReadOnlyRegion? Inspection,
-    IReadOnlyRegion? Mask, RecordValue? Pose,RecordValue? LocalRoi=null)
+    IReadOnlyRegion? Mask, RecordValue? Pose,RecordValue? LocalRoi=null,bool IsInheritedRoi=false)
 {
     public static BlobInput Read(InputValues values)
     {
@@ -16,6 +16,7 @@ public sealed record BlobInput(IReadOnlyImage Image, IReadOnlyRegion? Inspection
             values.Contains(BlobTool.InspectionInput) ? values.Get<IReadOnlyRegion>(BlobTool.InspectionInput) : null,
             values.Contains(BlobTool.MaskInput) ? values.Get<IReadOnlyRegion>(BlobTool.MaskInput) : null,
             values.Contains(BlobTool.PoseInput) ? values.Get<RecordValue>(BlobTool.PoseInput) : null,
-            values.Contains(BlobLocalRoi.InputId)?values.Get<RecordValue>(BlobLocalRoi.InputId):null);
+            BlobRoiInheritance.Materialize(values,values.Contains(BlobLocalRoi.InputId)?values.Get<RecordValue>(BlobLocalRoi.InputId):null),
+            values.Contains(BlobRoiInheritance.ModeId)&&values.Get<string>(BlobRoiInheritance.ModeId)!=BlobRoiInheritance.Local);
     }
 }

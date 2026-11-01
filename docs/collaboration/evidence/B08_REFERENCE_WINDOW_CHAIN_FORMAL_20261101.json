@@ -1,0 +1,31 @@
+{
+  "scope": "低阈值真实Blob窗口引用整链定向正式自测，不代表B08整体闭口",
+  "productSourceCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+  "candidateCommit": "0b551461bbc3c73ec9ee6387ececbc61bf5a5e7f",
+  "caseCount": 9,
+  "formalReceipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobReferenceWindow\\attempt-001\\receipt.json",
+  "formalReceiptData": {
+    "stage": "S4",
+    "validationScope": "Formal",
+    "attempt": 1,
+    "pid": 137644,
+    "exit": 0,
+    "timeoutMs": 360000,
+    "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4BlobReferenceWindowCases.cs",
+    "caseSourceSha256": "DDA25BAAE5688F2B53E9949DE60156573D09824EC0DEE67C6F0E13A48C00E96B",
+    "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+    "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobReferenceWindow\\attempt-001"
+  },
+  "loadedProductCount": 15,
+  "loadedHashMismatchCount": 0,
+  "limitations": [
+    "其他字段全交叉",
+    "自然键鼠",
+    "真实剪贴板",
+    "连续会话",
+    "跨文档",
+    "ROI和结果图文",
+    "模态局部timer边界"
+  ]
+}

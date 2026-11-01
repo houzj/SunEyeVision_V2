@@ -1,0 +1,313 @@
+{
+  "scope": "B08低阈值数值引用真实窗口完整生产链候选；非主仓Formal/全B08/VM等价",
+  "baseline": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+  "sourceCommit": "bf2a5caff2cffe61768e684f816246e5a71d9a27",
+  "designCommit": "1f530c6e",
+  "productSourceChanges": "无，产品src/tools与15171638一致；仅新增测试、runner与证据",
+  "candidateRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101",
+  "build": {
+    "sha256": "C13D5A2C198C95FF96DBF98E89C5A0799199F112C746D7BDBC4405CDAF2109A4",
+    "errors": 0,
+    "seconds": 120.1,
+    "sourceDependency": "-p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon；标准部署规则自行构建，不复制Release或厂商运行库",
+    "log": "Release/_validation/blob-reference-build-001.log",
+    "warnings": 6537
+  },
+  "receipt": {
+    "stage": "S4",
+    "validationScope": "Candidate",
+    "attempt": 7,
+    "pid": 142732,
+    "exit": 0,
+    "timeoutMs": 360000,
+    "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4BlobReferenceWindowCases.cs",
+    "caseSourceSha256": "DDA25BAAE5688F2B53E9949DE60156573D09824EC0DEE67C6F0E13A48C00E96B",
+    "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+    "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobReferenceWindow\\attempt-007"
+  },
+  "receiptSha256": "8C8205140A6A349CE72A070C377DFDFD5357255358D51A20CD7E33BB8B542C05",
+  "caseSourceSha256": "DDA25BAAE5688F2B53E9949DE60156573D09824EC0DEE67C6F0E13A48C00E96B",
+  "runnerSha256": "DF2390FBB050AE6B9A6C1B2B6043EF6D1D394C0E9D5D390919C85AF218EFA823",
+  "passed": 9,
+  "caseProgress": [
+    "2026-11-01T04:28:32.6511355Z BEGIN 正式前序成员来源真实选择、私有消费与取消不污染",
+    "2026-11-01T04:28:43.9759270Z PASS 正式前序成员来源真实选择、私有消费与取消不污染",
+    "2026-11-01T04:28:43.9767698Z BEGIN 成员来源调试确认、历史与真实文件重开",
+    "2026-11-01T04:29:13.8089597Z PASS 成员来源调试确认、历史与真实文件重开",
+    "2026-11-01T04:29:13.8098682Z BEGIN 原模态变量来源及All索引完整消费确认重开",
+    "2026-11-01T04:29:26.2429301Z PASS 原模态变量来源及All索引完整消费确认重开",
+    "2026-11-01T04:29:26.2436895Z BEGIN 原模态变量来源及Fixed索引完整消费确认重开",
+    "2026-11-01T04:29:39.5087421Z PASS 原模态变量来源及Fixed索引完整消费确认重开",
+    "2026-11-01T04:29:39.5096273Z BEGIN 原模态变量来源及AtField索引完整消费确认重开",
+    "2026-11-01T04:29:53.5885124Z PASS 原模态变量来源及AtField索引完整消费确认重开",
+    "2026-11-01T04:29:53.5893359Z BEGIN 原模态变量来源及AtVariable索引完整消费确认重开",
+    "2026-11-01T04:30:10.6483900Z PASS 原模态变量来源及AtVariable索引完整消费确认重开",
+    "2026-11-01T04:30:10.6492567Z BEGIN 实际捕获后变量变化仅影响下一次私有运行",
+    "2026-11-01T04:30:20.6515785Z PASS 实际捕获后变量变化仅影响下一次私有运行",
+    "2026-11-01T04:30:20.6524722Z BEGIN 固定索引越界失败不发布，合法索引可恢复",
+    "2026-11-01T04:30:29.4489363Z PASS 固定索引越界失败不发布，合法索引可恢复",
+    "2026-11-01T04:30:29.4497502Z BEGIN 控制断边保留身份且真实窗口拒绝，Undo恢复可执行",
+    "2026-11-01T04:31:04.2908202Z PASS 控制断边保留身份且真实窗口拒绝，Undo恢复可执行"
+  ],
+  "caseProgressSha256": "E30E1611501D02FEC194B0E5B0FC7A7AD02A5FE47D09FC4E15051251AF8DD42E",
+  "runLogSha256": "E1C5C005EC53C36F21870EE4112FE30F7E1BF5A3E6538D9BE769046088BEDFD0",
+  "loaded": [
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+      "name": "SunEyeVision.Workflow",
+      "sha256": "92337DFF369C1A85F9A79DBE8E1070C3E58443CA5F0ADD1F9DCD5AE5A26C5569"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+      "name": "SunEyeVision.Plugin.SDK",
+      "sha256": "F2A32F2F1C649CB6C6A34860E1BC15BB22912DC7D37907A477009F7666F11BAF"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "name": "SunEyeVision.Plugin.Runtime",
+      "sha256": "507555AD353D924320C142D9448E99496F55549A7BE5682C997BEF4528A1B737"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "name": "SunEyeVision.Plugin.Contracts",
+      "sha256": "1053CC428D27D4B5C7D882CCFA093BC13F72E2FAF4B6026A092B97F235628214"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+      "name": "SunEyeVision.HalAdapter",
+      "sha256": "8866F6D52574161A3823BD8EA35C06168420E0184AC8227FE53606A872DF9158"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+      "name": "SunEyeVision.Plugin.Infrastructure",
+      "sha256": "59501C241666B425929571CF693241B7ED703AD9C855B368058280BF9EC8FABB"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+      "name": "SunEyeVision.UI",
+      "sha256": "7E6FED8FF3E38D0166D102E36840385A480055075FD3BF2C28C1764C177B04D0"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+      "name": "SunEyeVision.Plugin.Wpf",
+      "sha256": "14322C8E06477475A17E6A77210A581EAE60116B668768344F078FA63DF32479"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+      "name": "SunEyeVision.Core",
+      "sha256": "B63334391B6134BE5F7C36AF83DC2C565DF9D5AADA10CA93495B52E5EDABD120"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+      "sha256": "D3764C2D872664BCBA822AFAE8AD4F0D03CF001523C0A8FCE7AAA893BDEC47F2"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+      "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+      "sha256": "830C8E9770E1B54118B29548EAAFEA7F0F24BF1BBF759C756F61CB521C3D9AAC"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+      "name": "SunEyeVision.Tool.ImageSource.Runtime",
+      "sha256": "AFEE8195388240FFF7FBA6269F6EC760E6FF8A63EF43C83419C524723422FD07"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+      "name": "SunEyeVision.Tool.ImageSource.Wpf",
+      "sha256": "B3DC9C60C0EA37057EA898E947C742457F3A0EF5380C6107B72B8368B35F560B"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+      "name": "SunEyeVision.DeviceDriver",
+      "sha256": "0F6F23D3EC508865B536EA9EADA3EA4541D0C8F50D6B045692001A361FAF9DA8"
+    },
+    {
+      "matchesCandidate": true,
+      "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+      "name": "SunEyeVision.HalAdapter.Runtime",
+      "sha256": "2ECA7234C14BF9BE68D7A4BB8C9D92B954D5E16FA96171E5F47C67F57FA6E516"
+    }
+  ],
+  "loadedManifestSha256": "9DDA0AD06001E4D64600A3314007CB8024ED6147E853C40622D9B84C08B9F3AD",
+  "failures": [
+    {
+      "files": [
+        {
+          "sha256": "D83C91D6FB29CA37CDEECC6386BAA39C830490AA68AF570F1751DB88448D0173",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-001/build.log"
+        },
+        {
+          "sha256": "3E57E6C8FE5F87AC304718355EA81EB13B98E224D91747095437DCC84ACD6FB2",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-001/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "DeclaredFieldAccess误作DeclaredFieldEditor，测试宿主编译失败",
+      "attempt": 1
+    },
+    {
+      "files": [
+        {
+          "sha256": "21B93F324DD882133FCDC2106B82B567FC978C8C4159D5D19D7B27EB95B92499",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-002/receipt.json"
+        },
+        {
+          "sha256": "742785EED2D30947DB24F54B3695F00C1ECD0213ADA085409EAD294E2A49D393",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-002/build.log"
+        },
+        {
+          "sha256": "14A5DDB18425A46635837322299DB26728D682ED4559F8F6ECD737BFE969CB03",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-002/run.log"
+        },
+        {
+          "sha256": "5C266C1B00F867255C4CE41BA90A3A55554286C55F390651AC524D6D60DCD31C",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-002/run-error.log"
+        },
+        {
+          "sha256": "70ADC297ECC414B30F99A0F4810B12EBDBEB2AE7CE49461EA036E091558BB6C4",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-002/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "图片data筛选缺PortId，原图/灰图双候选，夹具Single失败",
+      "attempt": 2
+    },
+    {
+      "files": [
+        {
+          "sha256": "CB3B602FD77182FA67BF1A2D46AB6DA8AD8612A744F5C1927F7AC1A5D6AAE343",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-003/receipt.json"
+        },
+        {
+          "sha256": "25CE7A402CDC4BEFBA17CEA68BFBBB62C7A67EE7D13C0F44B2B0691AF4160C51",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-003/build.log"
+        },
+        {
+          "sha256": "646748FA93055BE2B7067E24CE1FC46E91577DFABAC25306BBD32F3BB55F9BA6",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-003/run.log"
+        },
+        {
+          "sha256": "E2D10A72DD37FE8F00B07C0E01ABB1956B217A4621456C1CCD21F03C6FAE9BE1",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-003/run-error.log"
+        },
+        {
+          "sha256": "9863AA34C74C35A80F51C34F4D69EDC880B81B3F7D64F306CBFB4FE64C7C3331",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-003/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "UndoRedo后误期望私有运行值8重放，文件保持100且引用仍在",
+      "attempt": 3
+    },
+    {
+      "files": [
+        {
+          "sha256": "8866BDF5C33A473E6AFE2B1304E8965D806A619266745CB6F4CCCD8551449D69",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-004/build.log"
+        },
+        {
+          "sha256": "3A3FDC17A2265111CC5B7A2CE5D4FBEA5B5571181C4B15DBA7E79EEFE33561DE",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-004/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "重开执行辅助CheckLogger类型及LocalReadAdmission签名误用，宿主编译失败",
+      "attempt": 4
+    },
+    {
+      "files": [
+        {
+          "sha256": "0F62917092814C2D5A287D3CFD174AC6157FA748DFC63B99264C5249EDCA587B",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-005/receipt.json"
+        },
+        {
+          "sha256": "4DAA1A4178F64BB1313121F82A2140F35E4F032337D61C3A016FBADC4C03D03E",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-005/build.log"
+        },
+        {
+          "sha256": "14A5DDB18425A46635837322299DB26728D682ED4559F8F6ECD737BFE969CB03",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-005/run.log"
+        },
+        {
+          "sha256": "FE6902DDE888DF4030ED4D1CFE3F695BCD57E1F3ABBB88AFE99A033ADCEAA77A",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-005/run-error.log"
+        },
+        {
+          "sha256": "5563A5B771DC90197551FC9CC72EC25CBC3C800D7E5328D92D44A06786A92CC6",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-005/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "读取已退役视图Revision正常拒绝，被误当可读前提",
+      "attempt": 5
+    },
+    {
+      "files": [
+        {
+          "sha256": "7C79F151B918D3571027989D2DBA8C778815AF82C23C0B3BB6A32E7B65C6A84A",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-006/receipt.json"
+        },
+        {
+          "sha256": "ABB5644A33DF6D67CFA33DFF1DB4415C59E9D12CCCB581E992A5890B2534023B",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-006/build.log"
+        },
+        {
+          "sha256": "983079D25680F4730D93CC2D2135D334C56EFE6C6F18EECD1A8ED6FDEB069CBE",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-006/run.log"
+        },
+        {
+          "sha256": "73C961F85BF5729995427115655B0A19B4ED7C0674E21431E44EADA1D7C9A87E",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-006/run-error.log"
+        },
+        {
+          "sha256": "61234FD33F68D7FF8A26E989D1E2DE3ACFA255B578400B25926D77BA1AF6EA1A",
+          "path": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-006/cases.cs.txt"
+        }
+      ],
+      "classification": "测试夹具/预期错误，非已证产品缺陷",
+      "reason": "前6组通过，第7组夹具写All文本被严格整数索引解析拒绝",
+      "attempt": 6
+    }
+  ],
+  "contractNotes": [
+    "只用真实已声明ImageSource output.image.width、控制前序与合法Host创建的全局Integer[]，原模态变量窗选择真实身份；不使用产出探针",
+    "完整Serializer比较root/scope/node/member/type/storage及递归Selection，保存重开使用自有WorkflowPublishedConfiguration/GlobalValues/ExecutionOwner实际执行",
+    "确认后先保存核当前值8；UndoRedo只恢复配置关系，不要求重放私有运行值，重新执行再确认保存",
+    "实际冻结后改变正式变量173到99，本次私有仍173，下一次99；取消不污染正式节点",
+    "固定99明确得到变量索引超出本次序列范围且不首项回退诊断；恢复完整AtConstant1并实际90",
+    "旧窗口关闭后Revision明确拒读，旧回调后仍退役且旧draft字段/正式配置/历史不变",
+    "隐藏Desktop Create/SetThreadDesktop失败不回退用户桌面；未运行或终止用户程序",
+    "候选15项编译输出与主仓正式不相同，以上只核候选自身；Formal必须由主仓原Release独立复验"
+  ],
+  "runnerNotes": [
+    "007显式-TimeoutSeconds360；提交后新增该轨默认360，AST解析及默认求值核对通过，其他轨原语义保留",
+    "变量等待15秒deadline；发现dialog后先停timer，确认若不关闭dialog仍存在失去该局部deadline的静态夹具风险，外层360秒有限；此次模态均实际关闭返回，未重复整轨"
+  ],
+  "remaining": [
+    "真实物理键鼠/自然焦点；本轮WPF命令和CurValueA绑定不冒称物理输入",
+    "真实剪贴板/连续会话/跨文档与Root完整矩阵",
+    "全部九字段输入方式交叉、四浮点原厂语义",
+    "变量管理UI创建数组；本轮数组由已存在合法Host声明创建",
+    "ROI/图文/原厂其他模式、其他DPI、实际VS和人工验收",
+    "正式Release同轨验证尚未进行，不能用本候选代替"
+  ],
+  "formalCommand": "pwsh -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Track BlobReferenceWindow -Stage S4 -ValidationScope Formal -TimeoutSeconds 360",
+  "candidateCommand": "pwsh -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Track BlobReferenceWindow -Stage S4 -ValidationScope Candidate -TimeoutSeconds 360",
+  "environment": "无额外开关；runner供应S2_PRODUCT_ROOT/S2_CASE_ROOT，程序内部隐藏desktop"
+}

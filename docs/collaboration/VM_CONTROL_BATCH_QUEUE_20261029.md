@@ -8,7 +8,7 @@ VM是第一设计和验收基准。以完整控件或功能链集中准备原件
 
 - B08：正式受限窗口已通过14组，低阈值真实引用整窗9组覆盖来源、变量、固定／动态索引、保存重开实际消费、越界及断边恢复；对应正式同版证据为 `evidence/B08_REFERENCE_WINDOW_CHAIN_FORMAL_20261101.json`。九字段全交叉、自然键鼠、连续会话及ROI／结果组合等仍未完成，不称B08原六类出口或Blob/S2整体闭口。当前A00–A23见 `evidence/B08_CURRENT_ACCEPTANCE_20261031.json`。
 - ROI：原控件和几何、Record/Sequence、真实视口图层及区域执行已有可复用基础；Blob尚缺私有草稿/持久、实际帧借阅接线及同帧物化。完整组合正在基于300b924d设计，未实现或未证的继承、输出掩膜、位置修正和多形语义不能冒称已完成。
-- 辅助十字：主结果工作区已有真实视口消费者；Blob消费者与设置/换帧/退役整链核收进行中。Catalog历史pending不能代替现状或自动算验收。
+- 辅助十字：正式 BlobCrosshairWorkspace attempt-001 七组通过真实工具栏、双十字、结果高亮、灰二值切换及换帧退役；引擎驱动运行，自然键鼠、跨Root及原厂导出仍未验。详见 evidence/C17_BLOB_CROSSHAIR_CHAIN_FORMAL_20261101.json。
 - 算法：VM单阈值极性及HoleMinArea原生条件链已有静态补证，本方单阈值已有样本公式比较；原机像素差分、完整ROI/输出和S3仍未闭口，不以静态证据开放未实现模式。
 ## 2026-10-31 当前推进状态
 B01内容开关补齐（2026-10-30）：PCUI UserControl原件已迁为 ContentToggleSwitch（与Apps.XmlUI参数开关分开），dark两图保持原字节。正式UI/全量0错，DesignTime319含新增13、FieldEditing34、RuntimeEditorUiStage6通过；首轮137超时保留，138同版诊断正常结束，根因未定。资源/原件一致性和实际WPF图已核，工作流接入、真实VS和人工未验。证据：B01_CONTENT_TOGGLE_VALIDATION_20261030.json；具体消费合同：CONTENT_TOGGLE_SWITCH_CONTRACT_20261030.json。此修复不表示跳过B08或进入S3。

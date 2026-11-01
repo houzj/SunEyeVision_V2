@@ -1,0 +1,29 @@
+# C17辅助十字完整生产消费链（2026-11-01）
+
+基线300b924d，唯一工作区D:/MyWork/line-aiproject/blob-supported-window-20261101，分支codex/blob-crosshair-chain-20261101。先真实消费者核收，无实测缺陷不改产品；不改ROI线、工作流独立工作区及用户程序，不扩显示元数据或调度基础。
+
+## 原件与现有能力
+
+原证据复用Catalog C17.crosshair-settings-composition、C17.cross-binding-lifecycle及C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json，不新逆向、不启VM。原CrossData.cs SHA3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1；CrossConfig.xaml SHAe0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d；CrossConfig.xaml.cs SHA5be350a0fd91b5301f0af41b9c91432947d0a8733d3e6a9e0d8e5fd6b251b2f2；原CrossControl.xaml.cs SHAa09059167052071a3bcdced56258a3f1bd547d08812b18193a7537d01af90e51。所核原件为两个十字、显隐/坐标/粗细/颜色/居中及锁定、原真实窗口模板；原导出OpenCV像素不在本批等价结论内。
+
+现有真实链：Blob实际执行→DeclaredOutputSnapshot/NodeResultManager→MainWindowViewModel→ImageResultControl/ResultWorkspaceShell→ResultWorkspacePresenter.CrossLinesCommand→输出Pane懒建CrosshairLayer→OpenSettings→原CrosshairSettingsView/CrossControl。当前帧借阅与pixel proof由ResultImagePane/NativeResultViewport接管，不造图像或调用独立样例替代。现有18个c17-window多直接用Viewport/NativeCrosshairSample，不能冒称真实Main消费已验；Catalog旧pending亦不作为产品缺陷。
+
+## 完整集中矩阵
+
+1. 自有固定PNG经正式ImageSource→Blob调度生产灰/二值资源，核实际像素、Frame和坐标域；仅执行真实shell.CrossLinesCommand打开原设置窗口，不能测试手工调用OpenSettings冒充工具栏。
+2. 双十字实际原控件：显隐、坐标、粗细、颜色、居中/锁定与两个实例隔离；同一窗口关闭重开沿现合同保留，不新增持久偏好。
+3. 真实Blob表选择与十字层共存，清高亮不删除辅助十字；零Blob结果不造假Blob行，辅助十字按视图本地合同独立。
+4. 灰/二值切换、同尺寸真实重跑得到不同RunIdentity/Frame，旧设置窗口、色板/数值叶及原CrossControl回调退役；新帧仅接受其当前proof，不弱化域或帧身份。
+5. 关闭设置与重开、视口Shutdown/Owner关闭，旧shell命令/窗口/控件不能写新代，全部租约与运行owner释放后旧真实图像不能借阅。
+
+仅新增专属S4BlobCrosshairWorkspaceCases.cs及runner BlobCrosshairWorkspace轨道，复用既有真实结果fixture与隐藏桌面启动器。所有WPF在随机隐藏Desktop创建，失败不回退用户桌面；模拟WPF命令/DP/路由事件不声称自然输入或物理鼠标。若确证失败，先保留版本/日志，再集中修C17对应方法，不碰ROI文件。
+
+候选标准全量Release独立构建，HalconSourceRoot用现有源依赖；不复制Release或厂商库。专属轨及必要已有C17窗口回归/结果链按实际改动决定，不为数量重复。记录源码、加载程序集SHA、失败与未测；候选不替正式。实际VS按用户安排，不另跑自动设计时；其他DPI、原厂像素/导出等价、自然输入、Blob图文owner/ROI/连续会话均未验或未实现保留。
+
+## 候选核收结果及边界
+
+产品src/tools未变，标准全量build-001自然exit0：6566警告/0错，147.33秒。专属BlobCrosshairWorkspace attempt-001首组通过，第二组居中前的坐标、颜色、双实例与绑定断言已过；失败原因是测试Button.RaiseEvent(ClickEvent)仅路由事件，不会执行实际Button.OnClick/Command。没有产品缺陷证据，不修改产品。002改为确认实际按钮绑定同一CenterCommand/CanExecute后执行按钮Command，七组自然exit0，旧失败保留。
+
+实际范围：WorkflowExecutionEngine运行真实ImageSource→Blob，再交NodeResultManager/MainWindowVM消费；不是主窗RunCommand入口。主窗结果shell.CrossLinesCommand确实执行，未手工OpenSettings或新建层替代。坐标/显隐/锁定通过原控件DP与TwoWay、颜色经实际原命令、居中经实际按钮Command；均不声称物理点击/自然键鼠。真实灰/二值同Frame换图、不同Run/Frame重跑、原设置数值/色板叶退役、表高亮共存、空Blob零假行以及Shutdown旧命令和资源释放通过。
+
+未验保留：真实鼠标拖动/原CrossControl旧手势回调的生产组合（现18项组件样例不套本轨）、跨文档/Root完整矩阵、其他DPI/实际VS/人工、原厂导出像素与完整VM等价。辅助十字是当前图像视图本地状态，不将其当Blob业务字段/算法输出或方案历史。ROI、Blob图文owner和连续会话基础不在本批扩展。候选编译输出不代正式Release；主线可集成两个测试文件后直接针对原正式产物运行同轨，无需因本次测试改动重建产品。

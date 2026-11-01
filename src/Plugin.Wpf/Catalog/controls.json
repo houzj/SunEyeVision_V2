@@ -6769,7 +6769,7 @@
       "C13.original-text-composition": "真实Blob页面有原文本显示组合，但正式文本配置与同次图层消费者尚未接通；旧CANDIDATE_UNBUILT_UNRUN为历史记录，不称生产功能完成。",
       "C13.original-graphic-style-composition": "真实Blob页面有原图形样式组合；未接入配置由受限窗口保值拒绝。正式配置与同次显示消费者仍缺；实际键鼠未验。",
       "B08.variable-selection-dialog": "正式BlobReferenceWindow attempt-001九组包含真实变量模态、固定和动态索引及保存重开实际执行；不是所有字段、剪贴板或跨文档全域通过。",
-      "C17.crosshair-settings-composition": "ResultWorkspacePresenter已有真实结果视口消费者；旧18项是候选公共视口检查，Blob生产消费者整链正在独立核收，尚无正式通过回执。"
+      "C17.crosshair-settings-composition": "正式BlobCrosshairWorkspace attempt-001七组通过，覆盖真实工具栏命令、双十字、灰二值切换、重跑帧与退役；15项加载SHA一致。运行由引擎驱动而非主窗RunCommand，自然键鼠、旧手势、跨Root及原厂导出仍未验。"
     }
   },
   "integrationHistory": [

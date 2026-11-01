@@ -1,3 +1,7 @@
+## 2026-11-01 C17辅助十字真实Blob结果视口正式自测
+
+- 真实ImageSource→Blob由WorkflowExecutionEngine执行并将publication交NodeResultManager/MainWindowVM；真实shell.CrossLinesCommand打开当前结果Pane原双十字设置。正式BlobCrosshairWorkspace attempt-001七组通过：两实例坐标/颜色/锁定/居中命令、结果高亮共存、灰/二值切换、同尺寸新Run/Frame退役、空结果和关闭/图像租约释放。15个加载DLL与正式目录SHA一致；证据见 C17_BLOB_CROSSHAIR_CHAIN_FORMAL_20261101.json。无产品代码修改，无正式重建。
+- 候选attempt-001把RaiseEvent误当命令执行而失败，保留于候选回执；正式用实际按钮Command而非物理点击。主窗RunCommand、自然键鼠/拖动、旧手势组合、跨Root、其他DPI及原厂导出像素未验；不称Blob或S2整体完成。ROI独立开发继续。
 ## 2026-11-01 ROI组合与结果辅助十字并行
 
 - 按300b924d核现状：ROI并非全部缺基础；NativeRoiSession、Record/Sequence持久、现有真实视口ROI图层及Blob区域执行可复用。真实Blob运行时参数视图尚无当前视口帧租约入口，旧SDK区域编辑链不可直接当生产接线；几何物化、帧身份与原厂形状语义须完整核对。独立工作区 D:/MyWork/line-aiproject/blob-reference-chain-20261101 已复用切分支 codex/blob-roi-chain-20261101，以完整ROI清单与用户要求屏蔽多形为单位先设计，再按已具备能力集中实施，不扩其他基础或伪造继承/位置/输出掩膜。

@@ -38,3 +38,13 @@
 本方 `ResultWorkspacePresenter` 现只保存单个 `SelectedDisplayReference`；其 Record.data 及类型化表达式是宿主适配，不宣称 VM 内部等价。背景和叠加仍未实现。`ImageSourceResolver` 以同一引用选择图像条来源，但只核作用域/节点；结果面板按完整 Key 核端口、成员及类型，失效口径不同。后续统一设计主图、输入、背景及勾选状态，并核实显示与图像条的联动边界、身份失效和保存恢复；不可为旧字段保留兼容双轨，也不可在证据不足时把两个职责简单视为互不关联。
 
 格式变更导致用户方案 4 不能打开；一次性副本 `D:/MyWork/line-aiproject/recover-solution4-20261031/4.recovered.solution` 经正式 `SolutionRepository.LoadCandidate` 零诊断并核1051路径、5勾选、索引、变量及显示引用；原文件哈希未变。该恢复不证明其他方案均可转换，程序界面打开及人工反馈另记。
+
+## 2026-11-01 原显示对象、图像条与订阅补证
+
+逆向负责人离线只读取证，未运行 VM。报告“VM图像显示身份与图像条切换补证-20261101.md” SHA256 C549A756059C5DE9A0A725B5AE6142BFB88384BAC1667339D235F514CA6E743A；“VM图像来源与复制容器补证-20261101.md” SHA256 BA466D5487768399DDAE8484571A502C4EE6E5DB273779E7272126F6DC1B01FE，均位于 D:/MyWork/REA逆向测试/docs/joint-audit/。
+
+原图像输入通过可订阅上游 IMAGE 组合及 VmIO.RelateIO 建立订阅；原模块结果视图分别维护主显示、输入侧视图、背景及多个勾选项。主图、背景和勾选项按显示对象 FullName 记录于模块 UserData CheckedImages；输入侧视图不在该记录中。显示对象 owner 可定位同父级自身或前驱图像源，驱动本地图像条；条目选择在条件满足时写源模块 CurrentImagePath 并可触发运行，经真实输入连接影响消费者，但不直接修改其 RelateIO。
+
+现行 SelectedDisplayReference 单个 OutputReference 属本方类型化适配，不能表达背景、多选；ImageSourceResolver 根据该引用节点定位图像条符合显示到图像条有关联的方向，但其完整筛选和失效语义不等于已证 VM。原候选恢复存在指定回退，本方结果视口在显式身份失效时拒绝自动选择；应按证据整体对照并协调输入订阅、显示集合及图像条的身份与生命周期，不能仅把三者完全隔离或误认完全相同。7bc70f4b 将旧 SelectedDisplaySource 换为该字段；当前严格未知字段校验使旧方案被拒绝，这是本方格式变更结果，非已证 VM 要求。
+
+原 UI 参数经 SDK 及原生协议读写；方案文件保存重开、复制时 CheckedImages 的复制和引用重映射、删除及所有异步失效情形仍未闭合。按用户决定保留自研适配/假设并写明替换位置，不能声称 VM 持久化等价。此轮为证据与对照，不涉及产品修改、构建及动态运行；旧方案一次性恢复与产品设计分开。

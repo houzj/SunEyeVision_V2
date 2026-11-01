@@ -813,6 +813,7 @@
     },
     {
       "id": "C07.apps-pcui-popup-foundation",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.PcUI",
       "assemblyMvid": "380598ff-2817-448e-bad2-2350035a99a0",
       "assemblySha256": "bc47626c5064cf4a28e0cfa8344c07c4d186c5a9efd321988de9482dfb10fd74",
@@ -896,6 +897,7 @@
     },
     {
       "id": "C07.original-reference-tree-text-foundation",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -1021,6 +1023,7 @@
     },
     {
       "id": "C07.original-reference-composition",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -1770,7 +1773,8 @@
     },
     {
       "id": "C07.original-expanded-reference-window",
-      "blobExpandedFormal20261101": {"receipt": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "status": "中英文各12组正式消费者回归通过；完整控件未闭口"},
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
+      "blobExpandedFormal20261101": {"receipt": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "status": "中英文各12组正式消费者回归通过；当前具备基础范围条件性闭口，原完整范围保留"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",

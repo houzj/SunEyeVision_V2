@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,6 +25,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private readonly List<IDisposable> _readers;
     private ImageSourceRunInput? _sourceInput;
     private ICameraCaptureService? _cameraService;
+    private Func<bool>? _previewCurrent;
     private int _started;
     private bool _disposed;
     public ToolExecutionIdentity Identity {get;}
@@ -42,14 +43,72 @@ public sealed class RuntimeDebugInvocation : IDisposable
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
         Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null)
+        => CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null);
+
+    /// <summary>Resolve only explicitly requested active input ports from already published snapshots.
+    /// No algorithm, parameter current value, settings materialization or upstream execution occurs.</summary>
+    public static RuntimeInputPreviewLease CaptureInputs(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+        Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
+        IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
+        string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,
+        IReadOnlyCollection<string>? inputFieldIds=null,Action<IReadOnlyCollection<string>>? observeVariables=null)
+    {
+        ArgumentNullException.ThrowIfNull(inputFieldIds);
+        var selected=inputFieldIds.ToArray();
+        if(selected.Length==0||selected.Any(string.IsNullOrWhiteSpace)||selected.Distinct(StringComparer.Ordinal).Count()!=selected.Length)
+            throw new ArgumentException("预览输入必须非空、唯一且已声明。",nameof(inputFieldIds));
+        var invocation=CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,selected.ToHashSet(StringComparer.Ordinal),observeVariables);
+        try
+        {
+            var prepared=invocation._prepare((_,_)=>throw new InvalidOperationException("只读输入不得写参数当前值。"));
+            if(invocation._previewCurrent?.Invoke()!=true)throw new InvalidOperationException("预览输入在捕获期间已变化。");
+            return new(prepared.Inputs,invocation.SourceIdentities,()=>!invocation._disposed&&invocation._previewCurrent?.Invoke()==true,invocation.Dispose);
+        }
+        catch(Exception failure)
+        {
+            try{invocation.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
+        }
+    }
+    private static RuntimeDebugInvocation CaptureCore(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+        Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
+        IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
+        string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null)
     {
         ArgumentNullException.ThrowIfNull(workflow);ArgumentNullException.ThrowIfNull(draft);ArgumentNullException.ThrowIfNull(owner);
         if(!workflow.Nodes.Any(n=>n.Id==draft.Id&&n.ToolType==draft.ToolType))throw new InvalidOperationException("调试节点不属于当前工作流。");
         var node=draft.Clone();var configuration=node.RuntimeConfiguration??throw new InvalidOperationException("调试节点没有Runtime配置。");
-        var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
-        if(errors.Count>0)throw new InvalidOperationException(errors[0].Message);
-        var graph=WorkflowExecutionDependencyGraph.Compile(workflow);
-        var settings=configuration.CaptureExecutionFields().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        var originalConfiguration=draft.RuntimeConfiguration;
+        var originalTarget=workflow.Nodes.Single(n=>n.Id==draft.Id);
+        string PreviewConfiguration(RuntimeToolConfiguration? current)
+        {
+            if(current is null||current.Schema.Fingerprint!=configuration.Schema.Fingerprint)return "";
+            if(previewInputs is null)return "";
+            if(previewInputs.Any(id=>!current.IsExecutionFieldActive(id)||!Equals(current.GetParameterReferenceBehavior(id),configuration.GetParameterReferenceBehavior(id))))return "";
+            using var stream=new System.IO.MemoryStream();
+            using(var writer=new System.Text.Json.Utf8JsonWriter(stream))RuntimeFieldJson.Write(writer,previewInputs.Select(id=>new KeyValuePair<string,ParameterSetting>(id,current.Fields.Read(id))).Where(pair=>pair.Value is not UnsetSetting).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
+            return Convert.ToBase64String(stream.ToArray());
+        }
+        var configurationProof=previewInputs is null?"":PreviewConfiguration(configuration);
+        bool ConfigurationCurrent()=>workflow.Nodes.Any(node=>ReferenceEquals(node,originalTarget))&&originalTarget.ToolType==draft.ToolType&&PreviewConfiguration(draft.RuntimeConfiguration)==configurationProof;
+        Dictionary<string,ParameterSetting> settings;
+        WorkflowExecutionDependencyGraph? graph=null;
+        if(previewInputs is null)
+        {
+            var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
+            if(errors.Count>0)throw new InvalidOperationException(errors[0].Message);
+            graph=WorkflowExecutionDependencyGraph.Compile(workflow);
+            settings=configuration.CaptureExecutionFields().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        }
+        else
+        {
+            if(previewInputs.Any(id=>!configuration.Schema.Inputs.Any(port=>port.Id==id)||!configuration.IsExecutionFieldActive(id)))
+                throw new ArgumentException("预览仅接受当前活动的正式输入端口。");
+            settings=previewInputs.ToDictionary(id=>id,id=>configuration.Fields.Read(id),StringComparer.Ordinal);
+            var missing=settings.FirstOrDefault(pair=>pair.Value is UnsetSetting);
+            if(missing.Key is not null)throw new InvalidOperationException("预览来源尚未就绪："+missing.Key);
+        }
         var references=settings.Where(pair=>pair.Value is ReferenceSetting).ToDictionary(pair=>pair.Key,pair=>((ReferenceSetting)pair.Value).Reference,StringComparer.Ordinal);
         var outputReferences=new List<OutputReference>();var variableReferences=new Dictionary<string,VariableReference>(StringComparer.Ordinal);
         var variableSelections=new HashSet<string>(StringComparer.Ordinal);
@@ -72,7 +131,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
         foreach(var variable in settings.Values.OfType<VariableSetting>())AddVariable(variable.Reference);
         if(outputReferences.SelectMany(reference=>WorkflowBindingContext.ReferenceNodes(reference,workflow.Id)).Any(id=>id.ScopeId!=workflow.Id))
             throw new InvalidOperationException("调试节点的直接来源必须属于当前工作流。");
-        var globalDefinitions=GlobalVariable.CaptureDefinitions((variables??Array.Empty<GlobalVariable>()).ToArray()).ToArray();
+        observeVariables?.Invoke(variableReferences.Keys.ToArray());
+        var originalVariableObjects=(variables??Array.Empty<GlobalVariable>()).ToArray();
+        var globalDefinitions=GlobalVariable.CaptureDefinitions(originalVariableObjects).ToArray();
         var usedVariables=variableReferences.Keys.Select(id=>globalDefinitions.SingleOrDefault(variable=>variable.Id==id)
             ??throw new InvalidOperationException("调试变量声明已删除："+id)).ToArray();
         foreach(var variable in usedVariables)
@@ -98,6 +159,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             DeclaredOutputSnapshot? Read(BindingNodeId source)=>source.ScopeId==workflow.Id?readPublished(source.NodeId)
                 :readScopedPublished?.Invoke(source);
             var observed=new Dictionary<BindingNodeId,DeclaredOutputSnapshot>();
+            var sourceConfigurations=new Dictionary<BindingNodeId,RuntimeToolConfiguration?>();
             var sources=new List<BindingSource>();var values=new List<BindingNodeResult>();
             foreach(var dependency in dependencies)
             {
@@ -105,6 +167,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 var sourceWorkflow=dependency.ScopeId==workflow.Id?workflow:(sourceWorkflows??Array.Empty<Workflow>()).SingleOrDefault(flow=>flow.Id==dependency.ScopeId)
                     ??throw new InvalidOperationException("变量生产流程不属于当前方案。");
                 var sourceNode=sourceWorkflow.Nodes.Single(n=>n.Id==dependency.NodeId);
+                var sourceConfiguration=sourceNode.RuntimeConfiguration;sourceConfigurations.Add(dependency,sourceConfiguration);
                 var result=Read(dependency)??throw new InvalidOperationException("来源尚无已发布结果，请先运行上游节点或工作流："+sourceNode.Name);
                 var published=result??throw new InvalidOperationException("来源没有正式冻结输出。");
                 var admitted=result.ExecutionIdentity??throw new InvalidOperationException("来源没有原始执行身份。");
@@ -115,6 +178,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 var declaration=new ToolSchema(Array.Empty<Port>(),(new OutputBindingChangeService().ReadContract(sourceNode)??Array.Empty<OutputVariable>())
                     .Where(p=>p.Kind==OutputVariableKind.Data).Select(BindingClrAdapter.DescribeOutput));
                 if(declaration.Fingerprint!=published.Schema.Fingerprint)throw new InvalidOperationException("来源声明已更改，请重新运行来源节点。");
+                if(previewInputs is not null&&!ReferenceEquals(sourceConfiguration,sourceNode.RuntimeConfiguration))throw new InvalidOperationException("预览来源配置在捕获期间已变化。");
                 var reader=published.AcquireReader();readers.Add(reader);
                 if(reader.Values is null)throw new InvalidOperationException("来源没有可读的冻结值。");
                 observed.Add(dependency,result);
@@ -128,7 +192,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             var consumer=new BindingNodeId(workflow.Id,node.Id);
             var scope=new BindingScopeSnapshot(consumer,owner.Id,revision,sources,sources.Select(s=>s.Node),
                 workflow.Nodes.Select(n=>new KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>(new(workflow.Id,n.Id),
-                    graph.GetPredecessors(n.Id).Select(id=>new BindingNodeId(workflow.Id,id)).ToArray())),globals?.CaptureBindingSources());
+                    (graph?.GetPredecessors(n.Id)??Array.Empty<string>()).Select(id=>new BindingNodeId(workflow.Id,id)).ToArray())),globals?.CaptureBindingSources());
             var settingsIds=configuration.SettingsSchema?.Inputs.Select(p=>p.Id).ToHashSet(StringComparer.Ordinal)??new();
             var manualIds=configuration.SettingsSchema.Inputs.Where(OutputBindingChangeService.IsOrdinaryNumericParameter).Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
             var manualScope=scope.WithReferenceQualification(new ManualReferenceQualification(workflow,workflow.Id,node.Id).Validate);
@@ -182,18 +246,18 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 else if(setting is VariableSetting variable)variablePlans.Add(fieldId,RuntimeVariableBindings.Compile(variable,target,globals,manualIds.Contains(fieldId)?manualScope:scope,configuration.GetParameterReferenceBehavior(fieldId)));
             }
             IReadOnlyImage? fallbackImage=null;
-            if(configuration.Schema.WorkflowImageInputId is { } imagePort&&!settings.ContainsKey(imagePort)&&defaultImage is not null)
+            if(previewInputs is null&&configuration.Schema.WorkflowImageInputId is { } imagePort&&!settings.ContainsKey(imagePort)&&defaultImage is not null)
             {
                 if(defaultImage is not ITypedImageSnapshotSource typed)throw new InvalidOperationException("调试图像不支持像素及实际Domain快照。");
                 var image=typed.CaptureSnapshot(new ImageFrameAddress(Guid.NewGuid(),"debug-input:"+identity.RequestId.ToString("N")));
                 readers.Add(image);fallbackImage=image;
             }
-            if(configuration.Schema.WorkflowImageInputId is { } requiredImage&&!settings.ContainsKey(requiredImage)&&fallbackImage is null)
+            if(previewInputs is null&&configuration.Schema.WorkflowImageInputId is { } requiredImage&&!settings.ContainsKey(requiredImage)&&fallbackImage is null)
                 throw new InvalidOperationException("请选择已发布的图像输入源后再调试。");
             (InputValues Inputs,object Settings) Prepare(Action<string,object?> accept)
             {
                 var inputs=new Dictionary<string,object?>(StringComparer.Ordinal);var fields=new Dictionary<string,object?>(StringComparer.Ordinal);
-                foreach(var (fieldId,setting) in configuration.CaptureExecutionFields())
+                foreach(var (fieldId,setting) in previewInputs is null?configuration.CaptureExecutionFields():(IEnumerable<KeyValuePair<string,ParameterSetting>>)settings)
                 {
                     cancellation.ThrowIfCancellationRequested();
                     var target=configuration.BindingTargets.Single(port=>port.Id==fieldId);object? value;
@@ -210,10 +274,28 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     (settingsIds.Contains(fieldId)?fields:inputs).Add(fieldId,value);
                 }
                 if(configuration.Schema.WorkflowImageInputId is {} fallbackPort&&fallbackImage is not null)inputs.Add(fallbackPort,fallbackImage);
-                return (new InputValues(configuration.Schema.Inputs,inputs),configuration.MaterializeSettings(fields));
+                return (new InputValues(previewInputs is null?configuration.Schema.Inputs:configuration.Schema.Inputs.Where(port=>previewInputs.Contains(port.Id)),inputs),previewInputs is null?configuration.MaterializeSettings(fields):null!);
             }
             var invocation=new RuntimeDebugInvocation(workflow.Id,node,identity,readers,values.Select(v=>v.Identity),Prepare);
-            if(node.ToolType=="ImageLoad")
+            if(previewInputs is not null)
+            {
+                var variableProofs=globalDefinitions.Where(variable=>variableReferences.ContainsKey(variable.Id)).Select(frozen=>(Variable:originalVariableObjects.Single(variable=>variable.Id==frozen.Id),Revision:frozen.ValueRevision,Type:frozen.Type,Producer:frozen.ProducerBinding?.ReferenceExpression,Reason:frozen.RebindingReason,Pending:frozen.BindingValidationPending)).ToArray();
+                bool Current()
+                {
+                    if(!identity.IsCurrent||!ConfigurationCurrent())return false;
+                    foreach(var pair in observed)
+                    {
+                        if(!ReferenceEquals(pair.Value,Read(pair.Key))||pair.Value.ExecutionIdentity?.IsCurrent!=true)return false;
+                        var sourceFlow=pair.Key.ScopeId==workflow.Id?workflow:(sourceWorkflows??Array.Empty<Workflow>()).SingleOrDefault(flow=>flow.Id==pair.Key.ScopeId);
+                        if(sourceFlow is null||!ReferenceEquals(sourceFlow.Nodes.SingleOrDefault(n=>n.Id==pair.Key.NodeId)?.RuntimeConfiguration,sourceConfigurations[pair.Key]))return false;
+                    }
+                    foreach(var proof in variableProofs)
+                        if(!(variables??Array.Empty<GlobalVariable>()).Any(variable=>ReferenceEquals(variable,proof.Variable))||proof.Variable.ValueRevision!=proof.Revision||proof.Variable.Type!=proof.Type||proof.Variable.ProducerBinding?.ReferenceExpression!=proof.Producer||proof.Variable.RebindingReason!=proof.Reason||proof.Variable.BindingValidationPending!=proof.Pending)return false;
+                    return identity.IsCurrent&&ConfigurationCurrent();
+                }
+                invocation._previewCurrent=Current;
+            }
+            if(previewInputs is null&&node.ToolType=="ImageLoad")
             {
                 invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths,owner,workflow.Id);
                 invocation._cameraService=cameraService;
@@ -222,7 +304,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
         }
         catch(Exception failure)
         {
-            identity?.CompleteCallbacks();var cleanup=Release(readers);
+            var cleanup=new List<Exception>();
+            try{identity?.CompleteCallbacks();}catch(Exception error){cleanup.Add(error);}
+            finally{cleanup.AddRange(Release(readers));}
             if(cleanup.Count>0)throw new AggregateException(new[]{failure}.Concat(cleanup));throw;
         }
     }
@@ -262,7 +346,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
         catch(Exception error){failure=error;throw;}
         finally
         {
-            Identity.CompleteCallbacks();_disposed=true;var cleanup=Release(_readers);
+            _disposed=true;var cleanup=new List<Exception>();
+            try{Identity.CompleteCallbacks();}catch(Exception error){cleanup.Add(error);}
+            finally{cleanup.AddRange(Release(_readers));}
             try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
             try{_sourceInput?.FinishRead();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
@@ -275,7 +361,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
     {
         if(_disposed)return;
         if(Volatile.Read(ref _started)!=0)throw new InvalidOperationException("正在执行的调试快照必须等待执行排空。");
-        _disposed=true;Identity.CompleteCallbacks();var errors=Release(_readers);
+        _disposed=true;var errors=new List<Exception>();
+        try{Identity.CompleteCallbacks();}catch(Exception error){errors.Add(error);}
+        finally{errors.AddRange(Release(_readers));}
         try{_sourceInput?.FinishRead();}catch(Exception error){errors.Add(error);}if(errors.Count>0)throw new AggregateException(errors);
     }
     private static List<Exception> Release(List<IDisposable> readers)

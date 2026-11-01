@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+﻿using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
@@ -19,7 +19,7 @@ internal static class BlobRoiUi
             SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor Field(string id,string label)
             {
                 var editor=inputs.ComposeInputEditor(id,label,numericSequence:BlobRoiInheritance.Ports.Single(port=>port.Id==id).Type.Element==TypeRef.ScalarOf(ScalarKind.Float64));
-                editor.ToolTip="参数按当前输入图像像素坐标解释，角度为度；继承预览尚未接入。";return editor;
+                editor.ToolTip="参数按当前输入图像像素坐标解释，角度为度；仅预览已发布来源。";return editor;
             }
             var rectangleLabels=new[]{"ROI中心点X","ROI中心点Y","ROI宽度","ROI高度","ROI角度"};
             var annulusLabels=new[]{"圆心点X","圆心点Y","内径","外径","起始角度","角度范围"};
@@ -30,7 +30,7 @@ internal static class BlobRoiUi
                 BlobRoiInheritance.AnnulusMembers.Select((member,index)=>Field(BlobRoiInheritance.Leaf(BlobRoiInheritance.AnnulusParameters,member),annulusLabels[index])).ToArray());
         }
         var controls=new NativeRoiUiDraftControls(geometryOnlyPresentation:supportedWindow,inheritance);
-        if(supportedWindow)controls.ToolTip="继承按当前输入图像的像素坐标、角度及半径解释，预览尚未接入；图像区域、屏蔽继承及输出掩膜尚未实现。";
+        if(supportedWindow)controls.ToolTip="继承按当前输入图像的像素坐标、角度及半径只读预览；图像区域、屏蔽继承及输出掩膜尚未实现。";
         try
         {
             var detection=inputs.TakeField("input.inspection.region");

@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Contracts;
+﻿using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -9,13 +9,15 @@ using SunEyeVision.Tool.BlobAnalysis.Runtime;
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 /// <summary>One private formal-input owner; the two sessions are read-only projections of that same value.</summary>
-internal sealed class BlobLocalRoiOwner : IDisposable
+internal sealed partial class BlobLocalRoiOwner : IDisposable
 {
     private readonly DeclaredInputFieldsView _inputs;
     private readonly NativeRoiUiDraftControls _controls;
     private readonly NativeRoiFrameSource? _source;
     private readonly Dictionary<string,NativeRoiEditor> _editors=new();
     private readonly Dictionary<string,NativeRoiSession> _sessions=new();
+    private readonly Dictionary<NativeRoiSession,Action> _retirementHandlers=new();
+    private bool _recordingRetirement;
     private readonly Dictionary<string,Guid> _scopes=new(){{BlobLocalRoi.Inspection,Guid.NewGuid()},{BlobLocalRoi.Mask,Guid.NewGuid()}};
     private readonly Stack<RecordValue> _undo=new(),_redo=new();
     private readonly Dictionary<string,NativeRoiPendingInput> _pending=new();
@@ -25,10 +27,13 @@ internal sealed class BlobLocalRoiOwner : IDisposable
     private string? _active;
     private RecordValue _observed;
     private bool _disposed,_accepting,_refreshing,_activating;
+    private bool _localInspection,_localMask;
+    private string _observedPreviewMode=BlobRoiInheritance.Local;
     private long _generation,_projectionRevision;
     public long Revision {get;private set;}
     public string Error {get;private set;}="";
-    public bool HasPending=>_unrestoredInput is not null||_pending.Count>0||_editors.Values.Any(editor=>editor.HasPendingEdits)||_interaction?.HasPendingGesture==true;
+    private bool UnacceptedGesture=>_sessions.Values.Any(session=>session.ActiveDraw is not null||session.Items.Any(item=>item.HasPending))||_interaction?.HasPendingGesture==true;
+    public bool HasPending=>_unrestoredInput is not null||_pending.Count>0||_editors.Values.Any(editor=>editor.HasPendingEdits)||UnacceptedGesture;
     public event Action? Changed;
     internal BlobLocalRoiOwner(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source)
     {
@@ -42,6 +47,8 @@ internal sealed class BlobLocalRoiOwner : IDisposable
         controls.Changed+=OnModesChanged;
         inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput).Changed+=RefreshFrame;
         if(source is not null)source.Changed+=RefreshFrame;
+        _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+        _observedPreviewMode=PreviewMode();InitializePreview();
 
     }
 
@@ -70,10 +77,10 @@ internal sealed class BlobLocalRoiOwner : IDisposable
         return new(new(_scopes[editableGroup],revision,frame),rows.AsReadOnly(),groups.AsReadOnly());
     }
     private bool FrameCurrent(long generation)
-    {var frame=_frame;return !_disposed&&generation==_generation&&frame is not null&&frame.IsCurrent&&!_disposed&&generation==_generation&&ReferenceEquals(frame,_frame);}
+    {var frame=_frame;return !_disposed&&_controls.IsLoaded&&_controls.IsVisible&&generation==_generation&&frame is not null&&frame.IsCurrent&&!_disposed&&_controls.IsLoaded&&_controls.IsVisible&&generation==_generation&&ReferenceEquals(frame,_frame);}
     private void AcquireFrame()
     {
-        if(_disposed||_refreshing||_accepting||_activating)return;
+        if(_disposed||_refreshing||_accepting||_activating||!_controls.IsLoaded||!_controls.IsVisible)return;
         _refreshing=true;
         try
         {
@@ -88,6 +95,8 @@ internal sealed class BlobLocalRoiOwner : IDisposable
                     ()=>new(_undo.Count>0,_redo.Count>0),group,isAvoid:group==BlobLocalRoi.Mask,
                     canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group));
                 _sessions.Add(group,session);
+                Action retiring=()=>RecordInteractionRetirement(group,session,generation);
+                session.InteractionRetiring+=retiring;_retirementHandlers.Add(session,retiring);
                 if(_pending.TryGetValue(group,out var pending)&&_controls.IsLocalDrawing(group))session.Select(group,pending.Id);
                 _editors[group].Bind(session);
                 if(pending is not null&&_controls.IsLocalDrawing(group))
@@ -115,7 +124,7 @@ internal sealed class BlobLocalRoiOwner : IDisposable
     }
     private bool Activate(string group)
     {
-        if(_disposed||_activating||_accepting||!_controls.IsLocalDrawing(group))return false;
+        if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
         if(!FrameCurrent(_generation))AcquireFrame();
         if(!FrameCurrent(_generation)||!_sessions.TryGetValue(group,out var session))return false;
         if(_active==group&&_interaction?.IsCurrent==true)return true;
@@ -198,6 +207,10 @@ internal sealed class BlobLocalRoiOwner : IDisposable
     private void OnModesChanged()
     {
         if(_disposed||_accepting||_activating||_refreshing)return;
+        var inspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);var mask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+        var mode=PreviewMode();var previewChanged=inspection!=_localInspection||mode!=_observedPreviewMode;_observedPreviewMode=mode;
+        if(inspection==_localInspection&&mask==_localMask){if(previewChanged)QueuePreview();Notify();return;}
+        _localInspection=inspection;_localMask=mask;
         CapturePendingEditors();
         if(_interaction?.HasPendingGesture==true)_unrestoredInput="区域模式已改变，未完成绘制不能接纳；请取消窗口后重新编辑。";
         if(_active is {} group&&!_controls.IsLocalDrawing(group))
@@ -207,15 +220,27 @@ internal sealed class BlobLocalRoiOwner : IDisposable
         Run(_sessions.Values.Select(session=>(Action)(()=>{if(FrameCurrent(generation))session.Refresh();})).ToArray());
         RestorePendingEditors();
 
-        Notify();
+        if(previewChanged)QueuePreview();Notify();
     }
-    private void CapturePendingEditors()
+    private void RecordInteractionRetirement(string group,NativeRoiSession session,long generation)
     {
-        foreach(var pair in _editors.Where(pair=>pair.Value.HasPendingEdits).ToArray())
+        if(_disposed||_recordingRetirement||generation!=_generation||!_sessions.TryGetValue(group,out var current)||!ReferenceEquals(current,session))return;
+        _recordingRetirement=true;
+        try
+        {
+            CapturePendingEditors(group);
+            if(session.ActiveDraw is not null||session.Items.Any(item=>item.Group==group&&item.HasPending))
+                _unrestoredInput="区域视口已改变，未完成的绘制不能接纳；请取消窗口后重新编辑。";
+        }
+        finally{_recordingRetirement=false;}
+    }
+    private void CapturePendingEditors(string? group=null)
+    {
+        foreach(var pair in _editors.Where(pair=>(group is null||pair.Key==group)&&pair.Value.HasPendingEdits).ToArray())
         {
             var input=pair.Value.CapturePendingInput();
             if(input is not null)_pending[pair.Key]=input;
-            else _unrestoredInput="区域原文的对象已失效；请取消窗口后重新编辑。";
+            else if(!_pending.ContainsKey(pair.Key))_unrestoredInput="区域原文的对象已失效；请取消窗口后重新编辑。";
         }
     }
     private void RestorePendingEditors()
@@ -232,12 +257,15 @@ internal sealed class BlobLocalRoiOwner : IDisposable
         if(!_disposed)
         {
             CapturePendingEditors();
-            if(_interaction?.HasPendingGesture==true)_unrestoredInput="输入图像已改变，未完成的绘制不能接纳；请取消窗口后重新编辑。";
+            if(UnacceptedGesture)_unrestoredInput="区域视口已改变，未完成的绘制不能接纳；请取消窗口后重新编辑。";
         }
+        ClearPreview();
         ++_generation;var interaction=_interaction;_interaction=null;_active=null;var frame=_frame;_frame=null;
         var sessions=_sessions.Values.ToArray();_sessions.Clear();
+        var handlers=sessions.Where(session=>_retirementHandlers.ContainsKey(session)).Select(session=>(Session:session,Handler:_retirementHandlers[session])).ToArray();
+        foreach(var item in handlers)_retirementHandlers.Remove(item.Session);
         var coverage=_observed;
-        Run(_editors.Select(pair=>(Action)(()=>{pair.Value.UnboundFullDomain=BlobLocalRoi.Coverage(coverage,pair.Key)==BlobLocalRoi.FullDomain;pair.Value.Bind(null);})).ToArray().Concat(new Action[]{()=>interaction?.Dispose()})
+        Run(handlers.Select(item=>(Action)(()=>item.Session.InteractionRetiring-=item.Handler)).Concat(_editors.Select(pair=>(Action)(()=>{pair.Value.UnboundFullDomain=BlobLocalRoi.Coverage(coverage,pair.Key)==BlobLocalRoi.FullDomain;pair.Value.Bind(null);})).ToArray()).Concat(new Action[]{()=>interaction?.Dispose()})
             .Concat(sessions.Select(session=>(Action)session.Dispose)).Append(()=>frame?.Dispose()));
     }
     private static void Run(IEnumerable<Action> actions)
@@ -249,6 +277,6 @@ internal sealed class BlobLocalRoiOwner : IDisposable
     {
         if(_disposed)return;_disposed=true;_controls.Changed-=OnModesChanged;
         _inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput).Changed-=RefreshFrame;if(_source is not null)_source.Changed-=RefreshFrame;Changed=null;
-        Run(new Action[]{RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
+        Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }
 }

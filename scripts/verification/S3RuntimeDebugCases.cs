@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
@@ -54,7 +54,7 @@ internal static class S2DocumentEditingCases
                 }
                 finally{executor.NodeStatusChanged-=count;flow.Nodes.Remove(consumer);consumer.RuntimeConfiguration=consumerConfiguration.Copy();Bind(consumer,BlobTool.InspectionInput,source.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),flow.Id);run.Dispose();}
             });
-            using var production=Produce();var current=(DeclaredOutputSnapshot)production.NodeResults[source.Id].Result!;flow.Nodes.Add(consumer);
+            using var production=Produce();var current=(DeclaredOutputSnapshot)production.NodeResults[source.Id].Result!;flow.Nodes.Add(consumer);flow.Connections.Add(new WorkflowConnection{Id="debug-source-control",SourceNodeId=source.Id,TargetNodeId=consumer.Id});
             Case("设置订阅使用冻结已发布值，正式引用配置不回写运行值",()=>
             {
                 var field=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId;

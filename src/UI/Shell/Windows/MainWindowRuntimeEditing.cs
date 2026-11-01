@@ -1,3 +1,4 @@
+﻿using SunEyeVision.Workflow;
 using System;
 using System.Linq;
 using System.Windows;
@@ -11,6 +12,13 @@ namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
     internal Func<SunEyeVision.Plugin.Contracts.OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
+    internal event Action? RoiFrameAvailabilityChanged;
+    internal void NotifyRoiFrameAvailabilityChanged()
+    {
+        foreach(var handler in RoiFrameAvailabilityChanged?.GetInvocationList()??Array.Empty<Delegate>())
+            try{((Action)handler)();}catch(Exception error){try{AddLog("ROI视口通知失败："+error.Message);}catch{}}
+    }
+
     private void TryAutoBindRuntimeImageSource(SunEyeVision.Workflow.WorkflowNodeBase node,SunEyeVision.Workflow.WorkflowConnection? connection)
     {
         if(node.RuntimeConfiguration is not { } runtime||runtime.Schema.WorkflowImageInputId is not { } target||
@@ -64,8 +72,30 @@ public partial class MainWindowViewModel
         try
         {
             control.SetRoiFrameProvider((reference,current)=>context.IsValid?RuntimeRoiFrameBorrow?.Invoke(reference,()=>context.IsValid&&current()):null);
-            void RefreshRoi()=>control.Dispatcher.BeginInvoke(new Action(()=>{if(context.IsValid)control.RefreshRoiFrame();}));
-            ResultWorkspaceChanged+=RefreshRoi;context.Deactivated+=()=>ResultWorkspaceChanged-=RefreshRoi;
+            void RefreshRoi()=>control.Dispatcher.BeginInvoke(new Action(()=>{if(context.IsValid)try{control.RefreshRoiFrame();}catch(Exception error){AddLog("ROI预览刷新失败："+error.Message);}}));
+            ResultWorkspaceChanged+=RefreshRoi;RoiFrameAvailabilityChanged+=RefreshRoi;context.Deactivated+=()=>{ResultWorkspaceChanged-=RefreshRoi;RoiFrameAvailabilityChanged-=RefreshRoi;};
+            var watchedVariables=new List<GlobalVariable>();var requestedVariables=new HashSet<string>(StringComparer.Ordinal);
+            void VariableChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)=>RefreshRoi();
+            bool WatchVariables(IReadOnlyCollection<string> ids)
+            {
+                requestedVariables=ids.ToHashSet(StringComparer.Ordinal);var changed=false;
+                foreach(var old in watchedVariables.Where(variable=>!session.Document.GlobalVariables.Any(current=>ReferenceEquals(current,variable))||!requestedVariables.Contains(variable.Id)).ToArray())
+                {old.PropertyChanged-=VariableChanged;watchedVariables.Remove(old);changed=true;}
+                foreach(var variable in session.Document.GlobalVariables.Where(variable=>requestedVariables.Contains(variable.Id)&&!watchedVariables.Any(current=>ReferenceEquals(current,variable))))
+                {variable.PropertyChanged+=VariableChanged;watchedVariables.Add(variable);changed=true;}
+                return changed;
+            }
+            void HistoryChanged(object? sender,EventArgs args){if(context.IsValid&&WatchVariables(requestedVariables))RefreshRoi();}
+            session.History.Changed+=HistoryChanged;
+            context.Deactivated+=()=>{session.History.Changed-=HistoryChanged;foreach(var variable in watchedVariables)variable.PropertyChanged-=VariableChanged;watchedVariables.Clear();};
+            control.SetRoiInputCapture((draft,fields)=>
+            {
+                if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止运行后预览继承区域。");
+                return RuntimeDebugInvocation.CaptureInputs(flow,draft,context.DebugOwner,host.Capture().Version,
+                    id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
+                    solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
+                    readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,inputFieldIds:fields,observeVariables:ids=>WatchVariables(ids));
+            });
             control.BindDraft(context.DraftNode);
             control.SetDebugCapture(draft=>
             {

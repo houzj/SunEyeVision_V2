@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +46,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private string _captureError="";
     private bool _running;
     private Func<WorkflowNodeBase,RuntimeDebugInvocation>? _captureDebug;
+    private Func<WorkflowNodeBase,IReadOnlyCollection<string>,RuntimeInputPreviewLease>? _captureRoiInputs;
+    internal void SetRoiInputCapture(Func<WorkflowNodeBase,IReadOnlyCollection<string>,RuntimeInputPreviewLease> capture)=>_captureRoiInputs=capture;
     private Func<OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiFrameProvider;
     private SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? _roiFrames;
     internal void SetRoiFrameProvider(Func<OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> provider)=>_roiFrameProvider=provider;
@@ -177,6 +179,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             var key=BindingReferenceSerializer.Serialize(setting.Reference);
             bool SameInput()=>Current()&&node.RuntimeConfiguration!.Fields.Read(fieldId) is ReferenceSetting now&&BindingReferenceSerializer.Serialize(now.Reference)==key;
             return _roiFrameProvider?.Invoke(setting.Reference,SameInput);
+        },fields=>
+        {
+            if(_disposed||generation!=_generation||!ReferenceEquals(_node,node)||_running||_captureRoiInputs is null)return null;
+            var lease=_captureRoiInputs(node,fields);
+            bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+                &&ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext {IsValid:true}&&lease.IsCurrent;
+            try{if(!Current()){lease.Dispose();return null;}return new(lease.Inputs,Current,lease.Dispose);}
+            catch(Exception failure){try{lease.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
         });
         IToolSettingsView? candidate=null;
         try
@@ -405,7 +415,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
     }
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;_roiFrameProvider=null;_roiFrames=null;var view=_view;_view=null;_inputs.Clear();
+    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;_captureRoiInputs=null;_roiFrameProvider=null;_roiFrames=null;var view=_view;_view=null;_inputs.Clear();
         var errors=new List<Exception>();try{RetireReferencePresentation();}catch(Exception error){errors.Add(error);}
         try{Content=null;}catch(Exception error){errors.Add(error);}try{if(view is not null){view.Changed-=Changed;view.Dispose();}}catch(Exception error){errors.Add(error);}
         if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();if(errors.Count>1)throw new AggregateException(errors);}

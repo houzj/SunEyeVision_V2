@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
@@ -85,16 +85,24 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     }
     private void DoubleImageChanged(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed)return;
+        RetireRoiPresentation();
         // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
         _shell.SelectedInputItem=null;
         if(!_disposed&&_shell.IsDoubleImage)
             _shell.SelectedInputItem=_plan?.InputSources.FirstOrDefault();
+
+        }
+        finally{if(!_disposed)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private void InputSelected(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed||_restoringInput)return;
-        RetireRoiPresentation();
+        if(_roiPresentation?.Input==true)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
@@ -102,11 +110,16 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         _inputSource=source;_inputKey=source?.Key;
         if(_refreshing)return;
         Present(_input,source);ReportDisplayDefinitionGap();
+
+        }
+        finally{if(!_disposed&&_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private void OutputSelected(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed||_restoringOutput)return;
-        RetireRoiPresentation();
+        if(_roiPresentation?.Input==false)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
@@ -132,6 +145,9 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         }
         _navigationIndex=_main.SelectedDisplayImageSourceIndex;
         Present(_output,source);ReportDisplayDefinitionGap();
+
+        }
+        finally{if(!_disposed&&!_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
     {
@@ -363,6 +379,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             ()=>_shell.SelectedInputItem=null,()=>_shell.SelectedOutputItem=null,
             ()=>_shell.InputItems=null,()=>_shell.OutputItems=null,
             ()=>cancellation?.Cancel(),()=>cancellation?.Dispose(),
-            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose()});
+            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose(),_main.NotifyRoiFrameAvailabilityChanged});
     }
 }

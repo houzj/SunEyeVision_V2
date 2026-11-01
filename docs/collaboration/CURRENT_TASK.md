@@ -1,3 +1,9 @@
+## 2026-11-01 检测继承只读预览正式 Release 自测
+
+- 集成候选98ebbc21至主仓基线49e8f50a；正式Release UI与全量单进程构建通过。首轮UI生成XML文档时内存不足，首次单进程重试在MSBuild日志初始化报内部错误；关闭本次终端日志及共享编译服务后通过，原失败日志保留。
+- 正式预览Core 5组、Window 19组、RuntimeDebug 7组、FieldEditing 38组均通过，实际加载程序集分别15/15/13/12个且与正式目录SHA一致，详见 evidence/BLOB_ROI_PREVIEW_FORMAL_20261101.json。预览轨隐藏桌面；FieldEditing使用普通桌面测试窗口并已退出。
+- 已接入选择性冻结引用及只读继承图层，与原屏蔽区编辑共用实际图像帧；错图、换帧、变量/索引、隐藏恢复、未提交文本及失效手势保护有正式定向检查。事件注入不等同自然鼠标；同ID SetValue实际保留正式实例，不冒称旧实例迟到覆盖。
+- VM原厂预览视觉/时序及坐标像素等价未证；组合来源生产者、图像/输出mask、屏蔽继承、位置修正仍未完成。VS设计时与人工未验，不称完整ROI、Blob或S2/S3完成。对逆向负责人的预览补证发送工具超时，未确认送达，不作回件处理。
 ## 2026-11-01 检测区域继承正式 Release 集成自测
 
 - 候选提交 909170d2 集中集成至主仓基线 e10ce022；主仓 UI 和全量 Release 均构建成功。正式 Release 继承 Binding 9、Window 11、Publication 1、Model 7 组通过；公共 FieldEditing 38、VariableFields 13 组通过。四条继承轨各15个、字段12个、变量2个实际加载程序集与正式目录 SHA256 一致。机器回执 evidence/BLOB_ROI_INHERITANCE_FORMAL_20261101.json；候选和之前失败记录仍保留。

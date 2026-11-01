@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
@@ -84,19 +84,18 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         EnsureCurrent();
         NativeView.ShapeHitTestVisible=false;
         EnsureCurrent();
-        NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=()=>CancelDrawing(true);
-        NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelDrawing(true);};
+        NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=CancelAutomaticDrawing;
+        NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelAutomaticDrawing();};
         NativeView.NativeRoiCaptureCancelEdit=context=>
         {
             if(context is not NativeRoiProjection item||_session is not {} session)return ()=>{};
-            var stamp=session.Stamp;
+            var stamp=session.Stamp;var generation=ROIControlBase.GestureGeneration(NativeView);var attachmentGeneration=_generation;var request=session.ActiveDraw;
             return ()=>
             {
-                var generation=ROIControlBase.GestureGeneration(NativeView);
-                bool Current()=>ReferenceEquals(session,_session)&&session.Stamp==stamp
+                bool Current()=>ReferenceEquals(session,_session)&&session.Stamp==stamp&&attachmentGeneration==_generation&&ReferenceEquals(request,session.ActiveDraw)
                     &&generation==ROIControlBase.GestureGeneration(NativeView);
-                if(!Current()||!session.Owns(item)||!Current()||!_owner.MayCancelRoiSession(this,session)||!Current())return;
-                if(item.HasPending&&item.PendingStamp==stamp)item.Cancel();
+                if(!Current()||!session.Items.Any(row=>ReferenceEquals(row,item))||!Current()||!_owner.MayCancelRoiSession(this,session)||!Current())return;
+                NativeRoiCallbacks.Run([()=>NotifyIfExpired(session,Current),()=>{if(Current()&&session.Items.Any(row=>ReferenceEquals(row,item))&&Current()&&item.HasPending&&item.PendingStamp==stamp)item.Cancel();}]);
             };
         };
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
@@ -122,7 +121,7 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
             if(_drawCancelled is not null)previous.DrawCancelled-=_drawCancelled;
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
-        NativeRoiCallbacks.Run([()=>{if(generation==_generation)ClearMenuState();},()=>{if(generation==_generation)CancelDrawing(true);},
+        NativeRoiCallbacks.Run([()=>{if(generation==_generation)NotifyRetiring(previous);},()=>{if(generation==_generation)ClearMenuState();},()=>{if(generation==_generation)CancelDrawing(true);},
             ()=>{if(generation==_generation)previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous));},()=>{if(generation==_generation)ReleaseFrame();}]);
         if(_disposed||generation!=_generation)return;
         _session=session;
@@ -139,7 +138,10 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     private void PrepareDrawing(NativeRoiSession session,RoiDrawRequest request)
     {
         if(_disposed||!IsCurrent||!IsLoaded||_frame?.Frame!=request.Stamp.Frame||!ReferenceEquals(session.ActiveDraw,request))
-        {if(ReferenceEquals(session.ActiveDraw,request)&&_owner.MayCancelRoiSession(this,session))session.CancelDraw();return;}
+        {
+            bool OwnsRequest()=>ReferenceEquals(session.ActiveDraw,request)&&_owner.MayCancelRoiSession(this,session);
+            NativeRoiCallbacks.Run([()=>{if(OwnsRequest())NotifyRetiring(session);},()=>{if(OwnsRequest())session.CancelDraw();}]);return;
+        }
         var generation=_generation;CancelDrawing(false);
         if(_disposed||!IsCurrent||generation!=_generation||!ReferenceEquals(session,_session)||!session.IsCurrent||!ReferenceEquals(session.ActiveDraw,request)||_frame?.Frame!=request.Stamp.Frame)return;
         _drawOwner=session;_drawRequest=request;
@@ -156,7 +158,7 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         if(_disposed||!IsCurrent||session is null||request is null||!ReferenceEquals(session,_session)||!ReferenceEquals(session.ActiveDraw,request)
             ||!session.IsCurrent||session.Stamp!=request.Stamp||_frame?.Frame!=request.Stamp.Frame
             ||page.ImageWidth!=session.ImageWidth||page.ImageHeight!=session.ImageHeight)
-        {CancelDrawing(true);return false;}
+        {CancelAutomaticDrawing();return false;}
         if(_drawing is not null)return true;
         var maximum=(int)NativeView.GetValue(PolygonROIAttach.CustomMaxPointNumProperty);if(maximum<=0)maximum=32;
         NativeRoiDrawing? drawing=null;
@@ -165,15 +167,15 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         drawing=new(page,request,start,
             ()=>!_disposed&&generation==_generation&&ReferenceEquals(_drawing,drawing)&&ReferenceEquals(_drawRequest,request)
                 &&ReferenceEquals(_session,session)&&session.IsCurrent&&session.Stamp==request.Stamp&&ReferenceEquals(session.ActiveDraw,request)&&IsCurrent&&generation==_generation&&ReferenceEquals(_drawRequest,request)&&session.Stamp==request.Stamp&&ReferenceEquals(session.ActiveDraw,request),
-            ()=>{if(ReferenceEquals(_drawing,drawing))CancelDrawing(true);},
+            ()=>{if(ReferenceEquals(_drawing,drawing))CancelAutomaticDrawing();},
             error=>{if(ReferenceEquals(_drawing,drawing)){CancelDrawing(false);session.DrawStatus(request,error,true);}},
             active=>{if(ReferenceEquals(_drawing,drawing)&&generation==_generation&&_owner.MayClearRoiCallbacks(this))NativeView.IsDrawingOfROI=active;},maximum);
         if(_disposed||!IsCurrent||generation!=_generation||!ReferenceEquals(_drawRequest,request)){drawing.Dispose();return false;}
         _drawing=drawing;NativeView.IsDrawingOfROI=true;
         if(drawing.Start())return true;
-        if(ReferenceEquals(_drawing,drawing))CancelDrawing(true);return false;
+        if(ReferenceEquals(_drawing,drawing))CancelAutomaticDrawing();return false;
         }
-        catch(Exception error){NativeRoiCallbacks.Run(new Action[]{()=>System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw(),()=>{if(ReferenceEquals(_drawRequest,request))CancelDrawing(true);else drawing?.Dispose();}});throw;}
+        catch(Exception error){NativeRoiCallbacks.Run(new Action[]{()=>System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw(),()=>{if(ReferenceEquals(_drawRequest,request))CancelAutomaticDrawing();else drawing?.Dispose();}});throw;}
     }
     private bool CompleteDrawing(object value)
     {
@@ -182,14 +184,23 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         CancelDrawing(false);
         return !_disposed&&IsCurrent&&ReferenceEquals(session,_session)&&session?.IsCurrent==true&&IsCurrent&&session.CompleteDraw(request!,completion.Geometry);
     }
-    private void CancelDrawing(bool cancelSession)
+    private void CancelAutomaticDrawing()
+    {
+        // Native cancel also represents an explicit cancel while current. Only an expired
+        // proof is retirement; preserve that distinction before cancel clears the request.
+        var session=_drawOwner;var request=_drawRequest;var generation=_generation;var retiring=true;
+        NativeRoiCallbacks.Run([
+            ()=>retiring=_disposed||!IsLoaded||!IsCurrent||session?.IsCurrent!=true||_frame?.Frame!=request?.Stamp.Frame,
+            ()=>{if(generation==_generation&&ReferenceEquals(_drawOwner,session)&&ReferenceEquals(_drawRequest,request))CancelDrawing(true,retiring);}]);
+    }
+    private void CancelDrawing(bool cancelSession,bool retiring=false)
     {
         var drawing=_drawing;var session=_drawOwner;var request=_drawRequest;
         _drawing=null;_drawOwner=null;_drawRequest=null;
         if(drawing is null&&request is null)return;
         // Retire the old capture before native DP notifications can start another lease on the same page.
         var generation=_generation;
-        NativeRoiCallbacks.Run(new Action[]{()=>drawing?.Dispose(),()=>NativeView.UnprepareNativeRoi(()=>_owner.MayClearRoiCallbacks(this)&&generation==_generation&&_drawRequest is null&&_drawing is null),
+        NativeRoiCallbacks.Run(new Action[]{()=>{if(retiring&&ReferenceEquals(session?.ActiveDraw,request))NotifyRetiring(session);},()=>drawing?.Dispose(),()=>NativeView.UnprepareNativeRoi(()=>_owner.MayClearRoiCallbacks(this)&&generation==_generation&&_drawRequest is null&&_drawing is null),
             ()=>{if(cancelSession&&ReferenceEquals(session?.ActiveDraw,request))session!.CancelDraw();}});
     }
     private void OnLoaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,NativeView))AttachFrame();}
@@ -329,24 +340,35 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
            !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<CircleROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<PolygonROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
-        var session=_session;var generation=ROIControlBase.GestureGeneration(NativeView);
-        bool Current()=>!_disposed&&ReferenceEquals(session,_session)&&generation==ROIControlBase.GestureGeneration(NativeView)
-            &&_owner.MayCancelRoiSession(this,session);
-        NativeRoiCallbacks.Run([CancelInteraction,()=>{if(Current())session?.CancelPending(Current);}]);
+        var session=_session;var generation=ROIControlBase.GestureGeneration(NativeView);var attachmentGeneration=_generation;var request=session?.ActiveDraw;var stamp=session?.Stamp;
+        var cancel=CaptureInteractionCancellation();
+        bool Current()=>!_disposed&&ReferenceEquals(session,_session)&&attachmentGeneration==_generation&&session?.Stamp==stamp&&ReferenceEquals(request,session?.ActiveDraw)
+            &&generation==ROIControlBase.GestureGeneration(NativeView)&&_owner.MayCancelRoiSession(this,session);
+        NativeRoiCallbacks.Run([()=>NotifyIfExpired(session,Current),()=>{if(Current())cancel();},()=>{if(Current())session?.CancelPending(Current);}]);
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
         if(!ReferenceEquals(args.OriginalSource,NativeView))return;
         var generation=_generation;var session=_session;
-        NativeRoiCallbacks.Run([()=>session?.CancelPending(()=>_owner.MayCancelRoiSession(this,session)),()=>{if(generation==_generation)ReleaseFrame();}]);
+        NativeRoiCallbacks.Run([()=>NotifyRetiring(session),()=>session?.CancelPending(()=>_owner.MayCancelRoiSession(this,session)),()=>{if(generation==_generation)ReleaseFrame();}]);
     }
+    private void NotifyIfExpired(NativeRoiSession? session,Func<bool> stillOwns)
+    {
+        if(session is null||!stillOwns())return;
+        var expired=true;
+        NativeRoiCallbacks.Run([
+            ()=>expired=!IsLoaded||!IsCurrent||!session.IsCurrent,
+            ()=>{if(expired&&stillOwns())NotifyRetiring(session);}]);
+    }
+    private void NotifyRetiring(NativeRoiSession? session)
+    {if(session is not null&&_owner.MayCancelRoiSession(this,session))session.NotifyInteractionRetiring();}
     private void ReleaseFrame()
     {
-        var generation=_generation;_frame=null;
+        var session=_session;var generation=_generation;_frame=null;
         var designRefresh=_designRefresh;_designRefresh=null;
         var shapeRefresh=_shapeRefresh;_shapeRefresh=null;
         bool OwnsCleanup()=>generation==_generation&&_frame is null;
-        NativeRoiCallbacks.Run([()=>designRefresh?.Abort(),()=>shapeRefresh?.Abort(),()=>{if(OwnsCleanup())ClearMenuState();},
+        NativeRoiCallbacks.Run([()=>{if(OwnsCleanup())NotifyRetiring(session);},()=>designRefresh?.Abort(),()=>shapeRefresh?.Abort(),()=>{if(OwnsCleanup())ClearMenuState();},
             ()=>{if(OwnsCleanup())CancelDrawing(true);},()=>{if(OwnsCleanup())CancelInteraction();},
             ()=>{if(OwnsCleanup()&&!_disposed)_owner.SetRoiRows(this,Array.AsReadOnly(Array.Empty<object>()));},
             ()=>{if(OwnsCleanup()){_shapeStamp=null;_shapeContext=null;if(!_disposed)_owner.SetRoiShapes(this,Array.Empty<object>());}}]);
@@ -367,7 +389,7 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
             if(_drawCancelled is not null)previous.DrawCancelled-=_drawCancelled;
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
-        NativeRoiCallbacks.Run([RetireMenus,()=>previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous)),ReleaseFrame,()=>{if(_owner.MayClearRoiCallbacks(this))NativeView.RoiSelectedCommand=null;},
+        NativeRoiCallbacks.Run([()=>NotifyRetiring(previous),RetireMenus,()=>previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous)),ReleaseFrame,()=>{if(_owner.MayClearRoiCallbacks(this))NativeView.RoiSelectedCommand=null;},
             ()=>{if(_owner.MayClearRoiCallbacks(this)){NativeView.NativeDrawStart=(_,_)=>false;NativeView.NativeDrawComplete=_=>false;NativeView.NativeDrawCancel=()=>{};NativeView.NativeDrawCaptureLost=_=>{};NativeView.NativeRoiCaptureCancelEdit=null;}},()=>_owner.DetachRoi(this)]);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject

@@ -19,9 +19,16 @@ public sealed class CanvasPointTests
         => Assert.Throws<ArgumentOutOfRangeException>(()=>new CanvasPoint(x,y));
     [Fact] public void Non_finite_json_cannot_be_loaded()
         => Assert.ThrowsAny<Exception>(()=>JsonSerializer.Deserialize<CanvasPoint>("{\"X\":1e999,\"Y\":0}"));
-    [Fact] public void Domain_assembly_has_no_desktop_sdk_or_runtime_references()
+    [Fact] public void Domain_assembly_rejects_desktop_legacy_sdk_and_runtime_references()
     {
         var references=typeof(CanvasPoint).Assembly.GetReferencedAssemblies().Select(x=>x.Name).ToArray();
-        Assert.DoesNotContain(references,name=>name is not null && (name.StartsWith("Presentation",StringComparison.Ordinal) || name=="WindowsBase" || name.StartsWith("SunEyeVision.Plugin",StringComparison.Ordinal)));
+        Assert.All(references,name=>
+        {
+            var neutral=name is not null && (name=="SunEyeVision.Plugin.Contracts" ||
+                (name.StartsWith("System.",StringComparison.Ordinal) &&
+                 !name.StartsWith("System.Windows",StringComparison.Ordinal) &&
+                 name is not "System.Xaml" and not "System.Drawing.Common"));
+            Assert.True(neutral,$"Domain cannot reference host or desktop assembly: {name}");
+        });
     }
 }

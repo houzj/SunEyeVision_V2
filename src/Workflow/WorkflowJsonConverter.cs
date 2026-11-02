@@ -10,6 +10,12 @@ namespace SunEyeVision.Workflow;
 /// <summary>Reads a pure candidate document. UI conversion belongs to workspace activation.</summary>
 public class WorkflowJsonConverter : JsonConverter<Workflow>
 {
+    private static void ValidateNodeLayout(WorkflowNodeBase node)
+    {
+        if (!double.IsFinite(node.PositionX) || !double.IsFinite(node.PositionY) ||
+            !double.IsFinite(node.Width) || !double.IsFinite(node.Height))
+            throw new JsonException("Node layout position and size must be finite.");
+    }
     private readonly RuntimeDirectorySnapshot? _directory;
     public WorkflowJsonConverter() { }
     public WorkflowJsonConverter(RuntimeDirectorySnapshot directory)=>_directory=directory??throw new ArgumentNullException(nameof(directory));
@@ -51,6 +57,7 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
                     throw error;
                 }
                 if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id)) throw new JsonException("Empty or duplicate node Id.");
+                ValidateNodeLayout(node);
                 if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                     throw new JsonException("Runtime configuration ToolId differs from the node identity.");
                 if ((_directory??throw new JsonException("Workflow serialization requires an admitted runtime directory.")).Contains(node.ToolType) && node.RuntimeConfiguration is null)
@@ -76,6 +83,7 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
     {
         foreach (var node in value.Nodes)
         {
+            ValidateNodeLayout(node);
             RuntimeNodeAdmission.RequireShape(node);
             if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                 throw new JsonException("Runtime configuration ToolId differs from the node identity.");

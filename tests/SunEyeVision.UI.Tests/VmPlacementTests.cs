@@ -27,34 +27,34 @@ public sealed class VmPlacementTests
     }
     [Fact] public void Move_clears_incident_manual_path_and_undo_restores_saved_array()
     {
-        var node = new WorkflowNode { Id = "a", Position = new Point(50, 50) };
-        var path = new[] { new Point(50,65), new Point(50,150), new Point(250,150) };
+        var node = new WorkflowNode { Id = "a", Position = new SunEyeVision.Domain.Workflows.CanvasPoint(50, 50) };
+        var path = new[] { new SunEyeVision.Domain.Workflows.CanvasPoint(50,65), new SunEyeVision.Domain.Workflows.CanvasPoint(50,150), new SunEyeVision.Domain.Workflows.CanvasPoint(250,150) };
         var connection = new Connection { SourceNodeId = "a", TargetNodeId = "b", ManualPathPoints = path };
-        var command = new MoveNodesSnapshotCommand(new[] { (node, node.Position, new Point(100,100)) }, new[] { connection });
+        var command = new MoveNodesSnapshotCommand(new[] { (node, new Point(node.Position.X,node.Position.Y), new Point(100,100)) }, new[] { connection });
         command.Execute(null); Assert.Null(connection.ManualPathPoints);
-        path[0] = new Point(999,999); command.Undo(); Assert.Equal(new Point(50,65), connection.ManualPathPoints![0]);
+        path[0] = new SunEyeVision.Domain.Workflows.CanvasPoint(999,999); command.Undo(); Assert.Equal(new SunEyeVision.Domain.Workflows.CanvasPoint(50,65), connection.ManualPathPoints![0]);
         command.Execute(null); Assert.Null(connection.ManualPathPoints);
     }
     [Fact] public void Insertion_preserves_ports_and_undo_restores_edge_position_and_binding_configuration()
     {
-        var source = new WorkflowNode { Id = "source" };
-        var target = new WorkflowNode { Id = "target", Parameters = new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters() };
-        var inserted = new WorkflowNode { Id = "inserted", Position = new Point(100, 100) };
-        target.Parameters.RebindingRequired["ImageSource"] = "before";
-        var old = new Connection { Id = "original", SourceNodeId = source.Id, TargetNodeId = target.Id, SourcePort = "LeftPort", TargetPort = "RightPort", ManualPathPoints = new[] { new Point(1,1), new Point(2,2) } };
+        var source = new WorkflowNode { Id = "source", ToolType="ImageLoad", RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad") };
+        var target = new WorkflowNode { Id = "target", ToolType="ImageLoad", RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad") };
+        var inserted = new WorkflowNode { Id = "inserted", ToolType="ImageLoad", RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad"), Position = new SunEyeVision.Domain.Workflows.CanvasPoint(100, 100) };
+        target.RuntimeConfiguration=target.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{"sequence.initial",1L}});
+        var old = new Connection { Id = "original", SourceNodeId = source.Id, TargetNodeId = target.Id, SourcePort = "LeftPort", TargetPort = "RightPort", ManualPathPoints = new[] { new SunEyeVision.Domain.Workflows.CanvasPoint(1,1), new SunEyeVision.Domain.Workflows.CanvasPoint(2,2) } };
         var edges = new System.Collections.ObjectModel.ObservableCollection<Connection> { old };
         var history = new SunEyeVision.UI.Features.WorkflowUI.Commands.CommandManager(new(), edges);
         var configureCalls = 0;
         var command = new InsertNodeIntoConnectionCommand(edges, new[] { source, target, inserted }, old, inserted, new Point(200,200),
-            () => { ++configureCalls; target.Parameters.RebindingRequired["ImageSource"] = "after"; }, () => { });
+            () => { ++configureCalls; target.RuntimeConfiguration=target.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{"sequence.initial",2L}}); }, () => { });
         history.Execute(command);
         Assert.Equal(2, edges.Count); Assert.All(edges, c => { Assert.Equal("LeftPort", c.SourcePort); Assert.Equal("RightPort", c.TargetPort); });
         Assert.Contains(edges, c => c.SourceNodeId == "source" && c.TargetNodeId == "inserted");
         Assert.Contains(edges, c => c.SourceNodeId == "inserted" && c.TargetNodeId == "target");
-        Assert.Equal(new Point(200,200), inserted.Position); Assert.Equal("after", target.Parameters.RebindingRequired["ImageSource"]);
-        history.Undo(); Assert.Same(old, Assert.Single(edges)); Assert.Equal(new Point(100,100), inserted.Position);
-        Assert.Equal("before", target.Parameters.RebindingRequired["ImageSource"]); Assert.NotNull(old.ManualPathPoints);
-        history.Redo(); Assert.Equal(2, edges.Count); Assert.Equal("after", target.Parameters.RebindingRequired["ImageSource"]); Assert.Equal(1, configureCalls);
+        Assert.Equal(new SunEyeVision.Domain.Workflows.CanvasPoint(200,200), inserted.Position); Assert.Equal(2L,RootCanvasFixture.Value(target));
+        history.Undo(); Assert.Same(old, Assert.Single(edges)); Assert.Equal(new SunEyeVision.Domain.Workflows.CanvasPoint(100,100), inserted.Position);
+        Assert.Equal(1L,RootCanvasFixture.Value(target)); Assert.NotNull(old.ManualPathPoints);
+        history.Redo(); Assert.Equal(2, edges.Count); Assert.Equal(2L,RootCanvasFixture.Value(target)); Assert.Equal(1, configureCalls);
     }
     [Fact] public void Invalid_insertion_cycle_or_own_endpoint_leaves_graph_unchanged()
     {

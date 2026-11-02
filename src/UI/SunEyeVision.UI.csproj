@@ -67,6 +67,7 @@
   <!-- 测试项目可访问 internal（对齐 Plugin.SDK.csproj:52 既有做法，仅测试基础设施，不改业务代码） -->
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.CanvasLayout.Tests" />
   </ItemGroup>
 
   <ItemGroup>

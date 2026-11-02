@@ -24,5 +24,11 @@ $env:S2_RUNTIME_PROBE=$null
 $exit=$LASTEXITCODE
 Get-Content (Join-Path $dir 'run.log') -Tail 25
 $loaded=Get-Content (Join-Path $dir 'loaded-product.tsv')|ForEach-Object {$p=$_ -split "`t";[ordered]@{name=$p[0];path=$p[1];sha256=$p[2];matchesCandidate=([IO.Path]::GetDirectoryName($p[1]) -eq $product -and (Get-FileHash $p[1] -Algorithm SHA256).Hash -eq $p[2])}}
-[ordered]@{scope='独立公共UI组合候选，不替代真实Blob三页/主仓/实际VS';exit=$exit;commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
+$names=@($loaded|ForEach-Object {$_.name})
+$identityPassed=(@($loaded).Count -ge 2 -and @($loaded|Where-Object {!$_.matchesCandidate}).Count -eq 0 -and $names -contains 'SunEyeVision.Plugin.Wpf' -and $names -contains 'SunEyeVision.Plugin.Contracts')
+$runText=Get-Content (Join-Path $dir 'run.log') -Raw
+$passedCases=([regex]::Matches($runText,'(?m)^PASS ')).Count
+$casesPassed=($passedCases -eq 8 -and $runText.Contains('公共组合8组通过'))
+if(!$identityPassed -or !$casesPassed){$exit=1}
+[ordered]@{scope='独立公共UI组合候选，不替代真实Blob三页/主仓/实际VS';exit=$exit;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
 if($exit -ne 0){throw ('公共组件候选失败：'+$dir)}

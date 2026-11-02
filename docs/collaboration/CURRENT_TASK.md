@@ -1,3 +1,18 @@
+## 2026-11-03 输入与编辑候选集中核收
+
+87f4 产品仍为8c6f0aa33，未集成在途候选。主线只读核查正式 AlgorithmNode.Runtime 和 RuntimeDebugInvocation 已共用 HostInputCoordinator，准备前后检查取消/身份，租约验证不允许替换输出资源域，失败路径释放。开发线回报协调器2/2、正式/调试图像源聚焦22/22；最终载荷和共享接线待核收。编辑候选最新attempt-021专项通过并有实际Button.IsEnabled断言；主线查看运行页截图，确认重置原图标禁用占位。旧44组不作为最新全测。已要求两线直接完成共享Capture合同接线、固定提交与封包后集中集成；旧UI测试工程引用退役工具被门禁拒绝，不恢复旧入口。主计划当前状态表已集中更新，全平台原始范围保留。
+## 2026-11-03 原件连续语义交叉纠偏
+
+技术总监与主线实际核对候选RunContinuousAsync，发现UI Task.Delay(500)循环不符合UI不调度和VM原件边界；编辑线已移除并禁用连续/停止，未实现语义占位不计功能。窗口尺寸及根流程/context门禁按主仓证据整合，运行页重置显示禁用占位尚在接入。修正后候选全量Release0错，新增专项进行中，旧44项载荷不覆盖本次修正。两方已约定最终合并只保留一套原件窗口和唯一事务。
+
+## 2026-11-03 主仓窗口链重叠协调
+
+技术总监告知主仓34002fbd5，继续独立开发且不互相覆盖Release；其NativeRuntimeEditorWindow与本线RuntimeToolEditorWindow可能重叠。已发送具体文件、唯一事务及原件组合边界，推荐合并保留唯一生产链，等待其对应文件/证据回执。当前不要求合并。编辑线源码冻结，在完整44项后仅重建并验证新增打开失败清理、连续停止及运行中关闭。
+
+## 2026-11-03 旧兼容工厂退出验证
+
+87f4提交8c6f0aa33删除无源码调用的ToolDebugWindowFactory及文件内兼容插件，UI Release构建0错，正式两工具隐藏宿主打开/关闭退出0；封包SHA660A13D4ADC2FF9E2CAC83E3335F558303377A89FD10AE433E0406474510A355，日志Release/_validation/remove-legacy-factory-8c6f。该批只退出此旧入口，其他旧可视/SDK依赖仍在原矩阵追踪。资源线另报告公共元数据/恢复故障10/10及事务设施6/6，检查点198433460，HostInput未包含且尚未集成。
+
 ## 2026-11-02 旧调试兼容工厂退出
 
 主线核对src/tools/tests/scripts源码及XAML未见ToolDebugWindowFactory消费者后，删除该旧工厂及其文件内部DefaultToolPlugin；正式Runtime打开仍走NodeOpenDecisionChain，MainWindowViewModel内同名嵌套类未改。历史由Git保留，当前删除需UI构建和两工具正式打开回归；无外部反射引用的结论不由静态搜索证明，但不为旧兼容保留入口。已协调编辑线不重复写该文件。

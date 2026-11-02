@@ -28,10 +28,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 
         public string LastCommandDescription => _documentHistory?.LastAppliedEntry?.Description ?? (_undoStack.Count > 0 ? _undoStack.Peek().GetType().Name : "");
         private DocumentHistoryCoordinator? _documentHistory;
-        private Action? _synchronize;
+        private Func<IReadOnlyList<ScopedNodeIdentity>>? _synchronize;
         private Func<string>? _signature;
         private string _rootId = "";
-        public void BindDocumentHistory(DocumentHistoryCoordinator history, string rootId, Action synchronize, Func<string> signature)
+        public void BindDocumentHistory(DocumentHistoryCoordinator history, string rootId, Func<IReadOnlyList<ScopedNodeIdentity>> synchronize, Func<string> signature)
         {
             if (ReferenceEquals(_documentHistory, history)) return;
             if (_documentHistory != null) _documentHistory.Changed -= HistoryChanged;
@@ -47,12 +47,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
             try { _documentHistory.Execute(operation); }
             catch { if (accepted && !operation.Reverted) command.Undo(); throw; }
         }
-        private sealed class CanvasOperation(IUndoableCommand command, string rootId, Action synchronize, Func<string> signature, bool accepted)
-            : IDocumentHistoryOperation, IDocumentHistoryReplayGuard
+        private sealed class CanvasOperation(IUndoableCommand command, string rootId, Func<IReadOnlyList<ScopedNodeIdentity>> synchronize, Func<string> signature, bool accepted)
+            : IDocumentHistoryOperation, IDocumentHistoryReplayGuard, IDocumentHistoryReplayEffects
         {
             private string _expected = signature();
             private bool _initial = true;
             public bool Reverted { get; private set; }
+            public IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; private set; } = Array.Empty<ScopedNodeIdentity>();
             public string Description => command switch {
                 AddNodeCommand => "添加节点", AddConnectionCommand => "连接节点",
                 MoveNodeCommand or MoveNodesSnapshotCommand or BatchMoveNodesCommand => "移动节点",
@@ -71,9 +72,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
                 var skip = _initial && accepted; var applied = skip; var previous = _expected;
                 return new(() => {
                     if (!skip) { if (direction == DocumentHistoryDirection.Forward) command.Execute(null); else command.Undo(); applied = true; }
-                    synchronize(); _expected = signature(); _initial = false;
+                    InvalidatedNodes = synchronize(); _expected = signature(); _initial = false;
                 }, () => {
                     if (applied) { if (direction == DocumentHistoryDirection.Forward) command.Undo(); else command.Execute(null); synchronize(); Reverted = true; }
+                    InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
                     _expected = previous;
                 });
             }

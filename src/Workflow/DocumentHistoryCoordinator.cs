@@ -26,7 +26,7 @@ public interface IDocumentHistoryReplayGuard
 }
 
 /// <summary>Effects of one successfully replayed configuration operation, never runtime values.</summary>
-internal interface IDocumentHistoryReplayEffects
+public interface IDocumentHistoryReplayEffects
 {
     IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; }
 }
@@ -40,7 +40,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     private readonly int _capacity;
     private int _position;
     private long _sequence;
-    private bool _busy, _notifying, _closed;
+    private bool _busy, _notifying, _closed, _initialPresentationBlocked;
     private Func<IDisposable>? _mutationLeaseProvider;
     public Guid SessionId { get; }
     public long Revision { get; private set; }
@@ -70,6 +70,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     public void SetMutationLeaseProvider(Func<IDisposable>? provider)
     {
         if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if (_initialPresentationBlocked) throw new InvalidOperationException("显示节点准备期间不能更改执行门禁。");
         if (_closed && provider is not null) throw new ObjectDisposedException(nameof(DocumentHistoryCoordinator));
         if (provider is not null && _mutationLeaseProvider is not null && _mutationLeaseProvider != provider)
             throw new InvalidOperationException("历史已有另一个执行门禁宿主。");
@@ -86,6 +87,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         ArgumentNullException.ThrowIfNull(expected);
         if(Environment.CurrentManagedThreadId!=_ownerThread)throw new InvalidOperationException("历史只能由方案所属线程配置。");
+        if(_initialPresentationBlocked)throw new InvalidOperationException("显示节点准备期间不能更改执行门禁。");
         if(_mutationLeaseProvider!=expected)return false;
         _mutationLeaseProvider=null;return true;
     }
@@ -96,6 +98,26 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     {
         EnsureMutationAllowed();
         return AcquireMutationLease();
+    }
+    internal IDisposable BlockInitialPresentationMutations()
+    {
+        EnsureMutationAllowed();
+        _busy=true;_initialPresentationBlocked=true;
+        try{return new InitialPresentationGuard(this,AcquireMutationLease());}
+        catch{_initialPresentationBlocked=false;_busy=false;throw;}
+    }
+    private sealed class InitialPresentationGuard(DocumentHistoryCoordinator owner,IDisposable? lease):IDisposable
+    {
+        private DocumentHistoryCoordinator? _owner=owner;
+        public void Dispose()
+        {
+            var current=_owner;
+            if(current is null)return;
+            if(Environment.CurrentManagedThreadId!=current._ownerThread)throw new InvalidOperationException("显示节点准备必须在方案所属线程结束。");
+            _owner=null;
+            try{lease?.Dispose();}
+            finally{current._initialPresentationBlocked=false;current._busy=false;}
+        }
     }
     /// <summary>Ownership transfers only after successful application. A failed preparation/application
     /// leaves ownership with the caller and does not clear redo or advance the sequence.</summary>

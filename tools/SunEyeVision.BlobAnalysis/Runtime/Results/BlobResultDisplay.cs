@@ -25,7 +25,9 @@ public static class BlobResultDisplay
         var displayOrder=BlobParameterDefinition.Instance.SettingsSchema.Presentation!.Fields.Max(field=>field.Order)+1;
         void Add(string id,string label,string section,TypeRef type,object value,double? minimum=null,double? maximum=null,double? increment=null,string? dialog=null,bool primary=false,int? decimals=2)
         {
-            var port=new Port(id,type,EditModes:FieldEditModes.Constant);
+            var modes=id==Field(Text,"content")?FieldEditModes.Constant|FieldEditModes.DisplayExpression:
+                id==Field(Text,"x")||id==Field(Text,"y")?FieldEditModes.Constant|FieldEditModes.Reference:FieldEditModes.Constant;
+            var port=new Port(id,type,EditModes:modes);
             result.Add(new(port,new(id,label,section,displayOrder+result.Count,type.Shape==ValueShape.Record?FieldEditorKind.Record:FieldEditorKind.Scalar){Layout=new("结果显示",section,
                 Minimum:minimum,Maximum:maximum,Increment:increment??1,DecimalPlaces:type==DataType.Number?decimals:0,
                 DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch {Inspection=>"ROI",Mask=>"屏蔽区域",Annulus=>"扇环检测区域",_=>"Blob"},DialogPrimary:primary)},value));
@@ -55,8 +57,7 @@ public static class BlobResultDisplay
     }
     public static ResultDisplayAppearance Capture(FieldSettings fields)
     {
-        var values=fields.Select(Schema.Inputs).Materialize(new Dictionary<string,object?>());
-        T Read<T>(string id)=>values.Get<T>(id);
+        T Read<T>(string id)=>fields.Get<T>(id);
         double Number(string group,string role)
         {
             var id=Field(group,role);var value=Read<double>(id);var layout=Definitions.Single(item=>item.Port.Id==id).Presentation.Layout!;
@@ -66,18 +67,45 @@ public static class BlobResultDisplay
         }
         ResultDisplayColor Color(string group,string role)
         {var value=Read<RecordValue>(Field(group,role));return new(checked((byte)value.Get<long>("r")),checked((byte)value.Get<long>("g")),checked((byte)value.Get<long>("b")),checked((byte)value.Get<long>("a")));}
-        var content=Read<string>(Field(Text,"content"));ValidateContent(content);
+        var expression=fields.Read(Field(Text,"content")) switch {DisplayExpressionSetting configured=>ParseContent(configured.Text,configured.Slots),ConstantSetting {Value:string raw}=>ParseContent(raw),_=>throw new ArgumentException("文本内容设置无效。")};
+        var content=expression.Text;
+        ParameterSetting Position(string role){var setting=fields.Read(Field(Text,role));if(setting is ReferenceSetting reference){ValidateDisplayReference(reference.Reference,true);return reference;}if(setting is ConstantSetting {Value:double number}&&double.IsFinite(number))return setting;throw new ArgumentException("文本位置必须是有限数或已声明数字来源。");}
+        var x=Position("x");var y=Position("y");
         ResultGraphicAppearance Style(string group)=>new(Read<bool>(Field(group,"visible")),Color(group,"ok"),Color(group,"ng"),Number(group,"opacity"),Number(group,"width"));
         return new(Style(Graphic),
-            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),Number(Text,"x"),Number(Text,"y")),Style(Inspection),Style(Mask),Style(Annulus));
+            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),x is ConstantSetting {Value:double xv}?xv:0,y is ConstantSetting {Value:double yv}?yv:0,expression,x,y),Style(Inspection),Style(Mask),Style(Annulus));
     }
-    public static void ValidateContent(string content)
+    public static void ValidateDisplayReference(OutputReference reference,bool numeric=false)
     {
-        if(content is null)throw new ArgumentException("显示内容不能为空值。");
-        var remainder=System.Text.RegularExpressions.Regex.Replace(content,@"\{\{ |\}\}","",System.Text.RegularExpressions.RegexOptions.IgnorePatternWhitespace);
-        remainder=System.Text.RegularExpressions.Regex.Replace(remainder,@"\{0(?::[FfNnGgRr][0-9]?)?\}","");
-        if(remainder.Contains('{')||remainder.Contains('}'))throw new ArgumentException("显示内容仅支持面积占位符{0}及有限数值格式。");
-        try{_=string.Format(CultureInfo.InvariantCulture,content,0d);}
-        catch(FormatException error){throw new ArgumentException("显示内容仅支持面积占位符{0}及其数值格式。",error);}
+        if(reference.Selection is BindingSelection.AtVariable)throw new ArgumentException("显示来源暂不支持变量索引。");
+        if(reference.Selection is BindingSelection.AtField index)ValidateDisplayReference(index.Reference);
+        var type=ParameterReferenceRules.SelectedType(reference);while(type.Shape==ValueShape.Sequence)type=type.Element!;
+        if(type.Shape!=ValueShape.Scalar||type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64 or ScalarKind.Text)||numeric&&type.Scalar==ScalarKind.Text)
+            throw new ArgumentException("显示来源只支持整数、浮点或文本。");
     }
+    public static DisplayExpressionSetting ParseContent(string content,IEnumerable<DisplayExpressionSlot>? available=null)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var slots=new List<DisplayExpressionSlot>();var known=(available??Array.Empty<DisplayExpressionSlot>()).ToArray();
+        var position=0;
+        while(position<content.Length)
+        {
+            var start=content.IndexOfAny(new[]{'{','}'},position);if(start<0)break;
+            if(content[start]!='{')throw new ArgumentException("文本表达式括号不完整。");
+            var end=content.IndexOf('}',start+1);
+            if(end<0||content.AsSpan(start+1,end-start-1).Contains('{'))throw new ArgumentException("文本表达式括号不完整。");
+            var token=content.Substring(start+1,end-start-1);
+            var matches=known.Where(slot=>slot.Token==token).ToArray();
+            if(matches.Length>1&&!matches.Skip(1).All(slot=>new DisplayExpressionSetting("",new[]{slot}).SameExpression(new("",new[]{matches[0]}))))
+                throw new ArgumentException("文本来源名称不唯一，请重新选择。");
+            if(matches.Length!=0)slots.Add(matches[0]);
+            else if(System.Text.RegularExpressions.Regex.Match(token,@"^(0|面积|Area)(?::([FfNnGgRr][0-9]?))?$") is {Success:true} area)
+                slots.Add(new(token,new ResultFieldPath(BlobSchema.BlobsPort,new[]{"area"}),area.Groups[2].Success?area.Groups[2].Value:null));
+            else throw new ArgumentException("文本来源尚未选择或已失效："+token);
+            position=end+1;
+        }
+        foreach(var slot in slots)if(slot.Reference is {} reference)ValidateDisplayReference(reference);
+        return new(content,slots);
+    }
+    public static void ValidateContent(string content)=>_=ParseContent(content);
 }

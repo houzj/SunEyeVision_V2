@@ -58,7 +58,7 @@ public sealed class FieldSettings
         var values = new Dictionary<string, object?>(StringComparer.Ordinal);
         foreach (var (id, setting) in _values)
         {
-            if (setting is ConstantSetting constant) values.Add(id, constant.Value);
+        if (setting is ConstantSetting constant) values.Add(id, constant.Value);
             else if (resolved.TryGetValue(id, out var value)) values.Add(id, value);
             else throw new ArgumentException("A configured reference has not been resolved: " + id);
         }
@@ -71,6 +71,7 @@ public sealed class FieldSettings
         ArgumentNullException.ThrowIfNull(map);
         return new(_ports.Values, _values.ToDictionary(pair => pair.Key,
             pair => pair.Value switch {
+                DisplayExpressionSetting expression=>expression.MapReferences(map),
                 ReferenceSetting reference=>reference with {Reference=map(reference.Reference)},
                 VariableSetting variable when variable.Reference.Selection is BindingSelection.AtField index=>variable with {
                     Reference=new VariableReference(variable.Reference.SolutionId,variable.Reference.VariableId,variable.Reference.Type,new BindingSelection.AtField(map(index.Reference),index.ConstructionBehavior),variable.Reference.Storage)},
@@ -80,6 +81,12 @@ public sealed class FieldSettings
     public static ParameterSetting Freeze(Port port, ParameterSetting setting)
     {
         ArgumentNullException.ThrowIfNull(setting);
+        if(setting is DisplayExpressionSetting expression)
+        {
+            if(port.Type!=DataType.Text||(port.EditModes&FieldEditModes.DisplayExpression)==0)
+                throw new ArgumentException("This field does not allow display expressions: "+port.Id);
+            return expression.Copy();
+        }
         if (setting is ConstantSetting constant)
         {
             if (port.EditModes != FieldEditModes.None && (port.EditModes & FieldEditModes.Constant) == 0)

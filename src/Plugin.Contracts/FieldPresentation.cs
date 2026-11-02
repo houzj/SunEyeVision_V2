@@ -10,7 +10,7 @@ public sealed record FieldLayout(string Page, string Section, FieldCondition? Vi
     double Increment=1);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
-[Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8 }
+[Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }
 public enum FieldDefaultPresence { Unset, ExplicitValueRequired }
 public enum RegionFieldMode { LocalGeometry, InheritedGeometry, InheritedRegion,
     InheritedRectangle, InheritedRectangleParameters, InheritedCircle, InheritedCircleParameters }

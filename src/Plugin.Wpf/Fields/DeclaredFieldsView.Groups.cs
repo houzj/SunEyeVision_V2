@@ -122,10 +122,11 @@ public sealed partial class DeclaredFieldsView
             {
                 if(validateComposition&&_choiceDisplays.TryGetValue(change.Key,out var choice)&&choice.ValidateProposal(change.Value) is {} choiceError)
                     throw new ArgumentException(choiceError);
-                if(change.Value is ConstantSetting {Value:string text}&&_textExpressions.TryGetValue(change.Key,out var expression))
+                var expressionText=change.Value switch {ConstantSetting {Value:string text}=>text,DisplayExpressionSetting mapped=>mapped.Text,_=>null};
+                if(expressionText is not null&&_textExpressions.TryGetValue(change.Key,out var expression))
                 {
                     if(!CurrentGroup())throw new InvalidOperationException("文本字段所属编辑范围已失效。");
-                    var error=expression.ValidateText?.Invoke(text);
+                    var error=expression.ValidateText?.Invoke(expressionText);
                     if(!CurrentGroup())throw new InvalidOperationException("文本验证期间编辑范围已改变。");
                     if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
                 }

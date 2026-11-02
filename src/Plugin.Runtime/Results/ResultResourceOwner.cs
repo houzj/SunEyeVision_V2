@@ -20,6 +20,22 @@ public sealed class ResultResourceOwner : IDisposable
             return new Lease(this);
         }
     }
+    internal void Own(IDisposable value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        lock(_gate)
+        {
+            if(_references==0)throw new ObjectDisposedException(nameof(ResultResourceOwner));
+            var previous=_release;
+            _release=()=>
+            {
+                Exception? failure=null;
+                try{previous?.Invoke();}catch(Exception error){failure=error;}
+                try{value.Dispose();}catch(Exception cleanup){if(failure is not null)throw new AggregateException(failure,cleanup);throw;}
+                if(failure is not null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            };
+        }
+    }
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _ownerReleased, 1) == 0) Release();

@@ -24,9 +24,12 @@ public sealed class SolutionSession
         }
     }
     public DocumentHistoryCoordinator History => Editing.History;
+    internal void EnsureNotPreparingPresentation()
+    {if(_editing?.IsPreparingInitialPresentation==true)throw new InvalidOperationException("显示节点准备期间不能切换、关闭或保存方案。");}
     internal void CloseEditing()
     {
         if(_closed)return;
+        EnsureNotPreparingPresentation();
         _closed=true;
         _editing?.Close();
     }

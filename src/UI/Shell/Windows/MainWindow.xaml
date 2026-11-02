@@ -50,7 +50,7 @@
                 <ColumnDefinition Width="Auto" x:Name="ToolboxColumn" MinWidth="52" MaxWidth="230"/>
                 <ColumnDefinition Width="*" x:Name="WorkflowColumn" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="700" x:Name="RightPanelColumn" MinWidth="40" MaxWidth="900"/>
+                <ColumnDefinition Width="*" x:Name="RightPanelColumn" MinWidth="400"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>

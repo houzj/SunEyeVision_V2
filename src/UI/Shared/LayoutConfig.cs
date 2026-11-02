@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Shared
     {
         // 默认值
         private const double DefaultLeftColumnWidth = 260.0;
-        private const double DefaultRightColumnWidth = 500.0;
+        private const double DefaultRightColumnWidth = 0.0;
         private const double DefaultSplitterWidth = 5.0;
 
         // 宽度限制
@@ -108,7 +108,8 @@ namespace SunEyeVision.UI.Shared
         public void ValidateAndCorrect()
         {
             LeftColumnWidth = Math.Max(MinLeftColumnWidth, Math.Min(MaxLeftColumnWidth, LeftColumnWidth));
-            RightColumnWidth = Math.Max(MinRightColumnWidth, Math.Min(MaxRightColumnWidth, RightColumnWidth));
+            RightColumnWidth = double.IsFinite(RightColumnWidth) && RightColumnWidth > 0
+                ? RightColumnWidth : 0.0;
         }
 
         /// <summary>

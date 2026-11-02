@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -90,21 +90,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
         {
             FullscreenRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// 顶栏工作流下拉框选中项变化 — 通过 ViewModel 的唯一写入口 SetSelectedTab 更新，
-        /// 避免 WPF 双向绑定回写 SelectedTab setter 造成重入（单向数据流）。
-        /// 仅当选中项与当前 VM 状态不同才写入，防止初始化绑定触发重复回写。
-        /// </summary>
-        private void WorkflowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (DataContext is ShellTopBarViewModel vm
-                && e.AddedItems.Count > 0
-                && !ReferenceEquals(vm.SelectedTab, e.AddedItems[0]))
-            {
-                vm.SetSelectedTab(e.AddedItems[0]);
-            }
         }
 
         /// <summary>

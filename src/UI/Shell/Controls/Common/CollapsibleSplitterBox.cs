@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -130,59 +130,53 @@ namespace SunEyeVision.UI.Shell.Controls.Common
         /// </summary>
         public void ToggleCollapsed()
         {
-            var grid = Parent as Grid;
-            if (grid == null)
-            {
-                return;
-            }
-
-            var column = Grid.GetColumn(this);
-            var row = Grid.GetRow(this);
-
+            if (Parent is not Grid grid) return;
             if (ResizeDirection == GridResizeDirection.Columns)
             {
-                // 折叠到指定方向的相邻列
-                var targetCol = CollapseDirection == CollapseDirectionType.Left ? column - 1 : column + 1;
-                if (targetCol < 0 || targetCol >= grid.ColumnDefinitions.Count)
+                var index = Grid.GetColumn(this) + (CollapseDirection == CollapseDirectionType.Left ? -1 : 1);
+                if (index < 0 || index >= grid.ColumnDefinitions.Count) return;
+                var target = grid.ColumnDefinitions[index];
+                if (!IsCollapsed)
                 {
-                    return;
-                }
-                var target = grid.ColumnDefinitions[targetCol];
-                if (IsCollapsed)
-                {
-                    // 展开：恢复原始尺寸（记录在 Width 的 Auto/像素）
-                    target.Width = new GridLength(_savedSize, GridUnitType.Pixel);
+                    _savedLength = target.Width;
+                    _savedMinimum = target.MinWidth;
+                    ExpandedPixelSize = target.Width.IsAbsolute ? target.Width.Value : target.ActualWidth;
+                    target.MinWidth = 0;
+                    target.Width = new GridLength(CollapsedSize);
                 }
                 else
                 {
-                    _savedSize = target.ActualWidth;
-                    target.Width = new GridLength(CollapsedSize, GridUnitType.Pixel);
+                    target.MinWidth = _savedMinimum;
+                    target.Width = _savedLength;
                 }
             }
             else
             {
-                var targetRow = CollapseDirection == CollapseDirectionType.Top ? row - 1 : row + 1;
-                if (targetRow < 0 || targetRow >= grid.RowDefinitions.Count)
+                var index = Grid.GetRow(this) + (CollapseDirection == CollapseDirectionType.Top ? -1 : 1);
+                if (index < 0 || index >= grid.RowDefinitions.Count) return;
+                var target = grid.RowDefinitions[index];
+                if (!IsCollapsed)
                 {
-                    return;
-                }
-                var target = grid.RowDefinitions[targetRow];
-                if (IsCollapsed)
-                {
-                    target.Height = new GridLength(_savedSize, GridUnitType.Pixel);
+                    _savedLength = target.Height;
+                    _savedMinimum = target.MinHeight;
+                    ExpandedPixelSize = target.Height.IsAbsolute ? target.Height.Value : target.ActualHeight;
+                    target.MinHeight = 0;
+                    target.Height = new GridLength(CollapsedSize);
                 }
                 else
                 {
-                    _savedSize = target.ActualHeight;
-                    target.Height = new GridLength(CollapsedSize, GridUnitType.Pixel);
+                    target.MinHeight = _savedMinimum;
+                    target.Height = _savedLength;
                 }
             }
-
             IsCollapsed = !IsCollapsed;
             UpdateArrowText();
         }
 
-        private double _savedSize;
+        /// <summary>折叠前的实际宽度或高度，用于保存可恢复的用户布局。</summary>
+        public double ExpandedPixelSize { get; private set; }
+        private GridLength _savedLength = new GridLength(1, GridUnitType.Star);
+        private double _savedMinimum;
     }
 
     /// <summary>

@@ -335,10 +335,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private void SaveLayoutConfig()
         {
             var config = LayoutConfig.Load();
-            config.IsRightPanelCollapsed = RightPanelSplitter.IsCollapsed;
-            config.RightColumnWidth = RightPanelColumn.ActualWidth > 0
-                ? RightPanelColumn.ActualWidth
-                : config.RightColumnWidth;
+            SunEyeVision.UI.Shell.Controls.Shell.MainWorkspaceLayout.Capture(config, RightPanelColumn, RightPanelSplitter);
             if (!config.Save()) throw new System.IO.IOException("窗口布局配置保存失败，原配置保留。");
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -401,15 +398,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private void RestoreLayoutConfig()
         {
             var config = LayoutConfig.Load();
-            if (config.IsRightPanelCollapsed)
-            {
-                RightPanelSplitter.IsCollapsed = true;
-                RightPanelSplitter.ToggleCollapsed();
-            }
-            else if (config.RightColumnWidth > 0)
-            {
-                RightPanelColumn.Width = new GridLength(config.RightColumnWidth);
-            }
+            SunEyeVision.UI.Shell.Controls.Shell.MainWorkspaceLayout.Restore(config, RightPanelColumn, RightPanelSplitter);
         }
         #endregion
         #region TabControl 多流程管理事件处理

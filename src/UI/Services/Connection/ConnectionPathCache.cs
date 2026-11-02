@@ -103,7 +103,7 @@ namespace SunEyeVision.UI.Services.Connection
                         if (_groupInitialArrows != null
                             && _groupInitialArrows.TryGetValue(connection.Id, out Point initialArrow))
                         {
-                            connection.ArrowPosition = new Point(
+                            connection.ArrowPosition = new CanvasPoint(
                                 initialArrow.X + _groupOffset.X,
                                 initialArrow.Y + _groupOffset.Y);
                         }
@@ -182,7 +182,7 @@ namespace SunEyeVision.UI.Services.Connection
             {
                 var list = inner?.Where(c => c != null).ToList();
                 _groupTranslatedIds = list?.Select(c => c.Id).ToHashSet();
-                _groupInitialArrows = list?.ToDictionary(c => c.Id, c => c.ArrowPosition);
+                _groupInitialArrows = list?.ToDictionary(c => c.Id, c => c.ArrowPosition.ToWpf());
                 _groupOffset = default;
             }
         }
@@ -397,7 +397,7 @@ namespace SunEyeVision.UI.Services.Connection
 
             var manual=connection.PreviewPathPoints??connection.ManualPathPoints;
             var pathPoints=manual is {Length:>1}
-                ? AttachManualEndpoints(manual,sourcePos,targetPos,sourceDirection,targetDirection)
+                ? AttachManualEndpoints(manual.Select(point=>point.ToWpf()).ToArray(),sourcePos,targetPos,sourceDirection,targetDirection)
                 : _pathCalculator.CalculateOrthogonalPath(sourcePos,targetPos,sourceDirection,targetDirection,sourceNodeRect,targetNodeRect,allNodeRects);
             var displayPoints=manual is {Length:>1}
                 ? SunEyeVision.UI.Services.PathCalculators.VmRouting.VmOrthogonalRouter.Passivate(pathPoints.Select(p=>new SunEyeVision.UI.Services.PathCalculators.VmRouting.RoutePoint(p.X,p.Y)).ToArray()).Select(p=>new Point(p.X,p.Y)).ToArray()
@@ -405,7 +405,7 @@ namespace SunEyeVision.UI.Services.Connection
             var pathGeometry=_pathCalculator.CreatePathGeometry(displayPoints);
             UpdateConnectionPathPoints(connection,pathPoints);
             var (arrowPosition,arrowAngle)=_pathCalculator.CalculateArrow(displayPoints,targetPos,targetDirection);
-            connection.ArrowPosition=arrowPosition;connection.ArrowAngle=arrowAngle;
+            connection.ArrowPosition=arrowPosition.ToCanvas();connection.ArrowAngle=arrowAngle;
             return pathGeometry;
         }
 
@@ -442,7 +442,7 @@ namespace SunEyeVision.UI.Services.Connection
             connection.PathPoints.Clear();
             foreach (var point in pathPoints)
             {
-                connection.PathPoints.Add(point);
+                connection.PathPoints.Add(point.ToCanvas());
             }
         }
 

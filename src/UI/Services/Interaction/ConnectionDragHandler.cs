@@ -313,8 +313,8 @@ namespace SunEyeVision.UI.Services.Interaction
             var sourcePos = CanvasHelper.GetPortPosition(sourceNode, connection.SourcePort);
             var targetPos = CanvasHelper.GetPortPosition(targetNode, connection.TargetPort);
 
-            connection.SourcePosition = sourcePos;
-            connection.TargetPosition = targetPos;
+            connection.SourcePosition = sourcePos.ToCanvas();
+            connection.TargetPosition = targetPos.ToCanvas();
 
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)

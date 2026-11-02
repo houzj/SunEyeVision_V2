@@ -13,6 +13,7 @@ namespace SunEyeVision.UI.Tests;
 public sealed class VmWireEditingTests
 {
     private static Point[] Path()=>new[]{new Point(210,115),new Point(260,115),new Point(260,315),new Point(400,315)};
+    private static SunEyeVision.Domain.Workflows.CanvasPoint[] Saved()=>Path().Select(p=>new SunEyeVision.Domain.Workflows.CanvasPoint(p.X,p.Y)).ToArray();
     [Theory]
     [InlineData(357.3,281.8,355,280)]
     [InlineData(355,280,355,280)]
@@ -22,10 +23,10 @@ public sealed class VmWireEditingTests
     }    [Fact]
     public void Manual_path_roundtrips_but_preview_and_render_cache_do_not()
     {
-        var connection=new Connection{Id="wire",SourceNodeId="a",TargetNodeId="b",SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=Path(),PreviewPathPoints=new[]{new Point(1,1),new Point(2,2)}};
+        var connection=new Connection{Id="wire",SourceNodeId="a",TargetNodeId="b",SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=Saved(),PreviewPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(1,1),new SunEyeVision.Domain.Workflows.CanvasPoint(2,2)}};
         var json=JsonSerializer.Serialize(connection);
         var reopened=JsonSerializer.Deserialize<Connection>(json)!;
-        Assert.Equal(Path(),reopened.ManualPathPoints);Assert.Null(reopened.PreviewPathPoints);Assert.Empty(reopened.PathPoints);
+        Assert.Equal(Saved(),reopened.ManualPathPoints);Assert.Null(reopened.PreviewPathPoints);Assert.Empty(reopened.PathPoints);
         Assert.DoesNotContain("PreviewPathPoints",json);Assert.DoesNotContain("PathUpdateCounter",json);
     }
     [Fact]
@@ -34,17 +35,17 @@ public sealed class VmWireEditingTests
         var connection=new Connection();var after=Path();int refreshes=0;
         var history=new CommandManager(new(),new());
         history.Execute(new EditConnectionPathCommand(connection,null,after,()=>refreshes++));
-        after[1]=new Point(999,999);Assert.Equal(Path(),connection.ManualPathPoints);
+        after[1]=new Point(999,999);Assert.Equal(Saved(),connection.ManualPathPoints);
         history.Undo();Assert.Null(connection.ManualPathPoints);
-        history.Redo();Assert.Equal(Path(),connection.ManualPathPoints);Assert.Equal(3,refreshes);
+        history.Redo();Assert.Equal(Saved(),connection.ManualPathPoints);Assert.Equal(3,refreshes);
     }
     [Fact]
     public void Workflow_copy_retains_independent_manual_path()
     {
         var workflow=new SunEyeVision.Workflow.Workflow("w","test");
-        workflow.Connections.Add(new Connection{ManualPathPoints=Path()});
-        var copy=workflow.Clone();Assert.Equal(Path(),copy.Connections[0].ManualPathPoints);
-        copy.Connections[0].ManualPathPoints![1]=new Point(1,1);Assert.Equal(Path(),workflow.Connections[0].ManualPathPoints);
+        workflow.Connections.Add(new Connection{ManualPathPoints=Saved()});
+        var copy=workflow.Clone();Assert.Equal(Saved(),copy.Connections[0].ManualPathPoints);
+        copy.Connections[0].ManualPathPoints![1]=new SunEyeVision.Domain.Workflows.CanvasPoint(1,1);Assert.Equal(Saved(),workflow.Connections[0].ManualPathPoints);
     }
     [Fact]
     public void Recovered_segment_drag_snaps_and_preserves_endpoints()
@@ -56,6 +57,7 @@ public sealed class VmWireEditingTests
         Assert.Contains(drag.PathPoints,p=>p.X==280);
         Assert.Equal(Path(),points);
     }
+
     [Theory]
     [InlineData("LeftPort",20,30,20,15)]
     [InlineData("RightPort",20,30,0,15)]
@@ -71,11 +73,11 @@ public sealed class VmWireEditingTests
     public void Manual_path_reattaches_to_moved_node_without_mutating_saved_points()
     {
         OnSta(()=>{
-            var source=new WorkflowNode{Id="a",Position=new Point(155,115)};var target=new WorkflowNode{Id="b",Position=new Point(455,315)};
-            var connection=new Connection{Id="w",SourceNodeId="a",TargetNodeId="b",SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=Path()};
+            var source=new WorkflowNode{Id="a",Position=new SunEyeVision.Domain.Workflows.CanvasPoint(155,115)};var target=new WorkflowNode{Id="b",Position=new SunEyeVision.Domain.Workflows.CanvasPoint(455,315)};
+            var connection=new Connection{Id="w",SourceNodeId="a",TargetNodeId="b",SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=Saved()};
             var cache=new ConnectionPathCache(new ObservableCollection<WorkflowNodeBase>{source,target});cache.GetPath(connection);
-            source.Position=new Point(155,140);cache.MarkDirty(connection);cache.GetPath(connection);
-            Assert.Equal(source.RightPortPosition,connection.PathPoints[0]);Assert.Equal(target.LeftPortPosition,connection.PathPoints[^1]);Assert.Equal(Path(),connection.ManualPathPoints);
+            source.Position=new SunEyeVision.Domain.Workflows.CanvasPoint(155,140);cache.MarkDirty(connection);cache.GetPath(connection);
+            Assert.Equal(source.RightPortPosition,new Point(connection.PathPoints[0].X,connection.PathPoints[0].Y));Assert.Equal(target.LeftPortPosition,new Point(connection.PathPoints[^1].X,connection.PathPoints[^1].Y));Assert.Equal(Saved(),connection.ManualPathPoints);
         });
     }
     private static void OnSta(Action action)

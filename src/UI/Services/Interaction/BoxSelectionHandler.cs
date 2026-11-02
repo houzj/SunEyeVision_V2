@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -164,7 +164,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
                 for (int i = 0; i < selectedNodes.Count && i < _selectedNodesInitialPositions.Length; i++)
                 {
-                    selectedNodes[i].Position = _selectedNodesInitialPositions[i];
+                    selectedNodes[i].Position = _selectedNodesInitialPositions[i].ToCanvas();
                 }
             }
 
@@ -197,7 +197,7 @@ namespace SunEyeVision.UI.Services.Interaction
                 _selectedNodesInitialPositions = new Point[selectedNodes.Count];
                 for (int i = 0; i < selectedNodes.Count; i++)
                 {
-                    _selectedNodesInitialPositions[i] = selectedNodes[i].Position;
+                    _selectedNodesInitialPositions[i] = selectedNodes[i].Position.ToWpf();
                 }
             }
         }

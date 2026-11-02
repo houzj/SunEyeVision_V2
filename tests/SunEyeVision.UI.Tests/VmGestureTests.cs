@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +13,7 @@ using SunEyeVision.UI.Shared;
 using Xunit;
 using NodeBase = SunEyeVision.Workflow.WorkflowNodeBase;
 using Connection = SunEyeVision.Workflow.WorkflowConnection;
+using CanvasPoint = SunEyeVision.Domain.Workflows.CanvasPoint;
 namespace SunEyeVision.UI.Tests;
 [Collection("VM canvas UI")]
 public sealed class VmGestureTests
@@ -37,10 +38,12 @@ public sealed class VmGestureTests
     {
         var control = new WorkflowCanvasControl { Width = 700, Height = 450 };
         control.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml", UriKind.Relative) });
-        node = new WorkflowNode { Id = "a", ToolType = "ImageLoad", DispName = "图像源1", GlobalIndex = 2, Position = new Point(150, 90) };
-        var target = new WorkflowNode { Id = "b", ToolType = "BlobAnalysis", DispName = "Blob分析1", GlobalIndex = 1, Position = new Point(350, 290) };
-        var model = new WorkflowTabViewModel(); model.SetNodes(new ObservableCollection<NodeBase> { node, target });
-        model.SetConnections(new ObservableCollection<Connection> { new() { Id = "wire", SourceNodeId = "a", TargetNodeId = "b", SourcePort = "BottomPort", TargetPort = "TopPort" } });
+        node = new WorkflowNode { Id = "a", ToolType = "ImageLoad", DispName = "图像源1", GlobalIndex = 2, Position = new CanvasPoint(150, 90) };
+        var target = new WorkflowNode { Id = "b", ToolType = "BlobAnalysis", DispName = "Blob分析1", GlobalIndex = 1, Position = new CanvasPoint(350, 290) };
+        var document=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CreateUntitledSolution(); var flow=document.Workflows[0];
+        node.RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad"); target.RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"BlobAnalysis");
+        flow.Nodes.Add(node);flow.Nodes.Add(target);flow.Connections.Add(new() { Id = "wire", SourceNodeId = "a", TargetNodeId = "b", SourcePort = "BottomPort", TargetPort = "TopPort" });
+        var model = new WorkflowTabViewModel(RootCanvasFixture.Directory) { Id=flow.Id }; model.SetNodes(flow.Nodes); model.SetConnections(flow.Connections);
         control.DataContext = model; control.Measure(new Size(700, 450)); control.Arrange(new Rect(0, 0, 700, 450)); control.UpdateLayout();
         return control;
     }
@@ -80,7 +83,7 @@ public sealed class VmGestureTests
     });
     [Fact] public void Node_preview_and_cancel_do_not_mutate_original_model() => Sta(() =>
     {
-        var control = Create(out var node); var original = node.Position;
+        var control = Create(out var node); var original = new Point(node.Position.X,node.Position.Y);
         var type = typeof(WorkflowCanvasControl).GetNestedType("VmNodeMoveSession", BindingFlags.NonPublic)!;
         var session = Activator.CreateInstance(type)!;
         type.GetProperty("Owner")!.SetValue(session, control.DataContext);
@@ -91,7 +94,7 @@ public sealed class VmGestureTests
         type.GetProperty("Before")!.SetValue(session, new Dictionary<WorkflowNode, Point> { [node] = original });
         typeof(WorkflowCanvasControl).GetField("_vmNodeMove", Private)!.SetValue(control, session);
         Call(control, "PreviewVmNodeMove", session, new Point(182, 133));
-        Assert.Equal(original, node.Position);
+        Assert.Equal(new CanvasPoint(original.X,original.Y), node.Position);
         var after = (Dictionary<WorkflowNode, Point>)type.GetProperty("After")!.GetValue(session)!;
         Assert.NotEqual(original, after[node]);
         var ghosts = (List<FrameworkElement>)type.GetProperty("Ghosts")!.GetValue(session)!;
@@ -109,7 +112,7 @@ public sealed class VmGestureTests
         Call(control, "PreviewVmNodeMove", session, new Point(150, 90));
         Assert.Empty(after);
         Call(control, "CancelVmCanvasGesture");
-        Assert.Equal(original, node.Position); Assert.Null(Field(control, "_vmNodeMove"));
+        Assert.Equal(new CanvasPoint(original.X,original.Y), node.Position); Assert.Null(Field(control, "_vmNodeMove"));
         Assert.Empty((List<FrameworkElement>)type.GetProperty("Ghosts")!.GetValue(session)!);
         control.DataContext = null;
     });
@@ -118,16 +121,16 @@ public sealed class VmGestureTests
         var control = Create(out var node); var tab = (WorkflowTabViewModel)control.DataContext;
         var connection = tab.WorkflowConnections.Single();
         control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        Assert.Equal(node.BottomPortPosition, connection.PathPoints[0]);
-        var before = node.Position; var after = new Point(210, 140);
+        Assert.Equal(node.BottomPortPosition, new Point(connection.PathPoints[0].X,connection.PathPoints[0].Y));
+        var before = new Point(node.Position.X,node.Position.Y); var after = new Point(210, 140);
         var command = new MoveNodesSnapshotCommand(new[] { (node, before, after) }, tab.WorkflowConnections);
         tab.CommandManager.Execute(command);
         control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        Assert.Equal(node.BottomPortPosition, connection.PathPoints[0]); Assert.Equal(new Point(210, 155), connection.PathPoints[0]);
+        Assert.Equal(node.BottomPortPosition, new Point(connection.PathPoints[0].X,connection.PathPoints[0].Y)); Assert.Equal(new CanvasPoint(210, 155), connection.PathPoints[0]);
         tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        Assert.Equal(new Point(150, 105), connection.PathPoints[0]);
+        Assert.Equal(new CanvasPoint(150, 105), connection.PathPoints[0]);
         tab.CommandManager.Redo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        Assert.Equal(new Point(210, 155), connection.PathPoints[0]);
+        Assert.Equal(new CanvasPoint(210, 155), connection.PathPoints[0]);
         control.DataContext = null;
         Assert.Empty((HashSet<WorkflowNode>)Field(control, "_vmGeometrySubscriptions")!);
     });
@@ -138,9 +141,9 @@ public sealed class VmGestureTests
         tab.CommandManager.Execute(new EditConnectionPortsCommand(edge, "RightPort", "LeftPort"));
         control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
         Assert.Same(edge, Assert.Single(tab.WorkflowConnections)); Assert.Equal(id, edge.Id);
-        Assert.Equal(source.RightPortPosition, edge.PathPoints[0]);
+        Assert.Equal(source.RightPortPosition,new Point(edge.PathPoints[0].X,edge.PathPoints[0].Y));
         tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        Assert.Equal(source.BottomPortPosition, edge.PathPoints[0]);
+        Assert.Equal(source.BottomPortPosition,new Point(edge.PathPoints[0].X,edge.PathPoints[0].Y));
         control.DataContext = null;
         Assert.Empty((HashSet<Connection>)Field(control, "_vmGeometryConnectionSubscriptions")!);
     });
@@ -164,8 +167,8 @@ public sealed class VmGestureTests
         var control = Create(out _); var tab = (WorkflowTabViewModel)control.DataContext;
         var edge = tab.WorkflowConnections.Single();
         control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        var points = edge.PathPoints;
-        var pair = Enumerable.Range(0, points.Count - 1).Select(i => (A: points[i], B: points[i+1])).OrderByDescending(p => (p.B-p.A).Length).First();
+        var points = edge.PathPoints.Select(p=>new Point(p.X,p.Y)).ToArray();
+        var pair = Enumerable.Range(0, points.Length - 1).Select(i => (A: points[i], B: points[i+1])).OrderByDescending(p => (p.B-p.A).Length).First();
         var pointer = pair.A + (pair.B-pair.A) * .5;
         Assert.Same(edge, Call(control, "FindVmInsertionWire", pointer, Array.Empty<string>()));
         Call(control, "UpdateVmInsertionWire", pointer, Array.Empty<string>());
@@ -177,11 +180,11 @@ public sealed class VmGestureTests
     });
     [Fact] public void Move_redo_uses_saved_endpoint_not_current_position()
     {
-        var a = new WorkflowNode { Position = new Point(80, 90) }; var b = new WorkflowNode { Position = new Point(180, 290) };
-        var command = new MoveNodesSnapshotCommand(new[] { (a, a.Position, new Point(105, 115)), (b, b.Position, new Point(205, 315)) });
+        var a = new WorkflowNode { Position = new CanvasPoint(80, 90) }; var b = new WorkflowNode { Position = new CanvasPoint(180, 290) };
+        var command = new MoveNodesSnapshotCommand(new[] { (a, new Point(a.Position.X,a.Position.Y), new Point(105, 115)), (b, new Point(b.Position.X,b.Position.Y), new Point(205, 315)) });
         var history = new SunEyeVision.UI.Features.WorkflowUI.Commands.CommandManager(new(), new()); history.Execute(command);
-        Assert.Equal(new Point(105, 115), a.Position); history.Undo(); Assert.Equal(new Point(80, 90), a.Position);
-        a.Position = new Point(999, 999); history.Redo(); Assert.Equal(new Point(105, 115), a.Position); Assert.Equal(new Point(205, 315), b.Position);
+        Assert.Equal(new CanvasPoint(105, 115), a.Position); history.Undo(); Assert.Equal(new CanvasPoint(80, 90), a.Position);
+        a.Position = new CanvasPoint(999, 999); history.Redo(); Assert.Equal(new CanvasPoint(105, 115), a.Position); Assert.Equal(new CanvasPoint(205, 315), b.Position);
     }
     [Fact] public void Group_frame_alignment_updates_wires_and_undo_restores_positions() => Sta(() =>
     {
@@ -197,7 +200,7 @@ public sealed class VmGestureTests
         Call(control, "AlignVmSelection", SunEyeVision.UI.Services.Interaction.VmNodeAlignment.Left);
         control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
         Assert.Equal(a.Position.X, b.Position.X);
-        Assert.Equal(b.TopPortPosition, tab.WorkflowConnections.Single().PathPoints.Last());
+        var last=tab.WorkflowConnections.Single().PathPoints.Last(); Assert.Equal(b.TopPortPosition, new Point(last.X,last.Y));
         tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
         Assert.Equal(oldA, a.Position); Assert.Equal(oldB, b.Position);
         tab.CommandManager.Redo(); Assert.Equal(a.Position.X, b.Position.X);
@@ -236,6 +239,7 @@ public sealed class VmGestureTests
         Assert.Equal(expected, method.Invoke(null,new object[]{copy,keys,allowed,dropping}));
     }
 
+#if !CANVAS_LAYOUT_TESTS
     [Fact] public void Group_original_dimensions_match_visual_ports_router_and_live_loop_parameters() => Sta(() =>
     {
         var control = Create(out var node); var tab=(WorkflowTabViewModel)control.DataContext;
@@ -285,6 +289,7 @@ public sealed class VmGestureTests
         Assert.EndsWith(file,Assert.IsType<System.Windows.Media.Imaging.BitmapImage>(brush.ImageSource).UriSource.OriginalString);
     });
 
+#endif
     [Fact] public void Running_tab_blocks_canvas_editing_even_without_a_main_window_host() => Sta(() =>
     {
         var control=Create(out _);var tab=(WorkflowTabViewModel)control.DataContext;
@@ -295,11 +300,11 @@ public sealed class VmGestureTests
     [Fact] public void Gesture_stamps_detect_replaced_node_identity_and_nested_unnotified_parameter_changes() => Sta(() =>
     {
         var control=Create(out var node);var tab=(WorkflowTabViewModel)control.DataContext;
-        node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1,2}};
+        var manager=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
         var before=Call(control,"VmGraphStamp",tab);var configuration=Call(control,"VmConfigurationStamp",tab);Assert.NotNull(configuration);
-        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(3);
+        var draft=manager.Session!.Editing.Host.BeginEdit(tab.Id,node.Id);RootCanvasFixture.SetValue(draft.Node,3);manager.Session.Editing.Host.Commit(draft);
         Assert.Equal(before,Call(control,"VmGraphStamp",tab));Assert.NotEqual(configuration,Call(control,"VmConfigurationStamp",tab));
-        var replacement=new WorkflowNode{Id=node.Id,Name=node.Name,ToolType=node.ToolType,Position=node.Position,Parameters=node.Parameters,ParamSettings=node.ParamSettings};
+        var replacement=new WorkflowNode{Id=node.Id,Name=node.Name,ToolType=node.ToolType,Position=node.Position,RuntimeConfiguration=node.RuntimeConfiguration};
         tab.WorkflowNodes[0]=replacement;Assert.NotEqual(before,Call(control,"VmGraphStamp",tab));control.DataContext=null;
     });
 
@@ -317,10 +322,10 @@ public sealed class VmGestureTests
 
     [Fact] public void Rename_session_rejects_nested_config_change_and_switching_owner_cancels_editor() => Sta(() =>
     {
-        var control=Create(out var node);node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1}};
+        var control=Create(out var node);var manager=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;var tab=(WorkflowTabViewModel)control.DataContext;
         Assert.True((bool)Call(control,"BeginVmNodeRename",node)!);Assert.True(node.IsEditingName);
         Assert.True((bool)Call(control,"ValidVmNodeRename",node)!);
-        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(2);Assert.False((bool)Call(control,"ValidVmNodeRename",node)!);
+        var draft=manager.Session!.Editing.Host.BeginEdit(tab.Id,node.Id);RootCanvasFixture.SetValue(draft.Node,2);manager.Session.Editing.Host.Commit(draft);Assert.False((bool)Call(control,"ValidVmNodeRename",node)!);
         control.DataContext=null;Assert.False(node.IsEditingName);Assert.Null(Field(control,"_vmRenameNode"));
     });
 

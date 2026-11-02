@@ -276,7 +276,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 var insertion = _canvasControl.FindVmInsertionWire(dropPosition, Array.Empty<string>());
                 var predecessor = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
                 var placement = _canvasControl.ResolveVmPlacement(SnapVmPoint(dropPosition), _tempNodeHeight);
-                newNode.Position = new Point(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985));
+                newNode.Position = new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985));
 #if DEBUG
                 LogTimestamp("Drop", "✓ 节点属性设置完成");
 #endif
@@ -291,7 +291,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                     viewModel.AddNodeToWorkflow(newNode);
                     if (insertion != null)
                     {
-                        if (!viewModel.InsertNodeIntoConnection(newNode, insertion, newNode.Position))
+                        if (!viewModel.InsertNodeIntoConnection(newNode, insertion, newNode.Position.ToWpf()))
                             throw new InvalidOperationException(viewModel.StatusText);
                     }
                     else if (predecessor != null)

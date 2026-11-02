@@ -1,8 +1,15 @@
+## 2026-11-03 布局中立化集中合入进行中
+
+主线核收UI完整候选368913771/记录8e84f8622，独立同载包7019593A57662E2C4B72819DAF1847B60C85CBDE2A94320D764E4AF677E119D7下Canvas40/Root38/Domain6/Graph31及真实CanvasLayout、Core/Window链通过。只读边界评审未发现新WPF转换缺口。域739c5e51f另修四字段非有限布局读写，固定域38/38，无ABI变化。当前先合入UI完整祖先，再补有限校验与实际Domain依赖断言，尚未作87f4本地构建自测；不借候选成绩。V3金样与原生成器PDB源码checksum已核一致，旧实际运行加载路径未记录的限制保留。Group暂停，整个Workflow仍非最终Domain实体，也未整体去WPF。
 ## 2026-11-03 SDK旧源码退出本地自测闭口
 
 当前6ec1ead54，完整Release0错/6261警告，正式封包ECD41E38CF2FB9C14DFD3A30DA8E338BF98EF16FDD3939984C257716793C202A；Root38/域28/查询7/输入24/准入25/SDK302/图像源31/Blob11、真实Root/相机/窗口与关闭链通过。SDK PE旧UI命名空间类型0，15类资源有效，无SDK直接Editing/System.Drawing，包E426...与正式SDK43DF...一致。Window首次120秒外部看门狗有进度仍终止，保留失败，按300秒有界预算同载荷15项完整通过。相机第一次误用项目名启动失败无PID，改实际程序集SunEyeVision.UI.Tests后PID51280退出0，未改产品或借其他产物。日志Release/_validation/sdk-retirement-integrated-20261103。原主计划、剩余矩阵和精确路径审查统一更新；Group/硬件/设计器/人工/主仓合并继续单列。
 
 下一布局值完整闭包已按整体设计及只读复核授权两线，从6ec1ead54独立分支：platform-layout-domain-20261103唯一写Domain/Workflow/slnx与非UI测试；platform-layout-ui-20261103唯一写UI/直接Domain引用/视觉边界和UI测试。共享唯一合同SunEyeVision.Domain.Workflows.CanvasPoint，有限double X/Y无隐式WPF转换；不新造第二实体/NodeLayout双存，现XY/尺寸及V3形状保持，移动清折点和Undo恢复保持。Runtime配置/owner/当前值/Group不改。先各自实际构建自测，再集中集成，不借本SDK成绩计布局通过。整体分层设计与界面闭包已纳入主文档目录，四项合同裁决待最终设计稿统一，后续配置层不提前编码。
+## 2026-11-03 画布 UI 中立坐标独立候选
+
+领域 ABI 2910bfceb 和 V3 金样回归 b5bef7ce7 已接入独立分支。UI 全量初版 0 错，CanvasLayout 40/40、Root 38/38，隐藏 Text 六组及真实布局→移动→撤销→复制→保存重开→图像源/Blob 执行链通过；源码 368913771 完整 Release 0 错；同载包 Canvas 40、Root 38、Domain 6、Graph 31，隐藏 Core 14、Window 15、CanvasLayout 整链均通过，封包 SHA 7019593A57662E2C4B72819DAF1847B60C85CBDE2A94320D764E4AF677E119D7。完整范围、原脚本替代及未验见 evidence/画布几何中立化-界面适配整链-20261103.html；Group 不扩。
+
 ## 2026-11-03 SDK旧源退出集中合入
 
 主线核收8e76389de固定载荷AF8F0A9B53FC87648A6903344E2119B3F8A214DE6892B22A3948E949EFE43F9B及包27DD2838A4E490410EFF6C635E94996813388C71538A4E92CDCAFC6329B6400B，SDK302/图像源31/Blob11与根、相机、准入、两工具窗口独立通过。现在集中合入151个已核旧源码退出、SDK无使用依赖清理和UI显式编辑事务依赖；仅账本冲突，保留双方历史。当前尚未对合并后的87f4构建自测。Group四专属源与活跃WPF桥/分类资源保留，未准入旧工具功能范围仍待迁移，不计完成。技术总监回执主仓52e6012b9，双方共享边界无阻塞，不恢复兼容、不强制rebase，仍未合主仓。

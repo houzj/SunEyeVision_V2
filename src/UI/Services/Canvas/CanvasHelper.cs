@@ -141,7 +141,7 @@ namespace SunEyeVision.UI.Services.Canvas
                 Math.Abs(endPoint.X - startPoint.X),
                 Math.Abs(endPoint.Y - startPoint.Y));
 
-            return nodes.Where(n => rect.Contains(n.Position)).ToList();
+            return nodes.Where(n => rect.Contains(n.Position.ToWpf())).ToList();
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace SunEyeVision.UI.Services.Canvas
         public static Point GetNodeCenter(WorkflowNode node)
         {
             if (node == null) return new Point(0, 0);
-            return node.Position;
+            return node.Position.ToWpf();
         }
 
         /// <summary>

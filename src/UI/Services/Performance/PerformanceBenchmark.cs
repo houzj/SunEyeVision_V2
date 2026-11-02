@@ -180,7 +180,7 @@ namespace SunEyeVision.UI.Services.Performance
 
                 // 模拟拖拽过程
                 var oldPosition = draggedNode.Position;
-                draggedNode.Position = new Point(oldPosition.X + 10, oldPosition.Y + 10);
+                draggedNode.Position = new CanvasPoint(oldPosition.X + 10, oldPosition.Y + 10);
 
                 // 模拟相关更新
                 foreach (var node in nodes.Take(10))
@@ -347,7 +347,7 @@ namespace SunEyeVision.UI.Services.Performance
                     name: $"{i + 1} 节点{i + 1}",
                     workflowId: "benchmark_workflow"
                 );
-                node.Position = new Point(random.Next(50, 1500), random.Next(50, 1000));
+                node.Position = new CanvasPoint(random.Next(50, 1500), random.Next(50, 1000));
                 nodes.Add(node);
             }
 

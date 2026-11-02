@@ -18,7 +18,7 @@ public sealed class CanvasDocumentHistoryTests:IDisposable
         commands.BindDocumentHistory(session.History,root.Id,host.AcceptDocumentGraphHistory,()=>NodeConfigurationEditHost.DocumentHistorySignature(document));
         return(session,root,commands);
     }
-    private static WorkflowNode Node(string id)=>new(id,id,id,"ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad"),Position=new Point(100,100)};
+    private static WorkflowNode Node(string id)=>new(id,id,id,"ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad"),Position=new SunEyeVision.Domain.Workflows.CanvasPoint(100,100)};
     [Fact]
     public void Accepted_drop_batch_parameters_and_move_replay_in_one_order_without_rewinding_live_values()
     {
@@ -33,7 +33,7 @@ public sealed class CanvasDocumentHistoryTests:IDisposable
         Assert.Null(receipt.Before.CopyConfiguration().GlobalVariables[0].Value);
         commands.Execute(new MoveNodeCommand(a,new Point(100,100),new Point(220,230)));
         session.Document.GlobalVariables[0].Value=new long[]{99};
-        commands.Undo();Assert.Equal(new Point(100,100),a.Position);
+        commands.Undo();Assert.Equal(new SunEyeVision.Domain.Workflows.CanvasPoint(100,100),a.Position);
         commands.Undo();Assert.Equal(1,RootCanvasFixture.Value(a));
         commands.Undo();Assert.Empty(root.Nodes);Assert.Empty(root.Connections);
         commands.Redo();commands.Redo();commands.Redo();
@@ -52,8 +52,8 @@ public sealed class CanvasDocumentHistoryTests:IDisposable
         Assert.False(session.History.CanUndo);root.Connections.Remove(edge);Assert.True(session.History.CanUndo);
         root.Connections.Add(edge);
         commands.Execute(new EditConnectionPathCommand(edge,null,new[]{new Point(1,2),new Point(3,4)},()=>{}));
-        edge.ManualPathPoints=new[]{new Point(9,9)};Assert.False(session.History.CanUndo);
-        edge.ManualPathPoints=new[]{new Point(1,2),new Point(3,4)};Assert.True(session.History.CanUndo);
+        edge.ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(9,9)};Assert.False(session.History.CanUndo);
+        edge.ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(1,2),new SunEyeVision.Domain.Workflows.CanvasPoint(3,4)};Assert.True(session.History.CanUndo);
         commands.Undo();Assert.Null(edge.ManualPathPoints);
         Assert.Throws<InvalidOperationException>(commands.Clear);
     }

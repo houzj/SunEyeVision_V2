@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -305,7 +305,7 @@ namespace SunEyeVision.UI.Services.Node
             _initialPositions.Clear();
             foreach (var node in SelectedNodes)
             {
-                _initialPositions[node.Id] = node.Position;
+                _initialPositions[node.Id] = node.Position.ToWpf();
             }
         }
 

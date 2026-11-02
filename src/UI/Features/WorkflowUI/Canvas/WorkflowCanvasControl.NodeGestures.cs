@@ -101,7 +101,7 @@ public partial class WorkflowCanvasControl
         _vmNodeMove = new VmNodeMoveSession
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
-            Before = tab.WorkflowNodes.OfType<WorkflowNode>().Where(n => n.IsSelected).ToDictionary(n => n, n => n.Position),
+            Before = tab.WorkflowNodes.OfType<WorkflowNode>().Where(n => n.IsSelected).ToDictionary(n => n, n => n.Position.ToWpf()),
             Stamp = VmGraphStamp(tab), ConfigurationStamp = VmConfigurationStamp(tab)
         };
     }

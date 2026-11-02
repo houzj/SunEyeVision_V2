@@ -87,7 +87,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
             _isDragging = true;
             _draggedNode = node;
-            _initialNodePosition = node.Position;
+            _initialNodePosition = node.Position.ToWpf();
             _startDragPosition = startPosition;
 
             _onNodeSelected?.Invoke(node);
@@ -124,7 +124,7 @@ namespace SunEyeVision.UI.Services.Interaction
                         _selectedNodesInitialPositions[i].Y + totalOffset.Y
                     );
 
-                    selectedNodes[i].Position = newPos;
+                    selectedNodes[i].Position = newPos.ToCanvas();
                 }
 
                 OnDragging(new NodeDragEventArgs(_draggedNode, currentPosition, totalOffset));
@@ -132,7 +132,7 @@ namespace SunEyeVision.UI.Services.Interaction
             else
             {
                 var offset = currentPosition - _startDragPosition;
-                _draggedNode.Position = new Point(
+                _draggedNode.Position = new CanvasPoint(
                     _initialNodePosition.X + offset.X,
                     _initialNodePosition.Y + offset.Y
                 );
@@ -212,12 +212,12 @@ namespace SunEyeVision.UI.Services.Interaction
 
                 for (int i = 0; i < selectedNodes.Count && i < _selectedNodesInitialPositions.Length; i++)
                 {
-                    selectedNodes[i].Position = _selectedNodesInitialPositions[i];
+                    selectedNodes[i].Position = _selectedNodesInitialPositions[i].ToCanvas();
                 }
             }
             else
             {
-                _draggedNode.Position = _initialNodePosition;
+                _draggedNode.Position = _initialNodePosition.ToCanvas();
             }
 
             _isDragging = false;
@@ -248,7 +248,7 @@ namespace SunEyeVision.UI.Services.Interaction
                 _selectedNodesInitialPositions = new Point[selectedNodes.Count];
                 for (int i = 0; i < selectedNodes.Count; i++)
                 {
-                    _selectedNodesInitialPositions[i] = selectedNodes[i].Position;
+                    _selectedNodesInitialPositions[i] = selectedNodes[i].Position.ToWpf();
                 }
             }
         }

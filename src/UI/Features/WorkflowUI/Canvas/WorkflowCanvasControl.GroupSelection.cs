@@ -62,7 +62,7 @@ public partial class WorkflowCanvasControl
     private void ApplyVmSelectionPositions(WorkflowNode[] nodes, Point[] topLeft)
     {
         var tab = CurrentWorkflowTab; if (tab == null || nodes.Length != topLeft.Length || !CanEditVmCanvas) return;
-        var positions = nodes.Select((node, i) => (Node: node, Before: node.Position,
+        var positions = nodes.Select((node, i) => (Node: node, Before: node.Position.ToWpf(),
             After: new Point(topLeft[i].X + node.NodeRect.Width / 2, topLeft[i].Y + node.NodeRect.Height / 2))).ToArray();
         if (positions.Any(p => p.Before != p.After)) tab.CommandManager.Execute(new MoveNodesSnapshotCommand(positions, tab.WorkflowConnections));
         DrawVmSelectionFrame();

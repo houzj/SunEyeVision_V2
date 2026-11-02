@@ -374,11 +374,11 @@ internal static class S2DocumentEditingCases
             foreach(var pattern in new[]{1,2,3})
             {
                 var a=new SunEyeVision.UI.Shared.WorkflowNode{Id="a",ToolType="ImageLoad",RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
-                var b=new SunEyeVision.UI.Shared.WorkflowNode{Id="b",ToolType=BlobTool.Id,RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id),Position=new Point(20,30)};
+                var b=new SunEyeVision.UI.Shared.WorkflowNode{Id="b",ToolType=BlobTool.Id,RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id),Position=new SunEyeVision.Domain.Workflows.CanvasPoint(20,30)};
                 var c=new SunEyeVision.UI.Shared.WorkflowNode{Id="c",ToolType=BlobTool.Id,RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id)};
-                var original=new WorkflowConnection("ac",a.Id,c.Id){SourcePort="BottomPort",TargetPort="TopPort",ManualPathPoints=new[]{new Point(1,2),new Point(3,4)}};
-                var left=new WorkflowConnection("ab",a.Id,b.Id){SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=new[]{new Point(5,6),new Point(7,8)}};
-                var right=new WorkflowConnection("bc",b.Id,c.Id){SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=new[]{new Point(9,10),new Point(11,12)}};
+                var original=new WorkflowConnection("ac",a.Id,c.Id){SourcePort="BottomPort",TargetPort="TopPort",ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(1,2),new SunEyeVision.Domain.Workflows.CanvasPoint(3,4)}};
+                var left=new WorkflowConnection("ab",a.Id,b.Id){SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(5,6),new SunEyeVision.Domain.Workflows.CanvasPoint(7,8)}};
+                var right=new WorkflowConnection("bc",b.Id,c.Id){SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(9,10),new SunEyeVision.Domain.Workflows.CanvasPoint(11,12)}};
                 var edges=new System.Collections.ObjectModel.ObservableCollection<WorkflowConnection>{original};
                 if((pattern&1)!=0){edges.Add(left);BindImage(b,ImageReference(a,"scope",left.Id));}
                 if((pattern&2)!=0){edges.Add(right);BindImage(c,ImageReference(b,"scope",right.Id));}else BindImage(c,ImageReference(a,"scope",original.Id));
@@ -393,46 +393,46 @@ internal static class S2DocumentEditingCases
                         if(target.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput) is UnsetSetting)BindImage(target,ImageReference(producer,"scope",edge.Id));
                     }
                 },()=>{});
-                Require(edges.SequenceEqual(before)&&b.Position==new Point(20,30),"插线构造已改变图或位置");
+                Require(edges.SequenceEqual(before)&&b.Position==new SunEyeVision.Domain.Workflows.CanvasPoint(20,30),"插线构造已改变图或位置");
                 command.Execute(null);var after=edges.ToArray();
-                Require(edges.Count==2&&command.AddedConnections.Count==2-((pattern&1)!=0?1:0)-((pattern&2)!=0?1:0)&&b.Position==new Point(120,130),"新增边清单含既有边或位置错误");
+                Require(edges.Count==2&&command.AddedConnections.Count==2-((pattern&1)!=0?1:0)-((pattern&2)!=0?1:0)&&b.Position==new SunEyeVision.Domain.Workflows.CanvasPoint(120,130),"新增边清单含既有边或位置错误");
                 foreach(var existing in before.Where(edge=>edge!=original))
                 {
                     Require(edges.Contains(existing)&&existing.SourcePort=="BottomPort"&&existing.TargetPort=="TopPort"&&existing.ManualPathPoints is null,"既有边身份/端口/路由错误");
                     var target=existing.TargetNodeId==b.Id?b:c;
                     Require(((ReferenceSetting)target.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput)).OriginId=="connection:"+existing.Id,"既有边自动来源归属丢失");
                 }
-                command.Undo();Require(edges.SequenceEqual(before)&&b.Position==new Point(20,30),"撤销图顺序或位置不完整");
+                command.Undo();Require(edges.SequenceEqual(before)&&b.Position==new SunEyeVision.Domain.Workflows.CanvasPoint(20,30),"撤销图顺序或位置不完整");
                 Require(Equals(configs[0]!.Fields.Read(BlobTool.ImageInput),b.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput))&&Equals(configs[1]!.Fields.Read(BlobTool.ImageInput),c.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput)),"撤销未恢复Runtime Map");
                 foreach(var existing in before.Where(edge=>edge!=original))Require(existing.SourcePort=="RightPort"&&existing.TargetPort=="LeftPort"
-                    &&existing.ManualPathPoints?.SequenceEqual(existing==left?new[]{new Point(5,6),new Point(7,8)}:new[]{new Point(9,10),new Point(11,12)})==true,"撤销未恢复既有端口和手工路径坐标");
-                command.Execute(null);Require(calls==1&&edges.SequenceEqual(after)&&b.Position==new Point(120,130),"重做换边身份或再次配置来源");
+                    &&existing.ManualPathPoints?.SequenceEqual(existing==left?new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(5,6),new SunEyeVision.Domain.Workflows.CanvasPoint(7,8)}:new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(9,10),new SunEyeVision.Domain.Workflows.CanvasPoint(11,12)})==true,"撤销未恢复既有端口和手工路径坐标");
+                command.Execute(null);Require(calls==1&&edges.SequenceEqual(after)&&b.Position==new SunEyeVision.Domain.Workflows.CanvasPoint(120,130),"重做换边身份或再次配置来源");
             }
         });
         Case("重叠插线配置或刷新抛错仍恢复图端口路径位置及Runtime配置",()=>
         {
             foreach(var failConfigure in new[]{true,false})
             {
-                var a=new SunEyeVision.UI.Shared.WorkflowNode{Id="a"};var b=new SunEyeVision.UI.Shared.WorkflowNode{Id="b",ToolType=BlobTool.Id,RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id),Position=new Point(20,30)};var c=new SunEyeVision.UI.Shared.WorkflowNode{Id="c"};
-                var original=new WorkflowConnection("ac","a","c");var left=new WorkflowConnection("ab","a","b"){SourcePort="RightPort",ManualPathPoints=new[]{new Point(8,9)}};
+                var a=new SunEyeVision.UI.Shared.WorkflowNode{Id="a"};var b=new SunEyeVision.UI.Shared.WorkflowNode{Id="b",ToolType=BlobTool.Id,RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id),Position=new SunEyeVision.Domain.Workflows.CanvasPoint(20,30)};var c=new SunEyeVision.UI.Shared.WorkflowNode{Id="c"};
+                var original=new WorkflowConnection("ac","a","c");var left=new WorkflowConnection("ab","a","b"){SourcePort="RightPort",ManualPathPoints=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(8,9)}};
                 var edges=new System.Collections.ObjectModel.ObservableCollection<WorkflowConnection>{original,left};var configuration=b.RuntimeConfiguration;var refresh=0;
                 var command=new SunEyeVision.UI.Features.WorkflowUI.Commands.InsertNodeIntoConnectionCommand(edges,new[]{a,b,c},original,b,new Point(100,120),()=>
                 {b.RuntimeConfiguration=b.RuntimeConfiguration!.WithSettings(((BlobSettings)b.RuntimeConfiguration.CaptureSettings()) with {Threshold=73});if(failConfigure)throw new InvalidOperationException("配置失败标记");},()=>{if(!failConfigure&&++refresh==1)throw new InvalidOperationException("刷新失败标记");});
                 try{command.Execute(null);throw new Exception("失败插线竟然接纳");}catch(InvalidOperationException error){Require(error.Message.Contains("失败标记"),"丢失首个插线失败原因");}
-                Require(edges.SequenceEqual(new[]{original,left})&&b.Position==new Point(20,30)&&left.SourcePort=="RightPort"&&left.ManualPathPoints?.Single()==new Point(8,9)&&((BlobSettings)b.RuntimeConfiguration!.CaptureSettings()).Threshold==100,"失败恢复遗漏图/位置/端口/路径/配置");
+                Require(edges.SequenceEqual(new[]{original,left})&&b.Position==new SunEyeVision.Domain.Workflows.CanvasPoint(20,30)&&left.SourcePort=="RightPort"&&left.ManualPathPoints?.Single()==new SunEyeVision.Domain.Workflows.CanvasPoint(8,9)&&((BlobSettings)b.RuntimeConfiguration!.CaptureSettings()).Threshold==100,"失败恢复遗漏图/位置/端口/路径/配置");
             }
         });
         Case("端口恢复观察者抛错仍完成其余端口与路由恢复",()=>
         {
-            var path=new[]{new Point(1,2),new Point(3,4)};
+            var path=new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(1,2),new SunEyeVision.Domain.Workflows.CanvasPoint(3,4)};
             var edge=new WorkflowConnection("ports","a","b"){SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=path};
             var command=new SunEyeVision.UI.Features.WorkflowUI.Commands.EditConnectionPortsCommand(edge,"BottomPort","TopPort");
-            path[0]=new Point(999,999);command.Execute(null);
+            path[0]=new SunEyeVision.Domain.Workflows.CanvasPoint(999,999);command.Execute(null);
             System.ComponentModel.PropertyChangedEventHandler observer=(_,args)=>{if(args.PropertyName==nameof(edge.SourcePort))throw new InvalidOperationException("源端口恢复通知失败");};
             edge.PropertyChanged+=observer;
             try{command.Undo();throw new Exception("恢复通知异常被吞");}catch(InvalidOperationException error){Require(error.Message=="源端口恢复通知失败","恢复丢失原异常");}
             finally{edge.PropertyChanged-=observer;}
-            Require(edge.SourcePort=="RightPort"&&edge.TargetPort=="LeftPort"&&edge.ManualPathPoints?.SequenceEqual(new[]{new Point(1,2),new Point(3,4)})==true,"恢复通知截断其余端口/深拷贝路由恢复");
+            Require(edge.SourcePort=="RightPort"&&edge.TargetPort=="LeftPort"&&edge.ManualPathPoints?.SequenceEqual(new[]{new SunEyeVision.Domain.Workflows.CanvasPoint(1,2),new SunEyeVision.Domain.Workflows.CanvasPoint(3,4)})==true,"恢复通知截断其余端口/深拷贝路由恢复");
         });
     }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root){

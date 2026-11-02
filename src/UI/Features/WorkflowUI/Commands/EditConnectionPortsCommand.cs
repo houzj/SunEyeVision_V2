@@ -6,7 +6,7 @@ public sealed class EditConnectionPortsCommand : IUndoableCommand
 {
     private readonly WorkflowConnection _edge;
     private readonly string _beforeSource, _beforeTarget, _afterSource, _afterTarget;
-    private readonly Point[]? _beforePath;
+    private readonly CanvasPoint[]? _beforePath;
     public EditConnectionPortsCommand(WorkflowConnection edge, string sourcePort, string targetPort)
     {
         _edge = edge; _beforeSource = edge.SourcePort; _beforeTarget = edge.TargetPort;

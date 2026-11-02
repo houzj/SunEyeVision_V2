@@ -170,7 +170,7 @@ namespace SunEyeVision.UI.Services.Interaction
             {
                 if (node.IsSelected)
                 {
-                    positions[node] = node.Position;
+                    positions[node] = node.Position.ToWpf();
                 }
             }
 

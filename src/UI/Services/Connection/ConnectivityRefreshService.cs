@@ -142,8 +142,8 @@ namespace SunEyeVision.UI.Services.Connection
         {
             if (_groupById != null)
             {
-                if (_groupById.TryGetValue(conn.SourceNodeId, out var sourceNode)) return sourceNode.Position;
-                if (_groupById.TryGetValue(conn.TargetNodeId, out var targetNode)) return targetNode.Position;
+                if (_groupById.TryGetValue(conn.SourceNodeId, out var sourceNode)) return sourceNode.Position.ToWpf();
+                if (_groupById.TryGetValue(conn.TargetNodeId, out var targetNode)) return targetNode.Position.ToWpf();
             }
             return new Point(0, 0);
         }

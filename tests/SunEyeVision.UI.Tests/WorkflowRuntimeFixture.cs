@@ -7,6 +7,6 @@ public sealed class WorkflowRuntimeFixture
  public WorkflowRuntimeFixture()
  {
   var root=Environment.GetEnvironmentVariable("S2_CASE_ROOT")??Path.Combine(AppContext.BaseDirectory,"_validation");
-  ServiceInitializer.InitializeSolutionManager(Path.Combine(root,"workflow-runtime-data"));
+  ServiceInitializer.InitializeSolutionManager(RootCanvasFixture.Directory,Path.Combine(root,"workflow-runtime-data"));
  }
 }

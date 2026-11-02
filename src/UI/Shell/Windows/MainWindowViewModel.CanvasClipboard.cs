@@ -67,15 +67,15 @@ public partial class MainWindowViewModel
             for (var i=0; i<fragment.Nodes.Count; i++)
             {
                 var copy = (Node)fragment.Nodes[i]; var original = originals[i];
-                if (positions != null) copy.Position = positions[original.Id];
+                if (positions != null) copy.Position = positions[original.Id].ToCanvas();
                 else
                 {
                     var corner = original.NodeRect.TopLeft + delta;
-                    copy.Position = new Point(Snap(corner.X) + copy.NodeRect.Width/2, Snap(corner.Y) + copy.NodeRect.Height/2);
+                    copy.Position = new CanvasPoint(Snap(corner.X) + copy.NodeRect.Width/2, Snap(corner.Y) + copy.NodeRect.Height/2);
                 }
             }
             foreach (var edge in fragment.Connections)
-                if (edge.ManualPathPoints != null) edge.ManualPathPoints = edge.ManualPathPoints.Select(p => p + (fragment.Nodes[0].Position - first.Position)).ToArray();
+                if (edge.ManualPathPoints != null) edge.ManualPathPoints = edge.ManualPathPoints.Select(p => new CanvasPoint(p.X + fragment.Nodes[0].Position.X - first.Position.X, p.Y + fragment.Nodes[0].Position.Y - first.Position.Y)).ToArray();
             tab.CommandManager.Execute(new PasteWorkflowFragmentCommand(target, fragment, _workflowEngine, SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution));
             committed = true;
             foreach (var node in target.Nodes) node.IsSelected = fragment.Nodes.Contains(node);

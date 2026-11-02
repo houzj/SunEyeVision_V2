@@ -49,6 +49,7 @@
     <ProjectReference Include="@(ProductToolComponent->'../../%(Identity)')" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Core\SunEyeVision.Core.csproj" />
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
+    <ProjectReference Include="..\Domain\SunEyeVision.Domain.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Editing.Wpf\SunEyeVision.Plugin.Editing.Wpf.csproj" />
     <ProjectReference Include="..\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj" />
@@ -66,6 +67,7 @@
   <!-- 测试项目可访问 internal（对齐 Plugin.SDK.csproj:52 既有做法，仅测试基础设施，不改业务代码） -->
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.CanvasLayout.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -68,7 +68,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
             _originalPositions.Clear();
             foreach (var node in _nodes)
             {
-                _originalPositions[node] = node.Position;
+                _originalPositions[node] = node.Position.ToWpf();
             }
 
             // 开始抑制所有节点的属性变更通知
@@ -95,7 +95,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
             {
                 var node = kvp.Key;
                 var originalPos = kvp.Value;
-                node.Position = new Point(originalPos.X + delta.X, originalPos.Y + delta.Y);
+                node.Position = new CanvasPoint(originalPos.X + delta.X, originalPos.Y + delta.Y);
             }
         }
 
@@ -137,7 +137,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
                 {
                     if (_originalPositions.TryGetValue(node, out var origPos))
                     {
-                        node.Position = new Point(origPos.X + delta.X, origPos.Y + delta.Y);
+                        node.Position = new CanvasPoint(origPos.X + delta.X, origPos.Y + delta.Y);
                     }
                 }
             }
@@ -155,7 +155,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
                 {
                     var node = kvp.Key;
                     var originalPos = kvp.Value;
-                    node.Position = originalPos;
+                    node.Position = originalPos.ToCanvas();
                 }
             }
         }

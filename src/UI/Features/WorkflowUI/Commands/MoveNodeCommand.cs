@@ -30,12 +30,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 
         public void Execute(object? parameter)
         {
-            _node.Position = _newPosition;
+            _node.Position = _newPosition.ToCanvas();
         }
 
         public void Undo()
         {
-            _node.Position = _oldPosition;
+            _node.Position = _oldPosition.ToCanvas();
         }
     }
 }

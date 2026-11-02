@@ -87,7 +87,7 @@ public partial class WorkflowCanvasControl
         ClearVmWireHandles();
         var connection=_vmSelectedWire;
         if(connection==null||!connection.IsSelected||!CanEditVmWire)return;
-        var points=_vmWireDrag?.PathPoints??connection.PathPoints.ToArray();
+        var points=_vmWireDrag?.PathPoints??connection.PathPoints.Select(point=>point.ToWpf()).ToArray();
         for(int i=0;i+1<points.Count;i++)
         {
             var a=points[i];var b=points[i+1];if((b-a).Length<=5)continue;
@@ -107,8 +107,8 @@ public partial class WorkflowCanvasControl
         var target=tab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n=>n.Id==connection.TargetNodeId);
         if(source==null||target==null||segment<0||segment+1>=connection.PathPoints.Count)return;
         _vmWireTab=tab;_vmWireStamp=VmGraphStamp(tab);_vmWireConfigurationStamp=VmConfigurationStamp(tab);
-        _vmWireOwner=DataContext;_vmEditingWire=connection;_vmBeforePath=connection.ManualPathPoints?.ToArray();_vmOriginalRendered=connection.PathPoints.ToArray();
-        _vmWireDrag=new RecoveredConnectionDrag(connection.PathPoints.ToArray(),segment,source.NodeRect,target.NodeRect);
+        _vmWireOwner=DataContext;_vmEditingWire=connection;_vmBeforePath=connection.ManualPathPoints?.Select(point=>point.ToWpf()).ToArray();_vmOriginalRendered=connection.PathPoints.Select(point=>point.ToWpf()).ToArray();
+        _vmWireDrag=new RecoveredConnectionDrag(_vmOriginalRendered,segment,source.NodeRect,target.NodeRect);
         WorkflowCanvas.CaptureMouse();
     }
     private void RefreshVmWire(WorkflowConnection connection)
@@ -121,7 +121,7 @@ public partial class WorkflowCanvasControl
         if(!CanEditVmWire||_vmWireTab==null||!ReferenceEquals(CurrentWorkflowTab,_vmWireTab)||VmGraphStamp(_vmWireTab)!=_vmWireStamp||!ReferenceEquals(_vmWireOwner,DataContext)||_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(_vmEditingWire)!=true||e.LeftButton!=MouseButtonState.Pressed)
         {FinishVmWireDrag(false);return;}
         _vmWireDrag.Move(e.GetPosition(WorkflowCanvas));
-        _vmEditingWire.PreviewPathPoints=_vmWireDrag.PathPoints.ToArray();
+        _vmEditingWire.PreviewPathPoints=_vmWireDrag.PathPoints.Select(point=>point.ToCanvas()).ToArray();
         RefreshVmWire(_vmEditingWire);DrawVmWireHandles();e.Handled=true;
     }
     private void FinishVmWireDrag(bool commit)
@@ -131,7 +131,7 @@ public partial class WorkflowCanvasControl
         if(connection==null)return;
         var valid=_vmWireTab!=null&&ReferenceEquals(CurrentWorkflowTab,_vmWireTab)&&VmGraphStamp(_vmWireTab)==_vmWireStamp
             &&_vmWireConfigurationStamp!=null&&_vmWireConfigurationStamp==VmConfigurationStamp(_vmWireTab)
-            &&(connection.ManualPathPoints??Array.Empty<Point>()).SequenceEqual(before??Array.Empty<Point>());
+            &&(connection.ManualPathPoints??Array.Empty<CanvasPoint>()).Select(point=>point.ToWpf()).SequenceEqual(before??Array.Empty<Point>());
         _vmWireTab=null;_vmWireStamp=null;_vmWireConfigurationStamp=null;
         var after=drag?.PathPoints.ToArray();connection.PreviewPathPoints=null;
         if(WorkflowCanvas.IsMouseCaptured)WorkflowCanvas.ReleaseMouseCapture();

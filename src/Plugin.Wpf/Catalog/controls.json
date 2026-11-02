@@ -5734,7 +5734,7 @@
         "files": [
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
-            "sha256": "6D55D20DB52B284E28A73E5D736C654E13E13B9F7CEDC69452A88D245A306A80"
+            "sha256": "B93DE3CD2E73F14B56D932DA4AA13A351A6BF3F94EDA2995C559A40C5DEBFBB4"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",

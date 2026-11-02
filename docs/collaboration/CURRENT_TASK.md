@@ -1,6 +1,13 @@
 ## 2026-11-02 插件基础设施测试迁移
 
 独立 worktree 基于 3d27b97df，移除已退役旧 SDK 扫描、隔间与元数据注册合同测试，以权威载荷、Runtime 目录、原子代次与真实 reader 生产探针替代；保留仍适用的权威负例。全量 Release 0 错，迁移测试 25/25 通过无跳过，载荷 SHA 6F2AB3DC1F012DD31127A0AF2DFDDB3EBC79EFD4F49DCF25CCC0CA88A27AB837。旧隔间和 ROI 反射未声称等价，主线集成待做；迁移矩阵及原始日志见 evidence/插件基础设施测试迁移矩阵-20261102.html。
+## 2026-11-02 根流程标签状态测试
+
+在根参数与画布历史测试基础上迁移原 RootTabState：真实 Runtime 配置就绪及七组标签滚动规则；同一载荷共 15/15。旧 SDK pending 参数状态不冒称等价，实际 WPF Tab 交互和根宿主、连续运行仍未迁完。详见 evidence/根流程画布测试迁移方案-20261102.html。
+
+## 2026-11-02 根流程画布测试首批
+
+独立基线 3d27b97df，迁移既有 CanvasDocumentHistory 与 RootConfiguration 至真实封包 ImageLoad 同代目录；正式 SolutionManager 会话与测试清理，全量 Release 0 错、7/7 通过。真实 WPF 根宿主、右键拖放、连续运行及其余旧 UI.Tests 尚未迁移，Group 暂停；不称根流程完整闭环。详见 evidence/根流程画布测试迁移方案-20261102.html。
 
 ## 隔离集成候选核查点（未交付）
 

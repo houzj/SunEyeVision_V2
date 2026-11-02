@@ -1,0 +1,125 @@
+{
+  "schema": "blob-ui-components-candidate/v1",
+  "scope": "公共完整组合候选，非主仓正式、Blob真实三页或VS人工验收",
+  "workspace": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101",
+  "baseline": "d87a5577b",
+  "start": "41835d16d1ec1c32d6123406ab8304db4d1a1f5f",
+  "productSourceCommit": "e645ad9aa20aa25e9e343ac777f4ccc8526e5c5e",
+  "testRunnerCommit": "19193b3cd31ec80c8a18f0ffe0127d8eeaec2791",
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "1A91859B5C3531AA386A666F70F4E845E0F96AB3DF8B83C8061B44A3415D1BA4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+      "sha256": "3F8F1ECB8A8127C695519956EABA35E0053ED33A1622F1125B2A478980C74C05"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "sha256": "801A0E126A72F944C424EF18B7103ED1F5F3AEC87F75976653FA0CF1983CBB22"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "64E78BC4E52934C4C43502640F48F6ABAE831F5A873ECD857B22695C05093865"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "sha256": "C942B4209BC3D32EC82BD54E2F4B4BE4268FC67FEB0B6FFC9F0B8DCFEA98E9EC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeUiDraftRange.cs",
+      "sha256": "6750B32AA38701C7315C58B9D9CE496015BFE6CB615AF3579838147875F45501"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeJudgmentUiDraftControls.cs",
+      "sha256": "72FAF66199B7085E29EC0F2B6260B8CB79216A25467DBC2B90DBAC44028B95F6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeThresholdUiDraftControls.cs",
+      "sha256": "A93FBCB06C7F8F41E5B3D6177D8CBB2ABE3FFADABFD0A155CC63ABF8AC3FBF72"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeUiConditionalFields.cs",
+      "sha256": "BD63804DA0B07072AB85B79D1EBDC25DA713D2B7A3E48AE7586D2839B08766F4"
+    },
+    {
+      "path": "scripts/verification/BlobUiComponentCases.cs",
+      "sha256": "E1919D93FC9549737E108C7BD8D11902349E043A2EBB9927760FE7ED3EDF4004"
+    },
+    {
+      "path": "scripts/verification/Run-BlobUiComponentValidation.ps1",
+      "sha256": "CB18EAEB11FFF20808C0C1BEC2513552BBCE88486FA54DB8E54BFB7A555F1EE1"
+    },
+    {
+      "path": "docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂参数资源索引.json",
+      "sha256": "FC72F8DB3D193BABBF51AD1C2C01BA91030D589641F60BE75761286C003BF0EF"
+    }
+  ],
+  "builds": [
+    {
+      "kind": "UI",
+      "exit": 0,
+      "sha256": "0469D4D1ABD975620EE6EE297CE5A544F54081463F87E89A96D21FC0FFAC910F",
+      "seconds": 49.43,
+      "path": "Release/_validation/BlobUiComponents-20261103/ui-build-011.log",
+      "warnings": 6545,
+      "errors": 0
+    },
+    {
+      "kind": "Full",
+      "exit": 0,
+      "sha256": "AE8997EEB16A6B5AA2BB527CFCB76B91C7A785B0A7D9F2AE15292B326A37BA5A",
+      "seconds": 40.09,
+      "path": "Release/_validation/BlobUiComponents-20261103/full-build-012.log",
+      "warnings": 6442,
+      "errors": 0
+    }
+  ],
+  "finalTest": {
+    "scope": "独立公共UI组合候选，不替代真实Blob三页/主仓/实际VS",
+    "exit": 0,
+    "identityPassed": true,
+    "passedCases": 8,
+    "productSourceCommit": "e645ad9aa20aa25e9e343ac777f4ccc8526e5c5e",
+    "commit": "19193b3cd31ec80c8a18f0ffe0127d8eeaec2791",
+    "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\BlobUiComponentCases.cs",
+    "sourceSha256": "E1919D93FC9549737E108C7BD8D11902349E043A2EBB9927760FE7ED3EDF4004",
+    "runnerSha256": "CB18EAEB11FFF20808C0C1BEC2513552BBCE88486FA54DB8E54BFB7A555F1EE1",
+    "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "17878FEA9FA4AFBCA645216F775254E4E6B4D04C5458F50CB72CB9A4468544A2",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "BFDE677728C9C01B5D22FCED2303525B772B94492B99AE1C887B33B95DEDFEB4",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "finalTestReceipt": "Release/_validation/BlobUiComponents-20261103/attempt-007/receipt.json",
+  "finalTestReceiptSha256": "768D48FA9C064E657709382775D0FF4C210DE31DAAD921204C9C0E9DCF5790F5",
+  "passedGroups": 8,
+  "loadedIdentityPassed": true,
+  "failuresPreserved": [
+    "components-build-001.log:旧assets缺OpenCvSharp引用，离线restore修正",
+    "attempt-003/build.log:新增测试缺System.IO，仅修测试后通过"
+  ],
+  "notVerified": [
+    "主仓正式Release集成",
+    "Blob真实三页96项与8共享组整页门禁/序列化/业务闭环",
+    "真实VS设计器",
+    "自然键鼠和用户人工",
+    "原厂运行像素/时序等价"
+  ],
+  "protected": [
+    "Blob.Wpf/Catalog/O06/现runner未修改",
+    "Runtime/SDK/Workflow/持久化未修改",
+    "既有CURRENT_TASK脏内容和旧未跟踪证据保留"
+  ]
+}

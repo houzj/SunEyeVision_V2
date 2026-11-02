@@ -1,4 +1,4 @@
-﻿using System.Collections.Specialized;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services.Workflow;
@@ -14,7 +14,7 @@ public partial class WorkflowTabViewModel
  internal void RefreshRootReadiness()
  {
   if(_rootDefinition==null)return;
-  var errors=RootWorkflowReadiness.Evaluate(_rootDefinition,_readinessResolver);
+  var errors=RootWorkflowReadiness.Evaluate(_directory,_rootDefinition,_readinessResolver);
   if(_rootConfigurationErrors.SequenceEqual(errors))return;
   _rootConfigurationErrors=errors;
   OnPropertyChanged(nameof(RootConfigurationErrors));OnPropertyChanged(nameof(IsRootConfigurationReady));OnPropertyChanged(nameof(RootConfigurationSummary));

@@ -209,7 +209,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         try
         {
         if(_disposed||generation!=_generation){DisposeInput();return;}
-        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
+        candidate=SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolPresentation.CreateSettingsView(configuration.Directory,configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
             new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
                 candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}

@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net9.0</TargetFramework><Description>UI-free invocation and binding runtime.</Description></PropertyGroup>
   <ItemGroup><ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /></ItemGroup>
-<ItemGroup><ProjectReference Include="../Foundation/SunEyeVision.Foundation.csproj" /></ItemGroup></Project>
+<ItemGroup><ProjectReference Include="../Foundation/SunEyeVision.Foundation.csproj" /></ItemGroup><ItemGroup><InternalsVisibleTo Include="SunEyeVision.Plugin.Infrastructure" /><InternalsVisibleTo Include="SunEyeVision.Workflow" /><InternalsVisibleTo Include="NeutralReleaseProbe" /><InternalsVisibleTo Include="AdmissionLifecycleProbe" /></ItemGroup></Project>

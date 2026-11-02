@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using System.Linq;
 using System.Text.Json.Serialization.Metadata;
@@ -49,7 +49,7 @@ public sealed class SolutionSession
     {
         // Capture one value generation; JSON converters and IO run after releasing ValueGate.
         var variables = GlobalVariable.CaptureDefinitions(document.GlobalVariables).ToList();
-        var source = WorkflowSerializationOptions.Default;
+        var source = WorkflowSerializationOptions.For(document.RuntimeDirectory??throw new InvalidOperationException("方案未绑定已准入目录。"));
         var options = new JsonSerializerOptions(source)
         {
             TypeInfoResolver = (source.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>

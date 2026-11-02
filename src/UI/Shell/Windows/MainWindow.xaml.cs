@@ -132,10 +132,10 @@ namespace SunEyeVision.UI.Shell.Windows
             return IntPtr.Zero;
         }
 
-        public MainWindow()
+        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
         {
             InitializeComponent();
-            _viewModel = new MainWindowViewModel();
+            _viewModel = new MainWindowViewModel(admission);
             _viewModel.SolutionDialogOwner = this;
             DataContext = _viewModel;
             // ★ 中间工作区注入 ViewModel 并订阅缩放事件（替代直接操作 ZoomTextBlock 的跨区域耦合）

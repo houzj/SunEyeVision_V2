@@ -931,6 +931,7 @@ namespace SunEyeVision.Workflow
                     executionParameters = ToolParameterSnapshot.Create(node.Parameters);
                     ApplyNodeParameterOverrides(executionParameters, node.Id, request);
                     executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
+                    _workflowEngine.RuntimeDirectory,
                     node.ToolType,
                     node.Id,
                     node.Name,
@@ -1238,13 +1239,15 @@ namespace SunEyeVision.Workflow
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
+            using var generation=_workflowEngine.RuntimeDirectory.AcquireInvocation();
+            using var generationCancellation=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,generation.RetirementToken);
             WorkflowRunSession session;
             lock (_sessionGate)
             {
                 if (_activeSession?.IsActive == true)
                     return ExecutionResult.CreateFailure("已有工作流正在执行；请先停止或等待当前运行完成。");
 
-                session = new WorkflowRunSession(request.WorkflowId, cancellationToken);
+                session = new WorkflowRunSession(request.WorkflowId, generationCancellation.Token);
                 // 先占用执行槽位，再排入线程池。否则两次紧邻的异步调用都可能在首个任务
                 // 尚未开始、State 仍为 Idle 时通过检查，重新出现会话相互覆盖。
                 session.TryStart();
@@ -1254,6 +1257,8 @@ namespace SunEyeVision.Workflow
             try
             {
                 session.Configuration = request.Configuration ?? WorkflowRunConfiguration.Capture(request.WorkflowId, _workflowEngine.GetWorkflow);
+                if(session.Configuration.Definitions.SelectMany(flow=>flow.Nodes).Any(node=>node.RuntimeConfiguration is { } configuration && !ReferenceEquals(configuration.Directory,_workflowEngine.RuntimeDirectory)))
+                    throw new InvalidOperationException("工作流运行配置与准入目录代次不一致。");
                 // 不把取消令牌传给 Task.Run：若任务尚未排队即被取消，Task.Run 会在进入统一
                 // 错误转换逻辑前直接抛 TaskCanceledException。执行链内部通过 WorkflowContext 的
                 // 令牌检测取消并返回标准 ExecutionResult。

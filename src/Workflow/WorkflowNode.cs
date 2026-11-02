@@ -175,21 +175,12 @@ namespace SunEyeVision.Workflow
 
         /// <summary>Invoke this node's neutral settings with already frozen inputs and
         /// an admitted context. Scheduling and input/resource ownership stay with the caller.</summary>
-        public System.Threading.Tasks.ValueTask<SunEyeVision.Plugin.Contracts.ToolOutcome> ExecuteRuntimeAsync(
-            SunEyeVision.Plugin.Contracts.InputValues inputs,
-            SunEyeVision.Plugin.Contracts.IToolExecutionContext context,
-            IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests = null)
-        {
-            var configuration = RuntimeConfiguration ?? throw new InvalidOperationException("节点没有Runtime配置。");
-            return ExecuteRuntimeAsync(configuration,inputs,context,outputRequests);
-        }
-
         internal System.Threading.Tasks.ValueTask<SunEyeVision.Plugin.Contracts.ToolOutcome> ExecuteRuntimeAsync(
-            RuntimeToolConfiguration configuration,SunEyeVision.Plugin.Contracts.InputValues inputs,
+            RuntimeToolConfiguration configuration,SunEyeVision.Plugin.Runtime.RuntimeGenerationLease generation,SunEyeVision.Plugin.Contracts.InputValues inputs,
             SunEyeVision.Plugin.Contracts.IToolExecutionContext context,
             IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests,object? resolvedSettings=null)
         {
-            if (configuration.ToolId != ToolType || context.Identity.NodeId != Id)
+            if (!ReferenceEquals(generation.Directory,configuration.Directory) || configuration.ToolId != ToolType || context.Identity.NodeId != Id)
                 throw new InvalidOperationException("Runtime配置或执行上下文与节点身份不符。");
             return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(configuration.Definition,
                 resolvedSettings??configuration.CaptureSettings(), inputs, context, outputRequests);

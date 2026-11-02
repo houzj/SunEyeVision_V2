@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -42,6 +42,7 @@ public class SolutionManager
     private string _solutionsDirectory;
     private string _configFilePath;
     private readonly ILogger _logger;
+    public SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot RuntimeDirectory { get; }
 
     private SolutionRegistry _registry;
     private SolutionCache _cache;
@@ -73,6 +74,11 @@ public class SolutionManager
         {
             if(_changingSession)throw new InvalidOperationException("方案切换清理期间不能重入切换。");
             if(ReferenceEquals(Session?.Document,value))return;
+            if(value is not null)
+            {
+                if(value.RuntimeDirectory is not null && !ReferenceEquals(value.RuntimeDirectory,RuntimeDirectory))throw new InvalidOperationException("方案运行目录代次不一致。");
+                value.RuntimeDirectory=RuntimeDirectory;
+            }
             var next=value is null?null:new SolutionSession(value);
             _changingSession=true;
             try
@@ -180,7 +186,7 @@ public class SolutionManager
     /// 构造函数
     /// </summary>
     /// <param name="solutionsDirectory">解决方案目录</param>
-    public SolutionManager(ApplicationDataPaths paths) : this(paths.SolutionsDirectory, paths.ConfigFile, paths.RecoveryDirectory, paths.Root)
+    public SolutionManager(ApplicationDataPaths paths,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory) : this(paths.SolutionsDirectory,directory,paths.ConfigFile,paths.RecoveryDirectory,paths.Root)
     {
         if (!File.Exists(paths.ConfigFile)) ForceSaveSettings();
         var marker = JsonNode.Parse(File.ReadAllText(paths.MarkerFile))!.AsObject();
@@ -188,8 +194,9 @@ public class SolutionManager
         AtomicJsonFile.Write(paths.MarkerFile, marker.ToJsonString());
     }
 
-    public SolutionManager(string solutionsDirectory, string? configurationPath = null, string? recoveryDirectory = null, string? dataRoot = null)
+    public SolutionManager(string solutionsDirectory,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,string? configurationPath = null, string? recoveryDirectory = null, string? dataRoot = null)
     {
+        RuntimeDirectory=directory??throw new ArgumentNullException(nameof(directory));
         _solutionsDirectory = solutionsDirectory;
         _dataRoot = Path.GetFullPath(dataRoot ?? solutionsDirectory);
         _configFilePath = configurationPath ?? Path.Combine(_dataRoot, "Config", "user-settings.json");
@@ -198,7 +205,7 @@ public class SolutionManager
         // 初始化组件
         _registry = new SolutionRegistry();
         _cache = new SolutionCache(maxSize: 100, expirationTime: TimeSpan.FromMinutes(30));
-        _repository = new SolutionRepository(recoveryDirectory ?? Path.Combine(_dataRoot, ".recovery"));
+        _repository = new SolutionRepository(recoveryDirectory ?? Path.Combine(_dataRoot, ".recovery"),RuntimeDirectory);
         _settings = new SolutionSettings();
 
         // ✅ 设置基准路径（用于相对路径转换）
@@ -1080,7 +1087,7 @@ public class SolutionManager
         if (File.Exists(paths.ConfigFile) && !settings.Load(paths.ConfigFile)) throw new InvalidDataException("新配置无法加载。");
         _dataRoot = paths.Root; _solutionsDirectory = paths.SolutionsDirectory; _configFilePath = paths.ConfigFile;
         _settings = settings; _registry = new SolutionRegistry(); _cache = new SolutionCache();
-        _repository = new SolutionRepository(paths.RecoveryDirectory); _isSettingsDirty = false;
+        _repository = new SolutionRepository(paths.RecoveryDirectory,RuntimeDirectory); _isSettingsDirty = false;
         RefreshMetadata();
     }
 

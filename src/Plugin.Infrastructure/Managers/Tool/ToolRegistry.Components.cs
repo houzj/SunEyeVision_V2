@@ -14,75 +14,36 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 public static partial class ToolRegistry
 {
-    private static Dictionary<string,ToolComponentRegistration> _runtimeComponents=new(StringComparer.Ordinal);
-    private static Dictionary<string,ToolComponentRegistration> _editorComponents=new(StringComparer.Ordinal);
+
+
 
     public static IToolEditorFactory? CreateEditorFactory(IToolPlugin? tool)
     {
         if(tool is null)return null;
         var id=tool.GetType().GetCustomAttribute<ToolAttribute>()?.Id;
         ToolComponentRegistration? component;
-        lock(_lock)component=id is not null&&_editorComponents.TryGetValue(id,out var value)?value:null;
+        lock(_lock)component=id is null?null:_admission?.Runtime.Components.SingleOrDefault(c=>c.Metadata.Role==ToolComponentRole.Editor&&c.Metadata.ToolId==id);
         return component is null?tool as IToolEditorFactory:Activator.CreateInstance(component.EntryType) as IToolEditorFactory;
-    }
-
-    public static IToolResultView? CreateCurrentResultView(string toolId)
-    {
-        ToolComponentRegistration? runtime, editor;
-        lock(_lock)
-        {
-            _runtimeComponents.TryGetValue(toolId,out runtime);
-            _editorComponents.TryGetValue(toolId,out editor);
-        }
-        if(runtime is null||Activator.CreateInstance(runtime.EntryType) is not IToolResultPresentationProvider provider)return null;
-        var schema=provider.ResultSchema;var projection=provider.ResultProjection;
-        var errors=projection.Validate(schema);
-        if(errors.Count!=0)throw new InvalidOperationException("Invalid runtime result presentation: "+string.Join("; ",errors.Select(e=>e.Message)));
-        // The module output tree has its own schema-driven owner. A property-list
-        // declaration must not be mounted as the separate current-result table.
-        if(projection.Kind is ResultProjectionKind.None or ResultProjectionKind.PropertyList)return null;
-        if(editor is not null)
-        {
-            var factory=Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory
-                ??throw new InvalidOperationException("A runtime result declaration requires a neutral WPF presentation factory.");
-            return factory.CreateResultView(schema,projection)??throw new InvalidOperationException("Result view factory returned null.");
-        }
-        return projection.Kind switch
-        {
-            ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),
-            _=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)
-        };
     }
 
     public static IReadOnlyList<ToolComponentMetadata> GetComponentMetadata()
     {
-        lock(_lock)return _runtimeComponents.Values.Concat(_editorComponents.Values).Select(x=>x.Metadata).ToArray();
-    }
-
-    public static IToolDefinition CreateRuntime(string toolId)
-    {
-        ToolComponentRegistration component;
-        lock(_lock)component=_runtimeComponents.TryGetValue(toolId,out var found)?found:
-            throw new InvalidOperationException("Required runtime is not registered: "+toolId);
-        return (IToolDefinition)Activator.CreateInstance(component.EntryType)!;
+        lock(_lock)return _admission?.Runtime.Components.Select(x=>x.Metadata).ToArray()??Array.Empty<ToolComponentMetadata>();
     }
 
     internal static IReadOnlyList<SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool> GetRuntimeDirectoryTools()
     {
-        lock (_lock) return _runtimeComponents.Select(item =>
+        lock (_lock) return (_admission?.Runtime.Components.Where(c=>c.Metadata.Role==ToolComponentRole.Runtime)??Array.Empty<ToolComponentRegistration>()).Select(item =>
         {
-            var metadata = _metadataCache[item.Key];
-            var entry = item.Value.EntryType;
-            return new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool(item.Key, metadata.DisplayName,
+            var metadata = _metadataCache[item.Metadata.ToolId];
+            var entry = item.EntryType;
+            return new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool(item.Metadata.ToolId, metadata.DisplayName,
                 metadata.Category, metadata.Order, metadata.Icon, metadata.Description, entry.FullName!, entry.Assembly.Location,
                 true, SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryToolKind.Runtime);
         }).ToArray();
     }
 
-    public static bool HasRuntime(string toolId)
-    {lock(_lock)return _runtimeComponents.ContainsKey(toolId);}
-
-    private static bool PrepareComponents(IReadOnlyList<ToolComponentRegistration>? components,
+private static bool PrepareComponents(IReadOnlyList<ToolComponentRegistration>? components,
         Dictionary<string,ToolComponentRegistration> runtimes,Dictionary<string,ToolComponentRegistration> editors,
         Dictionary<string,ToolMetadata> metadata,Dictionary<string,Type> sdkTypes)
     {
@@ -110,18 +71,6 @@ public static partial class ToolRegistry
             target.Add(component.Metadata.ToolId,component);changed=true;
         }
         return changed;
-    }
-
-    public static IToolSettingsView CreateSettingsView(string toolId,FieldSettings fields,ToolSettingsViewOptions? options=null)
-    {
-        var draft=new ToolSettingsEditSession(CreateRuntime(toolId),fields);
-        ToolComponentRegistration? editor;
-        lock(_lock)_editorComponents.TryGetValue(toolId,out editor);
-        options??=new();
-        if(editor is null)return new DeclaredSettingsView(draft,options);
-        var factory=Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory
-            ??throw new InvalidOperationException("Runtime settings require a neutral WPF presentation factory.");
-        return factory.CreateSettingsView(draft,options)??throw new InvalidOperationException("Settings view factory returned null.");
     }
 
     private static void ValidateComponentEntry(ToolComponentRegistration component)

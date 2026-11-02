@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Collections.Generic;
@@ -14,11 +15,11 @@ public sealed class SolutionSnapshot
     private SolutionSnapshot(string json, string canonicalContent, string targetPath, IReadOnlyList<PersistenceDiagnostic> diagnostics)
         => (Json, CanonicalContent, TargetPath, Diagnostics) = (json, canonicalContent, targetPath, diagnostics);
     public static SolutionSnapshot Prepare(Solution document, string targetPath)
-        => PrepareJson(SolutionSession.Serialize(document), targetPath, string.IsNullOrEmpty(document.FilePath));
+        => PrepareJson(SolutionSession.Serialize(document), targetPath, string.IsNullOrEmpty(document.FilePath),document.RuntimeDirectory??throw new System.InvalidOperationException("方案未绑定已准入目录。"));
     internal static SolutionSnapshot PrepareSession(SolutionSession session,string targetPath)
-        =>PrepareJson(session.CapturePersistenceJson(),targetPath,string.IsNullOrEmpty(session.FilePath));
+        =>PrepareJson(session.CapturePersistenceJson(),targetPath,string.IsNullOrEmpty(session.FilePath),session.Document.RuntimeDirectory??throw new System.InvalidOperationException("方案未绑定已准入目录。"));
 
-    internal static SolutionSnapshot PrepareJson(string json, string targetPath, bool untitled)
+    internal static SolutionSnapshot PrepareJson(string json, string targetPath, bool untitled,RuntimeDirectorySnapshot directory)
     {
         SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
         var root = JsonNode.Parse(json) ?? throw new System.Text.Json.JsonException("Empty solution snapshot.");
@@ -29,7 +30,7 @@ public sealed class SolutionSnapshot
         SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacy);
         // Never consult the mutable source document again. Resolve the exact captured JSON
         // against its actual owner and static schemas before any target or recovery IO.
-        var candidate = new SolutionRepository().ReadFrozenCandidate(root, diagnostics, legacy);
+        var candidate = new SolutionRepository(directory:directory).ReadFrozenCandidate(root, diagnostics, legacy);
         var normalized = SolutionSemanticComparer.Canonicalize(SolutionSession.Serialize(candidate));
         return new SolutionSnapshot(normalized, normalized, Path.GetFullPath(targetPath), diagnostics.AsReadOnly());
     }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Workflow;
 
@@ -13,16 +13,18 @@ namespace SunEyeVision.Workflow;
 [JsonConverter(typeof(RuntimeToolConfigurationJsonConverter))]
 public sealed partial class RuntimeToolConfiguration
 {
+    private readonly RuntimeDirectorySnapshot _directory;
     private readonly IToolDefinition _definition;
     private readonly IToolSettingsFields _settingsFields;
     private readonly IReadOnlyDictionary<string,ConstantSetting> _currentValues;
     private readonly IReadOnlyDictionary<string,long> _currentRevisions;
     public FieldSettings Fields { get; }
 
-    private RuntimeToolConfiguration(IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
+    private RuntimeToolConfiguration(RuntimeDirectorySnapshot directory, IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
         IReadOnlyDictionary<string,ParameterSetting>? currentValues=null,IReadOnlyDictionary<string,long>? currentRevisions=null,
         IReadOnlyList<string>? bindingOrder=null,IReadOnlyDictionary<string,ParameterReferenceBehavior>? frozenBehaviors=null)
     {
+        _directory = directory ?? throw new ArgumentNullException(nameof(directory));
         _definition = definition ?? throw new ArgumentNullException(nameof(definition));
         if (string.IsNullOrWhiteSpace(definition.ToolId)) throw new ArgumentException("Runtime ToolId is required.");
         _settingsFields=definition as IToolSettingsFields??throw new ArgumentException("Runtime requires declared settings and a materializer.");
@@ -64,6 +66,7 @@ public sealed partial class RuntimeToolConfiguration
         => (_definition as IToolManualReferenceSources)?.ManualReferenceSources
             .Select(source => new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray()
             ?? Array.Empty<ManualReferenceSource>();
+    public RuntimeDirectorySnapshot Directory => _directory;
     internal IToolDefinition Definition => _definition;
     public string ToolId => _definition.ToolId;
     public Type SettingsType => _definition.SettingsType;
@@ -106,7 +109,7 @@ public sealed partial class RuntimeToolConfiguration
     public object MaterializeSettings(IReadOnlyDictionary<string,object?> resolved)
         =>_definition.FreezeSettings(_settingsFields.MaterializeSettings(Fields.Select(SettingsSchema.Inputs).Materialize(resolved)));
     public RuntimeToolConfiguration WithSettings(object settings) => WithFieldValues(_settingsFields.ReadSettings(_definition.FreezeSettings(settings)).CopyValues());
-    public RuntimeToolConfiguration Copy() => new(_definition, Fields.Capture(),CaptureCurrentValues(),_currentRevisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
+    public RuntimeToolConfiguration Copy() => new(_directory,_definition, Fields.Capture(),CaptureCurrentValues(),_currentRevisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     /// <summary>Pure parameter state, separate from binding configuration and invocation resources.
     /// Constants have only one authority, Fields; absent referenced values remain absent.</summary>
     public ConstantSetting? ReadCurrentParameter(string fieldId)
@@ -131,7 +134,7 @@ public sealed partial class RuntimeToolConfiguration
         current[fieldId]=FreezeCurrent(port,value);
         var revisions=_currentRevisions.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         revisions[fieldId]=checked(CurrentRevision(fieldId)+1);
-        return new(_definition,Fields.Capture(),current,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
+        return new(_directory,_definition,Fields.Capture(),current,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     /// <summary>Configuration replay must not replay execution. Keep the live value for
     /// retained referenced parameter identities; explicit constant edits remain authoritative.</summary>
@@ -147,7 +150,7 @@ public sealed partial class RuntimeToolConfiguration
                 values.Remove(port.Id);
                 if(live.ReadCurrentParameter(port.Id) is {} current)values.Add(port.Id,current);
             }
-        return new(_definition,Fields.Capture(),values,values.Keys.ToDictionary(id=>id,id=>live.CurrentRevision(id),StringComparer.Ordinal),_bindingOrder,frozenBehaviors:_referenceBehaviors);
+        return new(_directory,_definition,Fields.Capture(),values,values.Keys.ToDictionary(id=>id,id=>live.CurrentRevision(id),StringComparer.Ordinal),_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     private long CurrentRevision(string fieldId)=>_currentRevisions.GetValueOrDefault(fieldId);
     internal bool CurrentValueChangedFrom(string fieldId,RuntimeToolConfiguration opening)
@@ -186,7 +189,7 @@ public sealed partial class RuntimeToolConfiguration
                     revisions.Add(port.Id,changed?checked(live.CurrentRevision(port.Id)+1):live.CurrentRevision(port.Id));
                 }
             }
-        return new(_definition,Fields.Capture(),values,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
+        return new(_directory,_definition,Fields.Capture(),values,revisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
     private static ConstantSetting FreezeCurrent(Port port,object? value)
     {
@@ -237,7 +240,7 @@ public sealed partial class RuntimeToolConfiguration
                 var value=ReadCurrentParameter(port.Id);
                 if(value is not null)current.Add(port.Id,value);
             }
-        return new(_definition,fields.Capture(),current,current.Keys.ToDictionary(id=>id,CurrentRevision,StringComparer.Ordinal),ReconfigureBindingOrder(fields,proposals),frozenBehaviors:_referenceBehaviors);
+        return new(_directory,_definition,fields.Capture(),current,current.Keys.ToDictionary(id=>id,CurrentRevision,StringComparer.Ordinal),ReconfigureBindingOrder(fields,proposals),frozenBehaviors:_referenceBehaviors);
     }
     /// <summary>Restore one exact field from an admitted opening snapshot, preserving all other edits.
     /// Missing invocation inputs can be restored to their original absence; user proposals still use Apply.</summary>
@@ -255,7 +258,7 @@ public sealed partial class RuntimeToolConfiguration
         current.Remove(fieldId);
         if(opening.ReadCurrentParameter(fieldId) is {} openingValue)current.Add(fieldId,openingValue);
         var revisions=current.Keys.ToDictionary(id=>id,id=>id==fieldId?opening.CurrentRevision(id):restored.CurrentRevision(id),StringComparer.Ordinal);
-        return new(_definition,values,current,revisions,restored.RestoreBindingPosition(fieldId,opening),frozenBehaviors:_referenceBehaviors);
+        return new(_directory,_definition,values,current,revisions,restored.RestoreBindingPosition(fieldId,opening),frozenBehaviors:_referenceBehaviors);
     }
     public RuntimeToolConfiguration WithSettingsFields(FieldSettings settings,IReadOnlyList<string>? proposalOrder=null)
     {
@@ -270,29 +273,32 @@ public sealed partial class RuntimeToolConfiguration
     public RuntimeToolConfiguration MapReferences(Func<OutputReference,OutputReference> map,Func<string,string?>? mapOrigin=null)
     {
         var fields=Fields.MapReferences(map).Capture();
-        return new(_definition,fields.ToDictionary(pair=>pair.Key,pair=>pair.Value is ReferenceSetting reference&&reference.OriginId is {} origin&&mapOrigin is not null
+        return new(_directory,_definition,fields.ToDictionary(pair=>pair.Key,pair=>pair.Value is ReferenceSetting reference&&reference.OriginId is {} origin&&mapOrigin is not null
             ?(ParameterSetting)(reference with{OriginId=mapOrigin(origin)}):pair.Value,StringComparer.Ordinal),CaptureCurrentValues(),_currentRevisions,_bindingOrder,frozenBehaviors:_referenceBehaviors);
     }
 
-    public static RuntimeToolConfiguration Create(string toolId)
+    public static RuntimeToolConfiguration Create(RuntimeDirectorySnapshot directory,string toolId)
     {
-        var definition = ToolRegistry.CreateRuntime(toolId);
+        var definition = directory.CreateDefinition(toolId);
         var fields=definition as IToolSettingsFields??throw new ArgumentException("Runtime requires a settings declaration.");
         var defaults=fields.ReadSettings(definition.CreateSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         if(definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider display)
             foreach(var value in display.CreateDisplaySettings().CopyValues())defaults.Add(value.Key,value.Value);
-        return new(definition,defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
+        return new(directory,definition,defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
     }
 
-    internal static RuntimeToolConfiguration Restore(IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
+    internal static RuntimeToolConfiguration Restore(RuntimeDirectorySnapshot directory,IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
         IReadOnlyDictionary<string,ParameterSetting> currentValues,IReadOnlyList<string> bindingOrder)
     {
-        return new(definition, settings,currentValues,bindingOrder:bindingOrder);
+        return new(directory,definition, settings,currentValues,bindingOrder:bindingOrder);
     }
 }
 
 public sealed class RuntimeToolConfigurationJsonConverter : JsonConverter<RuntimeToolConfiguration>
 {
+    private readonly RuntimeDirectorySnapshot? _directory;
+    public RuntimeToolConfigurationJsonConverter() { }
+    public RuntimeToolConfigurationJsonConverter(RuntimeDirectorySnapshot directory)=>_directory=directory??throw new ArgumentNullException(nameof(directory));
     public override RuntimeToolConfiguration Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
@@ -306,7 +312,7 @@ public sealed class RuntimeToolConfigurationJsonConverter : JsonConverter<Runtim
             || currentValues.ValueKind!=JsonValueKind.Object||!root.TryGetProperty("ParameterBindingOrder",out var bindingOrder)
             ||bindingOrder.ValueKind!=JsonValueKind.Array)
             throw new JsonException("Runtime configuration requires exactly ToolId, Fields, CurrentValues and ParameterBindingOrder.");
-        try { var definition=ToolRegistry.CreateRuntime(id.GetString()!); return RuntimeToolConfiguration.Restore(definition, RuntimeFieldJson.Read(definition,settings),
+        try { var directory=_directory??throw new JsonException("Runtime configuration requires an admitted directory snapshot."); var definition=directory.CreateDefinition(id.GetString()!); return RuntimeToolConfiguration.Restore(directory,definition, RuntimeFieldJson.Read(definition,settings),
             RuntimeFieldJson.Read(definition,currentValues,currentValues:true),bindingOrder.EnumerateArray().Select(item=>
                 item.ValueKind==JsonValueKind.String?item.GetString()!:throw new JsonException("Parameter binding order requires field IDs.")).ToArray()); }
         catch (Exception error) when (error is ArgumentException or InvalidOperationException or FormatException or OverflowException)

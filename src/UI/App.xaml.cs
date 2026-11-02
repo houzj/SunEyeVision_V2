@@ -117,8 +117,8 @@ public partial class App : Application
                 var inspectToolbox = e.Args[0] == "--toolbox-probe";
                 var probePluginManager=inspectToolbox?new PluginManager():null;
                 if (inspectToolbox)
-                    probePluginManager!.LoadPlugins();
-                var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel() : null;
+                    await probePluginManager!.LoadPluginsAsync();
+                var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(probePluginManager!.DesktopAdmission??throw new InvalidOperationException("缺少已准入工具目录。")) : null;
                 if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
                 var info = new
                 {
@@ -228,7 +228,7 @@ public partial class App : Application
         _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
         LogStartupStage("Plugin.Load begin", "source=release-payload.productComponents");
-        pluginManager.LoadPlugins();
+        await pluginManager.LoadPluginsAsync();
         try
         {
             pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
@@ -245,7 +245,7 @@ public partial class App : Application
 
         // 2. 标记插件已加载（全局状态）
         _splashScreen?.UpdateProgress(35);
-        PluginLoader.MarkAsLoaded();
+
 
         // 2.5 初始化视觉图像加载入口
         // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中
@@ -309,7 +309,8 @@ public partial class App : Application
         // 5. 初始化解决方案管理器
         _splashScreen?.UpdateStage("正在初始化解决方案", 65, "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
-        ServiceInitializer.InitializeSolutionManager(_dataPaths!);
+        var desktopAdmission=pluginManager.DesktopAdmission??throw new InvalidOperationException("缺少已准入运行目录。");
+        ServiceInitializer.InitializeSolutionManager(_dataPaths!,desktopAdmission.Runtime);
         _servicesReady = true;
         _splashScreen?.UpdateStage("正在初始化解决方案", 70, "解决方案管理器准备完成");
         LogStartupStage("SolutionManager.Initialize completed");
@@ -341,7 +342,7 @@ public partial class App : Application
 
         // 启动决策
         LogStartupStage("Startup decision begin");
-        await HandleStartupDecisionAsync();
+        await HandleStartupDecisionAsync(desktopAdmission);
         _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
     }
@@ -349,9 +350,9 @@ public partial class App : Application
     /// <summary>
     /// 处理启动决策
     /// </summary>
-    private async Task HandleStartupDecisionAsync()
+    private async Task HandleStartupDecisionAsync(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission desktopAdmission)
     {
-        var mainWindow = new MainWindow();
+        var mainWindow = new MainWindow(desktopAdmission);
         AttachMainWindowDiagnostics(mainWindow);
         Application.Current.MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnExplicitShutdown;

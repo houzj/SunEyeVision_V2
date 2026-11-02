@@ -26,12 +26,27 @@ public sealed class HostInputCoordinatorTests
     }
     private sealed class Preparer: IHostInputPreparer
     {
+        public int Disposals;
         public string CapabilityId {get;set;}="image-source";
         public int CapabilityVersion {get;set;}=1;
         public IReadOnlyList<string> Services {get;set;}=new[]{"local-image-read"};
         public Func<HostInputPreparationContext,ValueTask<IPreparedHostInputs>> Prepare {get;set;}=_=>throw new InvalidOperationException();
         public ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context)=>Prepare(context);
-        public void Dispose(){}
+        public void Dispose()=>Disposals++;
+    }
+
+    [Fact]
+    public void Reusing_running_request_is_rejected_without_disposing_first_owners_input()
+    {
+        var input=new Preparer();var request=new WorkflowRunRequest("flow",hostInputs:new Dictionary<string,IHostInputPreparer>{{"source",input}});
+        var claim=typeof(WorkflowRunRequest).GetMethod("Claim",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        claim.Invoke(request,null);
+        var rejected=Assert.Throws<TargetInvocationException>(()=>claim.Invoke(request,null));
+        Assert.IsType<InvalidOperationException>(rejected.InnerException);Assert.Equal(0,input.Disposals);
+        Assert.Throws<InvalidOperationException>(()=>request.Dispose());Assert.Equal(0,input.Disposals);
+        typeof(WorkflowRunRequest).GetMethod("Complete",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(request,null);
+        request.Dispose();Assert.Equal(1,input.Disposals);
+        Assert.Throws<TargetInvocationException>(()=>claim.Invoke(request,null));
     }
     private static Task Start(RuntimeToolConfiguration configuration,IHostInputPreparer input,ToolExecutionIdentity identity,IToolExecutionContext context)
     {

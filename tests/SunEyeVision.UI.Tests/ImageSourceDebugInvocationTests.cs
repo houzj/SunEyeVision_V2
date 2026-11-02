@@ -39,6 +39,15 @@ public sealed class ImageSourceDebugInvocationTests
     }
     private sealed class TestGate(ToolExecutionIdentity identity):IHostInvocationGate
     { public bool TryInvoke(Action callback)=>identity.TryInvokeCallback(callback); }
+    private sealed class CountingPreparer:IHostInputPreparer
+    {
+        public int Disposals;
+        public string CapabilityId=>"image-source";
+        public int CapabilityVersion=>1;
+        public IReadOnlyList<string> Services=>Array.Empty<string>();
+        public ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context)=>throw new InvalidOperationException("not expected");
+        public void Dispose()=>Disposals++;
+    }
     private sealed class Fixture : IDisposable
     {
         public string DirectoryPath {get;}
@@ -202,6 +211,39 @@ public sealed class ImageSourceDebugInvocationTests
         if(failure=="base")f.Document.ResourceBaseDirectory=null;
         Assert.ThrowsAny<Exception>(()=>f.Capture(defaultImage:fallback));
         Assert.False(fallback.IsEmpty);
+    }
+
+    [Fact]
+    public async Task Formal_request_releases_input_when_run_cannot_start()
+    {
+        using var fixture=new Fixture();
+        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var input=new CountingPreparer();
+        var request=new WorkflowRunRequest("missing-flow",hostInputs:new Dictionary<string,IHostInputPreparer>{{"source",input}});
+        using var result=await engine.ExecuteWorkflowAsync(request);
+        Assert.False(result.Success);
+        Assert.Equal(1,input.Disposals);request.Dispose();Assert.Equal(1,input.Disposals);
+    }
+
+    [Fact]
+    public async Task Formal_request_reentry_is_rejected_without_disrupting_the_first_run()
+    {
+        using var fixture=new Fixture();var path=fixture.WriteImage(fixture.DirectoryPath,33);
+        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();
+        var preparer=new ImageSourceHostInputPreparer(path,7){LocalReadAdmission=(_,_)=>
+        {entered.Set();if(!release.Wait(TimeSpan.FromSeconds(15)))throw new TimeoutException();return path;}};
+        var request=new WorkflowRunRequest(fixture.Flow.Id,hostInputs:new Dictionary<string,IHostInputPreparer>{{fixture.Node.Id,preparer}});
+        var first=Task.Run(()=>engine.ExecuteWorkflowAsync(request));
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(15)));
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>engine.ExecuteWorkflowAsync(request));
+            Assert.Throws<InvalidOperationException>(()=>request.Dispose());
+        }
+        finally{release.Set();}
+        using var result=await first.WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.True(result.Success,string.Join(";",result.Errors));request.Dispose();
     }
 
     [Fact]

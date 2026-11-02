@@ -80,10 +80,27 @@ public sealed class WorkflowRunRequest : IDisposable
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }
     /// <summary>Immutable source selections, separate from persistent settings and parameter bindings.</summary>
     public IReadOnlyDictionary<string,IHostInputPreparer> HostInputs { get; }
-    private int _disposed;
+    private int _state;
+    internal void Claim()
+    {
+        if(System.Threading.Interlocked.CompareExchange(ref _state,1,0)!=0)
+            throw new InvalidOperationException("工作流运行请求已经执行或释放，不能重复接纳。");
+    }
     public void Dispose()
     {
-        if(System.Threading.Interlocked.Exchange(ref _disposed,1)!=0)return;
+        var previous=System.Threading.Interlocked.CompareExchange(ref _state,2,0);
+        if(previous==2)return;
+        if(previous==1)throw new InvalidOperationException("运行请求已交给执行器，必须等待运行结束后释放。");
+        ReleaseInputs();
+    }
+    internal void Complete()
+    {
+        if(System.Threading.Interlocked.CompareExchange(ref _state,2,1)!=1)
+            throw new InvalidOperationException("工作流运行请求没有有效的执行所有权。");
+        ReleaseInputs();
+    }
+    private void ReleaseInputs()
+    {
         var errors=new List<Exception>();
         foreach(var input in new HashSet<IHostInputPreparer>(HostInputs.Values,System.Collections.Generic.ReferenceEqualityComparer.Instance))
             try{input.Dispose();}catch(Exception error){errors.Add(error);}

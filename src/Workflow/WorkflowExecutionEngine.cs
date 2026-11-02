@@ -1217,12 +1217,13 @@ namespace SunEyeVision.Workflow
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+            request.Claim();
             Exception? failure=null;
             try{return await ExecuteOwnedRequestAsync(request,cancellationToken).ConfigureAwait(false);}
             catch(Exception error){failure=error;throw;}
             finally
             {
-                try{request.Dispose();}
+                try{request.Complete();}
                 catch(Exception cleanup)
                 {
                     if(failure is not null)throw new AggregateException("工作流运行和宿主输入释放均失败。",failure,cleanup);

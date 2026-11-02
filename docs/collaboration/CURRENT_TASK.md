@@ -1,3 +1,27 @@
+## 2026-11-02 正式 Release 重封包回归
+
+87f4 fb8ee37bf 正式 Release 重新封包 SHA EF6B937F3D2F36BD06DE80EA7577E85E826AC142A511A2070A9BB0FC07B11312 后，以不重建方式完成根流程 15/15、插件 25/25、ImageLoad 31/31、Blob 11/11；日志 Release/_validation/neutral-fb8ee/desktop-*.log。该结果不代替新编辑宿主及 V3 资源链候选验证。
+
+## 2026-11-02 完整启动与无 WPF 复核
+
+独立 fb8ee37bf 载荷隐藏桌面测试直接观察默认隔离配置显示起始页；单独设置 HideStartPage=true 后完整 App 主窗加载、关闭及排空通过，源证据独立提交 82541e3a5。原 87f4 超时未直接观测窗口，仍记超时。87f4 fb8ee 的独立无 WPF 载荷实际执行 ImageLoad 和 Blob，未加载 WPF/UI/SDK；封包 SHA 2B86C7241CC994EDD3A4F1B9C0AF32A4EB6E287E5EFDA1D8FA06417EEB3351EB。初次使用相对 -o 被工程输出规则覆盖，后使用绝对 OutDir 隔离重建；正式 Release 已重封包 SHA EF6B937F3D2F36BD06DE80EA7577E85E826AC142A511A2070A9BB0FC07B11312，旧封包测试结果不可误称新封包复测。
+
+## 2026-11-02 冻结输入资源与方案新格式批次
+
+依据独立合同审定 4e8479d6c，方案新格式冻结为 SchemaVersion 3；旧版或缺版本拒绝且失败不改源或既存目标。现行安全校验迁入唯一严格链，删除旧格式适配和回退。图像源能力和资源声明按准入代次及确定性指纹校验；正式与调试共合同但独立游标，维持接纳票据及资源所有权。输入资源线实施 Workflow/Runtime/Contracts 和非冲突消费者，编辑宿主线独占五个共享 UI 文件并集中接入；Group 暂停。该批已启动，未实现或验证前不得算完成。
+
+## 2026-11-02 完整 App 启动隔离验证超时
+
+基于 fb8ee37bf 的 ShutdownLifecycleProbe 采用隐藏 STA 桌面、隔离数据目录和系统弹窗抑制，75 秒 watchdog 退出 3，未到达主窗口；封包 SHA 763EE7EADD6B8CA328197C5D352411FEA9BE37CEFDA46826F10D3BA8FA1E1028。隔离日志已到 Service.Initialize completed 和 RuntimeIdentity，之后未见 SolutionManager.Initialize begin；不能判断产品或测试环境原因。日志位于 Release/_validation/platform-integration-fb8ee/startup.* 和 full-startup-data，已安排独立诊断。
+
+## 2026-11-02 当前工作区真实编辑窗口验证
+
+87f4 提交 fb8ee37bf 全量 Release 重建和编辑窗口探针构建通过，封包 SHA 149D8AFDD9CA579D6FD5210F418813C4A9ACC3DD39D37842DB0CBCF18A53106E。隐藏桌面使用正式 MainWindowViewModel 打开命令，ImageLoad 和 Blob 窗口均加载、关闭，编辑范围计数回到零，退出 0；日志 Release/_validation/platform-integration-fb8ee/window.out.log。测试是隐藏宿主窗口与正式视图模型，不是完整 App 启动或 VM 控件宿主迁移完成；后者仍在独立实施。
+
+## 2026-11-02 两条后续整链并行
+
+工具编辑宿主线以 111960d9f 独立设计 VM 原件窗口与参数容器组合，正式接线需覆盖共享草稿、主窗口、关闭取消及 reader 生命周期，不修改 Group，尚未实施。另一只读核查发现工作流调用和方案资源仍有 ImageLoad 特判，已安排独立 worktree 对正式与调试输入、持久化和资源所有权做整体设计；其通用合同为自研设计，不冒称 VM 内部已证。87f4 已合并真实窗口测试提交 fb8ee37bf，正式构建和重测进行中。
+
 ## 2026-11-02 当前工作区真实根宿主验证
 
 87f4 集成提交 c9a7c4bae 完整 Release 0 错，锁定依赖恢复及根宿主测试构建通过；封包 SHA 4EA8A0094FD58415B9279B34C1F1D7A81CDCAEAD9CB027E6B6AC6A2F598C1D5E。根流程模型和文档测试 15/15；隐藏桌面独立进程真实 Shell 加载 Runtime 节点、复制、撤销重做、保存重开及目录排空通过，日志 Release/_validation/platform-integration-c9a7/root-host.log。菜单、小地图、拖拽、缩放、参数弹窗、实际执行和连续运行仍未被该探针覆盖；设计器与人工验收单列。

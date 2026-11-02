@@ -126,7 +126,20 @@ internal static class S2DocumentEditingCases
             try{var run=current.RunDebugAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(actual==expected,"真实算法未消费预期阈值："+actual+"/"+expected);Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:long value}&&value==expected,"私有当前值与算法不同");}
             finally{current.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);}
         }
-        void Confirm(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
+        void Confirm(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)
+        {
+            DumpBindings(window,"before-confirm");var ok=window.TryConfirm(out var issue);DumpBindings(window,"after-confirm");
+            if(!ok){var control=Control(window);var valid=control.TryValidateEditor(out var validateError);var captured=control.TryCapture(out var captureError);File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"confirm-diagnostics.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{issue,valid,validateError,captured,captureError})+Environment.NewLine);DumpBindings(window,"after-direct-capture");}
+            Require(ok,"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();
+        }
+        void DumpBindings(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window,string stage)
+        {
+            var walk=typeof(ToolEditorCommit).GetMethod("Walk",BindingFlags.Static|BindingFlags.NonPublic)!;var bm=typeof(ToolEditorCommit).GetMethod("Bindings",BindingFlags.Static|BindingFlags.NonPublic)!;
+            var elements=((IEnumerable<DependencyObject>)walk.Invoke(null,new object[]{Control(window)})!).OfType<FrameworkElement>().ToArray();
+            var rows=elements.Select(e=>{var bs=((IEnumerable<BindingExpression>)bm.Invoke(null,new object[]{e})!).ToArray();return new{Type=e.GetType().FullName,e.Name,e.IsLoaded,e.IsVisible,DataContext=e.DataContext?.GetType().FullName,Parent=ParentPath(e),Text=e.GetType().GetProperty("Text")?.GetValue(e)?.ToString(),Errors=Validation.GetErrors(e).Select(x=>new{Content=x.ErrorContent?.ToString(),Rule=x.RuleInError?.GetType().FullName,Binding=x.BindingInError?.ToString(),Exception=x.Exception?.ToString()}).ToArray(),Bindings=bs.Select(b=>new{b.IsDirty,b.HasValidationError,Path=b.ParentBinding.Path?.Path,Target=b.TargetProperty.Name,Status=b.Status.ToString(),Source=b.ResolvedSource?.GetType().FullName}).ToArray()};}).Where(r=>r.Errors.Length>0||r.Bindings.Any(b=>b.IsDirty)||r.Type!.Contains("Numeric")).ToArray();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"binding-diagnostics.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{Stage=stage,Elements=rows})+Environment.NewLine);
+        }
+        string ParentPath(DependencyObject item){var names=new List<string>();for(var i=0;i<12&&item is not null;i++){names.Add(item.GetType().Name+(item is FrameworkElement e?"#"+e.Name:""));item=VisualTreeHelper.GetParent(item);}return string.Join("/",names);}
         long Current()=>node.RuntimeConfiguration!.ReadCurrentParameter(threshold)?.Value is long value?value:node.RuntimeConfiguration.Fields.Read(threshold) is ConstantSetting constant?(long)constant.Value!:throw new Exception("没有正式当前值");
         string Identity(ParameterSetting setting)=>setting switch{ReferenceSetting reference=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference.Reference),VariableSetting variable=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(variable.Reference),ConstantSetting constant=>System.Text.Json.JsonSerializer.Serialize(constant.Value),UnsetSetting=>"Unset",_=>throw new Exception("不是支持设置")};
         int? expectedReplayCount=null;

@@ -1,3 +1,7 @@
+## 2026-11-03 中立参数编码候选交接
+
+产品源码 13024cf8a；全量 Release 0 错。规范金样、真实 V3 保存重开与消费者回归、隐藏桌面文本六项通过；新增当前值保存重开测试直接调用内部接收方法，不替代完整运行发布验证。旧 S4 当前值和数值脚本依赖退役接口不能编译。详细证据见 evidence/中立参数规范编码迁移-20261103.html；候选未集成主线、Group 暂停。
+
 ## 2026-11-03 下一整批设计核收与主仓回执
 
 核收独立设计f62efe546：唯一Contracts规范写入避免Domain/Execution反依Persistence，Application.Queries同程序集承接可信scope/BFS/DTO，持久化由Application捕获一致不可变输入后执行，禁止Persistence回调编辑Host。配置身份、CurrentValues、BindingOrder和V3写入须使用同一规范算法，不复制codec。查询结果裸Snapshot退出需与RuntimeDebugInvocation的实际reader获取、跨异步保留和释放完整切换。当前尚待精确裁决：internal AcquirePublishedResult不能供UI跨程序集直接调用；保存资源捕获及声明驱动读取须确保不把Runtime依赖带入Domain/Persistence。未冻结前不造产品接口。界面线按独立worktree继续完整投影/订阅清理设计，只读评审已完成实际依赖盘点。
@@ -16422,3 +16426,4 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 已在独立分支整合资源线 ad3948688 和单次所有权修正 b5b67bfd4（本树 19bd0b1d0），Runtime 调试使用唯一 HostInput 准备器；捕获失败释放、成功由 invocation 接管。
 - 统一封包全量 Release 0 错；封包后无重编图像源正式/调试 24/24、输入身份与所有权 3/3；隐藏 WPF attempt-025 检查图像源捕获失败释放与 Blob 实际调试，attempt-026 检查门禁、禁用占位和执行中关闭。统一载荷哈希、测试日志及快照范围见 evidence/统一WPF编辑事务抽离设计-20261102.html。
 - 上述为独立候选，主线合并其它调度变更后须重建重验；完整 Group、旧 SDK 可视完全退出、自然输入、设计器与人工验收未完成，连续调试及重置业务保持禁用占位。此前 44 组属于旧载荷，不计为本次完整回归。
+

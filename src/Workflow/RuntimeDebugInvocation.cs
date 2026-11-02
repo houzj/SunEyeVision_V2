@@ -43,16 +43,16 @@ public sealed class RuntimeDebugInvocation : IDisposable
 
     /// <summary>Call on the document owner before dispatching execution. The double
     /// read rejects replacement during capture; retained readers survive later replacement.</summary>
-    public static RuntimeDebugInvocation Capture(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+    public static RuntimeDebugInvocation Capture(Workflow workflow,RuntimeDirectorySnapshot directory,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
         Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
-        => CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null,null,readDisplayCandidate);
+        => CaptureCore(workflow,directory,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null,null,readDisplayCandidate);
 
     /// <summary>Resolve only explicitly requested active input ports from already published snapshots.
     /// No algorithm, parameter current value, settings materialization or upstream execution occurs.</summary>
-    public static RuntimeInputPreviewLease CaptureInputs(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+    public static RuntimeInputPreviewLease CaptureInputs(Workflow workflow,RuntimeDirectorySnapshot directory,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
@@ -63,7 +63,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         var selected=inputFieldIds.ToArray();
         if(selected.Length==0||selected.Any(string.IsNullOrWhiteSpace)||selected.Distinct(StringComparer.Ordinal).Count()!=selected.Length)
             throw new ArgumentException("预览输入必须非空、唯一且已声明。",nameof(inputFieldIds));
-        var invocation=CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,selected.ToHashSet(StringComparer.Ordinal),observeVariables);
+        var invocation=CaptureCore(workflow,directory,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,selected.ToHashSet(StringComparer.Ordinal),observeVariables);
         try
         {
             var prepared=invocation._prepare((_,_)=>throw new InvalidOperationException("只读输入不得写参数当前值。"));
@@ -75,13 +75,17 @@ public sealed class RuntimeDebugInvocation : IDisposable
             try{invocation.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
     }
-    private static RuntimeDebugInvocation CaptureCore(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+    private static RuntimeDebugInvocation CaptureCore(Workflow workflow,RuntimeDirectorySnapshot directory,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
         Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
     {
-        var directory=draft.RuntimeConfiguration?.Directory??throw new InvalidOperationException("调试节点没有已准入运行目录。");
+        ArgumentNullException.ThrowIfNull(workflow);
+        RuntimeNodeAdmission.Require(directory,draft);
+        var original=workflow.Nodes.SingleOrDefault(node=>node.Id==draft.Id && node.ToolType==draft.ToolType)
+            ??throw new InvalidOperationException("调试节点不属于当前工作流。");
+        RuntimeNodeAdmission.Require(directory,original);
         var generation=directory.AcquireInvocation();
         CancellationTokenSource? linked=null;
         try

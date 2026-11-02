@@ -63,52 +63,8 @@ namespace SunEyeVision.Workflow
             bool enableCaching = true,
             bool enableRetry = false)
         {
-            try
-            {
-                // 从ToolRegistry获取工具元数据
-                var metadata = ToolRegistry.GetToolMetadata(toolId);
-                if (metadata == null)
-                {
-return null;
-                }
-
-                if(directory.Contains(toolId))
-                {
-                    if(parameters is not null)throw new ArgumentException("Runtime工具不接受SDK参数。",nameof(parameters));
-                    throw new InvalidOperationException("Runtime 节点需要已冻结配置，不能从全局目录重建。");
-                }
-
-                // 创建工具实例
-                var tool = ToolRegistry.CreateToolInstance(toolId);
-                if (tool == null)
-                {
-return null;
-                }
-
-                // 设置参数
-                if (parameters == null)
-                {
-                    parameters = ToolRegistry.CreateParameters(toolId);
-                }
-
-                // 创建AlgorithmNode
-                var algorithmNode = new AlgorithmNode(nodeId, nodeName, dispName, tool)
-                {
-                    // Keep the registry identity in frozen execution nodes. "Algorithm" is
-                    // a node category, not a tool ID or a source output contract.
-                    ToolType = toolId,
-                    Parameters = parameters,
-                    DebugWindowType = metadata.DebugWindowType,
-                    NodeStyleType = metadata.NodeStyleType
-                };
-return algorithmNode;
-            }
-            catch (Exception ex)
-            {
-return null;
-            }
+            throw new InvalidOperationException("旧 SDK 工具节点工厂已停用；请通过已准入 Runtime 配置创建节点。");
         }
-
         /// <summary>
         /// 从工具ID批量创建AlgorithmNode
         /// </summary>

@@ -149,6 +149,110 @@ var production=new PluginManager();
 await production.LoadPluginsAsync();
 if(production.LastAdmissionError is not null)throw new Exception("Production admission failed: "+production.LastAdmissionError);
 var productionDirectory=production.RuntimeDirectory??throw new Exception("Production directory missing.");
+// Tool admission guard: no unadmitted SDK, paused control flow or foreign generation can run.
+void MustReject(Action action,string scenario)
+{
+    try { action(); } catch (InvalidOperationException) { return; }
+    throw new Exception("Guard did not reject "+scenario);
+}
+var declaredImage = RuntimeToolConfiguration.Create(productionDirectory,"ImageLoad");
+var imageNode = new WorkflowNodeBase("good","good","good","ImageLoad") { RuntimeConfiguration=declaredImage };
+RuntimeNodeAdmission.Require(productionDirectory,imageNode);
+MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("missing","missing","missing","UnknownTool")),"unknown tool");
+MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("empty","empty","empty","ImageLoad")),"missing runtime configuration");
+MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("bad-id","bad-id","bad-id","BlobAnalysis") { RuntimeConfiguration=declaredImage }),"tool identity mismatch");
+foreach(var id in new[]{"Subroutine","Condition"})
+    MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase(id,id,id,id)),"paused control flow "+id);
+MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("linked","linked","linked","ImageLoad") { RuntimeConfiguration=declaredImage, SubroutineId="child" }),"subroutine identity");
+MustReject(()=>new WorkflowNodeBase("legacy","legacy","legacy","UnknownTool").CreateInstance(),"legacy SDK instance");
+MustReject(()=>WorkflowNodeFactory.CreateAlgorithmNode(productionDirectory,"UnknownTool","legacy","legacy","legacy"),"legacy SDK node factory");
+using(var eventBus=new SunEyeVision.Core.Events.EventBus(new NullLogger()))
+{
+    var oldEventPath=new EventEnabledWorkflow("old","old",eventBus);
+    if(oldEventPath.ExecuteNode(new WorkflowNodeBase("old","old","old","UnknownTool"),null).Success)
+        throw new Exception("Legacy event-based node execution reported success.");
+}
+var rejectedFlow=new SunEyeVision.Workflow.Workflow("rejected","rejected");
+rejectedFlow.Nodes.Add(new WorkflowNodeBase("bad","bad","bad","UnknownTool") { Parameters=new GenericToolParameters() });
+var rejectedEngine=new WorkflowEngine(new NullLogger(),productionDirectory);rejectedEngine.RegisterWorkflow(rejectedFlow);
+var rejectedRunner=new WorkflowExecutionEngine(rejectedEngine,production,new NullLogger());
+bool guardRejected=false;
+try { using var invalidRun=await rejectedRunner.ExecuteWorkflowAsync(new WorkflowRunRequest(rejectedFlow.Id)); guardRejected=!invalidRun.Success; }
+catch(InvalidOperationException) { guardRejected=true; }
+if(!guardRejected)throw new Exception("Unadmitted workflow unexpectedly executed.");
+MustReject(()=>RuntimeDebugInvocation.Capture(rejectedFlow,productionDirectory,rejectedFlow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"unadmitted debug");
+Console.WriteLine("probe: tool admission, paused control flow, legacy factory, workflow and debug rejection passed");
+Exception? uiError=null;
+var uiThread=new Thread(()=>
+{
+    try
+    {
+        var chain=new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain();
+        bool created=false;
+        foreach(var rejectedNode in new[]{new WorkflowNodeBase("missing","missing","missing","UnknownTool"),new WorkflowNodeBase("paused","paused","paused","Subroutine") { SubroutineId="child" },new WorkflowNodeBase("mismatch","mismatch","mismatch","BlobAnalysis") { RuntimeConfiguration=declaredImage }})
+        {
+            var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory };
+            if(chain.Execute(rejectedNode,context,()=>{created=true;return new System.Windows.Controls.UserControl();}) || created || context.CreatedWindow is not null || string.IsNullOrWhiteSpace(context.FailureReason))
+                throw new Exception("Unadmitted node opened or constructed an editor.");
+        }
+        if(System.Windows.Application.Current is null)_=new System.Windows.Application{ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
+        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+        foreach(var toolId in new[]{"ImageLoad","BlobAnalysis"})
+        {
+            var node=new WorkflowNodeBase("opened-"+toolId,toolId,toolId,toolId) { RuntimeConfiguration=RuntimeToolConfiguration.Create(productionDirectory,toolId), DebugWindowStyle=DebugWindowStyle.Custom };
+            var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory };
+            if(!chain.Execute(node,context))throw new Exception("Admitted Runtime open failed: "+toolId+" "+context.FailureReason);
+            if(context.WindowStyle!=DebugWindowStyle.Custom || context.Metadata?.RuntimeCatalog?.DisplayName != productionDirectory.GetCatalog(toolId)?.DisplayName)
+                throw new Exception("Node style or admitted metadata was lost: "+toolId);
+            if(context.CreatedWindow is not SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow || context.DebugControl is not SunEyeVision.UI.Services.Editing.RuntimeNodeConfigurationControl control)
+                throw new Exception("Real Runtime editor/window not constructed: "+toolId);
+            context.CreatedWindow.Left=-10000; context.CreatedWindow.Top=-10000; context.CreatedWindow.ShowActivated=false;
+            context.CreatedWindow.Show();
+            var pump=new System.Windows.Threading.DispatcherFrame();
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,new Action(()=>pump.Continue=false));
+            System.Windows.Threading.Dispatcher.PushFrame(pump);
+            if(!context.CreatedWindow.IsLoaded)throw new Exception("Runtime editor window did not load: "+toolId);
+            context.CreatedWindow.Close(); control.Dispose();
+        }
+        imageNode.DebugWindowStyle=DebugWindowStyle.None;
+        if(!chain.Execute(imageNode,new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory }))
+            throw new Exception("Admitted Runtime node was rejected by open decision chain.");
+        System.Windows.Application.Current.Shutdown();
+    }
+    catch(Exception error){uiError=error;}
+});
+uiThread.SetApartmentState(ApartmentState.STA);uiThread.Start();uiThread.Join();
+if(uiError is not null)throw new Exception("Node open admission test failed.",uiError);
+Console.WriteLine("probe: admitted open and unadmitted/paused open rejection passed");
+var guardDir=Path.Combine(AppContext.BaseDirectory,"tool-guard-case-"+Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(guardDir);
+try
+{
+    var solutionManager=new SolutionManager(guardDir,productionDirectory);
+    var document=solutionManager.CreateUntitledSolution();
+    document.Workflows[0].Nodes.Add(new WorkflowNodeBase("source","source","source","ImageLoad") { RuntimeConfiguration=declaredImage });
+    var repo=new SolutionRepository(Path.Combine(guardDir,"recovery"),productionDirectory);
+    var validPath=Path.Combine(guardDir,"valid.solution");
+    if(!repo.Save(document,validPath))throw new Exception("Admitted solution save failed: "+repo.LastError);
+    if(repo.Load(validPath) is null)throw new Exception("Admitted solution reopen failed: "+repo.LastError);
+    var original=File.ReadAllBytes(validPath); var before=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(original));
+    document.Workflows[0].Nodes[0].ToolType="UnknownTool";
+    if(repo.Save(document,validPath))throw new Exception("Unadmitted solution was saved over the source.");
+    if(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(validPath)))!=before)throw new Exception("Rejected save changed source bytes.");
+    foreach(var unavailable in new[]{"UnknownTool","Subroutine","Condition"})
+    {
+        var raw=System.Text.Json.Nodes.JsonNode.Parse(original)!;
+        raw["Workflows"]![0]!["Nodes"]![0]!["ToolType"]=unavailable;
+        var candidatePath=Path.Combine(guardDir,unavailable+".solution");File.WriteAllText(candidatePath,raw.ToJsonString());
+        var checksum=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(candidatePath)));
+        var candidate=repo.LoadCandidate(candidatePath);
+        if(candidate.Candidate is not null)throw new Exception("Unadmitted solution opened: "+unavailable);
+        if(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(candidatePath)))!=checksum)throw new Exception("Rejected open changed source: "+unavailable);
+    }
+    Console.WriteLine("probe: admitted save/reopen and missing/paused rejected open/save preserve bytes passed");
+}
+finally { var resolved=Path.GetFullPath(guardDir); var allowed=Path.GetFullPath(AppContext.BaseDirectory); if(!resolved.StartsWith(allowed,StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("测试目录不在候选 Release 中。"); Directory.Delete(resolved,true); }
 var imageFile=Path.Combine(Path.GetTempPath(),"suneye-workflow-probe-"+Guid.NewGuid().ToString("N")+".bmp");
 try
 {
@@ -186,6 +290,15 @@ try
     await production.LoadPluginsAsync();
     if(production.LastAdmissionError is not null)throw new Exception("Production re-admission failed.");
     var activeDirectory=production.RuntimeDirectory??throw new Exception("Active generation missing.");
+    MustReject(()=>RuntimeNodeAdmission.Require(activeDirectory,imageNode),"foreign/retired directory generation");
+    MustReject(()=>RuntimeDebugInvocation.Capture(flow,activeDirectory,flow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"foreign generation debug");
+    var foreignEngine=new WorkflowEngine(new NullLogger(),activeDirectory); foreignEngine.RegisterWorkflow(flow);
+    var foreignRunner=new WorkflowExecutionEngine(foreignEngine,production,new NullLogger());
+    bool rejectedForeign=false;
+    try { using var foreign=await foreignRunner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id)); rejectedForeign=!foreign.Success; }
+    catch(InvalidOperationException) { rejectedForeign=true; }
+    if(!rejectedForeign)throw new Exception("Workflow accepted an old generation configuration.");
+    Console.WriteLine("probe: old runtime generation rejected for execution and debug admission");
     var activeFlow=new SunEyeVision.Workflow.Workflow("active-probe","active-probe");
     activeFlow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(activeDirectory,"ImageLoad")});
     var activeEngine=new WorkflowEngine(new NullLogger(),activeDirectory);activeEngine.RegisterWorkflow(activeFlow);
@@ -231,7 +344,7 @@ try
     if(automaticText.Evaluate(0).Content!="width=8")throw new Exception("Cross-node display expression resolved an unexpected value.");
     Console.WriteLine("probe: automatic display source and upstream width=8 passed");
     DeclaredOutputSnapshot? Published(string id)=>displayRun.DeclaredOutputs.SingleOrDefault(output=>output.Identity.NodeId==id);
-    using(var debug=RuntimeDebugInvocation.Capture(displayFlow,displayFlow.Nodes.Single(node=>node.Id=="blob"),new ToolExecutionOwner(),0,
+    using(var debug=RuntimeDebugInvocation.Capture(displayFlow,displayDirectory,displayFlow.Nodes.Single(node=>node.Id=="blob"),new ToolExecutionOwner(),0,
         Published,CancellationToken.None,publishedOwner:displayFlow.ExecutionOwner,readDisplayCandidate:Published))
     using(var debugResult=await debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)))
     {

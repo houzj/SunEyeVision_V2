@@ -2641,14 +2641,20 @@ SplitterPosition = position;
             try
             {
                 LogNodeStorageIdentity(node, "打开调试窗口");
-                var context = new NodeOpenContext(Application.Current.MainWindow);
+                var selectedTab=WorkflowTabViewModel.SelectedTab ?? throw new InvalidOperationException("当前没有选中的流程。");
+                var session=DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案会话。");
+                var directory=session.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。");
+                if (!ReferenceEquals(directory,_directory) || !selectedTab.WorkflowNodes.Contains(node))
+                    throw new InvalidOperationException("节点不属于当前方案或运行目录代次。");
+                var context = new NodeOpenContext(Application.Current.MainWindow) { RuntimeDirectory=directory };
                 // UI owns editor creation. Use the formal node so identity and style
                 // overrides are not lost in an incomplete execution-node conversion.
                 var decisionChain = new NodeOpenDecisionChain();
                 var success = decisionChain.Execute(node, context);
                 if (!success)
                 {
-                    AddLog($"❌ 节点打开失败: {node.Name}");
+                    StatusText = "节点打开失败：" + (context.FailureReason ?? node.Name);
+                    AddLog(StatusText);
                     return;
                 }
 

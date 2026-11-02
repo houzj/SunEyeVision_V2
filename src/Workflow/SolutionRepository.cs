@@ -142,7 +142,7 @@ public class SolutionRepository
     internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument, bool validateAdmission = true)
     {
         var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
-        _=AdmittedDirectory;
+        if (!AdmittedDirectory.IsActive) throw new InvalidOperationException("工具运行目录已退役。");
         using var document = JsonDocument.Parse(root.ToJsonString());
         ValidateTools(document.RootElement);
         var devices = ReadPersistedDevices(document.RootElement, Stopwatch.StartNew());
@@ -169,6 +169,9 @@ public class SolutionRepository
                     var path = "$.Workflows[" + w + "].Nodes[" + n++ + "].ToolType";
                     if (!node.TryGetProperty("ToolType", out var tool) || tool.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(tool.GetString()))
                         throw new JsonException("Node ToolType is required.", path, null, null);
+                    var subroutineId = node.TryGetProperty("SubroutineId", out var subroutine) && subroutine.ValueKind == JsonValueKind.String ? subroutine.GetString() : null;
+                    if (RuntimeNodeAdmission.IsPausedControlFlow(tool.GetString(),subroutineId))
+                        throw new JsonException("Group / 控制流当前尚未接入正式运行：" + tool.GetString(), path, null, null);
                     if (!AdmittedDirectory.Contains(tool.GetString()!))
                         throw new JsonException("缺少兼容工具插件：" + tool.GetString(), path, null, null);
                 }

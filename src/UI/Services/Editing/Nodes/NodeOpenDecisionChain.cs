@@ -2,6 +2,7 @@ using System;
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.UI.Services.Editing
@@ -31,15 +32,12 @@ namespace SunEyeVision.UI.Services.Editing
                 // Step 1: 设置上下文
                 context.Node = node;
 
-                // Step 2: 判断是否为子程序节点（通过 SubroutineId 区分）
-                if (!string.IsNullOrEmpty(node.SubroutineId))
-                {
-                    OnControlFlowNodeOpen?.Invoke(node);
-                    return true;
-                }
-
-                // Step 3: 算法节点 — 执行 ToolRegistry 流程
-                FetchMetadata(context);
+                // 打开前使用所属方案目录；控制流、缺配置和旧代次一律拒绝。
+                RuntimeNodeAdmission.Require(context.RuntimeDirectory ?? throw new InvalidOperationException("节点打开缺少所属方案的运行目录。"), node);
+                var catalog = context.RuntimeDirectory!.GetCatalog(node.ToolType)
+                    ?? throw new InvalidOperationException("已准入工具缺少目录声明：" + node.ToolType);
+                context.Metadata = new ToolMetadata { Id=node.ToolType, DisplayName=catalog.DisplayName,
+                    Description=catalog.Description, Icon=catalog.IconKey, Category=catalog.Category, RuntimeCatalog=catalog };
                 DecideWindowStyle(context);
 
                 if (context.WindowStyle == DebugWindowStyle.None)
@@ -54,6 +52,7 @@ namespace SunEyeVision.UI.Services.Editing
             }
             catch (Exception ex)
             {
+                context.FailureReason = ex.Message;
                 VisionLogger.Instance.Log(LogLevel.Error,
                     $"节点打开失败: {ex.Message}",
                     "NodeOpenDecisionChain", ex);
@@ -64,20 +63,6 @@ namespace SunEyeVision.UI.Services.Editing
         /// <summary>
         /// 获取工具元数据
         /// </summary>
-        private void FetchMetadata(NodeOpenContext context)
-        {
-            var node = context.Node;
-            var metadata = ToolRegistry.GetToolMetadata(node.ToolType);
-            context.Metadata = metadata;
-
-            if (metadata == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"未找到工具元数据: {node.ToolType}",
-                    "NodeOpenDecisionChain");
-            }
-        }
-
         /// <summary>
         /// 决定窗口类型（优先级：节点级 → 工具级 → 全局默认）
         /// </summary>
@@ -106,41 +91,8 @@ namespace SunEyeVision.UI.Services.Editing
         /// </summary>
         private void CreateDebugControl(NodeOpenContext context)
         {
-            var node = context.Node;
-
-            try
-            {
-                if(node.RuntimeConfiguration is not null)
-                {context.DebugControl=new RuntimeNodeConfigurationControl(node);return;}
-                var toolInstance = node.CreateInstance();
-                context.ToolInstance = toolInstance;
-
-                if (toolInstance == null)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Warning,
-                        $"无法创建工具实例: {node.ToolType}",
-                        "NodeOpenDecisionChain");
-                    return;
-                }
-
-                var debugControl = ToolConfigurationEditors.CreateControl(toolInstance);
-                context.DebugControl = debugControl;
-
-                if (debugControl == null)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"工具未提供调试控件: {node.ToolType}",
-                        "NodeOpenDecisionChain");
-                }
-            }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"创建调试控件失败: {ex.Message}",
-                    "NodeOpenDecisionChain", ex);
-            }
+            context.DebugControl = new RuntimeNodeConfigurationControl(context.Node);
         }
-
         /// <summary>
         /// 默认打开窗口逻辑 - 使用 DefaultDebugWindow 包装调试控件
         /// </summary>

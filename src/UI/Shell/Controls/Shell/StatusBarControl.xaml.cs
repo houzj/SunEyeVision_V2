@@ -1,16 +1,55 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
+using SunEyeVision.Core.Versioning;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+using SunEyeVision.UI.Services.Logging;
 
-namespace SunEyeVision.UI.Shell.Controls.Shell
+namespace SunEyeVision.UI.Shell.Controls.Shell;
+
+/// <summary>右侧日志摘要；完整日志列表等待原件控件接入。</summary>
+public partial class StatusBarControl : UserControl
 {
-    /// <summary>
-    /// 底部状态栏：真实状态、相机状态、运行状态、流程计数。
-    /// 从 MainWindow 拆分而来，移除假 CPU/FPS 硬编码（rule-008）。
-    /// </summary>
-    public partial class StatusBarControl : UserControl
+    private UILogWriter? _writer;
+
+    public StatusBarControl()
     {
-        public StatusBarControl()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        VersionText.Text = AppVersionInfo.Product;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (DesignerProperties.GetIsInDesignMode(this) || _writer is not null) return;
+        _writer = ServiceInitializer.UILogWriter;
+        _writer.LogsAdded += OnLogsChanged;
+        _writer.LogsCleared += OnLogsCleared;
+        RefreshLatestLog();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (_writer is null) return;
+        _writer.LogsAdded -= OnLogsChanged;
+        _writer.LogsCleared -= OnLogsCleared;
+        _writer = null;
+        LogSummary.DataContext = null;
+        LogSummary.Visibility = Visibility.Collapsed;
+        NoLogText.Visibility = Visibility.Visible;
+    }
+
+    private void OnLogsChanged(object? sender, LogBatchEventArgs e) => RefreshLatestLog();
+    private void OnLogsCleared(object? sender, EventArgs e) => RefreshLatestLog();
+
+    private void RefreshLatestLog()
+    {
+        var entries = _writer?.LogEntries;
+        var latest = entries is { Count: > 0 } ? entries[entries.Count - 1] : null;
+        LogSummary.DataContext = latest;
+        LogSummary.Visibility = latest is null ? Visibility.Collapsed : Visibility.Visible;
+        NoLogText.Visibility = latest is null ? Visibility.Visible : Visibility.Collapsed;
     }
 }

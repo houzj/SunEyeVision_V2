@@ -54,7 +54,7 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="24"/>
+                <RowDefinition Height="28"/>
             </Grid.RowDefinitions>
 
             <!-- ========== 左侧工具箱 - 使用双模ToolboxControl ========== -->
@@ -63,7 +63,7 @@
             </Border>
 
 
-            <shell:ShellWorkspaceControl Grid.Column="1" x:Name="WorkspaceHost" DataContext="{Binding Workspace}" Loaded="WorkspaceHost_Loaded"/>
+            <shell:ShellWorkspaceControl Grid.Column="1" Grid.RowSpan="2" x:Name="WorkspaceHost" DataContext="{Binding Workspace}" Loaded="WorkspaceHost_Loaded"/>
             <!-- 右侧分割器 - 工作区和右侧面板之间（可折叠，折叠逻辑内聚） -->
             <common:CollapsibleSplitterBox Grid.Column="2" Width="8" MinWidth="8"
                                            ResizeDirection="Columns"
@@ -76,8 +76,8 @@
                 <shell:ImageResultControl x:Name="ImageResultHost" DataContext="{Binding ImageResult}"/>
             </Border>
 
-            <!-- ========== 状态栏 (24px) ========== -->
-            <shell:StatusBarControl Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" DataContext="{Binding StatusBar}"/>
+            <!-- 右侧日志栏与左侧画布状态栏处于同一视觉高度。 -->
+            <shell:StatusBarControl Grid.Column="3" Grid.Row="1" DataContext="{Binding StatusBar}"/>
         </Grid>
     </DockPanel>
 

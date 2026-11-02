@@ -1,40 +1,38 @@
 <UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.StatusBarControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-             mc:Ignorable="d"
-             d:DesignHeight="24" d:DesignWidth="800">
-
-    <StatusBar Height="24" Background="{DynamicResource {x:Static base:ThemeKeys.StatusBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.StatusBarBorderBrush}}" BorderThickness="0,1,0,0">
-        <StatusBarItem>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="●" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
-            </StackPanel>
-        </StatusBarItem>
-        <Separator/>
-        <StatusBarItem>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="📷 相机:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding CameraStatus}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
-            </StackPanel>
-        </StatusBarItem>
-        <Separator/>
-        <StatusBarItem>
-            <Button Command="{Binding ShowExecutionSnapshotCommand}" Background="Transparent" BorderThickness="0" Padding="2,0" ToolTip="查看当前工作流的本次执行快照">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="流程:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding WorkflowExecutionText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
-            </StackPanel>
-            </Button>
-        </StatusBarItem>
-        <StatusBarItem HorizontalAlignment="Right">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="流程:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding WorkflowCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
-            </StackPanel>
-        </StatusBarItem>
-    </StatusBar>
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:logging="clr-namespace:SunEyeVision.Plugin.SDK.Logging;assembly=SunEyeVision.Plugin.SDK"
+ mc:Ignorable="d" d:DesignHeight="28" d:DesignWidth="600">
+ <Border Height="28" Background="{DynamicResource ThemeStatusBarBackgroundBrush}"
+         BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,1,0,0">
+  <Grid>
+   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <TextBlock x:Name="NoLogText" Margin="10,0" VerticalAlignment="Center" FontSize="12"
+              Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="暂无日志"/>
+   <Grid x:Name="LogSummary" Margin="9,0,8,0" Visibility="Collapsed">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="68"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Image Width="20" Height="20" VerticalAlignment="Center"><Image.Style><Style TargetType="Image">
+     <Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_信息.png"/>
+     <Style.Triggers>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Warning}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_告警.png"/></DataTrigger>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Error}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_错误.png"/></DataTrigger>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Fatal}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_错误.png"/></DataTrigger>
+     </Style.Triggers>
+    </Style></Image.Style></Image>
+    <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12"
+               Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="{Binding Timestamp,StringFormat={}{0:HH:mm:ss}}"/>
+    <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis"
+               Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="{Binding Message}" ToolTip="{Binding Message}"/>
+   </Grid>
+   <TextBlock x:Name="VersionText" Grid.Column="1" VerticalAlignment="Center" FontSize="10" Margin="4,0"
+              Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+   <Button Grid.Column="2" Width="24" Height="24" Margin="2,0,6,0" IsEnabled="False"
+           ToolTipService.ShowOnDisabled="True" ToolTip="日志列表待接入原件控件" AutomationProperties.Name="展开日志（待接入）"
+           Background="Transparent" BorderThickness="0">
+    <Image Width="20" Height="20" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_log_unfold_disable.png"/>
+   </Button>
+  </Grid>
+ </Border>
 </UserControl>

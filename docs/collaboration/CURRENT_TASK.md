@@ -3096,3 +3096,6 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
 
 - B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+### 中立插件准入整链设计（候选未实施）
+独立分支 codex/platform-neutral-admission-20261102 基于 80d09b28，未包含主工作区在途成果。已形成中立插件准入运行目录实施设计 HTML，核对正式 ReleasePayloadAuthority 和组件/工具/桌面消费者：当前 LoadToolComponents 在默认 ALC 加载，PluginLoadContext.cs 未纳入项目；旧静态目录候选不能直接作为交付。正式无 WPF 载荷需由构建规则生成真实闭包，不能删除桌面 Release 文件凑成。本批仅设计，尚未实现或构建测试，运行作用域排空及发布失败后的程序集卸载不能假称已具备。

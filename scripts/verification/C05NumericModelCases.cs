@@ -132,5 +132,17 @@ internal static class C05NumericModelCases
   }
   finally{owner.Close();Application.Current.Shutdown();}
  }
- [STAThread]public static int Main(){try{return Run();}catch(Exception e){Console.Error.WriteLine(e);return 1;}}
+ static IntPtr desktop;
+ [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);
+ [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]static extern bool SetThreadDesktop(IntPtr value);
+ [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]static extern bool CloseDesktop(IntPtr value);
+ [STAThread]public static int Main()
+ {
+  var result=1;var thread=new Thread(()=>{
+   try{desktop=CreateDesktop("SunEyeVision-C05-"+Guid.NewGuid().ToString("N"),IntPtr.Zero,IntPtr.Zero,0,0x000F01FF,IntPtr.Zero);
+    if(desktop==IntPtr.Zero||!SetThreadDesktop(desktop))throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(),"独立隐藏桌面不可用；不回退到用户桌面。");
+    Console.WriteLine("C05隐藏桌面已建立，不切换用户桌面。");result=Run();}
+   catch(Exception e){Console.Error.WriteLine(e);}});
+  thread.SetApartmentState(ApartmentState.STA);thread.Start();thread.Join();if(desktop!=IntPtr.Zero)CloseDesktop(desktop);return result;
+ }
 }

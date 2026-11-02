@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
@@ -21,8 +23,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 3. 支持分组显示
     /// 
     /// 设计分层：
-    /// - 身份层（SourceNodeId + PropertyName）：构造后不可变，用于唯一标识一个数据源，
-    ///   相等比较基于此二层，确保 WPF 控件能正确匹配选中项
+    /// - 身份层（Binding）：中立声明的作用域、端口或变量与选择共同定义身份，
+    ///   相等比较基于完整中立引用，确保 WPF 控件能正确匹配选中项
     /// - 展示层（SourceNodeName, DisplayName 等）：UI 显示辅助
     /// - 状态层（CurrentValue, HasExecuted 等）：随执行变化
     /// 
@@ -44,32 +46,41 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>Candidate navigation only; never part of persisted binding identity.</summary>
         [JsonIgnore] public string? CandidateSection { get; set; }
         /// <summary>Only host-created connection defaults carry ownership; user picks are explicit.</summary>
-        public string? AutomaticConnectionId { get; set; }
-        public string? SourceWorkflowId { get; init; }
+        private ParameterSetting _binding = null!;
+        public required ParameterSetting Binding
+        {
+            get => _binding;
+            init => _binding = value switch
+            {
+                ReferenceSetting { Reference: { ScopeId: { Length: > 0 } } } => value,
+                VariableSetting { Reference: not null } => value,
+                _ => throw new ArgumentException("来源必须是具有作用域的节点引用或有效变量引用。", nameof(value))
+            };
+        }
+        public string? AutomaticConnectionId => (Binding as ReferenceSetting)?.OriginId is { } origin && origin.StartsWith("connection:", StringComparison.Ordinal) ? origin[11..] : null;
+        public string? SourceWorkflowId => (Binding as ReferenceSetting)?.Reference.ScopeId;
         public AvailableDataSource WithConnectionOwnership(string? connectionId)
         {
-            var copy = (AvailableDataSource)MemberwiseClone(); copy.AutomaticConnectionId = connectionId; return copy;
+            if (Binding is not ReferenceSetting reference) throw new InvalidOperationException("变量来源不能拥有连接来源。");
+            var copy = (AvailableDataSource)MemberwiseClone(); copy._binding = reference with { OriginId = connectionId is null ? null : "connection:" + connectionId }; return copy;
         }
         /// <summary>A detached runtime value; candidate and editor objects keep their original values.</summary>
         public AvailableDataSource WithRuntimeValue(object? value)
         {
+            if (value is not (null or bool or byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal or string))
+                throw new InvalidOperationException("来源候选不能持有借用资源或复合运行值。");
             var copy = (AvailableDataSource)MemberwiseClone(); copy.CurrentValue = value; return copy;
+        }
+        public AvailableDataSource WithCandidateSection(string? section)
+        {
+            var copy = (AvailableDataSource)MemberwiseClone(); copy.CandidateSection = section; return copy;
         }
         /// <summary>
         /// 源节点ID（身份字段，构造后不可变）
         /// </summary>
-        public string SourceNodeId { get; init; } = string.Empty;
+        public string SourceNodeId => (Binding as ReferenceSetting)?.Reference.NodeId ?? string.Empty;
 
-        /// <summary>
-        /// 源字段稳定 ID（可选）。
-        /// </summary>
-        /// <remarks>
-        /// 通讯解析、脚本和子程序等动态字段使用该 ID 作为长期绑定身份。
-        /// 旧数据源没有该值时，继续使用 SourceNodeId + PropertyName 兼容识别。
-        /// </remarks>
-        public Guid? SourceFieldId { get; init; }
-
-        /// <summary>
+/// <summary>
         /// 源节点名称
         /// </summary>
         public string SourceNodeName { get; set; } = string.Empty;
@@ -86,19 +97,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 结果对象中的属性路径。
         /// 示例: "Radius", "Center.X", "CircleFound.Radius"
         /// </remarks>
-        public string PropertyName { get; init; } = string.Empty;
+        public string PropertyName => (Binding as ReferenceSetting)?.Reference.PortId ?? string.Empty;
 
-        /// <summary>
-        /// 绑定路径后缀（数组子集过滤，如 "[Type=Circle]" 或 "[0]"）。
-        /// </summary>
-        /// <remarks>
-        /// 用于 RoI(ShapeParameters[]) 在绑定树中按图形类型/按单个图形下钻时，
-        /// 挂到合成 AvailableDataSource 上，使 GetBindingPath 输出 "NodeId.属性名[Type=Circle]"。
-        /// 为空时退回原数组 "[]" 逻辑。
-        /// </remarks>
-        public string? BindingSuffix { get; set; }
-
-        /// <summary>
+/// <summary>
         /// 显示名称
         /// </summary>
         /// <remarks>
@@ -113,7 +114,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 合成叶子（几何字段叶 / ROI 字段叶 / 类型集合叶）常需要比 <see cref="DisplayName"/>
         /// 更完整的名字（如父名 + 字段名 "圆心.X"）。为空时回退 <see cref="DisplayName"/>。
-        /// ★ 显示名只允许由构造方声明；格式化层（ParamBinding）不得再按 BindingSuffix 形态推断。
+        /// ★ 显示名只允许由构造方声明；格式化层不得再从来源表达式形态推断。
         /// </remarks>
         public string? LeafDisplayName { get; set; }
 
@@ -168,7 +169,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 用于预览和验证。
         /// </remarks>
         [JsonIgnore]
-        public object? CurrentValue { get; set; }
+        private object? _currentValue;
+        public object? CurrentValue
+        {
+            get => _currentValue;
+            set => _currentValue = value is null or bool or byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal or string
+                ? value : throw new InvalidOperationException("来源候选不能持有借用资源或复合运行值。");
+        }
 
         /// <summary>
         /// 值的字符串表示
@@ -291,7 +298,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 是否有效
         /// </summary>
-        public bool IsValid => !string.IsNullOrEmpty(SourceNodeId) && !string.IsNullOrEmpty(PropertyName);
+        public bool IsValid => Binding is ReferenceSetting or VariableSetting;
 
         /// <summary>
         /// 创建绑定路径
@@ -299,11 +306,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>绑定路径字符串，数组类型追加 []</returns>
         public string GetBindingPath()
         {
-            if (BindingSuffix != null)
-                return $"{SourceNodeId}.{PropertyName}{BindingSuffix}";
-            if (PropertyType?.IsArray == true)
-                return $"{SourceNodeId}.{PropertyName}[]";
-            return $"{SourceNodeId}.{PropertyName}";
+            return Binding switch { ReferenceSetting r => BindingReferenceSerializer.Serialize(r.Reference), VariableSetting v => BindingReferenceSerializer.Serialize(v.Reference), _ => throw new InvalidOperationException("来源缺少中立身份。") };
         }
 
         /// <summary>
@@ -344,29 +347,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 创建数据源
         /// </summary>
-        public static AvailableDataSource Create(
-            string sourceNodeId,
-            string sourceNodeName,
-            string propertyName,
-            string displayName,
-            Type propertyType,
-            object? currentValue = null)
-        {
-            return new AvailableDataSource
-            {
-                SourceNodeId = sourceNodeId,
-                SourceNodeName = sourceNodeName,
-                PropertyName = propertyName,
-                DisplayName = displayName,
-                PropertyType = propertyType,
-                CurrentValue = currentValue
-            };
-        }
-
         #region 值相等（基于身份字段）
 
         /// <summary>
-        /// 基于身份字段（SourceNodeId + PropertyName）判断值相等
+        /// 基于完整中立引用判断值相等
         /// </summary>
         /// <remarks>
         /// 不同创建点产生的 AvailableDataSource 实例可能引用不同，但身份相同（同一个数据源）。
@@ -377,9 +361,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return SourceNodeId == other.SourceNodeId
-                && SourceWorkflowId == other.SourceWorkflowId
-                && PropertyName == other.PropertyName;
+            return Binding.GetType() == other.Binding.GetType() && string.Equals(GetBindingPath(), other.GetBindingPath(), StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -391,10 +373,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 基于身份字段计算哈希值
         /// </summary>
         /// <remarks>
-        /// 身份字段（SourceNodeId、PropertyName）使用 init setter，构造后不可变，
+        /// Binding 使用 init setter，构造后不可变，
         /// 因此 GetHashCode 在对象生命周期内保持稳定，可安全用于字典和集合。
         /// </remarks>
-        public override int GetHashCode() => HashCode.Combine(SourceWorkflowId, SourceNodeId, PropertyName);
+        public override int GetHashCode() => HashCode.Combine(Binding.GetType(), GetBindingPath());
 
         /// <summary>
         /// 相等运算符
@@ -413,7 +395,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
     /// <summary>
     /// AvailableDataSource 类型转换器，支持 string ↔ AvailableDataSource 的 WPF 绑定转换。
-    /// 格式：NodeId.PropertyName
+    /// 格式：中立绑定引用的序列化表达式
     /// </summary>
     public class AvailableDataSourceConverter : TypeConverter
     {
@@ -426,27 +408,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 从字符串转换（格式：NodeId.PropertyName）
+        /// 从字符串转换（格式：中立绑定引用的序列化表达式）
         /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             if (value is string empty && string.IsNullOrWhiteSpace(empty)) return null;
             if (value is string str && !string.IsNullOrEmpty(str))
             {
-                var dotIndex = str.IndexOf('.');
-                if (dotIndex > 0 && dotIndex < str.Length - 1)
-                {
-                    var nodeId = str[..dotIndex];
-                    var propertyName = str[(dotIndex + 1)..];
-                    // 去掉数组索引标记 []
-                    if (propertyName.EndsWith("[]"))
-                        propertyName = propertyName[..^2];
-                    return new AvailableDataSource
-                    {
-                        SourceNodeId = nodeId,
-                        PropertyName = propertyName,
-                    };
-                }
+                try { return new AvailableDataSource { Binding = new ReferenceSetting(BindingReferenceSerializer.Deserialize(str)) }; }
+                catch (System.Text.Json.JsonException) { return new AvailableDataSource { Binding = new VariableSetting(BindingReferenceSerializer.DeserializeVariable(str)) }; }
             }
             return base.ConvertFrom(context, culture, value);
         }

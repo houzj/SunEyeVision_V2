@@ -47,12 +47,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 结果类型（设计时）
         /// </summary>
-        public Type? ResultType { get; set; }
+        public SunEyeVision.Plugin.Contracts.ToolSchema? Schema { get; set; }
 
         /// <summary>
         /// 节点参数（用于动态输出契约 IOutputContractProvider 查询）
         /// </summary>
-        public ToolParameters? Parameters { get; set; }
 
         /// <summary>
         /// 执行状态
@@ -62,17 +61,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 是否有执行结果
         /// </summary>
-        public bool HasResult => Result != null;
+        public bool HasResult => Result is { Status: not SunEyeVision.Plugin.Runtime.ExecutionStatus.NotExecuted };
 
         /// <summary>
         /// 是否为运行时
         /// </summary>
-        public bool IsRuntime => Result != null;
+        public bool IsRuntime => HasResult;
 
         /// <summary>
         /// 是否为设计时
         /// </summary>
-        public bool IsDesignTime => Result == null;
+        public bool IsDesignTime => !HasResult;
     }
 
     /// <summary>
@@ -160,14 +159,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         NodeExecutionContext? GetNodeContext(string nodeId);
 
         /// <summary>
-        /// 获取属性值
-        /// </summary>
-        /// <param name="nodeId">节点ID</param>
-        /// <param name="propertyName">属性名称</param>
-        /// <returns>属性值（如果存在）</returns>
-        object? GetPropertyValue(string nodeId, string propertyName);
-
-        /// <summary>
         /// 检查节点是否已执行
         /// </summary>
         /// <param name="nodeId">节点ID</param>
@@ -202,35 +193,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public static List<AvailableDataSource> GetAvailableDataSources<T>(this IDataSourceQueryService service, string nodeId)
         {
             return service.GetAvailableDataSources(nodeId, typeof(T));
-        }
-
-        /// <summary>
-        /// 获取属性值并转换为指定类型
-        /// </summary>
-        /// <typeparam name="T">目标类型</typeparam>
-        /// <param name="service">数据源查询服务</param>
-        /// <param name="nodeId">节点ID</param>
-        /// <param name="propertyName">属性名称</param>
-        /// <returns>属性值</returns>
-        public static T? GetPropertyValue<T>(this IDataSourceQueryService service, string nodeId, string propertyName)
-        {
-            var value = service.GetPropertyValue(nodeId, propertyName);
-            if (value is T typedValue)
-                return typedValue;
-
-            if (value != null)
-            {
-                try
-                {
-                    return (T)Convert.ChangeType(value, typeof(T));
-                }
-                catch
-                {
-                    return default;
-                }
-            }
-
-            return default;
         }
 
         /// <summary>

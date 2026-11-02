@@ -85,6 +85,14 @@ public sealed partial class NodeConfigurationEditHost
     }
     private void EnsureOpen()
     {if(_closed)throw new InvalidOperationException("方案配置宿主已经退役。");}
+    private SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot RequireCurrentDirectory()
+    {
+        EnsureOpen();
+        var directory = _store.Capture().CopyConfiguration().RuntimeDirectory;
+        if (directory is null || !directory.IsActive || !ReferenceEquals(_design.RuntimeDirectory, directory) || _design.ExecutionOwner.IsRetired)
+            throw new InvalidOperationException("方案已退役或运行目录代次已变更。");
+        return directory;
+    }
     private readonly List<(GlobalVariable Variable, bool ValueChanged)> _structureNotifications = new();
     // Deterministic acceptance-failure injection only; disabled in production. Tests set
     // this private counter by reflection. It is not an observer/callback under ValueGate.
@@ -261,11 +269,18 @@ public sealed partial class NodeConfigurationEditHost
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("节点草稿已接受或不属于当前文档。");
             RequireCurrentNodeInstance(editor);
-            var shell = new Solution();
-            var flow = new Workflow(editor.Identity.WorkflowId, "prepared");
-            flow.Nodes.Add(editor.Node);
-            shell.Workflows.Add(flow);
-            var copy = BindingConfigurationStore.Copy(shell).Workflows[0].Nodes[0];
+            var directory = RequireCurrentDirectory();
+            var source = editor.Node;
+            RuntimeNodeAdmission.Require(directory, source);
+            var copy = new WorkflowNodeBase(source.Id, source.Name, source.DispName, source.ToolType)
+            {
+                SubroutineId = source.SubroutineId, GlobalIndex = source.GlobalIndex, LocalIndex = source.LocalIndex,
+                IsEnabled = source.IsEnabled, PositionX = source.PositionX, PositionY = source.PositionY,
+                Width = source.Width, Height = source.Height,
+                AdditionalData = source.AdditionalData?.ToDictionary(entry => entry.Key, entry => entry.Value.Clone()),
+                RuntimeConfiguration = source.RuntimeConfiguration!.Copy(),
+                SelectedDisplayReference = source.SelectedDisplayReference
+            };
             return new(_owner, editor.Identity, copy, editor.Signature,editor.FormalInstance,editor.RuntimeValueBaseline);
         }
     }
@@ -276,6 +291,9 @@ public sealed partial class NodeConfigurationEditHost
             EnsureOpen();
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("变量草稿已接受或不属于当前文档。");
+            var directory = RequireCurrentDirectory();
+            if (!ReferenceEquals(editor.Configuration.RuntimeDirectory, directory) || !ReferenceEquals(editor.Baseline.RuntimeDirectory, directory))
+                throw new InvalidOperationException("变量草稿运行目录代次已变更。");
             var copy = new GlobalVariableConfigurationEditDraft(_owner, editor.BaseVersion,
                 BindingConfigurationStore.Copy(editor.Configuration), BindingConfigurationStore.Copy(editor.Baseline),
                 new Dictionary<string, GlobalVariableConfigurationEditDraft.OpeningValue>(editor.OpeningValues));
@@ -304,7 +322,7 @@ public sealed partial class NodeConfigurationEditHost
                 var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点没有Runtime配置。");
                 _=runtime.Fields.Apply(changes); // Freeze every proposed value against its actual declaration.
                 var proposed=runtime.WithFieldSettings(changes);node.RuntimeConfiguration=proposed;
-                RuntimeDisplayBindings.Validate(flow,node,proposed,changes.Keys.ToHashSet(StringComparer.Ordinal));
+                RuntimeDisplayBindings.Validate(flow,node,proposed,batch.Draft.Configuration.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入目录。"),changes.Keys.ToHashSet(StringComparer.Ordinal));
                 var settingsErrors=proposed.ValidateSettings();
                 if(settingsErrors.Count!=0)throw new ArgumentException(settingsErrors[0].Message);
                 foreach(var (id,setting) in proposed.CaptureExecutionFields())
@@ -313,7 +331,7 @@ public sealed partial class NodeConfigurationEditHost
                     {WorkflowBindingContext.ValidateVariable(batch.Draft.Configuration,flow,node,id,variable);continue;}
                     if(setting is not ReferenceSetting reference)continue;
                     if(reference.RebindingReason is {Length:>0} reason)throw new ArgumentException(reason);
-                    var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id,batch.Draft.Configuration);
+                    var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id,batch.Draft.Configuration.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入目录。"),batch.Draft.Configuration);
                     if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
                         throw new ArgumentException(result.Reason);
                 }
@@ -518,7 +536,7 @@ public sealed partial class NodeConfigurationEditHost
         CheckVariableDefinitions(candidate);
         foreach (var flow in candidate.Workflows)
         {
-            var issues = OutputBindingChangeService.GetExecutionInputIssues(flow, flow.Id);
+            var issues = OutputBindingChangeService.GetExecutionInputIssues(flow, candidate.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入目录。"), flow.Id);
             if (validateAllBindings && issues.Values.SelectMany(i => i).FirstOrDefault() is { } batchIssue)
                 throw new InvalidOperationException(batchIssue.Message);
             foreach(var node in flow.Nodes.Where(node=>node.RuntimeConfiguration is not null&&(validateAllBindings||participants.Contains(new(flow.Id,node.Id)))))
@@ -527,7 +545,7 @@ public sealed partial class NodeConfigurationEditHost
                     if(setting is VariableSetting variable)WorkflowBindingContext.ValidateVariable(candidate,flow,node,fieldId,variable);
                     else if(setting is ReferenceSetting reference&&BindingRelationCatalog.IndexVariables(reference.Reference.Selection).Any())
                     {
-                        var validation=WorkflowBindingContext.ValidateTyped(flow,node,fieldId,reference,flow.Id,candidate);
+                        var validation=WorkflowBindingContext.ValidateTyped(flow,node,fieldId,reference,flow.Id,candidate.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入目录。"),candidate);
                         if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)throw new InvalidOperationException(validation.Reason);
                     }
                 }
@@ -542,8 +560,7 @@ public sealed partial class NodeConfigurationEditHost
                 }
                 else
                 {
-                    var result = node.Parameters.Validate();
-                    if (!result.IsValid) throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "节点参数无效。");
+                    throw new InvalidOperationException("节点缺少已准入 Runtime 配置。");
                 }
                 if (issues.TryGetValue(node.Id, out var inputIssues) && inputIssues.Count > 0)
                     throw new InvalidOperationException(inputIssues[0].Message);
@@ -634,8 +651,7 @@ public sealed partial class NodeConfigurationEditHost
         internal bool Applied;
         internal readonly List<(Workflow Root,RootWorkflowConfiguration Before,RootWorkflowConfiguration After)> Roots=new();
         internal List<GlobalVariable>? PreviousOrder;
-        internal readonly List<(WorkflowNodeBase Node, SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters Parameters,
-            SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSettingContainer Settings, RuntimeToolConfiguration? Runtime)> Nodes = new();
+        internal readonly List<(WorkflowNodeBase Node, RuntimeToolConfiguration? Runtime)> Nodes = new();
         internal readonly List<(GlobalVariable Variable, GlobalVariable.ConfigurationState Configuration, GlobalVariable.ValueState Value)> Variables = new();
         internal readonly List<string> AddedInstances = new();
         internal readonly List<(GlobalVariable Variable, bool ValueChanged)> Notifications = new();
@@ -644,7 +660,7 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (!Applied) return;
             foreach(var root in Roots)root.Root.ApplyRootConfigurationRaw(root.Before);
-            foreach (var node in Nodes) { node.Node.Parameters = node.Parameters; node.Node.ParamSettings = node.Settings; node.Node.RuntimeConfiguration = node.Runtime; }
+            foreach (var node in Nodes) node.Node.RuntimeConfiguration = node.Runtime;
             foreach (var variable in Variables)
             {
                 variable.Variable.ApplyConfigurationRaw(variable.Configuration);
@@ -682,7 +698,7 @@ public sealed partial class NodeConfigurationEditHost
             var target = _nodeInstances[pair.Key];
             if (ParametersSignature(target) != ParametersSignature(pair.Value)
                 ||target.RuntimeConfiguration?.CurrentValuesIdentity!=pair.Value.RuntimeConfiguration?.CurrentValuesIdentity)
-                projection.Nodes.Add((target, target.Parameters, target.ParamSettings, target.RuntimeConfiguration));
+                projection.Nodes.Add((target, target.RuntimeConfiguration));
         }
         var configChanged = plans.ToDictionary(p => p.Next.Id,
             p => VariableConfigurationSignature(p.Target) != VariableConfigurationSignature(p.Next), StringComparer.Ordinal);
@@ -704,8 +720,8 @@ public sealed partial class NodeConfigurationEditHost
         foreach (var pair in nextNodes)
             if (projection.Nodes.Any(p => ReferenceEquals(p.Node, _nodeInstances[pair.Key])))
             {
-                _nodeInstances[pair.Key].Parameters = pair.Value.Parameters;
-                _nodeInstances[pair.Key].ParamSettings = pair.Value.ParamSettings;
+
+
                 _nodeInstances[pair.Key].RuntimeConfiguration = pair.Value.RuntimeConfiguration;
                 RawMutationCompleted();
             }
@@ -843,9 +859,8 @@ public sealed partial class NodeConfigurationEditHost
     }, WorkflowSerializationOptions.Compact);
     private static string ToolConfigurationSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
-        Type = node.RuntimeConfiguration?.SettingsType.FullName ?? node.Parameters.GetType().FullName,
+        Type = node.RuntimeConfiguration?.SettingsType.FullName,
         Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
-        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null, node.ParamSettings
     }, WorkflowSerializationOptions.Compact);
     private static string VariableConfigurationSignature(GlobalVariable variable) => JsonSerializer.Serialize(new
     {
@@ -877,9 +892,7 @@ public sealed partial class NodeConfigurationEditHost
     private static void SetParameters(WorkflowNodeBase target, WorkflowNodeBase source)
     {
         target.RuntimeConfiguration = source.RuntimeConfiguration?.Copy();
-        target.Parameters = source.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(source.Parameters)
-            : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
-        target.ParamSettings = BindingConfigurationStore.CopySettings(source.ParamSettings);
+
     }
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact)
         ?? throw new InvalidOperationException("无法复制编辑绑定设置。");

@@ -12,7 +12,6 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
@@ -329,8 +328,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private string FormatReference(OutputReference reference)
     {
         var sourceName=_query?.GetBindingCandidateNodeNames(_node.Id).GetValueOrDefault(reference.NodeId);
-        var output=_query?.FormalOutputContractReader?.Invoke(reference.NodeId)?.FirstOrDefault(p=>BindingClrAdapter.OutputPortId(p)==reference.PortId);
-        return (sourceName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
+        var output=_query?.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
+        return (sourceName??"已选择来源")+" · "+(output?.DisplayName??reference.PortId)
             +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
     }
     private SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionSnapshot ReadTextExpressionSnapshot(long generation)
@@ -355,10 +354,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         var pending=new Stack<string>(graph.GetPredecessors(_node.Id));while(pending.TryPop(out var id))if(ids.Add(id))foreach(var parent in graph.GetPredecessors(id))pending.Push(parent);
         var result=new List<DeclaredReferenceCandidate>();
         foreach(var node in workflow.Nodes.Where(node=>ids.Contains(node.Id)))
-        foreach(var output in _query.FormalOutputContractReader?.Invoke(node.Id)??Array.Empty<OutputVariable>())
+        foreach(var schema in new[]{_query.GetSchema(node.Id)}.OfType<ToolSchema>())
+        foreach(var output in schema.Outputs)
         {
-            if(output.Kind!=OutputVariableKind.Data)continue;
-            foreach(var candidate in DeclaredReferenceCandidateBuilder.Build(output,node.Id,workflow.Id,node.Name))
+
+            foreach(var candidate in DeclaredReferenceCandidateBuilder.Build(schema,output,node.Id,workflow.Id,node.Name))
             {
                 var type=candidate.SelectedType;while(type.Shape==ValueShape.Sequence)type=type.Element!;
                 if(type.Shape==ValueShape.Scalar&&type.Scalar is ScalarKind.Int64 or ScalarKind.Float64 or ScalarKind.Text)result.Add(candidate);
@@ -372,10 +372,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         var candidates=new List<DeclaredReferenceCandidate>();
         var names=_query.GetBindingCandidateNodeNames(_node.Id);
         foreach(var id in names.Keys)
-        foreach(var output in _query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
+        foreach(var schema in new[]{_query.GetSchema(id)}.OfType<ToolSchema>())
+        foreach(var output in schema.Outputs)
         {
-            if(output.Kind!=OutputVariableKind.Data)continue;
-            try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,_query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
+
+            try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(schema,output,id,_query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
             catch(ArgumentException){continue;}
         }
         if(manualParameters)

@@ -154,9 +154,7 @@ public sealed class BindingConfigurationStore
                         if (retained.Contains(new(flow.Id, node.Id)) && oldNodes.TryGetValue(new(flow.Id, node.Id), out var saved))
                         {
                             node.RuntimeConfiguration = saved.RuntimeConfiguration?.Copy();
-                            node.Parameters = saved.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(saved.Parameters)
-                                : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
-                            node.ParamSettings = CopySettings(saved.ParamSettings);
+
                         }
                 foreach(var flow in projected.Workflows.Where(w=>!w.IsSubroutine))
                     if(old.Workflows.FirstOrDefault(w=>w.Id==flow.Id&&!w.IsSubroutine) is {} oldRoot)flow.RootConfiguration=oldRoot.RootConfiguration;
@@ -263,10 +261,11 @@ public sealed class BindingConfigurationStore
             if (oldVariable != null) variableNames.Add(oldVariable.Name);
             if (newVariable != null) variableNames.Add(newVariable.Name);
         }
-        foreach (var relation in BindingRelationCatalog.Describe(before).Concat(BindingRelationCatalog.Describe(after)))
-            if (BindingInputCatalog.TryReference(relation.Input.Read(), Array.Empty<string>(), relation.Input.ReferenceOnly, out var source, out var path) &&
-                (source == "__VariableId__" && variableIds.Contains(path) || source == "__GlobalVars__" && variableNames.Contains(PropertyPathParser.ExtractPropertyName(path.Split('.')[0]))))
-                affected.Add(relation.Target);
+        foreach(var solution in new[]{before,after})
+            foreach(var flow in solution.Workflows)
+                foreach(var node in flow.Nodes)
+                    if(BindingRelationCatalog.VariableReferences(node).Any(entry=>variableIds.Contains(entry.Reference.VariableId)))
+                        affected.Add(new(flow.Id,node.Id));
         var scopedIds = oldNodes.Keys.Union(newNodes.Keys).ToDictionary(k => SolutionExecutionDependencyGraph.GetScopedNodeId(k.WorkflowId, k.NodeId));
         var dependencies = oldDependencies.Concat(newDependencies).ToArray();
         foreach (var dependency in dependencies.Where(d => d.GlobalVariableName != null && variableNames.Contains(d.GlobalVariableName)))
@@ -286,18 +285,15 @@ public sealed class BindingConfigurationStore
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
-        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
-        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
+        node.SelectedDisplayReference
     }, WorkflowSerializationOptions.Compact);
 
     private static string NodeExecutionSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration?.ExecutionConfigurationIdentity,
-        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
         // The selected display is presentation state, not an input of the completed invocation.
         // Keep it in NodeSignature/persistence and the next-run image selection path.
-        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null
     }, WorkflowSerializationOptions.Compact);
 
     // Runtime initialization timestamps are not binding changes. Initial values are configuration.
@@ -374,17 +370,15 @@ public sealed class BindingConfigurationStore
             var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration, AdditionalData=workflow.AdditionalData?.ToDictionary(entry=>entry.Key,entry=>entry.Value.Clone()) };
             foreach (var node in workflow.Nodes)
             {
-                if (node.RuntimeConfiguration is { } runtime && runtime.ToolId != node.ToolType)
-                    throw new InvalidOperationException("Runtime配置与节点工具身份不符。");
+                RuntimeNodeAdmission.Require(source.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入运行目录。"),node);
                 flow.Nodes.Add(new WorkflowNodeBase(node.Id, node.Name, node.DispName, node.ToolType)
                 {
                     SubroutineId = node.SubroutineId, GlobalIndex = node.GlobalIndex, LocalIndex = node.LocalIndex,
                     IsEnabled = node.IsEnabled, PositionX = node.PositionX, PositionY = node.PositionY,
                     Width = node.Width, Height = node.Height,
+                    AdditionalData = node.AdditionalData?.ToDictionary(entry => entry.Key, entry => entry.Value.Clone()),
                     RuntimeConfiguration = node.RuntimeConfiguration?.Copy(),
-                    Parameters = node.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(node.Parameters)
-                        : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters(),
-                    ParamSettings = CopySettings(node.ParamSettings), SelectedDisplayReference = node.SelectedDisplayReference
+                    SelectedDisplayReference = node.SelectedDisplayReference
                 });
             }
             foreach (var connection in workflow.Connections)
@@ -410,24 +404,4 @@ public sealed class BindingConfigurationStore
         return copy;
     }
 
-    internal static ParamSettingContainer CopySettings(ParamSettingContainer? source)
-    {
-        if (source is null) return new ParamSettingContainer();
-        var copy = source.Clone();
-        foreach (var setting in copy.Settings)
-        {
-            if (setting.ConstantValue is not { } value) continue;
-            if (value is JsonElement element) { setting.ConstantValue = element.Clone(); continue; }
-            var type = value.GetType();
-            // Object-typed constants must preserve their declared runtime scalar/array type.
-            // A container-wide JSON roundtrip silently turns int into JsonElement.
-            setting.ConstantValue = JsonSerializer.Deserialize(JsonSerializer.Serialize(value, type, WorkflowSerializationOptions.Compact),
-                type, WorkflowSerializationOptions.Compact);
-        }
-        return copy;
-    }
-
-    private static T? JsonCopy<T>(T? source) where T : class => source == null ? null :
-        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(source, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact)
-        ?? throw new InvalidOperationException($"无法复制绑定配置 {typeof(T).Name}。");
 }

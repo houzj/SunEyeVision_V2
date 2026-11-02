@@ -97,4 +97,14 @@
     <Resource Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="Resources\Toolbox\ToolGroups.xml" />
     <Content Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="ToolGroups.xml" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <!-- Group/legacy parameter editor source is retained, but unavailable until its Runtime migration. -->
+  <ItemGroup>
+    <Compile Remove="Services\Editing\EditorDraftAdapter.cs;Services\Editing\GroupRunParameterConfigWindow.cs;Services\Editing\GroupRegionParameterControl.cs;Services\Editing\GroupRunParametersControl.cs;Services\Editing\GroupRunParameterSession.cs;Shell\Windows\MainWindowGroupEditing.cs;Features\WorkflowUI\Commands\AddGroupNodeCommand.cs" />
+  </ItemGroup>
+  <!-- Old communication editor is unavailable; keep only existing nonvisual device and parser support. -->
+  <ItemGroup>
+    <Page Remove="Features\CommunicationManager\**\*.xaml" />
+    <Compile Remove="Features\CommunicationManager\**\*.cs" />
+    <Compile Include="Features\CommunicationManager\CommunicationDeviceSnapshotFactory.cs;Features\CommunicationManager\CommunicationEventViewModels.cs;Features\CommunicationManager\CommunicationReceiveProcessor.cs;Features\CommunicationManager\CommunicationReceiveTargetKind.cs;Features\CommunicationManager\CommunicationSeparators.cs;Features\CommunicationManager\ModbusSendTestEncoder.cs" />
+  </ItemGroup>
 </Project>

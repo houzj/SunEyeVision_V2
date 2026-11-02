@@ -19,10 +19,11 @@ internal static class RootWorkflowReferencePicker
   var query=context.Query;var candidates=new List<DeclaredReferenceCandidate>();var target=proxy.NodeId;
   var names=query.GetBindingCandidateNodeNames(target);
   foreach(var id in names.Keys)
-   foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
+   foreach(var schema in new[]{query.GetSchema(id)}.OfType<ToolSchema>())
+   foreach(var output in schema.Outputs)
    {
-    if(output.Kind!=OutputVariableKind.Data)continue;
-    try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(output,id,query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
+
+    try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(schema,output,id,query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
     catch(ArgumentException){continue;}
    }
   _=context.Resolve(proxy);

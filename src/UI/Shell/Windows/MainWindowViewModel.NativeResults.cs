@@ -98,9 +98,7 @@ public partial class MainWindowViewModel
                 ToolSchema schema;
                 try
                 {
-                    schema=snapshot?.Schema??node.RuntimeConfiguration?.Schema??new ToolSchema(Array.Empty<Port>(),
-                        (node.Parameters is IOutputContractProvider provider?provider.GetOutputContract():Array.Empty<OutputVariable>())
-                        .Where(output=>output.Kind==OutputVariableKind.Data).Select(BindingClrAdapter.DescribeOutput));
+                    schema=snapshot?.Schema??node.RuntimeConfiguration?.Schema??throw new InvalidOperationException("节点输出声明不可用。");
                 }
                 catch(Exception error)when(error is ArgumentException or InvalidOperationException)
                 {plan.Diagnostics.Add(node.Name+"：输出声明尚未就绪，"+error.Message);continue;}
@@ -139,10 +137,7 @@ public partial class MainWindowViewModel
                         {
                             var reference=new OutputReference(node.Id,port.Id,port.Type,path,
                                 selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
-                            var available=DisplayImageSources.FirstOrDefault(source=>source.SourceNodeId==node.Id
-                                &&(snapshot?.Fields.TryGetValue(port.Id,out var field)==true
-                                    ?source.SourceFieldId is {} fieldId?field.FieldId==fieldId:field.Name==source.PropertyName
-                                    :BindingClrAdapter.OutputPortId(new OutputVariable{Name=source.PropertyName,FieldId=source.SourceFieldId})==port.Id));
+                            var available=DisplayImageSources.FirstOrDefault(source=>source.Binding is ReferenceSetting setting && setting.Reference.NodeId==node.Id && setting.Reference.PortId==port.Id && setting.Reference.ScopeId==scope && setting.Reference.MemberFieldPath.SequenceEqual(path) && Equals(setting.Reference.Selection,reference.Selection));
                             plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id)
                                 {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
                             return;

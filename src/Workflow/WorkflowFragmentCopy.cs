@@ -58,27 +58,22 @@ public static class WorkflowFragmentCopy
                     AdditionalData = flow.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()) };
                 foreach (var original in nodes)
                 {
+                    RuntimeNodeAdmission.RequireShape(original);
                     var clone = create(original, targetId);
                     if (ReferenceEquals(clone, original) || string.IsNullOrWhiteSpace(clone.Id) || clone.Id == original.Id)
                         throw new InvalidOperationException("复制工厂必须返回独立节点及新身份。");
+                    RuntimeNodeAdmission.RequireShape(clone);
+                    if(!ReferenceEquals(original.RuntimeConfiguration!.Directory,clone.RuntimeConfiguration!.Directory)
+                        ||original.ToolType!=clone.ToolType)
+                        throw new InvalidOperationException("复制源与目标工具或运行目录代次不一致。");
                     clone.Position = original.Position; clone.Width = original.Width; clone.Height = original.Height;
                     clone.IsEnabled = original.IsEnabled;
-                    clone.Parameters = ToolParameterSnapshot.Create(original.Parameters);
-                    clone.ParamSettings = original.RuntimeConfiguration is null ? ToolParameterSnapshot.CopySettings(original.ParamSettings)! : original.ParamSettings.Settings.Any() ? throw new InvalidOperationException("Runtime节点不能复制旧ParamSettings。") : new ParamSettingContainer();
-                    clone.ParamSettings.NodeId = clone.Id;
                     clone.AdditionalData = original.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone());
                     clone.SelectedDisplayReference = original.SelectedDisplayReference;
                     clone.RuntimeConfiguration = original.RuntimeConfiguration?.Copy();
                     scope.Nodes.Add(original.Id, clone);
-                    if (!string.IsNullOrEmpty(original.SubroutineId))
-                    {
-                        var child = resolve(original.SubroutineId) ?? throw new InvalidOperationException("复制的子程序定义不存在。");
-                        var nested = Build(child, child.Nodes.ToArray(), Guid.NewGuid().ToString(), scope, path);
-                        scope.Children.Add(nested); clone.SubroutineId = nested.TargetId;
-                        nested.Target!.Name = clone.Name;
-                        if (clone.Parameters is SubroutineParameters parameters) { parameters.SubroutineId = nested.TargetId; parameters.SubroutineName = clone.Name; }
-                    }
-                    else clone.SubroutineId = null;
+                    if (RuntimeNodeAdmission.IsPausedControlFlow(original.ToolType,original.SubroutineId)) throw new InvalidOperationException("Group / 控制流复制尚未接入。");
+                    clone.SubroutineId = null;
                 }
                 foreach (var edge in scope.SourceEdges)
                 {
@@ -124,96 +119,19 @@ public static class WorkflowFragmentCopy
         OutputReference Reference(OutputReference reference, Scope scope)
         {
             var mapped = Remap(reference.NodeId, reference.ScopeId, scope);
-            var selection = reference.Selection is BindingSelection.AtField index
-                ? new BindingSelection.AtField(Reference(index.Reference, scope),index.ConstructionBehavior) : reference.Selection;
+            var selection = reference.Selection switch
+            {
+                BindingSelection.AtField index => new BindingSelection.AtField(Reference(index.Reference, scope),index.ConstructionBehavior),
+                _ => reference.Selection
+            };
             return new OutputReference(mapped.Node, reference.PortId, reference.Type, reference.MemberFieldPath, selection, mapped.Scope, reference.Storage);
         }
         string? Edge(string? id, Scope scope) => id != null && scope.Edges.TryGetValue(id, out var edge) ? edge.Id : null;
-        object? Visit(object? value, Scope scope, HashSet<object> seen)
-        {
-            if (value == null || value is string || value.GetType().IsValueType || value is Type) return value;
-            if (value is OutputReference reference) return Reference(reference, scope);
-            if (value is AvailableDataSource data)
-            {
-                var mapped = Remap(data.SourceNodeId, data.SourceWorkflowId, scope);
-                // Copy configuration through its persistence contract; runtime values are never carried over.
-                var json = JsonSerializer.SerializeToNode(data, WorkflowSerializationOptions.Compact)!;
-                json[nameof(data.SourceNodeId)] = mapped.Node; json[nameof(data.SourceWorkflowId)] = mapped.Scope;
-                json[nameof(data.AutomaticConnectionId)] = Edge(data.AutomaticConnectionId, scope);
-                if (mapped.Name != null) json[nameof(data.SourceNodeName)] = mapped.Name;
-                return json.Deserialize<AvailableDataSource>(WorkflowSerializationOptions.Compact)!;
-            }
-            if (value is SunEyeVision.Plugin.SDK.Models.SubroutineParameterTarget target)
-            {
-                var mapped = Remap(target.NodeId, target.WorkflowId, scope);
-                target.NodeId = mapped.Node; target.WorkflowId = mapped.Scope;
-                return target;
-            }
-            if (value is BindingSourceIdentity identity)
-            {
-                var mapped = Remap(identity.SourceNodeId, identity.WorkflowId, scope);
-                var dot = identity.Expression.IndexOf('.');
-                var expression = dot > 0 && identity.Expression[..dot] == identity.SourceNodeId
-                    ? mapped.Node + identity.Expression[dot..] : identity.Expression;
-                return identity with { Expression = expression, WorkflowId = mapped.Scope, SourceNodeId = mapped.Node };
-            }
-            if (!seen.Add(value)) return value;
-            if (value is ImageSourceReference image)
-            {
-                var mapped = Remap(image.SourceNodeId, image.SourceWorkflowId, scope);
-                image.SourceNodeId = mapped.Node; image.SourceWorkflowId = mapped.Scope;
-                if (mapped.Name != null) image.SourceNodeName = mapped.Name;
-                image.AutomaticConnectionId = Edge(image.AutomaticConnectionId, scope); return image;
-            }
-            if (value is ParamSetting setting)
-            {
-                if (setting.ReferenceExpression != null)
-                {
-                    var mappedReference = Reference(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression), scope);
-                    setting.ReferenceExpression = BindingReferenceSerializer.Serialize(mappedReference);
-                    setting.SourceNodeId = mappedReference.NodeId; setting.SourceWorkflowId = mappedReference.ScopeId;
-                }
-                else if (setting.SourceNodeId != null)
-                {
-                    var mapped = Remap(setting.SourceNodeId, setting.SourceWorkflowId, scope);
-                    setting.SourceNodeId = mapped.Node; setting.SourceWorkflowId = mapped.Scope;
-                    if (mapped.Name != null) setting.SourceNodeName = mapped.Name;
-                }
-                setting.ConstantValue = Visit(setting.ConstantValue, scope, seen); return setting;
-            }
-            if (value is IDictionary dictionary)
-            { foreach (var key in dictionary.Keys.Cast<object>().ToArray()) dictionary[key] = Visit(dictionary[key], scope, seen); return value; }
-            if (value is IList list)
-            { for (var i = 0; i < list.Count; i++) { var item = Visit(list[i], scope, seen); if (!ReferenceEquals(item, list[i])) list[i] = item; } return value; }
-            foreach (var property in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && p.GetCustomAttribute<JsonIgnoreAttribute>() == null))
-            {
-                var childScope = value is SubroutineParameters sub && property.Name is nameof(sub.Outputs) or nameof(sub.DisplayConfigs) or nameof(sub.RunParameterGroups)
-                    ? scope.Children.SingleOrDefault(c => c.TargetId == sub.SubroutineId) ?? scope : scope;
-                var old = property.GetValue(value); var mapped = Visit(old, childScope, seen);
-                if (!ReferenceEquals(old, mapped) && property.CanWrite) property.SetValue(value, mapped);
-            }
-            return value;
-        }
         foreach (var scope in scopes)
             foreach (var clone in scope.Nodes.Values)
             {
-                // 仅重写模型声明的输入表达式；路径后缀、普通文本和扩展JSON不做字符串替换。
-                foreach (var input in BindingInputCatalog.Describe(clone.Parameters))
-                {
-                    var expression = input.Read();
-                    var child = clone.Parameters is SubroutineParameters sub ? scope.Children.SingleOrDefault(c => c.TargetId == sub.SubroutineId) : null;
-                    var inputScope = input.InternalProjection && child != null ? child : scope;
-                    if (!BindingInputCatalog.TryReference(expression, inputScope.SourceNodes.Select(n => n.Id), input.ReferenceOnly, out var sourceId, out var path)) continue;
-                    var oldScope = input.ReadWorkflowId?.Invoke();
-                    if (child != null && oldScope == child.TargetId) oldScope = child.SourceId;
-                    if (clone.Parameters.BindingSourceIdentities.TryGetValue(input.Key, out var saved) && saved.Expression == expression) oldScope = saved.WorkflowId;
-                    var mapped = Remap(sourceId, oldScope ?? inputScope.SourceId, inputScope);
-                    if (mapped.Node != sourceId) input.Write(mapped.Node + "." + path);
-                }
                 if(clone.RuntimeConfiguration is {} runtime)clone.RuntimeConfiguration=runtime.MapReferences(reference=>Reference(reference,scope),origin=>origin.StartsWith("connection:",StringComparison.Ordinal)&&scope.Edges.TryGetValue(origin[11..],out var edge)?"connection:"+edge.Id:null);
-                var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
-                Visit(clone.Parameters, scope, seen); Visit(clone.ParamSettings, scope, seen);
+
                 if(clone.SelectedDisplayReference is {} displayReference)
                     clone.SelectedDisplayReference=BindingReferenceSerializer.Serialize(Reference(BindingReferenceSerializer.Deserialize(displayReference),scope));
             }

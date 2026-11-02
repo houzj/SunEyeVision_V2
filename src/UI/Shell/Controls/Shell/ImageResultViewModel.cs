@@ -112,9 +112,9 @@ namespace SunEyeVision.UI.Shell.Controls
 
         #region INodeResultSink 实现
 
-        public void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null)
+        public void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null)
         {
-            _coordinator.UpdateModuleResults(result, nodeName, toolId, nodeId, parameters);
+            _coordinator.UpdateModuleResults(result, nodeName, toolId, nodeId);
         }
 
         /// <summary>

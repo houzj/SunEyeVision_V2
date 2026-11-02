@@ -18,6 +18,9 @@ private static int Main(string[] args)
     ProbeErrorMode.DisableSystemDialogs();
     try
     {
+        var payload=Environment.GetEnvironmentVariable("SUNEYE_INFRA_PRODUCT_ROOT");
+        if(string.IsNullOrWhiteSpace(payload)||!Path.IsPathFullyQualified(payload)||!Directory.Exists(payload))throw new InvalidOperationException("必须提供本工作区正式封包目录 SUNEYE_INFRA_PRODUCT_ROOT。");
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(payload))+Path.DirectorySeparatorChar);
         if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
         return RunAsync().GetAwaiter().GetResult();
     }
@@ -178,8 +181,6 @@ MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNode
 foreach(var id in new[]{"Subroutine","Condition"})
     MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase(id,id,id,id)),"paused control flow "+id);
 MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("linked","linked","linked","ImageLoad") { RuntimeConfiguration=declaredImage, SubroutineId="child" }),"subroutine identity");
-MustReject(()=>new WorkflowNodeBase("legacy","legacy","legacy","UnknownTool").CreateInstance(),"legacy SDK instance");
-MustReject(()=>WorkflowNodeFactory.CreateAlgorithmNode(productionDirectory,"UnknownTool","legacy","legacy","legacy"),"legacy SDK node factory");
 using(var eventBus=new SunEyeVision.Core.Events.EventBus(new NullLogger()))
 {
     var oldEventPath=new EventEnabledWorkflow("old","old",eventBus);
@@ -187,15 +188,15 @@ using(var eventBus=new SunEyeVision.Core.Events.EventBus(new NullLogger()))
         throw new Exception("Legacy event-based node execution reported success.");
 }
 var rejectedFlow=new SunEyeVision.Workflow.Workflow("rejected","rejected");
-rejectedFlow.Nodes.Add(new WorkflowNodeBase("bad","bad","bad","UnknownTool") { Parameters=new GenericToolParameters() });
+rejectedFlow.Nodes.Add(new WorkflowNodeBase("bad","bad","bad","UnknownTool"));
 var rejectedEngine=new WorkflowEngine(new NullLogger(),productionDirectory);rejectedEngine.RegisterWorkflow(rejectedFlow);
-var rejectedRunner=new WorkflowExecutionEngine(rejectedEngine,production,new NullLogger());
+var rejectedRunner=new WorkflowExecutionEngine(rejectedEngine,new NullLogger());
 bool guardRejected=false;
 try { using var invalidRun=await rejectedRunner.ExecuteWorkflowAsync(new WorkflowRunRequest(rejectedFlow.Id)); guardRejected=!invalidRun.Success; }
 catch(InvalidOperationException) { guardRejected=true; }
 if(!guardRejected)throw new Exception("Unadmitted workflow unexpectedly executed.");
 MustReject(()=>RuntimeDebugInvocation.Capture(rejectedFlow,productionDirectory,rejectedFlow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"unadmitted debug");
-Console.WriteLine("probe: tool admission, paused control flow, legacy factory, workflow and debug rejection passed");
+Console.WriteLine("probe: tool admission, paused control flow, workflow and debug rejection passed");
 var openChain=new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain();
 bool editorConstructed=false;
 foreach(var rejectedNode in new[]{new WorkflowNodeBase("missing","missing","missing","UnknownTool"),new WorkflowNodeBase("paused","paused","paused","Subroutine") { SubroutineId="child" },new WorkflowNodeBase("mismatch","mismatch","mismatch","BlobAnalysis") { RuntimeConfiguration=declaredImage }})
@@ -244,7 +245,7 @@ try
     var flow=new SunEyeVision.Workflow.Workflow("admission-probe","admission-probe");
     flow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(productionDirectory,"ImageLoad")});
     var engine=new WorkflowEngine(new NullLogger(),productionDirectory);engine.RegisterWorkflow(flow);
-    var runner=new WorkflowExecutionEngine(engine,production,new NullLogger());
+    var runner=new WorkflowExecutionEngine(engine,new NullLogger());
     var request=new WorkflowRunRequest(flow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{"image",new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}});
     var run=await runner.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(30));
     if(!run.Success)throw new Exception("Production workflow failed: "+string.Join(";",run.Errors));
@@ -273,7 +274,7 @@ try
     MustReject(()=>RuntimeNodeAdmission.Require(activeDirectory,imageNode),"foreign/retired directory generation");
     MustReject(()=>RuntimeDebugInvocation.Capture(flow,activeDirectory,flow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"foreign generation debug");
     var foreignEngine=new WorkflowEngine(new NullLogger(),activeDirectory); foreignEngine.RegisterWorkflow(flow);
-    var foreignRunner=new WorkflowExecutionEngine(foreignEngine,production,new NullLogger());
+    var foreignRunner=new WorkflowExecutionEngine(foreignEngine,new NullLogger());
     bool rejectedForeign=false;
     try { using var foreign=await foreignRunner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id)); rejectedForeign=!foreign.Success; }
     catch(InvalidOperationException) { rejectedForeign=true; }
@@ -282,7 +283,7 @@ try
     var activeFlow=new SunEyeVision.Workflow.Workflow("active-probe","active-probe");
     activeFlow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(activeDirectory,"ImageLoad")});
     var activeEngine=new WorkflowEngine(new NullLogger(),activeDirectory);activeEngine.RegisterWorkflow(activeFlow);
-    var activeRunner=new WorkflowExecutionEngine(activeEngine,production,new NullLogger());
+    var activeRunner=new WorkflowExecutionEngine(activeEngine,new NullLogger());
     using var entered=new ManualResetEventSlim();
     using var release=new ManualResetEventSlim();
     var activeRequest=new WorkflowRunRequest(activeFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>
@@ -313,7 +314,7 @@ try
     displayFlow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){RuntimeConfiguration=blobConfig});
     displayFlow.Connections.Add(new WorkflowConnection{Id="edge",SourceNodeId="image",TargetNodeId="blob"});
     var displayEngine=new WorkflowEngine(new NullLogger(),displayDirectory);displayEngine.RegisterWorkflow(displayFlow);
-    var displayRunner=new WorkflowExecutionEngine(displayEngine,production,new NullLogger());
+    var displayRunner=new WorkflowExecutionEngine(displayEngine,new NullLogger());
     var displayRequest=new WorkflowRunRequest(displayFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{"image",new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}});
     var displayRun=await displayRunner.ExecuteWorkflowAsync(displayRequest).WaitAsync(TimeSpan.FromSeconds(30));
     if(!displayRun.Success)throw new Exception("Automatic display workflow failed: "+string.Join(";",displayRun.Errors));

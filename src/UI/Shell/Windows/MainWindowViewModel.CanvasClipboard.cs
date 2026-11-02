@@ -81,7 +81,7 @@ public partial class MainWindowViewModel
             foreach (var node in target.Nodes) node.IsSelected = fragment.Nodes.Contains(node);
             foreach (var edge in target.Connections) edge.IsSelected = false;
             SelectedNode = fragment.Nodes.OfType<Node>().FirstOrDefault();
-            foreach (var node in fragment.Nodes) PrecompileNodeIfNeeded(node);
+
             return true;
         }
         catch (Exception error)

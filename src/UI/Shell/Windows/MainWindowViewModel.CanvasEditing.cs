@@ -2,7 +2,6 @@ using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {

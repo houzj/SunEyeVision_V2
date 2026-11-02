@@ -61,34 +61,21 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
    var opening=RootParameterCatalog.Describe(original).SingleOrDefault(f=>f.FieldId==proxy.FieldId&&f.StoragePath==proxy.StoragePath)?.Field;
    var resource=RootParameterCatalog.Describe(draft.Node).SingleOrDefault(f=>f.FieldId==proxy.FieldId&&f.StoragePath==proxy.StoragePath)?.Resource;
    if(resource!=null)resource.RestoreOpening(draft.Node,original);
-   else if(field!=null&&opening!=null){field.Write(opening.Read());var prior=original.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();if(prior==null)draft.Node.ParamSettings.RemoveSetting(proxy.StoragePath);else draft.Node.ParamSettings.SetSetting(prior);}
+
   }
   _root.Configuration=_root.Configuration with{RunParameters=_root.Configuration.RunParameters.Remove(proxy)};Changed?.Invoke();
  }
  internal Setting Read(RootParameterProxy proxy)
  {
-  var target=Resolve(proxy);if(target.Resource is {} resource)return resource.Read(target.Node,Query,Root.Id);var field=target.Field!;var stored=target.Node.ParamSettings.GetSetting(field.StoragePath);
-  if(stored?.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression),stored.Conversion);
-  if(stored?.BindingType==BindingType.Binding)
-  {
-   var output=Query.FormalOutputContractReader?.Invoke(stored.SourceNodeId!).SingleOrDefault(o=>stored.SourceFieldId.HasValue?o.FieldId==stored.SourceFieldId:o.Name==stored.SourceProperty)??throw new InvalidOperationException("现有订阅来源已失效，请解除或重新选择。");
-   var port=BindingClrAdapter.DescribeOutput(output);return new ReferenceSetting(new OutputReference(stored.SourceNodeId!,port.Id,port.Type,scopeId:stored.SourceWorkflowId??Root.Id,storage:port.Storage));
-  }
-  return new ConstantSetting(field.Read());
+  var target=Resolve(proxy);
+  return (target.Resource ?? throw new InvalidOperationException("节点未提供 Runtime 参数声明。"))
+   .Read(target.Node,Query,Root.Id);
  }
  internal void Write(RootParameterProxy proxy,Setting setting)
  {
-  Ensure(true);var target=Resolve(proxy);if(target.Resource is {} resource){resource.Write(target.Node,setting,Query,Root.Id);return;}var field=target.Field!;
-  if(setting is ConstantSetting constant){field.Write(constant.Value);target.Node.ParamSettings.RemoveSetting(field.StoragePath);}
-  else if(setting is ReferenceSetting reference)target.Node.ParamSettings.SetSetting(ToSetting(field,reference));
-  else throw new InvalidOperationException("此参数不支持空设置。");
-  target.Node.Parameters.RebindingRequired.Remove(field.StoragePath);target.Node.Parameters.BindingValidationPending.Remove(field.StoragePath);
- }
- private ParamSetting ToSetting(ConfigurationFieldAccessor field,ReferenceSetting setting)
- {
-  var reference=setting.Reference;
-  var source=Query.FormalOutputContractReader?.Invoke(reference.NodeId)?.SingleOrDefault(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId);
-  return new(){ParameterName=field.StoragePath,BindingType=BindingType.Binding,Conversion=setting.Conversion,ReferenceExpression=BindingReferenceSerializer.Serialize(reference),SourceNodeId=reference.NodeId,SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
+  Ensure(true);var target=Resolve(proxy);
+  (target.Resource ?? throw new InvalidOperationException("节点未提供 Runtime 参数声明。"))
+   .Write(target.Node,setting,Query,Root.Id);
  }
  internal string? ValidateReference(RootParameterProxy proxy,ReferenceSetting reference)
  {
@@ -116,8 +103,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
    if(!Current())return changed;
    var candidate=_host.Freeze(nodes.Single(pair=>pair.Key==proxy.NodeId).Value);
    var target=RootParameterCatalog.Resolve(candidate.Node,proxy);
-   if(target.Resource is {} resource)resource.Write(target.Node,reference,Query,Root.Id);
-   else candidate.Node.ParamSettings.SetSetting(ToSetting(target.Field!,reference));
+   (target.Resource ?? throw new InvalidOperationException("节点未提供 Runtime 参数声明。")).Write(target.Node,reference,Query,Root.Id);
    if(!Current())return changed;
    _host.ValidateBatch(nodes.Select(pair=>pair.Key==proxy.NodeId?candidate:baselines[pair.Key]).ToArray(),null,new[]{rootBaseline});
    return Current()?null:changed;

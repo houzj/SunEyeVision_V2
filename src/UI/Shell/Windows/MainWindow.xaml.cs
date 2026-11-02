@@ -22,7 +22,6 @@ using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;

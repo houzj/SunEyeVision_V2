@@ -4,7 +4,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.UI.Controls;
+using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Controls.Inputs;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Windows;
 
@@ -70,21 +71,30 @@ namespace SunEyeVision.UI.Features.Camera
             }
         }
 
-        private async void CameraConnectionToggle_CheckedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
+        private async void CameraConnectionToggle_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is not ToggleSwitch toggle || toggle.DataContext is not CameraDevice camera)
+            DependencyObject? element = sender as DependencyObject;
+            while (element is not null && element is not ContentToggleSwitch)
+                element = VisualTreeHelper.GetParent(element);
+            if (element is not ContentToggleSwitch toggle || toggle.DataContext is not CameraDevice camera)
                 return;
-            if (camera.IsConnected == e.NewValue)
+            var requested = toggle.IsChecked;
+            if (camera.IsConnected == requested)
                 return;
 
-            if (DataContext is CameraManagerViewModel manager)
-                await manager.SetCameraConnectionAsync(camera, e.NewValue);
-
-            BindingOperations.SetBinding(toggle, ToggleSwitch.IsCheckedProperty, new Binding(nameof(CameraDevice.IsConnected))
+            try
             {
-                Source = camera,
-                Mode = BindingMode.OneWay
-            });
+                if (DataContext is CameraManagerViewModel manager)
+                    await manager.SetCameraConnectionAsync(camera, requested);
+            }
+            finally
+            {
+                BindingOperations.SetBinding(toggle, ContentToggleSwitch.IsCheckedProperty, new Binding(nameof(CameraDevice.IsConnected))
+                {
+                    Source = camera,
+                    Mode = BindingMode.OneWay
+                });
+            }
         }
 
         private void CameraPreviewButton_Click(object sender, RoutedEventArgs e)

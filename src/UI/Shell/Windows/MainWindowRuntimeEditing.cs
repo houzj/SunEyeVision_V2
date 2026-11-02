@@ -4,9 +4,8 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Services.Workflow;
 
 namespace SunEyeVision.UI.Shell.Windows;
 
@@ -23,8 +22,14 @@ public partial class MainWindowViewModel
     private void TryAutoBindRuntimeImageSource(SunEyeVision.Workflow.WorkflowNodeBase node,SunEyeVision.Workflow.WorkflowConnection? connection)
     {
         if(node.RuntimeConfiguration is not { } runtime||runtime.Schema.WorkflowImageInputId is not { } target||
-            runtime.Fields.Read(target) is not Plugin.Contracts.UnsetSetting||
-            node is not Shared.WorkflowNode uiNode||GetDataProviderForNode(uiNode) is not Plugin.SDK.Execution.Parameters.DataSourceQueryService query)return;
+            runtime.Fields.Read(target) is not Plugin.Contracts.UnsetSetting)return;
+        if(node is not Shared.WorkflowNode uiNode)throw new InvalidOperationException("自动图像绑定缺少当前工作区节点。");
+        var query=GetDataProviderForNode(uiNode) as Plugin.SDK.Execution.Parameters.DataSourceQueryService;
+        if(query is null)
+        {
+            if(connection is not null)throw new InvalidOperationException("自动图像绑定缺少当前流程声明查询；连线已回滚。");
+            return;
+        }
         var candidates=(query.BindingCandidateNodeIds?.Invoke(node.Id)??query.GetAvailableDataSources(node.Id).Select(source=>source.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray()).ToHashSet(StringComparer.Ordinal);
         var incoming=connection is not null?new[]{connection}:_workflowEngine.GetWorkflow(query.WorkflowId!)!.Connections.Where(edge=>edge.TargetNodeId==node.Id).ToArray();
         static System.Collections.Generic.IEnumerable<string[]> ImageMembers(Plugin.Contracts.TypeRef type,string[] path)
@@ -38,11 +43,9 @@ public partial class MainWindowViewModel
         }
         foreach(var edge in incoming.Where(edge=>candidates.Contains(edge.SourceNodeId)))
         foreach(var id in new[]{edge.SourceNodeId})
-        foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<Plugin.SDK.Execution.Results.OutputVariable>())
+        foreach(var schema in new[]{query.GetSchema(id)}.OfType<Plugin.Contracts.ToolSchema>())
+        foreach(var port in schema.Outputs)
         {
-            if(output.Kind!=Plugin.SDK.Execution.Results.OutputVariableKind.Data)continue;
-            Plugin.Contracts.Port port;
-            try{port=Plugin.SDK.Execution.Parameters.BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
             var members=ImageMembers(port.Type,Array.Empty<string>()).FirstOrDefault();
             if(members is null)continue;
             var reference=new Plugin.Contracts.OutputReference(id,port.Id,port.Type,members,scopeId:query.WorkflowId,storage:port.Storage);
@@ -50,7 +53,7 @@ public partial class MainWindowViewModel
             // A present setting (including a broken automatic reference) is never silently replaced.
             node.RuntimeConfiguration=runtime.WithFieldSettings(new System.Collections.Generic.Dictionary<string,Plugin.Contracts.ParameterSetting>{
                 [target]=new Plugin.Contracts.ReferenceSetting(reference,OriginId:"connection:"+edge.Id)});
-            AddLog($"自动绑定图像源: {node.Name} → {output.DisplayName??output.Name}");return;
+            AddLog($"自动绑定图像源: {node.Name} → {schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id}");return;
         }
     }
     private bool InitializeRuntimeEditor(object target,Shared.WorkflowNode node)
@@ -128,12 +131,65 @@ public partial class MainWindowViewModel
                     throw;
                 }
             });
-            SubscribeToolExecutionCompleted(window,node,query,context);
+            SubscribeRuntimeExecutionCompleted(window,node,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
             _nodeDebugWindows[node.Id]=window;
             window.Closed+=(_,_)=>_nodeDebugWindows.Remove(node.Id);
             window.Show();return true;
         }
         catch{context.Discard();throw;}
+    }
+    private void SubscribeRuntimeExecutionCompleted(RuntimeToolEditorWindow window, Shared.WorkflowNode node, ProductionEditorContext context)
+    {
+        var resultContext=CurrentWorkflowContext;var session=DocumentManager.Session;var tab=WorkflowTabViewModel.SelectedTab;var closed=false;
+        bool OwnerCurrent()=>!closed&&window.IsLoaded&&ReferenceEquals(DocumentManager.Session,session)&&context.IsValid;
+        bool DisplayCurrent()=>OwnerCurrent()&&ReferenceEquals(tab,WorkflowTabViewModel.SelectedTab)
+            &&ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node)&&!_declaredHistoricalResult;
+        void Handler(object? sender,RuntimeToolExecutionEventArgs args)
+        {
+            var result=args.Result;
+            try
+            {
+                using var retained=result?.Retain();
+                void Apply()
+                {
+                    if(!OwnerCurrent())return;
+                    if(result is null)
+                    {
+                        if(args.Error is not null){context.DebugResults.RemoveNodeResult(node.Id);if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}}
+                        return;
+                    }
+                    if(result.ExecutionIdentity is {} identity&&(!identity.IsCurrent||!ReferenceEquals(identity.Owner,context.DebugOwner)))return;
+                    if(!context.TryAcceptDebugResult(result)||!OwnerCurrent())return;
+                    if(DisplayCurrent())_nodeResultManager.RefreshDebugPreview(context.DraftNode,result);
+                    if(OwnerCurrent())AddLog($"调试窗口执行完成: {node.Name}");
+                }
+                if(window.Dispatcher.CheckAccess())Apply();
+                else if(result is null)window.Dispatcher.BeginInvoke(new Action(Apply));
+                else
+                {
+                    var pending=new ResultDispatchLease(result);
+                    try
+                    {
+                        var operation=window.Dispatcher.BeginInvoke(new Action(()=>{using var lease=pending.Claim();if(lease is not null)Apply();}));
+                        operation.Aborted+=(_,_)=>pending.Dispose();
+                        if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)pending.Dispose();
+                    }
+                    catch{pending.Dispose();throw;}
+                }
+            }
+            catch(Exception error){AddLog($"处理执行结果失败: {error.Message}");}
+        }
+        void RestoreProductionDisplay()
+        {
+            context.Deactivated-=RestoreProductionDisplay;
+            if(!ReferenceEquals(resultContext,CurrentWorkflowContext)||!ReferenceEquals(SelectedNode,node))return;
+            if(resultContext?.GetNodeResult(node.Id)?.Result is { } production)_nodeResultManager.RefreshResultDisplay(node,production);
+            else{_nodeResultManager.ClearResultDisplay();ClearNativeImagePresentation();}
+            _=UpdateDataAnalysisControl(node);
+        }
+        window.ToolExecutionCompleted+=Handler;
+        context.Deactivated+=RestoreProductionDisplay;
+        window.Closed+=(_,_)=>{closed=true;window.ToolExecutionCompleted-=Handler;};
     }
 }

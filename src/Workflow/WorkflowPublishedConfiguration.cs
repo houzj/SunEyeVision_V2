@@ -14,13 +14,15 @@ public sealed class WorkflowPublishedConfiguration
     {
         var configuration=published.CopyConfiguration();
         if(configuration.Id!=document.Id)throw new InvalidOperationException("正式配置快照属于其它方案。");
+        if(document.ExecutionOwner.IsRetired||document.RuntimeDirectory is not {} directory||!directory.IsActive||!ReferenceEquals(configuration.RuntimeDirectory,directory))
+            throw new InvalidOperationException("正式配置快照的方案已退役或运行目录代次不一致。");
         var actual=document.Workflows.ToDictionary(flow=>flow.Id,StringComparer.Ordinal);
         foreach(var flow in configuration.Workflows)
         {
             if(!actual.TryGetValue(flow.Id,out var owner))throw new InvalidOperationException("正式配置快照中的流程已退出当前方案。");
             flow.AttachExecutionOwner(owner.ExecutionOwner);
         }
-        Configuration=WorkflowRunConfiguration.Capture(configuration.Workflows,published.Version);
+        Configuration=WorkflowRunConfiguration.Capture(configuration.Workflows,directory,published.Version);
         var definitions=GlobalVariable.CaptureDefinitions(configuration.GlobalVariables).ToArray();
         var runtimeValues=GlobalVariable.CaptureValues(document.GlobalVariables);
         foreach(var variable in definitions)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Json;
 using SunEyeVision.Workflow;
@@ -32,7 +32,7 @@ public sealed class RootConfigurationTests:IDisposable
  [Fact]
  public void Root_directory_and_two_node_candidates_publish_atomically_and_history_preserves_new_canvas_settings()
  {
-  var (document,root,host)=Model();var frozen=WorkflowRunConfiguration.Capture(document.Workflows);
+  var (document,root,host)=Model();var frozen=WorkflowRunConfiguration.Capture(document.Workflows,document.RuntimeDirectory ?? throw new InvalidOperationException("缺少正式目录。"));
   var rootDraft=host.BeginRootEdit(root.Id);rootDraft.Configuration=Configuration();
   var a=host.BeginEdit(root.Id,"a");var b=host.BeginEdit(root.Id,"b");RootCanvasFixture.SetValue(a.Node,11);RootCanvasFixture.SetValue(b.Node,23);
   Assert.Empty(root.RootConfiguration.RunParameters);Assert.Equal(1,RootCanvasFixture.Value(root.Nodes[0]));

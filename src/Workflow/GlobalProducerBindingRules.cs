@@ -31,13 +31,18 @@ public static class GlobalProducerBindingRules
         target=new Port("value",type,Storage:storage);clrType=resolved;return true;
     }
 
-    public static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable)
-        =>Validate(solution,producer,variable,node=>new OutputBindingChangeService().ReadContract(node));
+    public static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
+    {
+        ArgumentNullException.ThrowIfNull(solution);ArgumentNullException.ThrowIfNull(directory);
+        if(!directory.IsActive || (solution.RuntimeDirectory is {} actual&&!ReferenceEquals(actual,directory)))
+            throw new InvalidOperationException("方案与声明查询运行目录代次不一致。");
+        return Validate(solution,producer,variable,node=>new OutputBindingChangeService().ReadContract(node,directory));
+    }
 
     // Reconciliation borrows its already captured contracts, including its actual host reader.
     // It must not re-read a mutable provider halfway through building one atomic change plan.
     internal static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable,
-        Func<WorkflowNodeBase,IReadOnlyList<OutputVariable>?> readContract)
+        Func<WorkflowNodeBase,ToolSchema?> readContract)
     {
         ArgumentNullException.ThrowIfNull(solution);ArgumentNullException.ThrowIfNull(producer);ArgumentNullException.ThrowIfNull(variable);
         BindingValidation Reject(string message)=>new(BindingCompatibility.Incompatible,message);
@@ -55,28 +60,18 @@ public static class GlobalProducerBindingRules
             var sources=flows[0].Nodes.Where(node=>node.Id==reference.NodeId).ToArray();
             if(sources.Length!=1)return Reject("全局变量生产节点已删除或身份不唯一，请重新绑定。");
             var flow=flows[0];var source=sources[0];
-            var parameters=source.Parameters;var runtime=source.RuntimeConfiguration;
+            var runtime=source.RuntimeConfiguration;
             bool Current()=>producer.ReferenceExpression==expression&&variable.Type==vocabulary&&variable.Id==variableId
                 &&flow.Id==reference.ScopeId&&source.Id==reference.NodeId
                 &&solution.Workflows.Count(candidate=>ReferenceEquals(candidate,flow))==1
                 &&flow.Nodes.Count(candidate=>ReferenceEquals(candidate,source))==1
-                &&ReferenceEquals(source.Parameters,parameters)&&ReferenceEquals(source.RuntimeConfiguration,runtime);
+                &&ReferenceEquals(source.RuntimeConfiguration,runtime);
             var contract=readContract(source);
             if(!Current())return Reject("读取生产来源声明期间配置或节点归属已改变，请重新选择当前来源。");
             if(contract is null)return new(BindingCompatibility.Unresolved,"生产来源正式输出声明暂不可用，等待校验。");
-            var outputs=contract.Where(output=>output.Kind==SunEyeVision.Plugin.SDK.Execution.Results.OutputVariableKind.Data).ToArray();
-            var selected=outputs.Where(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId).ToArray();
+            var selected=contract.Outputs.Where(output=>output.Id==reference.PortId).ToArray();
             if(selected.Length!=1)return Reject("全局变量原输出身份已删除或不唯一，请重新绑定。");
-            var output=selected[0];
-            // A dynamic output may exist before its type declaration is complete. Keep the
-            // explicit source pending; only a removed port or a known conflict breaks a binding.
-            var declared=output.DeclaredType??SdkTypeVocabulary.ToSystemType(output.VariableType);
-            if(output.ValueDeclaration is null&&(declared is null||declared==typeof(object)))
-                return new(BindingCompatibility.Unresolved,"生产字段的正式类型声明尚不完整，等待校验。");
-            var port=BindingClrAdapter.DescribeOutput(output);
-            // Only the selected formal output is needed for this declaration-only operation.
-            // Other unsupported output carriers do not justify guessing or rejecting this port.
-            var sourceSchema=new ToolSchema(Array.Empty<Port>(),new[]{port});
+            var sourceSchema=new ToolSchema(Array.Empty<Port>(),new[]{selected[0]});
             var node=new BindingNodeId(reference.ScopeId,reference.NodeId);
             // This is a design-only scope. No RunIdentity or expected invocation is fabricated.
             var scope=new BindingScopeSnapshot(new(reference.ScopeId,"global-producer:"+variable.Id),Guid.Empty,0,

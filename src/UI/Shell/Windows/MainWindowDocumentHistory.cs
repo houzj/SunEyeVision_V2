@@ -146,7 +146,7 @@ public partial class MainWindowViewModel
         {
             // If retirement reentered and published a new generation, its presentation wins.
             var currentResult = _workflowContextService.Get(workflowId)?.GetNodeResult(selected.Id)?.Result;
-            try { if (currentResult?.ExecutionIdentity?.IsCurrent != true) UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters); }
+            try { if (currentResult?.ExecutionIdentity?.IsCurrent != true) UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id); }
             catch (Exception error) { failures.Add(error); }
         }
         if (failures.Count != 0) throw new AggregateException("配置已接纳，部分结果清理或刷新失败。", failures);

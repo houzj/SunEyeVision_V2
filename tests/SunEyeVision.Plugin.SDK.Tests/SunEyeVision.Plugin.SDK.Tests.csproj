@@ -29,9 +29,10 @@
   <ItemGroup>
     <!-- 契约测试需直接使用 HalconDotNet 类型（HRegion/HImage/HOperatorSet），框架库非传递引用 -->
     <Reference Include="halcondotnetxl">
-      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <HintPath>$(HalconSourceRoot)/net/halcondotnetxl.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup><Compile Remove="ToolDebugResultSnapshotTests.cs;ImageFrameProvenanceTests.cs" /></ItemGroup>
+  <!-- Group 专属测试保留，等待 Group 重新启用。 -->
+  <ItemGroup><Compile Remove="SubroutineDisplayItemTypeContractTests.cs" /></ItemGroup>
 </Project>

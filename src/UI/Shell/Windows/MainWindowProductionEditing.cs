@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
 
@@ -29,61 +27,6 @@ public partial class MainWindowViewModel
         return _productionEditorHost;
     }
 
-    private ProductionEditorContext? CreateProductionEditorContext(object target, SunEyeVision.UI.Shared.WorkflowNode node,
-        out DataSourceQueryService? provider)
-    {
-        provider = null;
-        // Explicit production consumers only. Other editors remain a follow-up.
-        if (!EditorDraftAdapter.Supports(node.Parameters)) return null;
-        var control = target switch
-        {
-            DefaultDebugWindow window => window.EditorControl,
-            CustomDebugWindow window => window.EditorControl,
-            ToolDebugControlBase editor => editor,
-            _ => null
-        } ?? throw new InvalidOperationException("生产编辑器缺少草稿提交接缝。");
-        var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
-        var flow = session.Document.Workflows.Single(w => w.Nodes.Any(n => ReferenceEquals(n, node)));
-        var host = GetProductionEditorHost(session);
-        var query = CreateDataSourceQueryService(flow.Id); // Never change a shared cached provider's live callback.
-        var context = new ProductionEditorContext(host, flow.Id, node,
-            () => ReferenceEquals(DocumentManager.Session, session) &&
-                session.Document.Workflows.Any(w => ReferenceEquals(w, flow) && w.Nodes.Any(n => ReferenceEquals(n, node))),
-            draft =>
-            {
-                control.SetCurrentNode(draft);
-                control.SetParameters(draft.Parameters);
-                control.SetDataProvider(query);
-            }, publication =>
-            {
-                RefreshProductionPublication(session, publication, query);
-            }, session.Editing);
-        if (node.Parameters.GetType().FullName == "SunEyeVision.Tool.SendData.SendDataParameters")
-        {
-            var sends = query.CommunicationSendService as SunEyeVision.UI.Services.Communication.WorkflowCommunicationSendService
-                ?? throw new InvalidOperationException("发送数据生产编辑缺少正式通信配置服务。");
-            query.CommunicationSendService = sends.CreateConfigurationView(context.GetCommunicationConfiguration);
-        }
-        context.PrepareView = () => ToolEditorCommit.TryPrepare(control, out var error) ? null : error;
-        context.HasPendingViewEdits = () => ToolEditorCommit.HasPendingEdits(control);
-        query.ExecutionOwner = context.DebugOwner;
-        query.EditScopeCancellation = context.DebugCancellation;
-        query.CapturePublishedGlobals = () =>
-        {
-            if (!context.IsValid || !ReferenceEquals(DocumentManager.Session, session))
-                throw new InvalidOperationException("调试所属方案或编辑范围已经失效。");
-            return CaptureGlobalVariables(session.Document);
-        };
-        ToolEditorCommit.AttachDraftContext(control, context);
-        query.CommitOutputConfiguration = id =>
-        {
-            if (id != node.Id) throw new InvalidOperationException("编辑节点作用域不一致。");
-            if (!ToolEditorCommit.TryCommit(control, out var error)) throw new InvalidOperationException(error);
-        };
-        TrackProductionEditor(_productionEditors, context, target, ClearProductionEditorHost);
-        provider = query;
-        return context;
-    }
     private void ClearProductionEditorHost()
     {
         if (_productionEditors.Count != 0 || _variableEditors.Count != 0) return;
@@ -110,9 +53,7 @@ public partial class MainWindowViewModel
         if (!resultsAlreadyRefreshed && !IsRunning)
             foreach (var affected in publication.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id))
                 CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
-        if (!resultsAlreadyRefreshed && SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
-            UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id, selected.Parameters);
-        else if (!resultsAlreadyRefreshed && !IsRunning && ReferenceEquals(DocumentManager.Session, session)
+        if (!resultsAlreadyRefreshed && !IsRunning && ReferenceEquals(DocumentManager.Session, session)
             && SelectedNode is { RuntimeConfiguration: not null } runtimeNode
             && publication.InvalidatedNodes.Any(affected => affected.NodeId == runtimeNode.Id
                 && affected.WorkflowId == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId)
@@ -144,7 +85,7 @@ public partial class MainWindowViewModel
     {
         if (!context.IsActive) return;
         if (!active.Add(context)) return;
-        var control = target as ToolDebugControlBase;
+        var control = target as FrameworkElement;
         Window? owner = null;
         void Closed(object? sender, EventArgs e) => context.Discard();
         void BindOwner()

@@ -439,21 +439,8 @@ public sealed class CommunicationAssemblyOutputViewModel : ViewModelBase
 
     internal void ResolveBindingIdentity()
     {
-        if (string.IsNullOrWhiteSpace(BindingSource) || AvailableDataSources == null)
-            return;
-
-        foreach (var source in AvailableDataSources)
-        {
-            if (!string.Equals(source.GetBindingPath(), BindingSource, StringComparison.Ordinal))
-                continue;
-
-            SourceFieldId = source.SourceFieldId;
-            SourceNodeId = source.SourceNodeId;
-            SourceNameSnapshot = source.PropertyName;
-            if (string.IsNullOrWhiteSpace(BindingDisplayText))
-                BindingDisplayText = source.GetDisplayText();
-            return;
-        }
+        if (AvailableDataSources is not null && !SourceFieldId.HasValue && !string.IsNullOrWhiteSpace(BindingSource))
+            throw new InvalidOperationException("通信字段绑定尚未迁移，请重新配置。");
     }
 
     private string NormalizeBindingPath(string? path)

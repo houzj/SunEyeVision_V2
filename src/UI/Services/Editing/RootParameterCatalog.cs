@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Workflow;
@@ -10,48 +10,7 @@ internal static class RootParameterCatalog
 {
  internal static IReadOnlyList<RootParameterCandidate> Describe(WorkflowNodeBase node)
  {
-  if(node.RuntimeConfiguration is {} runtime)return DescribeRuntime(node,runtime);
-  if(node.ToolType=="Subroutine"||node.Parameters==null)return Array.Empty<RootParameterCandidate>();
-  var fields=new List<RootParameterCandidate>();
-  if(node.Parameters is IConfigurationFieldProvider provider)
-   fields.AddRange(provider.GetConfigurationFields().Select(field=>new RootParameterCandidate(node,field.Port.Id,field.StoragePath,field.Presentation.DisplayName,field,
-    Supports(field.Port.Type)?null:"需要专用资源或集合编辑器")));
-  // ImageSource is an explicitly supported persisted source identity, not an AvailableDataSource constant.
-  if(node.Parameters is MeasureGuideParameters&&BindingInputCatalog.Describe(node.Parameters).Any(input=>input.Key=="ImageSource"))
-   AddResource("ImageSource","图像来源",SunEyeVision.Plugin.Contracts.ResourceKind.Image,true);
-  foreach(var slot in (node.Parameters as IInputSlotContract)?.GetInputSlots()??Array.Empty<InputSlotDescriptor>())
-  {
-   if(!slot.Bindable||slot.ValueType!=typeof(SunEyeVision.Plugin.Contracts.IReadOnlyRegion))continue;
-   if(node.Parameters is not IConfigurationFieldProvider declaredProvider||!declaredProvider.RegionInputStorage.Values.Contains(slot.PropertyName,StringComparer.Ordinal))continue;
-   AddResource(slot.PropertyName,slot.DisplayName,SunEyeVision.Plugin.Contracts.ResourceKind.Region,false);
-  }
-  void AddResource(string path,string display,SunEyeVision.Plugin.Contracts.ResourceKind kind,bool image)
-  {
-   var port=new SunEyeVision.Plugin.Contracts.Port("input:"+path,SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(kind),Required:false,EditModes:SunEyeVision.Plugin.Contracts.FieldEditModes.Reference);
-   var resource=new RootResourceProxyBinding(path,port,image);
-   fields.RemoveAll(field=>field.StoragePath==path);
-   fields.Add(new(node,port.Id,path,display,resource.Field(display),Resource:resource));
-  }
-  var declared=((node.Parameters as IRuntimeParameterContract)?.GetRuntimeParameters()??Array.Empty<RuntimeParameterDescriptor>()).Concat(((node.Parameters as IInputSlotContract)?.GetInputSlots()??Array.Empty<InputSlotDescriptor>()).Select(input=>new RuntimeParameterDescriptor(input.PropertyName,input.DisplayName,input.TypeVocabulary,input.ValueType,Bindable:input.Bindable))).GroupBy(field=>field.PropertyName,StringComparer.Ordinal).Select(group=>group.First());
-  foreach(var descriptor in declared)
-  {
-   if(fields.Any(field=>field.StoragePath==descriptor.PropertyName))continue;
-   var property=node.Parameters.GetType().GetProperty(descriptor.PropertyName,BindingFlags.Public|BindingFlags.Instance);
-   if(property is not {CanRead:true,CanWrite:true}||property.GetIndexParameters().Length!=0){fields.Add(new(node,descriptor.PropertyName,descriptor.PropertyName,descriptor.DisplayName,null,"正式属性不可读写"));continue;}
-   var type=property.PropertyType;Port port;FieldPresentation presentation;
-   if(type.IsEnum){port=new(descriptor.PropertyName,DataType.Text,EditModes:FieldEditModes.Constant,Choices:new TextChoiceConstraint(Enum.GetNames(type)));presentation=new(port.Id,descriptor.DisplayName,"运行参数",fields.Count,FieldEditorKind.Choice,Enum.GetNames(type));}
-   else
-   {
-    if(!BindingClrAdapter.TryDescribe(type,out var declaration,out _)||declaration.Shape!=ValueShape.Scalar){fields.Add(new(node,descriptor.PropertyName,descriptor.PropertyName,descriptor.DisplayName,null,"需要专用类型编辑器"));continue;}
-    port=BindingClrAdapter.DescribePort(descriptor.PropertyName,type) with{EditModes=descriptor.Bindable?FieldEditModes.Constant|FieldEditModes.Reference:FieldEditModes.Constant};
-    presentation=new(port.Id,descriptor.DisplayName,"运行参数",fields.Count,FieldEditorKind.Scalar);
-   }
-   var accessor=new ConfigurationFieldAccessor(port,presentation,descriptor.PropertyName,
-    ()=>type.IsEnum?property.GetValue(node.Parameters)?.ToString():BindingClrAdapter.NormalizeValue(port,property.GetValue(node.Parameters)),
-    value=>property.SetValue(node.Parameters,type.IsEnum?Enum.Parse(type,(string)value!):BindingClrAdapter.Materialize(port,type,value)));
-   fields.Add(new(node,port.Id,accessor.StoragePath,descriptor.DisplayName,accessor));
-  }
-  return fields;
+  return node.RuntimeConfiguration is {} runtime ? DescribeRuntime(node,runtime) : Array.Empty<RootParameterCandidate>();
  }
  private static IReadOnlyList<RootParameterCandidate> DescribeRuntime(WorkflowNodeBase node,RuntimeToolConfiguration runtime)
  {

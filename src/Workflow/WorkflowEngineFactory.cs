@@ -29,7 +29,7 @@ namespace SunEyeVision.Workflow
             var workflowEngine = new WorkflowEngine(logger,directory);
 
             // 3. 创建执行引擎
-            var executionEngine = new WorkflowExecutionEngine(workflowEngine, pluginManager, logger);
+            var executionEngine = new WorkflowExecutionEngine(workflowEngine, logger);
 
             // 子程序插件由 UI 层负责创建和注册
 
@@ -70,7 +70,7 @@ namespace SunEyeVision.Workflow
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            return new WorkflowExecutionEngine(workflowEngine, pluginManager, logger);
+            return new WorkflowExecutionEngine(workflowEngine, logger);
         }
     }
 }

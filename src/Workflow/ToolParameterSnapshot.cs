@@ -1,3 +1,4 @@
+#if false
 using System;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -36,3 +37,5 @@ namespace SunEyeVision.Workflow
         }
     }
 }
+
+#endif

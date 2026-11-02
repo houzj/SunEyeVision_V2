@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.UI.Features.ParameterSetting;
+
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared.Events;
 using SunEyeVision.UI.Services.Interaction;
@@ -776,174 +776,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <summary>
         /// 打开目标参数管理对话框
         /// </summary>
-        private void OpenTargetParameter(object? parameter)
-        {
-            if (parameter is not GlobalVariable variable)
-                return;
-
-            try
-            {
-                var currentSolution = DraftDocument;
-                if (currentSolution == null || currentSolution.Workflows.Count == 0)
-                {
-                    LogWarning("当前解决方案没有工作流，无法管理消费者");
-                    return;
-                }
-
-                var result = TargetParameterSelectionService.Choose(
-                    currentSolution.Workflows,
-                    variable.ConsumerBindings,
-                    variable.Type,
-                    currentSolution.GlobalVariables.Where(other => other.Id != variable.Id)
-                        .SelectMany(other => other.ConsumerBindings).ToArray());
-
-                if (result != null)
-                {
-                    // 1. 计算变化：哪些新增，哪些移除
-                    var oldSet = variable.ConsumerBindings
-                        .Select(b => b.BindingKey)
-                        .ToHashSet(StringComparer.Ordinal);
-                    var newSet = result
-                        .Select(b => b.BindingKey)
-                        .ToHashSet(StringComparer.Ordinal);
-
-                    var added = result.Where(b => !oldSet.Contains(b.BindingKey)).ToList();
-                    var removed = variable.ConsumerBindings
-                        .Where(b => !newSet.Contains(b.BindingKey)).ToList();
-
-                    // 2. 更新 ConsumerBindings
-                    variable.ConsumerBindings = result;
-
-                    // 3. 新增绑定 → 设置节点 ParamSettings（全局变量绑定）
-                    foreach (var binding in added)
-                        SetNodeParamBinding(currentSolution, binding, variable.Name);
-
-                    // 4. 移除绑定 → 清除节点 ParamSettings（切回常量模式）
-                    foreach (var binding in removed)
-                        ClearNodeParamBinding(currentSolution, binding);
-
-                    variable.NotifyOutputDisplayChanged();
-                    LogSuccess($"更新目标输出 (共 {result.Count} 个消费者)");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"打开目标参数管理失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 为节点参数设置全局变量绑定（支持纯 CLR 参数和集合型输入）
-        /// </summary>
-        private static void SetNodeParamBinding(Solution solution, ConsumerBinding binding, string variableName)
-        {
-            var workflow = solution.Workflows.FirstOrDefault(w => w.Id == binding.WorkflowId);
-            var node = workflow?.Nodes?.FirstOrDefault(n => n.Id == binding.NodeId)
-                ?? (string.IsNullOrEmpty(binding.WorkflowId)
-                    ? solution.Workflows.SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
-                        .SingleOrDefault(n => n.Id == binding.NodeId)
-                    : null);
-            if (node?.Parameters == null) return;
-
-            // ★ 集合型输入（脚本工具 Inputs / 子程序 Inputs）
-            if (TrySetInputBinding(node.Parameters, binding.ParameterName, variableName))
-                return;
-
-            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
-            if (prop == null) return;
-
-            // 新参数模型：绑定定义存放在节点 ParamSettings，算法参数保持纯 CLR 值。
-            // 该定义是设计期数据，运行时由 ToolExecutionRequest 解析为快照。
-            node.ParamSettings ??= new ParamSettingContainer();
-            node.ParamSettings.SetSetting(new ParamSetting
-            {
-                ParameterName = binding.ParameterName,
-                BindingType = BindingType.Binding,
-                SourceNodeId = "__GlobalVars__",
-                SourceProperty = variableName,
-                SourceNodeName = "全局变量",
-                SourceDisplayName = variableName,
-                TargetType = prop.PropertyType
-            });
-
-        }
-
-        /// <summary>
-        /// 尝试为集合型输入（Inputs 集合）设置绑定
-        /// </summary>
-        private static bool TrySetInputBinding(ToolParameters parameters, string parameterName, string variableName)
-        {
-            var inputsProp = parameters.GetType().GetProperty("Inputs");
-            if (inputsProp == null) return false;
-
-            if (inputsProp.GetValue(parameters) is IEnumerable inputs)
-            {
-                foreach (var input in inputs)
-                {
-                    var nameProp = input.GetType().GetProperty("Name");
-                    if (nameProp?.GetValue(input) is string name && name == parameterName)
-                    {
-                        var bindingSourceProp = input.GetType().GetProperty("BindingSource");
-                        var bindingDisplayProp = input.GetType().GetProperty("BindingDisplayText");
-                        bindingSourceProp?.SetValue(input, $"__GlobalVars__.{variableName}");
-                        bindingDisplayProp?.SetValue(input, $"全局变量.{variableName}");
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 清除节点参数的绑定（支持纯 CLR 参数和集合型输入）
-        /// </summary>
-        private static void ClearNodeParamBinding(Solution solution, ConsumerBinding binding)
-        {
-            var workflow = solution.Workflows.FirstOrDefault(w => w.Id == binding.WorkflowId);
-            var node = workflow?.Nodes?.FirstOrDefault(n => n.Id == binding.NodeId)
-                ?? (string.IsNullOrEmpty(binding.WorkflowId)
-                    ? solution.Workflows.SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
-                        .SingleOrDefault(n => n.Id == binding.NodeId)
-                    : null);
-            if (node?.Parameters == null) return;
-
-            // ★ 集合型输入
-            if (TryClearInputBinding(node.Parameters, binding.ParameterName))
-                return;
-
-            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
-            if (prop == null) return;
-
-            // 新参数模型：先移除节点级外部绑定定义。
-            node.ParamSettings?.RemoveSetting(binding.ParameterName);
-
-        }
-
-        /// <summary>
-        /// 尝试清除集合型输入（Inputs 集合）的绑定
-        /// </summary>
-        private static bool TryClearInputBinding(ToolParameters parameters, string parameterName)
-        {
-            var inputsProp = parameters.GetType().GetProperty("Inputs");
-            if (inputsProp == null) return false;
-
-            if (inputsProp.GetValue(parameters) is IEnumerable inputs)
-            {
-                foreach (var input in inputs)
-                {
-                    var nameProp = input.GetType().GetProperty("Name");
-                    if (nameProp?.GetValue(input) is string name && name == parameterName)
-                    {
-                        var bindingSourceProp = input.GetType().GetProperty("BindingSource");
-                        var bindingDisplayProp = input.GetType().GetProperty("BindingDisplayText");
-                        bindingSourceProp?.SetValue(input, string.Empty);
-                        bindingDisplayProp?.SetValue(input, string.Empty);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+private void OpenTargetParameter(object? parameter) => LogWarning("变量目标参数绑定尚未迁移，当前不可用。");
 
         #endregion
     }

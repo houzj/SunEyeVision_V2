@@ -43,6 +43,6 @@ public partial class WorkflowTabViewModel
  {RebindReadinessNodes();RefreshRootReadiness();}
  private void RootReadinessNodeChanged(object? sender,PropertyChangedEventArgs e)
  {
-  if(e.PropertyName is nameof(WorkflowNodeBase.Parameters) or nameof(WorkflowNodeBase.ToolType) or nameof(WorkflowNodeBase.SubroutineId) or nameof(WorkflowNodeBase.DispName))RefreshRootReadiness();
+  if(e.PropertyName is nameof(WorkflowNodeBase.RuntimeConfiguration) or nameof(WorkflowNodeBase.ToolType) or nameof(WorkflowNodeBase.SubroutineId) or nameof(WorkflowNodeBase.DispName))RefreshRootReadiness();
  }
 }

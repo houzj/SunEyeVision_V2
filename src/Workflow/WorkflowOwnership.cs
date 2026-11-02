@@ -1,4 +1,5 @@
-﻿using System;
+#if false
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -59,3 +60,4 @@ public static class WorkflowOwnership
         return candidates.Except(retained).ToArray();
     }
 }
+#endif

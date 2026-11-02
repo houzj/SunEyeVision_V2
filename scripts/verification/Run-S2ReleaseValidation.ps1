@@ -1,8 +1,8 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal',
-      [ValidateRange(0,900)][int]$TimeoutSeconds=0)
+      [ValidateRange(0,900)][int]$TimeoutSeconds=0, [switch]$CompileOnly)
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
@@ -203,6 +203,7 @@ internal static class SafeEntry {
 [IO.File]::WriteAllText((Join-Path $dir 'SafeEntry.cs'),$entry)
 dotnet build (Join-Path $dir 'Check.csproj') -c Release *> (Join-Path $logDir 'build.log')
 if($LASTEXITCODE -ne 0){Get-Content (Join-Path $logDir 'build.log') -Tail 12;throw 'S2检查宿主编译失败，不计作产品失败'}
+if($CompileOnly){Write-Output "检查宿主已编译：$logDir"; return}
 $env:S2_PRODUCT_ROOT=$product;$env:S2_CASE_ROOT=$logDir
 $env:S2_TEST_HELPERS=Join-Path $root 'tests/bin/Release'
 $env:TEMP=Join-Path $logDir 'data';$env:TMP=$env:TEMP

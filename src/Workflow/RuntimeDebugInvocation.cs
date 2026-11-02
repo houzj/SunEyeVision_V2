@@ -91,7 +91,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         try
         {
             linked=CancellationTokenSource.CreateLinkedTokenSource(cancellation,generation.RetirementToken);
-            var invocation=CaptureCoreHeld(workflow,draft,owner,revision,readPublished,linked.Token,defaultImage,publishedOwner,
+            var invocation=CaptureCoreHeld(workflow,directory,draft,owner,revision,readPublished,linked.Token,defaultImage,publishedOwner,
                 resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,previewInputs,observeVariables,readDisplayCandidate);
             if(!ReferenceEquals(invocation._node.RuntimeConfiguration?.Directory,directory))
             {
@@ -110,7 +110,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             if(errors.Count>1)throw new AggregateException(errors);throw;
         }
     }
-    private static RuntimeDebugInvocation CaptureCoreHeld(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
+    private static RuntimeDebugInvocation CaptureCoreHeld(Workflow workflow,RuntimeDirectorySnapshot directory,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
@@ -136,7 +136,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         WorkflowExecutionDependencyGraph? graph=null;
         if(previewInputs is null)
         {
-            var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id);
+            var errors=RuntimeInputBindings.Validate(workflow,node,workflow.Id,directory);
             if(errors.Count>0)throw new InvalidOperationException(errors[0].Message);
             graph=WorkflowExecutionDependencyGraph.Compile(workflow);
             settings=configuration.CaptureExecutionFields().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
@@ -215,8 +215,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     !ReferenceEquals(admitted.Owner,publishedOwner??workflow.ExecutionOwner)||admitted.NodeId!=dependency.ScopeId+"/"+dependency.NodeId||published.SourceWorkflowId!=dependency.ScopeId||
                     published.Identity!=admitted.ToInvocationIdentity(dependency.NodeId))
                     throw new InvalidOperationException("来源结果不属于当前工作流的完整成功发布。");
-                var declaration=new ToolSchema(Array.Empty<Port>(),(new OutputBindingChangeService().ReadContract(sourceNode)??Array.Empty<OutputVariable>())
-                    .Where(p=>p.Kind==OutputVariableKind.Data).Select(BindingClrAdapter.DescribeOutput));
+                var originalDeclaration=new OutputBindingChangeService().ReadContract(sourceNode,directory)??throw new InvalidOperationException("来源缺少正式输出声明。");
+                var declaration=new ToolSchema(Array.Empty<Port>(),originalDeclaration.Outputs,outputDisplay:originalDeclaration.OutputDisplay);
                 if(declaration.Fingerprint!=published.Schema.Fingerprint)throw new InvalidOperationException("来源声明已更改，请重新运行来源节点。");
                 if(previewInputs is not null&&!ReferenceEquals(sourceConfiguration,sourceNode.RuntimeConfiguration))throw new InvalidOperationException("预览来源配置在捕获期间已变化。");
                 var reader=published.AcquireReader();readers.Add(reader);

@@ -15,8 +15,8 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
+
+
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
@@ -87,7 +87,16 @@ internal static class S2DocumentEditingCases
         var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(64,64,96,96,PixelFormats.Gray8,null,Pixels(),64)));using(var file=File.Create(imageFile))png.Save(file);
         var policy=ImageSourcePolicy.Read(source)!;policy.FilePaths=new(){imageFile};policy.CurrentIndex=0;policy.ForRunPaths=new(){imageFile};policy.SNInitialValue=1;policy.ApplyTo(source);vm.AddNodeToWorkflow(source);
         Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=source.Id,TargetNodeId=node.Id}),"真实图像连线失败");
-        var inputReference=((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput)).Reference;var key=BindingReferenceSerializer.Serialize(inputReference);
+        var inputSetting=node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput);
+        if(inputSetting is not ReferenceSetting)
+        {
+            var query=typeof(MainWindowViewModel).GetMethod("GetDataProviderForNode",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{node}) as DataSourceQueryService;
+            if(query is null)try{query=vm.CreateDataSourceQueryService(vm.WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId);}catch(Exception error){Console.Error.WriteLine("query construction failure: "+error);}
+            var ids=query?.BindingCandidateNodeIds?.Invoke(node.Id)??Array.Empty<string>();
+            Console.Error.WriteLine($"auto-binding diagnostic: query={(query is null?"null":"present")} scope={query?.WorkflowId} candidates={string.Join(",",ids)} source={source.Id} sourceSchema={query?.GetSchema(source.Id)?.Outputs.Count} input={inputSetting.GetType().Name}");
+            throw new InvalidOperationException("连线后自动图像来源未建立。");
+        }
+        var inputReference=((ReferenceSetting)inputSetting).Reference;var key=BindingReferenceSerializer.Serialize(inputReference);
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
@@ -179,20 +188,10 @@ internal static class S2DocumentEditingCases
                 Require(!new NodeOpenDecisionChain().Execute(node,openContext,()=>rejected),"不支持的编辑器被当作正式窗口");
                 Require(rejected.Disposed&&openContext.CreatedWindow is null,"打开失败后编辑视图未释放");
             });
-            Case("现有Group参数页使用唯一事务准备并随会话退役",()=>{
-                var document=new Solution();var parent=new SunEyeVision.Workflow.Workflow("group-parent","主流程");
-                var child=new SunEyeVision.Workflow.Workflow("group-child","内部"){IsSubroutine=true};
-                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId=child.Id,Parameters=new SubroutineParameters{SubroutineId=child.Id}};
-                parent.Nodes.Add(owner);document.Workflows.Add(parent);document.Workflows.Add(child);
-                using var context=new ProductionEditorContext(new NodeConfigurationEditHost(document),parent.Id,owner,()=>true,_=>{});
-                var assembly=typeof(ProductionEditorContext).Assembly;
-                var sessionType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParameterSession",true)!;
-                var pageType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParametersControl",true)!;
-                Func<string,WorkflowNodeBase,bool> allowed=(_,_)=>false;
-                var groupSession=Activator.CreateInstance(sessionType,new object?[]{context,document,allowed,32,null})!;
-                var page=(UserControl)Activator.CreateInstance(pageType,BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{groupSession,null},null)!;
-                try { Require(ToolEditorCommit.TryPrepare(page,out var error),error);Require(context.IsValid,"Group 草稿提前失效");context.Discard();Require(!context.IsActive,"Group 会话未退役"); }
-                finally { (page as IDisposable)?.Dispose(); }
+            Case("暂停的Group入口拒绝打开",()=>{
+                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId="group-child"};
+                var openContext=new NodeOpenContext{RuntimeDirectory=admission.Runtime};
+                Require(!new NodeOpenDecisionChain().Execute(owner,openContext)&&openContext.CreatedWindow is null,"暂停的Group入口错误开放");
             });
             Case("图像源和Blob通过原件窗口打开，取消关闭保留草稿与重试释放",()=>{
                 foreach(var openWindow in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())openWindow.Close();Pump();
@@ -303,7 +302,8 @@ internal static class S2DocumentEditingCases
         {
             Case("首次显示准备保护历史、未登记草稿及失败重试",()=>{
                 DocumentEditSession Create(Solution solution)=>(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
-                var solution=new Solution();var editing=Create(solution);var history=editing.History;var oldHost=editing.Host;
+                Solution NewSolution()=>new SolutionManager(Path.Combine(folder,"presentation-fixture-"+Guid.NewGuid().ToString("N")),admission.Runtime).CreateUntitledSolution();
+                var solution=NewSolution();var editing=Create(solution);var history=editing.History;var oldHost=editing.Host;
                 var held=0;Func<IDisposable> gate=()=>{held++;return new ActionLease(()=>held--);};history.SetMutationLeaseProvider(gate);
                 using(var preparation=editing.BeginInitialPresentationMaterialization())
                 {
@@ -319,13 +319,13 @@ internal static class S2DocumentEditingCases
                 using(var retry=editing.BeginInitialPresentationMaterialization())retry.Complete();
                 var used=false;try{using var ignored=editing.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){used=true;}
                 Require(used,"成功准备后仍允许再次物化");editing.Close();
-                var draftSession=Create(new Solution());var draftHost=draftSession.Host;_ = draftHost.BeginVariableEdit();
+                var draftSession=Create(NewSolution());var draftHost=draftSession.Host;_ = draftHost.BeginVariableEdit();
                 var draftBlocked=false;try{using var ignored=draftSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){draftBlocked=true;}
                 Require(draftBlocked&&draftHost.Capture() is not null,"未登记草稿被关闭或覆盖");draftSession.Close();
-                var usedSolution=new Solution();var usedSession=Create(usedSolution);usedSolution.ExecutionOwner.Begin("test/node",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
+                var usedSolution=NewSolution();var usedSession=Create(usedSolution);usedSolution.ExecutionOwner.Begin("test/node",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
                 var runBlocked=false;try{using var ignored=usedSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){runBlocked=true;}
                 Require(runBlocked,"已运行的会话被当作首次加载");usedSession.Close();usedSolution.ExecutionOwner.Retire();
-                var racedSolution=new Solution();var racedSession=Create(racedSolution);var racedHost=racedSession.Host;var racedHistory=racedSession.History;var racedHeld=0;
+                var racedSolution=NewSolution();var racedSession=Create(racedSolution);var racedHost=racedSession.Host;var racedHistory=racedSession.History;var racedHeld=0;
                 racedHistory.SetMutationLeaseProvider(()=>{racedHeld++;racedSolution.ExecutionOwner.Begin("test/race",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);return new ActionLease(()=>racedHeld--);});
                 var racedBlocked=false;try{using var ignored=racedSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){racedBlocked=true;}
                 Require(racedBlocked&&racedHeld==0&&ReferenceEquals(racedHost,racedSession.Host),"取得门禁期间启动的运行未阻止重建或门禁泄漏");racedSession.Close();racedSolution.ExecutionOwner.Retire();
@@ -484,7 +484,7 @@ internal static class S2DocumentEditingCases
             });
             Case("真实Host确认后同publication保留，UndoRedo只刷新正式样式",()=>{
                 var context=ToolEditorCommit.GetDraftContext(control)!;var args=new object?[]{null};Require((bool)context.GetType().GetMethod("TryCommitEditor",Flags)!.Invoke(context,args)!,"正式确认拒绝："+args[0]);Pump();
-                Require(node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width==4&&publication.IsCurrent()&&ReferenceEquals(publication,Publication()),"正式样式确认使结果失效");editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);Require(Field(BlobResultDisplay.Graphic,"width").TrySetConstant(6d),"同窗Apply新草稿不可编辑");Pump();Console.WriteLine("ApplyNext draft="+((ConstantSetting)Field(BlobResultDisplay.Graphic,"width").Setting).Value+" formal="+node.RuntimeConfiguration.CaptureResultDisplay()!.Graphic.Width+" scene="+string.Join(",",Geometry(Scene()).Select(item=>Get(item,"StrokeThickness"))));Require(Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==6),"同窗Apply新代未预览");window.Close();Pump();history.Undo();Pump();Console.WriteLine("StyleUndo formalWidth="+node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width+" publicationCurrent="+publication.IsCurrent()+" publicationSame="+ReferenceEquals(publication,Publication())+" history="+history.Position+" sceneWidths="+string.Join(",",Geometry(Scene()).Select(item=>Get(item,"StrokeThickness"))));Require(publication.IsCurrent()&&Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==2),"样式Undo失效publication或未更新");history.Redo();Pump();Require(publication.IsCurrent()&&Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==4),"样式Redo未刷新");
+                Require(node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width==4&&publication.IsCurrent()&&ReferenceEquals(publication,Publication()),"正式样式确认使结果失效");editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);Require(Field(BlobResultDisplay.Graphic,"width").TrySetConstant(6d),"同窗Apply新草稿不可编辑");Pump();Console.WriteLine("ApplyNext draft="+((ConstantSetting)Field(BlobResultDisplay.Graphic,"width").Setting).Value+" formal="+node.RuntimeConfiguration.CaptureResultDisplay()!.Graphic.Width+" scene="+string.Join(",",Geometry(Scene()).Select(item=>Get(item,"StrokeThickness"))));Require(Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==6),"同窗Apply新代未预览");Console.WriteLine("StyleClose BEFORE current="+publication.IsCurrent()+" same="+ReferenceEquals(publication,Publication())+" sameSnapshot="+ReferenceEquals(Maybe(vm,"_resultPublicationSnapshot"),((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result)+" productionPresent="+(((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result is not null));window.Close();Pump();Console.WriteLine("StyleClose AFTER current="+publication.IsCurrent()+" same="+ReferenceEquals(publication,Publication()));var beforeIdentity=(string)typeof(RuntimeToolConfiguration).GetProperty("ExecutionConfigurationIdentity",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(node.RuntimeConfiguration)!;history.Undo();Pump();var afterIdentity=(string)typeof(RuntimeToolConfiguration).GetProperty("ExecutionConfigurationIdentity",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(node.RuntimeConfiguration)!;Console.WriteLine("StyleUndo identityEqual="+(beforeIdentity==afterIdentity)+" invalidated="+string.Join(",",history.LastInvalidatedNodes));if(beforeIdentity!=afterIdentity){Console.WriteLine("IDENTITY_BEFORE="+beforeIdentity);Console.WriteLine("IDENTITY_AFTER="+afterIdentity);}Console.WriteLine("StyleUndo formalWidth="+node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width+" publicationCurrent="+publication.IsCurrent()+" publicationSame="+ReferenceEquals(publication,Publication())+" history="+history.Position+" sceneWidths="+string.Join(",",Geometry(Scene()).Select(item=>Get(item,"StrokeThickness"))));Require(publication.IsCurrent()&&Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==2),"样式Undo失效publication或未更新");history.Redo();Pump();Require(publication.IsCurrent()&&Geometry(Scene()).Length==2&&Geometry(Scene()).All(item=>(double)Get(item,"StrokeThickness")==4),"样式Redo未刷新");
             });
             window=Open();control=Control(window);editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();
             Case("取消读最新正式值，不恢复开窗旧样式",()=>{
@@ -634,7 +634,7 @@ internal static class S2DocumentEditingCases
                 Require(Equals(restored.RuntimeConfiguration!.CaptureResultDisplay(),before.CaptureResultDisplay())&&Equals(before.Copy().CaptureResultDisplay(),before.CaptureResultDisplay()),"三角色样式保存/复制丢失");
                 var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance,admission.Runtime);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
                 using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
-                var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
+                var executor=new WorkflowExecutionEngine(engine,SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
                 var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
                 using(var result=task.GetAwaiter().GetResult())
                 {
@@ -983,7 +983,15 @@ internal static class S2DocumentEditingCases
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
     private sealed class DraftProbeValue { public string Value {get;set;}="原值"; }
-    private sealed class DraftProbeEditor : ToolDebugControlBase { protected override object ExecuteTool()=>new GenericToolResults(); }
+    private sealed class DraftProbeEditor : UserControl, IEditorViewParticipant
+    {
+        public FrameworkElement Element => this;
+        public object? CurrentNode => this;
+        public bool SuppressClosePersistence { get; set; }
+        public void PersistParameterBindings() { }
+        public bool ValidateParameters() => true;
+        public void RefreshCommittedBindings(bool onlyInvalidated) { }
+    }
     private sealed class RejectedEditorProbe : UserControl, IDisposable { public bool Disposed {get;private set;} public void Dispose()=>Disposed=true; }
     private sealed class ForeignDraftProbe : IToolEditorDraftContext
     { public object FormalNode {get;}=new(); public bool OwnsDraft(object? node)=>false; public bool TryCommitEditor(out string error){error="";return true;} public bool TryValidateEditor(out string error){error="";return true;} public void Discard(){} }

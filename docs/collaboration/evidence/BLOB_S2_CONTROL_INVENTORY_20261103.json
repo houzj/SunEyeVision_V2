@@ -1,0 +1,441 @@
+{
+  "schema": "blob-s2-full-control-inventory/v1",
+  "sourceBaseline": "44a4120bfc2d1c66a690ab1c7dc1e6d81d2fc8ed",
+  "formalProduct": "3480dfc94c6e8276cc8476dfa7b45f78c03f90cc",
+  "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
+  "latestFormal": "docs/collaboration/evidence/BLOB_REAL_THREE_PAGE_UI_FORMAL_20261103.json",
+  "catalogCount": 28,
+  "entries": [
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C10.original-advanced-expand",
+      "family": "advanced",
+      "catalogId": "C10.original-advanced-expand"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C01.original-parameter-host",
+      "family": "host",
+      "catalogId": "C01.original-parameter-host"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C12.vm-pcui-color-picker",
+      "family": "color",
+      "catalogId": "C12.vm-pcui-color-picker"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C02.vm-enumeration-g-image-source",
+      "family": "image",
+      "catalogId": "C02.vm-enumeration-g-image-source"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C04.apps-xmlui-boolean",
+      "family": "boolean",
+      "catalogId": "C04.apps-xmlui-boolean"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C03.original-enumeration",
+      "family": "choice",
+      "catalogId": "C03.original-enumeration"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C07.apps-pcui-popup-foundation",
+      "family": "reference",
+      "catalogId": "C07.apps-pcui-popup-foundation"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C07.original-reference-tree-text-foundation",
+      "family": "reference",
+      "catalogId": "C07.original-reference-tree-text-foundation"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C07.original-reference-composition",
+      "family": "reference",
+      "catalogId": "C07.original-reference-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C05.original-number-composition",
+      "family": "number",
+      "catalogId": "C05.original-number-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C06.original-between-composition",
+      "family": "range",
+      "catalogId": "C06.original-between-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C07.original-expanded-reference-window",
+      "family": "reference",
+      "catalogId": "C07.original-expanded-reference-window"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C08.original-roi-scene",
+      "family": "roi",
+      "catalogId": "C08.original-roi-scene"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C08.original-polygon-limit-warning",
+      "family": "roi",
+      "catalogId": "C08.original-polygon-limit-warning"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C09.original-integer-radio",
+      "family": "radio",
+      "catalogId": "C09.original-integer-radio"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C09.original-inherited-annulus-display",
+      "family": "roi",
+      "catalogId": "C09.original-inherited-annulus-display"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C13.original-text-composition",
+      "family": "display",
+      "catalogId": "C13.original-text-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C13.original-graphic-style-composition",
+      "family": "display",
+      "catalogId": "C13.original-graphic-style-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C14.original-standard-result-table",
+      "family": "results",
+      "catalogId": "C14.original-standard-result-table"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#results.original-property-list",
+      "family": "results",
+      "catalogId": "results.original-property-list"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#results.original-workspace-shell",
+      "family": "results",
+      "catalogId": "results.original-workspace-shell"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C15.original-tool-editor-footer",
+      "family": "footer",
+      "catalogId": "C15.original-tool-editor-footer"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C09.original-assist-composition",
+      "family": "assist",
+      "catalogId": "C09.original-assist-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C17.image-export-snapshot",
+      "family": "export",
+      "catalogId": "C17.image-export-snapshot"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C17.cross-binding-lifecycle",
+      "family": "viewport",
+      "catalogId": "C17.cross-binding-lifecycle"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#C17.crosshair-settings-composition",
+      "family": "viewport",
+      "catalogId": "C17.crosshair-settings-composition"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#B08.variable-selection-dialog",
+      "family": "reference",
+      "catalogId": "B08.variable-selection-dialog"
+    },
+    {
+      "scopePreserved": true,
+      "catalogEvidence": "src/Plugin.Wpf/Catalog/controls.json#B01.content-toggle-switch",
+      "family": "boolean",
+      "catalogId": "B01.content-toggle-switch"
+    }
+  ],
+  "families": {
+    "host": {
+      "name": "参数页宿主与分组",
+      "priority": 0,
+      "state": "复用已自测支持范围",
+      "sources": [
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs"
+      ],
+      "existingImplementation": "同一真实组装、草稿、条件显隐、生命周期及已支持接纳；S1完整18组",
+      "remaining": "未支持组仍仅UI；宿主新平台待按已固定工作流基线集成；VS/自然操作另记",
+      "owner": "主线控件；工作流负责宿主",
+      "acceptanceExit": "真实窗口配置/原文/拒绝与支持态恢复、同owner清理"
+    },
+    "image": {
+      "name": "输入图像选择",
+      "priority": 3,
+      "state": "复用已有输入链；共享显示状态另列",
+      "sources": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs"
+      ],
+      "existingImplementation": "正式输入声明、来源身份和真实Blob消费；不混为视口显示选择",
+      "remaining": "背景/多勾选/多帧lease及显示持久化完整宿主合同未完成",
+      "owner": "工作流共享线，主线集成",
+      "acceptanceExit": "输入捕获与显示接纳分开，错帧/失效/恢复及保存复制删除"
+    },
+    "choice": {
+      "name": "枚举原件",
+      "priority": 0,
+      "state": "基础复用；未实现业务键受保护",
+      "sources": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUiState.cs"
+      ],
+      "existingImplementation": "真实选择、原标签/键、未支持分支预览；支持键按正式草稿写入",
+      "remaining": "五种阈值和七种排序功能未实现，不因可选择而接通",
+      "owner": "主线；算法语义归S3",
+      "acceptanceExit": "选项身份、移除键保留、切回不覆盖、未实现拒绝"
+    },
+    "boolean": {
+      "name": "Boolean与PCUI内容开关两家族",
+      "priority": 0,
+      "state": "已有正确基础复用，不合并两家族",
+      "sources": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Controls/Inputs/ContentToggleSwitch.xaml.cs"
+      ],
+      "existingImplementation": "正式布尔状态、条件组与程序投影；两家族保持原不同用途",
+      "remaining": "UI-only开关内容的业务producer仍按所属组合保护，人工自然输入另列",
+      "owner": "主线",
+      "acceptanceExit": "既有正式使能、程序回填、条件及关闭；原UI资源/行为来源分别保留"
+    },
+    "number": {
+      "name": "C05单数值完整控件",
+      "priority": 1,
+      "state": "下一完整单元：整体原证核对中",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs"
+      ],
+      "existingImplementation": "常量/引用、原文、边界、模式切换、当前值及真实消费已有生产链，复用；本批已独立核原Float/Integer源码，现浮点舍入一致，复用",
+      "remaining": "原托管Float为double并按ToEven舍入，现PrepareValue已匹配；普通参数回读与执行值的宿主语义及完整输入/回读时序仍待补证，不把ComType=float当single",
+      "owner": "主线整体设计/实施，既有逆向负责人集中补证",
+      "acceptanceExit": "同一单值控件完整入口→选源→运行/回读→切常量/解绑→历史保存重开→退役；先于C06"
+    },
+    "range": {
+      "name": "C06双端范围完整组合",
+      "priority": 2,
+      "state": "复用三筛选范围；依赖C05整体决定",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+      ],
+      "existingImplementation": "面积/圆度/矩形度双端独立引用、组接纳、真实执行及历史已有限自测",
+      "remaining": "引用对端按null与原隐藏模型夹值有静态差异；回读时序未证；其余原范围为UI-only",
+      "owner": "主线，补证集中经逆向负责人",
+      "acceptanceExit": "左右对称/单端双端引用、0/1/多值、箭头失焦Dispatcher及关闭，保引用身份与执行快照"
+    },
+    "reference": {
+      "name": "C07/B08订阅、来源树、展开与变量",
+      "priority": 3,
+      "state": "复用已验链；保A00至A23全范围",
+      "sources": [
+        "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+        "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs"
+      ],
+      "existingImplementation": "当前声明资格、固定/动态索引、展开/变量模态、确认/历史/重开与真实消费者已有限验",
+      "remaining": "未知/Group/动态输出和缺producer保护；偏好仅会话、不称磁盘Dirty/Undo；原解绑和全域时序未全证",
+      "owner": "主线公共引用；工作流目录/owner；逆向补具体缺口",
+      "acceptanceExit": "同一完整引用控件及真实混合窗；原24项完成或明确依赖保护，人工统一另记"
+    },
+    "advanced": {
+      "name": "高级折叠与真实分组",
+      "priority": 0,
+      "state": "复用已自测UI基础",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Parameters/NativeAdvancedPresenter.cs"
+      ],
+      "existingImplementation": "S1核实际高级父级、有效IsVisible、收起与导航不脏",
+      "remaining": "内容本身的数据/算法功能仍按所属控件，不由折叠通过代证",
+      "owner": "主线",
+      "acceptanceExit": "真实页展开/收起、保持原文、旧延迟回调退役；VS另记"
+    },
+    "color": {
+      "name": "原颜色选择及RGBA适配",
+      "priority": 0,
+      "state": "复用正式样式已有支持链",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Display/NativeColorPresenter.cs"
+      ],
+      "existingImplementation": "原颜色原件、正式图文样式设置及确认取消/历史；不重跑算法",
+      "remaining": "四缺值样式只有UI；自然键鼠、语言/其他DPI另记",
+      "owner": "主线",
+      "acceptanceExit": "真实颜色/样式变更、取消/关闭、同次结果重呈现及保存重开"
+    },
+    "roi": {
+      "name": "C08与检测继承/扇环组合",
+      "priority": 4,
+      "state": "复用现有空间基础；缺口分单元保护",
+      "sources": [
+        "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.cs"
+      ],
+      "existingImplementation": "本地四形、纯值定义、活动输入冻结、四态继承及5/6叶只读预览；当前17/24组对应范围",
+      "remaining": "图像/输出mask、屏蔽继承缺完整消费语义；组合ROI来源缺真实producer；原像素/帧等价未证",
+      "owner": "主线控件与Blob；平台真实producer；逆向集中缺口",
+      "acceptanceExit": "每一空间输入独立贯通配置→快照→物化→执行→同次回显→历史复制重开及失效；保用户多形屏蔽差异"
+    },
+    "radio": {
+      "name": "整数单选原件",
+      "priority": 0,
+      "state": "复用当前单选与显隐基础",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs"
+      ],
+      "existingImplementation": "原整数单选模板及状态，当前基本页各交叉选择已核",
+      "remaining": "选择后的位姿/区域业务未完成时保持保护；不是六native FixMode映射证明",
+      "owner": "主线",
+      "acceptanceExit": "程序/用户状态、条件组、取消/关闭与不误写正式字段"
+    },
+    "assist": {
+      "name": "C09位置修正完整组合",
+      "priority": 5,
+      "state": "有变换核心但Blob组合未接，受保护",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/NativeAssistOptions.cs"
+      ],
+      "existingImplementation": "三UI方式/15角色公共组合；已有Affine2D校验及HALCON变换，不认定缺基础",
+      "remaining": "三UI不等于六native FixMode；公式/角度缩放顺序、单次变换责任和fixture来源未闭合；Blob明确拒绝pose",
+      "owner": "主线合同及消费者；逆向公式；平台producer",
+      "acceptanceExit": "实际来源→单次空间变换→执行几何/基准运行点→历史重开跨帧/旧owner"
+    },
+    "display": {
+      "name": "C13文本/图形完整显示组合",
+      "priority": 6,
+      "state": "复用正式五对象及文本链；四对象保护",
+      "sources": [
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+        "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.DisplayScene.cs"
+      ],
+      "existingImplementation": "同次publication/appearance、原矩形与ROI/屏蔽/扇环、文本多来源及XY引用/历史，44组对应支持范围",
+      "remaining": "最大内接矩形/轮廓点/基准点/运行点缺真实值；显示变量索引、原文本长度和完整复制恢复未全证",
+      "owner": "主线；真实测量归S3，点归Assist",
+      "acceptanceExit": "新真实值沿既有描述/帧/样式接入，不造renderer或假结果"
+    },
+    "results": {
+      "name": "C14结果表/树及工作区",
+      "priority": 7,
+      "state": "复用声明+同次结果+租约",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
+        "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/DeclaredPropertyList.cs"
+      ],
+      "existingImplementation": "表树同publication、选择转发、分批与当前高亮已有正式消费者；旧专轨保持各自身份",
+      "remaining": "角度长短轴缺真实测量，不用bounds代替；原输入域坐标和指定RunIdentity历史入口未完成",
+      "owner": "主线表/树；S3真实特征；工作流历史",
+      "acceptanceExit": "同次树/表/视口一致，新旧运行退役、错帧及真实历史入口"
+    },
+    "footer": {
+      "name": "C15原工具底栏",
+      "priority": 8,
+      "state": "复用单次调试/确认关闭；连续保护",
+      "sources": [
+        "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml.cs",
+        "src/UI/Services/Editing/Nodes/NativeRuntimeEditorWindow.cs"
+      ],
+      "existingImplementation": "原四模板和非视觉命令委托，现单次/确认/取消与事务已测",
+      "remaining": "连续/停止与Reset无完整非视觉会话及事务，保持禁用，不加UI循环",
+      "owner": "工作流执行会话，主线控件接命令",
+      "acceptanceExit": "完整单节点连续session/冻结/取消排空/失败退役/关闭后再接原模板"
+    },
+    "export": {
+      "name": "C17原图与可见图形导出",
+      "priority": 9,
+      "state": "已交付支持范围正式闭口；原字体保护",
+      "sources": [
+        "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
+        "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs"
+      ],
+      "existingImplementation": "原helper图形分派/现OpenCV编码/真实右键及快照；C17正式23组为其原批次",
+      "remaining": "PutTextZh native、含字轴/角度、Gray16带图形及不保真编码保护；不称厂商像素等价",
+      "owner": "主线；逆向native字体；平台差异显式记录",
+      "acceptanceExit": "字体依赖闭合后对相应完整导出范围验证，不重写可用屏幕renderer"
+    },
+    "viewport": {
+      "name": "C17视口、十字及绑定生命周期",
+      "priority": 9,
+      "state": "复用物理帧receipt和独立图层",
+      "sources": [
+        "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+        "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Cross.cs"
+      ],
+      "existingImplementation": "帧/reader lease、常驻/选择/十字、换帧空结果和关闭已有对应专项",
+      "remaining": "多图背景/叠层/多勾选及完整历史仍为宿主共享链；不能Blob另造owner",
+      "owner": "主线视口；工作流共享状态",
+      "acceptanceExit": "真实同帧显示、旧lease、共享多图状态和历史按完整宿主链验证"
+    }
+  },
+  "b08OriginalItems": [
+    "A00",
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "A12",
+    "A13",
+    "A14",
+    "A15",
+    "A16",
+    "A17",
+    "A18",
+    "A19",
+    "A20",
+    "A21",
+    "A22",
+    "A23"
+  ],
+  "b08Authority": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
+  "nextWholeUnit": "先C05单数值的完整原件/模型/回读/身份链，完成后C06双端；现有正确链复用，不先将引用对端null改为实时值",
+  "evidenceRequest": "已向既有逆向负责人集中提交；本次仅静态，不扩大原机授权",
+  "workflowBaseline": {
+    "directNumericOverlap": [
+      "scripts/verification/S4B08NumericReferenceCompositionCases.cs",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/packages.lock.json"
+    ],
+    "decision": "尚未合入不是缺基础；不把整平台合入硬设为C05前置，实际共享合同需要时集中集成",
+    "incomingPaths": 612,
+    "sharedProductOrTestPaths": 25,
+    "candidate": "6ec1ead54"
+  },
+  "estimates": "缺现证据的部分不报可靠工期；明确缺口与阶段出口，不能无限笼统待确认",
+  "status": "S2完整盘点与取证设计；未修改产品、未新增工作树、未宣称S2闭口",
+  "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
+  "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json"
+}

@@ -1,0 +1,16 @@
+{
+  "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-C05-C06数值模型订阅回读集中证据-20261103.md",
+  "sourceSha256": "2144E62DB0434BAA491D021A9E76ABD787886936EAC8BCC90C8D8053FE47FD95",
+  "archived": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
+  "method": "仅静态VM4.4，原报告明示仍有可追关键调用链，未穷尽",
+  "adopted": [
+    "Float模型double不是single",
+    "Float setter Math.Round ToEven，与现PrepareValue一致，复用",
+    "订阅身份/本地模型/普通回读/执行值分离"
+  ],
+  "notAdoptedAsFact": [
+    "每次Blob运行后必全量回读",
+    "本地隐藏模型就是实时订阅执行值"
+  ],
+  "remaining": "Blob宿主接口token/CIL回读调用者及普通native参数语义已交既有负责人同批继续"
+}

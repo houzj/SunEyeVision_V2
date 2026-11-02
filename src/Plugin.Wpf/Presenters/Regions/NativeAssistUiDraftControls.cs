@@ -22,12 +22,12 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
     {
         _information=information??throw new ArgumentNullException(nameof(information));
         if(information.Parent is not null)throw new ArgumentException("修正信息控件已有宿主。",nameof(information));
+        try
+        {
         _mode=new DeclaredFieldState(new Port("ui-only-assist-mode",DataType.Integer),new ConstantSetting(0L),_=>{});
         _radio=new NativeIntegerRadioPresenter(_mode,"选择方式",new NativeIntegerRadioOptions(new[]{
             new NativeIntegerRadioChoice(0,"按信息"),new NativeIntegerRadioChoice(1,"按点"),
             new NativeIntegerRadioChoice(2,"按坐标")},useFiveSlotTemplate:true));
-        try
-        {
             Children.Add(_radio);
             information.SetLabel("修正信息");Children.Add(information);
             Add("基准点",1);Add("基准点X",2);Add("基准点Y",2);
@@ -36,7 +36,11 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
             Add("运行角度",3);Add("运行尺度X",3);Add("运行尺度Y",3);
             _mode.Changed+=ProjectVisibility;_mode.Changed+=OnUiChanged;foreach(var row in _rows)row.Editor.Changed+=OnUiChanged;ProjectVisibility();
         }
-        catch{Dispose();throw;}
+        catch(Exception failure)
+        {
+            try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
 
     private void Add(string label,int visibleMode)
@@ -62,9 +66,12 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;
-        _mode.Changed-=ProjectVisibility;_mode.Changed-=OnUiChanged;foreach(var row in _rows)row.Editor.Changed-=OnUiChanged;Changed=null;Children.Clear();
-        foreach(var (editor,_) in _rows)editor.Dispose();
-        _radio.Dispose();_mode.Dispose();
+        if(_disposed)return;_disposed=true;Changed=null;
+        var rows=_rows.ToArray();
+        ParameterCleanup.Run(new Action[]{()=>{if(_mode is {} mode){mode.Changed-=ProjectVisibility;mode.Changed-=OnUiChanged;}}}
+            .Concat(rows.Select(row=>(Action)(()=>row.Editor.Changed-=OnUiChanged)))
+            .Append(()=>Children.Clear())
+            .Concat(rows.Select(row=>(Action)row.Editor.Dispose))
+            .Concat(new Action[]{()=>_radio?.Dispose(),()=>_mode?.Dispose()}));
     }
 }

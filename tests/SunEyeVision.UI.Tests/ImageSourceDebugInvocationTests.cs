@@ -22,23 +22,27 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ImageSourceDebugInvocationTests
 {
     [Fact]
-    public void Cancelled_read_identity_rejects_before_admission_with_cancellation()
+    public async Task Cancelled_read_identity_rejects_before_admission_with_cancellation()
     {
+        using var fixture=new Fixture();
         using var cancellation=new CancellationTokenSource();
         var owner=new ToolExecutionOwner();
         var identity=owner.Begin("flow/source",Guid.NewGuid(),"schema",cancellation.Token);
         var admitted=false;
-        var input=new ImageSourceRunInput("unused",1){LocalReadAdmission=_=>{admitted=true;return "unused";}};
+        using var input=new ImageSourceHostInputPreparer("unused",1){LocalReadAdmission=(_,_)=>{admitted=true;return "unused";}};
+        var configuration=fixture.Node.RuntimeConfiguration!;
+        var context=new HostInputPreparationContext(configuration.Directory.GetHostInputs(configuration.ToolId)!,configuration.ReadFieldValues(),
+            identity.ToInvocationIdentity(fixture.Node.Id),cancellation.Token,new TestGate(identity));
         cancellation.Cancel();
-        var method=typeof(ImageSourceRunInput).GetMethod("AcceptLocalImage",BindingFlags.Instance|BindingFlags.NonPublic)!;
-        var error=Assert.Throws<TargetInvocationException>(()=>method.Invoke(input,new object[]{identity}));
-        Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async()=>await input.PrepareAsync(context));
         Assert.False(admitted);
     }
+    private sealed class TestGate(ToolExecutionIdentity identity):IHostInvocationGate
+    { public bool TryInvoke(Action callback)=>identity.TryInvokeCallback(callback); }
     private sealed class Fixture : IDisposable
     {
         public string DirectoryPath {get;}
-        public WorkflowEngine Engine {get;}=new(Substitute.For<ILogger>());
+        public WorkflowEngine Engine {get;}=new(Substitute.For<ILogger>(),RootCanvasFixture.Directory);
         public SunEyeVision.Workflow.Workflow Flow {get;}
         public WorkflowNodeBase Node {get;}
         public Solution Document {get;}
@@ -63,9 +67,15 @@ public sealed class ImageSourceDebugInvocationTests
         }
         public RuntimeDebugInvocation Capture(WorkflowNodeBase? draft=null,CancellationToken cancellation=default,
             ICameraCaptureService? camera=null,IVisionImage? defaultImage=null,IResourcePathResolver? resolver=null,ToolExecutionOwner? owner=null)
-            =>RuntimeDebugInvocation.Capture(Flow,Node.RuntimeConfiguration!.Directory,draft??Host.BeginEdit(Flow.Id,Node.Id).Node,owner??new ToolExecutionOwner(),Host.Capture().Version,
+        {
+            var actualDraft=draft??Host.BeginEdit(Flow.Id,Node.Id).Node;var actualOwner=owner??new ToolExecutionOwner();
+            var paths=resolver??new SolutionResourceResolver(Document.ResourceBaseDirectory);
+            var preparer=RuntimeHostInputAdapters.CreateDebug(actualDraft,Flow.Id,actualOwner,paths,camera);
+            try{return RuntimeDebugInvocation.Capture(Flow,Node.RuntimeConfiguration!.Directory,actualDraft,actualOwner,Host.Capture().Version,
                 _=>throw new InvalidOperationException("图像源不得读取上游发布作为默认输入。"),cancellation,defaultImage,
-                resourcePaths:resolver??new SolutionResourceResolver(Document.ResourceBaseDirectory),cameraService:camera);
+                resourcePaths:paths,cameraService:camera,hostInputPreparer:preparer);}
+            catch{preparer?.Dispose();throw;}
+        }
         public void Edit(Action<ImageSourcePolicy> change)
         {var edit=Host.BeginEdit(Flow.Id,Node.Id);ImageSourceTestRuntime.Edit(edit.Node,change);Host.Commit(edit);}
         public void Camera(string device="camera",int timeout=1234)
@@ -199,9 +209,9 @@ public sealed class ImageSourceDebugInvocationTests
     {
         using var f=new Fixture();var path=f.WriteImage(f.DirectoryPath,40);
         var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
-        var sourceInputs=new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7){LocalReadAdmission=_=>path}}};
-        var request=new WorkflowRunRequest(f.Flow.Id,sourceInputs:sourceInputs);
-        sourceInputs[f.Node.Id]=new(path+".missing",99); // Request must retain its admitted immutable mapping.
+        var sourceInputs=new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{f.Node.Id,new ImageSourceHostInputPreparer(path,7){LocalReadAdmission=(_,_)=>path}}};
+        var request=new WorkflowRunRequest(f.Flow.Id,hostInputs:sourceInputs);
+        sourceInputs[f.Node.Id]=new ImageSourceHostInputPreparer(path+".missing",99); // Request must retain its admitted immutable mapping.
         using var run=await executor.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(20));
         Assert.True(run.Success,string.Join(";",run.Errors));
         var formal=Assert.IsType<DeclaredOutputSnapshot>(run.NodeResults[f.Node.Id].Result);
@@ -234,8 +244,8 @@ public sealed class ImageSourceDebugInvocationTests
         Assert.Equal(7,ImageSourceTestRuntime.Read(f.Node).SNInitialValue);
         Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
         // Rejection must drain the same engine root slot; only an explicit frozen scheduler input may run.
-        using var admitted=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,sourceInputs:
-            new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7){LocalReadAdmission=_=>path}}}));
+        using var admitted=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,hostInputs:
+            new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{f.Node.Id,new ImageSourceHostInputPreparer(path,7){LocalReadAdmission=(_,_)=>path}}}));
         Assert.True(admitted.Success,string.Join(";",admitted.Errors));
         var output=Assert.IsType<DeclaredOutputSnapshot>(admitted.NodeResults[f.Node.Id].Result);
         using var reader=output.AcquireReader();
@@ -346,9 +356,8 @@ public sealed class ImageSourceDebugInvocationTests
         using var f=new Fixture();f.Camera();using var frame=new TrackedFrame();
         var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
         var service=Substitute.For<ICameraCaptureService>();
-        var request=new WorkflowRunRequest(f.Flow.Id,cameraCaptureService:service,
-            cameraFrames:new Dictionary<string,CameraFrame>{{f.Node.Id,frame.Frame}},
-            sourceInputs:new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(null,7)}});
+        var request=new WorkflowRunRequest(f.Flow.Id,
+            hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{f.Node.Id,new ImageSourceHostInputPreparer(null,7,service,frame.Frame)}});
         using(var run=await executor.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(20)))
         {
             Assert.True(run.Success,string.Join(";",run.Errors));

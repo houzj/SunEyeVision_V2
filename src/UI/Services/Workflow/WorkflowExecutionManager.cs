@@ -752,8 +752,9 @@ namespace SunEyeVision.UI.Services.Workflow
             var nodeOverrides=new Dictionary<string,IReadOnlyDictionary<string,object?>>{{node.Id,overrides}};
             using var localImages=await BeginLocalImagesAsync(workflowId,token);
             var sourceValues=localImages.CaptureIteration();
-            var sourceInputs=sourceValues.Where(pair=>pair.Key==node.Id).ToDictionary(pair=>pair.Key,pair=>new ImageSourceRunInput(
-                pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,(long)pair.Value["input.sequence"]!)
+            var sourceInputs=sourceValues.Where(pair=>pair.Key==node.Id).ToDictionary(pair=>pair.Key,pair=>(SunEyeVision.Plugin.Contracts.IHostInputPreparer)new ImageSourceHostInputPreparer(
+                pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,(long)pair.Value["input.sequence"]!,
+                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime)
                 { LocalReadAdmission=localImages.AdmissionFor(pair.Key) },StringComparer.Ordinal);
             var image=await _inputProvider.GetInputImageAsync() as IVisionImage;token.ThrowIfCancellationRequested();
             var inner=_communicationInputs.Value??SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
@@ -765,7 +766,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 var engine=new WorkflowExecutionEngine(_workflowEngine,new PluginManager(logger),logger);
                 var request=new WorkflowRunRequest(workflowId,image,inputs.ProducedGlobals.Capture().ToDictionary(pair=>pair.Key,pair=>pair.Value),
                     inputs.RuntimeParameters.ToDictionary(pair=>pair.Key,pair=>pair.Value),nodeParameterOverrides:nodeOverrides,nodeBindingOverrides:nodeOverrides,
-                    sourceInputs:sourceInputs,communicationInputs:receiveInputs,
+                    hostInputs:sourceInputs,communicationInputs:receiveInputs,
                     communicationOutputs:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,
                     cameraCaptureService:sourceInputs.Count>0?SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime:null)
                 {Configuration=configuration,ExecutionOwner=inputs.ExecutionOwner,ResourcePaths=inputs.ResourcePaths,
@@ -984,11 +985,13 @@ namespace SunEyeVision.UI.Services.Workflow
                     }
                 }
                 var hasCameraSource = runInputs.LocalImages.Policies.Values.Any(policy=>policy.SourceKind==ImageSourceKind.Camera);
-                var sourceInputs=sourceInputValues.ToDictionary(pair=>pair.Key,pair=>new ImageSourceRunInput(
+                var sourceInputs=sourceInputValues.ToDictionary(pair=>pair.Key,pair=>(SunEyeVision.Plugin.Contracts.IHostInputPreparer)new ImageSourceHostInputPreparer(
                     pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,
-                    (long)pair.Value["input.sequence"]!) { LocalReadAdmission=localImages?.AdmissionFor(pair.Key) },StringComparer.Ordinal);
+                    (long)pair.Value["input.sequence"]!,
+                    hasCameraSource?SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime:null,
+                    cameraNodeId==pair.Key?cameraFrame:null) { LocalReadAdmission=localImages?.AdmissionFor(pair.Key) },StringComparer.Ordinal);
                 // Communication property assignments belong to per-run parameter overrides;
-                // source selections are separately frozen in SourceInputs.
+                // Source selections are separately frozen in host inputs.
                 var nodeParameterOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
                 var bindingOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
                 foreach (var group in (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).GroupBy(a => a.NodeId))
@@ -1010,7 +1013,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     inputImage as IVisionImage,
                     runGlobals,
                     runtimeParameters,
-                    sourceInputs: sourceInputs,
+                    hostInputs: sourceInputs,
                     nodeParameterOverrides: nodeParameterOverrides,
                     nodeBindingOverrides: bindingOverrides,
                     communicationInputs: receiveInputs,

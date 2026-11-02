@@ -892,7 +892,11 @@ public class SolutionManager
         {
             var metadata = _repository.LoadMetadata(targetFilePath) ?? throw new InvalidDataException("新方案元数据无法读取。");
             Solution? next = null;
-            if (switchToNewSolution) next = _repository.Load(targetFilePath) ?? throw new InvalidDataException("新方案加载失败：" + LastError);
+            if (switchToNewSolution)
+            {
+                var loaded = _repository.LoadCandidate(targetFilePath);
+                next = loaded.Candidate ?? throw new InvalidDataException("新方案加载失败：" + string.Join("；",loaded.Diagnostics.Where(item=>item.Severity=="Error").Select(item=>item.Message)));
+            }
             RegisterKnownSolution(metadata);
             ForceSaveSettings();
             if (next != null) SetCurrentSolution(next);

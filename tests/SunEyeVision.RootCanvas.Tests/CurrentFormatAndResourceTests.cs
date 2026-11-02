@@ -74,6 +74,20 @@ public sealed class CurrentFormatAndResourceTests
     }
 
     [Fact]
+    public void Metadata_update_after_replace_failure_restores_target_backup_and_catalogue()
+    {
+        var (manager,document,path)=NewDocument();var original=manager.GetMetadata(document.Id)!;
+        Assert.True(manager.SaveSolution(),manager.LastError);
+        var repository=(SolutionRepository)typeof(SolutionManager).GetField("_repository",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(manager)!;
+        var backup=repository.GetRecoveryPath(path);var backupHash=Hash(backup);var targetHash=Hash(path);
+        var proposed=original.Clone();proposed.Name="new-name";
+        SetBoundary(manager,phase=>{if(phase=="target-replaced")throw new IOException("injected metadata commit failure");});
+        Assert.ThrowsAny<IOException>(()=>manager.UpdateMetadata(proposed));
+        Assert.Equal(targetHash,Hash(path));Assert.Equal(backupHash,Hash(backup));
+        Assert.Equal(original.Name,manager.GetMetadata(document.Id)!.Name);
+    }
+
+    [Fact]
     public void Metadata_update_does_not_keep_caller_alias_after_success()
     {
         var (manager,document,_)=NewDocument();var proposed=manager.GetMetadata(document.Id)!;
@@ -91,6 +105,17 @@ public sealed class CurrentFormatAndResourceTests
         SetBoundary(manager,phase=>{if(phase=="before-target-replace")File.WriteAllText(path,"external change");});
         Assert.ThrowsAny<IOException>(()=>manager.RestorePreviousSave(document.Id));
         Assert.Equal("external change",File.ReadAllText(path));Assert.Equal(backupHash,Hash(backup));
+    }
+
+    [Fact]
+    public void Public_restore_rolls_back_target_when_recovery_changes_after_replace()
+    {
+        var (manager,document,path)=NewDocument();Assert.True(manager.SaveSolution(),manager.LastError);
+        var repository=(SolutionRepository)typeof(SolutionManager).GetField("_repository",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(manager)!;
+        var backup=repository.GetRecoveryPath(path);var targetHash=Hash(path);
+        SetBoundary(manager,phase=>{if(phase=="target-replaced")File.WriteAllText(backup,"external backup");});
+        Assert.ThrowsAny<IOException>(()=>manager.RestorePreviousSave(document.Id));
+        Assert.Equal(targetHash,Hash(path));Assert.Equal("external backup",File.ReadAllText(backup));
     }
 
     [Fact]

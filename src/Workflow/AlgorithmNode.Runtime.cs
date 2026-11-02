@@ -15,7 +15,7 @@ public partial class AlgorithmNode
 {
     internal IReadOnlyImage? FrozenWorkflowImage { get; set; }
     internal string? RuntimeInputError { get; set; }
-    internal ImageSourceRunInput? SourceRunInput { get; set; }
+    internal IHostInputPreparer? HostInputPreparer { get; set; }
 
     private async Task<DeclaredOutputSnapshot> ExecuteRuntimeNodeAsync(IDictionary<string,DeclaredOutputSnapshot>? results,CancellationToken cancellation)
     {
@@ -36,6 +36,7 @@ public partial class AlgorithmNode
         ToolOutcome? outcome=null;
         DeclaredOutputSnapshot? prepared=null;
         RuntimeGenerationLease? generation=null;
+        PreparedHostInvocation? hostInputs=null;
         Exception? failure=null;
         var timer=Stopwatch.StartNew();
         try
@@ -72,19 +73,18 @@ public partial class AlgorithmNode
                 }
             }
             var settings=configuration.MaterializeSettings(settingValues);
-            if(ToolType=="ImageLoad")
+            var context=new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources);
+            if(configuration.Directory.GetHostInputs(configuration.ToolId) is not null)
             {
-                var sourceInputs=await ImageSourceInvocationInputs.CaptureAsync(this,
-                    SourceRunInput??throw new InvalidOperationException("图像源缺少本轮冻结输入。"),
-                    identity.ToInvocationIdentity(Id),CameraCaptureService,CameraFrame,cancellation).ConfigureAwait(false);
-                leases.Add(sourceInputs);
-                foreach(var value in sourceInputs.Values)
-                    if(!values.TryAdd(value.Key,value.Value))throw new InvalidOperationException("图像源冻结输入与持久绑定冲突："+value.Key);
+                hostInputs=await HostInputCoordinator.PrepareAsync(configuration,
+                    HostInputPreparer??throw new InvalidOperationException("工具缺少本轮宿主输入。"),settings,identity,Id,context).ConfigureAwait(false);
+                foreach(var value in hostInputs.Values)
+                    if(!values.TryAdd(value.Key,value.Value))throw new InvalidOperationException("宿主输入与持久绑定冲突："+value.Key);
             }
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(configuration,generation!,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests,settings).ConfigureAwait(false);
+            outcome=await ExecuteRuntimeAsync(configuration,generation!,inputs,hostInputs?.Context??context,OutputRequests,settings).ConfigureAwait(false);
             var generationResources=new GenerationResourceOwner(resources,generation!);
             generation=null; transferred=true;
             prepared=captureResult(outcome,generationResources,timer.Elapsed.TotalMilliseconds);
@@ -101,6 +101,7 @@ public partial class AlgorithmNode
                 try{generation?.Dispose();}catch(Exception error){cleanup.Add(error);}
             }
             foreach(var lease in leases)try{lease.Dispose();}catch(Exception error){cleanup.Add(error);}
+            if(hostInputs is not null)try{await hostInputs.DisposeAsync().ConfigureAwait(false);}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0)
             {
                 if(prepared is not null)try{prepared.Dispose();}catch(Exception error){cleanup.Add(error);}
@@ -109,12 +110,11 @@ public partial class AlgorithmNode
             }
         }
     }
-    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources,Func<string>? localRead):IToolExecutionContext,ILocalImageReadContext
+    private sealed class RuntimeContext(RunIdentity identity,CancellationToken cancellation,IOutputResources resources):IToolExecutionContext
     {
         public RunIdentity Identity=>identity;
         public CancellationToken Cancellation=>cancellation;
         public IOutputResources Resources=>resources;
-        public string AcceptLocalImage()=>localRead?.Invoke()??throw new InvalidOperationException("当前执行不提供本地图像读取接纳。");
         public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(
             SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime:"+identity.NodeId);
     }

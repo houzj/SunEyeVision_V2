@@ -942,11 +942,11 @@ namespace SunEyeVision.Workflow
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame
                     : null;
-                if(request?.SourceInputs.TryGetValue(node.Id,out var sourceInput)==true)
+                if(request?.HostInputs.TryGetValue(node.Id,out var sourceInput)==true)
                 {
-                    if(node.ToolType!="ImageLoad"||node.RuntimeConfiguration is null)
-                        throw new InvalidOperationException("冻结的图像源输入不属于Runtime图像源节点。");
-                    executionNode.SourceRunInput=sourceInput;
+                    if(node.RuntimeConfiguration is null||node.RuntimeConfiguration.Directory.GetHostInputs(node.ToolType) is null)
+                        throw new InvalidOperationException("节点没有声明宿主输入能力。");
+                    executionNode.HostInputPreparer=sourceInput;
                 }
 
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
@@ -1217,6 +1217,22 @@ namespace SunEyeVision.Workflow
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+            Exception? failure=null;
+            try{return await ExecuteOwnedRequestAsync(request,cancellationToken).ConfigureAwait(false);}
+            catch(Exception error){failure=error;throw;}
+            finally
+            {
+                try{request.Dispose();}
+                catch(Exception cleanup)
+                {
+                    if(failure is not null)throw new AggregateException("工作流运行和宿主输入释放均失败。",failure,cleanup);
+                    throw;
+                }
+            }
+        }
+
+        private async Task<ExecutionResult> ExecuteOwnedRequestAsync(WorkflowRunRequest request,CancellationToken cancellationToken)
+        {
 
             using var generation=_workflowEngine.RuntimeDirectory.AcquireInvocation();
             using var generationCancellation=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,generation.RetirementToken);

@@ -37,3 +37,12 @@
 专轨一次覆盖：单/三/四通道与Gray16真实合同；原图不含图形；Tuple多类型、正常/退化/正负角矩形、正负扇环、多边形Fill/非零opacity、微点/十字/可见性；PNG/BMP无损像素，JPEG编码默认政策并记录库差异；文字/含字坐标角度受保护。沿已冻结快照验证换源、同帧重用、新结果、取消、关闭及通知重入；源图、配置、历史不变；异常写入/释放/临时文件不泄漏。已有视口/显示/十字/工作区/混合B08/预览相称回归，不把原屏幕文字测试继续借‘导出WPF截图’充当屏幕证据，应改用实际屏幕渲染观测并另验文字导出保护。
 
 候选构建/自测及真实加载身份与主仓正式分开；主线集成后规定UI+全量Release和同版回归。原文字native、原机像素与编码版本等价继续列未完成；本批支持范围可按自动自测交付，保护不计功能实现。原C17完整范围、B08及S3不删，不扩建无关通用平台，不重复迁入底栏/窗口。
+## 实施前只读复核补正：正式原像素与保护条件
+
+NativeResultImageFrame的PixelFormat/Buffer为Domain打透明的显示BGRA拷贝，不代表原图；正式视口导出从PrepareOriginalBitmap取得OriginalLayout的Gray8/Bgr24/Bgra32原像素。Gray16仅存在于IRangeImageData备用入口，本批分别验证，不宣称正式视口已接入16位。
+
+BGRA是本方必要平台适配，非VM原helper已证输入：保留未绘像素的B/G/R/A；图形按原正opacity实色覆盖，四通道绘制显式alpha255，不因三参数Scalar的默认第四分量0把图形变透明。AA边缘按当前库规则记录；若备用入口给预乘格式，先明确转换到直alpha。PNG保位深和alpha；Gray16的BMP/JPEG、非全不透明BGRA的BMP/JPEG若当前编码路径不能保真则保护拒绝，不静默降8位或丢alpha；全不透明BGRA转BGR可作为明确平台路径。
+
+文字保护仅在原实际会触发native的分支发生：顶层可见性与非IMultiPoint整体opacity0先排除，Tuple内部不另加visibility筛选；IMultiText内部不统一逐项opacity过滤。IText的右/下越界、模块错误、空串按原对应重载，坐标轴零向量不强造文字；角度使用的另一DrawText重载没有IText右/下越界排除，不能借此绕过保护。缺字不能假称成功。
+
+原轮廓IMVS_PATMATCH_POINT_INFO为float X/Y/Score与int Index，共16字节；按16步长、Score转int与原颜色分支，Index不消费，残余不足整结构按原忽略；不能用12字节点数组。polygon先画闭边再FillPoly，矩形不添加原未绘的fill/skew/index。完整验收加入以上差异的独立像素、零/有效轴、刚好边界/越界及16字节多点包场景。

@@ -1,7 +1,7 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns:b08n0="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Interaction" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
- xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom">
+ >
  <ResourceDictionary.MergedDictionaries>
   <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
   <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml"/>
@@ -187,7 +187,7 @@
               <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
               <i:Interaction.Triggers>
                 <i:EventTrigger EventName="ScrollChanged">
-                  <PCommon:ParamsEventCommand Command="{Binding CurResultScrollCommand}" CommandParameter="{Binding VerticalOffset, RelativeSource={RelativeSource AncestorType=ScrollViewer}}" />
+                  <b08n0:ParamsEventCommand Command="{Binding CurResultScrollCommand}" CommandParameter="{Binding VerticalOffset, RelativeSource={RelativeSource AncestorType=ScrollViewer}}" />
                 </i:EventTrigger>
               </i:Interaction.Triggers>
             </ScrollViewer>

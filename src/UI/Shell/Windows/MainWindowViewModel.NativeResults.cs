@@ -127,7 +127,7 @@ public partial class MainWindowViewModel
                 {
                     var label=schema.FindOutputDisplay(port.Id)?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
-                    var declaredNames=projection?.Columns.Where(column=>column.Value.PortId==port.Id
+                    var declaredNames=projection?.Columns.Where(column=>column.Value is not null&&column.Value.PortId==port.Id
                         &&column.Value.MemberFieldPath.Count==0&&!string.IsNullOrWhiteSpace(column.DisplayName))
                         .Select(column=>column.DisplayName).Distinct(StringComparer.Ordinal).ToArray();
                     if(schema.FindOutputDisplay(port.Id) is null&&declaredNames?.Length==1)label=declaredNames[0];

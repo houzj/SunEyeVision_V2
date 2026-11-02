@@ -53,7 +53,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references,Func<OutputReference,string>? format,
         Func<IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)>,Action,bool>? acceptPrepared=null,Func<IDisposable?>? beginGroup=null)
     {
-        _expansion=new(this);
+        _expansion=new(this,references?.WindowOwner);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
         for(var i=0;i<2;i++){_observedAcceptance[i]=_states[i].AcceptanceVersion;_observedReference[i]=_states[i].IsReferenceMode;}
         _acceptPrepared=acceptPrepared;_beginGroup=beginGroup;
@@ -79,7 +79,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             var endpoint=i;
             if((_states[i].Port.EditModes&FieldEditModes.Reference)!=0&&(_allow[i]||_states[i].IsReferenceMode))
             {
-                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitEndpoint(endpoint),_expansion.Open,_expansion.Preference);
+                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitEndpoint(endpoint),_expansion.Open,_expansion.Preference,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
                 _scopes[i]=new(this,_references[i]!,()=>!_disposed&&_states[endpoint].IsReferenceMode);
             }
             _states[i].Changed+=OnStateChanged;
@@ -90,7 +90,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         row.RightContent=NativeView;Content=row;
         NativeView.OnStartValueChange+=OnLeftValue;NativeView.OnEndValueChange+=OnRightValue;
         NativeView.OnLeftTypeChange+=OnLeftMode;NativeView.OnRightTypeChange+=OnRightMode;
-        Loaded+=OnLoaded;Unloaded+=OnUnloaded;IsVisibleChanged+=OnVisibility;
+        Loaded+=OnLoaded;Unloaded+=OnUnloaded;IsVisibleChanged+=OnVisibility;IsEnabledChanged+=OnEnabled;
         PreviewKeyDown+=OnKey;PreviewMouseWheel+=OnWheel;LostKeyboardFocus+=OnLostFocus;
         _box=(ComboBox)NativeView.FindName("CBox");AttachInputs();Project(false);
         if(left.Accepted is ConstantSetting l&&right.Accepted is ConstantSetting r&&Convert.ToDouble(l.Value,CultureInfo.InvariantCulture)>Convert.ToDouble(r.Value,CultureInfo.InvariantCulture))
@@ -161,6 +161,10 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         try
         {
             for(var i=0;i<2;i++)NativeView.SetCurrentValue(ModeProperty(i),_states[i].IsReferenceMode);
+            // A subscription active before Loaded can leave the original right
+            // column collapsed. Once both endpoints are editable, reapply the
+            // original layout; this does not accept or invent a constant value.
+            if(!NativeView.IsSubscribeLeft&&!NativeView.IsSubscribeRight)NativeView.InitUI();
             NativeView.IsSubscribeVisible=_references.Any(session=>session is not null)?Visibility.Visible:Visibility.Collapsed;
             for(var i=0;i<2;i++)
             {
@@ -324,7 +328,6 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     {
         if(_disposed||_committing||endpoint is <0 or >1||_states.Any(state=>state.IsDisposed))return false;
         var state=_states[endpoint];
-        if(proposal is ReferenceSetting&&state.SourceError.Length!=0)return false;
         _committing=true;IDisposable? group=null;
         var commits=_commits.ToArray();var versions=_states.Select(item=>item.AcceptanceVersion).ToArray();
         var modes=_states.Select(item=>item.IsReferenceMode).ToArray();var edits=commits.Select(item=>item?.EditVersion).ToArray();
@@ -398,12 +401,13 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private void OnLeftValue(object sender,RoutedPropertyChangedEventArgs<double> args)=>OnNativeValue(0);
     private void OnRightValue(object sender,RoutedPropertyChangedEventArgs<double> args)=>OnNativeValue(1);
     private void OnNativeValue(int endpoint)
-    {if(_active&&!_disposed&&!_syncing&&!_closing&&!_presentationHidden)TryCommitEndpoint(endpoint);}
+    {if(_active&&!_disposed&&IsEnabled&&!_syncing&&!_closing&&!_presentationHidden)TryCommitEndpoint(endpoint);}
     private void OnLeftMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(0);
     private void OnRightMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(1);
     private void ChangeMode(int i)
     {
         if(_disposed||_syncing||_presentationHidden)return;
+        if(!IsEnabled){Project(false);return;}
         try
         {
             if((bool)NativeView.GetValue(ModeProperty(i)))
@@ -425,14 +429,38 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(_disposed)return;_active=true;var generation=++_generation;AttachInputs();
+        if(_disposed)return;_active=true;AttachInputs();
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=Window.GetWindow(this);if(_owner is not null)_owner.Deactivated+=OnDeactivated;
-        Project(false);foreach(var scope in _scopes)scope?.Refresh();
-        _resume?.Abort();_resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-        {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
+        Project(false);foreach(var scope in _scopes)scope?.PrepareForVisibility(!_presentationHidden&&IsVisible&&IsEnabled);
+        QueueResume();
     }
+    private void QueueResume()
+    {
+        var generation=++_generation;_resume?.Abort();_resume=null;
+        if(_disposed||!_active||!IsVisible||_presentationHidden||!IsEnabled)return;
+        _resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
+        {if(_disposed||!_active||!IsVisible||_presentationHidden||!IsEnabled||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
+    }
+    private void OnEnabled(object sender,DependencyPropertyChangedEventArgs args)
+    {
+        if(_disposed)return;
+        if(!IsEnabled)
+        {
+            _generation++;_resume?.Abort();_resume=null;
+            ParameterCleanup.Run(_commits.Where(commit=>commit is not null).Select(commit=>(Action)commit!.Suspend)
+                .Concat(_scopes.Where(scope=>scope is not null).Select(scope=>(Action)(()=>scope!.PrepareForVisibility(false))))
+                .Concat(new Action[]{_expansion.Close,ClosePopups}));
+        }
+        else
+        {
+            foreach(var scope in _scopes)scope?.PrepareForVisibility(!_presentationHidden&&IsVisible);
+            QueueResume();
+        }
+    }
+
     private void OnKey(object sender,KeyEventArgs args)
     {
+        if(_disposed||!IsEnabled||_presentationHidden)return;
         var i=Array.FindIndex(_commits,commit=>commit?.Text.IsKeyboardFocusWithin==true);
         if(i<0||_states[i].IsReferenceMode)return;
         if(args.Key==Key.Escape){ClosePopups();args.Handled=true;return;}
@@ -442,13 +470,13 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private void Queue(Action action)
     {
         _pending?.Abort();var generation=_generation;
-        _pending=Dispatcher.BeginInvoke(DispatcherPriority.Input,new Action(()=>{if(_disposed||!_active||!IsVisible||generation!=_generation)return;_pending=null;action();}));
+        _pending=Dispatcher.BeginInvoke(DispatcherPriority.Input,new Action(()=>{if(_disposed||!_active||!IsVisible||!IsEnabled||_presentationHidden||generation!=_generation)return;_pending=null;action();}));
     }
     private void OnWheel(object sender,MouseWheelEventArgs args)
     {var endpoint=Array.FindIndex(_commits,commit=>commit?.Text.IsKeyboardFocused==true);if(endpoint>=0)Queue(()=>TryCommitEndpoint(endpoint));}
     private void OnLostFocus(object sender,KeyboardFocusChangedEventArgs args)
     {
-        if(_presentationHidden)return;
+        if(_disposed||!IsEnabled||_presentationHidden)return;
         var endpoint=Array.FindIndex(_commits,commit=>ReferenceEquals(commit?.Text,args.OldFocus));
         Queue(()=>{if(endpoint>=0)TryCommitEndpoint(endpoint);if(!IsKeyboardFocusWithin&&_box!.Template.FindName("PART_Popup",_box) is not Popup {Child:{IsKeyboardFocusWithin:true}})ClosePopups();});
     }
@@ -480,11 +508,9 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         else
         {
             _presentationHidden=false;
-            foreach(var scope in _scopes)scope?.PrepareForVisibility(true);
+            foreach(var scope in _scopes)scope?.PrepareForVisibility(IsEnabled);
             if(!_active||!IsVisible||!_commits.Any(commit=>commit?.IsSuspended==true))return;
-            var generation=++_generation;_resume?.Abort();
-            _resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-            {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
+            QueueResume();
         }
     }
     private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(IsVisible);
@@ -501,7 +527,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         NativeView.OnLeftTypeChange-=OnLeftMode;NativeView.OnRightTypeChange-=OnRightMode;
         foreach(var state in _states)state.Changed-=OnStateChanged;
         var owner=_owner;_owner=null;
-        Loaded-=OnLoaded;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibility;PreviewKeyDown-=OnKey;PreviewMouseWheel-=OnWheel;LostKeyboardFocus-=OnLostFocus;
+        Loaded-=OnLoaded;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibility;IsEnabledChanged-=OnEnabled;PreviewKeyDown-=OnKey;PreviewMouseWheel-=OnWheel;LostKeyboardFocus-=OnLostFocus;
         ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},ClosePopups,
                 ()=>NativeView.SubscribeDataLeft=null,()=>NativeView.SubscribeDataRight=null,_expansion.Dispose}
             .Concat(_commits.Where(commit=>commit is not null).Select(commit=>(Action)commit!.Dispose))

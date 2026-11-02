@@ -1,0 +1,29 @@
+{
+  "status": "CONFIRMED_SOURCE_GAPS_NOT_IMPLEMENTED",
+  "scope": "下一完整原数值控件适配单元，C09根代理通过不代替本单元或阶段门禁。",
+  "files": [
+    "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+    "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+    "scripts/verification/O06WindowPresentationCases.cs"
+  ],
+  "gaps": [
+    "BeginConstantEntry/Resume受控文本回写同步触发外部回调后，旧尾部可能设置新接纳状态的dirty、pending及诊断。",
+    "OnTextChanged在syncing期间直接忽略事件，无法区分自身格式化、新raw及ABA。",
+    "ProjectAccepted/Resume的finally直接syncing=false，可能破坏嵌套同步范围。",
+    "TryPrepare、ValidatePreparedBindings、ProjectAccepted、RestoreRejected及AttachInput恢复旧pending均须核接纳身份与文本变化。"
+  ],
+  "implementationDecision": [
+    "统一受控写入ticket，每段回调后检查当前叶、接纳版本、模式及文本mutation；最多识别一次预期自身事件。",
+    "同步范围禁止递归模型提交，但不吞TextChanged；新raw保留、延后校验，新接纳后旧尾部立即停止。",
+    "保存并恢复外层同步状态，不能用最终字符串相等代替mutation身份。"
+  ],
+  "acceptance": [
+    "Begin/Resume文本回调接纳新常量或Reference，旧流程不追加诊断、不重复写。",
+    "投影回调输入新raw，保留实际文本，下一Enter只提交新raw一次。",
+    "两位精度格式化1.234到1.23期间观察者写8再写1.23，旧提案必须失效；下一明确Enter才接纳1.23。",
+    "保原卸载非法raw恢复、离线捕获、同值去重、两级绑定Active和关闭后零写入。"
+  ],
+  "unprovenBehavior": "Escape现仅关闭Popup/取消排队回调，不将其称为完整常量编辑取消；原件行为另按证据核对。",
+  "stageOneComplete": false,
+  "stageTwoAdmitted": false
+}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -16,8 +16,11 @@ public sealed class NodeConfigurationEditDraft
     internal bool Consumed { get; set; }
     public ScopedNodeIdentity Identity { get; }
     public WorkflowNodeBase Node { get; }
-    internal NodeConfigurationEditDraft(Guid owner, ScopedNodeIdentity identity, WorkflowNodeBase node, string signature)
-    { Owner = owner; Identity = identity; Node = node; Signature = signature; }
+    internal RuntimeToolConfiguration? RuntimeValueBaseline {get;}
+    internal WorkflowNodeBase FormalInstance {get;}
+    internal NodeConfigurationEditDraft(Guid owner, ScopedNodeIdentity identity, WorkflowNodeBase node, string signature, WorkflowNodeBase formalInstance,
+        RuntimeToolConfiguration? valueBaseline=null)
+    { Owner = owner; Identity = identity; Node = node; Signature = signature;FormalInstance=formalInstance;RuntimeValueBaseline=valueBaseline?.Copy()??node.RuntimeConfiguration?.Copy(); }
 }
 
 /// <summary>A private variable/configuration candidate belonging to one document host generation.
@@ -67,6 +70,10 @@ public sealed partial class NodeConfigurationEditHost
     // This is host-local history backing, not a resource owner or a global registry.
     private readonly Dictionary<string, GlobalVariable> _variableInstances;
     private bool _projecting;
+    private bool _closed;
+    internal void Close() {lock(_gate)_closed=true;}
+    private void EnsureOpen()
+    {if(_closed)throw new InvalidOperationException("方案配置宿主已经退役。");}
     private readonly List<(GlobalVariable Variable, bool ValueChanged)> _structureNotifications = new();
     // Deterministic acceptance-failure injection only; disabled in production. Tests set
     // this private counter by reflection. It is not an observer/callback under ValueGate.
@@ -93,11 +100,23 @@ public sealed partial class NodeConfigurationEditHost
 
     /// <summary>Configuration/dependency history, never the authority for live runtime values.
     /// Save and run capture live values independently with GlobalVariable.CaptureValues.</summary>
-    public BindingConfigurationSnapshot Capture() => _store.Capture();
-    public bool CanUndo => _documentHistory?.CanUndo ?? _store.CanUndo;
-    public bool CanRedo => _documentHistory?.CanRedo ?? _store.CanRedo;
+    public BindingConfigurationSnapshot Capture() {lock(_gate){EnsureOpen();return _store.Capture();}}
+    /// <summary>Frozen names only. Formatting an identity must not capture or inspect runtime variable values.</summary>
+    public IReadOnlyDictionary<string,string> GetVariableNames(string solutionId)
+    {
+        lock(_gate)
+        {
+            var names=_design.Id==solutionId?_variableCollection.ToDictionary(variable=>variable.Id,variable=>variable.Name,StringComparer.Ordinal):new Dictionary<string,string>(StringComparer.Ordinal);
+            return new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(names);
+        }
+    }
+    /// <summary>Private variable-picker snapshot; captures existing definitions and display values without modifying the document.</summary>
+    public (string SolutionId,IReadOnlyList<GlobalVariable> Variables) CaptureVariablesForSelection()
+    {lock(_gate){EnsureOpen();if(!ReferenceEquals(_design.GlobalVariables,_variableCollection))throw new InvalidOperationException("变量目录归属已改变。");return(_design.Id,GlobalVariable.CaptureDefinitions(_variableCollection));}}
+    public bool CanUndo => !_closed&&(_documentHistory?.CanUndo ?? _store.CanUndo);
+    public bool CanRedo => !_closed&&(_documentHistory?.CanRedo ?? _store.CanRedo);
     public bool OwnsNode(string workflowId, WorkflowNodeBase node)
-    { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
+    { lock (_gate) return !_closed&&_design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
 
     public void SynchronizeStructure()
     {
@@ -106,7 +125,7 @@ public sealed partial class NodeConfigurationEditHost
     }
     public bool HasPublishedNodeChanged(NodeConfigurationEditDraft editor)
     {
-        lock (_gate) return NodeEditSignature(Find(_store.Capture().CopyConfiguration(), editor.Identity)) != editor.Signature;
+        lock (_gate) return !IsCurrentNodeInstance(editor) || NodeEditSignature(Find(_store.Capture().CopyConfiguration(), editor.Identity)) != editor.Signature;
     }
 
     public NodeConfigurationEditDraft BeginEdit(string workflowId, string nodeId)
@@ -119,7 +138,7 @@ public sealed partial class NodeConfigurationEditHost
                 EnsureBaseline();
                 var identity = new ScopedNodeIdentity(workflowId, nodeId);
                 var node = Find(_store.Capture().CopyConfiguration(), identity);
-                return new(_owner, identity, node, NodeEditSignature(node));
+                return new(_owner, identity, node, NodeEditSignature(node),_nodeInstances[identity]);
             }
         }
         finally { FlushStructureNotifications(); }
@@ -141,9 +160,9 @@ public sealed partial class NodeConfigurationEditHost
                 {
                     var captured = captures[variable.Id];
                     openings.Add(variable.Id, new(variable, captured.Revision));
-                    // The existing native/complex display remains read-only. Never inspect a
-                    // borrowed native payload to implement the four primitive value editors.
-                    if (!variable.IsComplexValue)
+                    // Pure scalar/sequence values follow their frozen declaration even when
+                    // the existing manager has no array text editor. Native values stay borrowed.
+                    if (GlobalVariable.IsPureValueDeclaration(variable.Type))
                         configuration.GlobalVariables.Single(v => v.Id == variable.Id).Value = GlobalVariable.CopyEditableValue(captured.Value);
                 }
                 return new(_owner, published.Version, configuration, BindingConfigurationStore.Copy(configuration), openings);
@@ -152,7 +171,8 @@ public sealed partial class NodeConfigurationEditHost
         finally { FlushStructureNotifications(); }
     }
 
-    public bool HasPendingChanges(NodeConfigurationEditDraft editor) => NodeEditSignature(editor.Node) != editor.Signature;
+    public bool HasPendingChanges(NodeConfigurationEditDraft editor) => NodeEditSignature(editor.Node) != editor.Signature
+        ||editor.Node.RuntimeConfiguration?.HasCurrentValueChangesFrom(editor.RuntimeValueBaseline)==true;
     public bool HasPendingChanges(GlobalVariableConfigurationEditDraft editor)
         => editor.HasValueEdits || ShapeSignature(editor.Configuration) != ShapeSignature(editor.Baseline);
 
@@ -188,7 +208,7 @@ public sealed partial class NodeConfigurationEditHost
                         result.ExplicitValues[variable.Id] = GlobalVariable.CopyEditableValue(value);
                         result.ValueCommandRevisions[variable.Id] = revision;
                     }
-                    else if (fresh.Configuration.GlobalVariables.SingleOrDefault(v => v.Id == variable.Id) is { } current && !variable.IsComplexValue)
+                    else if (fresh.Configuration.GlobalVariables.SingleOrDefault(v => v.Id == variable.Id) is { } current && GlobalVariable.IsPureValueDeclaration(variable.Type))
                         variable.Value = GlobalVariable.CopyEditableValue(current.Value);
                 }
                 edited.Consumed = true;
@@ -199,7 +219,8 @@ public sealed partial class NodeConfigurationEditHost
     }
 
     public static bool SamePendingEdits(NodeConfigurationEditDraft left, NodeConfigurationEditDraft right)
-        => left.Identity == right.Identity && NodeEditSignature(left.Node) == NodeEditSignature(right.Node);
+        => left.Identity == right.Identity && ReferenceEquals(left.FormalInstance,right.FormalInstance) && NodeEditSignature(left.Node) == NodeEditSignature(right.Node)
+            &&left.Node.RuntimeConfiguration?.CurrentValuesIdentity==right.Node.RuntimeConfiguration?.CurrentValuesIdentity;
     public NodeConfigurationEditDraft RebaseAcceptedDraft(NodeConfigurationEditDraft editor)
     {
         try
@@ -209,10 +230,11 @@ public sealed partial class NodeConfigurationEditHost
             {
                 if (editor.Owner != _owner) throw new InvalidOperationException("草稿不属于当前文档。");
                 EnsureBaseline();
+                RequireCurrentNodeInstance(editor);
                 var accepted = Find(_store.Capture().CopyConfiguration(), editor.Identity);
                 editor.Consumed = true;
                 // Keep the same private object so raw view input and newer edits are not rebound away.
-                return new(_owner, editor.Identity, editor.Node, NodeEditSignature(accepted));
+                return new(_owner, editor.Identity, editor.Node, NodeEditSignature(accepted),editor.FormalInstance,accepted.RuntimeConfiguration);
             }
         }
         finally { FlushStructureNotifications(); }
@@ -225,18 +247,20 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("节点草稿已接受或不属于当前文档。");
+            RequireCurrentNodeInstance(editor);
             var shell = new Solution();
             var flow = new Workflow(editor.Identity.WorkflowId, "prepared");
             flow.Nodes.Add(editor.Node);
             shell.Workflows.Add(flow);
             var copy = BindingConfigurationStore.Copy(shell).Workflows[0].Nodes[0];
-            return new(_owner, editor.Identity, copy, editor.Signature);
+            return new(_owner, editor.Identity, copy, editor.Signature,editor.FormalInstance,editor.RuntimeValueBaseline);
         }
     }
     public GlobalVariableConfigurationEditDraft Freeze(GlobalVariableConfigurationEditDraft editor)
     {
         lock (_gate)
         {
+            EnsureOpen();
             if (editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("变量草稿已接受或不属于当前文档。");
             var copy = new GlobalVariableConfigurationEditDraft(_owner, editor.BaseVersion,
@@ -251,7 +275,8 @@ public sealed partial class NodeConfigurationEditHost
 
     public void Validate(NodeConfigurationEditDraft editor)
     { ArgumentNullException.ThrowIfNull(editor); ValidateBatch(new[] { editor }, null); }
-    /// <summary>Validate only the proposed Runtime settings fields against current declarations.
+    /// <summary>Validate proposed Runtime fields against current declarations, known settings
+    /// and the complete candidate dependency graph, without requiring unfinished input groups.
     /// This does not publish a candidate or replace the complete validation at capture/commit.</summary>
     public void ValidateRuntimeFieldProposals(NodeConfigurationEditDraft editor,IReadOnlyDictionary<string,ParameterSetting> changes)
     {
@@ -264,15 +289,23 @@ public sealed partial class NodeConfigurationEditHost
                 var flow=batch.Draft.Configuration.Workflows.Single(workflow=>workflow.Id==editor.Identity.WorkflowId);
                 var node=Find(batch.Draft.Configuration,editor.Identity);
                 var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点没有Runtime配置。");
-                var schema=runtime.SettingsSchema??throw new InvalidOperationException("节点没有Runtime设置声明。");
-                var prepared=runtime.Fields.Select(schema.Inputs).Apply(changes);
-                foreach(var id in changes.Keys)
+                _=runtime.Fields.Apply(changes); // Freeze every proposed value against its actual declaration.
+                var proposed=runtime.WithFieldSettings(changes);node.RuntimeConfiguration=proposed;
+                var settingsErrors=proposed.ValidateSettings();
+                if(settingsErrors.Count!=0)throw new ArgumentException(settingsErrors[0].Message);
+                foreach(var (id,setting) in proposed.CaptureExecutionFields())
                 {
-                    if(prepared.Read(id) is not ReferenceSetting reference)continue;
-                    var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id);
+                    if(setting is VariableSetting variable)
+                    {WorkflowBindingContext.ValidateVariable(batch.Draft.Configuration,flow,node,id,variable);continue;}
+                    if(setting is not ReferenceSetting reference)continue;
+                    if(reference.RebindingReason is {Length:>0} reason)throw new ArgumentException(reason);
+                    var result=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,flow.Id,batch.Draft.Configuration);
                     if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
                         throw new ArgumentException(result.Reason);
                 }
+                // No readiness filtering: every configured active edge, including a proposed
+                // variable producer or dynamic index, must participate in cycle detection.
+                _=SolutionExecutionDependencyGraph.Compile(batch.Draft.Configuration,checkReadiness:false);
                 EnsureBaseline();
                 if(_store.Capture().Version!=version)throw new InvalidOperationException("来源声明或方案已变化，请重试。");
             }
@@ -322,7 +355,8 @@ public sealed partial class NodeConfigurationEditHost
                 var projection = new Projection();
                 try
                 {
-                    var valueOnly = variables?.HasValueEdits == true &&
+                    var valueOnly = (variables?.HasValueEdits == true||editors.Any(editor=>
+                        editor.Node.RuntimeConfiguration?.HasCurrentValueChangesFrom(editor.RuntimeValueBaseline)==true)) &&
                         ShapeSignature(prepared.Draft.Configuration) == ShapeSignature(_store.Capture().CopyConfiguration());
                     publication = valueOnly
                         ? _store.AcceptRuntimeValues(prepared.Draft,
@@ -346,8 +380,8 @@ public sealed partial class NodeConfigurationEditHost
         finally { FlushStructureNotifications(); }
     }
 
-    public BindingConfigurationSnapshot Undo() => RestoreDocumentHistory(undo:true);
-    public BindingConfigurationSnapshot Redo() => RestoreDocumentHistory(undo:false);
+    public BindingConfigurationSnapshot Undo() {lock(_gate)EnsureOpen();return RestoreDocumentHistory(undo:true);}
+    public BindingConfigurationSnapshot Redo() {lock(_gate)EnsureOpen();return RestoreDocumentHistory(undo:false);}
     private BindingConfigurationSnapshot RestoreHistory(bool undo)
     {
         try
@@ -387,6 +421,7 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (editor == null || editor.Owner != _owner || editor.Consumed)
                 throw new InvalidOperationException("编辑草稿已提交或不属于当前方案。");
+            RequireCurrentNodeInstance(editor);
             if (!byId.TryAdd(editor.Identity, editor)) throw new InvalidOperationException("同一节点有重复的编辑参与者。");
             var current = Find(baseline, editor.Identity);
             if (NodeEditSignature(current) != editor.Signature)
@@ -431,7 +466,7 @@ public sealed partial class NodeConfigurationEditHost
             {
                 if (openingVariables.TryGetValue(variable.Id, out var openingVariable))
                 {
-                    if (!variable.IsComplexValue && !variables.ExplicitValues.ContainsKey(variable.Id) && !SameEditableValue(variable.Value, openingVariable.Value))
+                    if (GlobalVariable.IsPureValueDeclaration(variable.Type) && !variables.ExplicitValues.ContainsKey(variable.Id) && !SameEditableValue(variable.Value, openingVariable.Value))
                         throw new InvalidOperationException("当前值编辑必须通过变量草稿 SetValue 显式提交。");
                 }
                 else if (_variableInstances.ContainsKey(variable.Id))
@@ -451,7 +486,14 @@ public sealed partial class NodeConfigurationEditHost
                 draft.Configuration.GlobalVariables.Add(copy);
             }
         }
-        foreach (var editor in byId.Values) SetParameters(Find(draft.Configuration, editor.Identity), editor.Node);
+        foreach (var editor in byId.Values)
+        {
+            var target=Find(draft.Configuration,editor.Identity);
+            var live=target.RuntimeConfiguration;
+            SetParameters(target,editor.Node);
+            if(target.RuntimeConfiguration is {} candidate&&live is not null)
+                target.RuntimeConfiguration=candidate.MergeCurrentValues(live,editor.RuntimeValueBaseline);
+        }
         ComposeRoots(draft.Configuration,roots);
         // Runtime settings validate editable structure; invocation readiness is separate.
         return new(draft, participants);
@@ -465,6 +507,16 @@ public sealed partial class NodeConfigurationEditHost
             var issues = OutputBindingChangeService.GetExecutionInputIssues(flow, flow.Id);
             if (validateAllBindings && issues.Values.SelectMany(i => i).FirstOrDefault() is { } batchIssue)
                 throw new InvalidOperationException(batchIssue.Message);
+            foreach(var node in flow.Nodes.Where(node=>node.RuntimeConfiguration is not null&&(validateAllBindings||participants.Contains(new(flow.Id,node.Id)))))
+                foreach(var (fieldId,setting) in node.RuntimeConfiguration!.Fields.Capture())
+                {
+                    if(setting is VariableSetting variable)WorkflowBindingContext.ValidateVariable(candidate,flow,node,fieldId,variable);
+                    else if(setting is ReferenceSetting reference&&BindingRelationCatalog.IndexVariables(reference.Reference.Selection).Any())
+                    {
+                        var validation=WorkflowBindingContext.ValidateTyped(flow,node,fieldId,reference,flow.Id,candidate);
+                        if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)throw new InvalidOperationException(validation.Reason);
+                    }
+                }
             foreach (var node in flow.Nodes.Where(n => participants.Contains(new(flow.Id, n.Id))))
             {
                 if (node.RuntimeConfiguration is { } sourceRuntime && sourceRuntime.ToolId != node.ToolType)
@@ -508,6 +560,10 @@ public sealed partial class NodeConfigurationEditHost
                 : value is float[] fs ? fs.All(float.IsFinite) : value is double[] ds && ds.All(double.IsFinite),
             "String" => value is string or string[],
             "Boolean" => value is bool or bool[],
+            "Integer[]" => value is long[],
+            "Double[]" => value is double[] sequence && sequence.All(double.IsFinite),
+            "String[]" => value is string[] texts && texts.All(text=>text is not null),
+            "Boolean[]" => value is bool[],
             _ => false
         };
         if (!valid) throw new InvalidOperationException("当前值与变量类型不匹配，或该类型不支持文本值编辑。");
@@ -539,7 +595,14 @@ public sealed partial class NodeConfigurationEditHost
             var known = _variableInstances.TryGetValue(next.Id, out var existing);
             var value = known ? existing!.CaptureValueRaw().Value : next.CaptureValueRaw().Value;
             if (known && existing!.Type == next.Type) continue;
-            if (!next.IsComplexValue) ValidateEditableValue(next.Type, value);
+            if (GlobalVariable.IsPureValueDeclaration(next.Type))
+            {
+                // A declared sequence may have no design value; a producer fills the batch
+                // slot. Do not turn that absence into an empty or single-item sequence.
+                if(value is null&&GlobalProducerBindingRules.TryDescribeTarget(next.Type,out var declaration,out _,out _)
+                    &&declaration.Type.Shape==ValueShape.Sequence)continue;
+                ValidateEditableValue(next.Type, value);
+            }
             else if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.GetType()) != next.Type)
                 throw new InvalidOperationException("变量新类型与当前运行值不兼容，请显式编辑合法值后再提交。");
         }
@@ -603,7 +666,8 @@ public sealed partial class NodeConfigurationEditHost
         foreach (var pair in nextNodes)
         {
             var target = _nodeInstances[pair.Key];
-            if (ParametersSignature(target) != ParametersSignature(pair.Value))
+            if (ParametersSignature(target) != ParametersSignature(pair.Value)
+                ||target.RuntimeConfiguration?.CurrentValuesIdentity!=pair.Value.RuntimeConfiguration?.CurrentValuesIdentity)
                 projection.Nodes.Add((target, target.Parameters, target.ParamSettings, target.RuntimeConfiguration));
         }
         var configChanged = plans.ToDictionary(p => p.Next.Id,
@@ -667,8 +731,21 @@ public sealed partial class NodeConfigurationEditHost
         lock (_gate) _lastRefreshError = errors.Count == 0 ? null : new AggregateException("配置已发布，但部分视图通知失败。", errors);
     }
 
+    // A stable Id identifies a document slot, not a replacement node instance. An old
+    // editor cannot attach to a recreated node merely because its values match.
+    private bool IsCurrentNodeInstance(NodeConfigurationEditDraft editor)
+        =>!_closed&&editor.Owner==_owner&&_nodeInstances.TryGetValue(editor.Identity,out var current)
+            &&ReferenceEquals(current,editor.FormalInstance)
+            &&_design.Workflows.Any(flow=>flow.Id==editor.Identity.WorkflowId
+                &&flow.Nodes.Any(node=>ReferenceEquals(node,editor.FormalInstance)));
+    private void RequireCurrentNodeInstance(NodeConfigurationEditDraft editor)
+    {
+        if(!IsCurrentNodeInstance(editor))throw new InvalidOperationException("节点已删除或正式实例已替换，请重新打开参数编辑。");
+    }
+
     private void EnsureBaseline()
     {
+        EnsureOpen();
         if (_projecting) throw new InvalidOperationException("配置投影过程中不能重入编辑或恢复。");
         if (!ReferenceEquals(_design.GlobalVariables, _variableCollection)) throw new InvalidOperationException("正式变量集合已被替换。");
         if (_variableCollection.Any(v => !_variableInstances.TryGetValue(v.Id, out var original) || !ReferenceEquals(original, v)))
@@ -753,7 +830,7 @@ public sealed partial class NodeConfigurationEditHost
     private static string ToolConfigurationSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
         Type = node.RuntimeConfiguration?.SettingsType.FullName ?? node.Parameters.GetType().FullName,
-        Runtime = node.RuntimeConfiguration,
+        Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null, node.ParamSettings
     }, WorkflowSerializationOptions.Compact);
     private static string VariableConfigurationSignature(GlobalVariable variable) => JsonSerializer.Serialize(new

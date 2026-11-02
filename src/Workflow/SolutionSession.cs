@@ -12,8 +12,24 @@ public sealed class SolutionSession
 {
     public Solution Document { get; }
     private DocumentEditSession? _editing;
-    public DocumentEditSession Editing => _editing ??= new DocumentEditSession(Document);
+    private bool _closed;
+    public DocumentEditSession Editing
+    {
+        get
+        {
+            // Existing UI cleanup may call Editing.Close again after the manager retires
+            // this session. Return that closed object, but never create a new owner.
+            if(_closed&&_editing is null)throw new InvalidOperationException("方案会话已经关闭。");
+            return _editing ??= new DocumentEditSession(Document);
+        }
+    }
     public DocumentHistoryCoordinator History => Editing.History;
+    internal void CloseEditing()
+    {
+        if(_closed)return;
+        _closed=true;
+        _editing?.Close();
+    }
     public string? FilePath => Document.FilePath;
     public bool IsUntitled => string.IsNullOrEmpty(FilePath);
     private string? _savedContent;
@@ -21,13 +37,15 @@ public sealed class SolutionSession
     {
         get
         {
-            try { return _editing?.HasPendingChanges == true || SolutionSemanticComparer.Canonicalize(Serialize(Document)) != _savedContent; }
+            try { return _editing?.HasPendingChanges == true || SolutionSemanticComparer.Canonicalize(CapturePersistenceJson()) != _savedContent; }
             catch (Exception)
             { return true; } // Incomplete editor values must not appear clean or break the status display.
         }
     }
     internal SolutionSession(Solution document) => Document = document;
-    internal static string Serialize(Solution document)
+    internal string CapturePersistenceJson()=>Serialize(Document,_editing?.Host.CaptureParameterConfigurations());
+    internal static string Serialize(Solution document,
+        System.Collections.Generic.IReadOnlyDictionary<WorkflowNodeBase,RuntimeToolConfiguration?>? parameterConfigurations=null)
     {
         // Capture one value generation; JSON converters and IO run after releasing ValueGate.
         var variables = GlobalVariable.CaptureDefinitions(document.GlobalVariables).ToList();
@@ -36,6 +54,12 @@ public sealed class SolutionSession
         {
             TypeInfoResolver = (source.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>
             {
+                if(parameterConfigurations is not null&&typeof(WorkflowNodeBase).IsAssignableFrom(info.Type))
+                {
+                    var runtime=info.Properties.FirstOrDefault(property=>property.Name==nameof(WorkflowNodeBase.RuntimeConfiguration));
+                    if(runtime is not null)runtime.Get=node=>parameterConfigurations.TryGetValue((WorkflowNodeBase)node,out var configuration)
+                        ?configuration:throw new InvalidOperationException("保存期间出现未捕获的节点身份。");
+                }
                 if (info.Type != typeof(Solution)) return;
                 var value = info.Properties.FirstOrDefault(p => p.Name == nameof(Solution.GlobalVariables));
                 if (value != null) value.Get = _ => variables;
@@ -43,7 +67,7 @@ public sealed class SolutionSession
         };
         return JsonSerializer.Serialize(document, options);
     }
-    internal void CaptureBaseline() => _savedContent = SolutionSemanticComparer.Canonicalize(Serialize(Document));
+    internal void CaptureBaseline() => _savedContent = SolutionSemanticComparer.Canonicalize(CapturePersistenceJson());
     internal void CommitSave(string path, string writtenContent)
     {
         Document.FilePath = path;

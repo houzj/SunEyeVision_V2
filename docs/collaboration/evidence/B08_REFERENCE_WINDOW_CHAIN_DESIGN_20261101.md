@@ -1,0 +1,30 @@
+# B08数值引用真实窗口完整链设计（2026-11-01）
+
+基线15171638；唯一候选D:/MyWork/line-aiproject/blob-reference-chain-20261101，分支codex/blob-reference-chain-20261101。只处理数值引用链，不改图形样式、数值协调及焦点测试，不写主仓或工作流工作区。
+
+复用：S4BlobSupportedWindowCases的真实MainWindow/NodeOpenDecisionChain/RuntimeNodeConfigurationControl/默认支持状态/隐藏桌面；ReferenceFieldSession正式来源与索引树命令、原VariableSelectionDialog；正式ImageSource width成员与GlobalVariable Integer/Integer[]；RuntimeDebugInvocation私有owner快照、正式参数当前值接纳、DocumentEditSession历史和SolutionRepository。所有窗口在随机隐藏Desktop创建，SetThreadDesktop失败即失败，绝不切换用户桌面。不是伪造工具输出，不调用直接算法代替宿主。
+
+原证据：B08五整数显式字段政策、原正常SDK索引协议闭合及来源控制前序实证；只支持五整数限定首项/索引源首项规则，缺失/越权/生产失败/Int32溢出仍硬拒绝。低阈值正式WPF控件作为完整链入口；其他四整数复用同一字段政策，不以本专项宣称四浮点VM等价或所有九参数全交叉。
+
+集中矩阵：
+1. 正式ImageSource控制前序width成员经真实来源树接纳，私有调试读取本次上游快照更新当前值；取消不改正式，确认保持来源身份/当前值，历史及保存重开。
+2. 原变量模态选择真实Integer[]，All首项、固定索引、模块动态索引（正式ImageSource width）及变量动态索引；执行结果ThresholdMinUsed与私有/正式当前值对齐。
+3. 捕获后变量更改/正式来源结果重跑不污染已捕获快照；后续运行采用新值；失败不得正式半写。
+4. 控制断边使来源明确失效且保留原引用，Undo恢复；同名不同身份不能误恢复；旧Popup树项、关闭后的旧会话命令拒绝，重新打开仍读正式身份。
+5. 每轮真实确认或取消、历史、保存重开、资源与Owner排空；不声称真实剪贴板、自然鼠标/焦点、连续会话、ROI/图文或全域原厂等价。
+
+改动边界：优先新增S4BlobReferenceWindowCases.cs和现有验证runner的新轨道BlobReferenceWindow，必要候选本地构建配置忽略不提交。仅测试复现明确产品缺陷后修改对应数值引用方法，先向主线报告方法/影响；不为测试造生产合同。
+
+验收：本工作区标准全量Release自行构建，HalconSourceRoot指向既有源依赖而非复制Release/厂商运行库。候选回执、源码SHA、加载DLL SHA逐条核对；失败原样保留。共享主程序不启动不终止，另一候选进程不干扰。当前没有运行结果，设计不代表闭口。
+
+## 候选执行与交接
+
+候选标准全量build-001自然exit0，6537警告/0错误，120.10秒；专属完整attempt-007自然exit0，9组通过，PID142732。原前六组未缩减，增加真实捕获后变量变化、明确索引越界与恢复以及断边Undo。配置/关系的历史回放不重放私有运行当前值：先确认后保存核8，再Undo/Redo恢复关系并重新消费核8。
+
+失败均原样保留：001逻辑DeclaredFieldAccess误当DeclaredFieldEditor的夹具编译错误；002原图/灰图data候选筛选缺PortId；003UndoRedo后错误期待旧运行值8；004重开执行辅助日志类型及本地准入回调签名编译错误；005正常退役后读取AcceptedRevision被拒绝；006六组通过，第七组夹具写入All原文被严格整数索引解析拒绝。最终使用真实Clear命令，不放宽解析或产品保护。
+
+007准确验证边界：来源/索引走已加载WPF命令及绑定，变量经真实原模态选择；反射CurValueA索引赋值不是物理键入。完整ReferenceSerializer比对包括递归Selection、scope/node/port/member/type/storage；实际重开在自有WorkflowPublishedConfiguration/GlobalValues/ExecutionOwner中执行真实ImageSource和Blob；重开图片接纳是自有固定文件，非完整图像序列服务。旧会话关闭后原视图Revision明确拒读，回调后旧draft字段/配置、正式配置及历史不变。
+
+Timer等待真实dialog有15秒deadline；发现dialog后确认回调先停timer，若将来确认事件未关闭dialog，15秒限时不能覆盖该确认阶段，仍受runner自有进程360秒总限。此次所有模态实际返回，未为静态风险重复整轨。新增runner默认该轨360秒，PowerShell AST解析及default结果离线核对，不改变原轨时限；007明确传入-TimeoutSeconds360，与默认有效时限相同。
+
+未修改任何产品源码；该工作区编译产物只证明Candidate，不借主仓/另一候选产物证明Formal。主线应集成测试后在原正式Release运行同一轨道。实际鼠标/自然焦点、真实剪贴板、连续会话、其他DPI/VS、全部九字段交叉、四浮点VM等价及ROI/图文均未计通过。数组在既有正式Host变量编辑合同合法建立，再由实际变量窗选择，不声称变量管理UI能创建数组。

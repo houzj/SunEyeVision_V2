@@ -1,0 +1,21 @@
+{
+  "baseline": "459c6fa8f9aecb38108783b7bd0236092ec1abbd",
+  "evidence": "B08-Blob图像与二值图输出静态证据-20261031.md：GetBlobImage为目标连通域绘制，GetBinaryImage为二值结果；像素/格式/Domain关系未证",
+  "actual": "Field(5)=BlobOutput.GrayImage，BlobSession由原灰度图捕获；Field(6)=BinaryImage。只有输出标题把灰度叫Blob图像。",
+  "consumers": [
+    "BlobSchema.OutputDisplay→WorkflowBindingContext冻结Fields/显示目录→引用树",
+    "MainWindowViewModel.NativeResults从snapshot.Fields.DisplayName→ResultWorkspaceImageSource选择名称",
+    "BlobRunUi原Blob图像输出仅禁用UI-only状态，不能指向灰度输出开关"
+  ],
+  "change": "只改正式灰度标题；原UI-only Blob图像输出保留原文、原样式和既有禁用提示。不改字段ID、图像数据、引用身份或原语言资源，不造原BlobImage接口或别名。",
+  "validation": [
+    "声明只有两路实际Image输出，标题不冒称Blob图像",
+    "真实运行snapshot.Fields及图像选择名称与灰度语义一致",
+    "现有实际灰度字节、Binary、Frame/Domain/同次高亮和重跑不退化",
+    "原Blob绘制图像没有Schema/输出/订阅候选；UI-only仍禁用"
+  ],
+  "notImplemented": [
+    "原厂Blob目标连通域绘制图像",
+    "原绘制规则/筛选关系/像素格式/Domain策略"
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "productCodeCommit": "70a13a3d",
+  "testCommit": "48810672",
+  "scope": "本方正式ToolRuntimeExecutor/单阈值六个像素掩膜，不宣称VM等价",
+  "receipt": {
+    "stage": "S3",
+    "validationScope": "Formal",
+    "attempt": 4,
+    "pid": 142756,
+    "exit": 0,
+    "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S3BlobRuntimeCases.cs",
+    "caseSourceSha256": "B8417C85BD5C69B429BCE7867B8A3108EB4A6B0CBEF38C4128CC216FEB23D435",
+    "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+    "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-004"
+  },
+  "loaded": [
+    {
+      "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+      "expected": "70B0576D7CD3FB1F9C613044BD36F46F0A127F828FF56F39AAA55CF3EC985F1D",
+      "actual": "70B0576D7CD3FB1F9C613044BD36F46F0A127F828FF56F39AAA55CF3EC985F1D"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Contracts",
+      "expected": "5602650CDCF246EAF7A59F61EA6E5D1E37A7F885919A52373346E002F398578F",
+      "actual": "5602650CDCF246EAF7A59F61EA6E5D1E37A7F885919A52373346E002F398578F"
+    },
+    {
+      "name": "SunEyeVision.HalAdapter",
+      "expected": "8C34A3E04A3DC366613F287E15B5BD1FEEA763A48D2591AFC72432BE10B43A05",
+      "actual": "8C34A3E04A3DC366613F287E15B5BD1FEEA763A48D2591AFC72432BE10B43A05"
+    },
+    {
+      "name": "SunEyeVision.Plugin.SDK",
+      "expected": "24568BCD53DB24CA468F029E7A9E53764199A1AF7CABFAB219C03406267C66BB",
+      "actual": "24568BCD53DB24CA468F029E7A9E53764199A1AF7CABFAB219C03406267C66BB"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Runtime",
+      "expected": "68581B443C57AA5B929EA51F6C6D52B23A5CF747354BD51B589FB328AABB255A",
+      "actual": "68581B443C57AA5B929EA51F6C6D52B23A5CF747354BD51B589FB328AABB255A"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Infrastructure",
+      "expected": "CF509590BED0784F2A01371BB839E6844EB40273536790C785378B7B25FB47F8",
+      "actual": "CF509590BED0784F2A01371BB839E6844EB40273536790C785378B7B25FB47F8"
+    },
+    {
+      "name": "SunEyeVision.Workflow",
+      "expected": "82611AE8F093469E12D4AD0F0E5A5C260D3EEC636941F78068D7B89144EDBF0B",
+      "actual": "82611AE8F093469E12D4AD0F0E5A5C260D3EEC636941F78068D7B89144EDBF0B"
+    },
+    {
+      "name": "SunEyeVision.HalAdapter.Runtime",
+      "expected": "4B82F3B903948F35BE075F26B4627FB163C3665086D80E59A66A696BA54F715D",
+      "actual": "4B82F3B903948F35BE075F26B4627FB163C3665086D80E59A66A696BA54F715D"
+    },
+    {
+      "name": "SunEyeVision.Core",
+      "expected": "2577E0A06D3CEC6D6D538D10604E3A6A370168F65544D995602AB231DB15F405",
+      "actual": "2577E0A06D3CEC6D6D538D10604E3A6A370168F65544D995602AB231DB15F405"
+    },
+    {
+      "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+      "expected": "4879209FEED8F9D57FAF82776675CDE3667161279E883924D11ED83A533B7ADD",
+      "actual": "4879209FEED8F9D57FAF82776675CDE3667161279E883924D11ED83A533B7ADD"
+    },
+    {
+      "name": "SunEyeVision.Plugin.Wpf",
+      "expected": "F726A4A7AA84703E94A62BC69C7A0CE969F77425FEEFB7C4B0F28AD1CA6D86F8",
+      "actual": "F726A4A7AA84703E94A62BC69C7A0CE969F77425FEEFB7C4B0F28AD1CA6D86F8"
+    },
+    {
+      "name": "SunEyeVision.Tool.ImageSource.Runtime",
+      "expected": "1E56CF4BED1A44EE4B383902E0D24F67F4C50DA0AD85538843B4F8AE17586795",
+      "actual": "1E56CF4BED1A44EE4B383902E0D24F67F4C50DA0AD85538843B4F8AE17586795"
+    },
+    {
+      "name": "SunEyeVision.Tool.ImageSource.Wpf",
+      "expected": "DB60E843983136DA02E13B034B9D0EF69CA31D7C1DF0EE440E467CC8F888373F",
+      "actual": "DB60E843983136DA02E13B034B9D0EF69CA31D7C1DF0EE440E467CC8F888373F"
+    }
+  ],
+  "sourceEvidence": {
+    "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08单阈值像素比较边界复核-20261031.md",
+    "sha256": "B9482DFACB30E126DABD3FDDF6A45851EED35AFEB1C13CC0EE5C37C1FF87D73C"
+  },
+  "masks": [
+    {
+      "threshold": 0,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "area": 7
+    },
+    {
+      "threshold": 0,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "area": 0
+    },
+    {
+      "threshold": 100,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        255,
+        255,
+        255,
+        255
+      ],
+      "area": 4
+    },
+    {
+      "threshold": 100,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        0,
+        0,
+        0,
+        0
+      ],
+      "area": 3
+    },
+    {
+      "threshold": 255,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        255
+      ],
+      "area": 1
+    },
+    {
+      "threshold": 255,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        0
+      ],
+      "area": 6
+    }
+  ],
+  "replacementLocation": "BlobSession.Execute threshold/binary",
+  "unconfirmed": [
+    "原VM比较方向和等号及0/255",
+    "二值输出Domain是否应保持原输入域"
+  ]
+}

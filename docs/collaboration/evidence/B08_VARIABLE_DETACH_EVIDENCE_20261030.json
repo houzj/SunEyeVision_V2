@@ -1,0 +1,191 @@
+{
+  "unit": "B08变量删除解绑与字面值回读",
+  "status": "静态闭包已核；后端解绑后的具体字面值尚未证明，不猜默认值",
+  "source": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ValueBase.cs",
+      "sha256": "E60DB3CF3E18751803693CCE6EFE037183E46D629578064F9C65989ECA2472F7",
+      "lines": "IsSubA 27—72；InitIsSub 222—249；SetInit 251—255",
+      "finding": "SetInit仅isInit=false与_SubData=null；重新读取@ComName订阅标记；退出订阅时GetParamUnit重新读取模块参数，并未设置任意默认值"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/NameValueItem.cs",
+      "sha256": "90B4742E79243F46C46FD6B38187EE7F5BE49D4C6677F994133215A3796FED46",
+      "lines": "GetParamUnit/GetParamUnitByZmq 1034—1095",
+      "finding": "从模块UserStringData[ComName]或父InnerGetStringParamValue回读，校验后更新Value/OldValue；静态不证明后端返回旧常量、最后运行值或默认值"
+    }
+  ],
+  "currentHost": "合同6.0 RuntimeGlobals017共31项通过；删除/类型变化仍拒绝且无半写，非VM解绑对齐",
+  "implementationBoundary": "不得为消除拒绝而填工具默认值、读取当前运行结果当配置或引入未确认持久备份合同",
+  "remaining": [
+    "受控VM场景：赋非默认常量→订阅→运行产生另一值→删除变量→观察IsSub与参数回读→保存重开",
+    "All/固定/动态索引的消费者覆盖",
+    "本方完整消费者解绑/事务、历史、活动编辑范围清理"
+  ],
+  "manualNativeVMRun": false,
+  "backendBoundaryAudit": [
+    {
+      "lines": "SetRunParamBind1329—1363；DeleteIOLink3827；DeleteIO3853—3898",
+      "sha256": "1BE5F6B78FC53CE0FCAD229DDEC4B1943818EFCA32331A2B599706DD4905AC38",
+      "finding": "仅支持订阅的消费者调用解绑；成功才将@参数设false并SetInit；变量删除本身不回填参数值",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.Variable/VariableManager.cs"
+    },
+    {
+      "lines": "165—190",
+      "sha256": "42B0363C9A4FF1376FC5980865ACE43FBAE7D5A2FDF00156C55CEFC5CCC6703E",
+      "finding": "按模块ID、参数名和类型构造单项解绑请求；异常返回false，不包含字面值恢复",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmParamSubManager.cs"
+    },
+    {
+      "lines": "1964—1973",
+      "sha256": "783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922",
+      "finding": "转ServerSDKAPI，非零错误抛VmException",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs"
+    },
+    {
+      "lines": "484—485",
+      "sha256": "6A60F612FB385987FF96D6973844A256402F097D1EB371E7AD462C44E57127D0",
+      "finding": "实际实现跨入iMVS-6000PlatformSDK.dll的IMVS_DelModuleParamBinding；托管材料止于PInvoke，未证明原生存储恢复语义",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/NativeMethods.cs"
+    }
+  ],
+  "hostReuseDecision": [
+    "复用NodeConfigurationEditHost变量草稿与节点参数同批合成、冲突检查、历史和回滚；不新造第二事务",
+    "现GlobalVariableManager删除只改私有变量集合，不足以清理Runtime字段及变量索引消费者",
+    "FieldSettings对必需字段不允许Unset，故不能直接删除配置键冒充原厂解绑；缺失回读值证据前保留原子拒绝",
+    "来源控件清空与变量管理删除最终应共用同一正式解绑决策，不能各自猜回填值"
+  ],
+  "nativeAttempt20261030": {
+    "diagnostics": [
+      "Ghidra未配置且Java不可用",
+      "IDA未配置",
+      "Hopper不支持Windows"
+    ],
+    "decision": "未安装或改动工具配置；不以导出入口身份当函数行为证据",
+    "target": "D:/Program Files/VisionMaster4.4.0/Applications/PublicFile/x64/iMVS-6000PlatformSDK.dll",
+    "sha256": "b62d7e15588ccda6671228aebc11fec3e27aca878f0e03067e44b17d5a54a9a1",
+    "procedure": "IMVS_DelModuleParamBinding",
+    "analyzeFunction": "provider_unavailable",
+    "functionBodyObtained": false,
+    "openBinary": "REA成功识别x86_64 PE"
+  },
+  "nativeExportReview": {
+    "confirmed": "解绑18064eb40继续FUN_1806ab440；设置18064ea40继续FUN_1806aaff0；读取18064ec40继续FUN_1806ab790",
+    "complete": false,
+    "source": "逆向统筹本次Ghidra成果，本线原文件复核",
+    "remaining": "导出包装函数体不证明内部恢复值；继续后端与参数存储",
+    "files": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence/IMVS_DelModuleParamBinding-18064eb40.c",
+        "sha256": "A82A60DD73E1889DF953426759F154B76F8AC1756B5BE03A2862FEF913E6501F"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence/IMVS_SetModuleParamBinding-18064ea40.c",
+        "sha256": "E7591EFB88F55BED9F5B337360CB122FBD05ECE42B3A89CFBAA5DA38737AB7FE"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence/IMVS_GetModuleParamBindingList-18064ec40.c",
+        "sha256": "2E9F2208BA592418840420BBFAC6BD3FF5FF724416D055A869003E5DC2148E22"
+      }
+    ]
+  },
+  "evidence2AcceptanceReview": {
+    "followup": "同授权范围已请求补18066ffa0汇编及内部接收/清理证据",
+    "reportSha256": "CDC6B0192E8B47B946EABCFC1B5E3555D8969EA23BBFC0DC3501229FB50CD914",
+    "review": "本线核报告、bodies.tsv、两个原始汇编与内部函数反编译",
+    "detach": {
+      "confirmed": "18064ec13—18064ec1d将原RDX交给FUN_1806ab440；内部组织请求并调用FUN_1806c00d0",
+      "bodyBytes": 249,
+      "notProven": "服务端参数恢复和回读值",
+      "assemblySha256": "B5AD16997CC9B2562A61F5A31C81262FB3BA6899BE443BD60354C2B95FD812B4",
+      "address": "18064eb40"
+    },
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08解绑及触发命令原生补证-20261030.md",
+    "productChanged": false,
+    "nativeRuntimeVerified": false,
+    "execute": {
+      "address": "180647750",
+      "bodyBytes": 195,
+      "assemblySha256": "787F593EDB0BCAE33E282C514342F8367A360F6A41AD7B3369CB749DA369E4E8",
+      "notProven": "特殊源值与寿命",
+      "confirmed": "18064780e尾跳18066ffa0；命令参数R8经RDI保留后再传R8",
+      "coverageLimit": "空/非空命令分支与FUN_1806c00d0目前来自反编译尾调用展开，不直接包含在195字节导出汇编"
+    }
+  },
+  "evidence3AcceptanceReview": {
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08解绑及触发命令原生补证-20261030.md",
+    "reportSha256": "927EEFCBF23EF3B8441162100959197A076FCEF661C31B03CDEB04133977BF5B",
+    "tailBody": {
+      "bytes": 462,
+      "assemblySha256": "D8D0D14B7E3A4889DC7B2CF61140F3C32C79A7BAE47A7A2D0A417EA093D724E3",
+      "address": "18066ffa0",
+      "confirmed": "保存R8；实际空指针/首字符为空分支；1806700d2调用1806c00d0"
+    },
+    "runtimeVerified": false,
+    "decision": "静态客户端边界已核，不据此实施默认值回填或共享最近消息",
+    "unknown": [
+      "间接函数指针实际目标",
+      "服务端参数存储及恢复值",
+      "TRIGGER_STRING值与生命周期"
+    ],
+    "downstream": {
+      "bytes": 913,
+      "assemblySha256": "D2EF29B0AE20ED85E78BD692E110CF28AD4EE7E197AACFCF3DC3F121B35DBC14",
+      "address": "1806c00d0",
+      "confirmed": "对象+0x2398函数指针间接调用；错误码重试分支调用180662a70"
+    }
+  },
+  "platformDispatchReview": {
+    "followup": "已同授权范围请求继续实际装载与存储/执行清理，并具体审计最小运行隔离前提",
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08解绑及触发命令原生补证-20261030.md",
+    "originalAssemblyHashes": [
+      "E01B03F86BB972705EAE2D98AC80FD5BA6604748C68E89F4FFC2916EE34CB5A2",
+      "AF520D8D8ADBBDBB9AEE42526430AC410835724A098AE6A3EC7AC77DA99D4B8F"
+    ],
+    "confirmed": "SDK加载PlatformManager.dll，解析PF_M_MsgDeal写+0x2398；释放时清零卸载。既有C02分派0x45d→18062b200→1805edd00→1805de710，后者按+0x7d510句柄解析VM_PROXY_RecvServerCommand并缓存+0x7d518",
+    "stillUnknown": [
+      "实际ModuleProxy装载来源",
+      "解绑恢复值",
+      "TRIGGER_STRING独立服务端上下文与寿命"
+    ],
+    "sha256": "10CAEFF2682EC6AB509B6E51531907B00579501B7135BE99773F75E952468343",
+    "candidateOnly": "安装ModuleProxy.dll存在同名导出RVA20bd0，不证明句柄实际装载该文件",
+    "runtime": "未执行原VM探针；完整程序副本不是已证明必需条件"
+  },
+  "moduleFrameAcceptanceReview": {
+    "coverage": "静态默认/所核分支，不是现场加载；关系项移除不证明本地参数恢复值",
+    "productChanged": false,
+    "nextAction": "已要求具体owned-only最小探针：新建进程/句柄/方案和本任务目录；真实附着/共享写入才以接口证据拦下，不扩大无证风险",
+    "report": "D:/MyWork/REA逆向测试/docs/joint-audit/B08解绑及触发命令原生补证-20261030.md",
+    "unknown": [
+      "参数值是否经条件辅助函数或其它路径改写",
+      "实际读回与保存重开结果",
+      "TRIGGER_STRING独立上下文寿命"
+    ],
+    "runtime": "尚无VM实机差分",
+    "sources": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence18/0x180021590-180021590.asm.txt",
+        "sha256": "2ADCEA8503E064A865F11357B53E0C356D27040591623A4A6A309B0EAD049096"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence19/VM_M_DelModuleParamBinding-180145790.asm.txt",
+        "sha256": "903811B53FE61B02D83EA035C22D090F4B7561F0B7F61E5B42EF26B3E006E1E4"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence20/0x1800bd7c0-1800bd7c0.asm.txt",
+        "sha256": "25FEBA9EFA48D6AF18A6CDEE18E0EBB9F97CB2B8B69BDF6AA6F06DE16A512FA2"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence21/0x1800be550-1800be550.asm.txt",
+        "sha256": "8364917A727D0D179FE173F61F9A3E2CC974F05B07F96C632BCF42AF91D0263A"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/b08-native-20261030/evidence21/0x1800c13d0-1800c13d0.asm.txt",
+        "sha256": "C1F58B2271AA65A8413BEBB55AB00496BDC4BD4C74AF51F4B26A07005E9A61CB"
+      }
+    ],
+    "reportSha256": "C5086324ACB425495CAA5102E89E39FBDCA96AECDAC972D27E14DCA01002042F",
+    "confirmed": "默认配置构造ModuleProxy路径；Proxy所核分支构造ModuleFrame.dll路径并解析VM_M_DelModuleParamBinding；导出按模块ID与参数名进入1800bd7c0，持锁找关系并调用1800c13d0/1800be550/18007dbb0"
+  }
+}

@@ -1,0 +1,624 @@
+{
+  "scope": "原运行页46条原始记录和现行声明的结构候选映射；不是三页完整清单或行为等价结论",
+  "baselineCommit": "c59a5582",
+  "originalInventory": "docs/collaboration/evidence/BLOB_VM_RUN_PARAMETERS_20261029.json",
+  "originalInventorySha256": "BB3815272EC8F310111AA8FACE5268E780D54E03D5432C9968FF2995C34C88D3",
+  "originalXml": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "originalXmlSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "currentDeclaration": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+  "currentDeclarationSha256": "1CF440EC4F830D9A70D23A4F13D1F43B2820712BE8F1AB6F13524B80B2E237D6",
+  "originalCount": 46,
+  "currentDeclaredParameterCount": 19,
+  "rows": [
+    {
+      "originalName": "ThresholdType",
+      "originalType": "Enumeration",
+      "displayName": "RunParam_Threshold Mode",
+      "defaultValue": "0x2",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [
+        "SegmentationMode"
+      ],
+      "presentFields": [
+        "SegmentationMode"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "Polarity",
+      "originalType": "Enumeration",
+      "displayName": "Polarity",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "Type"
+      ],
+      "presentFields": [
+        "Type"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "LowThreshold",
+      "originalType": "Integer",
+      "displayName": "Low Threshold",
+      "defaultValue": "0x64",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "Threshold"
+      ],
+      "presentFields": [
+        "Threshold"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "HightThreshold",
+      "originalType": "Integer",
+      "displayName": "High Threshold",
+      "defaultValue": "0x96",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "UpperThreshold"
+      ],
+      "presentFields": [
+        "UpperThreshold"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "ThresholdRangArea",
+      "originalType": "IntegerBettween",
+      "displayName": "Threshold Range",
+      "defaultValue": "10000",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "Softness",
+      "originalType": "Integer",
+      "displayName": "Soft Threshold Softness",
+      "defaultValue": "254",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SoftLeftRatio",
+      "originalType": "Integer",
+      "displayName": "RunParam_Low Tail Ratio",
+      "defaultValue": "5",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SoftRightRatio",
+      "originalType": "Integer",
+      "displayName": "RunParam_High Tail Ratio",
+      "defaultValue": "5",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SoftLowRatio",
+      "originalType": "Integer",
+      "displayName": "Low Threshold Ratio",
+      "defaultValue": "40",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SoftHighRatio",
+      "originalType": "Integer",
+      "displayName": "High Threshold Ratio",
+      "defaultValue": "60",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "FindNum",
+      "originalType": "Integer",
+      "displayName": "RunParam_Number to Find",
+      "defaultValue": "100",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [
+        "BlobCountLimit"
+      ],
+      "presentFields": [
+        "BlobCountLimit"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "HoleMinArea",
+      "originalType": "Integer",
+      "displayName": "Fill Area Threshold",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByArea",
+      "originalType": "Boolean",
+      "displayName": "Area Enable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [
+        "IsAreaFilterEnabled"
+      ],
+      "presentFields": [
+        "IsAreaFilterEnabled"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangArea",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_Area Range",
+      "defaultValue": "10000",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [
+        "FilterAreaMin",
+        "FilterAreaMax"
+      ],
+      "presentFields": [
+        "FilterAreaMin",
+        "FilterAreaMax"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "BlobContourType",
+      "originalType": "Enumeration",
+      "displayName": "RunParam_BlobContourType",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "True",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "BolbImageEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_BolbImageEnable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "BinaryImageEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_BinaryImageEnable",
+      "defaultValue": "True",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [
+        "OutputBinaryImage"
+      ],
+      "presentFields": [
+        "OutputBinaryImage"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "Expert",
+      "originalType": "Expand",
+      "displayName": "",
+      "defaultValue": "",
+      "visibility": "",
+      "customVisible": "",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByHistInfo",
+      "originalType": "Boolean",
+      "displayName": "RunParam_SelectByHistInfoEnable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByBoxAngle",
+      "originalType": "Boolean",
+      "displayName": "Angle Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangBoxAngle",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_Angle Range",
+      "defaultValue": "0x0",
+      "visibility": "Beginner",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByRectWidth",
+      "originalType": "Boolean",
+      "displayName": "RectWidth Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangRectWidth",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_RectWidth Range",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByRectHeight",
+      "originalType": "Boolean",
+      "displayName": "RectHeight Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangRectHeight",
+      "originalType": "IntegerBettween",
+      "displayName": "RunParam_RectHeight Range",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByPerimeter",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Perimeter Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangPerimeter",
+      "originalType": "IntegerBettween",
+      "displayName": "Perimeter Range",
+      "defaultValue": "1000",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByShortAxis",
+      "originalType": "Boolean",
+      "displayName": "Minor Axis Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangShortAxis",
+      "originalType": "IntegerBettween",
+      "displayName": "Minor Axis Range",
+      "defaultValue": "1000",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByLongAxis",
+      "originalType": "Boolean",
+      "displayName": "Major Axis Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangLongAxis",
+      "originalType": "IntegerBettween",
+      "displayName": "Major Axis Range",
+      "defaultValue": "",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByCircularuty",
+      "originalType": "Boolean",
+      "displayName": "Circularity Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "IsCircularityFilterEnabled"
+      ],
+      "presentFields": [
+        "IsCircularityFilterEnabled"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangCircularity",
+      "originalType": "FloatBettween",
+      "displayName": "Circularity Range",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "FilterCircularityMin",
+        "FilterCircularityMax"
+      ],
+      "presentFields": [
+        "FilterCircularityMin",
+        "FilterCircularityMax"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByRectangularity",
+      "originalType": "Boolean",
+      "displayName": "Rectangularity Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "IsRectangularityFilterEnabled"
+      ],
+      "presentFields": [
+        "IsRectangularityFilterEnabled"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangRectangularity",
+      "originalType": "FloatBettween",
+      "displayName": "Rectangularity Range",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "FilterRectangularityMin",
+        "FilterRectangularityMax"
+      ],
+      "presentFields": [
+        "FilterRectangularityMin",
+        "FilterRectangularityMax"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SelectByCentraBias",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Barycenter Offset Enable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "RangCenterBias",
+      "originalType": "FloatBettween",
+      "displayName": "RunParam_Barycenter Offset Range",
+      "defaultValue": "10",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "AxisRatioEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_Axial Ratio",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "AxisRatioRange",
+      "originalType": "FloatBettween",
+      "displayName": "RunParam_Axial Ratio",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SortFeature",
+      "originalType": "Enumeration",
+      "displayName": "Ranking",
+      "defaultValue": "1",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "SortMode",
+      "originalType": "Enumeration",
+      "displayName": "Sort Type",
+      "defaultValue": "2",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [
+        "SortMode"
+      ],
+      "presentFields": [
+        "SortMode"
+      ],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "connectivity",
+      "originalType": "Enumeration",
+      "displayName": "Connectivity ",
+      "defaultValue": "0x8",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "MaxAreaInnerRectNum",
+      "originalType": "Integer",
+      "displayName": "RunParam_MaxAreaInnerRectNum",
+      "defaultValue": "0x0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "OverlapRatio",
+      "originalType": "Integer",
+      "displayName": "MinOverlap",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "MaxOutPixelNumEnable",
+      "originalType": "Boolean",
+      "displayName": "RunParam_MaxOutPixelNumEnable",
+      "defaultValue": "False",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    },
+    {
+      "originalName": "MaxOutPixelNum",
+      "originalType": "Integer",
+      "displayName": "MaxOutPixelNum",
+      "defaultValue": "0",
+      "visibility": "",
+      "customVisible": "False",
+      "candidateFields": [],
+      "presentFields": [],
+      "missingFields": [],
+      "classification": "仅声明存在检查，行为及VM等价须单独核证"
+    }
+  ]
+}

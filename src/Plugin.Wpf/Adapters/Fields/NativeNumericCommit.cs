@@ -109,6 +109,9 @@ internal sealed class NativeNumericCommit : IDisposable
                 if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
                 value=number;
             }
+            // Typed raw input must satisfy absolute bounds before display precision is applied.
+            // Paired endpoint ordering is validated later against the complete candidate pair.
+            ValidateBounds(value);
             value=PrepareValue(value).Value!;
             return true;
         }
@@ -117,25 +120,30 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public ConstantSetting PrepareValue(object value)
     {
+        if(NativeNumericSequenceProjection.Applies(_state.Port)&&value is not double)value=NativeNumericSequenceProjection.Single(_state.Port,value);
         EnsureRepresentable(new ConstantSetting(value));
         if(value is double number)
         {
             if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
             if(_layout?.DecimalPlaces is {} digits)value=Math.Round(number,digits,MidpointRounding.ToEven);
         }
-        var frozen=ValueRules.Freeze(_state.Port,value)!;
-        var numeric=Convert.ToDouble(frozen,CultureInfo.InvariantCulture);
+        var frozen=NativeNumericSequenceProjection.FreezeNumber(_state.Port,value);
+        ValidateBounds(frozen);
+        return new(frozen);
+    }
+    private void ValidateBounds(object value)
+    {
+        var numeric=Convert.ToDouble(NativeNumericSequenceProjection.Single(_state.Port,value),CultureInfo.InvariantCulture);
         if((_layout?.Minimum is {} minimum&&numeric<minimum)||(_layout?.Maximum is {} maximum&&numeric>maximum)
             ||(!_paired&&(numeric<_leaf.Minimum||numeric>_leaf.Maximum))
             ||(_paired&&_owner is not null&&(numeric<_owner.Minimum||numeric>_owner.Maximum))
             ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
             throw new ArgumentException("数值超出允许范围。");
-        return new(frozen);
     }
     public void ValidateStored(ConstantSetting setting)
     {
         var prepared=PrepareValue(setting.Value!);
-        if(!Equals(prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
+        if(!NativeNumericSequenceProjection.Same(_state.Port,prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
     }
     public bool TryPrepare(out ConstantSetting proposal)
     {
@@ -214,12 +222,19 @@ internal sealed class NativeNumericCommit : IDisposable
         if(constant is null)return;
         EnsureRepresentable(constant);
         if(_suspended){IsDirty=false;_rawError="";_pendingRaw=null;return;}
-        var stamp=Stamp();var expected=Format(constant.Value!);var syncing=_syncing;_syncing=true;
+        string expected;
+        try{expected=Format(constant.Value!);}
+        catch(ArgumentException failure)
+        {
+            var unavailable=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),unavailable);
+            _state.SetSourceError(failure.Message);return;
+        }
+        var stamp=Stamp();var syncing=_syncing;_syncing=true;
         try
         {
             if(_owner is not null)
             {
-                var value=Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture);
+                var value=Convert.ToDouble(NativeNumericSequenceProjection.Single(_state.Port,constant.Value!),CultureInfo.InvariantCulture);
                 if(!WriteText(expected,()=>_projectBoundValue?.Invoke(value),stamp))return;
                 if(!WriteText(expected,()=>_owner.SetCurrentValue(_valueProperty!,value),stamp))return;
                 if(_requireOwnerBinding&&!WriteText(expected,()=>_owner.GetBindingExpression(_valueProperty!)?.UpdateTarget(),stamp))return;
@@ -244,8 +259,13 @@ internal sealed class NativeNumericCommit : IDisposable
         IsDirty=true;_pendingRaw=string.Empty;
         _state.SetEditError("请输入新的常量值。");
     }
-    private string Format(object value)=>value is long integer?integer.ToString(CultureInfo.InvariantCulture)
+    private string Format(object value)
+    {
+        value=NativeNumericSequenceProjection.Single(_state.Port,value);
+        return value is long integer?integer.ToString(CultureInfo.InvariantCulture)
+        :_owner is Numbers.SliderArrangeFloat floating?NativeNumericTextProjection.Format(Convert.ToDouble(value,CultureInfo.InvariantCulture),floating.DecimalDigits)
         :Convert.ToDouble(value,CultureInfo.InvariantCulture).ToString(_layout is null?"G17":"F"+_layout.DecimalPlaces,CultureInfo.InvariantCulture);
+    }
     public void ValidateInitial()
     {
         if(_state.IsReferenceMode||_state.Accepted is not ConstantSetting initial)return;

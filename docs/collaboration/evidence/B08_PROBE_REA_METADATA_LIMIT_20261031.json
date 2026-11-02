@@ -1,0 +1,23 @@
+{
+  "status": "REA完整成员表示预算超限，未当作不存在或通过",
+  "evidence_id": "ev_de13b657e3113b360efba931e280afdfd22fb5cd1901b38dcf2f58204aa718b7",
+  "operation": "inspect_managed_members",
+  "artifact": {
+    "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\PublicFile\\x64\\VM.PlatformSDKCS.dll",
+    "sha256": "34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1",
+    "byte_length": 515072,
+    "format": "pe"
+  },
+  "coverage": {
+    "state": "unavailable",
+    "issues": [
+      {
+        "code": "resource-limit",
+        "scope": "metadata.representation",
+        "offset": null,
+        "detail": "Managed metadata exceeds the 67108864 byte representation budget"
+      }
+    ]
+  },
+  "alternative": "Inspect-B08ProbeMetadata.ps1通过System.Reflection.Metadata读取选定CLI声明，不加载/执行目标；保留raw签名和Marshal blob，未运行验证ABI"
+}

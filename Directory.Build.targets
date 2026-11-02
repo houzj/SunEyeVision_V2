@@ -77,8 +77,12 @@
        OutDir 用 $[System.IO.Path]::GetFullPath 规范化,避免字面拼接 '..\..\' 在
        后续 Delete/RemoveDir 操作中无法被 SDK 规范化导致路径不匹配。 -->
 
-  <!-- HALCON编译引用由各工程直接指向libs/halcon/net，不经dev/Debug中转。
-       native与托管输出仍由下方统一部署规则提供。 -->
+  <!-- 编译与部署共享同一个依赖源，不从另一工作区的程序输出取库。 -->
+  <ItemGroup>
+    <Reference Update="halcondotnetxl">
+      <HintPath>$([MSBuild]::EnsureTrailingSlash('$(HalconSourceRoot)'))net\halcondotnetxl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
   <!-- 工具插件: OutDir 统一覆盖到 plugins/<ToolName>/ 子目录
        不区分特例,所有 IsToolPlugin=true 的 csproj 一律输出到独立子目录,
@@ -252,7 +256,7 @@
        首个 csproj 完成复制后其余 csproj 因 .lock 文件存在直接 return)。-->
   <Target Name="CopyHalconNativeRuntimes" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
     <PropertyGroup>
-      <_HalconSrcDir>$(MSBuildThisFileDirectory)libs\halcon\runtime\x64-win64\</_HalconSrcDir>
+      <_HalconSrcDir>$([MSBuild]::EnsureTrailingSlash('$(HalconSourceRoot)'))runtime\x64-win64\</_HalconSrcDir>
       <_HalconLockFile>$(OutDir).halcon-native-deployed</_HalconLockFile>
     </PropertyGroup>
     <Error Text="Halcon native 目录不存在: $(_HalconSrcDir)。请先部署 libs/halcon/runtime/x64-win64/*.dll (rule-008 报错优先)。" Condition="!Exists('$(_HalconSrcDir)')" />
@@ -268,7 +272,7 @@
        因此 Release 包缺少它会在首次使用 HALCON 工具时发生 FileNotFoundException。 -->
   <Target Name="CopyHalconManagedAssembly" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
     <PropertyGroup>
-      <_HalconManagedAssembly>$(MSBuildThisFileDirectory)libs\halcon\net\halcondotnetxl.dll</_HalconManagedAssembly>
+      <_HalconManagedAssembly>$([MSBuild]::EnsureTrailingSlash('$(HalconSourceRoot)'))net\halcondotnetxl.dll</_HalconManagedAssembly>
     </PropertyGroup>
     <Error Text="HALCON 托管程序集不存在: $(_HalconManagedAssembly)" Condition="!Exists('$(_HalconManagedAssembly)')" />
     <Copy SourceFiles="$(_HalconManagedAssembly)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />

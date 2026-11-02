@@ -1,0 +1,49 @@
+{
+  "unit": "B05 浮点基础编辑器",
+  "status": "原件及现行正确适配复用，自动检查通过，VS与人工待验",
+  "decision": "不修改产品实现；Float_sub与Float_between分别核收",
+  "validation": {
+    "attempt": "Release/_validation/S4-20261025/DesignTime/attempt-123",
+    "floatChecks": 15,
+    "scope": "真实加载原件、常量字段接纳、精度边界、拒绝恢复、弹层、禁用恢复及释放",
+    "total": 278,
+    "exit": 0
+  },
+  "pending": [
+    "引用树完整组合",
+    "双端范围组合",
+    "Blob完整生产链",
+    "VS实际设计器",
+    "用户键鼠验收"
+  ],
+  "sources": [
+    {
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml"
+    },
+    {
+      "sha256": "07784584F38D02CD288E65B4CE2AE66C3DDF170C795404FEAC042E7E83D94A00",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeFloat.xaml"
+    },
+    {
+      "sha256": "88A03646B37396016244A42224773301B10F318620AAD5D114905CBEBDA7FF80",
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeFloat.xaml.cs"
+    },
+    {
+      "sha256": "0F0A6CE21D6825BDAC0964E1EC2A8FD3FCDC76D340B4E6DD6A9A7460FB8CB7F7",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs"
+    },
+    {
+      "sha256": "5C3B9663DBCA7197E64EE38F0A5908F6C882E6D65090DD86A9A96182E307DAC9",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs"
+    },
+    {
+      "sha256": "06AD8B51D8C2F162566C5431D0179F4AE3EEF3AD0D11CF20BE7707BB60E0DFA5",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+    },
+    {
+      "sha256": "EC2FAD747ABEA3412F0AD4FF02F792B806088017FD146C63BC8846FC18C5894A",
+      "path": "scripts/verification/S4DesignTimeCases.cs"
+    }
+  ]
+}

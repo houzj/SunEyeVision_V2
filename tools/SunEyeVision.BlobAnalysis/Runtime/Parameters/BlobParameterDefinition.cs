@@ -37,9 +37,11 @@ public sealed partial class BlobParameterDefinition
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
-                Shape(field,["id","fieldId","allowReference","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
+                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
                 Required(field,"id");Required(field,"type");Required(field,"default");Required(field,"label");
                 Required(field,"fieldId");Boolean(field,"allowReference");
+                if(Boolean(field,"allowReference"))Required(field,"bindingName");
+                else if(field.Attribute("bindingName") is not null)throw new InvalidDataException("Non-reference parameters cannot declare binding names.");
                 foreach(var choice in field.Elements("Choice")){Shape(choice,["key","label"],[]);Required(choice,"key");Required(choice,"label");}
             }
         }

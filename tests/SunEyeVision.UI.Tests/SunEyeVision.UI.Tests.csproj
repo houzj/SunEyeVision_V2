@@ -24,7 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../_shared/WpfTestDispatcher.cs" Link="_shared/WpfTestDispatcher.cs" />
+    <Compile Include="../_shared/ResultWorkspaceRuntimeProbe.cs" Link="_shared/ResultWorkspaceRuntimeProbe.cs" />
     <ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj" />
+    <ProjectReference Include="../SunEyeVision.GlobalProduction.Runtime.Tests/SunEyeVision.GlobalProduction.Runtime.Tests.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />

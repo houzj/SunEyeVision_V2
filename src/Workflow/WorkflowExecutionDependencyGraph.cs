@@ -77,7 +77,7 @@ public sealed class WorkflowExecutionDependencyGraph
 
     public static WorkflowExecutionDependencyGraph Compile(Workflow workflow,
         IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables, string? sourceWorkflowId,
-        IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>>? inputIssues)
+        IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>>? inputIssues,string? solutionId=null)
     {
         if (workflow == null)
             throw new ArgumentNullException(nameof(workflow));
@@ -110,7 +110,7 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
-            foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
+            foreach (var input in BindingRelationCatalog.DescribeExecution(node).Where(i => i.Active))
             {
                 if(BindingRelationCatalog.GetReference(node,input.Key) is not null)continue;
                 if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
@@ -130,7 +130,7 @@ public sealed class WorkflowExecutionDependencyGraph
                     throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
                 AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
             }
-            foreach(var (fieldId,setting) in BindingRelationCatalog.References(node))
+            foreach(var (fieldId,setting) in BindingRelationCatalog.References(node,executionOnly:true))
             {
                 if(inputIssues?.TryGetValue(node.Id,out var failures)==true&&failures.Any(f=>f.InputKey==fieldId))continue;
                 var reference=setting.Reference;
@@ -147,6 +147,21 @@ public sealed class WorkflowExecutionDependencyGraph
                     if (variable != null && knownNodes.Contains(variable.ProducerNodeId)
                         && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
                         AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
+                }
+            if(node.RuntimeConfiguration is not null)
+                foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node,executionOnly:true))
+                {
+                    if(reference.SolutionId!=solutionId)continue;
+                    var variable=variables?.FirstOrDefault(item=>item.Id==reference.VariableId);
+                    if(variable is {HasProducer:true}&&knownNodes.Contains(variable.ProducerNodeId)
+                        &&(string.IsNullOrEmpty(variable.ProducerWorkflowId)||variable.ProducerWorkflowId==(sourceWorkflowId??workflow.Id)))
+                        AddDependency(variable.ProducerNodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                    if(reference.Selection is SunEyeVision.Plugin.Contracts.BindingSelection.AtField index)
+                        foreach(var dependency in WorkflowBindingContext.ReferenceNodes(index.Reference,sourceWorkflowId??workflow.Id))
+                        {
+                            if(dependency.ScopeId!=(sourceWorkflowId??workflow.Id))throw new InvalidOperationException("变量动态索引跨出工作流作用域。");
+                            AddDependency(dependency.NodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                        }
                 }
         }
 

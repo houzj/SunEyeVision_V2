@@ -1,0 +1,38 @@
+{
+  "formalProductBase": "914b2173",
+  "candidate": "ead7c0ab35ae268d6834edc0820a603e31f3c135",
+  "caseSha256": "E6F83CC418A8FAA59A2F904B7C43E9B3A8A6404A7077A4A9D4438A6B4494F6CB",
+  "results": [
+    {
+      "scope": "Area",
+      "attempt": 1,
+      "groups": 16,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-001\\receipt.json"
+    },
+    {
+      "scope": "Circularity",
+      "attempt": 2,
+      "groups": 16,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-002\\receipt.json"
+    },
+    {
+      "scope": "Rectangularity",
+      "attempt": 4,
+      "groups": 16,
+      "loadedCount": 15,
+      "loadedMismatch": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\attempt-004\\receipt.json"
+    }
+  ],
+  "previousTimeout": {
+    "attempt": 3,
+    "timeoutSeconds": 480,
+    "progress": "14组通过，敏感样本时超时；runner抛出异常前未生成receipt",
+    "log": "Release/_validation/BlobRangeFormal-20261101/Rectangularity.log"
+  },
+  "limitations": "VM订阅对端回读及夹值时序与本方当前值策略仍有差异/未证；原阈值、结果判定等其余双端范围未由本批覆盖。自然键鼠、系统剪贴板、真实VS设计时和用户运行验收未执行；同一Blob未筛选测量只作集成基准，不证明VM算法数值等价。不称完整B08、范围控件或S2/S3闭口。"
+}

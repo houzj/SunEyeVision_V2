@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Interop.Windows;
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Data;

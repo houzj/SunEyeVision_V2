@@ -310,6 +310,7 @@ internal sealed class ResultViewportImageLease : IDisposable
     { _image = image; Viewport = viewport; Receipt = receipt; _lease = lease; _current = current; }
     internal IReadOnlyImage Image { get { ObjectDisposedException.ThrowIf(_lease is null, this); return _image; } }
     internal NativeResultViewport Viewport { get; }
+    internal ResultPublicationStamp Stamp=>_lease?.Stamp??throw new ObjectDisposedException(nameof(ResultViewportImageLease));
     internal NativeResultFrameReceipt Receipt { get; }
     internal bool IsCurrent
     {

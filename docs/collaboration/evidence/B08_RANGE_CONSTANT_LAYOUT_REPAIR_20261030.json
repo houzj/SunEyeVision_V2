@@ -1,0 +1,66 @@
+{
+  "reports": [
+    {
+      "expected": "3EBE07A082597B194CE9AC6B45E611E3B7B268220094E788CFC4C6C9CC233A7E",
+      "name": "B08双端范围原控件布局时序静态证据-20261030.md",
+      "actual": "3EBE07A082597B194CE9AC6B45E611E3B7B268220094E788CFC4C6C9CC233A7E",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08双端范围原控件布局时序静态证据-20261030.md"
+    },
+    {
+      "expected": "F25132840C825477EC0B8490F60FDBFFB0A9ED075AD2F678D699CC8D5F200C9F",
+      "name": "B08双端切回常量与读值静态链-20261030.md",
+      "actual": "F25132840C825477EC0B8490F60FDBFFB0A9ED075AD2F678D699CC8D5F200C9F",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08双端切回常量与读值静态链-20261030.md"
+    },
+    {
+      "expected": "21AE62091A1777CE4DEBA3AD680249BACEBC93BD53C6BDAF2801E32B7AF973F3",
+      "name": "B08双端控件隔离探针边界评估-20261030.md",
+      "actual": "21AE62091A1777CE4DEBA3AD680249BACEBC93BD53C6BDAF2801E32B7AF973F3",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08双端控件隔离探针边界评估-20261030.md"
+    }
+  ],
+  "scope": "NativeRangePresenter双端都处于常量编辑态后的视觉布局恢复",
+  "decision": "必要宿主可用性修复，非已证VM宿主运行行为",
+  "existing": "原SliderArrangeBase.InitUI根据isBeside投影Gr0/1/2及IsVisibleOfChild；订阅回调只更新isBeside和滑条状态",
+  "change": "Project同步两个订阅标记后，仅两者均false时调用原InitUI；不变单侧/双侧订阅布局，不推断解绑回读值",
+  "contract": "不改Accepted/ConstantBackup/字段事务/执行/序列化合同，不填默认值；显隐恢复仍走原模板与原布局方法",
+  "lifecycle": "构造投影、Loaded、切模式、接纳、历史回放复用Project；同一_syncing门禁内调用，不新增计时器、订阅或持有者",
+  "unresolved": "实际VM宿主时序和最终解绑参数值仍未知，不以布局修复宣称B08完成",
+  "implementation": "NativeRangePresenter.Project在同步两端模式后，仅两端false时调用原InitUI；Accepted/ConstantBackup与运行合同不变",
+  "validation": {
+    "VariableFields": 13,
+    "fullFunctionalAcceptance": false,
+    "fullBuild": {
+      "log": "b08-range-layout-full-build.log",
+      "warnings": 6420,
+      "errors": 0
+    },
+    "RuntimeEditorUiStage": 6,
+    "resourceAudit": "2037编译资源键、333本地记录、24原图标哈希通过；Wpf SHA 5F61FA357D3F34B92405CE2F1BAEC3CB92CCE557DD7F774600C2C7D4AC1C6667",
+    "windowCases": {
+      "noBackup": "1组通过",
+      "integerFloatLeftRightMatrix": "1组含4组合通过",
+      "nativeBetween": "4组通过",
+      "reentrantMode": "1组通过"
+    },
+    "FieldEditing": 34,
+    "uiBuild": {
+      "log": "b08-range-layout-ui-build.log",
+      "warnings": 6509,
+      "errors": 0
+    },
+    "DesignTime": 306,
+    "limits": "本轮定向范围通过不替代attempt345全轨捕获失败/超时或实际VS、人工验收"
+  },
+  "nativeCloseExpectationCorrection": {
+    "result": "原between4组通过/0失败；旧失败日志保留",
+    "source": "原NumericControl.GotFocus→IsFocusedP→原CBox.IsDropDownOpen；原SliderArrangeFloat/SliderArrange.PART_Popup_Closed强制两端UpdateSource并发两端事件",
+    "priorFailure": "旧断言要求Enter关闭后最终只写左端；实际写入低端35后高端45，3次含此前整组捕获",
+    "correction": "改查原弹层先打开/后关闭、低端再高端顺序及各一次写入；非法另一端和宿主拒绝断言保留。未修改原关闭行为以迎合旧测试",
+    "originalHashes": {
+      "NumericControl": "7FA31754DF042FAD31AE5E16A9149484C4956C1164FF7FED9F688FBE9FB4B7EF",
+      "SliderArrangeFloat": "88A03646B37396016244A42224773301B10F318620AAD5D114905CBEBDA7FF80",
+      "SliderArrange": "40E9DDC63A2E3CFD5B9670DD59E1FBEEA249590AD74C5B540418B8EAB17C8BE3"
+    }
+  }
+}

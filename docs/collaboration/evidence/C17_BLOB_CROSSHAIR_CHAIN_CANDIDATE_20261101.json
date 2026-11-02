@@ -1,0 +1,239 @@
+{
+  "scope": "C17辅助十字完整真实Blob生产消费者候选核收；非主仓正式、自然输入或原厂导出等价",
+  "baseline": "300b924db00844fb7149f7990ff833d65c15063b",
+  "sourceCommit": "db85edccd2af93b37fd1dbb1ff307cc4e6362a4b",
+  "designCommit": "41f92d8f",
+  "productSourceChanges": "无，src/tools对300b924d无diff；不改ROI或共享宿主",
+  "originalEvidence": {
+    "catalog": "src/Plugin.Wpf/Catalog/controls.json C17.crosshair-settings-composition/C17.cross-binding-lifecycle",
+    "archiveSha256": "9745708015830E0F39DE5321604272636C40D7AAD5481433F153508078F611D0",
+    "originalSources": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossData.cs",
+        "sha256": "3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml",
+        "sha256": "e0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs",
+        "sha256": "5be350a0fd91b5301f0af41b9c91432947d0a8733d3e6a9e0d8e5fd6b251b2f2"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+        "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeBase.cs",
+        "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+        "sha256": "a09059167052071a3bcdced56258a3f1bd547d08812b18193a7537d01af90e51"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Controls/styles/basewindowstyle.xaml",
+        "sha256": "46989e854d2dc8f66c9e05b06aad8f48995a0d8f963566371efaab0dd71a1e27"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml",
+        "sha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/buttonstyle/togglebuttonstyle.xaml",
+        "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml",
+        "sha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b"
+      }
+    ],
+    "archive": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json"
+  },
+  "build": {
+    "warnings": 6566,
+    "log": "Release/_validation/blob-crosshair-build-001.log",
+    "deployment": "工作区标准规则自行部署，未复制Release或厂商运行库",
+    "halconSourceRoot": "D:/MyWork/SunEyeVision_V2/libs/halcon",
+    "errors": 0,
+    "sha256": "FAEFBEAC1078737F6DCE5B00F97E12A65D0818F683D61916C49031409E7A51A4",
+    "seconds": 147.33
+  },
+  "receipt": {
+    "stage": "S4",
+    "validationScope": "Candidate",
+    "attempt": 2,
+    "pid": 146716,
+    "exit": 0,
+    "timeoutMs": 240000,
+    "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4BlobCrosshairWorkspaceCases.cs",
+    "caseSourceSha256": "CFDCCB6E5297C6A41B280220BE37DC6103FCA1B54F7D6EE3275343D5E7A485D0",
+    "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+    "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-002"
+  },
+  "receiptSha256": "8E87F4E9D9E53C609E97E14A00A5D55C18C50AA66189058BA142EB083BADA0C6",
+  "caseSourceSha256": "CFDCCB6E5297C6A41B280220BE37DC6103FCA1B54F7D6EE3275343D5E7A485D0",
+  "runnerSha256": "94DA6CE7AB12AE80C398DCE3FBE35C30A42FB4028C918EFBFE1FE6B62F0ECEAD",
+  "passed": 7,
+  "progress": [
+    "2026-11-01T04:52:52.1713276Z BEGIN 真实Blob帧经shell命令打开原设置及双十字",
+    "2026-11-01T04:52:52.1773013Z PASS 真实Blob帧经shell命令打开原设置及双十字",
+    "2026-11-01T04:52:52.1781467Z BEGIN 原设置控件编辑双实例、颜色坐标及关闭重开",
+    "2026-11-01T04:52:52.8855222Z PASS 原设置控件编辑双实例、颜色坐标及关闭重开",
+    "2026-11-01T04:52:52.8863885Z BEGIN 真实表高亮与辅助十字层独立共存",
+    "2026-11-01T04:52:52.9856965Z PASS 真实表高亮与辅助十字层独立共存",
+    "2026-11-01T04:52:52.9876356Z BEGIN 真实灰二值切换保物理帧并退役旧设置叶",
+    "2026-11-01T04:52:53.5740343Z PASS 真实灰二值切换保物理帧并退役旧设置叶",
+    "2026-11-01T04:52:53.5772593Z BEGIN 同尺寸真实重跑以新Run和Frame退役旧窗口",
+    "2026-11-01T04:52:54.3311699Z PASS 同尺寸真实重跑以新Run和Frame退役旧窗口",
+    "2026-11-01T04:52:54.3319941Z BEGIN 真实空结果无假Blob行且辅助线仍属视图",
+    "2026-11-01T04:52:55.0400786Z PASS 真实空结果无假Blob行且辅助线仍属视图",
+    "2026-11-01T04:52:55.0409150Z BEGIN 工作区关闭退役命令窗口和当前模型",
+    "2026-11-01T04:52:55.1920474Z PASS 工作区关闭退役命令窗口和当前模型"
+  ],
+  "progressSha256": "6BAE18682858B94061A3796AC7B70FA3D90F421C25EF5108BB5A873551A8DCCD",
+  "runLogSha256": "ABB4E214817C7E7A4184BD7C0030220C1897A6EE8715439852A25069CB735DA8",
+  "screenshot": {
+    "sha256": "C7F5DC9F4A37DB1685FF3DCE3ED3E1C18D539B548411812F2459434F80D934BB",
+    "scope": "真实隐藏桌面WPF绘制，仅审阅预览，不代VM外观或人工验收",
+    "path": "Release/_validation/S4-20261025/BlobCrosshairWorkspace/attempt-002/crosshair-production-settings.png"
+  },
+  "loaded": [
+    {
+      "sha256": "B0CF1A33AC29012E93D8D5BAD2FF754EECB2D11147AED207681E926E7571B9DC",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Workflow",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll"
+    },
+    {
+      "sha256": "4E852EEC1C20DA9D48022DEE37151D5DB72267B2AC3980F86F57821B399A1B10",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Plugin.Contracts",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll"
+    },
+    {
+      "sha256": "87343F8AB9D6D4980E66685F16533236117331C21F0E66AACA4330BBA8FFC2CC",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.UI",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll"
+    },
+    {
+      "sha256": "AA4E7AA0C1D68A2D9BF340979ACB2460CC4EA365A87AE87E71DC6E85296A720A",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Plugin.SDK",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll"
+    },
+    {
+      "sha256": "01E9DE824A27E396358627E92696ACB8074386468B5B450BADE1A8B8AC49CD79",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Tool.ImageSource.Runtime",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll"
+    },
+    {
+      "sha256": "01A55E4C7A44C3AAE8EC504904C717AFCB2A59D9ECA9BBCEEF322EEB3403014E",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Plugin.Runtime",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll"
+    },
+    {
+      "sha256": "6B6E78E9ECAD1B2B06492A1CBCDCA789FC6094A269FBB8865F437FD7423223CE",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Plugin.Infrastructure",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll"
+    },
+    {
+      "sha256": "F2A5EB5F14780624E084A589C889D83325E066887B06804C0A956957B15BFF14",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll"
+    },
+    {
+      "sha256": "E65EDB2F4BAE04257E46C5D0F678B919A88CAB5F41F04764455243C3FC7CED3E",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Plugin.Wpf",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll"
+    },
+    {
+      "sha256": "DD54F7B41DFF25443333DF913C7DD7E567822A7D8646EC74BBA1DD9844C1F0B0",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Core",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll"
+    },
+    {
+      "sha256": "3AA9D2BFCC3A1CFF04CE837B17FFF1B859DCE835D7E17F5ACB0AB0ABED9FF848",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll"
+    },
+    {
+      "sha256": "810F59CE499CEBFB8E0FC5C4CD2CABDCFDE425E19EAA0B1FEECCD01D559B5503",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.Tool.ImageSource.Wpf",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll"
+    },
+    {
+      "sha256": "D53433F8A9F7F85DC5942F447DCBFA21F1D962CDA85E168282575D7BEE043406",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.DeviceDriver",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll"
+    },
+    {
+      "sha256": "0229C22BC0C6A571470B0C48B989486CB38DC351B5445DA06CCE26E92BA60CE1",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.HalAdapter",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll"
+    },
+    {
+      "sha256": "349A4303C7F0C4F7CB0248AD6D83C44963415853A03FD8E4FC91588A04CCEC03",
+      "matchesCandidate": true,
+      "name": "SunEyeVision.HalAdapter.Runtime",
+      "path": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll"
+    }
+  ],
+  "loadedCount": 15,
+  "loadedManifestSha256": "46E75093470A7F6957C168F4F91B506B035C7A1F3C8EE7158F71686BF58257B5",
+  "failure": {
+    "logSha256": "817042B1C0145A5A998C22CCD9430316CCDF360EDF63801AD641C62EEC9085A5",
+    "correction": "验证实际按钮Command身份/CanExecute并执行该Command，明确命令级输入；不改产品",
+    "rerun": "attempt-002完整七组自然exit0",
+    "classification": "夹具输入路径错误，未证明产品缺陷",
+    "caseSourceSha256": "58F8D890DFB2A04009FE61B547B95CE61D5998E887D6F7DB162D1649BFE1300E",
+    "reason": "Button.RaiseEvent(ClickEvent)只路由事件，不执行绑定Command；首组及第二组此前断言已过",
+    "receipt": {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 1,
+      "pid": 128572,
+      "exit": 1,
+      "timeoutMs": 240000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4BlobCrosshairWorkspaceCases.cs",
+      "caseSourceSha256": "58F8D890DFB2A04009FE61B547B95CE61D5998E887D6F7DB162D1649BFE1300E",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-supported-window-20261101\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-001"
+    }
+  },
+  "verified": [
+    "真实固定PNG由WorkflowExecutionEngine运行ImageSource→Blob，交NodeResultManager/MainWindowVM，不冒称主窗RunCommand入口",
+    "真实shell.CrossLinesCommand建立实际Pane.CrosshairLayer/OpenSettings，原双十字和原设置控件，不调用独立样例替代",
+    "原坐标/粗细/显隐/锁定DP与TwoWay绑定、色板命令、实际居中按钮Command；双实例隔离，关闭重开不复用旧窗口",
+    "真实表高亮与两个辅助十字共存，清高亮保辅助线；空Blob零假行",
+    "灰/二值切换保同一物理Frame与Blob坐标域，旧数值/色板叶不能写新显示",
+    "同尺寸真实重跑产生不同RunIdentity/Frame，旧窗口与图像租约退役",
+    "Shutdown后旧shell命令和模型不可写，释放所有真实发布/图像lease/运行owner后旧图像AcquirePixels拒绝"
+  ],
+  "remaining": [
+    "真实自然键鼠/拖动未验；WPF DP与命令输入不能冒称物理输入",
+    "原CrossControl旧手势回调未额外做真实生产组合，旧18项组件样例不套本轨",
+    "跨文档/Root及全部异常重入组合未验",
+    "其他DPI、实际VS设计器与人工未验",
+    "原厂OpenCV导出像素、VM整控件等价及十字偏好持久化未证明",
+    "Blob ROI/图文正式owner/连续会话不在本批实现"
+  ],
+  "formalCommand": "pwsh -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Track BlobCrosshairWorkspace -Stage S4 -ValidationScope Formal -TimeoutSeconds 240",
+  "candidateCommand": "pwsh -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Track BlobCrosshairWorkspace -Stage S4 -ValidationScope Candidate -TimeoutSeconds 240",
+  "environment": "无额外env，内部CreateDesktop随机隐藏桌面，失败不回退用户桌面；不启动或终止用户程序",
+  "formalBoundary": "候选编译SHA与主仓正式分开，只核本候选；主线集成测试后针对原正式Release独立跑同轨，无产品重建需要"
+}

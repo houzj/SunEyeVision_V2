@@ -3,8 +3,10 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
+public enum BlobConnectivity { Connected_8 = 8, Connected_4 = 4 }
 public enum BlobThresholdMode { Binary, BinaryInv }
-public enum BlobSort { None, AreaAsc, AreaDesc, CircularityAsc, CircularityDesc, RectangularityAsc, RectangularityDesc, XAsc, XDesc, YAsc, YDesc }
+public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6 }
+public enum BlobSortMode { SortModeAscend = 1, SortModeDecend = 2, SortModeNotSort = 3 }
 public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
 public enum BlobJudgmentKind { Range, Empty, Boolean }
 public sealed record BlobJudgment(
@@ -29,20 +31,21 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Type=definition.Default<BlobThresholdMode>(nameof(Type));
         IsPositionCorrectionEnabled=definition.Default<bool>(nameof(IsPositionCorrectionEnabled));
         IsAreaFilterEnabled=definition.Default<bool>(nameof(IsAreaFilterEnabled));
-        FilterAreaMin=definition.Default<double>(nameof(FilterAreaMin));
-        FilterAreaMax=definition.Default<double>(nameof(FilterAreaMax));
+        FilterAreaMin=definition.Default<int>(nameof(FilterAreaMin));
+        FilterAreaMax=definition.Default<int>(nameof(FilterAreaMax));
         IsCircularityFilterEnabled=definition.Default<bool>(nameof(IsCircularityFilterEnabled));
         FilterCircularityMin=definition.Default<double>(nameof(FilterCircularityMin));
         FilterCircularityMax=definition.Default<double>(nameof(FilterCircularityMax));
         IsRectangularityFilterEnabled=definition.Default<bool>(nameof(IsRectangularityFilterEnabled));
         FilterRectangularityMin=definition.Default<double>(nameof(FilterRectangularityMin));
         FilterRectangularityMax=definition.Default<double>(nameof(FilterRectangularityMax));
-        IsBlobCountFilterEnabled=definition.Default<bool>(nameof(IsBlobCountFilterEnabled));
         BlobCountLimit=definition.Default<int>(nameof(BlobCountLimit));
         OutputGrayImage=definition.Default<bool>(nameof(OutputGrayImage));
         OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
         OutputBoundary=definition.Default<bool>(nameof(OutputBoundary));
-        SortMode=definition.Default<BlobSort>(nameof(SortMode));
+        SortMode=definition.Default<BlobSortMode>(nameof(SortMode));
+        SortFeature=definition.Default<BlobSortFeature>(nameof(SortFeature));
+        Connectivity=definition.Default<BlobConnectivity>(nameof(Connectivity));
         Judgments=definition.CreateJudgments();
     }
 
@@ -59,9 +62,9 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public bool IsAreaFilterEnabled { get; init; }
     [JsonRequired]
-    public double FilterAreaMin { get; init; }
+    public int FilterAreaMin { get; init; }
     [JsonRequired]
-    public double FilterAreaMax { get; init; }
+    public int FilterAreaMax { get; init; }
     [JsonRequired]
     public bool IsCircularityFilterEnabled { get; init; }
     [JsonRequired]
@@ -74,8 +77,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public double FilterRectangularityMin { get; init; }
     [JsonRequired]
     public double FilterRectangularityMax { get; init; }
-    [JsonRequired]
-    public bool IsBlobCountFilterEnabled { get; init; }
+
     [JsonRequired]
     public int BlobCountLimit { get; init; }
     [JsonRequired]
@@ -85,7 +87,11 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public bool OutputBoundary { get; init; }
     [JsonRequired]
-    public BlobSort SortMode { get; init; }
+    public BlobSortMode SortMode { get; init; }
+    [JsonRequired]
+    public BlobSortFeature SortFeature { get; init; }
+    [JsonRequired]
+    public BlobConnectivity Connectivity { get; init; }
     [JsonRequired]
     public IReadOnlyList<BlobJudgment> Judgments { get; init; }
     public BlobSettings Freeze()
@@ -106,19 +112,18 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
             if (!valid) errors.Add(new("BLOB_SETTINGS_INVALID", $"{definition.Label(field)}必须在{definition.Minimum(field)}至{definition.Maximum(field)}之间。", field));
             return valid;
         }
-        Check(Enum.IsDefined(SegmentationMode) && Enum.IsDefined(Type) && Enum.IsDefined(SortMode), "不支持的Blob分割、极性或排序模式。");
+        Check(Enum.IsDefined(SegmentationMode) && Enum.IsDefined(Type) && Enum.IsDefined(SortMode) && Enum.IsDefined(SortFeature) && Enum.IsDefined(Connectivity), "不支持的Blob分割、极性或排序模式。");
         if (SegmentationMode != BlobSegmentationMode.None) Number(nameof(Threshold), Threshold);
         if (SegmentationMode == BlobSegmentationMode.DoubleThreshold)
         {
             Number(nameof(UpperThreshold), UpperThreshold);
             Check(UpperThreshold >= Threshold, "双阈值下限不能超过上限。");
         }
-        if (IsBlobCountFilterEnabled) Number(nameof(BlobCountLimit), BlobCountLimit);
+        Number(nameof(BlobCountLimit), BlobCountLimit);
         void Range(bool enabled, string minField, double min, string maxField, double max)
         {
-            if (!enabled) return;
             Number(minField, min); Number(maxField, max);
-            Check(min <= max, "筛选下限不能超过上限。");
+            if(enabled)Check(min <= max, "筛选下限不能超过上限。");
         }
         Range(IsAreaFilterEnabled, nameof(FilterAreaMin), FilterAreaMin, nameof(FilterAreaMax), FilterAreaMax);
         Range(IsCircularityFilterEnabled, nameof(FilterCircularityMin), FilterCircularityMin, nameof(FilterCircularityMax), FilterCircularityMax);

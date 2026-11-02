@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>材料 · 193 篇</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#c96b6b;
+}
+*{box-sizing:border-box}
+body{
+  max-width:720px;margin:0 auto;padding:44px 26px 100px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+.crumb{font-size:12px;color:var(--faint);margin-bottom:14px}
+.crumb a:hover{text-decoration:underline;color:var(--accent)}
+.crumb .sep{color:#2c4657;margin:0 4px}
+.crumb .cur{color:#cfe4ee}
+.gx{float:right;font-weight:400;font-size:11.5px;margin-left:12px}
+.gx a{color:var(--accent)}
+.gx a:hover{text-decoration:underline}
+
+h1{font-size:22px;font-weight:600;margin:0 0 7px}
+.lede{margin:0 0 20px;font-size:13.5px;color:var(--dim)}
+
+#q{
+  display:block;width:100%;margin:0 0 18px;padding:8px 11px;
+  background:#0a1621;border:1px solid #24404f;border-radius:4px;
+  color:inherit;font:inherit;font-size:13.5px;
+}
+#q:focus{outline:none;border-color:#4a7f96}
+#q::placeholder{color:#5c7385}
+
+h2{
+  font-size:13px;font-weight:600;color:#8fb4c8;letter-spacing:.03em;
+  margin:26px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--line);
+}
+h2:first-of-type{margin-top:6px}
+h2 i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+
+details{margin:0}
+details summary{
+  cursor:pointer;list-style:none;
+  font-size:13px;font-weight:600;color:#8fb4c8;
+  padding:10px 0;border-bottom:1px solid var(--line);
+}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";color:var(--accent);font-size:11px}
+details[open] summary::before{content:"▾ "}
+details summary:hover{color:#fff}
+details summary i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+details .in{padding:2px 0 8px}
+
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:baseline;gap:10px;padding:3.5px 0}
+li a{flex:1;min-width:0;color:#cfe4ee}
+li a:hover{color:#fff;text-decoration:underline}
+li .id{font-family:Consolas,monospace;font-size:11px;color:var(--faint);width:30px;flex:none}
+li .st{font-size:11px;white-space:nowrap;width:56px;text-align:right;flex:none}
+li .st.ok{color:var(--ok)}
+li .st.partial{color:var(--warn)}
+li .st.none{color:var(--bad)}
+li .sz{font-size:11px;color:var(--warn);white-space:nowrap;flex:none}
+
+.none{display:none;font-size:13px;color:var(--dim);margin:16px 0}
+@media(max-width:600px){ body{padding:30px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb"><a href="index.html">架构文档</a> <span class="sep">›</span> <span class="cur">材料</span> <span class="sep">·</span> <a href="存档.html">存档</a></div>
+
+<h1>材料 · 193 篇</h1>
+<p class="lede">在用的原始材料，按专区收着。已停用的旧版本和工具另放「存档」。</p>
+
+<input id="q" type="search" autocomplete="off" placeholder="筛选">
+<p class="none" id="none">没有匹配项。</p>
+
+<div id="list"></div>
+
+<script>
+const DATA = [{"h":"总览","items":[{"t":"交付进度与验收","f":"交付总览.html","st":"","k":176,"id":""}],"collapsed":true,"idx":null},{"h":"框架设计","items":[{"t":"数据与数据流","f":"框架设计/framework-data.html","st":"","k":17,"id":""},{"t":"证据与待核实","f":"框架设计/framework-evidence.html","st":"","k":24,"id":""},{"t":"执行架构","f":"框架设计/framework-execution.html","st":"","k":14,"id":""},{"t":"具体改法与验收","f":"框架设计/framework-implementation.html","st":"","k":8,"id":""},{"t":"资源生命周期","f":"框架设计/framework-lifetime.html","st":"","k":11,"id":""},{"t":"结论与范围","f":"框架设计/framework-overview.html","st":"","k":8,"id":""},{"t":"结果发布","f":"框架设计/framework-publication.html","st":"","k":11,"id":""},{"t":"目标架构","f":"框架设计/framework-target.html","st":"","k":12,"id":""}],"collapsed":true,"idx":null},{"h":"目标架构","items":[{"t":"A01 统一运行入口","f":"目标架构/architecture-a01.html","st":"","k":23,"id":""},{"t":"A02 执行计划与调度","f":"目标架构/architecture-a02.html","st":"","k":23,"id":""},{"t":"A03 停止和完成","f":"目标架构/architecture-a03.html","st":"","k":31,"id":""},{"t":"A04 定义/参数/快照","f":"目标架构/architecture-a04.html","st":"","k":15,"id":""},{"t":"A05 绑定与外部数据schema","f":"目标架构/architecture-a05.html","st":"","k":15,"id":""},{"t":"A06 结果发布和订阅","f":"目标架构/architecture-a06.html","st":"","k":31,"id":""},{"t":"A07 图像缓冲与共享内存","f":"目标架构/architecture-a07.html","st":"","k":46,"id":""},{"t":"A08 工具实例/缓存/项目关闭","f":"目标架构/architecture-a08.html","st":"","k":21,"id":""},{"t":"A09 应用SDK","f":"目标架构/architecture-a09.html","st":"","k":19,"id":""},{"t":"A10 工具SDK和可选控件","f":"目标架构/architecture-a10.html","st":"","k":18,"id":""},{"t":"A11 持久化与兼容","f":"目标架构/architecture-a11.html","st":"","k":20,"id":""},{"t":"A12 许可和宿主隔离","f":"目标架构/architecture-a12.html","st":"","k":20,"id":""},{"t":"24项实现验收计划（未运行）","f":"目标架构/architecture-acceptance.html","st":"","k":14,"id":""},{"t":"目标架构：与VM逐项取舍","f":"目标架构/architecture-target.html","st":"","k":8,"id":""}],"collapsed":true,"idx":null},{"h":"现状分析","items":[{"t":"相机：连着设备、正在采集、持有一帧，是三件事","f":"现状分析/camera-architecture.html","st":"","k":39,"id":""},{"t":"我们的数据，究竟分成哪几种？","f":"现状分析/data-architecture.html","st":"","k":116,"id":""},{"t":"全局变量：界面里的值，和本轮的值是一回事吗？","f":"现状分析/global-variables.html","st":"","k":98,"id":""},{"t":"使用自己的加密狗：具体怎么设计？","f":"现状分析/license-design.html","st":"","k":22,"id":""},{"t":"方案如何保存、打开与恢复","f":"现状分析/persistence-architecture.html","st":"","k":117,"id":""},{"t":"主题、公共控件与插件：共用什么，隔离什么？","f":"现状分析/platform-architecture.html","st":"","k":134,"id":""},{"t":"主界面架构","f":"现状分析/suneye-entry-architecture-comparison.html","st":"","k":30,"id":""},{"t":"当前系统由谁组成，点击以后谁在工作？","f":"现状分析/system-architecture.html","st":"","k":169,"id":""},{"t":"N点标定训练","f":"现状分析/tool-calibration.html","st":"","k":67,"id":""},{"t":"Blob分析 · 实际数据链与对照","f":"现状分析/tool-detail-BlobAnalysis.html","st":"","k":74,"id":""},{"t":"圆-圆测量 · 实际数据链与对照","f":"现状分析/tool-detail-CircleCircleMeasure.html","st":"","k":67,"id":""},{"t":"圆查找 · 实际数据链与对照","f":"现状分析/tool-detail-CircleDetect.html","st":"","k":60,"id":""},{"t":"条件分支 · 实际数据链与对照","f":"现状分析/tool-detail-Condition.html","st":"","k":45,"id":""},{"t":"图像滤波 · 实际数据链与对照","f":"现状分析/tool-detail-ImageFilter.html","st":"","k":59,"id":""},{"t":"图像源 · 实际数据链与对照","f":"现状分析/tool-detail-ImageLoad.html","st":"","k":55,"id":""},{"t":"图像二值化 · 实际数据链与对照","f":"现状分析/tool-detail-ImageThreshold.html","st":"","k":59,"id":""},{"t":"线-圆测量 · 实际数据链与对照","f":"现状分析/tool-detail-LineCircleMeasure.html","st":"","k":68,"id":""},{"t":"直线查找 · 实际数据链与对照","f":"现状分析/tool-detail-LineDetect.html","st":"","k":57,"id":""},{"t":"线-线测量 · 实际数据链与对照","f":"现状分析/tool-detail-LineLineMeasure.html","st":"","k":67,"id":""},{"t":"形态学处理 · 实际数据链与对照","f":"现状分析/tool-detail-Morphology.html","st":"","k":56,"id":""},{"t":"点-圆测量 · 实际数据链与对照","f":"现状分析/tool-detail-PointCircleMeasure.html","st":"","k":57,"id":""},{"t":"点-线测量 · 实际数据链与对照","f":"现状分析/tool-detail-PointLineMeasure.html","st":"","k":56,"id":""},{"t":"点-点测量 · 实际数据链与对照","f":"现状分析/tool-detail-PointPointMeasure.html","st":"","k":46,"id":""},{"t":"协议组装 · 实际数据链与对照","f":"现状分析/tool-detail-ProtocolAssemble.html","st":"","k":43,"id":""},{"t":"协议解析 · 实际数据链与对照","f":"现状分析/tool-detail-ProtocolParse.html","st":"","k":44,"id":""},{"t":"接收数据 · 实际数据链与对照","f":"现状分析/tool-detail-ReceiveData.html","st":"","k":49,"id":""},{"t":"发送数据 · 实际数据链与对照","f":"现状分析/tool-detail-SendData.html","st":"","k":64,"id":""},{"t":"轮廓匹配 · 实际数据链与对照","f":"现状分析/tool-detail-ShapeMatch.html","st":"","k":78,"id":""},{"t":"脚本专业工具","f":"现状分析/tool-script.html","st":"","k":405,"id":""},{"t":"标准调试窗 / 阈值参数","f":"现状分析/tool-standard.html","st":"","k":48,"id":""},{"t":"子程序 / Group参数配置","f":"现状分析/tool-subroutine.html","st":"","k":48,"id":""},{"t":"独立模板编辑器","f":"现状分析/tool-template.html","st":"","k":20,"id":""},{"t":"独立标定验证与发布","f":"现状分析/tool-verification.html","st":"","k":52,"id":""},{"t":"专业工具 · 按实际窗口进入","f":"现状分析/tools.html","st":"","k":66,"id":""}],"collapsed":true,"idx":null},{"h":"能力对照","items":[{"t":"M01 启动、方案恢复与主窗装配","f":"能力对照/capability-m01.html","st":"","k":25,"id":""},{"t":"M02 方案配置：新建、打开、切换","f":"能力对照/capability-m02.html","st":"","k":21,"id":""},{"t":"M03 保存当前方案 / Ctrl+S","f":"能力对照/capability-m03.html","st":"","k":23,"id":""},{"t":"M04 工具箱分类、浏览与拖入","f":"能力对照/capability-m04.html","st":"","k":17,"id":""},{"t":"M05 新增、选中、重命名与删除流程Tab","f":"能力对照/capability-m05.html","st":"","k":17,"id":""},{"t":"M06 节点选中、拖动与多选","f":"能力对照/capability-m06.html","st":"","k":15,"id":""},{"t":"M07 端口连线、断开与路径显示","f":"能力对照/capability-m07.html","st":"","k":26,"id":""},{"t":"M08 删除节点、撤销与重做","f":"能力对照/capability-m08.html","st":"","k":24,"id":""},{"t":"M09 子程序/Group进入、返回及配置","f":"能力对照/capability-m09.html","st":"","k":29,"id":""},{"t":"M10 小地图、画布缩放与主窗全屏","f":"能力对照/capability-m10.html","st":"","k":12,"id":""},{"t":"M11 主工具栏/F5单次运行","f":"能力对照/capability-m11.html","st":"","k":15,"id":""},{"t":"M12 流程Tab单次运行","f":"能力对照/capability-m12.html","st":"","k":11,"id":""},{"t":"M13 全部流程连续运行/停止","f":"能力对照/capability-m13.html","st":"","k":17,"id":""},{"t":"M14 流程Tab连续运行/停止","f":"能力对照/capability-m14.html","st":"","k":17,"id":""},{"t":"M15 停止/Shift+F5","f":"能力对照/capability-m15.html","st":"","k":23,"id":""},{"t":"M16 显示图像源选择、预览与历史","f":"能力对照/capability-m16.html","st":"","k":19,"id":""},{"t":"M17 模块结果树/表及绑定到全局变量","f":"能力对照/capability-m17.html","st":"","k":19,"id":""},{"t":"M18 全局变量管理与选择","f":"能力对照/capability-m18.html","st":"","k":27,"id":""},{"t":"M19 相机管理：连接、参数、预览与正式采集","f":"能力对照/capability-m19.html","st":"","k":27,"id":""},{"t":"M20 通信管理：连接、读写、事件与后台触发","f":"能力对照/capability-m20.html","st":"","k":25,"id":""},{"t":"M21 主题、主窗控制、帮助与诊断入口","f":"能力对照/capability-m21.html","st":"","k":16,"id":""},{"t":"M22 关闭主窗/切方案时保存与资源退役","f":"能力对照/capability-m22.html","st":"","k":20,"id":""},{"t":"M23 系统设置命令占位（非已确认可见菜单）","f":"能力对照/capability-m23.html","st":"","k":12,"id":""},{"t":"M24 状态栏、运行耗时与执行快照","f":"能力对照/capability-m24.html","st":"","k":14,"id":""},{"t":"M25 专业数据分析面板与图像高亮","f":"能力对照/capability-m25.html","st":"","k":20,"id":""},{"t":"M26 日志面板、筛选、搜索与诊断级别","f":"能力对照/capability-m26.html","st":"","k":22,"id":""},{"t":"T01 打开工具界面与上下文注入","f":"能力对照/capability-t01.html","st":"","k":14,"id":""},{"t":"T02 输入图像/标量/数组绑定选择","f":"能力对照/capability-t02.html","st":"","k":28,"id":""},{"t":"T03 参数编辑与提交输入控件","f":"能力对照/capability-t03.html","st":"","k":20,"id":""},{"t":"T04 窗口执行按钮：单次调试","f":"能力对照/capability-t04.html","st":"","k":14,"id":""},{"t":"T05 窗口连续调试","f":"能力对照/capability-t05.html","st":"","k":14,"id":""},{"t":"T06 窗口连续调试：停止","f":"能力对照/capability-t06.html","st":"","k":17,"id":""},{"t":"T07 确定/应用：提交、验证、关闭","f":"能力对照/capability-t07.html","st":"","k":13,"id":""},{"t":"T08 关闭/X：编辑收尾与事件解绑","f":"能力对照/capability-t08.html","st":"","k":21,"id":""},{"t":"T09 ROI绘制、选择、移动与屏蔽","f":"能力对照/capability-t09.html","st":"","k":17,"id":""},{"t":"T10 位置修正/Fixture预览","f":"能力对照/capability-t10.html","st":"","k":15,"id":""},{"t":"T11 图像缩放、适应、平移、全屏","f":"能力对照/capability-t11.html","st":"","k":13,"id":""},{"t":"T12 图形与文字样式、叠加渲染","f":"能力对照/capability-t12.html","st":"","k":21,"id":""},{"t":"T13 调试结果回到主图与结果树","f":"能力对照/capability-t13.html","st":"","k":20,"id":""},{"t":"T14 重置参数与数据源恢复","f":"能力对照/capability-t14.html","st":"","k":16,"id":""},{"t":"T15 脚本：代码、动态输出、程序集与执行","f":"能力对照/capability-t15.html","st":"","k":28,"id":""},{"t":"T16 子程序：输入、输出与显示配置","f":"能力对照/capability-t16.html","st":"","k":27,"id":""},{"t":"T17 标定：采样、求解、候选文件与验证","f":"能力对照/capability-t17.html","st":"","k":18,"id":""},{"t":"T18 模板/匹配编辑与其他专业工具","f":"能力对照/capability-t18.html","st":"","k":18,"id":""},{"t":"X01 图像缓冲、显示缓存与最后读者","f":"能力对照/capability-x01.html","st":"","k":21,"id":""},{"t":"X02 SDK、插件部署与公共编辑控件","f":"能力对照/capability-x02.html","st":"","k":30,"id":""},{"t":"X03 自有加密狗与功能授权","f":"能力对照/capability-x03.html","st":"","k":21,"id":""},{"t":"X04 方案文件加密、密钥恢复与插件信任","f":"能力对照/capability-x04.html","st":"","k":17,"id":""},{"t":"X05 性能、长稳、日志与故障验证","f":"能力对照/capability-x05.html","st":"","k":17,"id":""}],"collapsed":true,"idx":[{"f":"能力对照/capability-index.html","t":"能力对照目录"}]},{"h":"SDK设计","items":[{"t":"先双轨兼容，再切默认；每阶段可回滚","f":"SDK设计/framework-sdk-compatibility.html","st":"","k":15,"id":""},{"t":"读写数据：配置、输入、全局和结果分四种合同","f":"SDK设计/framework-sdk-data.html","st":"","k":11,"id":""},{"t":"工程落位：新公共边界，复用执行实现","f":"SDK设计/framework-sdk-engineering.html","st":"","k":17,"id":""},{"t":"事件、并发与失败：不把内部回调责任推给客户","f":"SDK设计/framework-sdk-events.html","st":"","k":10,"id":""},{"t":"从加载到退出：每个API必须说明返回意味着什么","f":"SDK设计/framework-sdk-external.html","st":"","k":21,"id":""},{"t":"旧SDK逐文件、逐类型候选落点","f":"SDK设计/framework-sdk-file-map.html","st":"","k":166,"id":""},{"t":"迁移和发布：每一步都有可验证出口","f":"SDK设计/framework-sdk-migration.html","st":"","k":12,"id":""},{"t":"二开具体设计：三类SDK，统一公共数据与寿命合同","f":"SDK设计/framework-sdk-overview.html","st":"","k":22,"id":""},{"t":"拆包：先按消费边界，再迁具体类型","f":"SDK设计/framework-sdk-packages.html","st":"","k":16,"id":""},{"t":"资源释放：拥有者与使用者都写进SDK合同","f":"SDK设计/framework-sdk-resources.html","st":"","k":10,"id":""},{"t":"工具插件SDK：保留强类型基础，收紧运行与UI边界","f":"SDK设计/framework-sdk-tools.html","st":"","k":10,"id":""},{"t":"UI控件库：可组合，不接管客户程序","f":"SDK设计/framework-sdk-ui.html","st":"","k":10,"id":""}],"collapsed":true,"idx":null},{"h":"关系图解","items":[{"t":"数据流与结果发布 · 关系图解","f":"关系图解/guide-dataflow.html","st":"","k":13,"id":""},{"t":"工程与SDK依赖 · 关系图解","f":"关系图解/guide-dependencies.html","st":"","k":10,"id":""},{"t":"执行架构 · 关系图解","f":"关系图解/guide-execution.html","st":"","k":19,"id":""},{"t":"资源Owner与生命周期 · 关系图解","f":"关系图解/guide-lifecycle.html","st":"","k":9,"id":""}],"collapsed":true,"idx":null},{"h":"优化方案","items":[{"t":"模块结果，我们和 VM 差在哪？","f":"优化方案/references/module-result-chain-20261028/module-result-chain-vm-comparison.html","st":"","k":27,"id":""},{"t":"工具层控件逆向目标","f":"优化方案/references/vm-control-library-20261026/VM控件库逆向目标.html","st":"","k":828,"id":""},{"t":"执行引擎：VM 原厂与自研架构对照","f":"优化方案/references/vm-engine-architecture-20261030/vm-engine-architectural-comparison.html","st":"","k":66,"id":""},{"t":"VisionMaster 4.4.0 原厂框架逆向","f":"优化方案/references/vm-engine-architecture-20261030/vm-source-architecture-first-batch.html","st":"","k":36,"id":""},{"t":"VisionMaster 原厂框架：层级分布与源码组织逆向","f":"优化方案/references/vm-framework-architecture-20261027/vm-original-framework-structure.html","st":"","k":35,"id":""},{"t":"原件对照","f":"优化方案/references/vm-blob-ui-target-20261027.html","st":"","k":6126,"id":""},{"t":"诊断、性能基准与交付记录","f":"优化方案/optimization-diagnostics.html","st":"","k":19,"id":""},{"t":"O01 入口、装配与编辑事务","f":"优化方案/optimization-o01.html","st":"","k":277,"id":""},{"t":"O02 统一运行范围、连续与停止完成","f":"优化方案/optimization-o02.html","st":"","k":21,"id":""},{"t":"O03 参数、绑定、变量和控制结构合同","f":"优化方案/optimization-o03.html","st":"","k":22,"id":""},{"t":"O04 生命周期、图像最后读者与退出","f":"优化方案/optimization-o04.html","st":"","k":20,"id":""},{"t":"O05 标准工具窗口：执行、连续、提交和关闭","f":"优化方案/optimization-o05.html","st":"","k":17,"id":""},{"t":"Blob 界面方案预览","f":"优化方案/optimization-o06-ui-preview.html","st":"","k":104,"id":""},{"t":"O06 图像、ROI、图形文字及坐标一致性","f":"优化方案/optimization-o06.html","st":"","k":1915,"id":""},{"t":"O07 模块结果树与输出投影","f":"优化方案/optimization-o07.html","st":"","k":21,"id":""},{"t":"O08 方案、标定文件与恢复事务","f":"优化方案/optimization-o08.html","st":"","k":28,"id":""},{"t":"O09 相机、通信和后台真实副作用","f":"优化方案/optimization-o09.html","st":"","k":44,"id":""},{"t":"O10 插件、SDK、脚本和发布依赖","f":"优化方案/optimization-o10.html","st":"","k":35,"id":""},{"t":"O11 自有狗授权、文件保护与信任政策","f":"优化方案/optimization-o11.html","st":"","k":10,"id":""},{"t":"O12 专业工具逐项验收与同条件性能","f":"优化方案/optimization-o12.html","st":"","k":20,"id":""}],"collapsed":true,"idx":[{"f":"优化方案/optimization-index.html","t":"目录"},{"f":"优化方案/references/index.html","t":"参考件"}]},{"h":"证据审计","items":[{"t":"本批证据与同步边界","f":"证据审计/architecture-evidence.html","st":"","k":18,"id":""},{"t":"C01 启动装配与依赖方向","f":"证据审计/audit-c01.html","st":"","k":7,"id":""},{"t":"C02 身份、作用域与所有权","f":"证据审计/audit-c02.html","st":"","k":8,"id":""},{"t":"C03 工作流调度与控制结构","f":"证据审计/audit-c03.html","st":"","k":8,"id":""},{"t":"C04 并发、排队与资源竞争","f":"证据审计/audit-c04.html","st":"","k":8,"id":""},{"t":"C05 参数、IO与绑定契约","f":"证据审计/audit-c05.html","st":"","k":8,"id":""},{"t":"C06 图像、原生句柄与缓存寿命","f":"证据审计/audit-c06.html","st":"","k":8,"id":""},{"t":"C07 设备接入、通信与恢复","f":"证据审计/audit-c07.html","st":"","k":7,"id":""},{"t":"C08 工具插件发现与生命周期","f":"证据审计/audit-c08.html","st":"","k":8,"id":""},{"t":"C09 编辑、调试与正式运行隔离","f":"证据审计/audit-c09.html","st":"","k":8,"id":""},{"t":"C10 显示、ROI、叠加与坐标分域","f":"证据审计/audit-c10.html","st":"","k":8,"id":""},{"t":"C11 方案保存、迁移、复制与撤销","f":"证据审计/audit-c11.html","st":"","k":8,"id":""},{"t":"C12 错误、停止、超时与恢复","f":"证据审计/audit-c12.html","st":"","k":8,"id":""},{"t":"C13 事件、日志与可观测性","f":"证据审计/audit-c13.html","st":"","k":8,"id":""},{"t":"C14 构建部署、版本与SDK兼容","f":"证据审计/audit-c14.html","st":"","k":8,"id":""},{"t":"C15 权限、脚本与外部副作用","f":"证据审计/audit-c15.html","st":"","k":8,"id":""},{"t":"C16 性能、长稳与可测试性","f":"证据审计/audit-c16.html","st":"","k":7,"id":""},{"t":"C17 全局变量与作用域","f":"证据审计/audit-c17.html","st":"","k":8,"id":""},{"t":"C18 相机管理与采集策略","f":"证据审计/audit-c18.html","st":"","k":8,"id":""},{"t":"C19 SDK、公共控件与模板","f":"证据审计/audit-c19.html","st":"","k":8,"id":""},{"t":"C20 UI各部分的设计对比","f":"证据审计/audit-c20.html","st":"","k":10,"id":""},{"t":"原42证据 · RE-W1","f":"证据审计/audit-evidence-1.html","st":"","k":15,"id":""},{"t":"原42证据 · RE-W2","f":"证据审计/audit-evidence-2.html","st":"","k":15,"id":""},{"t":"原42证据 · RE-I1","f":"证据审计/audit-evidence-3.html","st":"","k":15,"id":""},{"t":"原42证据 · RE-I2","f":"证据审计/audit-evidence-4.html","st":"","k":15,"id":""},{"t":"原42证据 · RE-P1","f":"证据审计/audit-evidence-5.html","st":"","k":14,"id":""},{"t":"原42证据 · RE-P2","f":"证据审计/audit-evidence-6.html","st":"","k":14,"id":""},{"t":"原42证据 · RE-X1","f":"证据审计/audit-evidence-7.html","st":"","k":16,"id":""},{"t":"菜单处置 · MenuItems.xml","f":"证据审计/audit-menus-1.html","st":"","k":226,"id":""},{"t":"菜单处置 · MenuItemsLinux.xml","f":"证据审计/audit-menus-2.html","st":"","k":253,"id":""},{"t":"菜单处置 · NeutralMenuItems.xml","f":"证据审计/audit-menus-3.html","st":"","k":215,"id":""},{"t":"菜单处置 · NeutralMenuItemsLinux.xml","f":"证据审计/audit-menus-4.html","st":"","k":246,"id":""},{"t":"证据与审计：不要混淆四种完成","f":"证据审计/audit-overview.html","st":"","k":62,"id":""},{"t":"工具处置 · 图像处理","f":"证据审计/audit-tools-1.html","st":"","k":148,"id":""},{"t":"工具处置 · 全局与框架载体","f":"证据审计/audit-tools-10.html","st":"","k":82,"id":""},{"t":"工具处置 · 图形生成","f":"证据审计/audit-tools-11.html","st":"","k":27,"id":""},{"t":"工具处置 · 测量","f":"证据审计/audit-tools-12.html","st":"","k":91,"id":""},{"t":"工具处置 · 识别","f":"证据审计/audit-tools-13.html","st":"","k":29,"id":""},{"t":"工具处置 · 拆分组合","f":"证据审计/audit-tools-14.html","st":"","k":35,"id":""},{"t":"工具处置 · 标定","f":"证据审计/audit-tools-2.html","st":"","k":69,"id":""},{"t":"工具处置 · 采集","f":"证据审计/audit-tools-3.html","st":"","k":35,"id":""},{"t":"工具处置 · 定位","f":"证据审计/audit-tools-4.html","st":"","k":213,"id":""},{"t":"工具处置 · 逻辑工具","f":"证据审计/audit-tools-5.html","st":"","k":110,"id":""},{"t":"工具处置 · 运算","f":"证据审计/audit-tools-6.html","st":"","k":71,"id":""},{"t":"工具处置 · 颜色处理","f":"证据审计/audit-tools-7.html","st":"","k":41,"id":""},{"t":"工具处置 · 通信","f":"证据审计/audit-tools-8.html","st":"","k":40,"id":""},{"t":"工具处置 · 缺陷检测","f":"证据审计/audit-tools-9.html","st":"","k":111,"id":""},{"t":"13项UI入口与场景验收","f":"证据审计/audit-ui.html","st":"","k":23,"id":""},{"t":"证据、范围与交付状态","f":"证据审计/evidence.html","st":"","k":93,"id":""}],"collapsed":true,"idx":null},{"h":"维护记录","items":[{"t":"先优化现有实现，再由逆向驱动新增开发","f":"维护记录/joint-optimization-plan.html","st":"","k":16,"id":""},{"t":"文档维护与专题目录","f":"维护记录/文档维护.html","st":"","k":59,"id":""}],"collapsed":true,"idx":null}];
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const STL = {"implemented":["已实现","ok"],"partial":["部分实现","partial"],"unimplemented":["未实现","none"],"unknown":["未确认","none"]};
+
+function rows(items){
+  return items.map(function(it){
+    const s = it.st ? STL[it.st] : null;
+    const sz = (it.k && it.k >= 500) ? '<span class="sz">'+(it.k>=1024?(it.k/1024).toFixed(1)+" MB":it.k+" KB")+'</span>' : '';
+    return '<li><span class="id">'+esc(it.id||"")+'</span>'+
+           '<a href="'+esc(it.f)+'" data-k="'+esc(((it.t||"")+" "+(it.id||"")+" "+(it.f||"")).toLowerCase())+'">'+esc(it.t)+'</a>'+
+           (s ? '<span class="st '+s[1]+'">'+s[0]+'</span>' : '')+ sz +'</li>';
+  }).join('');
+}
+
+let html = "";
+const gx = g => (g.idx && g.idx.length) ? '<span class="gx">'+g.idx.map(x=>'<a href="'+esc(x.f)+'">'+esc(x.t)+'›</a>').join('')+'</span>' : '';
+
+DATA.forEach(function(g){
+  if(!g.items.length && !g.idx) return;
+  const head = esc(g.h) + '<i>' + g.items.length + '</i>' + gx(g);
+  if(g.collapsed){
+    html += '<details><summary>' + head + '</summary><div class="in"><ul>' + rows(g.items) + '</ul></div></details>';
+  }else{
+    html += '<h2>' + head + '</h2><ul>' + rows(g.items) + '</ul>';
+  }
+});
+
+document.getElementById("list").innerHTML = html;
+
+const qEl = document.getElementById("q");
+const noneEl = document.getElementById("none");
+
+qEl.addEventListener("input", function(){
+  const q = qEl.value.trim().toLowerCase();
+  let shown = 0;
+
+  document.querySelectorAll("li").forEach(function(li){
+    const a = li.querySelector("a");
+    const ok = !q || (a && a.dataset.k.indexOf(q) >= 0);
+    li.style.display = ok ? "" : "none";
+    if(ok) shown++;
+  });
+
+  document.querySelectorAll("details").forEach(function(d){
+    const any = d.querySelector('li:not([style*="none"])');
+    d.style.display = any ? "" : "none";
+    if(q) d.open = !!any;
+  });
+
+  document.querySelectorAll("h2").forEach(function(h){
+    const ul = h.nextElementSibling;
+    const vis = ul && ul.querySelector('li:not([style*="none"])');
+    h.style.display = vis ? "" : "none";
+    if(ul) ul.style.display = vis ? "" : "none";
+  });
+
+  noneEl.style.display = (q && !shown) ? "block" : "none";
+});
+
+document.addEventListener("click", function(e){
+  if(e.target.closest && e.target.closest(".gx a")){ e.stopPropagation(); }
+});
+
+document.addEventListener("keydown", function(e){
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); qEl.focus(); }
+  if(e.key === "Escape"){ qEl.value=""; qEl.dispatchEvent(new Event("input")); }
+});
+</script>
+</body>
+</html>

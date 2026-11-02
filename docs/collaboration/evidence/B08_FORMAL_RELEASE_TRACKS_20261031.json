@@ -1,0 +1,86 @@
+{
+  "status": "三个正式轨道回执核对；不代表完整Blob或用户验收",
+  "tracks": [
+    {
+      "track": "S4-20261025/ManualReferenceQualification",
+      "attempt": 2,
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-002\\receipt.json",
+      "sha256": "55DB8C1AFD9591A0F063DF357BBFB3F324B5DDA3F8EF36F9C553A63D2D64E1D6",
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision"
+    },
+    {
+      "track": "S4-20261025/ParameterValues",
+      "attempt": 4,
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-004\\receipt.json",
+      "sha256": "93F2E3D9DF9FFD2829BD14D42260E87C012B6AB2A945837154050D269BD5ECC0",
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision"
+    },
+    {
+      "track": "S3-20261025/RuntimeWorkflow",
+      "attempt": 62,
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-062\\receipt.json",
+      "sha256": "22B74D6B3056AC11152DD4D953FB67C826A57A4F6F15741395A3D6F4C80CCC6C",
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision"
+    }
+  ],
+  "checkedSharedAssemblies": [
+    {
+      "Track": "S4-20261025/ManualReferenceQualification",
+      "Assembly": "SunEyeVision.Plugin.Contracts",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "Sha256": "D199450BCAE1CF0B14395C14952B4AB86F381EFF7104CDE21E2E1D409DED1099"
+    },
+    {
+      "Track": "S4-20261025/ManualReferenceQualification",
+      "Assembly": "SunEyeVision.Plugin.Runtime",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "Sha256": "401D32F3F3863DC1E662B7E1E02B80F0F14E667CF7F12E0EC0241FA54787D3D6"
+    },
+    {
+      "Track": "S4-20261025/ManualReferenceQualification",
+      "Assembly": "SunEyeVision.Workflow",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+      "Sha256": "FA94E5F35FAF51E604B867AE67BAFB82CABED6D58A2A404BD284C2D80943E36B"
+    },
+    {
+      "Track": "S4-20261025/ParameterValues",
+      "Assembly": "SunEyeVision.Plugin.Contracts",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "Sha256": "D199450BCAE1CF0B14395C14952B4AB86F381EFF7104CDE21E2E1D409DED1099"
+    },
+    {
+      "Track": "S4-20261025/ParameterValues",
+      "Assembly": "SunEyeVision.Plugin.Runtime",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "Sha256": "401D32F3F3863DC1E662B7E1E02B80F0F14E667CF7F12E0EC0241FA54787D3D6"
+    },
+    {
+      "Track": "S4-20261025/ParameterValues",
+      "Assembly": "SunEyeVision.Workflow",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+      "Sha256": "FA94E5F35FAF51E604B867AE67BAFB82CABED6D58A2A404BD284C2D80943E36B"
+    },
+    {
+      "Track": "S3-20261025/RuntimeWorkflow",
+      "Assembly": "SunEyeVision.Workflow",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+      "Sha256": "FA94E5F35FAF51E604B867AE67BAFB82CABED6D58A2A404BD284C2D80943E36B"
+    },
+    {
+      "Track": "S3-20261025/RuntimeWorkflow",
+      "Assembly": "SunEyeVision.Plugin.Contracts",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "Sha256": "D199450BCAE1CF0B14395C14952B4AB86F381EFF7104CDE21E2E1D409DED1099"
+    },
+    {
+      "Track": "S3-20261025/RuntimeWorkflow",
+      "Assembly": "SunEyeVision.Plugin.Runtime",
+      "Path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "Sha256": "401D32F3F3863DC1E662B7E1E02B80F0F14E667CF7F12E0EC0241FA54787D3D6"
+    }
+  ],
+  "sharedAssemblyHashesMatch": true
+}

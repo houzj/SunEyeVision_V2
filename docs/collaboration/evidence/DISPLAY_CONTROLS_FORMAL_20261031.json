@@ -1,0 +1,49 @@
+{
+  "receipts": [
+    {
+      "sha256": "DA3D9805B61EB623CD7098B5896FCC7593EF140A6F8FA49C2D615788CE8D165C",
+      "track": "WindowPresentation/attempt-384",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-384/receipt.json"
+    },
+    {
+      "sha256": "61AC72C5135613F11191D06D049DDE9C76C7C01FA2CCF0D8F261D90C6211CFD1",
+      "track": "FieldEditing/attempt-151",
+      "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-151/receipt.json"
+    },
+    {
+      "sha256": "E9A33D93AC8EDA02C3ACF870AD05C5F0F5B2E35D72CB58039BFD5B8241D485C9",
+      "track": "WindowPresentation/attempt-386",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-386/receipt.json"
+    },
+    {
+      "sha256": "C24D15F9CF26516F66A4B8312141C165DC0CEA192E21BB4C5DA81A6C328B6BF6",
+      "track": "DesignTime/attempt-151",
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-151/receipt.json"
+    }
+  ],
+  "status": "当前公共控件合同条件性自测闭口；Blob生产显示链未闭口",
+  "units": [
+    "C11公共图形样式",
+    "C12公共色板",
+    "C13公共文本编辑"
+  ],
+  "limits": [
+    "BlobDisplayUi仍使用ui-only图形和文本状态；Blob正式显示字段、同次配置冻结及结果层消费者尚未形成完整链",
+    "部分图形如最大内接矩形尚无真实输出，不伪造",
+    "系统指针色板、实际VS、其他DPI与用户人工未验证",
+    "S2底栏正式宿主和原始上游图坐标映射仍未接入；不得标为整阶段完成"
+  ],
+  "loadedMismatch": 0,
+  "tests": [
+    "原样式筛选8组",
+    "正式字段编辑：原色板默认/更多、RGBA、拒绝/恢复/卸载及原文本输入",
+    "原文本筛选14组（含一个相关分量序列用例）",
+    "独立设计组装290组"
+  ],
+  "buildId": "development-ccad8951d246498ea33892a1ef4c094a",
+  "payloadSha256": "339CA92269FAD82078467773D4E3C83AA7917C18D87BC3EF29EA1E6D99044580",
+  "scope": "公共图形样式、颜色控件与文本输入/来源的真实控件、接纳拒绝与释放；不覆盖完整Blob生产结果显示。",
+  "loadedRecords": 32,
+  "date": "2026-10-31",
+  "sourceCommit": "c4e04f0f5f8386529cf60eb3b65e92d48e4b28c9"
+}

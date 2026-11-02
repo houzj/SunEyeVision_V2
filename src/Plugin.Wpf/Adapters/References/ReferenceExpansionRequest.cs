@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.ComponentModel;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
@@ -8,6 +8,7 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 /// <summary>UI opening preference, independent of tool parameters and accepted references.</summary>
 public sealed class ReferenceExpansionPreference : INotifyPropertyChanged
 {
+    public string ScopeDescription {get;init;}="仅当前视图的临时默认方式；保存、重开、Dirty和撤销未接通。";
     private bool _expanded;
     public bool PreferExpanded {get=>_expanded;set{if(_expanded==value)return;_expanded=value;PropertyChanged?.Invoke(this,new(nameof(PreferExpanded)));}}
     public event PropertyChangedEventHandler? PropertyChanged;

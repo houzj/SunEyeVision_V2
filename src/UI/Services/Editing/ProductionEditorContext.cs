@@ -91,6 +91,9 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     private bool _active = true;
     private bool _committing;
     private readonly DocumentEditSession? _documentEdits;
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DocumentEditSession,SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference> ReferencePreferences=new();
+    private readonly SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference _localReferencePreference=new();
+    internal SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceExpansionPreference ReferencePreference => _documentEdits is null ? _localReferencePreference : ReferencePreferences.GetValue(_documentEdits,_=>new(){ScopeDescription=System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?"仅当前方案编辑会话的临时默认方式；保存、重开、Dirty和撤销未接通。":"Temporary default for this document editing session only. Save/reopen, dirty state and undo are not connected."});
     private readonly CancellationTokenSource _debugCancellation = new();
     public ToolExecutionOwner DebugOwner { get; } = new();
     public WorkflowContext DebugResults { get; } = new();
@@ -110,6 +113,11 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     public bool IsValid => _active && _isCurrent() && OwnsAllNodes();
     internal NodeConfigurationEditHost Host => _host;
     internal NodeConfigurationEditDraft PreparedDraft => _draft;
+    internal SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(string fieldId)
+    {
+        EnsureCurrent();
+        return _host.ReadCurrentParameter(_draft,fieldId);
+    }
     internal event Action? Deactivated;
 
     public ProductionEditorContext(NodeConfigurationEditHost host, string workflowId, WorkflowNodeBase formalNode,
@@ -147,11 +155,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     {
         EnsureCurrent();
         if (!ReferenceEquals(host, _host)) throw new InvalidOperationException("编辑范围属于另一个方案。");
-        if (!HasPendingChanges && AllDrafts().Any(_host.HasPublishedNodeChanged))
-        {
-            RefreshCandidates();
-            _bindDraft(_draft.Node);
-        }
+        TryRefreshUnmodifiedPublishedDraft();
         var viewError = PrepareView?.Invoke();
         if (!string.IsNullOrEmpty(viewError)) throw new InvalidOperationException(viewError);
         if (!TryPrepareEditor(out var error)) throw new InvalidOperationException(error);
@@ -172,6 +176,21 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         AcceptPublication(publication);
     }
     public void Cancel() => Discard();
+
+    // The same safe rebind used by Prepare; never replaces accepted or raw view edits.
+    internal bool TryRefreshUnmodifiedPublishedDraft()
+    {
+        EnsureCurrent();
+        var opening=_draft;
+        if(HasPendingChanges||!ReferenceEquals(opening,_draft)||!IsValid)return false;
+        if(!AllDrafts().Any(_host.HasPublishedNodeChanged))return true;
+        if(HasPendingChanges||!ReferenceEquals(opening,_draft)||!IsValid)return false;
+        RefreshCandidates();
+        var refreshed=_draft;
+        _bindDraft(refreshed.Node);
+        var clean=!HasPendingChanges;
+        return clean&&IsValid&&ReferenceEquals(refreshed,_draft);
+    }
 
     public bool TryValidateEditor(out string error)
     {

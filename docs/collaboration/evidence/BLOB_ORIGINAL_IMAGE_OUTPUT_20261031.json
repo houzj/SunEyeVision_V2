@@ -1,0 +1,16 @@
+{
+  "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-Blob图像与二值图输出静态证据-20261031.md",
+  "sha256": "0AAE5DC7F336864583E8A1D0D7C75EC2AFDF3F938CD2E8904C22034412F61D8B",
+  "confirmed": [
+    "原二值图是输入二值化结果",
+    "原Blob图像是目标连通域绘制结果",
+    "两图各有图像、宽、高和像素格式输出"
+  ],
+  "unknown": [
+    "Blob图像筛选后范围、逐像素值及通道",
+    "原图像Domain和区域外像素",
+    "静态调用证据不等同原机像素对照"
+  ],
+  "currentIssue": "主线9d02762c已将Field(5)真实GrayImage显示名从Blob图像改为灰度图像；VM连通域绘制图仍未实现",
+  "sourceCommit": "4ec3fe3e"
+}

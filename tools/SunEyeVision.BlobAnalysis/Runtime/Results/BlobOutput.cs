@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
@@ -10,14 +11,15 @@ public sealed record BlobMeasurement(long ElementId, int Label, double Area, dou
     IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed);
 
 /// <summary>One final ordered result set. Independent resource readers can outlive this output owner.</summary>
-public sealed class BlobOutput : IToolOutput, IDisposable
+public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput
 {
     private readonly IDisposable[] _owned;
     private int _disposed;
     internal BlobOutput(BlobSettings settings, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? gray, IReadOnlyImage? binary,
         IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
-        double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned)
+        double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned,ResultGeometrySnapshot resultGeometry)
     {
+        ResultGeometry=resultGeometry;
         ThresholdMinUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.Threshold;
         ThresholdMaxUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.SegmentationMode == BlobSegmentationMode.SingleThreshold ? 255 : settings.UpperThreshold;
         TypeUsed=settings.SegmentationMode == BlobSegmentationMode.None ? "NotApplied" : settings.Type.ToString();
@@ -27,6 +29,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
     }
+    public ResultGeometrySnapshot ResultGeometry {get;}
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
     public int? ThresholdMinUsed { get; }
     public int? ThresholdMaxUsed { get; }

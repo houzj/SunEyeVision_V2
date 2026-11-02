@@ -1,0 +1,23 @@
+{
+  "status": "STATIC_ORIGINAL_RENDERING_RULES_NOT_IMPLEMENTED",
+  "source": {
+    "path": "D:/MyWork/REA逆向测试/docs/architecture-recovery/image-export-entry-audit.resources/Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs",
+    "sha256": "954980db0062e35506753b5fd918aab2472f2606e71a28ae5f9a3132b50257ee"
+  },
+  "preserve": [
+    "继续复用当前模态前冻结、帧租约、源身份、关闭释放和预算拒绝。"
+  ],
+  "confirmedRules": [
+    "SaveOriginalImage→SaveRawImageSyn；SaveRenderImage→SaveRoiImageSyn。只原图和可见ShapeList，不截整个视口/ROIList编辑层/网格/独立ImageLayers。",
+    "多数线宽转int并至少2；点/箭头等各分支单核，不统一臆测。Cross/Circle/Text存在int截断，其余Point构造要连同原OpenCvSharp版本核。",
+    "多数Opacity==0跳过，正值不按WPF alpha混合；Polygon Fill只检查A>0后画BGR。",
+    "字号先max(int(图宽*.01),声明字号)，若<10或>1000重置10；不是clamp。Microsoft YaHei与原中英文/数字测量、换行及同位置累计高度。",
+    "同步默认jpgQuality=0走OpenCV默认编码参数；静态SaveImageCompressionRatio=70没有传进当前同步入口。",
+    "Rgb24/Rgb24_P3转BGR，渲染灰度转BGR、原图灰度保持单通道。控制图Resize/VConcat在当前入口传null，不扩大为Blob前置。"
+  ],
+  "currentDifference": "当前ShapeItemsPage→RenderTargetBitmap/Pbgra32及WPF编码是不同绘制/布局/alpha/编码路径；冻结和本方交互PASS不能代原算法同态。",
+  "nextEvidence": [
+    "定向核Cv2.PutTextZh原实现/调用ABI、GDI字体测量与同机字体版本像素行为。",
+    "核原OpenCV编码库版本和同输入输出对照；已有原源码足以推进大部分规则，不以泛称资料不足等待。"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "status": "绑定顺序与组合提案接线定向验证通过，B08完整验收未完成",
+  "build": {
+    "path": "Release/_validation/B08ParameterCurrentValue-20261030/build-004.log",
+    "exit": 0,
+    "errors": 0,
+    "warnings": 6237
+  },
+  "checks": [
+    {
+      "caseSourceSha256": "16A47FD14192BE4113B148F6C267C5540BE78D1E1AF7513DB104A2C429AD473F",
+      "build": "build-004",
+      "pid": 136408,
+      "exit": 0,
+      "receipt": "Release/_validation/S4-20261025/ParameterValues/attempt-003/receipt.json",
+      "passed": 10
+    },
+    {
+      "caseSourceSha256": "EE18A11B0B394ADCEC241F84518636D1F28F102181459F9E6A96E4EF6C257FCE",
+      "build": "build-004",
+      "pid": 136868,
+      "exit": 0,
+      "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-134/receipt.json",
+      "passed": 34
+    },
+    {
+      "caseSourceSha256": "ED1FDBD2A3E911FA6B4EA4DAB95C7CC85DCEAD760904339B138585E1FC833595",
+      "build": "build-004",
+      "pid": 131692,
+      "exit": 0,
+      "receipt": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-017/receipt.json",
+      "passed": 6
+    },
+    {
+      "caseSourceSha256": "7E0D886258F35B92CAB59AA71F447CD3F09789EEF69F8B4FEECF1C51EA8314C8",
+      "build": "build-003，后续组合顺序修改前",
+      "pid": 136304,
+      "exit": 0,
+      "receipt": "Release/_validation/S3-20261025/RuntimeWorkflow/attempt-061/receipt.json",
+      "passed": 10
+    }
+  ],
+  "assemblies": [
+    {
+      "sha256": "F48B41C539F282E593D1FCF29C7E9183115F2E6D1BCF444495839799523206C7",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll"
+    },
+    {
+      "sha256": "77D7B1F7739492FFC57E166FEE01B1D09D558F9B660D91C2B2515CE563ECFDF2",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Contracts.dll"
+    },
+    {
+      "sha256": "7EB77B8DB9B1C8472A2B3F450C1FEC5A8032BD8B8E7A5D6404B2EBB6096E17E1",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Runtime.dll"
+    },
+    {
+      "sha256": "3F0B728F4D8397F6C6509D492669DED6754DC99F25DE967DE71D28092C2DD35F",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll"
+    },
+    {
+      "sha256": "C8293AAFD9B40A4BEC6FFB2D7D6DB2EA7D5EC40E46BCCBA50FBA2914A5682A87",
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.dll"
+    }
+  ],
+  "sources": [
+    {
+      "sha256": "C91F300FAEF0C23BA16BDAD58CCC1B45082D1284182B56C72328A057BD7C7D56",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs"
+    },
+    {
+      "sha256": "52B1C43CD7AF7AB4DBA59CF161047116481BED3C7D43047BFE29E6218A1D1847",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs"
+    },
+    {
+      "sha256": "00A06761F78C2FC012BACA0F9FA900ACF9D1240DA1362A4893C7CD9E0A681487",
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs"
+    },
+    {
+      "sha256": "9395F859ABD457D460A0E1B8B38C42AD9860E30A646805A11B1BF1BFC58BBB91",
+      "path": "src/Workflow/RuntimeToolConfiguration.cs"
+    },
+    {
+      "sha256": "CE8754A1690990CFA1892590BFAFB669B162902F1FBA54A42CD1BA2F85470B10",
+      "path": "src/Workflow/RuntimeToolConfiguration.BindingOrder.cs"
+    }
+  ],
+  "remaining": [
+    "候选前序/父模块范围及可订阅/可见/私有等来源资格核对",
+    "原厂多绑定实机及首次建链/其他分支未证",
+    "Float物理类型和原厂异常/清理边界按原矩阵保留",
+    "Blob阈值及完整生产接入仍受明确S1占位保护",
+    "VS实际设计器及人工验收不由自动测试代签",
+    "普通String/TS历史清单保留，不误作Blob数值参数前置"
+  ]
+}

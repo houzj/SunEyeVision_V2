@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +30,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public bool HasInvalidInput=>!_disposed&&_fields?.HasInvalidActiveFields==true;
     public bool HasPendingEdits=>!_disposed&&_fields?.HasPendingActiveFields==true;
     public long AcceptedRevision=>Draft?.Revision??throw new InvalidOperationException("A settings draft is required.");
+    public IReadOnlyList<string> AcceptedFieldOrder {get;private set;}=Array.Empty<string>();
     public FieldSettings CaptureAcceptedFields()
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
@@ -45,6 +46,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public void Bind(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(draft);
+        AcceptedFieldOrder=Array.Empty<string>();
         _binding=true;
         try {SetCurrentValue(DraftProperty,draft);SetCurrentValue(OptionsProperty,options);}
         finally {_binding=false;}
@@ -71,6 +73,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     }
     private void Rebuild()
     {
+        AcceptedFieldOrder=Array.Empty<string>();
         ObjectDisposedException.ThrowIf(_disposed,this);
         var draft=Draft;var options=Options??new();var optionsIdentity=Options;
         var nextInput=draft is null?null:options.InputContent;
@@ -131,7 +134,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
                 return result;
             }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants,texts,options.GraphicDisplays?.ToArray(),options.TextDisplays?.ToArray(),
-            options.AssistCompositions?.ToArray(),options.HeaderlessSectionAnchors,options.PageLabelWidths);
+            options.AssistCompositions?.ToArray(),options.HeaderlessSectionAnchors,options.PageLabelWidths,options.ChoiceDisplays,options.VisibilityDisplays);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)
@@ -188,6 +191,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var draft=Draft??throw new InvalidOperationException("A settings draft is required.");
         var generation=_generation;var options=Options;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,options);
+        var order=Array.AsReadOnly(proposals.Keys.ToArray());
         draft.ApplyFields(proposals,candidate=>
         {
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
@@ -195,6 +199,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
         });
         if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
+        AcceptedFieldOrder=order;
     }
     private void OnChanged()=>Changed?.Invoke();
     public bool TryCapture(out FieldSettings fields,out string error)

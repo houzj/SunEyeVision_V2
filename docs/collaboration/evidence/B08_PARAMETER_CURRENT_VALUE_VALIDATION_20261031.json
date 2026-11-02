@@ -1,0 +1,74 @@
+{
+  "status": "参数当前值生产链定向验证通过，完整B08未验收",
+  "builds": [
+    {
+      "path": "Release/_validation/B08ParameterCurrentValue-20261030/build-001.log",
+      "exit": 1,
+      "warnings": 5768,
+      "errors": 1,
+      "reason": "误用SerializeVariable方法名，已有Serialize重载",
+      "preserved": true
+    },
+    {
+      "path": "Release/_validation/B08ParameterCurrentValue-20261030/build-002.log",
+      "exit": 0,
+      "warnings": 830,
+      "errors": 0,
+      "scope": "全量Release，包含UI与工具插件"
+    }
+  ],
+  "parameterValues": {
+    "receipt": "Release/_validation/S4-20261025/ParameterValues/attempt-001/receipt.json",
+    "exit": 0,
+    "pid": 133920,
+    "passed": 7,
+    "scope": "实际调度、变量消费、绑定与解绑保存重开、私有回执及确认取消、部分失败、ABA、关闭回调门禁",
+    "notCovered": [
+      "真实控件指针/VS人工",
+      "原厂多绑定顺序",
+      "STRING/TS完整寿命",
+      "全Blob算法等价"
+    ]
+  },
+  "fieldEditing": {
+    "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-132/receipt.json",
+    "exit": 0,
+    "pid": 112340,
+    "passed": 34,
+    "scope": "公共字段既有回归及S1保护，不代表正式BlobUI执行已接通"
+  },
+  "productAssemblies": [
+    {
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+      "sha256": "E5D0F81B4980A142E7CAE2FD244B36B04BD6B0DBA09B68010B7C58AE6E7EF2FE"
+    },
+    {
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+      "sha256": "61494E1BB0801A39B9FB7A08130D313C15E53DD73CD60989926FB48C41536DC3"
+    },
+    {
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "B20335EFAFBA4B9324CCAFB0ADC367B96115D62779C418D2FBB8D35D6EE5C748"
+    },
+    {
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "D10EA7FBE8E2646A17B5A22CE211DB69393B40FA1C5A4374D9FDAD4750F61E6E"
+    },
+    {
+      "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+      "sha256": "ABA03EEBADF3A52FE39DF4F9C0F421D7C26AF234E0EF047F09D629E159772CC1"
+    }
+  ],
+  "workflowTrial": {
+    "pid": 130856,
+    "verifiedExecutable": "C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+    "probe": "特定进程只读CIM核实，普通沙箱拒绝后经标准审批读取",
+    "closed": false,
+    "worktreeModified": false
+  },
+  "scopeAudit": "B08_BLOB_STRING_FAMILY_SCOPE_20261031.json",
+  "bindingOrderAudit": "B08_BINDING_ORDER_REVIEW_20261031.json",
+  "fullFunctionalAcceptance": false,
+  "vsDesignerManuallyVerifiedForThisBatch": false,
+  "goalS3Started": false
+}

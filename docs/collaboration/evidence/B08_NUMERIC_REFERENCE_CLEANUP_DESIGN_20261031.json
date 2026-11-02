@@ -1,0 +1,24 @@
+{
+  "baseline": "e1f856eb6a05f6f9982d8eeed7bf552021958cea",
+  "scope": "B08公共数值引用消费者的完整关闭、卸载、隐藏、禁用及借用Dispose异常清理",
+  "evidence": [
+    "VM_CONTROL_BATCH_QUEUE及原O06要求关闭通知异常仍完成全部弹层关闭/监听解绑，不影响新代；当前NativeRangePresenter是已正确实现的同族完整清理样例",
+    "NativeNumberCoordinator.ClosePopups顺序执行外层Combo与ReferencePopupScope，第一项失败跳过引用Popup",
+    "OnUnloaded先ClosePopups后Owner.Deactivated解绑，失败残留监听；PrepareForVisibility/OnEnabledChanged顺序清理可能跳过数值Suspend或引用退役"
+  ],
+  "decision": "集中调整NativeNumberCoordinator的四个出口，复用ParameterCleanup逐项完成并保留原始/聚合异常；先设置退役标志、取消延迟任务和取走Owner监听归属，再执行全部子清理。未变化的写入/模式/当前值合同全部复用 借用活跃字段的Dispose必须在原Combo关闭之前先SetSuspended(true)，防旧选择在销毁回调写入仍有效state；关闭以进入时PopupGeneration守卫，回调新开一代不得被旧关闭覆盖。",
+  "files": [
+    "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+    "scripts/verification/S4FieldEditingCases.cs"
+  ],
+  "contracts": "不修改Plugin.Contracts、UI宿主或工作流；Numeric文件写权已由主线确认独占；不改原件视觉/资源或S1布局",
+  "validation": [
+    "真实DeclaredFieldEditor→NativeNumberPresenter→NativeNumberCoordinator与原Combo/订阅会话；故障关闭保留异常但两Popup均关、卸载Owner监听解除、隐藏数字提交Suspend和引用退役；原晚回调不写入",
+    "候选UI及完整解决方案Release，FieldEditing/VariableFields/RuntimeEditorUiStage，必要扩展窗口回归；源码变更后重跑相称矩阵"
+  ],
+  "notScope": [
+    "Blob可见阈值S1占位接入",
+    "Solution级展开偏好合同与DPI人工宽度判断",
+    "VM原SDK运行、TRIGGER_STRING/普通String未知分支、Group、S3算法"
+  ]
+}

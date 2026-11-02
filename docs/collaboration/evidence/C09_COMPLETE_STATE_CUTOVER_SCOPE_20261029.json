@@ -1,0 +1,64 @@
+{
+  "status": "READ_ONLY_IMPLEMENTATION_SCOPE_NOT_IMPLEMENTED",
+  "checkpoint": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+  "sources": [
+    {
+      "path": "src/Plugin.Contracts/RuntimeEntry.cs",
+      "sha256": "f2fe919e7b22c7ecc2308bb78cce4967b403227eb1d2a5c80e7b6334a215e943"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "b06fa74b9f2f32e41603bcd32e9b66f1e7b3526c1309834ba2f256f988b5a910"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolSettingsFields.cs",
+      "sha256": "07adb3f46fb380b5eeb4732cb58400fc30ea769a28a065cafb695e29f94c68d6"
+    },
+    {
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "sha256": "b18ec19b42952a24482181403596c186d8bf59f9c0db94993998b766caae6fda"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolSettingsEditSession.cs",
+      "sha256": "2e63f5f8048e35b37a565d3767317c80ef34b53b274a82d7e67b83a2a46dc399"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "13d773cf865f022c41129a3f7275cde33586132dc92fbfc2a954e001815d66cc"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "f3602d17d2bae546d997649c5e2808e9cd6345cc5ea1a9069b17b46dc1c248c8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+      "sha256": "99895d0ec5bb91cffd91b4a1a0f40979b482384bff29f86ffbba5ce9bbffc891"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootResourceProxyBinding.cs",
+      "sha256": "5b163f76ab6b121b787131ecf22a7d2e2f671d4d8538e77f28fb95a0dcab2822"
+    }
+  ],
+  "unit": "一个完整集成批，覆盖两个已准入Runtime工具的全部声明字段状态、编辑、持久化、引用、复制历史、执行调试；内部顺序不是局部交付。",
+  "proposal": [
+    "声明Schema/Capabilities不需要伪typed settings；稳定字段ID→Constant/Reference为唯一配置，缺键表达Unset；不再同Runtime节点ParamSettings双权威。",
+    "Reference携带Conversion，语义比较、UI重建、批量编译、持久化、复制索引重映射均保留；Required/optional及host供给输入在正确阶段校验。",
+    "全部引用解析后完整物化typed settings，不Apply到默认实例补洞；ImageSource11字段全部保留，不只迁6可视项。",
+    "RootResourceProxy读写/取消恢复切唯一配置，Unset不得复活旧常量。",
+    "保存重开/另存local.paths和local.selected/复制/撤销重做/来源删除/图编译/执行/私有调试共同调整；Runtime旧JSON及旧ParamSettings消费者删除，不加旧格式兼容。"
+  ],
+  "concreteGaps": [
+    "DeclaredFieldState.SameSetting只比引用不比Conversion。",
+    "ReferenceFieldSession重新构造ReferenceSetting会重置转换；ReferenceBindingBatch和Contracts/Editing编译未传转换。",
+    "根代理仅移除ParamSettings的Unset回到旧typed常量，必须切权威。"
+  ],
+  "phaseBoundary": "第一阶段只落实公共字段状态与必要的现行消费者合同调整；Blob算法、文件重组和业务参数语义仍冻结，不能将接口同步当作第二阶段开工。",
+  "validation": [
+    "新建→三态编辑/订阅解绑→确认取消→保存重开/另存路径→复制撤销重做→执行/私有调试→下游；覆盖转换单独变化、隐藏字段、拒绝重入旧回调、无Wpf、真实HALCON无UI泵。",
+    "源码改动前由主线核对Required设置缺省/输入host供给的阶段语义，不盲采审计建议；实施后集中构建和同版本正式Release验证。"
+  ]
+}

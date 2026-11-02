@@ -995,6 +995,27 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Contains("图像源配置已接纳，结果失效失败",f.Main.StatusText);
     });
     [Fact]
+    public void Explicit_source_selection_reentry_retains_the_committed_new_choice_and_retires_old_receipt()
+        => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+    {
+        using var f=new Fixture();f.Main.SelectedNode=f.Source;Pump();
+        var source=Assert.IsType<SunEyeVision.UI.Shared.ImageInputSource>(f.Main.ActiveInputSource);
+        var a=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"a.png")};
+        var b=new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(f.Directory,"b.png")};
+        source.AddImages(new[]{a,b},selectFirstAdded:true);Pump();
+        EventHandler<SunEyeVision.UI.Shared.ImageSourceSelectionEventArgs> selectAgain=(_,e)=>
+        {if(ReferenceEquals(e.Image,a))source.SelectImage(1);};
+        source.ExplicitSelectionAccepted+=selectAgain;
+        try
+        {
+            var tab=f.Main.WorkflowTabViewModel.SelectedTab!;
+            var receipt=source.SelectImage(0);
+            Assert.True(receipt.FormalAccepted);Assert.Null(receipt.ProjectionVersion);
+            Assert.Same(b,source.CurrentImage);Assert.Equal(1,ImageSourcePolicy.Read(f.Source)!.CurrentIndex);
+        }
+        finally{source.ExplicitSelectionAccepted-=selectAgain;}
+    });
+    [Fact]
     public void Showing_unchanged_formal_input_preserves_the_runtime_cursor_and_image_objects()
         => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
     {

@@ -1,0 +1,33 @@
+{
+  "baseline": "9c28fe520ed013bd2e9d9329c67df7227d2f4bff",
+  "original": "IMVSBlobFindModuDisplay.xml ResultList Colume=Area,Perimeter,CentroidX,CentroidY,Angle,LongAxis,ShortAxis,Circularity,Rectangularity；序号为额外首列",
+  "reuse": "真实BlobResultView→DeclaredResultTable→publication/element-id选择→ResultWorkspacePresenter同帧高亮；原表模板、500增量、严格Stamp门禁不变",
+  "decision": "公共列Value与UnavailableReason互斥，只有StandardTable可有展示占位；占位不得声明有效性或几何来源，不进入Sources；三未证特征只显示未实现，表头持续标记且空结果零行。",
+  "files": [
+    "Plugin.Contracts/Results/Presentation/ResultProjectionDescriptor.cs",
+    "Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
+    "Blob Runtime Results/BlobDisplayDefinition.cs",
+    "Blob Runtime Resources/BlobDisplay.xml",
+    "专属结果联动与现行列数测试"
+  ],
+  "notChanged": [
+    "算法与BlobMeasurement/BlobSchema实际输出",
+    "普通来源资格/订阅叶",
+    "结果表排序/重排禁用及高亮身份",
+    "工作流主界面/其他基础"
+  ],
+  "validation": [
+    "真实六特征仍来自Blob输出且十列原顺序",
+    "占位Value空/明确原因/无真实Schema成员或资格来源",
+    "非法占位组合及无原因缺源声明拒绝",
+    "实际空Blob结果零假行且表头可辨认未实现",
+    "两次运行Stamp/element-id/Frame与旧事件拒绝",
+    "原公共表分页/publication/冻结运行相关轨",
+    "真实两个Blob在升/降序两轮中逐行验证element-id、真实记录多边形与实际图层Points一致"
+  ],
+  "unimplemented": [
+    "Angle/LongAxis/ShortAxis数值与VM语义",
+    "其他未就绪模式、ROI/显示/底栏基础"
+  ],
+  "angleEvidence": "原厂Angle指向外接矩形角度映射已证；本方尚未输出，角度数值规范未验，不再称映射未证"
+}

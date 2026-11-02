@@ -1,0 +1,255 @@
+{
+  "scope": "S3现有SingleThreshold本方生产准入一致性修复；独立候选，不代表主仓正式或VM算法等价",
+  "baseline": "0477f836b6060a1cbf089d05622a114f96c5006f",
+  "sourceCommit": "c776a8e591023ce6e52920e822be0d3121a79ba0",
+  "design": "SINGLE_THRESHOLD_ADMISSION_DESIGN_20261031.json",
+  "defect": "同源禁用FilterAreaMin=0被RuntimeToolConfiguration.WithSettings拒绝，但ToolRuntimeExecutor→BlobSession此前返回成功。BlobSettings.Validate在筛选禁用时跳过全部端点finite/XML bounds，与已存在宿主合同不一致。",
+  "fix": "三组筛选端点始终验证finite与XML绝对范围；仅enabled时比较两端顺序。未改变HALCON阈值、连通、特征计算、量化或VM未证行为。",
+  "build": {
+    "log": {
+      "path": "Release/_validation/single-threshold-admission-build-001.log",
+      "sha256": "CBAC9E190EF44560C76E52DA1A34F98E88B4DC36874E7C33D0471F5B66679230"
+    },
+    "exit": 0,
+    "warnings": 6527,
+    "errors": 0,
+    "elapsed": "00:01:08.53"
+  },
+  "productAssemblies": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "sha256": "8A8827B87BDDE9E5593196B7259043BC0BAAAC5B6406962FAB833CCC9B02577B"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+      "sha256": "D8C305FD738E252295F1B1569DCE407B2EB4A924888DD5AEC7CFF766D31E2B32"
+    }
+  ],
+  "validation": {
+    "sameProduct": [
+      {
+        "track": "RuntimeAlgorithm",
+        "attempt": 5,
+        "passed": 6
+      },
+      {
+        "track": "BlobParameterProduction",
+        "attempt": 14,
+        "passed": 20
+      },
+      {
+        "track": "ParameterValues",
+        "attempt": 9,
+        "passed": 18
+      },
+      {
+        "track": "RuntimeWorkflow",
+        "attempt": 7,
+        "passed": 10
+      }
+    ],
+    "directAndConfigurationMatrix": [
+      "禁用面积下限0/上限1000000000拒绝",
+      "禁用圆度NaN/上限1.1拒绝",
+      "禁用矩形度下限负值/上限Infinity拒绝",
+      "三组启用倒序均拒绝",
+      "三组合法禁用倒序由配置保留原值并经真实Runtime成功",
+      "原8邻域与线程恢复、全局连接上限拒绝、排序限数、多孔边界/NG/独立Reader及空结果业务NG继续通过"
+    ],
+    "failureHistory": {
+      "RuntimeAlgorithm001": "旧产品正式Runtime接纳禁用非法面积常量；前四组通过后失败",
+      "RuntimeAlgorithm002": "新测试局部变量名冲突编译失败",
+      "RuntimeAlgorithm003": "新宿主对照探针未注册Runtime的前置失败",
+      "RuntimeAlgorithm004": "补正式PluginLoader后同源配置拒绝而Runtime成功，产品差异复证",
+      "RuntimeAlgorithm005": "最终同版6组全通过"
+    }
+  },
+  "evidence": [
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": 1,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-001/receipt.json",
+          "sha256": "5DCD343D3A90E8E0C5962E40AB6DE493AF6CACF6475D778E44AF6CB34DFEA57F",
+          "stage": "S3",
+          "validationScope": "Candidate",
+          "attempt": 1,
+          "exit": 1,
+          "caseSource": "S3BlobRuntimeCases.cs",
+          "caseSourceSha256": "DAEB7DA58E0AA328A58EB08C22C40A67353EA1FEAEA59D6A691C248EE3AB6731"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-001/run.log",
+          "sha256": "946266113F63BE851AAA3FFEEB2C7B1D4FC7020B2590C8FE0005295B3174C3A4"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-001/build.log",
+          "sha256": "111AA50406A2D52A178A397A8395094182BE8BF01394B6A6E7C096F46C21E2E6"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": 2,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-002/build.log",
+          "sha256": "475DA3239FEB6614453FDA036F5E41305B7ABA9417B92BD8176B055F2A460974"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": 3,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-003/receipt.json",
+          "sha256": "EE05E707C4300D4A04BD78DD2D57B66E908CF5A413A4DBBD171B8653F770425C",
+          "stage": "S3",
+          "validationScope": "Candidate",
+          "attempt": 3,
+          "exit": 1,
+          "caseSource": "S3BlobRuntimeCases.cs",
+          "caseSourceSha256": "C20D4F7FF7310951AAF62546C6F26FBAFD107F8146DB3372F713531F78AE0899"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-003/run.log",
+          "sha256": "946266113F63BE851AAA3FFEEB2C7B1D4FC7020B2590C8FE0005295B3174C3A4"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-003/build.log",
+          "sha256": "E2EC5D2B32FFEF26F139AE021CF2C373AAA8E62CD7299D54154D72F4A2E8C303"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": 4,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-004/receipt.json",
+          "sha256": "8FEF608484752B65F427897EF0A90CA50EF1F0B6DF9988736F2B58F31113B64B",
+          "stage": "S3",
+          "validationScope": "Candidate",
+          "attempt": 4,
+          "exit": 1,
+          "caseSource": "S3BlobRuntimeCases.cs",
+          "caseSourceSha256": "AD2BD03D580CF7110863D8983A79D3DE972039553D1DD6F389D07846A62D9510"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-004/run.log",
+          "sha256": "946266113F63BE851AAA3FFEEB2C7B1D4FC7020B2590C8FE0005295B3174C3A4"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-004/build.log",
+          "sha256": "77ADE4A14861CC9A7F326711C9AE3E7C200473934899877C5A1B842EEB89B56D"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": 5,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-005/receipt.json",
+          "sha256": "95BBEF5B274AF84990870D7BC3143AF99D9E54426BA5E0631367A84686F4ABED",
+          "stage": "S3",
+          "validationScope": "Candidate",
+          "attempt": 5,
+          "exit": 0,
+          "caseSource": "S3BlobRuntimeCases.cs",
+          "caseSourceSha256": "BB25768B93E934DA122EE4890528F5C6816604F643B35054E11078C75241EEEE"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-005/run.log",
+          "sha256": "4FCAADFFB4154381AA43A312BD14EAB809B8A9A764D922C0D99038F3C1B69643"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-005/build.log",
+          "sha256": "1E04548BDCBABBC040618DF597CA653DB42D5538129929D07EDA99E8514FAA23"
+        }
+      ]
+    },
+    {
+      "track": "BlobParameterProduction",
+      "attempt": 14,
+      "evidence": [
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-014/receipt.json",
+          "sha256": "4708A62FD777E31C407809966EC45092D0E676DF8DF4FD12080E1317869F1C60",
+          "stage": "S4",
+          "validationScope": "Candidate",
+          "attempt": 14,
+          "exit": 0,
+          "caseSource": "S4BlobParameterProductionCases.cs",
+          "caseSourceSha256": "5C60C86659C227A8C741CF1D1472A7F1A4C1558FB3F4AA9B988F3C2BE35729FE"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-014/run.log",
+          "sha256": "99B93C84E8CC757AE62957BE6128EDAC252C03E7B9991F1A1A9BF34263F20E66"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-014/build.log",
+          "sha256": "5DAD962CF7AD828F4D9A30A21858DA9289AF3CF870695AA5CB8E6E53509B093F"
+        }
+      ]
+    },
+    {
+      "track": "ParameterValues",
+      "attempt": 9,
+      "evidence": [
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-009/receipt.json",
+          "sha256": "D4E83FA6E82DF7F6BDEC3FA40755E0D504DE0BB50B6F570826D16B61F1657B37",
+          "stage": "S4",
+          "validationScope": "Candidate",
+          "attempt": 9,
+          "exit": 0,
+          "caseSource": "S4ParameterCurrentValueCases.cs",
+          "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-009/run.log",
+          "sha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ParameterValues/attempt-009/build.log",
+          "sha256": "52009F651BE386849377610D4A85B0017B7521AECFEA7494921A1819E7C08406"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "attempt": 7,
+      "evidence": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeWorkflow/attempt-007/receipt.json",
+          "sha256": "EE23F5576D8422E8B75E1AB7F72A201A7F366603E5D08E62F0A8E01B6D7CA5EF",
+          "stage": "S3",
+          "validationScope": "Candidate",
+          "attempt": 7,
+          "exit": 0,
+          "caseSource": "S3RuntimeWorkflowCases.cs",
+          "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeWorkflow/attempt-007/run.log",
+          "sha256": "8277B9E901681C92756D886CA4CF6F1EE655D054F6AF701F76756A32CF0E085D"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeWorkflow/attempt-007/build.log",
+          "sha256": "B370DD01705DAEC856ED37982AB675FB6BDE911311A6073651BB14A9A1BC4CCF"
+        }
+      ]
+    }
+  ],
+  "remaining": [
+    "其他五阈值模式正式链未完成",
+    "VM四形状量化后最终比较及数值等价未证",
+    "Angle/LongAxis/ShortAxis未形成正式结果，原语义仍核对",
+    "Blob绘制ROI定义、显示/正式底栏、原始上游域映射等外部基础仍未完成",
+    "部分判断统计与全部原厂算法差分、实际VS/其他DPI/人工未验"
+  ],
+  "guiUsed": false
+}

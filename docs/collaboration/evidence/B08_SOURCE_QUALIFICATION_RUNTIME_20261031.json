@@ -1,0 +1,483 @@
+{
+  "status": "本实例五状态原厂取证及生命周期核对通过；非全部VM语义或产品验收",
+  "pid": 130508,
+  "exit": 0,
+  "finished": true,
+  "phases": [
+    {
+      "connections": [
+        {
+          "id": 0,
+          "next": [
+            1
+          ],
+          "previous": []
+        },
+        {
+          "id": 2,
+          "next": [],
+          "previous": []
+        }
+      ],
+      "blobPredecessors": [],
+      "sourceTrees": [
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "int",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        },
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "float",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        }
+      ],
+      "phase": "before-image-subscription"
+    },
+    {
+      "connections": [
+        {
+          "id": 0,
+          "next": [
+            1
+          ],
+          "previous": []
+        },
+        {
+          "id": 2,
+          "next": [],
+          "previous": []
+        }
+      ],
+      "blobPredecessors": [],
+      "sourceTrees": [
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "int",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        },
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "float",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        }
+      ],
+      "phase": "after-image-subscription-before-run"
+    },
+    {
+      "connections": [
+        {
+          "id": 0,
+          "next": [
+            1
+          ],
+          "previous": []
+        },
+        {
+          "id": 2,
+          "next": [],
+          "previous": []
+        }
+      ],
+      "blobPredecessors": [],
+      "sourceTrees": [
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "int",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        },
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "Lang_VariableManager"
+          ],
+          "type": "float",
+          "imageSourceLeafCount": 0,
+          "imageSourceNames": [
+            null
+          ]
+        }
+      ],
+      "phase": "after-image-source-run"
+    },
+    {
+      "connections": [
+        {
+          "id": 0,
+          "next": [
+            1,
+            2
+          ],
+          "previous": []
+        },
+        {
+          "id": 2,
+          "next": [],
+          "previous": [
+            0
+          ]
+        }
+      ],
+      "blobPredecessors": [
+        0
+      ],
+      "sourceTrees": [
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "%0 Image Source1%",
+            "Lang_VariableManager"
+          ],
+          "type": "int",
+          "imageSourceLeafCount": 12,
+          "imageSourceNames": [
+            "ModuStatus",
+            "Width",
+            "Height",
+            "PixelFormat",
+            "WidthMono8",
+            "HeightMono8",
+            "PixelFormatMono8",
+            "FrameNum",
+            "LostFrameCount",
+            "LostPacketCount",
+            "GetCameraFailCount",
+            "SNCode"
+          ]
+        },
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "%0 Image Source1%",
+            "Lang_VariableManager"
+          ],
+          "type": "float",
+          "imageSourceLeafCount": 1,
+          "imageSourceNames": [
+            "ModuRunTime"
+          ]
+        }
+      ],
+      "phase": "after-control-connection"
+    },
+    {
+      "connections": [
+        {
+          "id": 0,
+          "next": [
+            1,
+            2
+          ],
+          "previous": []
+        },
+        {
+          "id": 2,
+          "next": [],
+          "previous": [
+            0
+          ]
+        }
+      ],
+      "blobPredecessors": [
+        0
+      ],
+      "sourceTrees": [
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "%0 Image Source1%",
+            "Lang_VariableManager"
+          ],
+          "type": "int",
+          "imageSourceLeafCount": 12,
+          "imageSourceNames": [
+            "ModuStatus",
+            "Width",
+            "Height",
+            "PixelFormat",
+            "WidthMono8",
+            "HeightMono8",
+            "PixelFormatMono8",
+            "FrameNum",
+            "LostFrameCount",
+            "LostPacketCount",
+            "GetCameraFailCount",
+            "SNCode"
+          ]
+        },
+        {
+          "rootLabels": [
+            "RunParam_None",
+            "%0 Image Source1%",
+            "Lang_VariableManager"
+          ],
+          "type": "float",
+          "imageSourceLeafCount": 1,
+          "imageSourceNames": [
+            "ModuRunTime"
+          ]
+        }
+      ],
+      "phase": "after-first-run"
+    }
+  ],
+  "catalogues": [
+    {
+      "tool": "ImageSource",
+      "rawLeafCount": 17,
+      "pathTypeMatchesXml": true,
+      "managedLeafCount": 21,
+      "excluded": [
+        {
+          "path": "fArrivalTimeStampLow",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fArrivalTimeStampHigh",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fLeaveTimeStampLow",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fLeaveTimeStampHigh",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        }
+      ]
+    },
+    {
+      "tool": "Blob",
+      "rawLeafCount": 75,
+      "pathTypeMatchesXml": true,
+      "managedLeafCount": 79,
+      "excluded": [
+        {
+          "path": "fArrivalTimeStampLow",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fArrivalTimeStampHigh",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fLeaveTimeStampLow",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "fLeaveTimeStampHigh",
+          "type": "float",
+          "canSubscribe": false,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": false,
+          "resultVisible": false
+        },
+        {
+          "path": "Output Position Correction Info/Output Fixtured Point/OutputFixtureInitPointX",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/Output Fixtured Point/OutputFixtureInitPointY",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureInitAngle",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureInitScaleX",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureInitScaleY",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/Output Unfixtured Point/OutputFixtureRunPointX",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/Output Unfixtured Point/OutputFixtureRunPointY",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureRunAngle",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureRunScaleX",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        },
+        {
+          "path": "Output Position Correction Info/OutputFixtureRunScaleY",
+          "type": "float",
+          "canSubscribe": true,
+          "visible": false,
+          "isPrivate": false,
+          "customVisible": true,
+          "resultVisible": true
+        }
+      ]
+    }
+  ],
+  "cache": {
+    "preservedFilesMatch": true,
+    "historyAfterSha256": "057A7DA69F5B7B1F22A4A94C54B6849150D69FF9ECAB6B18EF71E6BC068972A8",
+    "historyAfter": [
+      "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\ImageTemp\\VM130508ImgSrcTemp"
+    ],
+    "originalCacheDirectoryExists": false
+  },
+  "artifacts": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\receipt.json",
+      "sha256": "42557F21AA214F3B6AC410D9A827B0BDCBFF6E63BF0818F261E073717E588714"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\b08-observations.json",
+      "sha256": "92CBF9BE9450B50EF9EF61ED3AF21910FC7CDB623F6E5AE9E0761979291B94B8"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\init-observations.json",
+      "sha256": "2F4A22598A6A79509EE923C6B88A9327C2387115160AD49102D8964A7486ECEC"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\plan.json",
+      "sha256": "D9273F50A18F2A295C4464BC8C58AC1AEC1B0A81631CCC01445C3BEB1FB33E18"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\B08SourceQualificationProbe.exe",
+      "sha256": "3827885235A99AFA0C043DEDAE032ED8FD7A413C63EAF829EE63E1AD196A899A"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\B08SourceQualificationCapture.cs",
+      "sha256": "2B59CFD44C56F1F5151CBD93DDBA2B586E17D356EDA8DD44619B4D6B6EBDA02B"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\B08BindingRuntimeProbe.cs",
+      "sha256": "08640C56F34004F351E4CE05EA2631284298100792087DDF025338A7C26D2BE9"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08SourceQualification-20261031-attempt01\\InitializedEntry.cs",
+      "sha256": "039E71A781BED6F55430C8904E6545C035E1B38511AA115D110C0CF6E29A6B81"
+    }
+  ],
+  "limitations": [
+    "仅本构建/本方案/本地图像模式/这两个模块及观测时点；不是原生全域调度结论",
+    "原厂SDK返回结构在本实例与XML路径/类型相符，不推广动态修改/重建/失败",
+    "Blob自源不在本普通候选树；隐藏资格由实际VmIO标志与已核原谓词共同支持",
+    "变量弹窗展开、Group父输入、IMAGE专用组合、字符串触发寿命与全部算法仍未验",
+    "未运行产品或替代VS/人工验收"
+  ]
+}

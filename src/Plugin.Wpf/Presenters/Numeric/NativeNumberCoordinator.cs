@@ -78,8 +78,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
                 {
                     _referenceResources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)};
                     _eventRoot.Resources.MergedDictionaries.Add(_referenceResources);
-                    _expansion=new(eventRoot);
-                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference);
+                    _expansion=new(eventRoot,references?.WindowOwner);
+                    _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
                     _arrange.SubscribeTemplate=(DataTemplate)eventRoot.FindResource("ButtonSelecter_sub");
                     _arrange.SubscribeDataLeft=_reference;
                     _referenceScope=new(eventRoot,_reference,()=>Current()&&_state.IsReferenceMode);
@@ -171,7 +171,10 @@ internal sealed class NativeNumberCoordinator : IDisposable
             if(_commit is not {IsDirty:true})_commit?.ProjectAccepted();
             else if(_state.IsReferenceMode)_commit?.ProjectAccepted();
             if(_commit is null&&(_state.Accepted as ConstantSetting??_state.ConstantBackup) is {} initial&&_arrange is not null)
-                _arrange.StartValue=Convert.ToDouble(initial.Value,CultureInfo.InvariantCulture);
+            {
+                try{_arrange.StartValue=Convert.ToDouble(NativeNumericSequenceProjection.Single(_state.Port,initial.Value!),CultureInfo.InvariantCulture);}
+                catch(ArgumentException failure){_state.SetSourceError(failure.Message);}
+            }
             ApplySliderVisibility();
         }
         finally{_syncing=false;DrainAcceptedProjection();}
@@ -255,10 +258,12 @@ internal sealed class NativeNumberCoordinator : IDisposable
             }
             else
             {
-                try{if(_state.ConstantBackup is {} backup)_commit!.ValidateStored(backup);}
-                catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);return;}
-                _state.TryUseConstant();
-                if(!_state.IsReferenceMode&&_state.ConstantBackup is null)_commit?.BeginConstantEntry();
+                if(_state.ConstantBackup is {} backup)TrySetConstant(backup.Value!);
+                else
+                {
+                    _state.TryUseConstant();
+                    if(!_state.IsReferenceMode&&_state.ConstantBackup is null)_commit?.BeginConstantEntry();
+                }
             }
         }
         finally{ProjectState();_referenceScope?.Refresh();}
@@ -298,23 +303,29 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private void ClosePopups()
     {
         Cancel();_closing=true;
-        try{if(_box is not null)_box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);_referenceScope?.ClosePopups();}
+        var popupGeneration=_reference?.PopupGeneration;
+        try{ParameterCleanup.Run(new Action[]{()=>_box?.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false),
+            ()=>{if(popupGeneration==_reference?.PopupGeneration)_referenceScope?.ClosePopups();}});}
         finally{_closing=false;}
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
-    {_active=false;_loadGeneration++;_resume?.Abort();_resume=null;_commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
+    {
+        _active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
+        ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
+            ()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),()=>_expansion?.Close(),ClosePopups});
+    }
     internal void PrepareForVisibility(bool visible)
     {
-        _referenceScope?.PrepareForVisibility(visible&&_eventRoot.IsEnabled);
         if(_disposed)return;
         if(!visible)
         {
             _presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
-            _commit?.Suspend();ClosePopups();
+            ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
+                ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
-            _presentationHidden=false;
+            _presentationHidden=false;_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
             QueueResume();
         }
@@ -332,8 +343,8 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!_eventRoot.IsEnabled)
         {
             _loadGeneration++;_resume?.Abort();_resume=null;
-            _commit?.Suspend();ClosePopups();
-            if(Current())_referenceScope?.PrepareForVisibility(false);
+            ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
+                ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
@@ -348,7 +359,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_active=false;_presentationHidden=true;_loadGeneration++;
-        var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_commit?.Suspend(),ClosePopups,
+        var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_reference?.SetSuspended(true),()=>_commit?.Suspend(),ClosePopups,
             ()=>{_state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;},
             ()=>{if(_arrange is not null){_arrange.OnStartValueChange-=OnNativeValue;_arrange.OnLeftTypeChange-=OnModeChanged;
                 if(ReferenceEquals(_arrange.SubscribeDataLeft,_reference))_arrange.SubscribeDataLeft=null;}

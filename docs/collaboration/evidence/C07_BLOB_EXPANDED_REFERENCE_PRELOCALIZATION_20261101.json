@@ -1,0 +1,46 @@
+{
+  "tests": [
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 5,
+        "pid": 136444,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobExpandedReferenceCases.cs",
+        "caseSourceSha256": "36C7C2826DFAC3A4F55026C5368DC278A65FBF763212E4024975D1A779AF6113",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobExpandedReference\\attempt-005"
+      },
+      "loadedSha": "3AE01FAE491F629DB4801A1C529E15A200B9EB5FD095FCD523B798D883C4BFED",
+      "attempt": "005",
+      "receiptSha": "24EC995B9BAA1DA5FFE99747B83FF21076D73FC435A363B56EBDAEF039E703A8",
+      "loadedMismatch": [],
+      "loadedCount": 15
+    },
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 6,
+        "pid": 41752,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobExpandedReferenceCases.cs",
+        "caseSourceSha256": "36C7C2826DFAC3A4F55026C5368DC278A65FBF763212E4024975D1A779AF6113",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobExpandedReference\\attempt-006"
+      },
+      "loadedSha": "3AE01FAE491F629DB4801A1C529E15A200B9EB5FD095FCD523B798D883C4BFED",
+      "attempt": "006",
+      "receiptSha": "89E5A5AA2752679C9D01747D446B32C9345DBDEC5A927EBACE3AACAE235FD9DE",
+      "loadedMismatch": [],
+      "loadedCount": 15
+    }
+  ],
+  "baseline": "2f942e6d2201d943fda2e0318171073cc16899f8",
+  "scope": "本地化修复前候选；不是最终批或正式Release"
+}

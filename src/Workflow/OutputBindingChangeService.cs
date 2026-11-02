@@ -157,6 +157,37 @@ public sealed class OutputBindingChangeService
             .Where(id => !excluded.Contains(SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, id))).ToArray();
     }
 
+    /// <summary>Ordinary manual parameter references require an actual control predecessor.
+    /// Subscription dependencies must not create their own qualification.</summary>
+    public IReadOnlyList<string> GetManualParameterCandidateNodeIds(string workflowId, string targetId)
+    {
+        var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
+        if (flow == null || !flow.Nodes.Any(node => node.Id == targetId)) return Array.Empty<string>();
+        var incoming = flow.Connections.GroupBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(edge => edge.SourceNodeId).ToArray(), StringComparer.Ordinal);
+        var predecessors = new HashSet<string>(StringComparer.Ordinal);
+        var pending = new Stack<string>();
+        pending.Push(targetId);
+        while (pending.Count > 0)
+        {
+            var current = pending.Pop();
+            if (!incoming.TryGetValue(current, out var sources)) continue;
+            foreach (var source in sources)
+                if (predecessors.Add(source)) pending.Push(source);
+        }
+        predecessors.Remove(targetId);
+        return GetCandidateNodeIds(workflowId, targetId).Where(predecessors.Contains).ToArray();
+    }
+    /// <summary>Apply the same frozen manual-source eligibility used at acceptance and execution.</summary>
+    public static bool IsOrdinaryNumericParameter(Port port)
+        => port.Type.Shape==ValueShape.Scalar && port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+    public static Func<OutputReference,bool> CaptureManualParameterEligibility(Workflow workflow,string targetId)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        if(!workflow.Nodes.Any(node=>node.Id==targetId))return _=>false;
+        var frozen=new ManualReferenceQualification(workflow,workflow.Id,targetId);
+        return reference=>reference is not null && frozen.Validate(reference) is null;
+    }
     public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId, string targetId)
     {
         var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
@@ -172,7 +203,7 @@ public sealed class OutputBindingChangeService
     private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor? projection)
     {
         var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
-            ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+            ?projection.Columns.Where(column=>column.Value is not null).Select(column=>column.Value!.PortId).ToHashSet(StringComparer.Ordinal):null;
         return schema.Outputs.Select(port=>new OutputVariable
         {
         PortId=port.Id,Name=port.Id,DisplayName=schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,

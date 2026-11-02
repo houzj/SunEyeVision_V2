@@ -1,0 +1,81 @@
+{
+  "unit": "B01 Boolean 开关",
+  "status": "基础开关实现及自动核收通过；VS实际设计器、实际键鼠和完整Blob生产窗口验收待做",
+  "sourceFiles": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml.cs",
+      "sha256": "8760A110405D4CF95890433B999B1D5DFEEFBE0E5EFF8AFC6A720C02685657DC"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml",
+      "sha256": "DC32518F4F08C24619EA8DA7E7C6657B75B61D3C074E233E7F19C6FA92BC3C7A"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Boolean.cs",
+      "sha256": "6FF1C5F9C8D8F9DBFF3F2EEB207A50AF38EB12E1FFDC02BE22F0DB9C56C95FCC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "F161140F1434FC8D635F756687E1967BEDCB00923F88E322E397F124C3459F76"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+      "sha256": "708ABA4BEC618332BCB3EC63DDE51D247ABE55FBB401E776FD2CDDCB829D0A22"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "9A3F00AB5336C7D79DCF5F26C65D8A8F565B424163A8319498B349E68C2FD517"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "FCD3632DA6E58EFD5A8393662CC3792966535EA9ECE5C5024BC3DE53A60DF76F"
+    }
+  ],
+  "baselineRun": "Release/_validation/S4-20261025/DesignTime/attempt-115",
+  "baselineResult": "前三项通过，第四项退役原件解绑事件失败",
+  "pending": [
+    "实际VS设计器",
+    "实际键鼠与主题人工验收",
+    "完整Blob页面真实功能与完整方案保存验收归后续组合及集成，不由本组件测试代替"
+  ],
+  "productBuild": "UI Release 0错误/6494警告；全量Release 0错误/6496警告。正式产品目录未复制。",
+  "candidateTestCompilation": "扩展生产配置合同检查后，验证宿主编译0错误/601警告；首次命名空间错误修正并保留b01-host-test-compile-failed.log。当前仅测试编译，未运行修正。",
+  "hostChecksPrepared": [
+    "私有草稿不提前发布",
+    "正式节点配置确认",
+    "正式撤销重做",
+    "节点复制",
+    "正式Runtime配置JSON写入和重开原件",
+    "取消不发布"
+  ],
+  "trialPermission": "用户已确认检查结束，后续可关闭并构建；下一正式集成窗口仍优先图像源",
+  "verifiedRun": {
+    "path": "Release/_validation/S4-20261025/DesignTime/attempt-117",
+    "exit": 0,
+    "checks": 216,
+    "booleanChecks": 24,
+    "scope": "15项基础开关与已加载原件事件，9项真实节点配置/历史/复制/Runtime序列化合同；其余为现有组装回归",
+    "testOrderingFailure": "attempt-116：新增生产检查先加载Workflow，污染独立设计依赖断言；调整测试顺序后117通过，没有放宽独立依赖断言",
+    "probe": "Release/_validation/B01-20261029/toolbox-probe.json",
+    "probeExit": 0,
+    "visual": "已查看attempt-117/parameters-2.png，行对齐及原开关正常，不等于实际VS与人工验收"
+  },
+  "productHashes": [
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "49B09CE955CDCED555FA187F47CC0AD99D8D304500E3D1A4E01DB767F30AFCE7"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+      "sha256": "AEDD88462DDAFA445EC826E920026EA119E0B6864F75EF06E2FF29D4C7D25D91"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "E85F4D239930F042F4C4F028F8D38AB2FE99A23850B67896521C257C75683FD8"
+    }
+  ]
+}

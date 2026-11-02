@@ -26,7 +26,7 @@ using Mode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode;
 
 internal static class S2DocumentEditingCases
 {
-    private static readonly BlobSettings Basic=new(){IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=false,OutputGrayImage=false};
+    private static readonly BlobSettings Basic=new(){IsAreaFilterEnabled=false,BlobCountLimit=20000,OutputGrayImage=false};
     private static int passed;
     [STAThread] private static int Main()
     {
@@ -74,7 +74,7 @@ internal static class S2DocumentEditingCases
                 Require(result.Values[BlobSchema.Field(5)] is IReadOnlyImage,"规范图像类型改变");
                 var many=new byte[16*16];many[2*16+2]=255;for(var y=8;y<10;y++)for(var x=8;x<10;x++)many[y*16+x]=255;
                 using var multiple=HalImage.CreateFromBytes(many,16,16,1);
-                using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc});
+                using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,BlobCountLimit=1,SortMode=BlobSortMode.SortModeDecend});
                 var limited=(BlobOutput)((DeclaredOutputSnapshot)final.NodeResults["blob"].Result!).Output!;
                 Require(final.Success&&limited.Count==1&&limited.MinimumArea==4&&limited.MaximumArea==4,"统计未来自最终限数集合");
             });
@@ -159,11 +159,11 @@ internal static class S2DocumentEditingCases
                 var combo=(System.Windows.Controls.ComboBox)native.FindName("CBox");combo.ApplyTemplate();
                 var toggle=Visuals(combo).OfType<ToggleButton>().Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
                 toggle.IsChecked=true;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _,out _),"活动Upper没有来源仍可提交");
-                mode.TrySetConstant("SingleThreshold");Require(upper.View.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
-                mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _,out _),"恢复Double未恢复待选错误");
+                Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _),"活动Upper没有来源仍可提交");
+                mode.TrySetConstant("SingleThreshold");Require(upper.View.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
+                mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _),"恢复Double未恢复待选错误");
                 toggle.IsChecked=false;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(settingsView.TryCapture(out _,out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
+                Require(settingsView.TryCapture(out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
                 var controlling=new Port("controller",DataType.Text,EditModes:FieldEditModes.Constant|FieldEditModes.Reference,Choices:new TextChoiceConstraint(new[]{"a","b"}));
                 var dependent=new Port("dependent",DataType.Integer);var source=new ReferenceSetting(new OutputReference("node","out",DataType.Text));
                 var referenced=new DeclaredFieldsView(new[]{(controlling,new FieldPresentation("controller","mode","g",0,FieldEditorKind.Choice,new[]{"a","b"}),(ParameterSetting)source),(dependent,new FieldPresentation("dependent","value","g",1,FieldEditorKind.Scalar){Layout=new("p","s",new("controller","a",true))},(ParameterSetting)new ConstantSetting(1L))},_=>{});

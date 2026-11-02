@@ -6,8 +6,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
-using NativePopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
-using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox;
+using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
+using NativeText=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Text;
 

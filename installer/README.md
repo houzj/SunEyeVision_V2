@@ -7,6 +7,15 @@ pwsh -NoProfile -File installer/Pack-Release.ps1
 ```
 
 要求 PowerShell 7、.NET SDK、Inno Setup 6，以及已生成的依赖锁。
+VS 的 Release 封装步骤优先使用 `ReleasePowerShellPath`，其次查标准 PowerShell 7 安装目录，最后使用构建进程的 PATH。使用便携版时，可在不入库的 `installer/Release.Local.props` 配置绝对路径：
+
+```xml
+<Project><PropertyGroup>
+  <ReleasePowerShellPath>D:\开发工具\PowerShell\pwsh.exe</ReleasePowerShellPath>
+</PropertyGroup></Project>
+```
+
+也可用 MSBuild 参数 `-p:ReleasePowerShellPath=...` 指定。路径可含空格；不存在的显式路径会提前报错。不要把个人路径写入共享 targets，也不要用 Windows PowerShell 5.1 替代 PowerShell 7。
 依赖锁同时包含常规框架目标与 win-x64 发布目标；日常 Debug 还原不会再移除发布目标。已有旧锁需先运行一次常规 dotnet restore 更新，之后发布继续严格使用 --locked-mode，不在打包时自动升级依赖。
 签名证书、干净工作区、VM 安装验收均不是正常打包的强制条件；清单如实记录源码状态、签名和安装验收结果。
 不自动提交代码、创建标签或安装程序；请在发布完成后提交源码和 version.json，按项目流程管理标签。

@@ -1,0 +1,74 @@
+{
+  "scope": "Candidate，修复前无窗口同源解绑复现，不是Loaded生命周期或完整B08验收",
+  "baseline": "eaa772288bc47aae82eafde35fa083b2b38b0735",
+  "originalConditionalPath": [
+    "ValueBase.IsSubA=false -> GetParamUnit",
+    "NameValueItem.GetParamUnitByZmq -> Float.Value",
+    "Float.CurValueA -> Math.Round(value, DecimalDigits)"
+  ],
+  "originalRoot": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab",
+  "boundary": "原件路径仅证明普通读取到0.125时按两位舍入，不推定算法输出；Group暂停，不将FloatBettween.GetValueToStore视为普通解绑",
+  "receipt": {
+    "stage": "S4",
+    "validationScope": "Candidate",
+    "attempt": 1,
+    "pid": 134212,
+    "exit": 1,
+    "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4NumericContractCases.cs",
+    "caseSourceSha256": "1A818EEC3610E892555427C00AF4493847723DFD0AF67F04ACFBB37CC997253F",
+    "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+    "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-001"
+  },
+  "samples": [
+    {
+      "Kind": "scalar",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ReferenceSetting { Reference = SunEyeVision.Plugin.Contracts.OutputReference, Conversion = Automatic, OriginId = , RebindingReason =  }",
+      "Writes": 0,
+      "Invalid": true,
+      "Error": "当前数值超出声明的编辑精度，请明确修改后提交。",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": false
+    },
+    {
+      "Kind": "range-left",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ConstantSetting { Value = 0.12 }",
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-right",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ConstantSetting { Value = 0.12 }",
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    }
+  ],
+  "loadedProduct": [
+    "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\t648BEB53028A8D39BE57CA8520823C14EA53011188C188F5A939882DBAF1CACC",
+    "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\t91AAE8C7895ABA927DAE8134A50B9B3FDC428065055F3029541664D4BEBD258C",
+    "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\tFEABDD9E1A7A3704B885B60284B3F839634B9B9D08BD793D479E6EC9B10FEA81",
+    "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\tE334E5096BD29502E5A49F4112E3C3F2274D5285BE857EB64F0D5E457F18AB82"
+  ],
+  "design": "scalar解绑复用已有TrySetConstant，使当前值统一经NativeNumericCommit.PrepareValue和正式写入；保留空当前值新常量入口、宿主拒绝与旧实例门禁。禁用迟到另用真实Loaded窗口复现后处理。"
+}

@@ -1,0 +1,143 @@
+{
+  "scope": "B08正式同版定向回归；不代表全部控件、算法或Blob整窗完成",
+  "sourceCommit": "232630453546a584cc25e80cedced94b1029289f",
+  "buildId": "development-eb1b10b24a094fee97f3f31600e3c198",
+  "payloadSha256": "36DF0C891EA40C706EAF6EDEE2D0246DDD32C2632D4A4D29DB98BCE0FA849886",
+  "payloadEntriesVerified": 569,
+  "payloadMismatches": 0,
+  "formalTracks": [
+    {
+      "track": "NumericIndexProduction",
+      "stage": "S4",
+      "attempt": "001",
+      "receipt": "Release\\_validation\\S4-20261025\\NumericIndexProduction\\attempt-001\\receipt.json",
+      "receiptSha256": "B4D9420124B8F2E55AE64D0CC91AA2F43A254E1F7DD7360D9DBB3680EF679D27",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\NumericIndexProduction\\attempt-001\\loaded-product.tsv",
+      "loadedProductSha256": "1D3FD3818970E987583DE755DCD639C0D5AD7D5A57EADD381DE28DADEE623A45"
+    },
+    {
+      "track": "ManualReferenceQualification",
+      "stage": "S4",
+      "attempt": "009",
+      "receipt": "Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-009\\receipt.json",
+      "receiptSha256": "3B197D8892DADB46B3FB677A99568F75BADEF017BD8AC4016D0C66F1377E3DAB",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-009\\loaded-product.tsv",
+      "loadedProductSha256": "983437F66497CD350B8C994E0DCA42315F44474E92E50CB2C78CE491589D75CD"
+    },
+    {
+      "track": "ParameterValues",
+      "stage": "S4",
+      "attempt": "011",
+      "receipt": "Release\\_validation\\S4-20261025\\ParameterValues\\attempt-011\\receipt.json",
+      "receiptSha256": "C7819836C5B76A0A983874B153C3E5C21E2C9EC10C3115C9C404E00BF8040CE4",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\ParameterValues\\attempt-011\\loaded-product.tsv",
+      "loadedProductSha256": "C77C8ADA0B91D9C60168B88AAC3D5EBAB8132823F736158C200484F6EB0945D9"
+    },
+    {
+      "track": "BlobParameterProduction",
+      "stage": "S4",
+      "attempt": "007",
+      "receipt": "Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-007\\receipt.json",
+      "receiptSha256": "DABDEE4DD7ABA8F37B0BC0E0E88C103F8391D9E5E68EE9FE962F189048DDDFDC",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-007\\loaded-product.tsv",
+      "loadedProductSha256": "2A3EDCFB2F0E45CF7EF8D87CFFA7AEE85D824BD43D71BA76EA843DDF74FF3874"
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "141",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-141\\receipt.json",
+      "receiptSha256": "2C8C84B2E132DB95103E94798578323709867F9F42E48D92C74B4A4B44776D10",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-141\\loaded-product.tsv",
+      "loadedProductSha256": "BB2CF4E511EB5DDCADC107FA588B8019D346D8963FE31EF0EC23DCE6C78BA3E3"
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "142",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-142\\receipt.json",
+      "receiptSha256": "C825F1C34A56A0B933FA73CCE90CDC67F47101E9EE91428387B1E5CCA8EB0096",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-142\\loaded-product.tsv",
+      "loadedProductSha256": "C56169CF26E03E8590F2D41F82D324131439D523B3547E9859E9C7930889FBC9"
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "143",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-143\\receipt.json",
+      "receiptSha256": "895EA2EAF89B61CEADF39ACF637401336A05D1E4D6B84B0518615A100CE63AA2",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-143\\loaded-product.tsv",
+      "loadedProductSha256": "BB2CF4E511EB5DDCADC107FA588B8019D346D8963FE31EF0EC23DCE6C78BA3E3"
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "144",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-144\\receipt.json",
+      "receiptSha256": "75BC5F0C41C1070EFE40405242C60E9E4443217A7D67DFA587F75FEBC559A456",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-144\\loaded-product.tsv",
+      "loadedProductSha256": "BB2CF4E511EB5DDCADC107FA588B8019D346D8963FE31EF0EC23DCE6C78BA3E3"
+    },
+    {
+      "track": "VariableFields",
+      "stage": "S4",
+      "attempt": "017",
+      "receipt": "Release\\_validation\\S4-20261025\\VariableFields\\attempt-017\\receipt.json",
+      "receiptSha256": "B78C8E93F516DB673E963F1FB8D1C01F4D692BF59E2B799BF4448A0DD7C05638",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\VariableFields\\attempt-017\\loaded-product.tsv",
+      "loadedProductSha256": "FBF23AEF24645B02B50C96F67BBBD926E09EC201F40E3E28AD7BBE4A8AA91DAA"
+    },
+    {
+      "track": "NumericContract",
+      "stage": "S4",
+      "attempt": "003",
+      "receipt": "Release\\_validation\\S4-20261025\\NumericContract\\attempt-003\\receipt.json",
+      "receiptSha256": "5B58AEED1E437B2EE869259405D86BD3D05E17A93B16304F32C74705E8C45506",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\NumericContract\\attempt-003\\loaded-product.tsv",
+      "loadedProductSha256": "DD134BB94EA89CEB9352BB522BF27B4A1B38D99211E758B93FA7E441F039A25F"
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "stage": "S4",
+      "attempt": "024",
+      "receipt": "Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-024\\receipt.json",
+      "receiptSha256": "AD0A6B2E9251779C13057E5804BD8C8AC74A9AB58616FE33D36832C91F4CE5BB",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-024\\loaded-product.tsv",
+      "loadedProductSha256": "506581962699C113372B40CEA07E4138BF10A5B809392ADD26B736A7E6B99A0E"
+    },
+    {
+      "track": "DesignTime",
+      "stage": "S4",
+      "attempt": "144",
+      "receipt": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-144\\receipt.json",
+      "receiptSha256": "04DD2890897BBE8A23320CE21F6B71D8886750EC4969E4B4D7BCD2628CD832BE",
+      "loadedProduct": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-144\\loaded-product.tsv",
+      "loadedProductSha256": "491A730923901B8A7C9C7A337FD9891D5DB64BFE901C3C7DA8348106BBA658C6"
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "stage": "S3",
+      "attempt": "068",
+      "receipt": "Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-068\\receipt.json",
+      "receiptSha256": "FC1E2C4A71C71BFFF95D67D3B4C326A50F64A113924BE86B22144F0FC5F6DF1F",
+      "loadedProduct": "Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-068\\loaded-product.tsv",
+      "loadedProductSha256": "3E2FAB0DA58F2E675FA78DEFB0A02B8220688D7AD322AFF0927B64C71625C976"
+    }
+  ],
+  "windowPresentationFailure": {
+    "sha256": "78E19F46ACD35238F401E1D160B5682B55AD736EE427EB42931BF6E40EFB5DCD",
+    "status": "极大上限未接纳后超时；历史已有，未解决，非B08实际数值范围",
+    "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-360/run.log",
+    "receipt": "未生成"
+  },
+  "limitations": [
+    "ROI及结果图文正式组合未接入，真实整窗执行、确认和保存受保护",
+    "方案偏好为会话临时，保存、Dirty和Undo未实现",
+    "实际VS设计器与用户人工验收未执行",
+    "极大Float64范围上限旧失败未解决，不计通过",
+    "VM算法同态和S3未完成"
+  ],
+  "loadedEntriesVerified": 151,
+  "loadedEntryMismatches": 0,
+  "loadedMvidStatus": "回归记录包含路径和SHA256，未独立记录运行时MVID。"
+}

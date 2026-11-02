@@ -1,0 +1,560 @@
+{
+  "scope": "整工具统一迁移候选后台阶段，不是96项实现或整工具闭口",
+  "sourceCommit": "1cf5de7fd0ce4dd86089a1157701b793ee3e1eac",
+  "designCommit": "e79a9f5d",
+  "originalMatrixMain": "349ece68/0a751e88",
+  "builds": [
+    {
+      "seconds": 114.41,
+      "warnings": 6527,
+      "exit": 1,
+      "errors": 1,
+      "reason": "一个xUnit消费者旧BlobSort CS0103，全仓核查后同步新模型",
+      "log": "Release/_validation/blob-whole-tool-build-001.log",
+      "sha256": "37BC8868F012E9E7B501403B42B6E2187EAC73BDFD67F64B8DE93B5F90F8AEFD"
+    },
+    {
+      "seconds": 37.44,
+      "warnings": 3410,
+      "exit": 0,
+      "errors": 0,
+      "log": "Release/_validation/blob-whole-tool-build-002.log",
+      "sha256": "668EA9DB5A364E0846201D85246895B17275845907CC92CB812F522D90198A7B"
+    }
+  ],
+  "runs": [
+    {
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        }
+      ],
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 7,
+        "pid": 12400,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3BlobRuntimeCases.cs",
+        "caseSourceSha256": "2CEBCBDC9D057AA5CDB116C56560B6B676254C3EDC02D6A4AEAF2C65CFEFC597",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-007"
+      },
+      "track": "RuntimeAlgorithm",
+      "receiptSha256": "B5625EFC07E35ADE582E51CA8B73C5DF188FD84AAA1E4B9F9CEAF93B3AF434B9",
+      "loadedManifestSha256": "1E2C31FEA738784B2908780DDBD70D4614C05787B9383133E4FD71727FDDCEBA",
+      "groups": 9
+    },
+    {
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 4,
+        "pid": 144484,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeKernelCases.cs",
+        "caseSourceSha256": "4BC03711ACA1B06082FE81C48BCD545CE9723D5ACE69A07CCEA8999118DD0056",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-004"
+      },
+      "track": "RuntimeKernel",
+      "receiptSha256": "9E775C5B10BC53C8651BE64ECCB35C2B94726F7BD92C94F66E9703E15D1B327F",
+      "loadedManifestSha256": "749D423A519257C2F5306AD2D0AF8C5C67248BCE8AE4B414F2D5397E2160EB80",
+      "groups": 19
+    },
+    {
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 9,
+        "pid": 134540,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeWorkflowCases.cs",
+        "caseSourceSha256": "ABED92268F32E2C93CA010AAC3AF8574653EB4E0C2B7DC3B5DDB6E9AAB92B9DB",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-009"
+      },
+      "track": "RuntimeWorkflow",
+      "receiptSha256": "19E5657D7937B34262AFACB512E3F2D490BC647749E354AEF4E5B843492BC208",
+      "loadedManifestSha256": "CC58EC82E5274987B4CA5E7D7CF360CDFC7B09303E456CC6850AB199C66CA201",
+      "groups": 10
+    },
+    {
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.UI",
+          "reportedSha256": "A4F99552D2D7511E7AE27B07976501A2C571BE9471CA8EDBE0DEEE812C444F72",
+          "actualSha256": "A4F99552D2D7511E7AE27B07976501A2C571BE9471CA8EDBE0DEEE812C444F72"
+        }
+      ],
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 10,
+        "pid": 60520,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4ParameterCurrentValueCases.cs",
+        "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-010"
+      },
+      "track": "ParameterValues",
+      "receiptSha256": "469E975EAB2EFEFFDCF2028438DB648E25E97E8ADE4970BE255290D0A03C4027",
+      "loadedManifestSha256": "9B7D00EC52987372028C4EE42E89C2EC7CAB88FAB769AB7B0DED2F32A7EF019D",
+      "groups": 18
+    },
+    {
+      "loaded": [
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "reportedSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4",
+          "actualSha256": "4376DF03F22D737537A999CFF844F9177E279D5AB6425391DDF4EA9E513D12B4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "reportedSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5",
+          "actualSha256": "2BD942A41525016050F4952C2D78DE9EFA67EBA1EE2D2DC9E14AB97FBD8EC5E5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.SDK",
+          "reportedSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9",
+          "actualSha256": "43033F33D0E9FD32170257951CD1080C3DB9E74958BF95642309651848FC7BC9"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Contracts",
+          "reportedSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C",
+          "actualSha256": "D91E716D879C33C803CCE6D0228B45D6E5F6868BF6C7376E787603A8A58A9D0C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Runtime",
+          "reportedSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40",
+          "actualSha256": "051EA1F823F5004C131EC9D9F8924B35F6AE534F4A01361AE2A4F57E1BD68B40"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Core",
+          "reportedSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B",
+          "actualSha256": "71FB9C77986AA7041A6660A4D82D4CF1D0CA1DD7D5FEB2055FAFD6A7FDAFC57B"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "reportedSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5",
+          "actualSha256": "FB6CA8D13C9C7B5CF4A2C573DFC0ABDD1AB63A03F36870A6C3A6E13457D56BE5"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Plugin.Wpf",
+          "reportedSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C",
+          "actualSha256": "1738BA70AD318874597EDDEE9157B6C6D42BB566C48263E5C968A6A01033564C"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "reportedSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0",
+          "actualSha256": "CF9F1ECF06A76D1A9346EA4DE5EAA90525BE6B3CCE1E4295E7B312C25BCF33B0"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "reportedSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170",
+          "actualSha256": "3529E901525977D9C26E52B6E1375D9AA565142D5A96236AAAEB3EFD5F9DC170"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.Workflow",
+          "reportedSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4",
+          "actualSha256": "7236DA7DA468DA29B713D5258C08CB2212B493414047B2A23CF1E3102E0C7CF4"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter",
+          "reportedSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457",
+          "actualSha256": "3C4ED9D363404884147D97B1B1BAD9FBFD248848CB1FCF9FF3D854B3F1E45457"
+        },
+        {
+          "matches": true,
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "reportedSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80",
+          "actualSha256": "0E8B3AD2E635C79CCE52816BBC4A7726B7B90CF10A2CDE952B5E646B74184C80"
+        }
+      ],
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 17,
+        "pid": 4684,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "2D59640E41FFD16B41B425A80372585B7013716F1865521CAB7F993B98B64C6F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-017",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-017\\blob-parameter-production-report.json"
+      },
+      "track": "BlobParameterProduction",
+      "receiptSha256": "91FD5D62149D264BF95A67F573DD5B1BDF42A3639718EF72BE6ECE5A73C13FD8",
+      "loadedManifestSha256": "0894D8A8747D0AC43CC7D57F28CE0EC2FFBC8B68017BE603086529EB839CB54B",
+      "groups": 21
+    }
+  ],
+  "failures": [
+    {
+      "reason": "测试旧默认false断言，与已证原XML二值默认True不符",
+      "logSha256": "223D2D5832B2132CBD262B6927EA1D55C79F0379975F0B72F5A41A189EBC6426",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 71824,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeKernelCases.cs",
+        "caseSourceSha256": "04ABD215288FF5E7B26D0968C53B03811DC8887A129E95460D5384AA5C71F612",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-003"
+      }
+    },
+    {
+      "reason": "测试Setting辅助函数只识别九绑定名称，Connectivity在产品调用前KeyNotFound",
+      "logSha256": "3F728D3A7AF1B10B9B8A80CA56238720755E67E20C4B1BE7E0F42D35A03D9000",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 15,
+        "pid": 60720,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "4626272117631B23958E2F69B41E0BC544B986A58C03A5C74118E43D8F13FDB2",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-015",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-015\\blob-parameter-production-report.json"
+      }
+    },
+    {
+      "reason": "测试对含未解析阈值绑定的配置调用CaptureSettings触发正式拒绝；改为检查新常量字段并保留真实运行",
+      "logSha256": "CC40FADEAA8825FC4D6BA6A37DCE94CDEAAEE65A3E0A6D4434A5C5EDDC22425D",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 16,
+        "pid": 135536,
+        "exit": 1,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "25F590D2356ED807F5AAB72490C478DFC48A80665E74A23CF87C2121614E513F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-016",
+        "track": "BlobParameterProduction",
+        "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-016\\blob-parameter-production-report.json"
+      }
+    }
+  ],
+  "samples": [
+    "8x8两对角像素：4连通两域各1，8连通一域2；调用者线程4/8均恢复",
+    "1像素与2x2两组件，六真实特征×三方向，稳定同值/排序后限数/element-id与Label",
+    "原九字段绑定与两个模式门禁；新增同一真实Host组调试冻结、捕获后修改、取消确认、失败不半写、复制历史保存重开",
+    "T=0/100/255双极性六掩膜，非矩形Domain/ROI、双孔/NG、独立reader沿既有断言"
+  ],
+  "cancellation": "算法预取消；安装作用域后缺pose异常恢复；实际安装后中途取消未测",
+  "environment": {
+    "productRoot": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+    "validationScope": "Candidate",
+    "gui": "未启动。主仓用户程序PID39612运行中，不关闭或干扰。",
+    "blobProductionEnvironment": "S4_BLOB_MODE_ADMISSION=1; S4_BLOB_POLARITY_UI未设置"
+  },
+  "pendingValidation": [
+    "BlobResultWorkspace真实两轮表/派生图联动",
+    "FieldEditing正式Loaded控件",
+    "RuntimeEditorUiStage真实整窗保护及新正式字段",
+    "DesignTime独立同视图；真实VS、其他DPI与人工未验"
+  ],
+  "notImplemented": [
+    "ROI本地定义/保存owner/同帧编辑租约/部分环物化",
+    "原IMAGE专属CanSubscribeA/Visible声明资格",
+    "位置三方式十float/FIXTURE转换",
+    "其余阈值模式/软阈值/填孔/其他高级筛选",
+    "四形状参数量化到最终比较及原算法顺序",
+    "其余七排序特征与原生排序同值语义",
+    "原判定聚合/空集/比较；原组合禁用，本方12判定不冒充原映射",
+    "原Blob目标连通域绘制图/原三态轮廓",
+    "Angle/LongAxis/ShortAxis真实数值",
+    "Blob图文正式owner/冻结/同次图层",
+    "正式连续调试会话与底栏",
+    "原始上游输入槽到物理坐标域proof",
+    "原二值输出像素/Domain等价和原资源释放全分支"
+  ],
+  "loadedIdentityVerification": "逐条真实TAB解析并核对全部57条载入记录与候选产物SHA256，零差异。上一证据提交只记录清单文件SHA，载入数组因分隔符识别错误为空；本提交补全，不改变测试结果。"
+}

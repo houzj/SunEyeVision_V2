@@ -1,0 +1,21 @@
+{
+  "unit": "工作流线图像源缩略条S1候选主仓集成",
+  "commits": [
+    "a803981158d42279a9d28c093e76b1a7cddd2c24",
+    "b6ed993ebeebfe0214ea3abff8b4e1152e4bb6f4"
+  ],
+  "integration": "git apply --check后按3文件hunk集成，无整分支覆盖，无新提交",
+  "uiBuild": "0错误/6524警告",
+  "fullBuild": "0错误/6526警告",
+  "validation": "ImageSourceRecovery037：346通过/0失败，覆盖原21失败",
+  "report": "Release/_validation/S4-20261025/ImageSourceRecovery/attempt-037/image-source-recovery-report.json",
+  "nativePath": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs",
+  "nativeSha256": "DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79",
+  "manualAccepted": false,
+  "remaining": [
+    "主结果区实际视觉核收",
+    "VS设计器",
+    "用户人工验收"
+  ],
+  "goalStage": "来源线S1，不等于Blob算法阶段"
+}

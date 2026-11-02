@@ -503,10 +503,13 @@ public class GlobalVariable : ObservableObject
     /// <summary>
     /// 检查类型是否有效
     /// </summary>
+    // Runtime declarations identify scalar/sequence shape explicitly. The manager's
+    // IsComplexValue property describes its current text-editor capability, not value ownership.
+    internal static bool IsPureValueDeclaration(string type)
+        =>GlobalProducerBindingRules.TryDescribeTarget(type,out _,out _,out _);
     private static bool IsValidType(string type)
     {
-        // 通过 SdkTypeVocabulary 验证类型有效性（SSOT）。Region 已移出词汇表，不再需要特判。
-        return SdkTypeVocabulary.ToSystemType(type) != null;
+        return IsPureValueDeclaration(type)||SdkTypeVocabulary.ToSystemType(type) != null;
     }
 
     /// <summary>

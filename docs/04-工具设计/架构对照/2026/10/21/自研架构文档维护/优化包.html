@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 个优化包</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#c96b6b;
+}
+*{box-sizing:border-box}
+body{
+  max-width:720px;margin:0 auto;padding:44px 26px 100px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+.crumb{font-size:12px;color:var(--faint);margin-bottom:14px}
+.crumb a:hover{text-decoration:underline;color:var(--accent)}
+
+h1{font-size:22px;font-weight:600;margin:0 0 7px}
+.lede{margin:0 0 22px;font-size:13.5px;color:var(--dim)}
+
+#q{
+  display:block;width:100%;margin:0 0 20px;padding:8px 11px;
+  background:#0a1621;border:1px solid #24404f;border-radius:4px;
+  color:inherit;font:inherit;font-size:13.5px;
+}
+#q:focus{outline:none;border-color:#4a7f96}
+#q::placeholder{color:#5c7385}
+
+h2{
+  font-size:12.5px;font-weight:600;color:#8fb4c8;letter-spacing:.04em;
+  margin:30px 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line);
+}
+h2:first-of-type{margin-top:6px}
+h2 i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:baseline;gap:10px;padding:3.5px 0}
+li a{flex:1;min-width:0;color:#cfe4ee}
+li a:hover{color:#fff;text-decoration:underline}
+li .id{font-family:Consolas,monospace;font-size:11px;color:var(--faint);width:30px;flex:none}
+li .st{font-size:11px;white-space:nowrap;width:56px;text-align:right;flex:none}
+li .st.ok{color:var(--ok)}
+li .st.partial{color:var(--warn)}
+li .st.none{color:var(--bad)}
+li .sz{font-size:11px;color:var(--warn);white-space:nowrap;flex:none}
+
+.none{display:none;font-size:13px;color:var(--dim);margin:16px 0}
+@media(max-width:600px){ body{padding:30px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb"><a href="index.html">架构文档</a> › 12 个优化包</div>
+
+<h1>12 个优化包</h1>
+<p class="lede">每个包解决一类问题。想看它牵扯哪些功能，进「改动影响关系图」。</p>
+
+<input id="q" type="search" autocomplete="off" placeholder="筛选">
+<p class="none" id="none">没有匹配项。</p>
+
+<div id="list"></div>
+
+<script>
+const DATA = [{"h":"按编号","items":[{"id":"O01","t":"入口、装配与编辑事务","f":"优化方案/optimization-o01.html","st":"","k":277},{"id":"O02","t":"统一运行范围、连续与停止完成","f":"优化方案/optimization-o02.html","st":"","k":20},{"id":"O03","t":"参数、绑定、变量和控制结构合同","f":"优化方案/optimization-o03.html","st":"","k":21},{"id":"O04","t":"生命周期、图像最后读者与退出","f":"优化方案/optimization-o04.html","st":"","k":19},{"id":"O05","t":"标准工具窗口：执行、连续、提交和关闭","f":"优化方案/optimization-o05.html","st":"","k":17},{"id":"O06","t":"图像、ROI、图形文字及坐标一致性","f":"优化方案/optimization-o06.html","st":"","k":1813},{"id":"O07","t":"模块结果树与输出投影","f":"优化方案/optimization-o07.html","st":"","k":21},{"id":"O08","t":"方案、标定文件与恢复事务","f":"优化方案/optimization-o08.html","st":"","k":28},{"id":"O09","t":"相机、通信和后台真实副作用","f":"优化方案/optimization-o09.html","st":"","k":43},{"id":"O10","t":"插件、SDK、脚本和发布依赖","f":"优化方案/optimization-o10.html","st":"","k":35},{"id":"O11","t":"自有狗授权、文件保护与信任政策","f":"优化方案/optimization-o11.html","st":"","k":10},{"id":"O12","t":"专业工具逐项验收与同条件性能","f":"优化方案/optimization-o12.html","st":"","k":20}]}];
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const STL = {"implemented":["已实现","ok"],"partial":["部分实现","partial"],"unimplemented":["未实现","none"],"unknown":["未确认","none"]};
+
+let html = "";
+DATA.forEach(function(g){
+  if(!g.items.length) return;
+  html += '<h2>'+esc(g.h)+'<i>'+g.items.length+'</i></h2><ul>';
+  g.items.forEach(function(it){
+    const s = it.st ? STL[it.st] : null;
+    const sz = (it.k && it.k >= 500) ? '<span class="sz">'+(it.k>=1024?(it.k/1024).toFixed(1)+" MB":it.k+" KB")+'</span>' : '';
+    html += '<li><span class="id">'+esc(it.id||"")+'</span>'+
+            '<a href="'+esc(it.f)+'" data-k="'+esc(((it.t||"")+" "+(it.id||"")+" "+(it.f||"")).toLowerCase())+'">'+esc(it.t)+'</a>'+
+            (s ? '<span class="st '+s[1]+'">'+s[0]+'</span>' : '')+ sz +'</li>';
+  });
+  html += '</ul>';
+});
+
+document.getElementById("list").innerHTML = html;
+
+const qEl = document.getElementById("q");
+const noneEl = document.getElementById("none");
+
+qEl.addEventListener("input", function(){
+  const q = qEl.value.trim().toLowerCase();
+  let shown = 0;
+
+  document.querySelectorAll("li").forEach(function(li){
+    const a = li.querySelector("a");
+    const ok = !q || (a && a.dataset.k.indexOf(q) >= 0);
+    li.style.display = ok ? "" : "none";
+    if(ok) shown++;
+  });
+
+  document.querySelectorAll("h2").forEach(function(h){
+    const ul = h.nextElementSibling;
+    const vis = ul && ul.querySelector('li:not([style*="none"])');
+    h.style.display = vis ? "" : "none";
+    if(ul) ul.style.display = vis ? "" : "none";
+  });
+
+  noneEl.style.display = (q && !shown) ? "block" : "none";
+});
+
+document.addEventListener("keydown", function(e){
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); qEl.focus(); }
+  if(e.key === "Escape"){ qEl.value=""; qEl.dispatchEvent(new Event("input")); }
+});
+</script>
+</body>
+</html>

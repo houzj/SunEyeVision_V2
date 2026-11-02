@@ -1,0 +1,51 @@
+{
+  "unit": "执行底栏、结果表与图像联动",
+  "formalTests": [
+    "原固定底栏6组",
+    "结果publication7组",
+    "通用原结果表1组",
+    "结果来源2组",
+    "结果冻结与通知生命周期24组"
+  ],
+  "loadedRecords": 22,
+  "receipts": [
+    {
+      "track": "WindowPresentation/attempt-376",
+      "sha256": "194448D637E80465E7DE85FDAE31E9BB7814E20260175899BBF008CDCC4D0314",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-376/receipt.json"
+    },
+    {
+      "track": "WindowPresentation/attempt-377",
+      "sha256": "8607E91848DFB7CBEACBB8596C31CC94413FFD245C1A2BEBB82B82E982E039A4",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-377/receipt.json"
+    },
+    {
+      "track": "WindowPresentation/attempt-378",
+      "sha256": "0067C5F05C78D7C236B83B2299A4E9B26B4C461269DB7782D0CB100C2C4968A5",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-378/receipt.json"
+    },
+    {
+      "track": "WindowPresentation/attempt-379",
+      "sha256": "7A8954F5F73BB66A425164DE213A25A7192764B56F82F789ECCD2FB965C1C16C",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-379/receipt.json"
+    },
+    {
+      "track": "ResultChain/attempt-011",
+      "sha256": "784599052B497B3A3CA13341C7E7B18FE3F4FAA99DFF3CDB1C74AF5498B2C7AA",
+      "receipt": "Release/_validation/S4-20261025/ResultChain/attempt-011/receipt.json"
+    }
+  ],
+  "existing": "BlobResultView/DeclaredResultTable及基于单次DeclaredOutputSnapshot的ResultPublication已有真实链；ResultWorkspacePresenter已有同帧同域选中高亮。",
+  "payloadSha256": "462537ED48848A98B50A9082B316791262366801F43BE37D9DB8E1545DA4A818",
+  "missing": [
+    "Blob窗口尚未消费NativeToolEditorFrame；旧SDK窗口连续循环尚未迁到工作流单节点调试会话，不能在新UI复制循环或增第二底栏",
+    "原Blob结果XML明确9个数据项，序号是否另构一列未证；当前Blob表8列且缺Angle、LongAxis、ShortAxis正式输出，现有最小旋转矩形计算不证明原厂定义",
+    "实际Blob表行到当前图像的一次发布逐项联动尚待真实宿主验证；正式图形/文字配置和背景叠层唯一owner尚未接入",
+    "ROI正式定义/资源消费、结果配置和Blob执行保护继续保留；VS、其他DPI及人工未验"
+  ],
+  "status": "公共基础已验证，Blob完整生产链未闭口",
+  "date": "2026-10-31",
+  "buildId": "development-7636ff78f2c04d9ab87de52a51bb649e",
+  "sourceCommit": "591db0a426fc28af4357a87ff0b22fd27f768f20",
+  "loadedMismatch": 0
+}

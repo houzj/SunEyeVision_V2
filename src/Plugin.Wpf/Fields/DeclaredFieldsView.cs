@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Windows;
@@ -25,6 +25,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<NativeGraphicStylePresenter> _displayCompositions=new();
  private bool _disposed;
+ private readonly ReferenceWindowOwner? _referenceWindowOwner;
+ private readonly bool _ownsReferenceWindowOwner;
  private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
@@ -45,8 +47,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _tabs.SelectedIndex=value;
   }
  }
- public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
- public bool HasPendingActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
+ public bool HasInvalidActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
+ public bool HasPendingActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
  private readonly Dictionary<string,FrameworkElement> _visualSources=new(StringComparer.Ordinal);
@@ -126,7 +128,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
  private NativeParameterRow BorrowRow(NativeParameterGroup group,FrameworkElement view,Func<NativeParameterItemState>? state=null)
  {
-  var row=new NativeParameterRow(group,view,state,()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+  var row=new NativeParameterRow(group,view,state,()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
   _parameterRows.Add(row);return row;
  }
  private static void BindNativeRowMargin(FrameworkElement view,NativeHost page)
@@ -166,6 +168,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();
  public bool TryValidate(out string error)
  {
+  if(ChoiceReadinessError() is {} unavailable){error=unavailable;return false;}
   var checkedRanges=new HashSet<FrameworkElement>();
   foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
   {
@@ -190,15 +193,25 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyList<NativeGraphicDisplayOptions>? graphicDisplays=null,
   IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null,
   IReadOnlyList<NativeAssistOptions>? assistCompositions=null,IReadOnlySet<string>? headerlessSectionAnchors=null,
-  IReadOnlyDictionary<string,double>? pageLabelWidths=null)
+  IReadOnlyDictionary<string,double>? pageLabelWidths=null,
+  IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
+  IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
+  if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
   {
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
   var declarations=all.ToDictionary(field=>field.Port.Id,StringComparer.Ordinal);
+  _choiceDisplays=choiceDisplays?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)??new Dictionary<string,DeclaredChoiceDisplayOptions>(StringComparer.Ordinal);
+  foreach(var (id,option) in _choiceDisplays)
+  {
+   if(!declarations.TryGetValue(id,out var field)||option is null||field.Presentation.Editor!=FieldEditorKind.Choice)
+    throw new ArgumentException("枚举展示配置引用了未知或非枚举字段。");
+   option.ValidatePort(field.Port);
+  }
   if(pageLabelWidths is not null&&pageLabelWidths.Any(entry=>string.IsNullOrWhiteSpace(entry.Key)
       ||!double.IsFinite(entry.Value)||entry.Value<0||entry.Value>500
       ||!all.Any(field=>(field.Presentation.Layout?.Page??field.Presentation.Group)==entry.Key)))
@@ -272,6 +285,14 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   _textExpressions=textOptions;
   var graphicOptions=ValidateGraphics(declarations,graphicDisplays,paired,radios,imageProviders,textOptions);
   var graphicIds=graphicOptions.Values.SelectMany(GraphicIds).ToHashSet(StringComparer.Ordinal);
+  var visibilityIds=new HashSet<string>(StringComparer.Ordinal);
+  foreach(var option in visibilityDisplays??Array.Empty<NativeVisibilityDisplayOptions>())
+  {
+   if(!visibilityIds.Add(option.VisibleFieldId)||graphicIds.Contains(option.VisibleFieldId)||!declarations.TryGetValue(option.VisibleFieldId,out var declared)
+       ||declared.Port.Type!=DataType.Boolean||!declared.Port.Required||declared.Port.EditModes!=FieldEditModes.Constant||declared.Presentation.Layout?.DialogGroup is not null)
+       throw new ArgumentException("眼睛行必须具有唯一正式常量布尔字段。");
+  }
+  graphicIds.UnionWith(visibilityIds);
   ValidateTextDisplays(declarations,textDisplayOptions,graphicIds,paired,radios,imageProviders,inlineConstants,textOptions);
   foreach(var option in textDisplayOptions)
   {
@@ -285,7 +306,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
    var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),
-       propose:proposal=>ProposeSingle(field.Port.Id,proposal));
+       propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null,referenceBehavior:references?.ReadBehavior?.Invoke(field.Port)??ParameterReferenceBehavior.StrictExactlyOne);
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);
@@ -301,6 +322,14 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      value=>graphic.TrySetConstant(fieldId,value),()=>graphic.TryCommitPending(fieldId),handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
     _rows.Add(id,graphic);
    }
+  }
+  foreach(var id in visibilityIds)
+  {
+   var state=states[id];var roles=new NativeGraphicDisplayOptions(id,id,id,id,id,ShowStyleButton:false);
+   var graphic=new NativeGraphicStylePresenter(roles,new Dictionary<string,DeclaredFieldState>{{id,state}},_groupPresentations,CurrentGroup,visibilityOnly:true);
+   _displayCompositions.Add(graphic);_rows.Add(id,graphic);
+   access.Add(id,new(id,graphic,()=>state.Accepted,()=>state.HasInvalidInput,()=>false,()=>state.Error,()=>graphic.Input(id),
+       value=>graphic.TrySetConstant(id,value),()=>!state.HasInvalidInput,handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
   }
   foreach(var field in all)
   {
@@ -321,7 +350,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    else if(!paired.Contains(field.Port.Id))
    {
     var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id));
+        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
     if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
     if(imageProviders.TryGetValue(field.Port.Id,out var provider))
@@ -466,6 +495,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _assists=[];
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
+  if(_ownsReferenceWindowOwner&&_referenceWindowOwner is not null)cleanup.Add(_referenceWindowOwner.Dispose);
   ParameterCleanup.Run(cleanup);
  }
 }

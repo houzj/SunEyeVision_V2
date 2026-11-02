@@ -1,0 +1,69 @@
+{
+  "scope": "仅独立worktree公共WPF候选，不代正式Release或完整B08",
+  "baseline": "7ebbf462d362f4c7f80be41fdc40e08f8ef30b0a",
+  "uiRestore": "本机包缓存成功",
+  "uiRelease": {
+    "result": "失败",
+    "errors": 1,
+    "warnings": 5382,
+    "reason": "候选libs/halcon/runtime/x64-win64不存在；没有复制原厂库或主仓Release",
+    "log": "Release/_validation/B08ReferenceUiCandidate/ui-build.log"
+  },
+  "wpfCompileAttempt": "-t:Compile未执行WPF标记生成，164错误；非有效WPF构建方式，原日志保留，不视为产品编译失败结论",
+  "wpfBuild": {
+    "command": "dotnet build src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj -c Release --no-restore -p:BuildProjectReferences=false",
+    "errors": 0,
+    "warnings": 2683,
+    "log": "Release/_validation/B08ReferenceUiCandidate/wpf-build.log"
+  },
+  "composition": {
+    "source": "S4FieldEditingCases.cs的VerifyReferenceComposition/VerifyReferenceCandidateRefresh/SelectReferenceLeaf及既有视觉遍历原样提取；独立Application入口/EditorResources",
+    "buildErrors": 0,
+    "buildWarnings": 0,
+    "exitCode": 0,
+    "passedMessages": 6,
+    "sourceSnapshot": "Release/_validation/B08ReferenceUiCandidate/reference-composition.cs.txt",
+    "log": "Release/_validation/B08ReferenceUiCandidate/composition-run.log"
+  },
+  "variables": {
+    "source": "S4VariableReferenceCases.cs原样源码，候选WPF/Contracts与本机缓存Behaviors/System.Management",
+    "buildErrors": 0,
+    "buildWarnings": 1,
+    "exitCode": 0,
+    "passed": 13,
+    "log": "Release/_validation/B08ReferenceUiCandidate/variable-rerun.log",
+    "initialAttempt": "Copy-Item保留源码时间戳导致增量复用旧模块探针；variable-run.log保留。Rebuild强制重编译后才记13组通过"
+  },
+  "identities": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "sha256": "85AE3E8B9042028A9230EF37F1C500D288DA626ED0C68B0648962820F86B8761"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "EBB9FCB8B3FD1F7A180838E5633600264B19B584C7DE6A3B920C6A7A22BD4C58"
+    },
+    {
+      "path": "scripts/verification/S4FieldEditingCases.cs",
+      "sha256": "352C6A0FEE54C5B02DC6DEA44B700EA617CDC3CF039D545F00CAF483296BE07E"
+    },
+    {
+      "path": "scripts/verification/S4VariableReferenceCases.cs",
+      "sha256": "128C5CC68210CE9B0D64AFA040CE9B2429CDD44F38B7BF4F15349C5148711FBA"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "9311AC32CF2FC362AD901FAD8876780466CF52C90D469EE0EF538C0A166B969C"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "27B9A7F37E4878DF05E7DAE726FAD73A0DA6F0DA8899E06416332E7DE205E900"
+    }
+  ],
+  "notValidated": [
+    "主仓正式UI/全量Release同版验收",
+    "完整FieldEditing与RuntimeEditorUiStage轨道",
+    "VS实际设计器与用户人工外观",
+    "完整Blob生产接入与S3算法"
+  ]
+}

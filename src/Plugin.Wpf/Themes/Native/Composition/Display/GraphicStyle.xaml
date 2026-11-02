@@ -1,15 +1,15 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns:b08n0="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Popups" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:PControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls"
+ 
  xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab"
  xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView"
  xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView"
  xmlns:localization="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
  <ResourceDictionary.MergedDictionaries>
   <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
-  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Popups/PopupStyles.xaml"/>
   <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceControlStyles.xaml"/>
-  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml"/>
   <x:StaticExtension Member="localization:LocalizationResourceDictionary.Instance"/>
  </ResourceDictionary.MergedDictionaries>
  <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
@@ -65,7 +65,7 @@
       <localParamTab:LeftRightControl.RightContent>
         <UniformGrid Width="100" Columns="2">
           <ToggleButton Tag="NativeGraphicVisibility" Style="{StaticResource eyeToggleButton}" IsChecked="{Binding BridgeObjA.IsDisplayA, Mode=TwoWay}" />
-          <PControl:PopupButton Tag="NativeGraphicStylePopup" HorizontalOffsetVal="-90" SubContent="{StaticResource ImageViewConfig_subContent}" Visibility="{Binding PanVisibleA, Converter={StaticResource bool2VisibilityConverter}}" />
+          <b08n0:PopupButton Tag="NativeGraphicStylePopup" HorizontalOffsetVal="-90" SubContent="{StaticResource ImageViewConfig_subContent}" Visibility="{Binding PanVisibleA, Converter={StaticResource bool2VisibilityConverter}}" />
         </UniformGrid>
       </localParamTab:LeftRightControl.RightContent>
     </localParamTab:LeftRightControl>

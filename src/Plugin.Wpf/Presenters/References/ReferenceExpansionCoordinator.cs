@@ -1,104 +1,93 @@
-﻿using System.Runtime.CompilerServices;
 using System.Windows;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.References;
 
-/// <summary>Hosts the original subscription window; the request borrows the field session.</summary>
+/// <summary>One field composition borrows a root window owner; disposing fields never disposes a shared root.</summary>
 internal sealed class ReferenceExpansionCoordinator : IDisposable
 {
-    private sealed class OwnerScope
-    {
-        internal readonly ReferenceExpansionPreference Preference=new();
-        internal ReferenceExpansionCoordinator? Active;
-        internal long Generation;
-    }
-    private static readonly ConditionalWeakTable<Window,OwnerScope> Owners=new();
     private readonly FrameworkElement _root;
-    private readonly ReferenceExpansionPreference _unownedPreference=new();
-    private sealed class WindowLease(ParamSubscribeWindow window,ReferenceExpansionRequest request,OwnerScope scope)
+    private readonly ReferenceWindowOwner _owner;
+    private readonly bool _ownsOwner;
+    private ReferenceExpansionRequest? _request;
+    private VariableLease? _variable;
+    private bool _disposed;
+    private long _generation;
+    private sealed class VariableLease(VariableSelectionDialog window,VariableSelectionRequest request,Action close)
     {
-        internal readonly ParamSubscribeWindow Window=window;
-        internal readonly ReferenceExpansionRequest Request=request;
-        internal readonly OwnerScope Scope=scope;
+        internal readonly VariableSelectionDialog Window=window;
+        internal readonly VariableSelectionRequest Request=request;
+        internal readonly Action Close=close;
         internal Action? Invalidated;
         internal EventHandler? Closed;
         internal bool Retired;
     }
-    private WindowLease? _current;
-    private bool _disposed;
-
-    internal ReferenceExpansionCoordinator(FrameworkElement root)
+    internal ReferenceExpansionCoordinator(FrameworkElement root,ReferenceWindowOwner? owner=null)
     {
-        _root=root;root.Unloaded+=OnUnloaded;root.IsVisibleChanged+=OnVisibility;
+        _root=root;_ownsOwner=owner is null;
+        _owner=owner??new ReferenceWindowOwner(root,()=>!_disposed,new(),false);
+        root.Unloaded+=OnUnloaded;root.IsVisibleChanged+=OnVisibility;
     }
-    internal ReferenceExpansionPreference Preference()=>Window.GetWindow(_root) is {} owner
-        ?Owners.GetValue(owner,_=>new()).Preference:_unownedPreference;
-
-    internal static void ClearSelectionFor(Window owner)
-    {if(Owners.TryGetValue(owner,out var scope))scope.Active?._current?.Request.ClearSelection();}
-
+    internal ReferenceExpansionPreference Preference()=>_owner.Preference;
+    internal bool IsExpanded()=>_owner.IsExpanded;
+    internal static void ClearSelectionFor(ReferenceWindowOwner? owner)=>owner?.ClearSelection();
     internal void Open(ReferenceExpansionRequest request)
     {
+        if(_disposed||!_owner.IsCurrent||!request.IsValid||!_root.IsLoaded||!_root.IsVisible){request.Dispose();return;}
+        _request=request;_owner.Open(request);
+    }
+    internal void OpenVariable(VariableSelectionRequest request)
+    {
         _root.Dispatcher.VerifyAccess();
-        if(_disposed||!request.IsValid||!_root.IsLoaded||!_root.IsVisible||Window.GetWindow(_root) is not {} owner)
+        if(_disposed||!_owner.IsCurrent||!request.IsValid||!_root.IsLoaded||!_root.IsVisible||Window.GetWindow(_root) is not {} windowOwner)
         {request.Dispose();return;}
-        var scope=Owners.GetValue(owner,_=>new());var generation=++scope.Generation;
-        ParamSubscribeWindow? window=null;WindowLease? lease=null;
+        var generation=++_generation;VariableLease? lease=null;
+        Action close=()=>{if(lease is not null)RetireVariable(lease,true,false);else request.Dispose();};
         try
         {
-            scope.Active?.Close();
-            if(_disposed||!request.IsValid||generation!=scope.Generation||!_root.IsLoaded||!_root.IsVisible||!ReferenceEquals(Window.GetWindow(_root),owner))
-            {request.Dispose();return;}
-            window=new ParamSubscribeWindow(owner);
-            lease=new(window,request,scope);
-            var captured=lease;
-            lease.Invalidated=()=>Retire(captured,true);
-            lease.Closed=(_,_)=>Retire(captured,false);
-            _current=lease;scope.Active=this;
-            request.Invalidated+=lease.Invalidated;window.Closed+=lease.Closed;
-            window.DataContext=request;
-            if(!ReferenceEquals(_current,lease)||!request.IsValid){Retire(lease,true);return;}
-            window.Show();
+            if(!_owner.InstallModal(close)){request.Dispose();return;}
+            if(_disposed||!_owner.IsCurrent||!request.IsValid||generation!=_generation||!_root.IsLoaded||!_root.IsVisible||!ReferenceEquals(Window.GetWindow(_root),windowOwner))
+            {_owner.ReleaseModal(close);request.Dispose();return;}
+            var dialog=new VariableSelectionDialog(request.Items){Owner=windowOwner,WindowStartupLocation=WindowStartupLocation.CenterOwner,ShowInTaskbar=false};
+            lease=new(dialog,request,close);var captured=lease;
+            lease.Invalidated=()=>RetireVariable(captured,true,false);
+            lease.Closed=(_,_)=>RetireVariable(captured,false,true);
+            _variable=lease;request.Invalidated+=lease.Invalidated;dialog.Closed+=lease.Closed;
+            if(!request.IsValid){RetireVariable(lease,true,false);return;}
+            dialog.ShowDialog();if(!lease.Retired)RetireVariable(lease,true,false);
         }
         catch(Exception failure)
         {
-            try
-            {
-                if(lease is not null)Retire(lease,true);
-                else ParameterCleanup.Run(new Action[]{request.Dispose,()=>window?.DetachOwner(),()=>window?.Close()});
-            }
-            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
-            throw;
+            try{if(lease is not null)RetireVariable(lease,true,false);else{_owner.ReleaseModal(close);request.Dispose();}}
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
     }
-    private void Retire(WindowLease lease,bool closeWindow)
+    private void RetireVariable(VariableLease lease,bool closeWindow,bool takeSelection)
     {
         if(lease.Retired)return;lease.Retired=true;
-        if(ReferenceEquals(_current,lease))
-        {
-            _current=null;
-            if(ReferenceEquals(lease.Scope.Active,this))lease.Scope.Active=null;
-        }
+        if(ReferenceEquals(_variable,lease))_variable=null;
+        _owner.ReleaseModal(lease.Close);
+        var selected=takeSelection&&lease.Window.IsConfirm?lease.Window.SelectedVarItem:null;
         ParameterCleanup.Run(new Action[]{
-            ()=>{if(lease.Closed is not null)lease.Window.Closed-=lease.Closed;},
             ()=>{if(lease.Invalidated is not null)lease.Request.Invalidated-=lease.Invalidated;},
-            lease.Window.DetachOwner,lease.Request.Dispose,()=>lease.Window.DataContext=null,
-            ()=>{if(closeWindow&&lease.Window.IsVisible)lease.Window.Hide();},
-            ()=>{if(closeWindow)lease.Window.Close();}});
+            ()=>{if(lease.Closed is not null)lease.Window.Closed-=lease.Closed;},
+            ()=>{if(closeWindow)lease.Window.Retire();},
+            ()=>{if(selected is not null&&lease.Request.IsValid)lease.Request.TrySelect(selected);},lease.Request.Dispose});
     }
     internal void Close()
     {
-        if(_current is {} lease)Retire(lease,true);
+        _generation++;var request=_request;_request=null;
+        ParameterCleanup.Run(new Action[]{()=>{if(_variable is {} variable)RetireVariable(variable,true,false);},
+            ()=>{if(request is not null)_owner.Release(request);}});
     }
     private void OnUnloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_root))Close();}
-    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args)
-    {if(!_root.IsVisible)Close();}
+    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args){if(!_root.IsVisible)Close();}
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        _root.Unloaded-=OnUnloaded;_root.IsVisibleChanged-=OnVisibility;Close();
+        ParameterCleanup.Run(new Action[]{()=>{_root.Unloaded-=OnUnloaded;_root.IsVisibleChanged-=OnVisibility;},Close,
+            ()=>{if(_ownsOwner)_owner.Dispose();}});
     }
 }

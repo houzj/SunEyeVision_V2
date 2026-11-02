@@ -1,0 +1,11 @@
+2026-10-30 22:36:37.524 INFO  [126756] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=5.531ms, process time=5.530ms, algorithm time=4.831ms
+2026-10-30 22:36:37.546 INFO  [10580] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.731ms, process time=0.730ms, algorithm time=0.594ms
+2026-10-30 22:36:37.571 INFO  [45640] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.520ms, process time=0.517ms, algorithm time=0.332ms
+2026-10-30 22:36:37.614 INFO  [82420] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.548ms, process time=0.547ms, algorithm time=0.377ms
+2026-10-30 22:36:38.633 INFO  [91536] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=2.834ms, process time=2.833ms, algorithm time=2.650ms
+2026-10-30 22:36:38.680 ERROR [105848] [CModuleParamBindingHandler::ProcessIntBinding@115] ##[Module 2]## GetBindingInt(LowThreshold, 0) failed, error code=0xe0000314
+2026-10-30 22:36:38.680 ERROR [105848] [CModuleParamBindingHandler::ProcessModuleParamBindings@43] Set module[2] running param[LowThreshold] failed, error code=0xe0000314
+2026-10-30 22:36:38.701 INFO  [127080] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.570ms, process time=0.569ms, algorithm time=0.420ms
+2026-10-30 22:36:38.718 INFO  [115292] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.455ms, process time=0.454ms, algorithm time=0.302ms
+2026-10-30 22:36:38.760 INFO  [44680] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=0.341ms, process time=0.341ms, algorithm time=0.190ms
+2026-10-30 22:36:39.583 INFO  [119020] [CModuleNode::DoWork@174] ##[Module 2]##, status=0(Ok), module time=2.331ms, process time=2.330ms, algorithm time=2.181ms

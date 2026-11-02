@@ -1,0 +1,38 @@
+using System.ComponentModel;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Controls.References.Variables;
+
+public class PageSizeOption : INotifyPropertyChanged
+{
+	private string _displayInfo;
+
+	public int PageNum { get; set; }
+
+	public string DisplayInfo
+	{
+		get
+		{
+			_displayInfo = string.Format("{0} {1}", PageNum, AppLocalizationService.GetLang("Lang_ItemPage"));
+			return _displayInfo;
+		}
+		set
+		{
+			if (_displayInfo != value)
+			{
+				_displayInfo = value;
+				RaisePropertyChanged("DisplayInfo");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected void RaisePropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+}

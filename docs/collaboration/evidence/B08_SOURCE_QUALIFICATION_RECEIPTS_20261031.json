@@ -1,0 +1,22 @@
+[
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08来源资格与前驱统一决策-20261031.md",
+    "archive": "docs\\collaboration\\evidence\\B08_SOURCE_QUALIFICATION_20261031\\B08来源资格与前驱统一决策-20261031.md",
+    "sha256": "A7882B5805A7865E440BD90C75AB44E0EAB2B546F23F730B285DDAE685375C0D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-Blob来源资格和动态元数据-20261031.md",
+    "archive": "docs\\collaboration\\evidence\\B08_SOURCE_QUALIFICATION_20261031\\B08-Blob来源资格和动态元数据-20261031.md",
+    "sha256": "30042E3E32E48317C8EB2F3DCBE9C8B4A3087070FBB498EAD695AACD37278FE6"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08图像源输出资格静态证据-20261031.md",
+    "archive": "docs\\collaboration\\evidence\\B08_SOURCE_QUALIFICATION_20261031\\B08图像源输出资格静态证据-20261031.md",
+    "sha256": "071A8FD7C69894A38737C0AA9FA9C18930E4C83637F495D63F2B28A3C513A9F3"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08前驱连线与订阅关系来源-20261031.md",
+    "archive": "docs\\collaboration\\evidence\\B08_SOURCE_QUALIFICATION_20261031\\B08前驱连线与订阅关系来源-20261031.md",
+    "sha256": "B97AC3F4CB251A518BD7C06FC3248743C18106DC558C35076E72EA23A720A174"
+  }
+]

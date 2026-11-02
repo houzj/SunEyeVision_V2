@@ -1,0 +1,40 @@
+{
+    "schemaVersion":  2,
+    "title":  "VM 原厂执行引擎与自研执行架构对照（含第一批路由/执行/回传逆向）",
+    "purpose":  "仅整理归档，供执行引擎层对照评估查阅；未据此批准或实施重构。",
+    "sources":  [
+                    {
+                        "path":  "D:\\\\MyWork\\\\REA逆向测试\\\\analysis\\\\vm-framework-architecture-20261030\\\\vm-engine-architectural-comparison.html",
+                        "documentTitle":  "执行引擎：VM 原厂与自研架构对照",
+                        "bytes":  65062,
+                        "sha256":  "f20454537da7796b77363a098f858cffe76a4fb99c19ca087570fc134ffe4d9a",
+                        "archive":  {
+                                        "path":  "vm-engine-architectural-comparison.html",
+                                        "bytes":  67230,
+                                        "sha256":  "7b160730d9b07666bb269535b138e76cdedc0245f380c99dda8448c7a34e284f",
+                                        "mode":  "正文逐字保留；37 个相对证据链接改写为指向原取证库的 file:/// 绝对路径，锚点未动。"
+                                    }
+                    },
+                    {
+                        "path":  "D:\\\\MyWork\\\\REA逆向测试\\\\analysis\\\\vm-framework-architecture-20261030\\\\vm-source-architecture-first-batch.html",
+                        "documentTitle":  "VisionMaster 4.4.0 原厂框架逆向｜第一批：路由、执行与回传",
+                        "bytes":  33124,
+                        "sha256":  "82cbf7c3e952edfb1c760271dbedbea43049de8af7906eef8043a87b48232669",
+                        "archive":  {
+                                        "path":  "vm-source-architecture-first-batch.html",
+                                        "bytes":  36400,
+                                        "sha256":  "2938d60be297109bb2c367f6f5ef77bdbe9c1e981a2645c738d221060c743b64",
+                                        "mode":  "正文逐字保留（2026-10-30 16:01 更新版）；42 个证据相对链接改写为指向原取证库的 file:/// 绝对路径，锚点未动。"
+                                    },
+                        "syncedUtc":  "2026-10-30T08:03:19Z"
+                    }
+                ],
+    "provenance":  {
+                       "evidenceLinks":  "两篇正文引用的证据（disasm/dumpbin/decompiled/VisionFramework 原型源码/第一批 workpack）仍在原取证库（REA逆向测试/analysis/vm-framework-architecture-20261030 及 ../decompiled、../../src），未复制进本文档库。",
+                       "notArchived":  "原目录内混有 Ghidra 12.1.4 运行时与大量二进制取证产物，属工作区而非文档证据，未归档。",
+                       "limits":  [
+                                      "对照结论与证据等级以原文为准，归档校验只证明快照与链接改写，不表示本方逐项复核或批准全部架构结论。",
+                                      "VisionFramework 引用指向原取证库内早期原型源码，与现行 SunEyeVision_V2 宿主实现可能已分叉。"
+                                  ]
+                   }
+}

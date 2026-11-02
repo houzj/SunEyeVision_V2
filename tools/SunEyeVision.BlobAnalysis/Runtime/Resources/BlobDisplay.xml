@@ -1,23 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <BlobDisplay schemaVersion="1">
-  <Graphics>
-    <Graphic key="blobs" label="外接矩形" styleName="Blobs" order="10" scope="Output" port="field:8ca10000000040008000000000000100" member="rotated-bounds" visible="true" okColor="#00FF00" ngColor="#FF0000" opacity="1" lineWidth="2" crossSize="8" />
-    <Graphic key="centroids" label="质心" styleName="Centroids" order="20" scope="Output" port="field:8ca10000000040008000000000000100" member="centroid" visible="false" okColor="#00FF00" ngColor="#FF0000" opacity="1" lineWidth="2" crossSize="8" />
-    <Graphic key="contours" label="轮廓" styleName="Contours" order="30" scope="Output" port="field:8ca10000000040008000000000000100" member="contour" visible="false" okColor="#00FF00" ngColor="#FF0000" opacity="1" lineWidth="1" crossSize="8" />
-    <Graphic key="inspection-roi" label="检测区" styleName="InspectionRoi" order="40" scope="Input" port="input.inspection.region" member="" visible="true" okColor="#0000FF" ngColor="#FF0000" opacity="1" lineWidth="1" crossSize="8" />
-    <Graphic key="mask-roi" label="屏蔽区" styleName="MaskRoi" order="50" scope="Input" port="input.mask.region" member="" visible="true" okColor="#FFA500" ngColor="#FF0000" opacity="1" lineWidth="1" crossSize="8" />
-  </Graphics>
-  <Texts>
-    <Text key="area" label="面积列表" styleName="AreaDisplay" order="10" port="field:8ca10000000040008000000000000100" member="area" visible="true" okColor="#00FF00" ngColor="#FF0000" opacity="1" fontSize="9" bold="false" x="0" y="0" decimals="0" unit="px" />
-  </Texts>
   <Table port="field:8ca10000000040008000000000000100" identity="element-id">
     <Column key="label" label="序号" member="label" decimals="0" unit="" />
     <Column key="area" label="面积" member="area" decimals="0" unit="px²" />
     <Column key="perimeter" label="周长" member="perimeter" decimals="1" unit="px" />
     <Column key="centroid-x" label="中心X" member="centroid-x" decimals="1" unit="px" />
     <Column key="centroid-y" label="中心Y" member="centroid-y" decimals="1" unit="px" />
+    <Column key="angle" label="角度" unavailable="原厂外接矩形角度映射已证；当前输出尚未实现，数值规范尚未验证，不产出或订阅该特征" />
+    <Column key="long-axis" label="长轴" unavailable="原厂长轴数值语义尚未证实，当前不产出或订阅该特征" />
+    <Column key="short-axis" label="短轴" unavailable="原厂短轴数值语义尚未证实，当前不产出或订阅该特征" />
     <Column key="circularity" label="圆度" member="circularity" decimals="3" unit="" />
     <Column key="rectangularity" label="矩形度" member="rectangularity" decimals="3" unit="" />
-    <Column key="bounds" label="边框" member="bounds" decimals="0" unit="px" />
   </Table>
 </BlobDisplay>

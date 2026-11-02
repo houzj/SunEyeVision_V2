@@ -31,6 +31,20 @@ internal sealed class NativePolygonRoiInputs : IDisposable
     private bool _projecting,_committing,_disposed;
     private long _generation;
     internal string Error {get;private set;}="";
+    internal bool HasPendingEdits=>_raw.Count!=0;
+    internal IReadOnlyDictionary<(int Index,bool X),string> CapturePending()
+    {
+        var captured=_raw.ToDictionary(pair=>(pair.Key.Index,pair.Key.X),pair=>pair.Value);
+        foreach(var input in _inputs.Where(input=>!input.Suspended))if(input.Text.Text!=input.Baseline)captured[(input.Slot.Index,input.Slot.X)]=input.Text.Text;
+        return captured;
+    }
+    internal bool RestorePending(IReadOnlyDictionary<(int Index,bool X),string> raw)
+    {
+        if(_item is null)return raw.Count==0;
+        if(raw.Keys.Any(key=>key.Index<0||key.Index>=_item.PolygonPoints.Count))return false;
+        foreach(var pair in raw)_raw[new(_item,_item.TopologyGeneration,pair.Key.Index,pair.Key.X)]=pair.Value;
+        Attach();foreach(var input in _inputs)Restore(input);return true;
+    }
     internal bool HasFocus=>_inputs.Any(input=>input.Text.IsKeyboardFocused);
     internal NativePolygonRoiInputs(FrameworkElement root,Func<bool> ready){_root=root;_ready=ready;}
     internal void Bind(NativeRoiSession? session,NativePolygonRoiProjection? item)

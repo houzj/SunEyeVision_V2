@@ -51,8 +51,10 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
             SelectionMode=DataGridSelectionMode.Single,ItemsSource=_rows};
         _table.Style=(Style)Resources["CurResultDataGridStyle"];
         _table.DataContext=this;
+        var unavailable=projection.Columns.Where(column=>column.Value is null).ToArray();
+        if(unavailable.Length!=0)_table.ToolTip=string.Join("；",unavailable.Select(column=>column.DisplayName+"："+column.UnavailableReason))+"。空结果不代表这些特征已计算。";
         foreach(var column in projection.Columns)
-            _table.Columns.Add(new DataGridTextColumn{Header=column.DisplayName,
+            _table.Columns.Add(new DataGridTextColumn{Header=column.Value is null?column.DisplayName+"（未实现）":column.DisplayName,
                 CellStyle=(Style)Resources["dgCellCenterAlignmentStyle"],
                 Binding=new Binding("["+column.Key+"]"){Mode=BindingMode.OneWay,
                     StringFormat=column.DecimalPlaces is {} decimals?"{0:F"+decimals+"}":null}});
@@ -89,8 +91,16 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         object? RootValue(string id)=>values.Contains(id)?values.Get<object?>(id):null;
         if(_projection.Rows is {} source)
         {
-            var sequence=Read(RootValue(source.PortId),source.MemberFieldPath) as SequenceValue
-                ??throw new ArgumentException("The declared result rows are missing.");
+            var rowValue=Read(RootValue(source.PortId),source.MemberFieldPath);
+            if(rowValue is null)
+            {
+                // An omitted optional or null parent yields no rows for this publication.
+                // Install an empty scene so the previous row selection cannot survive.
+                if(Current())Install(rows.AsReadOnly(),expected,publication);
+                return;
+            }
+            var sequence=rowValue as SequenceValue
+                ??throw new ArgumentException("The declared result rows must be a sequence.");
             var identities=new HashSet<object>();
             foreach(var value in sequence)
             {
@@ -161,6 +171,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         var geometryPaths=new HashSet<string>(StringComparer.Ordinal);
         foreach(var column in _projection.Columns)
         {
+            if(column.Value is null){cells.Add(column.Key,"未实现");continue;}
             var valid=column.ValidWhen is null||read(column.ValidWhen) is true;
             cells.Add(column.Key,valid?DisplayCell(read(column.Value)):null);
             if(!valid)continue;

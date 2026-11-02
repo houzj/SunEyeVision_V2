@@ -1,0 +1,92 @@
+{
+  "buildId": "development-b2377343179d490fa301e12bd3accd1a",
+  "date": "2026-10-31",
+  "builds": [
+    "正式UI Release：0错误，6525警告",
+    "正式全量 Release：0错误，6488警告"
+  ],
+  "historical": "正式WindowPresentation attempt-360极大值失败与超时保留；正式attempt-364覆盖同一极大范围与真实Thumb已通过。候选图形样式筛选7通过、1个独立Rectangle样例失败，未把整个WindowPresentation记为通过。",
+  "tests": [
+    "范围专项42项",
+    "加载数值合同68项",
+    "字段编辑38项",
+    "变量字段13项",
+    "窗口范围筛选4/14/9/1组（有交叠）",
+    "参数生产18项",
+    "Blob参数生产20项",
+    "独立设计290项",
+    "真实运行编辑保护13项"
+  ],
+  "receipts": [
+    {
+      "track": "RangeRoundtrip/attempt-001",
+      "receipt": "Release/_validation/S4-20261025/RangeRoundtrip/attempt-001/receipt.json",
+      "sha256": "957A1315DB5D03C02C83FE8A70591DEB80304BC01767F744FA7AC12643AB3713"
+    },
+    {
+      "track": "NumericContract/attempt-004",
+      "receipt": "Release/_validation/S4-20261025/NumericContract/attempt-004/receipt.json",
+      "sha256": "D4EE670B7C06F080E6EDE1F2787451A69EFC9D825A4788BA9EC2A28826F34385"
+    },
+    {
+      "track": "FieldEditing/attempt-148",
+      "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-148/receipt.json",
+      "sha256": "0038EE109CCEA383EE8267FD034BC649EEBCCE59576BC5649139A2F38734CCF2"
+    },
+    {
+      "track": "VariableFields/attempt-018",
+      "receipt": "Release/_validation/S4-20261025/VariableFields/attempt-018/receipt.json",
+      "sha256": "A1ED955D5B2DBBCBA242F59074B739CDA3436D06BEEFCBA15E5E9E0D7DE0DB69"
+    },
+    {
+      "track": "WindowPresentation/attempt-361",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-361/receipt.json",
+      "sha256": "DF7F8968EE5363FF24268CDB0D224073F83D5C0BD92D469B2087AE6A8ACB0D2B"
+    },
+    {
+      "track": "WindowPresentation/attempt-362",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-362/receipt.json",
+      "sha256": "23066F8D407BEB3AD04293A54A05E9E7A28C626B559DE080171C5F6B52F63559"
+    },
+    {
+      "track": "WindowPresentation/attempt-363",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-363/receipt.json",
+      "sha256": "A2725F59B146C841D66A0B59100DA2FB956D01E8FD50B82046AC1BCB6E72BDD2"
+    },
+    {
+      "track": "WindowPresentation/attempt-364",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-364/receipt.json",
+      "sha256": "237C60ECBF8D70205F883C6D0FEC2F11CEFF058CEF0FB7C118EEEB8789A1887E"
+    },
+    {
+      "track": "ParameterValues/attempt-012",
+      "receipt": "Release/_validation/S4-20261025/ParameterValues/attempt-012/receipt.json",
+      "sha256": "9927B5CDA27D007171FAECEE5766F03BA82B504D6985D0AF0AB7D5079566862E"
+    },
+    {
+      "track": "BlobParameterProduction/attempt-008",
+      "receipt": "Release/_validation/S4-20261025/BlobParameterProduction/attempt-008/receipt.json",
+      "sha256": "EA9F52F8FCD7B70D97C7DE9CCD77F440C9CE214BACCB33A6E4C3920ED9EAFDD1"
+    },
+    {
+      "track": "DesignTime/attempt-147",
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-147/receipt.json",
+      "sha256": "B504110DDF91792A4C66AC0DB14BDA4540529D7A6EDA8DB9CA20454156F1D196"
+    },
+    {
+      "track": "RuntimeEditorUiStage/attempt-026",
+      "receipt": "Release/_validation/S4-20261025/RuntimeEditorUiStage/attempt-026/receipt.json",
+      "sha256": "3EBC86C57B81158E0C412B8B9F01142C2482B00027BD848B4A6CA318EA7F2B0B"
+    }
+  ],
+  "unit": "双端范围 NativeRangePresenter",
+  "payloadSha256": "6AB55DF81C6FC095CFC1837D2784DEADD7EA400207B576B3F4C91308D3F03133",
+  "status": "当前声明合同条件性自测闭口",
+  "limitations": [
+    "未验证实际操作系统剪贴板粘贴、其他DPI、实际Visual Studio设计器或用户人工验收",
+    "原厂解绑后回读、绑定时序和极值消费等价未证",
+    "ROI和结果图文正式组合、方案偏好持久化与Group等基础按原清单保留，不因本批扩大开发"
+  ],
+  "sourceCommit": "423ff08ae04a7240106abab76d0056ab4a78402b",
+  "scope": "原PcUI双端模板、两端独立输入与引用、现有宿主组接纳、数值投影与回填、拒绝、重入和退役；不宣称全部VM行为等价"
+}

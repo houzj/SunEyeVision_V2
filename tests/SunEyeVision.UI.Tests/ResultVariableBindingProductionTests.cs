@@ -177,7 +177,7 @@ public sealed class ResultVariableBindingProductionTests
             Stage("结果退出时清除选中路径");
             Assert.True(string.IsNullOrEmpty(tree.SelectedItemPath),"结果退出后不应保留先前结果的路径");
             Assert.False(tree.CopyPathCommand!.CanExecute(tree.SelectedItemPath));
-            var bad=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(new(source.Id,"missing",reference.Type,scopeId:root.Id))};
+            var bad=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(source.Id,"missing",reference.Type,scopeId:root.Id))};
             Assert.False(main.TryBindResultVariable(session,bad,variable.Id,out var error));Assert.NotEmpty(error);
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
         }

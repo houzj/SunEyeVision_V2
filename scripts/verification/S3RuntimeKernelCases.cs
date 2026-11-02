@@ -14,54 +14,96 @@ internal static class S2DocumentEditingCases
         var rules=new BlobSettings().Judgments;return rules.Any(r=>r.Key==rule.Key)
             ?rules.Select(r=>r.Key==rule.Key?rule:r).ToArray():rules.Append(rule).ToArray();
     }
+    private static FieldSettings Initial(IToolSettingsFields definition,object settings)=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+    private static IReadOnlyDictionary<string,ParameterSetting> Constants(Dictionary<string,object?> values)=>values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value));
+    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureValidatedFields().Select(new BlobTool().SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
+    private static FieldSettings InitialEditor(BlobTool tool,object settings) { var schema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(tool); return new(schema.Inputs,tool.ReadSettings(settings).CopyValues().Concat(tool.CreateDisplaySettings().CopyValues()).ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))); }
     private static int _passed;
-    private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, IsBlobCountFilterEnabled = false };
+    private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, BlobCountLimit = 20000 };
     private static int Main()
     {
         try
         {
             Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
                 var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
-                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,original);
-                Require(provider.SettingsSchema.Inputs.Count==54&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
+                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,InitialEditor(definition,original));
+                Require(provider.SettingsSchema.Inputs.Count==55&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
                 string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
+                var connectivity=provider.SettingsSchema.Inputs.Single(port=>port.Id==BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Connectivity)));
+                Require(connectivity.EditModes==FieldEditModes.Constant&&connectivity.Choices!.Keys.ToHashSet().SetEquals(new[]{"Connected_8","Connected_4"}),"连通字段资格不符");
+
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{connectivity.Id,"Connected_4"},{Field("排序特征"),"SortFeaturePerimeter"},{Field("排序方式"),"SortModeAscend"},{Field("二值化图像输出"),false}}),_=>{});
+                var connectedFrozen=Materialize(draft);Require(connectedFrozen.Connectivity==BlobConnectivity.Connected_4&&connectedFrozen.SortFeature==BlobSortFeature.SortFeaturePerimeter&&connectedFrozen.SortMode==BlobSortMode.SortModeAscend&&!connectedFrozen.OutputBinaryImage&&original.Connectivity==BlobConnectivity.Connected_8&&original.OutputBinaryImage,"统一生产字段未进入同一冻结草稿或污染原值");
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{connectivity.Id,"Connected_6"},{Field("排序方式"),"SortModeDecend"}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{Field("排序特征"),"SortFeatureBoxAngle"}}),_=>{}));
+                Require(Materialize(draft).SortMode==BlobSortMode.SortModeAscend&&connectedFrozen.Connectivity==BlobConnectivity.Connected_4,"非法组合半写或改写冻结值");
                 var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
-                draft.ApplyFields(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},_=>{});
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&original.Threshold==128
-                    &&draft.ReadFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,220L},{upper,210L}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,300L}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{mode,"undefined"}},_=>{}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{"unknown",1L}},_=>{}));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==211,"拒绝提案污染私有状态");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),_=>{});
+                Require(Materialize(draft).Threshold==73&&original.Threshold==100
+                    &&draft.CaptureFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}),_=>{});
+                Require(draft.CaptureFields().Get<long>(threshold)==220,"编辑中间态未保留在私有草稿");
+                Throws<ArgumentException>(()=>draft.CaptureValidatedFields());
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,73L},{upper,211L}}),_=>{});
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{threshold,300L}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{mode,"undefined"}}),_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{"unknown",1L}}),_=>{}));
+                Require(Materialize(draft).Threshold==73&&Materialize(draft).UpperThreshold==211,"拒绝提案污染私有状态");
                 var rule=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.Layout?.Page=="结果显示"&&f.Layout.PairWith is not null&&f.DisplayName=="Blob数量下限");
-                draft.ApplyFields(new Dictionary<string,object?>{{rule.FieldId,19d}},_=>{});
-                Require(draft.ReadFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{rule.FieldId,19d}}),_=>{});
+                Require(draft.CaptureFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
             });
             Case("设置整组候选只预检一次，拒绝或回调重入均不改变草稿",()=>{
-                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,new BlobSettings());
+                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,InitialEditor(tool,new BlobSettings()));
                 string Field(string label)=>draft.Schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
                 var low=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var high=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
                 var calls=0;
-                draft.ApplyFields(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},candidate=>
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),candidate=>
                 {
-                    calls++;var next=(BlobSettings)candidate;
-                    Require(next.Threshold==220&&next.UpperThreshold==230&&((BlobSettings)draft.CaptureSettings()).Threshold==128,
+                    calls++;var next=(BlobSettings)((IToolSettingsFields)tool).MaterializeSettings(candidate.Select(tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
+                    Require(next.Threshold==220&&next.UpperThreshold==230&&Materialize(draft).Threshold==100,
                         "候选不完整或宿主接纳前污染草稿");
                 });
-                Require(calls==1&&((BlobSettings)draft.CaptureSettings()).Threshold==220,"整组未单次接纳");
-                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>throw new InvalidOperationException("宿主拒绝")));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220,"宿主拒绝污染草稿");
-                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>
-                    draft.ApplyFields(new Dictionary<string,object?>{{high,240L}},_=>{})));
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==230,
+                Require(calls==1&&Materialize(draft).Threshold==220,"整组未单次接纳");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>throw new InvalidOperationException("宿主拒绝")));
+                Require(Materialize(draft).Threshold==220,"宿主拒绝污染草稿");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>
+                    draft.ApplyFields(Constants(new Dictionary<string,object?>{{high,240L}}),_=>{})));
+                Require(Materialize(draft).Threshold==220&&Materialize(draft).UpperThreshold==230,
                     "回调重入污染整组草稿");
-                draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>{});
-                Require(((BlobSettings)draft.CaptureSettings()).Threshold==221,"拒绝后提交门没有恢复");
+                draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,221L}}),_=>{});
+                Require(Materialize(draft).Threshold==221,"拒绝后提交门没有恢复");
+            });
+            Case("完整捕获期间重入接纳新值时拒绝旧快照",()=>{
+                var schema=new ToolSchema(new[]{new Port("value",DataType.Integer)},Array.Empty<Port>());
+                FieldSettingsDraft? draft=null;var armed=false;
+                draft=new FieldSettingsDraft(schema,new FieldSettings(schema.Inputs,new Dictionary<string,ParameterSetting>{{"value",new ConstantSetting(1L)}}),_=>{
+                    if(!armed)return;armed=false;draft!.ApplyFields(new Dictionary<string,ParameterSetting>{{"value",new ConstantSetting(2L)}},_=>{});
+                });
+                armed=true;Throws<InvalidOperationException>(()=>draft.CaptureValidatedFields());
+                Require(draft.CaptureFields().Get<long>("value")==2&&draft.Revision==1,"旧捕获覆盖或丢失回调接纳的新值");
+            });
+            Case("完整字段物化校验禁用参数标量域且不吞Boolean结构",()=>{
+                var tool=new BlobTool();var provider=(IToolSettingsFields)tool;
+                var disabled=new BlobSettings{SegmentationMode=BlobSegmentationMode.None};
+                string Id(string property)=>provider.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(property)).FieldId;
+                var fields=Initial(provider,disabled);
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{Id("Threshold"),new ConstantSetting(999L)}}).Materialize(new Dictionary<string,object?>())));
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{Id("BlobCountLimit"),new ConstantSetting(0L)}}).Materialize(new Dictionary<string,object?>())));
+                var valid=fields.Apply(new Dictionary<string,ParameterSetting>{{Id("Threshold"),new ConstantSetting(201L)}});
+                Require(((BlobSettings)provider.MaterializeSettings(valid.Materialize(new Dictionary<string,object?>()))).Threshold==201,"合法禁用参数往返丢值");
+                var rule=disabled.Judgments.Single(item=>item.Kind!=BlobJudgmentKind.Range);
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Select(item=>item.Key==rule.Key?item with {Minimum=1}:item).ToArray()}));
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Select(item=>item.Key==rule.Key?item with {PerItem=!item.PerItem}:item).ToArray()}));
+                Throws<ArgumentException>(()=>provider.ReadSettings(disabled with {Judgments=disabled.Judgments.Append(rule with {Key="unknown"}).ToArray()}));
+                var ratio=provider.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName=="白色像素比例上限").FieldId;
+                Throws<ArgumentException>(()=>provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{ratio,new ConstantSetting(101d)}}).Materialize(new Dictionary<string,object?>())));
+                var range=(BlobSettings)provider.MaterializeSettings(fields.Apply(new Dictionary<string,ParameterSetting>{{ratio,new ConstantSetting(75d)}}).Materialize(new Dictionary<string,object?>()));
+                Require(!range.Judgments.Single(item=>item.Key=="white-ratio").Enabled&&range.Judgments.Single(item=>item.Key=="white-ratio").Maximum==75,"禁用判定合法上限往返丢值");
             });
             Case("宿主中立入口保留模型身份、冻结参数并在无UI回调时清理",()=>{
                 using var resources=new FrozenOutputResources();
@@ -106,15 +148,15 @@ internal static class S2DocumentEditingCases
                 var ports=new[]{new Port("image",DataType.Image),new Port("number",DataType.Integer)};
                 var direct=new ToolSchema(ports,Array.Empty<Port>());
                 var fallback=new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"image");
-                Require(direct.Fingerprint!=fallback.Fingerprint&&new BlobTool().Describe(Basic).WorkflowImageInputId==BlobTool.ImageInput,
+                Require(direct.Fingerprint!=fallback.Fingerprint&&new BlobTool().Describe().WorkflowImageInputId==BlobTool.ImageInput,
                     "默认图像源未由Runtime声明或未参与身份冻结");
                 Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"number"));
                 Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"unknown"));
             });
             Case("XML唯一默认、用户设置重开及强类型读取",()=>{
                 var settings=new BlobSettings();
-                Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
-                    &&settings.BlobCountLimit==1000&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
+                Require(settings.Threshold==100&&settings.UpperThreshold==150&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999999
+                    &&settings.BlobCountLimit==100&&settings.OutputGrayImage&&settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
                 var changed=settings with{Threshold=73,UpperThreshold=211,FilterAreaMax=9999999,BlobCountLimit=993,
                     Judgments=Rules(new BlobJudgment("per-blob-area",true,true,19,750))};
                 var restored=JsonSerializer.Deserialize<BlobSettings>(JsonSerializer.Serialize(changed))!;
@@ -128,7 +170,7 @@ internal static class S2DocumentEditingCases
                     new BlobSettings { Judgments=Array.Empty<BlobJudgment>() },
                     new BlobSettings { Judgments=new BlobSettings().Judgments.Skip(1).ToArray() },
                     new BlobSettings { BlobCountLimit=20001 },
-                    new BlobSettings { FilterAreaMax=10000000 },
+                    new BlobSettings { FilterAreaMax=1000000000 },
                     new BlobSettings { SegmentationMode=BlobSegmentationMode.DoubleThreshold,Threshold=200,UpperThreshold=199 },
                     new BlobSettings { Judgments=Rules(new BlobJudgment("white-ratio",false,true,0,101)) },
                     new BlobSettings { Judgments=Rules(new BlobJudgment("average-circularity",false,true,-0.01,1)) },
@@ -146,7 +188,7 @@ internal static class S2DocumentEditingCases
                         "非法设置未在输入准入及算法执行前拒绝");
                 }
                 Require((new BlobSettings{BlobCountLimit=20000,FilterAreaMax=9999999}).Validate().Count==0,"XML合法边界被拒绝");
-                Require((new BlobSettings{IsBlobCountFilterEnabled=false,BlobCountLimit=0}).Validate().Count==0,"关闭的筛选仍参与执行校验");
+                Require((new BlobSettings{BlobCountLimit=0}).Validate().Count>0,"查找个数非法时应拒绝");
                 var absent=new BlobSettings{Judgments=null!};
                 Require(absent.Validate().Count>0,"空判定集合未报告字段错误");
                 Throws<ArgumentException>(()=>absent.Freeze());
@@ -183,12 +225,14 @@ internal static class S2DocumentEditingCases
                 Throws<InvalidDataException>(()=>BlobParameterDefinition.Read(dtd));
             });
             Case("显示XML声明源校验、样式与表格投影",()=>{
-                var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe(Basic);
-                Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==8
-                    &&definition.Table.Validate(schema).Count==0,"显示定义未加载或字段映射无效");
-                Require(definition.Graphics.Single(x=>x.Key=="inspection-roi").InputSource
-                    &&definition.Graphics.Single(x=>x.Key=="blobs").Source.PortId==BlobSchema.BlobsPort
-                    &&definition.Texts.Single().Source.MemberFieldPath.SequenceEqual(new[]{"area"}),"输入/输出显示来源混淆");
+                var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe();
+                Require(definition.Table.Columns.Count==10&&definition.Table.Validate(schema).Count==0,"表格声明未加载或字段映射无效");
+                var provider=(SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)new BlobTool();provider.ResultDisplay.Validate(schema);
+                Require(provider.DisplaySettingsSchema.Inputs.Count==13&&provider.DisplaySettingsSchema.Inputs.All(port=>port.EditModes==FieldEditModes.Constant)
+                    &&provider.ResultDisplay.Quadrilateral.MemberFieldPath.SequenceEqual(new[]{"rotated-bounds"})
+                    &&provider.ResultDisplay.TextValue.MemberFieldPath.SequenceEqual(new[]{"area"}),"正式显示阶段/实际输出映射无效");
+                var appearance=provider.CaptureResultDisplay(new FieldSettings(provider.DisplaySettingsSchema.Inputs,provider.CreateDisplaySettings().CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))));
+                Require(appearance.Graphic.Ok.Green==255&&appearance.Graphic.Ok.Red==102&&appearance.Text.Content=="Blob Area:{0}","正式新建样式默认不符合已核feature声明");
                 string Xml(){using var s=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobDisplay.xml")!;return new StreamReader(s).ReadToEnd();}
                 void Reject(Action<XElement> mutate)
                 {
@@ -196,11 +240,12 @@ internal static class S2DocumentEditingCases
                     using var stream=new MemoryStream(Encoding.UTF8.GetBytes(root.ToString()));
                     Throws<InvalidDataException>(()=>BlobDisplayDefinition.Read(stream,schema));
                 }
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("member","unknown"));
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("okColor","#GG0000"));
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("opacity","1.1"));
-                Reject(r=>r.Element("Graphics")!.Add(new XElement(r.Element("Graphics")!.Elements().First())));
-                Reject(r=>r.Element("Texts")!.Elements().First().SetAttributeValue("port","unknown"));
+                var displayFields=new FieldSettings(provider.DisplaySettingsSchema.Inputs,provider.CreateDisplaySettings().CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+                Throws<ArgumentException>(()=>provider.CaptureResultDisplay(displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.opacity",new ConstantSetting(1.1d)}})));
+                Throws<ArgumentException>(()=>displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.ok",new ConstantSetting("#GG0000")}}));
+                Throws<ArgumentException>(()=>displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.opacity",new ReferenceSetting(new OutputReference("unknown","unknown",DataType.Number))}}));
+                Reject(r=>r.Add(new XElement("Graphics")));
+                Reject(r=>r.Add(new XElement("Texts")));
                 Reject(r=>r.Element("Table")!.SetAttributeValue("identity","missing"));
                 Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("member","unknown"));
                 Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("decimals","16"));
@@ -215,7 +260,7 @@ internal static class S2DocumentEditingCases
                 var values=result.ToValues();
                 Require(values.ContainsKey(BlobSchema.BlobsPort)&&result.GrayImage is not null&&result.BinaryImage is not null, "请求资源被开关抑制");
                 Require((double)values[BlobSchema.Field(30)]! ==4&&(double)values[BlobSchema.Field(31)]! ==207,"公开最小/最大面积没有来自同一最终集合");
-                var definition=new BlobTool();var declaration=definition.Describe(Basic);
+                var definition=new BlobTool();var declaration=definition.Describe();
                 var session=definition.CreateSession();
                 var outcome=session.ExecuteAsync(new(Basic,
                     new InputValues(declaration.Inputs,new Dictionary<string,object?>{{BlobTool.ImageInput,input}}),
@@ -227,7 +272,7 @@ internal static class S2DocumentEditingCases
                     var records=(SequenceValue)projected!.ToValues()[BlobSchema.BlobsPort]!;
                     Require(((RecordValue)records[0]!).Get<bool>("contour-lossy")&&((RecordValue)records[0]!).Contains("boundary"),"请求投影状态未生成完整边界或有损标记");
                 }
-                using var limited = new BlobSession().Execute(Basic with {IsBlobCountFilterEnabled=true,BlobCountLimit=1},input,factory);
+                using var limited = new BlobSession().Execute(Basic with {BlobCountLimit=1},input,factory);
                 Require(limited.Count==1 && limited.TotalArea==207 && Math.Abs(limited.WhitePixelRatio-211.0/768*100)<1e-9, "排序限数、最终统计或分割白像素语义错误");
             });
             Case("空ROI不回退满图、实际Domain内反阈值", () => {
@@ -290,7 +335,7 @@ internal static class S2DocumentEditingCases
             });
             Case("声明执行与下游资源请求覆盖隐藏输出、无效路径明确拒绝",()=> {
                 using var factory=new FrozenOutputResources(); using var image=Image(8,8,(_,_)=>true);
-                var definition=new BlobTool();var schema=definition.Describe(Basic);
+                var definition=new BlobTool();var schema=definition.Describe();
                 var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{[BlobTool.ImageInput]=image});
                 var context=new Context(factory);
                 var requests=new[]{new OutputValueRequest(BlobSchema.Field(5)),new OutputValueRequest(BlobSchema.Field(6)),new OutputValueRequest(BlobSchema.BlobsPort,new[]{"boundary"})};
@@ -344,9 +389,9 @@ internal static class S2DocumentEditingCases
     private sealed class RunnerDefinition(bool asynchronous,bool fail=false):IToolDefinition<RunnerSettings,RunnerOutput>
     {
         public RunnerSession? Session;public string ToolId=>"runner";
-        public ToolSchema Describe(RunnerSettings settings)=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
+        public ToolSchema Describe()=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
         public IReadOnlyList<Diagnostic> Validate(RunnerSettings settings)=>settings.Values.Length==1?Array.Empty<Diagnostic>():new[]{new Diagnostic("invalid","one value required")};
-        public ToolCapabilities Capabilities(RunnerSettings settings)=>ToolCapabilities.None;
+        public ToolCapabilities Capabilities()=>ToolCapabilities.None;
         public IToolSession<RunnerSettings,RunnerOutput> CreateSession()=>Session=new(asynchronous,fail);
     }
     private sealed class RunnerSession(bool asynchronous,bool fail):IToolSession<RunnerSettings,RunnerOutput>

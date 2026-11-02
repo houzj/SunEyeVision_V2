@@ -1,0 +1,36 @@
+{
+  "status": "静态对照；高度裁切为假设待运行验证，产品尚未修复",
+  "files": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml",
+      "sha256": "a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\ImageSources\\ImageSourceStrip.xaml",
+      "sha256": "a8f2003b93883e47a4cdd2adb4182ae19ba1d7b94a276597e025c3c27edbcf44"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\ImageSources\\ImageSourceStrip.xaml.cs",
+      "sha256": "17b43fcb696ab56b7500303a11b0bd65747f9a286d31b3b1669ed27b45a87aca"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Composition\\Results\\ResultShell\\ResultWorkspaceShell.xaml",
+      "sha256": "c79d164c1e5b623d02247551b4592ddba5acd819f2347f0dca326065a5190429"
+    }
+  ],
+  "verified": [
+    "原控件模板与回收虚拟化",
+    "本方展开125和宿主MaxHeight110高度冲突",
+    "原Ctrl/Shift运行勾选和文件拖入"
+  ],
+  "unproven": [
+    "实际滚动条丢失具体原因",
+    "原滚轮横移",
+    "当前试用版调整效果",
+    "真实VM及用户验收"
+  ]
+}

@@ -65,8 +65,8 @@ public sealed class DocumentEditSession
     private bool _closed;
     public Guid SessionId { get; } = Guid.NewGuid();
     private DocumentHistoryCoordinator? _history;
-    public DocumentHistoryCoordinator History => _history ??= new(SessionId);
-    public NodeConfigurationEditHost Host => _host.Value;
+    public DocumentHistoryCoordinator History {get{EnsureOpen();return _history ??= new(SessionId);}}
+    public NodeConfigurationEditHost Host {get{EnsureOpen();return _host.Value;}}
     public int RegisteredScopeCount => _participants.Count;
     public bool HasPendingChanges => _participants.Values.Any(p => p.HasPendingChanges);
     public IReadOnlyList<string> RegisteredScopeKeys => _participants.Values.Select(p => p.ScopeKey).ToArray();
@@ -135,15 +135,19 @@ public sealed class DocumentEditSession
     {
         if (_closed) return;
         _closed = true;
+        if(_host.IsValueCreated)_host.Value.Close();
         var participants = _participants.Values.ToArray();
         _participants.Clear();
         foreach (var participant in participants)
             try { participant.Cancel(); } catch (Exception ex) { LastRefreshError ??= ex.Message; }
-        _history?.Dispose();
+        try {_history?.Dispose();}
+        catch(Exception ex){LastRefreshError ??= ex.Message;}
     }
+    private void EnsureOpen()
+    {if(_closed)throw new InvalidOperationException("方案编辑会话已经关闭。");}
     private void EnsureAvailable()
     {
-        if (_closed) throw new InvalidOperationException("方案编辑会话已经关闭。");
+        EnsureOpen();
         if (_busy) throw new InvalidOperationException("方案编辑事务不能重入。");
     }
 }

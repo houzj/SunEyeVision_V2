@@ -1,0 +1,86 @@
+{
+  "sourceCommit": "3d0136fe708499b5722902f7028441feda385216",
+  "baseline": "459c6fa8f9aecb38108783b7bd0236092ec1abbd",
+  "scope": "候选worktree自建Release，非正式验收",
+  "builds": [
+    {
+      "log": "Release/_validation/blob-gray-output-build-001.log",
+      "warnings": 6527,
+      "status": "首轮含后撤回的UI-only文案变更，不作最终源码证据",
+      "errors": 0,
+      "seconds": 52.74
+    },
+    {
+      "status": "最终固定源码",
+      "warnings": 3409,
+      "seconds": 26.91,
+      "sha256": "98C1762C96A7103267EA5653D1C5B83910668DBBE7DA2A3860412D140287C5A0",
+      "log": "Release/_validation/blob-gray-output-build-002.log",
+      "errors": 0
+    }
+  ],
+  "runs": [
+    {
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 12,
+        "pid": 140372,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultWorkspaceCases.cs",
+        "caseSourceSha256": "E3B3E2049B64E6BA8B9E05209E03EC750C1BCBF1121CE62062054D3A6A893B8C",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-012"
+      },
+      "receiptSha256": "990DEEE5C82AE9AC27269B23FB3D81EFABD849C9BC63AA922BE099FB51683DFE",
+      "track": "BlobResultWorkspace",
+      "groups": 4,
+      "loadedProductSha256": "3782767A740474AFB565FC70813AA7AAA21F06BB753707B98D39980A47201A63"
+    },
+    {
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 128472,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeKernelCases.cs",
+        "caseSourceSha256": "C09EA560481F55DB56A5F060393BF444F7C92411DA80FD241162F8A713FB6184",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-002"
+      },
+      "receiptSha256": "6EA1F4F97ECF939F97801457D6AED54256B6F0FD5B40DD0EF3AA7066276843D0",
+      "track": "RuntimeKernel",
+      "groups": 19,
+      "loadedProductSha256": "660BF299AD0EBF9084C2DA79E745A63DD73442F710E95DD43C2C11E8881E4C90"
+    },
+    {
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 8,
+        "pid": 50796,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeWorkflowCases.cs",
+        "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-008"
+      },
+      "receiptSha256": "8CDC4EE1AA1567432A4D42A4A4377C39D4581FF7FADC0B51D88B686DAC7B28B6",
+      "track": "RuntimeWorkflow",
+      "groups": 10,
+      "loadedProductSha256": "3D52A025C03003E6F85242C39C8B66BE8E9FEF9D6A03BC90CBD30874E4BD17C2"
+    }
+  ],
+  "changed": "仅Field(5)正式DisplayName改为灰度图像；字段ID、像素、类型、资格和资源身份不变",
+  "originalUi": "原Blob图像输出文案、样式及禁用提示保持不变；原目标连通域绘制图没有正式输出或订阅假源",
+  "unverified": [
+    "原厂Blob绘制像素、过滤关系和Domain语义",
+    "原厂Blob绘制功能未实现",
+    "其他DPI、实际VS设计器及人工验收未做"
+  ],
+  "gui": "专项进程自然exit0后释放，后台两轨自然exit0"
+}

@@ -1,0 +1,49 @@
+{
+  "status": "SOURCE_GAP_CONFIRMED_DESIGN_PENDING_NO_IMPLEMENTATION",
+  "origin": "图像源分支2026-10-29同步请求，主线只读复核现行Contracts/Runtime/Session；不是用户新增范围或已通过实现。",
+  "ownership": {
+    "sharedContractsRuntime": "本主线唯一写者，先核公共执行合同；不与独立分支同时修改。",
+    "hostNavigation": "工作流/图像源独立分支负责Manager、导航命令和VM整链设计；不改本主仓或正式Release。",
+    "synchronization": "固定完整提交同步；不复制C09未提交候选或用户BlobParameterEditor.xaml，不另造产品/算法库。"
+  },
+  "confirmed": [
+    "IToolExecutionContext只有Identity、Cancellation、Log、Resources，没有一次性输入消费接纳能力。",
+    "EnterRun/HasStartedExecution早于设置及绑定验证、CreateSession，不能代表实际取图开始。",
+    "TryPublish/TryInvokeCallback可复用完整身份、取消和退役门禁，但允许重复，不具备一次性消费语义。",
+    "ImageSourceInvocationInputs仅冻结地址与SN；ImageSourceSession在设置/SN/来源与设备身份检查后才做本地地址/File.Exists和解码。"
+  ],
+  "decision": [
+    "不能在CaptureAsync、ExecuteRuntimeAsync入口或结果成功后猜取图开始，不能用日志反推游标消费。",
+    "若新增能力，仅中性执行Context的稳定输入端口消费接纳；复用实际冻结来源、RunIdentity及原owner门禁，一次性状态独立于结果发布once。",
+    "图像源调用点需位于全部前置核验/取消后、实际本地读取尝试前；地址格式错误与存在性/解码失败消费边界要明确。",
+    "正式、调试、连续运行同合同，导航状态非视觉接纳；算法和收尾不等待Dispatcher。",
+    "本项先设计并验证合同缺口；不得由另一个分支并写共享合同，也不以提前假接纳完成AutoPlay。"
+  ],
+  "requiredVerification": [
+    "取消、验证失败、来源错配和CreateSession失败不推进。",
+    "同一请求只消费一次；旧请求、scope/节点代号失效、owner退役和重复回调不推进。",
+    "读不存在文件、解码异常及取图开始后取消按正式消费策略执行；末项AutoStop与普通AutoPlay和按钮SetParam时点分别验证。",
+    "无UI消息泵验证正式、调试及连续运行的接纳与清理。"
+  ],
+  "historicalEvidenceBoundary": "图像源分支已报告8fdb固定报告50/0含原21失败；共享out测试DLL已被后批覆盖。仅可核归档receipt/日志/源码，不将当前DLL或Release称为8fdb产物；原249未总体重跑。",
+  "next": "数值候选集中核收后，由本主线继续公共合同设计；不改变两阶段完整目标与Blob业务冻结。",
+  "additionalReentrancyGap": "Owner.Publish将外部Admission回调放在身份条件之后且未再核；回调同步退役可越过旧检查。新消费能力应回调后再核并原子固定一次性接纳，通知异常不得重试推进。",
+  "sourceSnapshot": [
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "fb5de6bee59a6602f934fb5245280042e9b0aa1f80fc093ddf6b592d73aae80b"
+    },
+    {
+      "path": "src/Plugin.Runtime/Execution/ToolExecutionIdentity.cs",
+      "sha256": "f84903be4abcb70e740f3d8742c54a96cc01d8b9c0593023f043448f54f73308"
+    },
+    {
+      "path": "src/Workflow/ImageSourceInvocationInputs.cs",
+      "sha256": "be9377c15639dbbf1cbbeb4c90f490bed68b749ec48f23fad7d4096521c1912a"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceSession.cs",
+      "sha256": "3e2c122f367f70603054d1a3c8440c3ad34e234c7becb1e7451d536edb903fde"
+    }
+  ]
+}

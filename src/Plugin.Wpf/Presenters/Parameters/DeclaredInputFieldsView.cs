@@ -19,12 +19,22 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
     private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
+    private readonly ToolSchema _schema;
+    private readonly Func<Port,ParameterSetting> _read;
+    private readonly Action<Port,ParameterSetting> _write;
+    private readonly ReferenceFieldOptions _references;
+    private readonly Func<OutputReference,string>? _formatReference;
+    private readonly ReferenceWindowOwner _referenceWindowOwner;
+    private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write,ReferenceFieldOptions references,
         Func<OutputReference,string>? format=null,
         Func<Port,IReadOnlyList<DeclaredReferenceCandidate>>? referenceCandidates=null)
     {
+        _schema=schema;_read=read;_write=write;
+        _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
+        _references=references;_formatReference=format;
         Fields=_fields.AsReadOnly();
         try
         {
@@ -48,7 +58,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                     if(port.Id==schema.WorkflowImageInputId)
                         editor.UseImageSourceSelector(()=>referenceCandidates?.Invoke(port)??Array.Empty<DeclaredReferenceCandidate>());
                     var row=new NativeParameterRow(metadata,editor,()=>editor.NativeItemState,
-                        ()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+                        ()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
                     _fieldRows.Add(port.Id,row);
                     _page.Rows.Add(row);
                     Action handler=row.Refresh;_handlers.Add((editor,handler));editor.Changed+=handler;
@@ -60,6 +70,38 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         {
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
+    }
+    /// <summary>A tool's nonvisual pure-value input uses the same formal owner callbacks; no extra field state is retained.</summary>
+    public ParameterSetting ReadUnpresentedInput(string id)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var port=Unpresented(id);return _read(port);
+    }
+    /// <summary>Creates a real declared input editor for a tool's original composite layout.
+    /// The view retains the editor and the same host write/reference callbacks; no second field owner is created.</summary>
+    public DeclaredFieldEditor ComposeInputEditor(string id,string label,bool numericSequence=false)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
+        if(_fields.Any(field=>field.FieldId==id)||_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
+            throw new ArgumentException("输入已有编辑器。");
+        var editor=new DeclaredFieldEditor(port,label,_read(port),setting=>_write(port,setting),_references,
+            formatReference:_formatReference,allowUnboundReference:!port.Required,numericSequence:numericSequence);
+        _fields.Add(editor);return editor;
+    }
+    public void WriteUnpresentedInput(string id,ParameterSetting setting)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);var port=Unpresented(id);
+        if(setting is not UnsetSetting)_=FieldSettings.Freeze(port,setting);
+        else if(port.Required)throw new ArgumentException("必填输入不能清除。");
+        _write(port,setting);
+    }
+    private Port Unpresented(string id)
+    {
+        var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
+        if(_schema.Presentation!.Fields.Any(field=>field.FieldId==id)||port.Type.Shape==ValueShape.Resource
+            ||port.EditModes!=FieldEditModes.Constant)throw new ArgumentException("此入口仅供未呈现的纯值常量输入。");
+        return port;
     }
     /// <summary>Transfers ownership of a real extra composition into the specified input section.</summary>
     public void AddAfterField(string fieldId,FrameworkElement content,string? section=null)
@@ -96,6 +138,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         cleanup.AddRange(_additionalContents.Select(content=>(Action)content.Dispose));_additionalContents.Clear();_fieldRows.Clear();
         cleanup.AddRange(_fields.Select(field=>(Action)field.Dispose));
         cleanup.Add(()=>{BindingOperations.ClearBinding(this,ChildLeftWidthProperty);BindingOperations.ClearBinding(this,ChildMarginProperty);BindingOperations.ClearBinding(this,ChildHeaderMarginProperty);});
+        if(_ownsReferenceWindowOwner)cleanup.Add(_referenceWindowOwner.Dispose);
         ParameterCleanup.Run(cleanup);
     }
 }

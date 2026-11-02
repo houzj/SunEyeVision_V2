@@ -836,7 +836,7 @@ SplitterPosition = position;
                 // Production execution never accepts a pending editor draft.
                 var session=DocumentManager.Session??throw new InvalidOperationException("运行准备没有当前方案会话。");
                 var accepted=session.Editing.Host.Capture();
-                var publication=WorkflowPublishedConfiguration.Capture(accepted,session.Document);
+                var publication=WorkflowPublishedConfiguration.Capture(accepted,session.Document,session.Editing.Host);
                 if(!ReferenceEquals(DocumentManager.Session,session)||!ReferenceEquals(session.Editing.Host.Capture(),accepted))
                     throw new InvalidOperationException("正式配置在运行快照采集期间改变，请重新执行。");
                 return publication;
@@ -889,7 +889,7 @@ SplitterPosition = position;
             // 监听解决方案变更事件
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             solutionManager.CurrentSolutionChanged += OnCurrentSolutionChanged;
-            _documentEventOwner=solutionManager;
+            _documentEventOwner = solutionManager;
 
             // 初始化当前解决方案信息
             UpdateCurrentSolutionInfo();
@@ -936,18 +936,7 @@ SplitterPosition = position;
             // The default Tab is created silently before subscriptions; bind its editable definition now.
             if (solutionManager.CurrentSolution == null) SolutionApplication.CreateNew();
             else LoadSolutionToWorkflowTabs(solutionManager.CurrentSolution);
-            solutionManager.SolutionSaved += (_, document) =>
-            {
-                foreach (var cached in _workflowDsqsCache.Values)
-                    cached.ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document);
-                if(ReferenceEquals(DocumentManager.CurrentSolution,document))
-                {
-                    RefreshAcceptedImageSourceViews();
-                    ForceRefreshImagePreview();
-                }
-                UpdateCurrentSolutionInfo();
-            };
-
+            solutionManager.SolutionSaved += OnDocumentHostSolutionSaved;
             }
             catch { ReleaseDocumentHost(); throw; }
         }
@@ -4414,7 +4403,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if(!owner())return;
                 var projection=runtime.ResultProjection;
                 var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
-                    ?projection.Columns.Select(column=>column.Value.PortId).ToHashSet(StringComparer.Ordinal):null;
+                    ?projection.Columns.Where(column=>column.Value is not null).Select(column=>column.Value!.PortId).ToHashSet(StringComparer.Ordinal):null;
                 PresentDeclaration(schema,nodeName,names,DeclaredBindings(schema,nodeId),shown);
                 return;
             }

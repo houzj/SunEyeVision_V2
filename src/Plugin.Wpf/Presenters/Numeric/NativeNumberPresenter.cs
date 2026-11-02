@@ -13,22 +13,23 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 internal sealed class NativeNumberPresenter : Decorator,IDisposable
 {
     private readonly NativeNumberCoordinator _coordinator;
-    public static bool UsesOriginalModes(Port port,FieldPresentation? presentation)
-        =>port.Type.Shape==ValueShape.Scalar&&(port.Type.Scalar==ScalarKind.Int64
+    public static bool UsesOriginalModes(Port port,FieldPresentation? presentation,bool numericSequence=false)
+        =>numericSequence&&NativeNumericSequenceProjection.Applies(port)||port.Type.Shape==ValueShape.Scalar&&(port.Type.Scalar==ScalarKind.Int64
             ||port.Type.Scalar==ScalarKind.Float64&&presentation?.Layout is {Minimum:not null,Maximum:not null});
 
 
     public TextBox? TextEditor=>_coordinator.TextEditor;
     internal bool HasPendingEdits=>_coordinator.HasPendingEdits;
-    public NativeNumberPresenter(DeclaredFieldState state,FieldPresentation? presentation,ReferenceFieldOptions? references,Func<OutputReference,string>? format)
+    public NativeNumberPresenter(DeclaredFieldState state,FieldPresentation? presentation,ReferenceFieldOptions? references,Func<OutputReference,string>? format,bool numericSequence=false)
     {
         var layout=presentation?.Layout;
         Language=XmlLanguage.GetLanguage("en-US");Height=32;
         FrameworkElement input;
-        if(UsesOriginalModes(state.Port,presentation))
+        if(UsesOriginalModes(state.Port,presentation,numericSequence))
         {
             double minimum,maximum;
             if(layout is {Minimum:not null,Maximum:not null}){minimum=layout.Minimum.Value;maximum=layout.Maximum.Value;}
+            else if(numericSequence){minimum=-double.MaxValue;maximum=double.MaxValue;}
             else
             {
                 var range=NumericStorageRules.IntegerRange(NumericStorageRules.Effective(state.Port.Type,state.Port.Storage)!.Value);

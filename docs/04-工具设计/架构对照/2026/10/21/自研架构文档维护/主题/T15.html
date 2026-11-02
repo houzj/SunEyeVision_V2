@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T15 脚本：代码、动态输出、程序集与执行</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#e88d8d;
+}
+*{box-sizing:border-box}
+body{
+  max-width:700px;margin:0 auto;padding:40px 26px 90px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.75 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:#8fd3e4}
+
+.crumb{font-size:12px;color:var(--faint);margin-bottom:12px}
+.crumb a{text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+
+h1{margin:0 0 10px;font-size:22px;font-weight:600;line-height:1.4}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.tag{font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--dim)}
+.tag.st{color:var(--ok);border-color:#3a6b58}
+.tag.st.partial{color:var(--warn);border-color:#6b553a}
+.tag.st.none{color:var(--bad);border-color:#6b3a3a}
+
+.lead{font-size:15.5px;color:#eef6fa;margin:0 0 20px}
+
+/* 流程图 */
+.flow{margin:0 0 26px;padding:0;list-style:none}
+.flow li{
+  position:relative;padding:5px 0 5px 30px;
+  font-family:Consolas,monospace;font-size:12.5px;color:#a8c6d6;line-height:1.5;
+}
+.flow li::before{
+  content:attr(data-i);position:absolute;left:0;top:5px;
+  width:20px;height:20px;line-height:20px;text-align:center;
+  font-size:10.5px;color:var(--accent);
+  background:#0a1b29;border:1px solid #2c4a5f;border-radius:50%;
+}
+.flow li::after{
+  content:"";position:absolute;left:9.5px;top:25px;bottom:-1px;
+  width:1px;background:#2c4a5f;
+}
+.flow li:last-child::after{display:none}
+
+.blk{margin:0 0 18px}
+.blk h2{
+  font-size:12.5px;font-weight:600;color:#7fa8bd;letter-spacing:.04em;
+  margin:0 0 7px;
+}
+.blk p{margin:0 0 6px}
+.blk .more{display:none}
+.blk.open .more{display:block}
+
+/* 分号拆成的清单 */
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{
+  position:relative;padding:2px 0 2px 15px;color:var(--text);line-height:1.65;
+}
+ul.pts li::before{
+  content:"";position:absolute;left:2px;top:12px;
+  width:4px;height:4px;border-radius:50%;background:#3f6b80;
+}
+
+.toggle{
+  background:none;border:0;padding:0;margin-top:2px;
+  font-size:11.5px;color:var(--faint);cursor:pointer;
+}
+.toggle:hover{color:var(--accent)}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0;list-style:none}
+.chips li{font-size:11px;padding:2px 7px;border-radius:3px;background:#12293a;border:1px solid var(--line);color:#9dbdcd}
+
+details{border-top:1px solid var(--line);margin-top:10px;padding-top:9px}
+details summary{cursor:pointer;list-style:none;font-size:12px;color:var(--faint)}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--accent)}
+details[open] summary{margin-bottom:8px}
+details .bd{font-size:13px;color:var(--dim);line-height:1.75}
+details .bd p{margin:0 0 7px}
+
+footer{margin-top:36px;padding-top:13px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+footer a{color:var(--dim)}
+
+@media(max-width:600px){ body{padding:28px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb">
+  <a href="../index.html">目录</a> ›
+  <a href="../index.html#g-能力对照">能力对照</a> ›
+  T15
+</div>
+
+<div id="page"></div>
+
+<script>
+const D = {"id":"T15","group":"tool","title":"脚本：代码、动态输出、程序集与执行","state":"partial","chain":["ScriptDebugControl","编辑/引用/输出契约","编译执行","OutputContractChanged","宿主刷新"],"current":"脚本专用UI、引用对话框及宿主动态契约通知入口存在。 本轮确认显示设置Tab仅占位；已有专用ResetCode不能等同标准参数重置。","gap":"编译/程序集载入→具体信任/取消/释放；输出修改→旧绑定失效；UI和后台脚本→真实副作用准入 当前同一try依次Init→Process→Release；Init或Process抛错就直接catch，Release跳过。输入反射失败先记errors，后续仍会尝试执行生命周期。 编译键是代码哈希、宿主名称版本指纹和勾选引用名指纹；引用名列表未包含文件内容/路径/版本。相同文件名替换内容时键仍相同，不能保证重新编译或加载。 MaxResident=16，超过上限按LastUsed淘汰并Dispose；GetOrCreate返回裸Sandbox，未记录在用计数，Invalidate/Clear也未等待在途。ConcurrentDictionary的工厂可能被并发调用多次，不能沿注释声称只创建一次。当前未找到外层对Clear/Invalidate的调用，最终进程回收不能代替逐会话合同。","vm":"恢复模型脚本/动态输出与原生框架依赖分开，任意DLL加载不可当安全机制。","vmDoc":"PLUGIN-FRAMEWORK-BOUNDARY.md","vmLimit":"VM原版恢复与重建实现须分开；该材料入口不等原生/全部场景已闭合。","choice":"暂不能判断","reason":"依据：脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 VM参考边界：原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。 结论仅针对列明范围，不作整体优胜排名。","change":"明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。 引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。","accept":"改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。","sourceIds":["S095","S096","R063","R064","N045","N046","N047","N069","N070"],"optimization":"O10","validation":"仅静态复核；未运行产品/设备/故障注入","review":{"id":"T15","before":"partial","after":"partial","confirmed":"Script专用UI有程序集引用、日志清理/双击等事件；宿主订阅OutputContractChanged，并异步刷新结果合同。","missingEdges":["编译/程序集载入→具体信任/取消/释放","输出修改→旧绑定失效","UI和后台脚本→真实副作用准入"],"cause":"源码入口有证据，安全/动态端口全链未闭合","change":"引用来源和动态字段版本收敛到脚本服务，改输出类型后使旧绑定失效；ALC不当安全沙箱，可信桌面前提或隔离策略先明确。","acceptance":"改输出名/类型、编译错、引用缺失、停止/关窗与拒绝副作用逐入口验。","sourceIds":["S095","S096","R063","R064"],"decision":"仅明确证据与缺口，不因复核次数或材料交付自动升级"},"previousRecommendation":{"choice":"保留专业脚本，补信任与合同","reason":"能扩展算法但扩大权限与部署面，需显式可信桌面前提或隔离策略。"},"defect":"脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。 新确认局部缺失：显示设置仅占位；ExecuteTool中Task.Run后GetAwaiter().GetResult同步等待调用方。","vmBorrow":"原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。","difference":"待核实","differenceBasis":"VM或自研对应实现/运行证据未齐，暂不分大小。","adoption":"暂缓决策","adoptionBasis":"等待证据/需求后评审，没有已经选定的最终实现。","selectionStatus":"方案建议，产品尚未实施/验收；本轮没有直接采用VM逆向代码的项目","reviewDecision":{"category":"暂不能判断","defect":"脚本引用/编译/输出链存在；AssemblyLoadContext不是安全隔离。","borrow":"原版脚本模块范围作参考；当前没有充分材料证明其沙箱/安全政策。","action":"明确可信脚本或进程隔离需求，追动态端口失效与程序集卸载；再选实现，不先推荐保留脚本架构。","difference":"待核实","adoption":"暂缓决策","confidence":"选型暂缓；已见局部代码不等全部闭合","sourceIds":["S095","S096","R063","R064","N045","N046","N047","N069","N070"]},"knownGaps":["显示设置Tab仅TextBlock占位：局部未实现，需新增或隐藏"]};
+
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const stMap = {"implemented":["已实现","st"],"partial":["部分实现","st partial"],"unimplemented":["未实现","st none"],"unknown":["未确认","st none"]};
+
+/* 按分号拆句：长报告腔拆成一条一句 */
+function pts(s){
+  if(!s) return "";
+  const arr = s.split(/[；;]/).map(x=>x.trim()).filter(Boolean);
+  if(arr.length < 2) return '<p>'+esc(s)+'</p>';
+  return '<ul class="pts">'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+}
+/* 摘要：第一句，压到 50 字内 */
+function brief(s){
+  if(!s) return "";
+  const first = s.split(/[；;。]/)[0].trim();
+  return first.length > 52 ? first.slice(0,52)+"…" : first;
+}
+/* 需要“展开”的长内容 */
+function moreBox(fullHtml){
+  return '<div class="more">'+fullHtml+'</div><button class="toggle">展开全文</button>';
+}
+
+const st = stMap[D.state] || [D.state||"未标注","st"];
+const out = [];
+
+out.push('<h1>'+esc(D.title)+'</h1>');
+out.push('<div class="meta"><span class="tag">'+esc(D.id)+'</span><span class="tag '+st[1]+'">'+esc(st[0])+'</span>'+
+  (D.optimization?'<span class="tag">影响 '+esc(D.optimization)+'</span>':'')+'</div>');
+
+if(D.current) out.push('<p class="lead">'+esc(D.current)+'</p>');
+
+/* 调用顺序：流程图 */
+if(D.chain && D.chain.length){
+  out.push('<ul class="flow">'+D.chain.map((c,i)=>'<li data-i="'+(i+1)+'">'+esc(c)+'</li>').join('')+'</ul>');
+}
+
+/* 差在哪 */
+let gapFull = '';
+if(D.gap) gapFull += pts(D.gap);
+if(D.defect) gapFull += '<p><b>缺陷：</b>'+esc(D.defect)+'</p>';
+if(D.vm) gapFull += '<p><b>VM 的做法：</b>'+esc(D.vm)+'</p>';
+if(D.vmLimit) gapFull += '<p><b>对照边界：</b>'+esc(D.vmLimit)+'</p>';
+out.push('<div class="blk"><h2>差在哪</h2>'+pts(brief(D.gap))+moreBox(gapFull)+'</div>');
+
+/* 怎么改 */
+let chgFull = '';
+if(D.change) chgFull += pts(D.change);
+if(D.choice) chgFull += '<p><b>取舍：</b>'+esc(D.choice)+'</p>';
+if(D.reason) chgFull += '<p><b>依据：</b>'+esc(D.reason)+'</p>';
+if(D.vmBorrow) chgFull += '<p><b>可借鉴：</b>'+esc(D.vmBorrow)+'</p>';
+out.push('<div class="blk"><h2>怎么改</h2>'+pts(brief(D.change))+moreBox(chgFull)+'</div>');
+
+/* 怎么验 */
+out.push('<div class="blk"><h2>怎么验</h2>'+pts(brief(D.accept))+moreBox(pts(D.accept))+'</div>');
+
+/* 证据 */
+if(D.sourceIds && D.sourceIds.length){
+  out.push('<div class="blk"><h2>证据'+(D.validation?' · '+esc(D.validation):'')+'</h2><ul class="chips">'+
+    D.sourceIds.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>');
+}
+
+/* 复核与历史，默认收起 */
+if(D.review){
+  const r=D.review; let b='';
+  if(r.confirmed) b+='<p><b>已确认：</b>'+esc(r.confirmed)+'</p>';
+  if(r.missingEdges&&r.missingEdges.length) b+='<p><b>缺口：</b>'+r.missingEdges.map(x=>'<br>· '+esc(x)).join('')+'</p>';
+  if(r.decision) b+='<p><b>结论：</b>'+esc(r.decision)+'</p>';
+  out.push('<details><summary>复核记录（'+esc(r.before||'')+' → '+esc(r.after||'')+'）</summary><div class="bd">'+b+'</div></details>');
+}
+if(D.previousRecommendation){
+  const p=D.previousRecommendation;
+  out.push('<details><summary>以前的想法（'+esc(p.choice||'')+'）</summary><div class="bd"><p>'+esc(p.reason||'')+'</p></div></details>');
+}
+
+document.getElementById("page").innerHTML = out.join('');
+
+document.getElementById("page").addEventListener("click", e => {
+  if(!e.target.classList.contains("toggle")) return;
+  const blk = e.target.closest(".blk");
+  const on = blk.classList.toggle("open");
+  e.target.textContent = on ? "收起" : "展开全文";
+});
+</script>
+
+<footer>
+  原始详细材料：<a href="../现状分析/tool-script.html">脚本专业工具</a>
+</footer>
+
+</body>
+</html>

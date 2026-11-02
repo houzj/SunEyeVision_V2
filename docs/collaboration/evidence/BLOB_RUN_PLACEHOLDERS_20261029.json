@@ -1,0 +1,28 @@
+{
+  "baseline": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "uncommitted": true,
+  "scope": "运行参数三个禁用入口；不证明算法或整个页面完成",
+  "sourceFiles": [
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "4192e5cbb9b595f6730a618084684aa79d6270edd4a4f3021efddd2db115668d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "af37a04ca75e1202134b2d29e33905cdeca682c9d4d1a87194471c3bb4856a69"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "ccaea8ef3e0a821f099464ba860b05187d0cdbf6ff9a2822a35b676dbe7320de"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "ae807c7ad2925b614937a1397f06e30e983bdd5aec8f0572012d1493a245e9a8"
+    }
+  ],
+  "design": "Release/_validation/S4-20261025/DesignTime/attempt-107",
+  "earlierVisualDefect": "Release/_validation/S4-20261025/DesignTime/attempt-106/parameters-1.png",
+  "releaseDll": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+  "releaseSha256": "b9a5d20a0d20d41e7cc37689a4f8373c975740676801228ca183de40ed05cc89",
+  "limitations": "实际窗口、VS和用户视觉、真实算法及订阅保存均待验"
+}

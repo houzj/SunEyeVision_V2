@@ -72,10 +72,11 @@ internal static class S2DocumentEditingCases
             Require(components.Count(c=>c.ToolId=="BlobAnalysis"&&c.Role==ToolComponentRole.Editor)==(expectEditor?1:0),"可选Editor登记不符");
             Console.WriteLine("通过：正式PluginManager发现/准入/注册，单ToolId及组件角色正确");
             VerifyRuntimeConfiguration();
+            var configuration=RuntimeToolConfiguration.Create("BlobAnalysis");
             var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){
-                RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis").WithOverrides(new Dictionary<string,object?>{{"Threshold",100},{"IsAreaFilterEnabled",false},{"OutputGrayImage",true}})};
+                RuntimeConfiguration=configuration.WithSettings(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)configuration.CaptureSettings()) with {Threshold=100,IsAreaFilterEnabled=false,OutputGrayImage=true})};
             EnsurePresentationApplication();VerifySettingsView(expectEditor);
-            using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
+            using var resultView=ToolRegistry.CreateCurrentResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
             if(expectEditor)
             {
                 Require(resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","可选Wpf结果视图错误");
@@ -90,7 +91,7 @@ internal static class S2DocumentEditingCases
             }
             using var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)200,64).ToArray(),8,8,1);
             {
-                var runtime=ToolRegistry.CreateRuntime("BlobAnalysis");var state=runtime.CreateSettings();var schema=runtime.Describe(state);
+                var runtime=ToolRegistry.CreateRuntime("BlobAnalysis");var state=runtime.CreateSettings();var schema=runtime.Describe();
                 Require(state.GetType()==runtime.SettingsType,"注册入口未创建真实运行参数类型");
                 var imagePort=schema.Inputs.Single(port=>port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image);
                 using var frozen=image.CaptureSnapshot(new(Guid.NewGuid(),"registered-runtime-input"));
@@ -114,7 +115,7 @@ internal static class S2DocumentEditingCases
             var result=execution.NodeResults["blob"].Result??throw new Exception("工作流没有Blob结果");
             var runtimeResult=(DeclaredOutputSnapshot)result;
             Require(runtimeResult.Output is not null,"缺少实际Runtime输出");
-            var resultValues=new InputValues(runtimeResult.BindingOutputSchema!.Outputs,runtimeResult.Output!.ToValues());
+            var resultValues=new InputValues(runtimeResult.Schema.Outputs,runtimeResult.Output!.ToValues());
             var rowPort=((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)ToolRegistry.CreateRuntime("BlobAnalysis")).ResultProjection.Rows!.PortId;
             var resultRows=resultValues.Get<SequenceValue>(rowPort);
             Require(resultRows.Count==1&&((RecordValue)resultRows[0]!).Get<double>("area")==64,"新Runtime真实节点结果不符");
@@ -135,7 +136,7 @@ internal static class S2DocumentEditingCases
                 var resultWindow=new Window{Content=resultView.View,Width=700,Height=350,Left=-10000,ShowActivated=false,ShowInTaskbar=false};
                 resultWindow.Show();resultWindow.UpdateLayout();
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                Require(grid.Items.Count==1&&grid.Columns.Count==8,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
+                Require(grid.Items.Count==1&&grid.Columns.Count==10,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
                 grid.SelectedItem=grid.Items[0];
                 Require(selected is not null&&selected.Publication==publication.Stamp&&Equals(selected.ElementIdentity,record.Get<long>("element-id"))&&selected.Targets.Count==1,
                     "结果选择缺少真实publication或稳定元素身份");
@@ -204,18 +205,18 @@ internal static class S2DocumentEditingCases
     {
         var configuration=RuntimeToolConfiguration.Create("BlobAnalysis");
         var provider=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");
-        using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",configuration.CaptureSettings());
+        using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",configuration.Fields.Select(provider.SettingsSchema.Inputs));
         Require(view.View.GetType().Assembly.GetName().Name==(expectEditor?"SunEyeVision.Tool.BlobAnalysis.Wpf":"SunEyeVision.Plugin.Wpf"),"设置编辑器有无Wpf回退错误");
         var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(view.View).Single().Fields.ToArray();
         Require(fields.Length==54,"设置编辑器未消费完整XML字段");
         var id=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;
         var editor=fields.Single(f=>f.FieldId==id);var changed=0;view.Changed+=()=>changed++;
-        Require(editor.TrySetConstant(73L)&&view.TryCapture(out var candidate,out var references,out var error),"有效设置编辑未捕获");
-        view.TryCapture(out candidate,out references,out error);
+        Require(editor.TrySetConstant(73L)&&view.TryCapture(out var candidate,out var error),"有效设置编辑未捕获");
+        view.TryCapture(out candidate,out error);
         int Threshold(object settings)=>(int)settings.GetType().GetProperty("Threshold")!.GetValue(settings)!;
-        Require(Threshold(candidate)==73&&changed==1&&references.Count==0
+        Require(candidate.Get<long>(id)==73&&changed==1&&candidate.Capture().Values.All(value=>value is ConstantSetting)
             &&Threshold(configuration.CaptureSettings())==128,"私有编辑污染正式配置或未发事件");
-        Require(!editor.TrySetConstant(300L)&&!view.TryCapture(out _,out _,out _),"非法设置可提交");
+        Require(!editor.TrySetConstant(300L)&&!view.TryCapture(out _,out _),"非法设置可提交");
         Console.WriteLine("通过：实际Runtime设置模型经XML生成54字段，有无专属Wpf均提供私有编辑和非法提交阻断");
     }
 
@@ -226,7 +227,7 @@ internal static class S2DocumentEditingCases
         {
             var fields=(IToolSettingsFields)ToolRegistry.CreateRuntime(source.ToolId);
             var id=fields.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName=="阈值").FieldId;
-            return source.WithSettings(fields.ApplySettings(source.CaptureSettings(),new Dictionary<string,object?>{{id,(long)threshold}}));
+            return source.WithFieldValues(new Dictionary<string,object?>{{id,(long)threshold}});
         }
         int Threshold(RuntimeToolConfiguration source)
         {var settings=source.CaptureSettings();return (int)settings.GetType().GetProperty("Threshold")!.GetValue(settings)!;}
@@ -269,7 +270,7 @@ internal static class S2DocumentEditingCases
         var loaded=repository.LoadCandidate(path).Candidate??throw new Exception("Runtime配置保存后不能重新读取");
         Require(Threshold(loaded.Workflows[0].Nodes[0].RuntimeConfiguration!)==73,"XML默认值覆盖保存的Runtime设置");
         var restoredNode=loaded.Workflows[0].Nodes[0];var definition=ToolRegistry.CreateRuntime(restoredNode.ToolType);
-        var schema=definition.Describe(restoredNode.RuntimeConfiguration!.CaptureSettings());
+        var schema=definition.Describe();
         using(var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)100,64).ToArray(),8,8,1))
         using(var input=image.CaptureSnapshot(new(Guid.NewGuid(),"runtime-node-config-input")))
         using(var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources())
@@ -286,12 +287,14 @@ internal static class S2DocumentEditingCases
             Require(rows.Count==1&&((RecordValue)rows[0]!).Get<double>("area")==64,"节点执行忽略保存的阈值73，或回退XML默认128");
             Reject(()=>restoredNode.ExecuteRuntimeAsync(inputs,new DirectRuntimeContext(resources,"another-node")));
         }
-        Reject(()=>JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(initial).Replace("\"Threshold\":128","\"Threshold\":128,\"Threshold\":2")));
+        var thresholdId=((IToolSettingsFields)ToolRegistry.CreateRuntime(initial.ToolId)).SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName=="阈值").FieldId;
+        Reject(()=>JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(initial).Replace("\""+thresholdId+"\":", "\""+thresholdId+"\":{\"Kind\":\"Constant\",\"Value\":2},\""+thresholdId+"\":")));
         foreach(var mutation in new Action<JsonNode>[] {
-            value=>value["Settings"]!.AsObject().Remove("Threshold"),
-            value=>value["Settings"]!["unknown"]=1,
-            value=>value["Settings"]!["Threshold"]="100",
-            value=>value["Settings"]!["Judgments"]![0]!.AsObject().Remove("Kind"),
+            value=>value["Fields"]!.AsObject().Remove(thresholdId),
+            value=>value["Fields"]!["unknown"]=new JsonObject{["Kind"]="Constant",["Value"]=1},
+            value=>value["Fields"]![thresholdId]!["Value"]="100",
+            value=>value["Fields"]![thresholdId]!.AsObject().Remove("Kind"),
+            value=>value["Settings"]=new JsonObject(),
             value=>value["ToolId"]="missing-runtime"
         })
         {var value=JsonSerializer.SerializeToNode(initial)!;mutation(value);Reject(()=>value.Deserialize<RuntimeToolConfiguration>());}

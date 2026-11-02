@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -82,6 +82,16 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     public ICommand ValueChangedCommand {get;}
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action? Changed;
+    /// <summary>Attachment retirement boundary: observers may record pending state only, never acquire another interaction.</summary>
+    public event Action? InteractionRetiring;
+    private bool _notifyingRetirement;
+    internal void NotifyInteractionRetiring()
+    {
+        if(_disposed||_notifyingRetirement)return;_notifyingRetirement=true;
+        try{NativeRoiCallbacks.Run((InteractionRetiring?.GetInvocationList()??Array.Empty<Delegate>()).Select(handler=>(Action)(()=>((Action)handler)())).ToArray());}
+        finally{_notifyingRetirement=false;}
+    }
+
     public event Action<RoiDrawRequest>? DrawRequested;
     public event Action<RoiDrawRequest>? DrawCancelled;
     public NativeRoiSession(IReadOnlyImage image,Func<RoiEditSnapshot> read,
@@ -153,8 +163,8 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         var kind=geometry.Get<string>("kind");
         if(kind is not ("rectangle" or "sector" or "annulus" or "polygon"))
             throw new NotSupportedException("当前原组合接纳矩形、完整圆环、扇形及多边形。");
-        if(editable&&kind=="annulus"&&Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)>1e-9)
-            throw new NotSupportedException("原SectorRing四项参数只接纳完整圆环。");
+        // Partial annuli retain their exact identity and use the six-field Sector projection.
+        // Full annuli still use the original four-field SectorRing; inherited annuli remain read-only.
     }
     public void Refresh()
     {
@@ -241,12 +251,18 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         }
         finally{_selecting=false;}
     }
-    public void CancelPending()=>NativeRoiCallbacks.Run(new Action[]{CancelDraw}.Concat(_rows.ToArray().Select(item=>(Action)item.Cancel)));
+    public void CancelPending()
+    {
+        var stamp=_stamp;var groups=_groupGeneration;var generation=_drawGeneration;
+        var rows=_rows.Select(item=>(Item:item,Pending:item.PendingStamp)).ToArray();
+        NativeRoiCallbacks.Run(new Action[]{CancelDraw}.Concat(rows.Select(row=>(Action)(()=>
+        {if(_drawGeneration==generation+1&&stamp==_stamp&&groups==_groupGeneration&&_rows.Any(item=>ReferenceEquals(item,row.Item))&&row.Item.PendingStamp==row.Pending)row.Item.Cancel();}))));
+    }
     internal void CancelPending(Func<bool> stillOwns)
     {
-        var request=ActiveDraw;var rows=_rows.ToArray();
+        var request=ActiveDraw;var generation=_drawGeneration;var stamp=_stamp;var groups=_groupGeneration;var rows=_rows.Select(item=>(Item:item,Pending:item.PendingStamp)).ToArray();
         NativeRoiCallbacks.Run(new Action[]{()=>{if(stillOwns()&&ReferenceEquals(ActiveDraw,request))CancelDraw();}}
-            .Concat(rows.Select(item=>(Action)(()=>{if(stillOwns())item.Cancel();}))));
+            .Concat(rows.Select(row=>(Action)(()=>{if(_drawGeneration==generation+1&&stamp==_stamp&&groups==_groupGeneration&&stillOwns()&&_rows.Any(item=>ReferenceEquals(item,row.Item))&&row.Item.PendingStamp==row.Pending)row.Item.Cancel();}))));
     }
     public void SetDrawingGroup(string group)
     {
@@ -262,7 +278,16 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     }
     private void NotifyDrawState()=>NativeRoiCallbacks.Run((PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>()??[])
         .Select(handler=>(Action)(()=>handler(this,new(nameof(ActiveDraw))))));
-    public void CancelDraw()=>NativeRoiCallbacks.Run(InvalidateDraw());
+    public void CancelDraw()
+    {
+        if(InteractionRetiring is null){NativeRoiCallbacks.Run(InvalidateDraw());return;}
+        var request=_drawRequest;var generation=_drawGeneration;var stamp=_stamp;var groups=_groupGeneration;var expired=true;
+        bool Same()=>generation==_drawGeneration&&ReferenceEquals(request,_drawRequest)&&stamp==_stamp&&groups==_groupGeneration;
+        NativeRoiCallbacks.Run([
+            ()=>expired=!IsCurrent,
+            ()=>{if(expired&&Same())NotifyInteractionRetiring();},
+            ()=>{if(Same())NativeRoiCallbacks.Run(InvalidateDraw());}]);
+    }
     private bool CanDrawGroup(string group)
     {
         if(_queryingDraw||!IsCurrent||!_groups.Any(state=>state.Group==group))return false;
@@ -494,7 +519,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         if(_disposed)return;_disposed=true;
         foreach(var item in _rows)item.Detach();_items.Clear();_selected=null;_editorCommit=null;_rows.Install([]);
         try{NativeRoiCallbacks.Run([CancelDraw,_rows.NotifyReset,Notify]);}
-        finally{PropertyChanged=null;Changed=null;DrawRequested=null;DrawCancelled=null;}
+        finally{PropertyChanged=null;Changed=null;InteractionRetiring=null;DrawRequested=null;DrawCancelled=null;}
     }
     private sealed class EditCommand(Action<object?> action):ICommand
     {

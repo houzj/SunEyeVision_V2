@@ -1,0 +1,564 @@
+{
+  "worktree": "D:\\MyWork\\line-aiproject\\blob-ui-image-merge-20261031",
+  "branch": "codex/merge-ui-image-20261031",
+  "main": "e597cc0b7bbb76430116a3fd87c7b511d045c721",
+  "workflow": "07cab9420476a55274dfd1ddc6ab465d570b54ac",
+  "scope": "仅解决39授权冲突文件；未提交合并，其他冲突保留",
+  "resolved": [
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.Components.cs",
+      "deleted": false,
+      "sha256": "51530D84B57A045776E483B23C452BD2B5A5F84E77523F7EB8BC7EA787E1009F",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "deleted": false,
+      "sha256": "9B64F170618590DBF6CB1928E8BD2ABB2890D905DB405DF9A79D7D87E64826E4",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "deleted": false,
+      "sha256": "B96967F8BCBA12694AB01E5378EFCFC3FE7B94FFE12DDAF00572761385AB344C",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "deleted": false,
+      "sha256": "C2404B9C0F53B45EBCD12DEE80DB3A2F906F9CEAE80587FECC398E686948384E",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "deleted": false,
+      "sha256": "C4CFDB284D696B1A8B735FADE5C2F1D71FF98B3A1DD589050184C951D21CAEC0",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml",
+      "deleted": false,
+      "sha256": "8806BF76508A54D75638B94B9FF19081278DEE29C4B51A3D88748B93B64035E8",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs",
+      "deleted": false,
+      "sha256": "564C656C2CD885D8977EFEC2D27FBF67855127C5FB1BC4ACD65D009BA4A0C4E2",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/ImageSources/ImageSourceStripDesignView.xaml",
+      "deleted": false,
+      "sha256": "42BBF10E4AF11CE82D8881E0576C9080E0E1FA220BB4E04457A76DF27114E3E2",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeDisplaySample.cs",
+      "deleted": false,
+      "sha256": "56DC858E61435D5550CE91BC00720BB48BB5937FC9B9D38EE0430FAC157D8203",
+      "group": "图形样例层proof",
+      "evidence": [
+        "docs/collaboration/evidence/DISPLAY_SAMPLE_LAYER_PROOF_CANDIDATE_20261031.json"
+      ],
+      "decision": "保留主线geometry/text各层revision与重入退役；不改变生产严格proof",
+      "unknown": "样例不是Blob正式显示配置接入",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
+      "deleted": false,
+      "sha256": "4CC35AEB8DE245E47EE32CCAAB0800A8F82E111492AD5B756E521FF2A4BB8867",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "deleted": false,
+      "sha256": "9820E8A330960D35EEA69B76ADA8B2957FF4746D97D1A665419916681B195216",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "deleted": false,
+      "sha256": "9E2586471CCEFADBC777E0D6392CF302F00D6875993E0F422D66563813A8899C",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "deleted": false,
+      "sha256": "01FA3CBB6C18DCC053BC1C6E9F86CCB4566A1710BDF83F4AE9C17970808FDC16",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "deleted": false,
+      "sha256": "51CD161E69EE05C5FA37C0E555D3DEFEB37E5E0934680DCEDEFED370BE8BF1EF",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "deleted": false,
+      "sha256": "01AD596E843421F716809D8741176D3C28BE72AAFD406FC16AF5397FDB898963",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "deleted": false,
+      "sha256": "2F2CF4E4145A04DBBDA8BBA25410AC598DDAC71B27B5E7F81BC9840BBE4B989E",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "deleted": false,
+      "sha256": "4131C5B9E6CB1F0EC6E7C67586BF61C08D1BA1421F753EA0831C5BB58AF71ED9",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "deleted": false,
+      "sha256": "28C97079E9C6CCA6C5A58EA8602E47876DC8F67321A80D9DF39D1E0C407FA435",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "deleted": false,
+      "sha256": "E02B92D1715A52FAA7FAC36906152AC5FCF14D032EE4D9FA58CA96D803416156",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "deleted": false,
+      "sha256": "8CABCE2639315520B953B0F3E3DDBCF49727350E7FDB8BCC11EAAF87FB458EBC",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Services/Images/ImageSourceStripSession.FileImport.cs",
+      "deleted": false,
+      "sha256": "59303CB1A3B7ABDD5364C7BBD4741E07DB0CEFD0AAF147F10C8739603C5AC343",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Services/Images/ImageSourceStripSession.cs",
+      "deleted": false,
+      "sha256": "1F358C0CC41EEF76E0CDA1BA166F4F3E1E4896AD764219666CA83761E90631CA",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "deleted": false,
+      "sha256": "5F0196B691F5AA42CFCAC183DA2AC8DFE6E488016928B1BE0A88490EAB87C041",
+      "group": "结果工作区/物理帧与显示保留",
+      "evidence": [
+        "docs/collaboration/evidence/S2_SOURCE_SELECTOR_FULL_CHAIN_REVIEW_20261031.json",
+        "docs/collaboration/evidence/S2_COMPONENT_MIGRATION_PLAN_20261030.md",
+        "docs/collaboration/evidence/BLOB_RESULT_LIST_FORMAL_20261031.json"
+      ],
+      "decision": "接入工作流双图输入项、导航全屏、明确来源身份、图像名及像素仅显示保留；主线严格Frame/Domain/proof和未实现结果列保持",
+      "unknown": "持有像素不等于publication仍有效；不扩双图叠加/背景owner，相关命令继续不可用",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+      "deleted": false,
+      "sha256": "601DCF74D357F01639D7C9FE1078D95659EFBB3A7E31F0A94D3BFA6C44E20F8F",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shared/ImageInputSource.cs",
+      "deleted": false,
+      "sha256": "F91456C2F7F4512A2C4238FE571ACA2F06F84780DAF3D4643866E8370B5076B7",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "deleted": false,
+      "sha256": "E9E9E33C9E6D88D8D147E1F16F7D7E1C2A5CABAA8B55677DD066544B7F12F1CE",
+      "group": "结果工作区/物理帧与显示保留",
+      "evidence": [
+        "docs/collaboration/evidence/S2_SOURCE_SELECTOR_FULL_CHAIN_REVIEW_20261031.json",
+        "docs/collaboration/evidence/S2_COMPONENT_MIGRATION_PLAN_20261030.md",
+        "docs/collaboration/evidence/BLOB_RESULT_LIST_FORMAL_20261031.json"
+      ],
+      "decision": "接入工作流双图输入项、导航全屏、明确来源身份、图像名及像素仅显示保留；主线严格Frame/Domain/proof和未实现结果列保持",
+      "unknown": "持有像素不等于publication仍有效；不扩双图叠加/背景owner，相关命令继续不可用",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowDocumentHistory.cs",
+      "deleted": false,
+      "sha256": "2F08FB1A1B148609E0FC5B167F24EE70E54C414E838066C0EA8CF1B708B39BF4",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留可对称解绑的SolutionSaved具名回调，融合工作流非冲突事件；不保留会泄漏的重复匿名回调",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+      "deleted": false,
+      "sha256": "818EF3EB70179D4F26D9E12072215015E7E0B62BB5A23137616952A8C3128FD7",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs",
+      "deleted": false,
+      "sha256": "8AB790529D7ACAFC4EBF7EEE6F7791AFE52FD95134D9D48BEB9C445865A2EFB8",
+      "group": "图像Record成员与引用",
+      "evidence": [
+        "docs/collaboration/evidence/S3_IMAGESOURCE_RESULT_CHAIN_20261031.md",
+        "docs/collaboration/evidence/IMAGE_SOURCE_EXECUTION_CASE_MAPPING_20261029.json",
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json"
+      ],
+      "decision": "工作流Image/GrayImage Record输出；资源引用精确data成员；手动宽高资格精确output.image.width/height；保留主线OriginId及不覆盖用户绑定、正式历史",
+      "unknown": "灰度分支何时为空及原资源生命周期仍按原报告未知；不保留平铺兼容输出",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "deleted": false,
+      "sha256": "CC8BB52FC3F47CDA3CC49A50BC866545A7743858517CC6FCE33270E180915C0C",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留可对称解绑的SolutionSaved具名回调，融合工作流非冲突事件；不保留会泄漏的重复匿名回调",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs",
+      "deleted": false,
+      "sha256": "CF19FF84D54BCADEB927674E212C05053649AC94EAFC10DB780C1E9800E18352",
+      "group": "图像Record成员与引用",
+      "evidence": [
+        "docs/collaboration/evidence/S3_IMAGESOURCE_RESULT_CHAIN_20261031.md",
+        "docs/collaboration/evidence/IMAGE_SOURCE_EXECUTION_CASE_MAPPING_20261029.json",
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json"
+      ],
+      "decision": "工作流Image/GrayImage Record输出；资源引用精确data成员；手动宽高资格精确output.image.width/height；保留主线OriginId及不覆盖用户绑定、正式历史",
+      "unknown": "灰度分支何时为空及原资源生命周期仍按原报告未知；不保留平铺兼容输出",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+      "deleted": false,
+      "sha256": "ADB4BC8359A15B93BDABD1ED92EFE20541845AD5F0A039C50B7127DB105FE29A",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+      "deleted": false,
+      "sha256": "28A5D75FF633DE147385EBF21A222620E6E3E58345BD318DB1D166083E1AB0A4",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImageSourceDebugInvocationTests.cs",
+      "deleted": false,
+      "sha256": "9C19D9662F9C35DDAD4598DAC7D7A2C9B644D5AB391299AEC97405BD5B94E0EC",
+      "group": "图像Record成员与引用",
+      "evidence": [
+        "docs/collaboration/evidence/S3_IMAGESOURCE_RESULT_CHAIN_20261031.md",
+        "docs/collaboration/evidence/IMAGE_SOURCE_EXECUTION_CASE_MAPPING_20261029.json",
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json"
+      ],
+      "decision": "工作流Image/GrayImage Record输出；资源引用精确data成员；手动宽高资格精确output.image.width/height；保留主线OriginId及不覆盖用户绑定、正式历史",
+      "unknown": "灰度分支何时为空及原资源生命周期仍按原报告未知；不保留平铺兼容输出",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs",
+      "deleted": false,
+      "sha256": "74AC103FFC9506EA60EA95688307128AD2536004AD797FB36F1FFAEC75880C04",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/LocalImageSequenceTests.cs",
+      "deleted": false,
+      "sha256": "D1D42403B61AF88C8160C54EDEB4395D77AEA9A373194F4A75E5C91AC935B2A1",
+      "group": "图像条/正式编辑与独立运行游标",
+      "evidence": [
+        "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs:568–607,786–817,1459–1500",
+        "docs/collaboration/evidence/IMAGE_SOURCE_STRIP_VM_AUDIT_20261029.json",
+        "docs/collaboration/evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json"
+      ],
+      "decision": "采用原图像条开关/焦点/键盘组合和工作流游标状态机；导入与显式运行分离、文件拖放拒目录、目录按钮独立；保留正式事务及失效保护",
+      "unknown": "删除当前最终是否-1未证；导入完整刷新终态、快速键忙时策略未作VM同态断言",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
+      "deleted": false,
+      "sha256": "5AA85DFA2746D0A1CC955FFFBBC787CBDD2722B619D992CD80225A92B34FDD18",
+      "group": "结果工作区/物理帧与显示保留",
+      "evidence": [
+        "docs/collaboration/evidence/S2_SOURCE_SELECTOR_FULL_CHAIN_REVIEW_20261031.json",
+        "docs/collaboration/evidence/S2_COMPONENT_MIGRATION_PLAN_20261030.md",
+        "docs/collaboration/evidence/BLOB_RESULT_LIST_FORMAL_20261031.json"
+      ],
+      "decision": "接入工作流双图输入项、导航全屏、明确来源身份、图像名及像素仅显示保留；主线严格Frame/Domain/proof和未实现结果列保持",
+      "unknown": "持有像素不等于publication仍有效；不扩双图叠加/背景owner，相关命令继续不可用",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/RootResourceProductionTests.cs",
+      "deleted": false,
+      "sha256": "5979F75134B5BF34668553CC5FA8A0515D60039DFCFA2597F20F21F9B811EE9C",
+      "group": "图像Record成员与引用",
+      "evidence": [
+        "docs/collaboration/evidence/S3_IMAGESOURCE_RESULT_CHAIN_20261031.md",
+        "docs/collaboration/evidence/IMAGE_SOURCE_EXECUTION_CASE_MAPPING_20261029.json",
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json"
+      ],
+      "decision": "工作流Image/GrayImage Record输出；资源引用精确data成员；手动宽高资格精确output.image.width/height；保留主线OriginId及不覆盖用户绑定、正式历史",
+      "unknown": "灰度分支何时为空及原资源生命周期仍按原报告未知；不保留平铺兼容输出",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
+      "deleted": false,
+      "sha256": "49EBD9C5A7420C2165658FC6882A0C9992CA46E48A3E41A976433928C3BA28C5",
+      "group": "主线字段/引用/关闭/Choice保护",
+      "evidence": [
+        "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+        "docs/collaboration/evidence/B08_FORMAL_NUMERIC_LIFECYCLE_20261031.json",
+        "docs/collaboration/evidence/B08_CHOICE_DISPLAY_IMPLEMENTATION_DESIGN_20261031.json"
+      ],
+      "decision": "保留已审主线冲突块的变量/政策/Owner/异常清理及不可用Choice保护；保留非冲突自动合并",
+      "unknown": "本方事务与世代安全为平台适配，不宣称原SDK实现等价",
+      "userExtension": "事务历史/独立运行游标/严格身份与资源安全是平台适配；没有新增原厂未证算法"
+    }
+  ],
+  "validation": [
+    "39文件无冲突标记",
+    "涉及冲突XAML可解析",
+    "git diff --check授权范围通过",
+    "未构建/测试/GUI"
+  ],
+  "notClaimed": [
+    "VM所有运行语义一致",
+    "跨合同集成可编译",
+    "整工具完成"
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "status": "B08订阅窗口宿主/默认方式/创建关闭/宽度主题同一完整设计；暂不改产品或生成接口/新格式字段",
+  "baseline": "c2c0c3cfade9425609901d8e013a808be9243695",
+  "constraints": [
+    "复用当前worktree，B08唯一完整控件，不启SDK或争用面积尺寸线GUI",
+    "主线要求宽度与方案偏好统一决定，不能先提交宽度",
+    "不因AdditionalData存在就断言持久化闭合；原UserData具体键SaveAs/重开/Dirty/Undo未证，不先决定写入方案文件"
+  ],
+  "originalStateOwnership": [
+    {
+      "state": "默认展开偏好",
+      "owner": "VmSolution.Instance / IVmSolution.IsSubscribeInWindow",
+      "evidence": "VmSolution.cs841-881：nullable缓存，缺省false；UserData[IsSubscribeInWindow]读bytes转bool，setter写bytes并通知；1189缓存复位",
+      "proven": "方案对象范围读写与缓存重读代码",
+      "notProven": "特定key的实际SaveAs→全新实例重开、Dirty/Undo/保存失败、模块取消与跨方案行为"
+    },
+    {
+      "state": "当前配置窗口展开状态",
+      "owner": "AlgorithmTabRoot.IsSubscribeInWindow、HasSubscribeInWindow、SelectedSubscribeParam、IsSubscribeIndex",
+      "evidence": "AlgorithmTabRoot.cs383-440/1558：当前Root状态，Dispose只设当前IsSubscribeInWindow=false；ButtonSelecter.cs598-606显式展开只改变Root，不写方案默认方式",
+      "proven": "默认方式与当前展开是两个状态，不能合并为单一bool"
+    },
+    {
+      "state": "WPF子窗和实例引用",
+      "owner": "ComprehensiveConfigControlBase.curSubWindow",
+      "evidence": "OpenSubWindow170-204/Close208-224；未Loaded延迟；Window.GetWindow或HwndSource HWND归属，HasSubscribeRoot防重复",
+      "proven": "窗口归属当前配置宿主；在单个control里一实例，原代码未展示本方全Owner的静态互斥，外围应用是否保证唯一仍不外推"
+    },
+    {
+      "state": "位置/高度/状态",
+      "owner": "ParamSubscribeWindow与传入Owner，状态另取Application.Current.MainWindow",
+      "evidence": "原window代码61-89,92-146：BaseWindow或非SDK模式下监听Owner移动/尺寸；其他SDK Window无这些跟随；HWND路径无WPF Owner；Top/Left/Height随Owner，反向拖动Owner；MyWindowState排除Maximized",
+      "proven": "当前本方Owner跟随为WPF平台对应，不能复制SDK全局服务或跨进程owner兼容入口"
+    }
+  ],
+  "originalPersistenceBoundary": {
+    "path": "默认Checkbox→Solution.(IVmSolution.IsSubscribeInWindow)→VmSolution.UserData[key]→UserData.Set/GetUIParamValue→ModuleManager→IMVS_SetUIParamValue / IMVS_GetUIParamValueByKey；VmSolution.Save/SaveAs另走BaseSave/BaseSaveAs→原SDK保存方案",
+    "fact": "UserData不是仅普通Dictionary：真实读写到SDK；重置VmSolution缓存后代码会从SDK重读。UserData普通setter可能按Parent全局/动态标志及Undo服务记录，不能概括所有UI偏好均不进原历史。",
+    "notFact": "最终只读报告已证缓存先改/写失败可吞、Undo仅条件静态可达、三个未设置偏好的sol未命中ASCII键；均不能证明实际保存、保存时机、Dirty或重开false。仍不新增格式/持久化策略。",
+    "decision": "保持未证；此批不新定正式文件字段/键、撤销策略或兼容原UserData格式"
+  },
+  "creationAndCloseMatrix": [
+    {
+      "trigger": "打开配置/绑定新Root",
+      "original": "符合BaseWindow或非SDK条件时，从Solution默认赋Root.IsSubscribeInWindow，再TwoWay绑定IsOpenSubWindow；true在Loaded时自动开窗，可尚无SelectedSubscribeParam",
+      "current": "没有编辑器级空目标窗。只在来源点击或括号焦点读Owner偏好；ReferenceExpansionRequest必须已有字段session/Target/CanBrowse",
+      "design": "需要真实编辑器展示owner支持可空目标及Loaded后打开；不随便挑一个字段制造假lease"
+    },
+    {
+      "trigger": "点击显式展开",
+      "original": "设置SelectedSubscribeParam=this、Root.IsSubscribeInWindow=true；不等于写默认方式",
+      "current": "Session.Expand安装借用request→Coordinator.Open→Window.Show",
+      "design": "保留现请求/异常退役，明确当前窗状态与默认方式分离"
+    },
+    {
+      "trigger": "默认方式Checkbox改变",
+      "original": "只绑定Solution默认；当前Root.IsSubscribeInWindow为另一属性。此源码链未将更改默认直接等价成关闭当前Root窗",
+      "current": "Request.PreferExpanded修改Owner偏好，DropDownCommand随后直接按该偏好选展开或inline；可能与仍有效展开lease不同步",
+      "design": "候选合同必须分别表达下一次默认方式、当前是否展开及当前字段目标；不以一个bool替代三者"
+    },
+    {
+      "trigger": "移动/切源与索引/选择叶",
+      "original": "Owner位置/高度双向联动；当前Root切换SelectedSubscribeParam/IsSubscribeIndex；叶即时写，无额外确定事务",
+      "current": "ParamSubscribeWindow及Source/Index request共用已接受field；OwnerScope.Active互斥",
+      "design": "复用已验证原模板/跟随和同session即时接纳；不新造值/候选store；多Owner互斥范围须主线决定，不擅改"
+    },
+    {
+      "trigger": "用户关子窗",
+      "original": "Closed清DataContext、IsOpenSubWindow=false→当前Root=false，引用释放；未见清Solution默认的写入",
+      "current": "Coordinator.Retire退役request、解绑Owner/事件、清DataContext/Close；Owner偏好保留",
+      "design": "关当前窗与更改默认独立，退出模块也不以字段取消回滚默认；后者确切原机取消行为仍待证"
+    },
+    {
+      "trigger": "模块取消/重绑/Owner或方案关闭",
+      "original": "Root.Dispose将当前IsSubscribeInWindow=false，经控制绑定关闭；方案UserData偏好存亡边界另待证",
+      "current": "Session/UI/generation、Owner监听、Unloaded/隐藏/Dispose会早退役；已修0b8af6d9首异常与清理异常合并",
+      "design": "新编辑器展示owner也必须退役空窗及当前目标；方案关闭先失效写偏好权限，再独立清窗口/监听；不丢首异常"
+    },
+    {
+      "trigger": "同Owner换方案或同方案新Owner",
+      "original": "默认读取当前VmSolution实例/缓存，Root只反映当前编辑器；跨保存实例持久化未证",
+      "current": "CWT以Window为key，换方案同Window可能沿旧偏好；同方案新Window默认false",
+      "design": "主线需冻结文档会话identity，不能只用Window或可重开的Solution.Id作为偏好/liveness key"
+    }
+  ],
+  "widthAndTheme": {
+    "nativeWidth": "原ParamSubscribeWindow.xaml Width240/Height480；ComprehensiveConfigControlBase.OpenSubWindow仅Language==English设Width320。Loaded后Height随Owner，不是固定480运行高度。",
+    "currentWidth": "XAML240/480，缺英文320分支；现有LocalizationResourceDictionary按CurrentUICulture第一次加载zh-cn/en-us，Language键分别DefaultCH/English，可直接复用，不改通用数字控件或额外测字算法。",
+    "independentImplementationBoundary": "技术上只需ParamSubscribeWindow.xaml.cs在原同语言条件选宽；但主线已要求和偏好完整设计统一决定，此批未实施/提交。不要改应用全局Culture或BaseWindow通用宽度。",
+    "resourceMap": [
+      "原VM.Controls.BaseWindow→Plugin.Wpf.Controls.Foundation.BaseWindow及Themes/Foundation/BaseWindow.xaml",
+      "原Apps.Style CheckBoxStyle→Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
+      "原SubTreeView→Controls/References/Primitives及SourceTree主题",
+      "原LocalizationResourceDictionary→当前组件局部语言资源；OriginalTheme映射两个原palette字典"
+    ],
+    "preservedVisuals": "标题Microsoft YaHei13/默认方式10、白色前景、树Margin12与白背景、原checkbox/树/窗口按钮、Min/Max Collapsed及ShowInTaskbar=false；本方显式Style定位原BaseWindow，局部字典避免宿主隐式样式污染。",
+    "themeScope": "组件当前OriginalTheme引用colorstyle1/colorstyle；GlobalMouseOverBg=#FFF2F3F5、Col_Theme_Mouse=#80E76900。这些是迁入原资源对应，不等于所有原厂主题/DPI/动态换语言均已人工达标；不近似重绘。",
+    "notProven": "中英长名称、100/125/150% DPI、双屏移动/屏外、主题切换和VS实际设计器；原窗口不作屏幕钳制，不自行加新吸附/裁剪规则"
+  },
+  "productionReuseAndGaps": {
+    "existing": "SolutionSession(Document/Editing.SessionId/CloseEditing/IsDirty/保存baseline)→DocumentEditSession(参与者和原子Prepare/Accept/Close)→ProductionEditorContext(IsValid/Deactivated/_documentEdits)→RuntimeNodeConfigurationControl唯一ReferenceFieldOptions→ToolRegistry/BlobParameterEditor→DeclaredSettingsView/DeclaredFieldsView/NativeNumberCoordinator/NativeRangePresenter/NativeReferencePresenter→ReferenceFieldSession/ExpansionCoordinator→ParamSubscribeWindow",
+    "sharedPreferenceState": "当前没有方案级订阅偏好。ReferenceExpansionPreference是可复用的WPF投影bool+通知；OwnerScope只有Window内存默认和Active lease，不能假称可直接保存。",
+    "publicInjectionGap": "ReferenceFieldOptions现只有候选/校验/索引/Expand/变量/当前值，无字段创建前默认方式或文档scope；ToolSettingsViewOptions也无编辑器级空目标/默认自动开窗生命周期。Action<ExpansionRequest>只在已有字段打开后调用，不能补初始化或空窗。",
+    "realHostReuse": "ProductionEditorContext已有有效性、Deactivated与真实DocumentEditSession登记；主线可以在同一UI适配位置提供presentation owner。只有RuntimeNodeConfigurationControl是new ReferenceFieldOptions的实际业务入口，另两处为NativeAssistSample/NativeRoiInheritanceSample设计数据；不能用ServiceLocator查询当前方案冒充明确owner。",
+    "candidateCapabilitiesNotGenerated": [
+      "稳定文档会话identity和可重绑generation/IsCurrent门禁",
+      "默认方式共享投影及主线冻结的读/接受策略；当前展开状态独立",
+      "编辑器级可空当前target；只有真实field session才可选择/写值",
+      "Loaded后按默认自动创建/显示、Unloaded/隐藏/关闭/方案退役的统一所有者",
+      "同Owner互斥复用现Active lease，文档偏好与Window互斥不得绑成同一生命周期",
+      "UI宿主承担持久化/dirty/历史策略，Plugin.Wpf不依赖Workflow、不新造配置值或存储"
+    ],
+    "apiDecision": "本文件只给有真实消费者的能力/数据/所有权候选，不生成空接口或新格式字段；由主线结合待证冻结具体签名后成片接入所有消费者。"
+  },
+  "formatCarrierAudit": {
+    "availableCode": "根Solution.AdditionalData有JsonExtensionData；SolutionSession.Serialize序列化Document；SolutionSnapshot.PrepareJson→ReadFrozenCandidate→同Serialize规范化；ReadFrozenCandidate以JsonSerializer读Solution；WriteSnapshot走现文件提交。",
+    "limit": "这只表明一般扩展字段可能有路径，不是该新偏好的正式保存合同或已跑证明；UnmappedMemberHandling/规范化/历史副本/失败恢复/关闭路径必须逐项验证。",
+    "snapshotSpecific": "主线0a55293d/b731a4c3修/测的是Workflow.AdditionalData。BindingConfigurationStore.Copy根new Solution仅赋Id/Name/Description/SchemaVersion/Version，未copy根AdditionalData；不能将流程扩展数据测试当根偏好的载体通过。也不据此擅判应扩绑定历史快照，UI元数据所有权须先定。",
+    "decision": "不选择AdditionalData、新字段或用户配置作为产品存储；若补证证明方案持久，则主线需明确根/流程/外部UI存储层、格式、脏标记与历史、SaveAs/失败重试/关闭策略，并复用现冻结写盘路径，绝不另写配置文件。"
+  },
+  "failureRetirement": [
+    "创建任何空窗/字段目标前验证文档session、UI generation、Owner已加载；窗口显示及两个投影通知都纳入失败退役区",
+    "新scope替代先使旧写入权限失效；旧Popup/变量/偏好回调不得改变新文档或新Target；错误或宿主重入不按同名节点重绑",
+    "关窗清Target、Owner跟随/Closed监听和DataContext；清理各项独立执行，首异常和次异常均保留，沿0b8af6d9 ParameterCleanup机制",
+    "默认方式接受失败必须恢复原已接受投影；不能已写文件再回滚UI值，也不能写失败被setter吞掉后报告持久化成功",
+    "保存拿同一冻结owner状态，写盘失败不推进Saved baseline；方案关闭释放空窗与字段窗，不保留可写request或全局强引用"
+  ],
+  "acceptanceMatrix": [
+    "默认false/true首次打开配置；true在Loaded后无字段也能开空窗，不造假field target",
+    "同方案换模块/不同Owner共享默认；不同方案同Owner不串偏好；关后重开同ID为新session",
+    "显式开窗不改默认；Checkbox改默认不误改当前展开/字段；用户关闭当前窗不清默认",
+    "编辑/常量/引用/索引焦点切换与空Target投影；无目标不能选择或写值；多入口互斥范围明确",
+    "Owner移动/resize/最小化/还原、子窗拖动反向跟随；关闭Owner/隐藏/卸载/重绑/取消/Dispose早退役",
+    "创建前/实际WPF投影/宿主打开/接受偏好/关闭监听故障，两个投影及所有清理执行，异常不掩盖；重入新代不被旧操作关闭",
+    "中文240与英文320走同资源/组装；独立设计样例不触发方案写入或业务/算法；中英独立进程验证，避免静态语言单例污染",
+    "同一正式格式Save/SaveAs/失败恢复/关闭保存/重开，验证原值与当前会话偏好、Dirty/历史是否符合主线冻结决策；原VM结果与产品结果分列",
+    "原BaseWindow/checkbox/双树资源、字体/色板/禁用/选择效果，长名称与100/125/150%DPI人工对照；独立WPF渲染不代VS设计器",
+    "FieldEditing/VariableFields/扩展WindowPresentation原通过整轨保留；只有新合同/源码改变再相称复测，不重算旧结果为新验收"
+  ],
+  "minimalReverseQuestions": [
+    {
+      "id": "P1",
+      "ask": "复用既有方案及报告，具体IsSubscribeInWindow键是否已有SaveAs→退出/全新实例Load的原值证据？true/false/缺省分别如何恢复？需记录缓存重置前后SDK原字节、UI勾选和自动打开，而不是仅静态setter。",
+      "boundary": "先查已有资料；本线不启SDK，新窗口授权及共享清单由主线统一决定"
+    },
+    {
+      "id": "P2",
+      "ask": "默认方式改变是否使原方案Dirty或进入Undo？模块取消/关闭与子窗关闭是否回滚或保留默认，保存失败如何表现？",
+      "why": "不能从通用UserData的条件Undo分支推某key必进或不进历史；本方不得先选择正式文件字段"
+    },
+    {
+      "id": "P3",
+      "ask": "原同方案多个配置宿主的空窗/活动目标与互斥边界是否已有可达入口证据？对SDK非BaseWindow/HWND路径仅核适用范围，不扩成当前产品跨进程兼容任务。",
+      "why": "已有源码只证每ComprehensiveControl/root防重开，不把缺全Owner锁推成可达多窗结论"
+    }
+  ],
+  "conclusion": "宽度差异已证且局部可改，但遵主线与偏好统一决定；方案偏好完整实现暂缺原持久化/Dirty证据及创建前presentation owner/空目标生命周期合同。当前不改产品、不生成接口或新格式、不启动GUI/SDK。",
+  "identities": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ComprehensiveConfigControlBase.xaml.cs",
+      "sha256": "204827AEEA0E08151ED80235A2670301D32F0C8BE0FFE09686E02D39B44A2504"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "sha256": "146D6411E3AEDF19F70B167411114FA87F9A7D70CEC1EDB199F50BC04EAE93A0"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "sha256": "BD82E6E2E36C4E7350F79D529AC33500269911E743D2E59CBDFE2804211288CC"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/AlgorithmTabRoot.cs",
+      "sha256": "31C8AAFDBCCD0E034316A54E2959F451E135298FAD9F618E8234BC6CBC1BC72E"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs",
+      "sha256": "C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/UserData.cs",
+      "sha256": "8B5099C298B336A6576F9C6FF0C02090EC48C5E4E06B3127D8129DC4C1A79394"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "sha256": "DF113445E47425EAC0842EEEA674830BE6678F9587D275F25555DF96F86227F4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml",
+      "sha256": "FB0B5CB6A380AA6B34FF0CA8D1F35FC9FB7DECF051A7F38C655DA32D3B279234"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+      "sha256": "FFA6FA8DC4A41CCEE8D8AF7BA41C4647E3A0010E47C13E8BD6CFF50DB7FCE9A6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "sha256": "B564D5200B7264E8E39424E23BCA50166148DD74A8DDD038A8D4E3915DFB28D5"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "4ADA4A689C5EEAB629FC4B8027226C17DA22896990A8130E825D920538E957F7"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionSession.cs",
+      "sha256": "3AD732AAAFFEC92B1E9FE7F976F9E6CB3192B3321DA78634494BE299B774E928"
+    },
+    {
+      "path": "D:/MyWork/SunEyeVision_V2/src/Workflow/SolutionRepository.cs",
+      "sha256": "62D56EDC0FC4DC5CEFA83DB1415FBF76295E1BB2B04DC5C0B492E287E7F5C95E"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+      "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7"
+    }
+  ],
+  "finalReverseBoundary": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "readFrom": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7",
+    "review": "已全文读取和核SHA；复用逆向负责人只读原件/既有ZIP报告，不新启SDK，不重复反编译",
+    "facts": [
+      "getter正常缺省或bool解析失败得到false缓存；读取抛异常时nullable缓存可仍null，下次可重试",
+      "setter先更新缓存和通知，再写UserData，写异常被吞；UI显示新值不证明SDK写成功",
+      "UserData静态存在条件Undo登记路径，不证明服务存在、实际入栈或Dirty",
+      "ParamsConfigControlBase与ComprehensiveConfigControlBase仅在BaseWindow或非SDK条件读方案默认，SubAlgorithmTabRoot委托Root；相同Root共享Has门槛，不同Root各有状态，不推运行互斥",
+      "attempt03三个sol ZIP全部解压条目未命中ASCII键，但未设置偏好且可能其他编码/结构；不证明未存、不证明重开false"
+    ],
+    "unknown": [
+      "具体键SaveAs/保存/新实例重开原字节和UI值",
+      "Dirty/Undo/Redo/取消及失败边界",
+      "同根/异根多宿主的实际窗口及关闭生命周期"
+    ]
+  }
+}

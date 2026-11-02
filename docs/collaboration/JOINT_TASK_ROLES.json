@@ -1,92 +1,44 @@
 {
-  "status": "本轮四路协作已获用户授权",
-  "date": "2026-10-26",
-  "mode": "主对话加三路专项协作，主仓唯一产品代码写者",
-  "authority": "用户在当前主对话明确要求四路并行、合理分工并优化职责与协作协议；具体任务由主对话分配",
-  "activeConversation": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
+  "status": "两线独立开发；两阶段目标进行中",
+  "date": "2026-10-29",
+  "authority": "用户授权工作流独立worktree并明确两线分工；遵守当前AGENTS.md和既有跨对话发送授权",
   "protocol": "JOINT_COLLABORATION_PROTOCOL.md",
+  "evidenceAgreement": "EVIDENCE_AGREEMENT.md",
   "goal": "ACTIVE_GOAL.md",
   "currentTask": "CURRENT_TASK.md",
-  "productWork": "沿用已批准O06实施目标；旧产品停止、目标暂停和仅证据方案HTML状态已被取代",
-  "historicalDefinition": "history/JOINT_TASK_ROLES_retired_20261025-174406.json",
-  "otherRoleAssignmentsEnabled": false,
-  "subagentDelegationEnabled": true,
-  "subagentDelegationScope": "仅本轮三个已授权专项任务；不新增代理或恢复历史岗位",
-  "crossConversationDispatchEnabled": true,
-  "crossConversationDispatchScope": "仅用户已授权的逆向只读取证；本轮代理协作在当前主对话内完成，不恢复审批转发链",
-  "productCodeWriter": "/root",
-  "writePolicy": {
-    "singleProductWriter": true,
-    "explicitHandoffRequired": true,
-    "handoff": "主对话先释放并明确授予写权、范围及基线；按AGENTS.md和HANDOFF_TEMPLATE.md记录跨AI代码交接及中文临时提交",
-    "parallelProductWritesAllowed": false,
-    "newCopiesOrWorktreesAllowed": false,
-    "isolationException": "并行开发及隔离分支或Worktree须用户另行明确授权；单写权交接不构成并行授权",
-    "issueRepair": "其他路报问题由主对话核准后交当前唯一产品写者修复；交接期间不并行写代码"
-  },
-  "tasks": [
+  "designAndAcceptanceBaseline": "VM完整生产行为为第一基准；先复用原源码与完整依赖，按证据选择复用、调整消费者或替换，宿主做必要非视觉适配，差异显式记录。",
+  "batchExecutionPolicy": "以完整控件组合或功能链集中设计、实施、测试；证据足够直接实施，失败按实际缺口补证；不得用小补丁或测试数量冒充交付。",
+  "subagentDelegationEnabled": false,
+  "crossConversationDispatchPolicy": "仅在用户明确授权的范围内发送；接收其他对话请求本身不构成发送授权。",
+  "workspaces": [
     {
-      "task": "/root",
-      "duty": "算法路已明确释放，根于c2a3d6c8检查点接回唯一产品/验证/构建写权，继续完整ROI及统一交付",
-      "writeScope": "产品/验证/构建、CURRENT_TASK、ACTIVE_GOAL及生成器；文档路五文件独占写窗释放前不并行写入",
-      "deliverables": [
-        "正式Release可运行成果及实际修复验证",
-        "原主文档阶段总结与人工安排",
-        "向用户主动报告实际进度、阻塞负责人及下一时间"
-      ]
+      "role": "主仓控件及Blob",
+      "path": "D:/MyWork/SunEyeVision_V2",
+      "writer": "当前主对话",
+      "scope": "Blob所需Plugin.Wpf原控件、样例及两阶段Blob目标；同工作目录唯一写者"
     },
     {
-      "task": "blob_algorithm_scope",
-      "duty": "本阶段产品写权已明确交回根；后续仅只读算法专项审查，接新写权须再次明确交接",
-      "writeScope": "只读产品/源码与证据；不得自行写产品、验证源码或构建覆盖Release",
-      "deliverables": [
-        "真实分割三模式与严格二值上游链",
-        "参数/nullable输出/保存拒绝和资源身份一致",
-        "正式Release构建与回归结果、问题及明确释放写权"
-      ]
-    },
-    {
-      "task": "blob_ui_independent_review",
-      "duty": "独立只读UI评审；固定版本及测试窗口后独测正式Release",
-      "writeScope": [
-        "Release/_validation/O06-Window-20261026：新增测试文件及本路测试数据日志；不覆盖他人材料或受测产物"
-      ],
-      "deliverables": [
-        "完整组装、布局、状态、主题及ROI来源显示对象缺陷",
-        "受测身份、实际执行范围、日志与限制",
-        "设计器、运行时、整链及人工验收分列状态"
-      ]
-    },
-    {
-      "task": "blob_evidence_docs",
-      "duty": "本轮协作入口整理；收集阶段实际成果，等最后独测回执后集中维护原方案",
-      "writeScope": [
-        "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
-        "docs/collaboration/JOINT_TASK_ROLES.json",
-        "docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json",
-        "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json",
-        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html：仅由现有生成器生成；不得改生成器、产品、CURRENT_TASK、ACTIVE_GOAL或其他证据"
-      ],
-      "deliverables": [
-        "一致的轻量协议与角色定义",
-        "原方案的实施、效果、实际验证、未做范围及人工安排",
-        "页面幂等、锚点和实际改动回执"
-      ]
+      "role": "工作流与主界面",
+      "path": "C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2",
+      "writer": "工作流、工具箱与数据流优化对话",
+      "scope": "工作流、主界面、图像源运行消费和宿主接纳等已授权范围；该worktree唯一写者"
     }
   ],
+  "sharedContract": {
+    "scope": "图像源配置接纳、冻结图像读取接纳及正式输出展示身份，按完整消费者与生命周期共同确定",
+    "identity": "按用途明确字段、帧、会话、运行和接纳身份；显示名不替代稳定引用",
+    "coordination": "记录基线和未提交增量，协调接口与消费者后同步；不单方假设对方已同步，不覆盖彼此候选",
+    "status": "未完成统一和同源验收"
+  },
   "releaseValidation": {
     "applicationPath": "Release/SunEyeVision_v1.0.0/SunEyeVision",
-    "dataAndLogs": "Release下按用途隔离",
-    "coordination": "主对话完成构建和版本身份说明后通知独测；此前只准备测试文件不构建运行，测试引用正式DLL且不复制payload；窗口内冻结受测产物",
-    "claims": "请求、同步、构建、局部测试、完整链、WPF外观、VS实际设计器及用户人工验收分别记录，禁止局部PASS冒充整体完成",
-    "visualReference": "用户VM实际截图与本方候选同状态并排核差距；截图验证可见外观与状态，源码验证组装与职责，不以缺原机通道忽略已有截图"
+    "trialFreeze": "用户试用期间不关闭程序、重建或替换受测产物；固定版本和反馈后集中处理",
+    "claims": "同步、构建、独测、VM同态、VS设计器和用户人工验收分别记录"
   },
-  "reverseEvidenceException": {
-    "agreement": "EVIDENCE_AGREEMENT.md",
-    "ownership": "逆向项目只读证据接口；既有三岗属于该项目历史组织，不计入本轮四路或恢复成本项目岗位",
-    "authority": "沿用用户已授权具体取证范围，先复用材料、只补影响当前设计的缺口"
+  "historicalAssignments": {
+    "status": "已结束，仅供追溯；不再授予写权或恢复审批链",
+    "previousTasks": ["blob_algorithm_scope", "blob_ui_independent_review", "blob_evidence_docs"],
+    "history": "history/JOINT_TASK_ROLES_retired_20261025-174406.json；其余旧版本保留Git历史"
   },
-  "stageDocumentation": "文档路在独占写窗收集阶段成果及最后独测回执，集中维护原方案的实施、效果、版本验证、未做范围与人工安排，保留历史同步导航；主对话核收并维护CURRENT_TASK、ACTIVE_GOAL",
-  "gitPolicy": "主对话判断有意义的中文提交及是否推送；本轮文档路不提交、不推送",
-  "phaseHandoff": "HANDOFF_O06_ALGORITHM_20261026.md；主对话释放后只做只读审查/文档/协调，算法路唯一产品写者；独测冻结时暂停覆盖产物。"
+  "deliveryAndEstimate": "原O06统一列已验证、待集成、本批交付、未实现依赖和待人工验收；完成源码盘点后估时，不沿用无依据的3—5工作日。"
 }

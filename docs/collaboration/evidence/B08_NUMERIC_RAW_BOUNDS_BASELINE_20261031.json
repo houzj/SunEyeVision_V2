@@ -1,0 +1,322 @@
+{
+  "baseline": "c199a41eaa216edf5ed9f29bd0cedf4e34842b2d",
+  "scope": "Candidate零窗口原始键入，非解绑；0..1/两位/.01，实际迁移原RangeRule对照",
+  "receipt": {
+    "stage": "S4",
+    "validationScope": "Candidate",
+    "attempt": 6,
+    "pid": 124268,
+    "exit": 1,
+    "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4NumericContractCases.cs",
+    "caseSourceSha256": "EF9A31D8C2FB6AC085757261C264734DA8A98CC8327DDEE9616C3E0B05677724",
+    "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+    "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-006"
+  },
+  "samples": [
+    {
+      "Kind": "scalar",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ConstantSetting { Value = 0.12 }",
+      "AcceptedValue": 0.12,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-left",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ConstantSetting { Value = 0.12 }",
+      "AcceptedValue": 0.12,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-right",
+      "Source": 0.125,
+      "Expected": 0.12,
+      "Accepted": "ConstantSetting { Value = 0.12 }",
+      "AcceptedValue": 0.12,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "scalar",
+      "Source": 0.135,
+      "Expected": 0.14,
+      "Accepted": "ConstantSetting { Value = 0.14 }",
+      "AcceptedValue": 0.14,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-left",
+      "Source": 0.135,
+      "Expected": 0.14,
+      "Accepted": "ConstantSetting { Value = 0.14 }",
+      "AcceptedValue": 0.14,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-right",
+      "Source": 0.135,
+      "Expected": 0.14,
+      "Accepted": "ConstantSetting { Value = 0.14 }",
+      "AcceptedValue": 0.14,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "scalar",
+      "Source": 0,
+      "Expected": 0,
+      "Accepted": "ConstantSetting { Value = 0 }",
+      "AcceptedValue": 0,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-left",
+      "Source": 0,
+      "Expected": 0,
+      "Accepted": "ConstantSetting { Value = 0 }",
+      "AcceptedValue": 0,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-right",
+      "Source": 0,
+      "Expected": 0,
+      "Accepted": "ConstantSetting { Value = 0 }",
+      "AcceptedValue": 0,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "scalar",
+      "Source": 1,
+      "Expected": 1,
+      "Accepted": "ConstantSetting { Value = 1 }",
+      "AcceptedValue": 1,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-left",
+      "Source": 1,
+      "Expected": 1,
+      "Accepted": "ConstantSetting { Value = 1 }",
+      "AcceptedValue": 1,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Kind": "range-right",
+      "Source": 1,
+      "Expected": 1,
+      "Accepted": "ConstantSetting { Value = 1 }",
+      "AcceptedValue": 1,
+      "Writes": 1,
+      "Invalid": false,
+      "Error": "",
+      "IsLoaded": false,
+      "IsVisible": false,
+      "HasPresentationSource": false,
+      "Windows": 0,
+      "Passed": true
+    },
+    {
+      "Name": "舍入提案宿主拒绝不半写",
+      "Passed": true,
+      "Detail": {
+        "writes": 0,
+        "Error": "宿主拒绝"
+      }
+    },
+    {
+      "Name": "拒绝后再次解绑可单次接纳",
+      "Passed": true,
+      "Detail": {
+        "writes": 1,
+        "Error": ""
+      }
+    },
+    {
+      "Name": "提案拒绝保留引用且不调用写入",
+      "Passed": true,
+      "Detail": {
+        "writes": 0,
+        "Error": "提案资格拒绝"
+      }
+    },
+    {
+      "Name": "解绑越界当前值保留引用",
+      "Passed": true,
+      "Detail": {
+        "writes": 0,
+        "Error": "数值超出允许范围。"
+      }
+    },
+    {
+      "Name": "宿主接纳同步关闭后不继续通知",
+      "Passed": true,
+      "Detail": {
+        "writes": 1,
+        "notifications": 0
+      }
+    },
+    {
+      "Name": "范围0宿主接纳同步关闭后不继续通知",
+      "Passed": true,
+      "Detail": {
+        "writes": 1,
+        "notifications": 0
+      }
+    },
+    {
+      "Name": "范围1宿主接纳同步关闭后不继续通知",
+      "Passed": true,
+      "Detail": {
+        "writes": 1,
+        "notifications": 0
+      }
+    },
+    {
+      "Name": "scalar原始越界不可借舍入进入范围1.004",
+      "Passed": true,
+      "Detail": {
+        "Raw": "1.004",
+        "OriginalRangeRuleValid": false,
+        "result": false,
+        "writes": 0,
+        "accepted": 0.25,
+        "RetainedRaw": "1.004",
+        "Error": "原数值输入校验未通过。",
+        "IsLoaded": false,
+        "HasPresentationSource": false
+      }
+    },
+    {
+      "Name": "range原始越界不可借舍入进入范围1.004",
+      "Passed": false,
+      "Detail": {
+        "Raw": "1.004",
+        "OriginalRangeRuleValid": false,
+        "result": true,
+        "writes": 1,
+        "accepted": 1,
+        "RetainedRaw": "1.00",
+        "Error": "",
+        "IsLoaded": false,
+        "HasPresentationSource": false
+      }
+    },
+    {
+      "Name": "scalar原始越界不可借舍入进入范围-0.004",
+      "Passed": true,
+      "Detail": {
+        "Raw": "-0.004",
+        "OriginalRangeRuleValid": false,
+        "result": false,
+        "writes": 0,
+        "accepted": 0.25,
+        "RetainedRaw": "-0.004",
+        "Error": "原数值输入校验未通过。",
+        "IsLoaded": false,
+        "HasPresentationSource": false
+      }
+    },
+    {
+      "Name": "range原始越界不可借舍入进入范围-0.004",
+      "Passed": false,
+      "Detail": {
+        "Raw": "-0.004",
+        "OriginalRangeRuleValid": false,
+        "result": false,
+        "writes": 0,
+        "accepted": 0.25,
+        "RetainedRaw": "0.00",
+        "Error": "",
+        "IsLoaded": false,
+        "HasPresentationSource": false
+      }
+    }
+  ],
+  "loadedProduct": [
+    "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\tB0C3CD14A9149F5855F8F94AF7726B9D94FD42C29B58F96D35951046F27DC0EF",
+    "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\tC5729D540121C9A3F8605F00E9CAEA684F4B93298561EF3FDCDF2E62032DEBB7",
+    "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t0F22DFD6F5FED6B3B7D07256A690B00D836394BE2D97E985FB7B19CAB003B0D1",
+    "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\tE57398836009CC717DC04EF6861124C6FBEBD1A64FA862179375EE66E9F875C1"
+  ],
+  "finding": "Range键入1.004借舍入接纳1；-0.004拒绝但原文丢失且无诊断；scalar及原RangeRule均拒绝并保留原文。影响Blob圆度/矩形度。",
+  "design": "ReadRaw在舍入前使用声明/绝对XML界限；PrepareValue继续供解绑与显式值按原合同先舍入。成对动态关系仍待完整候选安装后验证，不提前比较另一端旧值。"
+}

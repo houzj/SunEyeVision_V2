@@ -1,0 +1,80 @@
+{
+  "scope": "S1三页纯UI源码候选，不代表构建或验收通过",
+  "baseline": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "sourceFiles": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeThresholdUiDraftControls.cs",
+      "sha256": "B11B8B883D4A2C4F1A5FE14650E2D674EF50A0313FDF0D0DC42F59D9BF5A1507"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeJudgmentUiDraftControls.cs",
+      "sha256": "E77958F8807F4B517F60ED7F35D0B1A6275D76C7510F09F4C42E863267548492"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeUiConditionalFields.cs",
+      "sha256": "4AAF611106FBE2230BBA241D97F253069A1BC12AC7E78F140F4E7A71A24446E3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeUiDraftRange.cs",
+      "sha256": "17DFBABA7BCC910156ED9511799698082ABE652DD47084048B0F02F29B69ED15"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "2DE8A79469A996A57AE31C2F98BFF757A3598EE90B0E3B0BD603251E2F6B662F"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+      "sha256": "0287A0B04452BC54DD33A229400525F1FC099CF6400FBD66EB2BB2031B68208B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+      "sha256": "09FB57935562E5A342A343D90473F4CAC6234023CDCAFACC74C762E50A394AF7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "C6425CA10AAD70B521FB01A47B11E42699172F363F6D75042EDF150364E3FEFF"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "A43CD8443F05055D8BCA5EDD6BD75B86BB590BF45724CCF4BBB16291F44F92DA"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "162A3755C2C4E99E3D6A8570B5BDF896A95442EA65DA81A2B349A4800F436C50"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "5CE787213D6019C59D08F22A2B8EAC663E0E2B3B8D67273B2E3725ACF9A1F1DF"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "sha256": "A506A15C0A5698A900C8F8CF819D85CCA28B2BAC7D0B94E9181FF0F9A728B4B2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+      "sha256": "973CFA535998D8AA1990BDCA1F9E67AC9FD404FD38D9F9683DB51A7AA713A7C2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "F8D86A28835A6D3DA3FCBA694F7763005FEA2DAFADF93FFF73353E95696FE610"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "34D445104394014FE43E52532154893D3A42889CBEE4C104B4D0AA864C47EC99"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "F932C27B4BA8CDCE2D65CDDFCE7D986E0B10BF8E2EB0414F5163274CD400769A"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "E25C0CA34C53F26F0C779BECD2CA8F24ED56184E0050D40CE115F906C490A246"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "DF30C8C7AB522599D0700DB45ED7076D54CA80C044792589BA5A325A18998B75"
+    }
+  ],
+  "build": "待确认试用结束后执行正式Release构建",
+  "validation": "新增检查未运行，attempt-110不覆盖本批"
+}

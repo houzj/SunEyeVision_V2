@@ -1,0 +1,43 @@
+{
+  "status": "已实施并定向验证，完整B08未验收",
+  "basis": "B08_BINDING_ORDER_REVIEW_20261031.json",
+  "scope": "Blob设置参数的引用消费队列；图像/区域输入仍由输入及资源合同处理，不冒充普通参数绑定",
+  "decisions": [
+    "RuntimeToolConfiguration显式拥有稳定字段ID的不可变ParameterBindingOrder，独立于Fields字典/页面布局；建立时追加，来源或索引变化移尾，解除移除，未改关系不重排。原ButtonSelecter同CurValue不触发写入已核。",
+    "队列属于配置身份，复制/字段提案/正式快照/私有调试/撤销重做同步；纯参数当前值写入保留队列，不重放配置。",
+    "保存不修改活跃队列；输出记录按工具声明的参数名称UTF8字节序排序，读回按显式保存数组建立队列。Fields对象仍可为确定JSON排序，但不能决定执行顺序。",
+    "通过可选的非视觉IToolParameterBindingNames提供字段ID到参数业务键映射；不改变IToolSettingsFields已有职责、不添加WPF或宿主依赖、不从中文标签/CLR反射/字段GUID猜名称。每个实际设置引用必须有明确映射。",
+    "Blob现有9个可订阅参数的映射从原AlgorithmTab实际Name核对；定义在本工具参数元数据，公共库不硬编码Blob或原厂程序集名称。",
+    "宿主为每节点初始化空队列是平台生命周期适配。原首次链表构造/其他来源及多绑定原机重开仍未证，不把宿主验证冒称原机同态实测。保存UTF8比较只覆盖本批已核托管入口及ASCII名称，未泛化所有原生记录。",
+    "宿主文档历史恢复已接受配置队列并保留现行参数值；原厂Undo内部重放顺序未闭合，明确为宿主编辑事务适配。"
+  ],
+  "blobKeys": {
+    "Threshold": "LowThreshold",
+    "UpperThreshold": "HightThreshold",
+    "BlobCountLimit": "FindNum",
+    "FilterAreaMin": "MinArea",
+    "FilterAreaMax": "MaxArea",
+    "FilterCircularityMin": "MinCircularity",
+    "FilterCircularityMax": "MaxCircularity",
+    "FilterRectangularityMin": "MinRectangularity",
+    "FilterRectangularityMax": "MaxRectangularity"
+  },
+  "consumers": [
+    "RuntimeToolConfiguration全部复制/配置/当前值转换及JSON",
+    "AlgorithmNode.Runtime消费循环",
+    "RuntimeDebugInvocation执行时消费循环",
+    "NodeConfigurationEditHost配置CAS/历史/纯值接纳",
+    "Blob参数定义元数据",
+    "正式生产与私有调试回归"
+  ],
+  "acceptance": [
+    "A,B,C→改A得B,C,A→删B再绑得C,A,B",
+    "同来源不改序，数值接纳不改序",
+    "中途失败前项回执及后项不执行",
+    "正式和私有执行使用同一队列合同",
+    "保存不改活跃队列，重开按名称排序记录恢复，使用字段GUID排序不同的样本",
+    "复制、引用映射、确认取消、撤销重做与严格JSON重复/缺项/未知项拒绝",
+    "原厂未知、VS/人工与正式产物验证分别记录"
+  ],
+  "fullFunctionalAcceptance": false
+}

@@ -1,0 +1,82 @@
+{
+  "scope": "正式Release定向WPF验证，不代表完整Blob或算法验收",
+  "sourceCommit": "eaa772288bc47aae82eafde35fa083b2b38b0735",
+  "manifestSha256": "9B86114F0E57DB777E93FF180D4CAA0B751B72F86CDD86C9ECC2036D4A337B3F",
+  "buildLog": "Release/_validation/B08BlobNumericContract-20261031/build-008.log",
+  "buildLogSha256": "F3C879950062357E9A4DDBD71109490271C1D73658B3FDA7E13EC5BE6D2F67FF",
+  "checks": [
+    {
+      "track": "FieldEditing",
+      "attempt": "attempt-136",
+      "cases": 38,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-136\\receipt.json",
+      "receiptSha256": "FA608299CEAE51C1F64777846C7F5E18E7EFC608279A5F6F8261CB1ECC7332C9",
+      "runLogSha256": "4E7F3A886FBB76FEDBBE5359D5D52A48FBAC49852770B92D5ACF7B1B7B25C997",
+      "caseSourceSha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A"
+    },
+    {
+      "track": "VariableFields",
+      "attempt": "attempt-014",
+      "cases": 13,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\VariableFields\\attempt-014\\receipt.json",
+      "receiptSha256": "C69C4DA5779807963336FAE67931C2375E6924575DD79DB86C52D7D06F526288",
+      "runLogSha256": "318D91176025C1C915C1C3BD2F9E7F8DB5FA9EAA7AA747AE280E7F770BF31D0F",
+      "caseSourceSha256": "70D50346B0646735E31B4A09F7626FC13785380AF304BB3F432BA3F2AB29BB4B"
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "attempt": "attempt-019",
+      "cases": 13,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-019\\receipt.json",
+      "receiptSha256": "72F738F279DAC238F5E83C385AE35F7B94CE685A00F7690EA129DF45A0A5873C",
+      "runLogSha256": "DECD1E29CBBA4B4FB5D458E0CE646F09E9643A04B2DEE1BB40D19537EA0B1A72",
+      "caseSourceSha256": "54FF6E5153240DEE8F256176EA28C8146687C5CCA0344B30979DDF0830E7AA09"
+    },
+    {
+      "track": "BlobParameterProduction",
+      "stage": "S4",
+      "attempt": "attempt-003",
+      "cases": 18,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-003\\receipt.json",
+      "receiptSha256": "CB78E922DEEC5ABA85E37F21CC90C5BD3FA21DD45F65AB7AD4073B48714C010C",
+      "runLogSha256": "EAA9EE51A1CD31809958E36D91B82CB976815AA9FF8BAB90B1D16DA757AB42D6",
+      "caseSourceSha256": "A47DE344B6318292364E2E07640A573DC71FA26B1A7654871ABE4C1581976784"
+    },
+    {
+      "track": "ManualReferenceQualification",
+      "stage": "S4",
+      "attempt": "attempt-005",
+      "cases": 19,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-005\\receipt.json",
+      "receiptSha256": "BADA9280BD8AFFB840D2CAEA9D9E95778B8770F41C7DE962491BB644AF0D70C2",
+      "runLogSha256": "92329740724B2FD452B77F2FA945985CC1FF4F0BB85959BBB055600EF2C0E457",
+      "caseSourceSha256": "A36BB263E260443AAFD59D4A9548DFBF0709CEF9355C86E4E69E42EBD45C3F70"
+    },
+    {
+      "track": "ParameterValues",
+      "stage": "S4",
+      "attempt": "attempt-007",
+      "cases": 18,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-007\\receipt.json",
+      "receiptSha256": "3DAEE67997F5BBA42A608FB2902B0413AFBAB80CF756A196FCF02C078326F727",
+      "runLogSha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9",
+      "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "stage": "S3",
+      "attempt": "attempt-064",
+      "cases": 10,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-064\\receipt.json",
+      "receiptSha256": "18745F119721FB556EBD838FC19DD89C910EA26CECE96A127482ECE1D5A5279E",
+      "runLogSha256": "8277B9E901681C92756D886CA4CF6F1EE655D054F6AF701F76756A32CF0E085D",
+      "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC"
+    }
+  ],
+  "limitations": [
+    "六类正向窗口流程因ROI和结果显示尚未接入而阻塞",
+    "面积上限窄宽显示截断待核",
+    "VS及用户人工验收未完成",
+    "原厂索引部分语义及VM算法未证"
+  ]
+}

@@ -209,7 +209,7 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         private sealed record PublishedRunInputs(WorkflowRunConfiguration Configuration, WorkflowGlobalRunValues ProducedGlobals, PreparedLocalImages LocalImages, IReadOnlyList<GlobalVariable> GlobalDefinitions, IReadOnlyDictionary<string, object> RuntimeParameters,
-            SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths,ToolExecutionOwner ExecutionOwner,IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers,string SolutionId,string SolutionName);
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths,ToolExecutionOwner ExecutionOwner,IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers,string SolutionId,string SolutionName,RuntimeParameterValueAcceptance? ParameterValues);
         private readonly Dictionary<string, PublishedRunInputs> _preparedRunInputs = new(StringComparer.Ordinal);
         internal Func<WorkflowPublishedConfiguration>? CapturePublishedConfiguration { get; set; }
         internal bool AllowUnhostedRunForTests { get; set; }
@@ -769,7 +769,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     communicationOutputs:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,
                     cameraCaptureService:sourceInputs.Count>0?SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime:null)
                 {Configuration=configuration,ExecutionOwner=inputs.ExecutionOwner,ResourcePaths=inputs.ResourcePaths,
-                    ProducedGlobals=inputs.ProducedGlobals,GlobalProducers=inputs.GlobalProducers.Where(operation=>operation.Source.ScopeId==workflowId&&operation.Source.NodeId==node.Id).ToArray()};
+                    ProducedGlobals=inputs.ProducedGlobals,GlobalProducers=inputs.GlobalProducers.Where(operation=>operation.Source.ScopeId==workflowId&&operation.Source.NodeId==node.Id).ToArray(),ParameterValues=inputs.ParameterValues};
                 using var result=await engine.ExecuteWorkflowAsync(request,token);
                 if(result.Status==ExecutionStatus.Cancelled)throw new OperationCanceledException(token);
                 if(!result.Success)throw new InvalidOperationException(string.Join("; ",result.Errors));
@@ -1021,7 +1021,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     cameraFrames: cameraFrame is not null && cameraNodeId is not null
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
                         : null) { Configuration = runConfiguration, ResourcePaths = runInputs.ResourcePaths,
-                            ExecutionOwner = runInputs.ExecutionOwner,GlobalProducers=runInputs.GlobalProducers,ProducedGlobals=runInputs.ProducedGlobals };
+                            ExecutionOwner = runInputs.ExecutionOwner,GlobalProducers=runInputs.GlobalProducers,ProducedGlobals=runInputs.ProducedGlobals,ParameterValues=runInputs.ParameterValues };
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
                 if (sequenceNumbers is not null)
                 {
@@ -1257,7 +1257,8 @@ namespace SunEyeVision.UI.Services.Workflow
             else if(AllowUnhostedRunForTests)
             {
                 var fixture=solutionDefinition??new Solution{Workflows=_workflowEngine.GetAllWorkflows().ToList()};
-                publication=WorkflowPublishedConfiguration.Capture(new NodeConfigurationEditHost(fixture).Capture(),fixture);
+                var host=new NodeConfigurationEditHost(fixture);
+                publication=WorkflowPublishedConfiguration.Capture(host.Capture(),fixture,host);
             }
             else throw new InvalidOperationException("运行准备缺少当前文档的正式配置快照入口。");
             var configuration=publication.Configuration;
@@ -1277,8 +1278,8 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             var initial=definitions.Where(variable=>variable.ProducerBinding is null&&string.IsNullOrEmpty(variable.RebindingReason)
                 &&string.IsNullOrEmpty(variable.BindingValidationPending)&&GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out _,out _,out _))
-                .Select(variable=>new KeyValuePair<string,object?>(variable.Name,variable.Value)).ToArray();
-            var globals=new WorkflowGlobalRunValues(initial);
+                .Select(variable=>new KeyValuePair<string,object?>(variable.Id,variable.Value)).ToArray();
+            var globals=new WorkflowGlobalRunValues(publication.SolutionId,definitions,initial);
             var runtime = _runtimeParameters.ToDictionary(p => p.Key,
                 p => p.Value is Array array ? array.Clone() : p.Value, StringComparer.Ordinal);
             lock (_lock)
@@ -1302,7 +1303,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 var ids=workflowId is null?configuration.CopyWorkflows().Select(flow=>flow.Id).ToArray():new[]{workflowId};
                 var captured=ids.ToDictionary(id=>id,id=>new PublishedRunInputs(configuration,globals,
                     CaptureLocalImageInputs(id,configuration,resourcePaths),definitions,runtime,resourcePaths,
-                    publication.ExecutionOwner,Array.AsReadOnly(operations.ToArray()),publication.SolutionId,publication.SolutionName),StringComparer.Ordinal);
+                    publication.ExecutionOwner,Array.AsReadOnly(operations.ToArray()),publication.SolutionId,publication.SolutionName,publication.ParameterValues),StringComparer.Ordinal);
                 if(captured.Count==0)globals.Dispose();
                 lock(_lock)
                 {

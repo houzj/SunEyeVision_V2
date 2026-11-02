@@ -12,6 +12,23 @@ public sealed record ScopedBindingRelation(ScopedNodeIdentity Target, WorkflowNo
 
 public static class BindingRelationCatalog
 {
+    internal static IEnumerable<VariableReference> IndexVariables(BindingSelection selection)
+    {
+        if(selection is BindingSelection.AtVariable variable)yield return variable.Reference;
+        if(selection is BindingSelection.AtField field)
+            foreach(var index in IndexVariables(field.Reference.Selection))yield return index;
+    }
+    internal static IEnumerable<(string FieldId,VariableReference Reference)> VariableReferences(WorkflowNodeBase node,bool executionOnly=false)
+    {
+        if(node.RuntimeConfiguration is not {} runtime)yield break;
+        foreach(var (fieldId,setting) in runtime.Fields.Capture())
+        {
+            if(executionOnly&&!runtime.IsExecutionFieldActive(fieldId))continue;
+            if(setting is VariableSetting variable)yield return (fieldId,variable.Reference);
+            var selection=setting switch{VariableSetting value=>value.Reference.Selection,ReferenceSetting value=>value.Reference.Selection,_=>null};
+            if(selection is not null)foreach(var index in IndexVariables(selection))yield return (fieldId,index);
+        }
+    }
     /// <summary>Typed settings live in their owning model slot; a name projection must not hide an ROI reference.</summary>
     public static ParamSetting? GetSetting(WorkflowNodeBase node,string key)
         =>node.RuntimeConfiguration is not null?null:node.ParamSettings.GetSetting(key)??RoiBindingInputs.Settings(node.Parameters).SingleOrDefault(setting=>setting.ParameterName==key);
@@ -23,11 +40,14 @@ public static class BindingRelationCatalog
         var setting=GetSetting(node,key);
         return setting?.ReferenceExpression is {} expression?new(BindingReferenceSerializer.Deserialize(expression),setting.Conversion):null;
     }
-    public static IReadOnlyDictionary<string,ReferenceSetting> References(WorkflowNodeBase node)
+    public static IReadOnlyDictionary<string,ReferenceSetting> References(WorkflowNodeBase node,bool executionOnly=false)
         =>node.RuntimeConfiguration is {} runtime
-            ?runtime.Fields.Capture().Where(pair=>pair.Value is ReferenceSetting).ToDictionary(pair=>pair.Key,pair=>(ReferenceSetting)pair.Value,StringComparer.Ordinal)
+            ?runtime.Fields.Capture().Where(pair=>pair.Value is ReferenceSetting&&(!executionOnly||runtime.IsExecutionFieldActive(pair.Key))).ToDictionary(pair=>pair.Key,pair=>(ReferenceSetting)pair.Value,StringComparer.Ordinal)
             :Settings(node).Where(setting=>setting.BindingType==BindingType.Binding&&setting.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,setting.ParameterName))
                 .ToDictionary(setting=>setting.ParameterName,setting=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression!),setting.Conversion),StringComparer.Ordinal);
+    /// <summary>Execution-only view. The unfiltered Describe remains the document's reference-management inventory.</summary>
+    internal static IReadOnlyList<BindingInputReference> DescribeExecution(WorkflowNodeBase node)
+        =>Describe(node).Where(input=>input.Active&&(node.RuntimeConfiguration is not {} runtime||runtime.IsExecutionFieldActive(input.Key))).ToArray();
     public static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)
     {
         if(node.RuntimeConfiguration is not null)return RuntimeInputBindings.Describe(node);

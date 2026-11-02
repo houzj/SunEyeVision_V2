@@ -37,6 +37,8 @@ public static class BlobSchema
         new Port(BlobsPort, BlobsType), new Port(RegionPort, TypeRef.ResourceOf(ResourceKind.Region))
     });
 
+    public static IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}=BlobOutputDisplay.Create();
+
     public static RecordValue Freeze(BlobMeasurement blob)
     {
         var values = new Dictionary<string, object?> {

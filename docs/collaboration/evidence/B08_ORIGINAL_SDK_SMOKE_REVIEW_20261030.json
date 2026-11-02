@@ -1,0 +1,53 @@
+{
+  "status": "原SDK冒烟输出已实际核读；不是Blob解绑或触发字符串证据",
+  "source": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-1b19d742cee74ce197021cbad198d777\\probe.json",
+  "sourceSha256": "7D3BEF2D51748C55F93392031B6DAE8EC8D60C0E9CBCE1E5D0907B0630808361",
+  "provenance": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+      "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+    },
+    {
+      "path": "D:\\Temp\\vision-image-probe-1b19d742cee74ce197021cbad198d777\\workspace\\analysis\\full-audit\\image-source-runtime\\run-1b19d742cee74ce197021cbad198d777\\OriginalImageSourceProbe.exe",
+      "sha256": "1144dc6e31710b46a7ce56110414a65cbfdab9c39cf619e2ecd99a28dfad6f6a"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\OriginalImageSourceProbe.cs",
+      "sha256": "1c766b11a20ffbaf91ca3882296fd6c626cfcd83399d259bdb27d1eed3d6156d"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\ImageSourceCodecFixtures.cs",
+      "sha256": "b9b982939fe909d124a1e82ac87fba6a0c2ab20bc4abb79486e0976247540ef5"
+    }
+  ],
+  "partialLoad": {
+    "phase": "partial-solution-load",
+    "code": -536870093,
+    "limitation": "some sample modules failed to load; only a present ImageSource module will be probed"
+  },
+  "imageRun": {
+    "phase": "run-0",
+    "nativeErrorCode": 0,
+    "sn": 8,
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\images\\circle-find-sample.bmp",
+    "name": "circle-find-sample.bmp",
+    "width": 1296,
+    "height": 1024,
+    "format": 17301505,
+    "length": 1327104,
+    "extraMonoLength": 0,
+    "pixelSha256": "96187178e18c6e0104e79909116de929b6dceab22a595c6ab8abeefdd57d2098"
+  },
+  "actualPixelSha256": "96187178E18C6E0104E79909116DE929B6DCEAB22A595C6AB8ABEEFDD57D2098",
+  "nativeImageSuccess": true,
+  "stderr": "Apps.BaseLog文件监视目录配置异常保留；stderr非空不能称无警告运行",
+  "ownedProcessExit": "逆向负责人来件报告自有进程已启动并退出；本线独立核输出/像素，未独立持有其进程句柄",
+  "notProved": [
+    "方案完全加载成功",
+    "真实Blob创建/绑定/解绑/回读/执行",
+    "TRIGGER_STRING生命周期",
+    "本方正式Release验收"
+  ],
+  "next": "由同一负责人创建实际Blob、整数来源及可区分图像样本；本线不并起实例",
+  "productChanged": false
+}

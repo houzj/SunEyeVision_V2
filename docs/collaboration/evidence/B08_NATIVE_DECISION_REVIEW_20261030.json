@@ -1,0 +1,48 @@
+{
+  "status": "本轮集中静态回件已读并留快照；不是运行验收或最终解绑值",
+  "reports": [
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08解绑与触发文本迁移决策-20261030.md",
+      "local": "docs\\collaboration\\evidence\\B08_NATIVE_DECISION_20261030\\B08解绑与触发文本迁移决策-20261030.md",
+      "sha256": "991BA2BA3CEFE13B13DE8A49A785FE53E2EB8A3E34BF1DEBFA36C90CF62274EF",
+      "sourceAtCopySha256": "991BA2BA3CEFE13B13DE8A49A785FE53E2EB8A3E34BF1DEBFA36C90CF62274EF",
+      "bodyRead": true
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-Blob低阈值原生参数对象追踪-20261030.md",
+      "local": "docs\\collaboration\\evidence\\B08_NATIVE_DECISION_20261030\\B08-Blob低阈值原生参数对象追踪-20261030.md",
+      "sha256": "83C94AB916E68906E2E645ECC505A9924833A2E4EC8AC0F4C29D183C2B408E1D",
+      "sourceAtCopySha256": "83C94AB916E68906E2E645ECC505A9924833A2E4EC8AC0F4C29D183C2B408E1D",
+      "bodyRead": true
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08普通参数回读SDK代理桥证据-20261030.md",
+      "local": "docs\\collaboration\\evidence\\B08_NATIVE_DECISION_20261030\\B08普通参数回读SDK代理桥证据-20261030.md",
+      "sha256": "C4DAD56461E575743C7F2E866D9040F9D8177F1F568D8B792116C4A9509AE6B7",
+      "sourceAtCopySha256": "C4DAD56461E575743C7F2E866D9040F9D8177F1F568D8B792116C4A9509AE6B7",
+      "bodyRead": true
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08触发文本流程与任务对象传播-20261030.md",
+      "local": "docs\\collaboration\\evidence\\B08_NATIVE_DECISION_20261030\\B08触发文本流程与任务对象传播-20261030.md",
+      "sha256": "A056A65B925690E99862F175D8FC04E7027B38FA9FD3FEAFC7907BAA481EDA06",
+      "sourceAtCopySha256": "A056A65B925690E99862F175D8FC04E7027B38FA9FD3FEAFC7907BAA481EDA06",
+      "bodyRead": true
+    }
+  ],
+  "instructionReview": "B08_PARAMETER_TRIGGER_BRIDGE_REVIEW_20261030.json；七份选定原指令SHA相符，不代全部汇编独立审核",
+  "confirmed": [
+    "普通配置读取Get桥进入候选工具GetParam，与VM_M_GetString执行订阅读取分开",
+    "具体Blob低阈值经算法对象及0x12d句柄按名Get/Set；有效名称/解析回调成功/同实例普通分支共用名称缓存",
+    "流程+a8存在向关联任务集合+100复制边，不能再写为完全无已知关系"
+  ],
+  "decision": "不填猜测的100/旧常量/最近执行值，不合并流程与任务身份；复用现有正式事务，原拒绝保护不能算原厂解绑完成",
+  "remaining": [
+    "执行订阅是否写同一Blob参数缓存",
+    "删除关系后是否改写或通知该缓存",
+    "具体执行对象是否为关联集合成员，关闭清理/重开/特殊并发"
+  ],
+  "nextVerifiedTurn": "01a18cfe-9187-7720-8b8b-837c9c167683",
+  "nextScope": "仅两条影响解绑策略的边，不重复通用名称树，原机用途未答不启动",
+  "productChanged": false
+}

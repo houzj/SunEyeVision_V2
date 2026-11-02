@@ -23,7 +23,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
-          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
+          "localSha256": "6aae270bb2633cf0ab2800c9dafde67c15802dbdfecc85e0e68cedcbf6cac8eb",
           "coverage": "original selected template/style; URI and IsExpanded property routing only"
         },
         {
@@ -32,7 +32,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
           "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
-          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
+          "localSha256": "6aae270bb2633cf0ab2800c9dafde67c15802dbdfecc85e0e68cedcbf6cac8eb",
           "coverage": "original selected template/style; URI and IsExpanded property routing only"
         },
         {
@@ -40,7 +40,7 @@
           "originalType": "original image stream",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_downarrow.png",
           "originalSha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9",
-          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_downarrow.png",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_downarrow.png",
           "localSha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9"
         },
         {
@@ -48,7 +48,7 @@
           "originalType": "original image stream",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_uparrow.png",
           "originalSha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81",
-          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_uparrow.png",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_uparrow.png",
           "localSha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81"
         }
       ],
@@ -131,7 +131,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamListView.xaml",
           "originalSha256": "ea16ea5a97987f088f620507da79570e36393f692ea75469aec79f50df1b9484",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml",
-          "localSha256": "3ea6e4731b85aaae1ea3938d3402225f7452b6a22fbcc5e0191204a88e65063d"
+          "localSha256": "1ec4ed8ac54a9019db05703e85c3528afa10fe6cf086abb716e05bd0d2bc76ea"
         },
         {
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamListView.xaml.cs",
@@ -143,7 +143,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml",
           "originalSha256": "d2d700f12d7e09ba19f43ec88678e14f7d4643e90d9a1c81d2476902b2fd10c5",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml",
-          "localSha256": "6da2d0e6e38da2184c6b58836d9ab6dfe9296284b85397efde83b609fac93b54"
+          "localSha256": "95a65a4b8ffce33fd463c2246b9ab079c3fa96ff8031ae7b3379b8c95f33254c"
         },
         {
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml.cs",
@@ -207,47 +207,47 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "localSha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71",
+          "localSha256": "162a3755c2c4e99e3d6a8570b5bdf896a95442ea65da81a2b349a4800f436c50",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "localSha256": "006a48ae244eceee39aa995108e63f75a82242d4544dc7584c3569023afd406e",
+          "localSha256": "323227a5b198f1cb046fc156ca281d97aab4d8c89f8ab08c2028449de7f9bc25",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "localSha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381",
+          "localSha256": "6f1d8decb25c3c2b03d654628d77c9d535625dce94ed0b2c3eb84cfd2a6499fc",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
-          "localSha256": "011e99c168016e69426f555efa9b8ac073e628c825ce705cbded0a0994345206",
+          "localSha256": "f7eaec579795fabb97f4c6556e3a4f1391a65780c24e8726763ad8a6b7135ce4",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "localSha256": "f5d860e6fbc20c799b45a589a626c3a6107cc37a7b80df3cb797cc30fab55d29",
+          "localSha256": "f7b37af2f94e4959330761e52f0f25e5e43f29038f1270224880cde2f6ca8b9e",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "localSha256": "2a095f688914f1a93188ec852673365341d05859afa29d8c80bdfdeb504d95e7",
+          "localSha256": "c6425ca10aad70b521fb01a47b11e42699172f363f6d75042edf150364e3feff",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
-          "localSha256": "0e70915963260fc4235dfb38c235ba2386b88c54ae83fb97e14a9272e1555037",
+          "localSha256": "df113445e47425eac0842eeea674830be6678f9587d275f25555df96f86227f4",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
-          "localSha256": "d142c141d01385ef3a8b842a834bc7730f2486856e723c28de195cdbac11b379",
+          "localSha256": "21c57868b8960dfefde199a4e08f03a8e3d3d2303e081d2ccf268c8f5cabdac6",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "localSha256": "f3602d17d2bae546d997649c5e2808e9cd6345cc5ea1a9069b17b46dc1c248c8",
+          "localSha256": "4e4d887e9b8d5e39ccc82910e069aa95821d3d7718bdceda3b3acefab43e3ace",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         }
       ],
@@ -325,14 +325,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml",
           "originalSha256": "96c074711b1fd1575aeae9aa0eb57da8411bb4601790d2aa2d42347c053ea60e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
-          "localSha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+          "localSha256": "d5b6cf3440831e46ae344ddcdd69c8fa19e51b493ef97fec406f02fd9a0b76f7"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerControlView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+          "localSha256": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -353,7 +353,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerSecondItem.xaml",
           "originalSha256": "37d9330aaf157b5f3140007c6d1e50b26053be8b3b9fcc7de0d4e468bdb8447c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
-          "localSha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+          "localSha256": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerSecondItem",
@@ -374,7 +374,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\AdvancedColorPickerDialog.xaml.cs",
           "originalSha256": "7c631ba8831fd778abe58c2b2468370fd3df022f3e28f28ec2650204ea9200cc",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
-          "localSha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+          "localSha256": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4"
         }
       ],
       "dependencies": [
@@ -439,7 +439,7 @@
           "sha256": "866ca8200dfc6ab593845fb81f0a1734e3c1ddb9178b475534144f5c6d4aa423"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
@@ -570,11 +570,11 @@
           "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
@@ -675,11 +675,11 @@
           "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
@@ -749,11 +749,11 @@
           "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
@@ -813,6 +813,7 @@
     },
     {
       "id": "C07.apps-pcui-popup-foundation",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.PcUI",
       "assemblyMvid": "380598ff-2817-448e-bad2-2350035a99a0",
       "assemblySha256": "bc47626c5064cf4a28e0cfa8344c07c4d186c5a9efd321988de9482dfb10fd74",
@@ -821,36 +822,36 @@
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml",
           "originalSha256": "b492249955b5866cad766131bb691884c6ff77337e54207087dbd62a53295637",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
-          "localSha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml",
+          "localSha256": "335c28849c7e5a091bea3576d46896cd57a24c12175b3aa7988fdcd13eb90c68"
         },
         {
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml.cs",
           "originalSha256": "41b3966b44560d8282f3116032dd69815a1c0d7bedd5d00fe97acbf537e455c9",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
-          "localSha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+          "localSha256": "97b64331bae3637b43ca54b0ed49b77a5fed8c8a931726caace0e8983eb008b5"
         },
         {
           "originalType": "Apps.PcUI.Controls.HikTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\HikTextBox.cs",
           "originalSha256": "67294acd06026f230aee30e84c87f6b603b513f54de11bbd3bf612b3ee689915",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
-          "localSha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+          "localSha256": "1d301d50fc8c23077a3f3fd3fc61de65702a2e2fd5fb633dc552949811ee2d90"
         },
         {
           "originalType": "PopbuttonTemplate",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Controls\\CommomDictionary.xaml",
           "originalSha256": "ca6260d1623cd583aff96560d72879f38a1a9308138508cb0b4cbc0ce1bb4426",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
-          "localSha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml",
+          "localSha256": "e5058eeb64eb13fe8371c8785c633279b9f9bfd5e1d27ddc1fda62b02a6d1e67"
         },
         {
           "originalType": "Apps.PcUI Popup Styles",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Styles\\PcUIStyle.xaml",
           "originalSha256": "6f65b4bf5bc604dd966dc71b8c2f48c1f8a81f2a8392851d9d1867f54bc2e4d2",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
-          "localSha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml",
+          "localSha256": "683ae3ff705eb5db022dfa3118f5dce5cd107748c8117f9a9246c7c2df07ee57"
         }
       ],
       "dependencies": [
@@ -896,6 +897,7 @@
     },
     {
       "id": "C07.original-reference-tree-text-foundation",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -904,29 +906,29 @@
           "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml",
           "originalSha256": "6ecb778a669c66f23d9880d80e3cd388c4c497aee5791eaef86af2f70ec0da65",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
-          "localSha256": "abf18ca29160bc5371eeb75c27cf9a821612f188a692cf5da3a4a3e03fb28a14"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml",
+          "localSha256": "24de8d78c1e0eb0d010cd3e519ea7dc2cb65313495c84ee7e6b73cdaad020fc5"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml.cs",
           "originalSha256": "125d85828d6abfc811ce41106b790065393814d79eb339b0c7b2d32254e8c3ab",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
-          "localSha256": "76b3216f56c985282109c1abb4e5d7eb6c5f06fa1f6ca5453d66247941d62f3b"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
+          "localSha256": "f9e0c4dda66c2faa02df216aead8562e8e6d5f6ca47f58ed2e4a4f440ccc21a9"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml",
           "originalSha256": "ae96024ed98c8c4f90a4e545d2c9d5d7774889800205ed703aa074b8622f78f9",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
-          "localSha256": "689c393f7212fbd2bab2f990df0b7000a635713d605c0b7e7f361fa19865e05f"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml",
+          "localSha256": "bbe72226290225ca7aa4af6a3b6514b1b5a04c5891e47ee280367b3750302e13"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml.cs",
           "originalSha256": "303385857c5c26740d3d2634d149e90bf610c1677cb94d99e3ed39bfa069525a",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
-          "localSha256": "d743aee3cbb11458f82150b0db20dcbdeef83a4926112bc0a0c0c90e5e6db306"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+          "localSha256": "b476b6d747a66e58474c540ed838198163a640837cc00c4877fd7b197875755e"
         }
       ],
       "dependencies": [
@@ -935,31 +937,31 @@
           "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+          "path": "src/Plugin.Wpf/Themes/References/Primitives/SourceTree.xaml",
           "sha256": "3c31109c3dcec61ef4d4772cab8e44cd7837283b676ece0dac61ad9928c9bd13"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+          "path": "src/Plugin.Wpf/Interop/Windows/ObjectEventArgs.cs",
           "sha256": "e93b86ba21a8bd8fc883deb5167615e528c2c499bad1612eda543dd994ab1d89"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+          "path": "src/Plugin.Wpf/Interop/Windows/TextBoxFocusEventArgs.cs",
           "sha256": "6d3d11fbf6d8872f1e25affe324db792e31d3465bb708074c92c48d15e18cda6"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+          "path": "src/Plugin.Wpf/Converters/Tree/LeftMarginMultiplierConverter.cs",
           "sha256": "96d7ec1847ee51295dd71af45d9153cd3962f79c157eb13df1f2c1014d949e25"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+          "path": "src/Plugin.Wpf/Converters/Tree/TreeViewItemExtensions.cs",
           "sha256": "8c2729e001be7d6a2b47fcb49559e2ef62cd6ab949831f5d6c48bc80b4fa171e"
         },
         {
@@ -967,19 +969,19 @@
           "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_uparrow.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_uparrow.png",
           "sha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_downarrow.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_downarrow.png",
           "sha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_off.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/check2-box_off.png",
           "sha256": "c0d428ae5edc804f9146f0350b7bbc9b651c3d587f56bd8378d8eac661efacd4"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_on.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/check2-box_on.png",
           "sha256": "55ffb3d6668938a73075c3c002b225481e43cbda41e6304cf8da473bdf651e1c"
         },
         {
@@ -1021,6 +1023,7 @@
     },
     {
       "id": "C07.original-reference-composition",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -1031,7 +1034,7 @@
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "originalLines": "255-336",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
-          "localSha256": "727e0d2708912da997cdd0b0e2cfdc1849e038bc5085a01e510bb7f97c1b5090"
+          "localSha256": "dc2e13c204b938305e0c5ed733586fd4f5f9321172ca80c06306b1a14d5f48b2"
         }
       ],
       "dependencies": [
@@ -1056,23 +1059,23 @@
           "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+          "path": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
           "sha256": "0f163459a3dd2e1d1d296dc8ff5fdc7a377cae982fe044497b016265d92ea9d7"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+          "path": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
           "sha256": "98d950e46782fbd44bd1875a0e45f4e051ac4c31c8dab22d07b898bb2b96b245"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_normal.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_normal.png",
           "sha256": "4c152e1dd6a8eb63419138195212a7d28fe9a0bfc6cdb4e9cb4e657a1da316af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_disable.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_disable.png",
           "sha256": "9398f8799b6df50dfe0867739dda20cf0a898e9b5b17af7218d6bbb86e9150b7"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_click.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_click.png",
           "sha256": "457e4c6f957d60230d8062be36901168600f94ad47d335853e5c63360d58d04c"
         },
         {
@@ -1468,6 +1471,8 @@
     },
     {
       "id": "C06.original-between-composition",
+      "referenceProjectionAudit20261101": {"evidence": "docs/collaboration/evidence/BLOB_RANGE_REFERENCE_PROJECTION_AUDIT_20261101.md", "status": "静态差异已标记，原厂回读时序及实际写入行为未证"},
+      "blobFilterRangeFormal20261101": {"status": "面积/圆度/矩形度真实宿主各16组通过；完整控件未闭口", "receipt": "docs/collaboration/evidence/BLOB_RANGE_PRODUCTION_FORMAL_20261101.json", "limitations": "VM订阅对端回读及夹值时序与本方当前值策略仍有差异/未证；原阈值、结果判定等其余双端范围未由本批覆盖。自然键鼠、系统剪贴板、真实VS设计时和用户运行验收未执行；同一Blob未筛选测量只作集成基准，不证明VM算法数值等价。不称完整B08、范围控件或S2/S3闭口。"},
       "assembly": "VM.PcUI",
       "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
       "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
@@ -1768,6 +1773,8 @@
     },
     {
       "id": "C07.original-expanded-reference-window",
+      "currentDelivery20261101": {"status": "当前已具备基础的生产链条件性自测闭口；历史validation和consumer描述保留为当时记录", "evidence": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "remaining": "原厂偏好持久化、复制/Dirty/Undo尚未证，本方为会话临时偏好；全域索引和ROI/图文完整组合未完成。自然键鼠、VS与人工单独记录，不作为本范围闭口前置。"},
+      "blobExpandedFormal20261101": {"receipt": "docs/collaboration/evidence/C07_BLOB_EXPANDED_REFERENCE_FORMAL_20261101.json", "status": "中英文各12组正式消费者回归通过；当前具备基础范围条件性闭口，原完整范围保留"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -1776,22 +1783,22 @@
           "originalType": "Apps.XmlUI.ParamSubscribeWindow",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamSubscribeWindow.xaml",
           "originalSha256": "146d6411e3aedf19f70b167411114fa87f9a7d70cec1edb199f50bc04eae93a0",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
-          "localSha256": "c35ff489d52bc2753ae83cfbfab03b7769c1125d0e631117da6b674b80877552"
+          "localPath": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml",
+          "localSha256": "fb0b5cb6a380aa6b34ff0ca8d1f35fc9fb7decf051a7f38c655da32d3b279234"
         },
         {
           "originalType": "Apps.XmlUI.ParamSubscribeWindow",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamSubscribeWindow.xaml.cs",
           "originalSha256": "bd82e6e2e36c4e7350f79d529ac33500269911e743d2e59cbdfe2804211288cc",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
-          "localSha256": "3dcfdf1425246db98658208fcec06c73993bdc0b8caa2456a47842102eecf528"
+          "localPath": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs",
+          "localSha256": "ffa6fa8dc4a41ccee8d8af7ba41c4647e3a0010e47c13e8bd6cff50db7fce9a6"
         },
         {
           "originalType": "NormalCheckBoxStyle",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\checkboxstyle\\checkboxstyle.xaml",
           "originalSha256": "26174951a0b4ec4a52f2c1b89353ebe0f58375cc1b7dcec579bc765654e9a0b1",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
-          "localSha256": "01fed8884e12c41d2b501a7b49b450a6e7c923d365ced94cd45182781047a569"
+          "localSha256": "63942a772e30680fc596e2d1cf8760bc03ad85224c22601df921e938cebf449e"
         }
       ],
       "dependencies": [
@@ -1808,7 +1815,7 @@
           "sha256": "3366fe91d3a17d57710c9a8394b46b49a537f790666aeaae53993f48561e9bdc"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+          "path": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
           "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
         },
         {
@@ -1832,7 +1839,7 @@
           "sha256": "0e70915963260fc4235dfb38c235ba2386b88c54ae83fb97e14a9272e1555037"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Foundation/BaseWindow.xaml",
           "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
         },
         {
@@ -1860,6 +1867,7 @@
     },
     {
       "id": "C08.original-roi-scene",
+      "blobLocalRoiFormal20261101": {"status": "本地检测与屏蔽四形正式宿主自动自测通过，完整ROI未完成", "receipt": "docs/collaboration/evidence/BLOB_ROI_FORMAL_20261101.json", "limitations": "继承、图像及输出掩膜、位置修正未接通；自然鼠标、设计时和原厂像素等价未验证；屏蔽多形为用户扩展"},
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
       "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
@@ -1909,7 +1917,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
           "originalSha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml",
-          "localSha256": "a6c3fc060110b49edd6b99eb28620ac5f63d0cccfaa7e041b4681cdd67d5a8f3",
+          "localSha256": "00dc8d2a656ccc52b63d90f44d2144fc1542ffc8c13946e39e626ba4c7b68a3d",
           "coverage": "whole original file with local dependency adaptation"
         },
         {
@@ -1925,7 +1933,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
           "originalSha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
-          "localSha256": "bdcea259ff756f0440e0db1a8eac7b1f4ef99703e523d58b506c52478fbf1bd7",
+          "localSha256": "7470d9b73e3a88131e730b9715df29c67441355573c136ba8d7b1c45f8f895a1",
           "coverage": "Original Box and Sector branches only"
         },
         {
@@ -1985,7 +1993,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
           "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
-          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
+          "localSha256": "6aae270bb2633cf0ab2800c9dafde67c15802dbdfecc85e0e68cedcbf6cac8eb",
           "coverage": "selected original fragments only"
         },
         {
@@ -1993,7 +2001,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
           "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
+          "localSha256": "fab610bf57fe647a4df7f5a69a82ca3627b6c888df73af1eb127b1f61c0516a7",
           "coverage": "selected original fragments only"
         },
         {
@@ -2001,7 +2009,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
+          "localSha256": "fab610bf57fe647a4df7f5a69a82ca3627b6c888df73af1eb127b1f61c0516a7",
           "coverage": "selected original fragments only"
         },
         {
@@ -2009,7 +2017,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
           "originalSha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
+          "localSha256": "fab610bf57fe647a4df7f5a69a82ca3627b6c888df73af1eb127b1f61c0516a7",
           "coverage": "selected original fragments only"
         },
         {
@@ -2045,14 +2053,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\ROIControlBase.cs",
           "originalSha256": "3542ea201074b6c98c45c02b726a9dc1259944023f46f8ff6337548bf15cca1e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
-          "localSha256": "b40f67935c38a795f90c7f4b927864afb5111fb717d1b0c011b3195d3677a026"
+          "localSha256": "d849bd11fb92a945076f8810fd9c0e814e11b1e024be8f1659aa06bf1f02cfaa"
         },
         {
           "originalType": "VMBaseControls.RectROI",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROI.cs",
           "originalSha256": "416d2dd6c68913eaa269a47797d82e63454366e215d87061260c5674a5a71a14",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs",
-          "localSha256": "30ffdf5a06873d3869d8000dcf9bf58a4dff82e1cb9c2d04088f76d160d40bd8"
+          "localSha256": "beddceed3926ccddbe50bb50d0c578964ab75185208e63d13ba850eeda14af3d"
         },
         {
           "originalType": "VMBaseControls.NormalizedRectROI",
@@ -2073,7 +2081,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
+          "localSha256": "cb81f528e43c860c8f3bb903a8d9c75828ca1e1844525cbc2541fea6e8096127"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2111,7 +2119,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorROIStack.xaml",
           "originalSha256": "767544c74a6be6646b8c0c9e1f6fd6eec1b5060446d13022badafa2f67bf391e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml",
-          "localSha256": "107b267e588b28c4e47f1d186914ffdbae16b913e33543af35dd85f36cb8927d"
+          "localSha256": "d27929658098cc41817e7ae66364bdbf418bf5760e38a64123f7692435bd8a37"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.SectorROIStack",
@@ -2125,7 +2133,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorROI.cs",
           "originalSha256": "7bf7f440f782bca7592c209244148ec57b5f1d9450b2d0f36b306b3149760eff",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs",
-          "localSha256": "3b67d3203d9501b591d8b1ad9f6c41a6e87c9583efb44c853cb037a4f0d22586"
+          "localSha256": "212941c35e6baee43dd9f48847c0e207ec79e65cde843e5b3da951ab026a0c4b"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedSectorROI",
@@ -2153,7 +2161,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorRingROIStack.xaml",
           "originalSha256": "b5cabe2fee1503137e7947d699873d56169f8da61a9447e2b729c05d9d9db6bc",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml",
-          "localSha256": "8482065425262edd32ee880a31de5957d54bf4caa4b4c9a890fbd53fc8e61835"
+          "localSha256": "a473990ef274e89c3aac8cd92f849d7f35054e84d7221622a19bff65f13bcd6a"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.SectorRingROIStack",
@@ -2167,7 +2175,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleROI.cs",
           "originalSha256": "49f12a80b360c495b1c3e7d1e835265179bd21982944c8cb6af8d47f04bcd18f",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs",
-          "localSha256": "dea53e61c08b783d75420e893064bd8efc5719f549fcfff8e0de7a5f9cee5735"
+          "localSha256": "2b9668d6415515d348db08819cba8d59aeeb8d27dcb98622bdb39cd060413ade"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI",
@@ -2238,7 +2246,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml",
           "originalSha256": "e5f2425a2e6f68abe97752692bd3daae7ce8b246e9b435db2adbefbe2f697e17",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml",
-          "localSha256": "e16640f80fee2c14ce67c03f4b850a31c6c39a22d135a0cdf185768fcc2af85e"
+          "localSha256": "23121780e27ce6b70dca93e72ea48ca3b70694a9795197c32212baf0f1ae87eb"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.PolygonROIStack.xaml.cs",
@@ -2259,7 +2267,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROI.cs",
           "originalSha256": "b40603dbec7355829739a55225c0c470b83bb2e9d072c13a4f2a2f13a0d894c5",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
-          "localSha256": "7655a283fd8f5225db93996b63d06bf80cc140c594bf737cb84f95b63a2c1e51"
+          "localSha256": "c221e9b6a4fb773db2e7d2ccb1a068b7f34a86ce10a1aa35d46226bb6d415f07"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI.cs",
@@ -2393,7 +2401,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml",
           "originalSha256": "1a376cf7ed4516a4e3e15402fa2a99eac6820d9905081339ee763e0e5920e68c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
-          "localSha256": "0b682b0acb0ead831f5d0fd53a09b088b25e9fea79aec9911a15944f0af5c857",
+          "localSha256": "d2d9dc77c710dd83286457fe0a881b53e886f04a96602747196d69350a0d7217",
           "coverage": "original template plus explicit drawing capture capability; existing ROI ItemsPresenter branch disabled separately"
         },
         {
@@ -2417,7 +2425,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
           "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
+          "localSha256": "fab610bf57fe647a4df7f5a69a82ca3627b6c888df73af1eb127b1f61c0516a7",
           "coverage": "原全域样式及三个原位图；仅资源URI归属适配，原FullScreenDataTemplate回接RoiSelectControl，显隐为原BooleanToVisibilityConverter。"
         }
       ],
@@ -2532,7 +2540,7 @@
         "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
         "fragment": "PolygonRoiBtnStyle lines1647-1691, ordinary and avoid branches",
         "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-        "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943"
+        "localSha256": "fab610bf57fe647a4df7f5a69a82ca3627b6c888df73af1eb127b1f61c0516a7"
       },
       "polygonIndexSource": {
         "sourceKind": "original-il",
@@ -2728,8 +2736,8 @@
           "originalType": "BaseWindow.cs",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\BaseWindow.cs",
           "originalSha256": "03be64f4c22440f32a3a80b974aa7e95a776a82252797c6a0106346a591e3b93",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-          "localSha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088",
+          "localPath": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
+          "localSha256": "f2026b1ffe177db1724eb73506c749c9b0a7f0d8e801c1773201cf11ea37c5dd",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2738,7 +2746,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml",
           "originalSha256": "85b1d9d829d9c76a3ee06db41eb468f40c4c60c552fb4ff094397ce9ca0a4df3",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
-          "localSha256": "cb5e251ac561bc9062aebd7a508e7ffeafc29587d535746879e91d9a1080bcc0",
+          "localSha256": "af78af16e87ec7388dba23dda4f24fe700f248dce2090859bb879a1a97064732",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2747,7 +2755,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml.cs",
           "originalSha256": "d9551bdef67bf1324ef7d2a726f2afc191ddc2bebfdfb86f8021c42e594319f1",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
-          "localSha256": "16408ec4a0c07a19adf7296e02d5a281487d27e428c6ca264268550e2c3f6147",
+          "localSha256": "8c6ea24d075990625a449fba016f2c7bf30fe979ad702fe815aeced1f06cbbb9",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2782,8 +2790,8 @@
           "originalType": "FouerColorBorder.cs",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\FouerColorBorder.cs",
           "originalSha256": "892e3de452e903e5c43495d7eb1b3863f4c8cd5d99e251c523d8dfe2300ebc51",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
-          "localSha256": "9a110d549e20f28fba8ff741af30ce9015cf750530e35b4c1cafb087b703e041",
+          "localPath": "src/Plugin.Wpf/Controls/Foundation/FouerColorBorder.cs",
+          "localSha256": "3d59fce5d1594ad0db27d64ddc994c452298dc4358d36af1bf19b97a29b311ba",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2800,8 +2808,8 @@
           "originalType": "basewindowstyle.xaml",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\basewindowstyle.xaml",
           "originalSha256": "46989e854d2dc8f66c9e05b06aad8f48995a0d8f963566371efaab0dd71a1e27",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
-          "localSha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9",
+          "localPath": "src/Plugin.Wpf/Themes/Foundation/BaseWindow.xaml",
+          "localSha256": "8964015f5944b8e7cd1709b2aa43c72e9d897fd12950e0ac6a9e80b8948fef66",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2810,7 +2818,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\buttonsstyle.xaml",
           "originalSha256": "238781dffa6780f1c2209d19bcf283f35882aab95f1b0e98767dd61362ac5b0e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/buttonsstyle.xaml",
-          "localSha256": "53a880ce6c3a251f22af6e051b47716826c19307f9fc8a5a33be3f9c60269c2f",
+          "localSha256": "0072181065e06f5644ea75024c43fe60e059549f8dfd6829d73e1a9862f483fb",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2818,8 +2826,8 @@
           "originalType": "BottomCornerRadiusConvert.cs",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\BottomCornerRadiusConvert.cs",
           "originalSha256": "c1b4ca0599ad5128f5fd9b9501515a8f8230112680b9fb71cabfb95235e35ff5",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
-          "localSha256": "2b9355702cbbc2517b77c4d217105eb17a6cfdda12458faff3cfdfdad4886662",
+          "localPath": "src/Plugin.Wpf/Controls/Foundation/BottomCornerRadiusConvert.cs",
+          "localSha256": "d0bf0d3ec45268209074197c8b06dc5503ba2b01a00267c263e5cee478f94dcd",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2827,8 +2835,8 @@
           "originalType": "TopCornerRadiusConvert.cs",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\TopCornerRadiusConvert.cs",
           "originalSha256": "31a8c5cd05724f24658575c1ebf7c6628bf05de4cbd3d7a59b7c72e060104066",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
-          "localSha256": "15be653f2d408adcb53c11b539d39c51b39fae075f13e5f5f31999a7c2f2765c",
+          "localPath": "src/Plugin.Wpf/Controls/Foundation/TopCornerRadiusConvert.cs",
+          "localSha256": "ae0e1f7456acff5e907c70c92796fce3d127b328d46278545c3cc9d138eefc1d",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -2836,8 +2844,8 @@
           "originalType": "TopThicknessConvert.cs",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\TopThicknessConvert.cs",
           "originalSha256": "7ed23aef92974445ca7d0dbadf97c091b49bbb10027ddaba1189a01c9b541793",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
-          "localSha256": "39e5bf652bdf99fbd3c7d49957132f016f902e699f88f07a93716f475ad1a1c2",
+          "localPath": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert.cs",
+          "localSha256": "c2c91245972ca5a267bf9af888768ec2b73c9281659775327c5cfafd5d140fab",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -3226,7 +3234,7 @@
           "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
           "originalSha256": "757a42264784eea6f326878aa594fcfc11b17a34724c2f7c1fb64ec8d2106398",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
-          "localSha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961",
+          "localSha256": "9c93585f3226b6cb9aeba342ea6e968f874cb6dcbbd92dbb2b3db3e2203a0c01",
           "coverage": "Existing original display source, neutral namespace/URI adaptation; this consumer uses single IAnnularSector path, not other shape branches acceptance"
         },
         {
@@ -3556,64 +3564,64 @@
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml",
           "originalSha256": "b492249955b5866cad766131bb691884c6ff77337e54207087dbd62a53295637",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
-          "localSha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml",
+          "localSha256": "335c28849c7e5a091bea3576d46896cd57a24c12175b3aa7988fdcd13eb90c68"
         },
         {
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml.cs",
           "originalSha256": "41b3966b44560d8282f3116032dd69815a1c0d7bedd5d00fe97acbf537e455c9",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
-          "localSha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+          "localSha256": "97b64331bae3637b43ca54b0ed49b77a5fed8c8a931726caace0e8983eb008b5"
         },
         {
           "originalType": "Apps.PcUI.Controls.HikTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\HikTextBox.cs",
           "originalSha256": "67294acd06026f230aee30e84c87f6b603b513f54de11bbd3bf612b3ee689915",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
-          "localSha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+          "localSha256": "1d301d50fc8c23077a3f3fd3fc61de65702a2e2fd5fb633dc552949811ee2d90"
         },
         {
           "originalType": "PopbuttonTemplate",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Controls\\CommomDictionary.xaml",
           "originalSha256": "ca6260d1623cd583aff96560d72879f38a1a9308138508cb0b4cbc0ce1bb4426",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
-          "localSha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml",
+          "localSha256": "e5058eeb64eb13fe8371c8785c633279b9f9bfd5e1d27ddc1fda62b02a6d1e67"
         },
         {
           "originalType": "Apps.PcUI Popup Styles",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Styles\\PcUIStyle.xaml",
           "originalSha256": "6f65b4bf5bc604dd966dc71b8c2f48c1f8a81f2a8392851d9d1867f54bc2e4d2",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
-          "localSha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml",
+          "localSha256": "683ae3ff705eb5db022dfa3118f5dce5cd107748c8117f9a9246c7c2df07ee57"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml",
           "originalSha256": "6ecb778a669c66f23d9880d80e3cd388c4c497aee5791eaef86af2f70ec0da65",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
-          "localSha256": "abf18ca29160bc5371eeb75c27cf9a821612f188a692cf5da3a4a3e03fb28a14"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml",
+          "localSha256": "24de8d78c1e0eb0d010cd3e519ea7dc2cb65313495c84ee7e6b73cdaad020fc5"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml.cs",
           "originalSha256": "125d85828d6abfc811ce41106b790065393814d79eb339b0c7b2d32254e8c3ab",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
-          "localSha256": "76b3216f56c985282109c1abb4e5d7eb6c5f06fa1f6ca5453d66247941d62f3b"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
+          "localSha256": "f9e0c4dda66c2faa02df216aead8562e8e6d5f6ca47f58ed2e4a4f440ccc21a9"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml",
           "originalSha256": "ae96024ed98c8c4f90a4e545d2c9d5d7774889800205ed703aa074b8622f78f9",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
-          "localSha256": "689c393f7212fbd2bab2f990df0b7000a635713d605c0b7e7f361fa19865e05f"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml",
+          "localSha256": "bbe72226290225ca7aa4af6a3b6514b1b5a04c5891e47ee280367b3750302e13"
         },
         {
           "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml.cs",
           "originalSha256": "303385857c5c26740d3d2634d149e90bf610c1677cb94d99e3ed39bfa069525a",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
-          "localSha256": "d743aee3cbb11458f82150b0db20dcbdeef83a4926112bc0a0c0c90e5e6db306"
+          "localPath": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
+          "localSha256": "b476b6d747a66e58474c540ed838198163a640837cc00c4877fd7b197875755e"
         },
         {
           "originalType": "HikPcUI.ListView.NumericControl",
@@ -3789,14 +3797,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml",
           "originalSha256": "96c074711b1fd1575aeae9aa0eb57da8411bb4601790d2aa2d42347c053ea60e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
-          "localSha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+          "localSha256": "d5b6cf3440831e46ae344ddcdd69c8fa19e51b493ef97fec406f02fd9a0b76f7"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerControlView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+          "localSha256": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -3817,7 +3825,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerSecondItem.xaml",
           "originalSha256": "37d9330aaf157b5f3140007c6d1e50b26053be8b3b9fcc7de0d4e468bdb8447c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
-          "localSha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+          "localSha256": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerSecondItem",
@@ -3838,7 +3846,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\AdvancedColorPickerDialog.xaml.cs",
           "originalSha256": "7c631ba8831fd778abe58c2b2468370fd3df022f3e28f28ec2650204ea9200cc",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
-          "localSha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+          "localSha256": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4"
         },
         {
           "originalAssembly": "VMBaseControls",
@@ -3846,7 +3854,7 @@
           "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
           "originalSha256": "757a42264784eea6f326878aa594fcfc11b17a34724c2f7c1fb64ec8d2106398",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
-          "localSha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961",
+          "localSha256": "9c93585f3226b6cb9aeba342ea6e968f874cb6dcbbd92dbb2b3db3e2203a0c01",
           "coverage": "Existing original display source, neutral namespace/URI adaptation; this consumer uses single IAnnularSector path, not other shape branches acceptance"
         },
         {
@@ -3968,7 +3976,7 @@
           "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Text/TextField.xaml",
-          "localSha256": "717ddb10e6cf510ab289d1adbd3a62e902e6d33e5c329a3c83a857ea80251b1f",
+          "localSha256": "0f762b6fadf5fcba11662154fd546b4b07ef188133776ce3493e37586cb59868",
           "coverage": "原模板精确切片，类型命名空间/资源URI与显式非视觉宿主绑定适配；非运行验收。"
         },
         {
@@ -3976,14 +3984,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
+          "localSha256": "cb81f528e43c860c8f3bb903a8d9c75828ca1e1844525cbc2541fea6e8096127"
         },
         {
           "originalType": "VMBaseControls.ImageViewBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml",
           "originalSha256": "1a376cf7ed4516a4e3e15402fa2a99eac6820d9905081339ee763e0e5920e68c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
-          "localSha256": "0b682b0acb0ead831f5d0fd53a09b088b25e9fea79aec9911a15944f0af5c857",
+          "localSha256": "d2d9dc77c710dd83286457fe0a881b53e886f04a96602747196d69350a0d7217",
           "coverage": "original template plus explicit drawing capture capability; existing ROI ItemsPresenter branch disabled separately"
         },
         {
@@ -4055,12 +4063,16 @@
       ],
       "dependencies": [
         {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+          "sha256": "e5dd413c31aabf3147089bcdf09fc25e5af30834c99d19b4e3cb329904adab99"
+        },
+        {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
+          "sha256": "9a3f00ab5336c7d79dcf5f26c65d8a8f565b424163a8319498b349e68c2fd517"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "c35461526ebd152f5d058bfb1f51f7cd6d1cfe179fcff568b9ff133b65070ffc"
+          "sha256": "06ad8b51d8c2f162566c5431d0179f4ae3eef3ad0d11cf20be7707bb60e0dfa5"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4072,7 +4084,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
-          "sha256": "dcc844d068154a45c0d1f7654a1b19b34381dd1a3fc37bd4ee282469823ae1f2"
+          "sha256": "7270ea7bfc1492b3a06e0151b64a1fd833efd3df843bdc7fe8a4725c8f78451f"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Text/TextExpressionOptions.cs",
@@ -4087,11 +4099,11 @@
           "sha256": "b37a87774ef7dc925f7a05679b90a15ec3628d6abbfa6d4ba766c3c7e7fea09b"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+          "path": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs",
           "sha256": "d743aee3cbb11458f82150b0db20dcbdeef83a4926112bc0a0c0c90e5e6db306"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+          "path": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs",
           "sha256": "76b3216f56c985282109c1abb4e5d7eb6c5f06fa1f6ca5453d66247941d62f3b"
         },
         {
@@ -4171,15 +4183,15 @@
           "sha256": "6abb2f46b91c7f38af01b562e53c907c0a2410149a366b170e2d7b33b89fffdc"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
           "sha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml",
           "sha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
           "sha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
         },
         {
@@ -4188,7 +4200,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
-          "sha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+          "sha256": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
@@ -4196,7 +4208,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+          "sha256": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
@@ -4208,7 +4220,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
-          "sha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+          "sha256": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
@@ -4260,7 +4272,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeDisplaySample.cs",
-          "sha256": "00ad8418d8077146ceff7a702c3a43af12c7c962930fd5797eb20279c90932fe"
+          "sha256": "750a52df019407b5ce5a15ddf691c6a14ea8d944be3e2557cfc57e5de2c8bb27"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeDisplayScene.xaml",
@@ -4268,7 +4280,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "006a48ae244eceee39aa995108e63f75a82242d4544dc7584c3569023afd406e"
+          "sha256": "9b1bd0e928ab2f2f9e4946724bd642ae8a226577b0340eb15840ca8b3f80d531"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
@@ -4284,11 +4296,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
+          "sha256": "d0cb7c7f3b9cc1bc5b56ae5b93ab64bdc7541d6179bc6fb19ee3507f69b1ba56"
         },
         {
           "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
-          "sha256": "e97f0c837d2087a00ded73feb3123919b369f177efe97b93df069fd3833381f7"
+          "sha256": "620156dd2440a63e626b7b3265081331bc51e6aefa7ae5e5f44183019db1eeed"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeColorPaletteScope.cs",
@@ -4296,11 +4308,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicBridge.cs",
-          "sha256": "e9b2d7adf71215c62fbd83055554997277965145ae66a51937d6dab641c9917c"
+          "sha256": "65443504d6a626d8880df87c3cc72cf287f7299cff9cc6fe6c1bae5e77d30128"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
-          "sha256": "acbe7240c9fffd5e179f0be7f3242ca46969d8fb8abd53ea90cf60d849382552"
+          "sha256": "10d63b0d45ca16d1b41a323c430f5fc6a03a5b4206749888a9785134cd1fa798"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
@@ -4308,19 +4320,19 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "23d612073cdb8728462144d66b6a409946ca8256cb45f745877b9375071238ee"
+          "sha256": "f2e8f7a8c379688cad2c2985a246c86207ab205ff010d2afa81c181703e3b884"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "f5d860e6fbc20c799b45a589a626c3a6107cc37a7b80df3cb797cc30fab55d29"
+          "sha256": "9b2bfa40a33e33b9a6cd817690e6a42e90846d3e3009183e09758a25fd21b9fe"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "2a095f688914f1a93188ec852673365341d05859afa29d8c80bdfdeb504d95e7"
+          "sha256": "dfb0e13ea330f460feb5e00caf7c97b436263fe16945e791321794f695d450d9"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Text/NativeTextPresenter.cs",
-          "sha256": "94761c5a87173e59c545a3d848802d9ea73b4667d55d6116a7d897862c8dbeec"
+          "sha256": "a95cdbb5e4980e2d4b9614a616bdd82b85b7f076deb96152bcf1dd59e551ecb7"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png",
@@ -4359,11 +4371,11 @@
           "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+          "path": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml",
           "sha256": "689c393f7212fbd2bab2f990df0b7000a635713d605c0b7e7f361fa19865e05f"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+          "path": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml",
           "sha256": "abf18ca29160bc5371eeb75c27cf9a821612f188a692cf5da3a4a3e03fb28a14"
         },
         {
@@ -4375,11 +4387,11 @@
           "sha256": "717ddb10e6cf510ab289d1adbd3a62e902e6d33e5c329a3c83a857ea80251b1f"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
@@ -4395,11 +4407,11 @@
           "sha256": "644e0853747fbe516a0c7b51205e9099c2d4a4aec0e2981946c9c92b280ffc17"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+          "path": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml",
           "sha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml",
           "sha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
         },
         {
@@ -4429,8 +4441,13 @@
       ],
       "consumers": [
         "DeclaredSettingsView -> DeclaredFieldsView",
+        "BlobDisplayUi -> NativeDisplayUiDraftRows（UI 私有状态；未接正式配置）",
         "Design/NativeDisplayScene.xaml -> NativeDisplaySample"
       ],
+      "latestUiCheckpoint": {
+        "evidence": "docs/collaboration/evidence/C13_BLOB_TEXT_UI_20261029.json",
+        "status": "attempt-099 文本组验证；后续参数边距修正见 docs/collaboration/evidence/BLOB_PARAMETER_MARGIN_20261029.json；VM/VS/人工及正式配置链待验"
+      },
       "validation": {
         "status": "CANDIDATE_UNBUILT_UNRUN",
         "checks": [
@@ -4511,50 +4528,50 @@
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml",
           "originalSha256": "b492249955b5866cad766131bb691884c6ff77337e54207087dbd62a53295637",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
-          "localSha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml",
+          "localSha256": "335c28849c7e5a091bea3576d46896cd57a24c12175b3aa7988fdcd13eb90c68"
         },
         {
           "originalType": "Apps.PcUI.Controls.PopupButton",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml.cs",
           "originalSha256": "41b3966b44560d8282f3116032dd69815a1c0d7bedd5d00fe97acbf537e455c9",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
-          "localSha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
+          "localSha256": "97b64331bae3637b43ca54b0ed49b77a5fed8c8a931726caace0e8983eb008b5"
         },
         {
           "originalType": "Apps.PcUI.Controls.HikTextBox",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\HikTextBox.cs",
           "originalSha256": "67294acd06026f230aee30e84c87f6b603b513f54de11bbd3bf612b3ee689915",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
-          "localSha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
+          "localPath": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
+          "localSha256": "1d301d50fc8c23077a3f3fd3fc61de65702a2e2fd5fb633dc552949811ee2d90"
         },
         {
           "originalType": "PopbuttonTemplate",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Controls\\CommomDictionary.xaml",
           "originalSha256": "ca6260d1623cd583aff96560d72879f38a1a9308138508cb0b4cbc0ce1bb4426",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
-          "localSha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml",
+          "localSha256": "e5058eeb64eb13fe8371c8785c633279b9f9bfd5e1d27ddc1fda62b02a6d1e67"
         },
         {
           "originalType": "Apps.PcUI Popup Styles",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Styles\\PcUIStyle.xaml",
           "originalSha256": "6f65b4bf5bc604dd966dc71b8c2f48c1f8a81f2a8392851d9d1867f54bc2e4d2",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
-          "localSha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
+          "localPath": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml",
+          "localSha256": "683ae3ff705eb5db022dfa3118f5dce5cd107748c8117f9a9246c7c2df07ee57"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerControlView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml",
           "originalSha256": "96c074711b1fd1575aeae9aa0eb57da8411bb4601790d2aa2d42347c053ea60e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
-          "localSha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+          "localSha256": "d5b6cf3440831e46ae344ddcdd69c8fa19e51b493ef97fec406f02fd9a0b76f7"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerControlView",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+          "localSha256": "c97581336c8f68d2aa41975b84fac722cf39a8d8be70413f8cd044bc3d7d6ec6"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -4575,7 +4592,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerSecondItem.xaml",
           "originalSha256": "37d9330aaf157b5f3140007c6d1e50b26053be8b3b9fcc7de0d4e468bdb8447c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
-          "localSha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+          "localSha256": "af424b961fe0a743936f54d0e39ccdbf3def6f2fea1707a349af4b16ff2a5728"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerSecondItem",
@@ -4596,7 +4613,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\AdvancedColorPickerDialog.xaml.cs",
           "originalSha256": "7c631ba8831fd778abe58c2b2468370fd3df022f3e28f28ec2650204ea9200cc",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
-          "localSha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+          "localSha256": "38a93207f0518323c315fa29595d3dddbad7ad9bb3d0f99f728eddf7b12f82f4"
         },
         {
           "originalType": "HikPcUI.ListView.NumericControl",
@@ -4773,7 +4790,7 @@
           "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Display/GraphicStyle.xaml",
-          "localSha256": "3e0d98af9bf450495e3c9a9039251a75b3507b940bd6f732e79eac6e440f518a",
+          "localSha256": "47cc436b79b6c3e4a52254dff2b23737fcf91ea6c9a21d89cd3aa0e596296612",
           "coverage": "原模板精确切片，类型命名空间/资源URI与显式非视觉宿主绑定适配；非运行验收。"
         }
       ],
@@ -4791,15 +4808,15 @@
           "sha256": "255c1b430173d826cf07e86d0f9634ef1c78f50b5b8b65ce1ba6fdf2d04d43a9"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs",
           "sha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml",
           "sha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+          "path": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs",
           "sha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
         },
         {
@@ -4975,11 +4992,11 @@
           "sha256": "3e0d98af9bf450495e3c9a9039251a75b3507b940bd6f732e79eac6e440f518a"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+          "path": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml",
           "sha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml",
           "sha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
         },
         {
@@ -5039,7 +5056,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
           "originalSha256": "2e195d69c45de43c2dca7528705959f4127207722abde533b49f7d3e70305d9b",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Results/StandardTable.xaml",
-          "localSha256": "8524f3404bbbb562047d651d172894663c4f5f7dcac3df879483e71dadb6b0c7"
+          "localSha256": "0e18a0c311c3ece531a437cacc22f119e725555b2f3fe89d07545bfa329a08e7"
         },
         {
           "originalAssembly": "Apps.Style",
@@ -5047,7 +5064,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\datagridstyle\\datagridstyle.xaml",
           "originalSha256": "a3f04fe0bdb0bad3a25bbc6b8c43d80a14a5aa1ac353206ee688e78abab2e6a0",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Results/StandardTable.xaml",
-          "localSha256": "8524f3404bbbb562047d651d172894663c4f5f7dcac3df879483e71dadb6b0c7"
+          "localSha256": "0e18a0c311c3ece531a437cacc22f119e725555b2f3fe89d07545bfa329a08e7"
         },
         {
           "originalAssembly": "Apps.Style",
@@ -5062,8 +5079,8 @@
           "originalType": "Apps.PcUI.Common.ParamsEventCommand",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Common\\ParamsEventCommand.cs",
           "originalSha256": "a0a12bf26e2ad52c7cce4f029e8f0925d452e3c318c38eff599ec90700a23f9a",
-          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
-          "localSha256": "98d950e46782fbd44bd1875a0e45f4e051ac4c31c8dab22d07b898bb2b96b245"
+          "localPath": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
+          "localSha256": "e286c03dea82fdec78a2348c530f22e8cf4a6036fab41c5ca85b99f5d9fa4d1e"
         }
       ],
       "dependencies": [
@@ -5076,7 +5093,7 @@
           "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+          "path": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs",
           "sha256": "98d950e46782fbd44bd1875a0e45f4e051ac4c31c8dab22d07b898bb2b96b245"
         },
         {
@@ -5084,11 +5101,11 @@
           "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
@@ -5778,7 +5795,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
           "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
-          "localSha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef",
+          "localSha256": "4fdaa73bbd72f4be556cec410de2971edd3bbcb31541ad51f4a3099cded8a677",
           "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
         },
         {
@@ -5787,7 +5804,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
-          "localSha256": "dcf25c6bc415e81a0cedb22a8767bf753a8598f9963db1250044af8b64c30bef",
+          "localSha256": "4fdaa73bbd72f4be556cec410de2971edd3bbcb31541ad51f4a3099cded8a677",
           "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
         },
         {
@@ -5796,7 +5813,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamsTabUserControl.xaml",
           "originalSha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7",
           "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
-          "localSha256": "09a38d615282f7817a753d9876c5ed4a50dea4e8b8dcc849a37c8bdd15146b27",
+          "localSha256": "2b7da2c9738b32b8e9fe7bfd41fdb1d9b9f0051555d1afbe655783555810bead",
           "coverage": "Original selected styles/templates/layout; neutral labels/state/command borrowing and local lifecycle only"
         }
       ],
@@ -6276,7 +6293,7 @@
           "sha256": "df6710b6de5c44f267ddab0237cbaa963f89a03a411c1765900428b947064566"
         },
         {
-          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+          "path": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs",
           "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
         },
         {
@@ -6432,19 +6449,19 @@
           "sha256": "c519d84f60507e99a4c2bde44fca676134e020865d1caba73469405fe282465d"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/Windows/windowclose.png",
           "sha256": "216ecc027b94d9d136d836a9126f0cb18f74e4ab4f7288dbd7193cb7ef7a0a40"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_maximize.png",
           "sha256": "cdf32474ed06bb4e1781d7bb85c001827d470db5a76ab94cbbbea30daab68150"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_minimize.png",
           "sha256": "303c4dc69ea1459e3bd19719a6f91f9634dccc7e74bc9312238076eeba7def3c"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+          "path": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_normal.png",
           "sha256": "1d7bb61823dd336c0da0f470f61e058cca8618e6f0bc05d3071a9192e4d7e0c4"
         },
         {
@@ -6464,11 +6481,11 @@
           "sha256": "76f75691c698ab5076815f95735885bbb7febeea873d14bc048ce5f2426981dd"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml",
           "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "path": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml",
           "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
         },
         {
@@ -6484,7 +6501,7 @@
           "sha256": "644e0853747fbe516a0c7b51205e9099c2d4a4aec0e2981946c9c92b280ffc17"
         },
         {
-          "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+          "path": "src/Plugin.Wpf/Themes/Foundation/BaseWindow.xaml",
           "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
         },
         {
@@ -6565,6 +6582,127 @@
         "C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。",
         "位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。",
         "Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
+      ],
+      "committedValidation": {
+        "checkpointCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+        "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json",
+        "windowPassed": 18,
+        "designPassed": 108,
+        "manualAccepted": false
+      }
+    },
+    {
+      "id": "B08.variable-selection-dialog",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceAssemblies": [
+        {
+          "name": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "GlobalVariableSelectDlg.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml",
+          "originalSha256": "023A989C41ABBF8CE85E4E4DC28F23CA39C13133A96D60A8B81CE58945B95818",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableSelectionDialog.xaml",
+          "localSha256": "263a8eff2fa9f218a5811f21efabb2181ad0fa0aa270b3ad826771855c295c7e",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "GlobalVariableSelectDlg.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml.cs",
+          "originalSha256": "F4FADFE519FB021B2D092EFB2096D41D8DF52ED16781E3C152288E904F3A8EEC",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableSelectionDialog.xaml.cs",
+          "localSha256": "2ea780e16ba75d36fc707f68e891de712396b29415601b8699462bc6518ec546",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "TreeViewCombobox.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\TreeViewCombobox.xaml",
+          "originalSha256": "B2040C21191106B6561519C4B2B88DF16596F90A644035D8D27D5D6AEB44F305",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupSelector.xaml",
+          "localSha256": "4b4bbd4209dce2749a344ea75a29244f525b801c651dcd577c110216bb3afc38",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "TreeViewCombobox.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\TreeViewCombobox.xaml.cs",
+          "originalSha256": "F6E1C188CEA5F71DCCD347CB4986FFBEFE07DB58E5C35C051F516EC7D95A09E9",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupSelector.xaml.cs",
+          "localSha256": "278698995acb0a69483cd3031415b91160f6d45b204e03fe29033bf336e8094f",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "ComboboxTreeView.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ComboboxTreeView.xaml",
+          "originalSha256": "1D1104C27BC14CD42A4A229F2389C78C53AA1AA5AED53A4D125B403481D08C67",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupTree.xaml",
+          "localSha256": "2390c36604e80d881857be97f674743f031fea8c498e74274a72714745707afc",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "ComboboxTreeView.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ComboboxTreeView.xaml.cs",
+          "originalSha256": "24223671A053EF8BD994014329AFD42D8F0FF571FF8557B4F1F5929231D174E5",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupTree.xaml.cs",
+          "localSha256": "b1a7fbd86c2461fd1460a809aa7f49cfc42a1ee225ba3bf17a4685aecdce1f61",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "PageNumControl.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageNumControl.xaml",
+          "originalSha256": "59CD28F6C897F69651629D7A6C46612FEA1317770687A100A98421F60FB60AFD",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariablePageNavigator.xaml",
+          "localSha256": "d8cf964ce2687f36e513e7a9ef438a4fc00a68039af1b6415e4342a8d8f16581",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "PageNumControl.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageNumControl.xaml.cs",
+          "originalSha256": "602E3D037B6051811C3EA86365B77C5DD4088A08BFE8A5ED7E0D0AE5F2D19018",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariablePageNavigator.xaml.cs",
+          "localSha256": "539ccffb94819479cc59cc1af97ebaf34e9dec03bd20df8aded3f65efb783c50",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "NumInfo.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\NumInfo.cs",
+          "originalSha256": "F536AE8644DD6EACCE81774FE770EE9B057703D3C4A07BA6E3D22227251C0DA9",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\PageNumberItem.cs",
+          "localSha256": "3bc0e5358ae0575b9141b42d5401ae4259ef7a584974c3f0e93ed4ff09c77952",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "PageCountInfo.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageCountInfo.cs",
+          "originalSha256": "5AE670DA95D57B0BFD9AD5AFBE606AD7AF39AD7D9119B4CC05D7F62394656F0C",
+          "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\PageSizeOption.cs",
+          "localSha256": "f2c9527e654f87c5c9d939df243272d048fe58d3f2ce0d097f70a18dd80b443f",
+          "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+        }
+      ],
+      "status": "PUBLIC_FIELD_CHAIN_VERIFIED_BLOB_COMPOSITION_PENDING",
+      "evidence": "docs/collaboration/evidence/B08_VARIABLE_DIALOG_AUDIT_20261030.json",
+      "validation": "VariableDialog004：8组；VariableFields005：10组含实际Owner模态与展开窗转交、取消/迟到、索引、失效恢复；非Blob整工具封版",
+      "sourceRights": "保留原厂来源与权属，本记录不构成额外许可证明",
+      "remaining": [
+        "Blob可见S1组合完整功能接入",
+        "实际VS与人工验收",
+        "B08其余变量/通讯链"
       ]
     },
     {
@@ -6626,15 +6764,56 @@
     }
   ],
   "currentIntegration": {
-    "baselineCommit": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
-    "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
-    "status": "C17完整配置组合候选，正式Release源码/发布/实际加载SHA核；VM/VS/人工及阶段一完整门禁仍未过。"
+    "productCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+    "evidenceCommit": "300b924d",
+    "uncommittedCandidate": false,
+    "evidence": "docs/collaboration/evidence/B08_REFERENCE_WINDOW_CHAIN_FORMAL_20261101.json",
+    "status": "当前正式产品源15171638；低阈值真实窗口引用九组已在正式Release定向通过。各entry原validation保留为历史版本，不可直接视为当前整体验收；ROI、图文和其他完整能力仍有未完成。"
+  },
+  "currentStatusReview": {
+    "updated": "2026-11-01",
+    "scope": "仅纠正明确核查的条目；原件身份、资源SHA及历史validation保留；未列条目需依各自证据与产品源码核定。",
+    "entries": {
+      "C13.original-text-composition": "真实Blob页面有原文本显示组合，但正式文本配置与同次图层消费者尚未接通；旧CANDIDATE_UNBUILT_UNRUN为历史记录，不称生产功能完成。",
+      "C13.original-graphic-style-composition": "真实Blob页面有原图形样式组合；未接入配置由受限窗口保值拒绝。正式配置与同次显示消费者仍缺；实际键鼠未验。",
+      "B08.variable-selection-dialog": "正式BlobReferenceWindow attempt-001九组包含真实变量模态、固定和动态索引及保存重开实际执行；不是所有字段、剪贴板或跨文档全域通过。",
+      "C17.crosshair-settings-composition": "正式BlobCrosshairWorkspace attempt-001七组通过，覆盖真实工具栏命令、双十字、灰二值切换、重跑帧与退役；15项加载SHA一致。运行由引擎驱动而非主窗RunCommand，自然键鼠、旧手势、跨Root及原厂导出仍未验。"
+    }
   },
   "integrationHistory": [
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_NUMERIC_REENTRY_CANDIDATE_20261029.json",
+      "status": "历史C09原数值同步重入同源候选核收；只读边界及完整阶段门禁保留。"
+    },
     {
       "productCommit": "5780c062",
       "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
       "status": "规定构建与原栅格10组过；GlobalBinding20及ImageSources2失败，不套旧链成绩；依赖hash为当前源，历史validation保原基线"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json",
+      "status": "C17组合检查点同提交正式Release核收，VM/VS/物理指针/人工及阶段一门禁仍未过。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_FIELD_STATE_CANDIDATE_20261029.json",
+      "status": "C09整体切换中；本批同源定向成绩与失败均归档，不以局部PASS宣布控件库或阶段完成。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_GRAPH_EDITOR_CANDIDATE_20261029.json",
+      "status": "C09复制/插线及窗口同源候选核收；根代理/数值重入与完整门禁继续，非阶段完成。"
+    },
+    {
+      "productCommit": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+      "uncommittedCandidate": true,
+      "evidence": "docs/collaboration/evidence/C09_ROOT_PROXY_CANDIDATE_20261029.json",
+      "status": "C09根代理真实窗口/保存历史同源候选核收；数值重入与完整阶段门禁继续。"
     }
   ]
 }

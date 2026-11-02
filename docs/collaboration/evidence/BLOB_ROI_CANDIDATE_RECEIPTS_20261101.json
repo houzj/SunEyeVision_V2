@@ -1,0 +1,399 @@
+{
+  "baseline": "300b924db00844fb7149f7990ff833d65c15063b",
+  "productSourceFreeze": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiFrameLease.cs",
+      "sha256": "D01E14F5C036605F2C6FBB9B0C38FED5881F4D0A3B59B422252A84586E4AEC00"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
+      "sha256": "51520E5696B9146F21F71C033D4F64C01E03CFB64B807BA3E66784C13ABD7E72"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sha256": "1D272D18B58ACC3DDC5BD41ABC716BA51EF2F550ECE0512497DF4E45DFCD3F56"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "F751BCA51DCAF49E12B0B263F81D40D99D15B3474A56A9C1133999F25A06336E"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativePolygonRoiInputs.cs",
+      "sha256": "A377AD9C778F873448D09639F601AAB841FD5A76D294643D8AFD1586158ECE87"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
+      "sha256": "3A5E78FD993EB9CAB895C13D025AE3F0E70B244125E172448CF15E15839E9AFC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiPendingInput.cs",
+      "sha256": "126C77D0975873F65B53BAEF04A8BF3FB1331FDE8F30596AE13ECBA0C9FBCBD7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "0B0D461AB4AEBAD8F743E6B68C3A487D7EEAE47799DCFAFE73CF420C2D5E47B6"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "3B593EC163D754D5DA29CCD82217D9A787C8B1125F569EC9A753AFA0AADCA008"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultImagePane.cs",
+      "sha256": "DF8BF38D7E522F637CFE3F1A44C791958F2552AA79AC893D69CF0AA5FCA613F0"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "sha256": "1C38A85F78AEE4AC6FB59A7F9807BCD4F3CE61B89EAD8109DF09B5EA6FF7CC4F"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.RoiEditing.cs",
+      "sha256": "E0E4DCB021D103E441668B6CE874B890E2BCD629046F4C2693EDAEE542B6F40B"
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "sha256": "A31FEB6754FB7D0B7EC35A734A78DFEBC2BEE1A1944E2D2411C2D8723C5FCB38"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs",
+      "sha256": "3E07A297BAC9086975353B8ABB5F805C0C19731D38B93E1F890FC18B0818B0E2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobLocalRoiRasterizer.cs",
+      "sha256": "68144D93C37AB7B6C156E78C4875EDB16725088F67E699539ED40BA6800873BC"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+      "sha256": "D98B11C0D829AA8DE200FE6DE38A46EAB843D6D83E75640233F1630607E2AA66"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "51BB699776F2295971B645B5DCE84B632F18514DAFCFBA685C161243174D1552"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobInput.cs",
+      "sha256": "A351712BC4236110FB276E3ECFADACCA7C45E847F49F6969C8789497D1FA00D3"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobLocalRoi.cs",
+      "sha256": "FE7F1B980CD47D24A9F0DA6D18A1036210BA018254C8CEEB8D7299FC7A7AE6BC"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.cs",
+      "sha256": "FDF5547C84D72966C4987168DF9619C2479454457EA2D6C9B8890CED58FE1A07"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiProjection.cs",
+      "sha256": "5E5778BCB04756138728EA40BB9C1F64D8CC845E8F7C924877AAEBF03A27B7A9"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "8C46C650EA33F779AFE47C7065B8CC2092599584E00543B1051EAE61C2F07CF8"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+      "sha256": "5A899321F6499B1F373E45A49A565FF3DD2E983567AD5372FC5F9E99B393F89A"
+    }
+  ],
+  "tests": [
+    {
+      "track": "BlobRoiProduction",
+      "attempt": "003",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 132420,
+        "exit": 0,
+        "timeoutMs": 360000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRoiProductionCases.cs",
+        "caseSourceSha256": "445FB0101ECF2129007FFA6E7318DC6FBE3D0FEE8F51EBE8FF6D6B4464EC6B0F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-003"
+      },
+      "receiptSha256": "C052D6A658F71CACBA755C49ED1BFDD9B65F4E7065169A08AABE5DE3C12680B6",
+      "loadedCount": 15,
+      "loadedMismatch": []
+    },
+    {
+      "track": "BlobRoiProduction",
+      "attempt": "008",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 8,
+        "pid": 146028,
+        "exit": 0,
+        "timeoutMs": 360000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRoiProductionCases.cs",
+        "caseSourceSha256": "7FCE85B390D70E431B84DF19237AE73A977DAB4AEEE177F762F9D7557AD0DABE",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-008"
+      },
+      "receiptSha256": "8A0E07747F3D589828AA9538FD2A50D038C1DA209767599C5B24A831EE374F63",
+      "loadedCount": 15,
+      "loadedMismatch": []
+    },
+    {
+      "track": "BlobRoiProduction",
+      "attempt": "010",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 10,
+        "pid": 30256,
+        "exit": 0,
+        "timeoutMs": 360000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRoiProductionCases.cs",
+        "caseSourceSha256": "61D444CE779E14D4EA0BC022F8DBE11F714B34D5ED2C3F217056A1700FF4DCE3",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-010"
+      },
+      "receiptSha256": "62B0326AD0948C9717E6FAAB21B29EC5ADC8D79D9F158A6D9D0179AB5791A9B9",
+      "loadedCount": 15,
+      "loadedMismatch": []
+    },
+    {
+      "track": "BlobRoiProduction",
+      "attempt": "011",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 11,
+        "pid": 38212,
+        "exit": 0,
+        "timeoutMs": 360000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRoiProductionCases.cs",
+        "caseSourceSha256": "61D444CE779E14D4EA0BC022F8DBE11F714B34D5ED2C3F217056A1700FF4DCE3",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobRoiProduction\\attempt-011"
+      },
+      "receiptSha256": "8AB576FC33DB6343C5F1DA9E0E91C90F53A5B58D5A0B55BE00C0A1B9A433ABCF",
+      "loadedCount": 15,
+      "loadedMismatch": []
+    },
+    {
+      "track": "BlobSupportedWindow",
+      "attempt": "002",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 123668,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobSupportedWindowCases.cs",
+        "caseSourceSha256": "F23902FDC68441DEE9F7CD573D522D3CD47EC101708F83567BA063D67AA6C805",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobSupportedWindow\\attempt-002"
+      },
+      "receiptSha256": "10DCB9DC6783AD0B19271B4889DB328D4F042FAB91E67F55B705197AC08195D4",
+      "loadedCount": 15,
+      "loadedMismatch": []
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 37304,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeWorkflowCases.cs",
+        "caseSourceSha256": "5CD145C2439ED19762C2978352FF931DFD4AF9B442F42F020C54E169D1368765",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-001"
+      },
+      "receiptSha256": "9D6FCC8A21E3372DAF01030B27DA5EBD3C427B0D1595344C12A96F3DABD32DCA",
+      "loadedCount": 13,
+      "loadedMismatch": []
+    },
+    {
+      "track": "RuntimeAlgorithm",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 129804,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3BlobRuntimeCases.cs",
+        "caseSourceSha256": "270B20167E8F4220B8DFD1B354FDFA90DB85D505C772A92629E90A6544B42F3B",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-001"
+      },
+      "receiptSha256": "ED7E43E0F5F44FEFC8483BCEB28070F8CFE7E2035AB4F883A0AAD7A6F01F80B5",
+      "loadedCount": 13,
+      "loadedMismatch": []
+    },
+    {
+      "track": "BlobParameterProduction",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 24444,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "2D59640E41FFD16B41B425A80372585B7013716F1865521CAB7F993B98B64C6F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-001",
+        "track": "BlobParameterProduction",
+        "caseReport": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-001\\blob-parameter-production-report.json"
+      },
+      "receiptSha256": "91504D12C2DC97F297F918B495399A00653CA69D653B9FD9CDDCBB701A278621",
+      "loadedCount": 13,
+      "loadedMismatch": []
+    },
+    {
+      "track": "RoiComposition",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 69116,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06RoiCompositionCases.cs",
+        "caseSourceSha256": "A4988D9EAE6383F32842E046A236495AED7AB617CC5FE3519867DFD608141082",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RoiComposition\\attempt-001"
+      },
+      "receiptSha256": "569BF7715DF8066B9B76E6C32322A370A2C3EEBB627735BC97D7F24474A48B6A",
+      "loadedCount": 1,
+      "loadedMismatch": []
+    },
+    {
+      "track": "RoiBindings",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 32416,
+        "exit": 1,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06RoiBindingCases.cs",
+        "caseSourceSha256": "FC37D2CCB2C2F67D72C7EECF0EE3C91783A390CB8A9E44852AF6E1A9F6573512",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RoiBindings\\attempt-001"
+      },
+      "receiptSha256": "5CE429394C9FCDBFC7695D4095DE8D91A55A6E76F24086AFDFF2D5263F1F093A",
+      "loadedCount": 12,
+      "loadedMismatch": []
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": "001",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 128212,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "C1724BF3D0CDC93C464A421C3294DF576C65E174B7ECE08B486E97CCC5A13D21",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-001"
+      },
+      "receiptSha256": "DFF2AA139B8A4D335EC2A7882E80D2857BDE127B94CD794DF21F97BEEB2D3578",
+      "loadedCount": 5,
+      "loadedMismatch": []
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": "002",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 118192,
+        "exit": 1,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "C1724BF3D0CDC93C464A421C3294DF576C65E174B7ECE08B486E97CCC5A13D21",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-002"
+      },
+      "receiptSha256": "0412370A6A1F4D4FC8E48B1D302337A109D4E2485EFA45700C12E7EFE3D4557B",
+      "loadedCount": 5,
+      "loadedMismatch": []
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": "003",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 82232,
+        "exit": 1,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "C1724BF3D0CDC93C464A421C3294DF576C65E174B7ECE08B486E97CCC5A13D21",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-003"
+      },
+      "receiptSha256": "664BB192C6D255EC06A929D19EBBB7B94412C2631F00F08483D07B505A14BC71",
+      "loadedCount": 5,
+      "loadedMismatch": []
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": "004",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 4,
+        "pid": 140588,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "E89D25AF40CFCB85A6DFB478C3EA51AB847F483859158E6F2A103E98E115329E",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-004"
+      },
+      "receiptSha256": "583B60A9F29DB4D77C602CA77F38C4212365D2E6478D029D7423FD045808C71B",
+      "loadedCount": 5,
+      "loadedMismatch": []
+    }
+  ],
+  "testSources": [
+    {
+      "path": "scripts/verification/S4BlobRoiProductionCases.cs",
+      "sha256": "61D444CE779E14D4EA0BC022F8DBE11F714B34D5ED2C3F217056A1700FF4DCE3"
+    },
+    {
+      "path": "scripts/verification/S4BlobSupportedWindowCases.cs",
+      "sha256": "F23902FDC68441DEE9F7CD573D522D3CD47EC101708F83567BA063D67AA6C805"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "E89D25AF40CFCB85A6DFB478C3EA51AB847F483859158E6F2A103E98E115329E"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "FF71D2063280386916FFD287978029FD9469340F0A1B70FB0E8102F334B900DD"
+    }
+  ]
+}

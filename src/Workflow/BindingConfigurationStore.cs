@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -114,6 +114,7 @@ public sealed class BindingConfigurationStore
             if(_accepting)throw new InvalidOperationException("配置接受过程中不能重入恢复。");
             if(target.SolutionId!=_published.SolutionId)throw new InvalidOperationException("配置回执属于另一方案。");
             var configuration=target.CopyConfiguration();
+            PreserveCurrentParameterValues(configuration,_published.CopyConfiguration());
             var graph=SolutionExecutionDependencyGraph.Compile(configuration,checkReadiness:false);
             var validator=new OutputBindingChangeService();validator.Reset(configuration);
             var next=new BindingConfigurationSnapshot(checked(_published.Version+1),configuration,graph);
@@ -184,16 +185,21 @@ public sealed class BindingConfigurationStore
 
     /// <summary>Accept explicit live-value CAS without creating configuration history or a new configuration revision.</summary>
     internal BindingConfigurationPublication AcceptRuntimeValues(BindingConfigurationDraft draft,
-        Action<BindingConfigurationSnapshot> accept, Action<Solution> validate)
+        Action<BindingConfigurationSnapshot> accept, Action<Solution> validate,Func<Action,bool>? admit=null)
     {
         lock (_gate)
         {
             var prepared = Prepare(draft, validate);
             var next = new BindingConfigurationSnapshot(_published.Version, prepared.Configuration, prepared.Graph);
             var publication = new BindingConfigurationPublication(next, Array.Empty<OutputBindingChange>(), Array.Empty<ScopedNodeIdentity>());
-            Accept(next, accept);
-            _validator = prepared.Validator;
-            _published = next;
+            void Install()
+            {
+                Accept(next, accept);
+                _validator = prepared.Validator;
+                _published = next;
+            }
+            if(admit is null)Install();
+            else if(!admit(Install))throw new InvalidOperationException("参数值写入的运行身份已取消或退役。");
             return publication;
         }
     }
@@ -241,7 +247,7 @@ public sealed class BindingConfigurationStore
         var newNodes = after.Workflows.SelectMany(w => w.Nodes.Select(n => (Id: new ScopedNodeIdentity(w.Id, n.Id), Node: n))).ToDictionary(p => p.Id, p => p.Node);
         var affected = new HashSet<ScopedNodeIdentity>(reconciled);
         foreach (var id in oldNodes.Keys.Union(newNodes.Keys))
-            if (!oldNodes.TryGetValue(id, out var oldNode) || !newNodes.TryGetValue(id, out var newNode) || NodeSignature(oldNode) != NodeSignature(newNode)) affected.Add(id);
+            if (!oldNodes.TryGetValue(id, out var oldNode) || !newNodes.TryGetValue(id, out var newNode) || NodeExecutionSignature(oldNode) != NodeExecutionSignature(newNode)) affected.Add(id);
         var oldEdges = before.Workflows.SelectMany(w => w.Connections.Select(c => (w.Id, c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort))).ToHashSet();
         var newEdges = after.Workflows.SelectMany(w => w.Connections.Select(c => (w.Id, c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort))).ToHashSet();
         foreach (var edge in oldEdges.Except(newEdges).Concat(newEdges.Except(oldEdges)))
@@ -279,7 +285,15 @@ public sealed class BindingConfigurationStore
     internal static string NodeSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
-        Runtime = node.RuntimeConfiguration,
+        Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
+        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
+        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
+    }, WorkflowSerializationOptions.Compact);
+
+    private static string NodeExecutionSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
+    {
+        node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
+        Runtime = node.RuntimeConfiguration?.ExecutionConfigurationIdentity,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
         ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
     }, WorkflowSerializationOptions.Compact);
@@ -315,6 +329,7 @@ public sealed class BindingConfigurationStore
             // Restore the entire accepted payload, not just canvas nodes. Do not reconcile
             // against the discarded newer contract and detach the restored bindings again.
             var configuration = source.Peek().CopyConfiguration();
+            PreserveCurrentParameterValues(configuration,_published.CopyConfiguration());
             var graph = SolutionExecutionDependencyGraph.Compile(configuration, checkReadiness: false);
             var validator = new OutputBindingChangeService();
             validator.Reset(configuration);
@@ -325,6 +340,18 @@ public sealed class BindingConfigurationStore
             _validator = validator; _published = next;
             return next;
         }
+    }
+
+    private static void PreserveCurrentParameterValues(Solution target,Solution live)
+    {
+        var values=live.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node)))
+            .ToDictionary(entry=>entry.Id,entry=>entry.Node.RuntimeConfiguration);
+        foreach(var flow in target.Workflows)
+        foreach(var node in flow.Nodes)
+            if(node.RuntimeConfiguration is {} restored&&values.TryGetValue(new(flow.Id,node.Id),out var current)&&current is not null
+                &&restored.ToolId==current.ToolId&&restored.Schema.Fingerprint==current.Schema.Fingerprint
+                &&restored.SettingsSchema.Fingerprint==current.SettingsSchema.Fingerprint)
+                node.RuntimeConfiguration=restored.PreserveCurrentValuesFrom(current);
     }
 
     private void Accept(BindingConfigurationSnapshot snapshot, Action<BindingConfigurationSnapshot>? accept)
@@ -342,7 +369,7 @@ public sealed class BindingConfigurationStore
             SchemaVersion = source.SchemaVersion, Version = source.Version };
         foreach (var workflow in source.Workflows)
         {
-            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration };
+            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration, AdditionalData=workflow.AdditionalData?.ToDictionary(entry=>entry.Key,entry=>entry.Value.Clone()) };
             foreach (var node in workflow.Nodes)
             {
                 if (node.RuntimeConfiguration is { } runtime && runtime.ToolId != node.ToolType)

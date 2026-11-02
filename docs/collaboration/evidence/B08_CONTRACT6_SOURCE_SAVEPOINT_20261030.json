@@ -1,0 +1,20 @@
+{
+  "notIncluded": "随后原生evidence3核收及保存点登记文档",
+  "productRebuilt": false,
+  "mainHead": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "method": "独立GIT_INDEX_FILE与commit-tree",
+  "workflowIntegrated": false,
+  "parent": "d2dda53ae608df9c3e83e89bc070c80d96f07304",
+  "ref": "refs/heads/codex/b08-variable-index-contract6-20261030",
+  "sourceComparison": "使用独立索引核src/tools/scripts/verification/tests/installer/.gitignore无差异；不能用主仓真实索引将未跟踪文件误判删除",
+  "scope": "81文件，4293新增/201删除；已验证6.0源码、验证与当时文档，不代表B08封版",
+  "commit": "2aa8959d0901e5889e3a9f32884e39f54bc39b2c",
+  "validation": [
+    "全量Release0错误/6511警告",
+    "RuntimeGlobals018 32/0",
+    "VariableFields010 12组",
+    "DesignTime306组",
+    "RuntimeEditorUiStage013 fullFunctionalAcceptance=false"
+  ],
+  "realIndexAndHeadUnchanged": true
+}

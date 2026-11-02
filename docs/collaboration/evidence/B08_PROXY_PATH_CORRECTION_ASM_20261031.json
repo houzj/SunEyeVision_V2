@@ -1,0 +1,14 @@
+[
+  {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-cleanup-static-20261030\\path\\0x18003c600-18003c600.asm.txt",
+    "sha256": "B54DFCE4FA403EE61324BE2339E90549A5839AA8FCCD93238390657B8C11CB8A"
+  },
+  {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-cleanup-static-20261030\\path2\\0x180018980-180018980.asm.txt",
+    "sha256": "3B566CEED1CC72777667B4366DA60E2FCACE44D684D329F0BA6A324723D7177E"
+  },
+  {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\b08-public-proxypath-20261031\\out\\0x18000fb70-18000fb70.asm.txt",
+    "sha256": "A2759364D56DFB619459991E367143631E95A45C05A22D320F61ABF7407C24B8"
+  }
+]

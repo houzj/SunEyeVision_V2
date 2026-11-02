@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
-using NativePopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
+using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
 using NativePicker=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView;
 using NativeFloat=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat;
 using NativeArrange=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase;
@@ -21,6 +21,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParameterVisibility
 {
     private readonly NativeGraphicDisplayOptions _roles;
+    private readonly bool _visibilityOnly;
     private readonly IReadOnlyDictionary<string,DeclaredFieldState> _states;
     private readonly IReadOnlyDictionary<string,FieldPresentation> _presentations;
     private readonly Func<bool> _current;
@@ -45,11 +46,11 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     internal bool IsOpen=>_popup?.IsDropDownOpen==true;
     internal FrameworkElement? Surface=>_surface;
     internal NativeGraphicStylePresenter(NativeGraphicDisplayOptions roles,IReadOnlyDictionary<string,DeclaredFieldState> states,
-        IReadOnlyDictionary<string,FieldPresentation> presentations,Func<bool> current)
+        IReadOnlyDictionary<string,FieldPresentation> presentations,Func<bool> current,bool visibilityOnly=false)
     {
-        _roles=roles;_states=states;_presentations=presentations;_current=current;
-        DisplayNameA=presentations[roles.VisibleFieldId].Layout!.DialogTitle!;
-        _bridge=new(roles.ThicknessFieldId is not null){opacityA=Number(roles.OpacityFieldId)};
+        _roles=roles;_visibilityOnly=visibilityOnly;_states=states;_presentations=presentations;_current=current;
+        DisplayNameA=presentations[roles.VisibleFieldId].Layout?.DialogTitle??presentations[roles.VisibleFieldId].DisplayName;
+        _bridge=new(roles.ThicknessFieldId is not null){opacityA=visibilityOnly?1:Number(roles.OpacityFieldId)};
         if(roles.ThicknessFieldId is {} thickness)_bridge.StrokeThicknessA=Number(thickness);
         _host=new ContentControl{Content=new NativeGraphicTemplateData(DisplayNameA,_bridge,roles.ShowStyleButton),HorizontalContentAlignment=HorizontalAlignment.Stretch};
         try
@@ -115,6 +116,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
                 if(_popup is not null){_popup.DropDownOpened-=OnOpened;_popup.DropDownClosed-=OnClosed;}
                 _popup=popup;popup.DropDownOpened+=OnOpened;popup.DropDownClosed+=OnClosed;
             }
+            if(_visibilityOnly)return;
             popup.ApplyTemplate();
             if(!Alive())return;
             if(popup.Template.FindName("PART_Popup",popup) is not Popup popupPart||popupPart.Child is not FrameworkElement child)
@@ -175,6 +177,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
         try
         {
             _bridge.IsDisplayA=(bool)((ConstantSetting)_states[_roles.VisibleFieldId].Accepted).Value!;
+            if(_visibilityOnly){if(Current())_eye?.SetCurrentValue(ToggleButton.IsCheckedProperty,_bridge.IsDisplayA);return;}
             if(!Current())return;_bridge.okcolorA=Brush(_roles.OkColorFieldId);
             if(!Current())return;_bridge.ngcolorA=Brush(_roles.NgColorFieldId);
             if(!Current())return;_eye?.SetCurrentValue(ToggleButton.IsCheckedProperty,_bridge.IsDisplayA);

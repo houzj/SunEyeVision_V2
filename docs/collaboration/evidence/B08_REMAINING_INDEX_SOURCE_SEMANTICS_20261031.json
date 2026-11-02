@@ -1,0 +1,251 @@
+{
+  "baseline": "0b8af6d942263fcefd69e8d55253427f814310e6",
+  "status": "剩余索引/来源语义集中复核；只交矩阵与最小缺证，不改产品/共享合同，不启动SDK或GUI，不为文档改动重复构建",
+  "mainObservedHead": "eaa77228",
+  "nativeProvedSample": {
+    "source": "B08_ORIGINAL_BINDING_RUNTIME_AUDIT_20261030.json",
+    "scope": "仅VM4.4/该图像/整数LowThreshold/真实流程局部变量B08Var/固定[0]样本，不代表所有来源形状、类型或变量删除UI",
+    "facts": [
+      "默认100、手动常量37及173分别得到不同Blob结果",
+      "建立固定[0]关系本身回读37；真正消费后为173",
+      "成功源值变90再173，参数和Blob结果同步改变",
+      "本样本[99]无正常输出且Getter保持此前173，关系仍在；该错误码不能推断唯一根因",
+      "直接原生解绑后关系空，参数仍173；保存重开和再运行仍173"
+    ],
+    "notProved": [
+      "只有一个元素的[0]成功不足以证明多元素索引基数和全部边界",
+      "空[]/无括号到标量及多项来源的真实消费",
+      "模块或变量动态索引的原厂实际消费和失效恢复",
+      "VariableManager删除UI额外关联清理、其他类型、多参数部分失败/取消",
+      "多项/范围选择是否是本原控件的真实可达能力"
+    ],
+    "entry": "attempt03直接调用SDK绑定固定索引0，不是托管UI输入[]后的运行证明"
+  },
+  "nativeManagedBoundary": [
+    {
+      "file": "ButtonSelecter.cs",
+      "lines": "347-397",
+      "fact": "VmIO和变量主来源首次选择无既有括号时统一追加[]；有括号时保留原括号内容；不能据此推断后端取首项或All策略"
+    },
+    {
+      "file": "ButtonSelecter.cs",
+      "lines": "455-483,517-585",
+      "fact": "索引候选为int；来源VmIO或变量ModulePathName插入括号，焦点按括号内位置切索引树；这证明入口和文本，不证明原生读取结果"
+    },
+    {
+      "file": "SetFilterSourceOperation.cs",
+      "lines": "183-253",
+      "fact": "GetOutputInfo拆取第一[起的内容并移除方括号；GetBindIndex按含点路径或MathHelper.IsNumber建立VmIO/常量。没有从这些代码证明多项/范围语法；不新增该功能；此为泛IO关系旁证，不代普通数值实际SetModuleParamBindOperation生产入口。"
+    },
+    {
+      "file": "GetSelectedFilterOperation.cs",
+      "lines": "67-91",
+      "fact": "已选显示来自真实RelateIO/SubscriptionInfo，不以当前界面文本反造身份"
+    },
+    {
+      "source": "B08_ORIGINAL_INDEX_EVIDENCE_20261031.md（最终报告，SHA已核）",
+      "fact": "一条托管重建路径中[]与无括号均提交ALL，[0]/[1]/[2]提交固定索引",
+      "level": "托管提交及按SDK结构条件回读层；实际多值消费仍待隔离原机证据，不证明保存文件格式",
+      "effect": "Q1不重复要求识别ALL托管入参，主要补多元素来源的实际消费与错误；待主线补原证据身份后可挂接来源"
+    }
+  ],
+  "currentMatrix": [
+    {
+      "source": "Scalar",
+      "selection": "All",
+      "target": "Scalar",
+      "ui": "显示标签无括号；无可索引序列不打开索引树",
+      "compileAndRun": "类型/存储及宿主资格校验；标量保持标量",
+      "nativeAlignment": "本方显式类型适配；原统一[]文本并不证明等价，待Q1"
+    },
+    {
+      "source": "Scalar",
+      "selection": "AtConstant/AtField/AtVariable",
+      "target": "Scalar",
+      "ui": "无此索引入口",
+      "compileAndRun": "index-shape拒绝，不将Scalar提升为数组或假映射[0]",
+      "nativeAlignment": "不以原VmIO值容器List名称推定所有输出是业务Sequence"
+    },
+    {
+      "source": "Sequence，数量范围与1相交",
+      "selection": "All",
+      "target": "Scalar",
+      "ui": "可显示[]并条件接纳；不是所有Sequence都强制选索引",
+      "compileAndRun": "数量编译可Conditional；ResolveValue运行恰好1项才解包，0或多项为exactly-one错误，无首项回退",
+      "nativeAlignment": "原多值[]消费未证；当前规则是已实现平台合同，不称原厂等价"
+    },
+    {
+      "source": "Sequence，固定多项且数量与1不相交",
+      "selection": "All",
+      "target": "Scalar",
+      "ui": "先暂存候选并要求补有效索引，不改已接受正式来源",
+      "compileAndRun": "All数量不相容；有效单项选中后才能按一组提案接纳",
+      "nativeAlignment": "当前真实扩展窗固定多项用例已通过；原后端未证"
+    },
+    {
+      "source": "Sequence",
+      "selection": "AtConstant(n)",
+      "target": "Scalar或可接纳单项的Sequence",
+      "ui": "只解析当前来源括号内非负整数；保留非法原文，按声明最大数检查",
+      "compileAndRun": "选择第一层集合的第n项，n<实际长度；无项/越界拒绝不取首项，不投影未选空记录",
+      "nativeAlignment": "原仅[0]/[99]单值样本；不推全域零基数"
+    },
+    {
+      "source": "Sequence",
+      "selection": "AtField",
+      "target": "Scalar或单项Sequence",
+      "ui": "主源和整数索引来源身份组合校验；标量整数叶，记录成员投影可用",
+      "compileAndRun": "递归编译索引依赖/资格；索引值必须同次冻结的Int64，再检查实际界限",
+      "nativeAlignment": "原托管VmIO路径入口已证，实际动态消费待Q2"
+    },
+    {
+      "source": "Sequence",
+      "selection": "AtVariable",
+      "target": "Scalar或单项Sequence",
+      "ui": "同变量窗口租约，只筛整数Scalar+All；主来源保持，变量身份/目录代次校验",
+      "compileAndRun": "变量ID/类型/存储/消费者身份来自同次快照，索引必须Int64；不读WPF或最近结果",
+      "nativeAlignment": "原变量管理插入索引文本已证，实际动态消费待Q2"
+    },
+    {
+      "source": "Sequence",
+      "selection": "All",
+      "target": "Sequence",
+      "ui": "[]表示全部；候选按元素类型匹配",
+      "compileAndRun": "保持整序列并检查目标数量、逐元素类型/数值范围，允许0取决于目标声明",
+      "nativeAlignment": "Blob9参数全为Scalar，不能拿本方其他Sequence消费者通过代原厂B08证明"
+    },
+    {
+      "source": "主或索引删除/同名替代/失去控制资格",
+      "selection": "任意",
+      "target": "原字段",
+      "ui": "保留原正式身份和显示、标失效并拒写；有效显式替换恢复，不静默同名重绑",
+      "compileAndRun": "主线统一资格递归校验；运行/调试使用冻结快照",
+      "nativeAlignment": "五状态只证限定ImageSource→Blob实例的订阅不等于前序，Group/动态输出不外推"
+    },
+    {
+      "source": "清空来源或索引",
+      "selection": "无",
+      "target": "必填数值/可选字段",
+      "ui": "必填数值由ReadCurrentValue/唯一state决定，缺值不猜；可选Unset；清索引为All但仍按数量规则验证/暂存",
+      "compileAndRun": "不恢复旧常量或XML默认；正式owner接纳/取消/历史链不在WPF复制",
+      "nativeAlignment": "直接原生解绑173已证；VariableManager删除UI不能据此视为全部已证"
+    }
+  ],
+  "productionConsumers": [
+    {
+      "role": "5整数+4浮点Blob数值",
+      "path": "BlobParameterEditor→BlobRunUi(EditableIndex)→DeclaredSettingsView→DeclaredFieldsView/DeclaredFieldState→NativeNumberCoordinator或NativeRangePresenter→ReferenceFieldSession",
+      "receipt": "B08ReferenceLease FieldEditing attempt-014=38，含真实宿主、9字段/三范围原按钮；ROI总闸仍在，不能称整窗确认/保存完成"
+    },
+    {
+      "role": "宿主候选/最终提案",
+      "path": "RuntimeNodeConfigurationControl.ReadReferenceCandidates→ReferenceCandidates→ValidateProposal/WriteGroup→现有草稿/生产宿主",
+      "receipt": "UI只消费已限定候选；字段/主源/索引复合身份检查，原图资格交主线正式验收"
+    },
+    {
+      "role": "编译/执行/调试",
+      "path": "BindingSelection→ParameterBindingService.CompileReference/ResolveValue/ReadReference→Workflow冻结参数/变量与现有参数当前值接纳",
+      "receipt": "当前源码可审计；本轮不重新跑内核或伪称All的0/1/多项已有新增回执"
+    },
+    {
+      "role": "动态变量及展开窗",
+      "path": "VariableSelectionRequest/ReferenceExpansionRequest→既有Coordinator/原窗口→同Session提案",
+      "receipt": "VariableFields attempt-003=13；扩展WindowPresentation attempt-003=16，均候选；不是原VM动态后端证明"
+    }
+  ],
+  "minimalEvidenceQuestions": [
+    {
+      "id": "Q1",
+      "priority": "先补",
+      "question": "复用已知托管ALL/固定索引入参：同一可区分多元素整数源（建议37/90/173）绑定LowThreshold，ALL与固定[0]/[1]/[2]真正消费哪个值或报何错误？[]/无括号只核是否走该已确认重建路径，不重复泛查ALL入参。",
+      "capture": "沿最终原报告隔离方案执行：先读回真实数组项数/顺序；记录托管UI与直接SDK两入口的表达式、结构/indexType、返回码、Get绑定列表与显示。运行前写不同标记值，交叉Getter和Blob结果，失败不凭旧Getter说消费；保存前后分别记录结构/显示，不能把重建字符串当格式。当前不启SDK。",
+      "purpose": "界定空括号/All及索引基数；不是要求新增多项/范围选择",
+      "boundary": "由主线去重后交既有逆向负责人；不授权本线启动SDK"
+    },
+    {
+      "id": "Q2",
+      "priority": "复用现有证据优先",
+      "question": "同一多值源使用原整数VmIO或变量作为索引，值0→1→越界→恢复时，真实消费、旧参数保留和关系是否与固定索引一致？",
+      "capture": "先查已交托管/原生材料是否已有结果；缺口仅补动态索引实际读取/错误恢复，不重复树构造或变量窗口外观",
+      "purpose": "把原可达路径与当前AtField/AtVariable冻结语义对上，不能仅凭UI插入路径文本认定后端等价"
+    },
+    {
+      "id": "Q3",
+      "priority": "仅去重已有请求",
+      "question": "VariableManager删除UI相对已证明的直接原生解绑，是否还有影响Getter/来源标志/保存重开的额外清理？本版本原控件是否确有多项/区间选择入口或语法？",
+      "capture": "只报告已有具体源文件SHA/方法/入口；多项/范围无肯定证据时保持“未证存在”，不当作确定缺失功能扩实现；变量删除沿既有补证请求去重",
+      "purpose": "区分UI删除与原生解绑、未知能力与应实现功能；不扩大Group/触发字符串/算法任务"
+    }
+  ],
+  "oldDocumentCorrections": [
+    {
+      "file": "B08_VARIABLE_DETACH_EVIDENCE_20261030.json",
+      "lines": "15,18,21-22",
+      "correction": "原静态“不能证明值”是当时边界应保历史；当前导航应附attempt03已证明的[0]/99/直接解绑保173与重开。第21行“变量删除UI”仍未知，不能当已解决；第22行固定单样本与All/动态分别列，不能统称全未知。"
+    },
+    {
+      "file": "B08_REMAINING_EVIDENCE_REQUEST_20261030.json",
+      "lines": "7,14",
+      "correction": "20261030请求及环境阻塞保持历史，当前索引请求链接attempt03和五状态已完成；只传Q1/Q2及Q3真实剩余，不重新提整套初始化/消费/解绑样本。"
+    },
+    {
+      "file": "B08_REFERENCE_UI_FULL_LIFECYCLE_AUDIT_20261031.json",
+      "lines": "167-231,234",
+      "correction": "九字段“全被S1抑制”和面积Number仅属0d36前旧快照；当前c9bceea1/主仓1d7741b9为正式9字段、整数面积；数字关闭异常0d36已修，新租约异常0b8af6d9/主仓eaa77228已修，不再列现存缺陷。"
+    },
+    {
+      "file": "docs/collaboration/B08_MANUAL_REFERENCE_IMPLEMENTATION_20261031.md（主仓）",
+      "lines": "13",
+      "correction": "“当前Blob Settings为Number、待评估Integer”已由287c234d改为Integer及正式10/999999999；应同步当前表述并保先前差异为历史。主线唯一写者统一维护，本线不改。"
+    },
+    {
+      "file": "B08_REFERENCE_CONTROL_CHAIN_MATRIX_20261031.json",
+      "lines": "R07/remaining",
+      "correction": "“单项合同/未证数组全域”需由本细矩阵解释：All到Scalar可Conditional且运行必须恰好1项；原单值[0]成功不推全域基数；多项/范围是尚未证存在，不能虚设为应新增功能。"
+    }
+  ],
+  "decision": "没有发现本线可独立且有原厂语义证据支持的新产品缺口；保持现行严格类型/数量/身份和错误保留，提交设计及缺证供集中补证，勿为了差异矩阵制造接口或近似功能。18项原矩阵和未验范围保留。",
+  "validation": "本轮仅源码/既有证据/真实消费者与历史回执复核，未新增运行、未构建、未改产品，不将前批通过重算新验收；GUI仍释放给窗口线。",
+  "identities": [
+    {
+      "path": "docs/collaboration/evidence/B08_ORIGINAL_BINDING_RUNTIME_AUDIT_20261030.json",
+      "sha256": "E48901C421D4CA1222CDC9E3CB48B1ABC36D8CAC9EB25FD29E6442B0E5F00D8E"
+    },
+    {
+      "path": "src/Plugin.Contracts/BindingPlans.cs",
+      "sha256": "703195D524F60D13190E590BF8B8012273B28CE4012F57A8D3034E3463988EFE"
+    },
+    {
+      "path": "src/Plugin.Runtime/ParameterBindingService.cs",
+      "sha256": "07FFB2032068AE5A4F1B11AD057DC81655A140A61FE99AC5E9A5762D1910FC57"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "sha256": "85AE3E8B9042028A9230EF37F1C500D288DA626ED0C68B0648962820F86B8761"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "6CDF1903FE1A3443B2981D9043985C274220447A29203E9A44640E7CDF705046"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs",
+      "sha256": "A04C04DC557328269A06D67C194F6C3A64B68659ACC1F76E4DE778F5DA858931"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetFilterSourceOperation.cs",
+      "sha256": "197EC3EB19974776DB4DC9AB293CABABED6319EF2A5A1C0DA6A8A9BFD5EB0401"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedFilterOperation.cs",
+      "sha256": "1CF28C8B2ADCF10E2A6CEBDD8AFDFD2295AACB7E3FAF750F61A7325FEC8CF1CD"
+    }
+  ],
+  "finalReverseReport": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
+    "readFrom": "D:/MyWork/SunEyeVision_V2/docs/collaboration/evidence/B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
+    "sha256": "6FF23602F657FC1441A8A9E123B0B87347D27A1E4F5485CAD4B7ADE84F0EF628",
+    "review": "已全文读取并核SHA；其中原件SHA为报告列出身份，本线未再次反编译或启动SDK",
+    "confirmedLayer": "SetModuleParamBindOperation普通分支及VmModule.SetRunParamBind迁移/恢复分支：空索引提交ALL；[0]/[1]/[2]提交CONSTANT；含点且能解析的索引VmIO提交VARIABLE；GetModuleParamBinding仅按SDK返回结构条件重建",
+    "limits": "普通数值参数实际入口不能仅用SetFilterSourceOperation的泛IO关系分支替代；前版该条仅作文本拆分旁证。无多值实际消费、保存字节格式或负数/多项/范围能力证明"
+  }
+}

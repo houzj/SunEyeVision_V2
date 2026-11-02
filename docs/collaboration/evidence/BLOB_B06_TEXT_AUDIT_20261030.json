@@ -1,0 +1,33 @@
+{
+  "unit": "B06 基础文本编辑",
+  "status": "既有原件与适配复用，基础文本自动检查通过，完整候选组合/VS/人工待验",
+  "validation": {
+    "newChecks": 11,
+    "attempt": "Release/_validation/S4-20261025/DesignTime/attempt-124",
+    "total": 289,
+    "exit": 0
+  },
+  "scope": "真实StringConfig文本叶子、待提交原文、拒绝恢复、空字符串、禁用隐藏与释放；不将表达式运行求值当已完成",
+  "sources": [
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Text/TextField.xaml",
+      "sha256": "717DDB10E6CF510AB289D1ADBD3A62E902E6D33E5C329A3C83A857EA80251B1F"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Text/NativeTextPresenter.cs",
+      "sha256": "A95CDBB5E4980E2D4B9614A616BDD82B85B7F076DEB96152BCF1DD59E551ECB7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
+      "sha256": "7270EA7BFC1492B3A06E0151B64A1FD833EFD3DF843BDC7FE8A4725C8F78451F"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "35C1DB42107002689DF49134CE3D11E859E5D832B08D02D6569B290C9427FF8F"
+    }
+  ]
+}

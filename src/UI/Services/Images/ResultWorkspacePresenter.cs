@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
@@ -10,13 +10,15 @@ using SunEyeVision.UI.Shell.Windows;
 namespace SunEyeVision.UI.Services.Images;
 
 /// <summary>Owns the two original Shell image views; result tables retain their independent publication.</summary>
-internal sealed class ResultWorkspacePresenter:IDisposable
+internal sealed partial class ResultWorkspacePresenter:IDisposable
 {
     private sealed class Pane:IDisposable
     {
         internal long Generation;
         internal readonly ResultImagePane Image;
         internal readonly NativeResultViewport.GeometryLayer Selection;
+        internal DisplayScene? Display;
+        internal void ClearDisplay(){var previous=Display;Display=null;previous?.Dispose();}
         private NativeResultViewport.CrosshairLayer? _cross;
         internal NativeResultViewport.CrosshairLayer Cross=>_cross??=Image.Viewport.CreateCrosshairLayer();
         internal Pane(FrameworkElement view)
@@ -26,7 +28,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             catch{Image.Dispose();throw;}
         }
         internal void ClearGraphics()=>Selection.Clear();
-        public void Dispose()=>Run(new Action[]{ClearGraphics,()=>_cross?.Dispose(),Selection.Dispose,Image.Dispose});
+        public void Dispose()=>Run(new Action[]{ClearDisplay,ClearGraphics,()=>_cross?.Dispose(),Selection.Dispose,Image.Dispose});
     }
     private readonly MainWindowViewModel _main;
     private readonly ResultWorkspaceShell _shell;
@@ -57,6 +59,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
         _doubleImage.AddValueChanged(shell,DoubleImageChanged);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
+        main.ResultDisplayChanged+=QueueResultDisplay;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
         main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
         main.ResultWorkspaceRootSettled+=RootSettled;
@@ -85,15 +88,24 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     private void DoubleImageChanged(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed)return;
+        RetireRoiPresentation();
         // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
         _shell.SelectedInputItem=null;
         if(!_disposed&&_shell.IsDoubleImage)
             _shell.SelectedInputItem=_plan?.InputSources.FirstOrDefault();
+
+        }
+        finally{if(!_disposed)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private void InputSelected(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed||_restoringInput)return;
+        if(_roiPresentation?.Input==true)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
@@ -101,10 +113,16 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         _inputSource=source;_inputKey=source?.Key;
         if(_refreshing)return;
         Present(_input,source);ReportDisplayDefinitionGap();
+
+        }
+        finally{if(!_disposed&&_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private void OutputSelected(object? sender,EventArgs args)
     {
+        try
+        {
         if(_disposed||_restoringOutput)return;
+        if(_roiPresentation?.Input==false)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
@@ -130,6 +148,9 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         }
         _navigationIndex=_main.SelectedDisplayImageSourceIndex;
         Present(_output,source);ReportDisplayDefinitionGap();
+
+        }
+        finally{if(!_disposed&&!_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
     {
@@ -160,13 +181,14 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         ++_selectionGeneration;
         bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
         if(!Current())return;
-        pane.ClearGraphics();
+        pane.ClearDisplay();pane.ClearGraphics();
         if(!Current())return;
         if(source?.Publication is not {} publication){pane.Image.ClearUnlessRetained();return;}
         if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
             ()=>Current()&&source.Current()&&Current(),out var error))
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
         else if(Current())SetImageName(pane,source.FileName);
+        if(Current())QueueResultDisplay();
     }
     private static void SetImageName(Pane pane,string? name)
         =>pane.Image.Viewport.View.SetCurrentValue(
@@ -186,6 +208,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     internal void Refresh()
     {
         if(_disposed)return;
+        RetireRoiPresentation();
         if(_refreshing){_refreshAgain=true;return;}
         _refreshing=true;
         try
@@ -298,6 +321,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     private void ReportDisplayDefinitionGap()
     {
+        if(_main.SelectedNode?.RuntimeConfiguration?.ResultDisplay is not null)return;
         var publication=_main.CurrentResultPublication;
         if(publication is null||!publication.IsCurrent()||ReferenceEquals(publication,_displayDefinitionNotice))return;
         _displayDefinitionNotice=publication;
@@ -344,11 +368,12 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
+        if(_disposed)return;RetireRoiPresentation();_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
         var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
         var cancellation=_previewCancellation;_previewCancellation=null;
         Run(new Action[]{
             ()=>_main.ResultWorkspaceChanged-=Refresh,
+            ()=>_main.ResultDisplayChanged-=QueueResultDisplay,()=>{_displayRefresh?.Abort();_displayRefresh=null;},
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
             ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,
@@ -360,6 +385,6 @@ internal sealed class ResultWorkspacePresenter:IDisposable
             ()=>_shell.SelectedInputItem=null,()=>_shell.SelectedOutputItem=null,
             ()=>_shell.InputItems=null,()=>_shell.OutputItems=null,
             ()=>cancellation?.Cancel(),()=>cancellation?.Dispose(),
-            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose()});
+            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose(),_main.NotifyRoiFrameAvailabilityChanged});
     }
 }

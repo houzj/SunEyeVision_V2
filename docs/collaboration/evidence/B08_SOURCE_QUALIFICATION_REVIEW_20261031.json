@@ -1,0 +1,53 @@
+{
+  "status": "四份集中报告已核收归档，三个原汇编SHA核对；完整原厂资格与前驱仍有精确缺口",
+  "originalAudit": "docs/collaboration/evidence/B08_SOURCE_QUALIFICATION_CONSUMER_AUDIT_20261030.json",
+  "inventory": "B08_OUTPUT_QUALIFICATION_INVENTORY_20261031.json",
+  "reuse": [
+    "DeclaredReferenceTree.MatchesKind已按标量种类精确匹配；与原ValueBase.ComType=int、Float.ComType=float的基础类型过滤一致，不能凭猜测重写",
+    "ReferenceFieldSession刷新时重新捕获候选、投影失败保留旧根；选择准入和晚回调沿已有生命周期",
+    "GetCandidateNodeIds已核跨流程全局变量返回依赖防环，正确能力保留"
+  ],
+  "differences": [
+    {
+      "original": "递归GetPreModules以及非方案父模块；GetFrontFilterTree入口排除自己和内部",
+      "current": "同流程所有非自身/后继节点，也包含无连线非前序",
+      "area": "节点范围",
+      "decision": "原根流程PreModules是否含纯订阅边尚需补证，不以现有DAG相近冒称等价；不为来源树零散重写调度器"
+    },
+    {
+      "original": "逐叶TypeName/CanSubscribeA/Visible/IsPrivate和四个时间戳；父Group例外",
+      "current": "公开Schema类型及成员投影，没有同义逐叶资格",
+      "area": "输出资格",
+      "decision": "完整原始清单75/17叶已归档；静态默认与实际SDK覆盖分开，输出声明和结果面板显示职责不混合"
+    },
+    {
+      "original": "模块Holder按DisplayNameA默认OrderBy排序，再附变量管理/无项",
+      "current": "DeclaredReferenceTree按候选枚举GroupBy，未另按显示名称排序",
+      "area": "树排序",
+      "decision": "纳入来源树完整批一起实施和验收，不先单改排序当单元交付"
+    }
+  ],
+  "consumers": [
+    "MainWindowViewModel安装DataSourceQueryService元数据提供者",
+    "OutputBindingChangeService及正式编辑预检",
+    "RuntimeNodeConfigurationControl/DeclaredToolConfigurationControl/RootWorkflowReferencePicker候选与索引",
+    "DeclaredReferenceCandidateBuilder/DeclaredReferenceTree/ReferenceFieldSession",
+    "RuntimeInputBindings/BindingPlanCompiler与Debug冻结读源"
+  ],
+  "constraints": [
+    "不恢复旧SDK可视控件，不新增兼容回退",
+    "Group及公共显示/插件合同扩展暂停；若实际资格需要新合同先集中明确真实消费者，不先造空元数据",
+    "S2仍有完整Blob接入待办，不以来源计划替代完成"
+  ],
+  "next": "ProxyPath正常成功分支实写已核，旧仅日志结论撤回；下一步确定公开加载配置及单次窗口的并发/递归范围，再运行已编译完整取证程序。未启SDK",
+  "reportReceipts": "B08_SOURCE_QUALIFICATION_RECEIPTS_20261031.json",
+  "nativeIdentityChecks": "B08_SOURCE_QUALIFICATION_ASSEMBLY_IDENTITIES_20261031.json",
+  "confirmed": [
+    "Current SDK IO树由lazy Outputs查询GetModuOutputIOInfo再递归AnalysisIOInfo，先置loaded，失败不能冒称无输出或自动重试",
+    "普通叶才在所核分支处理IsPrivate，组合父Visible不自动继承为叶筛选规则",
+    "前驱由GetMultiModuleConnect连接表填充，画布控制边与数据订阅托管调用可以分别发生，原生隐式关系未闭合",
+    "手动筛选不看CustomVisible/VisibleInResultTree/自动订阅标志；具体原始XML与最终SDK覆盖分开"
+  ],
+  "proxyCorrection": "B08_PROXY_PATH_CORRECTION_REVIEW_20261031.json",
+  "probePreparation": "B08_SOURCE_QUALIFICATION_PROBE_PREPARATION_20261031.json"
+}

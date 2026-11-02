@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -23,6 +23,16 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
     private readonly List<IDisposable> _contents=[];
     private readonly List<DeclaredFieldState> _states=[];
     private bool _disposed;
+    private readonly Dictionary<DeclaredFieldState,ParameterSetting> _baseline=[];
+    private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _fieldBaseline=[];
+    private readonly Dictionary<NativeColorPresenter,Color> _colorBaseline=[];
+    public event Action? Changed;
+    public bool HasUiChanges=>!_disposed&&(_baseline.Any(pair=>pair.Key.HasInvalidInput||!DeclaredFieldState.SameSetting(pair.Key.Accepted,pair.Value))
+        ||_fieldBaseline.Any(pair=>pair.Key.HasPendingEdits||!DeclaredFieldState.SameSetting(pair.Key.Setting,pair.Value))
+        ||_colorBaseline.Any(pair=>pair.Key.SelectedColor!=pair.Value)
+        ||_contents.OfType<NativeGraphicStylePresenter>().Any(view=>_baseline.Keys.Any(state=>view.HasPendingEdits(state.Port.Id))));
+    private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
+    private void OnColorChanged(object sender,RoutedPropertyChangedEventArgs<Color> args)=>OnUiChanged();
     protected override Size MeasureOverride(Size availableSize)
     {
         var measured=base.MeasureOverride(availableSize);
@@ -50,6 +60,13 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
         ArgumentNullException.ThrowIfNull(source);
         if(index<0||index>=_rows.Count)throw new ArgumentOutOfRangeException(nameof(index));
         BindingOperations.SetBinding(_rows[index].View!,VisibilityProperty,new Binding(nameof(Visibility)){Source=source,Mode=BindingMode.OneWay});
+    }
+    /// <summary>Borrow the original row views into the caller's existing group; this instance still owns their transient states.</summary>
+    public IReadOnlyList<FrameworkElement> ExtractEntryViews()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var rows=_rows.ToArray();var views=rows.Select(row=>row.View!).ToArray();_rows.Clear();
+        ParameterCleanup.Run(rows.Select(row=>(Action)row.Dispose));return Array.AsReadOnly(views);
     }
     public NativeDisplayUiDraftRows(string section,IEnumerable<NativeDisplayUiDraftEntry> entries,bool includeTextSettings=false)
     {
@@ -83,6 +100,9 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
         }
         if(includeTextSettings)AddTextSettings();
         SetRows(_rows);
+        foreach(var state in _states){_baseline.Add(state,state.Accepted);state.Changed+=OnUiChanged;}
+        foreach(var editor in _contents.OfType<DeclaredFieldEditor>()){_fieldBaseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;}
+        foreach(var color in _contents.OfType<NativeColorPresenter>()){_colorBaseline.Add(color,color.SelectedColor);color.SelectedColorChanged+=OnColorChanged;}
         }
         catch(Exception failure)
         {
@@ -130,6 +150,9 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
+        foreach(var state in _baseline.Keys)state.Changed-=OnUiChanged;
+        foreach(var editor in _fieldBaseline.Keys)editor.Changed-=OnUiChanged;
+        foreach(var color in _colorBaseline.Keys)color.SelectedColorChanged-=OnColorChanged;Changed=null;
         ParameterCleanup.Run(new Action[]{()=>SetRows(null)}
             .Concat(_rows.Select(row=>(Action)(()=>{if(row.View is {} view)BindingOperations.ClearBinding(view,VisibilityProperty);})))
             .Concat(_rows.Select(row=>(Action)row.Dispose))

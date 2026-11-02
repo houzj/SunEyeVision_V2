@@ -1,0 +1,25 @@
+{
+  "baseline": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "uncommitted": true,
+  "scope": "Blob运行参数标签列宽，独立视图",
+  "catalogPriorHashes": [
+    {
+      "previous": "f7c38ae9f2b7cbd1191593a7c1d4da0b102a862c06413deb94d976c144dfe0ce",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "current": "d0cb7c7f3b9cc1bc5b56ae5b93ab64bdc7541d6179bc6fb19ee3507f69b1ba56"
+    },
+    {
+      "previous": "557e67e986695bd2671ef4bdb1365be95e5a4441180e24eb0c846a2eda911ca8",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "current": "9b2bfa40a33e33b9a6cd817690e6a42e90846d3e3009183e09758a25fd21b9fe"
+    },
+    {
+      "previous": "b8b12cc9ccc51426485c1c5232b3142f53ec499dcbe539d1ed5faf9817c17f8e",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "current": "dfb0e13ea330f460feb5e00caf7c97b436263fe16945e791321794f695d450d9"
+    }
+  ],
+  "validation": "Release/_validation/S4-20261025/DesignTime/attempt-108",
+  "releaseSha256": "A348AD1255DE047E1A34AD9B46E5FF22676860235C32A58D3DC234B9DFEBDDE4",
+  "limitations": "实际 VS 和用户视觉待验，运行参数功能未完成"
+}

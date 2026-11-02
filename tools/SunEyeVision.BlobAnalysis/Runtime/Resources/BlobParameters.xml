@@ -15,40 +15,43 @@
       <Choice key="SingleThreshold" label="单阈值" />
       <Choice key="DoubleThreshold" label="双阈值" />
     </Parameter>
-    <Parameter id="Type" type="Enum" default="Binary" label="极性" fieldId="field:88b45ab61b965761b901670fd587903f" allowReference="true" visibleWhen="SegmentationMode" visibleValue="None" visibleNegate="true">
-      <Choice key="Binary" label="区间内为白" />
-      <Choice key="BinaryInv" label="区间外为白" />
+    <Parameter id="Type" type="Enum" default="Binary" label="极性" fieldId="field:88b45ab61b965761b901670fd587903f" allowReference="false" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" visibleNegate="true">
+      <Choice key="Binary" label="亮于背景" />
+      <Choice key="BinaryInv" label="暗于背景" />
     </Parameter>
-    <Parameter id="Threshold" type="Integer" default="128" label="低阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:43bda03261df55b88f963bd18f2ba4d9" allowReference="true" visibleWhen="SegmentationMode" visibleValue="None" visibleNegate="true" />
-    <Parameter id="UpperThreshold" type="Integer" default="255" label="高阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000002" allowReference="true" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" />
-    <Parameter id="IsBlobCountFilterEnabled" type="Boolean" default="true" label="数量使能" fieldId="field:96e3b794dc875d55b37e5b10cff52047" allowReference="true" />
-    <Parameter id="BlobCountLimit" type="Integer" default="1000" label="查找个数" minimum="1" maximum="20000" decimals="0" increment="1" fieldId="field:e748553b7cb45d1a8003c2b345b1d98f" allowReference="true" visibleWhen="IsBlobCountFilterEnabled" visibleValue="true" />
-    <Parameter id="IsAreaFilterEnabled" type="Boolean" default="true" label="面积使能" fieldId="field:e9845ab7a46e5ee9b42310bef5a11c19" allowReference="true" />
-    <Parameter id="FilterAreaMin" type="Number" default="10" label="面积下限" minimum="0" maximum="9999999" decimals="0" increment="1" fieldId="field:fcdb01b095c25c6ea22384f993450aac" allowReference="true" pairWith="FilterAreaMax" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
-    <Parameter id="FilterAreaMax" type="Number" default="999999" label="面积上限" minimum="0" maximum="9999999" decimals="0" increment="1" fieldId="field:cdce3e942b555fa58489e08eeb39236f" allowReference="true" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
-    <Parameter id="OutputGrayImage" type="Boolean" default="true" label="灰度图像输出" fieldId="field:2fff619e51a359a6a9af286c5e8fef65" allowReference="true" />
-    <Parameter id="OutputBinaryImage" type="Boolean" default="false" label="二值化图像输出" fieldId="field:73f2c01e7b385e0ab2d35f739a88e718" allowReference="true" />
-    <Parameter id="OutputBoundary" type="Boolean" default="false" label="轮廓输出" fieldId="field:3799fbc2f80e58bf9abc7d2c0ad70067" allowReference="true" />
+    <Parameter id="Threshold" bindingName="LowThreshold" type="Integer" default="100" label="低阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:43bda03261df55b88f963bd18f2ba4d9" allowReference="true" visibleWhen="SegmentationMode" visibleValue="None" visibleNegate="true" />
+    <Parameter id="UpperThreshold" bindingName="HightThreshold" type="Integer" default="150" label="高阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000002" allowReference="true" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" />
+    <Parameter id="BlobCountLimit" bindingName="FindNum" type="Integer" default="100" label="查找个数" minimum="1" maximum="20000" decimals="0" increment="1" fieldId="field:e748553b7cb45d1a8003c2b345b1d98f" allowReference="true" />
+    <Parameter id="IsAreaFilterEnabled" type="Boolean" default="true" label="面积使能" fieldId="field:e9845ab7a46e5ee9b42310bef5a11c19" allowReference="false" />
+    <Parameter id="FilterAreaMin" bindingName="MinArea" type="Integer" default="10" label="面积下限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:fcdb01b095c25c6ea22384f993450aac" allowReference="true" pairWith="FilterAreaMax" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
+    <Parameter id="FilterAreaMax" bindingName="MaxArea" type="Integer" default="999999999" label="面积上限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:cdce3e942b555fa58489e08eeb39236f" allowReference="true" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
+    <Parameter id="OutputGrayImage" type="Boolean" default="true" label="灰度图像输出" fieldId="field:2fff619e51a359a6a9af286c5e8fef65" allowReference="false" />
+    <Parameter id="OutputBinaryImage" type="Boolean" default="true" label="二值化图像输出" fieldId="field:73f2c01e7b385e0ab2d35f739a88e718" allowReference="false" />
+    <Parameter id="OutputBoundary" type="Boolean" default="false" label="轮廓输出" fieldId="field:3799fbc2f80e58bf9abc7d2c0ad70067" allowReference="false" />
   </Group>
   <Group page="运行参数" section="高级" advanced="true">
-    <Parameter id="IsCircularityFilterEnabled" type="Boolean" default="false" label="圆度使能" fieldId="field:7d59f57f71c65911b88bae5f90d994d9" allowReference="true" />
-    <Parameter id="FilterCircularityMin" type="Number" default="0" label="圆度下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:da4d70261e23551e9a5bd832b2a686d1" allowReference="true" pairWith="FilterCircularityMax" visibleWhen="IsCircularityFilterEnabled" visibleValue="true" />
-    <Parameter id="FilterCircularityMax" type="Number" default="1" label="圆度上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:1a8be75176b350f09f3cd64506c136da" allowReference="true" visibleWhen="IsCircularityFilterEnabled" visibleValue="true" />
-    <Parameter id="IsRectangularityFilterEnabled" type="Boolean" default="false" label="矩形度使能" fieldId="field:34886e8b5b765d49b8662bb061b02bf7" allowReference="true" />
-    <Parameter id="FilterRectangularityMin" type="Number" default="0" label="矩形度下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:13d8c5e0c7445f1087497a21f4103a5e" allowReference="true" pairWith="FilterRectangularityMax" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
-    <Parameter id="FilterRectangularityMax" type="Number" default="1" label="矩形度上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:c38989cfdf9e51799d27e0eeee34e726" allowReference="true" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
-    <Parameter id="SortMode" type="Enum" default="AreaDesc" label="排序方式" fieldId="field:cb01714e6b0b503a812fe7a99f1c815e" allowReference="true">
-      <Choice key="None" label="不排序" />
-      <Choice key="AreaAsc" label="面积升序" />
-      <Choice key="AreaDesc" label="面积降序" />
-      <Choice key="CircularityAsc" label="圆度升序" />
-      <Choice key="CircularityDesc" label="圆度降序" />
-      <Choice key="RectangularityAsc" label="矩形度升序" />
-      <Choice key="RectangularityDesc" label="矩形度降序" />
-      <Choice key="XAsc" label="质心X升序" />
-      <Choice key="XDesc" label="质心X降序" />
-      <Choice key="YAsc" label="质心Y升序" />
-      <Choice key="YDesc" label="质心Y降序" />
+    <Parameter id="IsCircularityFilterEnabled" type="Boolean" default="false" label="圆度使能" fieldId="field:7d59f57f71c65911b88bae5f90d994d9" allowReference="false" />
+    <Parameter id="FilterCircularityMin" bindingName="MinCircularity" type="Number" default="0.1" label="圆度下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:da4d70261e23551e9a5bd832b2a686d1" allowReference="true" pairWith="FilterCircularityMax" visibleWhen="IsCircularityFilterEnabled" visibleValue="true" />
+    <Parameter id="FilterCircularityMax" bindingName="MaxCircularity" type="Number" default="1" label="圆度上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:1a8be75176b350f09f3cd64506c136da" allowReference="true" visibleWhen="IsCircularityFilterEnabled" visibleValue="true" />
+    <Parameter id="IsRectangularityFilterEnabled" type="Boolean" default="false" label="矩形度使能" fieldId="field:34886e8b5b765d49b8662bb061b02bf7" allowReference="false" />
+    <Parameter id="FilterRectangularityMin" bindingName="MinRectangularity" type="Number" default="0.1" label="矩形度下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:13d8c5e0c7445f1087497a21f4103a5e" allowReference="true" pairWith="FilterRectangularityMax" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
+    <Parameter id="FilterRectangularityMax" bindingName="MaxRectangularity" type="Number" default="1" label="矩形度上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="field:c38989cfdf9e51799d27e0eeee34e726" allowReference="true" visibleWhen="IsRectangularityFilterEnabled" visibleValue="true" />
+    <Parameter id="SortFeature" type="Enum" default="SortFeatureArea" label="排序特征" fieldId="field:8ca20000000040008000000000000004" allowReference="false">
+      <Choice key="SortFeatureArea" label="面积" />
+      <Choice key="SortFeaturePerimeter" label="周长" />
+      <Choice key="SortFeatureCircularity" label="圆度" />
+      <Choice key="SortFeatureRect" label="矩形度" />
+      <Choice key="SortFeatureCentroidX" label="质心X" />
+      <Choice key="SortFeatureCentroidY" label="质心Y" />
+    </Parameter>
+    <Parameter id="SortMode" type="Enum" default="SortModeDecend" label="排序方式" fieldId="field:cb01714e6b0b503a812fe7a99f1c815e" allowReference="false">
+      <Choice key="SortModeAscend" label="升序" />
+      <Choice key="SortModeDecend" label="降序" />
+      <Choice key="SortModeNotSort" label="不排序" />
+    </Parameter>
+    <Parameter id="Connectivity" type="Enum" default="Connected_8" label="连通性" fieldId="field:8ca20000000040008000000000000003" allowReference="false">
+      <Choice key="Connected_8" label="8连通" />
+      <Choice key="Connected_4" label="4连通" />
     </Parameter>
   </Group>
   <Judgments page="结果显示" section="结果判定">
@@ -66,3 +69,4 @@
     <Judgment key="per-blob-rectangularity" name="每个Blob矩形度" kind="Range" perItem="true" enabled="false" minimum="0" maximum="1" allowedMinimum="0" allowedMaximum="1" decimals="3" order="120" unit="" enabledFieldId="field:c6b64142ea7a5980aff24f3c8b050107" minimumFieldId="field:9ba8df161ea95631a57b83bee5f3d8d7" maximumFieldId="field:53c33a20309c5acb874144509c443b9a" />
   </Judgments>
 </BlobParameters>
+

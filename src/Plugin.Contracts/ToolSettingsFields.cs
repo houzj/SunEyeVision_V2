@@ -10,6 +10,11 @@ public interface IToolSettingsFields
     object MaterializeSettings(InputValues values);
 }
 
+/// <summary>Validate known settings at admission without resolving subscriptions or inventing values.</summary>
+public interface IToolKnownSettingsValidation
+{
+    IReadOnlyList<Diagnostic> ValidateKnownSettings(FieldSettings settings);
+}
 /// <summary>Private, model-only editor state. Applying a rejected proposal must leave
 /// the current settings unchanged. Raw text and source selection remain view concerns.</summary>
 public interface IToolSettingsDraft

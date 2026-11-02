@@ -21,7 +21,11 @@ public sealed class EditConnectionPortsCommand : IUndoableCommand
     }
     public void Undo()
     {
-        _edge.SourcePort = _beforeSource; _edge.TargetPort = _beforeTarget;
-        _edge.ManualPathPoints = _beforePath?.ToArray(); _edge.PreviewPathPoints = null;
+        var errors=new List<Exception>();
+        void Attempt(Action action){try{action();}catch(Exception error){errors.Add(error);}}
+        Attempt(()=>_edge.SourcePort=_beforeSource);Attempt(()=>_edge.TargetPort=_beforeTarget);
+        Attempt(()=>_edge.ManualPathPoints=_beforePath?.ToArray());Attempt(()=>_edge.PreviewPathPoints=null);
+        if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();
+        if(errors.Count>1)throw new AggregateException("连线端口恢复通知发生异常。",errors);
     }
 }

@@ -1,0 +1,29 @@
+{
+  "scope": "候选工作区冻结003的HALCON算子独立探针；不是VM运行对照，也不是正式Release整链验收",
+  "managedAssembly": {
+    "file": "halcondotnetxl.dll",
+    "sha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57"
+  },
+  "nativeLibrary": {
+    "file": "halconxl.dll",
+    "sha256": "1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27"
+  },
+  "rectangle": {
+    "operator": "GenRectangle2",
+    "arguments": [3, 3, 0, 1, 1],
+    "area": 9,
+    "centerRow": 3,
+    "centerColumn": 3,
+    "qualification": "未缩减图像Domain；不证明真实窗口冻结输入与此相同"
+  },
+  "annulus": {
+    "inner": "GenCircle(20,20,9)",
+    "outer": "GenCircleSector(20,20,10,3*pi/2,0)",
+    "points": [
+      { "x": 25, "y": 25, "insideInner": true, "insideOuter": true, "insideDifference": false },
+      { "x": 26, "y": 26, "insideInner": false, "insideOuter": true, "insideDifference": true },
+      { "x": 27, "y": 25, "insideInner": false, "insideOuter": true, "insideDifference": true }
+    ],
+    "qualification": "直接传负角的首次探针报HALCON 1304；按产品逻辑归一化角度后得到以上结果"
+  }
+}

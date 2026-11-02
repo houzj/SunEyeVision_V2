@@ -1,0 +1,30 @@
+{
+  "scope": "C17真实Blob结果视口的定向正式自测；非自然输入或VM导出等价",
+  "productSourceCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+  "candidateCommit": "d4aeb098c1de8eb55c9114a5b57f3bbcaf983414",
+  "caseCount": 7,
+  "formalReceipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-001\\receipt.json",
+  "formalReceiptData": {
+    "stage": "S4",
+    "validationScope": "Formal",
+    "attempt": 1,
+    "pid": 128528,
+    "exit": 0,
+    "timeoutMs": 240000,
+    "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "caseSource": "S4BlobCrosshairWorkspaceCases.cs",
+    "caseSourceSha256": "CFDCCB6E5297C6A41B280220BE37DC6103FCA1B54F7D6EE3275343D5E7A485D0",
+    "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+    "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-001"
+  },
+  "loadedProductCount": 15,
+  "loadedHashMismatchCount": 0,
+  "limitations": [
+    "主窗RunCommand未覆盖",
+    "自然键鼠和旧手势",
+    "跨Root及异常全组合",
+    "其他DPI及VS",
+    "原厂导出像素与偏好持久化",
+    "Blob ROI/图文/连续会话"
+  ]
+}

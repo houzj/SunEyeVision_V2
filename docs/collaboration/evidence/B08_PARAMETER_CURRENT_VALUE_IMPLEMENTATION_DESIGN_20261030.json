@@ -1,0 +1,137 @@
+{
+  "status": "正式全量构建0错830警告；参数当前值生产链7组和字段34项通过；绑定顺序及完整B08未闭合",
+  "basis": [
+    "B08_PARAMETER_CURRENT_VALUE_PRODUCTION_AUDIT_20261030.json",
+    "B08_ORIGINAL_BINDING_RUNTIME_AUDIT_20261030.json"
+  ],
+  "unit": "B08参数引用完整链，基础字段和范围消费者同步，不按单按钮交付",
+  "ownershipDecision": {
+    "configuration": "FieldSettings继续是常量/输出引用/变量引用的唯一配置，不修改其禁止持有执行资源的合同。",
+    "currentValues": "RuntimeToolConfiguration拥有声明约束的不可变参数当前值快照，独立于Fields关系。仅为SettingsSchema中的非常量参数保留纯值；常量直接读Fields，不另存第二份常量。不是结果缓存、来源快照或活跃资源Owner。",
+    "formalOwner": "NodeConfigurationEditHost仍是正式配置和值的唯一接纳入口；从已冻结配置进入执行的节点克隆只产生候选值，不能直接改正式节点。接纳保留配置版本，不产生编辑历史。",
+    "privateOwner": "ProductionEditorContext的既有草稿与DebugOwner拥有私有调试值。RuntimeDebugInvocation记录已接纳参数的冻结回执；UI回到原草稿代次后才安装，窗口取消/重绑则丢弃，不访问正式节点。",
+    "noAdditionalAuthority": "不在静态字典、控件、全局变量或最近运行结果里另设参数真值；运行输入仍是独立冻结快照，不给RunRequest加入设计节点或WPF引用。"
+  },
+  "stateTransitions": [
+    {
+      "action": "常量改成引用",
+      "rule": "由原常量种入该字段当前值；只建关系不消费，不读取来源来替换当前值。"
+    },
+    {
+      "action": "引用改源或索引",
+      "rule": "保留已接纳当前值，直到新来源实际通过参数接纳；不以新树选中值代替执行消费。"
+    },
+    {
+      "action": "成功消费",
+      "rule": "运行按已冻结的绑定项次序逐项解析、转换和参数接纳，然后进入算法；不能等所有来源解析成功后才一次写回。当前项来源解析失败不进该项写入，停止后项；前项是否最终保持只能按已证分支与后续回读判定，不能虚构跨参数回滚。UI原子提案与此运行链分开。"
+    },
+    {
+      "action": "解绑回常量",
+      "rule": "数值普通路径读取当前Owner中该字段的已接纳值，作为新的ConstantSetting并删除对应非常量值槽，不回退旧ConstantBackup或XML默认值；还须保留删除和回读各自状态，UI标志不是删除成功回执。String具有独立UTF8长度/额外写回，不能直接共用数值成功路径；当前值缺失不能假造默认值。"
+    },
+    {
+      "action": "私有调试与取消",
+      "rule": "回执只归原私有候选；调试参数已接纳与算法结果成功分开记录。取消编辑不发布到正式Owner；确认仍走现有原子提案/唯一发布入口。"
+    },
+    {
+      "action": "保存重开",
+      "rule": "Runtime JSON同时保存Fields和引用参数当前值；严格验证字段身份、类型、形状、数值存储与资源排除。新格式不保留旧格式兼容入口。保存捕获一个正式值代次，在释放锁后编码及IO。"
+    }
+  ],
+  "implementationBatch": [
+    {
+      "area": "不可变配置与JSON",
+      "files": [
+        "src/Workflow/RuntimeToolConfiguration.cs",
+        "src/Workflow/RuntimeFieldJson.cs"
+      ],
+      "change": "新增当前值快照读写及已消费候选物化；Copy/WithFieldSettings/WithSettingsFields/RestoreFieldFrom/MapReferences全部按同一规则处理；复用ValueRules冻结和现有JSON值编码，不复制类型系统。"
+    },
+    {
+      "area": "正式接纳与历史",
+      "files": [
+        "src/Workflow/NodeConfigurationEditHost.cs",
+        "src/Workflow/NodeConfigurationEditHost.DocumentHistory.cs",
+        "src/Workflow/BindingConfigurationStore.cs"
+      ],
+      "change": "配置签名只含Fields关系和声明身份，值代次独立判断；沿现有AcceptRuntimeValues接纳。准备、类型检查和图验证在身份锁外完成，身份门禁内仅安装已准备纯值根；统一锁顺序，不在锁内触发WPF/通知/序列化。确认与历史回放合并现行值，运行本身不添加撤销项。"
+    },
+    {
+      "area": "运行快照及调用入口",
+      "files": [
+        "src/Workflow/WorkflowPublishedConfiguration.cs",
+        "src/Workflow/WorkflowRunRequest.cs",
+        "src/Workflow/WorkflowExecutionEngine.cs",
+        "src/Workflow/AlgorithmNode.Runtime.cs",
+        "src/Workflow/WorkflowNode.cs",
+        "src/Plugin.Runtime/ToolRuntimeExecutor.cs"
+      ],
+      "change": "冻结配置身份和明确绑定项顺序，由现有调用入口传递非视觉接纳能力。逐项解析/参数转换并记录写入回执，不在全部解析/算法成功后一次补写；物化完整工具设置与算法校验仍按工具合同执行，不能反推此前逐项写入未发生。使用真实ToolExecutionIdentity校验Owner/node generation/root/run/request，拒绝旧配置或退役写入。原厂绑定容器顺序与宿主字段顺序没有等价证据时单列，不能冒称相同。"
+    },
+    {
+      "area": "私有调试",
+      "files": [
+        "src/Workflow/RuntimeDebugInvocation.cs",
+        "src/UI/Services/Editing/ProductionEditorContext.cs",
+        "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+        "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs"
+      ],
+      "change": "复用既有候选、DebugOwner、取消与代次。参数接纳回执与输出结果分离，算法异常也不能丢掉此前已接纳回执；仅原有效候选安装，不通过正式运行回写入口。"
+    },
+    {
+      "area": "字段与范围消费者",
+      "files": [
+        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+        "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+        "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs"
+      ],
+      "change": "非视觉当前值读取能力从宿主注入。普通数值、NativeNumberCoordinator、NativeRangePresenter两端和本地历史一起更新；保持原件事件/原子提案及防重入，不让控件存正式值。宿主提供读取但值缺失时不能回退旧备份。"
+    },
+    {
+      "area": "保存与资源",
+      "files": [
+        "src/Workflow/SolutionSession.cs",
+        "src/Workflow/Persistence/SolutionSnapshot.cs"
+      ],
+      "change": "捕获同代正式参数值；不持有图像、区域、外部资源句柄或WPF对象。复制/删除/撤销恢复只操作纯值快照，旧运行身份不得借恢复后的同ID节点回写。"
+    }
+  ],
+  "additionalConfirmedGap": {
+    "source": "src/Workflow/RuntimeDebugInvocation.cs Capture",
+    "finding": "references字典仅收ReferenceSetting；循环对所有非常量设置使用references[fieldId]，VariableSetting没有正式执行已有的Compile/Resolve路径；变量动态索引的输出依赖也未纳入捕获。不是名称显示问题。",
+    "reuse": "src/Workflow/RuntimeVariableBindings.cs以及WorkflowGlobalRunValues的冻结声明/值、BindingScopeSnapshot和BindingRunSnapshot已有变量支持。",
+    "requiredChange": "调试捕获显式冻结变量声明和值，正确纳入生产源与动态索引依赖，并复用RuntimeVariableBindings；不得把变量值转常量、借旧SDK字符串或读取不明最近值。PublishedBindingSnapshot现构造不接收变量，必须同步真实消费者，不只补一个if。"
+  },
+  "historyAndConcurrencyRules": [
+    "配置CAS和当前值代次分别核验。运行值变化不使未改关系的编辑器无故配置冲突；确实改关系/声明的旧执行回执必须拒绝。",
+    "撤销重做恢复编辑关系及显式常量；非常量当前值按现行值Owner合并，不重放运行或把历史快照里的旧缓存盖回去。此为宿主必要适配，不能冒称已经证明VM撤销细节。",
+    "复制到新身份可复制已冻结纯值；删除后晚回调拒绝，撤销恢复需新的运行代次。原暂停Group范围不扩展。",
+    "私有候选的回执不共享正式节点对象；确认取消、关闭重绑及保存接纳均沿原生命周期，不新造第二套编辑会话。"
+  ],
+  "verification": [
+    "以原37/173/100区分样本检查绑定前、消费后、解绑及保存重开，保留无效索引失败样本。",
+    "覆盖正式单次/连续与私有调试，各自Owner、变量/输出来源、固定/动态索引和范围两端；依赖生产源必须来自被接纳的发布结果。",
+    "覆盖参数校验拒绝、算法异常、取消前后、旧配置/旧节点代次、晚回调、重绑/关闭与私有取消。原厂未证行为单列。",
+    "覆盖配置历史、值变化不加历史、复制删除、撤销重做及严格JSON；资源拒绝与不产生额外来源资源所有权。",
+    "整批后全量正式Release、相称真实生产链回归；VS、运行时及人工验收分别记录，不以设计器或测试桩代替完整功能验收。"
+  ],
+  "evidenceLimits": [
+    "所核原生循环不是全参数原子提交；前项没有在该循环直接回滚不等于所有其他路径和线程最终不改写。",
+    "原MVD setter存在缓存写成功后再调用可返回错误的函数，不能把错误结果简单解释为未写入；需要写入回执与真实回读状态。",
+    "标准Boolean模板没有通用订阅切换；Float的CLR double与原ComType=float分开，不能为了统一类型把原模板语义合并。",
+    "String解绑可能UTF8截断及再次写回；SetInit仅失效缓存，不是恢复默认；普通关闭与显式重置分开。",
+    "TRIGGER_STRING、原SDK共享历史清理的公开隔离入口及异常/取消最终值仍有未证边界，不据此宣称全B08闭环。"
+  ],
+  "notDelivered": [
+    "原绑定队列建立/改源/删除及保存重开顺序的整体适配尚待",
+    "旧RuntimeWorkflow合同需同步并补完整顺序/窗口生产回归",
+    "本批实际VS与人工未验收",
+    "普通String/TS原清单保留待对应消费者，不是当前Blob数值前置",
+    "部分异常/取消原厂最终值仍未证",
+    "S2未完成，S3未开始"
+  ],
+  "currentBlobTypeScope": "B08_BLOB_STRING_FAMILY_SCOPE_20261031.json",
+  "validation": "B08_PARAMETER_CURRENT_VALUE_VALIDATION_20261031.json",
+  "bindingOrderReview": "B08_BINDING_ORDER_REVIEW_20261031.json"
+}

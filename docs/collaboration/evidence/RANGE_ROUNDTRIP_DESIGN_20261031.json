@@ -1,0 +1,57 @@
+{
+  "baseline": "602ceb8b",
+  "scope": "双端NativeRangePresenter完整单元；现worktree唯一写入，不扩ROI/结果/Group/偏好持久化；原B08未实现清单保留",
+  "originalEvidence": [
+    "O06_VM_NUMERIC_CONSUMPTION_20261026.json：VM.PcUI SliderArrange/Base/Float，MVID1393e856-5b85-4d5e-b730-304cf95a7766，between及T1/T2独立订阅",
+    "O06_BLOB_NATIVE_BETWEEN_CHECKPOINT_20261027.json：原between迁移及删除旧RangeField历史",
+    "B08_NUMERIC_RAW_BOUNDS_BASELINE/CANDIDATE_20261031.json：原RangeRule及原文界限、整组原子",
+    "B08_NUMERIC_DISABLED_QUEUE_BASELINE/CONSISTENCY_CANDIDATE_20261031.json：Loaded禁用迟到与重入",
+    "B08_FORMAL_REFERENCE_INTEGRATION_20261031.json：23263045正式13轨",
+    "B08_FORMAL_LANGUAGE_LAYOUT_20261031.json：60669453正式布局5轨；不混作前版同版"
+  ],
+  "reuse": [
+    "PairWith两字段模型与拓扑/类型/精度/增量校验；不新增范围业务对象",
+    "NativeRangePresenter左右独立state/session及宿主当前值；五整数显式策略和其他Strict不变",
+    "单端TryAcceptEndpoint与完整组TryAccept/SubmitRange一次安装；宿主拒绝和重入门禁",
+    "NativeNumericCommit原文绝对界限、ToEven规范化、原RangeRule及inner/outer/owner绑定校验",
+    "Load/Unload/Hide/Disable/Deactivated/Dispose代次、队列暂停恢复及聚合清理",
+    "Runtime配置/Host/片段复制/历史/保存与执行调试冻结消费者保持"
+  ],
+  "diagnosis": {
+    "receipt": "Release/_validation/RangeProjectionDiagnostic-20261031/attempt-001/receipt.json",
+    "receiptSha256": "4F59577F14D6A437A8C77259436DF0A54AC8B749B8364B2170962D28693FB4DD",
+    "formalProduct": "60669453",
+    "observed": "PrepareValue与ValidateStored成功，原0.投影和F0预期不同，TextChanged使mutation和EditVersion增加；ProjectCandidate首个false，0宿主写入。原0.文本解析Infinity。",
+    "oldFailure": "WindowPresentation338/345/360同一极值断言失败；本单元内真实问题，不标外部依赖"
+  },
+  "policy": {
+    "ordinary": "保留GetDecimalStr普通自定义格式；对已按声明精度ToEven规范化的有限double，只有原格式文本以Invariant Float解析后有限且严格等于规范化值才采用。",
+    "fallback": "原格式不能有限往返才用Fdigits；仍不等则拒绝，不引入指数回退。所有输出必须有限往返到规范化候选；否则拒绝。",
+    "consumers": "单一内部NumericTextProjection供原SliderArrangeFloat外层TwoWay converter和NativeNumericCommit使用；converter不调用工作流、不执行工具。",
+    "convertBack": "同一Invariant有限解析；非法/Infinity/NaN返回UnsetValue，不写源；原RangeRule仍验证绝对范围，Raw先校验不被提前舍入绕过。",
+    "binding": "在原Float Loaded创建外层Binding时安装共享converter；保持原Source/Path/Mode及默认UpdateSourceTrigger，事务期间不替换绑定，不吞TextChanged，不放宽身份/版本门禁。",
+    "culture": "数值叶现有en-US/Invariant合同不改，外层converter显式Invariant，不让de-DE/fr-FR改变小数或指数含义。",
+    "integer": "原SliderArrange与long精确界限、物理存储、解析均不改；不扩大Int64可表示范围。"
+  },
+  "files": [
+    "src/Plugin.Wpf/Adapters/Fields/NativeNumericTextProjection.cs（新增内部策略及converter）",
+    "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs（Float owner格式消费，其他分支不改）",
+    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs（原外层binding消费）",
+    "scripts/verification/S4RangeRoundtripCases.cs 与 Run-S2ReleaseValidation.ps1 专轨接入"
+  ],
+  "matrix": [
+    "原GetDecimalStr普通文字逐值保留，精度0/2/3/9及零/负值，culture zh/en/de/fr",
+    "MaxValue/负极值/近边界文本有限严格往返，NaN/Infinity/超范围绝不接纳",
+    "真实Loaded scalar和左右两端、整组两端、原Thumb拖动，宿主单次写入",
+    "outer/inner BindingExpression事务前后保持，原RangeRule和TwoWay有效，重载后仍一致",
+    "拒绝无半写、外部原文/观察回调重入/同步关闭不能被错误视为内部投影",
+    "引用态、不存在当前值及解绑舍入；整数现有边界不回归",
+    "禁用/隐藏/卸载/设计上下文及恢复，既有NumericContract/FieldEditing/VariableFields整轨",
+    "真实Host混合范围确认/拒绝/Undo/Redo/复制/保存重开与运行消费复用现有生产测试，受保护整窗不得绕过"
+  ],
+  "validation": "稳定源码后候选全量一次；先非GUI格式轨再协调唯一GUI跑真实Loaded专项及必要现有数值/字段/变量轨；记录源SHA/产物/失败和未验项，不将候选当正式。",
+  "limitations": [
+    "原Float算法和原厂极值是否可成功输入不据本适配声称等价",
+    "实际VS/其他DPI及B08整窗A22仍按既有交付边界保留"
+  ]
+}

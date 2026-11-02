@@ -1,0 +1,181 @@
+{
+  "scope": "Candidate，非主仓正式验收；不等于Blob整窗或算法完成",
+  "baseline": "97dfddf7cf7c68d9a8cc7bada58c4c996414e0f4",
+  "designCommit": "fff38162",
+  "sourceCommit": "d70a56cdad0fc0fdf74aa82098f0201aeb578c86",
+  "build": {
+    "log": "Release/_validation/roi-controls-build-001.log",
+    "sha256": "C8860E7EC89D02B04869E4C8F763923303560911DD6AFBC6F25C6DF658C20BDB",
+    "exit": 0,
+    "warnings": 6527,
+    "errors": 0,
+    "elapsed": "00:01:37.04"
+  },
+  "product": {
+    "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+    "sha256": "118FACCC8D0ED0A77DA9B009211418E29DB8B8091EAF198A2076FF5819420257"
+  },
+  "runs": [
+    {
+      "attempt": 10,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-010\\receipt.json",
+      "receiptSha256": "932112789E9B6F9027C0477B283A84DF6E1755E70C9DD9C921FA8010BDAAA511",
+      "exit": 1,
+      "caseSourceSha256": "7E0EBB565E1972A46C0E500B1F2F6600BCFBD00DCA667A74B9A246A9E67A142E",
+      "runLogSha256": "2C828E3FB2B566A065569B39F65F01B7A8742DBEFECFC66D50AFB99D599D315B",
+      "summary": "O06独立窗口检查：1组通过，1组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 11,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-011\\receipt.json",
+      "receiptSha256": "85B06C2C1C02D2B811EAE3C33D3EE1A9301B1FA2310245F86D242D5B2513B2CF",
+      "exit": 0,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "5659D2F45B5B2DC6A71E1CD7595F25AF612DE62AFB03C68DF4D22C91F4B36B3D",
+      "summary": "O06独立窗口检查：2组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 12,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-012\\receipt.json",
+      "receiptSha256": "09B47F2795750257D068C2CD2B5E82F00C4DC8952A674CFB417D8BB63916142D",
+      "exit": 0,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "F1B455AF62BF6496C28FAFACE955C6FABD1EE0C8713F9C60DC7D624BB1D50CF6",
+      "summary": "O06独立窗口检查：3组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 13,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-013\\receipt.json",
+      "receiptSha256": "CC2929331BE2834B409430122C974C62C3B997B62CC7C95B660F53D55F69A0A3",
+      "exit": 0,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "9B2A35ABF3531AB5E35E331434C394CD60E3C77473FCDEED9CDE6F7CDEB47508",
+      "summary": "O06独立窗口检查：7组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 14,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-014\\receipt.json",
+      "receiptSha256": "301FFF82859D546156EA73D1E3726182AD7BB46020E8CAE4C266911111EB7EA8",
+      "exit": 0,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "6C013821EB0A7551D0892412795D0132059EB2890591710F59E6A3B01DC4263D",
+      "summary": "O06独立窗口检查：17组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 15,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-015\\receipt.json",
+      "receiptSha256": "820656B18D3EC2253B99C7B410460A56C7E5E4776D42FA8172803FE5714EB40A",
+      "exit": 0,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "049077BCA84362A60D84CB288C838190FE8D425F30398AE9A8B503610314AD93",
+      "summary": "O06独立窗口检查：18组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 16,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-016\\receipt.json",
+      "receiptSha256": "5C3FF5A2F7F67E2E4FF8B4957E31680C6C24A9253E1969DA0FAA5A9D9B45B733",
+      "exit": 1,
+      "caseSourceSha256": "4AF9895FE99BD0522C5C121BC03B59C5C16159EB2BCE5E8919491CBED01764B5",
+      "runLogSha256": "F18744BC364FB13DE91D600DDAB2BE818BEC0DFF42B32A868C49B656FDA885D4",
+      "summary": "O06独立窗口检查：22组通过，2组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 17,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-017\\receipt.json",
+      "receiptSha256": "5F0006A7B381795D9DC467FCFF45C8C47BD8A8E43CE329B91446477472F7F250",
+      "exit": 0,
+      "caseSourceSha256": "35E2FB0B8A7FF9C505679ECBB94142C6A9E1FCC36B00954BEAD31AFE78F66472",
+      "runLogSha256": "50ED0D3A4BB9590715CDC8D43F97FE502014D4FAFB320BEF3D2D8D66EF47C8AC",
+      "summary": "O06独立窗口检查：4组通过，0组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 18,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-018\\receipt.json",
+      "receiptSha256": "DF221B415BC6748615466666DA2A0B19C70BB7D6AC1CEE1058E18C881AC60A19",
+      "exit": 1,
+      "caseSourceSha256": "35E2FB0B8A7FF9C505679ECBB94142C6A9E1FCC36B00954BEAD31AFE78F66472",
+      "runLogSha256": "1C4C9C40A172CDEDE4F4061EC5B74875FE519DE5001951BF88111D3D0A171A87",
+      "summary": "O06独立窗口检查：23组通过，1组失败。仅自动交互，不代人工外观验收。"
+    },
+    {
+      "attempt": 19,
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-019\\receipt.json",
+      "receiptSha256": "23E50B5962A20BBEEEFCBE452C1FFFFD951EFA023A515E88E90C04FA305A7867",
+      "exit": 0,
+      "caseSourceSha256": "6174857BDAD87836A76CF9CA6E185225AB4832A5EB0F66B88A96AC1C4A88E8AF",
+      "runLogSha256": "74A799044988A4FB654A5F526ABB210A04F51AA9B906D72F26C105A55CFE390E",
+      "summary": "O06独立窗口检查：24组通过，0组失败。仅自动交互，不代人工外观验收。"
+    }
+  ],
+  "passedProductScope": {
+    "partialAnnulus": {
+      "attempt": 17,
+      "groups": 4,
+      "coverage": [
+        "正负部分环真实六项模板和原图形",
+        "中心Enter不量化原始端点",
+        "扫角锚点及BeginAngle跨±180回卷",
+        "部分到正负整圆切回四项",
+        "宿主拒绝无半写、旧投影退役及版本回填",
+        "CompleteDraw原身份端点、单次接纳与拒绝重放"
+      ]
+    },
+    "regressions": [
+      {
+        "attempt": 12,
+        "filter": "原Sector",
+        "groups": 3
+      },
+      {
+        "attempt": 13,
+        "filter": "原继承",
+        "groups": 7
+      },
+      {
+        "attempt": 14,
+        "filter": "ROI覆盖",
+        "groups": 17
+      },
+      {
+        "attempt": 15,
+        "filter": "ROI菜单历史",
+        "groups": 18
+      },
+      {
+        "attempt": 19,
+        "filter": "原绘制",
+        "groups": 24
+      }
+    ],
+    "total": 73,
+    "note": "同一产品DLL；测试源按回执哈希分版，不合称同一测试源码。新增部分环版本回填不是Undo，既有历史测试仍独立记录。"
+  },
+  "failuresPreserved": [
+    {
+      "attempt": 10,
+      "reason": "测试前置以sector构造负扫角，尚未进入annulus；改先保留合法模型再显式annulus端点。"
+    },
+    {
+      "attempt": 16,
+      "reason": "退化Checked在进入CompleteDraw前抛错，及旧显示缓冲204800断言；22过2失败。"
+    },
+    {
+      "attempt": 18,
+      "reason": "旧Gray8缓冲长度断言与正式Bgra32显示合同不符；23过1失败。最终拆分格式尺寸、ROI列表和三个租约强断言后19全过。"
+    }
+  ],
+  "originalBoundary": "部分annulus借原六项Sector为明确本方适配，未证明原厂同样自动映射；kind不转换，正负原方向保留，完整环仍原四项，继承仍只读。",
+  "missingFoundationsRetained": [
+    "Blob正式私有ROI定义及可持久owner",
+    "Runtime几何到区域资源物化及同帧正式消费",
+    "ROI继承/图像分支与结果正式整窗接通；BlobRunUi保护不解除"
+  ],
+  "notVerified": [
+    "Blob正式保存重开与私有历史（当前未实现）",
+    "新增部分环实际Undo/Redo专项；仅版本回填加既有历史轨",
+    "真实VS设计器、其他DPI、人工验收",
+    "原厂部分annulus借Sector行为等价"
+  ],
+  "guiReleased": true,
+  "externalProcess": "曾见工作流87f4试用PID61272，等待其自然退出后执行，未关闭或修改其程序。"
+}

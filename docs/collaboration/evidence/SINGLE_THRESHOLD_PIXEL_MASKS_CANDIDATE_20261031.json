@@ -1,0 +1,270 @@
+{
+  "scope": "现有正式SingleThreshold本方实际像素与自研比较合同；不宣称VM方向、端点或0/255等价",
+  "productBaseline": "c776a8e591023ce6e52920e822be0d3121a79ba0",
+  "candidateHeadBeforeTest": "348074b61976309eb68c3c9f107295db68f6ee93",
+  "productChanged": false,
+  "buildReused": "SINGLE_THRESHOLD_ADMISSION_CANDIDATE_20261031.json记录的同候选全量构建；不重复构建",
+  "originalReport": {
+    "path": "D:/MyWork/REA逆向测试/docs/joint-audit/B08单阈值像素比较边界复核-20261031.md",
+    "sha256": "B9482DFACB30E126DABD3FDDF6A45851EED35AFEB1C13CC0EE5C37C1FF87D73C"
+  },
+  "test": {
+    "source": {
+      "path": "scripts/verification/S3BlobRuntimeCases.cs",
+      "sha256": "B8417C85BD5C69B429BCE7867B8A3108EB4A6B0CBEF38C4128CC216FEB23D435"
+    },
+    "receipt": {
+      "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-006/receipt.json",
+      "sha256": "730AAFCD37B1E932FE1AF67FC652EC99496FCED55E45E0A00C74F4E56EE24AB0"
+    },
+    "validationScope": "Candidate",
+    "exit": 0,
+    "caseSourceSha256": "B8417C85BD5C69B429BCE7867B8A3108EB4A6B0CBEF38C4128CC216FEB23D435",
+    "passedGroups": 7,
+    "runLog": {
+      "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-006/run.log",
+      "sha256": "20847D15D2C1F58B6F67DC457E91CFC07E3DDC750F591C8F152751CBC569A10A"
+    },
+    "loadedAssemblies": {
+      "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-006/loaded-product.tsv",
+      "sha256": "AD37DEF965E26C1FD9552F08DB4A49BAB488C934695D5DD88192F035BB52A3C5"
+    },
+    "maskArtifact": {
+      "path": "Release/_validation/S3-20261025/RuntimeAlgorithm/attempt-006/single-threshold-pixel-masks.json",
+      "sha256": "7597DBC6AE85EFB0125594D6F35490C6AEF9FCC3A973F68798933A47E4D9619F"
+    }
+  },
+  "actualMasks": [
+    {
+      "threshold": 0,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "area": 7,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    },
+    {
+      "threshold": 0,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "area": 0,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    },
+    {
+      "threshold": 100,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        255,
+        255,
+        255,
+        255
+      ],
+      "area": 4,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    },
+    {
+      "threshold": 100,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        0,
+        0,
+        0,
+        0
+      ],
+      "area": 3,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    },
+    {
+      "threshold": 255,
+      "polarity": "Binary",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        255
+      ],
+      "area": 1,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    },
+    {
+      "threshold": 255,
+      "polarity": "BinaryInv",
+      "input": [
+        0,
+        1,
+        99,
+        100,
+        101,
+        254,
+        255
+      ],
+      "mask": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        0
+      ],
+      "area": 6,
+      "frame": {
+        "FrameId": "cac337c5-0576-4cbb-a625-846f6632f7c2",
+        "SourceId": "single-threshold-pixel-probe",
+        "ProducerRun": null,
+        "SourcePortId": null,
+        "SchemaRevision": null
+      },
+      "coordinates": {
+        "Id": "image:input",
+        "Domain": 0,
+        "Unit": 0
+      }
+    }
+  ],
+  "productionPath": "真实中性Gray8快照→InputValues→ToolRuntimeExecutor→BlobTool/BlobSession→真实HALCON→BinaryImage资源；同步核Frame、BlobSchema.ImageFrame域、ThresholdMin/MaxUsed、TypeUsed与Region总面积",
+  "contract": [
+    "当前Binary选择T..255含端点；BinaryInv在有效执行域内取差集",
+    "阈值0与255的行为以六个逐像素掩膜固定",
+    "这是本方合同与候选实测，不是新增VM算法结论"
+  ],
+  "originalUnknown": [
+    "原方向/等号/0与255当前静态无法确认",
+    "Auto/FixedSoft/RelativeSoft等模式公式与消费未证，门禁不变"
+  ],
+  "effectiveDomainFinding": {
+    "known": "分割Region限制在输入Domain∩(检测−屏蔽)；RegionToBin生成全尺寸0/255图，Capture保其实际整图Domain，灰图保原Domain",
+    "unknown": "正式输出声明尚未明确二值图应为全幅掩膜、输入Domain或有效执行域；不能据名称将当前整图Domain定为缺陷",
+    "decision": "保留待定义/待证，不改产品或放松Frame/域校验"
+  },
+  "unverified": [
+    "非矩形输入Domain下二值输出域的期望策略",
+    "VM像素差分、其他阈值模式",
+    "ROI绘制/显示基础与S2整窗、实际VS/人工验收"
+  ],
+  "guiUsed": false
+}

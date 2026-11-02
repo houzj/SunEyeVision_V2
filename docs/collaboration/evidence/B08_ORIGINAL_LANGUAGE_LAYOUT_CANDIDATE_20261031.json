@@ -1,0 +1,56 @@
+{
+  "scope": "B08 原语言窗口及标签宽度候选验证",
+  "baseline": "0f9c035360c1feb174343f9ad7affeef1426f59e",
+  "implementation": [
+    "正式宿主按现有语言资源使用中文420/英文680",
+    "移除Blob运行页120标签覆盖，恢复原控件中文89/英文170",
+    "不修改引用模板、整窗保护或语言基础"
+  ],
+  "build": {
+    "ui": "0错/6525警告，1:11.62",
+    "solution": "0错/6528警告，50.70",
+    "logs": "Release/_validation/B08OriginalLanguageLayout"
+  },
+  "tests": [
+    "FieldEditing attempt-037 中文 LanguageLayout 退出0",
+    "FieldEditing attempt-038 英文 LanguageLayout 退出0"
+  ],
+  "observed": {
+    "dpi": 144,
+    "chinese": "原样裁剪；两端Home→End真实焦点滚动偏移20.344545，CaretIndex=9；原Tooltip完整999999999",
+    "english": "两端完整显示999999999，水平偏移0",
+    "screenshots": "已人工静态核对两个真实宿主截图",
+    "formalDraft": "取消及重开未改写正式配置"
+  },
+  "unverified": [
+    "其他DPI及Visual Studio实际设计器",
+    "现有资源不提供实时语言切换，本批未新增",
+    "整窗ROI/结果组合及原厂极性语义差异不由本批闭口"
+  ],
+  "artifacts": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-037\\receipt.json",
+      "sha256": "E74B82E21C3CDCB6F3725EC2A5EA6A9CD94D6EE73DE4C00D59F07B119D760644"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-037\\cross-document-reference\\layout-metrics-zh-CN.json",
+      "sha256": "244757D589B19CC03927916B484F671D7B5BDF7F9E52E7ADEDB0BEBB2A94C47B"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-037\\cross-document-reference\\original-layout-zh-CN.png",
+      "sha256": "6AB7CC3382C71D3CCAC17DF5567DC04BBA3020607A3FE8411FF67694886B7AEC"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-038\\receipt.json",
+      "sha256": "F43D81B148E26A96FAFCC906B4108EF65ABEE3991085D2A791A3416699C61DAA"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-038\\cross-document-reference\\layout-metrics-en-US.json",
+      "sha256": "116C2B112F248A51FD155D2DD6C2B322A0FD6230E91EB3CE882A9B36420D0D4A"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-reference-ui\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-038\\cross-document-reference\\original-layout-en-US.png",
+      "sha256": "DB41BD2D05957463948352062E5CE0B4FCC33D9304F53663B6E198EBE0B9417B"
+    }
+  ]
+}

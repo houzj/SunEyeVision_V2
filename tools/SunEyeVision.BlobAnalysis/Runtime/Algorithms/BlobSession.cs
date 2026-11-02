@@ -18,6 +18,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         try
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
+            if(invocation.Settings.SegmentationMode!=BlobSegmentationMode.SingleThreshold)
+                return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_MODE_NOT_READY","该阈值模式尚未完成原厂语义对齐。"));
             var schema=new BlobTool().Describe();
             var requested=BlobOutputRequest.None;
             foreach(var demand in invocation.OutputRequests)
@@ -28,9 +30,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
             var input=BlobInput.Read(invocation.Inputs);
-            var output=Execute(invocation.Settings,input.Image,invocation.Context.Resources,
-                input.Inspection,input.Mask,input.Pose,
-                invocation.Context.Cancellation,requested);
+            var output=Execute(invocation.Settings,input,invocation.Context.Resources,invocation.Context.Cancellation,requested);
             IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
                 ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}
                 :Array.Empty<Diagnostic>();
@@ -44,17 +44,24 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
 
     public BlobOutput Execute(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection = null,
         IReadOnlyRegion? mask = null, RecordValue? pose = null, CancellationToken cancellation = default,
-        BlobOutputRequest requested = BlobOutputRequest.None)
+        BlobOutputRequest requested = BlobOutputRequest.None,RecordValue? localRoi=null)
+        =>ExecuteCore(settings,input,resources,inspection,mask,pose,cancellation,requested,localRoi,16);
+    public BlobOutput Execute(BlobSettings settings,BlobInput input,IOutputResources resources,CancellationToken cancellation=default,BlobOutputRequest requested=BlobOutputRequest.None)
+        =>ExecuteCore(settings,input.Image,resources,input.Inspection,input.Mask,input.Pose,cancellation,requested,input.LocalRoi,input.IsInheritedRoi?64:16);
+    private BlobOutput ExecuteCore(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection,
+        IReadOnlyRegion? mask, RecordValue? pose, CancellationToken cancellation,BlobOutputRequest requested,RecordValue? localRoi,int maximumInspectionCount)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
+        if (settings.SegmentationMode != BlobSegmentationMode.SingleThreshold)
+            throw new InvalidOperationException("BLOB_MODE_NOT_READY: 该阈值模式尚未完成原厂语义对齐。");
         var errors = settings.Validate();
         if (errors.Count != 0) throw new ArgumentException(string.Join("; ", errors.Select(x => x.Message)));
         if ((requested & ~(BlobOutputRequest.GrayImage | BlobOutputRequest.BinaryImage | BlobOutputRequest.Boundary)) != 0)
             throw new ArgumentException("Unknown Blob output request.", nameof(requested));
         cancellation.ThrowIfCancellationRequested();
-        using var execution = new HalconBlobExecutionScope();
+        using var execution = new HalconBlobExecutionScope(settings.Connectivity);
         if (settings.SegmentationMode == BlobSegmentationMode.None) HalconImageAdmission.RequireBinary(input, cancellation);
         using var image = HalconResourceBridge.CopyImage(input);
         HOperatorSet.GetImageSize(image, out var widthValue, out var heightValue);
@@ -62,6 +69,12 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         int width = widthValue.I, height = heightValue.I;
         // Capture the same frozen input frame for every output and ROI reader admission.
         var frame = input.Frame;
+        if(localRoi is not null)
+        {
+            BlobLocalRoi.Validate(localRoi,maximumInspectionCount);
+            if(inspection is not null||mask is not null||settings.IsPositionCorrectionEnabled)
+                throw new ArgumentException("本地几何不能与像素区域或未接通的位置修正同时执行。");
+        }
         if (!settings.IsPositionCorrectionEnabled) pose = null;
         else
         {
@@ -72,8 +85,10 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
         using var gray = HalconImageAdmission.Gray(image);
         using var domain = gray.GetDomain();
-        using var inspectionRegion = inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
-        using var maskRegion = mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
+        using var inspectionRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Inspection,domain,cancellation,maximumInspectionCount)
+            :inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
+        using var maskRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Mask,domain,cancellation,maximumInspectionCount)
+            :mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
         using var correctedInspection = inspection is null ? inspectionRegion.Clone() : HalconResourceBridge.TransformRegion(inspectionRegion, pose);
         using var correctedMask = HalconResourceBridge.TransformRegion(maskRegion, pose);
         using var difference = correctedInspection.Difference(correctedMask);
@@ -89,8 +104,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         HalconBlobExecutionScope.RequireUnlimitedConnection();
         using var selected = SelectFeatures(connected, settings);
         var candidates = ExtractCandidates(selected, settings, cancellation);
-        var final = Sort(candidates, settings.SortMode);
-        if (settings.IsBlobCountFilterEnabled) final = final.Take(settings.BlobCountLimit);
+        var final = Sort(candidates, settings.SortFeature, settings.SortMode);
+        final = final.Take(settings.BlobCountLimit);
         var ordered = final.ToArray();
         var outputResources = resources.CreateScope();
         try
@@ -112,12 +127,12 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var regionOutput = HalconResourceBridge.CaptureRegion(finalRegions, BlobSchema.ImageFrame, frame, outputResources);
             var okOutput = HalconResourceBridge.CaptureRegion(okRegions, BlobSchema.ImageFrame, frame, outputResources);
             var ngOutput = HalconResourceBridge.CaptureRegion(ngRegions, BlobSchema.ImageFrame, frame, outputResources);
-            var grayOutput = settings.OutputGrayImage || requested.HasFlag(BlobOutputRequest.GrayImage) ? HalImageSnapshotSource.Capture(gray, frame, outputResources) : null;
+            var grayOutput = settings.OutputGrayImage || requested.HasFlag(BlobOutputRequest.GrayImage) ? HalImageSnapshotSource.Capture(gray, frame, BlobSchema.ImageFrame, outputResources) : null;
             IReadOnlyImage? binaryOutput = null;
             if (settings.OutputBinaryImage || requested.HasFlag(BlobOutputRequest.BinaryImage))
             {
                 HOperatorSet.RegionToBin(binary, out var binObject, 255, 0, width, height);
-                using (binObject) using (var binImage = new HImage(binObject)) binaryOutput = HalImageSnapshotSource.Capture(binImage, frame, outputResources);
+                using (binObject) using (var binImage = new HImage(binObject)) binaryOutput = HalImageSnapshotSource.Capture(binImage, frame, BlobSchema.ImageFrame, outputResources);
             }
             HOperatorSet.AreaCenter(binary, out var whiteCount, out var whiteRow, out var whiteColumn);
             using var white = whiteCount; using var wr = whiteRow; using var wc = whiteColumn;
@@ -147,7 +162,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             }
             if (ordered.Any(x => !x.IsPass)) messages.Add($"[NG] {ordered.Count(x => !x.IsPass)} Blob未通过单项判断。");
             cancellation.ThrowIfCancellationRequested();
-            var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources });
+            var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources },
+                BlobResultGeometry.Capture(localRoi,input,isPass,settings.IsPositionCorrectionEnabled,inspection is not null,mask is not null));
             _ = new InputValues(BlobSchema.Outputs, output.ToValues());
             return output;
         }
@@ -205,11 +221,22 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         _ => false
     };
 
-    private static IEnumerable<Candidate> Sort(IEnumerable<Candidate> source, BlobSort mode) => mode switch {
-        BlobSort.AreaAsc => source.OrderBy(x => x.Area), BlobSort.AreaDesc => source.OrderByDescending(x => x.Area),
-        BlobSort.CircularityAsc => source.OrderBy(x => x.Circularity), BlobSort.CircularityDesc => source.OrderByDescending(x => x.Circularity),
-        BlobSort.RectangularityAsc => source.OrderBy(x => x.Rectangularity), BlobSort.RectangularityDesc => source.OrderByDescending(x => x.Rectangularity),
-        BlobSort.XAsc => source.OrderBy(x => x.X), BlobSort.XDesc => source.OrderByDescending(x => x.X),
-        BlobSort.YAsc => source.OrderBy(x => x.Y), BlobSort.YDesc => source.OrderByDescending(x => x.Y), _ => source
-    };
+    // 本方明确策略：以真实已计算特征排序，同值保持HALCON候选顺序，再执行数量限制。
+    // 原声明已证特征/方向，原生内核同值规则及数值等价尚未证明。
+    private static IEnumerable<Candidate> Sort(IEnumerable<Candidate> source, BlobSortFeature feature, BlobSortMode mode)
+    {
+        Func<Candidate,double> key = feature switch {
+            BlobSortFeature.SortFeatureArea => value=>value.Area,
+            BlobSortFeature.SortFeaturePerimeter => value=>value.Perimeter,
+            BlobSortFeature.SortFeatureCircularity => value=>value.Circularity,
+            BlobSortFeature.SortFeatureRect => value=>value.Rectangularity,
+            BlobSortFeature.SortFeatureCentroidX => value=>value.X,
+            BlobSortFeature.SortFeatureCentroidY => value=>value.Y,
+            _ => throw new ArgumentOutOfRangeException(nameof(feature)) };
+        return mode switch {
+            BlobSortMode.SortModeAscend => source.OrderBy(key),
+            BlobSortMode.SortModeDecend => source.OrderByDescending(key),
+            BlobSortMode.SortModeNotSort => source,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode)) };
+    }
 }

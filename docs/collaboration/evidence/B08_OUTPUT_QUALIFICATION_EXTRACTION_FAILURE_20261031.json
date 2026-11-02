@@ -1,0 +1,14 @@
+{
+  "reason": "PowerShell XML适配器将元素Name同名属性作为.Name，Category停止条件失效；改用原生LocalName并限制XmlElement",
+  "countsOnly": [
+    {
+      "tool": "Blob",
+      "count": 75
+    },
+    {
+      "tool": "ImageSource",
+      "count": 17
+    }
+  ],
+  "status": "初轮提取器错误，未采用叶路径"
+}

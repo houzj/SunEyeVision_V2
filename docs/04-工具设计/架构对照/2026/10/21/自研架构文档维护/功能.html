@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>49 项功能</title>
+<style>
+:root{
+  --bg:#0d1b28; --text:#dde9f0; --dim:#8ba3b5; --faint:#5f7889;
+  --line:#22394a; --accent:#7fd4e8; --warn:#e0a06a; --ok:#7fd3a8; --bad:#c96b6b;
+}
+*{box-sizing:border-box}
+body{
+  max-width:720px;margin:0 auto;padding:44px 26px 100px;
+  background:var(--bg);color:var(--text);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+.crumb{font-size:12px;color:var(--faint);margin-bottom:14px}
+.crumb a:hover{text-decoration:underline;color:var(--accent)}
+
+h1{font-size:22px;font-weight:600;margin:0 0 7px}
+.lede{margin:0 0 20px;font-size:13.5px;color:var(--dim)}
+
+#q{
+  display:block;width:100%;margin:0 0 18px;padding:8px 11px;
+  background:#0a1621;border:1px solid #24404f;border-radius:4px;
+  color:inherit;font:inherit;font-size:13.5px;
+}
+#q:focus{outline:none;border-color:#4a7f96}
+#q::placeholder{color:#5c7385}
+
+h2{
+  font-size:13px;font-weight:600;color:#8fb4c8;letter-spacing:.03em;
+  margin:26px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--line);
+}
+h2:first-of-type{margin-top:6px}
+h2 i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+
+details{margin:0}
+details summary{
+  cursor:pointer;list-style:none;
+  font-size:13px;font-weight:600;color:#8fb4c8;
+  padding:10px 0;border-bottom:1px solid var(--line);
+}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";color:var(--accent);font-size:11px}
+details[open] summary::before{content:"▾ "}
+details summary:hover{color:#fff}
+details summary i{font-style:normal;font-weight:400;font-size:11.5px;color:var(--faint);margin-left:7px}
+details .in{padding:2px 0 8px}
+
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:baseline;gap:10px;padding:3.5px 0}
+li a{flex:1;min-width:0;color:#cfe4ee}
+li a:hover{color:#fff;text-decoration:underline}
+li .id{font-family:Consolas,monospace;font-size:11px;color:var(--faint);width:30px;flex:none}
+li .st{font-size:11px;white-space:nowrap;width:56px;text-align:right;flex:none}
+li .st.ok{color:var(--ok)}
+li .st.partial{color:var(--warn)}
+li .st.none{color:var(--bad)}
+li .sz{font-size:11px;color:var(--warn);white-space:nowrap;flex:none}
+
+.none{display:none;font-size:13px;color:var(--dim);margin:16px 0}
+@media(max-width:600px){ body{padding:30px 15px 70px} h1{font-size:20px} }
+</style>
+</head>
+<body>
+
+<div class="crumb"><a href="index.html">架构文档</a> › 49 项功能</div>
+
+<h1>49 项功能</h1>
+<p class="lede">按界面上你操作的位置分类，每组 3–7 项。点进去一页讲完：现在是什么、差在哪、怎么改、怎么验。</p>
+
+<input id="q" type="search" autocomplete="off" placeholder="筛选">
+<p class="none" id="none">没有匹配项。</p>
+
+<div id="list"></div>
+
+<script>
+const DATA = [{"h":"顶部菜单与方案","items":[{"id":"M01","t":"启动、方案恢复与主窗装配","f":"主题/M01.html","st":"partial","k":0},{"id":"M02","t":"方案配置：新建、打开、切换","f":"主题/M02.html","st":"partial","k":0},{"id":"M03","t":"保存当前方案 / Ctrl+S","f":"主题/M03.html","st":"implemented","k":0},{"id":"M22","t":"关闭主窗/切方案时保存与资源退役","f":"主题/M22.html","st":"partial","k":0}],"collapsed":false},{"h":"工具箱与流程画布","items":[{"id":"M04","t":"工具箱分类、浏览与拖入","f":"主题/M04.html","st":"partial","k":0},{"id":"M05","t":"新增、选中、重命名与删除流程Tab","f":"主题/M05.html","st":"partial","k":0},{"id":"M06","t":"节点选中、拖动与多选","f":"主题/M06.html","st":"partial","k":0},{"id":"M07","t":"端口连线、断开与路径显示","f":"主题/M07.html","st":"partial","k":0},{"id":"M08","t":"删除节点、撤销与重做","f":"主题/M08.html","st":"partial","k":0},{"id":"M09","t":"子程序/Group进入、返回及配置","f":"主题/M09.html","st":"partial","k":0},{"id":"M10","t":"小地图、画布缩放与主窗全屏","f":"主题/M10.html","st":"implemented","k":0}],"collapsed":false},{"h":"运行与停止","items":[{"id":"M11","t":"主工具栏/F5单次运行","f":"主题/M11.html","st":"implemented","k":0},{"id":"M12","t":"流程Tab单次运行","f":"主题/M12.html","st":"implemented","k":0},{"id":"M13","t":"全部流程连续运行/停止","f":"主题/M13.html","st":"partial","k":0},{"id":"M14","t":"流程Tab连续运行/停止","f":"主题/M14.html","st":"partial","k":0},{"id":"M15","t":"停止/Shift+F5","f":"主题/M15.html","st":"partial","k":0}],"collapsed":false},{"h":"图像与结果","items":[{"id":"M16","t":"显示图像源选择、预览与历史","f":"主题/M16.html","st":"partial","k":0},{"id":"M17","t":"模块结果树/表及绑定到全局变量","f":"主题/M17.html","st":"partial","k":0},{"id":"M25","t":"专业数据分析面板与图像高亮","f":"主题/M25.html","st":"partial","k":0}],"collapsed":false},{"h":"变量与设备","items":[{"id":"M18","t":"全局变量管理与选择","f":"主题/M18.html","st":"partial","k":0},{"id":"M19","t":"相机管理：连接、参数、预览与正式采集","f":"主题/M19.html","st":"partial","k":0},{"id":"M20","t":"通信管理：连接、读写、事件与后台触发","f":"主题/M20.html","st":"partial","k":0},{"id":"M23","t":"系统设置命令占位（非已确认可见菜单）","f":"主题/M23.html","st":"unimplemented","k":0}],"collapsed":false},{"h":"界面与日志","items":[{"id":"M21","t":"主题、主窗控制、帮助与诊断入口","f":"主题/M21.html","st":"implemented","k":0},{"id":"M24","t":"状态栏、运行耗时与执行快照","f":"主题/M24.html","st":"partial","k":0},{"id":"M26","t":"日志面板、筛选、搜索与诊断级别","f":"主题/M26.html","st":"partial","k":0}],"collapsed":false},{"h":"打开工具与输入","items":[{"id":"T01","t":"打开工具界面与上下文注入","f":"主题/T01.html","st":"implemented","k":0},{"id":"T02","t":"输入图像/标量/数组绑定选择","f":"主题/T02.html","st":"partial","k":0},{"id":"T03","t":"参数编辑与提交输入控件","f":"主题/T03.html","st":"partial","k":0},{"id":"T14","t":"重置参数与数据源恢复","f":"主题/T14.html","st":"unimplemented","k":0}],"collapsed":false},{"h":"调试运行","items":[{"id":"T04","t":"窗口执行按钮：单次调试","f":"主题/T04.html","st":"implemented","k":0},{"id":"T05","t":"窗口连续调试","f":"主题/T05.html","st":"implemented","k":0},{"id":"T06","t":"窗口连续调试：停止","f":"主题/T06.html","st":"partial","k":0}],"collapsed":false},{"h":"图像与 ROI 操作","items":[{"id":"T09","t":"ROI绘制、选择、移动与屏蔽","f":"主题/T09.html","st":"partial","k":0},{"id":"T10","t":"位置修正/Fixture预览","f":"主题/T10.html","st":"partial","k":0},{"id":"T11","t":"图像缩放、适应、平移、全屏","f":"主题/T11.html","st":"implemented","k":0},{"id":"T12","t":"图形与文字样式、叠加渲染","f":"主题/T12.html","st":"partial","k":0}],"collapsed":false},{"h":"结果与提交关闭","items":[{"id":"T07","t":"确定/应用：提交、验证、关闭","f":"主题/T07.html","st":"implemented","k":0},{"id":"T08","t":"关闭/X：编辑收尾与事件解绑","f":"主题/T08.html","st":"partial","k":0},{"id":"T13","t":"调试结果回到主图与结果树","f":"主题/T13.html","st":"partial","k":0}],"collapsed":false},{"h":"专业工具页签","items":[{"id":"T15","t":"脚本：代码、动态输出、程序集与执行","f":"主题/T15.html","st":"partial","k":0},{"id":"T16","t":"子程序：输入、输出与显示配置","f":"主题/T16.html","st":"partial","k":0},{"id":"T17","t":"标定：采样、求解、候选文件与验证","f":"主题/T17.html","st":"partial","k":0},{"id":"T18","t":"模板/匹配编辑与其他专业工具","f":"主题/T18.html","st":"unknown","k":0}],"collapsed":false},{"h":"横切关注","items":[{"id":"X01","t":"图像缓冲、显示缓存与最后读者","f":"主题/X01.html","st":"partial","k":0},{"id":"X02","t":"SDK、插件部署与公共编辑控件","f":"主题/X02.html","st":"partial","k":0},{"id":"X03","t":"自有加密狗与功能授权","f":"主题/X03.html","st":"unimplemented","k":0},{"id":"X04","t":"方案文件加密、密钥恢复与插件信任","f":"主题/X04.html","st":"unknown","k":0},{"id":"X05","t":"性能、长稳、日志与故障验证","f":"主题/X05.html","st":"unknown","k":0}],"collapsed":false}];
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const STL = {"implemented":["已实现","ok"],"partial":["部分实现","partial"],"unimplemented":["未实现","none"],"unknown":["未确认","none"]};
+
+function rows(items){
+  return items.map(function(it){
+    const s = it.st ? STL[it.st] : null;
+    const sz = (it.k && it.k >= 500) ? '<span class="sz">'+(it.k>=1024?(it.k/1024).toFixed(1)+" MB":it.k+" KB")+'</span>' : '';
+    return '<li><span class="id">'+esc(it.id||"")+'</span>'+
+           '<a href="'+esc(it.f)+'" data-k="'+esc(((it.t||"")+" "+(it.id||"")+" "+(it.f||"")).toLowerCase())+'">'+esc(it.t)+'</a>'+
+           (s ? '<span class="st '+s[1]+'">'+s[0]+'</span>' : '')+ sz +'</li>';
+  }).join('');
+}
+
+let html = "";
+DATA.forEach(function(g){
+  if(!g.items.length) return;
+  const head = esc(g.h) + '<i>' + g.items.length + '</i>';
+  if(g.collapsed){
+    html += '<details><summary>' + head + '</summary><div class="in"><ul>' + rows(g.items) + '</ul></div></details>';
+  }else{
+    html += '<h2>' + head + '</h2><ul>' + rows(g.items) + '</ul>';
+  }
+});
+
+document.getElementById("list").innerHTML = html;
+
+const qEl = document.getElementById("q");
+const noneEl = document.getElementById("none");
+
+qEl.addEventListener("input", function(){
+  const q = qEl.value.trim().toLowerCase();
+  let shown = 0;
+
+  document.querySelectorAll("li").forEach(function(li){
+    const a = li.querySelector("a");
+    const ok = !q || (a && a.dataset.k.indexOf(q) >= 0);
+    li.style.display = ok ? "" : "none";
+    if(ok) shown++;
+  });
+
+  document.querySelectorAll("details").forEach(function(d){
+    const any = d.querySelector('li:not([style*="none"])');
+    d.style.display = any ? "" : "none";
+    if(q) d.open = !!any;
+  });
+
+  document.querySelectorAll("h2").forEach(function(h){
+    const ul = h.nextElementSibling;
+    const vis = ul && ul.querySelector('li:not([style*="none"])');
+    h.style.display = vis ? "" : "none";
+    if(ul) ul.style.display = vis ? "" : "none";
+  });
+
+  noneEl.style.display = (q && !shown) ? "block" : "none";
+});
+
+document.addEventListener("keydown", function(e){
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); qEl.focus(); }
+  if(e.key === "Escape"){ qEl.value=""; qEl.dispatchEvent(new Event("input")); }
+});
+</script>
+</body>
+</html>

@@ -10,7 +10,7 @@ namespace SunEyeVision.Workflow;
 /// <summary>One published document generation and its actual execution/resource owners, captured before asynchronous input waits.</summary>
 public sealed class WorkflowPublishedConfiguration
 {
-    private WorkflowPublishedConfiguration(BindingConfigurationSnapshot published,Solution document)
+    private WorkflowPublishedConfiguration(BindingConfigurationSnapshot published,Solution document,NodeConfigurationEditHost? parameterOwner)
     {
         var configuration=published.CopyConfiguration();
         if(configuration.Id!=document.Id)throw new InvalidOperationException("正式配置快照属于其它方案。");
@@ -35,6 +35,7 @@ public sealed class WorkflowPublishedConfiguration
         GlobalDefinitions=Array.AsReadOnly(definitions);
         ExecutionOwner=document.ExecutionOwner;ResourcePaths=SolutionResourceResolver.For(document);
         SolutionId=configuration.Id;SolutionName=configuration.Name;
+        ParameterValues=parameterOwner?.CaptureParameterValueAcceptance(published);
     }
     public WorkflowRunConfiguration Configuration {get;}
     public IReadOnlyList<GlobalVariable> GlobalDefinitions {get;}
@@ -42,6 +43,7 @@ public sealed class WorkflowPublishedConfiguration
     public SolutionResourceResolver ResourcePaths {get;}
     public string SolutionId {get;}
     public string SolutionName {get;}
-    public static WorkflowPublishedConfiguration Capture(BindingConfigurationSnapshot published,Solution document)
-    {ArgumentNullException.ThrowIfNull(published);ArgumentNullException.ThrowIfNull(document);return new(published,document);}
+    public RuntimeParameterValueAcceptance? ParameterValues {get;}
+    public static WorkflowPublishedConfiguration Capture(BindingConfigurationSnapshot published,Solution document,NodeConfigurationEditHost? parameterOwner=null)
+    {ArgumentNullException.ThrowIfNull(published);ArgumentNullException.ThrowIfNull(document);return new(published,document,parameterOwner);}
 }

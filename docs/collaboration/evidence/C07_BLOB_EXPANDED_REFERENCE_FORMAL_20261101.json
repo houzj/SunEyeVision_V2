@@ -1,0 +1,45 @@
+{
+  "unit": "C07 非模态展开订阅窗：Blob正式消费者",
+  "sourceBase": "06f5ea0a084075c79811fc37a536f7ad6e30814d",
+  "sourceState": "该基线加已集成但构建时未提交的候选491f8ee5产品修复；文件哈希独立固定",
+  "candidateCommit": "491f8ee52c9eb17a457e5eb5490060798bd5b3aa",
+  "productSourceSha256": "C40AC560FAC69A91AC76ADC37738516E4E3515D1EC200DD34E49ADF6A985A673",
+  "testSourceSha256": "E2A6550EAEC894C619B936B336DEF37655321E66C501954EB94FA9F453899204",
+  "releasePayloadSha256": "5EAFBAD66CD28095B758B1AD6517ED4326727AD7D8B06ACE0EA0BE3CE9D48F89",
+  "builds": [
+    {
+      "log": "Release/_validation/C07BlobExpandedReferenceFormal-20261101/ui-build.log",
+      "errors": 0,
+      "warnings": 6537,
+      "name": "UI Release"
+    },
+    {
+      "log": "Release/_validation/C07BlobExpandedReferenceFormal-20261101/full-build.log",
+      "errors": 0,
+      "warnings": 6434,
+      "name": "全量 Release"
+    }
+  ],
+  "tests": [
+    {
+      "exit": 0,
+      "mismatch": 0,
+      "groups": 12,
+      "attempt": 1,
+      "culture": "zh-CN",
+      "loaded": 15,
+      "receipt": "Release/_validation/S4-20261025/BlobExpandedReference/attempt-001/receipt.json"
+    },
+    {
+      "exit": 0,
+      "mismatch": 0,
+      "groups": 12,
+      "attempt": 2,
+      "culture": "en-US",
+      "loaded": 15,
+      "receipt": "Release/_validation/S4-20261025/BlobExpandedReference/attempt-002/receipt.json"
+    }
+  ],
+  "evidence": "原两棵树实际容器路由事件；字段切换、引用消费、历史、保存重开及Owner退役。旧容器已断开，实际事件载荷为DisconnectedItem；旧request拒绝另行探针，不混称。",
+  "limitations": "非物理键鼠；其他DPI、真实VS设计器、用户人工、运行时语言热切换、原厂偏好保存与复制、ROI/图文完整组合未验。FindNum样本结果为0，不证明算法限数；不能据此称完整C07/B08、Blob、S2或S3完成。"
+}

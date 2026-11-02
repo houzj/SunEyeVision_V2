@@ -1,0 +1,69 @@
+{
+  "status": "触发探针清理尝试来件后保全核查",
+  "checks": [
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\B08BindingRuntimeProbe.cs",
+      "expected": "255FB3248F02A473AC3F9DA303B8E73A1FC2521490867A44D9A725FCE59BCDA0",
+      "actual": "255FB3248F02A473AC3F9DA303B8E73A1FC2521490867A44D9A725FCE59BCDA0",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\InitializedEntry.cs",
+      "expected": "6BB89928D435F62ABBA8BA297621B7FBF449FF376BB23524016F683AB4DD5BB6",
+      "actual": "6BB89928D435F62ABBA8BA297621B7FBF449FF376BB23524016F683AB4DD5BB6",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\Run.ps1",
+      "expected": "E5A8A0B2BB19CCE6992ECCE1DD7165A9AE53A1972AE433126E1D74EE79526DF7",
+      "actual": "E5A8A0B2BB19CCE6992ECCE1DD7165A9AE53A1972AE433126E1D74EE79526DF7",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\b08-observations.json",
+      "expected": "A8A229568B813D556D2304D3AB4902A067B1D4CC816607058578965D64D6FCD2",
+      "actual": "A8A229568B813D556D2304D3AB4902A067B1D4CC816607058578965D64D6FCD2",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\init-observations.json",
+      "expected": "F1803DA6B9C3136B8305A4EE4667FB5D6A648035C21F6D450FC395756F98240C",
+      "actual": "F1803DA6B9C3136B8305A4EE4667FB5D6A648035C21F6D450FC395756F98240C",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\receipt.json",
+      "expected": "A70874CED387EE982E656FA9D84BAE8DAB772A46C0B3104848CE461B65D57228",
+      "actual": "A70874CED387EE982E656FA9D84BAE8DAB772A46C0B3104848CE461B65D57228",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\image.bmp",
+      "expected": "988ADB1C04EBC63CFAEBE971D9F9292A9964C22D5EFFA0734C1178C007DA8C58",
+      "actual": "988ADB1C04EBC63CFAEBE971D9F9292A9964C22D5EFFA0734C1178C007DA8C58",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\b08-bound.sol",
+      "expected": "60CF6DDF06ED50AC44B503F9ED7901BDB3A693B139446CBD7FF14F6317610962",
+      "actual": "60CF6DDF06ED50AC44B503F9ED7901BDB3A693B139446CBD7FF14F6317610962",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\b08-after-unbind.sol",
+      "expected": "45A0339239D8295CE445BCEDC77858EC4AA28141140B16FE9CF6B94DC24D8DB1",
+      "actual": "45A0339239D8295CE445BCEDC77858EC4AA28141140B16FE9CF6B94DC24D8DB1",
+      "match": true
+    },
+    {
+      "path": "Release\\_validation\\B08OriginalBinding-20261030-attempt03\\fixture.sol",
+      "expected": "B91A7736F467757E15A55AF7836E22364AE153478E17C69AAEB69E0C30674D0B",
+      "actual": "B91A7736F467757E15A55AF7836E22364AE153478E17C69AAEB69E0C30674D0B",
+      "match": true
+    }
+  ],
+  "primaryArtifactsUnchanged": true,
+  "imageTempStillPresent": true,
+  "nativeCacheLimitation": "未保存此缓存的事前逐文件清单，不能证明缓存内容无影响；原证据与方案另有事前SHA可比",
+  "newVendorRuns": false
+}

@@ -43,7 +43,7 @@ public partial class AlgorithmNode
                 if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source is { } published)
                     leases.Add(published.AcquireReader());
             var snapshot=BindingContext!.Capture(this,results);
-            foreach(var (fieldId,setting) in configuration.Fields.Capture())
+            foreach(var (fieldId,setting) in configuration.CaptureExecutionFields())
             {
                 if(!targets.TryGetValue(fieldId,out var port))
                     throw new InvalidOperationException("Unknown Runtime input or setting: "+fieldId);
@@ -53,12 +53,20 @@ public partial class AlgorithmNode
                     if(port.EditModes!=FieldEditModes.None&&(port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("Runtime input cannot use a persisted constant.");
                     if(!settingFields.ContainsKey(port.Id))destination.Add(port.Id,RuntimeInputBindings.Constant(port,constant.Value));
                 }
+                else if(setting is VariableSetting)
+                {
+                    var resolution=BindingContext.ResolveVariable(this,port.Id,snapshot);
+                    if(!resolution.Success)throw new InvalidOperationException(resolution.Diagnostic?.Message??"Runtime variable resolution failed.");
+                    destination.Add(port.Id,resolution.Value);
+                    if(settingFields.ContainsKey(port.Id))BindingContext.AcceptParameterValue(this,configuration,port.Id,resolution.Value);
+                }
                 else
                 {
                     if(!CompiledBindings.TryGetValue(port.Id,out var plan))throw new InvalidOperationException("Runtime input has no admitted binding plan: "+port.Id);
                     var resolution=new ParameterBindingService().ResolveBinding(plan,snapshot);
                     if(!resolution.Success)throw new InvalidOperationException(resolution.Diagnostic?.Message??"Runtime binding resolution failed.");
                     destination.Add(port.Id,resolution.Value);
+                    if(settingFields.ContainsKey(port.Id))BindingContext.AcceptParameterValue(this,configuration,port.Id,resolution.Value);
                 }
             }
             var settings=configuration.MaterializeSettings(settingValues);

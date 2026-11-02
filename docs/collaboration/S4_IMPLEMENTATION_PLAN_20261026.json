@@ -2,9 +2,22 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "C17十字配置组合候选：Window18/0、独立设计108过，共享原控件/ROI/导出及整链同源核收，正式EXE八项准入；VM/VS/人工及第一阶段完整门禁未过。",
-  "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
+  "current": "第一阶段控件库未完成，第二阶段Blob重组未准入；先前自动验证对应旧版产物，当前未提交源码候选尚未同源构建。用户试用期间不关闭或重建，人工反馈和未证行为保留。",
+  "summaryStatus": "以VM为第一基准，按完整组合与调用链集中设计、实施和验证；主仓负责公共控件及Blob，已授权独立工作流worktree负责其执行、接纳及主界面，双方各自唯一写者，共享接口集中协调。",
+  "currentDeliveryStatus20261029": {
+    "verifiedPriorStage": "旧版本已有部分Release、HALCON和控件自动验证；仅对当时源码与产物有效，不能套用当前候选。",
+    "existingPendingIntegration": "原控件、样例、草稿及工作流独立线已有源码候选；引用、文本、显示及图像源共享合同未完成同源集成。",
+    "currentBatch": "先盘点Blob所需实际完整控件与依赖、VM证据及现行生产消费链，集中交付满足本轮试用的功能，不按回调或测试数量切分交付。",
+    "unimplementedAndDependencies": "完整来源显示声明与身份、图像源配置接纳和冻结图像读取回执、正式Blob ROI与显示接线及原目标其余未完成项按真实依赖逐链实施；禁止假能力和旧SDK视觉回退。",
+    "manualAcceptance": "正式候选固定后验证实际VS设计器、运行、VM同态外观与用户操作；当前试用程序不关闭不重建，人工未反馈不得代签。",
+    "estimate": "先形成真实剩余工作及依赖盘点，再提供有依据的批次与估时；无依据的3—5工作日估算已收回。"
+  },
   "rows": [
+    [
+      "C09 唯一字段状态整链",
+      "常量、引用、Unset只有一份权威；输入/设置、保存/复制/历史、执行/调试整体切换，不保留旧容器或默认后备。",
+      "C09复制/插线与真实窗口候选核收：非法归属复制不洗白、既有边ID/端口/路径与Runtime配置完整历史恢复；正式UI/全量0错，窗口10/整链15/字段31/设计108/内核18/组件9及实际EXE8项通过。根代理/数值重入和完整门禁仍待，第一阶段未完成。；剩余详c09FieldStateCutover及新权威证据。"
+    ],
     [
       "Blob两工程及旧SDK实现退出",
       "Blob根SDK工程、旧入口/参数/结果/输入输出合同/转换桥和旧别名退出；根目录只剩Runtime/Wpf两个工程，两份slnx、测试及发布规则同步。正常发布即无旧Blob SDK目录；缺Runtime配置及SDK双模型明确拒绝，不补默认值。直接Runtime判定集合完整对应XML，缺项/未知/重复均拒绝。",
@@ -323,9 +336,9 @@
       "result": "四继承backend12/面板9等原成绩保各候选；当前5style/17PNG不等于全库完成，typed调试新run、布局/弹窗、旧消费者、VS和人工仍未闭合。"
     }
   ],
-  "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
-  "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "保存本完整批中文本地检查点并重绑正式产物身份；继续C09三态唯一权威整体切换及位姿/C01—C17剩余。Blob业务保持阶段一冻结，不提前第二阶段。",
+  "sourceBaseline": "36bcd14faa43037fe00471bd56cfcb3101417c1f；C17代码与Git规范化内容逐文件一致，用户未提交BlobParameterEditor.xaml按独立SHA保留。",
+  "productIdentity": "36bcd14f同提交正式Release；569发布文件及13轨78条实际加载记录逐SHA核，准入015八项并恢复。不是纯净提交树产物，用户XAML SHA单列；历史身份和旧成绩保留在各自证据，不套当前产物。",
+  "next": "继续根参数代理及原数值瞬态文本重入完整单元，再迁余下调度/调试/有无Wpf验证消费者；C01—C17与全部最终门禁保留，Blob第二阶段继续冻结。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -364,116 +377,284 @@
   },
   "currentSourceManifest": [
     {
-      "path": "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
-      "sha256": "3714bb908a79a4770bea06417965d0c2eac41d4732a2da6a049c222ac809498a"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs",
-      "sha256": "f56e26a4900b5188d6b63796bc518f9b1fec7814572108ca20bfd4dd98328a6b"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/RoiComposeResolver.cs",
-      "sha256": "bd1aed9d4fbe743bd52c4ad55f30afd865a1d63c536d6c7e29c878d57d85ae06"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/RoiInput.cs",
-      "sha256": "1983bed6bd5a38141af1de58384bc17786f5c8a30044ea649cacf56af5af95c8"
-    },
-    {
-      "path": "src/Workflow/WorkflowBindingContext.cs",
-      "sha256": "6b20eba393e2f70792e814d560b687197bcb2fe71471bbe28e2bf9c15a1eacef"
-    },
-    {
-      "path": "src/Workflow/BindingRelationCatalog.cs",
-      "sha256": "a51cbacfc54ed8255f7e37df0cd06f51de5013c1e6ea6a9e2532b7f7b4dbb12e"
-    },
-    {
-      "path": "src/Workflow/OutputBindingChangeService.cs",
-      "sha256": "35dd9da03c69d2eb93f7276bdf1b769ba0b4a2f6c7de938400d5e268ed6c43e3"
-    },
-    {
-      "path": "src/Workflow/WorkflowExecutionDependencyGraph.cs",
-      "sha256": "45e7a8eab558033e6e7b0e27eb9ff63bfe7cd28b778698fcac69d8141985774b"
-    },
-    {
-      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
-      "sha256": "45c54164d8114bcdda4d8a450e2b815d9896ece775ebc61e6fe31019f6ce69a6"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobInputAdapter.cs",
-      "sha256": "ef8fa7b356858994aed8a62979b947b161a6db114d578aa0b6bf50c6f7cc5a4f"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs",
-      "sha256": "ba4f085963e3ed7b108fec439432ff1fbc312ecfbd9b34b0790fbef0a4c24cfe"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobInputContract.cs",
-      "sha256": "14d626ca00927702e6b3b2fdb52e8b9a6a73ba744b8778c571e9a1c40f663896"
-    },
-    {
-      "path": "src/Plugin.Contracts/FieldPresentation.cs",
-      "sha256": "f6bf9943624cb7f6bdc8342234542609ea387ac720229059e69a011e13d900d7"
-    },
-    {
-      "path": "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
-      "sha256": "319c3496a3c3a92c640c1ce48ebac87d7eaab5ec7cb61f0db956ee07db95fcf1"
-    },
-    {
-      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-      "sha256": "8d47a9c9c19ec81d64ac67654b7f29e81fb1575f6d842a9317c9758252d11710"
-    },
-    {
-      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-      "sha256": "1aab64feae1f752d346c9e0b9d61d5b7d3712aa40fdc3e53f4dc77f3e2584475"
-    },
-    {
-      "path": "src/Plugin.Wpf/Themes/Generic.xaml",
-      "sha256": "f4bf41d924f5eaa18330b56588dcf00f4897e069e69db58fd6d8f401c995ce8f"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
-      "sha256": "81aa5aee6a12b1773036e2d5f85285b536d885659be78236c446715b3b7febdd"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
-      "sha256": "d3b422147cef5fc36b0f9c41fa5dfc4f665d500ca947191191138203280cf0ef"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
-      "sha256": "a5b66a74bc621572f27bae94cad7e538492b85763d3a5cd102d511d4f04b977b"
-    },
-    {
-      "path": "scripts/verification/O06RoiCompositionCases.cs",
-      "sha256": "a9e8661838903e2ac0822bb4da8c6f87ca2f77e97721f32d1ae3fd98ff93d997"
-    },
-    {
-      "path": "scripts/verification/O06RoiBindingCases.cs",
-      "sha256": "6e1eacc77ef7024f087717ada9ed5da1078d64822a53c5717328ad50c2c6749a"
-    },
-    {
-      "path": "scripts/verification/S4RoiEditingCases.cs",
-      "sha256": "b2e407dbb203eca87164aa21aa8e0e0c65708bfa1c8c0bb13d223b0511444f5e"
-    },
-    {
       "path": "scripts/verification/O06WindowPresentationCases.cs",
-      "sha256": "98abbbeffb017be2d54ce626133ae3c55894ac4e4e5b237cd63d6c0d8072ee2c"
+      "sha256": "2abb24c7d4a1a90c99e7b26cd1251eda749799b99601f5779c8eb3eb6bca7f96"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "be98445766cadb872ab88ecb86595247706405fd2c5a223710e8dd9400b952be"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettings.cs",
+      "sha256": "d58f7d90d24271357e4be5b745e543ced55144bc1a219fdcfe29ae324fe8c520"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml",
+      "sha256": "a7c474b8f9293aea1d9e005604b55126c874a9e8eb41b2050a3a10314f34c7e6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml.cs",
+      "sha256": "efd7e6a3b44f2302938c26685d4c7c1c97356e42ca7e560d0382d0394a01dea5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml",
+      "sha256": "a2255c53079d888295f54e9af7581e4941cd85ef49c7f6faf96e3f8f78139140"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml.cs",
+      "sha256": "e5e73f3e4ed952d0f1bed53a3760d6017eded67cf90b377a9f77ad2d7cad9707"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+      "sha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml",
+      "sha256": "ac8377055aa8ac1bbdab2b69471c346c7adb40f743b0e98da6a1d12736773f80"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+      "sha256": "b1caab9c11f703253cf1e9ccaa1fc4cfee5bfd254d84036f66d9ee26f06583a0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossShape.cs",
+      "sha256": "df6710b6de5c44f267ddab0237cbaa963f89a03a411c1765900428b947064566"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml",
+      "sha256": "4be2b797be2745d2aa3aab923e65b0e654414a5fa2aedc0c58a18d52e7de0c36"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
+      "sha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
+      "sha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+      "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
+      "sha256": "e21fd7e9579b8ae65506b601147ac9b83b31db4a6e3e736b0dd291d569431008"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml.cs",
+      "sha256": "5043873a25062edf6b0e72dba7a74add367804257274cfafef9c450ff230e131"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
+      "sha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
+      "sha256": "5dee5b3d01d0faeff3ffd185f64cd83721576faf2613da95e4086b7755e53b2b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml",
+      "sha256": "483798f31b271a11779da6992aaec57325ae32842cafe1a7c0c21602a34dcffe"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+      "sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+      "sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml",
+      "sha256": "96dc7d22c19f7aae5b81930c3014c54cecfc20197c8076e34db20f6d6f588e8c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml.cs",
+      "sha256": "4526c6696c9d45c144bd5c04f623c5ac52fc29971201143e66afc05db1fe2e0f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+      "sha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
+      "sha256": "9242aab5609ec29f7ad882746e7d84bb198ae27aa718f77baeecaf1ebb76612b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml",
+      "sha256": "b06d34eef6b5f98a418c6e40b557120e0348c074e3a294c3f94c25a8e3fb4f6a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
+      "sha256": "b63b9c4ac5ca0f8c6a0576c9f4978f399012a121aad36c4b727b45e8ce555313"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeType.cs",
+      "sha256": "541f83f36fcf7e70b1c7d2dad3de0f92a8219644b9ccbca0a4161765b6cac3e3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SymbolType.cs",
+      "sha256": "2754ebfb250b0c5da6f4193aaf48a3799fcc43435478fa9075bcff3520acbbe3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairDesignData.cs",
+      "sha256": "4359c244d49b1967ab3bf77a68a8583f6df56e7b6273dbd6d6bbaf6adb58a4bb"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairSample.cs",
+      "sha256": "1c349e2660fa41794dcaba7303463a7ae092b670cbec9ffd8ea4fe25af10c336"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeCrosshairScene.xaml",
+      "sha256": "8bdc05ec8b3a13457791e01f31d2d8d38d51becfb53b1c0535ecfb91ba36ef23"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Cross.cs",
+      "sha256": "2d508fa926ee44a995714facd67a83aa37fea7afdf7076616834c45f53b8dcec"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "9571fbcb093c435b5822e84c8b954fbb2d59ad0ee410cbec0a88e805e3c4f600"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+      "sha256": "bda8ea54883b4f4e9743fcb9af707ed3e27d61c6a9e763ec43ce25f9a84c40b0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+      "sha256": "cf814431d2c0a178aa3ac49d45df149438f6f1b70ce2f3765a8b4dae75452fab"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",
+      "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_disable.png",
+      "sha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_normal.png",
+      "sha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_click.png",
+      "sha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_disable.png",
+      "sha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_normal.png",
+      "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off.png",
+      "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off_dark.png",
+      "sha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on.png",
+      "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on_dark.png",
+      "sha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_click.png",
+      "sha256": "a212f228cdc4884ddafcb3e080afc39e430e628c2059a4e6a5428a1e15db5dbd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_hover.png",
+      "sha256": "c519d84f60507e99a4c2bde44fca676134e020865d1caba73469405fe282465d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+      "sha256": "216ecc027b94d9d136d836a9126f0cb18f74e4ab4f7288dbd7193cb7ef7a0a40"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+      "sha256": "cdf32474ed06bb4e1781d7bb85c001827d470db5a76ab94cbbbea30daab68150"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+      "sha256": "303c4dc69ea1459e3bd19719a6f91f9634dccc7e74bc9312238076eeba7def3c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+      "sha256": "1d7bb61823dd336c0da0f470f61e058cca8618e6f0bc05d3071a9192e4d7e0c4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png",
+      "sha256": "86169298f16ca824208e030e67bacb24cedeb9c150f8f450aaf6cffaf7e6f993"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_normal.png",
+      "sha256": "c4c2008512fae8debcdfbc0c48b069e934b8ae699b63727712d023bf55a6a319"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/滑块_normal.png",
+      "sha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Display/CrosshairSettingsResources.xaml",
+      "sha256": "76f75691c698ab5076815f95735885bbb7febeea873d14bc048ce5f2426981dd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+      "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+      "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml",
+      "sha256": "abfb8f8fbbddc50fb0d0ad25aa317c57b31268c14dcd6780040caa1dd7ac0515"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml",
+      "sha256": "071dcf6085610d260d0d1b0eaa08b94b4fadebafcfde7940163f54a9fdcc103b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+      "sha256": "644e0853747fbe516a0c7b51205e9099c2d4a4aec0e2981946c9c92b280ffc17"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml",
+      "sha256": "3437bc43530c35dbe8c5ffcc8b5074362b067c8148083c7459beacbccb065ead"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Numeric/Shared/CommomDictionary.xaml",
+      "sha256": "60454e2f6b841e667c15ebfc4df5902959c9a60141e6f77cab77f5f75b4dad61"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+      "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
     },
     {
       "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
       "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
-    },
-    {
-      "path": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
-      "sha256": "da1e4fc25c10e8f94b8457839b6d9c1604bced0e37fefc506299019e969e6298"
-    },
-    {
-      "path": "scripts/documentation/import_vm_field_resources.py",
-      "sha256": "5954431bc179aabcde0032f1c567941775ec617e3e6f25b8c141afa7009b86e5"
-    },
-    {
-      "path": "src/Plugin.Wpf/EditorIcons.cs",
-      "sha256": "3488636545a2e052f268a9c13dc0615fe8c38f982743d6c0d76ff73022c924be"
     }
   ],
   "uiPreview": {
@@ -4399,7 +4580,7 @@
       "productIdentity": "本轮受测为24cd4ffd上的未提交窗口候选；全量正式Release 0错误/881警告37.05秒，身份见receipt-scrollbar-minwidth及loaded-product-scrollbar-minwidth.tsv。包含既有Results/两锁文件工作区改动，不算本轮成果；最终提交后重建身份尚待主对话固定。"
     }
   ],
-  "sourceManifestNote": "当前ROI工作区文件身份；非完整冻结发布清单，旧F28清单仅保历史。",
+  "sourceManifestNote": "当前清单是C17组合/递归复用/验证的70个文件，不冒称全部产品源码清单；完整发布文件和实际加载身份见C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json。",
   "persistentRegressionSource": {
     "path": "scripts/verification/O06ResourceCases.cs",
     "sha256": "ec510267640eaeb51c53fb049edf4e80a16b0ece99acdf8602b33912c68828ca"
@@ -5412,15 +5593,15 @@
         "input.inspection.region、input.mask.region及本地ROI；屏蔽区按用户最终预览支持与检测ROI一致的多形状结构/图标/顺序/布局（明确自研扩展）",
         "RoiSelectControl→RoiSelectDataTemplate→ROIStackStyle(CurROIData→ROIData、IsDraging反向→CanUpDateROI)→BoxROIStack/SectorRingROIStack/SectorROIStack/PolygonROIStack；ROIListStyle按真实类型选模板",
         "复用所需原控件/图标/几何交互闭包；重做本方/SDK ROI编辑视觉；沿用正确规范区域/帧身份合同",
-        "E01/E02/E04/E10；四类原参数栈/手柄已活动，fd70886a手势取消与派生布局重入修复正式ROI40/0等；普通CircleMes仍需完整接入，实际指针全姿态/VM外观/真实VS/人工未验。",
+        "最终五入口FullScreen/Box/SectorRing/Polygon/Sector：四种显式几何＋全域覆盖；检测与屏蔽同原模板/图标/顺序。原参数栈、手势与覆盖组已有分阶段实现，详C08_COVERAGE_COMMITTED_RELEASE_20261029.json；CircleMes普通圆仅保原通用库历史条目，不替圆环、不列Blob前置（HANDOFF_NEXT_BLOB_LIBRARY_CONTROLS_20261028.md已更正）。业务域转换/屏蔽并集/同步位姿、真实指针/VM逐态/VS/人工仍未完成；历史成绩不套本产物。",
         "图像绘制↔参数联动，形状切换/增删/撤销重做；引用与本地互斥；检测/屏蔽独立；坐标帧、取消/关闭/异常释放正确；不暗删VM已声明形状 屏蔽区各启用形状并集扣除，位姿同步；与检测区同组件/可视结构，独立数据；非仅多边形。 选中图形与原参数栈以同一稳定ROI身份双向绑定；图形移动/缩放/旋转/顶点变化同步参数，参数修改同步原图形；展开收起、多对象选中、撤销与切帧均验收。"
       ],
       [
         "C09 位置来源、继承方式与坐标编辑",
         "input.pose、IsPositionCorrectionEnabled、ROI继承",
         "InheritWayGroup/ExternROITypeGroup→RadioSelecter3/原单选样式+位姿/引用组合",
-        "原单选叶已活动；Assist三方式15角色整体组合未实施，已收齐原字段/条件/12来源清空触发。复用正式字段/引用和唯一状态，不另造Pose模型，不以未知nativeABI阻挡可实施UI。",
-        "E01/E02/E04/E10；GAP04分量继承与本方合同映射",
+        "原三方式15角色Assist、来源清空和继承组合已有库内候选；复用唯一字段/引用状态，不另造Pose或默认Affine2D。原基准/运行点为结果显示point，不作可编辑ROI。",
+        "当前唯一FieldSettings及生产消费者按本批候选证据核收；完整Assist＋检测/屏蔽＋图像同会话生命周期、保存恢复和VM/VS/人工门禁仍保留。位姿生产公式、单位/顺序、检测屏蔽同步和反向编辑未证，详C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json及C08_FIXTURE_INSTALLATION_API_AUDIT_20261029.json。",
         "来源/分量/本地常量按真实能力编辑；关闭修正不改原数据；帧不一致明确拒绝；保存重开与执行快照一致"
       ],
       [
@@ -6711,7 +6892,8 @@
         "C13文本显示全组合，当前仅area一项"
       ]
     ],
-    "parallelLanes": [
+    "parallelLanes": [],
+    "historicalParallelLanes": [
       [
         "A 输入引用（只读）",
         "已核AppsPopup四文件/HikTextBox父类/SubTree最小闭包；当前核正式树身份投影方案",
@@ -6733,7 +6915,7 @@
         "核收各路源身份/SHA/闭包/建议，串行构建验收；第一阶段不继续Blob业务重组。"
       ]
     ],
-    "parallelProtocol": "用户明确授权四路含主线。三个子智能体同目录只读逆向/分析/评审，每次一个控件或一个完整组合及其必要依赖；交付即核收并自动领取队列下一项。主线为唯一产品写者，集中实施、串行验证和维护原方案；不自行增加多写者、产品/算法库/仓库副本或旧审批岗位。静态核证完成、源码集成、运行通过、真实VS/用户验收分别记账。",
+    "parallelProtocol": "遵守现行AGENTS.md：不自行启用子智能体。主仓与用户授权的工作流独立worktree各自唯一写者；以完整功能链集中复用VM证据、实施并验证，共享接口及消费者按基线协调。历史四路记录仅供追溯，不代表当前写权。",
     "hostExitRows": [
       [
         "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs:114,170—172",
@@ -6836,7 +7018,7 @@
       "status": "已明确设计与验收要求，实际生产双向链尚未完成，不以HTML选中图标或静态参数行计完成。"
     },
     "twoStageGoal": {
-      "state": "新目标active，第一阶段执行中；本批P0修复通过，完整库与第二阶段仍未完成。",
+      "state": "第一阶段执行中、第二阶段未准入；当前源码候选未经同源构建，旧版P0成绩不可套用。",
       "stages": [
         [
           "第一阶段：Blob所需控件库",
@@ -8362,7 +8544,9 @@
       "必须承接": "Conversion、动态索引、11个全部设置而非6个可视字段、local.paths/local.selected另存重定位、拒绝/取消/重入/历史。当前正式设置全部Required，不能由隐藏推缺键。",
       "证据": "docs/collaboration/evidence/C09_SETTINGS_STATE_CUTOVER_AUDIT_20261029.json",
       "位姿补证": "安装件确有FixtureInit/RunPoint结果point图元定义；不是可编辑ROI点。SetDisplayObjectPropertyOperation.Operate为空，最终viewport/公式仍未证。",
-      "原件证据": "docs/collaboration/evidence/C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json"
+      "原件证据": "docs/collaboration/evidence/C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json",
+      "C09完整实施范围": "docs/collaboration/evidence/C09_COMPLETE_STATE_CUTOVER_SCOPE_20261029.json；根代理、Reference转换、全部隐藏字段、复制历史/保存/执行/调试须同一权威，不做UI局部补丁；Required/host供给语义实施前再核。",
+      "C08安装API补证": "docs/collaboration/evidence/C08_FIXTURE_INSTALLATION_API_AUDIT_20261029.json；Fixture原生声明和仅当次执行有证，PositionFix是新取证入口；Blob调用/公式/角单位/方向/生命周期未证，不猜矩阵。"
     },
     "crosshairSettingsCompositionCandidate": {
       "状态": "完整组合候选，未完成VM/VS/用户验收；阶段一未通过。",
@@ -8370,11 +8554,13 @@
       "真实消费": "受管CrosshairLayer和独立Design样例走同一真实View/原数值与色板/原窗口；未接Blob业务。",
       "交互与身份": "初始化/锁定/居中/实时编辑/关闭重开、三层Enter身份、来源错误、失捕/换帧/卸载、重入与冻结导出均有定向验证。",
       "设计与视觉纠偏": "实看105过渲染仍短横，补原EnsureTemplateInputs和实际值断言至108过；六标签显式使用原ParamsTabForeground，保原标题ModuleForeground。",
-      "正式验证": "UI013与full011零错误；Window18/0、Design108过、关联数值/色板/ROI/导出/Editor/FullChain及真实EXE准入见同源权威证据。",
+      "正式验证": "36bcd14f提交后UI/full001均零错；同提交Window18/0、Design108过、关联数值/色板/ROI/导出/Editor/FullChain及真实EXE八项准入。",
       "失败保留": "Window267/269/270/281、Design074占位缺陷和最初编译错误均留存，不删除失败或借旧成绩。",
       "来源与闭包": "Catalog/C17.crosshair-settings-composition记录五个来源程序集MVID/SHA、原源码资源SHA、本地闭包及三pending删除。",
-      "权威证据": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
-      "剩余": "C17实际VM逐态/物理鼠标/VS真实设计器与用户验收未完成，当前不是完整C17或阶段一通过。；原导出OpenCV渲染公式尚未迁移；当前辅助线导出是独立冻结的正式WPF场景，不冒称VM原导出算法同态。；C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。；位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。；Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
+      "权威证据": "docs/collaboration/evidence/C17_CROSSHAIR_COMMITTED_RELEASE_20261029.json",
+      "剩余": "C17实际VM逐态/物理鼠标/VS真实设计器与用户验收未完成，当前不是完整C17或阶段一通过。；原导出OpenCV渲染公式尚未迁移；当前辅助线导出是独立冻结的正式WPF场景，不冒称VM原导出算法同态。；C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。；位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。；Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。",
+      "候选历史证据": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
+      "原导出差异补证": "docs/collaboration/evidence/C17_NATIVE_EXPORT_RENDERING_GAP_20261029.json；已有原源码可推进，PutTextZh/字体和原编码库同态仍需定向补证。"
     }
   },
   "vmFrameworkArchitectureReference": {
@@ -9004,5 +9190,215 @@
       "committedReleasePending": false,
       "workspaceCommittedReleaseEvidence": "docs/collaboration/evidence/I2_WORKSPACE_COMMITTED_RELEASE_20261029.json"
     }
+  },
+  "sourceIdentityHistory": [
+    {
+      "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
+      "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
+      "currentSourceManifest": [
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+          "sha256": "3714bb908a79a4770bea06417965d0c2eac41d4732a2da6a049c222ac809498a"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs",
+          "sha256": "f56e26a4900b5188d6b63796bc518f9b1fec7814572108ca20bfd4dd98328a6b"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/RoiComposeResolver.cs",
+          "sha256": "bd1aed9d4fbe743bd52c4ad55f30afd865a1d63c536d6c7e29c878d57d85ae06"
+        },
+        {
+          "path": "src/Plugin.SDK/Execution/Parameters/RoiInput.cs",
+          "sha256": "1983bed6bd5a38141af1de58384bc17786f5c8a30044ea649cacf56af5af95c8"
+        },
+        {
+          "path": "src/Workflow/WorkflowBindingContext.cs",
+          "sha256": "6b20eba393e2f70792e814d560b687197bcb2fe71471bbe28e2bf9c15a1eacef"
+        },
+        {
+          "path": "src/Workflow/BindingRelationCatalog.cs",
+          "sha256": "a51cbacfc54ed8255f7e37df0cd06f51de5013c1e6ea6a9e2532b7f7b4dbb12e"
+        },
+        {
+          "path": "src/Workflow/OutputBindingChangeService.cs",
+          "sha256": "35dd9da03c69d2eb93f7276bdf1b769ba0b4a2f6c7de938400d5e268ed6c43e3"
+        },
+        {
+          "path": "src/Workflow/WorkflowExecutionDependencyGraph.cs",
+          "sha256": "45e7a8eab558033e6e7b0e27eb9ff63bfe7cd28b778698fcac69d8141985774b"
+        },
+        {
+          "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+          "sha256": "45c54164d8114bcdda4d8a450e2b815d9896ece775ebc61e6fe31019f6ce69a6"
+        },
+        {
+          "path": "tools/SunEyeVision.BlobAnalysis/BlobInputAdapter.cs",
+          "sha256": "ef8fa7b356858994aed8a62979b947b161a6db114d578aa0b6bf50c6f7cc5a4f"
+        },
+        {
+          "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs",
+          "sha256": "ba4f085963e3ed7b108fec439432ff1fbc312ecfbd9b34b0790fbef0a4c24cfe"
+        },
+        {
+          "path": "tools/SunEyeVision.BlobAnalysis/BlobInputContract.cs",
+          "sha256": "14d626ca00927702e6b3b2fdb52e8b9a6a73ba744b8778c571e9a1c40f663896"
+        },
+        {
+          "path": "src/Plugin.Contracts/FieldPresentation.cs",
+          "sha256": "f6bf9943624cb7f6bdc8342234542609ea387ac720229059e69a011e13d900d7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+          "sha256": "319c3496a3c3a92c640c1ce48ebac87d7eaab5ec7cb61f0db956ee07db95fcf1"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "8d47a9c9c19ec81d64ac67654b7f29e81fb1575f6d842a9317c9758252d11710"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+          "sha256": "1aab64feae1f752d346c9e0b9d61d5b7d3712aa40fdc3e53f4dc77f3e2584475"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Generic.xaml",
+          "sha256": "f4bf41d924f5eaa18330b56588dcf00f4897e069e69db58fd6d8f401c995ce8f"
+        },
+        {
+          "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+          "sha256": "81aa5aee6a12b1773036e2d5f85285b536d885659be78236c446715b3b7febdd"
+        },
+        {
+          "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
+          "sha256": "d3b422147cef5fc36b0f9c41fa5dfc4f665d500ca947191191138203280cf0ef"
+        },
+        {
+          "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+          "sha256": "a5b66a74bc621572f27bae94cad7e538492b85763d3a5cd102d511d4f04b977b"
+        },
+        {
+          "path": "scripts/verification/O06RoiCompositionCases.cs",
+          "sha256": "a9e8661838903e2ac0822bb4da8c6f87ca2f77e97721f32d1ae3fd98ff93d997"
+        },
+        {
+          "path": "scripts/verification/O06RoiBindingCases.cs",
+          "sha256": "6e1eacc77ef7024f087717ada9ed5da1078d64822a53c5717328ad50c2c6749a"
+        },
+        {
+          "path": "scripts/verification/S4RoiEditingCases.cs",
+          "sha256": "b2e407dbb203eca87164aa21aa8e0e0c65708bfa1c8c0bb13d223b0511444f5e"
+        },
+        {
+          "path": "scripts/verification/O06WindowPresentationCases.cs",
+          "sha256": "98abbbeffb017be2d54ce626133ae3c55894ac4e4e5b237cd63d6c0d8072ee2c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+          "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
+          "sha256": "da1e4fc25c10e8f94b8457839b6d9c1604bced0e37fefc506299019e969e6298"
+        },
+        {
+          "path": "scripts/documentation/import_vm_field_resources.py",
+          "sha256": "5954431bc179aabcde0032f1c567941775ec617e3e6f25b8c141afa7009b86e5"
+        },
+        {
+          "path": "src/Plugin.Wpf/EditorIcons.cs",
+          "sha256": "3488636545a2e052f268a9c13dc0615fe8c38f982743d6c0d76ff73022c924be"
+        }
+      ],
+      "sourceManifestNote": "当前ROI工作区文件身份；非完整冻结发布清单，旧F28清单仅保历史。"
+    }
+  ],
+  "c09FieldStateCutover": {
+    "status": "IN_PROGRESS_NUMERIC_REENTRY_CANDIDATE_VERIFIED",
+    "evidence": "docs/collaboration/evidence/C09_NUMERIC_REENTRY_CANDIDATE_20261029.json",
+    "implemented": [
+      "一份不可变字段Map，缺键为Unset，持久化只允许Constant/Reference；拒绝旧Settings/Runtime ParamSettings。",
+      "转换/自动归属/重选原因随引用保存；自动绑定仅填Unset，同源手动激活接管，删边保留显式失效引用。",
+      "完整设置只由已配置常量与当轮已解析引用物化；Describe/Capabilities无假设置；不存执行解析值。",
+      "合法常量中央原子清旧来源错误，无备份不补默认；Enumeration刷新失败/重绑/释放退役旧候选。",
+      "图历史捕获恢复Runtime Map；执行副本保原连线ID/端口/路径，不能吞复制错误。",
+      "XML数值域与判定固定结构在投影/物化入口明确校验，不改算法计算。",
+      "复制在创建候选前按完整源图校验自动归属；合法未复制边与已明确待修引用分开处理。",
+      "重叠插线保既有边对象/ID，Added仅新增；端口/路径/位置/Runtime配置在普通、拒绝及通知异常恢复中完整尝试。",
+      "输入视图保正式Required声明，同源合法项可显式修正已有写入错误；RuntimeEditor直接新Map。",
+      "根代理仅真实Constant构造备份，Reference完整Conversion传递；opening按原键精确恢复而不放宽Required。",
+      "根代理预检写独立冻结候选，核源草稿身份/版本/语义；回调新编辑、关闭及准入异常拒旧校验，不整节点回滚。",
+      "原数值pending携接纳版本；模板/恢复/拒绝回写保当前叶及版本，文本mutation/ABA及绑定接管拒旧提案。",
+      "普通Changed接纳或模式变化在同步区内延迟投影；接纳原文显式SetCurrentValue保绑定，范围逐端点保接纳通知的新raw。"
+    ],
+    "verification": {
+      "WindowNumbers": 17,
+      "WindowFloats": 2,
+      "WindowBetween": 3,
+      "WindowGraphicStyle": 2,
+      "WindowStroke": 1,
+      "WindowCrosshair": 18,
+      "FieldEditing": 31,
+      "DesignTime": 108,
+      "RuntimeEditor": 10,
+      "FullChain": 19,
+      "Components": 9,
+      "formalExeAdmission": 8
+    },
+    "pending": [
+      "优先完整迁S3RuntimeWorkflow现行消费者和断言，再Debug/Image/Catalog；直接字段ID及唯一Map，不恢复SDK双轨。",
+      "RuntimeWorkflow/RuntimeDebug/RuntimeImage等剩余验证消费者仍需直接新合同，并核有无Wpf的正式功能，不套历史成绩。",
+      "C01—C17完整组合、位姿真实公式/显示生命周期、原OpenCV导出差异、SDK可视残留/历史通知及总体关联回归继续；VM/真实VS/用户验收未完成。",
+      "A03图像源非视觉输入消费接纳合同缺口已登记，由本主线唯一写；C08同会话及C17原栅格导出整链继续，不扩大到非Blob控件全迁。"
+    ],
+    "phaseTwoFrozen": true,
+    "nextAudit": "docs/collaboration/evidence/C09_RUNTIME_CONSUMER_MIGRATION_AUDIT_20261029.json",
+    "priorVerification": {
+      "evidence": "docs/collaboration/evidence/C09_GRAPH_EDITOR_CANDIDATE_20261029.json",
+      "verification": {
+        "RuntimeEditor": 10,
+        "FullChain": 15,
+        "FieldEditing": 31,
+        "DesignTime": 108,
+        "RuntimeKernel": 18,
+        "Components": 9,
+        "formalExeAdmission": 8
+      }
+    },
+    "verificationHistory": [
+      {
+        "evidence": "docs/collaboration/evidence/C09_ROOT_PROXY_CANDIDATE_20261029.json",
+        "verification": {
+          "FullChain": 19,
+          "RuntimeEditor": 10,
+          "FieldEditing": 31,
+          "DesignTime": 108,
+          "Components": 9,
+          "formalExeAdmission": 8
+        }
+      }
+    ]
+  },
+  "localCheckpoint": {
+    "commit": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+    "title": "统一字段状态并完善原数值编辑事务",
+    "productLabelStill": "36bcd14faa43037fe00471bd56cfcb3101417c1f",
+    "next": "按新检查点重绑正式Release身份，当前候选成绩不冒称新提交标签成绩。",
+    "pushed": false
+  },
+  "nativeColorMoreCandidate20261029": {
+    "evidence": "docs/collaboration/evidence/NATIVE_COLOR_MORE_CANDIDATE_20261029.json",
+    "baselineEvidence": "docs/collaboration/evidence/C09_DDC_COMMITTED_RELEASE_20261029.json",
+    "status": "IN_PROGRESS_MOUSE_AND_MANUAL_GATES_REMAIN",
+    "scope": "VM.PcUI图形样式及文本色板；不混用Apps.XmlUI同名控件",
+    "verification": "候选UI/全量Release均0错；Field102=31、原完整样式321=3、颜色322=3、Design085=108、HALCON FullChain160=19、EXE准入021=8；鼠标图表失败100/101保留",
+    "remaining": "真实取色/拖动/焦点、VM及VS/用户验收、其余库完整门禁仍需完成；相机候选未合入"
+  },
+  "nativeColorPopupCandidate20261029": {
+    "evidence": "docs/collaboration/evidence/NATIVE_COLOR_POPUP_CANDIDATE_20261029.json",
+    "priorEvidence": "docs/collaboration/evidence/NATIVE_COLOR_MORE_CANDIDATE_20261029.json",
+    "status": "IN_PROGRESS_POINTER_AND_MANUAL_GATES_REMAIN",
+    "verification": "UI/全量0错；Field105=31、原完整样式332=3、颜色333=3、Design087=108、HALCON FullChain162=19、EXE准入023=8",
+    "pointer": "329真实调用栈确证父层误关；330修复后图表收到按下且Popup保持打开，但坐标断言失败；331前台非测试程序，安全门禁拒绝。拖动/外点仍未通过。",
+    "next": "色板指针和外点成对核证，再ROI与Assist同正式会话；不伪造位姿公式。"
   }
 }

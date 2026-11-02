@@ -1,0 +1,11 @@
+{
+  "commit": "e83b066d1057d951003d357e09fb2f89f25bdb79",
+  "parent": "55507bce44a793f1f5f18b40dcb16746606e05b6",
+  "reference": "refs/heads/codex/b01-content-toggle-20261030",
+  "mainHead": "ddc59a9dbfb0f4edf64dd68045adf8b718e05c7c",
+  "realIndexSha256": "ABB13C4A65515BAB3FB7C3F64C4C046EA0F413928010D0DE4EB50FC405B9B154",
+  "mainHeadUnchanged": true,
+  "realIndexUnchanged": true,
+  "pushed": false,
+  "scope": "公共内容开关及本批验证交接；不表示工作流集成或阶段完成"
+}

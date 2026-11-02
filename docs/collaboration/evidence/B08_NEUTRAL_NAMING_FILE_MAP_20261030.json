@@ -1,0 +1,731 @@
+{
+  "scope": "B08实际入口的类型/配套XAML/资源和资产迁移映射候选",
+  "status": "整批设计：按实际类型身份及配套XAML/资源/资产统一修改；消费者范围以编译/引用扫描整批核收，无兼容别名，不改变控件行为和运行合同",
+  "sourceSavepoint": "2aa8959d",
+  "syntaxParser": "Microsoft.CodeAnalysis.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "fileMoves": [
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sha256": "D743AEE3CBB11458F82150B0DB20DCBDEEF83A4926112BC0A0C0C90E5E6DB306",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sha256": "46747C422553BD2F23978E383F4A140C2C5720C810C92EF7165E53AEEA81F8DF",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/ListItemBackgroundConverter.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sha256": "76B3216F56C985282109C1ABB4E5D7EB6C5F06FA1F6CA5453D66247941D62F3B",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "sha256": "0F163459A3DD2E1D1D296DC8FF5FDC7A377CAE982FE044497B016265D92EA9D7",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "sha256": "D323945AED4D2F54C76709D982DFAC0379CD66E0438EC9C52E6EB98A0AE0ADDE",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Infrastructure.Resources",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData",
+      "sha256": "2D43286E1D94C6603A6F43E51EE9E3EA403D477BA76A99E67881CBBC0AB12DBC",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Infrastructure/Resources/DynamicResourceDictionary.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sha256": "E93B86BA21A8BD8FC883DEB5167615E528C2C499BAD1612EDA543DD994AB1D89",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Interop/Windows/ObjectEventArgs.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sha256": "7BAEEE67B24A1D3427DD1D75DF1A150D7940B53E3BD910E96D5CFFFB89B7CA67",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Interop/Windows/ObjectEventHandler.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sha256": "6D3D11FBF6D8872F1E25AFFE324DB792E31D3465BB708074C92C48D15E18CDA6",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Interop/Windows/TextBoxFocusEventArgs.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sha256": "F9B1B3CED27F78A164CE01B6775AB77C08924D04089A5CC8EFA946589C200212",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Interop/Windows/UIHelper.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Themes.Palettes",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun",
+      "sha256": "3370C36E84A0B54285996BB3956D94EF529B7A17F3B5F5BAFBF9184BB77BD7B0",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/ColorThemesResourceDictionary.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "E51CF94600878FC06BCCC61FBE66AD07CA2D67A32CC02A00D73CA03D0B8DA088",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BaseWindow.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "2B9355702CBBC2517B77C4D217105EB17A6CFDDA12458FAFF3CFDFDAD4886662",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/BottomCornerRadiusConvert.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "B13E6073441465062B241C08D853A796438EEC7A1D49BF015F43381C4CBC499F",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/DoubleUtil.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "9A110D549E20F28FBA8FF741AF30CE9015CF750530E35B4C1CAFB087B703E041",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/FouerColorBorder.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "0CA1C9F677223CFF5E314850A695047DA8F93A67582B743221AAA35614A29A4E",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/Location.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "15BE653F2D408ADCB53C11B539D39C51B39FAE075F13E5F5F31999A7C2F2765C",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopCornerRadiusConvert.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "39E5BF652BDF99FBD3C7D49957132F016F902E699F88F07A93716F475AD1A1C2",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "C0354DACB0238A0F624BEB6D393D69A3E1942B5B6E7F3ECFD7D9BAD2DCCB597D",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/TopThicknessConvert2.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "ED17EB097CBB634DFC5ED76BD4D95249780D099BF994B922879203528891D20F",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/UlementEx.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sha256": "6A67D64471F57DB097A1F307F9FF21973C7C136164FEAB673F0D3D2C0C39AC69",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Foundation/WindowHelper.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Converters.Tree",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert",
+      "sha256": "96D7EC1847EE51295DD71AF45D9153CD3962F79C157EB13DF1F2C1014D949E25",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Converters/Tree/LeftMarginMultiplierConverter.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "sha256": "01C5FF533F78E8E834FCD484BFED5EA3FB4A9499A954D016E74B7E49829CE3C0",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupTextBox.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "sha256": "F39D64DE32774515549F8F655FF6D36826AE77A054803CFA78E4555B6BE146A7",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "sha256": "98D950E46782FBD44BD1875A0E45F4E051AC4C31C8DAB22D07B898BB2B96B245",
+      "kind": "CSharp",
+      "destination": "src/Plugin.Wpf/Controls/Interaction/ParamsEventCommand.cs"
+    },
+    {
+      "kind": "ClassXaml",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+      "sha256": "E7205F546B467BDC5F2426A9E913436A0A364374A87A0FC56BECF54D13219DB9",
+      "destination": "src/Plugin.Wpf/Controls/Popups/PopupButton.xaml"
+    },
+    {
+      "kind": "ClassXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+      "sha256": "689C393F7212FBD2BAB2F990DF0B7000A635713D605C0B7E7F361FA19865E05F",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/DeleteTextBox.xaml"
+    },
+    {
+      "kind": "ClassXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+      "sha256": "ABF18CA29160BC5371EEB75C27CF9A821612F188A692CF5DA3A4A3E03FB28A14",
+      "destination": "src/Plugin.Wpf/Controls/References/Primitives/SubTreeView.xaml"
+    },
+    {
+      "kind": "ClassXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+      "sha256": "C35FF489D52BC2753AE83CFBFAB03B7769C1125D0E631117DA6B674B80877552",
+      "destination": "src/Plugin.Wpf/Controls/Parameters/ParamSubscribeWindow.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle2.xaml",
+      "sha256": "64626560D8C8ADF6780D46D6D07FDDFA5C8CE8A911A43303B9B26B54BD62A1A7",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/colorstyle2.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+      "sha256": "0FD6FB8973267E0EC03F6D88CB68E80B548D1241C849660A8F0AAC24C84B8D30",
+      "destination": "src/Plugin.Wpf/Themes/Popups/PopupCommon.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+      "sha256": "0F8429E93B85F9D4B28E45C0ECDD5A1C4F61E2130E071BE9F2AB2F1C3B6B928F",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/colorstyle.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle3.xaml",
+      "sha256": "FD7CBB76B46A45FE70A856B5355CF7ED82EE71B7345FDEE1B2D06A9879658AA0",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/colorstyle3.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "sha256": "4A57D83AAE40161672B2AC0D33E08B5A80D384519CEBEEBF87F737DF08DEDEE9",
+      "destination": "src/Plugin.Wpf/Themes/Foundation/BaseWindow.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+      "sha256": "CDB6B591131FAB5FAF59067C015F8AD66CDDEC21F266430C932E1233202C2F19",
+      "destination": "src/Plugin.Wpf/Themes/Palettes/colorstyle1.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+      "sha256": "3C31109C3DCEC61EF4D4772CAB8E44CD7837283B676ECE0DAC61AD9928C9BD13",
+      "destination": "src/Plugin.Wpf/Themes/References/Primitives/SourceTree.xaml"
+    },
+    {
+      "kind": "ResourceXaml",
+      "source": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+      "sha256": "04A1F9BFA0738F420C707C59DC673923B5448432BE42A71E840D48F201BDCFA6",
+      "destination": "src/Plugin.Wpf/Themes/Popups/PopupStyles.xaml"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_back_normal.png",
+      "sha256": "201B013B5D3FD341687B775F0F715CCD1BA14CF6FC26700A1B71919237C96CFB",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_back_normal.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_back_click.png",
+      "sha256": "39601AE113FFA2A1F83D13B3EFFB3278C1104BD227FF7E91BE4302987EF567ED",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_back_click.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_back_disable.png",
+      "sha256": "0CD00F4BDB592D3E9C75D225BA2902237BCC58D3E9A468181747222157511B1C",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_back_disable.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_preve_normal.png",
+      "sha256": "D9604F0911C91575E1E313F525B6D2B28ABAFCDA41D3CD5A7DD10E32365EE657",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_preve_normal.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_preve_click.png",
+      "sha256": "EBF9F709B7AD5249677D0F0522EB9DC5D1DAD7E1BFCE3E0E1FB5DA6E7CAD52F3",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_preve_click.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/ic_arrow_preve_disable.png",
+      "sha256": "5E8734BBA1878569882CFABD77C7E6B778BE0B30F55D32B847FE46C339403E6C",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/Pagination/ic_arrow_preve_disable.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_empty.png",
+      "sha256": "89EFFDE211D130249B179206124D6FD09877DEE9E3B87722FCCC4932532E44AD",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_empty.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_off.png",
+      "sha256": "C0D428AE5EDC804F9146F0350B7BBC9B651C3D587F56BD8378D8EAC661EFACD4",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/check2-box_off.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_on.png",
+      "sha256": "55FFB3D6668938A73075C3C002B225481E43CBDA41E6304CF8DA473BDF651E1C",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/check2-box_on.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check-box_half.png",
+      "sha256": "3B66FD8B9086F6DBA9F350A8D09BDEBD1EB8F98911BC2BFACAC9101AEC9093D9",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/check-box_half.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image_unchecked.png",
+      "sha256": "B7204C42DC44B4D5916407536E2B19878E857D37B19253084E83D9EB10003880",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_image_unchecked.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image_checked.png",
+      "sha256": "E2E8E43519050F74E4F2E96164BC14CED55D3392BC2598339ACB74BFE74D6FE5",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_image_checked.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_uparrow.png",
+      "sha256": "B6BEBBA8D02759061FB8BCAADEBE1303CD6A9AD169B902E2B1BA8546C790CD81",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_uparrow.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_downarrow.png",
+      "sha256": "622514B0F4C49F6FC34D37692B371222342BD22FD39BAD903D0D83277EEB17F9",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/btn_高级参数_downarrow.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_btn_initialize_normal.png",
+      "sha256": "AC1F5126F16D08B7E7592FC0C595A076F4FD2333A4DBCBE0EF612462B50ACB16",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_btn_initialize_normal.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_btn_initialize_click.png",
+      "sha256": "59C856A22634D4099FD1C14C112C8B52806D7E523EE42CE76272EBA9FEBA7C17",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_btn_initialize_click.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_dialog_expandarrows_normal.png",
+      "sha256": "4C152E1DD6A8EB63419138195212A7D28FE9A0BFC6CDB4E9CB4E657A1DA316AF",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_normal.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_dialog_expandarrows_disable.png",
+      "sha256": "9398F8799B6DF50DFE0867739DDA20CF0A898E9B5B17AF7218D6BBB86E9150B7",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_disable.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_dialog_expandarrows_click.png",
+      "sha256": "457E4C6F957D60230D8062BE36901168600F94AD47D335853E5C63360D58D04C",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_dialog_expandarrows_click.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+      "sha256": "303C4DC69EA1459E3BD19719A6F91F9634DCCC7E74BC9312238076EEBA7DEF3C",
+      "destination": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_minimize.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+      "sha256": "1D7BB61823DD336C0DA0F470F61E058CCA8618E6F0BC05D3071A9192E4D7E0C4",
+      "destination": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_normal.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+      "sha256": "CDF32474ED06BB4E1781D7BB85C001827D470DB5A76AB94CBBBEA30DAAB68150",
+      "destination": "src/Plugin.Wpf/Themes/Assets/Windows/windowshift_ic_maximize.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+      "sha256": "216ECC027B94D9D136D836A9126F0CB18F74E4AB4F7288DBD7193CB7EF7A0A40",
+      "destination": "src/Plugin.Wpf/Themes/Assets/Windows/windowclose.png"
+    },
+    {
+      "kind": "Asset",
+      "source": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/ic_search_normal.png",
+      "sha256": "B40E62764E3D78FA9647E3788586DFBCE92E0955342172C624883A605E832179",
+      "destination": "src/Plugin.Wpf/Themes/Assets/References/ic_search_normal.png"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert",
+      "kind": "CSharp",
+      "sha256": "8C2729E001BE7D6A2B47FCB49559E2EF62CD6AB949831F5D6C48BC80B4FA171E",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Converters.Tree",
+      "destination": "src/Plugin.Wpf/Converters/Tree/TreeViewItemExtensions.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility",
+      "kind": "CSharp",
+      "sha256": "83E830E1EF24A6967460159549C39A84581C997136815001C7D3B3A0B0363568",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Utilities",
+      "destination": "src/Plugin.Wpf/Utilities/MathHelper.cs"
+    },
+    {
+      "source": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility",
+      "kind": "CSharp",
+      "sha256": "71A894501D499E1C36055E5FDA847BCD256A62447FEA9DCC4C73E7C0A8B1A559",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Utilities",
+      "destination": "src/Plugin.Wpf/Utilities/UIHelper.cs"
+    }
+  ],
+  "typeMoves": [
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox",
+      "destinationName": "DeleteTextBox",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sourceName": "DeleteTextBox",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives.ListItemBackgroundConverter",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.ListItemBackgroundConverter",
+      "destinationName": "ListItemBackgroundConverter",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sourceName": "ListItemBackgroundConverter",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView",
+      "destinationName": "SubTreeView",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.References.Primitives",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab",
+      "sourceName": "SubTreeView",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Parameters.FgConverter",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.FgConverter",
+      "destinationName": "FgConverter",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "sourceName": "FgConverter",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamSubscribeWindow",
+      "destinationName": "ParamSubscribeWindow",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Parameters",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "sourceName": "ParamSubscribeWindow",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Infrastructure.Resources.DynamicResourceDictionary",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.DynamicResourceDictionary",
+      "destinationName": "DynamicResourceDictionary",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Infrastructure.Resources",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData",
+      "sourceName": "DynamicResourceDictionary",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Interop.Windows.ObjectEventArgs",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventArgs",
+      "destinationName": "ObjectEventArgs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sourceName": "ObjectEventArgs",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Interop.Windows.ObjectEventHandler",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventHandler",
+      "destinationName": "ObjectEventHandler",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sourceName": "ObjectEventHandler",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.TextBoxFocusEventArgs",
+      "destinationName": "TextBoxFocusEventArgs",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sourceName": "TextBoxFocusEventArgs",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Interop.Windows.UIHelper",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper",
+      "destinationName": "UIHelper",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Interop.Windows",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern",
+      "sourceName": "UIHelper",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Themes.Palettes.ColorThemesResourceDictionary",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun.ColorThemesResourceDictionary",
+      "destinationName": "ColorThemesResourceDictionary",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Themes.Palettes",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun",
+      "sourceName": "ColorThemesResourceDictionary",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.BaseWindow",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.BaseWindow",
+      "destinationName": "BaseWindow",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "BaseWindow",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.BottomCornerRadiusConvert",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.BottomCornerRadiusConvert",
+      "destinationName": "BottomCornerRadiusConvert",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "BottomCornerRadiusConvert",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.DoubleUtil",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DoubleUtil",
+      "destinationName": "DoubleUtil",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "DoubleUtil",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.FouerColorBorder",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.FouerColorBorder",
+      "destinationName": "FouerColorBorder",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "FouerColorBorder",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.Location",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Location",
+      "destinationName": "Location",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "Location",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.TopCornerRadiusConvert",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.TopCornerRadiusConvert",
+      "destinationName": "TopCornerRadiusConvert",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "TopCornerRadiusConvert",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.TopThicknessConvert",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.TopThicknessConvert",
+      "destinationName": "TopThicknessConvert",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "TopThicknessConvert",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.TopThicknessConvert2",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.TopThicknessConvert2",
+      "destinationName": "TopThicknessConvert2",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "TopThicknessConvert2",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.UlementEx",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.UlementEx",
+      "destinationName": "UlementEx",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "UlementEx",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Foundation.WindowHelper",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.WindowHelper",
+      "destinationName": "WindowHelper",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Foundation",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "sourceName": "WindowHelper",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Converters.Tree.LeftMarginMultiplierConverter",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert.LeftMarginMultiplierConverter",
+      "destinationName": "LeftMarginMultiplierConverter",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Converters.Tree",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert",
+      "sourceName": "LeftMarginMultiplierConverter",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Popups.PopupTextBox",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.HikTextBox",
+      "destinationName": "PopupTextBox",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "sourceName": "HikTextBox",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton",
+      "destinationName": "PopupButton",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Popups",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls",
+      "sourceName": "PopupButton",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Controls.Interaction.ParamsEventCommand",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom.ParamsEventCommand",
+      "destinationName": "ParamsEventCommand",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Controls.Interaction",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom",
+      "sourceName": "ParamsEventCommand",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Converters.Tree.TreeViewItemExtensions",
+      "destinationName": "TreeViewItemExtensions",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert.TreeViewItemExtensions",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Converters.Tree",
+      "sourceName": "TreeViewItemExtensions"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Utilities.MathHelper",
+      "destinationName": "MathHelper",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.MathHelper",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Utilities",
+      "sourceName": "MathHelper"
+    },
+    {
+      "destinationType": "SunEyeVision.Plugin.Wpf.Utilities.UIHelper",
+      "destinationName": "UIHelper",
+      "sourceNamespace": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility",
+      "sourceFile": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
+      "sourceType": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.UIHelper",
+      "destinationNamespace": "SunEyeVision.Plugin.Wpf.Utilities",
+      "sourceName": "UIHelper"
+    }
+  ],
+  "fileMoveCount": 64,
+  "typeMoveCount": 28,
+  "destinationCollisions": [],
+  "existingDestinationConflicts": [],
+  "computedResourceRule": {
+    "nameWhitelistUnchanged": [
+      "colorstyle1",
+      "colorstyle2",
+      "colorstyle3"
+    ],
+    "source": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+    "oldRoot": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/",
+    "newRoot": "/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/"
+  },
+  "sameNameIsolation": {
+    "reason": "两个原件身份不同，不按短名全局替换或合并",
+    "target": "SunEyeVision.Plugin.Wpf.Controls.Popups.PopupTextBox",
+    "migrate": "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.HikTextBox",
+    "doNotRename": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.HikTextBox"
+  },
+  "implementationGates": [
+    "逐类型更新所有C#/XAML消费者，不能整个旧命名空间替换",
+    "所有URI及Page/Resource规则、动态主题Root、Catalog local同步，original身份不变",
+    "依赖资源键与LogicalName/ResourceManager额外审计",
+    "统一全量Release并做原窗口/变量/字段/设计组装相称回归；实际VS人工另记"
+  ],
+  "productChanged": false,
+  "reachabilityReportSha256": "3522A8839FD7951B13ECFE0509A5742722859E1E83501D3F61ABE1A20DF95A36",
+  "sharedDisplayBoundary": "工作流线报告Source.Commit使publication失效并清CurrentFrame；本批不实现另一套保留旧图机制，不修改执行/显示有效性合同。该报告尚未本线独立复验。"
+}

@@ -1,0 +1,59 @@
+{
+  "limits": [
+    "原始上游输入域仍缺同次输入槽到真实坐标域的显式证明，严格拒绝跨域，不宣称原图高亮已接通",
+    "Blob正式窗口尚未消费公共原底栏，非视觉单节点连续调试控制基础尚未接通",
+    "原Blob XML为9个数据项，序号是否另成一列未证；Angle/LongAxis/ShortAxis尚无对应正式输出与原语义确认",
+    "ROI正式定义及结果图文配置未接入，整窗保护保留；实际VS、其他DPI和用户人工未验"
+  ],
+  "fix": [
+    "BlobResultView同步转发内部表选择，sender为对外结果视图并保留原Stamp，Clear/Dispose及异常清理",
+    "显式域捕获只用于Blob灰/二值图，保留物理帧、实际Domain runs及像素；其他调用默认域不变"
+  ],
+  "loadedMismatch": 0,
+  "builds": [
+    "正式UI Release：0错误，6525警告",
+    "正式全量Release：0错误，6530警告"
+  ],
+  "date": "2026-10-31",
+  "payloadSha256": "0844EE9DE9F79FDD8F5DD8F392B8CFAE845CA9123D4A071EB7648B85DB19664F",
+  "status": "已修复并正式自测通过；完整结果单元未闭口",
+  "tests": [
+    "真实ImageLoad→Blob两次运行、同publication表选择及派生灰/二值图高亮3组",
+    "结果冻结与生命周期24组",
+    "publication 7组",
+    "通用结果表1组",
+    "独立设计组装290组"
+  ],
+  "loadedRecords": 39,
+  "sourceCommit": "18f981c8a578f007985f4532c4852aad7b4308e5",
+  "receipts": [
+    {
+      "track": "BlobResultWorkspace/attempt-001",
+      "receipt": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-001/receipt.json",
+      "sha256": "FC887C4BF61853E36FA0081EF4F2F90E8246BE6BD35AA060B01A7A6DF1959FE1"
+    },
+    {
+      "track": "ResultChain/attempt-012",
+      "receipt": "Release/_validation/S4-20261025/ResultChain/attempt-012/receipt.json",
+      "sha256": "A659643AFF1C202B1DE03314FDDD5A038875D841B12775CE7F9300444D7BA5D8"
+    },
+    {
+      "track": "WindowPresentation/attempt-380",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-380/receipt.json",
+      "sha256": "EEC3F1BCF67AD734549BCD45C1B80A867D8A26BF3A3DE79FB4C769386FEF78C3"
+    },
+    {
+      "track": "WindowPresentation/attempt-381",
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-381/receipt.json",
+      "sha256": "49E40022113B3EBDD154B5310977851C8B9D3BB4BA10BBB8B5C527778D35D75A"
+    },
+    {
+      "track": "DesignTime/attempt-150",
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-150/receipt.json",
+      "sha256": "CF56F41F939D1A49FC04FB85A3CB41FA04519A4138CCC54F2CC4FC1C0FC7C421"
+    }
+  ],
+  "buildId": "development-7c678a3b34024da496b00916d677e6c5",
+  "history": "候选旧Resources轨编译失败和旧Components轨标签前置失败按BLOB_RESULT_WORKSPACE_CANDIDATE_20261031.json保留，不代表通过或本次新缺陷。",
+  "unit": "Blob真实结果表与派生图联动"
+}

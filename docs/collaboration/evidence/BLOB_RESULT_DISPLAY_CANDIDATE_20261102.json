@@ -1,0 +1,679 @@
+{
+  "title": "Blob图像九行与文本七字段正式组合候选",
+  "sourceBaseline": "a2ff34e4fd2bd3357bd76a88b0bc66eef3368bf4",
+  "branch": "codex/blob-result-display-20261101",
+  "worktree": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101",
+  "validationScope": "候选自行构建，不是主仓正式Release同版验收",
+  "freeze": "011",
+  "build": {
+    "session": 90161,
+    "exit": 0,
+    "uiErrors": 0,
+    "fullErrors": 0,
+    "uiLog": "Release/_validation/BlobResultDisplay-20261102/ui-build-011.log",
+    "fullLog": "Release/_validation/BlobResultDisplay-20261102/full-build-011.log",
+    "uiLogSha256": "B9D353F9D6414BF6AB0CB1C64E0D558F8378D6E5EA04FFD69E3857F09D6B40C3",
+    "fullLogSha256": "487C09F9C483BDABEEF2523AC11CF798D59ED456F487C7A80F3F77BF83C2552E",
+    "halconSourceRoot": "D:/MyWork/SunEyeVision_V2/libs/halcon",
+    "copiedFormalRelease": false
+  },
+  "sourceFiles": [
+    {
+      "path": "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.Components.cs",
+      "sha256": "4B2A4386DFF6B54C9DFC002172913C934DFC97A1F9DB4D498F9981063968C658"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolSettingsEditSession.cs",
+      "sha256": "EE3FAD17622EE6FFE85B1B1099E11D809209432069455C20E185387898E03526"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "4E53EF0B155F548B11FC5CD308E1AD147EE630B835405343F7A8D990ABC6DBD4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
+      "sha256": "6D840A201083FC372FD6C0E7351DB49EFB9EB4E26E2BE4F1EBBBA80AFA016C49"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+      "sha256": "97D7EA8405625FE04F7524DD73DA2DD2545C5F669D647A445866D40398F44EA5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
+      "sha256": "7D9B8C200986EA97F2C0FDEB1E4F25A73D8ACAD2B9952A7D9A16737923D2F173"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+      "sha256": "40A04A53FBF5BCBEDE0D1811A46319B73D9CA57957662F0AF22F55494D67A57E"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "sha256": "8AA129C2EB037A01E8479F8B0ACEAFC62CE617DF12413412B49ECADF8C834F97"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "EDAE2AE6228683650B07BACD4EFD55D819149010BD4150695F53F4BC75E056E6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "B9F59AB8D46EC59B95E6AA0E16866AC4CB3856DA6C50E0E2447EE16AD92B25A8"
+    },
+    {
+      "path": "src/UI/Services/Editing/ProductionEditorContext.cs",
+      "sha256": "543A53176C15A7778FD1ED900C08464590299F71ECDB08ADD3D2940A3747639B"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootParameterCatalog.cs",
+      "sha256": "47257DD1A79568D6B4D52F54A26C032AA41C6290C70F3EFC436221F25C90790D"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "sha256": "1E2640C7ACC1CDF432B7A5FCAF0164D10DBBD1BBE566FE20C6E51AFD8F47FB74"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowDocumentHistory.cs",
+      "sha256": "447382CDC0619A3574F6B1A572C3DE0279D8AFAFE5F83B207F0439D963372D27"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowProductionEditing.cs",
+      "sha256": "04243374FBDB3116AB87C0631219D7334DAA8E34974CE57A01E73DFBD6A654BD"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRuntimeEditing.cs",
+      "sha256": "226D063BD14DF8986A381B350FE926315DE6D70F239526A63DFFFABC40CDAE16"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "E97BDD09FABED8621867A68E77E6363207B178948EAFEEF34E08B1C95F27C07B"
+    },
+    {
+      "path": "src/Workflow/RuntimeFieldJson.cs",
+      "sha256": "09BD7F42FD94C90905D4162DF1818C0191954D178CD96D19C614B2B1935D62BC"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.BindingOrder.cs",
+      "sha256": "7A23A9E06D698841A5548B27B71F1B94129ED1819AA28EB9BB0547255686CE99"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "3ED5195C4362A83CF3D3E611025F826CDC808E462D8E9BEE2139D26E9D295B80"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "C65F8E2E46A67E0EF5496F53CCA1254573A4709CFBAA4C79415252F01950C088"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobDisplay.xml",
+      "sha256": "AAAF19C5D3D0562A740503A693C478DAE8FFEB0917490A8FF3BAE470905D0EAA"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobDisplayDefinition.cs",
+      "sha256": "A1C107A124FF807094B5A240E57787404115F99F371D43F72AE4802AAD064AB1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "8433B8270B77EBDBA1700B903A7197C076279E6052A65D177F1E52CCD32A1204"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "sha256": "CFCC1CBFFF6785FE3FC900A43FC3F90B4BBDD859DCE92C0B292FBB9F0EA63766"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "DEF29A01179D9081DAA18AEA6D21212F84570B74A01570013F9E7315697E72EC"
+    },
+    {
+      "path": "src/Plugin.Contracts/Results/Presentation/ResultDisplayDescriptor.cs",
+      "sha256": "EAC2A21188D07FED0BE556A9DF6AC9E44C2B31622B9C2A52F063253206EB1B5B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.DisplayScene.cs",
+      "sha256": "6A1069683E0BEEC291224847A443D794DF3F8DD19AB27CF7D9D70C9A4751165C"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.Display.cs",
+      "sha256": "5A0F86B29979905EBF919A6DE2DD7F469A4BE8C904534590C0AD991B038A5895"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowResultDisplay.cs",
+      "sha256": "F17C69775D541D543CCC8588196E4F83A124DEC122E44AD2556858C2F64793B7"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.Display.cs",
+      "sha256": "9FE833A357B37EACED394E6FE4DC440B298923B163FF4885C9CCCEFDE385ED17"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultDisplay.cs",
+      "sha256": "D4E18081099DD9FA14568A20CB60AD4E5E26EBBA9BFDA1431AB1729D83B9B7C8"
+    }
+  ],
+  "allSourceStillFrozen": true,
+  "tracks": [
+    {
+      "name": "Core",
+      "passedLogGroups": 5,
+      "desktop": "独立隐藏桌面",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 23,
+        "pid": 139016,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultDisplayCases.cs",
+        "caseSourceSha256": "5AF47FE259E64AE28A09CE4DABAF1BE468F99EC0F5929DB2F23A58EBE37D5F1E",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-023"
+      },
+      "receiptPath": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-023\\receipt.json",
+      "receiptSha256": "E24EB03F8235CBDDC92AAB84F6BAB6917A93D79D3F3018E6D3B478B9CE03E2EB",
+      "testSourceCurrentMatches": true,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "A40BDCE3E3ED9F49474C6DB48B99E715EC7B9FE0E678F6C03D1CB4D63D5ED113",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "D3FE183B1555E70C00B89A5DAD3352E11D62573F249C530761D072BD508F2D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "32FBAD432363174DCA0FBC51630A124C3E2637A7ED055F59E17BB9B55CC7E038",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "CC1664B3862E5F7261780F012068D5915F68A51E1A28638736422EDBFE8BCDE0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "1B2CBC80FA92A8CD3D30F28132B67C688397F764B61EDB60D1E4727E0194BC57",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "4D078128E2AF52D010B2ED82A00105FE609E1B520679F103E87709905A79EA33",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "2A795659EC118664C87BEF18C17C11E6175A14B755A9DB76AB4E02EFEAA411D0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F7E72DE84EBCCD9E8E987B37CE3D58D82868E68BA80F340000C63193E812D6E",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "E61C21CA35DB42CE57BCDFE9CD683C2682BB6F85A47F23D58B563C967E68728A",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "2BFAE1C7A039138ACB488AEA4F7DD6BB17EA9639924DE49C17DC34FE28833D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "EFC59B31CEDEF7128CF9EC074C0A73F739DC17CFA5F83767AD3BABC217230ED3",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "E72D938802896D83A08CFCB414268BCAA0C55D9363DCD34621FB9D2706216CF5",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "D848A0BE016EAA9B6D3A06B4847610FC475BA51D368A2862994BCB9610D81FCF",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "09955F2F8CE80CFB7968FFC435E25A3C8B4039478EF9854597FCDC0A7EB29578",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "6EB73AB010B5F8A6562A649EECBF89264E5C476310825710BA237F12B014B7A9",
+          "matches": true
+        }
+      ],
+      "allLoadedMatchCandidate": true,
+      "runLogSha256": "6C9AF1B8D3FE0C2DD70A9DCAA884B3D8BB3E86B8DA00632D6A3DB8BCE71D4E8C"
+    },
+    {
+      "name": "Window",
+      "passedLogGroups": 15,
+      "desktop": "独立隐藏桌面",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 24,
+        "pid": 127020,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultDisplayCases.cs",
+        "caseSourceSha256": "5AF47FE259E64AE28A09CE4DABAF1BE468F99EC0F5929DB2F23A58EBE37D5F1E",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-024"
+      },
+      "receiptPath": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-024\\receipt.json",
+      "receiptSha256": "3674D23A4AD63508694EDA69BE4AFE732E48BB13F965B171FEA84C2510C6E443",
+      "testSourceCurrentMatches": true,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "A40BDCE3E3ED9F49474C6DB48B99E715EC7B9FE0E678F6C03D1CB4D63D5ED113",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "D3FE183B1555E70C00B89A5DAD3352E11D62573F249C530761D072BD508F2D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "32FBAD432363174DCA0FBC51630A124C3E2637A7ED055F59E17BB9B55CC7E038",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "CC1664B3862E5F7261780F012068D5915F68A51E1A28638736422EDBFE8BCDE0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "1B2CBC80FA92A8CD3D30F28132B67C688397F764B61EDB60D1E4727E0194BC57",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "4D078128E2AF52D010B2ED82A00105FE609E1B520679F103E87709905A79EA33",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "2A795659EC118664C87BEF18C17C11E6175A14B755A9DB76AB4E02EFEAA411D0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F7E72DE84EBCCD9E8E987B37CE3D58D82868E68BA80F340000C63193E812D6E",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "E61C21CA35DB42CE57BCDFE9CD683C2682BB6F85A47F23D58B563C967E68728A",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "2BFAE1C7A039138ACB488AEA4F7DD6BB17EA9639924DE49C17DC34FE28833D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "EFC59B31CEDEF7128CF9EC074C0A73F739DC17CFA5F83767AD3BABC217230ED3",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "E72D938802896D83A08CFCB414268BCAA0C55D9363DCD34621FB9D2706216CF5",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "D848A0BE016EAA9B6D3A06B4847610FC475BA51D368A2862994BCB9610D81FCF",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "09955F2F8CE80CFB7968FFC435E25A3C8B4039478EF9854597FCDC0A7EB29578",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "6EB73AB010B5F8A6562A649EECBF89264E5C476310825710BA237F12B014B7A9",
+          "matches": true
+        }
+      ],
+      "allLoadedMatchCandidate": true,
+      "runLogSha256": "581B9451693E98BF3C0B4814EA986BBDDF8E19820F7089B25D3891223F2701E4"
+    },
+    {
+      "name": "RuntimeDebug",
+      "passedLogGroups": 7,
+      "desktop": "非GUI",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 28060,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeDebugCases.cs",
+        "caseSourceSha256": "DE6D934C6F6B413B0B96A1AB5B2CFAC9DD9B2B0B3B53209347A0F2AC183683E7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeDebug\\attempt-003"
+      },
+      "receiptPath": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeDebug\\attempt-003\\receipt.json",
+      "receiptSha256": "E9A4E07266E972CF450E511390D9520A0212610A74DA9BB310AE1F930D232BD9",
+      "testSourceCurrentMatches": true,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "4D078128E2AF52D010B2ED82A00105FE609E1B520679F103E87709905A79EA33",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "2A795659EC118664C87BEF18C17C11E6175A14B755A9DB76AB4E02EFEAA411D0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F7E72DE84EBCCD9E8E987B37CE3D58D82868E68BA80F340000C63193E812D6E",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "1B2CBC80FA92A8CD3D30F28132B67C688397F764B61EDB60D1E4727E0194BC57",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "32FBAD432363174DCA0FBC51630A124C3E2637A7ED055F59E17BB9B55CC7E038",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "D3FE183B1555E70C00B89A5DAD3352E11D62573F249C530761D072BD508F2D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "CC1664B3862E5F7261780F012068D5915F68A51E1A28638736422EDBFE8BCDE0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "2BFAE1C7A039138ACB488AEA4F7DD6BB17EA9639924DE49C17DC34FE28833D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "EFC59B31CEDEF7128CF9EC074C0A73F739DC17CFA5F83767AD3BABC217230ED3",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "E61C21CA35DB42CE57BCDFE9CD683C2682BB6F85A47F23D58B563C967E68728A",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "E72D938802896D83A08CFCB414268BCAA0C55D9363DCD34621FB9D2706216CF5",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "D848A0BE016EAA9B6D3A06B4847610FC475BA51D368A2862994BCB9610D81FCF",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "6EB73AB010B5F8A6562A649EECBF89264E5C476310825710BA237F12B014B7A9",
+          "matches": true
+        }
+      ],
+      "allLoadedMatchCandidate": true,
+      "runLogSha256": "4A62CED3F76CE49C1EE88C6F83DB616015FBC8E0D6BDF2F11AA394372A64FEDB"
+    },
+    {
+      "name": "RuntimeKernel",
+      "passedLogGroups": 19,
+      "desktop": "非GUI",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 24000,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeKernelCases.cs",
+        "caseSourceSha256": "0B34705233A39DD99202DF896DFF579242C1E5542A13A25183207EDEDC46284A",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-002"
+      },
+      "receiptPath": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-002\\receipt.json",
+      "receiptSha256": "1DC328BB7C8D679E1311DF0D3665E814521C65695AA62A7B8269D9AF97353E43",
+      "testSourceCurrentMatches": true,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "32FBAD432363174DCA0FBC51630A124C3E2637A7ED055F59E17BB9B55CC7E038",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "D3FE183B1555E70C00B89A5DAD3352E11D62573F249C530761D072BD508F2D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F7E72DE84EBCCD9E8E987B37CE3D58D82868E68BA80F340000C63193E812D6E",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "6EB73AB010B5F8A6562A649EECBF89264E5C476310825710BA237F12B014B7A9",
+          "matches": true
+        }
+      ],
+      "allLoadedMatchCandidate": true,
+      "runLogSha256": "AD28402188619C01570CD8EE15637E74E342A99AB1881583E6B50AC6A2118D35"
+    },
+    {
+      "name": "FieldEditing",
+      "passedLogGroups": 38,
+      "desktop": "独立隐藏桌面",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 6,
+        "pid": 79004,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "DCEDACBE1C6639AA2AD2F33C75D2EA0EC3D2FE717ED0669AAEFF79030ABC91B7",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-006"
+      },
+      "receiptPath": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-006\\receipt.json",
+      "receiptSha256": "6C9130066FD634C718A121C4AF583C1CB64E575D99E0878575AAEE072C550981",
+      "testSourceCurrentMatches": true,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "E61C21CA35DB42CE57BCDFE9CD683C2682BB6F85A47F23D58B563C967E68728A",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "D3FE183B1555E70C00B89A5DAD3352E11D62573F249C530761D072BD508F2D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "32FBAD432363174DCA0FBC51630A124C3E2637A7ED055F59E17BB9B55CC7E038",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "2A795659EC118664C87BEF18C17C11E6175A14B755A9DB76AB4E02EFEAA411D0",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "1B2CBC80FA92A8CD3D30F28132B67C688397F764B61EDB60D1E4727E0194BC57",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "A40BDCE3E3ED9F49474C6DB48B99E715EC7B9FE0E678F6C03D1CB4D63D5ED113",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "4D078128E2AF52D010B2ED82A00105FE609E1B520679F103E87709905A79EA33",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F7E72DE84EBCCD9E8E987B37CE3D58D82868E68BA80F340000C63193E812D6E",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "2BFAE1C7A039138ACB488AEA4F7DD6BB17EA9639924DE49C17DC34FE28833D06",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "EFC59B31CEDEF7128CF9EC074C0A73F739DC17CFA5F83767AD3BABC217230ED3",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "E72D938802896D83A08CFCB414268BCAA0C55D9363DCD34621FB9D2706216CF5",
+          "matches": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "D848A0BE016EAA9B6D3A06B4847610FC475BA51D368A2862994BCB9610D81FCF",
+          "matches": true
+        }
+      ],
+      "allLoadedMatchCandidate": true,
+      "runLogSha256": "380FFDD9191F7542B2ED5388D4F38BCFAB5C0948757B93C4F7B06291BE3335C6"
+    }
+  ],
+  "fieldSummaryNote": "38条实际通过日志；旧脚本末尾仍固定写31，不以旧汇总漏报。本次不为改日志再重复测试。",
+  "delivered": [
+    "算法55/显示13/编辑68单一正式Fields owner",
+    "原三页、判定/图像/文本及九行顺序；七项缺值禁用",
+    "真实双Blob四角及Area、常量位置与当前样式独立修订",
+    "实际Host确认取消/历史、同窗Apply新代与并发旧草稿保护",
+    "逐panepublication lease与实际Region frame/domain验证、错图/新帧退役"
+  ],
+  "unimplemented": [
+    "最大内接矩形、ROI矩形、轮廓点、基准点、运行点、屏蔽polygon、扇环：无本轮正式结果值或传递链，原位禁用",
+    "动态结果位置、中文{面积}token及完整表达式映射"
+  ],
+  "notDirectlyVerified": [
+    "保存重开仅LoadCandidate值与复制，不是重开宿主渲染或重开执行",
+    "双pane同时显示、空结果/失败运行的新增图文整景直接专项",
+    "本批provider/proof抛错同步重入、跨文档同ID、最后reader异常释放的直接注入专项",
+    "真实NG对象颜色到像素、任意DPI/缩放下位置像素差分",
+    "自然鼠标、系统焦点、VM视觉/数值/多项排版和时序等价、VS和人工"
+  ],
+  "policies": [
+    "显示样式采用历史publication+当前正式外观/有效草稿，不称本次算法冻结样式",
+    "普通UI事件注入/显式TryCommitPending不等于自然鼠标或系统焦点",
+    "逐Blob Area使用同一常量XY交原MultiText，默认两个样本截图分行；未自行加行偏移，VM等价未证",
+    "直接host.Commit只证明失效集，不代UI发布消费；真实Context最终提交已证明缓存/publication/场景退役"
+  ],
+  "retainedFailures": [
+    "UI001 nullable Increment、UI002缺Linq，003句柄丢失只记日志不虚报exit",
+    "Core001/002颜色Record误Scalar、Core003注册准入算法only，已修",
+    "Window页序、双重Reverse、Undo通知/旧token已集中修；各原日志保留",
+    "窗口夹具多Text/旧Editor/直接Host入口误判保留",
+    "algorithm-diagnostic-016 attempt020：480秒超时，无receipt；仅停止自有进程，未据此判断产品死锁",
+    "FieldEditing019普通桌面失败、020/021隐藏夹具字段漏传/旧总数失败保留，022隐藏完整通过"
+  ],
+  "evidenceRoot": "Release/_validation/BlobResultDisplay-20261102",
+  "screenshots": [
+    "Release/_validation/S4-20261025/BlobResultDisplay/attempt-024/display-default.png",
+    "Release/_validation/S4-20261025/BlobResultDisplay/attempt-024/display-layout-diagnostic.png",
+    "Release/_validation/S4-20261025/BlobResultDisplay/attempt-024/display-rerun.png"
+  ]
+}

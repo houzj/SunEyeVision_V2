@@ -1,0 +1,24 @@
+{
+  "source": "computer-use只读桌面窗口及已安装应用清单；没有启动或操作目标",
+  "vmApplication": {
+    "targetableWindows": 0,
+    "isRunning": false,
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/VisionMaster.exe"
+  },
+  "shellObservation": "可见MVDLogServer PID7476 session0；不推断所有服务或跨会话全局不存在",
+  "globalScript": {
+    "limits": "仅检查现存脚本静态调用，不证明这些方法已执行或必有外部副作用；不能把该文件当空脚本",
+    "characters": 2941,
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/GlobalScript/GlobalScript.txt",
+    "calls": [
+      "InitSDK",
+      "DefaultExecuteProcess",
+      "base.ResultDataCallBack",
+      "Marshal.PtrToStructure"
+    ],
+    "sha256": "8D2100CE27A1DDD084975C0D8A708FEA910E08CF7C4F8A9388C4ECC57B84B61D",
+    "syntaxErrors": 0
+  },
+  "pendingUserInformation": "当前VM/默认脚本/服务是否专供测试，还是含实际任务；问题已通过async发送，未把超时当回答",
+  "productChanged": false
+}

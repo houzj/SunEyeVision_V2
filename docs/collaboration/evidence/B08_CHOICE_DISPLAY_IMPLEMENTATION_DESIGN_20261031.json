@@ -1,0 +1,9 @@
+{
+  "baseline": "9e205a0277bfc256dfd4c1b2f1affef58ea87064",
+  "api": "DeclaredChoiceDisplayItem(displayId,label,formalKey?,isAvailable,unavailableReason?); DeclaredChoiceDisplayOptions(IEnumerable<item>).Items冻结；ToolSettingsViewOptions.ChoiceDisplays按fieldId透传，公开FieldEditor/FieldsView构造末尾同配置",
+  "frozenByMain": "主线确认按此签名/语义冻结，当前只改Plugin.Wpf及本线专属测试",
+  "ownership": "不修改Blob/Runtime/Workflow/Contracts或生命周期线脚本",
+  "state": "一个正式字段state，Port.Choices不变。空formalKey占位项永不可接受；disabled正式键可初始化和只读捕获原值，但新提案与最终TryCapture拒绝；显式owner历史可保留旧合法键，仍不能确认",
+  "validation": "项身份唯一、formalKeys完整唯一覆盖，快照冻结；原ComboBoxItem style派生绑定IsEnabled/禁用Tooltip而模板字节不改；鼠标/键盘/程序事件、直接字段/整组提案均校验；旧Render代次/重绑/Dispose/宿主拒绝与可用项既有行为保留",
+  "tests": "真实原Popup容器及键盘、disabled/占位/可用选择、正式初值disabled显示且capture拒绝、字典数组突变、原writer原子拒绝、重入重绑、关闭旧事件/设计时；候选UI与全量Release及公共字段整轨"
+}

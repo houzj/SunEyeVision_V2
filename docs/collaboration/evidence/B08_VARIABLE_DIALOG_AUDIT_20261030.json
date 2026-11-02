@@ -1,0 +1,154 @@
+{
+  "unit": "B08变量选择框依赖闭包",
+  "status": "原件独立与公共字段视觉链已定向验证；B08整体未完",
+  "sourceFiles": [
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "GlobalVariableSelectDlg.xaml",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml",
+      "originalSha256": "023A989C41ABBF8CE85E4E4DC28F23CA39C13133A96D60A8B81CE58945B95818",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableSelectionDialog.xaml",
+      "localSha256": "41A045C003CE5311D3457375F7786853242C73388D5B911B35F11D388310A56E",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "GlobalVariableSelectDlg.xaml.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml.cs",
+      "originalSha256": "F4FADFE519FB021B2D092EFB2096D41D8DF52ED16781E3C152288E904F3A8EEC",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableSelectionDialog.xaml.cs",
+      "localSha256": "8FD5AB71353375B1236CDF8AB9079613FCC015B2AF6BACF83AAB54D0B41AB039",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "TreeViewCombobox.xaml",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\TreeViewCombobox.xaml",
+      "originalSha256": "B2040C21191106B6561519C4B2B88DF16596F90A644035D8D27D5D6AEB44F305",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupSelector.xaml",
+      "localSha256": "12131C14A2F3F708BBA2B4E73CEDBB6E08B8AF6655810FB8468312EDEA45716C",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "TreeViewCombobox.xaml.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\TreeViewCombobox.xaml.cs",
+      "originalSha256": "F6E1C188CEA5F71DCCD347CB4986FFBEFE07DB58E5C35C051F516EC7D95A09E9",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupSelector.xaml.cs",
+      "localSha256": "75DF2EA2076F4F65B6DF3C3FDEB3AA8598A6E8C64B6CD9FBF331236DA846E14F",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "ComboboxTreeView.xaml",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ComboboxTreeView.xaml",
+      "originalSha256": "1D1104C27BC14CD42A4A229F2389C78C53AA1AA5AED53A4D125B403481D08C67",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupTree.xaml",
+      "localSha256": "6A198E465479E2CB782E2E2DD4DCA70EC0A2F0BE5B923C555E2A8F8D67008405",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "ComboboxTreeView.xaml.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ComboboxTreeView.xaml.cs",
+      "originalSha256": "24223671A053EF8BD994014329AFD42D8F0FF571FF8557B4F1F5929231D174E5",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupTree.xaml.cs",
+      "localSha256": "1D62C566728C68D0A78969B608E887312B21E9D2CB08C8C96D0D980E34F310C9",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "PageNumControl.xaml",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageNumControl.xaml",
+      "originalSha256": "59CD28F6C897F69651629D7A6C46612FEA1317770687A100A98421F60FB60AFD",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariablePageNavigator.xaml",
+      "localSha256": "24E31C086EC7679E7552C7A8794B27EEC969DB5B1028151D75074CC48D8A0E36",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "PageNumControl.xaml.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageNumControl.xaml.cs",
+      "originalSha256": "602E3D037B6051811C3EA86365B77C5DD4088A08BFE8A5ED7E0D0AE5F2D19018",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariablePageNavigator.xaml.cs",
+      "localSha256": "539CCFFB94819479CC59CC1AF97EBAF34E9DEC03BD20DF8ADED3F65EFB783C50",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "NumInfo.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\NumInfo.cs",
+      "originalSha256": "F536AE8644DD6EACCE81774FE770EE9B057703D3C4A07BA6E3D22227251C0DA9",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\PageNumberItem.cs",
+      "localSha256": "3BC0E5358AE0575B9141B42D5401AE4259EF7A584974C3F0E93ED4FF09C77952",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    },
+    {
+      "originalAssembly": "Apps.XmlUI",
+      "originalType": "PageCountInfo.cs",
+      "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageCountInfo.cs",
+      "originalSha256": "5AE670DA95D57B0BFD9AD5AFBE606AD7AF39AD7D9119B4CC05D7F62394656F0C",
+      "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\PageSizeOption.cs",
+      "localSha256": "F2C9527E654F87C5C9D939DF243272D048FE58D3F2CE0D097F70A18DD80B443F",
+      "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
+    }
+  ],
+  "candidateContract": "VariableSelectionItem持正式VariableReference；Value只显示，不写方案",
+  "adaptation": [
+    "不访问VM全局服务，不执行InitGlobalIo和默认分组写回",
+    "复用原主题/语言/滚动/下拉/底栏资源，原input/searchBtn单独提取",
+    "分组原无订阅路径由双击树叶确认，单击仅在订阅者存在时回调",
+    "新目录及类型中立命名，pending保留为历史证据"
+  ],
+  "fullBuild": "source-replacement-full-build：0错误/6092警告；历史visual002保留",
+  "validation": "VariableFields005 10组（新增实际展开窗→变量模态Owner转交）；FieldEditing125与RuntimeEditorUiStage011属同版上一轮；Dialog004历史独立8组",
+  "screenshot": "Release/_validation/S4-20261025/VariableDialog/attempt-003/variable-selection.png",
+  "manual": "未新增实际VS/人工，截图不代用户验收",
+  "remaining": [
+    "真实Blob生产入口联合验收及其他编辑消费者覆盖",
+    "实际VS与人工验收",
+    "B08通讯触发、变量动态索引及原生未证实项"
+  ],
+  "currentContract6Validation": {
+    "date": "2026-10-30",
+    "contract": "6.0",
+    "status": "变量动态索引定向验证通过，B08整体未完",
+    "fullBuild": "0错误/6511警告，b08-variable-index-contract6-full-build.log",
+    "checks": {
+      "RuntimeGlobals": "017:31通过/0失败",
+      "FieldEditing": "128通过",
+      "DesignTime": "306组，不代VS实际验证",
+      "RuntimeEditorUiStage": "013:6组，fullFunctionalAcceptance=false",
+      "RuntimeWorkflow": "059:10组",
+      "VariableFields": "010:12组",
+      "RuntimeKernel": "050:19组"
+    },
+    "pending": [
+      "原厂删除解绑及参数回读",
+      "TRIGGER_STRING通讯来源",
+      "Blob可见S1占位功能接入",
+      "本批VS与人工",
+      "原生VM运行等价证明"
+    ],
+    "nativeRuntimeVerified": false
+  },
+  "fragmentCopyValidation": {
+    "productRebuilt": false,
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-fragment-copy-RuntimeGlobals.log",
+    "passed": 32,
+    "newCase": "Fragment_copy_remaps_module_indices_and_preserves_solution_variable_identities",
+    "failed": 0,
+    "track": "RuntimeGlobals018",
+    "combinations": 4,
+    "scope": "真实WorkflowFragmentCopy.Prepare保留变量身份/重映射模块来源及动态索引，不证明跨方案变量迁移或原厂解绑"
+  },
+  "indexRefreshValidation": {
+    "fullB08Acceptance": false,
+    "sourceSavepoint": "2aa8959d不含该新增验证源码",
+    "track": "VariableFields011",
+    "passed": 13,
+    "productRebuilt": false,
+    "newCoverage": "真实公共字段：模块/变量主来源的变量索引更名不写配置、目录删除标失效、迟到选择退役、有效替换索引恢复且保持主来源",
+    "log": "Release/_validation/ImageSourceIntegration-20261029/b08-contract6-index-refresh-VariableFields.log"
+  }
+}

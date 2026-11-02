@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Contracts;
+﻿using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
@@ -44,7 +44,7 @@ public sealed partial class DeclaredFieldsView
             {
                 var field=declarations[id];var port=field.Port;
                 if(port.Nullable||port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
-                    ||port.EditModes!=FieldEditModes.Reference&&port.EditModes!=(FieldEditModes.Constant|FieldEditModes.Reference))
+                    ||port.EditModes is not (FieldEditModes.Constant or FieldEditModes.Reference or (FieldEditModes.Constant|FieldEditModes.Reference)))
                     throw new ArgumentException("文本坐标要求原数值订阅及明确的常量能力："+id);
                 if(field.Value is ConstantSetting value)
                 {

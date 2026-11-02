@@ -1,0 +1,261 @@
+{
+  "scope": "B08整数引用三个必要缺口的候选补验；只改专项测试与Contracts-only探针，原29项断言保留，不是整体B08或正式Release验收",
+  "parentTestCommit": "36ec8d7878fec1731a7c0951a11544aaa006e55c",
+  "productSourceCommit": "f1b931a702e8d7f39be3317d1ed59c49ac886e82",
+  "productRebuilt": false,
+  "productArtifacts": [
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "866C93D484C1BA0464F4E1C1C549A50D6FDD841B486A7203934A065ECEE64E34"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Runtime.dll",
+      "sha256": "86ACE846624A260154535BB0F82E323F98B0EBC34F786F092D1649E99B2FB725"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Workflow.dll",
+      "sha256": "857E6F989786C8C5EFAB8FBA568F819296F33FECF8FE657775DFE0CF2B19D5D5"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.SDK.dll",
+      "sha256": "40E60CF7C0DBEB4B589C45BD1372A35416EF1162DBE7F1DBBAF0FF8A334CF0B6"
+    }
+  ],
+  "newCases": [
+    "record.indices整数组成员作为动态索引实际消费90",
+    "两层AtField经ordinal数组选择实际消费90，原递归越界负向保留",
+    "真实保存JSON更换toolId至同schema的Strict工具，首次LoadCandidate拒绝",
+    "真实保存JSON移到同工具Strict字段，首次LoadCandidate拒绝"
+  ],
+  "identityControls": [
+    "未改身份的原文件先真实加载成功",
+    "相同binding expression在First上下文读取成功、Strict上下文拒绝",
+    "拒绝定位到$.Workflows[0].Nodes[5].RuntimeConfiguration首次binding declaration读取",
+    "同一解析写出文档仅恢复目标身份后真实LoadCandidate成功，排除无关格式错误",
+    "原合法文件字节保持、正式配置引用保持、原正式运行实际消费90"
+  ],
+  "final": {
+    "session": 32809,
+    "receipt": {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 8,
+      "pid": 124684,
+      "exit": 0,
+      "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4NumericIndexProductionCases.cs",
+      "caseSourceSha256": "09196539627018A520BB3338E054CBF2F1D19ECB0AB8997563DEA6BBE26B4C6F",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\attempt-008",
+      "track": "NumericIndexProduction",
+      "probe": {
+        "source": "tests/_shared/NumericIndexRuntimeProbe.cs",
+        "sourceSha256": "40454BCE427CD8A6ECC6B80B0CBCCFDA1B644DAF09275B6CCD4914DC5F0626A3",
+        "assembly": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\runtime-probe\\out\\SunEyeVision.ManualReference.Runtime.Tests.dll",
+        "assemblySha256": "73B665C05D78A9B4F75F0DE87831B41BD7ABD84664BF2A5CFC4FF8F6D5A13B56",
+        "contracts": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "contractsSha256": "866C93D484C1BA0464F4E1C1C549A50D6FDD841B486A7203934A065ECEE64E34"
+      },
+      "caseReport": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\attempt-008\\numeric-index-report.json"
+    },
+    "report": {
+      "passed": 33,
+      "cases": [
+        {
+          "name": "跨工具显式字段ALL首项 NumericIndexQualifiedProbe",
+          "passed": true
+        },
+        {
+          "name": "跨工具显式字段ALL首项 NumericIndexSecondProbe",
+          "passed": true
+        },
+        {
+          "name": "零基固定索引 0",
+          "passed": true
+        },
+        {
+          "name": "零基固定索引 1",
+          "passed": true
+        },
+        {
+          "name": "零基固定索引 2",
+          "passed": true
+        },
+        {
+          "name": "严格消费者保持ExactlyOne",
+          "passed": true
+        },
+        {
+          "name": "动态输出索引 output.index",
+          "passed": true
+        },
+        {
+          "name": "动态输出索引 output.index-array",
+          "passed": true
+        },
+        {
+          "name": "已准入普通索引读取失败回零 empty-index",
+          "passed": true
+        },
+        {
+          "name": "主源空或Int32溢出硬失败 empty-main",
+          "passed": true
+        },
+        {
+          "name": "主源空或Int32溢出硬失败 big-main",
+          "passed": true
+        },
+        {
+          "name": "默认Strict构造与JSON拒绝数组索引",
+          "passed": true
+        },
+        {
+          "name": "真实全局Int64数组动态索引",
+          "passed": true
+        },
+        {
+          "name": "生产者缺必需输出或执行失败不得回退 missing-index",
+          "passed": true
+        },
+        {
+          "name": "生产者缺必需输出或执行失败不得回退 fail",
+          "passed": true
+        },
+        {
+          "name": "并列及错误源身份不能被政策授权",
+          "passed": true
+        },
+        {
+          "name": "Strict浮点字段与资源目标不获首项政策",
+          "passed": true
+        },
+        {
+          "name": "真实保存首次读取拥有目标字段政策并运行",
+          "passed": true
+        },
+        {
+          "name": "真实复制粘贴及撤销重做保留嵌套索引上下文",
+          "passed": true
+        },
+        {
+          "name": "私有调试使用冻结整数政策且断边新捕获拒绝",
+          "passed": true
+        },
+        {
+          "name": "取消草稿及已关闭Host不会接纳政策引用",
+          "passed": true
+        },
+        {
+          "name": "SDK实际编译与解析桥保持策略及错误身份硬失败",
+          "passed": true
+        },
+        {
+          "name": "动态索引负数越界溢出硬失败 -1",
+          "passed": true
+        },
+        {
+          "name": "动态索引负数越界溢出硬失败 3",
+          "passed": true
+        },
+        {
+          "name": "动态索引负数越界溢出硬失败 2147483648",
+          "passed": true
+        },
+        {
+          "name": "显式政策不能经复制或JSON授权Strict目标",
+          "passed": true
+        },
+        {
+          "name": "真实Blob仅五个Int32设置声明政策，其他字段保持Strict",
+          "passed": true
+        },
+        {
+          "name": "全局主数组与数组索引经VariableSetting真实消费",
+          "passed": true
+        },
+        {
+          "name": "递归AtField索引使用同一目标政策",
+          "passed": true
+        },
+        {
+          "name": "已声明成员整数数组作为动态索引真实消费",
+          "passed": true
+        },
+        {
+          "name": "递归动态索引正向逐层实际消费",
+          "passed": true
+        },
+        {
+          "name": "真实保存JSON更换目标身份不能自授权 toolId",
+          "passed": true
+        },
+        {
+          "name": "真实保存JSON更换目标身份不能自授权 fieldId",
+          "passed": true
+        }
+      ]
+    },
+    "files": [
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/receipt.json",
+        "sha256": "0EE2440C6D5AEB11D40DF4290942CC2C175B983701435540F2F2614F1AB26E18"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/numeric-index-report.json",
+        "sha256": "7C3700F9B84A75A882659745FBDFC01DBCBC2B53AA3416FA9089BAAD8EA184EA"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/run.log",
+        "sha256": "9D04153BF06256210B3E7C2B923CC2D26B32D35F3921F4E3A8D8414C63894BFC"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/run-error.log",
+        "sha256": "F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/build.log",
+        "sha256": "30E234674DDEF0F543709A6B76FE95ED2723D5D7D39E454A256C9F6814ED2DF3"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-008/probe-source.json",
+        "sha256": "2D0D08C0EA1ABB48EE03327BFD4E46CB443798273CB5149652B78FB182BBE29D"
+      }
+    ]
+  },
+  "preservedFailure": {
+    "attempt": "attempt-006",
+    "passed": 31,
+    "failed": 2,
+    "classification": "测试断言错误地要求内部ArgumentException原文，实际公开JsonException统一包装；两项篡改已被正确拒绝，非产品失败",
+    "files": [
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-006/receipt.json",
+        "sha256": "58FA54C4EE0A1F751C74A74E3B1D63B0F267862EAF7D980317215E07C16D51F1"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-006/numeric-index-report.json",
+        "sha256": "7170F83D4EB3184B99D358C3D03253B96202DD22968958790267508EA0093C3A"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-006/run.log",
+        "sha256": "4823CA2C2FCAB7BC0CB9958EF28B8DEBB3FBE562F932D8DCB9F986AB2B9C5365"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/NumericIndexProduction/attempt-006/run-error.log",
+        "sha256": "A5AFD6711BC36F050C3AD662AC4ACD36326D3DFE8D2576DDF30F0EB292F745A2"
+      }
+    ],
+    "errorText": "失败：真实保存JSON更换目标身份不能自授权 toolId\nSystem.Exception: 拒绝原因不是目标Strict索引准入：$.Workflows[0].Nodes[5].RuntimeConfiguration: Binding reference contains an invalid or missing declaration.\n   at S2DocumentEditingCases.Require(Boolean condition, String message) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 225\n   at S2DocumentEditingCases.<>c__DisplayClass2_17.<Main>b__43() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 114\n   at S2DocumentEditingCases.Case(String name, Action test) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 228\n失败：真实保存JSON更换目标身份不能自授权 fieldId\nSystem.Exception: 拒绝原因不是目标Strict索引准入：$.Workflows[0].Nodes[5].RuntimeConfiguration: Binding reference contains an invalid or missing declaration.\n   at S2DocumentEditingCases.Require(Boolean condition, String message) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 225\n   at S2DocumentEditingCases.<>c__DisplayClass2_17.<Main>b__43() in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 114\n   at S2DocumentEditingCases.Case(String name, Action test) in C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericIndexProduction\\Cases.cs:line 228\n"
+  },
+  "intermediate": {
+    "attempt": "attempt-007",
+    "exit": 0,
+    "passed": 33,
+    "note": "修正公开异常断言后通过；最终008额外加入身份恢复及同expression策略对照"
+  },
+  "unverified": [
+    "UI策略接线与GUI由控件线负责，本批未运行",
+    "四浮点原厂数值转换、S3算法及B08整窗组合不在本批范围",
+    "主仓正式Release集成验收另记"
+  ]
+}

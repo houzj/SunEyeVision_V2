@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Controls.Foundation;
 using System.ComponentModel;
 using System.Windows;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;

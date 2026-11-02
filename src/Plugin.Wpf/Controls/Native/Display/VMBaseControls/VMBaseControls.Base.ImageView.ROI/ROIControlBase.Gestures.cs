@@ -1,3 +1,4 @@
+﻿using SunEyeVision.Plugin.Wpf.Interop.Windows;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -95,19 +96,26 @@ public partial class ROIControlBase
         private readonly object? _context;
         private readonly Func<bool> _current;
         private readonly Action _resetLocal;
-        private readonly Action? _cancelDraft;
+        private Action? _cancelDraft;
         private readonly List<Action> _detach=new();
         private bool _ending,_ended,_draftCancelled;
         internal RoiGesture(ROIControlBase control,ImageViewBox view,FrameworkElement handle,object? context,Func<bool> current,Action resetLocal)
-        {_control=control;_view=view;Handle=handle;_context=context;_current=current;_resetLocal=resetLocal;_cancelDraft=view.NativeRoiCaptureCancelEdit?.Invoke(context);}
+        {_control=control;_view=view;Handle=handle;_context=context;_current=current;_resetLocal=resetLocal;}
         public FrameworkElement Handle {get;}
         public bool IsLive=>!_ending&&!_ended;
         public bool IsCurrent=>!_ended&&Gestures.TryGetValue(_view,out var slot)&&ReferenceEquals(slot.Value,this)&&_current();
         public bool IsActive=>IsLive&&IsCurrent&&Captures.TryGetValue(Handle,out var capture)&&ReferenceEquals(capture.Value,this)&&ReferenceEquals(Mouse.Captured,Handle);
         internal void Claim()
         {
-            var slot=Gestures.GetValue(_view,_=>new());var previous=slot.Value;slot.Generation++;slot.Value=this;
+            var slot=Gestures.GetValue(_view,_=>new());var previous=slot.Value;var generation=slot.Generation;
+            // Cancel while the previous gesture still owns its claim, so its own pending
+            // projection is reverted. A cancellation callback may install a newer claim.
             previous?.Cancel();
+            if(slot.Generation!=generation||(slot.Value is not null&&!ReferenceEquals(slot.Value,previous)))return;
+            slot.Generation++;slot.Value=this;
+            // Capture only after this claim exists: the cancellation closure belongs to
+            // this gesture, never whichever gesture happens to be current during End.
+            _cancelDraft=_view.NativeRoiCaptureCancelEdit?.Invoke(_context);
         }
         public bool Capture()
         {

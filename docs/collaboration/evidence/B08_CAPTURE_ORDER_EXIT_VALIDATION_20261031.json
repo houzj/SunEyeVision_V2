@@ -1,0 +1,24 @@
+{
+  "status": "显式确认捕获出口补齐顺序；UI构建及S1保护通过，不是完整Blob验收",
+  "change": "RuntimeNodeConfigurationControl.TryCapture同Changed一样传递view.AcceptedFieldOrder",
+  "build": {
+    "log": "Release/_validation/B08ParameterCurrentValue-20261030/ui-build-005.log",
+    "errors": 0,
+    "warnings": 6524,
+    "command": "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore"
+  },
+  "uiProtection": {
+    "pid": 135392,
+    "exit": 0,
+    "caseSourceSha256": "ED1FDBD2A3E911FA6B4EA4DAB95C7CC85DCEAD760904339B138585E1FC833595",
+    "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-018/receipt.json",
+    "passed": 6
+  },
+  "sourceSha256": "EA0A29C49B9E787FE3080D24DD344E51AB673CC152E00FC2507BF00C63E63460",
+  "uiAssemblySha256": "B130F49AA54719FE151C6D56DD6A321E2E92D910BC507648A8495277A310CDB3",
+  "limits": [
+    "未运行旧RuntimeEditor全部功能用例；仍有S1占位",
+    "未代签VS或人工",
+    "前版全量build-004与参数/字段结果仍保留其独立身份"
+  ]
+}

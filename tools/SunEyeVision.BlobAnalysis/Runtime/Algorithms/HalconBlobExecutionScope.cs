@@ -3,18 +3,19 @@ using HalconDotNet;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
-/// <summary>算法同步执行期间固定8邻域，并在原线程恢复调用者设置；不改HALCON全局上限。</summary>
+/// <summary>算法同步执行期间按冻结参数设置4/8邻域，并在原线程恢复调用者设置；不改HALCON全局上限。</summary>
 public sealed class HalconBlobExecutionScope : IDisposable
 {
     private readonly int _threadId = Environment.CurrentManagedThreadId;
     private readonly HTuple _previousNeighborhood;
     private bool _disposed;
 
-    public HalconBlobExecutionScope()
+    public HalconBlobExecutionScope(BlobConnectivity connectivity)
     {
+        if (!Enum.IsDefined(connectivity)) throw new ArgumentOutOfRangeException(nameof(connectivity));
         RequireUnlimitedConnection();
         HOperatorSet.GetSystem("tsp_neighborhood", out _previousNeighborhood);
-        try { HOperatorSet.SetSystem("tsp_neighborhood", 8); }
+        try { HOperatorSet.SetSystem("tsp_neighborhood", (int)connectivity); }
         catch { _previousNeighborhood.Dispose(); throw; }
     }
 

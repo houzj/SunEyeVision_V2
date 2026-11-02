@@ -62,7 +62,7 @@ internal static class S2DocumentEditingCases
             Flow=Engine.CreateWorkflow("roi-"+Guid.NewGuid().ToString("N"),"真实ROI链");
             Load=Node("load","ImageLoad");
             Threshold=Node("threshold","ImageThreshold");Set(Threshold.Parameters,"Threshold",3);Source(Threshold,"load","output.image");
-            Blob=Node("blob","BlobAnalysis");Set(Blob.Parameters,"Threshold",128);Set(Blob.Parameters,"IsAreaFilterEnabled",false);Set(Blob.Parameters,"IsBlobCountFilterEnabled",false);
+            Blob=Node("blob","BlobAnalysis");Set(Blob.Parameters,"Threshold",128);Set(Blob.Parameters,"IsAreaFilterEnabled",false);
             Set(Blob.Parameters,"InspectionMode","InheritedGeometry");Source(Blob,"load","output.image");
             Flow.Nodes.Add(Load);Flow.Nodes.Add(Threshold);Flow.Nodes.Add(Blob);
         }

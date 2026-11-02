@@ -1,0 +1,24 @@
+{
+  "baseline": "0477f836b6060a1cbf089d05622a114f96c5006f",
+  "scope": "S3现有正式SingleThreshold生产准入一致性，不修改VM未证算法",
+  "chain": "RuntimeToolConfiguration/MaterializeSettings→BlobTool.Validate/BlobSettings.Validate→ToolRuntimeExecutor→BlobSession→声明快照/消费者",
+  "defect": "同一禁用面积下限0由正式配置拒绝，而ToolRuntimeExecutor直接生产入口执行成功；四形状端点同样缺无条件finite/bounds验证",
+  "decision": "始终检查三组端点有限与XML绝对边界，只有筛选启用才比较两端顺序；保留禁用合法原值",
+  "files": [
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs",
+    "scripts/verification/S3BlobRuntimeCases.cs"
+  ],
+  "validation": [
+    "禁用越界与NaN/Infinity在配置/直接Runtime入口一致拒绝",
+    "合法禁用倒序保持原值并成功执行",
+    "启用倒序两入口一致拒绝",
+    "现有8邻域/全局限制/排序限数/孔洞NG/读者/空结果回归",
+    "候选全量构建及参数生产/冻结工作流相关回归"
+  ],
+  "unimplemented": [
+    "其他五阈值模式正式准入",
+    "VM角度/两轴精确语义与九项全结果",
+    "原四形状量化后最终比较",
+    "ROI绘制、正式显示与底栏基础"
+  ]
+}

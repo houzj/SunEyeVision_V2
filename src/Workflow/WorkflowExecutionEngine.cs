@@ -824,8 +824,8 @@ namespace SunEyeVision.Workflow
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
             foreach(var node in executableWorkflow.Nodes.OfType<AlgorithmNode>())node.WorkflowInputImage=inputImage;
             var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
-            var variableDefinitions=request?.CommunicationInputs?.GetVariables().ToArray();
-            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues);
+            var variableDefinitions=request?.ProducedGlobals?.Sources??request?.CommunicationInputs?.GetVariables().ToArray();
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues,request?.ProducedGlobals?.SolutionId);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
                 node => node.Id,
                 node => inputIssues.ContainsKey(node.Id) ? ToolExecutionProfile.LegacyExclusive

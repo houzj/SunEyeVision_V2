@@ -1,0 +1,52 @@
+{
+  "tracks": [
+    {
+      "groups": 5,
+      "caseSourceSha256": "EB41F650D71E577AFFD801698B8E4E312CF73EC741A6968A86BCFD4783A22AB4",
+      "loadedAssemblies": 15,
+      "name": "Core",
+      "receipt": "S4-20261025\\BlobResultDisplay\\attempt-001"
+    },
+    {
+      "groups": 15,
+      "caseSourceSha256": "EB41F650D71E577AFFD801698B8E4E312CF73EC741A6968A86BCFD4783A22AB4",
+      "loadedAssemblies": 15,
+      "name": "Window",
+      "receipt": "S4-20261025\\BlobResultDisplay\\attempt-002"
+    },
+    {
+      "groups": 7,
+      "caseSourceSha256": "DE6D934C6F6B413B0B96A1AB5B2CFAC9DD9B2B0B3B53209347A0F2AC183683E7",
+      "loadedAssemblies": 13,
+      "name": "RuntimeDebug",
+      "receipt": "S3-20261025\\RuntimeDebug\\attempt-029"
+    },
+    {
+      "groups": 19,
+      "caseSourceSha256": "CEEDE8C1DD6AC911ECDCD24A0F70F39F655ACA47A5F3D61DE8CA4DAF0006F1BF",
+      "loadedAssemblies": 4,
+      "name": "RuntimeKernel",
+      "receipt": "S3-20261025\\RuntimeKernel\\attempt-055"
+    },
+    {
+      "groups": 38,
+      "caseSourceSha256": "2C149978EEC03E4BBF62B19AD1070F19E6FC0B9897C127316D299AB191256F47",
+      "loadedAssemblies": 12,
+      "name": "FieldEditing",
+      "receipt": "S4-20261025\\FieldEditing\\attempt-157"
+    }
+  ],
+  "candidateCommit": "f411405db0e7031b5b043ad3b19592390f20f77b",
+  "limitations": [
+    "Only Blob rectangle and area text enabled; seven rows protected",
+    "VM pixel and timing equivalence, natural interaction, VS designer and human acceptance not verified",
+    "Dynamic text coordinates and full expression syntax not implemented"
+  ],
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "builds": [
+    "UI Release exit 0",
+    "Full solution Release exit 0"
+  ],
+  "date": "2026-11-02",
+  "baseCommit": "a2ff34e4"
+}

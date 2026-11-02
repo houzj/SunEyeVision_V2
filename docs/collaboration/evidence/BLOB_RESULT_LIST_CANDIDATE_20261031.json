@@ -1,0 +1,340 @@
+{
+  "scope": "真实Blob结果表当前合同候选，不冒称三项数值或完整S3完成",
+  "baseline": "9c28fe520ed013bd2e9d9329c67df7227d2f4bff",
+  "sourceCommit": "c2a543c7038241348217d63f65a1db031fc5270a",
+  "originalEvidence": {
+    "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuDisplay.xml",
+    "sha256": "B3BC63E6CF7C8CA120BAF5B632BBE1359843138CF77CB5A64FC698EF22465112",
+    "featureOrder": "Area,Perimeter,CentroidX,CentroidY,Angle,LongAxis,ShortAxis,Circularity,Rectangularity",
+    "tableOrder": [
+      "label",
+      "area",
+      "perimeter",
+      "centroid-x",
+      "centroid-y",
+      "angle",
+      "long-axis",
+      "short-axis",
+      "circularity",
+      "rectangularity"
+    ],
+    "angle": "外接矩形角度映射已证，当前数值输出未实现且规范未验，不称映射未证"
+  },
+  "design": "BLOB_RESULT_LIST_DESIGN_20261031.json",
+  "changes": [
+    "ResultColumnDescriptor.Value/UnavailableReason恰一；占位仅StandardTable，拒绝格式/有效性/几何/物理源混用以及Unit=null",
+    "DeclaredResultTable占位不读取Schema值、不进入Sources/几何选择；单元格和表头明确未实现，空结果零假行仍保说明",
+    "BlobDisplay XML以序号加原九项替换原八列表，不用bounds列替代；六特征仍读真实输出",
+    "BlobDisplayDefinition解析严格互斥展示占位；不增加任何BlobSchema字段或可订阅声明",
+    "现行S3Component/RuntimeKernel/真实Blob联动列数预期同步；ImageSource创建者继续完整真实Value声明无需适配回退"
+  ],
+  "builds": [
+    {
+      "version": "001",
+      "file": {
+        "path": "Release/_validation/blob-result-list-build-001.log",
+        "sha256": "A4D27ED9D1F1270D95AD7A46B8A0F4B4D6EF34212E74ECCA7A880C4B22D26941"
+      },
+      "errors": 0,
+      "warnings": 6527,
+      "elapsed": "00:00:58.52",
+      "note": "第一版；不覆盖后来Unit/反序排序补充"
+    },
+    {
+      "version": "002",
+      "file": {
+        "path": "Release/_validation/blob-result-list-build-002.log",
+        "sha256": "84008707A0EB2057DE36B6CA8E8432EC68461DB21F3204D9F95058DD14CA1A52"
+      },
+      "errors": 0,
+      "warnings": 6338,
+      "elapsed": "00:00:43.53",
+      "note": "最终产品源码稳定版本"
+    }
+  ],
+  "validation": {
+    "finalSameProduct": [
+      {
+        "track": "BlobResultWorkspace",
+        "attempt": 11,
+        "groups": 4
+      },
+      {
+        "track": "RuntimeKernel",
+        "attempt": 1,
+        "groups": 19
+      },
+      {
+        "track": "ResultChain",
+        "attempt": 2,
+        "groups": 24
+      },
+      {
+        "track": "WindowPresentation",
+        "attempt": 22,
+        "groups": 1
+      },
+      {
+        "track": "WindowPresentation",
+        "attempt": 23,
+        "groups": 7
+      }
+    ],
+    "dedicatedAssertions": [
+      "十列顺序/六项真实值/三占位及输出与订阅资格隔离",
+      "无原因/双源/空原因/几何/有效性/精度/非StandardTable/Unit=null等非法声明拒绝",
+      "两轮真实ImageLoad→Blob→publication→DataGrid事件→现有主界面订阅/高亮；不同RunIdentity/Frame/旧事件拒绝",
+      "实际空Blob执行零假行、十个表头及三未实现标记和空结果说明",
+      "额外两Blob AreaAsc/AreaDesc两次真实执行，逐行element-id/Stamp/记录多边形及实际图层Points一致，不用行号身份",
+      "原灰/二值/域/资源释放和包装清理断言继续通过"
+    ],
+    "loadedAssembliesMatchActualFiles": true,
+    "loadedAssemblies": [
+      {
+        "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+        "sha256": "F5E4FF5CFC3239845656A6F4D0D92066DB396DC2FAFF0528DD05D8AB7AD934DB",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "sha256": "19E3EE7DD8549042829D421B626FC6BD6F2B1EA60441F195312D3F049CCB7560",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Plugin.Runtime",
+        "sha256": "2A83201AD2E891E3CEE88C1633D686122E6B4426298E962049FB1365CA8EFBA3",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.HalAdapter.Runtime",
+        "sha256": "271CA6A9305DDE1524F8741147F3D805F29BD94A5F66CC0F9F9E5D28A2E1F4D7",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Workflow",
+        "sha256": "52A8297A12EACC894AA1A9E215EC99CBE5C10C9E2029A400E434E8160D5FEDD8",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.UI",
+        "sha256": "68195365CEEF8EDEDD3C8C23A9A3CC8B8DCBD69FB1692818EDC18A73BE480DA8",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Plugin.SDK",
+        "sha256": "6B729AA80AB826923622FB94A3E95D7A62A1BDDED2CD4C2EF8B884C22C919665",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Tool.ImageSource.Runtime",
+        "sha256": "04B43ADE9D801D6FC5CD98BA0264660D260C0A646566DD047DED0A53330ED07F",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "sha256": "BCCF41C84C386DDE72659ED6AF067C28C3DFAAC0DA4188C0DFA0EB97109B4E57",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Plugin.Infrastructure",
+        "sha256": "2015AF2459A9AA5811828A727C7C8CF291102870A9F1FA8C675D713A87351B6F",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Core",
+        "sha256": "F43B422136F56B96C3367DE700383836F5A250C6E7F1C6150FBD66429FE88BBB",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+        "sha256": "08A5279A6DBC20992F1207F1034F9E8047D1F08F6947104E5B8B802D0CDCB266",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.Tool.ImageSource.Wpf",
+        "sha256": "AF0093CE12D621F99A837C29D300112165F90E1613A2E315DF2CFD113B36A4CA",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.DeviceDriver",
+        "sha256": "73714C3525C7B08A70D3E2A870376F153C888045793772FAB3D44749A586F65E",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll"
+        ]
+      },
+      {
+        "name": "SunEyeVision.HalAdapter",
+        "sha256": "5ECC31885A73683C46BA447D9FB5FE74A711974B898E7B1A49902755325990A0",
+        "paths": [
+          "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll"
+        ]
+      }
+    ],
+    "notRun": "旧Components本版未执行全轨；之前旧Threshold标签前置失败仍保留，不声称已通过。仅同步当前列数预期。"
+  },
+  "receipts": [
+    {
+      "track": "BlobResultWorkspace",
+      "attempt": 10,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "A18D5B83D9401BF8A0D7F4422EE6AFC296035690E1AF821330DC7CB1FDB84F87",
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-010/receipt.json",
+          "sha256": "BF43362157B393D22402901B1E655EF56B635702FFAE203720D4A22EA4409707"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-010/run.log",
+          "sha256": "96744D487176EA41CB7C66ED7C321C2031766B4DB48B89CF94C3839DA4FB6DE6"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-010/loaded-product.tsv",
+          "sha256": "D18DC0F4B18C813259D00810E77D0E344C92C74966DD86FDD384FC6613832FB1"
+        }
+      ]
+    },
+    {
+      "track": "BlobResultWorkspace",
+      "attempt": 11,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "F442F30010F5152A01A4E6BC2F71BB34AFD41F4CC3BF2D724EE929D8211B64E5",
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-011/receipt.json",
+          "sha256": "5202C8F7EBD5903B976CC84494D2AF1FB8F7BED43E32CA4D16424B7B64BB992B"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-011/run.log",
+          "sha256": "535CF0C66604B126F130BB998C78B8003D1603714A79A7F831D37CB2289EFBA1"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-011/loaded-product.tsv",
+          "sha256": "E96B2C02F173581CBBEA7FC8FDA0EF11F7190F49A6F28F97A21A54208DA2D31B"
+        }
+      ]
+    },
+    {
+      "track": "RuntimeKernel",
+      "attempt": 1,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "C09EA560481F55DB56A5F060393BF444F7C92411DA80FD241162F8A713FB6184",
+      "files": [
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-001/receipt.json",
+          "sha256": "A2019B931E93668AD16360784F541BA78B64C591DF46B9EF9EDB8CCCE7E67DD9"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-001/run.log",
+          "sha256": "AD28402188619C01570CD8EE15637E74E342A99AB1881583E6B50AC6A2118D35"
+        },
+        {
+          "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-001/loaded-product.tsv",
+          "sha256": "91E02A8C6A788F045C0DA68296A744A65A9E611E0173AF33FF7024740706B09F"
+        }
+      ]
+    },
+    {
+      "track": "ResultChain",
+      "attempt": 2,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "FD3420A8BE850D0E63D6408B072E3802FADE16647BA7D9CB16B198B0CC9F0AC1",
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/ResultChain/attempt-002/receipt.json",
+          "sha256": "F30F4F12CF08A675E81691E3FB126A55C2A4C7F11B2BDE9510C85300A5461FD3"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ResultChain/attempt-002/run.log",
+          "sha256": "FCAB75A4B8901F82A88405C9BDB7E36663E67C62009B2C1946F4476ABDAD4681"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/ResultChain/attempt-002/loaded-product.tsv",
+          "sha256": "19BAFA9BCD36262E014C7E35D701A71C805EC5227259B538587174FD0A207C5B"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": 22,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "B9592757457FBA9138AFEE0033F927BA88BC03EF4C07F44A3D95A04D594F0637",
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-022/receipt.json",
+          "sha256": "177D9CBCD30436653676B11E08896095A236C37FA108BBA846721397DB06782D"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-022/run.log",
+          "sha256": "1B1E3E6D9EC48052E362EE173E14A4CC9A6F22C05AC86C368592C49A6D3D5CEC"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-022/loaded-product.tsv",
+          "sha256": "C85D104335D05418DE7263238FB88022B2B39C9F44E71D1CC4022E29275DBF5D"
+        }
+      ]
+    },
+    {
+      "track": "WindowPresentation",
+      "attempt": 23,
+      "exit": 0,
+      "scope": "Candidate",
+      "caseSourceSha256": "B9592757457FBA9138AFEE0033F927BA88BC03EF4C07F44A3D95A04D594F0637",
+      "files": [
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-023/receipt.json",
+          "sha256": "47B62E76DF65D10501EB0179A05C01605C55A96458F1C4D91BE9708E20F9A25E"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-023/run.log",
+          "sha256": "D9DE8412A940937A9A016448C57C02BD3B9B9A87F90AE280DA354E0A727CC2A7"
+        },
+        {
+          "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-023/loaded-product.tsv",
+          "sha256": "C85D104335D05418DE7263238FB88022B2B39C9F44E71D1CC4022E29275DBF5D"
+        }
+      ]
+    }
+  ],
+  "unimplemented": [
+    "Angle/LongAxis/ShortAxis真实数值、原规范和订阅；仅展示占位，不记功能完成",
+    "原始上游图输入槽到实际域proof及完整图形/文本正式配置",
+    "其他未就绪阈值模式/ROI绘制/正式底栏等基础",
+    "真实VS/其他DPI/人工外观验收"
+  ],
+  "noChanges": [
+    "Blob算法/BlobMeasurement/BlobSchema",
+    "来源资格和共享主界面消费者"
+  ],
+  "guiReleased": true
+}

@@ -1,0 +1,955 @@
+{
+  "productCommit": "963b6159",
+  "scope": "工作流和Blob统一正式Release；不是全部VM功能或人工验收",
+  "uiBuildLog": "Release/_validation/WORKFLOW_BLOB_FORMAL_20261031/ui-build-001.log",
+  "fullBuildLog": "Release/_validation/WORKFLOW_BLOB_FORMAL_20261031/full-build-001.log",
+  "records": [
+    {
+      "track": "RuntimeAlgorithm",
+      "stage": "S3",
+      "attempt": "attempt-005",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Formal",
+        "attempt": 5,
+        "pid": 71424,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3BlobRuntimeCases.cs",
+        "caseSourceSha256": "2CEBCBDC9D057AA5CDB116C56560B6B676254C3EDC02D6A4AEAF2C65CFEFC597",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeAlgorithm\\attempt-005"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        }
+      ],
+      "logSha256": "5E16AB34D92771782EAC9C8C21C0ECECCFFD4DA3BDB91B6658EF2BC64CF932B6",
+      "lastLines": [
+        "通过：空结果执行完成且业务判定NG",
+        "S3 Runtime算法检查：9组通过；不代表完整宿主、VM视觉或人工验收。"
+      ]
+    },
+    {
+      "track": "RuntimeKernel",
+      "stage": "S3",
+      "attempt": "attempt-054",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Formal",
+        "attempt": 54,
+        "pid": 23340,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeKernelCases.cs",
+        "caseSourceSha256": "4BC03711ACA1B06082FE81C48BCD545CE9723D5ACE69A07CCEA8999118DD0056",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeKernel\\attempt-054"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        }
+      ],
+      "logSha256": "AD28402188619C01570CD8EE15637E74E342A99AB1881583E6B50AC6A2118D35",
+      "lastLines": [
+        "通过：运行层直接引用无资源实现库、进程无SDK和WPF",
+        "S3真实内核：19组通过；仅证明运行层，不是生产装配或S3整体完成。"
+      ]
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "stage": "S3",
+      "attempt": "attempt-071",
+      "receipt": {
+        "stage": "S3",
+        "validationScope": "Formal",
+        "attempt": 71,
+        "pid": 119788,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S3RuntimeWorkflowCases.cs",
+        "caseSourceSha256": "5CD145C2439ED19762C2978352FF931DFD4AF9B442F42F020C54E169D1368765",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-071"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        }
+      ],
+      "logSha256": "8277B9E901681C92756D886CA4CF6F1EE655D054F6AF701F76756A32CF0E085D",
+      "lastLines": [
+        "通过：捕获结果失败与输出/资源清理同时失败时，全部清理并保留三个异常",
+        "S3中立工作流：10组通过；工具箱/参数页默认入口及完整VM界面尚未完成。"
+      ]
+    },
+    {
+      "track": "ParameterValues",
+      "stage": "S4",
+      "attempt": "attempt-014",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 14,
+        "pid": 40556,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4ParameterCurrentValueCases.cs",
+        "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-014"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        }
+      ],
+      "logSha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9",
+      "lastLines": [
+        "通过：关闭未打开参数页的正式方案不懒建宿主，保存失败仍保留同一编辑会话",
+        "参数当前值与顺序生产链：18组通过；不代表原厂多绑定动态差分、String/TS或全Blob验收。"
+      ]
+    },
+    {
+      "track": "BlobParameterProduction",
+      "stage": "S4",
+      "attempt": "attempt-010",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 10,
+        "pid": 128832,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "2D59640E41FFD16B41B425A80372585B7013716F1865521CAB7F993B98B64C6F",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-010",
+        "track": "BlobParameterProduction",
+        "caseReport": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-010\\blob-parameter-production-report.json"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        }
+      ],
+      "logSha256": "F841DE9D2CC13D564CF2783EB217634DBC3BC1ACFC9C435286EEC15F46F03C04",
+      "lastLines": [
+        "通过：极性未确认草稿与真实宿主历史保存重开保持正式键",
+        "Blob参数生产链：21组通过，0组失败；非前台；不代表完整参数窗口、VS设计器、原厂像素等价或B08整体验收。"
+      ]
+    },
+    {
+      "track": "BlobResultWorkspace",
+      "stage": "S4",
+      "attempt": "attempt-004",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 4,
+        "pid": 26464,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultWorkspaceCases.cs",
+        "caseSourceSha256": "D33CE8CE91551859E361209BA303B0CD80D56F00E4AA9742E57F89EEA1FD9E8F",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-004"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.DeviceDriver",
+          "expected": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B",
+          "actual": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        }
+      ],
+      "logSha256": "CA214D0D288434621234BA02087E2E725BF59515B23911D8FC2E9110A62653C5",
+      "lastLines": [
+        "回执：run1=RunIdentity { DocumentSessionId = f89de75c-72db-4f80-a25c-f23201f43727, RunId = 9499875c-8ef4-4fa4-8a4e-1eb5b12bce75, ScopeId = 9499875c-8ef4-4fa4-8a4e-1eb5b12bce75, NodeId = blob, RequestId = 022abfcd-6b09-4f05-b4ca-8009f82bcc6c }；run2=RunIdentity { DocumentSessionId = f89de75c-72db-4f80-a25c-f23201f43727, RunId = e2076523-0e58-4236-98e6-da2dca64f89c, ScopeId = e2076523-0e58-4236-98e6-da2dca64f89c, NodeId = blob, RequestId = 841a5943-595d-4fc3-ad23-84d1d7f072a2 }；frame1=ImageFrameAddress { FrameId = c48518dc-9d67-4e06-8a8c-872cfbf0029d, SourceId = image-source:source, ProducerRun = RunIdentity { DocumentSessionId = f89de75c-72db-4f80-a25c-f23201f43727, RunId = 9499875c-8ef4-4fa4-8a4e-1eb5b12bce75, ScopeId = 9499875c-8ef4-4fa4-8a4e-1eb5b12bce75, NodeId = source, RequestId = fcefa294-1058-4d79-acbc-3bbdabfec9e2 }, SourcePortId = output.image, SchemaRevision =  }；frame2=ImageFrameAddress { FrameId = 5f2ec425-4a68-46f3-8896-40e9fe78b9d2, SourceId = image-source:source, ProducerRun = RunIdentity { DocumentSessionId = f89de75c-72db-4f80-a25c-f23201f43727, RunId = e2076523-0e58-4236-98e6-da2dca64f89c, ScopeId = e2076523-0e58-4236-98e6-da2dca64f89c, NodeId = source, RequestId = a6d93cf3-aaa3-4b25-9b4f-966be74a3c77 }, SourcePortId = output.image, SchemaRevision =  }",
+        "通过：真实Blob表→正式publication→ResultWorkspacePresenter同帧选择、重跑及旧事件拒绝及快照/包装清理及声明占位，4组。"
+      ]
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "stage": "S4",
+      "attempt": "attempt-028",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 28,
+        "pid": 76072,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4RuntimeEditorCases.cs",
+        "caseSourceSha256": "02B2537D49302B6A09F900D7B9A58621AC9D441B362BE0E9C8343D40ECAC2555",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-028",
+        "track": "RuntimeEditorUiStage",
+        "caseReport": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-028\\ui-stage-report.json"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.DeviceDriver",
+          "expected": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B",
+          "actual": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B"
+        }
+      ],
+      "logSha256": "DECD1E29CBBA4B4FB5D458E0CE646F09E9643A04B2DEE1BB40D19537EA0B1A72",
+      "lastLines": [
+        "通过：旧模式窗口原值与整窗保护，私有修正关闭重开：DoubleThreshold",
+        "B08真实编辑窗口UI链：13组通过；fullFunctionalAcceptance=false；原正向窗口项在报告中保留为阻塞，未运行Blob算法。"
+      ]
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "attempt-154",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 154,
+        "pid": 86908,
+        "exit": 0,
+        "timeoutMs": 180000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "1461AB855B3F31949A7D0A90D27C1C14DD0AA3945D660B617126531221A4D52E",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-154"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        }
+      ],
+      "logSha256": "C8D8513F914B5B05EEDBEF274FA2DDBF5F8087C94191D1813F0337C6B3720741",
+      "lastLines": [
+        "2026-10-31T14:36:39.2446643Z OWNER_CLOSE_END / APP_SHUTDOWN_BEGIN",
+        "2026-10-31T14:36:39.2467286Z APP_SHUTDOWN_END"
+      ]
+    },
+    {
+      "track": "DesignTime",
+      "stage": "S4",
+      "attempt": "attempt-152",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 152,
+        "pid": 9088,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4DesignTimeCases.cs",
+        "caseSourceSha256": "B324BB7E5DA76B4BDDBCDB1F04BF93917C80BEF15EE71215B06F8281740060CB",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\DesignTime\\attempt-152"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        }
+      ],
+      "logSha256": "9A757C01362D9540F63B0B40267C4D0C4C54B8F500B13DF964418E2771B04D35",
+      "lastLines": [
+        "PASS 普通枚举正式配置序列化重开回填同一候选键",
+        "独立设计组装及开关生产合同检查：290组通过；生产合同检查在独立预览断言之后执行，不代替Visual Studio实际设计器与用户视觉验收。"
+      ]
+    },
+    {
+      "track": "ResultChain",
+      "stage": "S4",
+      "attempt": "attempt-014",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 14,
+        "pid": 127364,
+        "exit": 0,
+        "timeoutMs": 90000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "I2ResultChainCases.cs",
+        "caseSourceSha256": "30807A218B3EF1E18CDC8C4A9FE392CDBE6E36C340653796146C2807AE979391",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ResultChain\\attempt-014"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        }
+      ],
+      "logSha256": "FCAB75A4B8901F82A88405C9BDB7E36663E67C62009B2C1946F4476ABDAD4681",
+      "lastLines": [
+        "PASS Actual WPF dispatcher shutdown releases pending manager results without pumping them",
+        "I2冻结结果及通知生命周期：24通过，0失败。"
+      ]
+    },
+    {
+      "track": "ImageSourceRecovery",
+      "stage": "S4",
+      "attempt": "attempt-038",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Formal",
+        "attempt": 38,
+        "pid": 133136,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "I2ImageSourceRecoveryCases.cs",
+        "caseSourceSha256": "22F4F10117F3B1F3FE93138E2AF543AF2BA92EDB7E1EB8859F2A89EC4B5E06E2",
+        "scope": "当前实施者针对主仓正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+        "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ImageSourceRecovery\\attempt-038"
+      },
+      "loaded": [
+        {
+          "name": "SunEyeVision.Core",
+          "expected": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094",
+          "actual": "8A735FC9092CFCC37D7E9109C8B5C7853989B4D592C977B56D2B9658BDD66094"
+        },
+        {
+          "name": "SunEyeVision.CvAdapter",
+          "expected": "575F5B832CBD4F8198BC33A9A4E1C050BC0BAD853A0566238A9D28CEB355CED7",
+          "actual": "575F5B832CBD4F8198BC33A9A4E1C050BC0BAD853A0566238A9D28CEB355CED7"
+        },
+        {
+          "name": "SunEyeVision.CvEngine",
+          "expected": "8C71CC0C8195E6C7DF57080AEEAFC562474554B6360A0938D66EA9A39F51DBC3",
+          "actual": "8C71CC0C8195E6C7DF57080AEEAFC562474554B6360A0938D66EA9A39F51DBC3"
+        },
+        {
+          "name": "SunEyeVision.DeviceDriver",
+          "expected": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B",
+          "actual": "7B6DE8CE96EC2E3A3DA671784E480D3F5A8613BB97A3025964DCC6ABF0D9FD2B"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "expected": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF",
+          "actual": "CA39CB96FD88FF19DD43AB8FAACBE6149362871C9A6746FAB79629AD3DE4DAFF"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "expected": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94",
+          "actual": "BFEEA4C3D995C80A3EDA7EF3D8528DCE9B26F837C2EB8008BF8808A2E7386A94"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "expected": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82",
+          "actual": "0B47B7D496B0D2E4EE712118C15823105A920374EA634E7845DE540059BFEF82"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "expected": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7",
+          "actual": "8C4FD45C457048DC371170CF50BC318E80DAFEE7F41062B5D9A7EA81B2B238A7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "expected": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955",
+          "actual": "91D4B1BDA1E8F48108938A23F76E66C15F3C50AB4861E5CFF649E932B0919955"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "expected": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8",
+          "actual": "59F9924FCE70434F2440B7CC6142EB709B47D064902F0350DC8739A0E5AA87D8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "expected": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360",
+          "actual": "4390099958749B24DAE997CABD6B75C7C558ED8D2DF9C7672A51A02B19E20360"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "expected": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43",
+          "actual": "9A292A1C4357FC182C67F1BC21EA0C9E9A2F6302DDF0F6EE0389EE1601CEEC43"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "expected": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11",
+          "actual": "839D3140D2811BE7360559BA6DA09CFF64DFE17EC050A91567C9207B4E818D11"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "expected": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173",
+          "actual": "FBA08837A2CD934E6A81AD302DAEA3DDA1B25130050D6EA437BCF78BCA63F173"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "expected": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F",
+          "actual": "C72FF45A0691D2D33FCB2EFD758606AD82B4B5CEFE46D1DE54F6C8480CD4FF3F"
+        },
+        {
+          "name": "SunEyeVision.Tool.Kernels",
+          "expected": "F9A1042536DED49E2F016E1D517C35F4F52B6B1D453715C74697A364B02224ED",
+          "actual": "F9A1042536DED49E2F016E1D517C35F4F52B6B1D453715C74697A364B02224ED"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "expected": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F",
+          "actual": "864229AED11F2A7B049441C5923A8523463367795B455C177E351D203AC8740F"
+        },
+        {
+          "name": "SunEyeVision.Workflow",
+          "expected": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B",
+          "actual": "B42E2B974D094909CDC15E41D855E0FFA5CAEF0D37EFFB3C8662BA0D6DB1373B"
+        }
+      ],
+      "logSha256": "7431F5671893C5DB6EDDB4716BF5F2579040A5287D5F2D1387CC79895629606F",
+      "lastLines": [
+        "CASE_MS 1 TOTAL_MS 112929",
+        "图像源失败承接：377通过，0失败；覆盖原失败21项。"
+      ]
+    }
+  ],
+  "limitations": [
+    "ROI本地定义/物化、其他阈值与原判定、图文配置、Blob绘制图及角度轴长仍未完成或未证",
+    "历史结果和帮助缺基础，仍为占位",
+    "部分图像结构/游标为本方适配，非VM已证等价",
+    "实际VS设计器及用户对本统一版本的人工验收未进行；用户决定后续手动设计时检查",
+    "独立设计时组装在用户新决定前已运行并通过，不等同实际VS",
+    "正式应用进程未主动启动，由用户自行启动"
+  ]
+}

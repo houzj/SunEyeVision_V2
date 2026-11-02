@@ -17,7 +17,8 @@ public static class BlobPresentation
   string? Id(string logical)=>ids.TryGetValue(logical,out var id)?id:null;
   void When(string logical,object value){if(Id(logical) is {} id)condition=new(id,value);}
   if(key is "setting.Threshold" or "setting.UpperThreshold"){minimum=0;maximum=255;decimals=0;}
-  if(key is "setting.Threshold" or "setting.Type")condition=new(ids["setting.SegmentationMode"],"None",true);
+  if(key=="setting.Threshold")condition=new(ids["setting.SegmentationMode"],"None",true);
+  if(key=="setting.Type")condition=new(ids["setting.SegmentationMode"],"DoubleThreshold",true);
   if(key=="setting.UpperThreshold")When("setting.SegmentationMode", "DoubleThreshold");
   if(key.StartsWith("setting.Filter"))
   {
@@ -28,8 +29,8 @@ public static class BlobPresentation
    if(family=="Area")decimals=0;else increment=.01;
    if(key.EndsWith("Min"))paired=Id(key[..^3]+"Max");
   }
-  if(key is "setting.IsAreaFilterEnabled" or "setting.IsCircularityFilterEnabled" or "setting.IsRectangularityFilterEnabled" or "setting.SortMode" or "setting.IsBlobCountFilterEnabled" or "setting.BlobCountLimit")section="Blob筛选";
-  if(key=="setting.BlobCountLimit"){When("setting.IsBlobCountFilterEnabled",true);minimum=1;maximum=20000;decimals=0;}
+  if(key is "setting.IsAreaFilterEnabled" or "setting.IsCircularityFilterEnabled" or "setting.IsRectangularityFilterEnabled" or "setting.SortMode" or "setting.BlobCountLimit")section="Blob筛选";
+  if(key=="setting.BlobCountLimit"){minimum=1;maximum=20000;decimals=0;}
   if(key.StartsWith("setting.Output"))section="输出";
   if(key.StartsWith("presentation.judgments."))
   {

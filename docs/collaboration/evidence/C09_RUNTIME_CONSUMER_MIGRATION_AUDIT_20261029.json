@@ -1,0 +1,32 @@
+{
+  "status": "READ_ONLY_CURRENT_CONTRACT_MIGRATION_PLAN_NOT_IMPLEMENTED",
+  "priority": "先完整S3RuntimeWorkflow，再Debug/Image/Catalog及有无Wpf功能；不为通过旧测试恢复旧接口。",
+  "workflow": {
+    "source": "scripts/verification/S3RuntimeWorkflowCases.cs",
+    "locations": [41, 56, 62, 71, 81, 84, 90, 91, 98, 100, 105, 110, 116, 117, 124, 151, 163, 219],
+    "changes": [
+      "WithOverrides/ParamSettings直接改RuntimeConfiguration.WithFieldValues/WithFieldSettings/Fields.Read；覆盖键用Setting返回的稳定字段ID，不用Threshold属性名。",
+      "绑定后CaptureSettings不应成功；核唯一Map中的Reference/Conversion，以及本轮解析结果。运行中修改整个配置到Constant200，本轮仍用旧冻结Reference，下一轮采用200。",
+      "保存重开核Reference路径/转换且无ParamSettings；临时常量覆盖不改变正式Map引用。",
+      "constant-only字段Reference提案在正式入口拒绝；required设置恢复原Constant或完整保存快照，不以Unset清除。",
+      "原重复常量风险改为真实SDK容器污染Runtime节点执行/保存拒绝，不能制造双权威，也不能把合法单一Constant当重复。",
+      "保留原快照、取消、连续停止、资源释放与真实HALCON执行全部语义用例。"
+    ]
+  },
+  "debug": {
+    "source": "scripts/verification/S3RuntimeDebugCases.cs",
+    "locations": [22, 41, 52, 63, 66, 77, 107, 116, 124],
+    "changes": "直接Fields；含Reference不读未解析typed设置，取消恢复整个配置；清输入引用用初始配置副本而非清ParamSettings，保Input缺键。"
+  },
+  "image": {
+    "source": "scripts/verification/S3RuntimeImageCases.cs",
+    "locations": [32, 35, 85, 111],
+    "changes": "Bind写Fields、覆盖用字段ID；实际现行ImageThreshold SDK工具仍是当前跨工具生产消费者，保Runtime→该工具→Runtime的帧/Domain/资源链，不新造兼容桥、不机械删其Results引用。"
+  },
+  "catalog": {
+    "source": "scripts/verification/S3RuntimeCatalogCases.cs",
+    "locations": [43, 51, 53, 57],
+    "changes": "核节点工厂唯一Map及无旧容器，严格Fields JSON；旧Blob入口无条件禁止，有/无Wpf准入保留。"
+  },
+  "scope": "静态迁移建议不是编译或运行通过；行号仅定位，实施前复核当前源码。"
+}

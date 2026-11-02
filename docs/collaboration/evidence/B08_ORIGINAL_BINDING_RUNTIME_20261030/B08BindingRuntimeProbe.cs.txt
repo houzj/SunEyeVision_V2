@@ -1,0 +1,111 @@
+// Owned-solution B08 probe. Build only until the coordinator starts its single instance.
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Web.Script.Serialization;
+
+public static class B08BindingRuntimeProbe
+{
+    [DllImport("kernel32.dll", CharSet=CharSet.Unicode)] static extern bool SetDllDirectory(string p);
+    static readonly List<object> records = new List<object>();
+    static string output;
+    static object variableManager;
+    static object Get(object o, string p) { return o.GetType().GetProperty(p).GetValue(o, null); }
+    static object Item(object o, string key) { return o.GetType().GetProperty("Item", new[] { typeof(string) }).GetValue(o, new object[] { key }); }
+    static void Put(object o, string key, string value) { o.GetType().GetProperty("Item", new[] { typeof(string) }).SetValue(o, value, new object[] { key }); }
+    static object Invoke(object o,string name, params object[] args) { var m=o.GetType().GetMethods().First(x=>x.Name==name && x.GetParameters().Length==args.Length); return m.Invoke(o,args); }
+    static string Sha(string p) { using(var s=File.OpenRead(p)) using(var h=SHA256.Create()) return BitConverter.ToString(h.ComputeHash(s)).Replace("-", ""); }
+    static void Write(object row) { records.Add(row); File.WriteAllText(output,new JavaScriptSerializer{MaxJsonLength=int.MaxValue}.Serialize(records)); }
+    static string Err(Exception e) { while(e is TargetInvocationException && e.InnerException!=null)e=e.InnerException; return e.ToString(); }
+    static object NativeError(Exception e) { while(e is TargetInvocationException && e.InnerException!=null)e=e.InnerException; var data=new Dictionary<string,object>();data["type"]=e.GetType().FullName;foreach(var name in new[]{"errorCode","errorMessage"}){var p=e.GetType().GetProperty(name);var f=e.GetType().GetField(name);try {if(p!=null)data[name]=p.GetValue(e,null);else if(f!=null)data[name]=f.GetValue(e);}catch(Exception x){data[name+"ReadError"]=x.ToString();}}return data; }
+    static string[] Values(object io) { var values=Get(io,"Value") as IEnumerable; if(values==null)return new string[0]; var list=new List<string>(); foreach(var v in values){ if(list.Count==32)break; list.Add(v==null?"<null>":Convert.ToString(v,System.Globalization.CultureInfo.InvariantCulture)); } return list.ToArray(); }
+    static object Snapshot(string phase,object blob,object source,string sourceName) {
+        var result=new Dictionary<string,object>(); result["phase"]=phase; result["utc"]=DateTime.UtcNow.ToString("o");
+        result["blobId"]=Get(blob,"ID"); result["sourceId"]=Get(source,"ID");
+        try { result["sourceValues"]=Values(Item(source,sourceName)); } catch(Exception e){result["sourceError"]=Err(e);}
+        if(variableManager!=null)try {object v=Invoke(variableManager,"GetVarIntValue",sourceName);result["sourceVariableValues"]=v.GetType().GetField("pIntVal").GetValue(v);}catch(Exception e){result["sourceVariableError"]=Err(e);}
+        try { result["lowThreshold"]=Item(Get(blob,"Params"),"LowThreshold"); } catch(Exception e){result["parameterError"]=Err(e);}
+        try { result["binding"]=Invoke(Get(blob,"ParamSubManager"),"GetModuleParamBinding","LowThreshold"); } catch(Exception e){result["bindingError"]=Err(e);}
+        var declared=new List<object>();
+        try {foreach(var io in (IEnumerable)Get(blob,"Outputs"))declared.Add(new{name=Get(io,"Name"),typeIndex=Get(io,"ValueTypeIndex")});result["outputDeclarations"]=declared;}catch(Exception e){result["declarationError"]=Err(e);}
+        foreach(var property in new[]{"ExecuteCount","IsRunning","ErrorCode","ModuleStatus"})try{var info=blob.GetType().GetProperty(property);if(info!=null)result[property]=info.GetValue(blob,null);}catch(Exception e){result[property+"Error"]=Err(e);}
+        var values=new Dictionary<string,object>(); try { foreach(var io in (IEnumerable)Get(blob,"Outputs")) { string n=Convert.ToString(Get(io,"Name")); if(n=="BlobNum"||n=="Area"||n=="TotalArea") { try{values[n]=Values(io);}catch(Exception e){values[n]=Err(e);} } } } catch(Exception e){result["outputsError"]=Err(e);} result["outputs"]=values; return result;
+    }
+    static object Find(object solution,Type solType,string fullName) { var item=solType.GetProperty("Item",new[]{typeof(string)}); return item.GetValue(solution,new object[]{fullName}); }
+    static void Run(object procedure) { var m=procedure.GetType().GetMethod("Run",new[]{typeof(string),typeof(bool),typeof(bool)}); m.Invoke(procedure,new object[]{null,true,false}); }
+    static void CheckCount(object blob,int expected,string label) {
+        string[] values=Values(Item(blob,"BlobNum"));if(values.Length!=1||values[0]!=expected.ToString())throw new Exception(label+" actual BlobNum="+String.Join(",",values));
+    }
+    static object[] Reopen(Type st,string path,string blobFull,string imageFull,string sourceName,bool created,string label) {
+        st.GetMethod("Load",new[]{typeof(string),typeof(string),typeof(bool)}).Invoke(null,new object[]{path,"",false});
+        object sol=st.GetProperty("Instance").GetValue(null,null),blob=Find(sol,st,blobFull),source;
+        if(created){object image=Find(sol,st,imageFull);object root=Get(image,"Root");Type setInterface=root.GetType().GetInterfaces().First(t=>t.FullName=="VMControls.Interface.IVmModuleSet");source=setInterface.GetProperty("LocalVariablModule").GetValue(root,null);variableManager=Activator.CreateInstance(variableManager.GetType(),new object[]{source});}
+        else throw new Exception("This controlled reopen requires the created-variable fixture");
+        if(blob==null||source==null)throw new Exception("Reopened owned identity absent");
+        Write(Snapshot(label+"-before-run",blob,source,sourceName));Run(Get(blob,"Root"));Write(Snapshot(label+"-after-run",blob,source,sourceName));return new object[]{sol,blob,source};
+    }
+    [STAThread] public static int Main(string[] a) {
+        // args: Applications, ownedDir, ownedSolution, BlobFullName or @create, sourceFullName or imageSourceFullName, variableName, [ownedImage]
+        if(a.Length<6||a.Length>7){Console.Error.WriteLine("Expected Applications ownedDir ownedSolution BlobFullName|@create sourceFullName|imageSourceFullName variableName [ownedImage]"); return 2;}
+        string root=Path.GetFullPath(a[0]), owned=Path.GetFullPath(a[1]).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar;
+        string sol=Path.GetFullPath(a[2]); if(!sol.StartsWith(owned,StringComparison.OrdinalIgnoreCase)||!File.Exists(sol)){Console.Error.WriteLine("Solution must be an existing file inside the owned directory");return 2;}
+        string appbase=Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory); if(!appbase.StartsWith(owned,StringComparison.OrdinalIgnoreCase)){Console.Error.WriteLine("Probe executable must be inside owned directory");return 2;}
+        output=Path.Combine(owned,"b08-observations.json"); if(File.Exists(output)){Console.Error.WriteLine("Refusing to overwrite result");return 2;}
+        string saved=Path.Combine(owned,"b08-after-unbind.sol"); if(File.Exists(saved)){Console.Error.WriteLine("Refusing to overwrite saved solution");return 2;}
+        AppDomain.CurrentDomain.AssemblyResolve+=(s,e)=>{ string f=new AssemblyName(e.Name).Name+".dll"; foreach(string d in new[]{"myLibs","PublicFile/x64",".CommonControl"}){string p=Path.Combine(root,d,f);if(File.Exists(p))return Assembly.LoadFrom(p);} return null; };
+        object solution=null; string phase="init";
+        try {
+            SetDllDirectory(Path.Combine(root,"PublicFile/x64")); Type st=Assembly.LoadFrom(Path.Combine(root,"myLibs/VM.Core.dll")).GetType("VM.Core.VmSolution",true);
+            Write(new{phase="identity",utc=DateTime.UtcNow.ToString("o"),pid=System.Diagnostics.Process.GetCurrentProcess().Id,appBase=appbase,solution=sol,solutionSha256=Sha(sol),applications=root,blob=a[3],source=a[4],sourceOutput=a[5],a=37,b=173,xmlDefault=100});
+            phase="load";try { st.GetMethod("Load",new[]{typeof(string),typeof(string),typeof(bool)}).Invoke(null,new object[]{sol,"",false}); } catch(TargetInvocationException e) { var cause=e.InnerException;var code=cause==null?null:cause.GetType().GetProperty("errorCode");if(code==null||Convert.ToInt32(code.GetValue(cause,null))!=-536870093)throw;Write(new{phase="partial-solution-load",code=-536870093,limitation="some fixture modules unavailable; every required module must be verified"}); } solution=st.GetProperty("Instance").GetValue(null,null);
+            object blob,source; string blobFull=a[3]; bool created=a[3]=="@create";
+            if(created) {
+                if(a.Length!=7)throw new Exception("@create requires an owned image file"); string imagePath=Path.GetFullPath(a[6]); if(!imagePath.StartsWith(owned,StringComparison.OrdinalIgnoreCase)||!File.Exists(imagePath))throw new Exception("Image must be an existing file in owned directory");
+                object imageSource=Find(solution,st,a[4]);if(imageSource==null)throw new Exception("Image source not found");object proc=Get(imageSource,"Root");if(proc==null)throw new Exception("Image source has no root procedure");
+                phase="create-blob";blob=Activator.CreateInstance(Assembly.LoadFrom(Path.Combine(root,"myLibs/VM.Core.dll")).GetType("VM.Core.VmModule",true),new object[]{proc,"IMVSBlobFindModu"});
+                blobFull=Convert.ToString(Get(blob,"FullName"));Write(new{phase="created-blob",fullName=blobFull,id=Get(blob,"ID")});
+                phase="create-variable";Type setInterface=proc.GetType().GetInterfaces().First(t=>t.FullName=="VMControls.Interface.IVmModuleSet");source=setInterface.GetMethod("AddLocalVariableModule").Invoke(proc,null);if(source==null)throw new Exception("Local variable module unavailable");
+                Type vm=Assembly.LoadFrom(Path.Combine(root,"myLibs/Apps.XmlParser.dll")).GetType("Apps.XmlParser.Variable.VariableManager",true);object vars=Activator.CreateInstance(vm,new object[]{source});variableManager=vars;Invoke(vars,"AddVar",a[5],"int","173","");Invoke(vars,"SetVarIntValue",a[5],new int[]{173},"");
+                object v=Invoke(vars,"GetVarIntValue",a[5]);var vals=(int[])v.GetType().GetField("pIntVal").GetValue(v);Write(new{phase="created-variable",id=Get(source,"ID"),values=vals});if(vals==null||vals.Length!=1||vals[0]!=173)throw new Exception("Actual variable readback is not exactly 173");
+                phase="connect-image";object target=Invoke(blob,"GetInputIOWithLeafByName","InputImage"), sourceImage=Invoke(imageSource,"GetOutputIOWithLeafByName","ImageData");if(target==null||sourceImage==null)throw new Exception("IMAGE IO combination missing");target.GetType().GetProperty("RelateIO").SetValue(target,sourceImage,null);if(target.GetType().GetProperty("RelateIO").GetValue(target,null)==null)throw new Exception("IMAGE subscription did not roundtrip");
+                Invoke(imageSource,"ClearAllInputImage");Invoke(imageSource,"AddInputImageByPath",imagePath);Write(new{phase="image-connected",path=imagePath,sha256=Sha(imagePath)});Invoke(imageSource,"Run");
+                phase="connect-control";
+                Type baseModule=Assembly.LoadFrom(Path.Combine(root,"myLibs/VM.Core.dll")).GetType("VM.Core.VmModule",true);
+                object next=baseModule.GetProperty("NextModules",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(imageSource,null);
+                Invoke(next,"Add",blob);
+                Write(new{phase="control-connected",from=Get(imageSource,"ID"),to=Get(blob,"ID")});
+                object actualVariableIo=Item(source,a[5]);
+                Write(new{phase="variable-io-identity",name=Get(actualVariableIo,"Name"),rootId=Get(Get(actualVariableIo,"Root"),"ID"),moduleId=Get(source,"ID"),values=Values(actualVariableIo)});
+            } else {blob=Find(solution,st,a[3]);source=Find(solution,st,a[4]);} if(blob==null||source==null)throw new Exception("Specified Blob or source module is absent");
+            if(!String.Equals(Convert.ToString(Get(blob,"StrModuleName")),"IMVSBlobFindModu",StringComparison.Ordinal))throw new Exception("Selected module does not identify itself as IMVSBlobFindModu");
+            string[] sourceValues;try{sourceValues=Values(Item(source,a[5]));}catch(Exception e){sourceValues=new string[0];Write(new{phase="source-io-error",error=Err(e)});} Write(new{phase="source-preflight",values=sourceValues});
+            if(!created&&(sourceValues.Length!=1||sourceValues[0]!="173"))throw new Exception("Real source output must already contain exactly 173; no fabricated source will be substituted");
+            object procedure=Get(blob,"Root"); if(procedure==null||Convert.ToBoolean(Get(procedure,"IsRunning"))||Convert.ToBoolean(Get(procedure,"ContinuousRunEnable")))throw new Exception("Owned Blob procedure missing or already running");
+            phase="default-baseline-run";Write(Snapshot("D-default-before-run",blob,source,a[5]));Run(procedure);Write(Snapshot("D-default-after-run",blob,source,a[5]));CheckCount(blob,2,"D=100 baseline");
+            phase="B-constant-baseline-run";Put(Get(blob,"Params"),"LowThreshold","173");Run(procedure);Write(Snapshot("B-constant-after-run",blob,source,a[5]));CheckCount(blob,1,"B=173 baseline");
+            phase="set-A";Put(Get(blob,"Params"),"LowThreshold","37");Write(Snapshot("A-before-binding",blob,source,a[5]));if(Convert.ToString(Item(Get(blob,"Params"),"LowThreshold"))!="37")throw new Exception("LowThreshold A did not roundtrip as 37");
+            phase="A-baseline-run";Run(procedure);Write(Snapshot("A-after-run",blob,source,a[5]));
+            object manager=Get(blob,"ParamSubManager");var bind=manager.GetType().GetMethods().First(m=>m.Name=="SetModuleParamBinding"&&m.GetParameters().Length==10);var pars=bind.GetParameters();
+            phase="bind-variable";object[] b={"LowThreshold","int",Enum.Parse(pars[2].ParameterType,"SUBSCRIBE_VAR_VARIABLE"),"",Convert.ToUInt32(Get(Get(Item(source,a[5]),"Root"),"ID")),Convert.ToString(Get(Item(source,a[5]),"Name")),Enum.Parse(pars[6].ParameterType,"SUBSCRIBE_INDEX_CONSTANT"),"0",0u,""};
+            object ok=bind.Invoke(manager,b);Write(new{phase="bind-result",accepted=ok});if(!Convert.ToBoolean(ok))throw new Exception("Bind rejected");Write(Snapshot("bound-before-run",blob,source,a[5]));
+            phase="bound-run";Run(procedure);Write(Snapshot("bound-after-run",blob,source,a[5]));CheckCount(blob,1,"real B=173 bound execution");
+            string boundSaved=Path.Combine(owned,"b08-bound.sol");phase="bound-save";st.GetMethod("SaveAs",new[]{typeof(string),typeof(string)}).Invoke(null,new object[]{boundSaved,null});Write(new{phase="bound-save",path=boundSaved,sha256=Sha(boundSaved)});
+            phase="bound-reopen";object[] refreshed=Reopen(st,boundSaved,blobFull,a[4],a[5],created,"bound-reopened");solution=refreshed[0];blob=refreshed[1];source=refreshed[2];procedure=Get(blob,"Root");manager=Get(blob,"ParamSubManager");CheckCount(blob,1,"bound persisted and re-executed");
+            phase="invalid-source-index";b[7]="99";bool invalidAccepted=Convert.ToBoolean(bind.Invoke(manager,b));Write(new{phase="invalid-source-index-result",accepted=invalidAccepted,index=99});if(invalidAccepted){Run(procedure);Write(Snapshot("invalid-source-after-run",blob,source,a[5]));}b[7]="0";if(!Convert.ToBoolean(bind.Invoke(manager,b)))throw new Exception("Valid source restore rejected");
+            phase="changed-source-run";Invoke(variableManager,"SetVarIntValue",a[5],new int[]{90},"");Run(procedure);Write(Snapshot("source-90-after-run",blob,source,a[5]));CheckCount(blob,2,"same source changed to 90");
+            phase="restored-source-run";Invoke(variableManager,"SetVarIntValue",a[5],new int[]{173},"");Run(procedure);Write(Snapshot("source-173-after-run",blob,source,a[5]));CheckCount(blob,1,"same source restored to 173");
+            phase="unbind";bool deleted=Convert.ToBoolean(Invoke(manager,"DelModuleParamBinding","LowThreshold","int"));Write(new{phase="unbind-result",accepted=deleted});if(!deleted)throw new Exception("Unbind rejected");Write(Snapshot("unbound-before-run",blob,source,a[5]));
+            phase="unbound-run";Run(procedure);Write(Snapshot("unbound-after-run",blob,source,a[5]));
+            phase="save";st.GetMethod("SaveAs",new[]{typeof(string),typeof(string)}).Invoke(null,new object[]{saved,null});Write(new{phase="save",path=saved,exists=File.Exists(saved),sha256=File.Exists(saved)?Sha(saved):null});
+            if(!File.Exists(saved))throw new Exception("Saved solution missing");
+            phase="reload";st.GetMethod("Load",new[]{typeof(string),typeof(string),typeof(bool)}).Invoke(null,new object[]{saved,"",false});solution=st.GetProperty("Instance").GetValue(null,null);blob=Find(solution,st,blobFull);if(created){object image=Find(solution,st,a[4]);object rootProc=Get(image,"Root");Type setInterface=rootProc.GetType().GetInterfaces().First(t=>t.FullName=="VMControls.Interface.IVmModuleSet");source=setInterface.GetProperty("LocalVariablModule").GetValue(rootProc,null);if(source!=null)variableManager=Activator.CreateInstance(variableManager.GetType(),new object[]{source});}else source=Find(solution,st,a[4]);if(blob==null||source==null)throw new Exception("Saved module identity unavailable after reload");Write(Snapshot("reloaded",blob,source,a[5]));Run(Get(blob,"Root"));Write(Snapshot("reloaded-after-run",blob,source,a[5]));
+            return 0;
+        } catch(Exception e){Write(new{phase="error",at=phase,error=Err(e),nativeError=NativeError(e)});return 1;}
+        finally { if(solution!=null)try { ((IDisposable)solution).Dispose();Write(new{phase="owned-solution-disposed"}); }catch(Exception e){Write(new{phase="dispose-error",error=Err(e)});} }
+    }
+}

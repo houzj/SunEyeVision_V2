@@ -1,0 +1,593 @@
+{
+  "scope": "Candidate，独立工作树自身构建；未集成主仓正式Release验收",
+  "baseline": "eaa772288bc47aae82eafde35fa083b2b38b0735",
+  "changes": [
+    "scalar普通解绑复用PrepareValue/正式接纳，按声明精度ToEven舍入，宿主拒绝及关闭重入保留保护",
+    "range禁用暂停数值与引用、关闭弹层与展开、取消排队，原生/键盘/模式及异步回调核启用状态，按当前Loaded/可见代际恢复原文"
+  ],
+  "build": {
+    "log": "Release/_validation/numeric-contract-final-build.log",
+    "exit": 0,
+    "errors": 0,
+    "warnings": 6527,
+    "elapsed": "00:02:02.79"
+  },
+  "productAndTestSourceSha256": {
+    "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs": "3b57f7db8985894ab47f6c0ef3920edd952f90090e039ba70c2d4c321307a5ce",
+    "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs": "c0458a0cd0129cdc3ad4387b42d3cc63bd1e505cb4767e59b953b490bbc76e9b",
+    "scripts/verification/S4NumericContractCases.cs": "fa093a055fba2923d5e34322124863d71ad2bcd84551eda8a1274192c081e582",
+    "scripts/verification/Run-S2ReleaseValidation.ps1": "f450cf88389c1452e67893aef4d0ece246c6672fd40b6ae1cdbecb448de4ab53"
+  },
+  "tracks": [
+    {
+      "track": "NumericContract",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 5,
+        "pid": 133492,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "FA093A055FBA2923D5E34322124863D71AD2BCD84551EDA8A1274192C081E582",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-005"
+      },
+      "passedLogLines": 41,
+      "loadedProduct": [
+        "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\tB0C3CD14A9149F5855F8F94AF7726B9D94FD42C29B58F96D35951046F27DC0EF",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\tC5729D540121C9A3F8605F00E9CAEA684F4B93298561EF3FDCDF2E62032DEBB7",
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t0F22DFD6F5FED6B3B7D07256A690B00D836394BE2D97E985FB7B19CAB003B0D1",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\tE57398836009CC717DC04EF6861124C6FBEBD1A64FA862179375EE66E9F875C1"
+      ],
+      "samples": [
+        {
+          "Kind": "scalar",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Name": "舍入提案宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "宿主拒绝"
+          }
+        },
+        {
+          "Name": "拒绝后再次解绑可单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "提案拒绝保留引用且不调用写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "提案资格拒绝"
+          }
+        },
+        {
+          "Name": "解绑越界当前值保留引用",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "数值超出允许范围。"
+          }
+        },
+        {
+          "Name": "宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "范围0宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "范围1宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "scalar真实焦点转移后禁用时序",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": false,
+            "beforeTransfer": 0,
+            "beforeDisable": 1,
+            "valueBeforeDisable": 0.45,
+            "afterDisable": 1,
+            "valueAfterDisable": 0.45,
+            "afterPump": 1,
+            "accepted": 0.45,
+            "Raw": "0.45",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "scalar实际失焦恢复不重复写入",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 1,
+            "beforeDisable": 1
+          }
+        },
+        {
+          "Name": "range真实焦点转移后禁用时序",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": false,
+            "beforeTransfer": 0,
+            "beforeDisable": 1,
+            "valueBeforeDisable": 0.45,
+            "afterDisable": 1,
+            "valueAfterDisable": 0.45,
+            "afterPump": 1,
+            "accepted": 0.45,
+            "Raw": "0.45",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range实际失焦恢复不重复写入",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 1,
+            "beforeDisable": 1
+          }
+        },
+        {
+          "Name": "scalar真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "scalar排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "scalarlow恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "scalarlow卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "scalarlow重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "scalarlow拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "rangelow恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "rangelow卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "rangelow重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "rangelow拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 1,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "rangehigh恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "rangehigh卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "rangehigh重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "rangehigh拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        }
+      ]
+    },
+    {
+      "track": "FieldEditing",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 123748,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4FieldEditingCases.cs",
+        "caseSourceSha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-002"
+      },
+      "passedLogLines": 38,
+      "loadedProduct": [
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t0F22DFD6F5FED6B3B7D07256A690B00D836394BE2D97E985FB7B19CAB003B0D1",
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\tE57398836009CC717DC04EF6861124C6FBEBD1A64FA862179375EE66E9F875C1",
+        "SunEyeVision.Tool.BlobAnalysis.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll\t7FD61E031F2BA0938F124DA0F467F478FC07D457CD67D71DB5B3CDF7070CECD1",
+        "SunEyeVision.Workflow\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll\t090E949D733AD7EC9C5C646E5C98C25AA46A34B19222CE8678704C23353DC5F6",
+        "SunEyeVision.Plugin.SDK\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll\tC5729D540121C9A3F8605F00E9CAEA684F4B93298561EF3FDCDF2E62032DEBB7",
+        "SunEyeVision.UI\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll\tB0C3CD14A9149F5855F8F94AF7726B9D94FD42C29B58F96D35951046F27DC0EF",
+        "SunEyeVision.Plugin.Infrastructure\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll\t33E27B0949D330F3F699C2CF4DEAA42D3C6890E0A5579059BE412CE6AAEF0286",
+        "SunEyeVision.Plugin.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll\tAA297CBD34E257442F58EAAEAFAF5D7FA56611A993F53CA085370F1C7BFD9925",
+        "SunEyeVision.Core\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll\t28EFD3EFCBE84357D24CCB8F492DB6758360BE5ACB80A2520E65C895915C6D23",
+        "SunEyeVision.Tool.BlobAnalysis.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll\tEC291F6C0D91DC9EADEB5E5D45DAA172B929992DD3C44414879A813E215253A3",
+        "SunEyeVision.Tool.ImageSource.Runtime\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll\t043807E0B5D64264A13B4E4E0DAD945D00DD0A9025244A03BE00D14F1C6BC801",
+        "SunEyeVision.Tool.ImageSource.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll\t3DA1E9087CF337223151E5F081E6926B4DA7E637B068F4F80C4EC1C2E5E69E4A"
+      ]
+    },
+    {
+      "track": "VariableFields",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 1,
+        "pid": 123060,
+        "exit": 0,
+        "productRoot": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4VariableReferenceCases.cs",
+        "caseSourceSha256": "128C5CC68210CE9B0D64AFA040CE9B2429CDD44F38B7BF4F15349C5148711FBA",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "C:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\VariableFields\\attempt-001"
+      },
+      "passedLogLines": 13,
+      "loadedProduct": [
+        "SunEyeVision.Plugin.Contracts\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\tE57398836009CC717DC04EF6861124C6FBEBD1A64FA862179375EE66E9F875C1",
+        "SunEyeVision.Plugin.Wpf\tC:\\Users\\houzhongjie\\.codex\\worktrees\\blob-parameter-lifecycle\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t0F22DFD6F5FED6B3B7D07256A690B00D836394BE2D97E985FB7B19CAB003B0D1"
+      ]
+    }
+  ],
+  "sameProductHashesAcrossTracks": true,
+  "preservedFailures": [
+    "NumericContract/attempt-001: scalar0.125解绑拒绝，范围左右0.12接纳；已固定e3476a55证据",
+    "NumericContract/attempt-002:未区分实际焦点转移同步接纳，错误零写入断言保留，不用于产品禁用失败结论",
+    "NumericContract/attempt-003:真实Loaded下明确注入LostKeyboardFocus排队，range禁用前0/禁用后0/Pump后1；已固定f1365040证据"
+  ],
+  "boundaries": [
+    "排队迟到探针明确注入路由消息，不能称所有物理操作必现；正常实际移焦同步提交另已通过",
+    "测试额外注入禁用原生箭头和键盘消息以验证门禁，真实操作禁用控件通常不接收输入",
+    "未启动原VM或SDK，不涉及HALCON算法、共享合同或视觉布局；原420尺寸保持",
+    "ROI/结果整窗保护、VS实际设计器、用户人工验收及B08原完整清单未完成；候选三轨不代表完整B08完成"
+  ]
+}

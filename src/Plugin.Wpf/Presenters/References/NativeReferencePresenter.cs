@@ -16,8 +16,8 @@ internal sealed class NativeReferencePresenter : Decorator,IDisposable
     private bool _disposed;
     internal NativeReferencePresenter(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format,bool allowConstantText=false)
     {
-        _expansion=new(this);
-        _session=new(state,options,format,expand:_expansion.Open,preference:_expansion.Preference,allowConstantText:allowConstantText);
+        _expansion=new(this,options.WindowOwner);
+        _session=new(state,options,format,expand:_expansion.Open,preference:_expansion.Preference,allowConstantText:allowConstantText,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
         try
         {
             Resources.MergedDictionaries.Add(new ResourceDictionary

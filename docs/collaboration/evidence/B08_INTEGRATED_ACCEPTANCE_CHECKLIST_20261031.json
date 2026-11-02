@@ -1,0 +1,607 @@
+{
+  "scope": "B08整控件可执行集成验收清单，24项保留数值/模式/常量引用索引/窗口/异常/设计/生产宿主/跨文档，不进入下一控件；S1→S2→S3顺序保持",
+  "baseline": "cf4e5a657be4eddff4280920c6ee7644dd4cae13",
+  "observedMainHead": "5d68d768；只读核CURRENT_TASK/实际runner/正式与候选回执，未合入或运行主仓产物",
+  "classification": {
+    "已验": "按具体formal/candidate、代码/资源SHA、轨道与保护/正向范围列，不能跨版本冒用",
+    "需原机": "多值/动态索引实际消费及具体默认偏好键持久化/Dirty/Undo等；托管资料已证入参的不重复求证",
+    "本方可直接完成": "已有正式类型/数量/身份及原资源上的量测、真实宿主/关闭/设计态/VS验证；先满足实施合同及同版GUI安排，未执行不报通过",
+    "需主线合同": "编辑器级空目标/文档展示scope/偏好读接受策略；当前没有方案级状态可直接接，不造接口或格式",
+    "外部组合阻塞": "ROI/结果原件未有正式owner，六类正向必须保留，既有正式来源不可整体禁用且不能先撤整窗保护"
+  },
+  "existingFormalReceipt": {
+    "scope": "正式Release定向WPF验证，不代表完整Blob或算法验收",
+    "sourceCommit": "eaa772288bc47aae82eafde35fa083b2b38b0735",
+    "manifestSha256": "9B86114F0E57DB777E93FF180D4CAA0B751B72F86CDD86C9ECC2036D4A337B3F",
+    "buildLog": "Release/_validation/B08BlobNumericContract-20261031/build-008.log",
+    "buildLogSha256": "F3C879950062357E9A4DDBD71109490271C1D73658B3FDA7E13EC5BE6D2F67FF",
+    "checks": [
+      {
+        "track": "FieldEditing",
+        "attempt": "attempt-136",
+        "cases": 38,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-136\\receipt.json",
+        "receiptSha256": "FA608299CEAE51C1F64777846C7F5E18E7EFC608279A5F6F8261CB1ECC7332C9",
+        "runLogSha256": "4E7F3A886FBB76FEDBBE5359D5D52A48FBAC49852770B92D5ACF7B1B7B25C997",
+        "caseSourceSha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A"
+      },
+      {
+        "track": "VariableFields",
+        "attempt": "attempt-014",
+        "cases": 13,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\VariableFields\\attempt-014\\receipt.json",
+        "receiptSha256": "C69C4DA5779807963336FAE67931C2375E6924575DD79DB86C52D7D06F526288",
+        "runLogSha256": "318D91176025C1C915C1C3BD2F9E7F8DB5FA9EAA7AA747AE280E7F770BF31D0F",
+        "caseSourceSha256": "70D50346B0646735E31B4A09F7626FC13785380AF304BB3F432BA3F2AB29BB4B"
+      },
+      {
+        "track": "RuntimeEditorUiStage",
+        "attempt": "attempt-019",
+        "cases": 13,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-019\\receipt.json",
+        "receiptSha256": "72F738F279DAC238F5E83C385AE35F7B94CE685A00F7690EA129DF45A0A5873C",
+        "runLogSha256": "DECD1E29CBBA4B4FB5D458E0CE646F09E9643A04B2DEE1BB40D19537EA0B1A72",
+        "caseSourceSha256": "54FF6E5153240DEE8F256176EA28C8146687C5CCA0344B30979DDF0830E7AA09"
+      },
+      {
+        "track": "BlobParameterProduction",
+        "stage": "S4",
+        "attempt": "attempt-003",
+        "cases": 18,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-003\\receipt.json",
+        "receiptSha256": "CB78E922DEEC5ABA85E37F21CC90C5BD3FA21DD45F65AB7AD4073B48714C010C",
+        "runLogSha256": "EAA9EE51A1CD31809958E36D91B82CB976815AA9FF8BAB90B1D16DA757AB42D6",
+        "caseSourceSha256": "A47DE344B6318292364E2E07640A573DC71FA26B1A7654871ABE4C1581976784"
+      },
+      {
+        "track": "ManualReferenceQualification",
+        "stage": "S4",
+        "attempt": "attempt-005",
+        "cases": 19,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-005\\receipt.json",
+        "receiptSha256": "BADA9280BD8AFFB840D2CAEA9D9E95778B8770F41C7DE962491BB644AF0D70C2",
+        "runLogSha256": "92329740724B2FD452B77F2FA945985CC1FF4F0BB85959BBB055600EF2C0E457",
+        "caseSourceSha256": "A36BB263E260443AAFD59D4A9548DFBF0709CEF9355C86E4E69E42EBD45C3F70"
+      },
+      {
+        "track": "ParameterValues",
+        "stage": "S4",
+        "attempt": "attempt-007",
+        "cases": 18,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-007\\receipt.json",
+        "receiptSha256": "3DAEE67997F5BBA42A608FB2902B0413AFBAB80CF756A196FCF02C078326F727",
+        "runLogSha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9",
+        "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+      },
+      {
+        "track": "RuntimeWorkflow",
+        "stage": "S3",
+        "attempt": "attempt-064",
+        "cases": 10,
+        "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-064\\receipt.json",
+        "receiptSha256": "18745F119721FB556EBD838FC19DD89C910EA26CECE96A127482ECE1D5A5279E",
+        "runLogSha256": "8277B9E901681C92756D886CA4CF6F1EE655D054F6AF701F76756A32CF0E085D",
+        "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC"
+      }
+    ],
+    "limitations": [
+      "六类正向窗口流程因ROI和结果显示尚未接入而阻塞",
+      "面积上限窄宽显示截断待核",
+      "VS及用户人工验收未完成",
+      "原厂索引部分语义及VM算法未证"
+    ]
+  },
+  "existingCandidateReceipt": "B08_REFERENCE_CONTROL_CHAIN_MATRIX_20261031.json：0b8af6d9，UI0错/6525、full0错/6474、候选FieldEditing014=38/VariableFields003=13/扩展Window003=16；不与formal重复计数",
+  "blockedPositiveCases": [
+    "成功捕获过程同步重绑的旧结果隔离",
+    "保存接纳并重绑后旧来源控件迟到回调",
+    "未失焦数值经整窗确认保存重开",
+    "真实窗口调试与连续运行停止",
+    "私有调试预览结果表及失败清空",
+    "整窗成功确认发布后释放范围"
+  ],
+  "checklist": [
+    {
+      "id": "A00",
+      "item": "同版产物与来源清单",
+      "currentStatus": "已验正式子集",
+      "owner": "主线集成/发布",
+      "actions": "固定源码SHA、UI/full构建、发布清单与实际加载DLL/MVID/SHA；全轨同Release，不复制程序/算法库；targeted build改载荷后必须经标准全量规则重出一致清单再测。",
+      "passOracle": "版本不同、payload SHA不一致、产物根混用即拒收，不能只凭build成功。",
+      "recipe": "FORMAL/ARTIFACT",
+      "evidence": "B08_FORMAL_WINDOW_REFERENCE_20261031.json：eaa77228、manifest9B86114F...；不泛称后续源码/未来构建已验"
+    },
+    {
+      "id": "A01",
+      "item": "五整数四浮点与数值边界",
+      "currentStatus": "已验正式子集",
+      "owner": "Runtime/声明主线+控件线",
+      "actions": "从正式XML/Schema打开9字段，核100/150/100、面积10/999999999且整数1..999999999、圆度/矩形度0.1..1；按键/粘贴/箭头/滚轮/失焦/Enter逐一编辑，重载不写默认。",
+      "passOracle": "非法小数/非有限/越界/倒置不半写；显示格式与接受值分开核，引用绑定存在/过滤关闭也核已知常量边界。",
+      "recipe": "FIELD+NUMERIC",
+      "evidence": "正式BlobParameterProduction18、FieldEditing38；不把旧阈值循环已变常量的失败覆盖当有效证据"
+    },
+    {
+      "id": "A02",
+      "item": "真实单值/三范围组合及订阅按钮",
+      "currentStatus": "候选及正式字段子集已验，视觉未全验",
+      "owner": "控件线/面积尺寸线",
+      "actions": "真实Blob运行页核9字段顺序、三正式过滤开关；展开高级非空且真正生效，三范围左右原按钮均可见可用；常量与引用姿态量实际viewport。",
+      "passOracle": "不能仅看session存在；原模板/图标、两端独立状态、非法保留与共享同一正式草稿；不静默截断九位面积值。",
+      "recipe": "FIELD+LAYOUT+MANUAL",
+      "evidence": "候选attempt013/014三范围实图与强断言；主仓FieldEditing136；144DPI窄面积文本仍未闭合"
+    },
+    {
+      "id": "A03",
+      "item": "六模式Choice与条件显隐",
+      "currentStatus": "已验正式子集",
+      "owner": "共享Choice+Blob主线",
+      "actions": "原六项保留，仅Single可新接纳；None/Double既有配置保持显示，可私有修正Single，未实现三项展示不可接纳；核None/Single/Double极性/低高显隐。",
+      "passOracle": "鼠标/键盘/程序提案/整组均拒disabled；展示ID不可入字段/JSON；历史不可用键不自动替换；确认执行准入独立。",
+      "recipe": "FIELD+WINDOW+NUMERIC",
+      "evidence": "正式FieldEditing38/RuntimeEditorUiStage19=13；不能由此宣布极性标签或算法像素与VM等价"
+    },
+    {
+      "id": "A04",
+      "item": "常量↔引用/清空/当前值",
+      "currentStatus": "已验正式参数值子集",
+      "owner": "参数值生命周期线+控件线",
+      "actions": "常量37→引用173→消费→清源/解绑；分别无当前值、消费前、成功后、失效、取消/失败；用同owner读当前值回常量。",
+      "passOracle": "不猜XML默认/订阅前备份/最近结果，不将显示值写作常量；恢复应按现正式owner，状态/保存/历史不半写。",
+      "recipe": "FIELD+VALUE+NUMERIC",
+      "evidence": "ParameterValues正式18及FieldEditing38；原仅单样本直接解绑保173，变量删除UI额外清理仍未证"
+    },
+    {
+      "id": "A05",
+      "item": "候选资格/完整来源树",
+      "currentStatus": "已验正式限定来源",
+      "owner": "资格主线+控件线",
+      "actions": "有/无直接和传递控制边、仅图像订阅、断边撤销；int/float主树、整数索引树、模块排序、记录深层、无/变量管理叶；选中恢复及分组不提交。",
+      "passOracle": "只消费宿主限定候选；Scope/Node/Port/MemberPath/Type/Storage身份一致；不在WPF计算调度或假造未产出叶。",
+      "recipe": "QUALIFY+FIELD+EXPANDED",
+      "evidence": "正式ManualReferenceQualification19；原五状态仅限定ImageSource→Blob实例，Group/动态输出全域未证"
+    },
+    {
+      "id": "A06",
+      "item": "刷新与身份失效/恢复",
+      "currentStatus": "已验正式字段和候选窗口子集",
+      "owner": "控件线",
+      "actions": "更名/删除/同名新ID/类型存储变更、刷新失败后恢复；分别主源、模块索引、变量索引复合身份；旧树叶迟到双击。",
+      "passOracle": "失败保显示但禁提交；恢复只清正确诊断不吞写入拒绝；不能同名重绑，不把旧节点对象接入新快照。",
+      "recipe": "FIELD+VARIABLE+EXPANDED",
+      "evidence": "FieldEditing38、VariableFields13；候选扩展16，正式同版扩展复验按变更需要安排"
+    },
+    {
+      "id": "A07",
+      "item": "All与数量/形状适配",
+      "currentStatus": "本方源码已核，原多值消费未证",
+      "owner": "主线合同/逆向+控件线",
+      "actions": "Scalar+All保持标量；Sequence All到Scalar在数量与1相交时可条件绑定，实际0/多项拒绝、1项解包；固定多项先补索引；All到Sequence保全并校验数量。",
+      "passOracle": "不得把所有Sequence说成必须索引；不得默认取首项；原[]/无括号提交ALL只属托管/条件回读，不证明消费。",
+      "recipe": "INDEX-NATIVE+FIELD+EXPANDED",
+      "evidence": "10格语义矩阵与原最终报告；当前源码Compile/ResolveValue可核，不能凭旧SDK字符串B2测试名称当正式运行证据"
+    },
+    {
+      "id": "A08",
+      "item": "固定索引与文本编辑",
+      "currentStatus": "已验本方子集；原全域未证",
+      "owner": "控件线+逆向",
+      "actions": "当前来源真实括号内输入0、1、负数、溢出、小数、超声明最大数、运行时越界；刷新更名后保身份与原文；清索引回All按数量验证。",
+      "passOracle": "非法原文不丢且不写；有有效暂存来源也不能越过宿主；原单值[0]与[99]不推多值基数/错误码全域。",
+      "recipe": "FIELD+VARIABLE+INDEX-NATIVE",
+      "evidence": "原attempt03直接SDK单值[0]成功、[99]无正常结果保173；多值[0]/1/2待证"
+    },
+    {
+      "id": "A09",
+      "item": "模块/变量动态索引",
+      "currentStatus": "本方候选/正式子集已验；原消费待证",
+      "owner": "资格/生命周期主线+控件线",
+      "actions": "模块或变量主源×AtField/AtVariable；索引0→1→越界→恢复；整型scalar、记录成员、同批快照、复制重映射/保存重开。",
+      "passOracle": "主源不被索引选择替代；变量ID/类型/存储/作用域及代次准确，旧请求不写；不把多值索引源擅取首项。",
+      "recipe": "VARIABLE+QUALIFY+VALUE+INDEX-NATIVE",
+      "evidence": "VariableFields13、非前台九字段18及资格19；原VARIABLE提交与条件回读不代后端消费"
+    },
+    {
+      "id": "A10",
+      "item": "双Popup/焦点/文本命令",
+      "currentStatus": "已验字段子集",
+      "owner": "控件线",
+      "actions": "原Source/Index两个Popup、嵌套文本、树叶双击、Enter/Escape/Delete、内外焦点、窗口失活、常量/引用切换。",
+      "passOracle": "合法只写一次；非法留原文/正确焦点；实际Popup DP关闭，不能只把VM属性置false；不用红色行内提示。",
+      "recipe": "FIELD+EXPANDED",
+      "evidence": "FieldEditing38（含实际原树/文本/Combo测试），人工交互仍需同版核"
+    },
+    {
+      "id": "A11",
+      "item": "非模态展开/原变量模态",
+      "currentStatus": "候选展开及正式变量子集已验",
+      "owner": "控件线",
+      "actions": "展开源/索引互斥、当前目标切换、移出括号/清目标、窗口互斥；变量分组搜索分页单/双击确认取消、Owner隐藏关闭。",
+      "passOracle": "借同一正式field state，关窗不撤销已接受选择；取消不写；显示Value不当执行值；没有真实目标不能选择。",
+      "recipe": "VARIABLE+EXPANDED",
+      "evidence": "候选扩展16、正式VariableFields13；当前字段窗可用不等于方案默认自动空窗已实现"
+    },
+    {
+      "id": "A12",
+      "item": "异常关闭/创建/退役",
+      "currentStatus": "已验正式字段子集+候选窗口子集",
+      "owner": "控件线",
+      "actions": "close/unload/hide/disable/折叠/Dispose、原WPF绑定投影、宿主打开/提案、监听器、租约Invalidated异常；首错/清理错及重入新代。",
+      "passOracle": "先暂停/失效写权；每项清理执行；首与次异常都可查；旧PopupGeneration/request不关新代、不写活跃新scope。",
+      "recipe": "FIELD+VARIABLE+EXPANDED",
+      "evidence": "0d36数值关闭修复、0b8af6d9→主eaa77228租约修复；正式FieldEditing136=38包含7场景原模板异常组"
+    },
+    {
+      "id": "A13",
+      "item": "窗口Owner/默认偏好/自动空窗",
+      "currentStatus": "待原证+共享展示合同，不可独立闭环",
+      "owner": "主线冻结+控件线",
+      "actions": "按完整偏好设计核文档默认方式、当前编辑器展开、可空Target、WindowOwner四状态；pref=true新配置Loaded自动空窗，关闭不混同改默认。",
+      "passOracle": "不能用任意字段造空窗lease；不同方案同Window不串默认；同方案新Window是否共享按冻结合同；不用全局查询当前方案代owner。",
+      "recipe": "PREFERENCE-NATIVE+WINDOW+MANUAL",
+      "evidence": "当前Owner CWT只内存共享；暂无方案级偏好/创建前注入/无字段自动空窗；不先造接口/格式字段"
+    },
+    {
+      "id": "A14",
+      "item": "中英文宽度/主题/DPI/面积文本",
+      "currentStatus": "当前可量测，统一设计待决",
+      "owner": "控件线+面积尺寸线+主线",
+      "actions": "原展开窗240/英文320、Owner等高与位置；原BaseWindow/checkbox/树/色板与字体；420/500宿主宽、标签宽、100/125/150%DPI、长来源名及九位面积。",
+      "passOracle": "区分严格原厂与可读性适配，不能以内部session存在代实图；宽度和偏好同批决定，不先改；面积量测不代人工外观。",
+      "recipe": "LAYOUT+DESIGN+MANUAL",
+      "evidence": "144DPI：420/label120上限视口39.455DIP，九位需73.89；原label89仍53.545，500可完整；当前未改产品"
+    },
+    {
+      "id": "A15",
+      "item": "设计时同一真实视图/控件资源",
+      "currentStatus": "独立渲染子集已验，VS未验",
+      "owner": "控件线+人工验收",
+      "actions": "VS分别打开实际Blob XAML及公共组合；用正式schema示例走同组装，中文/英文与引用/常量/范围/禁用态；无主程序/Workflow/算法。",
+      "passOracle": "不复制默认值/假预览控件；设计器无候选时原按钮/模板仍正确，不调实际执行或写方案；真实VS与自动渲染分列。",
+      "recipe": "DESIGN+MANUAL",
+      "evidence": "设计数据/真实页面候选实图已核；VS实际设计器和用户人工仍未完成"
+    },
+    {
+      "id": "A16",
+      "item": "生产宿主完整组提案/拒绝",
+      "currentStatus": "已验正式非前台子集，整窗成功受阻",
+      "owner": "生产宿主/生命周期主线",
+      "actions": "9字段常量与引用混合整组、非法一项、主/索引组合、宿主拒绝、回调重绑、当前值和AcceptedFieldOrder；正式配置只在确认发布。",
+      "passOracle": "唯一draft/一次prepare，无部分写；回调重入不污染新代，拒绝原因保留；不旁路现版本/资格门禁。",
+      "recipe": "FIELD+NUMERIC+VALUE+QUALIFY",
+      "evidence": "非前台18/资格19/参数值18；主流程AdditionalData null/empty快照修复0a552/b731，不绕过版本检查"
+    },
+    {
+      "id": "A17",
+      "item": "确认取消/未失焦/历史与保存重开",
+      "currentStatus": "非前台已验，真实整窗6类阻塞",
+      "owner": "生命周期主线",
+      "actions": "未失焦文本→确认/保存→关闭重开；取消不改正式、undo/redo、复制/删除/重命名/断边、保存失败/不覆盖、旧模式读取修正与退出。",
+      "passOracle": "非法或未就绪不确认不覆盖原文件；业务编辑进入历史，运行/停止不重放；不能因外部保护阻断就在测试绕过。",
+      "recipe": "WINDOW+NUMERIC+VALUE",
+      "evidence": "正式RuntimeEditorUiStage19=13保留旧模式修正/取消；六类正向仍被ROI/结果组合阻塞"
+    },
+    {
+      "id": "A18",
+      "item": "跨文档/重开/退役身份",
+      "currentStatus": "主线现有身份子集已验，新增偏好路径待验",
+      "owner": "宿主主线+控件线",
+      "actions": "同Owner由方案A切B、A关闭后重开同ID、相同显示名新节点、不同Owner同方案；关闭/换文档时所有Popup/变量/展开及偏好迟到回调。",
+      "passOracle": "DocumentSession/Generation与Node/Field身份分开；旧scope无写权；偏好生命周期不能仅用Window或可复用Solution.Id。",
+      "recipe": "WINDOW+QUALIFY+PREFERENCE-NATIVE",
+      "evidence": "现正式编辑身份/失效案例可复用；当前Owner偏好跨文档语义尚无合同，不伪称已覆盖"
+    },
+    {
+      "id": "A19",
+      "item": "运行/调试/连续停止与冻结值",
+      "currentStatus": "已验部分后台；真实窗正向仍阻塞",
+      "owner": "运行/生命周期主线",
+      "actions": "同批冻结常量/引用/变量/索引、执行消费点当前值、取消前后/算法异常、私有调试隔离、连续运行停止、关闭退役。",
+      "passOracle": "不查WPF或最新结果，不把运行写历史；失败/取消最终值按已冻结策略；不把旧Getter当消费成功。",
+      "recipe": "VALUE+QUALIFY+WORKFLOW+WINDOW",
+      "evidence": "正式ParameterValues18/RuntimeWorkflow10；完整窗调试/连续与预览清空仍在blockedPositiveCases"
+    },
+    {
+      "id": "A20",
+      "item": "未知来源/Group/动态输出/完整原清单",
+      "currentStatus": "原全域未证或暂停，现严格资格保留",
+      "owner": "主线+逆向",
+      "actions": "复用完整原输出/控件清单，明确已映射实际输出、未实现算法叶、时间戳/Visible/CustomVisible与资格区别。",
+      "passOracle": "不能以名称相近假造值/候选；不把Visible结果显示标志当订阅资格；Group暂停，不扩契约或进入S3算法。",
+      "recipe": "QUALIFY+INDEX-NATIVE",
+      "evidence": "五状态int12/float1限定样本；当前正式声明映射不等于原75叶全部产出等价"
+    },
+    {
+      "id": "A21",
+      "item": "方案偏好正式载体/保存/Dirty/Undo",
+      "currentStatus": "待原机/源证与主线所有权决策",
+      "owner": "主线唯一共享文件写者",
+      "actions": "先核UserData具体key保存重开/Dirty/Undo，再冻结会话scope与载体；若要求持久，实际通过Serialize→PrepareJson→ReadFrozenCandidate→WriteSnapshot及失败恢复/关闭。",
+      "passOracle": "不因AdditionalData存在就新增字段；Workflow扩展快照修复不能代根扩展/偏好证明；不另写旁路配置。",
+      "recipe": "PREFERENCE-NATIVE+WINDOW+MANUAL",
+      "evidence": "完整偏好设计已定位原SDK Set/GetUIParamValue边界和根copy缺口，尚无该key保存实测，不先定新格式"
+    },
+    {
+      "id": "A22",
+      "item": "实际消费者整窗六类正向出口",
+      "currentStatus": "明确阻塞，不可缩为通过",
+      "owner": "主线统一整体组合边界",
+      "actions": "ROI/结果合法owner接通后一次补：捕获重绑旧结果、保存重绑旧来源回调、未失焦确认保存重开、真实窗调试/连续停止、预览及失败清空、成功确认发布后释放。",
+      "passOracle": "保持现整窗保护，不整体禁用已有正式ROI来源、不用条件跳过/旧假模型验收；未满足前B08/S2仍未完整验收。",
+      "recipe": "WINDOW+FULL",
+      "evidence": "原blockedPositiveCases六项完整保留；B08能复用非前台证明，但不能借此报整窗完成"
+    },
+    {
+      "id": "A23",
+      "item": "整控件人工与文档收口",
+      "currentStatus": "待完整同版与人工",
+      "owner": "主线/用户人工",
+      "actions": "核原件、真实页面、所有状态和主题DPI；汇总已验/原机待证/本方未做、失败及依赖，统一回原O06/主设计与CURRENT_TASK，原清单保留。",
+      "passOracle": "自动用例/截图/HTML/独立渲染均不能替代人工或VS；不以B08局部通过报S2/S3完成。",
+      "recipe": "MANUAL",
+      "evidence": "原矩阵18项、10格索引、完整偏好设计均纳入，不删旧证据/缩原范围"
+    }
+  ],
+  "recipes": {
+    "ARTIFACT": {
+      "actions": [
+        "主仓固定唯一集成SHA/清单及加载日志；候选先独立分支构建，不复制主仓产物",
+        "当前源与产物不一致先修标准构建，记录失败，不篡改manifest或弱化Loader"
+      ],
+      "commands": [
+        "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore",
+        "dotnet build SunEyeVision.slnx -c Release --no-restore"
+      ],
+      "rule": "本轮只写清单不执行。源码/资源/合同完整批改变后做一次规定构建；未改变产物不重复构建。候选HalconSourceRoot/ReleasePowerShellPath按已授权只读依赖根和本机忽略配置提供。"
+    },
+    "FIELD": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track FieldEditing -ValidationScope Formal"
+      ],
+      "oracles": [
+        "38项为当前基线，不是未来硬凑数量；每条实际状态/副作用断言必须通过",
+        "source/loaded-product/receipt/run/error日志及SHA归同一attempt"
+      ]
+    },
+    "VARIABLE": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track VariableFields -ValidationScope Formal"
+      ],
+      "oracles": [
+        "13组当前基线；主源/索引用途、实际模态取消/隐藏/关闭、刷新失效恢复"
+      ]
+    },
+    "EXPANDED": {
+      "commands": [
+        "$env:O06_WINDOW_CASE_FILTER='扩展'",
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track WindowPresentation -ValidationScope Formal",
+        "$env:O06_WINDOW_CASE_FILTER=$null"
+      ],
+      "oracles": [
+        "必须有实际非零用例及源/索引窗口，16组为既有子集；新偏好/空目标能力须新增真实入口用例而不改弱原组",
+        "finally还原filter；不能让一次遗留过滤被当全轨"
+      ]
+    },
+    "NUMERIC": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track BlobParameterProduction -ValidationScope Formal"
+      ],
+      "oracles": [
+        "18组当前非前台子集，正式9字段/混合绑定/模式准入/保存重开/快照形态；不代真实整窗"
+      ]
+    },
+    "VALUE": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track ParameterValues -ValidationScope Formal"
+      ],
+      "oracles": [
+        "18组当前值/成功消费/失败取消/owner退役子集"
+      ]
+    },
+    "QUALIFY": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track ManualReferenceQualification -ValidationScope Formal"
+      ],
+      "oracles": [
+        "19组当前正式资格子集；伪造/递归索引/图更新/冻结调试同门禁"
+      ]
+    },
+    "WORKFLOW": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S3 -Track RuntimeWorkflow -ValidationScope Formal"
+      ],
+      "note": "S3是历史验证启动器stage标签，只复验现有运行/冻结参数链，不授权进入S3算法实施。只有本批改到对应生产语义才重跑。"
+    },
+    "WINDOW": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track RuntimeEditorUiStage -ValidationScope Formal"
+      ],
+      "oracles": [
+        "当前13组保护/旧模式修正与取消窗口通过；fullFunctionalAcceptance必须仍false，直到六类正向真实通过",
+        "若后续用RuntimeEditor完整轨，须先核其真实开关/源码并具备正向条件；不可将UiStage保护通过当整轨完成"
+      ]
+    },
+    "LAYOUT": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track BlobRangeLayout -ValidationScope Formal"
+      ],
+      "oracles": [
+        "先与面积尺寸线协调桌面；保原DPI/宿主宽/标签宽/文字所需宽/viewport/实际图，不把数值量测当人工达标"
+      ]
+    },
+    "DESIGN": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track DesignTime -ValidationScope Formal"
+      ],
+      "manual": [
+        "在VS实际设计器打开实际视图，不是替身预览；中英独立进程避免语言单例首加载污染",
+        "核设计态无运行/方案写入、缺候选按钮与资源正确，分别记录渲染及VS人工结果"
+      ]
+    },
+    "FULL": {
+      "commands": [
+        "& $ValidationPowerShell -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S4 -Track FullChain -ValidationScope Formal"
+      ],
+      "precondition": "仅在主线确认该轨真实覆盖当期完整消费者且全窗正向基础具备后执行，不以现ROI保护拦截当成功。"
+    },
+    "INDEX-NATIVE": {
+      "action": "主线复用最终只读报告与已保存单值attempt03；对多值/动态部分审核探针、隔离自有方案、哈希及当前独占授权后才由逆向负责人运行；本线不启SDK。",
+      "acceptance": [
+        "托管入参/条件回读/文件保存/真实消费分开记录",
+        "真正读回源数组项数顺序，运行前写不同标记值，联合Getter与Blob区分结果判消费",
+        "保失败、原生结构及前后文件SHA，不把旧Getter或0314码当唯一结论"
+      ]
+    },
+    "PREFERENCE-NATIVE": {
+      "action": "按完整偏好设计P1/P2/P3只先复用已存材料；需原机时交主线集中当前窗口授权，不借旧授权运行。",
+      "oracles": [
+        "具体key SaveAs/新实例重开、Dirty/Undo/取消/失败实际语义",
+        "当前Root展开/方案默认/WindowOwner/当前Target四状态不可合并"
+      ]
+    },
+    "MANUAL": {
+      "action": "主线统一同版Release人工窗口，面积线/窗口线/本线不抢GUI；记录VS、原件对照与用户验收结果及明确未验。"
+    }
+  },
+  "dependencyOrder": [
+    {
+      "id": "D0",
+      "prerequisite": "既有代码/证据基线固定",
+      "work": "确认全部公共/页面/宿主提交集成同SHA，保留旧失败；区分原件、候选、正式、VS/用户四层。"
+    },
+    {
+      "id": "D1",
+      "prerequisite": "现可直接复用材料",
+      "work": "先交剩余索引Q1/Q2、偏好P1/P2/P3去重清单；多项/范围没肯定证据不造新功能；Group保持暂停。"
+    },
+    {
+      "id": "D2",
+      "prerequisite": "原证及主线统一设计",
+      "work": "冻结当前展开/方案默认/可空Target/WindowOwner责任、文档会话生存期及是否要求持久化；未证明SaveAs/Dirty前不选新文件字段。宽度与该完整设计同批决定。"
+    },
+    {
+      "id": "D3",
+      "prerequisite": "面积尺寸线完整量测与原宽证据",
+      "work": "主线决定严格原厂和可读性适配，保原标签/模板/按钮；500宽仅量测事实，不擅自设产品默认。"
+    },
+    {
+      "id": "D4",
+      "prerequisite": "D2/D3已冻结",
+      "work": "按唯一文件负责人一次贯通公共控件→所有生产消费者→设计数据→关闭/异常→历史/保存相关owner；不留下半套偏好或先交一个宽度补丁。"
+    },
+    {
+      "id": "D5",
+      "prerequisite": "产品批完整",
+      "work": "候选同版UI/full各一次，运行本批相关轨，不重复跑未变且已证明部分；失败留原回执，根因/修复后再测有意义整轨。"
+    },
+    {
+      "id": "D6",
+      "prerequisite": "候选提交及正式集成",
+      "work": "主仓唯一正式Release重建并按recipe定向验证；DLL/manifest/加载身份一致；候选通过不可直接贴formal。"
+    },
+    {
+      "id": "D7",
+      "prerequisite": "完整Blob正向依赖由主线处理",
+      "work": "ROI/结果组合未接入前继续阻断六类窗正向，不为了本清单切换下一控件或假解除保护；主线统一完整组合边界与接续顺序，保未做清单。"
+    },
+    {
+      "id": "D8",
+      "prerequisite": "同版正式自动证据及相应界面就绪",
+      "work": "VS实际设计器、DPI/主题/长文本及用户人工；原O06/主方案/CURRENT_TASK统一阶段收口，S2完整验收前不做S3算法。"
+    }
+  ],
+  "singleImplementationBoundary": {
+    "controlWriter": "Plugin.Wpf Reference适配/Presenter/原窗口及专属S4FieldEditing；复用原树/双Popup/同一field state、ParameterCleanup和generation。当前不实施。",
+    "mainWriter": "Plugin.Contracts/Runtime、Workflow资格/存储/历史/方案会话、UI宿主正式候选及展示scope；先冻结真实消费者所需合同后分线接，不生成无消费者接口。",
+    "otherWriters": "面积尺寸线独占其量测/指定布局文件，生命周期/窗口线独占RuntimeEditor用例及Node宿主保存链；本线不改它们或争GUI。",
+    "requiredAtomicPath": "字段入口/样式→候选和稳定身份→提案接受→执行冻结/当前值→窗口目标/默认/Owner→错误与关闭退役→设计时→保存重开与跨文档；已有正确部分复用，冲突集中调整。",
+    "excluded": "不新建worktree、复制Release/厂商库、开启SDK、扩大Group/通信触发/未知索引范围/算法；不以这些未验项从原清单删除来缩范围。"
+  },
+  "exitCriteria": [
+    "24项逐项具有状态/实际回执/适用边界，原范围未缩",
+    "本方能直接完成部分在同一正式产物验证；原机结论有原始结构/源码图像日志SHA和明确样本范围",
+    "偏好合同、尺寸策略及所有实际消费者完整接入，没有假Target/假模型/双轨入口",
+    "六类正向依赖若未满足则如实blocked且整体fullFunctionalAcceptance=false，不报B08/S2完整结束",
+    "VS及用户人工结果、未做范围/后续依赖和原主文档一次性更新完成",
+    "偏好报告中的UI缓存、SDK写入、静态Undo、文件条目未命中、保存重开各层独立，不互相替代证明。"
+  ],
+  "executionPolicy": "本JSON是可执行清单及oracle，不是运行回执；本轮未构建、未跑GUI/SDK。$ValidationPowerShell由操作者现有本机配置提供，Formal命令必须workdir主仓；候选在已有独立worktree用-ValidationScope Candidate，先同步相应runner提交。索引/偏好原机recipe不可由本线直接执行。",
+  "identities": [
+    {
+      "path": "docs/collaboration/evidence/B08_REFERENCE_CONTROL_CHAIN_MATRIX_20261031.json",
+      "sha256": "6A0F6D9B794C10E4540125AA5C24DFC73B62F1F94392E3623E55DDA161B6ECDD"
+    },
+    {
+      "path": "docs/collaboration/evidence/B08_REMAINING_INDEX_SOURCE_SEMANTICS_20261031.json",
+      "sha256": "FE856A8B9026C6F8C9B5F4031AD87801D3ED1803A21CC5B981AF8E922FD0B917"
+    },
+    {
+      "path": "docs/collaboration/evidence/B08_REFERENCE_WINDOW_OWNERSHIP_PREFERENCE_DESIGN_20261031.json",
+      "sha256": "3D78F277C2EF6D8DBFF9401593A983F8136AD311B1C1744E3B7BB58FF950D452"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_FORMAL_WINDOW_REFERENCE_20261031.json",
+      "sha256": "CB8686579159213E8F288A7104A53D74DA1BD55836FE7B5514B0E3D5E617B52F"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_RUNTIME_EDITOR_LIFECYCLE_CANDIDATE_20261031.json",
+      "sha256": "A599759D819ECCC2DE20EF535FCFB3894F846CEFA78FCD57189EDDC74E0E6829"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_INDEX_EVIDENCE_20261031.md",
+      "sha256": "6FF23602F657FC1441A8A9E123B0B87347D27A1E4F5485CAD4B7ADE84F0EF628"
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+      "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7"
+    }
+  ],
+  "preferenceFinalReport": {
+    "file": "docs/collaboration/evidence/B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "readFrom": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\B08_ORIGINAL_REFERENCE_PREFERENCE_BOUNDARY_20261031.md",
+    "sha256": "B30E3C5E1070393C5BC61A35F0EF21F014184312DD7D1D9272C8267D770CD9A7",
+    "review": "已全文读取和核SHA；复用逆向负责人只读原件/既有ZIP报告，不新启SDK，不重复反编译",
+    "facts": [
+      "getter正常缺省或bool解析失败得到false缓存；读取抛异常时nullable缓存可仍null，下次可重试",
+      "setter先更新缓存和通知，再写UserData，写异常被吞；UI显示新值不证明SDK写成功",
+      "UserData静态存在条件Undo登记路径，不证明服务存在、实际入栈或Dirty",
+      "ParamsConfigControlBase与ComprehensiveConfigControlBase仅在BaseWindow或非SDK条件读方案默认，SubAlgorithmTabRoot委托Root；相同Root共享Has门槛，不同Root各有状态，不推运行互斥",
+      "attempt03三个sol ZIP全部解压条目未命中ASCII键，但未设置偏好且可能其他编码/结构；不证明未存、不证明重开false"
+    ],
+    "unknown": [
+      "具体键SaveAs/保存/新实例重开原字节和UI值",
+      "Dirty/Undo/Redo/取消及失败边界",
+      "同根/异根多宿主的实际窗口及关闭生命周期"
+    ]
+  },
+  "implementationBatches": [
+    {
+      "id": "B0",
+      "class": "可立即进行的本方准备/验收，不冒称新增开发",
+      "inputs": "已固定正式数值/身份/数量/异常合同及原资源",
+      "scope": "复用24项清单和现有回执准备具体fixtures/命令、源码资源映射/跨文档案例、VS/人工时段；面积尺寸线继续量测与原宽证据复核。未改代码不重跑已过轨。",
+      "productPatch": "本次没有新确认且可无合同独立修复的产品缺口；不为清单制造改动或把准备算实施完成"
+    },
+    {
+      "id": "B1",
+      "class": "本方可实施，但等主线一次冻结完整设计",
+      "inputs": "主线确定尺寸可读性策略及文档展示owner/空Target/默认与当前状态责任",
+      "scope": "语言240/320、面积可读性、文档scope/创建前偏好与当前窗目标，同原模板/全部生产消费者/设计数据/关闭清理按唯一写者成片接入。",
+      "boundary": "语言宽度有独立证据却按主线要求不先提交；不需要原厂索引后端才能保持现有严格数量合同，但偏好持久/历史方案不得绕B2"
+    },
+    {
+      "id": "B2",
+      "class": "依赖原机证据与共享合同，不可立即改产品",
+      "inputs": "索引最终报告Q1/Q2、偏好最终报告P1/P2/P3；新的独占/共享清理隔离由主线另行确认",
+      "scope": "确认多值ALL/固定/动态实际消费及偏好具体SaveAs/Dirty/Undo/多宿主；随后主线决定是否/如何正式存储、document session和callback代次/API。",
+      "boundary": "不启SDK、不因一般AdditionalData路径或UI缓存变化推持久化，不制造多项/范围功能或新格式字段"
+    },
+    {
+      "id": "B3",
+      "class": "已有明确外部组合依赖，保留原完整出口",
+      "inputs": "主线另行统一ROI/结果组合真实owner接入顺序及完整单元边界",
+      "scope": "解除确已具备真实功能的保护后，一次补六类真实窗正向（完整清单原样保留）；前提不具备继续阻断。",
+      "boundary": "当前不切下一控件，不整体禁正式ROI来源，不为B08局部过测绕过全窗保护；fullFunctionalAcceptance仍false"
+    }
+  ]
+}

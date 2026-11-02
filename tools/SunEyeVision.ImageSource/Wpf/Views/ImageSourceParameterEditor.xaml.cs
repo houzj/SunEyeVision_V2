@@ -68,6 +68,7 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
     public bool HasInvalidInput => Editor.HasInvalidInput;
     public bool HasPendingEdits=>Editor.HasPendingEdits;
     public long AcceptedRevision=>Editor.AcceptedRevision;
+    public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
     public event Action? Changed { add => ViewChanged += value; remove => ViewChanged -= value; }
     private void OnFieldsChanged(){_source?.RefreshSourceDraft();ViewChanged?.Invoke();}

@@ -1,0 +1,98 @@
+{
+  "scope": "正式Release定向回归，不代表完整Blob、VS或算法验收",
+  "sourceCommit": "f5163ae0c932dd143c5d1124e3f83c0e86978291",
+  "manifestSha256": "9F65CF470E901A6501EAC962ACB230CBF1999D87CFF1D7F29434EB009F6EAB42",
+  "buildLog": "Release/_validation/B08BlobNumericContract-20261031/build-009.log",
+  "buildLogSha256": "D3CF1B97D9A7DD01893A7B0BB509D07B175E6C5BEE265DE7655D1AAB4323BA40",
+  "checks": [
+    {
+      "track": "NumericContract",
+      "stage": "S4",
+      "attempt": "attempt-001",
+      "cases": 41,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-001\\receipt.json",
+      "receiptSha256": "1CAD9B1E02B685393FC631C098EFCF25275BFAEC99F27CF4FEC1BFA2974F0A3C",
+      "runLogSha256": "7590AFB4F834DA9020386435D7305FB76821C7822077E86F2D79D2077DCB8DA0",
+      "caseSourceSha256": "FA093A055FBA2923D5E34322124863D71AD2BCD84551EDA8A1274192C081E582"
+    },
+    {
+      "track": "FieldEditing",
+      "stage": "S4",
+      "attempt": "attempt-137",
+      "cases": 38,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-137\\receipt.json",
+      "receiptSha256": "F8C3CC5673A58B2880A3834E9344902FC70517129A1620E2B0686015D31C4DB9",
+      "runLogSha256": "4E7F3A886FBB76FEDBBE5359D5D52A48FBAC49852770B92D5ACF7B1B7B25C997",
+      "caseSourceSha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A"
+    },
+    {
+      "track": "VariableFields",
+      "stage": "S4",
+      "attempt": "attempt-015",
+      "cases": 13,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\VariableFields\\attempt-015\\receipt.json",
+      "receiptSha256": "E133C617BA0267B63D7965EDC2F54D40A4302ACDF2E6FC7248D8ABAAF411F234",
+      "runLogSha256": "318D91176025C1C915C1C3BD2F9E7F8DB5FA9EAA7AA747AE280E7F770BF31D0F",
+      "caseSourceSha256": "70D50346B0646735E31B4A09F7626FC13785380AF304BB3F432BA3F2AB29BB4B"
+    },
+    {
+      "track": "RuntimeEditorUiStage",
+      "stage": "S4",
+      "attempt": "attempt-022",
+      "cases": 13,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\RuntimeEditorUiStage\\attempt-022\\receipt.json",
+      "receiptSha256": "674CEC12987E258206C5B3BA9362ED91BE96286BCD227B8C50561322A28ABD11",
+      "runLogSha256": "DECD1E29CBBA4B4FB5D458E0CE646F09E9643A04B2DEE1BB40D19537EA0B1A72",
+      "caseSourceSha256": "54FF6E5153240DEE8F256176EA28C8146687C5CCA0344B30979DDF0830E7AA09"
+    },
+    {
+      "track": "BlobParameterProduction",
+      "stage": "S4",
+      "attempt": "attempt-004",
+      "cases": 18,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-004\\receipt.json",
+      "receiptSha256": "987FF437FF21CE3E49E7FA925EAC71FDE190CA2A94E65F3F12D5EFEFE8BBA7B2",
+      "runLogSha256": "EAA9EE51A1CD31809958E36D91B82CB976815AA9FF8BAB90B1D16DA757AB42D6",
+      "caseSourceSha256": "A47DE344B6318292364E2E07640A573DC71FA26B1A7654871ABE4C1581976784"
+    },
+    {
+      "track": "ManualReferenceQualification",
+      "stage": "S4",
+      "attempt": "attempt-006",
+      "cases": 19,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ManualReferenceQualification\\attempt-006\\receipt.json",
+      "receiptSha256": "27639EE9B3250560FAF844E02BB1960FFFF21D8CC6FA18EE96F561255F9A5666",
+      "runLogSha256": "92329740724B2FD452B77F2FA945985CC1FF4F0BB85959BBB055600EF2C0E457",
+      "caseSourceSha256": "A36BB263E260443AAFD59D4A9548DFBF0709CEF9355C86E4E69E42EBD45C3F70"
+    },
+    {
+      "track": "ParameterValues",
+      "stage": "S4",
+      "attempt": "attempt-008",
+      "cases": 18,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\ParameterValues\\attempt-008\\receipt.json",
+      "receiptSha256": "DF6771533F58085EB0BCDD2739795A392BD15CB503116622C2045E2E0873CC61",
+      "runLogSha256": "E1586AAEF43D43180A82ED1A2D524E8012EBBFD0D11DBA7E30E3DFE4BC1907B9",
+      "caseSourceSha256": "A7DC383885A6D8B0583681FF49F0F70A056EC13E53A470EACFA81C871EA93C8B"
+    },
+    {
+      "track": "RuntimeWorkflow",
+      "stage": "S3",
+      "attempt": "attempt-065",
+      "cases": 10,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeWorkflow\\attempt-065\\receipt.json",
+      "receiptSha256": "CF0CDCB457298510D7CC1096CFA95B58C6CD6C1B1B6D1BFB1B74887E3516BB33",
+      "runLogSha256": "8277B9E901681C92756D886CA4CF6F1EE655D054F6AF701F76756A32CF0E085D",
+      "caseSourceSha256": "09CB476B90B4A80A24395FF9B89770B9CFDE3CD61986DDD16F060AC10889E6EC"
+    }
+  ],
+  "preservedFailures": [
+    "RuntimeEditorUiStage attempt-020/021 在原90秒总限时中止，前12组通过；attempt-022采用180秒后13组通过",
+    "数值禁用测试明确注入排队LostKeyboardFocus"
+  ],
+  "limitations": [
+    "范围原文越界舍入问题在候选复现，修复未集成",
+    "Runtime图像自动连线SDK混用缺陷候选修复中",
+    "六项ROI/结果正向窗口流程、VS及人工未完成"
+  ]
+}

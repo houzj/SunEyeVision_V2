@@ -1,0 +1,293 @@
+{
+  "baseline": "c9bceea1e0e0bde24dd7a2ba2b18f85bbf49c84e",
+  "status": "18项完整差异矩阵；R17/R18生命周期缺口集中修复并候选三轨通过，其余正确实现复用；非B08/S2整体完成",
+  "scope": "仅Plugin.Wpf引用实现与S4FieldEditing专属测试；不改Blob/Contracts/Workflow/UI宿主，不启动SDK",
+  "evidence": [
+    "BLOB_B08_REFERENCE_AUDIT_20261030.json",
+    "B08_REFERENCE_UI_FULL_LIFECYCLE_AUDIT_20261031.json",
+    "B08_VARIABLE_INDEX_ENTRY_EVIDENCE_20261030.json",
+    "B08_VARIABLE_DETACH_EVIDENCE_20261030.json",
+    "B08_SOURCE_QUALIFICATION_RUNTIME_20261031.json",
+    "B08_NUMERIC_REFERENCE_CLEANUP_VALIDATION_20261031.json",
+    "B08_BLOB_PAGE_INTEGRATION_CANDIDATE_20261031.json"
+  ],
+  "matrix": [
+    {
+      "id": "R01",
+      "requirement": "原双Popup/文本/展开按钮及资源闭包",
+      "original": "原paramusercontroldatatemplate.xaml/ButtonSelecter_sub",
+      "implementation": "ReferenceField.xaml、NativeReferencePresenter",
+      "decision": "复用原家族，不自行画图标",
+      "acceptance": "FieldEditing原弹层；原图+DPI/VS人工仍未验"
+    },
+    {
+      "id": "R02",
+      "requirement": "模块名排序/输出成员递归树/无叶",
+      "original": "VmModule.GetFrontFilterTree及GetFrontFilterTreeOperation",
+      "implementation": "DeclaredReferenceTree.Build",
+      "decision": "模块显示名排序已修242288；身份由Scope/Node/Output/Path承担",
+      "acceptance": "现FieldEditing37与扩展16，Group暂停不外推"
+    },
+    {
+      "id": "R03",
+      "requirement": "普通int/float及整数索引候选",
+      "original": "GetFrontFilterTreeOperation ExtraParams=int/float",
+      "implementation": "ReferenceCandidates、DeclaredReferenceTree.Matches",
+      "decision": "宿主提供限定快照，WPF不查工作流/运行值",
+      "acceptance": "本方严格类型/存储已测；原数组全域语义未证"
+    },
+    {
+      "id": "R04",
+      "requirement": "普通图像订阅不等于控制前序",
+      "original": "原五状态B08_SOURCE_QUALIFICATION_RUNTIME",
+      "implementation": "ReadCandidates委托",
+      "decision": "资格由主线合同实现，不能在本线重复调度",
+      "acceptance": "限定构建/图像样本；暂停Group/动态输出未证"
+    },
+    {
+      "id": "R05",
+      "requirement": "深层选中恢复/分组不提交/叶双击",
+      "original": "原SubTreeView及ButtonSelecter.ClickCommand",
+      "implementation": "SubTreeView容器递归+ReferenceFieldSession.SelectSource",
+      "decision": "对象身份选中；新快照旧叶拒绝",
+      "acceptance": "既有FieldEditing与扩展16"
+    },
+    {
+      "id": "R06",
+      "requirement": "刷新/更名/删除/同名替代",
+      "original": "原DropDownCommand刷新及稳定VmIO owner",
+      "implementation": "Refresh原子快照、SourceAvailable",
+      "decision": "失败保显示禁点击，恢复只清诊断；同标签不重绑",
+      "acceptance": "FieldEditing来源失败与VariableFields13"
+    },
+    {
+      "id": "R07",
+      "requirement": "固定文本索引/非法原文/括号焦点",
+      "original": "原FocusedCommand、ClearBetweenBracket",
+      "implementation": "ObserveText、TryPreparePending、FocusChanged",
+      "decision": "只改当前来源括号；单项整数合同，无首项回退",
+      "acceptance": "固定/模块/变量索引已测；多项原厂后端未证"
+    },
+    {
+      "id": "R08",
+      "requirement": "模块动态索引",
+      "original": "原IndexClickCommand VmIO.ModulePathName",
+      "implementation": "BindingSelection.AtField与IndexNodes",
+      "decision": "主/索引完整身份组合校验，不换主源",
+      "acceptance": "既有FieldEditing"
+    },
+    {
+      "id": "R09",
+      "requirement": "变量主源/索引与原变量窗口",
+      "original": "原GetSubFilteFromGlobalVariable/IndexClickCommand",
+      "implementation": "VariableSelectionRequest/VariableSelectionDialog",
+      "decision": "同一正式变量稳定身份；显示值不当常量",
+      "acceptance": "VariableDialog8/VariableFields13；原生全域等价未证"
+    },
+    {
+      "id": "R10",
+      "requirement": "常量↔引用/无来源/解绑",
+      "original": "原ButtonSelecter CurValueA和缓存补证",
+      "implementation": "DeclaredFieldState/ReadCurrentValue",
+      "decision": "当前值由owner给，缺值不猜默认或旧备份",
+      "acceptance": "另一生命周期线生产证据；本线不改合同"
+    },
+    {
+      "id": "R11",
+      "requirement": "Enter/Escape/Delete/焦点离开",
+      "original": "原DeleteTextBox/PopupTextBox/PopupButton",
+      "implementation": "ReferencePopupScope/NativeNumericCommit",
+      "decision": "保非法原文，合法一次写；实际PopupDP关窗",
+      "acceptance": "既有FieldEditing正常/异常关闭"
+    },
+    {
+      "id": "R12",
+      "requirement": "展开非模态即时源/索引切换",
+      "original": "原ParamSubscribeWindow/ButtonSelecter",
+      "implementation": "ReferenceExpansionRequest+Coordinator",
+      "decision": "借同一session，关窗不撤销已接受；无新增确认事务",
+      "acceptance": "扩展WindowPresentation16"
+    },
+    {
+      "id": "R13",
+      "requirement": "Owner跟随/互斥/偏好",
+      "original": "原AlgorithmTabRoot/ParamSubscribeWindow",
+      "implementation": "ConditionalWeakTable OwnerScope",
+      "decision": "现偏好Owner范围与原Solution范围分列；宽240/英文320人工待定",
+      "acceptance": "已测Owner跟随；不擅自改布局或共享上下文"
+    },
+    {
+      "id": "R14",
+      "requirement": "隐藏/禁用/卸载/关闭/Dispose退役",
+      "original": "原窗口/控件关闭路径及平台必要适配",
+      "implementation": "ReferencePopupScope/Coordinator/NativeNumberCoordinator",
+      "decision": "早暂停、独立清理、PopupGeneration不关重入新代；0d36已修",
+      "acceptance": "FieldEditing数值五出口、VariableFields13、扩展16"
+    },
+    {
+      "id": "R15",
+      "requirement": "设计时与运行时同资源/同组合",
+      "original": "原原件XAML资源+独立样例约定",
+      "implementation": "正式模板/冻结候选设计数据",
+      "decision": "空候选仍保正式引用控件；无算法/Workflow依赖",
+      "acceptance": "独立渲染已测；VS实际设计器/人工未验"
+    },
+    {
+      "id": "R16",
+      "requirement": "完整Blob真实消费者",
+      "original": "原O06九数值整数/浮点声明",
+      "implementation": "c9bceea1正式9字段/6Choice",
+      "decision": "当前源码已接唯一正式草稿，不能沿旧audit声称仍全部S1抑制",
+      "acceptance": "FieldEditing37/生产宿主+范围实图；ROI总闸仍在，本批不改Blob"
+    },
+    {
+      "id": "R17",
+      "requirement": "展开租约安装→投影→宿主打开失败",
+      "original": "真实原DataTemplate BorderThickness投影异常复现",
+      "implementation": "ReferenceFieldSession.Expand",
+      "decision": "已证缺口：Notify在try外会残留有效租约；本批集中修",
+      "acceptance": "无GUIrepro001：host0、有效租约True，BindingExpression真实传播"
+    },
+    {
+      "id": "R18",
+      "requirement": "退役通知与清理异常同时发生",
+      "original": "平台异常清理合同、真实PropertyChanged/Invalidated链",
+      "implementation": "InvalidateExpansion/OpenVariableSelector/SelectVariable",
+      "decision": "本批清理全执行且保首异常/次异常，不扩共享合同",
+      "acceptance": "待专属故障回归及正常/迟到回调整轨"
+    }
+  ],
+  "design": {
+    "files": [
+      "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "scripts/verification/S4FieldEditingCases.cs"
+    ],
+    "ownership": "session安装借用request；任何投影/宿主打开失败必须先清_session当前request，再无条件释放监听；不回滚已接受字段、不改候选资格",
+    "creation": "将两项投影及宿主打开纳入同一异常退役范围；两投影用ParameterCleanup独立执行，检查request仍有效后才打开",
+    "retirement": "prior.Invalidate与IsSelected/IsTextPopupVisible两个通知同一独立清理批；保原异常并合并次异常",
+    "variables": "打开回调/选择Submit失败时退役请求不覆盖原异常；成功结果仍遵守原语义且只退役一次",
+    "proof": "Release/_validation/B08ReferenceLease/repro-001.log真实原模板BindingExpression传播，宿主打开0、残留有效lease=True；诊断exit0不计产品通过",
+    "tests": "既有FieldEditing入口增加原DataTemplate故障用例；先无可见Window验证，再协调FieldEditing正常/关闭/迟到回调整轨；无GUI窗口测试权未获前不启动"
+  },
+  "verification": {
+    "scope": "独立worktree自己的标准Release产物；未复制主仓Release或算法库，主仓正式验收另列",
+    "worktree": "C:/Users/houzhongjie/.codex/worktrees/blob-reference-ui/SunEyeVision_V2",
+    "ui": {
+      "log": "Release/_validation/B08ReferenceLease/ui-build-001.log",
+      "errors": 0,
+      "warnings": 6525,
+      "duration": "00:01:03.54"
+    },
+    "solution": {
+      "log": "Release/_validation/B08ReferenceLease/solution-build-001.log",
+      "errors": 0,
+      "warnings": 6474,
+      "duration": "00:01:17.63"
+    },
+    "probe": {
+      "build": "Release/_validation/B08ReferenceLease/fix-probe-build-002.log",
+      "run": "Release/_validation/B08ReferenceLease/fix-probe-002.log",
+      "cases": [
+        "原DataTemplate实际BorderThickness投影抛异常后完整退役",
+        "已打开租约退役异常与投影异常同时保留且第二投影仍通知",
+        "宿主展开回调首异常与清理异常同时保留",
+        "变量打开回调首异常与清理异常同时保留",
+        "变量主源提案拒绝与清理异常同时保留",
+        "变量索引提案拒绝与清理异常同时保留",
+        "正常展开关闭、旧租约重复Dispose及迟到命令不影响新代"
+      ],
+      "visibleWindows": 0,
+      "exit": 0,
+      "note": "与S4FieldEditing完全同一私有测试方法；初测试Guid参数而正式ID为string编译2错日志fix-probe-build-001保留，已修测试不改合同"
+    },
+    "tracks": [
+      {
+        "track": "FieldEditing",
+        "log": "Release/_validation/B08ReferenceLease/field-editing-001.log",
+        "attempt": "attempt-014",
+        "passed": 38,
+        "failed": 0,
+        "exit": 0,
+        "filter": null
+      },
+      {
+        "track": "VariableFields",
+        "log": "Release/_validation/B08ReferenceLease/variable-fields-001.log",
+        "attempt": "attempt-003",
+        "passed": 13,
+        "failed": 0,
+        "exit": 0,
+        "filter": null
+      },
+      {
+        "track": "WindowPresentation",
+        "log": "Release/_validation/B08ReferenceLease/window-expanded-001.log",
+        "attempt": "attempt-003",
+        "passed": 16,
+        "failed": 0,
+        "exit": 0,
+        "filter": "扩展"
+      }
+    ],
+    "GUI": "连续命令6001三轨退出0、finally关闭全部窗口；已向主线释放，不再启动轨道"
+  },
+  "preservedFailure": {
+    "original": "Release/_validation/B08ReferenceLease/repro-001.log",
+    "baseline": "c9bceea1e0e0bde24dd7a2ba2b18f85bbf49c84e",
+    "observed": "真实原模板BorderThickness故障经StyleHelper/BindingExpression/PropertyChangedEventManager传播，host打开0、有效lease残留True；诊断本身exit0不记产品通过",
+    "sourcePreservation": "临时Cases.cs后改为正式测试方法抽取版；原失败日志和栈完整保留，未伪称原临时源码SHA已保存。原产品源码由baseline Git保留，正式回归源码提交可审计"
+  },
+  "remaining": [
+    "原VM数组多项/范围索引后端全域语义未证；本方显式整数单项合同不伪称原厂完全等价",
+    "展开偏好本方Owner范围与原Solution范围、窗口宽240/英文320及DPI视觉人工未统一，不擅改S1布局或共享上下文",
+    "普通来源资格的全图/暂停Group/动态输出由主线及逆向负责人汇总，本线不计算调度规则",
+    "VS实际设计器和用户人工尚未验；无可见Window原模板探针和自动整轨不能代人工",
+    "Blob六模式/九数值正式草稿已在c9接入，但极性标签语义补证、ROI/结果组合及整窗保存执行仍未闭环；本批不改Blob"
+  ],
+  "identities": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "6CDF1903FE1A3443B2981D9043985C274220447A29203E9A44640E7CDF705046"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+      "sha256": "DC2E13C204B938305E0C5ED733586FD4F5F9321172CA80C06306B1A14D5F48B2"
+    },
+    {
+      "path": "scripts/verification/S4FieldEditingCases.cs",
+      "sha256": "492DC1618C193ABE0C33791D7769A2185ADC3C568693A351794461E50C37199A"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "BD04D52C338FE96E7F3ACBFE2F98719F8A38C2FCFAB5CF5A9A049E00BF2A0213"
+    },
+    {
+      "path": "Release/_validation/B08ReferenceLease/repro-001.log",
+      "sha256": "E5FF351C8E387B86462C98075641041A448A7B22DEF9CCA7317C0E429F2FDD10"
+    },
+    {
+      "path": "Release/_validation/B08ReferenceLease/fix-probe-002.log",
+      "sha256": "507B9906D0B547E73EC87F0255C9EFF32528E6F9245D4092B1E0073351CA110C"
+    },
+    {
+      "path": "Release/_validation/B08ReferenceLease/field-editing-001.log",
+      "sha256": "EE675091375DE11BE2CFBC2C85F0193258E56E7AA69B3B85AB307A4F11A5431E"
+    },
+    {
+      "path": "Release/_validation/B08ReferenceLease/variable-fields-001.log",
+      "sha256": "A354152489F37303CE5ED38BC573B1B68CE282ACEF6098646E506074E1AE600B"
+    },
+    {
+      "path": "Release/_validation/B08ReferenceLease/window-expanded-001.log",
+      "sha256": "2C99E4666565345A167AF43C1A4A38EF08C788DC98C225896E8F75191492223D"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs",
+      "sha256": "A04C04DC557328269A06D67C194F6C3A64B68659ACC1F76E4DE778F5DA858931"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetFrontFilterTreeOperation.cs",
+      "sha256": "859B7C4EC74F7843623BC4923E797C898052E8E2A315B061FB4251C74A0446E7"
+    }
+  ]
+}

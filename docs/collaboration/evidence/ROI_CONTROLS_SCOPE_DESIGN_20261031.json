@@ -1,0 +1,44 @@
+{
+  "baseline": "97dfddf7cf7c68d9a8cc7bada58c4c996414e0f4",
+  "scope": "NativeRoiSession/Editor/Viewport控件组合；Blob正式ROI定义、资源物化及整窗消费未实现，保护保留",
+  "reuse": [
+    "原Box/Sector/SectorRing/Polygon模板及图形",
+    "同帧版本owner与组接纳、覆盖三态、历史及内部几何剪贴板",
+    "继承只读环形与真实参数引用组件"
+  ],
+  "originalEvidence": [
+    "O06_BLOB_NATIVE_SECTOR_CHECKPOINT_20261027.json",
+    "O06_FIELD_GROUP_INHERITANCE_SOURCE_AUDIT_20261028.json",
+    "O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json"
+  ],
+  "difference": {
+    "firstRejection": "NativeRoiSession.ValidateNativeGeometry:156，editable annulus非完整圆拒绝",
+    "original": "SectorRing四项无角度；Sector六项提供双半径和起角/扫角。未证明VM把annulus自动映射Sector。",
+    "adaptation": "明确本方适配：可编辑部分annulus借六项原Sector，保留kind/id/group/frame及原始正负端点；负扫角显示反向遍历，编辑时反向回写。完整annulus仍四项，sector仍独立；继承annulus仍只读。"
+  },
+  "writeBoundary": [
+    "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
+    "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+    "scripts/verification/O06WindowPresentationCases.cs"
+  ],
+  "validation": [
+    "正负跨180部分环显示/编辑/原手柄/同帧",
+    "完整环仍四项及继承只读不变",
+    "宿主拒绝不半写、撤销恢复身份、旧投影退役",
+    "覆盖/菜单历史/原Sector/原继承既有回归"
+  ],
+  "beforeChanges": {
+    "candidate": "原Sector 3、原继承7、ROI覆盖17、ROI菜单历史18均exit0",
+    "receipts": "Release/_validation/S4-20261025/WindowPresentation/attempt-006..009"
+  },
+  "notImplemented": [
+    "Blob Runtime持久ROI定义/生产私有owner",
+    "几何到资源的正式Runtime桥",
+    "Blob ROI/结果整窗正向"
+  ],
+  "notVerified": [
+    "真实VS设计器",
+    "其他DPI与人工验收",
+    "本方部分annulus适配与VM行为等价"
+  ]
+}

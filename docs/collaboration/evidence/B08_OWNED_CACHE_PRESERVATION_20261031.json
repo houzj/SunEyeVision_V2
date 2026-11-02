@@ -1,0 +1,17 @@
+{
+  "status": "仅保全本线既有探针两张缓存，未清理原件/启动SDK",
+  "rows": [
+    {
+      "length": 3981366,
+      "source": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\ImageTemp\\VM127868ImgSrcTemp\\0106000-20220225180507.bmp",
+      "preserved": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\cache-preserved-20261031\\0106000-20220225180507.bmp",
+      "sha256": "690B17333CE8A9F6FE8961C90D7F21FBD6472DBF0F7CC3443FC89DA43BB33ABA"
+    },
+    {
+      "length": 4150,
+      "source": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\ImageTemp\\VM127868ImgSrcTemp\\01278680-image.bmp",
+      "preserved": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\B08OriginalBinding-20261030-attempt03\\cache-preserved-20261031\\01278680-image.bmp",
+      "sha256": "988ADB1C04EBC63CFAEBE971D9F9292A9964C22D5EFFA0734C1178C007DA8C58"
+    }
+  ]
+}

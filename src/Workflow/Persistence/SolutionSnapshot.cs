@@ -15,6 +15,8 @@ public sealed class SolutionSnapshot
         => (Json, CanonicalContent, TargetPath, Diagnostics) = (json, canonicalContent, targetPath, diagnostics);
     public static SolutionSnapshot Prepare(Solution document, string targetPath)
         => PrepareJson(SolutionSession.Serialize(document), targetPath, string.IsNullOrEmpty(document.FilePath));
+    internal static SolutionSnapshot PrepareSession(SolutionSession session,string targetPath)
+        =>PrepareJson(session.CapturePersistenceJson(),targetPath,string.IsNullOrEmpty(session.FilePath));
 
     internal static SolutionSnapshot PrepareJson(string json, string targetPath, bool untitled)
     {

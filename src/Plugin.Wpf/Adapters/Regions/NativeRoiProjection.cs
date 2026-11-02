@@ -18,6 +18,7 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected int ImageWidth {get;}
     protected int ImageHeight {get;}
     public string Group=>Accepted.Group;
+    internal RecordValue AcceptedGeometry=>Accepted.Geometry;
     public Guid Id=>Accepted.Id;
     public string Kind=>Accepted.Geometry.Get<string>("kind");
     public bool Enabled=>Accepted.Enabled;
@@ -32,7 +33,8 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected NativeRoiProjection(NativeRoiSession scope,RoiEditItem item)
     {_scope=scope;Accepted=item;ImageWidth=scope.ImageWidth;ImageHeight=scope.ImageHeight;DataChangedCommand=new CommitCommand(this);}
     internal static Type ProjectionType(RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
-    {"rectangle"=>typeof(NativeBoxRoiProjection),"sector"=>typeof(NativeSectorRoiProjection),"annulus" when !item.Enabled=>typeof(NativeInheritedAnnulusProjection),"annulus"=>typeof(NativeRingRoiProjection),"polygon"=>typeof(NativePolygonRoiProjection),_=>throw new NotSupportedException()};
+    {"rectangle"=>typeof(NativeBoxRoiProjection),"sector"=>typeof(NativeSectorRoiProjection),"annulus" when !item.Enabled=>typeof(NativeInheritedAnnulusProjection),"annulus" when !IsFullAnnulus(item.Geometry)=>typeof(NativeSectorRoiProjection),"annulus"=>typeof(NativeRingRoiProjection),"polygon"=>typeof(NativePolygonRoiProjection),_=>throw new NotSupportedException()};
+    internal static bool IsFullAnnulus(RecordValue geometry)=>Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)<=1e-9;
     internal static NativeRoiProjection Create(NativeRoiSession scope,RoiEditItem item)=>ProjectionType(item) switch
     {
         var type when type==typeof(NativeBoxRoiProjection)=>new NativeBoxRoiProjection(scope,item),
@@ -131,13 +133,16 @@ public sealed class NativeSectorRoiProjection : NativeRoiProjection,INormalizedS
     protected override double AcceptedValue(string key)=>key switch
     {
         "x"=>RoiGeometryEditing.Center(Accepted.Geometry).X,"y"=>RoiGeometryEditing.Center(Accepted.Geometry).Y,
-        "begin"=>Normalize(Accepted.Geometry.Get<double>("start-radians")*180/Math.PI),
+        "begin"=>Normalize(Accepted.Geometry.Get<double>(ReverseAnnulus?"end-radians":"start-radians")*180/Math.PI),
         "sweep"=>AcceptedSweep(),
         _=>Accepted.Geometry.Get<double>(key)
     };
+    // Platform adaptation: a partial annulus borrows the six-field Sector editor without changing its persisted identity.
+    private bool ReverseAnnulus=>Kind=="annulus"&&Accepted.Geometry.Get<double>("end-radians")<Accepted.Geometry.Get<double>("start-radians");
     private double AcceptedSweep()
     {
         var radians=Accepted.Geometry.Get<double>("end-radians")-Accepted.Geometry.Get<double>("start-radians");
+        if(ReverseAnnulus)radians=-radians;
         return Math.Abs(radians-2*Math.PI)<=1e-9?360:radians*180/Math.PI;
     }
     public double Radius {get=>Value("outer-radius")/ImageWidth;set{Stage("outer-radius",value*ImageWidth);if(MinRadius>value)Stage("inner-radius",value*ImageWidth);}}
@@ -176,8 +181,9 @@ public sealed class NativeSectorRoiProjection : NativeRoiProjection,INormalizedS
         var values=PrepareCenter();values["outer-radius"]=outer;values["inner-radius"]=inner;
         if(Changed("begin")||Changed("sweep"))
         {
-            var start=Changed("begin")?begin*Math.PI/180:Accepted.Geometry.Get<double>("start-radians");
-            values["start-radians"]=start;values["end-radians"]=start+sweep*Math.PI/180;
+            var start=Changed("begin")?begin*Math.PI/180:Accepted.Geometry.Get<double>(ReverseAnnulus?"end-radians":"start-radians");
+            values["start-radians"]=ReverseAnnulus?start+sweep*Math.PI/180:start;
+            values["end-radians"]=ReverseAnnulus?start:start+sweep*Math.PI/180;
         }
         return RoiGeometryEditing.Checked(values);
     }

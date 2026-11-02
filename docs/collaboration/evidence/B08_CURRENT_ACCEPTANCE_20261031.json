@@ -1,0 +1,182 @@
+{
+  "scope": "B08完整控件当前状态快照；旧清单保留作为历史，不以回归数量宣告整控件完成",
+  "baseline": "正式源码914b2173：本地ROI已集成，UI及全量Release构建0错误；正式ROI四类专项、受限窗口、十字线和工作流回归见 BLOB_ROI_FORMAL_20261101.json。15171638及更早结果为历史，未重复通过的旧轨不冒充当前版本验证。",
+  "sourceChecklist": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
+  "sourceChecklistSha256": "7CD20F28D7AFCA9CE586968A53795969F558A695456D129E186F87D101FDC357",
+  "formalEvidence": "docs/collaboration/evidence/B08_FORMAL_REFERENCE_INTEGRATION_20261031.json",
+  "updated": "2026-11-01",
+  "items": [
+    {
+      "id": "A00",
+      "item": "同版产物与来源清单",
+      "originalRequirements": "固定源码SHA、UI/full构建、发布清单与实际加载DLL/MVID/SHA；全轨同Release，不复制程序/算法库；targeted build改载荷后必须经标准全量规则重出一致清单再测。",
+      "originalOracle": "版本不同、payload SHA不一致、产物根混用即拒收，不能只凭build成功。",
+      "currentStatus": "正式15171638对应UI及全量Release构建均0错误；Blob受限窗口加载15个程序集与正式产物SHA一致，四条同版定向回归通过。569项旧载荷和布局回归60669453、引用链23263045为历史记录，不冒充本版载荷全量核对；运行时MVID未独立记录。 正式BlobReferenceWindow attempt-001对同版产物通过，15个实际加载DLL与正式目录SHA一致；不是全载荷核验或MVID记录。"
+    },
+    {
+      "id": "A01",
+      "item": "五整数四浮点与数值边界",
+      "originalRequirements": "从正式XML/Schema打开9字段，核100/150/100、面积10/999999999且整数1..999999999、圆度/矩形度0.1..1；按键/粘贴/箭头/滚轮/失焦/Enter逐一编辑，重载不写默认。",
+      "originalOracle": "非法小数/非有限/越界/倒置不半写；显示格式与接受值分开核，引用绑定存在/过滤关闭也核已知常量边界。",
+      "currentStatus": "已验字段合同与边界范围自测闭口：正式BlobParameterProduction 20、NumericContract 68及真实窗口13通过；九字段与键入/粘贴/箭头/滚轮/失焦/Enter的全交叉未逐项验，四浮点原厂转换未证明；旧double.MaxValue失败保留。"
+    },
+    {
+      "id": "A02",
+      "item": "真实单值/三范围组合及订阅按钮",
+      "originalRequirements": "真实Blob运行页核9字段顺序、三正式过滤开关；展开高级非空且真正生效，三范围左右原按钮均可见可用；常量与引用姿态量实际viewport。",
+      "originalOracle": "不能仅看session存在；原模板/图标、两端独立状态、非法保留与共享同一正式草稿；不静默截断九位面积值。",
+      "currentStatus": "当前布局和字段范围自测闭口：正式字段147及中英布局145/146通过，三范围双侧订阅按钮可见；中文原420宽视觉裁剪但两端完整值与Tooltip存在，焦点滚动实测可达；人工视觉后置。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    },
+    {
+      "id": "A03",
+      "item": "六模式Choice与条件显隐",
+      "originalRequirements": "原六项保留，仅Single可新接纳；None/Double既有配置保持显示，可私有修正Single，未实现三项展示不可接纳；核None/Single/Double极性/低高显隐。",
+      "originalOracle": "鼠标/键盘/程序提案/整组均拒disabled；展示ID不可入字段/JSON；历史不可用键不自动替换；确认执行准入独立。",
+      "currentStatus": "当前模式合同自测闭口：正式真实窗口与设计时检查通过，仅Single允许新接纳；None、Double及另三项未实现或未就绪，不能确认执行，算法等价未验证。"
+    },
+    {
+      "id": "A04",
+      "item": "常量↔引用/清空/当前值",
+      "originalRequirements": "常量37→引用173→消费→清源/解绑；分别无当前值、消费前、成功后、失效、取消/失败；用同owner读当前值回常量。",
+      "originalOracle": "不猜XML默认/订阅前备份/最近结果，不将显示值写作常量；恢复应按现正式owner，状态/保存/历史不半写。",
+      "currentStatus": "已有ParameterValues18和字段/数值历史回归；15171638受限真实窗口允许已支持正式字段接纳，正式数值引用、变量与索引的真实整窗正向尚需单独验证。原厂其他解绑情形未全部证明。 正式BlobReferenceWindow attempt-001已验证低阈值真实窗口的前序成员来源、变量及私有当前值消费、确认与取消；其他字段/解绑全交叉不由本轨覆盖。"
+    },
+    {
+      "id": "A05",
+      "item": "候选资格/完整来源树",
+      "originalRequirements": "有/无直接和传递控制边、仅图像订阅、断边撤销；int/float主树、整数索引树、模块排序、记录深层、无/变量管理叶；选中恢复及分组不提交。",
+      "originalOracle": "只消费宿主限定候选；Scope/Node/Port/MemberPath/Type/Storage身份一致；不在WPF计算调度或假造未产出叶。",
+      "currentStatus": "现有正式输出声明范围自测闭口：正式来源资格19项及来源树回归通过；未声明原厂输出与全域动态资格未实现或未证明，不虚造候选。"
+    },
+    {
+      "id": "A06",
+      "item": "刷新与身份失效/恢复",
+      "originalRequirements": "更名/删除/同名新ID/类型存储变更、刷新失败后恢复；分别主源、模块索引、变量索引复合身份；旧树叶迟到双击。",
+      "originalOracle": "失败保显示但禁提交；恢复只清正确诊断不吞写入拒绝；不能同名重绑，不把旧节点对象接入新快照。",
+      "currentStatus": "已验刷新与会话退役场景自测闭口：正式变量回归13项及跨方案10场景通过；并非穷尽所有类型和存储变化的视觉恢复组合。"
+    },
+    {
+      "id": "A07",
+      "item": "All与数量/形状适配",
+      "originalRequirements": "Scalar+All保持标量；Sequence All到Scalar在数量与1相交时可条件绑定，实际0/多项拒绝、1项解包；固定多项先补索引；All到Sequence保全并校验数量。",
+      "originalOracle": "不得把所有Sequence说成必须索引；不得默认取首项；原[]/无括号提交ALL只属托管/条件回读，不证明消费。",
+      "currentStatus": "五整数显式首项例外与其他字段Strict范围自测闭口：正式整数专项33项及UI策略专项通过；浮点、图像及其他工具不得继承五字段例外。 正式BlobReferenceWindow attempt-001增加低阈值真实窗口变量数组All与固定索引消费，越界明确拒绝且恢复；不推广五整数政策到其他字段。"
+    },
+    {
+      "id": "A08",
+      "item": "固定索引与文本编辑",
+      "originalRequirements": "当前来源真实括号内输入0、1、负数、溢出、小数、超声明最大数、运行时越界；刷新更名后保身份与原文；清索引回All按数量验证。",
+      "originalOracle": "非法原文不丢且不写；有有效暂存来源也不能越过宿主；原单值[0]与[99]不推多值基数/错误码全域。",
+      "currentStatus": "已验严格固定索引范围自测闭口：正式零基消费与字段原文回归通过；正常SDK到整数读取静态链已核，原厂非法文本及atoi异常未证明，本方严格解析为适配。"
+    },
+    {
+      "id": "A09",
+      "item": "模块/变量动态索引",
+      "originalRequirements": "模块或变量主源×AtField/AtVariable；索引0→1→越界→恢复；整型scalar、记录成员、同批快照、复制重映射/保存重开。",
+      "originalOracle": "主源不被索引选择替代；变量ID/类型/存储/作用域及代次准确，旧请求不写；不把多值索引源擅取首项。",
+      "currentStatus": "五整数动态索引生产与UI范围自测闭口：正式33项及UI策略专项通过，含成员数组、递归索引、复制保存和身份拒绝；Int64到Int32受检转换为平台适配，四浮点独立未闭口。 正式BlobReferenceWindow attempt-001增加低阈值真实窗口AtField和AtVariable，保存重开比较完整Selection并实际执行。"
+    },
+    {
+      "id": "A10",
+      "item": "双Popup/焦点/文本命令",
+      "originalRequirements": "原Source/Index两个Popup、嵌套文本、树叶双击、Enter/Escape/Delete、内外焦点、窗口失活、常量/引用切换。",
+      "originalOracle": "合法只写一次；非法留原文/正确焦点；实际Popup DP关闭，不能只把VM属性置false；不用红色行内提示。",
+      "currentStatus": "已验双Popup和焦点命令范围自测闭口：正式字段回归覆盖实际弹窗、Enter、Escape、Delete及退役；不表示穷尽原厂所有焦点和失活组合。"
+    },
+    {
+      "id": "A11",
+      "item": "非模态展开/原变量模态",
+      "originalRequirements": "展开源/索引互斥、当前目标切换、移出括号/清目标、窗口互斥；变量分组搜索分页单/双击确认取消、Owner隐藏关闭。",
+      "originalOracle": "借同一正式field state，关窗不撤销已接受选择；取消不写；显示Value不当执行值；没有真实目标不能选择。",
+      "currentStatus": "现行来源选择与借用生命周期范围自测闭口：正式变量13、跨方案及WindowSession通过；当前正式版VariableDialog attempt-006共8组通过，覆盖搜索分页、确认取消和退役；偏好持久化归A21。"
+    },
+    {
+      "id": "A12",
+      "item": "异常关闭/创建/退役",
+      "originalRequirements": "close/unload/hide/disable/折叠/Dispose、原WPF绑定投影、宿主打开/提案、监听器、租约Invalidated异常；首错/清理错及重入新代。",
+      "originalOracle": "先暂停/失效写权；每项清理执行；首与次异常都可查；旧PopupGeneration/request不关新代、不写活跃新scope。",
+      "currentStatus": "已声明异常及退役范围自测闭口：正式字段、跨方案和宿主回归覆盖错误、清理及旧请求退役；未穷尽所有原厂异常组合。"
+    },
+    {
+      "id": "A13",
+      "item": "窗口Owner/默认偏好/自动空窗",
+      "originalRequirements": "按完整偏好设计核文档默认方式、当前编辑器展开、可空Target、WindowOwner四状态；pref=true新配置Loaded自动空窗，关闭不混同改默认。",
+      "originalOracle": "不能用任意字段造空窗lease；不同方案同Window不串默认；同方案新Window是否共享按冻结合同；不用全局查询当前方案代owner。",
+      "currentStatus": "本次会话范围自测闭口：正式WindowSession attempt-144通过同Root目标、自动空窗、A到B和同ID重开；默认偏好仅当前编辑会话，保存/Dirty/Undo未实现并列A21。WindowPresentation attempt-360另有非Blob极大数值失败并超时，未计通过。"
+    },
+    {
+      "id": "A14",
+      "item": "中英文宽度/主题/DPI/面积文本",
+      "originalRequirements": "原展开窗240/英文320、Owner等高与位置；原BaseWindow/checkbox/树/色板与字体；420/500宿主宽、标签宽、100/125/150%DPI、长来源名及九位面积。",
+      "originalOracle": "区分严格原厂与可读性适配，不能以内部session存在代实图；宽度和偏好同批决定，不先改；面积量测不代人工外观。",
+      "currentStatus": "当前144DPI中英文布局范围自测闭口：中文420×500/标签89，英文680×500/标签170；中文九位值焦点滚动与Tooltip实测可达，英文不裁剪。其他DPI、语言热切换及VS视觉未验证或未实现；旧极大Float64窗口失败仍保留。"
+    },
+    {
+      "id": "A15",
+      "item": "设计时同一真实视图/控件资源",
+      "originalRequirements": "VS分别打开实际Blob XAML及公共组合；用正式schema示例走同组装，中文/英文与引用/常量/范围/禁用态；无主程序/Workflow/算法。",
+      "originalOracle": "不复制默认值/假预览控件；设计器无候选时原按钮/模板仍正确，不调实际执行或写方案；真实VS与自动渲染分列。",
+      "currentStatus": "独立自动设计范围自测闭口：最新正式DesignTime attempt-146共290项通过；实际VS设计器及完整中英视觉组合未执行，用户人工验收按决定后置。"
+    },
+    {
+      "id": "A16",
+      "item": "生产宿主完整组提案/拒绝",
+      "originalRequirements": "9字段常量与引用混合整组、非法一项、主/索引组合、宿主拒绝、回调重绑、当前值和AcceptedFieldOrder；正式配置只在确认发布。",
+      "originalOracle": "唯一draft/一次prepare，无部分写；回调重入不污染新代，拒绝原因保留；不旁路现版本/资格门禁。",
+      "currentStatus": "非前台生产宿主及字段原子合同已有历史回归；15171638正式受限Blob窗口已验证图像和单阈值范围的确认，以及未支持内容保值拒绝。九字段完整混合及所有重入组合未由本批证明。 正式BlobReferenceWindow attempt-001增加低阈值成员来源及变量索引的真实窗口接纳和私有执行；未覆盖所有字段混合整组。 914b2173正式本地ROI真实窗口已通过同一草稿两组四形的确认及受限组合；引用继承、图文和九字段混合仍未证明。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    },
+    {
+      "id": "A17",
+      "item": "确认取消/未失焦/历史与保存重开",
+      "originalRequirements": "未失焦文本→确认/保存→关闭重开；取消不改正式、undo/redo、复制/删除/重命名/断边、保存失败/不覆盖、旧模式读取修正与退出。",
+      "originalOracle": "非法或未就绪不确认不覆盖原文件；业务编辑进入历史，运行/停止不重放；不能因外部保护阻断就在测试绕过。",
+      "currentStatus": "正式15171638受限Blob真实窗口已验证确认、取消、历史、配置Copy和保存重开；配置Copy不代表真实剪贴板整链。样式非法原文关闭重开保留、恢复后处理失焦链，但自然系统焦点及合法未失焦文本经整窗确认保存重开未证。 正式BlobReferenceWindow attempt-001增加低阈值引用确认取消、历史、完整身份保存重开及重开后执行；配置Copy不代表剪贴板。 914b2173正式本地ROI真实窗口验证确认、取消、历史、纯值复制、保存重开及重开对象进入工作流引擎执行；系统剪贴板、自然焦点及其他字段组合未覆盖。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    },
+    {
+      "id": "A18",
+      "item": "跨文档/重开/退役身份",
+      "originalRequirements": "同Owner由方案A切B、A关闭后重开同ID、相同显示名新节点、不同Owner同方案；关闭/换文档时所有Popup/变量/展开及偏好迟到回调。",
+      "originalOracle": "DocumentSession/Generation与Node/Field身份分开；旧scope无写权；偏好生命周期不能仅用Window或可复用Solution.Id。",
+      "currentStatus": "当前跨文档及根退役范围自测闭口：正式A到B、同ID重开及WindowSession通过；不同Owner同方案完整组合未逐项验证，偏好持久化归A21。"
+    },
+    {
+      "id": "A19",
+      "item": "运行/调试/连续停止与冻结值",
+      "originalRequirements": "同批冻结常量/引用/变量/索引、执行消费点当前值、取消前后/算法异常、私有调试隔离、连续运行停止、关闭退役。",
+      "originalOracle": "不查WPF或最新结果，不把运行写历史；失败/取消最终值按已冻结策略；不把旧Getter当消费成功。",
+      "currentStatus": "正式15171638受限Blob窗口已验证真实工作流执行和私有调试；同版RuntimeWorkflow10、RuntimeAlgorithm9通过。连续停止、私有预览及失败清空等完整矩阵未由本批证明，S3算法未完成。 正式BlobReferenceWindow attempt-001增加变量变化前后私有执行消费与冻结快照；不涵盖连续停止。 914b2173正式本地ROI已在工作流及重开方案执行；连续停止、私有预览、失败清空与完整冻结矩阵仍未证明。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    },
+    {
+      "id": "A20",
+      "item": "未知来源/Group/动态输出/完整原清单",
+      "originalRequirements": "复用完整原输出/控件清单，明确已映射实际输出、未实现算法叶、时间戳/Visible/CustomVisible与资格区别。",
+      "originalOracle": "不能以名称相近假造值/候选；不把Visible结果显示标志当订阅资格；Group暂停，不扩契约或进入S3算法。",
+      "currentStatus": "条件性闭口：当前声明来源和资格已自测；未产出原厂输出叶不映射、Group新增迁移暂停，原厂全域动态资格未验证。ManualReferenceQualification和ParameterBindingService拒绝未声明/非法身份；后续在真实输出Schema、生产者和资格消费者一并接入。"
+    },
+    {
+      "id": "A21",
+      "item": "方案偏好正式载体/保存/Dirty/Undo",
+      "originalRequirements": "先核UserData具体key保存重开/Dirty/Undo，再冻结会话scope与载体；若要求持久，实际通过Serialize→PrepareJson→ReadFrozenCandidate→WriteSnapshot及失败恢复/关闭。",
+      "originalOracle": "不因AdditionalData存在就新增字段；Workflow扩展快照修复不能代根扩展/偏好证明；不另写旁路配置。",
+      "currentStatus": "条件性闭口：默认展开仅DocumentEditSession临时偏好，实际开关Tooltip标明不持久化；方案保存重开、Dirty及Undo未实现，原厂UserData键未验证。后续需在ProductionEditorContext和正式方案序列化/快照/历史链接入。"
+    },
+    {
+      "id": "A22",
+      "item": "实际消费者整窗六类正向出口",
+      "originalRequirements": "ROI/结果合法owner接通后一次补：捕获重绑旧结果、保存重绑旧来源回调、未失焦确认保存重开、真实窗调试/连续停止、预览及失败清空、成功确认发布后释放。",
+      "originalOracle": "保持现整窗保护，不整体禁用已有正式ROI来源、不用条件跳过/旧假模型验收；未满足前B08/S2仍未完整验收。",
+      "currentStatus": "15171638已取消对已接入受限场景的一律阻断：正式窗口14组覆盖确认取消、历史复制保存重开、真实工作流与私有调试；非空Region和未接入状态保值拒绝。当时ROI正式草稿与图文消费者尚未接入，原六类正向出口未完成全矩阵，尤其重绑迟到、未失焦保存、连续停止、失败预览清空和发布后释放不能由本批代证。 正式BlobReferenceWindow attempt-001增加数值引用整窗九组：来源/变量/四索引、实际消费、历史、文件重开、越界和断边恢复；不覆盖ROI/图文及原六出口全矩阵。 914b2173本地ROI草稿、确认、历史、保存重开及执行已接入并正式自测；ROI继承、图文消费者、重绑迟到、未失焦保存、连续停止、失败预览清空和发布后释放仍未由本批证明。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    },
+    {
+      "id": "A23",
+      "item": "整控件自审、文档收口与后续人工验收",
+      "originalRequirements": "完整迁移并核原件、真实页面、状态和主题DPI；汇总已验、未证及依赖并统一回原O06与CURRENT_TASK。整体自测闭口后统一安排用户人工验收。",
+      "originalOracle": "相称构建、自动及可执行的设计时与运行时测试、自审完成后判定控件闭口；用户人工验证不作为前置。VS实测或其他未执行项目如实列明，不以独立渲染冒充。",
+      "currentStatus": "当前声明能力和15171638受限窗口已有条件性自测；原引用、布局历史回归与现受限窗口回归版本分列。缺失语义、六类整窗矩阵、旧极值失败及后续人工验收保留，不称完整B08或Blob/S2/S3完成。 正式BlobReferenceWindow attempt-001为当前受限低阈值引用补充九组自测证据；自然键鼠、剪贴板、连续、跨文档及九字段全交叉未验，非完整Blob或S2完成。 914b2173本地ROI候选与正式回执已收录；Polygon隐藏桌面捕获失败、旧RoiBindings未发布工具失败、自然键鼠、VS设计时、用户运行验收及完整B08范围仍未完成。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
+    }
+  ],
+  "remaining": "原厂未产出输出与Group新增暂停；偏好持久化/Dirty/Undo未实现；ROI继承及结果图文正式组合未接入，本地绘制已接入。15171638受限整窗的确认/保存/执行已通过，原六类正向及数值引用索引未完成全矩阵；四浮点原厂语义与S3算法未完成；自然焦点、其他DPI、实际VS、部分输入身份组合及运行时MVID未独立验证；旧Float64极值测试失败保留。B08完整自测后统一人工验收。 正式低阈值引用整窗九组已通过；其余字段、自然输入、连续及ROI/图文仍未由本轨覆盖。",
+  "layoutFormalEvidence": "docs/collaboration/evidence/B08_FORMAL_LANGUAGE_LAYOUT_20261031.json",
+  "roiFormalEvidence": "docs/collaboration/evidence/BLOB_ROI_FORMAL_20261101.json",
+  "rangeFormalEvidence": "docs/collaboration/evidence/BLOB_RANGE_PRODUCTION_FORMAL_20261101.json"
+}

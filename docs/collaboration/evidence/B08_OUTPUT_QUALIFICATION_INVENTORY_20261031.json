@@ -1,0 +1,1243 @@
+{
+  "status": "原XML输出全叶盘点，非运行SDK返回资格验收",
+  "originalTools": [
+    {
+      "sha256": "F1B2F279717DCE3EC61C11C41F858BD100359095BCF13672422A3C73EFE47F6C",
+      "outputLeafCount": 75,
+      "leaves": [
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ModuRunTime",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ModuStatus",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobStatus",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobNum",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Area",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "TotalArea",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "CentroidPoint/CentroidX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "CentroidPoint/CentroidY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinBoudingRect/CenterPoint/CenterX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinBoudingRect/CenterPoint/CenterY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinBoudingRect/BoxWidth",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinBoudingRect/BoxHeight",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinBoudingRect/Angle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MinGrayValue",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxGrayValue",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "GrayContrast",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxAreaInnerRect/MaxAreaInnerRectCenterPoint/MaxAreaInnerRectCenterX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxAreaInnerRect/MaxAreaInnerRectCenterPoint/MaxAreaInnerRectCenterY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxAreaInnerRect/MaxAreaInnerRectWidth",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxAreaInnerRect/MaxAreaInnerRectHeight",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "MaxAreaInnerRect/MaxAreaInnerRectAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRect/RectPoint/BlobRectX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRect/RectPoint/BlobRectY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRect/BlobRectWidth",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRect/BlobRectHeight",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRectUpLeftX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRectUpLeftY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRectBottomRightX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobRectBottomRightY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Perimeter",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "LongAxis",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ShortAxis",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Circularity",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Rectangularity",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Score",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BinaryImageComb/BinaryImage",
+          "type": "image"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BinaryImageComb/BinaryImageWidth",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BinaryImageComb/BinaryImageHeight",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BinaryImageComb/BinaryImagePixelFormat",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobImageComb/BlobImage",
+          "type": "image"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobImageComb/BlobImageWidth",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobImageComb/BlobImageHeight",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlobImageComb/BlobImagePixelFormat",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROI/DetectRectCenterPoint/DetectCenterX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROI/DetectRectCenterPoint/DetectCenterY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROI/DetectWidth",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROI/DetectHeight",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROI/DetectAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusCenterPoint/DetectAnnulusCenterX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusCenterPoint/DetectAnnulusCenterY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusInnerRadius",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusOuterRadius",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusStartAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ROIAnnulus/DetectAnnulusAngleExtend",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ContourPoints/ContourInfo",
+          "type": "pointset"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": "false",
+            "AutoSubscribeByOther": null
+          },
+          "path": "ContourPoints/ContourNum",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlindPolygon/BlindPolygonPointNum",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlindPolygon/BlindPolygonPoints/BlindPolygonPointsX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlindPolygon/BlindPolygonPoints/BlindPolygonPointsY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "true",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "BlindPolygonString",
+          "type": "string"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "OutputMask/OutMask",
+          "type": "image"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "OutputMask/OutMaskWidth",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "OutputMask/OutMaskHeight",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "OutputMask/OutMaskPixelFormat",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/Output Fixtured Point/OutputFixtureInitPointX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/Output Fixtured Point/OutputFixtureInitPointY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureInitAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureInitScaleX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureInitScaleY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/Output Unfixtured Point/OutputFixtureRunPointX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/Output Unfixtured Point/OutputFixtureRunPointY",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureRunAngle",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureRunScaleX",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": "false",
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "Output Position Correction Info/OutputFixtureRunScaleY",
+          "type": "float"
+        }
+      ],
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.xml",
+      "tool": "Blob"
+    },
+    {
+      "sha256": "0598746F0603BF6DE66DFA34E74C69F382E98F58437496EE5E598A3B88F6CD64",
+      "outputLeafCount": 17,
+      "leaves": [
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": "false",
+            "IsArray": null,
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ModuStatus",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ModuRunTime",
+          "type": "float"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageData/Image",
+          "type": "image"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageData/Width",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageData/Height",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageData/PixelFormat",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageDataMono8/ImageMono8",
+          "type": "image"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageDataMono8/WidthMono8",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageDataMono8/HeightMono8",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "ImageDataMono8/PixelFormatMono8",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": "false",
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "CurImagePath",
+          "type": "string"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": "false",
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "CurImageName",
+          "type": "string"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "FrameNum",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "LostFrameCount",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "LostPacketCount",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "GetCameraFailCount",
+          "type": "int"
+        },
+        {
+          "explicitAttributes": {
+            "CanSubscribe": null,
+            "Visible": null,
+            "IsPrivate": null,
+            "CustomVisible": null,
+            "IsArray": "false",
+            "AutoSubscribe": null,
+            "AutoSubscribeByOther": null
+          },
+          "path": "SNCode",
+          "type": "int"
+        }
+      ],
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.xml",
+      "tool": "ImageSource"
+    }
+  ],
+  "managedDefaults": {
+    "CanSubscribe": true,
+    "source": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmIO.cs",
+    "sha256": "15E1832243422B6BFA2714F300B796D54C365950573639EB1039C5DF58E99CB0",
+    "IsPrivate": false,
+    "boundary": "仅普通VmIO实例字段初值；SDK extraData、派生类和后续写入可能覆盖，不能据XML缺属性推定实际资格",
+    "Visible": true
+  },
+  "filters": [
+    "GetFrontFilterTreeOperation请求Output，默认排除自身/内部",
+    "VmModule.GetFrontParamItems递归GetPreModules，再加非方案父模块",
+    "GetOutputTreeNode按类型/CanSubscribeA/Visible/时间戳过滤，非父模块还排除IsPrivate",
+    "父Group使用Inputs并有LoopIndex例外；Group迁移暂停，不新扩展"
+  ],
+  "hostDifferences": [
+    "现有候选是全方案DAG下排除自身与后继，仍含无画布边及非前序节点",
+    "公开Schema没有逐叶来源资格，结果面板显示开关不能替代",
+    "ImageSource输出像素格式为Text，原XML为int；设备时间等本方辅助输出不按名称冒称原时间戳",
+    "Blob当前声明为本方结果合同，不能直接当原Output全叶迁移完成"
+  ],
+  "decision": "先明确原根流程边与订阅边关系及实际IO元数据生成，再决定宿主资格投影；不先造插件合同字段或改调度器，不将未证资格默认为true",
+  "request": {
+    "sent": true,
+    "thread": "01a15280-de08-7361-80d8-92d9b1ddeb25",
+    "scope": "既有用户授权B08集中离线补证；禁止启动SDK"
+  }
+}

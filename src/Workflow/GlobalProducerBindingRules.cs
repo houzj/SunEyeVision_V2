@@ -17,7 +17,12 @@ public static class GlobalProducerBindingRules
     public static bool TryDescribeTarget(string vocabulary, out Port target, out Type clrType, out string reason)
     {
         target=null!;clrType=null!;reason=string.Empty;
-        var resolved=SdkTypeVocabulary.ToSystemType(vocabulary);
+        // Current variable declarations express scalar and sequence cardinality explicitly.
+        // Do not inherit historical SDK carrier aliases (Integer[] -> int[]) here.
+        var resolved=vocabulary switch {
+            "Integer[]"=>typeof(long[]),"Double[]"=>typeof(double[]),
+            "String[]"=>typeof(string[]),"Boolean[]"=>typeof(bool[]),
+            _=>SdkTypeVocabulary.ToSystemType(vocabulary)};
         if(resolved is null)
         {reason="全局变量类型没有正式存储声明。";return false;}
         if(!BindingClrAdapter.TryDescribe(resolved,out var type,out var storage)

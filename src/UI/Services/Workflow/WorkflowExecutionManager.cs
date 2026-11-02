@@ -543,7 +543,7 @@ namespace SunEyeVision.UI.Services.Workflow
             var executionDefinition = new Solution { Id = admitted?.SolutionId??solution.Id, Name = admitted?.SolutionName??solution.Name,
                 Workflows = admitted?.Configuration.CopyWorkflows().ToList() ?? new(),
                 GlobalVariables = admitted?.GlobalDefinitions.ToList() ?? new() };
-            var plan = SolutionExecutionDependencyGraph.Compile(executionDefinition);
+            var plan = SolutionExecutionDependencyGraph.Compile(executionDefinition, expectedDirectory: admitted?.Configuration.Directory ?? solution.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"));
             var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
             var completed = new HashSet<string>(StringComparer.Ordinal);
             var failed = new HashSet<string>(StringComparer.Ordinal);

@@ -243,6 +243,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var solutionManager=ServiceInitializer.SolutionManager;
             var expected=solutionManager.Session;var publication=main.CurrentResultPublication;
             if(expected is null||publication is null||!publication.IsCurrent())return;
+            var directory=expected.Document.RuntimeDirectory;
+            if(directory is null){ThemeMessageDialog.Show("方案缺少已准入运行目录。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);return;}
             var reference=endpoint.Reference;
             var root=expected.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Id==reference.ScopeId);
             var node=root?.Nodes.SingleOrDefault(item=>item.Id==reference.NodeId);
@@ -251,7 +253,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 WorkflowName=root.Name,NodeName=node.DispName,ResultDisplayName=endpoint.ResultPath};
             var choices=expected.Document.GlobalVariables.Where(variable=>
                 (!remove||variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression)
-                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable,expected.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。")).State is
+                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable,directory).State is
                     SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
             if(choices.Count==0)
             {

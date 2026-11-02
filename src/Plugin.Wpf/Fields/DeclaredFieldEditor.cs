@@ -408,6 +408,14 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         return _children.All(child=>child.TryCommitPending());
     }
 
+    /// <summary>Retire transient interactions without accepting or discarding pending input.</summary>
+    public void RetireInteractions()
+    {
+        if(_disposed)return;
+        var resume=_presentationVisible&&IsVisible;
+        ((IParameterVisibility)this).PrepareForVisibility(false);
+        if(resume)((IParameterVisibility)this).PrepareForVisibility(true);
+    }
     private bool _presentationVisible=true;
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {

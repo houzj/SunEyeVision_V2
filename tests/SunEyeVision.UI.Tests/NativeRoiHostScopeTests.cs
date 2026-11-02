@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.UI.Services.Editing;

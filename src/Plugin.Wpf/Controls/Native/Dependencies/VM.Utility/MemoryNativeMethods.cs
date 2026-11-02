@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Platform;
 using System;
 using System.Runtime.InteropServices;
 

@@ -3,7 +3,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 using Native=SunEyeVision.Plugin.Wpf.Native;
 using System.Collections;
 using HalconDotNet;
@@ -24,7 +24,7 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Shell.Controls.Shell;
@@ -114,7 +114,7 @@ internal static class S2DocumentEditingCases
    Case("真实Blob帧经shell命令打开原设置及双十字",()=>{
     using var reader=first.AcquireReader();var gray=reader.Values!.Get<IReadOnlyImage>(BlobSchema.Field(5));Require(Receipt().Frame==gray.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"辅助十字未使用实际Blob派生图帧和域");
     Require(crosses.CrossDatas.Count==2&&one.Index==1&&two.Index==2&&one.ImageWidth==16&&one.ImageHeight==16&&one.IsVisible&&!two.IsVisible,"原双十字结构/当前图尺寸或默认显隐不符");
-    Require(CrossShapes().Count==2&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport).Count()==2,"实际视口未接入两个原CrossControl");
+    Require(CrossShapes().Count==2&&Visuals<Native.Display.ImageView.Base.ImageView.Shape.CrossControl>(viewport).Count()==2,"实际视口未接入两个原CrossControl");
    });
    Case("原设置控件编辑双实例、颜色坐标及关闭重开",()=>{
     var originalBinding=Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty);

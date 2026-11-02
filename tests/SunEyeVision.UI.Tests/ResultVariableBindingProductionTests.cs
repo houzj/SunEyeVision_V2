@@ -138,7 +138,7 @@ public sealed class ResultVariableBindingProductionTests
                 var invoke=Assert.IsAssignableFrom<System.Windows.Automation.Provider.IInvokeProvider>(peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke));
                 invoke.Invoke();Pump();Assert.Equal(path,clipboard);
                 var field=typeof(ImageResultControl).GetField("_copyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!;
-                var notice=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox>(field.GetValue(view));
+                var notice=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Display.Primitives.NativeMessageBox>(field.GetValue(view));
                 Assert.True(notice.IsVisible);
                 invoke.Invoke();Pump();Assert.Same(notice,field.GetValue(view));
                 typeof(ImageResultControl).GetMethod("CloseCopyNotice",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,null);

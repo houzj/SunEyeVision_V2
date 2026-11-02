@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.UI.Services.Images;
 using Xunit;

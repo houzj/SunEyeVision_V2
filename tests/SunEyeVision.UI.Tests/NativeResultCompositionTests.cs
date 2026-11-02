@@ -12,7 +12,7 @@ using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.Plugin.Wpf.Design.Results.PropertyList;
 using SunEyeVision.Plugin.Wpf.Design.Results.ResultShell;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;

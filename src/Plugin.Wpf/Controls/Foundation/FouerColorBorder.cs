@@ -1,15 +1,15 @@
 using SunEyeVision.Plugin.Wpf.Utilities;
 using SunEyeVision.Plugin.Wpf.Controls.Foundation;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Platform;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.Foundation;
 

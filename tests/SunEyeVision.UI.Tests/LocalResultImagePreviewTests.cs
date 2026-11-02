@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 using SunEyeVision.UI.Services.Images;
 using Xunit;
 

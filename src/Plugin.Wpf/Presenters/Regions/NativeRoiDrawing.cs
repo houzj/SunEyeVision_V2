@@ -6,10 +6,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.ROI;
 using SunEyeVision.Plugin.Wpf.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
@@ -29,7 +29,7 @@ internal sealed class NativeRoiDrawing : IDisposable
     private readonly Action _cancel;
     private readonly Action<string> _reject;
     private readonly Action<bool> _drawingState;
-    private HikMessageBox? _warningDialog;
+    private NativeMessageBox? _warningDialog;
     private readonly Point _start;
     private readonly double _ratio;
     private readonly int _width,_height,_maximumPoints;
@@ -58,11 +58,11 @@ internal sealed class NativeRoiDrawing : IDisposable
     private bool LeaseAlive=>!_disposed&&!_ended&&_current()&&_page.IsLoaded&&_page.ImageWidth==_width&&_page.ImageHeight==_height
         &&(_host is null||ReferenceEquals(_page.SubstituteHost,_host))&&double.IsFinite(_ratio)&&_ratio>0&&_page.ControlToImageRadio==_ratio;
     private bool Alive=>!_modal&&LeaseAlive;
-    private void AttachWarning(HikMessageBox window)
+    private void AttachWarning(NativeMessageBox window)
     {_warningDialog=window;window.LayoutUpdated+=OnWarningLayout;}
     private void OnWarningLayout(object? sender,EventArgs args)
     {if(!_disposed&&_warningDialog is {} window)NativeTextInheritance.Restore(window);}
-    private void DetachWarning(HikMessageBox? window)
+    private void DetachWarning(NativeMessageBox? window)
     {if(window is not null)window.LayoutUpdated-=OnWarningLayout;}
     private bool Capture()
     {
@@ -166,7 +166,7 @@ internal sealed class NativeRoiDrawing : IDisposable
             if(!LeaseAlive){_cancel();return;}
             ReleaseCapture();
             if(!LeaseAlive){_cancel();return;}
-            HikMessageBox.ShowOwnedWarning(owner,AppLocalizationService.GetLang("多边形点数不超过")+" "+_maximumPoints,
+            NativeMessageBox.ShowOwnedWarning(owner,AppLocalizationService.GetLang("多边形点数不超过")+" "+_maximumPoints,
                 AttachWarning,()=>LeaseAlive);
             if(!LeaseAlive){_cancel();return;}
             polygon.Points.RemoveAt(polygon.Points.Count-2);

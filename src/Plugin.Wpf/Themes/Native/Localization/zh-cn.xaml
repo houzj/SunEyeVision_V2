@@ -66,11 +66,11 @@
   <sys:String x:Key="Lang_HstRslt">历史结果</sys:String>
   <sys:String x:Key="Lang_Time">时间</sys:String>
   <sys:String x:Key="Lang_ModuData">模块数据</sys:String>
-  <!--HikMessageBox 第一版无-->
-  <!--HikMessageBox 按钮 -->
+  <!--NativeMessageBox 第一版无-->
+  <!--NativeMessageBox 按钮 -->
   <sys:String x:Key="Lang_Msg_Cancel">取消</sys:String>
-  <!--HikMessageBox 提示文字 -->
-  <!-- HikMessageBox Title-->
+  <!--NativeMessageBox 提示文字 -->
+  <!-- NativeMessageBox Title-->
   <sys:String x:Key="Lang_BackRun">后台运行</sys:String>
   <sys:String x:Key="Lang_StopBackRun">退出软件,停止运行</sys:String>
   <sys:String x:Key="Lang_UnNotify">记住我的选择</sys:String>

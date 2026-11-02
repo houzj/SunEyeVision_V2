@@ -10,8 +10,8 @@ using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.HikExternalCall.Common;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Platform;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 

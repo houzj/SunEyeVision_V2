@@ -1,7 +1,7 @@
 using SunEyeVision.Plugin.Contracts;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Display;
 

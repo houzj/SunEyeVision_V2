@@ -199,13 +199,13 @@ internal static class S2DocumentEditingCases
             vm.SelectedNode=node;node.IsSelected=true;var execution=vm.RunSelectedImageAsync();PumpUntil(()=>execution.IsCompleted);execution.GetAwaiter().GetResult();Pump();
             var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();workspace.SelectedOutputItem=workspace.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==node.Id&&reference.PortId==BlobSchema.Field(5));Pump();
             var presenter=Get(resultView,"_workspacePresenter");var pane=Get(presenter,"_output");object? scene=null;PumpUntil(()=>{try{scene=Get(pane,"Display");return scene is not null;}catch(NullReferenceException){return false;}});
-            var prepared=Get(Get(scene!,"Layer"),"_prepared");var items=(object[])Get(prepared,"Items");var rectangles=items.OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle>().ToArray();
+            var prepared=Get(Get(scene!,"Layer"),"_prepared");var items=(object[])Get(prepared,"Items");var rectangles=items.OfType<SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IRectangle>().ToArray();
             var geometry=((IToolResultGeometryOutput)Get(Get(vm,"_resultPublicationSnapshot"),"Output")).ResultGeometry;
             var receipt=((SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport)Get(Get(presenter,"OutputPane"),"Viewport")).CurrentFrame!;
             Require(geometry.SourceFrame==receipt.Frame&&geometry.Coordinates==receipt.Coordinates,"混合显示不是同一物理帧/坐标域");
             var appearance=node.RuntimeConfiguration!.CaptureResultDisplay()!;var matched=new HashSet<object>(ReferenceEqualityComparer.Instance);
             string ColorOf(ResultDisplayColor color)=>Color.FromArgb(color.Alpha,color.Red,color.Green,color.Blue).ToString();
-            void Match(Func<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle,bool> predicate,ResultGraphicAppearance style,bool passed,string fill)
+            void Match(Func<SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IRectangle,bool> predicate,ResultGraphicAppearance style,bool passed,string fill)
             {
                 var choices=rectangles.Where(rect=>predicate(rect)&&rect.Stroke==ColorOf(passed?style.Ok:style.Ng)&&rect.Fill==fill&&rect.StrokeThickness==style.Width&&Math.Abs(rect.Opacity-style.Opacity)<1e-9).ToArray();
                 Require(choices.Length==1&&matched.Add(choices[0]),"混合场景缺失、重复或串用某个结果/区域矩形及样式");

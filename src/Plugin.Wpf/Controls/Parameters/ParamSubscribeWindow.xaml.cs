@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Markup;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 
 

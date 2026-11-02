@@ -1,3 +1,7 @@
+## 2026-11-02 根流程画布测试首批
+
+独立基线 3d27b97df，迁移既有 CanvasDocumentHistory 与 RootConfiguration 至真实封包 ImageLoad 同代目录；正式 SolutionManager 会话与测试清理，全量 Release 0 错、7/7 通过。真实 WPF 根宿主、右键拖放、连续运行及其余旧 UI.Tests 尚未迁移，Group 暂停；不称根流程完整闭环。详见 evidence/根流程画布测试迁移方案-20261102.html。
+
 ## 隔离集成候选核查点（未交付）
 
 合并 d85f66a68 与 72dda8682，保留资源别名保护和代次释放；封签脚本统一使用已解析 appRoot，相对路径回归通过。重算锁后全量 locked restore、Release 构建（0 错、6539 警告）通过；图像源 31/31、Blob 11/11；真实 WPF 结果显示 41 组、ReaderShutdown 1 组；AdmissionLifecycleProbe 与正式准入故障探针退出 0。测试记录的载荷和日志在工作区 integration-*.log、Release/_validation。未覆盖主窗口持有 reader 的完整排空；未准入普通工具的内存打开与执行仍有旧 SDK 路径，Group/控制流暂停且不能称可运行。该检查点仅供继续集成，不是最终验收或 87f4 已集成。

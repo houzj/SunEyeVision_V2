@@ -2,7 +2,7 @@ using System.Linq;
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Windows;
+using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
@@ -206,9 +206,9 @@ namespace SunEyeVision.Workflow
         /// 节点位置（UI 层专用，不序列化，基于 PositionX/PositionY 计算）
         /// </summary>
         [JsonIgnore]
-        public Point Position
+        public CanvasPoint Position
         {
-            get => new Point(PositionX, PositionY);
+            get => new CanvasPoint(PositionX, PositionY);
             set
             {
                 if (PositionX != value.X || PositionY != value.Y)

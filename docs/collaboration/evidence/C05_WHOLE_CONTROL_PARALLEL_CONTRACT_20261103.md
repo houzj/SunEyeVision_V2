@@ -14,7 +14,7 @@ Plugin.Wpf.Presenters.Parameters新增NumericModelReadScope枚举Field/CurrentPa
 
 每个C05字段所有者持有窗口内数值UI模型：已知性/值/投影版本，跨TextBox重建，随字段退役。正式Accepted身份、模型、原raw/pending、宿主普通回读、执行值分别管理；模型变化事件不冒充字段接纳。引用状态也保留并投影模型，不能读来源结果冒充模型。明确单项/当前页/全部范围：只处理本批C05字段，当前页依声明归属，不以控件尚未Loaded当不存在；C06不被隐式注册。重复初始化、换根、异常/无值与旧根调用有明确结果。
 
-C05停止通过ConstantBackup getter偶然回读；复用既有ReadCurrentValue显式取值。未取到不补0、XML默认或旧常量；已有已知UI值可保留但不能当本次回读成功或解绑有效值。解绑读取有值后走原常量提案；无值/异常保持有效引用并要求明确新输入。读取/投影不写正式Fields或CurrentValues，不产生Dirty/Undo/运行，pending/raw不被回读覆盖。接受常量与UI数值模型投影分开，不静默写回舍入值。
+C05停止通过ConstantBackup getter偶然回读；复用既有ReadCurrentValue显式取值。未取到不补0、XML默认或旧常量；已有已知UI值可保留但不能当本次回读成功或解绑有效值。解绑读取有值后走原常量提案；无值/异常保持Accepted正式引用与宿主Fields，但沿既有TryUseConstant/BeginConstantEntry允许进入未接纳常量输入态（IsReferenceMode=false），以pending/invalid门禁保护直到新有效常量提案接纳；取消或重绑回正式身份。不能因保护而把UI永久卡在引用态，也不能把旧模型当本次解绑有效值。读取/投影不写正式Fields或CurrentValues，不产生Dirty/Undo/运行，pending/raw不被回读覆盖。接受常量与UI数值模型投影分开，不静默写回舍入值。
 
 整数沿原Int32格点语义实现，非法Inc/溢出明确拒绝并保留原值，是本方安全差异。其他存储宽度沿现有类型合同，不能冒称原Int32全类型等价。浮点复用double/ToEven，有限值与精度验证保留。共享数值准备代码影响现Inc=1范围时跑回归，不顺便改变C06夹值。
 

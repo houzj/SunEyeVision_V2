@@ -16162,3 +16162,8 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 ### 2026-11-02 未准入节点保护隔离候选（验证进行中）
 - 基线 72dda86824dbec15b1ea1b19ba8fd7e0f32d7fbc，设计 evidence/未准入节点生产链保护-20261102.html；只修改候选 worktree。
 - 恢复/保存、运行快照、打开/调试统一目录身份与节点形态校验；暂停 Group/控制流拒绝运行，旧 SDK 执行入口停用；正式 Release 探针验证进行中。未集成 3d27b97df，也未声称用户人工验收。
+
+### 2026-11-02 图像源与 Blob 编辑宿主设计（未实施）
+- 独立工作树基线 111960d9f4a5db527a15e8ebd1f2592411abebe8；设计和原件证据见 evidence/图像源与Blob编辑宿主整体替换设计-20261102.html、图像源与Blob编辑宿主原件窗证据-20261102.html。
+- 已确定两工具正式编辑共用 RuntimeNodeConfigurationControl 和 SDK DefaultDebugWindow，原件参数框架及 BaseWindow 可复用；生产接线、关闭取消、连续调试及结果资源生命周期尚未迁移和验证。SDK ToolEditorCommit 被保存、全局变量及 Group 共用，切换不得另造事务双轨或改动暂停的 Group。
+- 本检查点仅设计和源码盘点，无产品变更、构建、运行或人工验收；后续需完整切换并以两工具真实载荷集中自测。

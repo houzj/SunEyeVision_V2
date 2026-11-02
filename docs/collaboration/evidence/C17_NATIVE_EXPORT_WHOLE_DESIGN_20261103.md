@@ -39,10 +39,26 @@
 候选构建/自测及真实加载身份与主仓正式分开；主线集成后规定UI+全量Release和同版回归。原文字native、原机像素与编码版本等价继续列未完成；本批支持范围可按自动自测交付，保护不计功能实现。原C17完整范围、B08及S3不删，不扩建无关通用平台，不重复迁入底栏/窗口。
 ## 实施前只读复核补正：正式原像素与保护条件
 
-NativeResultImageFrame的PixelFormat/Buffer为Domain打透明的显示BGRA拷贝，不代表原图；正式视口导出从PrepareOriginalBitmap取得OriginalLayout的Gray8/Bgr24/Bgra32原像素。Gray16仅存在于IRangeImageData备用入口，本批分别验证，不宣称正式视口已接入16位。
+NativeResultImageFrame的PixelFormat/Buffer为Domain打透明的显示BGRA拷贝，不代表原图；正式视口导出从PrepareOriginalBitmap取得OriginalLayout的Gray8/Bgr24/Bgra32原像素。Gray16仅存在于IRangeImageData备用入口，本批分别验证，不宣称正式视口已接入16位。Gray16原图PNG保真；原件未证16位绘色强度规则，带图形16位导出暂保护拒绝，不自造0..255到0..65535映射。
 
 BGRA是本方必要平台适配，非VM原helper已证输入：保留未绘像素的B/G/R/A；图形按原正opacity实色覆盖，四通道绘制显式alpha255，不因三参数Scalar的默认第四分量0把图形变透明。AA边缘按当前库规则记录；若备用入口给预乘格式，先明确转换到直alpha。PNG保位深和alpha；Gray16的BMP/JPEG、非全不透明BGRA的BMP/JPEG若当前编码路径不能保真则保护拒绝，不静默降8位或丢alpha；全不透明BGRA转BGR可作为明确平台路径。
 
 文字保护仅在原实际会触发native的分支发生：顶层可见性与非IMultiPoint整体opacity0先排除，Tuple内部不另加visibility筛选；IMultiText内部不统一逐项opacity过滤。IText的右/下越界、模块错误、空串按原对应重载，坐标轴零向量不强造文字；角度使用的另一DrawText重载没有IText右/下越界排除，不能借此绕过保护。缺字不能假称成功。
 
 原轮廓IMVS_PATMATCH_POINT_INFO为float X/Y/Score与int Index，共16字节；按16步长、Score转int与原颜色分支，Index不消费，残余不足整结构按原忽略；不能用12字节点数组。polygon先画闭边再FillPoly，矩形不添加原未绘的fill/skew/index。完整验收加入以上差异的独立像素、零/有效轴、刚好边界/越界及16字节多点包场景。
+备用IImageData入口同时纳入本单元：Rgb24_P3按原三平面重排后再换色，不能直接当Rgb24；仅MemoryAddress供像素时按16字节头及checked期望长度/offset边界取独立拷贝，不写回借入源。旧Byte2ImageSource映射方法含未检signed offset和固定三通道限制，不以同名方法存在就当安全基础；仅在导出适配内做有界托管映射读取，未知header字段不新增猜测语义，不宣称传输原子。
+
+MMF采样完成后再次读取16字节头；忙态或头变化即拒绝。原头完整更新协议及ABA稳定代数未证，不额外造同步协议，不能将普通静态映射测试说成并发采样原子证明；正式视口基于已冻结IReadOnlyImage主链，与该备用传输边界分别记录。
+
+## 当前平台包来源（不是原厂ABI等价声明）
+
+两包沿用仓库已用版本；实际缓存nuspec的repository commit为7d3246d82ce206c034c4ecac1fbae752d1e2657d。这里只记录包声明和文件身份，不将其许可声明套用于原VM源码或定制DLL。
+
+|包|版本|声明许可|nuspec SHA256|缓存nupkg SHA256|
+|---|---|---|---|---|
+|opencvsharp4|4.13.0.20260222|Apache-2.0（本地nuspec声明）|614E51191577890E5A541A90FBA1A24F2DDF1FBB356AA3C9416F03FC9646FE1E|943501DC983C89CA5E74BAFE95D90FF057C58BD556EB933737B0D1E5688A6C12|
+|opencvsharp4.runtime.win|4.13.0.20260222|Apache-2.0（本地nuspec声明）|1FF43BA530849B2D0BC1129E20AEF7A4DFE45899C9441B4AB4FC06724BEAABAE|F12E83EBD276A48A035DAB033C74423EBB64A6E6010306C35B7B3A1E82966831|
+
+## 原托管转换已补证（同单元统一校正）
+
+见C17_NATIVE_EXPORT_NUMERIC_CIL_20261103.md。原Point/Size(double,double)均conv.i4向零截断；DrawRect的Width/Height实际走Size2f(double,double)，先int再float，中心明确先float，四角又向零截整。原RotatedRect.Points为托管single算法，非native不可取证；几何适配显式保留该顺序，不能因新库同名而直接替代。LineTypes与色转换枚举值已原PE实读。合并轴向量先float再Normalize的guard修正，一次固定最终源码；现有候选关联回归保留原身份，不移签。最终候选针对完整导出/原视口/屏幕文字，再由主仓正式同版集成回归，避免无差别重跑不相关候选历史。

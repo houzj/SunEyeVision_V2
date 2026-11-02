@@ -13,9 +13,11 @@ namespace SunEyeVision.UI.Services.Workflow
     public class WorkflowNodeFactory : IWorkflowNodeFactory
     {
         private readonly INodeSequenceManager _sequenceManager;
+        private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
 
-        public WorkflowNodeFactory(INodeSequenceManager sequenceManager)
+        public WorkflowNodeFactory(INodeSequenceManager sequenceManager,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
+            _directory=directory??throw new ArgumentNullException(nameof(directory));
             _sequenceManager = sequenceManager ?? throw new ArgumentNullException(nameof(sequenceManager));
         }
 
@@ -66,7 +68,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
 
             // 获取工具元数据（统一从 ToolRegistry 获取，Condition 已迁移为 ConditionTool）
-            var metadata = ToolRegistry.GetToolMetadata(algorithmType);
+            var metadata = _directory.GetCatalog(algorithmType);
             string displayName = metadata?.DisplayName ?? algorithmType;
 
             // 使用Guid生成节点ID
@@ -97,11 +99,10 @@ namespace SunEyeVision.UI.Services.Workflow
             return node;
         }
 
-        private static (ToolParameters? Parameters, SunEyeVision.Workflow.RuntimeToolConfiguration? Runtime) PrepareConfiguration(string toolId)
+        private (ToolParameters? Parameters, SunEyeVision.Workflow.RuntimeToolConfiguration? Runtime) PrepareConfiguration(string toolId)
         {
-            if (!ToolRegistry.ToolExists(toolId)) return (null, null);
-            if (ToolRegistry.HasRuntime(toolId)) return (null, SunEyeVision.Workflow.RuntimeToolConfiguration.Create(toolId));
-            return (ToolRegistry.CreateParameters(toolId), null);
+            if (!_directory.Contains(toolId))throw new InvalidOperationException("工具未准入："+toolId);
+            return (null, SunEyeVision.Workflow.RuntimeToolConfiguration.Create(_directory,toolId));
         }
     }
 }

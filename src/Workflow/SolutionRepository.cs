@@ -5,13 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+
 using SunEyeVision.Workflow.Persistence;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+
 
 namespace SunEyeVision.Workflow;
 
@@ -38,11 +39,13 @@ namespace SunEyeVision.Workflow;
 ///
 /// 架构原则（rule-004）：
 /// - 反序列化前确保插件已加载（方案2）
-/// - 使用 PluginLoader 全局状态管理
+/// - 使用方案会话绑定的已准入运行目录
 /// </remarks>
 public class SolutionRepository
 {
     private readonly ILogger _logger;
+    private readonly RuntimeDirectorySnapshot? _directory;
+    private RuntimeDirectorySnapshot AdmittedDirectory => _directory??throw new InvalidOperationException("方案操作缺少已准入运行目录。");
     private readonly string _recoveryDirectory;
     private readonly Action<string>? _saveBoundary;
     public string? LastError { get; private set; }
@@ -50,8 +53,9 @@ public class SolutionRepository
     /// <summary>
     /// 构造函数
     /// </summary>
-    public SolutionRepository(string? recoveryDirectory = null)
+    public SolutionRepository(string? recoveryDirectory = null, RuntimeDirectorySnapshot? directory = null)
     {
+        _directory=directory;
         _recoveryDirectory = recoveryDirectory ?? Path.Combine(Path.GetTempPath(), "SunEyeVision", "recovery");
         _logger = VisionLogger.Instance;
         _logger.Log(LogLevel.Info, "解决方案文件仓库初始化完成", "SolutionRepository");
@@ -59,22 +63,9 @@ public class SolutionRepository
 
     // Instance-scoped deterministic filesystem boundary facility for the isolated verification host.
     // Production construction never installs an observer; no process-wide hook or IO policy override.
-    internal SolutionRepository(string? recoveryDirectory, Action<string> saveBoundary) : this(recoveryDirectory)
+    internal SolutionRepository(string? recoveryDirectory, RuntimeDirectorySnapshot directory,Action<string> saveBoundary) : this(recoveryDirectory,directory)
         => _saveBoundary = saveBoundary;
 
-    /// <summary>
-    /// 确保插件已加载（使用全局状态管理）
-    /// </summary>
-    /// <remarks>
-    /// Fail Fast 原则：在反序列化前确保插件已加载，避免运行时失败。
-    /// 使用 PluginLoader 全局状态管理，确保插件只加载一次。
-    ///
-    /// 架构改进（rule-004）：
-    /// - 使用 PluginLoader 全局状态替代本地静态字段
-    /// - 与 App.OnStartup() 的插件加载逻辑解耦
-    /// - 避免重复加载插件
-    /// </remarks>
-    /// <returns>是否成功加载</returns>
     public string GetRecoveryPath(string path) => Path.Combine(_recoveryDirectory,
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(path).ToUpperInvariant()))) + ".previous.solution");
 
@@ -84,21 +75,6 @@ public class SolutionRepository
             throw new JsonException("方案缺少有效身份。", "$.Id", null, null);
         SolutionFormatPolicy.ValidateReadable(root);
     }
-
-    private bool EnsurePluginsLoaded()
-    {
-        // 检查全局状态
-        if (PluginLoader.IsLoaded)
-        {
-            _logger.Log(LogLevel.Info, "插件已加载（全局状态），跳过重复检查", "SolutionRepository");
-            return true;
-        }
-
-        // 如果未加载，触发全局加载
-        _logger.Log(LogLevel.Info, "插件未加载，触发全局加载", "SolutionRepository");
-        return PluginLoader.EnsureLoaded();
-    }
-
 
     /// <summary>
     /// 加载完整的解决方案对象
@@ -166,19 +142,20 @@ public class SolutionRepository
     internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument, bool validateAdmission = true)
     {
         var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
-        if (hasTools && !EnsurePluginsLoaded()) throw new InvalidDataException("插件元数据加载未完成。");
+        if (!AdmittedDirectory.IsActive) throw new InvalidOperationException("工具运行目录已退役。");
         using var document = JsonDocument.Parse(root.ToJsonString());
         ValidateTools(document.RootElement);
         var devices = ReadPersistedDevices(document.RootElement, Stopwatch.StartNew());
         var solution = JsonSerializer.Deserialize<Solution>(RemoveDevicesProperty(root.ToJsonString()),
-            new JsonSerializerOptions(WorkflowSerializationOptions.Default) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
+            new JsonSerializerOptions(WorkflowSerializationOptions.For(AdmittedDirectory)) { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow })
             ?? throw new JsonException("Null solution.");
+        solution.RuntimeDirectory=AdmittedDirectory;
         solution.Devices = devices;
         SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument, validateAdmission);
         return solution;
     }
 
-    private static void ValidateTools(JsonElement root)
+    private void ValidateTools(JsonElement root)
     {
         if (!root.TryGetProperty("Workflows", out var workflows)) return;
         int w = 0;
@@ -192,7 +169,10 @@ public class SolutionRepository
                     var path = "$.Workflows[" + w + "].Nodes[" + n++ + "].ToolType";
                     if (!node.TryGetProperty("ToolType", out var tool) || tool.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(tool.GetString()))
                         throw new JsonException("Node ToolType is required.", path, null, null);
-                    if (ToolRegistry.GetToolMetadata(tool.GetString()!) == null)
+                    var subroutineId = node.TryGetProperty("SubroutineId", out var subroutine) && subroutine.ValueKind == JsonValueKind.String ? subroutine.GetString() : null;
+                    if (RuntimeNodeAdmission.IsPausedControlFlow(tool.GetString(),subroutineId))
+                        throw new JsonException("Group / 控制流当前尚未接入正式运行：" + tool.GetString(), path, null, null);
+                    if (!AdmittedDirectory.Contains(tool.GetString()!))
                         throw new JsonException("缺少兼容工具插件：" + tool.GetString(), path, null, null);
                 }
             }
@@ -451,7 +431,7 @@ public class SolutionRepository
     }
 
     internal bool SaveSnapshot(Solution solution, string serializedSnapshot, string filePath, bool overwrite = true)
-        => WriteSnapshot(SolutionSnapshot.PrepareJson(serializedSnapshot, filePath, solution.FilePath == null), overwrite).FileWritten;
+        => WriteSnapshot(SolutionSnapshot.PrepareJson(serializedSnapshot, filePath, solution.FilePath == null,AdmittedDirectory), overwrite).FileWritten;
 
     /// <summary>Explicitly unblock a save only after target and central backup have been restored
     /// to their exact pre-failure identities. Does not perform recovery IO or accept a new baseline.</summary>
@@ -474,7 +454,7 @@ public class SolutionRepository
             SolutionFileCommit.ThrowIfRecoveryRequired(filePath);
             // The public entry point has the same owner/schema gate as Prepare and Save.
             // Revalidation consumes only the immutable captured JSON, never the live document.
-            prepared = SolutionSnapshot.PrepareJson(prepared.Json, prepared.TargetPath, untitled: false);
+            prepared = SolutionSnapshot.PrepareJson(prepared.Json, prepared.TargetPath, untitled: false,AdmittedDirectory);
             // Communication validation consumes the same frozen JSON that will be written.
             var snapshot = JsonNode.Parse(prepared.Json)!;
             if (snapshot["Communications"] is JsonArray communications)

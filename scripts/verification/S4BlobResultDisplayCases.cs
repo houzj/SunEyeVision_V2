@@ -70,14 +70,14 @@ internal static class S2DocumentEditingCases
         var dialogs=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(100)};
         dialogs.Tick+=(_,_)=>{foreach(var dialog in app.Windows.OfType<Window>().Where(w=>w.GetType().Name.Contains("MessageDialog")).ToArray())
             {Console.Error.WriteLine("产品提示："+string.Join(" | ",Logical(dialog).OfType<TextBlock>().Select(t=>t.Text)));dialog.Close();}};dialogs.Start();
-        var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;var plugins=new PluginManager();plugins.LoadPlugins();
-        plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(m=>m.Id));PluginLoader.MarkAsLoaded();
+        var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;var plugins=new PluginManager();plugins.LoadPluginsAsync().GetAwaiter().GetResult();var admission=plugins.DesktopAdmission??throw new InvalidOperationException("缺少桌面准入目录");
+        plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(m=>m.Id));
         var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"document");Directory.CreateDirectory(folder);
-        ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(folder);
-        var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();solutions.CreateUntitledSolution();
+        var paths=new SunEyeVision.Workflow.ApplicationDataLocationService(Path.Combine(folder,"locator.json")).Prepare(folder);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
+        var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel(admission);solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var scope=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_SCOPE")??"All";
-        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource","未知显示专项");
+        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource" or "ReaderShutdown","未知显示专项");
         var resultView=new ImageResultControl{DataContext=vm.ImageResult};resultView.Initialize(vm);
         var shell=new Window{Width=1000,Height=850,Content=resultView,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -168,7 +168,7 @@ internal static class S2DocumentEditingCases
                 Require(displaySchema.Inputs.Single(port=>port.Id==Display(BlobResultDisplay.Text,"content")).EditModes==(FieldEditModes.Constant|FieldEditModes.DisplayExpression)&&displaySchema.Inputs.Where(port=>port.Id==Display(BlobResultDisplay.Text,"x")||port.Id==Display(BlobResultDisplay.Text,"y")).All(port=>port.EditModes==(FieldEditModes.Constant|FieldEditModes.Reference)),"文本显示专属能力未声明");
                 var execution=((System.Collections.IEnumerable)config.GetType().GetMethod("CaptureExecutionFields",Flags)!.Invoke(config,null)!).Cast<object>().Select(pair=>(string)Get(pair,"Key")).ToArray();Require(!execution.Intersect(displaySchema.Inputs.Select(port=>port.Id)).Any()&&config.ParameterBindingOrder.All(id=>!config.IsDisplayField(id)),"显示进入执行或参数写入顺序");
                 var appearance=config.CaptureResultDisplay()!;Require(appearance.Graphic.Ok.Red==102&&appearance.Graphic.Width==2&&appearance.Text.Content=="Blob Area:{0}"&&appearance.Text.X==0&&appearance.Text.FontSize==10,"原feature默认错误");
-                var other=RuntimeToolConfiguration.Create("ImageLoad");Require(other.DisplaySettingsSchema.Inputs.Count==0&&other.EditorSettingsSchema.Fingerprint==other.SettingsSchema.Fingerprint,"无显示provider工具行为改变");
+                var other=RuntimeToolConfiguration.Create(admission.Runtime,"ImageLoad");Require(other.DisplaySettingsSchema.Inputs.Count==0&&other.EditorSettingsSchema.Fingerprint==other.SettingsSchema.Fingerprint,"无显示provider工具行为改变");
             });
             Case("显示只在完整编辑集合接纳，算法WithSettings保持正式样式",()=>{
                 var original=node.RuntimeConfiguration!;var changed=original.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),4d}});
@@ -180,8 +180,8 @@ internal static class S2DocumentEditingCases
             });
             Case("保存与复制保显示，加载缺字段不补默认，非法参数仍拒绝",()=>{
                 var config=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),5d},{Display(BlobResultDisplay.Text,"content"),"A={0:F1}"}});
-                var json=System.Text.Json.JsonSerializer.Serialize(config);var restored=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(json)!;Require(Equals(restored.CaptureResultDisplay(),config.CaptureResultDisplay())&&Equals(config.Copy().CaptureResultDisplay(),config.CaptureResultDisplay()),"复制/加载覆盖保存样式");
-                var root=System.Text.Json.Nodes.JsonNode.Parse(json)!;root["Fields"]!.AsObject().Remove(Display(BlobResultDisplay.Graphic,"width"));var missing=false;try{_=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(root.ToJsonString());}catch(Exception error){missing=error.ToString().Contains("display.");}Require(missing,"重开静默补显示默认");
+                var json=System.Text.Json.JsonSerializer.Serialize(config);var restored=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(json,WorkflowSerializationOptions.For(admission.Runtime))!;Require(Equals(restored.CaptureResultDisplay(),config.CaptureResultDisplay())&&Equals(config.Copy().CaptureResultDisplay(),config.CaptureResultDisplay()),"复制/加载覆盖保存样式");
+                var root=System.Text.Json.Nodes.JsonNode.Parse(json)!;root["Fields"]!.AsObject().Remove(Display(BlobResultDisplay.Graphic,"width"));var missing=false;try{_=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(root.ToJsonString(),WorkflowSerializationOptions.For(admission.Runtime));}catch(Exception error){missing=error.ToString().Contains("display.");}Require(missing,"重开静默补显示默认");
                 var invalid=false;try{_=config.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"opacity"),1.1d}});}catch(ArgumentException){invalid=true;}Require(invalid,"非法显示透明度通过");
                 invalid=false;try{_=config.WithFieldValues(new Dictionary<string,object?>{{FieldValue(nameof(BlobSettings.FilterAreaMin)),100L},{FieldValue(nameof(BlobSettings.FilterAreaMax)),10L}});}catch(ArgumentException){invalid=true;}Require(invalid,"显示合同绕过算法跨字段校验");
             });
@@ -259,7 +259,7 @@ internal static class S2DocumentEditingCases
                 racedHistory.SetMutationLeaseProvider(()=>{racedHeld++;racedSolution.ExecutionOwner.Begin("test/race",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);return new ActionLease(()=>racedHeld--);});
                 var racedBlocked=false;try{using var ignored=racedSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){racedBlocked=true;}
                 Require(racedBlocked&&racedHeld==0&&ReferenceEquals(racedHost,racedSession.Host),"取得门禁期间启动的运行未阻止重建或门禁泄漏");racedSession.Close();racedSolution.ExecutionOwner.Retire();
-                var managerRoot=Path.Combine(folder,"presentation-guard-manager");var manager=new SolutionManager(managerRoot);
+                var managerRoot=Path.Combine(folder,"presentation-guard-manager");var manager=new SolutionManager(managerRoot,admission.Runtime);
                 var document=manager.CreateUntitledSolution();var sourcePath=Path.Combine(managerRoot,"before.solution");Require(manager.SaveCurrentDocument(sourcePath).FileWritten,"无法准备当前方案复制夹具");
                 var originalSession=manager.Session!;var managerEditing=originalSession.Editing;_=managerEditing.Host;
                 using(var preparation=managerEditing.BeginInitialPresentationMaterialization())
@@ -436,7 +436,7 @@ internal static class S2DocumentEditingCases
                 SetFormal(Display(BlobResultDisplay.Graphic,"visible"),false);Pump();Require(Words(Scene()).Count()==2,"纯文字未实际显示");SelectInput();Pump();Require(Maybe(outputPane,"Display") is null,"文字在不匹配上游坐标域上误显示");SelectBlob();Pump();Require(Words(Scene()).Count()==2,"选回真实Blob图像未恢复文字");SetFormal(Display(BlobResultDisplay.Graphic,"visible"),true);Pump();_=Scene();
             });
             Case("保存重开及复制读取同一正式显示字段，不重置样式",()=>{
-                Require(solutions.SaveCurrentDocument(path).FileWritten,"显示保存失败");var copy=new SolutionRepository().LoadCandidate(path).Candidate!;try{var copied=copy.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(Equals(copied.CaptureResultDisplay(),node.RuntimeConfiguration!.CaptureResultDisplay()),"保存重开替换正式显示值");Require(Equals(node.Clone().RuntimeConfiguration!.CaptureResultDisplay(),copied.CaptureResultDisplay()),"节点复制丢显示");}finally{copy.ExecutionOwner.Retire();}
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"显示保存失败");var copy=new SolutionRepository(directory:admission.Runtime).LoadCandidate(path).Candidate!;try{var copied=copy.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(Equals(copied.CaptureResultDisplay(),node.RuntimeConfiguration!.CaptureResultDisplay()),"保存重开替换正式显示值");Require(Equals(node.Clone().RuntimeConfiguration!.CaptureResultDisplay(),copied.CaptureResultDisplay()),"节点复制丢显示");}finally{copy.ExecutionOwner.Retire();}
             });
             Case("失败BindDraft不发布新显示token，成功绑定真实新草稿后恢复",()=>{
                 window=Open();control=Control(window);editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
@@ -558,9 +558,9 @@ internal static class S2DocumentEditingCases
                 Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(10,10,2,2))}));
                 SetFormal(Display(BlobResultDisplay.Mask,"width"),4d);var before=node.RuntimeConfiguration!;var formalSnapshot=Frozen();
                 Require(solutions.SaveCurrentDocument(path).FileWritten,"同次几何配置保存失败");var bytes=File.ReadAllBytes(path);
-                var loaded=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("重开失败");var loadedFlow=loaded.Workflows.Single(f=>f.Id==flowId);var restored=loadedFlow.Nodes.Single(n=>n.Id==node.Id);
+                var loaded=new SolutionRepository(directory:admission.Runtime).LoadCandidate(path).Candidate??throw new Exception("重开失败");var loadedFlow=loaded.Workflows.Single(f=>f.Id==flowId);var restored=loadedFlow.Nodes.Single(n=>n.Id==node.Id);
                 Require(Equals(restored.RuntimeConfiguration!.CaptureResultDisplay(),before.CaptureResultDisplay())&&Equals(before.Copy().CaptureResultDisplay(),before.CaptureResultDisplay()),"三角色样式保存/复制丢失");
-                var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
+                var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance,admission.Runtime);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
                 using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
                 var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
                 var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
@@ -611,12 +611,12 @@ internal static class S2DocumentEditingCases
             });
             Case("表达式深冻结与JSON重开、每个slot复制重映射不改原配置",()=>{
                 var config=node.RuntimeConfiguration!;var expression=(DisplayExpressionSetting)config.Fields.Read(contentId);
-                var json=System.Text.Json.JsonSerializer.Serialize(config);var restored=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(json)!;
+                var json=System.Text.Json.JsonSerializer.Serialize(config);var restored=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(json,WorkflowSerializationOptions.For(admission.Runtime))!;
                 Require(((DisplayExpressionSetting)restored.Fields.Read(contentId)).SameExpression(expression),"表达式序列化丢失原文/引用/自体路径");
                 var replacement=Guid.NewGuid().ToString("N");var remapped=config.MapReferences(reference=>reference.NodeId==source.Id?new OutputReference(replacement,reference.PortId,reference.Type,reference.MemberFieldPath,reference.Selection,reference.ScopeId,reference.Storage):reference);
                 Require(((DisplayExpressionSetting)remapped.Fields.Read(contentId)).Slots.Where(slot=>slot.Reference is not null).All(slot=>slot.Reference!.NodeId==replacement)
                     &&((ReferenceSetting)remapped.Fields.Read(xId)).Reference.NodeId==replacement&&((DisplayExpressionSetting)config.Fields.Read(contentId)).SameExpression(expression),"嵌套复制映射漏slot或污染原owner");
-                Require(solutions.SaveCurrentDocument(path).FileWritten,"表达式正式方案保存失败");var reopened=new SolutionRepository().LoadCandidate(path).Candidate!;
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"表达式正式方案保存失败");var reopened=new SolutionRepository(directory:admission.Runtime).LoadCandidate(path).Candidate!;
                 try{var loaded=reopened.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(((DisplayExpressionSetting)loaded.Fields.Read(contentId)).SameExpression(expression)&&BindingReferenceSerializer.Serialize(((ReferenceSetting)loaded.Fields.Read(xId)).Reference)==BindingReferenceSerializer.Serialize(widthSource),"方案重开丢失文本映射或X身份");}finally{reopened.ExecutionOwner.Retire();}
             });
             Case("重复映射按原顺序替换，空字面量与非法来源原子拒绝",()=>{
@@ -816,7 +816,19 @@ internal static class S2DocumentEditingCases
                 Run();var snapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");Require(snapshot.Identity.DocumentSessionId!=oldOwner&&snapshot.Identity.DocumentSessionId==solutions.CurrentSolution!.ExecutionOwner.Id,"双来源重开执行使用旧会话");
                 PumpUntil(()=>Maybe(outputPane,"Display") is {} scene&&Words(scene).Count()==2&&Words(scene).All(word=>Equals(Get(word,"Content"),"前缀:64;后缀;中:32;尾")));
             });
-        }        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
+        }
+        if(scope=="ReaderShutdown")
+        {
+            Case("真实结果视图关闭释放其文本与数值reader",()=>{
+                Run();var scene=Scene();var text=(ResultDisplayTextLease)Get(scene,"Text");
+                Require(text.IsCurrent&&Words(scene).Any(),"真实视图未持有有效文本reader");
+                resultView.Shutdown();Pump();
+                Require((bool)Get(scene,"Disposed")&&!text.IsCurrent,"结果视图关闭未释放原场景和文本reader");
+                var rejected=false;try{text.Evaluate(0);}catch(ObjectDisposedException){rejected=true;}
+                Require(rejected,"释放后的文本reader仍可读取");
+            });
+        }
+        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
     }
     private static void SelectResultPage(DeclaredSettingsView editor)
     {

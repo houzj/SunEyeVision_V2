@@ -1,0 +1,14 @@
+probe: app initialized
+probe: plugin admission returned
+probe: services initialized
+probe: main window constructed
+probe: showing window
+probe: window shown
+probe: starting dispatcher
+probe: calling Close
+probe: Close returned
+probe: dispatcher timer ticked
+probe: state _isClosingPromptInProgress=True,_closeApproved=False,_shutdownPreparationStarted=True; windows=MainWindow:正在关闭：等待资源释放
+probe: state _isClosingPromptInProgress=True,_closeApproved=False,_shutdownPreparationStarted=True; windows=MainWindow:正在关闭：等待资源释放
+probe: dialog: 仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。
+Actual MainWindow shutdown scenario passed: wait

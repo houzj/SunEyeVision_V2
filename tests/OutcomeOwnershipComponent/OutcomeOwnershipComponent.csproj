@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>SunEyeVision.OutcomeOwnership.Probe</AssemblyName>
+    <ToolComponentId>SunEyeVision.OutcomeOwnership.Probe</ToolComponentId><ToolComponentToolId>OutcomeOwnershipProbe</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole><ToolComponentEntryType>SunEyeVision.OutcomeOwnership.Probe.Definition</ToolComponentEntryType>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj"/></ItemGroup>
+</Project>

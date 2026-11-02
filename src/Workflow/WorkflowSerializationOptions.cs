@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using SunEyeVision.Core.Services.Serialization;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Workflow
 {
@@ -94,6 +95,15 @@ namespace SunEyeVision.Workflow
                     return _compact!;
                 }
             }
+        }
+        /// <summary>Bind every runtime deserializer in one operation to the same admitted generation.</summary>
+        public static JsonSerializerOptions For(RuntimeDirectorySnapshot directory,bool compact=false)
+        {
+            ArgumentNullException.ThrowIfNull(directory);
+            var options=new JsonSerializerOptions(compact?Compact:Default);
+            options.Converters.Insert(0,new RuntimeToolConfigurationJsonConverter(directory));
+            options.Converters.Insert(0,new WorkflowJsonConverter(directory));
+            return options;
         }
         private static void ConfigureNodeSettings(JsonSerializerOptions options)
         {

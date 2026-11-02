@@ -15,7 +15,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 创建完整的工作流引擎套件
         /// </summary>
-        public static (WorkflowEngine, WorkflowExecutionEngine, IPluginManager) CreateEngineSuite(ILogger logger)
+        public static (WorkflowEngine, WorkflowExecutionEngine, IPluginManager) CreateEngineSuite(ILogger logger,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
             if (logger == null)
             {
@@ -26,7 +26,7 @@ namespace SunEyeVision.Workflow
             var pluginManager = new PluginManager(logger);
 
             // 2. 创建工作流引擎
-            var workflowEngine = new WorkflowEngine(logger);
+            var workflowEngine = new WorkflowEngine(logger,directory);
 
             // 3. 创建执行引擎
             var executionEngine = new WorkflowExecutionEngine(workflowEngine, pluginManager, logger);
@@ -39,14 +39,14 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 创建基础工作流引擎（无插件功能）
         /// </summary>
-        public static WorkflowEngine CreateBasicEngine(ILogger logger)
+        public static WorkflowEngine CreateBasicEngine(ILogger logger,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            return new WorkflowEngine(logger);
+            return new WorkflowEngine(logger,directory);
         }
 
         /// <summary>

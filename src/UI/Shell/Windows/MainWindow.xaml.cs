@@ -132,10 +132,10 @@ namespace SunEyeVision.UI.Shell.Windows
             return IntPtr.Zero;
         }
 
-        public MainWindow()
+        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
         {
             InitializeComponent();
-            _viewModel = new MainWindowViewModel();
+            _viewModel = new MainWindowViewModel(admission);
             _viewModel.SolutionDialogOwner = this;
             DataContext = _viewModel;
             // ★ 中间工作区注入 ViewModel 并订阅缩放事件（替代直接操作 ZoomTextBlock 的跨区域耦合）
@@ -220,6 +220,8 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private bool _isClosingPromptInProgress;
         private bool _closeApproved;
+        private bool _shutdownPreparationStarted;
+        private bool _consumerReleaseStarted;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -237,6 +239,17 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 拦截本次关闭，异步弹确认框后再决定（不能同步 ShowDialog——主窗口关闭流程中模态窗口不显示）
             e.Cancel = true;
+            if (_shutdownPreparationStarted)
+            {
+                // A child that refused to close has not released any consumers; retry
+                // only that reversible phase after the owner has resolved the failure.
+                if (!_consumerReleaseStarted && !_isClosingPromptInProgress)
+                {
+                    _isClosingPromptInProgress=true;
+                    Dispatcher.BeginInvoke(new Action(RetryPreparedClose));
+                }
+                return;
+            }
             if (_isClosingPromptInProgress) return;
             _isClosingPromptInProgress = true;
 
@@ -254,23 +267,48 @@ namespace SunEyeVision.UI.Shell.Windows
                   {
                       SaveLayoutConfig();
                       SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.SaveUserSettings();
-                      _closeApproved = true;
                       (Application.Current as SunEyeVision.UI.App)?.MarkInstanceClosing();
-                      Close();
+                      _shutdownPreparationStarted = true;
+                      if (Content is UIElement content) content.IsEnabled = false;
+                      Title = "正在关闭：等待资源释放";
+                      await CompletePreparedCloseAsync();
                 }
                 else _isClosingPromptInProgress = false;
             }
             catch (Exception ex)
             {
                 _isClosingPromptInProgress = false;
-                _viewModel.EndSolutionTransition();
-                ThemeMessageDialog.Show(ex.Message, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, this);
+                if (!_shutdownPreparationStarted) _viewModel.EndSolutionTransition();
+                var detail=_shutdownPreparationStarted ? "退出准备已开始，工作区保持关闭状态，请检查资源释放错误。\n"+ex.Message : ex.Message;
+                ThemeMessageDialog.Show(detail, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, this);
             }
         }
-        protected override void OnClosed(EventArgs e)
+        private async void RetryPreparedClose()
         {
-            _viewModel.CloseExecutionSnapshotDetails();
-            _viewModel.SolutionDialogOwner = null;
+            try { await CompletePreparedCloseAsync(); }
+            catch(Exception ex)
+            {
+                _isClosingPromptInProgress=false;
+                ThemeMessageDialog.Show("退出准备已开始，工作区保持关闭状态，请检查资源释放错误。\n"+ex.Message,
+                    "退出未完成",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Error,this);
+            }
+        }
+        private async Task CompletePreparedCloseAsync()
+        {
+            PreparePluginConsumersForShutdown();
+            if(Application.Current is SunEyeVision.UI.App app)
+            {
+                var drain=app.DrainPluginDirectoryAsync();
+                if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
+                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。", "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                await drain;
+            }
+            _closeApproved=true;
+            Close();
+        }
+        private void PreparePluginConsumersForShutdown()
+        {
+            var failures=new List<Exception>();
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
             // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
             var childWindows = Application.Current?.Windows
@@ -281,25 +319,41 @@ namespace SunEyeVision.UI.Shell.Windows
             {
                 foreach (var childWindow in childWindows)
                 {
+                    Exception? dispatcherFailure=null;
+                    System.Windows.Threading.DispatcherUnhandledExceptionEventHandler capture=(_,args)=>dispatcherFailure??=args.Exception;
+                    Dispatcher.UnhandledException+=capture;
                     try
                     {
                         childWindow.Close();
+                        if(dispatcherFailure is not null)failures.Add(dispatcherFailure);
+                        if(Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
+                            failures.Add(new InvalidOperationException("子窗口未关闭："+childWindow.GetType().Name));
                     }
                     catch (Exception ex)
                     {
                         VisionLogger.Instance.Log(LogLevel.Warning,
                             $"关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}", "MainWindow");
+                        failures.Add(ex);
                     }
+                    finally { Dispatcher.UnhandledException-=capture; }
                 }
             }
+            // A still-open child may retain result readers or an editor. Do not
+            // release its shared consumers or start retirement after a failed close.
+            if(failures.Count>0)throw new AggregateException("子窗口未能全部关闭，资源保持持有。",failures);
+            _consumerReleaseStarted=true;
+            try { _viewModel.CloseExecutionSnapshotDetails(); } catch(Exception ex) { failures.Add(ex); }
+            _viewModel.SolutionDialogOwner = null;
 
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
-            ImageResultHost.Shutdown();
-            _viewModel?.StopWorkflowCommand.Execute(null);
-            _viewModel?.ReleaseDocumentHost();
+            try { ImageResultHost.Shutdown(); } catch(Exception ex) { failures.Add(ex); }
+            try { _viewModel.ReleasePluginConsumersForShutdown(); } catch(Exception ex) { failures.Add(ex); }
+            try { _viewModel.ReleaseDocumentHost(); } catch(Exception ex) { failures.Add(ex); }
+            if(failures.Count>0)throw new AggregateException("插件消费者未能全部释放，窗口保持打开。",failures);
+        }
+        protected override void OnClosed(EventArgs e)
+        {
             base.OnClosed(e);
-
-            // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。
             Application.Current?.Shutdown();
         }
 

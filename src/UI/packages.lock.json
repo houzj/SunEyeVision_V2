@@ -1698,6 +1698,7 @@
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },

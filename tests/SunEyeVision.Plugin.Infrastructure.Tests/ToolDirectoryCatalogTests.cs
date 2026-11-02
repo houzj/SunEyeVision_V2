@@ -1,54 +1,42 @@
-using System;
 using System.IO;
-using System.Linq;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using Xunit;
+
 namespace SunEyeVision.Plugin.Infrastructure.Tests;
 public sealed class ToolDirectoryCatalogTests
 {
-    private static (string Root,string Groups,string Manifest) Fixture(string visible="true")
+    private sealed class Fixture:IDisposable
     {
-        var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","ToolboxCases")),Guid.NewGuid().ToString("N"));
-        var directory=Path.Combine(root,"plugins","sample");Directory.CreateDirectory(directory);
-        var groups=Path.Combine(root,"ToolGroups.xml");
-        File.WriteAllText(groups,$"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a.png' HoverIcon='b.png'/><Tool Id='image' Category='采集' Directory='sample' IsVisible='{visible}'/></ToolGroups>");
-        return(root,groups,Path.Combine(directory,"ToolItemInfo.xml"));
+        public string Root { get; }=Path.Combine(Path.GetTempPath(),"SunEyeDirectory-"+Guid.NewGuid().ToString("N"));
+        public string Groups=>Path.Combine(Root,"ToolGroups.xml");
+        public Fixture(){Directory.CreateDirectory(Root);File.WriteAllText(Groups,"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a.png' HoverIcon='b.png'/><Group Name='测量' Order='2' Icon='c.png' HoverIcon='d.png'/></ToolGroups>");}
+        public void Dispose()=>Directory.Delete(Root,true);
     }
-    private static void WriteManifest(string path,string visible="true")=>File.WriteAllText(path,$"<ToolItems SchemaVersion='1' Assembly='Missing.dll'><Tool Id='image' DisplayName='图像源' Category='采集' Order='10' Icon='image' EntryType='Missing.Image' IsVisible='{visible}'/></ToolItems>");
-    [Fact] public void Runtime_entry_uses_registered_identity_without_a_fake_sdk_manifest()
+    private static DirectoryTool Tool(string id,int order=1,bool visible=true,string category="采集")=>new(id,id,category,order,"generic","",id+".Entry",id+".dll",visible);
+    [Fact] public void Only_admitted_entries_form_directory_and_category_order()
     {
-        var f=Fixture();WriteManifest(f.Manifest);
-        var runtime=new DirectoryTool("runtime","运行工具","采集",2,"r","",typeof(ToolDirectoryCatalogTests).FullName!,typeof(ToolDirectoryCatalogTests).Assembly.Location,true,DirectoryToolKind.Runtime);
-        var c=new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,new[]{runtime});
-        Assert.Equal(runtime,c.Find("runtime"));Assert.Equal(2,c.ToolIds.Count);
-        Assert.Equal(2,c.GetCategory("采集").Count);Assert.Equal(2,c.Tools.Count);
-        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,new[]{runtime with{Id="image"}}));
+        using var f=new Fixture();var calls=new List<string>();var a=Tool("a",2);var b=Tool("b",1);var hidden=Tool("hidden",3,false);
+        var c=new ToolDirectoryCatalog(f.Groups,new[]{a,b,hidden},calls.Add);
+        Assert.Equal(new[]{f.Groups},calls);Assert.Equal(new[]{"b","a"},c.GetCategory("采集").Select(x=>x.Id));
+        Assert.Equal(2,c.CountCategory("采集"));Assert.Equal(hidden,c.Find("hidden"));Assert.Equal(3,c.ToolIds.Count);
+        Assert.Equal("a",a.ToMetadata().Id);Assert.Equal("采集",a.ToMetadata().Category);
     }
-    [Fact] public void Discovery_does_not_read_tool_manifest_or_load_missing_dll()
+    [Fact] public void Duplicate_identity_unknown_category_and_empty_runtime_are_rejected()
     {
-        var f=Fixture();File.WriteAllText(f.Manifest,"not XML");
-        var c=new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,Array.Empty<DirectoryTool>());
-        Assert.Equal("image",Assert.Single(c.ToolIds));Assert.Equal(1,c.CountCategory("采集"));
-        Assert.ThrowsAny<Exception>(()=>c.GetCategory("采集"));
-        WriteManifest(f.Manifest);Assert.Equal("image",Assert.Single(c.GetCategory("采集")).Id);
+        using var f=new Fixture();Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a"),Tool("a")}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a",category:"不存在")}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,Array.Empty<DirectoryTool>()));
     }
-    [Fact] public void Visibility_is_metadata_not_dll_availability()
+    [Fact] public void Group_manifest_cannot_declare_tool_producers_or_duplicate_categories()
     {
-        var f=Fixture("false");WriteManifest(f.Manifest,"false");
-        var c=new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,Array.Empty<DirectoryTool>());
-        Assert.Empty(c.GetCategory("采集"));Assert.NotNull(c.Find("image"));
-        Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName(f.Manifest)!,"Missing.dll")));
+        using var f=new Fixture();File.WriteAllText(f.Groups,"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a' HoverIcon='b'/><Tool Id='fake'/></ToolGroups>");
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
+        File.WriteAllText(f.Groups,"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a' HoverIcon='b'/><Group Name='采集' Order='2' Icon='a' HoverIcon='b'/></ToolGroups>");
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
     }
-    [Fact] public void Declared_identity_must_match_category_index()
+    [Fact] public void Group_xml_rejects_external_entity()
     {
-        var f=Fixture();WriteManifest(f.Manifest);File.WriteAllText(f.Manifest,File.ReadAllText(f.Manifest).Replace("Id='image'","Id='other'"));
-        var c=new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,Array.Empty<DirectoryTool>());
-        Assert.Throws<InvalidDataException>(()=>c.GetCategory("采集"));
-    }
-    [Fact] public void Auxiliary_directory_cannot_create_a_tool()
-    {
-        var f=Fixture();WriteManifest(f.Manifest);Directory.CreateDirectory(Path.Combine(f.Root,"plugins","sample_wpftmp"));
-        var c=new ToolDirectoryCatalog(Path.Combine(f.Root,"plugins"),f.Groups,Array.Empty<DirectoryTool>());
-        Assert.Single(c.ToolIds);Assert.Single(c.Tools);
+        using var f=new Fixture();File.WriteAllText(f.Groups,"<!DOCTYPE x [<!ENTITY a SYSTEM 'file:///missing'>]><ToolGroups SchemaVersion='1'>&a;</ToolGroups>");
+        Assert.ThrowsAny<Exception>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
     }
 }

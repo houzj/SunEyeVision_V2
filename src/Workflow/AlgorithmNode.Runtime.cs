@@ -35,10 +35,12 @@ public partial class AlgorithmNode
         bool transferred=false;
         ToolOutcome? outcome=null;
         DeclaredOutputSnapshot? prepared=null;
+        RuntimeGenerationLease? generation=null;
         Exception? failure=null;
         var timer=Stopwatch.StartNew();
         try
         {
+            generation=configuration.Directory.AcquireInvocation();
             foreach(var dependency in CompiledBindings.Values.SelectMany(plan=>plan.Dependencies).Distinct())
                 if(results?.TryGetValue(dependency.NodeId,out var source)==true&&source is { } published)
                     leases.Add(published.AcquireReader());
@@ -82,9 +84,10 @@ public partial class AlgorithmNode
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);
             var inputs=new InputValues(schema.Inputs,values);
-            outcome=await ExecuteRuntimeAsync(configuration,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests,settings).ConfigureAwait(false);
-            transferred=true; // The envelope also disposes both owners when its constructor fails.
-            prepared=captureResult(outcome,resources,timer.Elapsed.TotalMilliseconds);
+            outcome=await ExecuteRuntimeAsync(configuration,generation!,inputs,new RuntimeContext(identity.ToInvocationIdentity(Id),cancellation,resources,SourceRunInput is null ? null : () => SourceRunInput.AcceptLocalImage(identity)),OutputRequests,settings).ConfigureAwait(false);
+            var generationResources=new GenerationResourceOwner(resources,generation!);
+            generation=null; transferred=true;
+            prepared=captureResult(outcome,generationResources,timer.Elapsed.TotalMilliseconds);
             return prepared;
         }
         catch(Exception error){failure=error;throw;}
@@ -95,6 +98,7 @@ public partial class AlgorithmNode
             {
                 try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}
                 if(!ReferenceEquals(outcome?.Output,resources))try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}
+                try{generation?.Dispose();}catch(Exception error){cleanup.Add(error);}
             }
             foreach(var lease in leases)try{lease.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0)

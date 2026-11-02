@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Workflow;
+using SunEyeVision.Workflow;
 using System;
 using System.Linq;
 using System.Windows;
@@ -91,7 +91,7 @@ public partial class MainWindowViewModel
             control.SetRoiInputCapture((draft,fields)=>
             {
                 if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止运行后预览继承区域。");
-                return RuntimeDebugInvocation.CaptureInputs(flow,draft,context.DebugOwner,host.Capture().Version,
+                return RuntimeDebugInvocation.CaptureInputs(flow,session.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"),draft,context.DebugOwner,host.Capture().Version,
                     id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
                     solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
                     readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,inputFieldIds:fields,observeVariables:ids=>WatchVariables(ids));
@@ -102,7 +102,7 @@ public partial class MainWindowViewModel
             control.SetDebugCapture(draft=>
             {
                 if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止工作流后调试此节点。");
-                return SunEyeVision.Workflow.RuntimeDebugInvocation.Capture(flow,draft,context.DebugOwner,host.Capture().Version,
+                return SunEyeVision.Workflow.RuntimeDebugInvocation.Capture(flow,session.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"),draft,context.DebugOwner,host.Capture().Version,
                     id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
                     resourcePaths:SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document),
                     cameraService:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,

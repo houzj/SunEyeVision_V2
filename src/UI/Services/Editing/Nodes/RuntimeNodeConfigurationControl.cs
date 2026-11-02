@@ -211,7 +211,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(_disposed||generation!=_generation){DisposeInput();return;}
         var textExpressions=configuration.DisplaySettingsSchema.Inputs.Where(port=>(port.EditModes&FieldEditModes.DisplayExpression)!=0)
             .ToDictionary(port=>port.Id,port=>new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions(()=>ReadTextExpressionSnapshot(generation)),StringComparer.Ordinal);
-        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
+        candidate=SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolPresentation.CreateSettingsView(configuration.Directory,configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
             new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
                 candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames,TextExpressions:textExpressions));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}

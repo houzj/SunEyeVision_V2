@@ -74,11 +74,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         private static FileLogWriter? _fileLogWriter;
         public static void ConfigureDataPaths(ApplicationDataPaths paths) => _dataPaths = paths;
 
-        public static void InitializeSolutionManager(ApplicationDataPaths paths)
+        public static void InitializeSolutionManager(ApplicationDataPaths paths,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
             if (_solutionManager != null) return;
             _dataPaths = paths;
-            _solutionManager = new SolutionManager(paths);
+            _solutionManager = new SolutionManager(paths,directory);
             _ = CommunicationService;
         }
         private static CameraRuntimeComposition? _cameraRuntime;
@@ -184,7 +184,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 初始化解决方案管理器
         /// </summary>
         /// <param name="solutionsDirectory">解决方案目录，默认为solutions/</param>
-        public static void InitializeSolutionManager(string? solutionsDirectory = null)
+        public static void InitializeSolutionManager(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,string? solutionsDirectory = null)
         {
             if (_solutionManager != null)
             {
@@ -201,7 +201,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             }
 
             // 创建解决方案管理器
-            _solutionManager = new SolutionManager(solutionsDirectory);
+            _solutionManager = new SolutionManager(solutionsDirectory,directory);
             // Subscribe before any solution is opened, even when the manager window is never shown.
             _ = CommunicationService;
             logger.Info($"解决方案管理器初始化完成，目录: {_solutionManager.SolutionsDirectory}", "ServiceInitializer");

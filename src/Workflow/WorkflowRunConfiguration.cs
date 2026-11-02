@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +13,11 @@ public sealed class WorkflowRunConfiguration
         if(documentRevision<0)throw new ArgumentOutOfRangeException(nameof(documentRevision));
         DocumentRevision=documentRevision;
         var shell = new Solution { Workflows = workflows.ToList() };
+        foreach (var flow in shell.Workflows)
+        {
+            if (flow.IsSubroutine) throw new InvalidOperationException("Group / 控制流当前尚未接入正式运行。");
+            foreach (var node in flow.Nodes) RuntimeNodeAdmission.RequireShape(node);
+        }
         var copied = BindingConfigurationStore.Copy(shell).Workflows;
         var originals = shell.Workflows.ToDictionary(w => w.Id, StringComparer.Ordinal);
         foreach (var flow in copied) flow.ExecutionOwner = originals[flow.Id].ExecutionOwner;

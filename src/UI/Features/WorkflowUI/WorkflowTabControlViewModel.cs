@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -44,8 +44,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public Func<WorkflowTabViewModel, bool>? StartContinuousExecution { get; set; }
         public Func<WorkflowTabViewModel, bool>? StopContinuousExecution { get; set; }
 
-        public WorkflowTabControlViewModel()
+        private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
+        public WorkflowTabControlViewModel(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
+            _directory=directory??throw new ArgumentNullException(nameof(directory));
             // 创建默认工作流。
             CreateDefaultWorkflow();
         }
@@ -104,7 +106,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (Tabs.Count > 0)
                 return;
 
-            var defaultWorkflow = new WorkflowTabViewModel
+            var defaultWorkflow = new WorkflowTabViewModel(_directory)
             {
                 Name = "流程1"
             };
@@ -137,7 +139,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             Tabs.Clear();
 
             // 创建新的默认工作流（新对象，彻底清空节点和连接）
-            var defaultWorkflow = new WorkflowTabViewModel
+            var defaultWorkflow = new WorkflowTabViewModel(_directory)
             {
                 Name = "流程1"
             };

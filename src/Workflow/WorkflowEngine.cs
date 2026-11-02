@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -32,8 +32,11 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private ILogger Logger { get; set; }
 
-        public WorkflowEngine(ILogger logger)
+        private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
+        internal SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot RuntimeDirectory => _directory;
+        public WorkflowEngine(ILogger logger,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
+            _directory=directory??throw new ArgumentNullException(nameof(directory));
             Logger = logger;
             Workflows = new Dictionary<string, Workflow>();
         }
@@ -211,7 +214,7 @@ namespace SunEyeVision.Workflow
                 var workflow = Workflows[workflowId];
 
                 // 使用 Workflow 层的序列化配置
-                var options = WorkflowSerializationOptions.Default;
+                var options = WorkflowSerializationOptions.For(_directory);
 
                 var json = JsonSerializer.Serialize(workflow, options);
                 File.WriteAllText(filePath, json);
@@ -243,7 +246,7 @@ namespace SunEyeVision.Workflow
                 var json = File.ReadAllText(filePath);
 
                 // 使用 Workflow 层的序列化配置
-                var options = WorkflowSerializationOptions.Default;
+                var options = WorkflowSerializationOptions.For(_directory);
 
                 var workflow = JsonSerializer.Deserialize<Workflow>(json, options);
 

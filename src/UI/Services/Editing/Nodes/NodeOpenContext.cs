@@ -72,6 +72,8 @@ namespace SunEyeVision.UI.Services.Editing
         /// 主窗口引用（用于设置窗口所有者）
         /// </summary>
         public Window? MainWindow { get; set; }
+        public SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot? RuntimeDirectory { get; set; }
+        public string? FailureReason { get; internal set; }
 
         #endregion
 

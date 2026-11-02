@@ -48,9 +48,8 @@ public sealed class ToolboxViewModel : ViewModelBase
         }
     }
     public ICommand ToggleDisplayModeCommand { get; }
-    public ToolboxViewModel() : this(ToolRegistry.DirectoryCatalog) { }
-    public ToolboxViewModel(ToolDirectoryCatalog? directory) : this(directory, ToolRegistry.GetToolMetadata, ToolRegistry.HasRuntime,
-        () => ReferenceEquals(directory, ToolRegistry.DirectoryCatalog)) { }
+    public ToolboxViewModel(DesktopToolAdmission admission) : this(admission.Directory,
+        id=>admission.Directory.Find(id)?.ToMetadata(),admission.Runtime.Contains,()=>admission.Runtime.IsActive) { }
     internal ToolboxViewModel(ToolDirectoryCatalog? directory, Func<string, ToolMetadata?> resolve, Func<string, bool> hasRuntime, Func<bool> directoryCurrent)
     {
         _directory = directory;

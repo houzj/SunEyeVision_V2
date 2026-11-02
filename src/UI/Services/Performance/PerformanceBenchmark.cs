@@ -22,11 +22,11 @@ namespace SunEyeVision.UI.Services.Performance
         private readonly IWorkflowNodeFactory _nodeFactory;
         private readonly INodeSequenceManager _sequenceManager;
 
-        public PerformanceBenchmark()
+        public PerformanceBenchmark(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
             _monitor = new PerformanceMonitor();
             _sequenceManager = new NodeSequenceManager();
-            _nodeFactory = new WorkflowNodeFactory(_sequenceManager);
+            _nodeFactory = new WorkflowNodeFactory(_sequenceManager,directory);
         }
 
         /// <summary>

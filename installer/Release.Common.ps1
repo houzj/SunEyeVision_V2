@@ -262,7 +262,7 @@ function New-ReleasePayload {
     param([Parameter(Mandatory)][string]$AppPath,
         [Parameter(Mandatory)][string]$BuildId,
         [Parameter(Mandatory)][string]$SourceCommit,
-        [Parameter(Mandatory)][string]$ArtifactVersion,[Parameter(Mandatory)][object[]]$ProductComponents,[string]$FrameworkOriginPath)
+        [Parameter(Mandatory)][string]$ArtifactVersion,[Parameter(Mandatory)][object[]]$ProductComponents,[string]$FrameworkOriginPath,[string]$RuntimeConfigName = 'SunEyeVision.UI.runtimeconfig.json',[switch]$NeutralHost)
     Initialize-ReleaseToolMetadataReader
     $productIdentity=[SunEyeVision.ReleaseToolMetadataReader]::ReadProductIdentity((Join-Path $AppPath 'SunEyeVision.Foundation.dll'))
     $actualArtifact=$productIdentity['Product']
@@ -271,7 +271,10 @@ function New-ReleasePayload {
     if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Foundation PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins')){throw 'Retired SDK deployment directories must not enter a release payload.'}
-    $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
+    $sdkPath=Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll'
+    if(!(Test-Path -LiteralPath $sdkPath) -and !$NeutralHost){throw 'Desktop payload lacks the SDK assembly.'}
+    if($NeutralHost -and (Test-Path -LiteralPath $sdkPath)){throw 'Neutral payload cannot include the SDK assembly.'}
+    $sdkIdentity=if(Test-Path -LiteralPath $sdkPath){[Reflection.AssemblyName]::GetAssemblyName($sdkPath).FullName}else{$null}
     $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
     [xml]$directoryGroups=Get-Content (Join-Path $PSScriptRoot '../src/Plugin.SDK/Metadata/ToolGroups.xml') -Raw
     # 分类只描述共享分组，工具生产者只由产品组件清单和PE声明确定。
@@ -294,6 +297,8 @@ function New-ReleasePayload {
     })
     $componentEntries=@($entries|Where-Object{$_.Contains('components') -and $_.components.Count -gt 0})
     $components=@($componentEntries|ForEach-Object{$_.components})
+    if($NeutralHost -and @($components|Where-Object {$_.role -ne 'Runtime'}).Count){throw 'Neutral payload cannot include editor components.'}
+    if($NeutralHost -and @($entries|Where-Object { [IO.Path]::GetFileName($_.path) -in 'SunEyeVision.UI.dll','SunEyeVision.Plugin.Wpf.dll','PresentationFramework.dll','PresentationCore.dll','WindowsBase.dll','System.Xaml.dll' }).Count){throw 'Neutral payload contains a desktop assembly.'}
     if(@($components|ForEach-Object{$_.componentId}|Sort-Object -Unique).Count -ne $components.Count){throw 'Duplicate tool component identity.'}
     foreach($group in @($components|Group-Object { $_.toolId+'|'+$_.role })){if($group.Count -gt 1){throw 'Duplicate tool component role.'}}
     foreach($component in $components) {
@@ -321,13 +326,15 @@ function New-ReleasePayload {
         }
         if([string]$actual.companionToolId -cne [string]$expected.companionToolId){throw 'Product companion mismatch.'}
     }
-    $frameworks=Get-ReleaseRuntimeFrameworks -AppPath $appRoot -Entries $entries -FrameworkOriginPath $FrameworkOriginPath
+    $frameworks=Get-ReleaseRuntimeFrameworks -AppPath $appRoot -Entries $entries -FrameworkOriginPath $FrameworkOriginPath -RuntimeConfigName $RuntimeConfigName
+    if($NeutralHost -and @($frameworks.frameworks|Where-Object {$_.name -eq 'Microsoft.WindowsDesktop.App'}).Count){throw 'Neutral payload declares the desktop framework.'}
     [ordered]@{payloadSchemaVersion=2;buildId=$BuildId;sourceCommit=$SourceCommit;artifactVersion=$ArtifactVersion;productComponents=@($ProductComponents);runtimeFrameworks=$frameworks;entries=$entries}
 }
 
 function Get-ReleaseRuntimeFrameworks {
-    param([string]$AppPath,[object[]]$Entries,[string]$FrameworkOriginPath)
-    $runtime=Get-Content (Join-Path $AppPath 'SunEyeVision.UI.runtimeconfig.json') -Raw|ConvertFrom-Json -AsHashtable
+    param([string]$AppPath,[object[]]$Entries,[string]$FrameworkOriginPath,[string]$RuntimeConfigName = 'SunEyeVision.UI.runtimeconfig.json')
+    if ([IO.Path]::GetFileName($RuntimeConfigName) -cne $RuntimeConfigName -or !$RuntimeConfigName.EndsWith('.runtimeconfig.json',[StringComparison]::Ordinal)) {throw 'Invalid host runtime configuration name.'}
+    $runtime=Get-Content -LiteralPath (Join-Path $AppPath $RuntimeConfigName) -Raw|ConvertFrom-Json -AsHashtable
     $options=$runtime.runtimeOptions
     $selfContained=$options.ContainsKey('includedFrameworks')
     $declared=if($selfContained){@($options.includedFrameworks)}elseif($options.ContainsKey('frameworks')){@($options.frameworks)}elseif($options.ContainsKey('framework')){@($options.framework)}else{throw 'Runtime configuration has no framework declarations.'}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -30,6 +30,7 @@ namespace SunEyeVision.Workflow
         /// <param name="enableRetry">是否启用重试</param>
         /// <returns>创建的AlgorithmNode,如果工具不存在则返回null</returns>
         public static AlgorithmNode? CreateNode(
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,
             string toolId,
             string nodeId,
             string nodeName,
@@ -38,7 +39,7 @@ namespace SunEyeVision.Workflow
             bool enableCaching = true,
             bool enableRetry = false)
         {
-            return CreateAlgorithmNode(toolId, nodeId, nodeName, dispName, parameters, enableCaching, enableRetry);
+            return CreateAlgorithmNode(directory,toolId, nodeId, nodeName, dispName, parameters, enableCaching, enableRetry);
         }
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace SunEyeVision.Workflow
         /// <param name="enableRetry">是否启用重试</param>
         /// <returns>创建的AlgorithmNode,如果工具不存在则返回null</returns>
         public static AlgorithmNode? CreateAlgorithmNode(
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,
             string toolId,
             string nodeId,
             string nodeName,
@@ -61,64 +63,21 @@ namespace SunEyeVision.Workflow
             bool enableCaching = true,
             bool enableRetry = false)
         {
-            try
-            {
-                // 从ToolRegistry获取工具元数据
-                var metadata = ToolRegistry.GetToolMetadata(toolId);
-                if (metadata == null)
-                {
-return null;
-                }
-
-                if(ToolRegistry.HasRuntime(toolId))
-                {
-                    if(parameters is not null)throw new ArgumentException("Runtime工具不接受SDK参数。",nameof(parameters));
-                    return new AlgorithmNode(nodeId,nodeName,dispName,RuntimeToolConfiguration.Create(toolId));
-                }
-
-                // 创建工具实例
-                var tool = ToolRegistry.CreateToolInstance(toolId);
-                if (tool == null)
-                {
-return null;
-                }
-
-                // 设置参数
-                if (parameters == null)
-                {
-                    parameters = ToolRegistry.CreateParameters(toolId);
-                }
-
-                // 创建AlgorithmNode
-                var algorithmNode = new AlgorithmNode(nodeId, nodeName, dispName, tool)
-                {
-                    // Keep the registry identity in frozen execution nodes. "Algorithm" is
-                    // a node category, not a tool ID or a source output contract.
-                    ToolType = toolId,
-                    Parameters = parameters,
-                    DebugWindowType = metadata.DebugWindowType,
-                    NodeStyleType = metadata.NodeStyleType
-                };
-return algorithmNode;
-            }
-            catch (Exception ex)
-            {
-return null;
-            }
+            throw new InvalidOperationException("旧 SDK 工具节点工厂已停用；请通过已准入 Runtime 配置创建节点。");
         }
-
         /// <summary>
         /// 从工具ID批量创建AlgorithmNode
         /// </summary>
         /// <param name="toolConfig">工具配置列表</param>
         /// <returns>创建的AlgorithmNode列表</returns>
-        public static List<AlgorithmNode> CreateAlgorithmNodes(IEnumerable<ToolNodeConfig> toolConfig)
+        public static List<AlgorithmNode> CreateAlgorithmNodes(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory, IEnumerable<ToolNodeConfig> toolConfig)
         {
             var nodes = new List<AlgorithmNode>();
 
             foreach (var config in toolConfig)
             {
                 var node = CreateAlgorithmNode(
+                    directory,
                     config.ToolId,
                     config.NodeId,
                     config.NodeName,

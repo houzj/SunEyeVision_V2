@@ -1,3 +1,10 @@
+## 2026-11-03 新批共享范围补齐与隔离纠正
+
+域/UI/查询已开始独立源码迁移，尚无可运行组合。补冻结ScopedNodeInfoProvider(Solution,string)：捕获方案目录并逐次验证ReferenceEquals/active、scope归属及节点同代，不在Workflow用节点目录自证。AvailableDataSource唯一required ParameterSetting身份，纯旧SourceFieldId/BindingSuffix与旧CLR/字符串树一并退出；查询线独占SDK直接旧宿主编译闭包，UI线处理通信/Group旧可视入口及必要非视觉共用类型，禁止新绑定降回旧模型。通信缺正式字段来源身份，本批不造第三类引用，入口保护并保留非视觉基础。各线可合入已固定接口检查点aa332c168核对联编但不可编辑对方文件或称检查点可运行。
+
+域线早期一次.NET相对路径写入误落87f4 WorkflowNode.cs，已中断并确认独立候选包含全部语义；主线保全完整文件及diff至Release/_validation/isolation-recovery-20261103（B6715D873845E9589F5346BB0E39FCEB1CE071DA4C5F7D36ABA2006E86F4E583），仅恢复误写文件到HEAD后主线干净，域线恢复独立开发。所有IO改绝对路径。
+
+技术总监已回执：主仓99537c5ab另行整合正式批，显示族在独立线机械中立迁名（VMBaseControls→ImageView、VMControls→Primitives等）；本线继续当前名称开发，未来合并由主仓按精确映射同步，不新增旧别名、不要求互相停工。共享参数合同无已发现冲突；此回执不等于两方源码已合并。
 ## 2026-11-03 节点配置、图编辑与声明查询整链设计冻结
 
 依据848309292实际消费者完成三路只读审查，已写 evidence/节点配置图编辑与声明查询整链重构-20261103.html。冻结节点退出Parameters/ParamSettings，INodeInfoProvider/GetNodeContext使用实际ToolSchema，来源投影required ParameterSetting Binding（ReferenceSetting/VariableSetting）保留完整作用域/原始Port/成员/选择/TypeRef身份，不以CLR/字符串/Guid回退。OutputBindingChangeService返回Schema；投影、结果reader与ROI资源仍分工明确，Schema不能替代租约或完整手势版本。严格V3继续拒绝旧JSON字段。

@@ -1,3 +1,8 @@
+## 2026-11-02 B08已支持数值引用混合整窗正式自测
+
+- 以同产品源码93b9b683正式Release运行候选f0ce95c4测试；新增专轨8组通过，实际加载15个程序集路径与SHA及测试源码SHA逐项一致，见 evidence/B08_NUMERIC_REFERENCE_WHOLE_FORMAL_20261102.json。本批仅测试/清单与文档，无产品源码修改；不将其他历史回执拼为本次同版全项通过。
+- 同一真实Blob窗覆盖未消费/消费后解绑、索引失败保已接纳值、范围双端模块/变量动态索引、本地/逐叶继承ROI与图文、私有调试取消、确认UndoRedo、完整引用Copy、保存重开实际引擎执行、断边/Undo及旧owner拒绝、无CurrentValues的真实新DocumentSession重开。运行值与Fields/BindingOrder分别断言；候选失败记录保留。
+- 当前已支持组合自动自测完成；原VM完整解绑/回读时序、自然键鼠/系统焦点和剪贴板、混合冻结后变量变化与多参数后项失败接纳未直接验。A20未声明输出/Group、A21偏好持久与连续会话按依赖保护，不是功能已实现；VS/人工统一另记。不称B08原全部行为或Blob/S2/S3无条件完成。
 ## 2026-11-02 Blob 检测/屏蔽/扇环同次结果显示正式自测
 
 - 基线ab514dbd集成候选5b9387a4；正式UI及全量Release构建成功，Core 5、Roi 10、Window 15、RuntimeDebug 7、FieldEditing 38、BlobRoiPreview 24组正式通过。实际加载程序集路径与SHA逐项核对，回执见 evidence/BLOB_ROI_RESULT_DISPLAY_FORMAL_20261102.json。Field末尾固定摘要31为旧文本，按实际38条通过记录计数。

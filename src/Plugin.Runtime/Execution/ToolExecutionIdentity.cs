@@ -9,6 +9,8 @@ public sealed class ToolExecutionOwner
 {
     private bool _hasEverStarted;
     public bool HasEverStarted { get { lock(_gate)return _hasEverStarted; } }
+    /// <summary>Read-only document lifetime state; querying does not create execution admission.</summary>
+    public bool IsRetired { get { lock(_gate)return _retired; } }
     private readonly object _gate = new();
     private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
     private sealed class ScopeAdmissions(Guid root)

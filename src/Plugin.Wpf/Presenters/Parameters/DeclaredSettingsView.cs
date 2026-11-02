@@ -40,6 +40,16 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             throw new InvalidOperationException("参数草稿捕获期间已改变或重新绑定。");
         return fields;
     }
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    {
+        VerifyAccess();
+        if(!Enum.IsDefined(scope))throw new ArgumentOutOfRangeException(nameof(scope));
+        if(scope==NumericModelReadScope.Field&&string.IsNullOrWhiteSpace(fieldId))throw new ArgumentException("单项回读必须指定字段。",nameof(fieldId));
+        var fields=_fields;var generation=_generation;var draft=Draft;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(fields,_fields)&&ReferenceEquals(draft,Draft);
+        if(!Current()||fields is null)return new[]{new NumericModelReadResult(fieldId??"",_disposed?NumericModelReadStatus.Retired:NumericModelReadStatus.Unavailable)};
+        return fields.ReadNumericModels(scope,fieldId,Current);
+    }
     public event Action? Changed;
     public DeclaredSettingsView() { }
     public DeclaredSettingsView(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)=>Bind(draft,options);

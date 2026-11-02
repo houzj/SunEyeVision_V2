@@ -149,6 +149,9 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             integerRadioOptions.ValidatePort(port);
             if(integerRadioOptions.Validate(_state.Accepted) is {} error)_state.SetEditError(error);
         }
+        if(!inlineConstantReference&&integerRadioOptions is null&&port.Choices is null
+            &&(numericSequence||port.EditModes!=FieldEditModes.Reference&&port.Type.Shape==ValueShape.Scalar&&port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64))
+            _state.EnableNumericModel(presentation?.Layout);
         _state.Changed+=OnStateChanged;
         _state.ExplicitlyAccepted+=OnExplicitlyAccepted;
         Resources.MergedDictionaries.Add(EditorResources.Create());

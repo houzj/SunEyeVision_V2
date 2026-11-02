@@ -1,3 +1,19 @@
+## 2026-11-02 资源交接当前工作区验证
+
+已将候选 d68e0636 的四个生产文件及组件测试应用于当前独立工作区，涉及会话清理失败时未返回输出释放、直接别名只释放一次和结果捕获失败清理。当前工作区全量 Release 构建 0 错、6533 警告；资源交接组件及正式、调试宿主故障测试 6/6 通过（Release/_validation/outcome-current-tests.log）。正式载荷重封签 SHA B31ABC512CAAF5E3B842D837A9A47C1FA4BD35EFCB7342706395A2F1BA35EE15 后，图像源 31/31、Blob 11/11；日志 outcome-current-imagesource-final.log 和 outcome-current-blob-final.log。首次 31 项失败是 Runtime DLL 哈希与旧封签不一致；重封签后 25/31、其余 6 项缺 S2_CASE_ROOT，设置独立数据根后全部通过。该批未验证任意第三方嵌套所有权。节点编号候选 ffb592c51 的正式宿主通过 ImageLoad 准入、创建、复制、保存重开、多流程高水位与主窗共享历史 Undo/Redo；画布创建失败回滚及方案切换失败保护未验证，仍未集成。
+
+## 2026-11-02 正式工具输出资源静态核查
+
+FrozenOutputResources.CreateScope 创建独立子作用域，父作用域不代持；ImageSourceOutput 与 BlobOutput 各持其 session 新建子作用域，Dispose 时释放。资源交接候选 d68e0636 的直接别名和故障测试不能推广至任意第三方嵌套所有权，尚未集成。具体位置及验证范围已补入全平台主计划。
+
+## 2026-11-02 旧工具入口消费者审计
+
+插件候选已固定 041de199febc47cf806bc601fe63eca28f3a72dd，未集成。已核对 WorkflowNodeFactory、WorkflowExecutionEngine、NodeOpenDecisionChain、ToolDebugWindowFactory：旧 SDK 实例和参数路径仍存在，且执行链包含 Subroutine 委托；不能统一按 RuntimeConfiguration 为空禁用。EventBusIntegration.ExecuteNode 也直接使用旧实例；仓库静态搜索 EventEnabledWorkflow、WorkflowEventPublisher 未见 src/tests 外部引用，仅见历史文档，反射和外部调用尚未排除。主计划已记录各入口和统一切换要求；真实 WPF 显示 reader、完整启动与关闭继续由候选线验证。
+
+## 2026-11-02 并行候选核收与集成边界
+
+当前工作区基线 aca8dfc63。插件候选独立全量 Release 构建通过，ImageSource 31/31、Blob 11/11；工作流及调试探针验证上游 width=8 和结果 reader 代次持有。关闭探针绕开完整启动，真实 WPF 显示 reader、旧 SDK 非 Runtime 消费者及控制流仍需核查，候选未集成。节点编号候选 845d2f7d0：5 项通过、1 项跳过，正式插件载荷重开及生产创建、复制未验证；现有方案加载失败缺统一入口保护，候选不可集成；证据记录 2a6858e01。详细边界已同步全平台主计划，Group 不扩展。
+
 ## 2026-11-02 Blob 结果显示生产链回归通过
 
 独立分支正式 Release，BlobResultDisplay attempt-009 候选回归 41 组通过、退出 0；测试源码 SHA256 806F564B94F9F4C0A15A26DB8F09441EAB23DA1191EADEF379ECAA9FD4E78408。测试组清理临时节点、恢复全域 ROI、重开后重取节点/会话并读取同轮来源宽度；产品源码未为测试修改。日志和回执在 Release/_validation/S4-20261025/BlobResultDisplay/attempt-009；不代签 VM 像素、物理鼠标、设计器、人工验收、插件新目录或主仓集成。

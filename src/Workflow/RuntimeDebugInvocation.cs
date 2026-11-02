@@ -410,7 +410,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
             try{_sourceInput?.FinishRead();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
-            if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}}
+            if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}if(!ReferenceEquals(outcome?.Output,resources))try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}}
             if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0){if(failure is not null)cleanup.Insert(0,failure);throw new AggregateException(cleanup);}
         }

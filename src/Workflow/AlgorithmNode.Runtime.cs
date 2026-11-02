@@ -94,7 +94,7 @@ public partial class AlgorithmNode
             if(!transferred)
             {
                 try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}
-                try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}
+                if(!ReferenceEquals(outcome?.Output,resources))try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}
             }
             foreach(var lease in leases)try{lease.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(cleanup.Count>0)

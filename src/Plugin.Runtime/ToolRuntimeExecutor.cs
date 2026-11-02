@@ -20,12 +20,24 @@ public static class ToolRuntimeExecutor
             return new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic("TOOL_CANCELLED","工具执行已取消。")});
         var session=definition.CreateSession();
         Exception? failure=null;
-        try{return await session.ExecuteAsync(invocation).ConfigureAwait(false);}
+        ToolOutcome? outcome=null;
+        try{outcome=await session.ExecuteAsync(invocation).ConfigureAwait(false);return outcome;}
         catch(Exception error){failure=error;throw;}
         finally
         {
             try{await session.DisposeAsync().ConfigureAwait(false);}
             catch(Exception cleanup)when(failure is not null){throw new AggregateException("Tool execution and session cleanup both failed.",failure,cleanup);}
+            catch(Exception cleanup)
+            {
+                // The return value is suppressed by the cleanup exception. The caller still
+                // owns context.Resources, including the direct-alias case.
+                if(outcome?.Output is IDisposable output&&!ReferenceEquals(output,context.Resources))
+                {
+                    try{output.Dispose();}
+                    catch(Exception release){throw new AggregateException("Session and untransferred output cleanup both failed.",cleanup,release);}
+                }
+                throw;
+            }
         }
     }
 }

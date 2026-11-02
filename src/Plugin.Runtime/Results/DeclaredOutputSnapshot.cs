@@ -58,9 +58,10 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         string nodeId,ToolOutcome outcome,IDisposable resources,double elapsed,
         IReadOnlyDictionary<string,DeclaredOutputField>? fields=null,string? sourceWorkflowId=null,bool complete=true)
     {
-        var owner=new ResultResourceOwner(()=>Release(outcome.Output as IDisposable,resources));
+        ResultResourceOwner? owner=null;
         try
         {
+            owner=new ResultResourceOwner(()=>Release(outcome.Output as IDisposable,resources));
             if(!executionIdentity.TryCaptureResult())throw new InvalidOperationException("This invocation is stale or its result was already captured.");
             var status=outcome.Success?ExecutionStatus.Success:
                 executionIdentity.CancellationToken.IsCancellationRequested?ExecutionStatus.Cancelled:ExecutionStatus.Failed;
@@ -72,7 +73,7 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         }
         catch(Exception failure)
         {
-            try{owner.Dispose();}catch(Exception cleanup){throw new AggregateException("Result capture and cleanup failed.",failure,cleanup);}
+            try{if(owner is null)Release(outcome.Output as IDisposable,resources);else owner.Dispose();}catch(Exception cleanup){throw new AggregateException("Result capture and cleanup failed.",failure,cleanup);}
             throw;
         }
     }
@@ -80,7 +81,7 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     {
         var errors=new List<Exception>();
         try{output?.Dispose();}catch(Exception error){errors.Add(error);}
-        try{resources.Dispose();}catch(Exception error){errors.Add(error);}
+        if(!ReferenceEquals(output,resources))try{resources.Dispose();}catch(Exception error){errors.Add(error);}
         if(errors.Count>0)throw new AggregateException("Output and resource cleanup failed.",errors);
     }
     public static DeclaredOutputSnapshot NotExecuted(ToolSchema schema,long revision,RunIdentity identity,

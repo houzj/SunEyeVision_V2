@@ -83,4 +83,10 @@
   <Folder Name="/Tests/SunEyeVision.DeviceDriver.Tests/">
     <Project Path="tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/CanvasLayout.Tests/">
+    <Project Path="tests/CanvasLayout.Tests/CanvasLayout.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.WorkflowGraph.Tests/">
+    <Project Path="tests/SunEyeVision.WorkflowGraph.Tests/SunEyeVision.WorkflowGraph.Tests.csproj" />
+  </Folder>
 </Solution>

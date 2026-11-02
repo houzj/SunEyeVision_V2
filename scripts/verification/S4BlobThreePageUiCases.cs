@@ -65,18 +65,22 @@ internal static partial class S2DocumentEditingCases
             threshold.TrySelectMode("DoubleThreshold");Pump();var high=ThreeItems(threshold,"_editors").Cast<DeclaredFieldEditor>().Single(item=>item.FieldId.EndsWith(".high"));var highInput=(TextBox)high.InputElement;var original=highInput.Text;highInput.Text="bad-preview";Pump();Page(0);editor.Visibility=Visibility.Collapsed;Pump();editor.Visibility=Visibility.Visible;Page(1);Require(highInput.Text=="bad-preview","预览raw隐藏后丢失");threshold.TrySelectMode("SingleThreshold");Reject();threshold.TrySelectMode("DoubleThreshold");Pump();highInput=(TextBox)high.InputElement;highInput.Text=original;Pump();Require(high.TryCommitPending(),"预览高阈值恢复提交失败");threshold.TrySelectMode("SingleThreshold");Pump();Ready();Unchanged();
         });
         Case("全部高级范围与十三排序集中接入，未支持值保护与恢复",()=>{
-            Page(1);var ranges=ThreeItems(run,"_ranges").Cast<NativeUiDraftRange>().ToArray();Require(ranges.Length==8,"高级范围未完整接入");
+            Page(1);var advanced=ThreeItems(fields,"_advanced").Cast<NativeAdvancedPresenter>().Single(item=>item.IsVisible);advanced.IsExpanded=true;window.UpdateLayout();Pump();
+            var ranges=ThreeItems(run,"_ranges").Cast<NativeUiDraftRange>().ToArray();Require(ranges.Length==8,"高级范围未完整接入");
+            var visibility=(IDictionary)Get(fields,"_visibility");var positions=(IDictionary)Get(fields,"_positions");
+            Require(!(bool)Get(run,"HasUiChanges"),"展开真实高级区被当作编辑");
             var specs=new[]{(-9000d,9000d,-9000d,9000d,1d),(1d,1e6,100d,200d,1d),(1d,1e6,100d,200d,1d),(1d,999999999d,10d,999999999d,1d),(1d,999999999d,1d,999999999d,1d),(1d,999999999d,10d,999999999d,1d),(0d,9999999.99,0d,9999999.99,.01),(.01,1d,.01,1d,.01)};
             for(var i=0;i<ranges.Length;i++)
             {
                 var pair=ranges[i];var native=Get(pair,"_range");var p=ThreeItems(native,"_presentations").Cast<FieldPresentation>().ToArray();var s=specs[i];
                 Require(p[0].Layout!.Minimum==s.Item1&&p[1].Layout!.Minimum==(i==7?0:s.Item1)&&p.All(item=>item.Layout!.Maximum==s.Item2&&item.Layout.Increment==s.Item5),"高级范围元数据错误："+i);
                 Require(Convert.ToDouble(((ConstantSetting)Get(Get(pair,"_lower"),"Accepted")).Value)==s.Item3&&Convert.ToDouble(((ConstantSetting)Get(Get(pair,"_upper"),"Accepted")).Value)==s.Item4,"高级范围默认错误："+i);
-                var toggle=(DeclaredFieldEditor)Get(pair,"_toggle");toggle.TrySetConstant(true);Pump();Require(((FrameworkElement)native).Visibility==Visibility.Visible,"范围未展开");Reject();toggle.TrySetConstant(false);Pump();
+                var toggle=(DeclaredFieldEditor)Get(pair,"_toggle");Require(positions.Contains(pair)&&ReferenceEquals(Get(visibility[pair]!,"Item1"),advanced)&&pair.IsVisible&&toggle.IsVisible,"范围未实际托管于展开的高级分组："+i);
+                toggle.TrySetConstant(true);Pump();Require(((FrameworkElement)native).Visibility==Visibility.Visible&&((FrameworkElement)native).IsVisible,"原范围未有效展开");Reject();toggle.TrySetConstant(false);Pump();
             }
-            var sort=(DeclaredFieldEditor)Get(run,"_sort");var initial=sort.Setting;var port=(Port)Get(sort,"_port");Require(((TextChoiceConstraint)port.Choices!).Keys.Count==13,"排序未保留十三项");
+            var sort=(DeclaredFieldEditor)Get(run,"_sort");var initial=sort.Setting;var port=(Port)Get(sort,"_port");Require(((TextChoiceConstraint)port.Choices!).Keys.Count==13&&sort.IsVisible&&positions.Contains(sort)&&ReferenceEquals(Get(visibility[sort]!,"Item1"),advanced),"十三排序未在真实高级组有效显示");
             foreach(var key in new[]{"SortFeatureBoxAngle","SortFeatureBoxWidth","SortFeatureBoxHeight","SortFeatureRectX","SortFeatureRectY","SortFeatureAxisAngle","SortFeatureAxisRatio"}){Require(sort.TrySetConstant(key),"排序不可预览");Reject();}
-            sort.TrySetConstant(((ConstantSetting)initial).Value);Pump();Ready();Unchanged();
+            sort.TrySetConstant(((ConstantSetting)initial).Value);Pump();Ready();Unchanged();advanced.IsExpanded=false;window.UpdateLayout();Pump();Require(ranges.All(item=>!item.IsVisible)&&!sort.IsVisible&&!(bool)Get(run,"HasUiChanges"),"高级收起未隐藏或导航改变状态");Ready();Unchanged();
         });
         Case("结果判定零目标加十五范围逐端默认/边界/精度及显隐",()=>{
             Page(2);var judgment=(NativeJudgmentUiDraftControls)Get(composition,"_judgmentUi");var ranges=ThreeItems(judgment,"_ranges").Cast<NativeUiDraftRange>().ToArray();Require(ranges.Length==15,"判定范围不完整");

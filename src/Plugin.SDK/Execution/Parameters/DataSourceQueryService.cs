@@ -40,7 +40,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public Func<ToolParameters, ToolParameters>? CreateParameterSnapshot { get; set; }
         public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }
         public Func<string, IReadOnlyList<string>>? ExistingBindingSourceNodeIds { get; set; }
-        public Func<string, IReadOnlyList<OutputVariable>?>? FormalOutputContractReader { get; set; }
+        public ToolSchema? GetSchema(string nodeId)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(nodeId);
+            var provider = _nodeInfoProvider ?? throw new InvalidOperationException("来源查询缺少当前作用域的节点声明提供者。");
+            if (!provider.NodeExists(nodeId)) return null;
+            return provider.GetSchema(nodeId) ?? throw new InvalidOperationException("节点存在但缺少已准入声明：" + nodeId);
+        }
         public Func<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource?>? SelectReceiveVariable { get; set; }
         /// <summary>
         /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
@@ -101,7 +107,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                         if (sources == null) continue;
                         foreach (var ds in sources)
                         {
-                            if (!result.Any(e => e.SourceNodeId == ds.SourceNodeId && e.PropertyName == ds.PropertyName))
+                            if (!result.Contains(ds))
                                 result.Add(ds);
                         }
                     }
@@ -124,7 +130,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 属性元数据提供者(可选,用于设计时优化)
         /// </summary>
-        private readonly IPropertyMetadataProvider? _metadataProvider;
+
 
         /// <summary>
         /// 当前节点ID
@@ -174,25 +180,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             _connectionProvider = connectionProvider;
             _nodeInfoProvider = nodeInfoProvider;
             _logger = logger;
-        }
-
-        /// <summary>
-        /// 创建数据源查询服务（带依赖注入和 Logger 和属性元数据提供者）
-        /// </summary>
-        /// <param name="connectionProvider">工作流连接提供者</param>
-        /// <param name="nodeInfoProvider">节点信息提供者</param>
-        /// <param name="logger">Logger</param>
-        /// <param name="metadataProvider">属性元数据提供者(可选)</param>
-        public DataSourceQueryService(
-            IWorkflowConnectionProvider? connectionProvider,
-            INodeInfoProvider? nodeInfoProvider,
-            ILogger? logger = null,
-            IPropertyMetadataProvider? metadataProvider = null)
-        {
-            _connectionProvider = connectionProvider;
-            _nodeInfoProvider = nodeInfoProvider;
-            _logger = logger;
-            _metadataProvider = metadataProvider;
         }
 
         /// <summary>
@@ -311,47 +298,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤：统一通过 Mapper 词汇匹配（VariableType 字符串），
-                // 取代之前基于 CLR PropertyType 的双向数组/元素兼容逻辑。
-                // 类型表中只有数组类型（rule-008 零兼容），单值 T 通过
-                // SdkTypeVocabulary.ToTypeVocabulary 自动提升为 T[]。
                 if (targetType != null)
                 {
-                    if (FormalOutputContractReader != null)
-                    {
-                        var declaration = FormalOutputContractReader(parent.NodeId);
-                        outputProps = outputProps.Where(property => BindingContractValidator.Validate(declaration, property.PropertyName, new[] { targetType }).State
-                            is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
-                    }
-                    else if (SdkTypeVocabulary.ToTypeVocabulary(targetType) is { } targetVarType)
-                    {
-                        outputProps = outputProps
-                            .Where(p => p.VariableType == targetVarType)
-                            .ToList();
-                    }
+                    if (!BindingClrAdapter.TryDescribe(targetType, out var target, out var storage)) outputProps = new();
+                    else outputProps = outputProps.Where(property => IsCompatible(property, target, storage)).ToList();
                 }
-
-                // 添加到结果列表
                 foreach (var property in outputProps)
-                {
-                    var dataSource = new AvailableDataSource
-                    {
-                        CandidateSection = parent.CandidateSection,
-                        SourceNodeId = parent.NodeId,
-                        SourceWorkflowId = WorkflowId, SourceFieldId = property.SourceFieldId,
-                        SourceNodeName = parent.NodeName,
-                        SourceNodeType = parent.NodeType,
-                        PropertyName = property.PropertyName,
-                        DisplayName = property.DisplayName,
-                        PropertyType = property.PropertyType,
-                        VariableType = property.VariableType,
-                        CurrentValue = property.CurrentValue,
-                        Unit = property.Unit,
-                        Description = property.Description,
-                        GroupName = property.GroupName,
-                    };
-                    allDataSources.Add(dataSource);
-                }
+                    allDataSources.Add(property.WithCandidateSection(parent.CandidateSection));
             }
 
             // ★ 合并额外数据源（子程序输入端口等，支持实时更新）
@@ -359,17 +312,31 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 if (targetType != null)
                 {
-                    var extraVarType = SdkTypeVocabulary.ToTypeVocabulary(targetType);
-                    if (extraVarType == null || extra.VariableType != extraVarType)
-                        continue;
+                    if (!BindingClrAdapter.TryDescribe(targetType, out var target, out var storage) || !IsCompatible(extra, target, storage)) continue;
                 }
-                if (!allDataSources.Any(ds => ds.SourceNodeId == extra.SourceNodeId && ds.PropertyName == extra.PropertyName))
+                if (!allDataSources.Contains(extra))
                     allDataSources.Add(extra);
             }
 
             return allDataSources;
         }
 
+        private static bool IsCompatible(AvailableDataSource source, TypeRef target, NumericStorage? targetStorage)
+        {
+            TypeRef actual; NumericStorage? storage;
+            switch(source.Binding)
+            {
+                case ReferenceSetting reference:
+                    actual=ParameterReferenceRules.SelectedType(reference.Reference);storage=reference.Reference.Storage;break;
+                case VariableSetting variable:
+                    actual=variable.Reference.Type;storage=variable.Reference.Storage;
+                    if(variable.Reference.Selection is not BindingSelection.AllItems && actual.Shape==ValueShape.Sequence)actual=actual.Element!;
+                    break;
+                default: throw new InvalidOperationException("来源缺少中立身份。");
+            }
+            var state=new ParameterBindingService().CompareValueSource(new Port("source",actual,Storage:storage),new Port("target",target,Storage:targetStorage),BindingConversion.Automatic,out _);
+            return state is BindingCompatibility.Compatible or BindingCompatibility.Conditional;
+        }
         /// <summary>
         /// 获取图像显示用的数据源集合（当前节点 + 所有上游节点）
         /// 统一供 ImageControl 使用，与 ImageSourceSelector 共享相同的元数据源
@@ -382,44 +349,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             // 图像类型识别统一按 AvailableDataSource.VariableType == "Image"（#18），
             // 取代之前基于 CLR PropertyType 的 IsImageType 和内嵌的 SdkTypeVocabulary 调用。
-            bool IsImageSource(AvailableDataSource ds) =>
-                ds.VariableType == "Image";
+            bool IsImageSource(AvailableDataSource ds) => ds.Binding is ReferenceSetting reference &&
+                ParameterReferenceRules.SelectedType(reference.Reference) == TypeRef.ResourceOf(ResourceKind.Image);
 
             // 步骤 1: 当前节点自身的图像输出 (Distance=0)
-            var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
-            var nodeName = _nodeInfoProvider?.GetNodeName(currentNodeId) ?? currentNodeId;
-            if(FormalOutputContractReader is not null)
-            {
-                foreach(var source in GetNodeOutputProperties(currentNodeId).Where(IsImageSource))
-                {source.Distance=0;result.Add(source);}
-            }
-            else if (nodeType != null)
-            {
-                var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
-                if (metadataList != null)
-                {
-                    // 临时构造 AvailableDataSource 用 VariableType 过滤
-                    foreach (var meta in metadataList)
-                    {
-                        var vt = meta.PropertyType != null
-                            ? SdkTypeVocabulary.ToTypeVocabulary(meta.PropertyType)
-                            : null;
-                        if (vt != "Image")
-                            continue;
-                        result.Add(new AvailableDataSource
-                        {
-                            SourceNodeId = currentNodeId,
-                            SourceNodeName = nodeName,
-                            PropertyName = meta.PropertyName,
-                            DisplayName = meta.DisplayName,
-                            PropertyType = meta.PropertyType,
-                            VariableType = vt,
-                            Distance = 0,
-                        });
-                    }
-                }
-            }
-
+            foreach(var source in GetNodeOutputProperties(currentNodeId).Where(IsImageSource))
+            {source.Distance=0;result.Add(source);}
             // 步骤 2: BFS 遍历所有上游节点的图像输出 (Distance>=1)
             if (_connectionProvider != null)
             {
@@ -454,11 +389,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
 
             // 合并额外数据源中的图像类型（仅保留节点输出，排除子程序输入端口）
-            foreach (var extra in GetExtraDataSources().Where(ds =>
-                ds.VariableType == "Image"
-                && ds.SourceNodeId != "__SubroutineInputs__"))
+            foreach (var extra in GetExtraDataSources().Where(IsImageSource))
             {
-                if (!result.Any(r => r.SourceNodeId == extra.SourceNodeId && r.PropertyName == extra.PropertyName))
+                if (!result.Contains(extra))
                 {
                     extra.Distance = 1;
                     result.Add(extra);
@@ -471,154 +404,52 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public List<AvailableDataSource> GetNodeOutputProperties(string parentNodeId)
         {
-            var properties = new List<AvailableDataSource>();
-            var context = GetNodeContext(parentNodeId);
-
-            if (FormalOutputContractReader != null)
+            if(string.IsNullOrWhiteSpace(WorkflowId))throw new InvalidOperationException("来源查询缺少固定流程作用域。");
+            var schema=GetSchema(parentNodeId);
+            if(schema is null)return new List<AvailableDataSource>();
+            var context=GetNodeContext(parentNodeId);
+            var properties=new List<AvailableDataSource>();
+            foreach(var port in schema.Outputs)
             {
-                foreach (var output in FormalOutputContractReader(parentNodeId) ?? Array.Empty<OutputVariable>())
-                {
-                    if (output.Kind != OutputVariableKind.Data) continue;
-                    var declared = output.DeclaredType ?? SdkTypeVocabulary.ToSystemType(output.VariableType);
-                    var type = output.IsCollection == true && declared?.IsArray == false ? declared.MakeArrayType() : declared;
-                    object? value = null;
-                    if (context?.Result is { } result) { try { value = OutputVariableResolver.Resolve(result, output.Name); } catch { } }
-                    properties.Add(new AvailableDataSource { SourceNodeId = parentNodeId, SourceWorkflowId = WorkflowId, SourceFieldId = output.FieldId,
-                        SourceNodeName = context?.NodeName ?? _nodeInfoProvider?.GetNodeName(parentNodeId) ?? "上游节点", PropertyName = output.Name,
-                        DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
-                        PropertyType = type, VariableType = output.VariableType, CurrentValue = value, GroupName = output.Group });
-                }
-                return properties;
-            }
-
-            if (context == null || context.ResultType == null)
-            {
-                return properties;
-            }
-
-            // 动态输出契约优先：节点参数实现 IOutputContractProvider（如子程序）时，
-            // 输出属性由 GetOutputContract() 提供（含用户动态配置的 Outputs），走正常通道受连线约束
-            if (context.Parameters is IOutputContractProvider contractProvider)
-            {
-                foreach (var output in contractProvider.GetOutputContract())
-                {
-                    var propertyType = SdkTypeVocabulary.ToSystemType(output.VariableType);
-                    var variableType = string.IsNullOrEmpty(output.VariableType)
-                        ? (propertyType != null ? SdkTypeVocabulary.ToTypeVocabulary(propertyType) : null)
-                        : output.VariableType;
-
-                    var dataSource = new AvailableDataSource
-                    {
-                        SourceNodeId = parentNodeId,
-                        SourceNodeName = context.NodeName,
-                        SourceNodeType = context.NodeType,
-                        PropertyName = output.Name,
-                        DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
-                        PropertyType = propertyType,
-                        VariableType = variableType,
-                        CurrentValue = output.RuntimeValue,
-                        GroupName = output.Group,
-                        Description = output.Kind == OutputVariableKind.ControlSignal ? "流程控制信号" : null,
-                    };
-
-                    // 运行期值：从 SSOT 结果解析
-                    if (context.Result != null && output.Name != null)
-                    {
-                        try
-                        {
-                            dataSource.CurrentValue = OutputVariableResolver.Resolve(context.Result, output.Name);
-                        }
-                        catch
-                        {
-                            // 契约未命中不抛（设计期预期行为）
-                        }
-                    }
-
-                    properties.Add(dataSource);
-                }
-
-                return properties;
-            }
-
-            // 从变量池获取属性元数据（不再反射）
-            var metadataList = _metadataProvider?.GetAllPropertyMetadata(context.NodeType);
-
-            if (metadataList == null)
-            {
-                return properties;
-            }
-
-            foreach (var metadata in metadataList)
-            {
-                // VariableType 从 PropertyType 派生（与 OutputVariable 契约同源）
-                var variableType = metadata.PropertyType != null
-                    ? SdkTypeVocabulary.ToTypeVocabulary(metadata.PropertyType)
-                    : null;
-
-                // 运行期值：优先从输出变量契约取（支持动态工具），反射兜底已删除
-                object? currentValue = null;
-                if (context.Result != null && metadata.PropertyName != null)
+                var reference=new OutputReference(parentNodeId,port.Id,port.Type,scopeId:WorkflowId,storage:port.Storage);
+                var declared=port.Type;
+                var element=declared.Shape==ValueShape.Sequence?declared.Element!:declared;
+                Type clr=element.Shape switch {
+                    ValueShape.Scalar when element.Scalar==ScalarKind.Boolean=>typeof(bool),
+                    ValueShape.Scalar when element.Scalar==ScalarKind.Int64=>typeof(long),
+                    ValueShape.Scalar when element.Scalar==ScalarKind.Float64=>typeof(double),
+                    ValueShape.Scalar when element.Scalar==ScalarKind.Text=>typeof(string),
+                    ValueShape.Resource when element.Resource==ResourceKind.Image=>typeof(IReadOnlyImage),
+                    ValueShape.Resource when element.Resource==ResourceKind.Region=>typeof(IReadOnlyRegion),
+                    _=>typeof(object)
+                };
+                if(declared.Shape==ValueShape.Sequence)clr=clr.MakeArrayType();
+                object? value=null;
+                if(declared.Shape==ValueShape.Scalar && context?.Result is { } result)
                 {
                     try
                     {
-                        currentValue = OutputVariableResolver.Resolve(context.Result, metadata.PropertyName);
-                    }
-                    catch
-                    {
-                        // 契约未找到时不抛（设计期预期行为），currentValue 保留 null
-                    }
-                }
-
-                var dataSource = new AvailableDataSource
-                {
-                    SourceNodeId = parentNodeId,
-                    SourceNodeName = context.NodeName,
-                    SourceNodeType = context.NodeType,
-                    PropertyName = metadata.PropertyName,
-                    DisplayName = metadata.DisplayName,
-                    PropertyType = metadata.PropertyType,
-                    VariableType = variableType,
-                    CurrentValue = currentValue,
-                    Unit = null,
-                    Description = metadata.Description,
-                    GroupName = metadata.GroupName,
-                };
-
-                // 数组属性暴露 [i] 子数据源（决策1：支持 T[i] 绑定路径直接取单元素）
-                if (metadata.PropertyType?.IsArray == true)
-                {
-                    var elementType = metadata.PropertyType.GetElementType();
-                    var elementVarType = elementType != null
-                        ? SdkTypeVocabulary.ToTypeVocabulary(elementType)
-                        : null;
-                    object? elementValue = null;
-                    if (currentValue is Array arr && arr.Length > 0)
-                        elementValue = arr.GetValue(0);
-
-                    dataSource.Children = new List<AvailableDataSource>
-                    {
-                        new AvailableDataSource
+                        var output=result.Schema.Outputs.SingleOrDefault(item=>item.Id==port.Id);
+                        if(result.Identity.NodeId==parentNodeId && result.SourceWorkflowId==WorkflowId && output is not null && output.Type==port.Type && output.Storage==port.Storage)
                         {
-                            SourceNodeId = parentNodeId,
-                            SourceNodeName = context.NodeName,
-                            SourceNodeType = context.NodeType,
-                            PropertyName = metadata.PropertyName + "[i]",
-                            DisplayName = (metadata.DisplayName ?? metadata.PropertyName) + "[i]",
-                            PropertyType = elementType,
-                            VariableType = elementVarType,
-                            CurrentValue = elementValue,
-                            Description = metadata.Description,
-                            GroupName = metadata.GroupName,
+                            using var reader=result.AcquireReader();
+                            if(reader.Values is { } values && values.Contains(port.Id))
+                            {
+                                var candidate=values.Get<object?>(port.Id);
+                                if(candidate is bool or string or long or int or double or float or decimal)value=candidate;
+                            }
                         }
-                    };
+                    }
+                    catch(InvalidOperationException) { }
                 }
-
-                properties.Add(dataSource);
+                properties.Add(new AvailableDataSource { Binding=new ReferenceSetting(reference),
+                    SourceNodeName=context?.NodeName??parentNodeId,SourceNodeType=context?.NodeType,
+                    DisplayName=schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,
+                    PropertyType=clr,VariableType=declared.Shape==ValueShape.Resource&&declared.Resource==ResourceKind.Image?"Image":SdkTypeVocabulary.ToTypeVocabulary(clr),
+                    CurrentValue=value,HasExecuted=context?.HasResult==true,IsDesignTime=context?.HasResult!=true });
             }
-
             return properties;
         }
-
         /// <inheritdoc/>
         public List<AvailableDataSource> GetWorkflowNodeDataSources()
         {
@@ -649,8 +480,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 NodeType = _nodeInfoProvider.GetNodeType(nodeId) ?? "Unknown",
                 NodeIcon = _nodeInfoProvider.GetNodeIcon(nodeId),
                 Result = _ssotReader?.Invoke(nodeId),
-                ResultType = _nodeInfoProvider.GetResultType(nodeId),
-                Parameters = _nodeInfoProvider.GetParameters(nodeId)
+                Schema = GetSchema(nodeId)
             };
         }
 
@@ -763,21 +593,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>是否存在</returns>
         bool NodeExists(string nodeId);
 
-        /// <summary>
-        /// 获取节点结果类型
-        /// </summary>
-        /// <remarks>
-        /// 用于设计时推断输出属性。UI 层实现时，可以从工具元数据中获取 ResultType。
-        /// </remarks>
-        /// <param name="nodeId">节点ID</param>
-        /// <returns>结果类型，如果无法获取则返回 null</returns>
-        Type? GetResultType(string nodeId);
-
-        /// <summary>
-        /// 获取节点参数对象（用于动态输出契约 IOutputContractProvider 查询）
-        /// </summary>
-        /// <param name="nodeId">节点ID</param>
-        /// <returns>节点参数，无法获取则返回 null</returns>
-        ToolParameters? GetParameters(string nodeId);
+        ToolSchema? GetSchema(string nodeId);
     }
 }

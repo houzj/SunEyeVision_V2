@@ -61,17 +61,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 是否有执行结果
         /// </summary>
-        public bool HasResult => Result != null;
+        public bool HasResult => Result is { Status: not SunEyeVision.Plugin.Runtime.ExecutionStatus.NotExecuted };
 
         /// <summary>
         /// 是否为运行时
         /// </summary>
-        public bool IsRuntime => Result != null;
+        public bool IsRuntime => HasResult;
 
         /// <summary>
         /// 是否为设计时
         /// </summary>
-        public bool IsDesignTime => Result == null;
+        public bool IsDesignTime => !HasResult;
     }
 
     /// <summary>

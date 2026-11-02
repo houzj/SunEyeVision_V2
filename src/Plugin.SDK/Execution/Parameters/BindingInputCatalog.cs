@@ -143,7 +143,12 @@ public static class BindingInputCatalog
     private static AvailableDataSource? RewriteSource(AvailableDataSource? original, string expression)
     {
         if (original == null || expression.Length == 0) return null;
-        throw new NotSupportedException("旧字符串重写无法证明中立来源身份。 ");
+        var dot = expression.IndexOf('.');
+        var path = expression[(dot + 1)..]; var root = PropertyPathParser.ExtractPropertyName(path.Split('.')[0]);
+        return new AvailableDataSource { SourceNodeId = expression[..dot], PropertyName = root,
+            SourceWorkflowId = original.SourceWorkflowId, SourceFieldId = original.SourceFieldId, SourceNodeName = original.SourceNodeName,
+            DisplayName = original.DisplayName, PropertyType = original.PropertyType, VariableType = original.VariableType,
+            AutomaticConnectionId = original.AutomaticConnectionId, BindingSuffix = path[root.Length..] };
     }
 
     public static bool TryReference(string expression, IEnumerable<string> localNodeIds, bool referenceOnly, out string sourceId, out string path)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,11 +126,170 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 设计期/运行期结构一致：声明式由 ShapeType 枚举 + RoiFieldSchema 驱动，不依赖运行值
         /// （rule-016 数据驱动优先）。已删除旧逐元素 [i] 层级与 Geometry 反射枚举（schema 唯一字段源）。
         /// </summary>
-        public static List<TreeNodeData> BuildRoiTypedChildren(AvailableDataSource parentDs, string? targetVarType, ShapeType? shapeFilter = null)
-            => throw new NotSupportedException("旧 ROI 字符串来源不具备中立声明身份，当前入口不可用。");
+        public static List<TreeNodeData> BuildRoiTypedChildren(
+            AvailableDataSource parentDs, string? targetVarType, ShapeType? shapeFilter = null)
+        {
+            var children = new List<TreeNodeData>();
+            bool numericTarget = targetVarType is "Double" or "Integer";
 
+            if (numericTarget)
+            {
+                // 数值目标：类型集合/整体是 RoiShape[]（ROI 词目），绑到 double 必类型错 → 不出现；
+                // 仅提供"类型容器 → 字段叶"，容器自身不可绑（只导航）。
+                foreach (var type in Enum.GetValues<ShapeType>())
+                {
+                    if (type == ShapeType.None) continue;
+
+                    var fields = RoiFieldSchema.GetFields(type);
+                    if (fields.Count == 0)
+                        continue; // 无可下钻字段的类型（如多边形）在数值目标下无处可绑 → 不出现
+
+                    var enumName = type.ToString();
+                    var typeNode = new TreeNodeData
+                    {
+                        Text = GetShapeTypeShortName(type),
+                        IsSelectable = false, // 容器：单击只展开字段，绝不绑定
+                        IsExpanded = false,
+                    };
+                    var leaves = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
+                    foreach (var f in fields)
+                    {
+                        leaves.Add(CreateRoiFieldLeaf(parentDs, type, f));
+                    }
+                    typeNode.Children = leaves;
+                    children.Add(typeNode);
+                }
+                return children;
+            }
+
+            // 形状受限的几何目标（如点参数的 Point 词目）：只出**语义等价**的形状叶。
+            // 依据：ShapeTypeVocabulary（词目 → 允许形状的唯一真相源）。
+            // 历史缺陷一：此处对几何目标一律全列出 7 类形状，与目标类型无关 → 能选不能用。
+            // 历史缺陷二：「整体」叶（绑整个 RoiShape[]）曾是异构场景出口，现已取消（见方法 remarks）：
+            //   ROI / 未限定目标只出类型集合叶，不再产出整体。
+            var allowedTypes = ShapeTypeVocabulary.AllowedShapeTypes(targetVarType);
+
+            // 形状筛选（区域订阅）：目标词目**未限定形状**时，由调用方声明的形状把候选收敛为单一类型叶。
+            // 呈现诉求与值语义分离（决策 15）：筛选走独立入参，**不复用 DataType** —— 后者是值语义
+            //（区域源的 [Type=X] 过滤结果恒为 RoiShape[]），复用会把值类型误声明成 Circle2d[]。
+            if (shapeFilter is { } filter)
+            {
+                if (allowedTypes != null && !System.Linq.Enumerable.Contains(allowedTypes, filter))
+                {
+                    throw new InvalidOperationException(
+                        $"形状筛选 '{filter}' 与目标词目 '{targetVarType}' 允许的形状（{string.Join("/", allowedTypes)}）冲突："
+                        + "几何值目标的形状由词目决定，不允许再叠加筛选（rule-015 报错优先，不静默）。");
+                }
+                allowedTypes = new[] { filter };
+            }
+
+            foreach (var type in allowedTypes ?? (IReadOnlyList<ShapeType>)Enum.GetValues<ShapeType>())
+            {
+                if (type == ShapeType.None) continue;
+
+                var enumName = type.ToString();
+                var groupDs = new AvailableDataSource
+                {
+                    SourceNodeId = parentDs.SourceNodeId,
+                    SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
+                    SourceNodeName = parentDs.SourceNodeName,
+                    PropertyName = parentDs.PropertyName,
+                    DisplayName = parentDs.DisplayName,
+                    // 显示名 SSOT：类型集合叶的叶子名 = 图形类型短名（"圆"），语义为集合（带 []）
+                    LeafDisplayName = GetShapeTypeShortName(type),
+                    IsArraySemantics = true,
+                    PropertyType = typeof(RoiShape[]),
+                    VariableType = parentDs.VariableType,
+                    BindingSuffix = $"[Type={enumName}]",
+                    CurrentValue = Array.Empty<RoiShape>(),
+                };
+                children.Add(new TreeNodeData
+                {
+                    Text = GetShapeTypeShortName(type),
+                    IsSelectable = true, // 类型集合叶 = 绑定终点（无 children，无展开歧义）
+                    DataSource = groupDs,
+                    BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",
+                });
+            }
+            return children;
+        }
+
+        /// <summary>
+        /// 构建几何数组（同质，如 Circle2d[]）在数值目标下的字段叶：
+        /// 绑定路径 = 属性名.字段（集合语义，运行期由 OutputVariableResolver 逐元素投影，
+        /// 返回该几何数组全部元素的该字段；取单个元素由用户手写 [i]，如 Circle[2].Radius）。
+        /// 字段叶即绑定终点（不含容器节点）。
+        /// </summary>
         public static List<TreeNodeData> BuildGeometryFieldChildren(AvailableDataSource parentDs, System.Type geometryType)
-            => throw new NotSupportedException("旧几何字符串来源不具备中立声明身份，当前入口不可用。");
+        {
+            var children = new List<TreeNodeData>();
+            foreach (var f in GeometryFieldSchema.GetFields(geometryType))
+            {
+                var fieldDs = new AvailableDataSource
+                {
+                    SourceNodeId = parentDs.SourceNodeId,
+                    SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
+                    SourceNodeName = parentDs.SourceNodeName,
+                    PropertyName = parentDs.PropertyName,
+                    DisplayName = f.DisplayName,
+                    // 显示名 SSOT：几何字段叶 = "{父显示名}.{字段显示名}"（如 "圆心.X"），避免 "圆查找1.X" 歧义；
+                    // 字段值类型是标量，但语义是"数组全部元素的该字段"，属集合语义 → 显式声明 true。
+                    LeafDisplayName = $"{parentDs.EffectiveLeafDisplayName}.{f.DisplayName}",
+                    IsArraySemantics = true,
+                    PropertyType = f.ValueType,
+                    VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
+                    BindingSuffix = $".{f.Path}[]",
+                    CurrentValue = null,
+                };
+                children.Add(new TreeNodeData
+                {
+                    Text = f.DisplayName,
+                    IsSelectable = true,
+                    IsExpanded = false,
+                    BindingPath = $"{parentDs.PropertyName}.{f.Path}",
+                    DataSource = fieldDs,
+                });
+            }
+            return children;
+        }
+
+        /// <summary>
+        /// 创建 RoI 字段叶（schema 唯一字段源）。绑定路径 <c>[Type=X][].Geometry.{f.Path}</c>——
+        /// 集合语义：绑定"该类型全部图形的该字段"（[] 空括号 = 数组，不自动填索引）；
+        /// 运行期对该类型逐图形投影字段：仅 1 个时自动解包为单值，N 个返回数组；
+        /// 需要第 N 个时由用户手动在 [] 中写索引（[Type=X][N]）。检测区无该类型直接报错（rule-015）。
+        /// </summary>
+        private static TreeNodeData CreateRoiFieldLeaf(AvailableDataSource parentDs, ShapeType type, RoiFieldDef f)
+        {
+            var enumName = type.ToString();
+            var suffix = $"[Type={enumName}][].Geometry.{f.Path}";
+            var fieldDs = new AvailableDataSource
+            {
+                SourceNodeId = parentDs.SourceNodeId,
+                SourceWorkflowId = parentDs.SourceWorkflowId, SourceFieldId = parentDs.SourceFieldId, CandidateSection = parentDs.CandidateSection,
+                SourceNodeName = parentDs.SourceNodeName,
+                PropertyName = parentDs.PropertyName,
+                DisplayName = f.DisplayName,
+                // 显示名 SSOT：ROI 字段叶叶子名 = 字段显示名（"中心X"）；语义为集合（带 []）。
+                IsArraySemantics = true,
+                PropertyType = f.ValueType,
+                VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
+                BindingSuffix = suffix,
+                CurrentValue = null,
+            };
+            return new TreeNodeData
+            {
+                Text = f.DisplayName,
+                IsSelectable = true, // 字段叶 = 绑定终点
+                IsExpanded = false,
+                BindingPath = $"{parentDs.PropertyName}{suffix}",
+                DataSource = fieldDs,
+            };
+        }
+
+        /// <summary>
+        /// 图形类型 → 绑定树标签短名（用户拍板 [圆] 风格）。
+        /// </summary>
         public static string GetShapeTypeShortName(ShapeType shapeType)
         {
             return shapeType switch

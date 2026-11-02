@@ -48,18 +48,36 @@ public sealed class RuntimeQueryTests
         Assert.Equal("scope",binding.Reference.ScopeId);Assert.Equal("port.with.dot",binding.Reference.PortId);Assert.Equal("中文",source.DisplayName);
         Assert.Null(source.CurrentValue);Assert.True(source.IsDesignTime);Assert.False(source.HasExecuted);
         Assert.Single(query.GetAvailableDataSources("target",typeof(double)));
-        provider.Schema=null;Assert.Empty(query.GetAvailableDataSources("target"));
+        provider.Schema=null;Assert.Throws<InvalidOperationException>(()=>query.GetAvailableDataSources("target"));
+        provider.Exists=false;Assert.Empty(query.GetAvailableDataSources("target"));
     }
+    [Fact] public void Scalar_preview_reads_exact_port_under_reader_and_does_not_hold_resources()
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port",Number),new Port("port.with.dot",Number)});
+        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider){WorkflowId="scope"};
+        var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        var resource=new Release();
+        using var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",new ToolOutcome(true,new Output(),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),resource,0,sourceWorkflowId:"scope");
+        query.SetSootReader(_=>result);
+        var sources=query.GetNodeOutputProperties("node");
+        Assert.Equal(11L,sources.Single(item=>((ReferenceSetting)item.Binding).Reference.PortId=="port").CurrentValue);
+        Assert.Equal(22L,sources.Single(item=>((ReferenceSetting)item.Binding).Reference.PortId=="port.with.dot").CurrentValue);
+        result.Dispose();Assert.Equal(1,resource.Count);
+    }
+    private sealed class Release:IDisposable { public int Count; public void Dispose()=>Count++; }
+    private sealed class Output:IToolOutput
+    { public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>{{"port",11L},{"port.with.dot",22L}}; }
     private sealed class Provider(ToolSchema schema):IWorkflowConnectionProvider,INodeInfoProvider
     {
         public ToolSchema? Schema=schema;
+        public bool Exists=true;
         public List<string> GetParentNodeIds(string nodeId)=>new(){"node"};
         public List<string> GetChildNodeIds(string nodeId)=>new();
         public List<string> GetAllNodeIds()=>new(){"node","target"};
         public string GetNodeName(string id)=>id;
         public string GetNodeType(string id)=>"test";
         public string? GetNodeIcon(string id)=>null;
-        public bool NodeExists(string id)=>true;
+        public bool NodeExists(string id)=>Exists;
         public ToolSchema? GetSchema(string id)=>id=="node"?Schema:null;
     }
 }

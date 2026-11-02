@@ -14,7 +14,9 @@ internal static class RuntimeInputBindings
     {
         var configuration=node.RuntimeConfiguration!;var issues=new List<ExecutionInputIssue>();
         if(node.ParamSettings.Settings.Any())issues.Add(new("runtime-configuration","Runtime","Runtime nodes cannot contain SDK ParamSettings."));
-        foreach(var diagnostic in validateAdmission?configuration.Validate():Array.Empty<Diagnostic>())
+        // Persistence permits missing execution inputs in a valid editable draft, but
+        // still rejects invalid known settings and malformed stored identities.
+        foreach(var diagnostic in validateAdmission?configuration.Validate():configuration.ValidateSettings())
             issues.Add(new(diagnostic.FieldId??"runtime-settings",diagnostic.FieldId??"Runtime",diagnostic.Message));
         foreach(var (id,setting) in configuration.CaptureExecutionFields())
         {

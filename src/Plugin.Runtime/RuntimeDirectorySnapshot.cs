@@ -6,7 +6,7 @@ namespace SunEyeVision.Plugin.Runtime;
 /// <summary>One fully validated generation. Hosts retain this instance for the whole configuration and invocation lifetime.</summary>
 public sealed class RuntimeDirectorySnapshot
 {
-    private sealed record Entry(ToolComponentRegistration Registration,Type SettingsType,Type OutputType,string Schema,string? SettingsSchema,ToolCatalogDescriptor Catalog);
+    private sealed record Entry(ToolComponentRegistration Registration,Type SettingsType,Type OutputType,string Schema,string? SettingsSchema,ToolHostDeclarationSnapshot HostDeclarations,ToolCatalogDescriptor Catalog);
     private readonly IReadOnlyDictionary<string,Entry> _runtimes;
     private readonly object _lifetimeGate=new();
     private bool _retiring;
@@ -32,9 +32,20 @@ public sealed class RuntimeDirectorySnapshot
         var definition=(IToolDefinition)Activator.CreateInstance(entry.Registration.EntryType)!;
         var settingsSchema=(definition as IToolSettingsFields)?.SettingsSchema.Fingerprint;
         if(definition.ToolId!=toolId || definition.SettingsType!=entry.SettingsType || definition.OutputType!=entry.OutputType ||
-            definition.Describe().Fingerprint!=entry.Schema || settingsSchema!=entry.SettingsSchema)
+            definition.Describe().Fingerprint!=entry.Schema || settingsSchema!=entry.SettingsSchema || ToolHostDeclarationRules.ValidateAndFingerprint(definition)!=entry.HostDeclarations.Fingerprint)
             throw new InvalidOperationException("Runtime definition differs from its admitted directory generation: "+toolId);
         return definition;
+    }
+    /// <summary>Returns validated declarations from the active generation, never a UI or tool-name lookup.</summary>
+    public IReadOnlyList<ResourceFieldDeclaration> GetResourceFields(string toolId)
+    {
+        using var lease=AcquireInvocation();
+        return _runtimes.TryGetValue(toolId,out var entry) ? entry.HostDeclarations.ResourceFields : throw new InvalidOperationException("Required runtime is not registered: "+toolId);
+    }
+    public HostInputDeclaration? GetHostInputs(string toolId)
+    {
+        using var lease=AcquireInvocation();
+        return _runtimes.TryGetValue(toolId,out var entry) ? entry.HostDeclarations.HostInputs : throw new InvalidOperationException("Required runtime is not registered: "+toolId);
     }
     /// <summary>Hold one accepted invocation or retained result until its final reader releases it.</summary>
     public RuntimeGenerationLease AcquireInvocation()
@@ -76,7 +87,7 @@ public sealed class RuntimeDirectorySnapshot
             RuntimeComponentAdmission.Validate(component);
             var definition=(IToolDefinition)Activator.CreateInstance(component.EntryType)!;
             var entry=new Entry(component,definition.SettingsType,definition.OutputType,definition.Describe().Fingerprint,
-                (definition as IToolSettingsFields)?.SettingsSchema.Fingerprint,((IToolCatalogProvider)definition).Catalog);
+                (definition as IToolSettingsFields)?.SettingsSchema.Fingerprint,ToolHostDeclarationRules.Capture(definition),((IToolCatalogProvider)definition).Catalog);
             if(!runtimes.TryAdd(component.Metadata.ToolId,entry))throw new InvalidOperationException("Duplicate runtime tool identity.");
         }
         if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");

@@ -17,7 +17,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
 {
     private readonly string _nodeId;
     private readonly Func<bool> _isCurrent;
-    private readonly SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver _paths;
+    private readonly SunEyeVision.Plugin.Contracts.IResourcePathResolver _paths;
 
 
 
@@ -36,7 +36,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     public event Action? Changed;
 
     public ImageSourceDraftContent(string nodeId,Func<bool> isCurrent,
-        SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver paths)
+        SunEyeVision.Plugin.Contracts.IResourcePathResolver paths)
     {
         _nodeId=nodeId;_isCurrent=isCurrent;_paths=paths;
         _inputView=new();

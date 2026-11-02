@@ -221,8 +221,8 @@ public class NPointCalibrationParameters : ToolParameters, IWorkflowResultCommit
         return true;
     }
 
-    public static string ResolveActivityPath(string reference, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resolver)
-        => resolver?.Resolve(nameof(CalibrationFilePath), reference, SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileWrite).Address
+    public static string ResolveActivityPath(string reference, SunEyeVision.Plugin.Contracts.IResourcePathResolver? resolver)
+        => resolver?.Resolve(nameof(CalibrationFilePath), reference, SunEyeVision.Plugin.Contracts.ResourcePurpose.FileWrite).Address
             ?? (Path.IsPathRooted(reference) ? Path.GetFullPath(reference) : throw new InvalidOperationException("相对标定路径需要方案资源上下文。"));
 
     public static string CandidatePath(string activityPath)

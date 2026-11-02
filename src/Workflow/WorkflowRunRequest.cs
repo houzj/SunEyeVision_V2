@@ -73,7 +73,7 @@ public sealed class WorkflowRunRequest
     public string WorkflowId { get; }
     public WorkflowRunConfiguration? Configuration { get; init; }
     public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; init; }
-    public SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? ResourcePaths { get; init; }
+    public SunEyeVision.Plugin.Contracts.IResourcePathResolver? ResourcePaths { get; init; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; }
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }

@@ -101,17 +101,11 @@ public class SolutionRepository
             var bytes = File.ReadAllBytes(path);
             sha = Convert.ToHexString(SHA256.HashData(bytes));
             var json = new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF');
-            SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
+            SolutionDocumentValidator.CheckDuplicateKeys(json);
             root = JsonNode.Parse(json) ?? throw new JsonException("Empty document.");
-            var legacyDocument = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
-            SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacyDocument);
-            new SolutionResourceResolver(directory).Inspect(root, diagnostics);
-            var solution = ReadFrozenCandidate(root, diagnostics, legacyDocument, validateAdmission:false);
-            if (legacyDocument)
-            {
-                diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
-                    "Format 1 candidate and its known references validated in memory; the source file is unchanged."));
-            }
+            SolutionDocumentValidator.Prepare(root, diagnostics);
+            var solution = ReadFrozenCandidate(root, diagnostics, validateAdmission:false);
+            new SolutionResourceResolver(directory).Inspect(root, diagnostics, AdmittedDirectory);
             solution.FilePath = path;
             solution.ResourceBaseDirectory = directory;
             if (string.IsNullOrWhiteSpace(solution.Name)) solution.Name = Path.GetFileNameWithoutExtension(path);
@@ -139,7 +133,7 @@ public class SolutionRepository
 
     /// <summary>Read only the supplied frozen candidate. Both disk reads and save preparation use
     /// the same device restoration, registered declarations and owning-workflow binding validation.</summary>
-    internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool legacyDocument, bool validateAdmission = true)
+    internal Solution ReadFrozenCandidate(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool validateAdmission = false)
     {
         var hasTools = root["Workflows"] is JsonArray flowArray && flowArray.OfType<JsonObject>().Any(w => w["Nodes"] is JsonArray nodes && nodes.Count > 0);
         if (!AdmittedDirectory.IsActive) throw new InvalidOperationException("工具运行目录已退役。");
@@ -151,7 +145,7 @@ public class SolutionRepository
             ?? throw new JsonException("Null solution.");
         solution.RuntimeDirectory=AdmittedDirectory;
         solution.Devices = devices;
-        SolutionLegacyBindingMigration.Prepare(solution, diagnostics, legacyDocument, validateAdmission);
+        SolutionDocumentBindingValidator.Validate(solution, validateAdmission);
         return solution;
     }
 
@@ -691,114 +685,4 @@ public class SolutionRepository
         }
     }
 
-    /// <summary>
-    /// 复制解决方案文件
-    /// </summary>
-    /// <param name="sourcePath">源文件路径</param>
-    /// <param name="destPath">目标文件路径</param>
-    /// <param name="overwrite">是否覆盖（默认 false）</param>
-    /// <returns>是否成功</returns>
-    public bool Copy(string sourcePath, string destPath, bool overwrite = false)
-    {
-        // ✅ 日志监控：生成唯一调用ID
-        long callId = System.Threading.Interlocked.Increment(ref _copyCallCount);
-
-        if (string.IsNullOrEmpty(sourcePath) || string.IsNullOrEmpty(destPath))
-        {
-            _logger.Log(LogLevel.Warning, $"[Copy #{callId}] 复制解决方案失败：路径为空\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return false;
-        }
-
-        if (!File.Exists(sourcePath))
-        {
-            _logger.Log(LogLevel.Warning, $"[Copy #{callId}] 复制解决方案失败：源文件不存在: {sourcePath}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return false;
-        }
-
-        if (!overwrite && File.Exists(destPath))
-        {
-            _logger.Log(LogLevel.Warning, $"[Copy #{callId}] 复制解决方案失败：目标文件已存在: {destPath}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return false;
-        }
-
-        try
-        {
-            // 确保目标目录存在
-            var directory = Path.GetDirectoryName(destPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            File.Copy(sourcePath, destPath, overwrite);
-            _logger.Log(LogLevel.Success, $"[Copy #{callId}] 复制解决方案成功: {sourcePath} -> {destPath}, 覆盖={overwrite}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Error, $"[Copy #{callId}] 复制解决方案失败: {sourcePath} -> {destPath}, 错误: {ex.Message}\n堆栈: {GetShortStackTrace(3)}", "SolutionRepository", ex);
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 复制操作调用计数器（用于日志监控）
-    /// </summary>
-    private static long _copyCallCount = 0;
-
-    /// <summary>
-    /// 移动/重命名解决方案文件
-    /// </summary>
-    /// <param name="sourcePath">源文件路径</param>
-    /// <param name="destPath">目标文件路径</param>
-    /// <param name="overwrite">是否覆盖（默认 false）</param>
-    /// <returns>是否成功</returns>
-    public bool Move(string sourcePath, string destPath, bool overwrite = false)
-    {
-        if (string.IsNullOrEmpty(sourcePath) || string.IsNullOrEmpty(destPath))
-        {
-            _logger.Log(LogLevel.Warning, "移动解决方案失败：路径为空", "SolutionRepository");
-            return false;
-        }
-
-        if (!File.Exists(sourcePath))
-        {
-            _logger.Log(LogLevel.Warning, $"移动解决方案失败：源文件不存在: {sourcePath}", "SolutionRepository");
-            return false;
-        }
-
-        if (!overwrite && File.Exists(destPath))
-        {
-            _logger.Log(LogLevel.Warning, $"移动解决方案失败：目标文件已存在: {destPath}", "SolutionRepository");
-            return false;
-        }
-
-        try
-        {
-            // 确保目标目录存在
-            var directory = Path.GetDirectoryName(destPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-                _logger.Log(LogLevel.Info, $"创建目录: {directory}", "SolutionRepository");
-            }
-
-            // 如果目标文件存在且允许覆盖，先删除
-            if (overwrite && File.Exists(destPath))
-            {
-                File.Delete(destPath);
-                _logger.Log(LogLevel.Info, $"删除已存在的目标文件: {destPath}", "SolutionRepository");
-            }
-
-            // 移动文件
-            File.Move(sourcePath, destPath);
-            _logger.Log(LogLevel.Success, $"移动解决方案成功: {sourcePath} -> {destPath}", "SolutionRepository");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Error, $"移动解决方案失败: {sourcePath} -> {destPath}, 错误: {ex.Message}", "SolutionRepository", ex);
-            return false;
-        }
-    }
 }

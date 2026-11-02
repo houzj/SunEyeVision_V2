@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.ImageSource.Runtime;
 
 /// <summary>One frozen file/frame invocation. Sequence and camera connection ownership stay in the host.</summary>
-public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider,IToolManualReferenceSources
+public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider,IToolManualReferenceSources,IToolHostInputDeclaration,IToolResourceFieldDeclarations
 {
     public const string Id="ImageLoad";
     public const string LocalAddress="input.local-address", CameraImage="input.camera-image", Sequence="input.sequence",
@@ -12,6 +12,12 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;} =
         Array.AsReadOnly(new[] {new ManualReferenceSource(ImageSourceOutput.Image,new[]{ImageSourceOutput.ImageWidth}),new ManualReferenceSource(ImageSourceOutput.Image,new[]{ImageSourceOutput.ImageHeight})});
     public string ToolId=>Id;
+    public HostInputDeclaration HostInputs => new("image-source", 1,
+        Schema.Inputs.Select(port => new HostInputPort(port.Id, port.Type)), new[] { "local-image-read", "camera-frame" });
+    public IReadOnlyList<ResourceFieldDeclaration> ResourceFields { get; } = Array.AsReadOnly(new[] {
+        new ResourceFieldDeclaration("local.paths", ResourcePurpose.FileRead, ResourceReferenceCardinality.Sequence),
+        new ResourceFieldDeclaration("local.selected", ResourcePurpose.FileRead, ResourceReferenceCardinality.Sequence)
+    });
     public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10);
     public ToolSchema SettingsSchema=>ImageSourceFields.Schema;
     public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports,outputDisplay:ImageSourceOutput.Display);

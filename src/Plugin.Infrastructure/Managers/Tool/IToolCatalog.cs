@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
@@ -35,7 +36,7 @@ public interface IToolCatalog
     IReadOnlyList<ToolMetadata> GetAllMetadata();
 }
 
-public sealed record ToolComponentRegistration(SunEyeVision.Plugin.Contracts.ToolComponentMetadata Metadata, Type EntryType);
+
 
 /// <summary>One complete plugin assembly's prepared, unpublished catalog state.</summary>
 public interface IPreparedToolRegistration

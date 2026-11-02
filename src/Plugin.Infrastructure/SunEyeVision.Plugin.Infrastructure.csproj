@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Compile Include="Infrastructure\IPluginManager.cs" />
-    <Compile Include="Managers\Plugin\ReleasePayloadAuthority.cs" />
+
     <Compile Include="Managers\Plugin\PluginLoader.cs" />
     <Compile Include="Managers\Plugin\PluginManager.cs" />
     <Compile Include="Managers\Plugin\ToolDirectoryCatalog.cs" />

@@ -3099,3 +3099,6 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 
 ### 中立插件准入整链设计（候选未实施）
 独立分支 codex/platform-neutral-admission-20261102 基于 80d09b28，未包含主工作区在途成果。已形成中立插件准入运行目录实施设计 HTML，核对正式 ReleasePayloadAuthority 和组件/工具/桌面消费者：当前 LoadToolComponents 在默认 ALC 加载，PluginLoadContext.cs 未纳入项目；旧静态目录候选不能直接作为交付。正式无 WPF 载荷需由构建规则生成真实闭包，不能删除桌面 Release 文件凑成。本批仅设计，尚未实现或构建测试，运行作用域排空及发布失败后的程序集卸载不能假称已具备。
+
+### 中立准入在途检查点（未完成）
+独立分支基线 80d09b28。已迁移唯一 ReleasePayloadAuthority 与 Runtime 默认设置/schema 准入到 Plugin.Runtime，桌面编译接入；正在实现中立快照与发行器 NeutralHost。真实无 WPF 探针已用源码构建、独立产物封装并成功运行 ImageLoad + Blob，非正式工作流或桌面完整验证。生产 ToolRegistry、配置恢复、执行与桌面均尚未切换同代快照；失败原子性、关闭排空、全量回归未完，不得合入。Identity 测试恢复 NU1301 / NU1101 缺测试包；见方案。

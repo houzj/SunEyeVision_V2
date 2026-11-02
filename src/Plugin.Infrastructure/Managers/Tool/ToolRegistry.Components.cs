@@ -134,29 +134,6 @@ public static partial class ToolRegistry
             if((!typeof(IToolEditorFactory).IsAssignableFrom(type)&&!typeof(IToolPresentationFactory).IsAssignableFrom(type))||typeof(IToolPlugin).IsAssignableFrom(type))
                 throw new InvalidOperationException("Editor must be a factory, never an algorithm producer.");
         }
-        else
-        {
-            if(type.Assembly.GetReferencedAssemblies().Any(a=>a.Name is "SunEyeVision.Plugin.SDK" or "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"))
-                throw new InvalidOperationException("Neutral runtime component cannot depend on SDK/WPF.");
-            if(!typeof(IToolDefinition).IsAssignableFrom(type))
-                throw new InvalidOperationException("Runtime must implement the neutral tool definition.");
-            var definition=(IToolDefinition)Activator.CreateInstance(type)!;
-            if(definition is not IToolCatalogProvider catalog||catalog.Catalog is null)
-                throw new InvalidOperationException("Runtime must supply its own neutral catalog information.");
-            if(definition.ToolId!=component.Metadata.ToolId)
-                throw new InvalidOperationException("Runtime entry ToolId differs from its component declaration.");
-            var settings=definition.CreateSettings();
-            if(settings.GetType()!=definition.SettingsType||!typeof(IToolOutput).IsAssignableFrom(definition.OutputType))
-                throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
-            if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
-            _=definition.Describe();
-            if(definition is IToolSettingsFields settingsFields)
-            {
-                var defaults=settingsFields.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
-                if(definition is IToolResultDisplayProvider display)
-                    foreach(var pair in display.CreateDisplaySettings().CopyValues())defaults.Add(pair.Key,new ConstantSetting(pair.Value));
-                _=new ToolSettingsEditSession(definition,new FieldSettings(ResultDisplayFields.EditorSchema(definition).Inputs,defaults)).CaptureValidatedFields();
-            }
-        }
+        else RuntimeComponentAdmission.Validate(component);
     }
 }

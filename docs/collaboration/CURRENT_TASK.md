@@ -1,3 +1,15 @@
+## 2026-11-02 整合候选正式工具箱自检
+
+隔离整合候选实际 Release 执行 --toolbox-probe 退出 0：15 分类、143 项，ImageLoad 和 BlobAnalysis 可用，4 个正式组件；回执 Release/_validation/baseline-toolbox-probe-20261102.json 的构建身份 ce84533cc，后续 103b2ec81 仅修改测试依赖锁及记录。该探针在设备及方案初始化前退出，不证明真实拖放和完整启动。
+
+## 2026-11-02 整合候选测试依赖固定
+
+候选 103b2ec81 在 ce84533cc 上固定 ShellLayout 测试合并后新增的 Foundation 项目锁，并确认 locked-mode restore 成功；此前 WPF ShellLayout 4/4。独立插件线正在准备真实 MainWindow 进程回归，尚未验证或合入；不将直接租约探针当作关闭全链。
+
+## 2026-11-02 隔离基线整合候选
+
+新 worktree D:/MyWork/line-aiproject/platform-baseline-reconcile-20261102 的 ce84533cc 合并 695028045 和共享 4431cfa0，双方任务记录保留；不影响原工作区或主仓。使用 HalconSourceRoot 只读依赖源后全量 Release 0 错、3583 警告，图像源 31/31、Blob 11/11、WPF ShellLayout 4/4。首次构建因缺 HALCON 失败及首次 Shell 测试未单独构建的失败日志保留；ShellLayout lock 随后在 103b2ec81 固定并通过 locked-mode restore。插件关闭候选 97a0ab584 未包含，真实窗口/新增显示 reader/旧工具入口仍未验证，不把候选称为完整集成。
+
 ## 2026-11-02 逆向引擎设计更新核收
 
 逆向工程师交付八类条件证据及目标树/范围索引；已核阅插件、当前 ce341300 基线增量与交付审计三报告并在主 HTML 固定哈希。ce341300 与 87f4 HEAD 80d09b28 相关源码存在 36 文件差异；并行候选 adb0d7453 与 ce341300 存在 62 相关文件双向差异，缺显示来源和文本 reader 等新增合同。候选的排空探针未覆盖新增消费者，不能直接合并。旧 ABI 兼容通道建议与用户要求冲突，不采纳。并行候选线继续核对关闭、在用 reader 和旧 SDK 的完整链。

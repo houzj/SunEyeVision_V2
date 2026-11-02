@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text.Json;
-using SunEyeVision.Core.Versioning;
+using SunEyeVision.Foundation.Versioning;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
@@ -146,22 +146,22 @@ internal sealed class ReleasePayloadAuthority
 
     private void VerifyHostProductIdentity(JsonElement payload)
     {
-        // The existing Core PE is the product identity anchor. A fixture/root copy
+        // The Foundation PE is the product identity anchor. A fixture/root copy
         // is approved only when it has the exact bytes and identity of that host.
-        const string corePath="SunEyeVision.Core.dll";
+        const string corePath="SunEyeVision.Foundation.dll";
         var core=typeof(AppVersionInfo).Assembly;
         if(!_entries.TryGetValue(corePath,out var entry)||string.IsNullOrWhiteSpace(entry.Identity))
-            throw new InvalidDataException("The host Core product identity is not approved by the release payload.");
+            throw new InvalidDataException("The host Foundation product identity is not approved by the release payload.");
         if(AssemblyLoadContext.GetLoadContext(core)!=AssemblyLoadContext.Default||core.FullName!=entry.Identity)
-            throw new FileLoadException("The loaded Core identity differs from the release payload.",core.Location);
+            throw new FileLoadException("The loaded Foundation identity differs from the release payload.",core.Location);
         VerifyFile(core.Location,entry);
         if(string.IsNullOrWhiteSpace(AppVersionInfo.Product)||string.IsNullOrWhiteSpace(AppVersionInfo.Commit)||string.IsNullOrWhiteSpace(AppVersionInfo.Channel))
-            throw new InvalidDataException("The approved host Core product identity metadata is missing.");
+            throw new InvalidDataException("The approved host Foundation product identity metadata is missing.");
         if(!string.Equals(payload.GetProperty("sourceCommit").GetString(),AppVersionInfo.Commit,StringComparison.Ordinal))
-            throw new InvalidDataException("Payload sourceCommit differs from the approved host Core product identity.");
+            throw new InvalidDataException("Payload sourceCommit differs from the approved host Foundation product identity.");
         var artifact=AppVersionInfo.Product+(AppVersionInfo.Channel=="stable"?"":"_"+AppVersionInfo.Channel);
         if(!string.Equals(payload.GetProperty("artifactVersion").GetString(),artifact,StringComparison.Ordinal))
-            throw new InvalidDataException("Payload artifactVersion differs from the approved host Core product identity.");
+            throw new InvalidDataException("Payload artifactVersion differs from the approved host Foundation product identity.");
         // buildId is an opaque generator-run identifier; there is no PE buildId anchor.
     }
 

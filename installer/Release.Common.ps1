@@ -53,7 +53,7 @@ function Assert-ReleaseFileVersionAdvance {
 
 function Assert-ReleasePayload {
     param([string]$Path, [string]$FileVersion, [object[]]$ProductComponents, [string]$IconSourceRoot)
-    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
+    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Foundation.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
         if (!(Test-Path (Join-Path $Path $file))) { throw "载荷缺失：$file" }
     }
     if ($IconSourceRoot) {
@@ -149,7 +149,7 @@ namespace SunEyeVision {
         public static Dictionary<string,string> ReadProductIdentity(string path) {
             using(var stream=File.OpenRead(path))using(var pe=new PEReader(stream)) {
                 var reader=pe.GetMetadataReader();
-                if(reader.GetString(reader.GetAssemblyDefinition().Name)!="SunEyeVision.Core")throw new InvalidDataException("Product identity anchor is not Core.");
+                if(reader.GetString(reader.GetAssemblyDefinition().Name)!="SunEyeVision.Foundation")throw new InvalidDataException("Product identity anchor is not Foundation.");
                 string informational=null,channel=null;
                 foreach(var handle in reader.GetAssemblyDefinition().GetCustomAttributes()) {
                     var attribute=reader.GetCustomAttribute(handle);
@@ -174,7 +174,7 @@ namespace SunEyeVision {
                     }
                 }
                 var parts=(informational??"").Split(new[]{'+'},2);
-                if(parts.Length!=2||string.IsNullOrWhiteSpace(parts[0])||string.IsNullOrWhiteSpace(parts[1])||string.IsNullOrWhiteSpace(channel))throw new InvalidDataException("Core product identity metadata is missing.");
+                if(parts.Length!=2||string.IsNullOrWhiteSpace(parts[0])||string.IsNullOrWhiteSpace(parts[1])||string.IsNullOrWhiteSpace(channel))throw new InvalidDataException("Foundation product identity metadata is missing.");
                 return new Dictionary<string,string>{{"Product",parts[0].Trim()},{"Commit",parts[1].Trim()},{"Channel",channel}};
             }
         }
@@ -264,11 +264,11 @@ function New-ReleasePayload {
         [Parameter(Mandatory)][string]$SourceCommit,
         [Parameter(Mandatory)][string]$ArtifactVersion,[Parameter(Mandatory)][object[]]$ProductComponents,[string]$FrameworkOriginPath)
     Initialize-ReleaseToolMetadataReader
-    $productIdentity=[SunEyeVision.ReleaseToolMetadataReader]::ReadProductIdentity((Join-Path $AppPath 'SunEyeVision.Core.dll'))
+    $productIdentity=[SunEyeVision.ReleaseToolMetadataReader]::ReadProductIdentity((Join-Path $AppPath 'SunEyeVision.Foundation.dll'))
     $actualArtifact=$productIdentity['Product']
     if($productIdentity['Channel'] -cne 'stable'){$actualArtifact+='_'+$productIdentity['Channel']}
-    if($SourceCommit -cne $productIdentity['Commit']){throw 'Payload sourceCommit differs from the Core PE product identity.'}
-    if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Core PE product identity.'}
+    if($SourceCommit -cne $productIdentity['Commit']){throw 'Payload sourceCommit differs from the Foundation PE product identity.'}
+    if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Foundation PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins')){throw 'Retired SDK deployment directories must not enter a release payload.'}
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName

@@ -71,6 +71,9 @@
         "resolved": "10.0.3",
         "contentHash": "l8QNBPp92bVzl9Kw8nNtm1uYRNNhUrdulZjM4a8YK/QGNa8z9utKsC0bDoPB+Vq8LOlbD3fIyGlabtz80jT7cw=="
       },
+      "suneyevision.foundation": {
+        "type": "Project"
+      },
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },

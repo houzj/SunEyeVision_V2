@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using SunEyeVision.Core.Versioning;
+using SunEyeVision.Foundation.Versioning;
 
 namespace SunEyeVision.UI.Shell.Windows
 {

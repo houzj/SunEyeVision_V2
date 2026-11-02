@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace SunEyeVision.Core.Versioning;
+namespace SunEyeVision.Foundation.Versioning;
 
 /// <summary>
 /// 产品版本的唯一读取入口（rule-022）。

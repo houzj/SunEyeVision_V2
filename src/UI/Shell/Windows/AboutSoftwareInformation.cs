@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using SunEyeVision.Core.Versioning;
+using SunEyeVision.Foundation.Versioning;
 
 namespace SunEyeVision.UI.Shell.Windows;
 

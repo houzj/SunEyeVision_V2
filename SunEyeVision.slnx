@@ -10,6 +10,9 @@
   <Folder Name="/Src/CommonControl/">
     <Project Path="Src/CommonControl/CommonControl.csproj" />
   </Folder>
+  <Folder Name="/Src/Foundation/">
+    <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
+  </Folder>
   <Folder Name="/Src/Core/">
     <Project Path="Src/Core/SunEyeVision.Core.csproj" />
   </Folder>
@@ -49,6 +52,9 @@
   </Folder>
   <Folder Name="/Src/Workflow/">
     <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Identity.Tests/">
+    <Project Path="tests/SunEyeVision.Identity.Tests/SunEyeVision.Identity.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Core.Tests/">
     <Project Path="tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj" />

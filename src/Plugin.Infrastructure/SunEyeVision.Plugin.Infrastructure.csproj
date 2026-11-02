@@ -43,5 +43,6 @@
     <!-- 守卫测试需要访问 internal 的"插件程序集策略 / 隔间"类型（用法与 SDK 的 InternalsVisibleTo 一致）。
          本工程是唯一引用 Infrastructure 的测试工程，专用于锁死这一层的不变量。 -->
     <InternalsVisibleTo Include="SunEyeVision.Plugin.Infrastructure.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.Identity.Tests" />
   </ItemGroup>
 </Project>

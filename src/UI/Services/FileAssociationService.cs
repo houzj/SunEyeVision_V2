@@ -9,12 +9,12 @@ namespace SunEyeVision.UI.Services;
 public class FileAssociationService
 {
     private const string Extension = ".solution";
-    private static string ProgId => SunEyeVision.Core.Versioning.AppVersionInfo.Channel == "local" ? "SunEyeVision.Local.SolutionFile" : "SunEyeVision.SolutionFile";
+    private static string ProgId => SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel == "local" ? "SunEyeVision.Local.SolutionFile" : "SunEyeVision.SolutionFile";
     [DllImport("shell32.dll")] private static extern void SHChangeNotify(uint eventId, uint flags, IntPtr item1, IntPtr item2);
     public static bool IsInstalledLocation()
     {
         using var machine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-        using var installation = machine.OpenSubKey(SunEyeVision.Core.Versioning.AppVersionInfo.Channel == "local" ? @"Software\SunEyeVision\Local" : @"Software\SunEyeVision");
+        using var installation = machine.OpenSubKey(SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel == "local" ? @"Software\SunEyeVision\Local" : @"Software\SunEyeVision");
         var root = installation?.GetValue("InstallLocation") as string;
         return !string.IsNullOrEmpty(root) && SunEyeVision.Workflow.Persistence.AtomicJsonFile.SamePath(root, AppContext.BaseDirectory);
     }
@@ -32,14 +32,14 @@ public class FileAssociationService
                 using var effective = Registry.ClassesRoot.OpenSubKey(Extension);
                 current = effective?.GetValue("")?.ToString() ?? "";
             }
-            if (SunEyeVision.Core.Versioning.AppVersionInfo.Channel != "local" &&
+            if (SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel != "local" &&
                 (string.IsNullOrEmpty(current) || current.StartsWith("SunEyeVision.", StringComparison.OrdinalIgnoreCase) || current == @"Applications\SunEyeVision.UI.exe"))
                 extension?.SetValue("", ProgId);
         }
         using (var openWith = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.solution\OpenWithProgids")) openWith?.SetValue(ProgId, "");
         WriteType(ProgId, executable, icon);
         // Repair our own Windows Open With identity without changing UserChoice or another application.
-        if (SunEyeVision.Core.Versioning.AppVersionInfo.Channel != "local") WriteType(@"Applications\SunEyeVision.UI.exe", executable, icon);
+        if (SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel != "local") WriteType(@"Applications\SunEyeVision.UI.exe", executable, icon);
         SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
     }
     private static void WriteType(string id, string executable, string icon)

@@ -1629,6 +1629,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
@@ -1662,6 +1663,9 @@
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "System.IO.Ports": "[9.0.0, )"
         }
+      },
+      "suneyevision.foundation": {
+        "type": "Project"
       },
       "suneyevision.haladapter": {
         "type": "Project",

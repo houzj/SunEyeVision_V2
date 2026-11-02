@@ -122,10 +122,10 @@ public partial class App : Application
                 if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
                 var info = new
                 {
-                    releaseVersion = SunEyeVision.Core.Versioning.AppVersionInfo.Product,
-                    channel = SunEyeVision.Core.Versioning.AppVersionInfo.Channel,
-                    releaseDate = SunEyeVision.Core.Versioning.AppVersionInfo.ReleaseDate,
-                    commit = SunEyeVision.Core.Versioning.AppVersionInfo.Commit,
+                    releaseVersion = SunEyeVision.Foundation.Versioning.AppVersionInfo.Product,
+                    channel = SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel,
+                    releaseDate = SunEyeVision.Foundation.Versioning.AppVersionInfo.ReleaseDate,
+                    commit = SunEyeVision.Foundation.Versioning.AppVersionInfo.Commit,
                     toolContract = SunEyeVision.Plugin.SDK.Core.ToolContract.Version,
                     defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
@@ -812,7 +812,7 @@ public partial class App : Application
             ThreadPool.GetMinThreads(out var workers, out var io);
             var data = new
             {
-                phase, processId = Environment.ProcessId, sourceCommit = SunEyeVision.Core.Versioning.AppVersionInfo.Commit,
+                phase, processId = Environment.ProcessId, sourceCommit = SunEyeVision.Foundation.Versioning.AppVersionInfo.Commit,
                 mode = EffectiveImageWarmupMode.ToString(), runtime = Environment.Version.ToString(),
                 startupBlockingMs = _imageWarmupBlockingMs, contentRenderedElapsedMs = contentRenderedMs,
                 backgroundQueuedElapsedMs = queuedMs, backgroundStartedElapsedMs = workerStartedMs,

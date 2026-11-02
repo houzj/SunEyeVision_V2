@@ -1,0 +1,27 @@
+D:\MyWork\line-aiproject\platform-root-canvas-tests-20261102\tests\bin\Release\SunEyeVision.RootCanvas.Tests.dll (.NETCoreApp,Version=v9.0)的测试运行
+总共 1 个测试文件与指定模式相匹配。
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 9.0.20)
+[xUnit.net 00:00:00.34]   Discovering: SunEyeVision.RootCanvas.Tests
+[xUnit.net 00:00:00.42]   Discovered:  SunEyeVision.RootCanvas.Tests
+[xUnit.net 00:00:00.47]   Starting:    SunEyeVision.RootCanvas.Tests
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 400, width: 80, viewport: 400, maximum: 180, first: False, expected: 180) [247 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 100, width: 80, viewport: 400, maximum: 1000, first: True, expected: 0) [1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 310, width: 80, viewport: 400, maximum: 1000, first: False, expected: 130) [< 1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 100, width: 80, viewport: 400, maximum: 1000, first: False, expected: 100) [< 1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 10, width: 80, viewport: 400, maximum: 1000, first: False, expected: 70) [< 1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: -60, width: 80, viewport: 400, maximum: 1000, first: False, expected: 10) [< 1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Selection_scroll_keeps_native_edge_allowance_instead_of_centering(offset: 100, left: 400, width: 80, viewport: 400, maximum: 1000, first: False, expected: 210) [< 1 ms]
+  已通过 SunEyeVision.UI.Tests.RootTabStateTests.Configuration_check_reads_formal_runtime_and_graph_without_running [2 s]
+  已通过 SunEyeVision.UI.Tests.RootConfigurationTests.Formal_file_boundary_preserves_directory_and_copy_remaps_identity_without_losing_dangling_entries [835 ms]
+  已通过 SunEyeVision.UI.Tests.RootConfigurationTests.Acceptance_failure_restores_root_directory_nodes_and_history(failAfter: 1) [41 ms]
+  已通过 SunEyeVision.UI.Tests.RootConfigurationTests.Acceptance_failure_restores_root_directory_nodes_and_history(failAfter: 2) [54 ms]
+  已通过 SunEyeVision.UI.Tests.RootConfigurationTests.Stale_root_candidate_cannot_overwrite_an_accepted_directory_and_draft_is_preserved [77 ms]
+  已通过 SunEyeVision.UI.Tests.RootConfigurationTests.Root_directory_and_two_node_candidates_publish_atomically_and_history_preserves_new_canvas_settings [143 ms]
+  已通过 SunEyeVision.UI.Tests.CanvasDocumentHistoryTests.Accepted_drop_batch_parameters_and_move_replay_in_one_order_without_rewinding_live_values [274 ms]
+[xUnit.net 00:00:04.73]   Finished:    SunEyeVision.RootCanvas.Tests
+  已通过 SunEyeVision.UI.Tests.CanvasDocumentHistoryTests.Cancelled_drop_has_no_history_and_unregistered_route_edits_block_root_replay [89 ms]
+
+测试运行成功。
+测试总数: 15
+     通过数: 15
+总时间: 5.7699 秒

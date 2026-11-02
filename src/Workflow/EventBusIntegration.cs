@@ -150,65 +150,14 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public AlgorithmResult ExecuteNode(WorkflowNodeBase node, IVisionImage? inputImage)
         {
-            var stopwatch = Stopwatch.StartNew();
-            bool success = true;
-            string errorMessage = null;
-
-            try
-            {
-                _eventPublisher.PublishNodeExecutionStarted(Id, node.Id, node.Name);
-
-                var tool = node.CreateInstance();
-                IVisionImage? resultImage = null;
-
-                if (tool != null)
-                {
-                    // 使用反射创建默认参数实例
-                    var defaultParams = (ToolParameters)Activator.CreateInstance(tool.ParamsType)!;
-                    defaultParams.ResolvedInputImage = inputImage;
-                    var toolResult = tool.Run(defaultParams);
-
-                    // 从结果中获取输出图像（使用反射，统一使用新机制）
-                    var outputImageProp = toolResult.GetType().GetProperty("OutputImage");
-                    if (outputImageProp != null)
-                    {
-                        resultImage = outputImageProp.GetValue(toolResult) as IVisionImage;
-                    }
-                }
-
-                stopwatch.Stop();
-                _eventPublisher.PublishNodeExecuted(Id, node.Id, node.Name, node.ToolType, success, stopwatch.ElapsedMilliseconds);
-
-                return new AlgorithmResult
-                {
-                    AlgorithmName = node.ToolType,
-                    Success = true,
-                    ResultImage = resultImage,
-                    ExecutionTime = DateTime.Now
-                };
-            }
-            catch (Exception ex)
-            {
-                success = false;
-                errorMessage = ex.Message;
-                stopwatch.Stop();
-
-                _eventPublisher.PublishNodeExecuted(Id, node.Id, node.Name, node.ToolType, success, stopwatch.ElapsedMilliseconds, errorMessage);
-
-                return new AlgorithmResult
-                {
-                    AlgorithmName = node.ToolType,
-                    Success = false,
-                    ErrorMessage = errorMessage,
-                    ExecutionTime = DateTime.Now
-                };
-            }
+            ArgumentNullException.ThrowIfNull(node);
+            const string reason = "事件总线旧节点执行入口已停用，请使用正式运行目录及工作流执行入口。";
+            _eventPublisher.PublishNodeExecuted(Id, node.Id, node.Name, node.ToolType, false, 0, reason);
+            return new AlgorithmResult { AlgorithmName = node.ToolType, Success = false, ErrorMessage = reason, ExecutionTime = DateTime.Now };
         }
     }
 
-    /// <summary>
-    /// Example of event bus usage in application startup
-    /// </summary>
+    /// <summary>Example of event bus usage in application startup.</summary>
     public class WorkflowEventBusSetup
     {
         /// <summary>

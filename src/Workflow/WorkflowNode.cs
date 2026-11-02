@@ -640,21 +640,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public virtual IToolPlugin? CreateInstance()
         {
-            if (RuntimeConfiguration is not null)
-                throw new InvalidOperationException("Runtime配置必须由中立运行入口消费，不能创建SDK工具并忽略其设置。");
-            // 从工具注册表创建工具实例
-            var instance = ToolRegistry.CreateToolInstance(ToolType);
-            
-            if (instance == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning, 
-                    $"无法创建工具实例: ToolType={ToolType}", 
-                    "WorkflowNodeBase");
-            }
-            
-            return instance;
+            throw new InvalidOperationException("旧 SDK 节点实例入口已停用；请使用已准入 Runtime 执行或调试。");
         }
-
         /// <summary>
         /// 从字典创建节点（仅用于兼容旧格式 JSON 的反序列化）
         /// </summary>

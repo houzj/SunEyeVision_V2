@@ -212,7 +212,6 @@ namespace SunEyeVision.UI.Services.Workflow
             SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths,ToolExecutionOwner ExecutionOwner,IReadOnlyList<WorkflowGlobalProducerOperation> GlobalProducers,string SolutionId,string SolutionName,RuntimeParameterValueAcceptance? ParameterValues);
         private readonly Dictionary<string, PublishedRunInputs> _preparedRunInputs = new(StringComparer.Ordinal);
         internal Func<WorkflowPublishedConfiguration>? CapturePublishedConfiguration { get; set; }
-        internal bool AllowUnhostedRunForTests { get; set; }
 
         /// <summary>
         /// 获取运行时参数
@@ -1194,12 +1193,6 @@ namespace SunEyeVision.UI.Services.Workflow
             // before local-image/camera waits; child workflows use the same frozen configuration.
             WorkflowPublishedConfiguration publication;
             if(CapturePublishedConfiguration is {} capture)publication=capture()??throw new InvalidOperationException("正式配置快照入口返回空值。");
-            else if(AllowUnhostedRunForTests)
-            {
-                var fixture=solutionDefinition??new Solution{Workflows=_workflowEngine.GetAllWorkflows().ToList()};
-                var host=new NodeConfigurationEditHost(fixture);
-                publication=WorkflowPublishedConfiguration.Capture(host.Capture(),fixture,host);
-            }
             else throw new InvalidOperationException("运行准备缺少当前文档的正式配置快照入口。");
             var configuration=publication.Configuration;
             var flows=_workflowEngine.GetAllWorkflows(); // UI cursor ownership only; never a second execution definition.

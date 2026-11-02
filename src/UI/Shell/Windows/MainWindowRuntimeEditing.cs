@@ -22,8 +22,14 @@ public partial class MainWindowViewModel
     private void TryAutoBindRuntimeImageSource(SunEyeVision.Workflow.WorkflowNodeBase node,SunEyeVision.Workflow.WorkflowConnection? connection)
     {
         if(node.RuntimeConfiguration is not { } runtime||runtime.Schema.WorkflowImageInputId is not { } target||
-            runtime.Fields.Read(target) is not Plugin.Contracts.UnsetSetting||
-            node is not Shared.WorkflowNode uiNode||GetDataProviderForNode(uiNode) is not Plugin.SDK.Execution.Parameters.DataSourceQueryService query)return;
+            runtime.Fields.Read(target) is not Plugin.Contracts.UnsetSetting)return;
+        if(node is not Shared.WorkflowNode uiNode)throw new InvalidOperationException("自动图像绑定缺少当前工作区节点。");
+        var query=GetDataProviderForNode(uiNode) as Plugin.SDK.Execution.Parameters.DataSourceQueryService;
+        if(query is null)
+        {
+            if(connection is not null)throw new InvalidOperationException("自动图像绑定缺少当前流程声明查询；连线已回滚。");
+            return;
+        }
         var candidates=(query.BindingCandidateNodeIds?.Invoke(node.Id)??query.GetAvailableDataSources(node.Id).Select(source=>source.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray()).ToHashSet(StringComparer.Ordinal);
         var incoming=connection is not null?new[]{connection}:_workflowEngine.GetWorkflow(query.WorkflowId!)!.Connections.Where(edge=>edge.TargetNodeId==node.Id).ToArray();
         static System.Collections.Generic.IEnumerable<string[]> ImageMembers(Plugin.Contracts.TypeRef type,string[] path)

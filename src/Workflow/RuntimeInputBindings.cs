@@ -10,7 +10,7 @@ namespace SunEyeVision.Workflow;
 internal static class RuntimeInputBindings
 {
     internal static object? Constant(Port port,object? value)=>ValueRules.Freeze(port,value);
-    internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope,bool validateAdmission=true)
+    internal static IReadOnlyList<ExecutionInputIssue> Validate(Workflow flow,WorkflowNodeBase node,string scope,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,bool validateAdmission=true)
     {
         var configuration=node.RuntimeConfiguration!;var issues=new List<ExecutionInputIssue>();
         // Persistence permits missing execution inputs in a valid editable draft, but
@@ -27,7 +27,7 @@ internal static class RuntimeInputBindings
                     // Variable-index readiness needs the owning solution's frozen declarations.
                     // The document host and real invocation compiler perform that complete check.
                     if(BindingRelationCatalog.IndexVariables(reference.Reference.Selection).Any())continue;
-                    var validation=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,scope);
+                    var validation=WorkflowBindingContext.ValidateTyped(flow,node,id,reference,scope,directory);
                     if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)throw new ArgumentException(validation.Reason);
                 }
                 else if(setting is VariableSetting {RebindingReason:{Length:>0} reason})throw new ArgumentException(reason);

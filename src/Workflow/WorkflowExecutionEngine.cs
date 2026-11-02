@@ -652,7 +652,7 @@ namespace SunEyeVision.Workflow
             if(session.ExecutionOwner!=null)sourceWorkflow.ExecutionOwner=session.ExecutionOwner;
             ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
             foreach(var node in executableWorkflow.Nodes.OfType<AlgorithmNode>())node.WorkflowInputImage=inputImage;
-            var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, sourceWorkflow.Id);
+            var inputIssues = OutputBindingChangeService.GetExecutionInputIssues(executableWorkflow, _workflowEngine.RuntimeDirectory, sourceWorkflow.Id);
             var variableDefinitions=request?.ProducedGlobals?.Sources??request?.CommunicationInputs?.GetVariables().ToArray();
             var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow, variableDefinitions, sourceWorkflow.Id, inputIssues,request?.ProducedGlobals?.SolutionId);
             var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(

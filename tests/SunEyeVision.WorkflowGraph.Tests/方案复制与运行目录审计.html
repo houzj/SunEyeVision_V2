@@ -1,0 +1,11 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>方案复制与运行目录审计</title><style>body{font:15px system-ui;max-width:1100px;margin:36px auto;color:#192a40}table{border-collapse:collapse;width:100%}td,th{border:1px solid #b9c8d8;padding:10px;text-align:left}th{background:#e5f0fa}section{padding:16px;background:#eef6fb}</style>
+<h1>方案复制与运行目录审计</h1><section>可信方案或引擎目录 → 准入节点 → 独立快照；不能从被检查节点自身推定所属代次。Group 暂停。</section>
+<table><tr><th>入口</th><th>目录与生命周期来源</th><th>当前状态</th></tr>
+<tr><td>配置快照、节点与变量编辑 Begin / 比较 / 提交 / 历史</td><td>正式方案与 BindingConfigurationStore 已发布方案副本；Copy 逐节点对方案目录 Require。</td><td>根流程节点回归及宿主集成另测。</td></tr>
+<tr><td>节点 Freeze</td><td>正式方案和已发布快照目录同一、active，方案 owner 未退役；核验后直接复制节点。</td><td>编辑→冻结→提交→撤销/重做、错代及退役有域回归；宿主实测待重跑。</td></tr>
+<tr><td>变量 Freeze</td><td>正式方案、已发布目录及草稿/基线目录同代，owner 未退役。</td><td>退役拒绝域回归；真实变量 UI 待基础就绪。</td></tr>
+<tr><td>CopyVariable</td><td>临时容器仅复制变量，无节点也无工具目录推断。</td><td>不触发节点目录接纳。</td></tr>
+<tr><td>运行配置 Capture / CopyWorkflow(s)</td><td>方案或 WorkflowEngine 显式传入目录，快照保留同目录，复制及执行重新验证。</td><td>空图/错代/执行及节点复制域回归；真实图像源→Blob 由 S4 宿主验证。</td></tr>
+<tr><td>UI 执行定义及无宿主测试造壳</td><td>UI 工作流执行管理器；编排线确认只读依赖分析或改用正式方案。</td><td>交 UI 线核对，独立域测试不代表宿主通过。</td></tr>
+<tr><td>输出声明 ReadContract</td><td>执行、显示、调试和全局变量验证均显式传入方案或运行快照的可信目录，不再从节点自身推定。</td><td>域内错代与准备度回归通过；UI 联编及真实宿主整体验证另记。</td></tr>
+</table></html>

@@ -31,8 +31,13 @@ public static class GlobalProducerBindingRules
         target=new Port("value",type,Storage:storage);clrType=resolved;return true;
     }
 
-    public static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable)
-        =>Validate(solution,producer,variable,node=>new OutputBindingChangeService().ReadContract(node));
+    public static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
+    {
+        ArgumentNullException.ThrowIfNull(solution);ArgumentNullException.ThrowIfNull(directory);
+        if(!directory.IsActive || (solution.RuntimeDirectory is {} actual&&!ReferenceEquals(actual,directory)))
+            throw new InvalidOperationException("方案与声明查询运行目录代次不一致。");
+        return Validate(solution,producer,variable,node=>new OutputBindingChangeService().ReadContract(node,directory));
+    }
 
     // Reconciliation borrows its already captured contracts, including its actual host reader.
     // It must not re-read a mutable provider halfway through building one atomic change plan.

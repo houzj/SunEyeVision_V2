@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System;
 using System.Collections.Generic;
@@ -55,20 +56,21 @@ public sealed class OutputBindingChangeService
     };
 
     /// <summary>Read-only validation of the frozen local execution model; never modifies design configuration.</summary>
-    public static void EnsureExecutable(Workflow workflow, string? sourceWorkflowId = null)
+    public static void EnsureExecutable(Workflow workflow, RuntimeDirectorySnapshot directory, string? sourceWorkflowId = null)
     {
-        var first = GetExecutionInputIssues(workflow, sourceWorkflowId).SelectMany(p => p.Value).FirstOrDefault();
+        var first = GetExecutionInputIssues(workflow, directory, sourceWorkflowId).SelectMany(p => p.Value).FirstOrDefault();
         if (first != null) throw new InvalidOperationException(first.Message);
     }
 
     /// <summary>Read-only node-scoped validation of a frozen plan. Invalid inputs never abort unrelated nodes.</summary>
-    public static IReadOnlyDictionary<string,IReadOnlyList<ExecutionInputIssue>> GetExecutionInputIssues(Workflow workflow,string? sourceWorkflowId=null)
+    public static IReadOnlyDictionary<string,IReadOnlyList<ExecutionInputIssue>> GetExecutionInputIssues(Workflow workflow,RuntimeDirectorySnapshot directory,string? sourceWorkflowId=null)
     {
         var issues=new Dictionary<string,IReadOnlyList<ExecutionInputIssue>>(StringComparer.Ordinal);
         foreach(var node in workflow.Nodes)
         {
             if(node.RuntimeConfiguration is null){issues.Add(node.Id,new[]{new ExecutionInputIssue("runtime-configuration","Runtime","节点缺少已准入 Runtime 配置。")});continue;}
-            var errors=RuntimeInputBindings.Validate(workflow,node,sourceWorkflowId??workflow.Id);
+            RuntimeNodeAdmission.Require(directory,node);
+            var errors=RuntimeInputBindings.Validate(workflow,node,sourceWorkflowId??workflow.Id,directory);
             if(errors.Count>0)issues.Add(node.Id,errors);
         }
         return issues;
@@ -138,11 +140,11 @@ public sealed class OutputBindingChangeService
             .Where(reference=>reference.ScopeId==workflowId&&ids.Contains(reference.NodeId)).Select(reference=>reference.NodeId).Distinct(StringComparer.Ordinal).ToArray();
     }
 
-    public ToolSchema? ReadContract(WorkflowNodeBase node)
+    public ToolSchema? ReadContract(WorkflowNodeBase node,RuntimeDirectorySnapshot expectedDirectory)
     {
         ArgumentNullException.ThrowIfNull(node);
         var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点缺少已准入 Runtime 配置："+node.Id);
-        RuntimeNodeAdmission.Require(runtime.Directory,node);
+        RuntimeNodeAdmission.Require(expectedDirectory,node);
         return runtime.Schema;
     }
 
@@ -151,7 +153,8 @@ public sealed class OutputBindingChangeService
         InvalidatedNodes=Array.Empty<ScopedNodeIdentity>();
         if(_solution is null)return Array.Empty<OutputBindingChange>();
         var nodes=_solution.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node))).ToDictionary(item=>item.Id,item=>item.Node);
-        var current=nodes.ToDictionary(pair=>pair.Key,pair=>ReadContract(pair.Value));
+        var directory=_solution.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入运行目录。");
+        var current=nodes.ToDictionary(pair=>pair.Key,pair=>ReadContract(pair.Value,directory));
         var changes=new List<(Action Apply,Action Undo)>();var notices=new List<OutputBindingChange>();var invalidated=new HashSet<ScopedNodeIdentity>();
         var pendingConfigurations=new Dictionary<WorkflowNodeBase,(RuntimeToolConfiguration Before,RuntimeToolConfiguration After)>();
         foreach(var variable in _solution.GlobalVariables)
@@ -212,6 +215,6 @@ public sealed class OutputBindingChangeService
     private void Capture()
     {
         _contracts=_solution is null?new():_solution.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node)))
-            .ToDictionary(item=>item.Id,item=>ReadContract(item.Node));
+            .ToDictionary(item=>item.Id,item=>ReadContract(item.Node,_solution!.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入运行目录。")));
     }
 }

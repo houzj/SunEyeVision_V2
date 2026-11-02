@@ -4,8 +4,18 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Workflow;
 
-try
+return ProbeMain.Run();
+static class ProbeMain
 {
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] private static extern uint SetErrorMode(uint mode);
+    public static int Run()
+    {
+        SetErrorMode(0x0001 | 0x0002 | 0x8000);
+        try { return RunAsync().GetAwaiter().GetResult(); }
+        catch (Exception error) { Console.Error.WriteLine(error); return 1; }
+    }
+    private static async Task<int> RunAsync()
+    {
 var manager=new PluginManager();
 await manager.LoadPluginsAsync();
 if(manager.LastAdmissionError is not null)throw new Exception("准入失败："+manager.LastAdmissionError);
@@ -15,12 +25,12 @@ Console.WriteLine("通过：正式封包校验及组件准入");
 var logger=VisionLogger.Instance;var engine=new WorkflowEngine(logger,directory);
 var flow=engine.CreateWorkflow("owner-"+Guid.NewGuid().ToString("N"),"owner");
 var node=new WorkflowNodeBase("node","node","node",Definition.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,Definition.Id)};
-flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);
+flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);flow.AttachExecutionOwner(solution.ExecutionOwner);
 var failures=new List<string>();
 try
 {
     Definition.FailCleanup=true;Output.DisposeCount=0;Definition.LastResources=null;
-    var runner=new WorkflowExecutionEngine(engine,manager,logger);
+    var runner=new WorkflowExecutionEngine(engine,logger);
     using(var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id){ExecutionOwner=solution.ExecutionOwner}).WaitAsync(TimeSpan.FromSeconds(30)))
     {
         if(run.Success||!run.Errors.Any(error=>error.Contains("probe-session-cleanup")))failures.Add("正式执行未报告会话清理错误");
@@ -33,7 +43,7 @@ try
     var debugOwner=new ToolExecutionOwner();
     try
     {
-        using(var debug=RuntimeDebugInvocation.Capture(flow,node,debugOwner,0,_=>null,CancellationToken.None))
+        using(var debug=RuntimeDebugInvocation.Capture(flow,directory,node.Clone(),debugOwner,0,_=>null,CancellationToken.None))
         {
             try{using var unexpected=await debug.ExecuteAsync();failures.Add("调试未报告会话清理错误");}
             catch(InvalidOperationException error)when(error.Message=="probe-session-cleanup"){}
@@ -60,5 +70,5 @@ finally{Definition.FailCleanup=false;Definition.LastResources=null;solution.Exec
 if(failures.Count>0)throw new Exception("探针失败："+string.Join("；",failures));
 Console.WriteLine("通过：正式与调试会话清理、reader及代次排空");
 return 0;
+    }
 }
-catch(Exception error){Console.Error.WriteLine(error);return 1;}

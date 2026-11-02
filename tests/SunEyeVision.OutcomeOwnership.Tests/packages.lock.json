@@ -206,13 +206,16 @@
       "suneyevision.foundation": {
         "type": "Project"
       },
-      "suneyevision.outcomeownership.probe": {
+      "SunEyeVision.OutcomeOwnership.Probe": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.contracts": {
+        "type": "Project"
+      },
+      "suneyevision.plugin.editing.wpf": {
         "type": "Project"
       },
       "suneyevision.plugin.infrastructure": {
@@ -229,12 +232,14 @@
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
           "System.Drawing.Common": "[9.0.0, )"

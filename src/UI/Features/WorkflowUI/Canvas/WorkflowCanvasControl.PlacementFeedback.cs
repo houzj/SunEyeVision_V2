@@ -6,6 +6,7 @@ using SunEyeVision.UI.Services.Interaction;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
+    internal DataTemplate GetVmNodeTemplate() => VmNodeItems.ItemTemplate;
     private readonly List<Line> _vmAlignmentGuides = new();
     private Rectangle? _vmNodeHotRegion;
     private VmHotPlacement? _vmHotPlacement;

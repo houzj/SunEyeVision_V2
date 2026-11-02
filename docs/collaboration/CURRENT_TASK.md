@@ -1,3 +1,82 @@
+## 2026-11-02 逆向引擎设计更新核收
+
+逆向工程师交付八类条件证据及目标树/范围索引；已核阅插件、当前 ce341300 基线增量与交付审计三报告并在主 HTML 固定哈希。ce341300 与 87f4 HEAD 80d09b28 相关源码存在 36 文件差异；并行候选 adb0d7453 与 ce341300 存在 62 相关文件双向差异，缺显示来源和文本 reader 等新增合同。候选的排空探针未覆盖新增消费者，不能直接合并。旧 ABI 兼容通道建议与用户要求冲突，不采纳。并行候选线继续核对关闭、在用 reader 和旧 SDK 的完整链。
+
+## 2026-11-02 插件候选交付与节点身份证据
+
+并行候选最终文档检查点 adb0d7453，产品/测试代码 5bb9a9388。独立 UI Release 构建通过；真实 ImageLoad 运行和 reader 排空、无 WPF 单次 ImageLoad→Blob 探针通过。关闭无限等待、旧 SDK 路径、节点序号与 NormalLogo、实际 WPF 关闭/Blob 工作流/调试均未闭环，候选禁止整批集成。复用 add-module-parent-id-platform-conditional-bridge-20261101.md（SHA256 84E344AFD24279ECB8EFD4E4974FB17D278BD0EBADAF5ADB36D2989C025D24D9）；该条件流程 ID 桥不能证明节点显示序号的分配或复用。
+
+## 2026-11-02 节点编号整链静态审计
+
+本方节点编号存在多流程池重建、静态集合使用实例锁、移除释放但添加/重做未重新占用、构造和事务回滚跨多个消费者等风险；已在全平台主方案记录完整生产链与验证出口。此为源码分析，不把未实测问题当作已复现，也不声称 VM 算法。并行候选 5bb9a9388 无 WPF 单次 ToolRuntimeExecutor 探针已实际运行 ImageLoad→Blob，不能代替 Blob 正式工作流、调试和关闭验证，候选仍未集成。
+
+## 2026-11-02 插件目录候选集成审查
+
+独立候选 5bb9a9388 基于 80d09b28，精确 HEAD 的 UI Release 构建 0 错，真实 ImageLoad reader 排空及运行中退役探针通过；本线未集成，Blob、调试、主窗口关闭及全量 Release 不因候选检查通过。审查发现 OnClosed 消费者清理失败或 reader 不释放时可能无限等待；提前退役不可撤销，简单超时并保留窗口会使工作区不可用。须整体解决生命周期及失败策略后集成，不能强制卸载在用资源。候选与本线 App、主窗口文件有重叠；节点序号、节点图标合同及旧 SDK 静态消费者另待核查。
+
+## 2026-11-02 图像源与 Blob 正式运行时回归
+
+独立工作区全量 Release 再次构建成功（platform-blob-reseal-final-20261102.log）；正式产品运行环境图像源 31/31、Blob 11/11 通过。Blob 旧测试已改用正式运行配置并核对 19 项 ROI/图像输入，设置字段由 XML 和判定规则组成共 55 项；枚举测试避免发现阶段提前加载插件。最初失败及重封装过程的日志保留。测试不证明 VM 完整语义或主线集成。并行插件候选尚未集成，真实运行中退役有独立验证，主窗口关闭等仍待验证；Group 暂停。
+
+## 2026-11-02 当前独立基线全量构建与工具箱自检
+
+用户决定顶栏先到这里并关闭程序后，当前 87f4 未提交工作区执行 SunEyeVision.slnx Release 全量构建成功，0 错误、6532 警告，日志 platform-current-full-release-20261102.log。使用本工作区实际 Release 程序执行 --toolbox-probe，退出码 0，回执 platform-toolbox-probe-20261102.json：15 个分类、143 个目录条目，当前准入显示为可用的工具为图像源 ImageLoad 与 BlobAnalysis。该探针在设备和方案初始化前退出，不证明真实桌面拖放、工具运行、用户验收或主线集成；并行插件候选尚未合入，本结果仅覆盖本工作区当前代码。
+## 2026-11-02 顶栏阶段反馈
+
+用户决定顶栏先优化到这里，目前感觉还好。记录为阶段性人工积极反馈，不将未核的 DPI、动态菜单和功能链记为通过；后续继续平台重构，未得到新要求前不再扩展顶栏。
+## 2026-11-02 主题月亮图标调整
+
+用户指出浅色主题的月亮图标不美观；将原细线月牙改为实心月牙，暗色主题太阳保留线条，均使用 26×26 容器并随主题前景色变化。独立 Release ShellLayout 测试 4 通过（theme-redesign-20261102.log）；深浅主题 96 DPI 的 WPF 离屏渲染已检查，其他 DPI 和用户现场反馈未代签。更新后的独立程序 PID 35864 已启动。图标为本方适配，未称 VM 原件。
+## 2026-11-02 VM 顶栏布局与主题图标核对
+
+用户对照截图指出顶部图标及布局差异，并反馈本方主题图标与原件图标视觉不协调。按原件 TitleBar.xaml 和 ToolBarButtonStyle 核正为标题区 81、品牌列 184、菜单行 34、工具图像与按钮 36×36、分组虚线和右侧运行模式；运行模式尚未接入，保持禁用。深浅标题背景分别按原件颜色，保留 SunEyeVision Logo。主题切换是本方功能，未找到 VM 对应资源，采用 26×26 加粗矢量并保留深浅切换，明确为本方适配。独立 Release ShellLayout 4 项通过（vm-topbar-final-20261102.log）；真实 WPF 96 DPI 离屏深色截图 vm-topbar-final-wpf-20261102.png 已核，浅色主题、其他 DPI 和用户验收未代签。新版独立程序 PID 43720 已启动；未合入主仓。
+## 2026-11-02 工具箱拖动人工反馈
+
+用户试用后反馈目前感觉正常。记录为当前拖动的人工积极反馈，不扩展为热区、插线、撤销、取消及完整工具箱已通过。节点序号在创建、事务回滚和 Undo/Redo 间的所有权正由运行目录候选线整链核查。
+## 2026-11-02 工具箱预览与正式节点模板贯通
+
+VM ToolItemGrid/diagramitemtemplate 静态证据确认预览使用正式 DiagramItem、隐藏序号、展示工具项名称和模块节点图标，图像源与 Blob 为 110×30、0.7 透明度。本线以仅展示的 WorkflowNode 将预览接入 VmNodeItems 正式模板，不创建业务节点或撤销记录；预览隐藏序号并统一图标消费者。分类重复进入不再重建现有项，取消及无效按下清理待拖动状态。独立 Release ShellLayout 4 项通过（toolbox-preview-visual-20261102.log），含 WPF 真实画布渲染树中的名称和序号、进出事件与重复会话。鼠标真实 OLE、放置/连线全链、主题及用户人工尚未验证，整个工具箱不能计作完成。插件目录同代与节点图标消费者由独立候选线继续，未集成。
+## 2026-11-02 工具箱整链与顶栏在途
+
+用户反馈工具拖拽第一次可能成功，随后不能顺利拖到画布；要求整个工具箱对照 VM，不接受局部通过冒充完成。当前 HEAD 80d09b28；工作区含全局变量等在途改动。已静态核对 ToolBox.xaml、ToolBoxData、ToolItemGrid、ItemsPage 及 Connection；完整目录按用户决定显示，未准入项禁用。修正只读 IsMouseOver 单向绑定、拖动期间保持源和弹窗、取消及异常清理。前一批 UI Release 构建 0 错误，ShellLayout 测试 4 通过，但测试 OLE 调用以回调模拟，用户复测仍失败，不能称拖拽完成。继续核查发现临时预览隐藏后对象仍非空，DragOver 只更新位置而不恢复显示；现改为每次经过完整 ShowTempNode，且复用须同一 Canvas，已增加隐藏恢复、跨 Canvas 及实际画布 DragEnter→DragLeave→DragOver 事件处理的 WPF 宿主回归；Release 测试 4 通过，日志 toolbox-canvas-events-fixed-20261102.log。首次合成事件测试因未设置 RoutedEvent 失败，修正测试输入后通过。真实 OLE 及 VM 完整行为仍未验证。更新后的独立 Release 程序 PID 46044 已启动且响应；未验证完整真实鼠标拖放。
+
+顶栏根据原件 TitleToolBar 的 36×36 按钮和左右边距调整，占位入口采用提取图标并禁用，Logo 与主题保留；24×24 图像为本方可读性适配。工具箱与顶栏目前未提交，真实外观、用户验收、设计器及主线集成单列。Group 新增迁移暂停。
+## 2026-11-02 全平台目标源码树重构
+
+按用户要求，已在既有 EVIDENCE_AGREEMENT.md 集中补充全平台重构的证据基线、整链提问、回件核收、持续更新影响、独立工作区及未证假设规则，并同步到全平台 HTML 计划。此为文档更新，不代表已向逆向侧发消息或创建目标；产品代码未因本轮修改。
+
+用户已删除旧全局变量目标，经 get_goal 确认当前无活动目标；用户要求先完善全平台计划并确认，再创建新目标。本轮仅修改 HTML 计划和本记录，未改产品代码。计划新增目标职责树、现有工程首轮映射、跨批次依赖图、0–8 批实施内容与验收出口、跨批次清单及独立工作区并行规则；原件未证行为、自研假设、Group 暂停和在途成果均保留。该计划为用户审阅稿，逐文件实施审计及产品验证尚未执行。
+
+用户明确选择整个平台按目标源码树重构，并询问是否需要新的计划与目标。已创建图文草案 [全平台目标源码树重构计划](evidence/全平台目标源码树重构计划-20261102.html)，覆盖应用与 SDK、领域、执行、持久化、插件、基础设施、工具及验证；目标树为自研候选，VM 未证语义不能标为事实。保留当前全局变量未提交成果作为待审候选，Group 仍暂停。现有活动目标仍是全局变量专项，不可误标完成或擅自暂停；全平台目标尚未创建。先完成整体对照设计及协调，再按用户明确决定处理目标切换。
+
+## 2026-11-02 引擎架构对照及目标绑定安全门
+
+用户提供 vm-engine-architectural-comparison.html，确认架构层引擎逆向正在推进：已查 VM 的变量值传播不能证明自动建执行边或跨流程等待；冻结快照是自研现状而非 VM 事实，字段接纳、错误和资源所有权按入口证据区分。核查现行 GlobalVariableManagerViewModel.SetNodeParamBinding 仍写 __GlobalVars__ 名称式 SDK ParamSetting，而正式工具参数链使用 VariableSetting 的 SolutionId/VariableId；目标候选仍靠 CLR 反射，尚未贯通正式字段 ID 与变量草稿事务。为避免新外观误用旧路径，管理器 OpenTargetParameterCommand 已禁用，入口提示待接入；原件目标窗口单独存在但不算完整功能。后续核对现有 Host/RuntimeToolConfiguration 以及新引擎架构后按正式合同接入，不创建兼容双轨。未验证该修改的 UI 构建。
+
+## 2026-11-02 用户澄清整体架构方向
+
+用户明确：工具和全局变量整体架构后续按 VM 逆向重新设计。现有编辑、身份及运行链仅按当前已确认行为选择性复用，不作为永久架构或兼容性约束；若与证据不符应整体替换。曾开始制作未接入的 VariableManagerSurface 草稿，经检查其列表和标签采用了自行组合的近似结构，不符合用户要求；本轮已移除该草稿。后续按原件模板及完整依赖迁移，保持公共控件与业务分离，不能宣称已适配最终架构。已更新 HTML 方案。
+
+## 2026-11-02 目标参数窗口迁移进行中
+
+管理器依赖迁移中：新增 GroupRenameTextBox 及原件模板，提取原件添加、删除、变量 DataGrid 样式至 VariableManagerStyles，映射已有图标资源，尚未接入管理器。公共控件独立测试先前 4 通过；新增样式加载测试第一次因在 WPF 窗口初始化前加载 pack URI 失败，已调整测试初始化顺序，定向重测通过（1 通过、0 失败）。未运行管理器宿主链，不能计为功能完成。
+
+已将原件 OutputConfigTreeView 模板和 RunParamsSelectWindow 组合适配到 Plugin.Wpf 的 TargetParameterTree 与 TargetParameterSelectionDialog，UI TargetParameterSelectionService 连接现有候选、移除和确认，旧自研目标窗口已删除。确认时已按流程/节点/参数身份拒绝被其他变量占用的目标；原件类型切换所需 DisplayType/ComType 元数据尚未具备，控件明确禁用并提示；双击行为未接入，不可宣称完整原厂交互。占用拦截和类型提示变更后 UI Release 定位构建 0 错误、6101 警告；公共控件 WPF 测试此前 3 通过，类型提示 XAML 后续有变化，需整批复验。管理器迁移、宿主测试和全量构建尚未完成。
+
+## 2026-11-02 全局变量稳定基线同步
+
+整批实施未验证：新增 GlobalVariableSelectionService，主窗口、模块结果及现存参数绑定事件改用 Plugin.Wpf 原件来源选择窗口；候选来自当前编辑宿主快照并携带方案/变量 ID，返回后核对会话、方案、变量及类型，资源/组合类型无正式 VariableReference 时不提供可误用候选。模块结果现有发布与行身份复检仍保留。已移除旧选择器 XAML、代码与旧专用主题测试，并将结果绑定测试改为公共窗口。公共选择/数组窗口独立 WPF 测试 2 通过、0 失败；新改动的 UI Release 构建完成（0 错误、3419 警告），未完成结果绑定宿主回归，不能称整批完成。
+
+新增 VariableArrayDialogTests：真实 WPF 显示数组窗口并覆盖资源加载、快照隔离、分页、更新和关闭清理。旧 UI 测试工程因引用已退出产品构建的 5 个旧 SDK 工具及缺少还原资产而未执行；改为只依赖现行 Plugin.Wpf 的 SunEyeVision.Variables.Wpf.Tests，Release 测试 1 通过、0 失败。此为独立控件测试，不代表管理器接入或整批通过。其余全局变量管理、选择消费者统一、目标选择与整批验证仍未完成。
+
+整批实施中：依据 ArrayDisplayWindow 原件布局新增 Plugin.Wpf/Controls/References/Variables/VariableArrayDialog，接现有 VariablePageNavigator 与原件来源资源，采用调用方提供的字符串快照、40 项分页和关闭清理；尚未接入全局变量管理器，运行外观与生命周期未验证。为定位 XAML 编译已单独构建 Plugin.Wpf Release，0 错误、5388 警告；不等同整批构建或功能完成。仍须完成其余窗口、所有消费者、完整宿主回归与主方案更新。
+
+本轮以 XML 解析 5 份反编译原件 XAML，生成 [原件 XAML 静态目录](evidence/全局变量原件XAML静态目录-20261102.html)，列文件 SHA、命名元素、事件、资源和绑定；这是发现索引，不代表递归资源或逐项行为已核收。目标参数选择器 pending 文件引用的 5 个 Apps.Style 路径在当前控件库不存在；已有重组样式可复用与否须逐键、模板和状态核对，不能直接编译 pending。整体方案已关联此目录。尚未修改产品代码或进行构建，自测不能计作通过。
+
+同步后核实 Plugin.Wpf 已有原件来源 VariableSelectionDialog、VariablePageNavigator、VariableGroupSelector、VariableGroupTree，并通过 ReferenceExpansionCoordinator 用于工具参数引用；不能重新实现或笼统记为未迁移。UI 的模块结果、主窗口及旧 SDK 路径仍调用旧 GlobalVariableSelectDialog，存在视觉双轨。公共 VariableReference 只接受纯标量/纯标量序列，迁移消费者须保留现有候选资格、SolutionId+VariableId 及弹窗返回后失效检查；旧 SDK 名称路径按既有规则评估清理，不为它建立兼容桥。已将逐入口调用与整批决策写入 HTML 方案；管理窗口、目标选择、数组与资源事件闭包仍未核完，产品代码尚未修改。
+
+独立工作区原有文档、测试和设计先保存为 dedd542；已将技术总监确认的 93b9b683 合入，合并提交 9e961105。两处文档冲突保留双方内容，测试文件自动合并。尚未验证合并后的构建，产品迁移尚未开始；继续核查原件依赖与正式合同。
+
 ## 2026-11-02 VM 全局变量控件并行迁移：基线与设计
 
 用户已确认创建实施目标：先完善逆向与整链设计，再集中迁移、构建和自测；缺基础明确占位，人工验收及主线集成单独记录。目标已创建并处于进行中。当前本分支 07cab942 是技术总监确认的 93b9b683 的祖先；但双方在 AGENTS.md、主方案、CURRENT_TASK.md 和 ResultWorkspaceProductionTests.cs 四个已修改文件上均有差异，不能直接覆盖本地成果。尚未同步、尚未修改产品代码。两份 HTML 为逆向清单和迁移方案，完整依赖闭包仍待核对。
@@ -3096,3 +3175,92 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。
 
 - B01 补充：新增检查源码的验证宿主编译通过（0错误/555警告）；仅编译测试，没有构建产品或运行修正。日志见 Release/_validation/S4-20261025/DesignTime/b01-candidate-compile.log。
+
+## 2026-11-02 全平台重构目标启动（最新状态）
+
+用户已确认计划并创建全平台重构目标：先完成整体实施设计，协调逆向负责人集中提供阶段 0–2 的证据索引，再按依赖分批贯通生产链、构建及自测。Group 和循环新增迁移继续暂停。当前 HEAD 为 9e961105，工作区保留全局变量在途修改和设计资料；这些成果未完成整体验证，不得覆盖或计为已交付。已向逆向负责人发送集中取证请求，回复尚未核收，不阻塞可独立推进的准备。
+
+基础具备的范围以相称自测通过为闭口条件；缺基础项明确未实现、依赖、影响与接入位置，当前条件下穷尽静态取证仍未知的具体语义标记自研假设，人工验收与集成另行记录。本条为最新状态。
+
+## 2026-11-02 并行重构启动
+
+用户明确要求并行重构。插件运行线和工作流领域线各用独立分支/worktree，VM 架构证据线只读核查；本工作区负责共享合同与统一集成。并行起点为 9e961105，main 当前 cdd5056c；不自动同步主仓。87f4 全局变量在途未提交修改不包含在子 worktree 中，须在集成前核对。Group 和循环新增迁移暂停。各线尚处设计和准备阶段，未完成构建或集成验证。
+
+## 2026-11-02 主界面优先与成果保全
+
+用户要求最短时间先看按新架构重构的主界面。已制作 HTML 布局交互示意（不代表 WPF 实现），更新主计划中的真实控件组装、统一选择上下文和生命周期边界；主界面实现线使用独立 worktree，基线 9e961105，避免覆盖本工作区在途全局变量成果。插件运行线、工作流持久化线继续各自整链实施；Group 暂停。
+
+本地检查点包含当时 28 个未提交现存文件及 HEAD/状态清单：C:/Users/houzhongjie/.codex/visualizations/2026/10/26/01a176b8-278f-77f3-8093-20a80f11403b/platform-baseline-20261102.zip，SHA256 637E0F3C650E8758663DE194B953E43C9FAF95106D838D556426E9D6B9242DCD。删除文件由 HEAD 与状态清单记录；检查点创建后新增的主界面预览、主计划更新不在该包内。检查点不等于提交、构建、测试或集成通过。
+
+## 2026-11-02 主窗口布局批次整合
+
+已将独立主界面分支 63578d73 拣选至当前分支 444dedcb：按原件调整初始左右比例及折叠/恢复，移除顶部重复流程 ComboBox，保留流程 Tab 的流程列表和既有 Logo。独立分支 UI Release 构建 0 错误、730 警告，独立 WPF 布局测试 3/3；当前工作区与在途全局变量成果一起的构建正在进行，真实窗口外观、设计器和用户验收未验证。顶部及各区 VM 原件图标整体迁移尚未完成，此提交不代表全主界面或全平台完成。原主方案为 evidence/全平台目标源码树重构计划-20261102.html，批次设计为 evidence/主界面分区与布局批次设计-20261102.html。
+
+- 主窗口布局批次当前分支验证：UI Release 构建 0 错误/6534 警告，独立 WPF 布局测试 3/3 通过；日志分别为系统临时目录 suneye-shell-integrated-build-20261102.log 与 suneye-shell-integrated-test-20261102.log。构建中 VS MSBuild 曾短暂占用 DLL，测试最终退出码 0。此结果只覆盖布局批次与当前在途代码的编译，不证明真实窗口外观、全部顶栏原件图标、VS 设计器或用户验收。
+
+## 2026-11-02 主界面顶栏阶段成果
+
+已将独立分支 b3db1b1b 拣选为当前分支 b62e37f4：使用已核对的 VM 位图整理顶栏部分按钮与分组，支持的命令接入现有状态，缺基础入口明确禁用；Logo、流程 Tab 和右侧流程列表保留。独立 UI Release 0 错误/730 警告，真实顶栏 WPF 宿主测试 4/4；当前工作区集成构建与测试进行中。原件菜单内容/权限、窗口控制模板、真实执行语义与实际窗口外观尚未完整验证。原件 MenuSource/MenuToolSource 动态生成路径的完整对照待核，当前静态顶栏不能冒称已按该机制重建；详见 evidence/主界面顶栏与分类图标对照-20261102.html。
+
+- 顶栏批次当前分支验证：UI Release 0 错误/6531 警告；WPF 布局和顶栏宿主测试 4/4 通过，日志在 Release/_validation/shell-integration-20261102/toolbar-ui-build.log 与 toolbar-tests.log。随后原厂对照发现 IsAllWorkflowsRunning 实际为任意流程运行，不能代表 VM ContinuousRunEnable；现行连续运行入口也使用该值选择启动/停止，状态差异正在修正。以上测试不证明连续运行语义正确，批次不以此宣称完整闭口。
+
+- 已将独立分支 53ff8f31 拣选为当前分支 4232260d：顶栏全流程连续运行入口因缺少可区分的连续状态而禁用，不改流程 Tab 和共享命令；独立 UI 构建 0 错误/730 警告、WPF 测试 4/4。当前工作区集成测试及构建进行中。工具箱静态对照发现 VmToolCatalog.json 含 15 类/143 条，当前 ToolboxViewModel 未消费该清单且过滤空分类，与用户确认的完整目录和不可用禁用要求不符；正在独立工作区按静态目录、真实准入状态、双模及所有添加入口设计整批修复，21 项 ID 映射不等于已部署。
+
+- 连续运行入口修正已在当前 worktree 完成 UI Release 构建（0 错误、3411 警告）及 WPF 宿主测试 4/4；日志为 Release/_validation/shell-integration-20261102/continuous-guard-build.log 和 continuous-guard-test.log。顶栏该入口在可靠连续态具备前禁用，其他流程运行入口不变；不等于原厂连续运行机制已迁移。
+- 主界面整体对照已覆盖流程区与右侧结果区：复用现有画布/视口/图像源会话，仍须按原件验证流程菜单、小地图坐标及高 DPI、来源切换和释放；图像源已有运行遮罩但时序未核，帮助生产数据未接入，历史能力占位。工具箱全目录批次仍在独立实现/测试，未集成。用户在上轮按 Esc 停止电脑操作，真实主窗检查未完成，本轮不恢复 UI 自动化。
+
+## 2026-11-02 工具箱完整目录批次整合
+
+已将独立分支 ab69e1c2 拣选至当前分支 7e6cec9b。15 分类/143 项按原件静态清单展示，仅两项已核映射且实际目录、元数据和 Runtime 均准入才启用；其他 VM 项禁用，真实已部署但未核对应项以独立身份标明。双模、工具箱按下、画布右键及拖放再次校验当前目录；无目录变化事件时打开且未交互的旧外观可能暂存，但不能通过门禁添加。独立 Release UI 构建 0 错误/730 警告，WPF 测试 4/4；当前分支构建、真实桌面右键/拖放/跨间隙悬停及人工验收未验证。完整菜单与底栏候选仍在独立分支验证，运行中的验收程序可能占用当前 Release DLL。
+
+## 2026-11-02 主界面底栏批次整合
+
+已将独立分支 f2e9af06 的产品源码、测试和方案整合为当前分支 ec9c9be3；未覆盖当前任务记录。左画布状态栏与右真实日志摘要同排，复用 UILogWriter、原件状态图标和产品版本；原件日志展开控件未接入，入口禁用。独立 UI Release 0 错误/730 警告，真实 WPF 宿主日志/Unloaded 测试 1/1；当前分支与工具箱、待交菜单的统一构建、真实主窗外观及用户验收尚未完成。当前验收程序 PID 137644 正运行，等待用户保存关闭后统一构建，不强制结束。
+
+## 2026-11-02 主界面菜单批次整合
+
+已将独立分支 e32688b1 的菜单源码、方案与测试整合为当前分支 5d204067；未覆盖当前任务记录。按 VM 声明组合文件/设置/工具/系统/帮助，欢迎页归帮助，撤销记录位于撤销按钮的禁用下拉占位，主题切换以本方状态图标保留；Logo、流程 Tab 和右侧列表不动。独立 UI Release 构建和 WPF 测试 4/4 通过（对应构建 DLL 哈希一致）；VM 动态权限/远程模式、记录窗口、真实主窗外观和设计器尚未完成。用户当前仍在运行 PID 137644，三个已提交批次将先在新独立集成 worktree 做合并态构建和测试；它不含 87f4 未提交全局变量成果，不等同当前工作区最终回归或主仓集成。
+
+- 主界面三批独立集成工作区基于 5d204067，UI Release 0 错误/6539 警告；ShellLayout WPF 4/4 通过，测试 UI DLL 与该工作区 Release UI DLL SHA256 均为 C3A80B6A717541063F57EED54E8ED5A7C666257CC775DE3DAD4887FC713E7855。ShellFooter 测试首次构建生成 231 个 MSBuild 子节点、整机 CPU 100% 且可用内存不足 1GB，尚未生成测试 DLL；该本线进程已正常中断并保留日志，改为限制并行度重试。此集成工作区不含 87f4 未提交成果，不能代替当前工作区完整回归。
+
+- 基于 5d204067 的独立集成 worktree 已完成三批合并态验证：UI Release 0 错误/6539 警告；ShellLayout 4/4、ShellFooter 1/1。两项测试解析到本工作区 tests/bin/Release/SunEyeVision.UI.dll，与其 Release UI DLL 的 SHA256 均为 C3A80B6A717541063F57EED54E8ED5A7C666257CC775DE3DAD4887FC713E7855。底栏初次测试因 231 个 MSBuild 节点造成资源争用而中断，限制两节点重建后测试通过，旧日志保留。验证日志位于 D:/MyWork/line-aiproject/platform-shell-integration-20261102/Release/_validation/shell-integration-20261102/。该独立基线不含 87f4 未提交成果，不代表当前工作区最终回归、真实整窗外观、设计器或用户验收；137644 程序仍在运行。
+
+## 2026-11-02 工具箱分类弹窗批次整合
+
+已将独立分支 8d105561 整合为当前分支 4b0a6400：紧凑分类各自持有 Popup，按原件分类进入/离开状态、坐标边界与根控件状态关闭，更新列表布局，清理旧 DataContext 和卸载订阅；没有采用 120ms 自研延时。独立 UI Release 构建 0 错误/6539 警告，WPF 宿主 4/4；当前工作区和合并菜单后的验证未做。真实跨 HWND 鼠标轨迹、实际 WPF 外观、右侧弹出布局和 VS 设计器尚未验证；原件双层边框及动态主题资源还需对照，不能宣称外观完整一致。用户先前停止了桌面操作，本轮未恢复 UI 自动化。
+
+- 用户已确认保存并关闭验收程序；本机查询无 SunEyeVision.UI.exe。待菜单唯一数据源候选通过最终测试后，统一整合并在当前 worktree 构建；当前仍保留用户停止 Computer Use 的事实，不自行恢复桌面输入。菜单候选首次 WPF 测试发现动态生成图标的相对 pack URI 无资源基址，正在按真实资源路径整批修复并重验。
+
+- 当前分支 4b0a6400 与在途全局变量成果共同构建：UI Release 0 错误/6531 警告，ShellLayout WPF 宿主 4/4；日志为 Release/_validation/shell-integration-20261102/popup-ui-build.log、popup-tests.log。可执行文件位于 Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe。该版本含工具箱完整目录、分类弹窗、主窗布局/顶栏静态组织和底栏，不含正在独立验证的菜单唯一数据源。真实跨 HWND 鼠标轨迹、主窗外观、VS 设计器、完整原厂菜单模式以及主仓集成仍未验证；未主动恢复电脑操作。
+
+- 菜单/工具栏唯一声明树候选在独立 worktree 开发，动态位图 pack 基址修正后源码可构建、资源像素检查通过；真实窗口测试中，子菜单打开后消息循环验证超时，尚不能判断是测试宿主与菜单模式的交互还是产品阻塞。该候选未合入当前稳定分支，不把失败当通过；待保留可复核检查点和日志后再针对具体原因处理。当前 4b0a6400 稳定版可供查看。
+
+- 菜单唯一声明树候选已保存在独立分支 codex/platform-menu-model-20261102 的未完成检查点 738adb7d，基线 5d204067，未合入当前稳定版。候选 UI 构建成功；真实 WPF 子菜单打开后的 Dispatcher 验证超时，可见菜单命令状态与窗口重挂载解绑仍未验证。详细命令和日志：D:/MyWork/line-aiproject/platform-menu-model-20261102/Release/_validation/menu-model-20261102/。继续针对测试宿主与菜单模式差异定位，不能视为产品验证通过。
+- 流程标签原件对照与可交付范围正在独立 worktree D:/MyWork/line-aiproject/platform-workflow-tabs-20261102 进行，基线 4b0a6400；不修改 Group、引擎、工具箱或顶栏，完成后再检查实际消费者和集成。
+- 菜单候选后续诊断检查点 3a7e75a8：单一 Application.Run 消息泵未再复现 20 秒等待；非激活屏幕外宿主会自动关闭子菜单，前台展开时命令状态仍未验证，不能判定产品卡死或已通过。窗口迁移订阅/解绑宿主测试 1/1 通过；候选仍未合入。日志在独立 worktree Release/_validation/menu-model-20261102/。
+- 流程根菜单对照候选 e84a3faa 保存在独立分支 codex/platform-workflow-tabs-20261102，基线 4b0a6400，未合入。按原件排列根流程操作并对缺基础项禁用，Group 现状分离保留；UI Release 构建 0 错误/6539 警告，但离屏真实菜单 WPF 测试 STA 超时，根/Group 可见性及 Opened 尚未验证，不能判断宿主限制或产品问题。日志：D:/MyWork/line-aiproject/platform-workflow-tabs-20261102/Release/_validation/workflow-tabs-20261102/menu-test-4.log。
+- 菜单唯一声明树整批已应用当前独立工作区（来源 7f52ba24），UI Release 构建 0 错误/3411 警告，ShellLayout 4/4；测试及 Release UI DLL SHA256 均为 AA6BF1BC081E5EC57B02A8DF9CFF96BF9DAEB99FE405FD9D28202990739ACF6F。日志为 Release/_validation/shell-integration-20261102/menu-integrated-{build,tests}.log。前台外观、焦点、设计器、人工及主仓集成未验，动态权限/语言等未实现；在途全局变量未纳入本批提交。
+- 菜单阶段源码、测试与主方案已固定为当前独立分支中文提交 299d51f1；任务记录与全局变量在途成果仍未提交。提交后 Git 自动维护仍在运行，未重复执行提交。
+- 资源交接候选产品提交 d68e0636 留在独立 worktree D:/MyWork/line-aiproject/outcome-ownership-20261102；组件及正式 WorkflowExecutionEngine、RuntimeDebugInvocation 故障注入测试由开发线报告 6/6 通过，但最终测试仅有其会话输出、未保存单独日志。新增宿主测试及方案更改仍未提交：对该独立 worktree 的精确路径暂存被自动审批拒绝，理由为另一工作区授权范围不匹配；未合入当前分支。不同引用的隐式嵌套资源所有权、宿主直接别名尚未验证。
+- 对独立资源候选的既有测试程序集重新运行 dotnet vstest，6/6 通过，含正式/调试宿主；测试程序集 SHA256 788908E194FA323D1A64F1373F03FB611FB4C86081B395DD71BE8983B564C2A4。日志：Release/_validation/shell-integration-20261102/outcome-candidate-tests.log。仅证明该候选程序集，未替代当前分支集成回归；新增宿主测试仍未提交，暂存授权等待用户回复。
+- 图像源/Blob 统一链只读审计：两者已共享 IToolDefinition、设置字段、目录和结果展示合同及 ToolRegistry → RuntimeToolConfiguration → ToolSettingsEditSession → ToolRuntimeExecutor → DeclaredOutputSnapshot；图像源输入冻结和方案资源仍跨正式/调试/调度/持久化多处 ToolId 特判。已更新全平台 HTML 设计，先集中确定共享输入准备及资源持久化接入位置，保留 Blob 行为，不把项目设计冒充 VM 已证结构。
+- 已沿图像源配置、正式运行票据与读取接纳、调试私有游标、相机帧/快照所有权和方案引用检查/另存链梳理消费者及验收出口，并补入全平台 HTML。当前方案资源保存引用而非打包原图，不能称方案存图已实现；以上为本项目代码证据，不是 VM 内部语义。资源候选独立工作区暂存仍等待用户答复。
+- 对照现有 IToolExecutionInputs、正式/调试执行与资源持久化后，整体计划增加可选宿主输入准备能力、资源引用声明、编辑器发现、身份及所有权的本方候选设计与整批迁移顺序。合同尚未冻结，不能把候选当 VM 已证或已实现；资源交接候选暂存仍等待用户对自动审批拒绝的答复。
+- 插件准入复核：ToolComponentCatalog/ToolRegistry 已提供完整候选集身份与 Runtime/Editor 校验；新增宿主输入能力须绑定同代准入 Runtime、设置/schema 身份，不引入 Contracts/Runtime 到 Workflow、SDK 或 WPF 的依赖。资源声明检查与另存须同源；上述自研约束及现有回归入口已补入 HTML，接口仍未冻结。
+- 补充准入与图像源/Blob 精确回归位置；ToolRegistry 自身引用 Plugin.Wpf/SDK，不能因 Runtime 入口中立宣称正式宿主无 WPF，需单独验证。资源声明对 schema 指纹或独立稳定合同的影响尚待裁定。
+- 无 WPF 正式宿主依赖闭包已审计：Workflow 与 Plugin.Infrastructure 均启用 WPF，发布身份校验依赖 Core；默认 AssemblyLoadContext 加载不可简单回滚。HTML 已补充发布身份、准入同代目录、恢复/调用/释放、桌面装配及真实载荷无 WPF 验证门。本批为设计未实施，不代表完整无 WPF 工作流。
+- 发布身份依赖闭包审计：当前 AppVersionInfo 实际所在 Core PE 是封包与运行准入共同身份锚；迁移须同步构建注入、发布脚本、摘要/程序集校验、所有 UI 消费和测试。现有一致性校验未发现可信清单签名验证，不能宣传为完整信任链。方案已更新；本轮未改发布规则或声称无 WPF 已实现。
+- 身份锚迁移在当前 worktree 完成候选：Foundation 中立程序集、封包与运行校验、UI 消费者已同步；完整 Release 0 错误/6534 警告，schema2 专项测试 6/6，真实 Release 隐藏工具箱探针退出 0 并加载 ImageLoad/Blob Runtime 与 Editor；封包 PE 读取器接受 Foundation、拒绝 Core，测试/Release 身份 DLL SHA256 为 15EF9BCA03AD4E8E58BE0274ABFA2979B0E7B9490E056AC1D378EA29869EB03A。日志 foundation-* 在 Release/_validation/shell-integration-20261102/。源码仍未提交，工作区同时含原有全局变量成果；元数据 commit 仅基线 299d51f1。前台/设计器、正式签名/自包含、错误 ALC、完整无 WPF 工作流及主仓集成未验；旧 Infrastructure 测试工程使用已删除 API 无法整体编译，新增身份测试不代表其通过。
+- 身份锚迁移阶段已固定提交 80d09b28；App.xaml.cs 只提交两个版本命名空间块，原有全局变量选择改动仍留工作区。上次通过构建/探针使用提交前基线 299d51f1 和全局变量在途成果；正在按新提交重新构建，不能把旧产物当作新提交的身份验证。旧 Infrastructure 测试改造与部分还原锁文件变化仍未纳入本提交。
+- 身份锚提交 80d09b28 后重跑完整 Release 构建与身份专项测试成功；隐藏正式探针输出 commit 80d09b28ff9f79f84703fbf7378c12df9e27edb6，实际加载 ImageLoad 和 Blob Runtime。日志 foundation-committed-* 位于 Release/_validation/shell-integration-20261102/。构建包含工作区全局变量在途成果，不等于干净提交树验证；前台、设计器、签名/自包含与主仓集成未验。
+- 启动中立插件准入与运行目录整批隔离开发，基线 80d09b28；先对正式载荷、同代目录、Runtime 调用/释放和桌面 Editor 投影设计完整链，不修改 Group，也不依赖待授权暂存的资源候选。
+- 中立准入隔离分支 de3b3d78 为设计检查点，非实现；正式载荷生成器当前硬编码 UI/SDK/Editor，headless 须生成独立完整清单。旧 PluginLoadContext 未纳入正式编译。现有 owner 的 CompleteRoot/Retire 遇活跃运行直接抛错，关闭需接真实 stop/drain 或补可等待机制，不能宣称现有 Retire 支持排空。独立线继续核对合同并实施具备基础部分。
+- 中立准入隔离线基于 80d09b28 正在实施：已将唯一 ReleasePayloadAuthority 与 ToolComponentRegistration 移至 Plugin.Runtime 并调整 PluginManager 引用，Runtime 定位构建通过；正式 headless 载荷生成、统一目录、生产消费者及真实工具回归尚未完成，不可交付。隔离线不包含当前全局变量在途修改，也未改待授权资源候选。
+- 中立准入独立分支检查点 21afdb67 未完成且未集成：主线重跑已封装候选 NeutralReleaseProbe，退出 0，实际读取测试 BMP 并执行 ImageLoad/Blob，断言未加载 WPF/UI/Plugin.SDK。载荷清单 SHA256 469413BC18D0F9786BD8BCF78581B3821777DE5F88D1B2AB3085362FE0F0A5EE；主线日志 Release/_validation/shell-integration-20261102/neutral-candidate-probe.log。仅单次工具链，生产目录、工作流恢复/取消/读者排空、桌面消费者未切换；独立环境 NuGet TLS/包缺失，测试项目未恢复。
+- 只读评审发现 21afdb67 的公开 RuntimeDirectorySnapshot.Prepare 可接收未验证的任意组件注册，且中立目录创建先加载 Editor 再过滤；已要求隔离线限制生产目录只能来源于 authority 核验，并只加载 Runtime，补伪注册和 Editor 不加载负例。候选尚不可集成。
+- 中立准入边界修复候选 ebec005b 未完成未合入。主线重跑已封包桌面载荷的中立 Runtime-only 探针，退出 0，执行 ImageLoad/Blob 且未加载 Editor/WPF/UI/SDK；清单 SHA256 53130C00FB39118FC494D7C7B9173D25EB47D997C91ACA142AFE6E7ECF887903，原始日志 Release/_validation/shell-integration-20261102/desktop-runtime-only-candidate.log。隔离线报告直接构造和只读期望集负例通过；生产注册/恢复/执行同代接线与关闭排空仍未完成。
+- 中立目录后续候选 f46c8edf 已在隔离分支保存，含桌面组件快照、PluginManager 持有、注册入口收窄和一次恢复共用 definition；尚未编译/测试，旧 ToolRegistry 可变字典、Repository/Workflow/UI 同代注入及 stop/drain/读者释放均未完成。ebec005b 探针不覆盖此提交，不可合入。
+- 对 f46c8edf 静态审查发现重载失败时错误状态可能与旧 RuntimeDirectory 共存、快照与旧注册表分步发布造成混合代；需确定保留旧完整代或整体退役，并验证成功→失败→恢复及 reload/Unload 竞争。注册入口收窄亦影响 ScriptS3WorkflowDrainTests，须迁该测试。尚未运行复现，不可合入。
+- 目录重载修复候选 609fd823 保存在隔离分支，仍未合入。主线重跑真实桌面载荷探针退出 0，覆盖首次准入、缺清单失败保旧代、恢复、一次加载/卸载竞争和最终卸载；清单 SHA256 CF44FE908EC9BFF7895D8E087EF45A4A9EEC0E5F60CA8D5E4AD7C03B02D3BD89，原始日志 Release/_validation/shell-integration-20261102/admission-lifecycle-candidate.log。静态 registry、同代注入及运行中 stop/drain/读者释放未覆盖未完成。
+- 对候选 609fd823 只读审查发现：未拥有代的 manager 可卸载他人目录；GetAllToolMetadata 分两次锁可混代；旧快照卸载后仍可 CreateDefinition；RootWorkspaceHostTests 仍调用已移除 ConfigureDirectory 签名。已要求独立线处理代次所有权、单次捕获与 lease/退役，并覆盖跨 manager、旧引用与活跃读者；原单 manager 探针不覆盖。以上尚未运行复现，候选不可合入。
+- 用户报告工具箱悬停崩溃：Popup.IsOpen 的普通 Binding 默认双向，写回 Grid.IsMouseOver 只读属性触发异常；逆向 ToolBox.xaml 原件使用 TemplateBinding。当前工作区将该绑定显式设为 OneWay，并在真实分类模板上检查绑定方向；UI Release 构建 0 错误/6531 警告，ShellLayout 4/4。日志 toolbox-hover-fix-{build,tests}.log。未执行真实鼠标跨 HWND 轨迹和用户验收；本修复尚未提交。

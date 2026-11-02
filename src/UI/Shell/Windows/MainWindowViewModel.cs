@@ -3441,7 +3441,7 @@ SplitterPosition = position;
             };
             queryService.SelectReceiveVariable = () =>
             {
-                var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectDialog.ShowSelect(
+                var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectionService.Choose(
                     SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager);
                 return selected == null ? null : new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(
                     selected.Id, selected.Name, selected.Group, selected.Type);

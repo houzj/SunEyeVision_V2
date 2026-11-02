@@ -289,9 +289,9 @@
                                 </Grid>
 
                                 <!-- 全局序号 -->
-                                <TextBlock Grid.Column="1"
+                                <TextBlock Grid.Column="1" x:Name="NodeIndexText"
                                            Text="{Binding GlobalIndex, StringFormat='{}{0}'}"
-                                           Margin="0"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                           Margin="0"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding IsToolboxPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
 
                                 <!-- 节点显示名称（重命名时切换到编辑框） -->
                                 <Grid Grid.Column="2">

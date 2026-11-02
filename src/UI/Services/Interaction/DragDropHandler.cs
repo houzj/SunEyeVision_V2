@@ -84,15 +84,13 @@ namespace SunEyeVision.UI.Services.Interaction
         internal static Point SnapVmPoint(Point point)=>new(Math.Round(point.X/5)*5,Math.Round(point.Y/5)*5);
         private void ShowTempNode(ToolItem item,Point position,ControlsCanvas canvas)
         {
-            if(_tempDragNode?.Tag is string id&&id==item.ToolId)
+            if(_tempDragNode?.Tag is string id&&id==item.ToolId&&ReferenceEquals(_tempDragNode.Parent,canvas))
             {_tempDragNode.Visibility=Visibility.Visible;UpdateTempNodePosition(position);return;}
             if(_tempDragNode?.Parent is ControlsCanvas previous)previous.Children.Remove(_tempDragNode);
-            var content=new Grid();content.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(24)});content.ColumnDefinitions.Add(new ColumnDefinition());
-            content.Children.Add(new Image{Source=new System.Windows.Media.Imaging.BitmapImage(new Uri(item.IconSource)),Width=16,Height=16,Margin=new Thickness(4,0,0,0),VerticalAlignment=VerticalAlignment.Center});
-            var title=new TextBlock{Text=item.Name,FontSize=12,FontWeight=FontWeights.Bold,Foreground=new SolidColorBrush(Color.FromRgb(55,58,60)),VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis};Grid.SetColumn(title,1);content.Children.Add(title);
-            _tempDragNode=new Border{Width=_tempNodeWidth,Height=_tempNodeHeight,CornerRadius=new CornerRadius(item.ToolId=="ImageLoad"?15:4),
-                Background=new LinearGradientBrush(Color.FromRgb(250,247,245),Color.FromRgb(235,230,226),90),BorderBrush=Brushes.Gray,BorderThickness=new Thickness(.7),Opacity=.7,
-                Effect=new DropShadowEffect{BlurRadius=3,ShadowDepth=3,Opacity=.45},Child=content,Tag=item.ToolId,IsHitTestVisible=false};
+            var preview = new WorkflowNode("", item.Name, item.Name, item.ToolId) { IsToolboxPreview = true };
+            var presenter = new ContentPresenter { Content = preview, ContentTemplate = _canvasControl.GetVmNodeTemplate() };
+            _tempDragNode=new Border{Width=preview.HitAreaWidth,Height=preview.HitAreaHeight,Opacity=.7,
+                Child=presenter,Tag=item.ToolId,IsHitTestVisible=false};
             ControlsCanvas.SetZIndex(_tempDragNode,10000);canvas.Children.Add(_tempDragNode);UpdateTempNodePosition(position);
         }
         /// <summary>
@@ -105,8 +103,8 @@ namespace SunEyeVision.UI.Services.Interaction
             _canvasControl.UpdateVmInsertionWire(position, Array.Empty<string>());
             if (_tempDragNode != null)
             {
-                ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
-                ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
+                ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempDragNode.Width / 2);
+                ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempDragNode.Height / 2);
             }
         }
 
@@ -126,6 +124,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragEnter(object sender, DragEventArgs e)
         {
+            if (!e.Data.GetDataPresent("ToolItem")) return;
             if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true} active && active.CanActivate())
             {
                 e.Effects = DragDropEffects.Copy;
@@ -149,20 +148,23 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragOver(object sender, DragEventArgs e)
         {
+            if (!e.Data.GetDataPresent("ToolItem")) return;
             if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true} active && active.CanActivate())
             {
                 e.Effects = DragDropEffects.Copy;
 
                 // 更新临时节点位置
-                if (_tempDragNode != null && sender is ControlsCanvas canvas)
+                if (sender is ControlsCanvas canvas)
                 {
                     var position = e.GetPosition(canvas);
-                    UpdateTempNodePosition(position);
+                    ShowTempNode(active, position, canvas);
                 }
             }
             else
             {
                 e.Effects = DragDropEffects.None;
+                HideTempNode();
+                _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire();
             }
             e.Handled = true;
         }
@@ -172,6 +174,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragLeave(object sender, DragEventArgs e)
         {
+            if (!e.Data.GetDataPresent("ToolItem")) return;
             HideTempNode();
             _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire();
             e.Handled = true;

@@ -88,10 +88,14 @@ public sealed class MainWorkspaceLayoutTests
         {
             var app = new SunEyeVision.UI.App(); app.InitializeComponent(); app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var state = new TopBarState();
-            var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state };
-            var firstWindow = new Window { Content = top, Width = 1600, Height = 100, Left = -32000, Top = -32000, ShowInTaskbar = false, ShowActivated = false };
+            var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state, Height = 81 };
+            var firstWindow = new Window { Content = top, Width = 1600, Height = 160, Left = -32000, Top = -32000, ShowInTaskbar = false, ShowActivated = false };
             firstWindow.Show();
-            top.Measure(new Size(1600, 64)); top.Arrange(new Rect(0, 0, 1600, 64)); top.UpdateLayout();
+            top.Measure(new Size(1600, 81)); top.Arrange(new Rect(0, 0, 1600, 81)); top.UpdateLayout();
+            if (Environment.GetEnvironmentVariable("SUN_EYE_TOPBAR_CAPTURE") is { Length: > 0 } capturePath)
+            {
+                CaptureTopBar(top, capturePath);
+            }
             var menu = Assert.IsType<Menu>(top.FindName("MainMenu"));
             Assert.Equal(new[] { "文件(_F)", "设置", "工具(_T)", "系统", "帮助(_H)" },
                 menu.Items.Cast<MenuItem>().Select(item => item.Header.ToString()).ToArray());
@@ -104,16 +108,28 @@ public sealed class MainWorkspaceLayoutTests
             Assert.NotNull(top.FindName("UndoHistoryHotspot"));
             Assert.Null(top.FindName("EditHistoryButton"));
             var theme = Assert.IsType<Button>(top.FindName("ThemeToggleButton"));
-            var geometry = Assert.IsType<System.Windows.Shapes.Path>(Assert.IsType<Viewbox>(theme.Content).Child);
+            var themeIcon = Assert.IsType<Viewbox>(theme.Content);
+            Assert.Equal(26, themeIcon.Width); Assert.Equal(26, themeIcon.Height);
+            var geometry = Assert.IsType<System.Windows.Shapes.Path>(themeIcon.Child);
+            Assert.Equal(2.1, geometry.StrokeThickness);
             var darkIcon = geometry.Data.ToString();
             Assert.Equal("切换到浅色主题", theme.ToolTip);
             state.IsDarkTheme = false; top.UpdateLayout();
             Assert.NotEqual(darkIcon, geometry.Data.ToString());
+            Assert.Equal(0, geometry.StrokeThickness); Assert.NotNull(geometry.Fill);
             Assert.Equal("切换到深色主题", theme.ToolTip);
+            if (Environment.GetEnvironmentVariable("SUN_EYE_TOPBAR_CAPTURE") is { Length: > 0 } lightCapture)
+            {
+                var light = new ResourceDictionary { Source = new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml", UriKind.Relative) };
+                app.Resources.MergedDictionaries.Add(light); top.UpdateLayout();
+                CaptureTopBar(top, lightCapture + ".light.png");
+                app.Resources.MergedDictionaries.Remove(light); top.UpdateLayout();
+            }
             var buttons = new List<Button>(); CollectButtons(top, buttons);
             foreach (var iconButton in buttons.Where(button => button.Content is Image))
             {
                 var icon = Assert.IsType<Image>(iconButton.Content);
+                Assert.Equal(36, icon.Width); Assert.Equal(36, icon.Height);
                 Assert.True(Assert.IsAssignableFrom<System.Windows.Media.Imaging.BitmapSource>(icon.Source).PixelWidth > 0);
                 if (!iconButton.IsEnabled) continue;
                 iconButton.IsEnabled = false; top.UpdateLayout();
@@ -146,8 +162,15 @@ public sealed class MainWorkspaceLayoutTests
             Assert.False(continuous.IsEnabled);
             Assert.Contains("toolbarrunrepeat_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
             foreach (var name in new[] { "锁定", "触发", "脚本", "综合配置", "运行界面" })
-                Assert.False(Assert.Single(buttons.Where(b => Equals(b.Content, name))).IsEnabled);
+            {
+                var placeholder = Assert.Single(buttons.Where(b => (b.ToolTip as string)?.StartsWith(name + "：") == true));
+                Assert.False(placeholder.IsEnabled); Assert.IsType<Image>(placeholder.Content);
+                Assert.Equal(36, placeholder.Width); Assert.Equal(36, placeholder.Height);
+            }
             Assert.DoesNotContain(buttons, b => Equals(b.ToolTip, "工作流"));
+            var runMode = Assert.IsType<Button>(top.FindName("RunModeButton"));
+            Assert.False(runMode.IsEnabled); Assert.Null(runMode.Command);
+            Assert.IsType<Image>(Assert.IsType<StackPanel>(runMode.Content).Children[0]);
             var maximize = Assert.IsType<Button>(top.FindName("MaximizeButton"));
             Assert.Equal("最大化", maximize.ToolTip);
             var dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
@@ -231,6 +254,16 @@ public sealed class MainWorkspaceLayoutTests
         empty.IsCompactMode = false;
         empty.Categories[0].IsExpanded = true;
         var toolbox = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl { DataContext = empty };
+        var compact = Assert.IsType<ScrollViewer>(toolbox.FindName("Compact"));
+        var items = Assert.IsType<ItemsControl>(compact.Content);
+        var category = Assert.IsType<Grid>(items.ItemTemplate.LoadContent());
+        category.DataContext = empty.Categories[0];
+        var popup = Assert.Single(category.Children.OfType<Popup>());
+        var setter = Assert.Single(popup.Style.Setters.OfType<Setter>(), x => x.Property == Popup.IsOpenProperty);
+        var mouseBinding = Assert.IsType<System.Windows.Data.Binding>(setter.Value);
+        Assert.Equal(System.Windows.Data.BindingMode.OneWay, mouseBinding.Mode);
+        category.Measure(new Size(52, 50)); category.Arrange(new Rect(0, 0, 52, 50));
+        Assert.False(popup.IsOpen);
         empty.IsCompactMode = true;
         empty.SelectedCategory = "采集";
         Assert.True(empty.IsCompactModePopupOpen);
@@ -271,6 +304,57 @@ public sealed class MainWorkspaceLayoutTests
             Assert.Equal(144, model.AllTools.Count);
             var image = Assert.Single(model.GetCategoryTools("采集"), t => t.ToolId == "ImageLoad");
             Assert.True(image.IsAvailable); Assert.True(image.CanActivate());
+            var canvasHost = new SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl();
+            var previewHandler = new SunEyeVision.UI.Services.Interaction.WorkflowDragDropHandler(canvasHost);
+            var handlerType = previewHandler.GetType();
+            var showPreview = handlerType.GetMethod("ShowTempNode", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var hidePreview = handlerType.GetMethod("HideTempNode", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var canvasA = new Canvas(); var canvasB = new Canvas();
+            showPreview.Invoke(previewHandler, new object[] { image, new Point(100, 100), canvasA });
+            var preview = Assert.IsType<Border>(Assert.Single(canvasA.Children.Cast<UIElement>()));
+            var previewPresenter = Assert.IsType<ContentPresenter>(preview.Child);
+            Assert.Same(Assert.IsType<ItemsControl>(canvasHost.FindName("VmNodeItems")).ItemTemplate, previewPresenter.ContentTemplate);
+            var previewNode = Assert.IsType<SunEyeVision.UI.Shared.WorkflowNode>(previewPresenter.Content);
+            Assert.True(previewNode.IsToolboxPreview); Assert.Equal("图像源", previewNode.DispName);
+            Assert.Equal("ImageLoad", previewNode.ToolType); Assert.False(preview.IsHitTestVisible);
+            hidePreview.Invoke(previewHandler, null);
+            Assert.Equal(Visibility.Collapsed, preview.Visibility);
+            showPreview.Invoke(previewHandler, new object[] { image, new Point(150, 100), canvasA });
+            Assert.Same(preview, Assert.Single(canvasA.Children.Cast<UIElement>()));
+            Assert.Equal(Visibility.Visible, preview.Visibility);
+            showPreview.Invoke(previewHandler, new object[] { image, new Point(200, 100), canvasB });
+            Assert.Empty(canvasA.Children.Cast<UIElement>());
+            Assert.Equal(Visibility.Visible, Assert.IsType<Border>(Assert.Single(canvasB.Children.Cast<UIElement>())).Visibility);
+            var canvasWindow = new Window { Content = canvasHost, Width = 400, Height = 300, Left = -32000, Top = -32000, ShowActivated = false, ShowInTaskbar = false };
+            try
+            {
+                canvasWindow.Show(); canvasWindow.UpdateLayout();
+                var surface = Assert.IsType<Canvas>(canvasHost.FindName("WorkflowCanvas"));
+                showPreview.Invoke(previewHandler, new object[] { image, new Point(150, 100), surface });
+                canvasWindow.UpdateLayout();
+                var actualPreview = surface.Children.OfType<Border>().Single(b => Equals(b.Tag, "ImageLoad"));
+                var presenter = Assert.IsType<ContentPresenter>(actualPreview.Child);
+                var index = Assert.IsType<TextBlock>(presenter.ContentTemplate.FindName("NodeIndexText", presenter));
+                var title = Assert.IsType<TextBlock>(presenter.ContentTemplate.FindName("NodeNameText", presenter));
+                Assert.Equal(Visibility.Collapsed, index.Visibility); Assert.Equal("图像源", title.Text);
+            }
+            finally { canvasWindow.Content = null; canvasWindow.Close(); }
+            var dragEventConstructor = typeof(DragEventArgs).GetConstructor(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                null, new[] { typeof(IDataObject), typeof(DragDropKeyStates), typeof(DragDropEffects), typeof(DependencyObject), typeof(Point) }, null)!;
+            DragEventArgs MakeDrag(Canvas target, RoutedEvent routedEvent)
+            {
+                var args = (DragEventArgs)dragEventConstructor.Invoke(new object[] {
+                    new DataObject("ToolItem", image), DragDropKeyStates.LeftMouseButton, DragDropEffects.Copy, target, new Point(180, 100) });
+                args.RoutedEvent = routedEvent; return args;
+            }
+            previewHandler.Canvas_DragEnter(canvasA, MakeDrag(canvasA, DragDrop.DragEnterEvent));
+            var entered = Assert.IsType<Border>(Assert.Single(canvasA.Children.Cast<UIElement>()));
+            previewHandler.Canvas_DragLeave(canvasA, MakeDrag(canvasA, DragDrop.DragLeaveEvent));
+            Assert.Equal(Visibility.Collapsed, entered.Visibility);
+            var over = MakeDrag(canvasA, DragDrop.DragOverEvent);
+            previewHandler.Canvas_DragOver(canvasA, over);
+            Assert.Equal(DragDropEffects.Copy, over.Effects);
+            Assert.Equal(Visibility.Visible, entered.Visibility);
             var blob = Assert.Single(model.GetCategoryTools("定位"), t => t.ToolId == "BlobAnalysis");
             Assert.False(blob.IsAvailable); Assert.Contains("加载失败", blob.ToolTip);
             var measure = model.GetCategoryTools("测量").Where(t => t.ToolId == "LineCircleMeasure").ToArray();
@@ -288,6 +372,33 @@ public sealed class MainWorkspaceLayoutTests
             var up = hostType.GetMethod("ToolUp", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
             var armed = hostType.GetField("_tool", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
             var pointer = new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0, System.Windows.Input.MouseButton.Left);
+            var openCategory = hostType.GetMethod("Open", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var acquisition = model.Categories.Single(c => c.Name == "采集");
+            var retainedTools = acquisition.Tools;
+            var categoryElement = new Grid { Tag = acquisition };
+            openCategory.Invoke(host, new object[] { categoryElement });
+            Assert.Same(retainedTools, acquisition.Tools);
+            var drag = hostType.GetMethod("StartToolDrag", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var beginDrag = hostType.GetProperty("BeginDrag", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var dragSource = new Border { Tag = image };
+            var calls = 0;
+            beginDrag.SetValue(host, (Func<DependencyObject, object, DragDropEffects, DragDropEffects>)((source, data, effect) => {
+                calls++; Assert.Same(dragSource, source); Assert.True(host.IsDragging);
+                Assert.Equal("采集", model.SelectedCategory);
+                Assert.Same(image, Assert.IsType<DataObject>(data).GetData("ToolItem"));
+                Assert.Equal(DragDropEffects.Copy, effect); return DragDropEffects.None;
+            }));
+            drag.Invoke(host, new object[] { dragSource, image });
+            Assert.Equal(1, calls); Assert.False(host.IsDragging); Assert.Null(model.SelectedCategory);
+            model.SelectedCategory = "采集";
+            drag.Invoke(host, new object[] { dragSource, image });
+            Assert.Equal(2, calls); Assert.False(host.IsDragging); Assert.Null(model.SelectedCategory);
+            model.SelectedCategory = "采集";
+            beginDrag.SetValue(host, (Func<DependencyObject, object, DragDropEffects, DragDropEffects>)((_, _, _) => throw new InvalidOperationException("模拟拖动失败")));
+            drag.Invoke(host, new object[] { dragSource, image });
+            Assert.False(host.IsDragging); Assert.Null(model.SelectedCategory);
+            down.Invoke(host, new object[] { new Border { Tag = blob }, pointer }); Assert.Null(armed.GetValue(host));
+            down.Invoke(host, new object[] { new Border { Tag = image }, pointer }); Assert.Same(image, armed.GetValue(host));
             down.Invoke(host, new object[] { new Border { Tag = blob }, pointer }); Assert.Null(armed.GetValue(host));
             down.Invoke(host, new object[] { new Border { Tag = image }, pointer }); Assert.Same(image, armed.GetValue(host));
             up.Invoke(host, new object[] { host, pointer }); Assert.Null(armed.GetValue(host));
@@ -327,6 +438,14 @@ public sealed class MainWorkspaceLayoutTests
         public void Execute(object? parameter) => ExecutionCount++;
         public event EventHandler? CanExecuteChanged;
         public void Notify() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+    private static void CaptureTopBar(FrameworkElement top, string path)
+    {
+        var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(1600, 81, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+        bitmap.Render(top);
+        var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+        encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+        using var stream = File.Create(path); encoder.Save(stream);
     }
     private static void CollectButtons(DependencyObject node, List<Button> buttons)
     {

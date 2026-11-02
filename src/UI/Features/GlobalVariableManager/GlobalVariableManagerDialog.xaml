@@ -532,7 +532,7 @@
                                     VerticalContentAlignment="Center"
                                     Command="{Binding DataContext.OpenTargetParameterCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                     CommandParameter="{Binding}"
-                                    ToolTip="点击管理目标参数">
+                                    ToolTip="正式目标参数绑定尚未接入，暂不可用">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <ContentPresenter HorizontalAlignment="Left"

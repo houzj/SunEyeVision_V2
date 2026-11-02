@@ -9,6 +9,7 @@ using System.Diagnostics;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
+using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 using SunEyeVision.UI.Features.GlobalVariableManager;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Shell.Controls.Shell;
@@ -197,19 +198,21 @@ public sealed class ResultVariableBindingProductionTests
             var windows=Application.Current.Windows.Cast<Window>().Where(window=>!expected.Contains(window)&&window.IsVisible).ToArray();
             try
             {
-                var unexpected=windows.FirstOrDefault(window=>window is not GlobalVariableSelectDialog);
+                var unexpected=windows.FirstOrDefault(window=>window is not VariableSelectionDialog);
                 if(unexpected is not null)
                 {
                     failure=new InvalidOperationException("正式操作出现非预期对话框："+unexpected.GetType().Name+" / "+unexpected.Title+" / "+string.Join(" | ",Texts(unexpected)));
                     unexpected.Close();return;
                 }
-                if(!invoked&&windows.OfType<GlobalVariableSelectDialog>().FirstOrDefault(dialog=>dialog.IsLoaded) is {} dialog)
+                if(!invoked&&windows.OfType<VariableSelectionDialog>().FirstOrDefault(dialog=>dialog.IsLoaded) is {} dialog)
                 {
                     invoked=true;
                     if(cancel){dialog.Close();return;}
-                    var picker=Assert.IsType<GlobalVariableSelectViewModel>(dialog.DataContext);
-                    Assert.Contains(variable,picker.FilteredVariables);picker.SelectedVariable=variable;
-                    beforeAccept?.Invoke();Assert.True(picker.AcceptCommand.CanExecute(null));picker.AcceptCommand.Execute(null);
+                    var item=Assert.Single(dialog.BindItems.Where(candidate=>candidate.Reference.VariableId==variable.Id));
+                    var picker=Assert.IsType<ListView>(dialog.FindName("globalVarList"));picker.SelectedItem=item;
+                    beforeAccept?.Invoke();
+                    typeof(VariableSelectionDialog).GetMethod("Confirm_Click",BindingFlags.Instance|BindingFlags.NonPublic)!
+                        .Invoke(dialog,new object[]{dialog,new RoutedEventArgs()});
                 }
                 if(watch.Elapsed>TimeSpan.FromSeconds(10))
                 {

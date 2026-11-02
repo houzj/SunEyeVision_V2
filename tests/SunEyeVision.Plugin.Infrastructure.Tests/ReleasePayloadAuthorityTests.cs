@@ -2,7 +2,8 @@ using System.Reflection;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
-using SunEyeVision.Core.Versioning;
+using SunEyeVision.Foundation.Versioning;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using Xunit;
 
@@ -13,7 +14,7 @@ public sealed class ReleasePayloadAuthorityTests
     [Theory]
     [InlineData("sourceCommit")]
     [InlineData("artifactVersion")]
-    public void Nonempty_header_conflicting_with_approved_actual_Core_is_rejected(string field)
+    public void Nonempty_header_conflicting_with_approved_actual_Foundation_is_rejected(string field)
     {
         using var fixture=new PayloadFixture();
         var path=Path.Combine(fixture.Root,"release-payload.json");
@@ -39,10 +40,10 @@ public sealed class ReleasePayloadAuthorityTests
     [InlineData("missing")]
     [InlineData("bytes")]
     [InlineData("identity")]
-    public void Product_anchor_must_approve_the_actual_Default_Core_identity_and_bytes(string corruption)
+    public void Product_anchor_must_approve_the_actual_Default_Foundation_identity_and_bytes(string corruption)
     {
         using var fixture=new PayloadFixture();
-        var core=Path.Combine(fixture.Root,"SunEyeVision.Core.dll");
+        var core=Path.Combine(fixture.Root,"SunEyeVision.Foundation.dll");
         if(corruption=="bytes")File.AppendAllText(core,"different-approved-copy");
         if(corruption=="identity")File.Copy(typeof(SunEyeVision.Plugin.SDK.Core.ToolAttribute).Assembly.Location,core,true);
         fixture.Write();
@@ -92,7 +93,7 @@ public sealed class ReleasePayloadAuthorityTests
     {
         using var fixture=new PayloadFixture();
         var authority=new ReleasePayloadAuthority(fixture.Root+Path.DirectorySeparatorChar);
-        authority.VerifyPlugin(fixture.Plugin);
+        authority.VerifyApprovedFile(fixture.Plugin);
         Assert.Single(authority.ExpectedTools);
     }
     [Theory]
@@ -148,7 +149,7 @@ public sealed class ReleasePayloadAuthorityTests
         using var fixture=new PayloadFixture();
         var path=Path.Combine(fixture.Root,"release-payload.json");
         var payload=System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
-        var asset=new {payloadPath="plugins/Probe/Probe.dll",runtimePath=corruption=="path"?"../escape.dll":"runtimes/win-x64/lib/net9.0/Probe.dll",
+        var asset=new {payloadPath="Probe.dll",runtimePath=corruption=="path"?"../escape.dll":"runtimes/win-x64/lib/net9.0/Probe.dll",
             packId=corruption=="pack"?"Arbitrary.Package":"Microsoft.NETCore.App.Runtime.win-x64",packVersion="9.0.20",
             assemblyIdentity=corruption=="identity"?"Incorrect, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null":AssemblyName.GetAssemblyName(fixture.Plugin).FullName};
         payload["runtimeFrameworks"]=JsonSerializer.SerializeToNode(new {deploymentMode="selfContained",frameworks=new[]{new{name="Microsoft.NETCore.App",version="9.0.20",managedAssets=corruption=="empty"?Array.Empty<object>():new object[]{asset}}}});
@@ -170,11 +171,11 @@ public sealed class ReleasePayloadAuthorityTests
     {
         using var fixture=new PayloadFixture();
         var authority=new ReleasePayloadAuthority(fixture.Root);
-        authority.VerifyPlugin(fixture.Plugin);
+        authority.VerifyApprovedFile(fixture.Plugin);
         var unlisted=Path.Combine(fixture.Root,"extra.dll");File.Copy(fixture.Plugin,unlisted);
         Assert.Throws<InvalidDataException>(()=>authority.VerifyApprovedFile(unlisted));
         File.AppendAllText(fixture.Plugin,"changed-after-approval");
-        Assert.Throws<InvalidDataException>(()=>authority.VerifyPlugin(fixture.Plugin));
+        Assert.Throws<InvalidDataException>(()=>authority.VerifyApprovedFile(fixture.Plugin));
     }
 
     [Theory]
@@ -203,23 +204,23 @@ public sealed class ReleasePayloadAuthorityTests
     private sealed class PayloadFixture : IDisposable
     {
         internal string Root{get;}=Path.Combine(Path.GetTempPath(),"SunEyeVision-A11-"+Guid.NewGuid().ToString("N"));
-        internal string Plugin=>Path.Combine(Root,"plugins","Probe","Probe.dll");
-        internal PayloadFixture(){Directory.CreateDirectory(Path.GetDirectoryName(Plugin)!);File.Copy(typeof(ReleasePayloadAuthorityTests).Assembly.Location,Plugin);File.Copy(typeof(AppVersionInfo).Assembly.Location,Path.Combine(Root,"SunEyeVision.Core.dll"));Write();}
+        internal string Plugin=>Path.Combine(Root,"Probe.dll");
+        internal PayloadFixture(){Directory.CreateDirectory(Path.GetDirectoryName(Plugin)!);File.Copy(typeof(ReleasePayloadAuthorityTests).Assembly.Location,Plugin);File.Copy(typeof(AppVersionInfo).Assembly.Location,Path.Combine(Root,"SunEyeVision.Foundation.dll"));Write();}
         internal void Write(string? corruption=null)
         {
-            var tool=new Dictionary<string,object?>{{"id","Probe"},{"typeName","Probe.Tool"}};
-            var tools=new List<object>{tool};if(corruption=="duplicate-tool")tools.Add(tool);
+            var component=new Dictionary<string,object?>{{"componentId","test.runtime"},{"toolId","Probe"},{"role","Runtime"},{"contractMajor",FoundationContract.Major},{"contractMinor",FoundationContract.Minor},{"entryType","Probe.Tool"},{"companionToolId",null}};
+            var components=new List<object>{component};if(corruption=="duplicate-tool")components.Add(component);
             var entry=new Dictionary<string,object?>{
-                {"path",corruption=="escape"?"../escape.dll":"plugins/Probe/Probe.dll"},
+                {"path",corruption=="escape"?"../escape.dll":"Probe.dll"},
                 {"sha256",Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Plugin)))},
                 {"assemblyIdentity",corruption=="identity"?"Different, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null":AssemblyName.GetAssemblyName(Plugin).FullName},
-                {"tools",tools}};
-            var core=Path.Combine(Root,"SunEyeVision.Core.dll");
-            var coreEntry=new Dictionary<string,object?>{{"path","SunEyeVision.Core.dll"},{"sha256",Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(core)))},{"assemblyIdentity",AssemblyName.GetAssemblyName(core).FullName}};
+                {"components",components}};
+            var core=Path.Combine(Root,"SunEyeVision.Foundation.dll");
+            var coreEntry=new Dictionary<string,object?>{{"path","SunEyeVision.Foundation.dll"},{"sha256",Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(core)))},{"assemblyIdentity",AssemblyName.GetAssemblyName(core).FullName}};
             var entries=new List<object>{entry,coreEntry};if(corruption=="duplicate-path")entries.Add(entry);
             var payload=new Dictionary<string,object?>{
-                {"payloadSchemaVersion",corruption=="schema"?2:1},{"buildId","A11-owned-fixture"},{"sourceCommit",AppVersionInfo.Commit},{"artifactVersion",AppVersionInfo.Product+(AppVersionInfo.Channel=="stable"?"":"_"+AppVersionInfo.Channel)},
-                {"expectedPluginAssemblies",new[]{"Probe"}},{"entries",entries},
+                {"payloadSchemaVersion",corruption=="schema"?1:2},{"buildId","A11-owned-fixture"},{"sourceCommit",AppVersionInfo.Commit},{"artifactVersion",AppVersionInfo.Product+(AppVersionInfo.Channel=="stable"?"":"_"+AppVersionInfo.Channel)},
+                {"productComponents",new[]{new{componentId="test.runtime",toolId="Probe",role="Runtime",entryType="Probe.Tool",path="Probe.dll",companionToolId=""}}},{"entries",entries},
                 {"runtimeFrameworks",new{deploymentMode=corruption=="unknown-framework-mode"?"guessed":"frameworkDependent",frameworks=new[]{new{name="Microsoft.NETCore.App",version="9.0.0"},new{name="Microsoft.WindowsDesktop.App",version="9.0.0"}}}}};
             if(corruption=="missing-frameworks")payload.Remove("runtimeFrameworks");
             File.WriteAllText(Path.Combine(Root,"release-payload.json"),JsonSerializer.Serialize(payload));

@@ -12,12 +12,15 @@ public partial class ToolboxControl : UserControl
     public static readonly DependencyProperty PointerLeftProperty = DependencyProperty.RegisterAttached("PointerLeft", typeof(bool), typeof(ToolboxControl), new PropertyMetadata(true));
     public static void SetPointerLeft(DependencyObject target, bool value)=>target.SetValue(PointerLeftProperty,value);
     public static bool GetPointerLeft(DependencyObject target)=>(bool)target.GetValue(PointerLeftProperty);
+    public static readonly DependencyProperty IsDraggingProperty = DependencyProperty.Register(nameof(IsDragging), typeof(bool), typeof(ToolboxControl), new PropertyMetadata(false));
+    public bool IsDragging { get => (bool)GetValue(IsDraggingProperty); private set => SetValue(IsDraggingProperty, value); }
     private readonly HashSet<FrameworkElement> _categories = new();
     private ToolboxViewModel? Model=>DataContext as ToolboxViewModel;
     private Border? _armed;
     private ToolItem? _tool;
     private bool _dragging;
     private Window? _window;
+    internal Func<DependencyObject,object,DragDropEffects,DragDropEffects> BeginDrag { get; set; } = DragDrop.DoDragDrop;
     public ToolboxControl()
     {
         InitializeComponent(); Loaded+=OnLoaded; Unloaded+=OnUnloaded;
@@ -40,7 +43,7 @@ public partial class ToolboxControl : UserControl
     private void WindowDeactivated(object? sender,EventArgs e){if(!_dragging)Close();}
     private void ResetCategories(){foreach(var item in _categories)SetPointerLeft(item,true);_categories.Clear();}
     private void ModelChanged(object? sender,PropertyChangedEventArgs e){if(e.PropertyName==nameof(ToolboxViewModel.IsCompactMode)&&sender is ToolboxViewModel {IsCompactMode:false})ResetCategories();}
-    private void Close(){ResetCategories();Model?.ClosePopup();}
+    private void Close(){if(!_dragging){_armed=null;_tool=null;}ResetCategories();Model?.ClosePopup();}
     private void CategoryEnter(object sender,MouseEventArgs e)=>Open(sender);
     private void CategoryFocus(object sender,KeyboardFocusChangedEventArgs e)=>Open(sender);
     private void Open(object sender)
@@ -49,7 +52,9 @@ public partial class ToolboxControl : UserControl
         foreach(var item in _categories)if(!ReferenceEquals(item,sender))SetPointerLeft(item,true);
         _categories.Add((FrameworkElement)sender);
         SetPointerLeft((FrameworkElement)sender,false);
-        model.SelectedCategory=category.Name;
+        // Routed focus/enter can revisit the same category while a tile is in use.
+        // Replacing its collection would detach the pending drag source.
+        if(!string.Equals(model.SelectedCategory,category.Name,StringComparison.Ordinal))model.SelectedCategory=category.Name;
     }
     private void CategoryLeave(object sender,MouseEventArgs e)
     {
@@ -60,7 +65,7 @@ public partial class ToolboxControl : UserControl
     // 原件以工具箱根控件 IsMouseOver 控制整个分类弹窗会话。
     private void ToolboxLeave(object sender,MouseEventArgs e){if(!_dragging&&!IsMouseOver)Close();}
     private void ToolDown(object sender,MouseButtonEventArgs e)
-    { if(sender is Border {Tag:ToolItem {IsAvailable:true} tool} border && tool.CanActivate()){_armed=border;_tool=tool;} }
+    { _armed=null;_tool=null;if(sender is Border {Tag:ToolItem {IsAvailable:true} tool} border && tool.CanActivate()){_armed=border;_tool=tool;} }
     private void ToolUp(object sender,MouseButtonEventArgs e){_armed=null;_tool=null;}
     private void ToolLostCapture(object sender,MouseEventArgs e){if(!_dragging){_armed=null;_tool=null;}}
     private void ToolMove(object sender,MouseEventArgs e)
@@ -69,14 +74,18 @@ public partial class ToolboxControl : UserControl
         if(!ReferenceEquals(sender,_armed)){_armed=null;_tool=null;return;}
         var source=_armed;var tool=_tool;_armed=null;_tool=null;
         if(!tool.CanActivate()||e.LeftButton!=MouseButtonState.Pressed)return;
-        _dragging=true;
+        StartToolDrag(source,tool);
+    }
+    private void StartToolDrag(Border source,ToolItem tool)
+    {
+        if(_dragging||!tool.CanActivate())return;
+        _dragging=true; IsDragging=true;
         try
         {
-            Close();
             // 保留现行画布的ToolItem新增事务；程序集创建失败由该事务回滚和诊断。
-            DragDrop.DoDragDrop(source,new DataObject("ToolItem",tool),DragDropEffects.Copy);
+            BeginDrag(source,new DataObject("ToolItem",tool),DragDropEffects.Copy);
         }
         catch(Exception ex){VisionLogger.Instance.Log(LogLevel.Error,"工具拖动失败："+tool.Name,"Toolbox",ex);}
-        finally{_dragging=false;_armed=null;_tool=null;Close();}
+        finally{IsDragging=false;_dragging=false;_armed=null;_tool=null;Close();}
     }
 }

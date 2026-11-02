@@ -23,7 +23,9 @@ public sealed partial class NativeResultViewport
                 var words=NativeShapeProjection.Texts(texts,owner.ShapeBudget);
                 if(!current())throw new NativeProjectionRetiredException();
                 var regions=NativeRoiResultProjection.Prepare(receipt,roi??Array.Empty<NativeRoiResultOverlay>(),owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,current);
-                return new PreparedNativeShapes(shapes.Items.Concat(regions.Items).Concat(words.Items).ToArray(),checked(shapes.Count+regions.Count+words.Count),checked(shapes.Vertices+regions.Vertices));
+                var items=shapes.Items.Concat(regions.Items).Concat(words.Items).ToArray();
+                return new PreparedNativeShapes(items,checked(shapes.Count+regions.Count+words.Count),checked(shapes.Vertices+regions.Vertices),
+                    NativeShapeProjection.Presentation(items,owner._view));
             });
     }
 }

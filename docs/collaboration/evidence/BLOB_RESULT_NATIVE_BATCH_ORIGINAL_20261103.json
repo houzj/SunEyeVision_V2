@@ -1,0 +1,21 @@
+{
+  "kind": "已有托管反编译与静态交付，非原机运行",
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-批量绘制命中与结果来源补证-20261103.md",
+      "sha256": "9028CAFEED2E87C5854BFB28CAFF789D50A4F53982533A47FCB988D285FA800D"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\DrawShapeHelper.cs",
+      "sha256": "4F769A1D959E137CB5743FD1E793B2D28D936A20DBE073C744BC1D1A88CA2635"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ShapeItemsPage.cs",
+      "sha256": "757A42264784EEA6F326878AA594FCFC11B17A34724C2F7C1FB64EC8D2106398"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "E165657162322FD6B1CE15758847BED07F8C1E86A637815DF8E87FE19439BB88"
+    }
+  ]
+}

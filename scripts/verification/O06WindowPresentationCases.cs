@@ -52,6 +52,21 @@ internal static class S2DocumentEditingCases
  static void Require(bool value,string message){if(!value)throw new Exception(message);}
  static void Test(string name,Action run){var filter=Environment.GetEnvironmentVariable("O06_WINDOW_CASE_FILTER");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;try{run();passed++;Console.WriteLine("PASS "+name);}catch(Exception e){failed++;Console.WriteLine("FAIL "+name+": "+e);}}
  static void Pump()=>Dispatcher.CurrentDispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+ static object NativeToolTipService()
+ {
+  var type=typeof(ToolTip).Assembly.GetType("System.Windows.Controls.PopupControlService",true)!;
+  return type.GetProperty("Current",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+ }
+ static ToolTip OpenNativeServiceToolTip(FrameworkElement target)
+ {
+  var service=NativeToolTipService();service.GetType().GetMethod("ShowToolTip",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.Invoke(service,new object[]{target,false});Pump();
+  var tip=(ToolTip)target.ToolTip;
+  Require(tip.IsOpen&&ReferenceEquals(tip.PlacementTarget,target),"WPF提示服务未打开或实际目标不是原画布");return tip;
+ }
+ static void DismissNativeServiceToolTip()
+ {
+  var service=NativeToolTipService();service.GetType().GetMethod("DismissToolTips",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.Invoke(service,null);Pump();
+ }
  sealed class ColorLifetimeDraft : IToolSettingsDraft
  {
   public static IReadOnlyList<NativeGraphicDisplayOptions> Graphics {get;}=new[]{new NativeGraphicDisplayOptions("shape","visible","rgba","ng","opacity","width")};
@@ -621,31 +636,112 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyNativeResultRaster()
  {
+  Test("原结果视口批量提示经WPF服务打开后清空换帧退场关闭",()=>
+  {
+   foreach(var operation in new[]{"清空","换帧","换场景","关闭"})
+   {
+    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(64,64,new byte[4096]);using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();var receipt=viewport.CurrentFrame!;
+    using var scene=viewport.CreateDisplaySceneLayer();var rows=new[]{new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(24,24),20,16,0),Colors.Lime,2,IncludeMeasurements:true)};
+    Require(scene.Present(receipt,1,rows,Array.Empty<NativeTextOverlay>(),()=>true),"场景未接纳");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+    var canvas=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(native).Single(item=>VisualTreeHelper.GetChildrenCount(item)>0);var hit=VisualTreeHelper.HitTest(canvas,new Point(24*native.ControlToImageRadio,16*native.ControlToImageRadio));Require(hit is not null,"原画布未命中");canvas.MyCallback(hit!);
+    var tip=OpenNativeServiceToolTip(canvas);
+    try
+    {
+     Require(tip.IsOpen&&tip.Content is string text&&text.StartsWith("CenterX:24,",StringComparison.Ordinal),"原提示程序打开或绑定失败");
+     switch(operation){case "清空":scene.Clear();break;case "换帧":Require(viewport.BindImage(resources.CreateGray8(64,64,new byte[4096]),()=>true),"新图未接纳");break;case "换场景":Require(scene.Present(receipt,2,rows,Array.Empty<NativeTextOverlay>(),()=>true),"新场景未接纳");break;default:viewport.Dispose();break;}
+     Pump();Require(!tip.IsOpen,"旧提示在"+operation+"后仍打开");
+    }
+    finally{DismissNativeServiceToolTip();Pump();}
+   }
+  });
+  Test("原结果视口批量提示关闭回调重入新帧不清新场景",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(64,64,new byte[4096]);var b=resources.CreateGray8(64,64,new byte[4096]);using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(a,()=>true),"A未接纳");Pump();var receipt=viewport.CurrentFrame!;
+   using var scene=viewport.CreateDisplaySceneLayer();Require(scene.Present(receipt,1,new[]{new NativeGeometryOverlay(a.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(24,24),20,16,0),Colors.Lime,2,IncludeMeasurements:true)},Array.Empty<NativeTextOverlay>(),()=>true),"A场景未接纳");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var canvas=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(native).Single(item=>VisualTreeHelper.GetChildrenCount(item)>0);canvas.MyCallback(VisualTreeHelper.HitTest(canvas,new Point(24*native.ControlToImageRadio,16*native.ControlToImageRadio))!);var tip=OpenNativeServiceToolTip(canvas);
+   NativeResultViewport.DisplaySceneLayer? next=null;var fired=false;
+   RoutedEventHandler closed=(_,_)=>{if(fired)return;fired=true;Require(viewport.BindImage(b,()=>true),"B未接纳");var current=viewport.CurrentFrame!;next=viewport.CreateDisplaySceneLayer();Require(next.Present(current,1,new[]{new NativeGeometryOverlay(b.Frame,new OrientedRectangleGeometry(current.Coordinates,new(40,40),8,8,0),Colors.Blue,2,IncludeMeasurements:true)},Array.Empty<NativeTextOverlay>(),()=>true),"B场景未接纳");};tip.Closed+=closed;
+   try
+   {
+    scene.Clear();Pump();scene.Dispose();Pump();
+    Console.WriteLine("TIP_CLOSED_BEFORE_WAIT fired="+fired+" open="+tip.IsOpen+" sameOldTarget="+ReferenceEquals(tip.PlacementTarget,canvas));
+    Require(PumpUntil(()=>fired,3000),"WPF服务Closed事件在限定时间内未到达");
+    Require((!tip.IsOpen||!ReferenceEquals(tip.PlacementTarget,canvas))&&viewport.CurrentFrame?.Frame==b.Frame,"旧提示仍占旧目标或破坏新帧");
+    var tuple=native.ShapeList!.OfType<Tuple<string,object>>().Single();Require(tuple.Item2 is List<object> rows&&rows.Single() is Native.Dependencies.VMControls.RenderInterface.IRectangle rect&&rect.CenterPoint==new Point(40,40),"旧清理覆盖重入安装的新结果场景");
+   }
+   finally{tip.Closed-=closed;DismissNativeServiceToolTip();next?.Dispose();}
+  });
+  Test("原结果视口批量提示关闭属性通知同帧新建或重用图层不被旧清理覆盖",()=>
+  {
+   foreach(var reuse in new[]{false,true})
+   {
+    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(64,64,new byte[4096]);var b=resources.CreateGray8(64,64,new byte[4096]);using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(a,()=>true),"A未接纳");Pump();var receipt=viewport.CurrentFrame!;
+    using var scene=viewport.CreateDisplaySceneLayer();Require(scene.Present(receipt,1,new[]{new NativeGeometryOverlay(a.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(24,24),20,16,0),Colors.Lime,2,IncludeMeasurements:true)},Array.Empty<NativeTextOverlay>(),()=>true),"A场景未接纳");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+    var canvas=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(native).Single(item=>VisualTreeHelper.GetChildrenCount(item)>0);canvas.MyCallback(VisualTreeHelper.HitTest(canvas,new Point(24*native.ControlToImageRadio,16*native.ControlToImageRadio))!);var tip=OpenNativeServiceToolTip(canvas);
+    NativeResultViewport.DisplaySceneLayer? next=null;var fired=false;
+    var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(ToolTip.IsOpenProperty,typeof(ToolTip))!;
+    EventHandler changed=(_,_)=>{if(tip.IsOpen||fired)return;fired=true;var current=viewport.CurrentFrame!;Require(current.Frame==b.Frame,"回调未处于已接纳的新帧");next=reuse?scene:viewport.CreateDisplaySceneLayer();Require(next.Present(current,2,new[]{new NativeGeometryOverlay(b.Frame,new OrientedRectangleGeometry(current.Coordinates,new(40,40),8,8,0),Colors.Blue,2,IncludeMeasurements:true)},Array.Empty<NativeTextOverlay>(),()=>true),"同帧回调发布失败");};descriptor.AddValueChanged(tip,changed);
+    try
+    {
+     Require(viewport.BindImage(b,()=>true)&&fired&&native.ShapeList is not null,"旧退休流程同步清空同帧回调的新图层");Pump();if(!reuse)scene.Dispose();Pump();
+     var tuple=native.ShapeList!.OfType<Tuple<string,object>>().Single();Require(tuple.Item2 is List<object> rows&&rows.Single() is Native.Dependencies.VMControls.RenderInterface.IRectangle rect&&rect.CenterPoint==new Point(40,40),"旧退休流程清掉同帧新语义或安装状态");
+    }
+    finally{descriptor.RemoveValueChanged(tip,changed);DismissNativeServiceToolTip();if(!reuse)next?.Dispose();}
+   }
+  });
+  Test("原结果视口批量分组仍按语义总量准入且拒绝后可恢复",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(64,64,new byte[4096]);
+   using var viewport=new NativeResultViewport(shapeLimits:new(MaximumShapes:4,MaximumPolygonVertices:3));Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();var receipt=viewport.CurrentFrame!;
+   var rows=new[]{
+    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(10,10),6,6,0),Colors.Lime,2,IncludeMeasurements:true),
+    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(25,10),6,6,0),Colors.Lime,2,IncludeMeasurements:true),
+    new NativeGeometryOverlay(image.Frame,new PolygonGeometry(receipt.Coordinates,new[]{new Point2(30,30),new Point2(40,30),new Point2(35,40)}),Colors.Red,2)};
+   var words=new[]{new NativeTextOverlay("A",new(0,48),10,Colors.Blue,1)};using var scene=viewport.CreateDisplaySceneLayer();
+   Require(scene.Present(receipt,1,rows,words,()=>true),"语义4项恰好预算被拒");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Require(native.ShapeList!.Count==3&&native.ShapeList.OfType<Tuple<string,object>>().Count()==2,"未形成原矩形/多边形分组及文字");var batch=native.ShapeList[0];
+   using var selected=viewport.CreateSelectionLayer();var point=new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(50,50)),Colors.Orange);
+   var rejected=false;try{selected.Present(receipt,1,new[]{point},()=>true);}catch(ArgumentException error){rejected=error.Message.Contains("shape-budget");}
+   Require(rejected&&native.ShapeList.Cast<object>().Any(item=>ReferenceEquals(item,batch)),"用Tuple数替代语义数绕过跨层预算或误清常驻场景");
+   rejected=false;try{scene.Present(receipt,2,rows.Append(point).ToArray(),words,()=>true);}catch(ArgumentException error){rejected=error.Message.Contains("shape-budget");}
+   Require(rejected&&native.ShapeList is null,"超限场景未整体拒绝或保留截断绘制");
+   Require(selected.Present(receipt,2,new[]{point},()=>true)&&native.ShapeList!.Count==1&&native.ShapeList[0] is Native.Dependencies.VMControls.RenderInterface.IPoint,"拒绝后独立层无法重新接入或选择被打包");
+  });
+  Test("原结果视口批量导出使用实际Tuple画布并冻结结果",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(64,64,new byte[4096]);
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();var receipt=viewport.CurrentFrame!;using var scene=viewport.CreateDisplaySceneLayer();
+   Require(scene.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(24,24),20,16,0),Colors.Lime,2)},Array.Empty<NativeTextOverlay>(),()=>true),"场景未接纳");Pump();
+   var method=typeof(NativeResultViewport).GetMethod("PrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!;var bitmap=(BitmapSource)method.Invoke(viewport,new object[]{true})!;
+   Require(bitmap.IsFrozen&&bitmap.PixelWidth==64&&bitmap.PixelHeight==64,"原批量导出未冻结或尺寸错误");var converted=new FormatConvertedBitmap(bitmap,PixelFormats.Bgra32,null,0);var pixels=new byte[64*64*4];converted.CopyPixels(pixels,256,0);
+   Require(Enumerable.Range(0,4096).Any(index=>pixels[index*4+1]>100&&pixels[index*4]<20&&pixels[index*4+2]<20),"实际Tuple未进入原画布导出，只得到黑背景");
+   var copy=pixels.ToArray();scene.Clear();viewport.Dispose();converted.CopyPixels(pixels,256,0);Require(copy.SequenceEqual(pixels),"场景退役改变已冻结批量导出");
+  });
   Test("原结果视口ROI提示叠层真实命中与绘制退场保新租约",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
    var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(40,40),new(160,140))));using var session=model.Open();
    using var viewport=new NativeResultViewport();viewport.View.Width=500;viewport.View.Height=380;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();var receipt=viewport.CurrentFrame!;
-   using var layer=viewport.CreateGeometryLayer();Require(layer.Present(receipt,1,new[]{
+   using var layer=viewport.CreateDisplaySceneLayer();Require(layer.Present(receipt,1,new[]{
     new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(220,100),40,40,0),Colors.Lime,2,IncludeMeasurements:true),
-    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(100,100),40,40,0),Colors.Lime,2,IncludeMeasurements:true)},()=>true),"结果矩形未接纳");Pump();
+    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(100,100),40,40,0),Colors.Lime,2,IncludeMeasurements:true)},Array.Empty<NativeTextOverlay>(),()=>true),"结果矩形未接纳");Pump();
    var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
-   Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape Rect(double x)=>Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(native).Single(shape=>shape.ToolTip is ToolTip tip&&tip.Content is string text&&text.StartsWith($"CenterX:{x},",StringComparison.Ordinal));
+   Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas Canvas()=>Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(native).Single(canvas=>VisualTreeHelper.GetChildrenCount(canvas)>0);
    DependencyObject? Hit(double x)
    {
-    native.UpdateLayout();Pump();var shape=Rect(x);var ratio=native.ControlToImageRadio;
-    return native.InputHitTest(shape.TranslatePoint(new Point(x*ratio,80*ratio),native)) as DependencyObject;
+    native.UpdateLayout();Pump();var canvas=Canvas();var ratio=native.ControlToImageRadio;
+    return native.InputHitTest(canvas.TranslatePoint(new Point(x*ratio,80*ratio),native)) as DependencyObject;
    }
    bool Within<T>(DependencyObject? item)where T:DependencyObject
    {while(item is not null){if(item is T)return true;item=VisualTreeHelper.GetParent(item);}return false;}
-   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"真实结果轮廓不可命中");
+   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(Hit(220)),"真实结果轮廓不可命中");
    var first=viewport.BeginRoiEditing(receipt,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();
-   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"不重叠结果被ROI整页拦截");
+   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(Hit(220)),"不重叠结果被ROI整页拦截");
    Require(Within<Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase>(Hit(100)),"原上层ROI拖动区域被结果图形抢占");
    Require(session.BeginDraw("rectangle") is not null&&!native.ShapeHitTestVisible,"绘制准备仍允许结果命中");session.CancelDraw();Pump();
-   Require(native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"绘制取消未恢复结果命中");
+   Require(native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(Hit(220)),"绘制取消未恢复结果命中");
    using var next=viewport.BeginRoiEditing(receipt,session,()=>true);first.Dispose();Pump();
-   Require(next.IsCurrent&&native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"旧租约清理破坏新会话结果命中");
+   Require(next.IsCurrent&&native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas>(Hit(220)),"旧租约清理破坏新会话结果命中");
   });
   Test("原结果视口ROI借帧与结果文字共存并独立退场",()=>
   {

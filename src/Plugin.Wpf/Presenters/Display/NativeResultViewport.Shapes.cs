@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Display;
@@ -63,6 +64,26 @@ public sealed partial class NativeResultViewport
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
         { var child = VisualTreeHelper.GetChild(root, i); if (child is T value) yield return value; foreach (var item in Descendants<T>(child)) yield return item; }
     }
+    // Host lifetime protection: native tips may also be opened programmatically.
+    // Capture the retiring page only; a Closed callback may install a new scene.
+    private static bool CloseShapeToolTips(ShapeItemsPage? page, Func<bool> current)
+    {
+        if (page is null) return current();
+        var tips = Descendants<FrameworkElement>(page)
+            .Select(item => (Target: item, Tip: item.ToolTip as ToolTip))
+            .Where(item => item.Tip is { IsOpen: true } && ReferenceEquals(item.Tip.PlacementTarget, item.Target))
+            .Distinct().ToArray();
+        var failures = new List<Exception>();
+        foreach (var tip in tips)
+        {
+            // A native style may share a ToolTip. Never close it after it has
+            // been retargeted to a newer canvas by an external Closed observer.
+            try { if (ReferenceEquals(tip.Tip!.PlacementTarget, tip.Target) && tip.Tip.IsOpen) tip.Tip.SetCurrentValue(ToolTip.IsOpenProperty, false); }
+            catch (Exception error) { failures.Add(error); }
+        }
+        if (failures.Count != 0) throw new AggregateException("原结果提示退场失败。", failures);
+        return current();
+    }
     private void ShapesChanged()
     { ++_shapeVersion; InstallShapes(false); QueueRefresh(); }
     private void MutableShapeChanged()
@@ -101,8 +122,11 @@ public sealed partial class NativeResultViewport
             var context = (Width: page?.ImageSourceWidth ?? 0, Height: page?.ImageSourceHeight ?? 0,
                 Ratio: page?.ControlToImageRadio ?? 0, Thickness: page?.ThicknessScale ?? 0,
                 ViewWidth: _view.ActualWidth, ViewHeight: _view.ActualHeight);
-            if (layoutRefresh && ReferenceEquals(page, _shapePage) && context == _shapeContext && version == _installedShapeVersion) return;
-            var values = active.SelectMany(shape => shape.Items).ToArray();
+            if (layoutRefresh && ReferenceEquals(page, _shapePage) && context == _shapeContext && version == _installedShapeVersion
+                && ReferenceEquals(_view.ShapeList, _installedShapeCollection)) return;
+            if (!CloseShapeToolTips(_shapePage ?? page, Still)) return;
+            if (_shapePage is not null && !ReferenceEquals(_shapePage, page) && !CloseShapeToolTips(page, Still)) return;
+            var values = active.SelectMany(shape => shape.PresentationItems ?? shape.Items).ToArray();
             _view.ShapeList = values.Length == 0 ? null : new ObservableCollection<object>(values);
             if (!Still()) return;
             _installedShapeCollection = _view.ShapeList;
@@ -123,9 +147,12 @@ public sealed partial class NativeResultViewport
     }
     private void RetireShapes(Func<bool> stillOwns)
     {
-        ++_shapeVersion; _shapePage = null; _shapeContext = null; _installedShapeVersion = -1; _installedShapeCollection = null;
-        var cleanup = _shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => () => { if (stillOwns()) layer.Invalidate(); }).ToList();
-        cleanup.Add(() => { if (stillOwns()) _view.ShapeList = null; }); ParameterCleanup.Run(cleanup);
+        ++_shapeVersion; var page = _shapePage; var collection = _view.ShapeList;
+        var retiring = _shapeLayers.Select(layer => layer.CaptureInvalidation()).ToArray();
+        _shapePage = null; _shapeContext = null; _installedShapeVersion = -1; _installedShapeCollection = null;
+        var cleanup = new List<Action> { () => { if (stillOwns()) CloseShapeToolTips(page, stillOwns); } };
+        cleanup.AddRange(retiring.Select<Action, Action>(invalidate => () => { if (stillOwns()) invalidate(); }));
+        cleanup.Add(() => { if (stillOwns() && ReferenceEquals(_view.ShapeList, collection)) _view.ShapeList = null; }); ParameterCleanup.Run(cleanup);
     }
 
     public abstract class ShapeLayer : IDisposable
@@ -201,6 +228,11 @@ public sealed partial class NativeResultViewport
             }
         }
         internal void Refresh() { if (_receipt is {} receipt) Read(receipt); }
+        internal Action CaptureInvalidation()
+        {
+            var attempt = _attempt; var owner = _owner;
+            return () => { if (attempt == _attempt && ReferenceEquals(owner, _owner)) Invalidate(); };
+        }
         protected virtual void OnInvalidated() { }
         protected virtual void OnDisposed() { }
         internal void Invalidate() { ++_attempt; _revision = -1; _prepared = null; _proof = null; _receipt = null; OnInvalidated(); }

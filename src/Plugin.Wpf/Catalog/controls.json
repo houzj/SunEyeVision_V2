@@ -5730,15 +5730,40 @@
         "passed": "真实Window199原结果视口10/0；UI002/full001零错误；实际单像素/孔洞mask渲染、Domainalpha、原像素、模板故障隔离/独占/重入/释放/预算",
         "remaining": "Geometry/Text/Selection/ROI同owner完整层、原Shell生产接入、旧SDK主图退出及真实VS/VM人工尚未完成"
       },
+      "resultBatchProduction": {
+  "design": "docs/collaboration/evidence/BLOB_RESULT_NATIVE_BATCH_WHOLE_DESIGN_20261103.md",
+  "sourceEvidence": "docs/collaboration/evidence/BLOB_RESULT_NATIVE_BATCH_ORIGINAL_20261103.json",
+  "validated": "候选003 UI/全量0错；视口33、显示44、十字7、工作区4、B08整窗12、ROI预览24通过；未正式集成",
+  "remaining": [
+    "原算法特征同态未证",
+    "低质量bitmap偏好无生产入口，未实现保护",
+    "自然悬停/原机时序和实际VS另记"
+  ],
+  "files": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
+      "sha256": "42A8B8622563CF93FBE0997D7BB47114F3B58229B284852C055A69FBDFD6425A"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.DisplayScene.cs",
+      "sha256": "9DDEC973917B19C01DC308184F898ECAEE6238498B2B1AE080C3BDE1FCB63899"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+      "sha256": "967A610E59F029478390C635A019EC596E8B0AB03D363449D666220EAD31EED4"
+    }
+  ],
+  "status": "候选实施，未正式集成"
+},
       "shapeDependencyCandidate": {
         "files": [
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
-            "sha256": "B93DE3CD2E73F14B56D932DA4AA13A351A6BF3F94EDA2995C559A40C5DEBFBB4"
+            "sha256": "42A8B8622563CF93FBE0997D7BB47114F3B58229B284852C055A69FBDFD6425A"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-            "sha256": "8610251E074D6354523DEAE074A6814B36259E560FE99D94483C458A3A5083DA"
+            "sha256": "967A610E59F029478390C635A019EC596E8B0AB03D363449D666220EAD31EED4"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
@@ -6428,7 +6453,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-          "sha256": "8610251E074D6354523DEAE074A6814B36259E560FE99D94483C458A3A5083DA"
+          "sha256": "967A610E59F029478390C635A019EC596E8B0AB03D363449D666220EAD31EED4"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",

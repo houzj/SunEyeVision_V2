@@ -139,7 +139,8 @@ internal static class S2DocumentEditingCases
     bool Contains(object[] values,object item)=>values.Any(value=>ReferenceEquals(value,item));
     var table=Table();var grid=Visuals<DataGrid>(table.View).Single();
     var receipt=Receipt();var publication=Publication();var display=Get(pane,"Display");var displayLayer=Get(display,"Layer");
-    var originalDisplay=Items(displayLayer);var originalCross=CrossShapes().Cast<object>().ToArray();var selectionLayer=Get(pane,"Selection");
+    var prepared=Field(displayLayer,"_prepared")!;
+    var originalDisplay=(object[])Get(prepared,"PresentationItems");var originalCross=CrossShapes().Cast<object>().ToArray();var selectionLayer=Get(pane,"Selection");
     Require(originalDisplay.Length>0&&originalCross.Length==2,"缺少常驻图文或辅助十字前置");
     ResultSelection? observed=null;
     EventHandler<ResultSelection> handler=(sender,selection)=>{if(ReferenceEquals(sender,table))observed=selection;};

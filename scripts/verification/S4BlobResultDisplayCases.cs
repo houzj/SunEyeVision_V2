@@ -443,8 +443,22 @@ internal static class S2DocumentEditingCases
                 var projected=Geometry(originalScene).OfType<NativeRectangle>().ToArray();
                 Require(projected.Length==2&&projected.All(rect=>rect.ToolTip==$"CenterX:{rect.CenterPoint.X},CenterY:{rect.CenterPoint.Y} Width:{rect.Width} Height:{rect.Height} Angle:{rect.Angle}"),"同次各行Tips测量未对应实际矩形");
                 viewport.View.UpdateLayout();Pump();
-                var controls=Visual(viewport.View).OfType<NativeRectShape>().Where(shape=>shape.IsVisible).ToArray();
-                Require(controls.Length==2&&controls.All(shape=>shape.IsHitTestVisible&&shape.ToolTip is ToolTip tip&&projected.Any(rect=>Equals(rect.ToolTip,tip.Content))),"真实Loaded原矩形未接Tips或父级禁用命中");Capture(viewport.View,"display-default.png");
+                var native=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+                var batch=native.ShapeList!.OfType<Tuple<string,object>>().Single(item=>item.Item1=="IRectangle");
+                Require(batch.Item2 is List<object> members&&members.Count==2&&members.All(item=>projected.Any(rect=>ReferenceEquals(rect,item))),"生产列表未走原Tuple或复制串换同次矩形");
+                var canvas=Visual(viewport.View).OfType<NativeShapeCanvas>().Single(item=>VisualTreeHelper.GetChildrenCount(item)>0);
+                foreach(var rect in projected)
+                {
+                    var angle=rect.Angle*Math.PI/180;var ratio=native.ControlToImageRadio;
+                    var point=new Point((rect.CenterPoint.X+Math.Sin(angle)*rect.Height/2)*ratio,(rect.CenterPoint.Y-Math.Cos(angle)*rect.Height/2)*ratio);
+                    var hit=VisualTreeHelper.HitTest(canvas,point);Require(hit is not null&&Equals(Maybe(hit.VisualHit,"Tag"),rect.ToolTip),"真实原画布描边命中未携带同次对象Tips");
+                    canvas.MyCallback(hit!);var tip=(ToolTip)canvas.ToolTip;
+                    var serviceType=typeof(ToolTip).Assembly.GetType("System.Windows.Controls.PopupControlService",true)!;
+                    var service=serviceType.GetProperty("Current",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null);
+                    try{serviceType.GetMethod("ShowToolTip",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.Invoke(service,new object[]{canvas,false});Pump();Require(tip.IsOpen&&ReferenceEquals(tip.PlacementTarget,canvas)&&Equals(tip.Content,rect.ToolTip),"原画布Tips经WPF服务的实际Popup绑定或默认目标未贯通");}
+                    finally{serviceType.GetMethod("DismissToolTips",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.Invoke(service,null);Pump();}
+                }
+                Require(!Visual(viewport.View).OfType<NativeRectShape>().Any(),"普通Blob结果仍走逐控件分支");Capture(viewport.View,"display-default.png");
             });
             var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();
             DeclaredFieldsView Fields()=>(DeclaredFieldsView)((DeclaredSettingsView)Get(control.Content,"Editor")).Content;

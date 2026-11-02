@@ -122,7 +122,7 @@ internal static class S2DocumentEditingCases
    object[] Shapes()=>((IEnumerable?)viewport.ShapeList)?.Cast<object>().ToArray()??Array.Empty<object>();
    bool Contains(object[] values,object item)=>values.Any(value=>ReferenceEquals(value,item));
    object? DisplayScene()=>Field(pane,"Display");
-   object[] DisplayItems()=>DisplayScene() is {} scene?LayerItems(Get(scene,"Layer")):Array.Empty<object>();
+   object[] DisplayItems()=>DisplayScene() is {} scene&&(Field(Get(scene,"Layer"),"_prepared") is {} prepared)?(object[])Get(prepared,"PresentationItems"):Array.Empty<object>();
    object[] SelectionItems()=>LayerItems(selectionLayer);
    IResultPublication Publication()=>(IResultPublication)Get(main,"CurrentResultPublication");
    IToolResultView Table()=>(IToolResultView)Get(main,"_activeResultView");
@@ -138,7 +138,7 @@ internal static class S2DocumentEditingCases
     Require(!grid.CanUserSortColumns&&!grid.CanUserReorderColumns,"占位改变原表排序/重排门禁");
     var cell=grid.Items[0].GetType().GetProperty("Item")!;foreach(var key in new[]{"angle","long-axis","short-axis"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),"未实现"),"未证特征显示伪数值");
     using(var reader=snapshot.AcquireReader()){var record=(RecordValue)reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort)[0]!;foreach(var key in new[]{"area","perimeter","centroid-x","centroid-y","circularity","rectangularity"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),record.Get<double>(key)),"已有真实特征被占位替换："+key);}
-    var permanent=DisplayScene();var permanentItems=DisplayItems();Require(permanent is not null&&permanentItems.OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle>().Count()==grid.Items.Count&&permanentItems.Any(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)),"真实夹具缺同次常驻结果矩形/文字");
+    var permanent=DisplayScene();var permanentItems=DisplayItems();var semantic=permanent is null?Array.Empty<object>():LayerItems(Get(permanent,"Layer"));Require(permanent is not null&&semantic.OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle>().Count()==grid.Items.Count&&semantic.Any(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)),"真实夹具缺同次常驻结果矩形/文字");
     ResultSelection? selected=null;object? senderIdentity=null;EventHandler<ResultSelection> capture=(sender,value)=>{senderIdentity=sender;selected=value;};table.SelectionHighlightChanged+=capture;
     try{grid.SelectedItem=null;grid.SelectedItem=grid.Items[0];Pump();}finally{table.SelectionHighlightChanged-=capture;}
     Require(ReferenceEquals(senderIdentity,table),"真实Blob包装事件sender不是活动BlobResultView，而是"+senderIdentity?.GetType().Name);

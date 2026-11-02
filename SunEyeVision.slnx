@@ -13,6 +13,9 @@
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
+  <Folder Name="/Src/Domain/">
+    <Project Path="Src/Domain/SunEyeVision.Domain.csproj" />
+  </Folder>
   <Folder Name="/Src/Core/">
     <Project Path="Src/Core/SunEyeVision.Core.csproj" />
   </Folder>

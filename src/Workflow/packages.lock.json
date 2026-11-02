@@ -98,6 +98,9 @@
           "System.Text.Json": "[10.0.3, )"
         }
       },
+      "suneyevision.domain": {
+        "type": "Project"
+      },
       "suneyevision.foundation": {
         "type": "Project"
       },

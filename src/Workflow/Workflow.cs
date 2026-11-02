@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using System.Windows;
+using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -598,9 +598,9 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
         private string _targetNodeId = string.Empty;
         private string _sourcePort = "output";
         private string _targetPort = "input";
-        private Point _sourcePosition;
-        private Point _targetPosition;
-        private Point _arrowPosition;
+        private CanvasPoint _sourcePosition;
+        private CanvasPoint _targetPosition;
+        private CanvasPoint _arrowPosition;
         private double _arrowAngle = 0;
         private ConnectionStatus _status = ConnectionStatus.Idle;
         private bool _showPathPoints = false;
@@ -669,7 +669,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
         /// 箭头位置（UI渲染用，不序列化）
         /// </summary>
         [JsonIgnore]
-        public Point ArrowPosition
+        public CanvasPoint ArrowPosition
         {
             get => _arrowPosition;
             set
@@ -732,13 +732,13 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
         }
 
         [JsonIgnore]
-        public ObservableCollection<Point> PathPoints { get; set; } = new();
+        public ObservableCollection<CanvasPoint> PathPoints { get; set; } = new();
 
         /// <summary>用户编辑的连线路径；自动计算路径仍只存于渲染缓存。</summary>
-        public Point[]? ManualPathPoints { get; set; }
+        public CanvasPoint[]? ManualPathPoints { get; set; }
 
         [JsonIgnore]
-        public Point[]? PreviewPathPoints { get; set; }
+        public CanvasPoint[]? PreviewPathPoints { get; set; }
 
 
         [JsonIgnore]
@@ -763,7 +763,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
         }
 
         [JsonIgnore]
-        public Point SourcePosition
+        public CanvasPoint SourcePosition
         {
             get => _sourcePosition;
             set
@@ -777,7 +777,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
         }
 
         [JsonIgnore]
-        public Point TargetPosition
+        public CanvasPoint TargetPosition
         {
             get => _targetPosition;
             set
@@ -807,9 +807,9 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
             Id = string.Empty;
             SourceNodeId = string.Empty;
             TargetNodeId = string.Empty;
-            SourcePosition = new Point(0, 0);
-            TargetPosition = new Point(0, 0);
-            ArrowPosition = new Point(0, 0);
+            SourcePosition = new CanvasPoint(0, 0);
+            TargetPosition = new CanvasPoint(0, 0);
+            ArrowPosition = new CanvasPoint(0, 0);
         }
 
         public WorkflowConnection(string id, string sourceNodeId, string targetNodeId)
@@ -817,9 +817,9 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider
             Id = id;
             SourceNodeId = sourceNodeId;
             TargetNodeId = targetNodeId;
-            SourcePosition = new Point(0, 0);
-            TargetPosition = new Point(0, 0);
-            ArrowPosition = new Point(0, 0);
+            SourcePosition = new CanvasPoint(0, 0);
+            TargetPosition = new CanvasPoint(0, 0);
+            ArrowPosition = new CanvasPoint(0, 0);
         }
 
         /// <summary>

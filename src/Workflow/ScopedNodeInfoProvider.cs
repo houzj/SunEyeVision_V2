@@ -12,10 +12,17 @@ public sealed class ScopedNodeInfoProvider : INodeInfoProvider
     private readonly Solution _document;
     private readonly Workflow _flow;
     private readonly RuntimeDirectorySnapshot _directory;
+    private readonly ToolExecutionOwner _owner;
+    private readonly string _documentId;
+    private readonly string _workflowId;
     public ScopedNodeInfoProvider(Solution document,string workflowId)
     {
         _document=document??throw new ArgumentNullException(nameof(document));
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
+        _documentId=document.Id;
+        _workflowId=workflowId;
+        _owner=document.ExecutionOwner;
+        if(_owner.IsRetired)throw new InvalidOperationException("方案已关闭或退役。");
         _directory=document.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入运行目录。");
         if(!_directory.IsActive)throw new InvalidOperationException("方案运行目录已退役。");
         _flow=document.Workflows.SingleOrDefault(flow=>flow.Id==workflowId)
@@ -23,6 +30,9 @@ public sealed class ScopedNodeInfoProvider : INodeInfoProvider
     }
     private WorkflowNodeBase? Find(string nodeId)
     {
+        if(_document.Id!=_documentId || _flow.Id!=_workflowId ||
+           !ReferenceEquals(_document.ExecutionOwner,_owner) || _owner.IsRetired)
+            throw new InvalidOperationException("方案或流程身份已变更，或方案已退役。");
         if(!ReferenceEquals(_document.RuntimeDirectory,_directory)||!_directory.IsActive)
             throw new InvalidOperationException("方案运行目录已变更或退役。");
         if(_document.Workflows.Count(flow=>ReferenceEquals(flow,_flow))!=1||_document.Workflows.Count(flow=>flow.Id==_flow.Id)!=1)

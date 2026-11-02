@@ -175,7 +175,7 @@ public sealed class OutputBindingChangeService
                     var target=targets[0];var original=target.Value.RuntimeConfiguration??throw new InvalidOperationException("节点缺少 Runtime 配置。");
                     var runtime=pendingConfigurations.TryGetValue(target.Value,out var pending)?pending.After:original;
                     var key=consumer.InputKey??consumer.ParameterName;
-                    if(runtime.Fields.Read(key) is VariableSetting setting)
+                    if(runtime.Fields.Declarations.ContainsKey(key) && runtime.Fields.Read(key) is VariableSetting setting)
                     {
                         var replacement=runtime.WithFieldSettings(new Dictionary<string,ParameterSetting>{{key,setting with{RebindingReason="全局变量输入来源已变化，请重新绑定"}}});
                         pendingConfigurations[target.Value]=(original,replacement);

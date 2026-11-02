@@ -283,12 +283,16 @@
         "resolved": "7.0.0",
         "contentHash": "qmeeYNROMsONF6ndEZcIQ+VxR4Q/TX/7uIVLJqtwIWL7dDWeh0l1UIqgo4wYyjG//5lUNhwkLDSFl+pAWO6oiA=="
       },
+      "suneyevision.foundation": {
+        "type": "Project"
+      },
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },

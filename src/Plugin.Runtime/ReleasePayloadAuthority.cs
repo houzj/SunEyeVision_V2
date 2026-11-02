@@ -8,13 +8,13 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using SunEyeVision.Foundation.Versioning;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
-namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+
+namespace SunEyeVision.Plugin.Runtime;
 
 /// <summary>The build-produced payload is the only approval source. Runtime framework
 /// catalogs prove the origin selected by the CLR; they never approve application files.</summary>
-internal sealed class ReleasePayloadAuthority
+public sealed class ReleasePayloadAuthority
 {
     private sealed record Component(ToolComponentMetadata Metadata,string EntryType,string Path);
     private readonly List<Component> _components=new();
@@ -25,9 +25,9 @@ internal sealed class ReleasePayloadAuthority
     private readonly HashSet<string> _frameworkPayloadPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkNames=new(StringComparer.Ordinal);
     private readonly string _mode;
-    internal IReadOnlyDictionary<string,string> ExpectedTools=>_expectedTools;
+    public IReadOnlyDictionary<string,string> ExpectedTools=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(_expectedTools);
 
-    internal ReleasePayloadAuthority(string appRoot)
+    public ReleasePayloadAuthority(string appRoot)
     {
         _root=Path.TrimEndingDirectorySeparator(Path.GetFullPath(appRoot));
         using var document=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(_root,"release-payload.json")));
@@ -122,10 +122,29 @@ internal sealed class ReleasePayloadAuthority
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
     }
 
-    internal IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds=null)
+    /// <summary>Prepare one complete runtime generation from the approved physical payload.</summary>
+    /// <summary>Prepare the complete desktop projection and runtime identities in one admitted generation.</summary>
+    public RuntimeDirectorySnapshot PrepareDesktopDirectory()
+    {
+        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents());
+        if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
+            throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
+        return snapshot;
+    }
+    public RuntimeDirectorySnapshot PrepareRuntimeDirectory()
+    {
+        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents(null, runtimeOnly:true));
+        if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
+            throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
+        return snapshot;
+    }
+    public IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds=null)
+        =>LoadToolComponents(toolIds, runtimeOnly:false);
+
+    private IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds,bool runtimeOnly)
     {
         var result=new List<ToolComponentRegistration>();
-        foreach(var group in _components.Where(c=>toolIds==null||toolIds.Contains(c.Metadata.ToolId)).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
+        foreach(var group in _components.Where(c=>(!runtimeOnly||c.Metadata.Role==ToolComponentRole.Runtime) && (toolIds==null||toolIds.Contains(c.Metadata.ToolId))).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
         {
             var path=Resolve(group.Key);
             if(!File.Exists(path)&&group.All(c=>c.Metadata.Role==ToolComponentRole.Editor))continue;
@@ -198,7 +217,7 @@ internal sealed class ReleasePayloadAuthority
         if(entry.Identity is not null&&!string.Equals(AssemblyName.GetAssemblyName(path).FullName,entry.Identity,StringComparison.Ordinal))
             throw new InvalidDataException("Payload assembly identity mismatch: "+entry.Path);
     }
-    internal void VerifyApprovedFile(string path)
+    public void VerifyApprovedFile(string path)
     {
         var relative=Path.GetRelativePath(_root,Path.GetFullPath(path)).Replace('\\','/');
         if(!_entries.TryGetValue(relative,out var entry))throw new InvalidDataException("File is not approved by the release payload: "+relative);

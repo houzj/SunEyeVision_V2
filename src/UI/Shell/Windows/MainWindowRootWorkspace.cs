@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Workflow;
+using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using NodeFactory=SunEyeVision.UI.Services.Workflow.WorkflowNodeFactory;
@@ -37,22 +37,22 @@ public partial class MainWindowViewModel
  {
   if(!CanEditRootWorkspace)return false;
   var document=DocumentManager.CurrentSolution!;int number=1;while(document.Workflows.Any(w=>w.Name=="流程"+number))number++;
-  var root=new Flow(Guid.NewGuid().ToString(),"流程"+number);var tab=new WorkflowTabViewModel{Id=root.Id,Name=root.Name};
+  var root=new Flow(Guid.NewGuid().ToString(),"流程"+number);var tab=new WorkflowTabViewModel(_directory){Id=root.Id,Name=root.Name};
   try{ExecuteRootCollectionChange(root,tab,Array.Empty<Flow>(),true,document.Workflows.Count,"新增流程");return true;}catch(Exception error){StatusText="新增流程已取消："+error.Message;return false;}
  }
  internal bool CopyRootWorkspace(WorkflowTabViewModel sourceTab,System.Windows.Point? overviewPosition=null)
  {
   if(!CanEditRootWorkspace||ResolveEditableRoot(sourceTab) is not {} source)return false;
   var root=new Flow(Guid.NewGuid().ToString(),UniqueRootCopyName(source.Name)){WorkspaceSettings=overviewPosition is {} position?source.WorkspaceSettings with{OverviewX=position.X,OverviewY=position.Y}:source.WorkspaceSettings,AdditionalData=source.AdditionalData?.ToDictionary(p=>p.Key,p=>p.Value.Clone())};
-  var tab=new WorkflowTabViewModel{Id=root.Id,Name=root.Name};var allocated=new List<(SunEyeVision.UI.Shared.WorkflowNode Node,string Scope)>();
+  var tab=new WorkflowTabViewModel(_directory){Id=root.Id,Name=root.Name};var allocated=new List<(SunEyeVision.UI.Shared.WorkflowNode Node,string Scope)>();
   bool committed=false;var rootNodeIds=new Dictionary<string,string>(StringComparer.Ordinal);
   try
   {
-   var factory=new NodeFactory(tab.SequenceManager);
+   var factory=new NodeFactory(tab.SequenceManager,_directory);
    var fragment=source.Nodes.Count==0?new WorkflowFragment(Array.Empty<WorkflowNodeBase>(),Array.Empty<WorkflowConnection>(),Array.Empty<Flow>())
     :WorkflowFragmentCopy.Prepare(source,source.Nodes.Select(n=>n.Id),root.Id,_workflowEngine.GetWorkflowById,(original,scope)=>
     {
-     if(!ToolRegistry.ToolExists(original.ToolType))throw new InvalidOperationException("工具未加载："+original.DispName);
+     if(!_directory.Contains(original.ToolType))throw new InvalidOperationException("工具未加载："+original.DispName);
      var node=factory.CreateIndexedNode(original.ToolType,original.LocalIndex,workflowId:scope);node.DispName=original.DispName;node.Name=node.GlobalIndex+" "+original.DispName;allocated.Add((node,scope));if(scope==root.Id)rootNodeIds.Add(original.Id,node.Id);return node;
     });
    root.RootConfiguration=source.RootConfiguration.Remap(rootNodeIds);

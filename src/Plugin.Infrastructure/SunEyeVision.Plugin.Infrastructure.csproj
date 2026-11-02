@@ -28,9 +28,11 @@
 
   <ItemGroup>
     <Compile Include="Infrastructure\IPluginManager.cs" />
-    <Compile Include="Managers\Plugin\ReleasePayloadAuthority.cs" />
-    <Compile Include="Managers\Plugin\PluginLoader.cs" />
+
+
     <Compile Include="Managers\Plugin\PluginManager.cs" />
+    <Compile Include="Managers\Plugin\DesktopToolAdmission.cs" />
+    <Compile Include="Managers\Plugin\DesktopToolPresentation.cs" />
     <Compile Include="Managers\Plugin\ToolDirectoryCatalog.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.Components.cs" />
@@ -44,5 +46,7 @@
          本工程是唯一引用 Infrastructure 的测试工程，专用于锁死这一层的不变量。 -->
     <InternalsVisibleTo Include="SunEyeVision.Plugin.Infrastructure.Tests" />
     <InternalsVisibleTo Include="SunEyeVision.Identity.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
+    <InternalsVisibleTo Include="AdmissionLifecycleProbe" />
   </ItemGroup>
 </Project>

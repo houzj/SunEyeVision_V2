@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -29,19 +30,26 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         private static Dictionary<string, ToolMetadata> _metadataCache = new();
         private static readonly object _lock = new();
         private static long _registrationGeneration;
-        public static SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? DirectoryCatalog { get; private set; }
-        private static Action<string>? _ensureDirectoryTool;
-        public static void ConfigureDirectory(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog catalog, Action<string> ensureLoaded)
+        internal sealed record PublishedToolAdmission(
+            SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog Directory,
+            SunEyeVision.Plugin.Runtime.ReleasePayloadAuthority Authority,
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot Runtime,
+            Guid Owner,
+            Action<string> EnsureLoaded);
+        private static PublishedToolAdmission? _admission;
+        internal static PublishedToolAdmission? CurrentAdmission { get { lock(_lock) return _admission; } }
+        internal static long CurrentGeneration { get { lock(_lock) return _registrationGeneration; } }
+        public static SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? DirectoryCatalog => CurrentAdmission?.Directory;
+        internal static void ConfigureDirectory(PublishedToolAdmission admission)
         {
-            lock(_lock) { DirectoryCatalog=catalog; _ensureDirectoryTool=ensureLoaded; }
+            lock(_lock) { _admission=admission; _registrationGeneration++; }
         }
         private static void EnsureDirectoryTool(string id)
         {
             Action<string>? ensure;
-            lock(_lock) { if(_toolTypes.ContainsKey(id)||_runtimeComponents.ContainsKey(id))return; ensure=_ensureDirectoryTool; }
+            lock(_lock) { if(_toolTypes.ContainsKey(id)||_admission?.Runtime.Contains(id)==true)return; ensure=_admission?.EnsureLoaded; }
             ensure?.Invoke(id);
         }
-
         // ========================================
         // 缓存结构：基于具体类型的缓存池（优化方案）
         // ========================================
@@ -66,14 +74,14 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// 注册工具类型（从 [Tool] 特性提取元数据）
         /// </summary>
         /// <param name="toolType">工具类型</param>
-        public static void RegisterTool(Type toolType)
+        internal static void RegisterTool(Type toolType)
         {
             var prepared=PrepareRegistration(new[]{toolType});
             using var commit=prepared.EnterCommit();
             commit.Publish();
         }
 
-        public static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes,IReadOnlyList<ToolComponentRegistration>? components=null)
+        internal static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes,IReadOnlyList<ToolComponentRegistration>? components=null)
         {
             ArgumentNullException.ThrowIfNull(toolTypes);
             Dictionary<string,Type> types;
@@ -84,7 +92,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             lock(_lock)
             {
                 generation=_registrationGeneration;
-                runtimes=new(_runtimeComponents,StringComparer.Ordinal);editors=new(_editorComponents,StringComparer.Ordinal);
+                runtimes=(_admission?.Runtime.Components??Array.Empty<ToolComponentRegistration>()).Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).ToDictionary(c=>c.Metadata.ToolId,StringComparer.Ordinal);
+                editors=(_admission?.Runtime.Components??Array.Empty<ToolComponentRegistration>()).Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor).ToDictionary(c=>c.Metadata.ToolId,StringComparer.Ordinal);
                 types=new(_toolTypes);metadata=new(_metadataCache);
                 properties=_typeCache.ToDictionary(item=>item.Key,item=>item.Value.ToDictionary(field=>field.Key,field=>field.Value.ToList()));
             }
@@ -166,7 +175,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 ObjectDisposedException.ThrowIf(_closed,this);
                 if(_published)throw new InvalidOperationException("Tool registration was already published.");
                 _parameters.Publish();
-                if(_changed){_toolTypes=_types;_metadataCache=_metadata;_typeCache=_properties;_runtimeComponents=_runtimes;_editorComponents=_editors;_registrationGeneration++;}
+                if(_changed){_toolTypes=_types;_metadataCache=_metadata;_typeCache=_properties;_registrationGeneration++;}
                 _published=true;
             }
             public void Dispose(){if(_closed)return;_closed=true;_parameters.Dispose();Monitor.Exit(_lock);}
@@ -184,11 +193,12 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>所有工具元数据列表</returns>
         public static List<ToolMetadata> GetAllToolMetadata()
         {
-            SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? directory;
-            lock (_lock) directory = DirectoryCatalog;
-            var declared = directory?.Tools;
-            lock (_lock) return declared is null ? _metadataCache.Values.ToList()
-                : declared.Select(t => _metadataCache.TryGetValue(t.Id, out var loaded) ? loaded : t.ToMetadata()).ToList();
+            lock (_lock)
+            {
+                var declared = _admission?.Directory.Tools;
+                return declared is null ? _metadataCache.Values.ToList()
+                    : declared.Select(t => _metadataCache.TryGetValue(t.Id, out var loaded) ? loaded : t.ToMetadata()).ToList();
+            }
         }
         /// <summary>
         /// 获取指定分类的工具元数据
@@ -273,13 +283,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// </summary>
         /// <param name="toolId">工具ID</param>
         /// <returns>是否注销成功</returns>
-        public static bool UnregisterTool(string toolId)
+        internal static bool UnregisterTool(string toolId)
         {
             lock (_lock)
             {
+                if(_admission?.Runtime.Contains(toolId)==true)throw new InvalidOperationException("Admitted runtime components cannot be unregistered individually.");
                 var removed = _metadataCache.ContainsKey(toolId);
                 _toolTypes.Remove(toolId);
-                _runtimeComponents.Remove(toolId);_editorComponents.Remove(toolId);
                 _registrationGeneration++;
                 _metadataCache.Remove(toolId);
                 foreach(var cache in _typeCache.Values)cache.Remove(toolId);
@@ -394,13 +404,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <summary>
         /// 清除所有已注册的工具和缓存
         /// </summary>
-        public static void ClearAll()
+        internal static void ClearAll()
         {
             lock (_lock)
             {
-                DirectoryCatalog=null; _ensureDirectoryTool=null;
+                _admission=null;
                 _toolTypes.Clear();
-                _runtimeComponents.Clear();_editorComponents.Clear();
+
                 _metadataCache.Clear();
                 _typeCache.Clear();
                 _registrationGeneration++;

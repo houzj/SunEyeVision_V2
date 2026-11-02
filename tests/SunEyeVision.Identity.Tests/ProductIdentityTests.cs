@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using SunEyeVision.Foundation.Versioning;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Plugin.Runtime;
 using Xunit;
 
 public sealed class ProductIdentityTests

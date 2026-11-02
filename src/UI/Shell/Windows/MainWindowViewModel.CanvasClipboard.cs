@@ -19,7 +19,7 @@ public partial class MainWindowViewModel
         if (tab == null || !CanEditWorkflowCanvas) return false;
         var nodes = tab.WorkflowNodes.Where(n => n.IsSelected).ToArray();
         if (nodes.Length == 0) return false;
-        if (nodes.Any(n => !ToolRegistry.ToolExists(n.ToolType))) { Status = "所选工具未加载，不能复制。"; return false; }
+        if (nodes.Any(n => !_directory.IsActive || !_directory.Contains(n.ToolType))) { Status = "所选工具未加载，不能复制。"; return false; }
         _canvasCopySource = new(_workflowDefinitions.GetRequired(tab.CurrentWorkflowId), nodes.Select(n => n.Id).ToArray(), ((Node)nodes[0]).NodeRect.TopLeft);
         return true;
     }
@@ -51,10 +51,10 @@ public partial class MainWindowViewModel
         var allocated = new List<(Node Node, string Scope)>(); bool committed = false;
         try
         {
-            var factory = new NodeFactory(tab.SequenceManager);
+            var factory = new NodeFactory(tab.SequenceManager, _directory);
             var fragment = WorkflowFragmentCopy.Prepare(source, ids, target.Id, _workflowEngine.GetWorkflowById, (original, scope) =>
             {
-                if (!ToolRegistry.ToolExists(original.ToolType)) throw new InvalidOperationException($"工具未加载：{original.DispName}");
+                if (!_directory.Contains(original.ToolType)) throw new InvalidOperationException($"工具未加载：{original.DispName}");
                 var copy = factory.CreateNode(original.ToolType, workflowId: scope); allocated.Add((copy, scope)); return copy;
             });
             var originals = source.Nodes.Where(n => ids.Contains(n.Id)).Cast<Node>().ToArray();

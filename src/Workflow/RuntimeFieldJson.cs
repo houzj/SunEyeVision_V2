@@ -10,9 +10,9 @@ namespace SunEyeVision.Workflow;
 
 internal static class RuntimeFieldJson
 {
-    internal static IReadOnlyDictionary<string,ParameterSetting> Read(string toolId,JsonElement fields,bool currentValues=false)
+    internal static IReadOnlyDictionary<string,ParameterSetting> Read(IToolDefinition definition,JsonElement fields,bool currentValues=false)
     {
-        var definition=ToolRegistry.CreateRuntime(toolId);
+        ArgumentNullException.ThrowIfNull(definition);
         var declared=definition as IToolSettingsFields??throw new JsonException("Runtime settings are not declared.");
         var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs).Concat(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.Schema(definition).Inputs))
             .ToDictionary(port=>port.Id,StringComparer.Ordinal);

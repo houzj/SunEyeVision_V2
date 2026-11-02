@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -368,7 +368,7 @@ public sealed class BindingConfigurationStore
     internal static Solution Copy(Solution source)
     {
         var copy = new Solution { Id = source.Id, Name = source.Name, Description = source.Description,
-            SchemaVersion = source.SchemaVersion, Version = source.Version };
+            SchemaVersion = source.SchemaVersion, Version = source.Version, RuntimeDirectory=source.RuntimeDirectory };
         foreach (var workflow in source.Workflows)
         {
             var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration, AdditionalData=workflow.AdditionalData?.ToDictionary(entry=>entry.Key,entry=>entry.Value.Clone()) };

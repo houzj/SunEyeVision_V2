@@ -1,4 +1,4 @@
-﻿using DocumentHistoryCoordinator = SunEyeVision.Workflow.DocumentHistoryCoordinator;
+using DocumentHistoryCoordinator = SunEyeVision.Workflow.DocumentHistoryCoordinator;
 using System;
 using ScopedNodeIdentity = SunEyeVision.Workflow.ScopedNodeIdentity;
 using System.Collections.Generic;
@@ -129,6 +129,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// 节点序号管理器
         /// </summary>
         private readonly INodeSequenceManager _sequenceManager;
+        private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
 
         /// <summary>
         /// 节点序号管理器（公共访问）
@@ -157,19 +158,20 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public event EventHandler? WorkflowContentChanged;
 
-        public WorkflowTabViewModel() : this(new NodeSequenceManager())
+        public WorkflowTabViewModel(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory) : this(new NodeSequenceManager(),directory)
         {
         }
 
         /// <summary>
         /// 带依赖注入的构造函数
         /// </summary>
-        public WorkflowTabViewModel(INodeSequenceManager sequenceManager)
+        public WorkflowTabViewModel(INodeSequenceManager sequenceManager,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
+            _directory=directory??throw new ArgumentNullException(nameof(directory));
             _sequenceManager = sequenceManager ?? throw new ArgumentNullException(nameof(sequenceManager));
 
             // 初始化节点工厂
-            _nodeFactory = new WorkflowNodeFactory(_sequenceManager);
+            _nodeFactory = new WorkflowNodeFactory(_sequenceManager,directory);
 
             _id = Guid.NewGuid().ToString();
             _currentWorkflowId = _id;

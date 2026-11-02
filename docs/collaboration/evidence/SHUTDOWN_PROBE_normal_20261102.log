@@ -1,0 +1,11 @@
+probe: app initialized
+probe: plugin admission returned
+probe: services initialized
+probe: main window constructed
+probe: showing window
+probe: window shown
+probe: starting dispatcher
+probe: calling Close
+probe: Close returned
+probe: dispatcher timer ticked
+Actual MainWindow shutdown scenario passed: normal

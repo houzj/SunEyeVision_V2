@@ -4,11 +4,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SunEyeVision.Plugin.Runtime;
 namespace SunEyeVision.Workflow;
 
 /// <summary>Reads a pure candidate document. UI conversion belongs to workspace activation.</summary>
 public class WorkflowJsonConverter : JsonConverter<Workflow>
 {
+    private readonly RuntimeDirectorySnapshot? _directory;
+    public WorkflowJsonConverter() { }
+    public WorkflowJsonConverter(RuntimeDirectorySnapshot directory)=>_directory=directory??throw new ArgumentNullException(nameof(directory));
     private static readonly HashSet<string> Known = new(StringComparer.Ordinal) { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections" };
     public override Workflow Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -49,7 +53,7 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
                 if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id)) throw new JsonException("Empty or duplicate node Id.");
                 if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                     throw new JsonException("Runtime configuration ToolId differs from the node identity.");
-                if (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.HasRuntime(node.ToolType) && node.RuntimeConfiguration is null)
+                if ((_directory??throw new JsonException("Workflow serialization requires an admitted runtime directory.")).Contains(node.ToolType) && node.RuntimeConfiguration is null)
                     throw new JsonException("Runtime tool requires its persisted RuntimeConfiguration.");
                 workflow.Nodes.Add(node);
                 nodeIndex++;
@@ -75,7 +79,7 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
             if(node.RuntimeConfiguration is not null&&node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes cannot persist SDK ParamSettings.");
             if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                 throw new JsonException("Runtime configuration ToolId differs from the node identity.");
-            if (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.HasRuntime(node.ToolType) && node.RuntimeConfiguration is null)
+            if ((_directory??throw new JsonException("Workflow serialization requires an admitted runtime directory.")).Contains(node.ToolType) && node.RuntimeConfiguration is null)
                 throw new JsonException("Runtime tool requires its persisted RuntimeConfiguration.");
         }
         writer.WriteStartObject();

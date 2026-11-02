@@ -792,13 +792,15 @@ SplitterPosition = position;
         public ICommand ShowCameraManagerCommand { get; }
         public ICommand ShowCommunicationManagerCommand { get; }
 
-        public MainWindowViewModel()
+        private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
+        public MainWindowViewModel(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
         {
+            _directory=admission?.Runtime??throw new ArgumentNullException(nameof(admission));
             try
             {
-            Toolbox = new ToolboxViewModel();
+            Toolbox = new ToolboxViewModel(admission);
 
-            WorkflowTabViewModel = new WorkflowTabControlViewModel();
+            WorkflowTabViewModel = new WorkflowTabControlViewModel(_directory);
 
             // 初始化计算结果
             CalculationResults = new ObservableCollection<ResultItem>();
@@ -826,7 +828,7 @@ SplitterPosition = position;
 
             // 初始化工作流引擎
             _logger = VisionLogger.Instance;
-            _workflowEngine = new WorkflowEngine(_logger);
+            _workflowEngine = new WorkflowEngine(_logger,_directory);
             _workflowDefinitions = new WorkflowDefinitionService(_workflowEngine);
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
@@ -1691,7 +1693,7 @@ SplitterPosition = position;
             _logger?.LogInfo($"[StartupTrace] CreateWorkflowTab begin | name={workflow.Name}, id={workflow.Id}", "MainWindowViewModel");
 
             // 创建 WorkflowTabViewModel
-            var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel();
+            var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel(_directory);
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
             tabViewModel.BindRootDefinition(workflow,_workflowEngine.GetWorkflowById);
@@ -3281,7 +3283,7 @@ SplitterPosition = position;
             if(!Current())return System.Threading.Tasks.Task.CompletedTask;
             DataAnalysisControlTitle="数据分析";
             if(selectedNode is null||!Current())return System.Threading.Tasks.Task.CompletedTask;
-            var view=ToolRegistry.CreateCurrentResultView(selectedNode.ToolType);
+            var view=SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolPresentation.CreateCurrentResultView(_directory,selectedNode.ToolType);
             if(!Current()){view?.Dispose();return System.Threading.Tasks.Task.CompletedTask;}
             if(view is null)
             {
@@ -4403,6 +4405,21 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             presenter?.Dispose();
             if(epoch!=_resultPublicationEpoch)return;
             _declaredResultActive=false;_declaredHistoricalResult=false;
+        }
+        internal void ReleasePluginConsumersForShutdown()
+        {
+            var errors=new List<Exception>();
+            void Release(Action action){try{action();}catch(Exception error){errors.Add(error);}}
+            _cameraPresentationTimer?.Stop();
+            var pending=_pendingCameraPresentations.Values.ToArray();
+            _pendingCameraPresentations.Clear();
+            foreach(var item in pending)Release(()=>item.Lease?.Dispose());
+            Release(ReleaseProductionEditors);
+            Release(CloseResultPresentation);
+            Release(()=>_workflowContextService.Clear());
+            Release(()=>_nodeResultManager.ClearResultDisplay());
+            Release(()=>_executionManager.Dispose());
+            if(errors.Count>0)throw new AggregateException("关闭时释放插件消费者失败。",errors);
         }
         public void UpdateModuleResults(DeclaredOutputSnapshot? result,string? nodeName,string? toolId=null,string? nodeId=null,
             ToolParameters? parameters=null)

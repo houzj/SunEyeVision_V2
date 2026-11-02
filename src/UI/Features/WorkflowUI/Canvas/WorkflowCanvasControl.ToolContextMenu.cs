@@ -16,7 +16,7 @@ public partial class WorkflowCanvasControl
         var session=Adapters.ServiceInitializer.SolutionManager?.Session;
         if(tab==null||session==null||_viewModel==null)return;
         var nodes=tab.WorkflowNodes;var edges=tab.WorkflowConnections;
-        var catalog=new ToolboxViewModel();
+        var catalog=_viewModel.Toolbox;
         bool Current()=>CanEditVmCanvas&&ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab,tab)
             &&ReferenceEquals(CurrentWorkflowTab,tab)&&ReferenceEquals(tab.WorkflowNodes,nodes)&&ReferenceEquals(tab.WorkflowConnections,edges)
             &&ReferenceEquals(Adapters.ServiceInitializer.SolutionManager.Session,session);

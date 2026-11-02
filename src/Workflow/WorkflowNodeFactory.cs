@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -30,6 +30,7 @@ namespace SunEyeVision.Workflow
         /// <param name="enableRetry">是否启用重试</param>
         /// <returns>创建的AlgorithmNode,如果工具不存在则返回null</returns>
         public static AlgorithmNode? CreateNode(
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,
             string toolId,
             string nodeId,
             string nodeName,
@@ -38,7 +39,7 @@ namespace SunEyeVision.Workflow
             bool enableCaching = true,
             bool enableRetry = false)
         {
-            return CreateAlgorithmNode(toolId, nodeId, nodeName, dispName, parameters, enableCaching, enableRetry);
+            return CreateAlgorithmNode(directory,toolId, nodeId, nodeName, dispName, parameters, enableCaching, enableRetry);
         }
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace SunEyeVision.Workflow
         /// <param name="enableRetry">是否启用重试</param>
         /// <returns>创建的AlgorithmNode,如果工具不存在则返回null</returns>
         public static AlgorithmNode? CreateAlgorithmNode(
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,
             string toolId,
             string nodeId,
             string nodeName,
@@ -70,10 +72,10 @@ namespace SunEyeVision.Workflow
 return null;
                 }
 
-                if(ToolRegistry.HasRuntime(toolId))
+                if(directory.Contains(toolId))
                 {
                     if(parameters is not null)throw new ArgumentException("Runtime工具不接受SDK参数。",nameof(parameters));
-                    return new AlgorithmNode(nodeId,nodeName,dispName,RuntimeToolConfiguration.Create(toolId));
+                    throw new InvalidOperationException("Runtime 节点需要已冻结配置，不能从全局目录重建。");
                 }
 
                 // 创建工具实例
@@ -112,13 +114,14 @@ return null;
         /// </summary>
         /// <param name="toolConfig">工具配置列表</param>
         /// <returns>创建的AlgorithmNode列表</returns>
-        public static List<AlgorithmNode> CreateAlgorithmNodes(IEnumerable<ToolNodeConfig> toolConfig)
+        public static List<AlgorithmNode> CreateAlgorithmNodes(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory, IEnumerable<ToolNodeConfig> toolConfig)
         {
             var nodes = new List<AlgorithmNode>();
 
             foreach (var config in toolConfig)
             {
                 var node = CreateAlgorithmNode(
+                    directory,
                     config.ToolId,
                     config.NodeId,
                     config.NodeName,

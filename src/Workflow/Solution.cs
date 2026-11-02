@@ -62,6 +62,7 @@ public class Solution : ObservableObject
     public string? FilePath { get; set; }
 
     [JsonIgnore] public string? ResourceBaseDirectory { get; set; }
+    [JsonIgnore] public RuntimeDirectorySnapshot? RuntimeDirectory { get; internal set; }
 
     /// <summary>
     /// 工作流列表
@@ -124,11 +125,11 @@ public class Solution : ObservableObject
     /// </summary>
     public void Save(string filePath)
     {
-        var repository = new SolutionRepository();
+        var repository = new SolutionRepository(directory:RuntimeDirectory??throw new InvalidOperationException("方案未绑定已准入目录。"));
         if (!repository.Save(this, filePath)) throw new IOException(repository.LastError ?? "方案保存失败。");
     }
 
-    public static Solution? Load(string filePath) => new SolutionRepository().Load(filePath);
+    public static Solution? Load(string filePath,RuntimeDirectorySnapshot directory) => new SolutionRepository(directory:directory).Load(filePath);
 
     /// <summary>
     /// 创建新解决方案
@@ -314,6 +315,7 @@ public class Solution : ObservableObject
             SchemaVersion = SchemaVersion,
             AdditionalData = AdditionalData == null ? null : new Dictionary<string, JsonElement>(AdditionalData),
             Version = Version,
+            RuntimeDirectory = RuntimeDirectory,
             Workflows = Workflows.Select(w => w.Clone()).ToList(),
             GlobalVariables = GlobalVariables.Select(v => v.Clone()).ToList(),
             Devices = Devices.Select(d => d.Clone()).ToList(),

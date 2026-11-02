@@ -13,6 +13,9 @@ namespace SunEyeVision.TestShared;
 internal static class ProductRuntimeTestHost
 {
     internal static string ProductRoot { get; private set; } = null!;
+    // The sealed payload is the authority; no mutable SDK registration or test-only bypass.
+    internal static SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot CreateRuntimeDirectory()
+        => new SunEyeVision.Plugin.Runtime.ReleasePayloadAuthority(ProductRoot).PrepareRuntimeDirectory();
 
     [ModuleInitializer]
     internal static void Initialize()

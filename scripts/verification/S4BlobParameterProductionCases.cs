@@ -287,7 +287,8 @@ internal static class S2DocumentEditingCases
                 window.Content=null;Pump();
             }
             var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
-            using var designer=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options);
+            using var designer=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();
+            SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(designer,sample);
             window.Content=designer;Pump();window.UpdateLayout();
             Verify((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView)designer.Content,designer.CaptureAcceptedFields,"真实设计上下文");
         }

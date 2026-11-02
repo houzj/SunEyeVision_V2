@@ -833,11 +833,11 @@ internal static class S2DocumentEditingCases
             var independent=second.CaptureAcceptedFields();
             Check(independent.Get<long>(threshold)==defaults.Threshold,
                 "两个设计视图不共享可变草稿");
-            var replacement=BlobDesignData.CreateParameterContext();presenter.Bind(replacement.Draft,replacement.Options);
+            var replacement=BlobDesignData.CreateParameterContext();BlobDesignData.BindParameterContext(presenter,replacement);
             Check(!oldField.TrySetConstant(102L)&&first.CaptureAcceptedFields().Get<long>(threshold)==defaults.Threshold,
                 "重绑后旧控件事件不能修改当前草稿");
             // Options can be rebound to the same input content; it must be detached from the old tree first.
-            presenter.Bind(replacement.Draft,replacement.Options);
+            BlobDesignData.BindParameterContext(presenter,replacement);
             fields=(DeclaredFieldsView)presenter.Content;
             var tabs=(TabControl)fields.Content;
             presenter.SelectedPageIndex=1;var previewSelected=tabs.SelectedIndex==1;
@@ -955,8 +955,8 @@ internal static class S2DocumentEditingCases
                     Check(modeCombo.Items.Count==6,"设计视图通过正式下拉显示六种阈值模式");
                     Check(!mode.TrySetConstant("None")&&!mode.TrySetConstant("DoubleThreshold")&&mode.TrySetConstant("SingleThreshold"),
                         "未实现模式不可写入设计草稿，单阈值可用");
-                    Check(!Descendants<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls>(first).Any(),
-                        "设计视图与运行时共用正式阈值控件而非旧替身");
+                    Check(Descendants<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeThresholdUiDraftControls>(first).Single().IsSingleMode,
+                        "设计与运行同一组装内保留外部正式Single字段及完整模式预览");
                     Render(first,"parameters-six-thresholds.png",600,680);
                     var beforeExpansion=replacement.Draft.Revision;
                     Check(!advanced.IsExpanded&&circle.Visibility==Visibility.Collapsed,"运行参数高级项默认收起");

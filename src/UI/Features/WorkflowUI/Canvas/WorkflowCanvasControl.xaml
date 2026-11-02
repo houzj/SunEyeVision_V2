@@ -21,7 +21,7 @@
         <convertersPath:SmartPathConverter x:Key="SmartPathConverter"/>
         <convertersPath:SmartPathMultiConverter x:Key="SmartPathMultiConverter"/>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <convertersPath:PointOffsetConverter x:Key="PointOffsetConverter"/>
+        <convertersPath:CoordinateOffsetConverter x:Key="CoordinateOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
         <convertersNode:ToolNodeIconConverter x:Key="ToolNodeIcon"/>
         <convertersNode:VmGroupBackgroundConverter x:Key="VmGroupBackground"/>
@@ -159,8 +159,8 @@
                                                  Stroke="#FFFFFF"
                                                  StrokeThickness="1"
                                                  Opacity="0.7"
-                                                 Canvas.Left="{Binding X, Converter={StaticResource PointOffsetConverter}, ConverterParameter=-4}"
-                                                 Canvas.Top="{Binding Y, Converter={StaticResource PointOffsetConverter}, ConverterParameter=-4}"/>
+                                                 Canvas.Left="{Binding X, Converter={StaticResource CoordinateOffsetConverter}, ConverterParameter=-4}"
+                                                 Canvas.Top="{Binding Y, Converter={StaticResource CoordinateOffsetConverter}, ConverterParameter=-4}"/>
                                     </Canvas>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

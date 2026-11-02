@@ -354,6 +354,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(_eventRoot.IsVisible);
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
+    internal long EditVersion=>_commit?.EditVersion??0;
     public NumericPendingEdit? TakePendingRaw(){_commit?.Suspend();return _commit?.Pending;}
     public void RestorePending(NumericPendingEdit? raw)=>_commit?.RestorePending(raw);
     public void Dispose()

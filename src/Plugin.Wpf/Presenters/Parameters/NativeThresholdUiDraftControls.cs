@@ -24,14 +24,16 @@ public sealed class NativeThresholdUiDraftControls : StackPanel,IDisposable,IPar
     private Func<(ParameterSetting Polarity,ParameterSetting Low,string? LowPendingRaw)>? _readSingle;
     private string? _seedRaw;
     private bool _projectionSeeded,_seedRawApplied;
+    private long _seedEditVersion;
     private string _lastMode="SingleThreshold";
     public event Action? Changed;
     public string SelectedMode=>((ConstantSetting)_mode.Setting).Value as string??"SingleThreshold";
     public bool IsSingleMode=>SelectedMode=="SingleThreshold";
     public FrameworkElement SingleVisibilitySource {get;}=new Border();
-    private bool SeedPending(DeclaredFieldEditor e)=>ReferenceEquals(e,_low)&&_seedRaw is not null&&e.InputElement is TextBox text&&text.Text==_seedRaw;
+    private bool SeedPending(DeclaredFieldEditor e)=>ReferenceEquals(e,_low)&&_seedRaw is not null&&_seedRawApplied&&e.NumericEditVersion==_seedEditVersion&&DeclaredFieldState.SameSetting(e.Setting,_baseline[e]);
+    private bool SeedReference(DeclaredFieldEditor e)=>ReferenceEquals(e,_low)&&_projectionSeeded&&e.Setting is ReferenceSetting or VariableSetting&&DeclaredFieldState.SameSetting(e.Setting,_baseline[e])&&!e.HasPendingEdits;
     public bool HasPendingEdits=>!_disposed&&(_editors.Any(e=>e.HasPendingEdits&&!SeedPending(e))||_softRange.HasPendingEdits(0)||_softRange.HasPendingEdits(1));
-    public bool HasInvalidInput=>!_disposed&&(_editors.Any(e=>e.HasInvalidText&&!SeedPending(e))||_softLow.HasInvalidInput||_softHigh.HasInvalidInput);
+    public bool HasInvalidInput=>!_disposed&&(_editors.Any(e=>e.HasInvalidText&&!SeedPending(e)&&!SeedReference(e))||_softLow.HasInvalidInput||_softHigh.HasInvalidInput);
     public bool HasUiChanges=>!_disposed&&(HasPendingEdits||HasInvalidInput||_baseline.Any(p=>!DeclaredFieldState.SameSetting(p.Key.Setting,p.Value))
         ||!DeclaredFieldState.SameSetting(_softLow.Accepted,new ConstantSetting(100L))||!DeclaredFieldState.SameSetting(_softHigh.Accepted,new ConstantSetting(150L)));
     private void OnChanged(){if(!_disposed&&!_seeding)Changed?.Invoke();}
@@ -96,7 +98,7 @@ public sealed class NativeThresholdUiDraftControls : StackPanel,IDisposable,IPar
     }
     private void OnLowLoaded(object sender,RoutedEventArgs args)=>ApplySeedRaw();
     private void ApplySeedRaw()
-    {if(!_seedRawApplied&&_seedRaw is not null&&_low.InputElement is TextBox text){_seedRawApplied=true;var prior=_seeding;_seeding=true;try{text.Text=_seedRaw;}finally{_seeding=prior;}}}
+    {if(!_seedRawApplied&&_seedRaw is not null&&_low.InputElement is TextBox text){_seedRawApplied=true;var prior=_seeding;_seeding=true;try{_low.RestoreUiProjectionRaw(_seedRaw);_seedEditVersion=_low.NumericEditVersion;}finally{_seeding=prior;}}}
     public bool TrySelectMode(string mode)
     {if(_disposed)return false;if(IsSingleMode)SeedSingle();return _mode.TrySetConstant(mode);}
     private void Project()
@@ -116,7 +118,7 @@ public sealed class NativeThresholdUiDraftControls : StackPanel,IDisposable,IPar
     private void OnVisible(object sender,DependencyPropertyChangedEventArgs args)=>((IParameterVisibility)this).PrepareForVisibility(IsVisible);
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {ParameterCleanup.Run(_editors.Cast<FrameworkElement>().Append(_softRange).Select(view=>(Action)(()=> (view as IParameterVisibility)?.PrepareForVisibility(visible&&view.Visibility==Visibility.Visible))));}
-    public void RetireInteractions(){if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
+    public void RetireInteractions(){if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),()=>{if(!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});}
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;_readSingle=null;

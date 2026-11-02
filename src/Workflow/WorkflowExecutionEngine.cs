@@ -105,169 +105,6 @@ namespace SunEyeVision.Workflow
         #region 同步执行
 
         /// <summary>
-        /// 使用基于拓扑排序的并行组执行工作流（简化方案）
-        /// </summary>
-        private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups(
-            WorkflowRunSession session,
-            Workflow workflow,
-            WorkflowContext context,
-            WorkflowExecutionDependencyGraph dependencyGraph,
-            IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
-        {
-            return await ExecuteWorkflowWithReadyQueue(
-                session, workflow, context, dependencyGraph, nodeExecutionProfiles);
-
-#pragma warning disable CS0162 // 保留旧分层实现，便于运行回归期间对照；实际入口已切到全局就绪队列。
-            _logger.LogInfo($"[DEBUG ExecuteWorkflowWithParallelGroups] workflow.Id={workflow.Id}, workflow.Name={workflow.Name}, Nodes.Count={workflow.Nodes.Count}, Connections.Count={workflow.Connections.Count}");
-
-            var result = new ExecutionResult();
-            int totalExecutedNodes = 0;
-
-            _logger.LogInfo($"========== 使用基于执行链的并行组执行模式 ==========");
-
-            // 当前仍按组串行执行，但组必须来自完整依赖图：参数绑定也会形成前驱关系。
-            // 不能只用画布连线，否则“未画线的结果参数绑定”会被错误放入同一候选组。
-            var parallelGroups = dependencyGraph
-                .GetTopologicalLayers(workflow.Nodes.Select(node => node.Id))
-                .Select(layer => layer.ToList())
-                .ToList();
-            _logger.LogInfo($"获取到 {parallelGroups.Count} 个并行执行组");
-
-            // 显示执行组信息
-            for (int i = 0; i < parallelGroups.Count; i++)
-            {
-                var group = parallelGroups[i];
-                var groupInfo = $"组{i + 1}: {string.Join(", ", group.Select(id => 
-                {
-                    var node = workflow.Nodes.FirstOrDefault(n => n.Id == id);
-                    return node != null ? $"{node.Name}({id})" : id;
-                }))}";
-                _logger.LogInfo($"  {groupInfo}");
-            }
-            _logger.LogInfo($"=====================================================");
-
-            // 按组顺序执行
-            // ★ 剪枝集合：被跳过的节点（条件分支非命中分支 / 未命中整条分支）。
-            //   分组仍用拓扑 BFS 分层（谁先谁后不变），条件分支只负责给不该跑的节点"贴标签"，
-            //   执行时跳过贴标签节点。剪枝传播规则：一个节点被剪 ⟺ 其所有前驱都被剪。
-            var prunedNodeIds = new HashSet<string>();
-            // 条件分支的目标节点（命中时保留其整条上游链）
-            HashSet<string> protectedNodeIds = new();
-
-            for (int groupIndex = 0; groupIndex < parallelGroups.Count; groupIndex++)
-            {
-                await session.WaitIfPausedAsync();
-                var group = parallelGroups[groupIndex];
-
-                // ★ 本组内已被剪枝的节点：标记 Skipped，不执行。
-                //   剪枝发生在条件分支评估后（后续组），这些节点尚未执行（Pending），直接标记 Skipped；
-                //   UpdateNodeStatus 幂等，重复标记安全。
-                var toSkip = group.Where(id => prunedNodeIds.Contains(id)).ToList();
-                foreach (var skippedId in toSkip)
-                {
-                    context.UpdateNodeStatus(skippedId, NodeStatus.Skipped);
-                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = skippedId, Status = NodeStatus.Skipped });
-                }
-                var executable = group.Where(id => !prunedNodeIds.Contains(id)).ToList();
-                if (executable.Count == 0)
-                {
-                    _logger.LogInfo($"组 {groupIndex + 1} 全部被剪枝，跳过执行");
-                    continue;
-                }
-
-                _logger.LogInfo($"");
-                _logger.LogInfo($"========== 执行组 {groupIndex + 1}/{parallelGroups.Count} ({executable.Count}个节点) ==========");
-
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException();
-                }
-
-                // 并行执行当前组的节点
-                var groupStartTime = DateTime.Now;
-                using var groupResult = await ExecuteNodesInParallel(
-                    workflow,
-                    executable,
-                    context,
-                    dependencyGraph,
-                    nodeExecutionProfiles);
-
-                // ★ 统计按实际成功节点数（失败/跳过的节点不计入）
-                totalExecutedNodes += executable.Count(id => context.GetNodeResult(id)?.Success == true);
-
-                var groupDuration = (DateTime.Now - groupStartTime).TotalMilliseconds;
-                _logger.LogInfo($"组 {groupIndex + 1} 执行完成, 耗时: {groupDuration:F2}ms, 成功节点: {groupResult.Success}");
-
-                if (!groupResult.Success)
-                {
-                    // ★ 失败隔离：本组存在失败节点，但不再终止整条流程。
-                    //   失败节点结果已由 SetNodeResult 写入 SSOT，此处合并本组结果供 UI 使用，
-                    //   随后继续执行后续组 —— 不相关分支照常跑完；
-                    //   失败节点的下游由前驱可用性判定（AreParentsAvailable）标 Skipped，避免级联假错误。
-                    foreach (var kvp in context.GetAllNodeResults())
-                    {
-                        groupResult.SetNodeResult(kvp.Key, kvp.Value);
-                    }
-                    _logger.LogInfo($"组 {groupIndex + 1} 存在失败节点，按隔离策略继续执行后续组");
-                }
-
-                // ★ 收集本组所有条件分支的控制信号（可能有多个同组并行）。
-                //   必须逐一处理每个信号：一组多条件分支时，只取第一个会导致其余条件分支
-                //   的剪枝（命中/未命中）被忽略，其下游不剪枝 → "无规则时下游全执行" bug。
-                var controlSignals = TryExtractControlSignals(workflow, executable, context);
-                foreach (var (controlNodeId, nextNodeIds) in controlSignals)
-                {
-                    // 命中：保留目标节点的整条上游链（防止剪掉目标必经的中间层，保证数据链不断）
-                    protectedNodeIds = ComputeProtectedNodes(workflow, nextNodeIds);
-                    // 计算剪枝：非目标分支（命中）或全部下游（未命中）
-                    var newlyPruned = ComputePrunedNodes(workflow, controlNodeId, nextNodeIds, protectedNodeIds, prunedNodeIds);
-                    foreach (var id in newlyPruned)
-                    {
-                        prunedNodeIds.Add(id);
-                    }
-                    _logger.LogInfo(nextNodeIds.Count > 0
-                        ? $"条件分支控制: 命中 {nextNodeIds.Count} 个目标 [{string.Join(", ", nextNodeIds)}]，剪枝 {newlyPruned.Count} 个节点"
-                        : $"条件分支控制: 未命中，剪枝 {newlyPruned.Count} 个节点（该分支终止）");
-                }
-            }
-
-            // 从 SSOT (WorkflowContext) 获取所有节点结果
-            var allResults = context.GetAllNodeResults().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            // 合并所有节点结果
-            result.Success = allResults.Values.All(r => r.Success);
-            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
-            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
-            result.NodeResults = allResults;
-
-            // 收集错误
-            foreach (var nodeResult in allResults.Values.Where(r => !r.Success))
-            {
-                if (nodeResult.ErrorMessages?.Any() == true)
-                {
-                    foreach (var error in nodeResult.ErrorMessages.Where(e => e != null))
-                    {
-                        result.AddError(error, nodeResult.NodeId);
-                    }
-                }
-            }
-
-
-            _logger.LogInfo($"");
-            _logger.LogInfo($"========== 工作流执行总结 ==========");
-            _logger.LogInfo($"  总执行节点: {totalExecutedNodes}");
-            _logger.LogInfo($"  执行组数: {parallelGroups.Count}");
-            _logger.LogInfo($"  成功节点: {allResults.Values.Count(r => r.Success)}");
-            _logger.LogInfo($"  失败节点: {allResults.Values.Count(r => !r.Success)}");
-            _logger.LogInfo($"  总耗时: {(DateTime.Now - context.ExecutionStartTime).TotalMilliseconds:F2} ms");
-            _logger.LogInfo($"======================================");
-
-            try{CaptureDeclaredRunOutputs(result,workflow);ExecutionCompleted?.Invoke(this,result);return result;}
-            catch{result.Dispose();throw;}
-#pragma warning restore CS0162
-        }
-
-        /// <summary>
         /// 持续从整个依赖图选择已就绪节点，而不是等待一个拓扑层全部结束。
         /// 这样相机等待、外部信号等待或耗时节点不会阻塞与其无依赖关系的后续节点。
         /// </summary>
@@ -689,7 +526,7 @@ namespace SunEyeVision.Workflow
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
                 try
                 {
-                var subResult = await ExecuteWorkflowWithParallelGroups(
+                var subResult = await ExecuteWorkflowWithReadyQueue(
                     session,
                     execWorkflow,
                     subContext,
@@ -745,7 +582,7 @@ namespace SunEyeVision.Workflow
             try
             {
                 _logger.LogInfo($"开始执行工作流: {sourceWorkflow.Name}");
-                var result = await ExecuteWorkflowWithParallelGroups(
+                var result = await ExecuteWorkflowWithReadyQueue(
                     session,
                     execWorkflow,
                     session.RootContext,

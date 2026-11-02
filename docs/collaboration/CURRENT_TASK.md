@@ -1,6 +1,10 @@
+## 2026-11-02 Blob判定比较指令独立复核
+
+- 原主函数及float/int/double helper四份asm的SHA与逆向报告一致；总面积由int32精确转double，单体面积/周长/轴长为float32转double。float比较先做float精度范围运算，不能使用C#的最小正数Epsilon替代机器epsilon。
+- 在浮点invalid异常屏蔽且指令正常继续的限定下，原比较的unordered/NaN分支已核；真实MXCSR环境未知，正式输入继续拒绝非有限值。总体NG与逐体状态分别计算。证据补入 BLOB_LIMIT_JUDGE_ORIGINAL_20261102.md；原判定链尚未实施。
 ## 2026-11-02 Blob 原结果判定静态补证
 
-- 逆向负责人交付完整 LimitJudge 原指令及三个比较helper；报告归档 evidence/BLOB_LIMIT_JUDGE_ORIGINAL_20261102.md，SHA256 ED08C42ADE826FB81034E205A0614F60F5A71B984F083685323C670D61CE3816。原2总体/13逐体按AND，整数闭区间，float/double各使用相应epsilon；零目标开关为1时按(n==0)初始化，与直觉不同，按原指令保留且未做原机验证。
+- 逆向负责人交付完整 LimitJudge 原指令及三个比较helper；报告原始交付SHA256 ED08C42ADE826FB81034E205A0614F60F5A71B984F083685323C670D61CE3816，补充指令独立复核后的 evidence/BLOB_LIMIT_JUDGE_ORIGINAL_20261102.md 当前SHA256 BD2C6DA4A93AEC3F8AAB73BFA8EA83B31CF9CC6311E2AD2A71FAA7B1ECB05612。原2总体/13逐体按AND，整数闭区间，float/double各使用相应epsilon；零目标开关为1时按(n==0)初始化，与直觉不同，按原指令保留且未做原机验证。
 - 判定消费算法已返回的结果集合，NG状态本身不触发LimitJudge错误、仍可进入ProcessOutput；非零错误跳过输出，输出发布未证原子。内核筛选排序限数次序、长短轴全长/半长、框架错误后旧输出等仍未闭合。源码尚未接此判定，不将证据当完成。
 ## 2026-11-02 三阶段真实清单与持续闭口计划
 

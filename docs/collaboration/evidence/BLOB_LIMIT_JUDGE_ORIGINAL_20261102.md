@@ -53,3 +53,13 @@ SetParam 的字段偏移和 LimitJudge 的 getter 位移交叉对应；下表名
 - `helpers/0x180019f40-180019f40.asm.txt` `3117C14DBB5D791B02B1D4E13D3C8AD531353B328D45DA25651A3FE02947725A`。
 - `helpers/0x180019ee0-180019ee0.asm.txt` `557795CB1204D28579F206261CF81A0DEAB75608426CEDB7B926267A4F954E89`。
 - Process、ProcessAlg、ProcessOutput 与 SetParam 的原反编译/汇编分别位于 `D:/MyWork/REA逆向测试/analysis/full-audit/b08-blob-low-20261030/output/0x18001fa80-18001fa80.*`、`0x18001fec0-18001fec0.*`、`0x180022500-180022500.*` 和 `analysis/full-audit/b08-geometry-output-20261031/0x180020310-180020310.*`。
+
+## 独立指令复核：特殊值及总面积
+
+本次按原报告目录的 native 和 helpers 四份asm逐一读取并核SHA，均与上文一致。此前按归档报告相对路径查找失败仅是查找范围不足，并非材料不存在。
+
+原 `18001f883 MOVD XMM0,EAX`、`18001f887 CVTDQ2PD` 的总面积输入为**有符号int32→double精确转换**，上游getter如何生成该整数未证；本方double总和不得擅自截断冒充原结果。单体面积、周长和长短轴是float32经CVTSS2SD转换；质心、框、圆度及矩形度走float helper。float上下限运算须先按float32进行SUBSS/ADDSS，double按SUBSD/ADDSD；对应机器精度epsilon不能用C# `float.Epsilon`/`double.Epsilon`。
+
+原float `180019ef6 COMISS`/`180019ef9 JA`、`180019f04 COMISS`/`180019f07 JBE`，double `180019f56 COMISD`/`180019f5a JA`、`180019f65 COMISD`/`180019f69 JBE`：在浮点invalid异常被屏蔽且指令继续的条件下等价于 `!(lower > value) && !(value > upper)`，无序比较不会按通常的闭区间表达式处理；value为NaN时此路径返回通过。实际MXCSR异常屏蔽、舍入、DAZ/FTZ未固定；正式入口仍保留非有限数拒绝，不把隔离比较核心的真值表视为可接受非有限输入或原机验证。
+
+原判定中总体状态与各对象状态独立，整体NG或零目标开关导致整体NG时不得把所有对象状态强改NG。本方HALCON测量与原各getter精度/总面积阶段仍需明确适配和验证；缺少旋转框约定、轴长定义的条目保持保护。

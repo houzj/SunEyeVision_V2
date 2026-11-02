@@ -35,6 +35,7 @@ internal static class C05NumericModelCases
  {
   var bindings=new[]{leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!,text.GetBindingExpression(TextBox.TextProperty)!};
   var dirty=bindings.Where(b=>b.IsDirty).ToArray();Console.WriteLine($"{phase} dirty={dirty.Length} errors={Validation.GetErrors(leaf).Count+Validation.GetErrors(text).Count} text={text.Text}");
+  foreach(var error in Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)))Console.WriteLine($"{phase} validation rule={error.RuleInError.GetType().FullName} content={error.ErrorContent} binding={error.BindingInError}");
   Check(dirty.All(b=>b.ValidateWithoutUpdate()),phase+" dirty校验拒绝");foreach(var binding in dirty)binding.UpdateSource();
   Check(!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),phase+" 全窗flush等价检查存在WPF错误："+string.Join("|",Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)).Select(e=>e.ErrorContent)));
   Check(bindings.All(b=>!b.IsDirty),phase+" flush后残留dirty");
@@ -74,14 +75,6 @@ internal static class C05NumericModelCases
     foreach(var fail in new[]{false,true}){var p=Int();var identity=new ReferenceSetting(new OutputReference("producer","value",DataType.Integer));var refs=ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>fail?throw new InvalidOperationException("ordinary-read-failed"):null};using var e=Editor(p,identity,Layout(p),refs);Show(e);Check(Read(e).Status==(fail?NumericModelReadStatus.Failed:NumericModelReadStatus.Unavailable),"读失败状态");Check(!(bool)Call(State(e),"TryUseConstant")!&&e.Setting==identity&&!P<bool>(State(e),"IsReferenceMode"),"失败解绑破坏引用或锁死输入");Check(e.HasInvalidText,"未接纳输入态无门禁");Check(e.TrySetConstant(9L)&&e.Setting==new ConstantSetting(9L),"失败后无法明确输入");}
    });
    Case("未知引用隐藏绑定确认刷新及无值解绑坏raw保护",()=>{
-    var integer=Int("unknown.integer");var intIdentity=new ReferenceSetting(new OutputReference("producer","integer",DataType.Integer));var intReads=0;
-    using(var integral=Editor(integer,intIdentity,Layout(integer,min:10,max:100),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{intReads++;return null;}}))
-    {
-     Show(integral);var c=F(F(integral,"_numeric"),"_coordinator");var a=(Numbers.SliderArrangeBase)F(c,"_arrange");var l=(Numbers.NumericControl)F(c,"_leaf");var t=(TextBox)integral.InputElement!;
-     Console.WriteLine($"unknown-integer physical={a.StartValue} min={l.Minimum} max={l.Maximum}");
-     Call(F(c,"_commit"),"ProjectAccepted");FlushOwned(l,t,"unknown-integer");OpenCloseNative(a,l,t,"unknown-integer");
-     Check(!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity&&!integral.HasPendingEdits,"整数物理target污染未知模型");
-    }
     var p=new Port("unknown.sequence",TypeRef.SequenceOf(DataType.Number),EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
     var identity=new ReferenceSetting(new OutputReference("producer","value",p.Type));var reads=0;var refs=ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{reads++;return null;}};
     using var e=new DeclaredFieldEditor(p,p.Id,identity,_=>{},refs,numericSequence:true);Show(e);
@@ -100,6 +93,14 @@ internal static class C05NumericModelCases
     text.Text="actual-bad-raw";Pump();Call(commit,"ProjectAccepted");
     Check(text.Text=="actual-bad-raw"&&e.HasPendingEdits&&e.HasInvalidText&&!e.TryCommitPending()&&e.Setting==identity,"真实坏raw被引用绑定恢复清掉");
     Check(e.TrySetConstant(4.5)&&e.Setting is ConstantSetting accepted&&accepted.Value is not double,"明确常量不能接纳正式sequence");
+    var integer=Int("unknown.integer");var intIdentity=new ReferenceSetting(new OutputReference("producer","integer",DataType.Integer));var intReads=0;
+    using(var integral=Editor(integer,intIdentity,Layout(integer,min:10,max:100),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{intReads++;return null;}}))
+    {
+     Show(integral);var c=F(F(integral,"_numeric"),"_coordinator");var a=(Numbers.SliderArrangeBase)F(c,"_arrange");var l=(Numbers.NumericControl)F(c,"_leaf");var t=(TextBox)integral.InputElement!;
+     Console.WriteLine($"unknown-integer physical={a.StartValue} min={l.Minimum} max={l.Maximum}");
+     Call(F(c,"_commit"),"ProjectAccepted");FlushOwned(l,t,"unknown-integer");OpenCloseNative(a,l,t,"unknown-integer");
+     Check(!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity&&!integral.HasPendingEdits,"整数物理target污染未知模型");
+    }
    });
    Case("raw跨回读隐藏与重建保留模型及旧叶退役",()=>{
     var p=Int();using var e=Editor(p,new ConstantSetting(3L),Layout(p),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>new(11L)});Show(e);var text=(TextBox)e.InputElement!;text.Text="raw-invalid";Pump();Check(Read(e).Status==NumericModelReadStatus.Updated&&text.Text=="raw-invalid"&&e.HasPendingEdits,"read覆盖raw");e.RetireInteractions();e.Visibility=Visibility.Collapsed;Pump();e.Visibility=Visibility.Visible;Pump();Check(text.Text=="raw-invalid","隐藏丢raw");var model=Model(e);e.TrySetConstant(4L);Call(e,"Render");Pump();Check(ReferenceEquals(model,Model(e)),"同state重建丢模型");text.Text="99";Pump();Check(e.Setting==new ConstantSetting(4L),"旧TextBox回调污染");

@@ -31,6 +31,21 @@ internal static class C05NumericModelCases
   var draft=new FieldSettingsDraft(schema,new FieldSettings(schema.Inputs,fields.ToDictionary(x=>x.Port.Id,x=>x.Value)));
   return new(draft,(options??new()) with{ReferenceOptions=refs});
  }
+ static void FlushOwned(Numbers.NumericControl leaf,TextBox text,string phase)
+ {
+  var bindings=new[]{leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!,text.GetBindingExpression(TextBox.TextProperty)!};
+  var dirty=bindings.Where(b=>b.IsDirty).ToArray();Console.WriteLine($"{phase} dirty={dirty.Length} errors={Validation.GetErrors(leaf).Count+Validation.GetErrors(text).Count} text={text.Text}");
+  Check(dirty.All(b=>b.ValidateWithoutUpdate()),phase+" dirty校验拒绝");foreach(var binding in dirty)binding.UpdateSource();
+  Check(!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),phase+" 全窗flush等价检查存在WPF错误："+string.Join("|",Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)).Select(e=>e.ErrorContent)));
+  Check(bindings.All(b=>!b.IsDirty),phase+" flush后残留dirty");
+ }
+ static void OpenCloseNative(Numbers.SliderArrangeBase native,Numbers.NumericControl leaf,TextBox text,string phase)
+ {
+  var box=(ComboBox)native.FindName("CBox");Console.WriteLine($"{phase} CBox visible={box.IsVisible} enabled={box.IsEnabled} loaded={box.IsLoaded}");
+  if(box.IsVisible&&box.IsEnabled&&box.IsLoaded){box.IsDropDownOpen=true;Pump();Console.WriteLine($"{phase} CBox opened={box.IsDropDownOpen}");box.IsDropDownOpen=false;Pump();Console.WriteLine($"{phase} CBox closed={!box.IsDropDownOpen}");}
+  else Console.WriteLine(phase+" CBox不可打开，保留实际条件");
+  FlushOwned(leaf,text,phase+" popup-close");
+ }
  static int Run()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};owner=new Window{Content=host=new StackPanel(),Width=650,Height=850,Left=-20000,Top=-20000,ShowActivated=false,ShowInTaskbar=false};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -64,10 +79,7 @@ internal static class C05NumericModelCases
     {
      Show(integral);var c=F(F(integral,"_numeric"),"_coordinator");var a=(Numbers.SliderArrangeBase)F(c,"_arrange");var l=(Numbers.NumericControl)F(c,"_leaf");var t=(TextBox)integral.InputElement!;
      Console.WriteLine($"unknown-integer physical={a.StartValue} min={l.Minimum} max={l.Maximum}");
-     Check(a.StartValue>=l.Minimum&&a.StartValue<=l.Maximum,"原件未知整数物理target本身越界，须主线裁决");
-     Call(F(c,"_commit"),"ProjectAccepted");var bindings=new[]{l.GetBindingExpression(Numbers.NumericControl.TextProperty)!,t.GetBindingExpression(TextBox.TextProperty)!};
-     foreach(var binding in bindings){Check(binding.ValidateWithoutUpdate(),"整数隐藏槽校验拒绝");binding.UpdateSource();}
-     Check(bindings.All(b=>!b.HasValidationError&&!b.IsDirty)&&!Validation.GetHasError(l)&&!Validation.GetHasError(t),"min>0未知整数隐藏槽产生RangeRule错误");
+     Call(F(c,"_commit"),"ProjectAccepted");FlushOwned(l,t,"unknown-integer");OpenCloseNative(a,l,t,"unknown-integer");
      Check(!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity&&!integral.HasPendingEdits,"整数物理target污染未知模型");
     }
     var p=new Port("unknown.sequence",TypeRef.SequenceOf(DataType.Number),EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
@@ -77,11 +89,10 @@ internal static class C05NumericModelCases
     var outer=leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!;var inner=text.GetBindingExpression(TextBox.TextProperty)!;
     Check(!P<bool>(Model(e),"HasValue")&&reads==0,"未知引用初始化被冒充回读");
     // Reproduce the confirmed old target transfer: an empty hidden slot cannot convert to StartValue.
-    leaf.SetCurrentValue(Numbers.NumericControl.TextProperty,string.Empty);outer.UpdateSource();
+    text.SetCurrentValue(TextBox.TextProperty,string.Empty);inner.UpdateSource();outer.UpdateSource();
     Check(outer.HasValidationError&&Validation.GetHasError(leaf),"未复现隐藏空串转换失败");
     Call(commit,"ProjectAccepted");Pump();
-    foreach(var binding in new[]{outer,inner}.Where(b=>b.IsDirty)){Check(binding.ValidateWithoutUpdate(),"确认前绑定校验拒绝");binding.UpdateSource();}
-    Check(!outer.IsDirty&&!inner.IsDirty&&!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),"未知引用仍污染全窗确认刷新");
+    FlushOwned(leaf,text,"unknown-sequence inner-override");OpenCloseNative(native,leaf,text,"unknown-sequence");
     Check(!P<bool>(Model(e),"HasValue")&&reads==0&&e.Setting==identity&&!e.HasPendingEdits,"物理target被当模型或正式候选");
     native.IsSubscribeLeft=false;Call(native,"DoLeftTypeChange");Pump();
     Check(reads==1&&e.Setting==identity&&!P<bool>(State(e),"IsReferenceMode")&&text.Text==string.Empty&&e.HasPendingEdits&&e.HasInvalidText,"无值解绑未保持空raw受保护输入态");

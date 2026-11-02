@@ -86,8 +86,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 (string.IsNullOrEmpty(SourceWorkflowId) || ds.SourceWorkflowId == SourceWorkflowId) &&
                 (SourceFieldId.HasValue ? ds.SourceFieldId == SourceFieldId : ds.PropertyName == root));
             if (matched == null) return null;
-            if (PropertyName != root) throw new System.NotSupportedException("旧字符串子路径不能恢复中立来源身份。");
-            return matched.WithConnectionOwnership(AutomaticConnectionId);
+            return new AvailableDataSource { SourceNodeId = matched.SourceNodeId, SourceWorkflowId = matched.SourceWorkflowId,
+                SourceFieldId = matched.SourceFieldId, PropertyName = matched.PropertyName, BindingSuffix = PropertyName[root.Length..],
+                SourceNodeName = matched.SourceNodeName, DisplayName = matched.DisplayName, PropertyType = matched.PropertyType,
+                VariableType = matched.VariableType, AutomaticConnectionId = AutomaticConnectionId };
         }
 
         /// <summary>

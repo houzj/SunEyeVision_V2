@@ -493,26 +493,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <inheritdoc/>
-        public object? GetPropertyValue(string nodeId, string propertyName)
-        {
-            // 从 SSOT 读取器获取节点结果并委托 OutputVariableResolver 取值（无反射、无 GetResultItems 兜底）
-            var result = _ssotReader?.Invoke(nodeId);
-            if (result != null)
-            {
-                try
-                {
-                    return OutputVariableResolver.Resolve(result, propertyName, nodeId);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
         public bool HasNodeExecuted(string nodeId)
         {
             return _ssotReader?.Invoke(nodeId) != null;

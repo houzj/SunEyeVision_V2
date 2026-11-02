@@ -54,7 +54,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public abstract class ToolParameters : ObservableObject
     {
         /// <summary>Create the invocation-owned configuration copy before runtime fields are applied.</summary>
-        public virtual ToolParameters CreateExecutionSnapshot() => ToolExecutionPreparation.CopyParameters(this);
+        public virtual ToolParameters CreateExecutionSnapshot()
+        {
+            var type = GetType();
+            var options = new System.Text.Json.JsonSerializerOptions { IncludeFields = true };
+            return (ToolParameters)(System.Text.Json.JsonSerializer.Deserialize(System.Text.Json.JsonSerializer.Serialize(this, type, options), type, options)
+                ?? throw new InvalidOperationException("无法创建参数快照。"));
+        }
         /// <summary>Persisted inputs invalidated by a committed upstream contract change.</summary>
         public Dictionary<string, string> RebindingRequired { get; set; } = new();
         /// <summary>References retained because their formal contract cannot yet be proved. Not executable.</summary>
@@ -118,10 +124,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </remarks>
         [JsonIgnore]
         public IVisionImage? ResolvedInputImage { get; set; }
-
-        /// <summary>Frozen correction for this invocation; never persisted or inherited by a new run.</summary>
-        [JsonIgnore]
-        public SunEyeVision.Plugin.SDK.Execution.Helpers.PositionCorrectionResolution? ResolvedPositionCorrection { get; internal set; }
 
         /// <summary>
         /// 验证所有参数

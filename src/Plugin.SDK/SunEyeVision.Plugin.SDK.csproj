@@ -56,4 +56,11 @@
          实测根因即"SDK 缺 ThemeInfo 特性 ⇒ WPF 不查 generic.xaml ⇒ 设计器里控件空白"，故删除。） -->
   <ItemGroup><EmbeddedResource Include="Metadata\ToolGroups.xml" LogicalName="SunEyeVision.Plugin.SDK.Metadata.ToolGroups.xml" /></ItemGroup>
   <ItemGroup><Compile Remove="Execution/Parameters/ToolDebugResultSnapshot.cs" /></ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Execution/Parameters/ArrayTreeFormatter.cs;Execution/Parameters/BindingInputCatalog.cs;Execution/Parameters/ImageSourceReference.cs;Execution/Parameters/MeasureGuideParameters.cs;Execution/Parameters/RoiParameters.cs;Execution/Parameters/SubroutineParameters.cs;Execution/Parameters/ISubroutineDebugService.cs;Execution/Parameters/SubroutineDebugServiceProvider.cs;Execution/Parameters/ToolExecutionPreparation.cs;Execution/Helpers/PositionCorrectionResolution.cs;Models/SubroutineLoopConfig.cs;Core/ToolExecutor*.cs;Core/ToolRunner.cs;UI/**/*.cs" />
+    <Compile Include="UI/Controls/Roi/Models/**/*.cs" Exclude="UI/Controls/Roi/Models/ShapeToolItem.cs" />
+    <Compile Remove="ViewModels/ToolViewModelBase.cs" />
+    <Compile Remove="Core/ToolExecutionRequest.cs;Core/IAsyncToolPlugin.cs;Execution/Parameters/RoiBindingInputs.cs" />
+    <Page Remove="UI/**/*.xaml;Themes/Generic.xaml" />
+  </ItemGroup>
 </Project>

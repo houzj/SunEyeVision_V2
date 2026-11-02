@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -23,8 +23,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 3. 支持分组显示
     /// 
     /// 设计分层：
-    /// - 身份层（SourceNodeId + PropertyName）：构造后不可变，用于唯一标识一个数据源，
-    ///   相等比较基于此二层，确保 WPF 控件能正确匹配选中项
+    /// - 身份层（Binding）：中立声明的作用域、端口或变量与选择共同定义身份，
+    ///   相等比较基于完整中立引用，确保 WPF 控件能正确匹配选中项
     /// - 展示层（SourceNodeName, DisplayName 等）：UI 显示辅助
     /// - 状态层（CurrentValue, HasExecuted 等）：随执行变化
     /// 
@@ -80,15 +80,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         public string SourceNodeId => (Binding as ReferenceSetting)?.Reference.NodeId ?? string.Empty;
 
-        /// <summary>
-        /// 源字段稳定 ID（可选）。
-        /// </summary>
-        /// <remarks>
-        /// 通讯解析、脚本和子程序等动态字段使用该 ID 作为长期绑定身份。
-        /// 旧数据源没有该值时，继续使用 SourceNodeId + PropertyName 兼容识别。
-        /// </remarks>
-
-        /// <summary>
+/// <summary>
         /// 源节点名称
         /// </summary>
         public string SourceNodeName { get; set; } = string.Empty;
@@ -107,16 +99,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </remarks>
         public string PropertyName => (Binding as ReferenceSetting)?.Reference.PortId ?? string.Empty;
 
-        /// <summary>
-        /// 绑定路径后缀（数组子集过滤，如 "[Type=Circle]" 或 "[0]"）。
-        /// </summary>
-        /// <remarks>
-        /// 用于 RoI(ShapeParameters[]) 在绑定树中按图形类型/按单个图形下钻时，
-        /// 挂到合成 AvailableDataSource 上，使 GetBindingPath 输出 "NodeId.属性名[Type=Circle]"。
-        /// 为空时退回原数组 "[]" 逻辑。
-        /// </remarks>
-
-        /// <summary>
+/// <summary>
         /// 显示名称
         /// </summary>
         /// <remarks>
@@ -131,7 +114,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 合成叶子（几何字段叶 / ROI 字段叶 / 类型集合叶）常需要比 <see cref="DisplayName"/>
         /// 更完整的名字（如父名 + 字段名 "圆心.X"）。为空时回退 <see cref="DisplayName"/>。
-        /// ★ 显示名只允许由构造方声明；格式化层（ParamBinding）不得再按 BindingSuffix 形态推断。
+        /// ★ 显示名只允许由构造方声明；格式化层不得再从来源表达式形态推断。
         /// </remarks>
         public string? LeafDisplayName { get; set; }
 
@@ -364,21 +347,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 创建数据源
         /// </summary>
-        public static AvailableDataSource Create(
-            string sourceNodeId,
-            string sourceNodeName,
-            string propertyName,
-            string displayName,
-            Type propertyType,
-            object? currentValue = null)
-        {
-            throw new NotSupportedException("旧字符串来源无法确定声明身份；请使用已准入 Binding。 ");
-        }
-
         #region 值相等（基于身份字段）
 
         /// <summary>
-        /// 基于身份字段（SourceNodeId + PropertyName）判断值相等
+        /// 基于完整中立引用判断值相等
         /// </summary>
         /// <remarks>
         /// 不同创建点产生的 AvailableDataSource 实例可能引用不同，但身份相同（同一个数据源）。
@@ -401,7 +373,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 基于身份字段计算哈希值
         /// </summary>
         /// <remarks>
-        /// 身份字段（SourceNodeId、PropertyName）使用 init setter，构造后不可变，
+        /// Binding 使用 init setter，构造后不可变，
         /// 因此 GetHashCode 在对象生命周期内保持稳定，可安全用于字典和集合。
         /// </remarks>
         public override int GetHashCode() => HashCode.Combine(Binding.GetType(), GetBindingPath());
@@ -423,7 +395,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
     /// <summary>
     /// AvailableDataSource 类型转换器，支持 string ↔ AvailableDataSource 的 WPF 绑定转换。
-    /// 格式：NodeId.PropertyName
+    /// 格式：中立绑定引用的序列化表达式
     /// </summary>
     public class AvailableDataSourceConverter : TypeConverter
     {
@@ -436,7 +408,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 从字符串转换（格式：NodeId.PropertyName）
+        /// 从字符串转换（格式：中立绑定引用的序列化表达式）
         /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {

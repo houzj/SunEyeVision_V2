@@ -1,3 +1,10 @@
+## 2026-11-03 真实宿主失败推动完整目录传播修复
+
+SDK测试消费者7d9507b9c已清理纯退役源并保留混合正确断言，固定提交SDK302/302与域22/22；随后运行配置0b45a9d0d修复可信目录丢失，域26/26。UI同封包Root37/37、S4 Core14组通过后，S4 Window实际确认暴露NodeConfigurationEditHost.Freeze无目录壳；自动绑定也曾受误将非空scope当Group保护影响，已定位修复并按显式连接查询失败回滚、新增无连线节点不得二次破坏处理。各旧结果均限对应检查点，整批未通过。
+
+已冻结ReadContract(node,expectedDirectory)唯一签名及readiness完整传播，禁止节点Directory自证；运行快照公开只读Directory，方案/引擎/调试Capture明确供给。编辑单节点Freeze直接复制已同代验证节点，不伪造Solution；退役AllowUnhostedRunForTests无正式文档入口。域线核全部Copy包装与声明验证调用，UI线处理其临时definition显式上下文，不开放方案目录setter。更新原整链HTML，不以单点修复或放宽校验完成。
+
+相机4622d6885已独立构建与隐藏宿主完成样本帧、停止/关闭、迟到及实际参数双向/边界/步长；物理设备/实际写入/视觉和设计器未验。Outcome资源所有权旧测试消费者基础具备仍待迁，不按缺基础删需求；先优先当前生产目录闭包，之后继续迁正式封包故障组件准入。
 ## 2026-11-03 新批联合UI编译与独立自测核收
 
 主线16e7fa35c增加ToolExecutionOwner.IsRetired只读状态，Runtime独立OutDir编译0错，未覆盖既有桌面Release。域候选c3fc7b4cf的Workflow构建与中立真实载荷21/21、查询be7305357的SDK构建与7/7日志已主线实际核收，非87f4新批集成结果。只读scope合同最终为INodeInfoProvider.ScopeId，DataSourceQueryService不允许重定向WorkflowId且不留空provider构造；provider逐次验文档/流程ID、对象、目录与owner退役。

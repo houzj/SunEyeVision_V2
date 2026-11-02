@@ -47,7 +47,7 @@ internal sealed class NativeNumericModel
     }
     internal ConstantSetting ReadProjection(object value,bool checkBounds=true)
     {
-        var stored=NativeNumericSequenceProjection.Applies(_port)?NativeNumericSequenceProjection.FreezeNumber(_port,NativeNumericSequenceProjection.Single(_port,value)):ValueRules.Freeze(_port,value);
+        var stored=ValueRules.Freeze(_port,value);
         return Prepare(stored!,checkBounds,freezeStorage:false);
     }
     internal void Accept(ParameterSetting setting)

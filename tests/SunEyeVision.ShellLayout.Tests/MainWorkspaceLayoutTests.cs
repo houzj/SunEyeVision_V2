@@ -98,12 +98,13 @@ public sealed class MainWorkspaceLayoutTests
             state.Save.Enabled = false; state.Save.Notify(); top.UpdateLayout();
             Assert.False(save.IsEnabled);
             Assert.Contains("toolbarsave_disable", image.Source.ToString(), StringComparison.OrdinalIgnoreCase);
-            var continuous = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "连续运行或停止全部工作流")));
-            Assert.Same(state.ToggleContinuousAllCommand, continuous.Command);
+            var continuous = Assert.Single(buttons.Where(b => (b.ToolTip as string)?.StartsWith("全流程连续运行尚未接入") == true));
+            Assert.False(continuous.IsEnabled); Assert.Null(continuous.Command);
             var runImage = Assert.IsType<Image>(continuous.Content);
-            Assert.Contains("toolbarrunrepeat_normal", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("toolbarrunrepeat_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
             state.IsAllWorkflowsRunning = true; top.UpdateLayout();
-            Assert.Contains("toolbarstop_n", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.False(continuous.IsEnabled);
+            Assert.Contains("toolbarrunrepeat_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
             foreach (var name in new[] { "锁定", "触发", "脚本", "综合配置", "运行界面" })
                 Assert.False(Assert.Single(buttons.Where(b => Equals(b.Content, name))).IsEnabled);
             Assert.DoesNotContain(buttons, b => Equals(b.ToolTip, "工作流"));

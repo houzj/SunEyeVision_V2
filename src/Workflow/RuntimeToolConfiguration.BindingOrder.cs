@@ -56,7 +56,7 @@ public sealed partial class RuntimeToolConfiguration
     private static string SettingIdentity(string id,ParameterSetting setting)
     {
         using var buffer=new System.IO.MemoryStream();
-        using(var writer=new Utf8JsonWriter(buffer))RuntimeFieldJson.Write(writer,new Dictionary<string,ParameterSetting>{{id,setting}});
+        using(var writer=new Utf8JsonWriter(buffer))SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,setting}});
         return Encoding.UTF8.GetString(buffer.ToArray());
     }
     private IReadOnlyList<string> ReconfigureBindingOrder(FieldSettings fields,IEnumerable<string>? proposals)

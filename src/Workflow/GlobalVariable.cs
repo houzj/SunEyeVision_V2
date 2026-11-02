@@ -53,7 +53,7 @@ public class ProducerBinding
     public string ReferenceExpression { get; set; } = string.Empty;
     [JsonIgnore]
     public SunEyeVision.Plugin.Contracts.OutputReference SourceReference =>
-        SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(ReferenceExpression);
+        SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(ReferenceExpression);
     public string WorkflowName { get; set; } = string.Empty;
     public string NodeName { get; set; } = string.Empty;
     public string ResultDisplayName { get; set; } = string.Empty;

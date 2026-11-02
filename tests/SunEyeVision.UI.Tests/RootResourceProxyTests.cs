@@ -99,7 +99,7 @@ public sealed class RootResourceProxyTests
    Assert.Equal(ImageField,((Parameters)reopened.Workflows[0].Nodes[1].Parameters).ImageSourceRef!.SourceFieldId);
    var fragment=WorkflowFragmentCopy.Prepare(root,root.Nodes.Select(n=>n.Id),"copied",id=>id==root.Id?root:null,(node,_)=>new WorkflowNodeBase("copy-"+node.Id,node.Name,node.DispName,node.ToolType));
    var target=fragment.Nodes.Single(n=>n.Id=="copy-target");Assert.Equal("copy-source",((Parameters)target.Parameters).ImageSourceRef!.SourceNodeId);Assert.Equal("copied",((Parameters)target.Parameters).ImageSourceRef!.SourceWorkflowId);
-   var reference=BindingReferenceSerializer.Deserialize(target.ParamSettings.GetSetting("Region")!.ReferenceExpression!);Assert.Equal("copy-source",reference.NodeId);Assert.Equal("copied",reference.ScopeId);
+   var reference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(target.ParamSettings.GetSetting("Region")!.ReferenceExpression!);Assert.Equal("copy-source",reference.NodeId);Assert.Equal("copied",reference.ScopeId);
    query.FormalOutputContractReader=_=>null;Assert.NotNull(context.ValidateReference(image,new ReferenceSetting(Reference(ResourceKind.Image))));
    context.Write(image,new UnsetSetting());Assert.IsType<UnsetSetting>(context.Read(image));
   }

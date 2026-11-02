@@ -149,7 +149,7 @@ public sealed class ResultVariableBindingProductionTests
             Assert.Equal(initial+1,session.History.Position);Assert.Same(publication,main.CurrentResultPublication);
             Assert.Equal("宽度",row.BindingDisplayName);AssertUnlinkVisible(tree,row);
             var expression=variable.ProducerBinding!.ReferenceExpression;
-            var reference=BindingReferenceSerializer.Deserialize(expression);
+            var reference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(expression);
             Assert.Equal(root.Id,reference.ScopeId);Assert.Equal(source.Id,reference.NodeId);Assert.Equal("output.image",reference.PortId);
             Assert.Equal(source.RuntimeConfiguration.Schema.Outputs.Single(port=>port.Id=="output.image").Type,reference.Type);
             Assert.Equal(new[]{"width"},reference.MemberFieldPath);
@@ -178,7 +178,7 @@ public sealed class ResultVariableBindingProductionTests
             Stage("结果退出时清除选中路径");
             Assert.True(string.IsNullOrEmpty(tree.SelectedItemPath),"结果退出后不应保留先前结果的路径");
             Assert.False(tree.CopyPathCommand!.CanExecute(tree.SelectedItemPath));
-            var bad=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(source.Id,"missing",reference.Type,scopeId:root.Id))};
+            var bad=new ProducerBinding{ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(source.Id,"missing",reference.Type,scopeId:root.Id))};
             Assert.False(main.TryBindResultVariable(session,bad,variable.Id,out var error));Assert.NotEmpty(error);
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
         }

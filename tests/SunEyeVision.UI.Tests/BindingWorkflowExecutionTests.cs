@@ -44,7 +44,7 @@ public sealed class BindingWorkflowExecutionTests
         var reference=new SunEyeVision.Plugin.Contracts.OutputReference("source","field:7784e373d39b4375b2f7d911e42e9181",
             (SunEyeVision.Plugin.Contracts.TypeRef)SunEyeVision.Plugin.Contracts.DataType.Number,scopeId:fixture.Flow.Id);
         target.ParamSettings.SetSetting(new ParamSetting{ParameterName="IntInput",BindingType=BindingType.Binding,
-            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference),
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference),
             Conversion=explicitConversion?SunEyeVision.Plugin.Contracts.BindingConversion.Float64ToInt64Checked:SunEyeVision.Plugin.Contracts.BindingConversion.Automatic});
         using var result=await fixture.Run();
         Assert.Equal(expected,result.Success);Assert.Contains("independent",fixture.Trace);
@@ -66,7 +66,7 @@ public sealed class BindingWorkflowExecutionTests
                 SunEyeVision.Plugin.Contracts.CountConstraint.Exactly(2)),
             selection:new SunEyeVision.Plugin.Contracts.BindingSelection.AtField(index),scopeId:fixture.Flow.Id);
         target.ParamSettings.SetSetting(new ParamSetting{ParameterName="Input",BindingType=BindingType.Binding,
-            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference)});
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)});
         using var result=await fixture.Run();
         Assert.True(result.Success,string.Join(";",result.Errors));
         Assert.Equal(24,((ProbeResults)result.NodeResults["target"].Result!).Value);
@@ -82,7 +82,7 @@ public sealed class BindingWorkflowExecutionTests
         var reference=new SunEyeVision.Plugin.Contracts.OutputReference("source","field:7784e373d39b4375b2f7d911e42e9181",
             (SunEyeVision.Plugin.Contracts.TypeRef)SunEyeVision.Plugin.Contracts.DataType.Number,scopeId:fixture.Flow.Id);
         target.ParamSettings.SetSetting(new ParamSetting{ParameterName="Input",BindingType=BindingType.Binding,
-            ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference)});
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)});
         using var result=await fixture.Run();
         Assert.True(result.Success,string.Join(";",result.Errors));
         Assert.Equal(17,((ProbeResults)result.NodeResults["target"].Result!).Value);

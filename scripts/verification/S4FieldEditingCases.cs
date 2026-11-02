@@ -418,7 +418,7 @@ internal static class S2DocumentEditingCases
                 Require(flow.Connections.Any(e=>e.Id==edge.Id)&&Stamp(target.RuntimeConfiguration!)==accepted,"真实连线重做未恢复来源身份");
                 foreach(var n in flow.Nodes)n.IsSelected=false;foreach(var e in flow.Connections)e.IsSelected=e.Id==edge.Id;
                 expectDelete=true;try{vm.DeleteSelectedNodesCommand.Execute(null);Pump();}finally{expectDelete=false;}
-                Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&target.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:not null} broken&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(broken.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(automatic!.Reference),"断边未保留明确待修复引用");
+                Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&target.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:not null} broken&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(broken.Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(automatic!.Reference),"断边未保留明确待修复引用");
                 var brokenStamp=Stamp(target.RuntimeConfiguration!);Require(vm.AddConnectionToWorkflow(edge)&&Stamp(target.RuntimeConfiguration!)==brokenStamp,"重新连线静默修复/替换待修复来源");
                 vm.UndoCommand.Execute(null);Pump();Require(!flow.Connections.Any(e=>e.Id==edge.Id)&&Stamp(target.RuntimeConfiguration!)==brokenStamp,"待修复状态重新连线撤销失败");
                 vm.UndoCommand.Execute(null);Pump();Require(Stamp(target.RuntimeConfiguration!)==accepted,"断边撤销未恢复自动归属");
@@ -431,10 +431,10 @@ internal static class S2DocumentEditingCases
                 var manualDraft=host.BeginEdit(flow.Id,manualNode.Id);var manual=new ReferenceSetting(automatic!.Reference);
                 manualDraft.Node.RuntimeConfiguration=manualDraft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{[imagePort]=manual});host.Commit(manualDraft);
                 var manualEdge=new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=source.Id,TargetNodeId=manualNode.Id};
-                Require(vm.AddConnectionToWorkflow(manualEdge)&&manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualKept&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manualKept.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manual.Reference)&&manualNode.ParamSettings.Count==0,"自动连线覆盖手动来源");
+                Require(vm.AddConnectionToWorkflow(manualEdge)&&manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualKept&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(manualKept.Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(manual.Reference)&&manualNode.ParamSettings.Count==0,"自动连线覆盖手动来源");
                 foreach(var n in flow.Nodes)n.IsSelected=false;foreach(var e in flow.Connections)e.IsSelected=e.Id==manualEdge.Id;
                 expectDelete=true;try{vm.DeleteSelectedNodesCommand.Execute(null);Pump();}finally{expectDelete=false;}
-                Require(manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualAfterDelete&&SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manualAfterDelete.Reference)==SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(manual.Reference),"断边清除了手动来源");
+                Require(manualNode.RuntimeConfiguration!.Fields.Read(imagePort) is ReferenceSetting {OriginId:null,RebindingReason:null} manualAfterDelete&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(manualAfterDelete.Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(manual.Reference),"断边清除了手动来源");
                 imageChainVerified=true;Console.WriteLine("PASS 自动图像真实连线/撤销重做/断边/手动保留/复制/异常回滚");
             }
             host.SynchronizeStructure();var vars=host.BeginVariableEdit();

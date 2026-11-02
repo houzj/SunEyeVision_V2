@@ -175,7 +175,7 @@ public partial class MainWindowViewModel
                     if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
                     var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,
                         selection:reference.Selection,scopeId:scope,storage:reference.Storage);
-                    var key=BindingReferenceSerializer.Serialize(scoped);
+                    var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(scoped);
                     var source=plan.Sources.FirstOrDefault(item=>item.Key==key);
                     if(source is not null&&inputKeys.Add(key))plan.InputSources.Add(source.CreateInputItem());
                 }

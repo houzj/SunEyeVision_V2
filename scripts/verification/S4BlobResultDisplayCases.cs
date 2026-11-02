@@ -96,7 +96,7 @@ internal static class S2DocumentEditingCases
             Console.Error.WriteLine($"auto-binding diagnostic: query={(query is null?"null":"present")} scope={query?.WorkflowId} candidates={string.Join(",",ids)} source={source.Id} sourceSchema={query?.GetSchema(source.Id)?.Outputs.Count} input={inputSetting.GetType().Name}");
             throw new InvalidOperationException("连线后自动图像来源未建立。");
         }
-        var inputReference=((ReferenceSetting)inputSetting).Reference;var key=BindingReferenceSerializer.Serialize(inputReference);
+        var inputReference=((ReferenceSetting)inputSetting).Reference;var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(inputReference);
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
@@ -734,7 +734,7 @@ internal static class S2DocumentEditingCases
                 Require(((DisplayExpressionSetting)remapped.Fields.Read(contentId)).Slots.Where(slot=>slot.Reference is not null).All(slot=>slot.Reference!.NodeId==replacement)
                     &&((ReferenceSetting)remapped.Fields.Read(xId)).Reference.NodeId==replacement&&((DisplayExpressionSetting)config.Fields.Read(contentId)).SameExpression(expression),"嵌套复制映射漏slot或污染原owner");
                 Require(solutions.SaveCurrentDocument(path).FileWritten,"表达式正式方案保存失败");var reopened=new SolutionRepository(directory:admission.Runtime).LoadCandidate(path).Candidate!;
-                try{var loaded=reopened.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(((DisplayExpressionSetting)loaded.Fields.Read(contentId)).SameExpression(expression)&&BindingReferenceSerializer.Serialize(((ReferenceSetting)loaded.Fields.Read(xId)).Reference)==BindingReferenceSerializer.Serialize(widthSource),"方案重开丢失文本映射或X身份");}finally{reopened.ExecutionOwner.Retire();}
+                try{var loaded=reopened.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(((DisplayExpressionSetting)loaded.Fields.Read(contentId)).SameExpression(expression)&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(((ReferenceSetting)loaded.Fields.Read(xId)).Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(widthSource),"方案重开丢失文本映射或X身份");}finally{reopened.ExecutionOwner.Retire();}
             });
             Case("重复映射按原顺序替换，空字面量与非法来源原子拒绝",()=>{
                 SetText((contentId,BlobResultDisplay.ParseContent("{面积}|{面积}")),(xId,new ConstantSetting(0d)),(yId,new ConstantSetting(0d)));
@@ -760,7 +760,7 @@ internal static class S2DocumentEditingCases
                 var position=(DeclaredFieldEditor)Field(xId).View;
                 Console.WriteLine("TEXT_POSITION_ROUTE "+System.Text.Json.JsonSerializer.Serialize(new{inline=(bool)Get(position,"_inlineConstantReference"),view=position.GetType().FullName,popups=Visual(position).OfType<AppsPopup>().Count()}));Require((bool)Get(position,"_inlineConstantReference"),"文本坐标未走原ButtonSelecter内联常量/来源组合");
                 SelectSource(position,widthSource);Pump();
-                Require(Field(xId).Setting is ReferenceSetting reference&&BindingReferenceSerializer.Serialize(reference.Reference)==BindingReferenceSerializer.Serialize(widthSource),"真实位置来源按钮未接纳完整引用身份");
+                Require(Field(xId).Setting is ReferenceSetting reference&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference.Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(widthSource),"真实位置来源按钮未接纳完整引用身份");
                 Require(Words(Scene()).All(word=>((Point)Get(word,"Position")).X==64),"真实位置草稿未进入当前publication文字");
                 Require(!text.TrySetConstant("{无此来源}"),"非法手输表达式误接纳");Require(!control.TryCapture(out var error)&&error.Length>0,"非法原文未阻整窗捕获");
                 Require(text.TrySetConstant("Blob面积:{面积}"),text.Error);Require(control.TryCapture(out error),error);
@@ -802,10 +802,10 @@ internal static class S2DocumentEditingCases
                 var beforeIndependent=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(copiedTarget.Id)?.Result?.Identity;var invalidRun=vm.RunSelectedImageAsync();PumpUntil(()=>invalidRun.IsCompleted);invalidRun.GetAwaiter().GetResult();Pump();var invalidContext=(WorkflowContext)Get(vm,"CurrentWorkflowContext");Require(invalidContext.GetNodeResult(node.Id)?.Result?.IsSuccess!=true&&invalidContext.GetNodeResult(copiedTarget.Id)?.Result?.IsSuccess==true&&invalidContext.GetNodeResult(copiedTarget.Id)!.Result!.Identity!=beforeIndependent&&targetSnapshot.ExecutionIdentity?.IsCurrent==false,"缺源消费者执行了旧值、独立节点未运行或旧结果复活");                history.Undo();Pump();Require(((DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId)).SameExpression(before)&&!beforeDelete.IsCurrent()&&targetSnapshot.ExecutionIdentity?.IsCurrent==false,"撤销删除丢映射或复活旧运行");vm.SelectedNode=node;node.IsSelected=true;Pump();Run();Require(Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:64;B:32")),"删除Undo后的真实新运行未恢复两来源");
                 history.Redo();Pump();Require(((DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId)).SameExpression(before),"自动图像源删除Redo丢显示引用");vm.SelectedNode=node;node.IsSelected=true;Pump();var redoRun=vm.RunSelectedImageAsync();PumpUntil(()=>redoRun.IsCompleted);redoRun.GetAwaiter().GetResult();Pump();Require(((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result?.IsSuccess!=true,"自动图像源删除Redo后消费者仍执行");history.Undo();Pump();vm.SelectedNode=node;node.IsSelected=true;Pump();Run();
                 var threshold=FieldValue(nameof(BlobSettings.Threshold));var manual=new ReferenceSetting(b);var manualDraft=host.BeginEdit(flowId,node.Id);manualDraft.Node.RuntimeConfiguration=manualDraft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{threshold,manual}});host.ValidateRuntimeFieldProposals(manualDraft,new Dictionary<string,ParameterSetting>{{threshold,manual}});host.Commit(manualDraft);Pump();Run();Require(((BlobOutput)((DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot")).Output!).ThresholdMinUsed==32,"手动算法来源B未实际消费32");
-                var manualIdentity=BindingReferenceSerializer.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference);var expressionBefore=(DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId);
+                var manualIdentity=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference);var expressionBefore=(DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId);
                 void CheckManualMissing()
                 {
-                    Require(BindingReferenceSerializer.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference)==manualIdentity&&((DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId)).SameExpression(expressionBefore)&&node.RuntimeConfiguration.ReadCurrentParameter(threshold) is {Value:32L},"手动缺源清关系、改另一slot或篡改已接纳值");
+                    Require(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference)==manualIdentity&&((DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId)).SameExpression(expressionBefore)&&node.RuntimeConfiguration.ReadCurrentParameter(threshold) is {Value:32L},"手动缺源清关系、改另一slot或篡改已接纳值");
                     vm.SelectedNode=node;node.IsSelected=true;Pump();var missingWindow=Open();PrivateDebug(missingWindow,false);missingWindow.Close();Pump();
                     var prior=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(copiedTarget.Id)?.Result?.Identity;var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Pump();var context=(WorkflowContext)Get(vm,"CurrentWorkflowContext");var failed=context.GetNodeResult(node.Id)?.Result;var independent=context.GetNodeResult(copiedTarget.Id)?.Result;
                     Require(failed?.IsSuccess!=true&&independent?.IsSuccess==true&&independent.Identity!=prior,"手动缺源消费者用旧值执行、或独立仅显示失效节点未实际新跑");
@@ -989,7 +989,7 @@ internal static class S2DocumentEditingCases
             if(expected is null)return (bool)node.GetType().GetProperty("Clear")!.GetValue(node)!;
             var candidate=node.GetType().GetProperty("Candidate")!.GetValue(node);if(candidate is null)return false;
             var reference=(OutputReference)candidate.GetType().GetMethod("Reference")!.Invoke(candidate,new object[]{BindingSelection.All})!;
-            return BindingReferenceSerializer.Serialize(reference)==BindingReferenceSerializer.Serialize(expected);
+            return SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(expected);
         });        ((ICommand)session.GetType().GetProperty("ClickCommand")!.GetValue(session)!).Execute(item);popup.IsDropDownOpen=false;Pump();
     }
     private static string SettingId(string name)=>new BlobTool().SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(name)).FieldId;

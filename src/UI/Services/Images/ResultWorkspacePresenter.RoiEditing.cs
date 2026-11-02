@@ -16,7 +16,7 @@ internal sealed partial class ResultWorkspacePresenter
         bool PlanCurrent()=>!_disposed&&!_refreshing&&epoch==_epoch&&ReferenceEquals(plan,_plan)&&plan is not null&&input==_shell.IsDoubleImage;
         bool RequestCurrent()=>request==_roiRequest&&PlanCurrent();
         if(!RequestCurrent()||!current()||!RequestCurrent())return null;
-        var key=BindingReferenceSerializer.Serialize(reference);
+        var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference);
         var source=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
         if(source is null||source.Key!=key||!plan!.InputSources.Any(candidate=>candidate.Key==key)
             ||!ReferenceEquals(source,input?_inputSource:_outputSource)||!OwnsChoice(source,input)||source.Publication is not {} publication)return null;

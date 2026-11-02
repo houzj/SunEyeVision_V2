@@ -44,7 +44,7 @@ internal static class S2DocumentEditingCases
             .WithSettings(new BlobSettings{SegmentationMode=BlobSegmentationMode.None,IsAreaFilterEnabled=false,OutputGrayImage=true})};
         var source=BindingClrAdapter.DescribeOutput(new OutputBindingChangeService().ReadContract(morphology)!.Single(p=>p.Name=="BinaryMask"));
         blob.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,
-            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(morphology.Id,source.Id,source.Type,scopeId:flow.Id)),
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(morphology.Id,source.Id,source.Type,scopeId:flow.Id)),
             SourceNodeId=morphology.Id,SourceProperty=source.Id,SourceWorkflowId=flow.Id});flow.Nodes.Add(blob);
         var bytes=new byte[32*32];for(int y=6;y<26;y++)for(int x=6;x<26;x++)bytes[y*32+x]=200;
         using var input=HalImage.CreateFromBytes(bytes,32,32,1);var executor=new WorkflowExecutionEngine(engine,plugins,new CheckLogger());

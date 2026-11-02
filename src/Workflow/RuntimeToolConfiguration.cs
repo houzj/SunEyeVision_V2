@@ -82,7 +82,7 @@ public sealed partial class RuntimeToolConfiguration
                 writer.WriteString("InputSchema",Schema.Fingerprint);writer.WriteString("SettingsSchema",SettingsSchema.Fingerprint);writer.WriteString("DisplaySchema",DisplaySettingsSchema.Fingerprint);
                 writer.WritePropertyName("ReferenceBehaviors");writer.WriteStartObject();
                 foreach(var pair in _referenceBehaviors.OrderBy(p=>p.Key,StringComparer.Ordinal))writer.WriteString(pair.Key,pair.Value.ToString());writer.WriteEndObject();
-                writer.WritePropertyName("Fields");RuntimeFieldJson.Write(writer,Fields.Capture().Where(pair=>!executionOnly||!IsDisplayField(pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
+                writer.WritePropertyName("Fields");SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,Fields.Capture().Where(pair=>!executionOnly||!IsDisplayField(pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
                 writer.WritePropertyName("ParameterBindingOrder");WriteBindingOrder(writer,export:false);
                 writer.WritePropertyName("ParameterBindingNames");writer.WriteStartObject();
                 foreach(var pair in _bindingNames.OrderBy(pair=>pair.Key,StringComparer.Ordinal))writer.WriteString(pair.Key,pair.Value);
@@ -97,7 +97,7 @@ public sealed partial class RuntimeToolConfiguration
             using var buffer=new System.IO.MemoryStream();
             using(var writer=new Utf8JsonWriter(buffer))
             {
-                writer.WriteStartObject();writer.WritePropertyName("Values");RuntimeFieldJson.Write(writer,CaptureCurrentValues());
+                writer.WriteStartObject();writer.WritePropertyName("Values");SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,CaptureCurrentValues());
                 writer.WritePropertyName("Revisions");writer.WriteStartObject();
                 foreach(var pair in _currentRevisions.OrderBy(pair=>pair.Key,StringComparer.Ordinal))writer.WriteNumber(pair.Key,pair.Value);
                 writer.WriteEndObject();writer.WriteEndObject();
@@ -161,7 +161,7 @@ public sealed partial class RuntimeToolConfiguration
         using(var writer=new Utf8JsonWriter(buffer))
         {
             var value=ReadCurrentParameter(fieldId);
-            RuntimeFieldJson.Write(writer,value is null?new Dictionary<string,ParameterSetting>()
+            SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,value is null?new Dictionary<string,ParameterSetting>()
                 :new Dictionary<string,ParameterSetting>{{fieldId,value}});
         }
         return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
@@ -339,9 +339,9 @@ public sealed class RuntimeToolConfigurationJsonConverter : JsonConverter<Runtim
         writer.WriteStartObject();
         writer.WriteString("ToolId", value.ToolId);
         writer.WritePropertyName("Fields");
-        RuntimeFieldJson.Write(writer,value.Fields.Capture());
+        SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,value.Fields.Capture());
         writer.WritePropertyName("CurrentValues");
-        RuntimeFieldJson.Write(writer,value.CaptureCurrentValues());
+        SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,value.CaptureCurrentValues());
         writer.WritePropertyName("ParameterBindingOrder");value.WriteBindingOrder(writer,export:true);
         writer.WriteEndObject();
     }

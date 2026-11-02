@@ -127,7 +127,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
             if(previewInputs is null)return "";
             if(previewInputs.Any(id=>!current.IsExecutionFieldActive(id)||!Equals(current.GetParameterReferenceBehavior(id),configuration.GetParameterReferenceBehavior(id))))return "";
             using var stream=new System.IO.MemoryStream();
-            using(var writer=new System.Text.Json.Utf8JsonWriter(stream))RuntimeFieldJson.Write(writer,previewInputs.Select(id=>new KeyValuePair<string,ParameterSetting>(id,current.Fields.Read(id))).Where(pair=>pair.Value is not UnsetSetting).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
+            using(var writer=new System.Text.Json.Utf8JsonWriter(stream))SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Write(writer,previewInputs.Select(id=>new KeyValuePair<string,ParameterSetting>(id,current.Fields.Read(id))).Where(pair=>pair.Value is not UnsetSetting).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
             return Convert.ToBase64String(stream.ToArray());
         }
         var configurationProof=previewInputs is null?"":PreviewConfiguration(configuration);
@@ -162,7 +162,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         {
             if(string.IsNullOrWhiteSpace(solutionId)||reference.SolutionId!=solutionId)
                 throw new InvalidOperationException("调试变量不属于已捕获方案。");
-            if(!variableSelections.Add(BindingReferenceSerializer.Serialize(reference)))return;
+            if(!variableSelections.Add(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)))return;
             variableReferences.TryAdd(reference.VariableId,reference);
             if(reference.Selection is BindingSelection.AtField index)AddOutput(index.Reference);
             else if(reference.Selection is BindingSelection.AtVariable variable)AddVariable(variable.Reference);

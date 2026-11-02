@@ -37,7 +37,7 @@ internal static class RuntimeFieldJson
                 {
                     var token=slot.GetProperty("Token").GetString()??throw new JsonException("Expression token cannot be null.");
                     if(slot.TryGetProperty("Reference",out var source))
-                    {Exact(slot,"Token","Reference","Format");slots.Add(new(token,BindingReferenceSerializer.Deserialize(source.GetRawText(),behavior),slot.GetProperty("Format").GetString()));}
+                    {Exact(slot,"Token","Reference","Format");slots.Add(new(token,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(source.GetRawText(),behavior),slot.GetProperty("Format").GetString()));}
                     else
                     {Exact(slot,"Token","SelfPort","SelfMembers","Format");slots.Add(new(token,new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultFieldPath(
                         slot.GetProperty("SelfPort").GetString()!,slot.GetProperty("SelfMembers").EnumerateArray().Select(member=>member.GetString()!)),slot.GetProperty("Format").GetString()));}
@@ -49,14 +49,14 @@ internal static class RuntimeFieldJson
                 Exact(item,"Kind","Reference","Conversion","OriginId","RebindingReason");var name=item.GetProperty("Conversion").GetString();
                 if(!Enum.TryParse<BindingConversion>(name,false,out var conversion)||!Enum.IsDefined(conversion)||conversion.ToString()!=name)
                     throw new JsonException("Unknown binding conversion.");
-                setting=new ReferenceSetting(BindingReferenceSerializer.Deserialize(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("OriginId").GetString(),item.GetProperty("RebindingReason").GetString());
+                setting=new ReferenceSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("OriginId").GetString(),item.GetProperty("RebindingReason").GetString());
             }
             else if(kind.GetString()=="Variable")
             {
                 Exact(item,"Kind","Reference","Conversion","RebindingReason");var name=item.GetProperty("Conversion").GetString();
                 if(!Enum.TryParse<BindingConversion>(name,false,out var conversion)||!Enum.IsDefined(conversion)||conversion.ToString()!=name)
                     throw new JsonException("Unknown variable conversion.");
-                setting=new VariableSetting(BindingReferenceSerializer.DeserializeVariable(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("RebindingReason").GetString());
+                setting=new VariableSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(item.GetProperty("Reference").GetRawText(),behavior),conversion,item.GetProperty("RebindingReason").GetString());
             }
             else throw new JsonException("Persistent fields require Constant or Reference; Unset must be absent.");
             result.Add(property.Name,currentValues?setting:FieldSettings.Freeze(port,setting));
@@ -96,43 +96,5 @@ internal static class RuntimeFieldJson
             };
         else throw new JsonException("Invocation resources and unsupported values cannot be configuration constants.");
         return ValueRules.Freeze(port,result);
-    }
-    internal static void Write(Utf8JsonWriter writer,IReadOnlyDictionary<string,ParameterSetting> fields)
-    {
-        writer.WriteStartObject();
-        foreach(var (id,setting) in fields.OrderBy(pair=>pair.Key,StringComparer.Ordinal))
-        {
-            writer.WritePropertyName(id);writer.WriteStartObject();
-            if(setting is ConstantSetting constant){writer.WriteString("Kind","Constant");writer.WritePropertyName("Value");WriteValue(writer,constant.Value);}
-            else if(setting is DisplayExpressionSetting expression)
-            {
-                writer.WriteString("Kind","DisplayExpression");writer.WriteString("Text",expression.Text);writer.WriteStartArray("Slots");
-                foreach(var slot in expression.Slots)
-                {
-                    writer.WriteStartObject();writer.WriteString("Token",slot.Token);writer.WriteString("Format",slot.Format);
-                    if(slot.Reference is {} source){writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(source));}
-                    else{writer.WriteString("SelfPort",slot.Self!.PortId);writer.WriteStartArray("SelfMembers");foreach(var member in slot.Self.MemberFieldPath)writer.WriteStringValue(member);writer.WriteEndArray();}
-                    writer.WriteEndObject();
-                }
-                writer.WriteEndArray();
-            }
-            else if(setting is ReferenceSetting reference)
-            {writer.WriteString("Kind","Reference");writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(reference.Reference));writer.WriteString("Conversion",reference.Conversion.ToString());writer.WriteString("OriginId",reference.OriginId);writer.WriteString("RebindingReason",reference.RebindingReason);}
-            else if(setting is VariableSetting variable)
-            {writer.WriteString("Kind","Variable");writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(variable.Reference));writer.WriteString("Conversion",variable.Conversion.ToString());writer.WriteString("RebindingReason",variable.RebindingReason);}
-            else throw new JsonException("Persistent Unset must be absent.");
-            writer.WriteEndObject();
-        }
-        writer.WriteEndObject();
-    }
-    private static void WriteValue(Utf8JsonWriter writer,object? value)
-    {
-        if(value is null){writer.WriteNullValue();return;}
-        if(value is RecordValue record)
-        {writer.WriteStartObject();foreach(var item in record.CopyFields()){writer.WritePropertyName(item.Key);WriteValue(writer,item.Value);}writer.WriteEndObject();return;}
-        if(value is SequenceValue sequence){writer.WriteStartArray();foreach(var item in sequence)WriteValue(writer,item);writer.WriteEndArray();return;}
-        if(value is double[] array){writer.WriteStartArray();foreach(var item in array)writer.WriteNumberValue(item);writer.WriteEndArray();return;}
-        switch(value)
-        {case bool flag:writer.WriteBooleanValue(flag);break;case string text:writer.WriteStringValue(text);break;case long integer:writer.WriteNumberValue(integer);break;case double number when double.IsFinite(number):writer.WriteNumberValue(number);break;default:throw new JsonException("Unsupported configuration constant.");}
     }
 }

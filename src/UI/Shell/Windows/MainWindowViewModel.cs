@@ -4558,7 +4558,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
     public sealed class ResultBindingInfo
     {
         public ResultBindingInfo(SunEyeVision.Plugin.Contracts.OutputReference reference,string resultPath,IReadOnlyDictionary<string,string>? bindingNames=null)
-        {Reference=reference;ResultPath=resultPath;_referenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference);
+        {Reference=reference;ResultPath=resultPath;_referenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference);
             BindingNames=bindingNames is null?null:bindingNames is ReadOnlyDictionary<string,string>?bindingNames:new ReadOnlyDictionary<string,string>(bindingNames.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));}
         public IReadOnlyDictionary<string,string>? BindingNames {get;}
         public string? BoundVariableNames=>BindingNames?.TryGetValue(ReferenceExpression,out var names)==true?names:null;

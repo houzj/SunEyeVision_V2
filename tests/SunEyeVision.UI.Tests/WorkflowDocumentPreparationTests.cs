@@ -96,7 +96,7 @@ public sealed class WorkflowDocumentPreparationTests
         // Register only the real engine definitions needed for UI consistency/presentation.
         if(crossFlow)f.Engine.RegisterWorkflow(consumerFlow);
         var reference=new OutputReference(source.Id,invalid?"missing":"output.value",TypeRef.ScalarOf(ScalarKind.Float64),scopeId:sourceFlow.Id);
-        var variable=new GlobalVariable("produced",999d,"Double"){Id="produced",ProducerBinding=new(){ReferenceExpression=BindingReferenceSerializer.Serialize(reference)}};
+        var variable=new GlobalVariable("produced",999d,"Double"){Id="produced",ProducerBinding=new(){ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)}};
         variable.ConsumerBindings.Add(new(){WorkflowId=consumerFlow.Id,NodeId=consumer.Id,ParameterName="Input"});f.Document.GlobalVariables.Add(variable);
         var host=new NodeConfigurationEditHost(f.Document);var publication=WorkflowPublishedConfiguration.Capture(host.Capture(),f.Document);
         f.Manager.CapturePublishedConfiguration=()=>publication;

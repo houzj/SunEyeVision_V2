@@ -322,11 +322,11 @@ internal static class S2DocumentEditingCases
             var draft=Host.BeginEdit(Flow.Id,Target.Id);draft.Node.RuntimeConfiguration=draft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{field,setting}});return draft;
         }
         public void Accept(OutputReference reference)=>Host.Commit(Draft(reference));
-        public string Relation()=>BindingReferenceSerializer.Serialize(((ReferenceSetting)Target.RuntimeConfiguration!.Fields.Read(Probe.NumberInput)).Reference);
+        public string Relation()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(((ReferenceSetting)Target.RuntimeConfiguration!.Fields.Read(Probe.NumberInput)).Reference);
         public GlobalVariable AddVariable(string name,object? value,string type,OutputReference? producer=null)
         {
             var draft=Host.BeginVariableEdit();var variable=new GlobalVariable(name,value,type);
-            if(producer is not null)variable.ProducerBinding=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(producer)};
+            if(producer is not null)variable.ProducerBinding=new ProducerBinding{ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(producer)};
             draft.Configuration.GlobalVariables.Add(variable);Host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),draft);return Document.GlobalVariables.Single(item=>item.Id==variable.Id);
         }
         public VariableReference VariableReference(GlobalVariable variable,BindingSelection? selection=null)

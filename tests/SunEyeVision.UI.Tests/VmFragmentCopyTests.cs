@@ -27,7 +27,7 @@ public sealed class VmFragmentCopyTests
     {
         var a = Make("a",new Parameters { Values = new() {1,2} }); var b = Make("b"); var external = Make("external");
         b.ParamSettings.SetSetting(new ParamSetting { ParameterName="input",BindingType=BindingType.Binding,
-            SourceNodeId="a",SourceWorkflowId="source",ReferenceExpression=BindingReferenceSerializer.Serialize(Reference("a","source",new BindingSelection.AtField(Reference("external","source")))) });
+            SourceNodeId="a",SourceWorkflowId="source",ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference("a","source",new BindingSelection.AtField(Reference("external","source")))) });
         b.ParamSettings.SetSetting(ParamSetting.CreateConstant("list",new List<int>{7}));
         var source = new Flow("source","flow"); source.Nodes.Add(a); source.Nodes.Add(b); source.Nodes.Add(external);
         source.Connections.Add(new() { Id="internal",SourceNodeId="a",TargetNodeId="b",SourcePort="RightPort",TargetPort="LeftPort",ManualPathPoints=new[]{new Point(1,2),new Point(3,4)} });
@@ -36,7 +36,7 @@ public sealed class VmFragmentCopyTests
         var ca = result.Nodes[0]; var cb=result.Nodes[1]; Assert.NotEqual(a.Id,ca.Id); Assert.NotSame(a.Parameters,ca.Parameters);
         Assert.Empty(result.OwnedWorkflows); var edge=Assert.Single(result.Connections); Assert.Equal(ca.Id,edge.SourceNodeId); Assert.Equal(cb.Id,edge.TargetNodeId);
         Assert.Equal("RightPort",edge.SourcePort); Assert.NotSame(source.Connections[0].ManualPathPoints,edge.ManualPathPoints);
-        var reference=BindingReferenceSerializer.Deserialize(cb.ParamSettings["input"]!.ReferenceExpression!);
+        var reference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(cb.ParamSettings["input"]!.ReferenceExpression!);
         Assert.Equal(ca.Id,reference.NodeId); Assert.Equal("destination",reference.ScopeId);
         var index=Assert.IsType<BindingSelection.AtField>(reference.Selection).Reference; Assert.Equal("external",index.NodeId); Assert.Equal("source",index.ScopeId);
         Assert.Equal("stable-field",reference.PortId); Assert.Equal("a.Out",((Parameters)ca.Parameters).Text);
@@ -59,7 +59,7 @@ public sealed class VmFragmentCopyTests
     {
         var child=new Flow("child","child"){IsSubroutine=true}; var inner=Make("inner");child.Nodes.Add(inner);
         inner.ParamSettings.SetSetting(new ParamSetting { ParameterName="image",BindingType=BindingType.Binding,
-            ReferenceExpression=BindingReferenceSerializer.Serialize(Reference("__SubroutineInputs__","child")) });
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference("__SubroutineInputs__","child")) });
         var parameters=new SubroutineParameters {SubroutineId="child"};
         parameters.Outputs.Add(new SubroutineOutputConfig {Name="out",BindingSource="inner.Out",Source=new AvailableDataSource { SourceNodeId="inner",PropertyName="Out" }});
         parameters.LoopConfig.SourceCompareBinding="inner.Out";
@@ -72,7 +72,7 @@ public sealed class VmFragmentCopyTests
         Assert.Equal(copiedChild.Nodes[0].Id,p.Outputs[0].Source!.SourceNodeId);Assert.Equal(copiedChild.Id,p.Outputs[0].Source!.SourceWorkflowId);
         Assert.Equal(copiedChild.Nodes[0].Id+".Out",p.LoopConfig.SourceCompareBinding);
         Assert.Equal(copiedChild.Id,p.LoopConfig.TargetCompareReference!.SourceWorkflowId);Assert.Equal(copiedChild.Nodes[0].Id+".Out",p.LoopConfig.TargetCompareBinding);Assert.Equal("child",parameters.LoopConfig.TargetCompareReference!.SourceWorkflowId);
-        var input=BindingReferenceSerializer.Deserialize(copiedChild.Nodes[0].ParamSettings["image"]!.ReferenceExpression!);
+        var input=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(copiedChild.Nodes[0].ParamSettings["image"]!.ReferenceExpression!);
         Assert.Equal(copiedChild.Id,input.ScopeId);Assert.Equal("__SubroutineInputs__",input.NodeId);
         Assert.Equal("inner.Out",parameters.Outputs[0].BindingSource);
     }
@@ -120,12 +120,12 @@ public sealed class VmFragmentCopyTests
         var a=Make("a");var b=Make("b",new Parameters {ImageSource=new AvailableDataSource { SourceNodeId="a",SourceWorkflowId="external-flow",PropertyName="Out" }});
         b.Parameters.BindingSourceIdentities["ImageSource"]=new("a.Out","external-flow","a");
         b.ParamSettings.SetSetting(new ParamSetting {ParameterName="external",BindingType=BindingType.Binding,SourceNodeId="a",SourceWorkflowId="external-flow",
-            ReferenceExpression=BindingReferenceSerializer.Serialize(Reference("a","external-flow"))});
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference("a","external-flow"))});
         var flow=new Flow("source","source");flow.Nodes.Add(a);flow.Nodes.Add(b);var result=Copy(flow,new[]{"a","b"});
         var parameters=(Parameters)result.Nodes[1].Parameters;
         Assert.Equal("a",parameters.ImageSource!.SourceNodeId);Assert.Equal("external-flow",parameters.ImageSource.SourceWorkflowId);
         Assert.Equal("external-flow",parameters.BindingSourceIdentities["ImageSource"].WorkflowId);
-        Assert.Equal("a",BindingReferenceSerializer.Deserialize(result.Nodes[1].ParamSettings["external"]!.ReferenceExpression!).NodeId);
+        Assert.Equal("a",SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(result.Nodes[1].ParamSettings["external"]!.ReferenceExpression!).NodeId);
     }
 
     [Fact] public void Collection_listener_failure_cannot_leave_half_added_node_or_subprogram()

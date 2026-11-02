@@ -364,7 +364,7 @@ public sealed class GlobalVariableConfigurationEditHostTests
         Assert.NotSame(variable.ProducerBinding, copy.ProducerBinding); Assert.NotSame(variable.ConsumerBindings[0], copy.ConsumerBindings[0]);
         Assert.Equal(variable.ProducerBinding!.ReferenceExpression, copy.ProducerBinding!.ReferenceExpression);
         var reference=copy.ProducerBinding.SourceReference;
-        copy.ProducerBinding.ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+        copy.ProducerBinding.ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
             new SunEyeVision.Plugin.Contracts.OutputReference("private",reference.PortId,reference.Type,reference.MemberFieldPath,reference.Selection,reference.ScopeId,reference.Storage));
         copy.ConsumerBindings[0].ParameterName = "private";
         Assert.Equal("source", variable.ProducerBinding.SourceReference.NodeId); Assert.Equal("InputText", variable.ConsumerBindings[0].ParameterName);

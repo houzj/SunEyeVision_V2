@@ -185,7 +185,7 @@ internal static class S2DocumentEditingCases
         var morphology=Node("morphology","Morphology");Set(morphology.Parameters,"Operation","Open");Set(morphology.Parameters,"KernelShape","Circle");Source(morphology,"threshold","BinaryMask");flow.Nodes.Add(morphology);
         var blob=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,OutputBinaryImage=true})};
         var sourcePort=BindingClrAdapter.DescribeOutput(new OutputBindingChangeService().ReadContract(morphology)!.Single(p=>p.Name=="BinaryMask"));
-        blob.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(morphology.Id,sourcePort.Id,sourcePort.Type,scopeId:flow.Id))});flow.Nodes.Add(blob);
+        blob.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(morphology.Id,sourcePort.Id,sourcePort.Type,scopeId:flow.Id))});flow.Nodes.Add(blob);
         var bytes=new byte[32*32];for(int y=6;y<26;y++)for(int x=6;x<26;x++)bytes[y*32+x]=200;
         using var input=HalImage.CreateFromBytes(bytes,32,32,1);var executor=new WorkflowExecutionEngine(engine,plugins,new CheckLogger());
         using var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
@@ -196,7 +196,7 @@ internal static class S2DocumentEditingCases
         var image=read.Values.Get<IReadOnlyImage>(BlobSchema.Field(6));var region=read.Values.Get<IReadOnlyRegion>(BlobSchema.RegionPort);Require(image.Frame==region.SourceFrame,"二值图/Region错帧");
         var required=new WorkflowNodeBase("required-threshold","required-threshold","required-threshold",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id)};flow.Nodes.Add(required);
         required.ParamSettings.SetSetting(new ParamSetting{ParameterName=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId,BindingType=BindingType.Binding,SourceNodeId="blob",SourceWorkflowId=flow.Id,SourceProperty="ThresholdMinUsed",
-            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference("blob",BlobSchema.Field(8),DataType.Integer,scopeId:flow.Id,storage:NumericStorage.Int64))});
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference("blob",BlobSchema.Field(8),DataType.Integer,scopeId:flow.Id,storage:NumericStorage.Int64))});
         using var rejected=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
         Require(!rejected.Success,"nullable阈值null被下游必需参数默认为0");
         Require(new[]{"filter","threshold","morphology","blob"}.All(id=>rejected.NodeResults.TryGetValue(id,out var prior)&&prior.Success),"nullable拒绝前四个节点出现了其他失败");

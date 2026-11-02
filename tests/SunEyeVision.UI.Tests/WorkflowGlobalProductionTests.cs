@@ -39,7 +39,7 @@ public sealed class WorkflowGlobalProductionTests
             Source=Add(SourceFlow,"source",true,5);
             var port=GlobalProductionProbeDefinition.Outputs.Outputs.Single(o=>o.Id==(array?"output.values":"output.value"));
             Variable=new GlobalVariable("shared",array?new double[]{999}:999d,array?"Double[]":"Double")
-            {Id="variable-"+Id,ProducerBinding=new ProducerBinding {ReferenceExpression=BindingReferenceSerializer.Serialize(
+            {Id="variable-"+Id,ProducerBinding=new ProducerBinding {ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
                 new OutputReference(Source.Id,port.Id,port.Type,scopeId:SourceFlow.Id,storage:port.Storage))}};
             Solution.GlobalVariables.Add(Variable);
         }
@@ -394,7 +394,7 @@ public sealed class WorkflowGlobalProductionTests
         {
             using var f=new Fixture(array:true);var target=f.Add(f.SourceFlow,"target",false,0);var indexNode=f.Add(f.SourceFlow,"index",true,1);
             var indexVariable=new GlobalVariable("index-value",99L,"Integer"){Id="index-variable",ProducerBinding=new ProducerBinding {
-                ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(indexNode.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))}};
+                ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(indexNode.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))}};
             f.Solution.GlobalVariables.Add(indexVariable);
             Assert.True(GlobalProducerBindingRules.TryDescribeTarget(indexVariable.Type,out var indexPort,out var indexClr,out var reason),reason);
             var indexReference=new VariableReference(f.Solution.Id,indexVariable.Id,indexPort.Type,storage:indexPort.Storage);
@@ -475,10 +475,10 @@ public sealed class WorkflowGlobalProductionTests
         Assert.Throws<ArgumentException>(()=>new BindingSelection.AtVariable(new VariableReference("solution","array",TypeRef.SequenceOf(DataType.Integer,CountConstraint.Exactly(2)))));
         var index=new VariableReference("solution","index",DataType.Integer);
         var source=new VariableReference("solution","samples",TypeRef.SequenceOf(DataType.Number,CountConstraint.Exactly(2)),new BindingSelection.AtVariable(index));
-        var restored=BindingReferenceSerializer.DeserializeVariable(BindingReferenceSerializer.Serialize(source));
+        var restored=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(source));
         Assert.Equal("index",Assert.IsType<BindingSelection.AtVariable>(restored.Selection).Reference.VariableId);
-        Assert.Throws<JsonException>(()=>BindingReferenceSerializer.DeserializeVariable(BindingReferenceSerializer.Serialize(source).Replace("\"ContractMajor\":6","\"ContractMajor\":5")));
-        Assert.Throws<System.Text.Json.JsonException>(()=>BindingReferenceSerializer.DeserializeVariable(BindingReferenceSerializer.Serialize(source).Replace("\"Selection\":\"All\"","\"Selection\":\"AtConstant\"")));
+        Assert.Throws<JsonException>(()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(source).Replace("\"ContractMajor\":6","\"ContractMajor\":5")));
+        Assert.Throws<System.Text.Json.JsonException>(()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(source).Replace("\"Selection\":\"All\"","\"Selection\":\"AtConstant\"")));
     }
     [Fact]
     public async Task Variable_indices_reject_negative_and_out_of_range_values_without_first_item_fallback()
@@ -516,14 +516,14 @@ public sealed class WorkflowGlobalProductionTests
             using var f=new Fixture(array:true);var flow=f.Catalog.CreateWorkflow("index-flow-"+f.Id,"index flow");f.Solution.Workflows.Add(flow);
             var index=f.Add(flow,"index",true,1);var target=f.Add(f.SourceFlow,"target",false,0);
             var variable=new GlobalVariable("index",99L,"Integer"){Id="index-id",ProducerBinding=new ProducerBinding {
-                ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(index.Id,"output.index",DataType.Integer,scopeId:flow.Id))}};
+                ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(index.Id,"output.index",DataType.Integer,scopeId:flow.Id))}};
             f.Solution.GlobalVariables.Add(variable);Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var port,out _,out var reason),reason);
             var selection=new BindingSelection.AtVariable(new VariableReference(f.Solution.Id,variable.Id,port.Type,storage:port.Storage));
             if(!module)f.BindVariable(target,selection);else target.RuntimeConfiguration=target.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{
                 ["input"]=new ReferenceSetting(new OutputReference(f.Source.Id,"output.values",GlobalProductionProbeDefinition.Outputs.Outputs.Single(p=>p.Id=="output.values").Type,selection:selection,scopeId:f.SourceFlow.Id))});
             var graph=SolutionExecutionDependencyGraph.Compile(f.Solution);
             Assert.Contains(SolutionExecutionDependencyGraph.GetScopedNodeId(flow.Id,index.Id),graph.GetPredecessors(SolutionExecutionDependencyGraph.GetScopedNodeId(f.SourceFlow.Id,target.Id)));
-            variable.ProducerBinding=new ProducerBinding {ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(target.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))};
+            variable.ProducerBinding=new ProducerBinding {ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(target.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))};
             Assert.Throws<InvalidOperationException>(()=>SolutionExecutionDependencyGraph.Compile(f.Solution));
         }
     }
@@ -562,7 +562,7 @@ public sealed class WorkflowGlobalProductionTests
         using var f=new Fixture(array:true);var target=f.Add(f.SourceFlow,"target",false,0);var index=f.Add(f.SourceFlow,"index",true,1);
         var settings=(Parameters)index.RuntimeConfiguration!.CaptureSettings();index.RuntimeConfiguration=index.RuntimeConfiguration.WithSettings(settings with{Fail=true});
         var variable=new GlobalVariable("index",1L,"Integer"){Id="index-id",ProducerBinding=new ProducerBinding {
-            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(index.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))}};
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(index.Id,"output.index",DataType.Integer,scopeId:f.SourceFlow.Id))}};
         f.Solution.GlobalVariables.Add(variable);Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var port,out var clr,out var reason),reason);
         f.BindVariable(target,new BindingSelection.AtVariable(new VariableReference(f.Solution.Id,variable.Id,port.Type,storage:port.Storage)));
         using var values=new WorkflowGlobalRunValues(f.Solution.Id,f.Solution.GlobalVariables,new Dictionary<string,object?>{{variable.Id,1}});

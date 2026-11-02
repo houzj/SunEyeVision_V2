@@ -133,7 +133,7 @@ public static class WorkflowFragmentCopy
                 if(clone.RuntimeConfiguration is {} runtime)clone.RuntimeConfiguration=runtime.MapReferences(reference=>Reference(reference,scope),origin=>origin.StartsWith("connection:",StringComparison.Ordinal)&&scope.Edges.TryGetValue(origin[11..],out var edge)?"connection:"+edge.Id:null);
 
                 if(clone.SelectedDisplayReference is {} displayReference)
-                    clone.SelectedDisplayReference=BindingReferenceSerializer.Serialize(Reference(BindingReferenceSerializer.Deserialize(displayReference),scope));
+                    clone.SelectedDisplayReference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(displayReference),scope));
             }
         return new(root.Nodes.Values.ToArray(), root.Edges.Values.ToArray(), scopes.Where(p => p.Target != null).Select(p => p.Target!).ToArray());
     }

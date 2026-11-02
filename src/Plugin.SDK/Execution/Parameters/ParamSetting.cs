@@ -178,7 +178,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 case BindingType.Binding:
                     if (ReferenceExpression is not null)
                     {
-                        try { SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(ReferenceExpression); }
+                        try { SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(ReferenceExpression); }
                         catch (Exception fault) when (fault is System.Text.Json.JsonException or ArgumentException or InvalidOperationException or FormatException)
                         {
                             result.IsValid = false;

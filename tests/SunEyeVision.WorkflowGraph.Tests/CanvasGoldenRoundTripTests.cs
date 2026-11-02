@@ -29,8 +29,14 @@ public sealed class CanvasGoldenRoundTripTests
         var right=after.RootElement.GetProperty("Workflows")[0].GetProperty("Connections")[0].GetProperty("ManualPathPoints");
         Assert.Equal(left.GetRawText(),right.GetRawText());
         for(var i=0;i<2;i++)
+        {
             foreach(var field in new[]{"PositionX","PositionY","Width","Height"})
                 Assert.Equal(before.RootElement.GetProperty("Workflows")[0].GetProperty("Nodes")[i].GetProperty(field).GetRawText(),after.RootElement.GetProperty("Workflows")[0].GetProperty("Nodes")[i].GetProperty(field).GetRawText());
+            var beforeConfig=before.RootElement.GetProperty("Workflows")[0].GetProperty("Nodes")[i].GetProperty("RuntimeConfiguration");
+            var afterConfig=after.RootElement.GetProperty("Workflows")[0].GetProperty("Nodes")[i].GetProperty("RuntimeConfiguration");
+            foreach(var field in new[]{"Fields","CurrentValues","ParameterBindingOrder"})
+                Assert.Equal(beforeConfig.GetProperty(field).GetRawText(),afterConfig.GetProperty(field).GetRawText());
+        }
         Assert.Equal(3,after.RootElement.GetProperty("SchemaVersion").GetInt32());
     }
 

@@ -95,7 +95,7 @@ internal sealed class NativeNumericCommit : IDisposable
         value=null!;error="";
         try
         {
-            var raw=_suspended?(IsDirty?_pendingRaw??_text.Text:Format((_state.Accepted as ConstantSetting??_state.ConstantBackup??throw new ArgumentException("没有可提交的常量。")).Value!)):_text.Text;
+            var raw=_suspended?(IsDirty?_pendingRaw??_text.Text:Format((_state.NumericModel is {} model?model.HasValue?new ConstantSetting(model.Value):throw new ArgumentException("尚未取得数值模型，请明确输入常量。"): _state.Accepted as ConstantSetting??_state.ConstantBackup??throw new ArgumentException("没有可提交的常量。")).Value!)):_text.Text;
             if(string.IsNullOrWhiteSpace(raw))throw new ArgumentException("请输入数值。");
             if(_state.Port.Type.Scalar==ScalarKind.Int64)
             {
@@ -122,6 +122,8 @@ internal sealed class NativeNumericCommit : IDisposable
     {
         if(NativeNumericSequenceProjection.Applies(_state.Port)&&value is not double)value=NativeNumericSequenceProjection.Single(_state.Port,value);
         EnsureRepresentable(new ConstantSetting(value));
+        if(!_paired&&_state.NumericModel is {} model)
+        {var prepared=model.Prepare(value);ValidateBounds(prepared.Value!);return prepared;}
         if(value is double number)
         {
             if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
@@ -142,6 +144,7 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public void ValidateStored(ConstantSetting setting)
     {
+        if(!_paired&&_state.NumericModel is {} model){model.ReadProjection(setting.Value!);ValidateBounds(setting.Value!);return;}
         var prepared=PrepareValue(setting.Value!);
         if(!NativeNumericSequenceProjection.Same(_state.Port,prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
     }
@@ -217,11 +220,14 @@ internal sealed class NativeNumericCommit : IDisposable
     public void ProjectAccepted()
     {
         if(!Current())return;
-        if(_state.IsReferenceMode){IsDirty=false;_rawError="";_pendingRaw=null;return;}
-        var constant=_state.Accepted as ConstantSetting??_state.ConstantBackup;
-        if(constant is null)return;
+        var model=_state.NumericModel;
+        if(model is not null&&IsDirty)return;
+        if(_state.IsReferenceMode&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
+        var constant=model is not null?model.HasValue?new ConstantSetting(model.Value):null:_state.Accepted as ConstantSetting??_state.ConstantBackup;
+        if(constant is null)
+        {if(model is not null){var empty=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),empty);}return;}
         EnsureRepresentable(constant);
-        if(_suspended){IsDirty=false;_rawError="";_pendingRaw=null;return;}
+        if(_suspended&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
         string expected;
         try{expected=Format(constant.Value!);}
         catch(ArgumentException failure)

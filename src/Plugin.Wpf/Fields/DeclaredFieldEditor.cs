@@ -149,6 +149,9 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             integerRadioOptions.ValidatePort(port);
             if(integerRadioOptions.Validate(_state.Accepted) is {} error)_state.SetEditError(error);
         }
+        if(!inlineConstantReference&&integerRadioOptions is null&&port.Choices is null
+            &&(numericSequence||port.EditModes!=FieldEditModes.Reference&&port.Type.Shape==ValueShape.Scalar&&port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64))
+            _state.EnableNumericModel(presentation?.Layout);
         _state.Changed+=OnStateChanged;
         _state.ExplicitlyAccepted+=OnExplicitlyAccepted;
         Resources.MergedDictionaries.Add(EditorResources.Create());
@@ -416,6 +419,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),
             ()=>{if(resume&&!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});
     }
+    internal bool HasNumericModel=>_state.NumericModel is not null;
+    internal NumericModelReadResult ReadNumericModel(Func<bool> current)=>_state.ReadNumericModel(()=>!_disposed&&current());
     internal long NumericEditVersion=>_numeric?.EditVersion??0;
     internal void RestoreUiProjectionRaw(string raw)
     {if(_disposed||_numeric is null)return;_numeric.RestoreUiProjectionRaw(new(raw,_state.AcceptanceVersion));_numeric.PrepareForVisibility(_presentationVisible&&IsVisible);}

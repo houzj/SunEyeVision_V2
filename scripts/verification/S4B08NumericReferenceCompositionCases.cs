@@ -31,7 +31,7 @@ using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Workflow;
 
-internal static class S2DocumentEditingCases
+internal static partial class S2DocumentEditingCases
 {
     private static int _passed;
     private sealed class ThrowAfterDispose(IDisposable inner):IDisposable
@@ -233,6 +233,12 @@ internal static class S2DocumentEditingCases
                 Require(regionRectangles==2&&rectangles.Length==rows.Count+regionRectangles&&matched.Count==rectangles.Length,"结果/检测/屏蔽矩形未逐项完整对应");
             }
             var words=items.Where(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)).SelectMany(item=>((System.Collections.IEnumerable)Get(item,"Texts")).Cast<object>()).ToArray();Require(words.Length==1&&Equals(Get(words[0],"Content"),expectedText),"混合正式文本未消费同次结果");if(expectedX is {} x)Require(((Point)Get(words[0],"Position")).X==x,"混合文本位置未消费同次来源");Capture((FrameworkElement)resultView,"mixed-publication-scene.png");
+        }
+        if(Environment.GetEnvironmentVariable("S4_C05_NUMBER_MODELS_ONLY")=="1")
+        {
+            VerifyC05NumberModels(Open,Low,()=>node.RuntimeConfiguration!,FormalEdit,Variable,UseConstant,Debug,Confirm,
+                ()=>history.Position,()=>history.Undo(),()=>history.Redo(),SaveCheck,threshold,values.Id,path);
+            foreach(var window in app.Windows.OfType<NativeRuntimeEditorWindow>().ToArray())window.Close();shell.Close();app.Shutdown();dialogs.Stop();Pump();Console.WriteLine("C05真实单值模型生产链："+_passed+"组通过；CurrentValues仅普通参数适配，非VM native等价。");return 0;
         }
         Case("真实Blob窗使用唯一公共原底栏并执行返回结果",()=>{
             var window=Open();var control=Control(window);var frames=Visual(window).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.NativeToolEditorFrame>().ToArray();Require(frames.Length==1,"Blob窗未使用唯一公共底栏");var frame=frames[0];

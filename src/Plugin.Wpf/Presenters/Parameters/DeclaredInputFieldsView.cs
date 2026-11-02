@@ -27,6 +27,13 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
+    internal IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current)
+    {
+        var candidates=_fields.Where(field=>scope==NumericModelReadScope.Field?field.FieldId==fieldId:field.HasNumericModel).ToArray();
+        if(scope==NumericModelReadScope.CurrentPage&&!currentPage)
+            return pageKnown?Array.Empty<NumericModelReadResult>():Array.AsReadOnly(candidates.Select(field=>new NumericModelReadResult(field.FieldId,NumericModelReadStatus.NotApplicable,"输入组合未声明可证明的页面归属。" )).ToArray());
+        return Array.AsReadOnly(candidates.Select(field=>field.ReadNumericModel(()=>!_disposed&&current())).ToArray());
+    }
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write,ReferenceFieldOptions references,
         Func<OutputReference,string>? format=null,

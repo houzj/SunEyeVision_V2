@@ -40,6 +40,23 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             throw new InvalidOperationException("参数草稿捕获期间已改变或重新绑定。");
         return fields;
     }
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    {
+        VerifyAccess();
+        if(!Enum.IsDefined(scope))throw new ArgumentOutOfRangeException(nameof(scope));
+        if(scope==NumericModelReadScope.Field&&string.IsNullOrWhiteSpace(fieldId))throw new ArgumentException("单项回读必须指定字段。",nameof(fieldId));
+        var fields=_fields;var generation=_generation;var draft=Draft;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(fields,_fields)&&ReferenceEquals(draft,Draft);
+        if(!Current()||fields is null)return new[]{new NumericModelReadResult(fieldId??"",_disposed?NumericModelReadStatus.Retired:NumericModelReadStatus.Unavailable)};
+        var input=_inputContent as DeclaredInputFieldsView;var options=Options??new();
+        bool OwnsInput()=>Current()&&ReferenceEquals(input,_inputContent);
+        if(scope==NumericModelReadScope.Field&&input?.Fields.Any(field=>field.FieldId==fieldId)==true)
+            return input.ReadNumericModels(scope,fieldId,true,true,OwnsInput);
+        var result=fields.ReadNumericModels(scope,fieldId,Current);
+        if(input is null||scope==NumericModelReadScope.Field)return result;
+        var extra=input.ReadNumericModels(scope,null,fields.HasNumericInputPage(options.InputAfterField,options.InputSection),fields.NumericInputPage(options.InputAfterField,options.InputSection),OwnsInput);
+        return Array.AsReadOnly(result.Concat(extra).ToArray());
+    }
     public event Action? Changed;
     public DeclaredSettingsView() { }
     public DeclaredSettingsView(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)=>Bind(draft,options);
@@ -167,6 +184,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.PageChanged+=OnPageChanged;
             _fields=candidate;_inputContent=nextInput;
             Content=candidate;
+            if(Current()&&ReferenceEquals(_fields,candidate))ReadNumericModels(NumericModelReadScope.All);
         }
         catch(Exception failure)
         {

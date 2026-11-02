@@ -19,6 +19,9 @@ namespace SunEyeVision.Plugin.Wpf.Fields;
 public sealed partial class DeclaredFieldsView : UserControl,IDisposable
 {
  private readonly List<DeclaredFieldAccess> _fields=new();
+ private readonly Dictionary<string,string> _numericModelPages=new(StringComparer.Ordinal);
+ private string[] _numericPageKeys=[];
+ private readonly Dictionary<TabItem,string> _numericTabPages=[];
  private readonly Dictionary<string,DeclaredFieldEditor> _editors=new(StringComparer.Ordinal);
  private readonly Dictionary<string,FrameworkElement> _rows=new(StringComparer.Ordinal);
  private readonly List<NativeRangePresenter> _ranges=new();
@@ -301,6 +304,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    all=all.Take(anchor).Where(field=>!own.Contains(field.Port.Id)).Concat(ids.Select(id=>declarations[id]))
        .Concat(all.Skip(anchor).Where(field=>!own.Contains(field.Port.Id))).ToArray();
   }
+  _numericPageKeys=all.Select(field=>field.Presentation.Layout?.Page??field.Presentation.Group).Distinct(StringComparer.Ordinal).ToArray();
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
@@ -308,6 +312,10 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),
        propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null,referenceBehavior:references?.ReadBehavior?.Invoke(field.Port)??ParameterReferenceBehavior.StrictExactlyOne);
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
+   _numericModelPages[field.Port.Id]=field.Presentation.Layout?.Page??field.Presentation.Group;
+   if(!paired.Contains(field.Port.Id)&&!radios.ContainsKey(field.Port.Id)&&!_inlineConstants.Contains(field.Port.Id)
+       &&field.Port.EditModes!=FieldEditModes.Reference&&field.Port.Choices is null&&field.Port.Type.Shape==ValueShape.Scalar
+       &&field.Port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)state.EnableNumericModel(field.Presentation.Layout);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);
   foreach(var option in graphicOptions.Values)
@@ -408,7 +416,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      _rowGateAnchors.Add(view,field.Port.Id);
     }
    }
-   var tab=new TabItem{Header=page.Key,Content=body};
+   var tab=new TabItem{Header=page.Key,Content=body};_numericTabPages.Add(tab,page.Key);
    tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
   }
   Content=tabs;UpdateVisibility();
@@ -485,7 +493,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-   _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+   _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
    foreach(var release in _visualSourceCleanup)release();_visualSourceCleanup.Clear();_visualSources.Clear();

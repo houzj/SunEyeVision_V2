@@ -59,6 +59,7 @@ public interface IToolSettingsView : IDisposable
     long AcceptedRevision { get; }
     IReadOnlyList<string> AcceptedFieldOrder { get; }
     FieldSettings CaptureAcceptedFields();
+    IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null);
     event Action? Changed;
     bool TryCapture(out FieldSettings fields,out string error);
 }

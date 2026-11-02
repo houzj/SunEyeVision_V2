@@ -62,7 +62,26 @@ public sealed class RuntimeQueryTests
         var sources=query.GetNodeOutputProperties("node");
         Assert.Equal(11L,sources.Single(item=>((ReferenceSetting)item.Binding).Reference.PortId=="port").CurrentValue);
         Assert.Equal(22L,sources.Single(item=>((ReferenceSetting)item.Binding).Reference.PortId=="port.with.dot").CurrentValue);
+        Assert.True(query.HasNodeExecuted("node"));
         result.Dispose();Assert.Equal(1,resource.Count);
+        Assert.Null(query.GetNodeContext("node")!.Result);Assert.False(query.HasNodeExecuted("node"));
+        Assert.All(query.GetNodeOutputProperties("node"),item=>{Assert.False(item.HasExecuted);Assert.Null(item.CurrentValue);});
+    }
+    [Fact] public void Foreign_scope_retired_domain_and_not_executed_are_not_current_results()
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port",Number),new Port("port.with.dot",Number)});
+        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider){WorkflowId="scope"};
+        var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        using var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",new ToolOutcome(true,new Output(),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new Release(),0,sourceWorkflowId:"other");
+        query.SetSootReader(_=>result);
+        Assert.Null(query.GetNodeContext("node")!.Result);Assert.False(query.HasNodeExecuted("node"));
+        Assert.All(query.GetNodeOutputProperties("node"),item=>Assert.False(item.HasExecuted));
+        using var pending=DeclaredOutputSnapshot.NotExecuted(schema,0,identity.ToInvocationIdentity("node"),sourceWorkflowId:"scope",executionIdentity:identity);
+        query.SetSootReader(_=>pending);Assert.False(query.HasNodeExecuted("node"));Assert.Null(query.GetNodeContext("node")!.Result);
+        var liveOwner=new ToolExecutionOwner();var liveIdentity=liveOwner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        using var live=DeclaredOutputSnapshot.Capture(schema,0,liveIdentity,"node",new ToolOutcome(true,new Output(),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new Release(),0,sourceWorkflowId:"scope");
+        query.SetSootReader(_=>live);Assert.True(query.HasNodeExecuted("node"));
+        liveOwner.RetireNode("scope/node");Assert.Null(query.GetNodeContext("node")!.Result);Assert.False(query.HasNodeExecuted("node"));
     }
     private sealed class Release:IDisposable { public int Count; public void Dispose()=>Count++; }
     private sealed class Output:IToolOutput

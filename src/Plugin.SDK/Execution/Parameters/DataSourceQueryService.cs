@@ -468,10 +468,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public NodeExecutionContext? GetNodeContext(string nodeId)
         {
-            if (_nodeInfoProvider == null)
-            {
-                return null;
-            }
+            if (string.IsNullOrWhiteSpace(WorkflowId)) throw new InvalidOperationException("来源查询缺少固定流程作用域。");
+            var schema=GetSchema(nodeId);
+            if(schema is null)return null;
+            var result=_ssotReader?.Invoke(nodeId);
+            if(result is not null && !IsCurrentResult(result,nodeId,schema))result=null;
 
             return new NodeExecutionContext
             {
@@ -479,9 +480,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 NodeName = _nodeInfoProvider.GetNodeName(nodeId) ?? nodeId,
                 NodeType = _nodeInfoProvider.GetNodeType(nodeId) ?? "Unknown",
                 NodeIcon = _nodeInfoProvider.GetNodeIcon(nodeId),
-                Result = _ssotReader?.Invoke(nodeId),
-                Schema = GetSchema(nodeId)
+                Result = result,
+                Schema = schema
             };
+        }
+
+        private bool IsCurrentResult(DeclaredOutputSnapshot result,string nodeId,ToolSchema schema)
+        {
+            if(result.Status==ExecutionStatus.NotExecuted || result.Identity.NodeId!=nodeId || result.SourceWorkflowId!=WorkflowId ||
+               result.ExecutionIdentity is not { IsDomainCurrent:true } identity ||
+               new ToolSchema(Array.Empty<Port>(),schema.Outputs).Fingerprint!=result.Schema.Fingerprint)return false;
+            try
+            {
+                using var reader=result.AcquireReader();
+                if(result.IsSuccess && reader.Values is null)return false;
+                return identity.IsDomainCurrent;
+            }
+            catch(ObjectDisposedException){return false;}
+            catch(InvalidOperationException){return false;}
         }
 
         /// <summary>
@@ -495,7 +511,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public bool HasNodeExecuted(string nodeId)
         {
-            return _ssotReader?.Invoke(nodeId) != null;
+            return GetNodeContext(nodeId)?.HasResult == true;
         }
 
         /// <inheritdoc/>

@@ -19,9 +19,21 @@ public sealed class CanvasPointTests
         => Assert.Throws<ArgumentOutOfRangeException>(()=>new CanvasPoint(x,y));
     [Fact] public void Non_finite_json_cannot_be_loaded()
         => Assert.ThrowsAny<Exception>(()=>JsonSerializer.Deserialize<CanvasPoint>("{\"X\":1e999,\"Y\":0}"));
-    [Fact] public void Domain_assembly_has_no_desktop_sdk_or_runtime_references()
+    [Fact] public void Domain_assembly_rejects_desktop_legacy_sdk_and_runtime_references()
     {
         var references=typeof(CanvasPoint).Assembly.GetReferencedAssemblies().Select(x=>x.Name).ToArray();
-        Assert.DoesNotContain(references,name=>name is not null && (name.StartsWith("Presentation",StringComparison.Ordinal) || name=="WindowsBase" || name.StartsWith("SunEyeVision.Plugin",StringComparison.Ordinal)));
+        Assert.DoesNotContain(references,name=>name is not null && IsForbidden(name));
     }
+    [Theory]
+    [InlineData("SunEyeVision.Plugin.Contracts",false)] [InlineData("System.Runtime",false)]
+    [InlineData("SunEyeVision.Plugin.SDK",true)] [InlineData("SunEyeVision.Plugin.Runtime",true)]
+    [InlineData("SunEyeVision.Plugin.Wpf",true)] [InlineData("SunEyeVision.Plugin.Editing.Wpf",true)]
+    [InlineData("SunEyeVision.Plugin.Infrastructure",true)] [InlineData("SunEyeVision.UI",true)]
+    [InlineData("PresentationCore",true)] [InlineData("WindowsBase",true)] [InlineData("System.Xaml",true)]
+    public void Reference_policy_allows_neutral_contracts_and_rejects_desktop_and_host(string name,bool forbidden)
+        => Assert.Equal(forbidden,IsForbidden(name));
+    private static bool IsForbidden(string name)
+        => name.StartsWith("Presentation",StringComparison.Ordinal) || name is "WindowsBase" or "System.Xaml" or
+            "SunEyeVision.Plugin.SDK" or "SunEyeVision.Plugin.Runtime" or "SunEyeVision.Plugin.Wpf" or
+            "SunEyeVision.Plugin.Editing.Wpf" or "SunEyeVision.Plugin.Infrastructure" or "SunEyeVision.UI";
 }

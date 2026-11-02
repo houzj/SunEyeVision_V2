@@ -38,7 +38,7 @@ using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.UI.Shell.Controls.Shell;
 
-internal static class S2DocumentEditingCases
+internal static partial class S2DocumentEditingCases
 {
     private static int _passed;
     [STAThread] private static int Main()
@@ -358,6 +358,13 @@ internal static class S2DocumentEditingCases
             Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=textSourceB.Id,TargetNodeId=source.Id}),"第二文本来源控制前驱连接失败");
         }
         Run();var path=Path.Combine(folder,"display.solution");Require(solutions.SaveCurrentDocument(path).FileWritten,"正式夹具保存失败");
+        if(Environment.GetEnvironmentVariable("S4_NATIVE_EXPORT_ONLY")=="1")
+        {
+            VerifyNativeExportWhole(viewport,()=>Scene(),()=>Publication(),()=>Run(),path,
+                ()=>node.RuntimeConfiguration!.Fields,()=>history.Position,
+                ()=>SetFormal(Display(BlobResultDisplay.Text,"visible"),false));
+            shell.Close();app.Shutdown();Console.WriteLine("原生完整图像导出："+_passed+"组通过；字体native保护与平台差异另记。");return 0;
+        }
         if(scope is "All" or "Render")
         {
             Case("有序矩形角点投原IRectangle，退化与大坐标经两原绘制路径",()=>{

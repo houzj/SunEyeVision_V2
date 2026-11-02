@@ -29,7 +29,7 @@ public sealed partial class NativeResultViewport
                     cross.Fill, cross.StrokeThickness, cross.Opacity, cross.ToolTip,
                     value is CrosshairSettings settings && settings.IsLocked) : value).ToArray();
             Check();
-            var prepared = NativeImageExport.PrepareRendered(frame, visible, _view);
+            var prepared = NativeImageExport.PrepareRenderedBitmap(frame.PrepareOriginalBitmap(), visible, _view);
             Check();
             // Image proof can retire a layer without changing the physical frame.
             // Consume every layer's proof again after rendering; a retirement changes

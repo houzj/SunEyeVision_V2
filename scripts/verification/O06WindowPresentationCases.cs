@@ -4054,11 +4054,10 @@ internal static class S2DocumentEditingCases
   }
   BitmapSource Export(NativeTextViewport view,string name)
   {
-   var type=typeof(Native.Display.ImageView.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
-   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");
-   var prepared=(BitmapSource)type.GetMethod("PrepareRendered")!.Invoke(null,new object?[]{view.NativeView.ImageDataSource,view.NativeView.ShapeList?.Cast<object>().ToArray(),view.NativeView})!;
-   SaveExport(path,prepared);
-   return BitmapDecoder.Create(new Uri(path),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
+   // Screen observation stays independent from the guarded native text export.
+   var bitmap=Actual(view);var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");
+   var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(path))png.Save(file);
+   return bitmap;
   }
   BitmapSource Actual(NativeTextViewport view)
   {
@@ -4072,17 +4071,17 @@ internal static class S2DocumentEditingCases
    void Present(Color color,double opacity,double x=30,double y=30)
    {Require(view.Present(image.Frame,++revision,new[]{new NativeTextOverlay("Blob",new Point(x,y),24,color,opacity)},()=>true),"文字未接纳");Pump();}
    Present(Colors.Lime,1);var ok=Export(view,"native-text-ok");var ink=Ink(ok,true);
-   var actualOk=Ink(Actual(view),true);Require(ok.PixelWidth==320&&ok.PixelHeight==160&&ink.Count>20&&actualOk.Count>20,"原导出或实际视口没有绿色文字");
+   var actualOk=Ink(Actual(view),true);Require(ok.PixelWidth==(int)view.NativeView.ActualWidth&&ok.PixelHeight==(int)view.NativeView.ActualHeight&&ink.Count>20&&actualOk.Count>20,"原导出或实际视口没有绿色文字");
    Present(Colors.Red,1);var ng=Export(view,"native-text-ng");var actualNg=Actual(view);
    Require(Ink(ng,false).Count>20&&Ink(ng,true).Count==0&&Ink(actualNg,false).Count>20&&Ink(actualNg,true).Count==0,"NG色未实际显示");
-   Present(Colors.Lime,0);var actualZero=Actual(view);Require(Pixels(Export(view,"native-text-transparent")).All(value=>value==0)&&Ink(actualZero,true).Count==0&&Ink(actualZero,false).Count==0,"透明文字改变黑底或实际视口仍保留文字");
+   Present(Colors.Lime,0);var actualZero=Export(view,"native-text-transparent");Require(view.Present(image.Frame,++revision,Array.Empty<NativeTextOverlay>(),()=>true),"透明文字基底未清空");Pump();var actualBase=Actual(view);Require(Pixels(actualZero).SequenceEqual(Pixels(actualBase))&&Ink(actualZero,true).Count==0&&Ink(actualZero,false).Count==0,"透明文字改变实际背景或仍保留文字");
    Present(Colors.Lime,.5);var half=Ink(Export(view,"native-text-half"),true);var actualHalf=Ink(Actual(view),true);
    Require(half.Count>0&&half.Peak<ink.Peak*.65&&actualHalf.Count>0&&actualHalf.Peak<actualOk.Peak*.65,"透明度未降低真实像素强度");
    Present(Colors.Lime,1,80,50);var moved=Ink(Export(view,"native-text-moved"),true);
-   Require(Math.Abs(moved.X-ink.X-50)<=1&&Math.Abs(moved.Y-ink.Y-20)<=1,"XY未按图像像素移动");
    var actualMoved=Ink(Actual(view),true);var page=Visuals<FrameworkElement>(view).Single(item=>item.GetType().FullName=="SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.ShapeItemsPage");
    var transform=page.TransformToAncestor(view.NativeView);var ratio=view.NativeView.ControlToImageRadio;
    var start=transform.Transform(new Point(30*ratio,30*ratio));var end=transform.Transform(new Point(80*ratio,50*ratio));
+   Require(Math.Abs(moved.X-ink.X-(end.X-start.X))<=2&&Math.Abs(moved.Y-ink.Y-(end.Y-start.Y))<=2,"XY未按当前视口实际变换移动");
    Require(actualMoved.Count>20&&Math.Abs(actualMoved.X-actualOk.X-(end.X-start.X))<=2&&Math.Abs(actualMoved.Y-actualOk.Y-(end.Y-start.Y))<=2,"实际视口未按当前图像变换更新XY");
    var accepted=view.Revision;view.Width=384;view.Height=192;owner.UpdateLayout();view.NativeView.Init();Pump();
    Require(Ink(Actual(view),true).Count>20&&view.Revision==accepted&&image.CopyPixels().All(value=>value==0),"改尺寸丢字、改发布修订或污染原图");
@@ -4353,7 +4352,7 @@ internal static class S2DocumentEditingCases
   Test("c17-window 导出含可见辅助线且冻结不借模型并拒绝降额截断",()=>
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var model=sample.Crosshairs.CrossDatas[0];model.Stroke="#FFFF0000";
-   var method=typeof(NativeResultViewport).GetMethod("PrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!;var rendered=(BitmapSource)method.Invoke(viewport,new object[]{true})!;var before=new byte[rendered.PixelHeight*rendered.PixelWidth*4];rendered.CopyPixels(before,rendered.PixelWidth*4,0);model.CenterX+=15;var after=new byte[before.Length];rendered.CopyPixels(after,rendered.PixelWidth*4,0);
+   var method=typeof(NativeResultViewport).GetMethod("PrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!;var rendered=(BitmapSource)method.Invoke(viewport,new object[]{true})!;var renderedBgra=new FormatConvertedBitmap(rendered,PixelFormats.Bgra32,null,0);var before=new byte[rendered.PixelHeight*rendered.PixelWidth*4];renderedBgra.CopyPixels(before,rendered.PixelWidth*4,0);model.CenterX+=15;var after=new byte[before.Length];renderedBgra.CopyPixels(after,rendered.PixelWidth*4,0);
    Require(rendered.IsFrozen&&before.SequenceEqual(after)&&Enumerable.Range(0,before.Length/4).Any(i=>before[i*4+2]>200&&before[i*4+1]<40),"辅助线未导出或导出仍借可变模型");
    var max=Native.Display.Contracts.GlobalRenderVariable.ShapeRenderingMaxNumber;var rejected=false;
    try{Native.Display.Contracts.GlobalRenderVariable.ShapeRenderingMaxNumber=1;try{method.Invoke(viewport,new object[]{true});}catch(TargetInvocationException error){rejected=error.InnerException?.Message.Contains("shape-budget")==true;}}

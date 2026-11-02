@@ -15,8 +15,8 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
+
+
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
@@ -179,20 +179,10 @@ internal static class S2DocumentEditingCases
                 Require(!new NodeOpenDecisionChain().Execute(node,openContext,()=>rejected),"不支持的编辑器被当作正式窗口");
                 Require(rejected.Disposed&&openContext.CreatedWindow is null,"打开失败后编辑视图未释放");
             });
-            Case("现有Group参数页使用唯一事务准备并随会话退役",()=>{
-                var document=new Solution();var parent=new SunEyeVision.Workflow.Workflow("group-parent","主流程");
-                var child=new SunEyeVision.Workflow.Workflow("group-child","内部"){IsSubroutine=true};
-                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId=child.Id,Parameters=new SubroutineParameters{SubroutineId=child.Id}};
-                parent.Nodes.Add(owner);document.Workflows.Add(parent);document.Workflows.Add(child);
-                using var context=new ProductionEditorContext(new NodeConfigurationEditHost(document),parent.Id,owner,()=>true,_=>{});
-                var assembly=typeof(ProductionEditorContext).Assembly;
-                var sessionType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParameterSession",true)!;
-                var pageType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParametersControl",true)!;
-                Func<string,WorkflowNodeBase,bool> allowed=(_,_)=>false;
-                var groupSession=Activator.CreateInstance(sessionType,new object?[]{context,document,allowed,32,null})!;
-                var page=(UserControl)Activator.CreateInstance(pageType,BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{groupSession,null},null)!;
-                try { Require(ToolEditorCommit.TryPrepare(page,out var error),error);Require(context.IsValid,"Group 草稿提前失效");context.Discard();Require(!context.IsActive,"Group 会话未退役"); }
-                finally { (page as IDisposable)?.Dispose(); }
+            Case("暂停的Group入口拒绝打开",()=>{
+                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId="group-child"};
+                var openContext=new NodeOpenContext{RuntimeDirectory=admission.Runtime};
+                Require(!new NodeOpenDecisionChain().Execute(owner,openContext)&&openContext.CreatedWindow is null,"暂停的Group入口错误开放");
             });
             Case("图像源和Blob通过原件窗口打开，取消关闭保留草稿与重试释放",()=>{
                 foreach(var openWindow in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())openWindow.Close();Pump();
@@ -634,7 +624,7 @@ internal static class S2DocumentEditingCases
                 Require(Equals(restored.RuntimeConfiguration!.CaptureResultDisplay(),before.CaptureResultDisplay())&&Equals(before.Copy().CaptureResultDisplay(),before.CaptureResultDisplay()),"三角色样式保存/复制丢失");
                 var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance,admission.Runtime);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
                 using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
-                var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
+                var executor=new WorkflowExecutionEngine(engine,SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
                 var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
                 using(var result=task.GetAwaiter().GetResult())
                 {
@@ -983,7 +973,15 @@ internal static class S2DocumentEditingCases
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
     private sealed class DraftProbeValue { public string Value {get;set;}="原值"; }
-    private sealed class DraftProbeEditor : ToolDebugControlBase { protected override object ExecuteTool()=>new GenericToolResults(); }
+    private sealed class DraftProbeEditor : UserControl, IEditorViewParticipant
+    {
+        public FrameworkElement Element => this;
+        public object? CurrentNode => this;
+        public bool SuppressClosePersistence { get; set; }
+        public void PersistParameterBindings() { }
+        public bool ValidateParameters() => true;
+        public void RefreshCommittedBindings(bool onlyInvalidated) { }
+    }
     private sealed class RejectedEditorProbe : UserControl, IDisposable { public bool Disposed {get;private set;} public void Dispose()=>Disposed=true; }
     private sealed class ForeignDraftProbe : IToolEditorDraftContext
     { public object FormalNode {get;}=new(); public bool OwnsDraft(object? node)=>false; public bool TryCommitEditor(out string error){error="";return true;} public bool TryValidateEditor(out string error){error="";return true;} public void Discard(){} }

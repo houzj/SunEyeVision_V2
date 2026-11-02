@@ -79,7 +79,7 @@ internal static class S2DocumentEditingCases
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel(admission);solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var scope=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_SCOPE")??"All";
-        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource" or "ReaderShutdown","未知显示专项");
+        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource" or "ReaderShutdown" or "CloseMatrix","未知显示专项");
         var resultView=new ImageResultControl{DataContext=vm.ImageResult};resultView.Initialize(vm);
         var shell=new Window{Width=1000,Height=850,Content=resultView,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -424,6 +424,27 @@ internal static class S2DocumentEditingCases
             Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=textSourceB.Id,TargetNodeId=source.Id}),"第二文本来源控制前驱连接失败");
         }
         Run();var path=Path.Combine(folder,"display.solution");Require(solutions.SaveCurrentDocument(path).FileWritten,"正式夹具保存失败");
+        if(scope=="CloseMatrix")
+        {
+            Case("私有调试完成关闭恢复原生产快照并退役私有执行域",()=>{
+                var production=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");var window=Open();var control=Control(window);
+                var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;var debugOwner=context.DebugOwner;DeclaredOutputSnapshot? debug=null;
+                PrivateDebug(window,true,(result,_)=>{debug=result;Require(!ReferenceEquals(result,production),"调试结果与生产快照混用");});
+                Require(ReferenceEquals(Maybe(vm,"_resultPublicationSnapshot"),debug),"私有调试结果未显示");window.Close();Pump();
+                Require(debugOwner.IsRetired&&debug!.ExecutionIdentity?.IsCurrent==false&&ReferenceEquals(Maybe(vm,"_resultPublicationSnapshot"),production)&&Publication().IsCurrent(),"关闭后未释放私有域或恢复原生产结果");
+            });
+            Case("切换节点后旧编辑窗口迟到关闭不覆盖新节点",()=>{
+                var window=Open();var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;node.IsSelected=false;vm.SelectedNode=source;source.IsSelected=true;Pump();
+                var newPublication=Publication();var newSnapshot=Maybe(vm,"_resultPublicationSnapshot");window.Close();Pump();
+                Require(ReferenceEquals(vm.SelectedNode,source)&&ReferenceEquals(Publication(),newPublication)&&ReferenceEquals(Maybe(vm,"_resultPublicationSnapshot"),newSnapshot)&&newPublication.IsCurrent()&&!context.IsActive,"旧窗口关闭覆盖新选中节点或未释放上下文");
+                source.IsSelected=false;vm.SelectedNode=node;node.IsSelected=true;Pump();SelectBlob();
+            });
+            Case("私有调试捕获异常后关闭恢复生产快照",()=>{
+                var production=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");var window=Open();var control=Control(window);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;var debugOwner=context.DebugOwner;
+                control.SetDebugCapture(_=>throw new InvalidOperationException("injected-debug-capture-failure"));PrivateDebug(window,false);window.Close();Pump();
+                Require(debugOwner.IsRetired&&ReferenceEquals(Maybe(vm,"_resultPublicationSnapshot"),production)&&Publication().IsCurrent(),"调试异常关闭未退役私有域或恢复生产结果");
+            });
+        }
         if((scope is "All" or "Window")&&Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE")!="多节点纯样式")
         {
             var publication=Publication();var originalScene=Scene();

@@ -910,41 +910,20 @@ namespace SunEyeVision.Workflow
 
             foreach (var node in source.Nodes)
             {
-                ToolParameters? executionParameters=null;
-                AlgorithmNode executionNode;
-                if(node.RuntimeConfiguration is { } runtime)
+                // Group/旧 SDK 分支暂不可接纳；保留现有 Group 源码等待后续迁移。
+                ToolParameters? executionParameters = null;
+                RuntimeNodeAdmission.Require(_workflowEngine.RuntimeDirectory, node);
+                var configuration=node.RuntimeConfiguration!.Copy();
+                if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
                 {
-                    if(node.ParamSettings.Settings.Any())
-                        throw new InvalidOperationException("Runtime执行快照不能包含旧ParamSettings："+node.Id);
-                    var configuration=runtime.Copy();
-                    if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
-                    {
-                        var declaredSettings=configuration.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
-                        if(runtimeOverrides.Keys.Any(id=>!declaredSettings.Contains(id)))
-                            throw new ArgumentException("Unknown Runtime setting override: "+string.Join(",",runtimeOverrides.Keys.Where(id=>!declaredSettings.Contains(id))));
-                        configuration=configuration.WithFieldValues(runtimeOverrides);
-                    }
-                    executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
+                    var declaredSettings=configuration.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+                    if(runtimeOverrides.Keys.Any(id=>!declaredSettings.Contains(id)))
+                        throw new ArgumentException("Unknown Runtime setting override: "+string.Join(",",runtimeOverrides.Keys.Where(id=>!declaredSettings.Contains(id))));
+                    configuration=configuration.WithFieldValues(runtimeOverrides);
                 }
-                else
-                {
-                    executionParameters = ToolParameterSnapshot.Create(node.Parameters);
-                    ApplyNodeParameterOverrides(executionParameters, node.Id, request);
-                    executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
-                    _workflowEngine.RuntimeDirectory,
-                    node.ToolType,
-                    node.Id,
-                    node.Name,
-                    node.DispName ?? node.Name,
-                    executionParameters,
-                    enableCaching: true,
-                    enableRetry: false)
-                    ?? throw new InvalidOperationException(
-                        $"无法创建算法节点: ToolType={node.ToolType}, Name={node.Name}");
-                }
-
+                var executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
                 // 复制参数绑定配置
-                executionNode.ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings?.Clone() ?? new ParamSettingContainer() : new ParamSettingContainer();
+                executionNode.ParamSettings = new ParamSettingContainer();
                 if (request != null && request.NodeBindingOverrides.TryGetValue(node.Id, out var overrides))
                 {
                     if(executionNode.RuntimeConfiguration is {} configured)
@@ -1257,8 +1236,11 @@ namespace SunEyeVision.Workflow
             try
             {
                 session.Configuration = request.Configuration ?? WorkflowRunConfiguration.Capture(request.WorkflowId, _workflowEngine.GetWorkflow);
-                if(session.Configuration.Definitions.SelectMany(flow=>flow.Nodes).Any(node=>node.RuntimeConfiguration is { } configuration && !ReferenceEquals(configuration.Directory,_workflowEngine.RuntimeDirectory)))
-                    throw new InvalidOperationException("工作流运行配置与准入目录代次不一致。");
+                foreach (var flow in session.Configuration.Definitions)
+                {
+                    if (flow.IsSubroutine) throw new InvalidOperationException("Group / 控制流当前尚未接入正式运行。");
+                    foreach (var node in flow.Nodes) RuntimeNodeAdmission.Require(_workflowEngine.RuntimeDirectory, node);
+                }
                 // 不把取消令牌传给 Task.Run：若任务尚未排队即被取消，Task.Run 会在进入统一
                 // 错误转换逻辑前直接抛 TaskCanceledException。执行链内部通过 WorkflowContext 的
                 // 令牌检测取消并返回标准 ExecutionResult。

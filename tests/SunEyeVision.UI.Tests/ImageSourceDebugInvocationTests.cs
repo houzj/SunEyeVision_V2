@@ -63,7 +63,7 @@ public sealed class ImageSourceDebugInvocationTests
         }
         public RuntimeDebugInvocation Capture(WorkflowNodeBase? draft=null,CancellationToken cancellation=default,
             ICameraCaptureService? camera=null,IVisionImage? defaultImage=null,IResourcePathResolver? resolver=null,ToolExecutionOwner? owner=null)
-            =>RuntimeDebugInvocation.Capture(Flow,draft??Host.BeginEdit(Flow.Id,Node.Id).Node,owner??new ToolExecutionOwner(),Host.Capture().Version,
+            =>RuntimeDebugInvocation.Capture(Flow,Node.RuntimeConfiguration!.Directory,draft??Host.BeginEdit(Flow.Id,Node.Id).Node,owner??new ToolExecutionOwner(),Host.Capture().Version,
                 _=>throw new InvalidOperationException("图像源不得读取上游发布作为默认输入。"),cancellation,defaultImage,
                 resourcePaths:resolver??new SolutionResourceResolver(Document.ResourceBaseDirectory),cameraService:camera);
         public void Edit(Action<ImageSourcePolicy> change)

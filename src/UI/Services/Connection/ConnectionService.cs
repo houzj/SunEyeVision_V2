@@ -179,8 +179,8 @@ namespace SunEyeVision.UI.Services.Connection
                 TargetNodeId = targetNode.Id,
                 SourcePort = sourcePort.ToString(),
                 TargetPort = targetPort.ToString(),
-                SourcePosition = GetPortPosition(sourceNode, sourcePort),
-                TargetPosition = GetPortPosition(targetNode, targetPort)
+                SourcePosition = GetPortPosition(sourceNode, sourcePort).ToCanvas(),
+                TargetPosition = GetPortPosition(targetNode, targetPort).ToCanvas()
             };
 
             // 计算路径

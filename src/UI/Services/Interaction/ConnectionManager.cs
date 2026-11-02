@@ -68,7 +68,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
                         // 触发 SourcePosition 变化，导致转换器重新计算
                         var oldPos = connection.SourcePosition;
-                        connection.SourcePosition = new Point(oldPos.X + 0.001, oldPos.Y);
+                        connection.SourcePosition = new CanvasPoint(oldPos.X + 0.001, oldPos.Y);
                         connection.SourcePosition = oldPos;
                     }
                     catch (Exception ex)
@@ -140,8 +140,8 @@ namespace SunEyeVision.UI.Services.Interaction
                     break;
             }
 
-            newConnection.SourcePosition = sourcePos;
-            newConnection.TargetPosition = targetPos;
+            newConnection.SourcePosition = sourcePos.ToCanvas();
+            newConnection.TargetPosition = targetPos.ToCanvas();
 
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
@@ -285,8 +285,8 @@ namespace SunEyeVision.UI.Services.Interaction
             // 设置连接属性
             newConnection.SourcePort = finalSourcePort;
             newConnection.TargetPort = finalTargetPort;
-            newConnection.SourcePosition = sourcePos;
-            newConnection.TargetPosition = targetPos;
+            newConnection.SourcePosition = sourcePos.ToCanvas();
+            newConnection.TargetPosition = targetPos.ToCanvas();
 
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)

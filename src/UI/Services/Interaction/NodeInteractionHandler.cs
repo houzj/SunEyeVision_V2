@@ -161,7 +161,7 @@ namespace SunEyeVision.UI.Services.Interaction
                 // 单击事件：拖拽准
                 _isDragging = true;
                 _draggedNode = node;
-                _initialNodePosition = node.Position;
+                _initialNodePosition = node.Position.ToWpf();
                 _startDragPosition = e.GetPosition(_canvasControl.WorkflowCanvas);
 
                 border.CaptureMouse();
@@ -247,7 +247,7 @@ namespace SunEyeVision.UI.Services.Interaction
                     {
                         if (_selectedNodesInitialPositions != null && index < _selectedNodesInitialPositions.Length)
                         {
-                            selectedNode.Position = new Point(
+                            selectedNode.Position = new CanvasPoint(
                                 _selectedNodesInitialPositions[index].X + offsetX,
                                 _selectedNodesInitialPositions[index].Y + offsetY);
                             index++;
@@ -382,7 +382,7 @@ namespace SunEyeVision.UI.Services.Interaction
     
 
                 _selectedNodesInitialPositions = selectedNodes
-                    .Select(n => n.Position)
+                    .Select(n => n.Position.ToWpf())
                     .ToArray();
 
     

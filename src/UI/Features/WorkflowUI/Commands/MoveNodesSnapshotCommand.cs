@@ -5,7 +5,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands;
 public sealed class MoveNodesSnapshotCommand : IUndoableCommand
 {
     private readonly (WorkflowNode Node, Point Before, Point After)[] _positions;
-    private readonly (WorkflowConnection Connection, Point[]? Before)[] _paths;
+    private readonly (WorkflowConnection Connection, CanvasPoint[]? Before)[] _paths;
     public MoveNodesSnapshotCommand(IEnumerable<(WorkflowNode Node, Point Before, Point After)> positions,
         IEnumerable<WorkflowConnection>? connections = null)
     {
@@ -20,11 +20,11 @@ public sealed class MoveNodesSnapshotCommand : IUndoableCommand
     public void Execute(object? parameter)
     {
         foreach (var p in _paths) { p.Connection.ManualPathPoints = null; p.Connection.PreviewPathPoints = null; }
-        foreach (var item in _positions) item.Node.Position = item.After;
+        foreach (var item in _positions) item.Node.Position = item.After.ToCanvas();
     }
     public void Undo()
     {
         foreach (var p in _paths) p.Connection.ManualPathPoints = p.Before?.ToArray();
-        foreach (var item in _positions) item.Node.Position = item.Before;
+        foreach (var item in _positions) item.Node.Position = item.Before.ToCanvas();
     }
 }

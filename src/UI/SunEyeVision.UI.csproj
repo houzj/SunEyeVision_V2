@@ -49,6 +49,7 @@
     <ProjectReference Include="@(ProductToolComponent->'../../%(Identity)')" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Core\SunEyeVision.Core.csproj" />
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
+    <ProjectReference Include="..\Domain\SunEyeVision.Domain.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Editing.Wpf\SunEyeVision.Plugin.Editing.Wpf.csproj" />
     <ProjectReference Include="..\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj" />

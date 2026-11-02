@@ -2065,7 +2065,7 @@ _viewModel.SelectedNode = targetNode;
 
             _selectedNodesInitialPositions = selectedNodes
 
-                .Select(n => n.Position)
+                .Select(n => n.Position.ToWpf())
 
                 .ToArray();
 

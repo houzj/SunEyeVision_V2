@@ -88,22 +88,22 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 获取上方连接点位置（动态计算）
         /// </summary>
-        public Point TopPortPosition => StyleConfigTyped.GetTopPortPosition(Position);
+        public Point TopPortPosition => StyleConfigTyped.GetTopPortPosition(Position.ToWpf());
 
         /// <summary>
         /// 获取下方连接点位置（动态计算）
         /// </summary>
-        public Point BottomPortPosition => StyleConfigTyped.GetBottomPortPosition(Position);
+        public Point BottomPortPosition => StyleConfigTyped.GetBottomPortPosition(Position.ToWpf());
 
         /// <summary>
         /// 获取左侧连接点位置（动态计算）
         /// </summary>
-        public Point LeftPortPosition => StyleConfigTyped.GetLeftPortPosition(Position);
+        public Point LeftPortPosition => StyleConfigTyped.GetLeftPortPosition(Position.ToWpf());
 
         /// <summary>
         /// 获取右侧连接点位置（动态计算）
         /// </summary>
-        public Point RightPortPosition => StyleConfigTyped.GetRightPortPosition(Position);
+        public Point RightPortPosition => StyleConfigTyped.GetRightPortPosition(Position.ToWpf());
 
         /// <summary>
         /// 获取节点边界矩形（用于框选等操作）
@@ -115,12 +115,12 @@ namespace SunEyeVision.UI.Shared
         [JsonIgnore] public double HitAreaHeight => VisualHeight + 20;
         [JsonIgnore] public double HitAreaLeft => Position.X - HitAreaWidth / 2;
         [JsonIgnore] public double HitAreaTop => Position.Y - HitAreaHeight / 2;
-        public Rect NodeRect => StyleConfigTyped.GetNodeRect(Position);
+        public Rect NodeRect => StyleConfigTyped.GetNodeRect(Position.ToWpf());
 
         /// <summary>
         /// 获取节点中心点（用于距离计算）
         /// </summary>
-        public Point NodeCenter => StyleConfigTyped.GetNodeCenter(Position);
+        public Point NodeCenter => StyleConfigTyped.GetNodeCenter(Position.ToWpf());
 
         #endregion
 

@@ -41,7 +41,7 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
         if (HasCycle(next)) throw new InvalidOperationException("插线将形成执行环，已取消。");
         _after = next.ToArray(); AddedConnections = added;
         _portEdits=portEdits.ToArray();
-        _move = new MoveNodesSnapshotCommand(new[] { (inserted, inserted.Position, position) }, _after);
+        _move = new MoveNodesSnapshotCommand(new[] { (inserted, inserted.Position.ToWpf(), position) }, _after);
         var affectedIds = new[] { original.SourceNodeId, original.TargetNodeId, inserted.Id }.ToHashSet();
         _affected = nodes.Where(n => affectedIds.Contains(n.Id)).ToArray();
         _beforeConfig = Capture();

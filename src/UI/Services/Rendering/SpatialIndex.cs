@@ -45,7 +45,7 @@ namespace SunEyeVision.UI.Services.Rendering
         {
             lock (_lockObj)
             {
-                var cell = GetCell(node.Position);
+                var cell = GetCell(node.Position.ToWpf());
                 if (!_grid.ContainsKey(cell))
                 {
                     _grid[cell] = new List<WorkflowNode>();
@@ -82,7 +82,7 @@ namespace SunEyeVision.UI.Services.Rendering
             {
                 if (_nodeCellMap.TryGetValue(node.Id, out var oldCell))
                 {
-                    var newCell = GetCell(node.Position);
+                    var newCell = GetCell(node.Position.ToWpf());
                     if (oldCell != newCell)
                     {
                         if (_grid.TryGetValue(oldCell, out var nodes))

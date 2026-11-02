@@ -53,11 +53,11 @@ namespace SunEyeVision.UI.Services.Interaction
             // 获取目标端口位置
             Point targetPos = GetPortPosition(targetNode, targetPortName);
 
-            newConnection.SourcePosition = sourcePos;
-            newConnection.TargetPosition = targetPos;
+            newConnection.SourcePosition = sourcePos.ToCanvas();
+            newConnection.TargetPosition = targetPos.ToCanvas();
 
             // 箭头位置和角度由 ConnectionPathCache 计算，这里先设置默认值
-            newConnection.ArrowPosition = targetPos;  // 初始设置为目标端口位置
+            newConnection.ArrowPosition = targetPos.ToCanvas();  // 初始设置为目标端口位置
             newConnection.ArrowAngle = 0;
 
             // 通过 MainWindowViewModel 添加连接（记录日志）
@@ -102,11 +102,11 @@ namespace SunEyeVision.UI.Services.Interaction
 
             newConnection.SourcePort = finalSourcePort;
             newConnection.TargetPort = finalTargetPort;
-            newConnection.SourcePosition = sourcePos;
-            newConnection.TargetPosition = targetPos;
+            newConnection.SourcePosition = sourcePos.ToCanvas();
+            newConnection.TargetPosition = targetPos.ToCanvas();
 
             // 箭头位置和角度由 ConnectionPathCache 计算，这里先设置默认值
-            newConnection.ArrowPosition = targetPos;  // 初始设置为目标端口位置
+            newConnection.ArrowPosition = targetPos.ToCanvas();  // 初始设置为目标端口位置
             newConnection.ArrowAngle = 0;
 
             // 通过 MainWindowViewModel 添加连接（记录日志）
@@ -277,7 +277,7 @@ namespace SunEyeVision.UI.Services.Interaction
                 "BottomPort" => node.BottomPortPosition,
                 "LeftPort" => node.LeftPortPosition,
                 "RightPort" => node.RightPortPosition,
-                _ => node.Position // 默认返回节点中心
+                _ => node.Position.ToWpf() // 默认返回节点中心
             };
         }
 

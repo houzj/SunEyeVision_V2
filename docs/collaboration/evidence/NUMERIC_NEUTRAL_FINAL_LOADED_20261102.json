@@ -25,5 +25,14 @@
     "caseSourceSha": "4ADC596AAFBB53F4B0BBD2CD5DA3BA57BF0ACAF85EF541A9BB24394AF55087CE",
     "receipt": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-026\\receipt.json",
     "attempt": 26
+  },
+  {
+    "track": "B08NumericComposition",
+    "loadedMatched": 15,
+    "exit": 0,
+    "caseSourceSha": "4ADC596AAFBB53F4B0BBD2CD5DA3BA57BF0ACAF85EF541A9BB24394AF55087CE",
+    "cases": 12,
+    "attempt": 27,
+    "receipt": "Release/_validation/S4-20261025/B08NumericComposition/attempt-027/receipt.json"
   }
 ]

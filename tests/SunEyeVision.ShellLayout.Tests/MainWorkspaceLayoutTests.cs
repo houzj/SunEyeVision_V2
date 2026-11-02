@@ -86,9 +86,11 @@ public sealed class MainWorkspaceLayoutTests
     {
         RunSta(() =>
         {
-            var app = new SunEyeVision.UI.App(); app.InitializeComponent();
+            var app = new SunEyeVision.UI.App(); app.InitializeComponent(); app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var state = new TopBarState();
             var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state };
+            var firstWindow = new Window { Content = top, Width = 1600, Height = 100, Left = -32000, Top = -32000, ShowInTaskbar = false, ShowActivated = false };
+            firstWindow.Show();
             top.Measure(new Size(1600, 64)); top.Arrange(new Rect(0, 0, 1600, 64)); top.UpdateLayout();
             var menu = Assert.IsType<Menu>(top.FindName("MainMenu"));
             Assert.Equal(new[] { "文件(_F)", "设置", "工具(_T)", "系统", "帮助(_H)" },
@@ -104,10 +106,31 @@ public sealed class MainWorkspaceLayoutTests
             var theme = Assert.IsType<Button>(top.FindName("ThemeToggleButton"));
             var geometry = Assert.IsType<System.Windows.Shapes.Path>(Assert.IsType<Viewbox>(theme.Content).Child);
             var darkIcon = geometry.Data.ToString();
+            Assert.Equal("切换到浅色主题", theme.ToolTip);
             state.IsDarkTheme = false; top.UpdateLayout();
             Assert.NotEqual(darkIcon, geometry.Data.ToString());
+            Assert.Equal("切换到深色主题", theme.ToolTip);
             var buttons = new List<Button>(); CollectButtons(top, buttons);
+            foreach (var iconButton in buttons.Where(button => button.Content is Image))
+            {
+                var icon = Assert.IsType<Image>(iconButton.Content);
+                Assert.True(Assert.IsAssignableFrom<System.Windows.Media.Imaging.BitmapSource>(icon.Source).PixelWidth > 0);
+                if (!iconButton.IsEnabled) continue;
+                iconButton.IsEnabled = false; top.UpdateLayout();
+                Assert.True(Assert.IsAssignableFrom<System.Windows.Media.Imaging.BitmapSource>(icon.Source).PixelWidth > 0);
+                iconButton.ClearValue(UIElement.IsEnabledProperty); top.UpdateLayout();
+            }
             var save = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "保存 (Ctrl+S)")));
+            var saveMenu = ((MenuItem)menu.Items[0]).Items.OfType<MenuItem>().Single(i => Equals(i.Header, "保存方案(_S)"));
+            Assert.Same(saveMenu.Tag, save.Tag); // the toolbar is a projection of the actual menu declaration
+            Assert.Same(saveMenu.Command, save.Command);
+            var toolbar = Assert.IsType<StackPanel>(top.FindName("ToolbarItems"));
+            var lightMenu = ((MenuItem)menu.Items[3]).Items.OfType<MenuItem>().Single(i => Equals(i.Header, "光源设置"));
+            Assert.False(lightMenu.IsEnabled);
+            Assert.DoesNotContain(buttons, b => ReferenceEquals(b.Tag, lightMenu.Tag));
+            Assert.Same(save, toolbar.Children[0]);
+            var openMenu = ((MenuItem)menu.Items[0]).Items.OfType<MenuItem>().Single(i => Equals(i.Header, "打开方案(_O)"));
+            Assert.Same(openMenu.Tag, Assert.IsType<Button>(toolbar.Children[1]).Tag);
             var image = Assert.IsType<Image>(save.Content);
             Assert.NotNull(image.Source);
             Assert.Contains("toolbarsave_", image.Source.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -125,7 +148,77 @@ public sealed class MainWorkspaceLayoutTests
             foreach (var name in new[] { "锁定", "触发", "脚本", "综合配置", "运行界面" })
                 Assert.False(Assert.Single(buttons.Where(b => Equals(b.Content, name))).IsEnabled);
             Assert.DoesNotContain(buttons, b => Equals(b.ToolTip, "工作流"));
-            VerifyToolboxCatalog();
+            var maximize = Assert.IsType<Button>(top.FindName("MaximizeButton"));
+            Assert.Equal("最大化", maximize.ToolTip);
+            var dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+            Exception? asynchronousFailure = null;
+            Window? secondWindow = null;
+            using var done = new ManualResetEventSlim();
+            void Finish(Exception? error = null)
+            {
+                asynchronousFailure = error;
+                ((MenuItem)menu.Items[0]).IsSubmenuOpen = false;
+                firstWindow.Close(); secondWindow?.Close(); done.Set(); app.Shutdown();
+            }
+            void Step(Action work) => dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                try { work(); } catch (Exception error) { Finish(error); }
+            }));
+            var watchdog = new Thread(() =>
+            {
+                if (!done.Wait(TimeSpan.FromSeconds(8)) && !dispatcher.HasShutdownStarted)
+                    dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(() => Finish(new TimeoutException("真实菜单和窗口事件未在限定时间内完成。"))));
+            }) { IsBackground = true };
+            ((MenuItem)menu.Items[0]).RaiseEvent(new RoutedEventArgs(MenuItem.SubmenuOpenedEvent));
+            Step(() =>
+            {
+                Assert.False(saveMenu.Command.CanExecute(saveMenu.CommandParameter));
+                var click = typeof(MenuItem).GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+                click.Invoke(saveMenu, null);
+                Step(() =>
+                {
+                    Assert.Equal(0, state.Save.ExecutionCount);
+                    state.Save.Enabled = true; state.Save.Notify();
+                    Assert.True(saveMenu.Command.CanExecute(saveMenu.CommandParameter));
+                    click.Invoke(saveMenu, null);
+                    Step(() =>
+                    {
+                        Assert.Equal(1, state.Save.ExecutionCount);
+                        firstWindow.Content = null;
+                        Step(() =>
+                        {
+                            firstWindow.WindowState = WindowState.Maximized;
+                            Step(() =>
+                            {
+                                Assert.Equal("最大化", maximize.ToolTip);
+                                secondWindow = new Window { Content = top, Width = 300, Height = 100, Left = -32000, Top = -32000, ShowInTaskbar = false, ShowActivated = false };
+                                secondWindow.Show(); secondWindow.WindowState = WindowState.Maximized;
+                                Step(() =>
+                                {
+                                    Assert.Equal("向下还原", maximize.ToolTip);
+                                    secondWindow.Content = null;
+                                    Step(() =>
+                                    {
+                                        secondWindow.WindowState = WindowState.Normal;
+                                        Step(() =>
+                                        {
+                                            Assert.Equal("向下还原", maximize.ToolTip);
+                                            var replacement = new TopBarState(); replacement.Save.Enabled = false;
+                                            top.DataContext = replacement; top.UpdateLayout();
+                                            Assert.Same(replacement.SaveCurrentSolutionCommand, save.Command);
+                                            state.Save.Enabled = true; state.Save.Notify(); top.UpdateLayout();
+                                            Assert.False(save.IsEnabled);
+                                            VerifyToolboxCatalog(); Finish();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+            watchdog.Start(); app.Run();
+            if (asynchronousFailure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(asynchronousFailure).Throw();
         });
     }
 
@@ -230,7 +323,8 @@ public sealed class MainWorkspaceLayoutTests
     {
         public bool Enabled { get; set; } = true;
         public bool CanExecute(object? parameter) => Enabled;
-        public void Execute(object? parameter) { }
+        public int ExecutionCount { get; private set; }
+        public void Execute(object? parameter) => ExecutionCount++;
         public event EventHandler? CanExecuteChanged;
         public void Notify() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -254,7 +348,7 @@ public sealed class MainWorkspaceLayoutTests
     private static void RunSta(Action action)
     {
         Exception? failure = null;
-        var thread = new Thread(() => { try { action(); } catch (Exception ex) { failure = ex; } });
+        var thread = new Thread(() => { try { action(); } catch (Exception ex) { failure = ex; } }) { IsBackground = true };
         thread.SetApartmentState(ApartmentState.STA); thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(20)));
         if (failure is not null) throw new AggregateException(failure);

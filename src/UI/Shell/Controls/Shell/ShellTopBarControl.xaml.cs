@@ -9,6 +9,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     /// </summary>
     public partial class ShellTopBarControl : UserControl
     {
+        private Window? _stateWindow;
         /// <summary>
         /// 请求全屏图像显示（跨区域：ImageDisplayContent 在图像面板，故用事件转发）
         /// </summary>
@@ -17,23 +18,31 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellTopBarControl()
         {
             InitializeComponent();
+            BuildMenuAndToolbar();
 
             // 加载完成后订阅窗口状态变化，切换最大化/还原图标（VS 风格）。
             // 用代码监听而非 XAML DataTrigger——UserControl 内 RelativeSource AncestorType=Window
             // 绑定 Window.State 在初始化时可能求值失败，导致图标不切换。
-            Loaded += (_, _) =>
+            Loaded += OnHostLoaded;
+            Unloaded += OnHostUnloaded;
+        }
+
+        private void OnHostLoaded(object sender, RoutedEventArgs e)
+        {
+            var window = Window.GetWindow(this);
+            if (!ReferenceEquals(window, _stateWindow))
             {
-                var window = Window.GetWindow(this);
-                if (window == null) return;
-                window.StateChanged += OnWindowStateChanged;
-                UpdateWindowIcon(window.WindowState);
-            };
-            Unloaded += (_, _) =>
-            {
-                var window = Window.GetWindow(this);
-                if (window != null)
-                    window.StateChanged -= OnWindowStateChanged;
-            };
+                if (_stateWindow is not null) _stateWindow.StateChanged -= OnWindowStateChanged;
+                _stateWindow = window;
+                if (_stateWindow is not null) _stateWindow.StateChanged += OnWindowStateChanged;
+            }
+            if (_stateWindow is not null) UpdateWindowIcon(_stateWindow.WindowState);
+        }
+
+        private void OnHostUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (_stateWindow is not null) _stateWindow.StateChanged -= OnWindowStateChanged;
+            _stateWindow = null;
         }
 
         private void OnWindowStateChanged(object? sender, EventArgs e)

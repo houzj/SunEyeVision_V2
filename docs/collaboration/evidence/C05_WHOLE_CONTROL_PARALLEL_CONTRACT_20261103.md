@@ -34,3 +34,7 @@ C05停止通过ConstantBackup getter偶然回读；复用既有ReadCurrentValue�
 ## 已固定首交付及边界复核
 
 公共API/model首提交093c6f76c；消费者Blob/UI两源616fdb3df，均为未验完整单元的中间源码，不是闭口。实际ROI继承11个单元素浮点序列由Options.InputContent的DeclaredInputFieldsView同owner持有，纳入C05 Field/All与可证元数据页查询，不通过任意视觉树发现；模型Value标量，正式值保原Sequence形状，零/多元素拒绝。图文opacity/width未开弹层亦登记；文本X/Y原ButtonSelecter属于另一原件，明确NotApplicable。实际页键须包括附加页插入影响，不能仅假定声明数组索引相同。模型回读失败保已知UI值不等于本次成功，失败初始常量不得保留错误对应关系。
+
+## 固定源自审后的集中校验裁决
+
+原Integer/Float.Check经RangeChecker核解析与上下限，CurValue setter另做格点/ToEven；因此原合法正式值与UI投影不同不代表非法。C05单端将原值校验/ReadProjection与新候选Prepare分离：原值先核真实CLR类型、存储、finite、原上下限及合法metadata，再用double模型投影，不回写、不Dirty、不用显示精度差阻未改动捕获。例min1/inc4的正式8显示5；合法Float32原1.25显示1.2，不因显示值1.2不能精确存Float32而拒绝读取。只有用户新提案才按格点/ToEven后严格Freeze，不放宽存储或将string自动变正规double。C06旧校验不变；reference-only模型应在普通回读及改变模式前拒绝切常量。集中同批测试初始化/回读/原文/未触碰捕获/首次真实编辑、Float32两种出口及无效原值；不把中间b179构建或9组成绩移签修正后版本。

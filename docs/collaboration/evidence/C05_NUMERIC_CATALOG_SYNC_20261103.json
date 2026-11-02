@@ -1,0 +1,331 @@
+{
+  "status": "源码同步，未正式验收",
+  "candidateProductGitTreesEqual": true,
+  "originalIdentityEntries": 1284,
+  "originalIdentityUnchanged": true,
+  "sourceBaseline": "a3d4059be99a9ffd5e3c5d86ecb92336f9491f39",
+  "currentFiles": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+      "sha256": "547881A566AB28F9FAB34CD8C7DC006F0C2707EB810A69C119258D620982F1F9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+      "sha256": "653EFCA632675F3FDCBCEF0E65C1E428F75C89326CAF1A5503FD087662433C5D"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sha256": "E39FC9E207D01796E0AEEDB8F7EF3366E36C6C564F2AFAB2ACCA6CF395F261E3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
+      "sha256": "81932AF8F0F4A21DBEDBA7AD8A768F529D57F54BFDF14133FCA14281FCA1A6AF"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "C15FF01D3EA9F52A28B67B1086C428249B8A9C23BE1F5CF658ABA8BDD6C7944C"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "0FEC217F263B89C5900237DF6B563EFC75D5CC2D23414804D1A6763D3F3A093A"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+      "sha256": "82731084CDBC1EF7F259F558DA49028CADB7BF10C4EFA82D3EFAE080E242F520"
+    }
+  ],
+  "updatedTargets": [
+    {
+      "entry": "C10.original-advanced-expand",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "after": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "before": "F5CE921943C6D7388B065D97C09AD91314DC030700013FEB60784A309E50FA55"
+    },
+    {
+      "entry": "C10.original-advanced-expand",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C10.original-advanced-expand",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C10.original-advanced-expand",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "after": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "before": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "entry": "C01.original-parameter-host",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C01.original-parameter-host",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C01.original-parameter-host",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "after": "E39FC9E207D01796E0AEEDB8F7EF3366E36C6C564F2AFAB2ACCA6CF395F261E3",
+      "before": "887F6297960C2FE0FE15760AD144FD5D9BCF37DDE6DF2507AF5C1F3E35AB4D2B"
+    },
+    {
+      "entry": "C01.original-parameter-host",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "after": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
+      "before": "45CAC361A4F2C6EDFB1700A908BFC75FDCB4D6A9A47ADF63505C384FCBAE38D3"
+    },
+    {
+      "entry": "C01.original-parameter-host",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "after": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
+      "before": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
+    },
+    {
+      "entry": "C12.vm-pcui-color-picker",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C02.vm-enumeration-g-image-source",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C02.vm-enumeration-g-image-source",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C04.apps-xmlui-boolean",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C04.apps-xmlui-boolean",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C03.original-enumeration",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C03.original-enumeration",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C07.original-reference-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C05.original-number-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C05.original-number-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "after": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "before": "F5CE921943C6D7388B065D97C09AD91314DC030700013FEB60784A309E50FA55"
+    },
+    {
+      "entry": "C05.original-number-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C05.original-number-composition",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "after": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "before": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "entry": "C06.original-between-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "after": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "before": "F5CE921943C6D7388B065D97C09AD91314DC030700013FEB60784A309E50FA55"
+    },
+    {
+      "entry": "C06.original-between-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C06.original-between-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C07.original-expanded-reference-window",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "after": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "before": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "entry": "C09.original-integer-radio",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C09.original-integer-radio",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C09.original-integer-radio",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "after": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
+      "before": "45CAC361A4F2C6EDFB1700A908BFC75FDCB4D6A9A47ADF63505C384FCBAE38D3"
+    },
+    {
+      "entry": "C09.original-integer-radio",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "after": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
+      "before": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
+    },
+    {
+      "entry": "C09.original-integer-radio",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "after": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "before": "F5CE921943C6D7388B065D97C09AD91314DC030700013FEB60784A309E50FA55"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "after": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "before": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "after": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
+      "before": "45CAC361A4F2C6EDFB1700A908BFC75FDCB4D6A9A47ADF63505C384FCBAE38D3"
+    },
+    {
+      "entry": "C13.original-text-composition",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "after": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
+      "before": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "after": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "before": "81004AF36F7F7F62E5A4C079B15C8F8DC2F59357FF1DEE8B69F6CBEB1CED3396"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "after": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "before": "F5CE921943C6D7388B065D97C09AD91314DC030700013FEB60784A309E50FA55"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "after": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "before": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "after": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "before": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "after": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "before": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "after": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
+      "before": "45CAC361A4F2C6EDFB1700A908BFC75FDCB4D6A9A47ADF63505C384FCBAE38D3"
+    },
+    {
+      "entry": "C13.original-graphic-style-composition",
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "after": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
+      "before": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
+    }
+  ]
+}

@@ -221,6 +221,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _isClosingPromptInProgress;
         private bool _closeApproved;
         private bool _shutdownPreparationStarted;
+        private bool _consumerReleaseStarted;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -238,7 +239,17 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 拦截本次关闭，异步弹确认框后再决定（不能同步 ShowDialog——主窗口关闭流程中模态窗口不显示）
             e.Cancel = true;
-            if (_shutdownPreparationStarted) return;
+            if (_shutdownPreparationStarted)
+            {
+                // A child that refused to close has not released any consumers; retry
+                // only that reversible phase after the owner has resolved the failure.
+                if (!_consumerReleaseStarted && !_isClosingPromptInProgress)
+                {
+                    _isClosingPromptInProgress=true;
+                    Dispatcher.BeginInvoke(new Action(RetryPreparedClose));
+                }
+                return;
+            }
             if (_isClosingPromptInProgress) return;
             _isClosingPromptInProgress = true;
 
@@ -260,16 +271,7 @@ namespace SunEyeVision.UI.Shell.Windows
                       _shutdownPreparationStarted = true;
                       if (Content is UIElement content) content.IsEnabled = false;
                       Title = "正在关闭：等待资源释放";
-                      PreparePluginConsumersForShutdown();
-                      if(Application.Current is SunEyeVision.UI.App app)
-                      {
-                          var drain=app.DrainPluginDirectoryAsync();
-                          if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
-                              ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。", "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
-                          await drain;
-                      }
-                      _closeApproved = true;
-                      Close();
+                      await CompletePreparedCloseAsync();
                 }
                 else _isClosingPromptInProgress = false;
             }
@@ -281,11 +283,32 @@ namespace SunEyeVision.UI.Shell.Windows
                 ThemeMessageDialog.Show(detail, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, this);
             }
         }
+        private async void RetryPreparedClose()
+        {
+            try { await CompletePreparedCloseAsync(); }
+            catch(Exception ex)
+            {
+                _isClosingPromptInProgress=false;
+                ThemeMessageDialog.Show("退出准备已开始，工作区保持关闭状态，请检查资源释放错误。\n"+ex.Message,
+                    "退出未完成",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Error,this);
+            }
+        }
+        private async Task CompletePreparedCloseAsync()
+        {
+            PreparePluginConsumersForShutdown();
+            if(Application.Current is SunEyeVision.UI.App app)
+            {
+                var drain=app.DrainPluginDirectoryAsync();
+                if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
+                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。", "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                await drain;
+            }
+            _closeApproved=true;
+            Close();
+        }
         private void PreparePluginConsumersForShutdown()
         {
             var failures=new List<Exception>();
-            try { _viewModel.CloseExecutionSnapshotDetails(); } catch(Exception ex) { failures.Add(ex); }
-            _viewModel.SolutionDialogOwner = null;
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
             // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
             var childWindows = Application.Current?.Windows
@@ -296,9 +319,13 @@ namespace SunEyeVision.UI.Shell.Windows
             {
                 foreach (var childWindow in childWindows)
                 {
+                    Exception? dispatcherFailure=null;
+                    System.Windows.Threading.DispatcherUnhandledExceptionEventHandler capture=(_,args)=>dispatcherFailure??=args.Exception;
+                    Dispatcher.UnhandledException+=capture;
                     try
                     {
                         childWindow.Close();
+                        if(dispatcherFailure is not null)failures.Add(dispatcherFailure);
                         if(Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
                             failures.Add(new InvalidOperationException("子窗口未关闭："+childWindow.GetType().Name));
                     }
@@ -308,8 +335,15 @@ namespace SunEyeVision.UI.Shell.Windows
                             $"关闭子窗口失败: {childWindow.GetType().Name}, {ex.Message}", "MainWindow");
                         failures.Add(ex);
                     }
+                    finally { Dispatcher.UnhandledException-=capture; }
                 }
             }
+            // A still-open child may retain result readers or an editor. Do not
+            // release its shared consumers or start retirement after a failed close.
+            if(failures.Count>0)throw new AggregateException("子窗口未能全部关闭，资源保持持有。",failures);
+            _consumerReleaseStarted=true;
+            try { _viewModel.CloseExecutionSnapshotDetails(); } catch(Exception ex) { failures.Add(ex); }
+            _viewModel.SolutionDialogOwner = null;
 
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             try { ImageResultHost.Shutdown(); } catch(Exception ex) { failures.Add(ex); }

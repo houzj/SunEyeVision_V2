@@ -1,0 +1,13 @@
+probe: app initialized
+probe: plugin admission returned
+probe: services initialized
+probe: main window constructed
+probe: showing window
+probe: window shown
+probe: starting dispatcher
+probe: calling Close
+probe: Close returned
+probe: dispatcher timer ticked
+probe: dialog: 退出准备已开始，工作区保持关闭状态，请检查资源释放错误。
+子窗口未能全部关闭，资源保持持有。 (子窗口未关闭：Window)
+Actual MainWindow shutdown scenario passed: failure

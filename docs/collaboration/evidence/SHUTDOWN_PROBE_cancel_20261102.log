@@ -1,0 +1,12 @@
+probe: app initialized
+probe: plugin admission returned
+probe: services initialized
+probe: main window constructed
+probe: showing window
+probe: window shown
+probe: starting dispatcher
+probe: calling Close
+probe: Close returned
+probe: dispatcher timer ticked
+probe: dialog: 当前方案有未保存修改。是否保存？
+Actual MainWindow shutdown scenario passed: cancel

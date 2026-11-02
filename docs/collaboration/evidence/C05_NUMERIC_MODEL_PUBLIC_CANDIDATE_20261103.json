@@ -1,0 +1,231 @@
+{
+  "schema": "c05-numeric-model-public-candidate/v1",
+  "scope": "C05公共完整单元候选；不替代真实宿主消费线、主仓正式、C06或VS人工",
+  "baseline": "a3b3390f894191482a84bd969cb533aecdbfcc5c",
+  "productSourceCommit": "66c25c70a76c3a897aed646f694c92d7b2617564",
+  "commits": [
+    "093c6f76c2de9c7f6a1dcd1cd82b2cfe1a728437",
+    "b179b18c7990d75b561bf8dbb83b3001a26b669d",
+    "bf5bac40d67ec1ea5d92936869b898b95360560d",
+    "66c25c70a76c3a897aed646f694c92d7b2617564"
+  ],
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "E3898202D71CC22E9A8E598A4476FACC72B1EC8E946FBE4E45874181D6FDD2C9",
+      "gitBlob": "55647b637950fb08998767676e0a7e407caa9406"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "2134822768BD7A08CB0E60FD2ED3577B93AA9D2BCA30B9767BC7F123F0E2C92E",
+      "gitBlob": "07204fc0b7c7e2ef17dc43a668a2e9e1de4f975e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+      "sha256": "B13C57F0B6557CE94D75562A13E264577BDE8E6729E209702328492E2CF88DAC",
+      "gitBlob": "e0974e2285c5e7526d87a03bdeddd8c3c3838d3f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "33175A310E88FC7326CEA338596412B19DAD13B75EA1E3D9DFCF18232494B4FD",
+      "gitBlob": "5ae745c8dbe3fb6c305c248eedb5842ac0273191"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+      "sha256": "F40C3C1B40D3646CE81C561C7896A977167483DF21F22AF6928031887A906DA7",
+      "gitBlob": "01ed205ed0ae9833b27c8f339aaf9338fc29a7b5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "F61607379F59D494516E9F6410B749CB35940DAE37EE7AAD26449212F76961D2",
+      "gitBlob": "92213ff776b0689f67ec5c4de645fa13e0934774"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "E4B74E34F70B4142B5D0BFB22523876C00B1840ED888FDF976B009D3A3C7C285",
+      "gitBlob": "9b6e98a32b1c18903921e06f73ee8bcc6c70af73"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sha256": "BEC5D4A278906ABAEB66211814C4825E31623F8F6E3AE87219EE61561D3971DF",
+      "gitBlob": "85b0f158f3e06e32e7c987b047c1f2468f8ac196"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2",
+      "gitBlob": "5686b34afa6636602e38c2198c065c75e3ac9530"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84",
+      "gitBlob": "48f11500203480eda34f303d91947b2ac4de318a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
+      "sha256": "E0F400FC01617580EE64AA44551B20E726F7E46770DA60856218624A54B95677",
+      "gitBlob": "77904572d06e1b1b194adc8877e098e6993ddb67"
+    },
+    {
+      "path": "scripts/verification/C05NumericModelCases.cs",
+      "sha256": "A00532352B0EA169970BD89E542A847FC342AE7DBB0E5CC5A9D812886B830969",
+      "gitBlob": "46f18f499f244fd9521bd781f1410aeca91cd52a"
+    },
+    {
+      "path": "scripts/verification/Run-C05NumericModelValidation.ps1",
+      "sha256": "144BF2923AF5BE3274A2F3913223CC86D5499AE349D234007F08FC9F37B6B0D0",
+      "gitBlob": "7c032937df0455441c9d07b9fec87249570602b3"
+    }
+  ],
+  "consumerManifest": [
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "0FEC217F263B89C5900237DF6B563EFC75D5CC2D23414804D1A6763D3F3A093A",
+      "gitBlob": "a94bc815c91c88b3fae1771abf509c87420e27bf",
+      "ownership": "消费线固定提交，公共线仅按主线授权cherry-pick用于完整编译"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "C15FF01D3EA9F52A28B67B1086C428249B8A9C23BE1F5CF658ABA8BDD6C7944C",
+      "gitBlob": "95768050cf45163a8926e3bee5b94c891aa47abf",
+      "ownership": "消费线固定提交，公共线仅按主线授权cherry-pick用于完整编译"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+      "sha256": "82731084CDBC1EF7F259F558DA49028CADB7BF10C4EFA82D3EFAE080E242F520",
+      "gitBlob": "14d72999687db620a2cf71a4239022d7f9e4ecdc",
+      "ownership": "消费线固定提交，公共线仅按主线授权cherry-pick用于完整编译"
+    }
+  ],
+  "restore": {
+    "source": "本机既有NuGet缓存只读nupkg，HALCON仅共享只读来源",
+    "log": "Release/_validation/C05NumericModel-20261103/restore-005.log",
+    "exit": 0
+  },
+  "builds": [
+    {
+      "sha256": "6C6E1FD28DCB8D0AE9AAA061F4FF00AA3B3B3C60EA2162E0945607B3BB402BC7",
+      "warnings": 6553,
+      "exit": 0,
+      "seconds": 44.08,
+      "kind": "UI",
+      "log": "Release/_validation/C05NumericModel-20261103/ui-build-011.log",
+      "errors": 0
+    },
+    {
+      "sha256": "36A22A99F70FDDB58AEDEAB3AD1CD99681AEA500E63D8DC7D868DA37C02177E4",
+      "warnings": 6450,
+      "exit": 0,
+      "seconds": 34.26,
+      "kind": "Full",
+      "log": "Release/_validation/C05NumericModel-20261103/full-build-012.log",
+      "errors": 0
+    }
+  ],
+  "finalPublicTest": {
+    "scope": "C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS",
+    "exit": 0,
+    "payloadSourceCommit": "66c25c70a76c3a897aed646f694c92d7b2617564",
+    "payloadSha256": "5D0CB44AED1072D1014FA10E2E73197C9624D5DC86F4A8CEF8DC0748333134B8",
+    "payloadPassed": true,
+    "productSourcesDirty": [],
+    "worktreeDirty": [
+      " M docs/collaboration/CURRENT_TASK.md",
+      "?? docs/collaboration/evidence/BLOB_RENDER_CHAIN_CANDIDATE_20261102/source-freeze-002.json",
+      "?? docs/collaboration/evidence/BLOB_TEXT_DISPLAY_CANDIDATE_20261102/"
+    ],
+    "identityPassed": true,
+    "passedCases": 9,
+    "productSourceCommit": "66c25c70a76c3a897aed646f694c92d7b2617564",
+    "commit": "66c25c70a76c3a897aed646f694c92d7b2617564",
+    "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\C05NumericModelCases.cs",
+    "sourceSha256": "A00532352B0EA169970BD89E542A847FC342AE7DBB0E5CC5A9D812886B830969",
+    "runnerSha256": "144BF2923AF5BE3274A2F3913223CC86D5499AE349D234007F08FC9F37B6B0D0",
+    "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "EDD1861DB4FEEED1C1EB3ACCAC15B8D40A19EBA85F9D4798E8F2A883920E1CC3",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "1071293C515508329FEDE3492D8D9BF2C45095B7A87BDB9634917F24159E96E2",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "finalPublicReceiptSha256": "B71735EF07B298BDA04E183F2F326B4ED87F1C10D48958230809818E2354A2B1",
+  "rangeRegression": {
+    "passed": 42,
+    "receiptSha256": "1E31406AB7DF8C2BC7709A89D12AA5C8D0D166244362007B4CE2561ED8FFF35A",
+    "reportSha256": "98B594A81AA3CEDC07694D34ED50AA44CBB7352CCB9ED1E24E0775753C0EA929",
+    "receipt": {
+      "stage": "S4",
+      "validationScope": "Candidate",
+      "attempt": 3,
+      "pid": 2908,
+      "exit": 0,
+      "timeoutMs": 90000,
+      "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "S4RangeRoundtripCases.cs",
+      "caseSourceSha256": "C85F4AAD1C66F429388F1B0E9D5CCA3AA7B530BE240DBCF48FC04847E3D52613",
+      "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+      "logDir": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\RangeRoundtrip\\attempt-003",
+      "track": "RangeRoundtrip",
+      "caseReport": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\RangeRoundtrip\\attempt-003\\range-roundtrip-report.json",
+      "loaded": true
+    },
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "EDD1861DB4FEEED1C1EB3ACCAC15B8D40A19EBA85F9D4798E8F2A883920E1CC3",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.UI",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+        "sha256": "FE7DE19A66A2B20FA7D083D9BBE4F6B3F35BFF660A1BB4C8D46758FF2D2E77B3",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.SDK",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+        "sha256": "0ED9AB2EBCE19756C07517CAD4A3CD6680AA0605821ECF44CAD22BCB5FAA7B09",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "1071293C515508329FEDE3492D8D9BF2C45095B7A87BDB9634917F24159E96E2",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "originalEvidence": [
+    "C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
+    "C05_ORIGINAL_READ_CALLER_EVIDENCE_20261103.md"
+  ],
+  "failuresPreserved": [
+    "attempt001测试FieldPresentation误用with，补正非record夹具",
+    "attempt002/003测试反射Render遇继承重载，改按实际参数数目选择",
+    "attempt004/005图形夹具Record editorKind及width inc不符原组合，修夹具不改保护",
+    "attempt007/008 Float32夹具错误假设允许静默窄化；分离原值投影与候选存储并修真实断言",
+    "attempt009实九组但WIP及旧payload身份门禁拒签，未称完成"
+  ],
+  "limits": [
+    "宿主ReadCurrentValue属于SunEyeVision普通参数适配，不等价IMVS_GetParamValue或本轮订阅执行值",
+    "原六程序集静态证据未证运行完成自动回读，本批未增加该行为",
+    "Int64中间格点避免原Int32中间溢出，极端域不声称VM逐值等价；最终Int32及存储严格校验",
+    "其他整数存储宽度保持本方原合同；不等价原Int32所有类型",
+    "文本XY ButtonSelecter与C06不注册C05；本批不实现C06比较/夹值新语义",
+    "主仓正式、消费线完整生产链、真实VS与自然键鼠另验"
+  ],
+  "protected": [
+    "Catalog/O06/CURRENT未写；原脏内容及旧untracked证据保留",
+    "无Runtime/SDK/Workflow执行接口修改；三消费者源来自固定cherry-pick",
+    "未复制Release或厂商库"
+  ]
+}

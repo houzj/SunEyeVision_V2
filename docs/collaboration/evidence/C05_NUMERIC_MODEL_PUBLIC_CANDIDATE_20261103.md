@@ -1,0 +1,34 @@
+# C05公共单数值完整单元候选交接（2026-11-03）
+
+- 基线：a3b3390f894191482a84bd969cb533aecdbfcc5c；分支codex/c05-number-model-public-20261103，既有blob-reference-chain-20261101工作区。
+- 最终公共产品：66c25c70a76c3a897aed646f694c92d7b2617564。接续093c6f76c接口、b179b18c7整链、bf5bac40d原值/投影权限修正；精确13项公共源及专轨SHA/Git blob见同名JSON。
+- 消费线三真实视图及宿主固定源616fdb3d/81f2fe21/4d2204b1已按主线授权单cherry用于完整候选编译，分别为本线7e50f146c/d406e9a8c/865c26d0f；没有由公共线另写消费实现。
+
+## 完整实现、复用与保护
+
+沿现DeclaredFieldState增加窗口内NativeNumericModel，HasValue/Value/Version为独立UI状态，Value保持long/double标量。订阅身份、正式Accepted、历史缓存、原文pending、普通回读及执行值分别管理；模型变化使用独立事件，不通过字段Changed伪造接纳。模型跨同state的TextBox重建保留，随字段owner退役，不序列化或进入CurrentValues/Dirty/Undo。
+
+显式Field/CurrentPage/All回读沿冻结API返回Updated/Unchanged/Unavailable/Failed/Retired/NotApplicable；每个真实参数根安装成功后初始化All一次，不在Loaded或运行完成自动回读。当前页按声明Layout.Page??Group及实际TabItem冻结键；InputSection先匹配真实page键再匹配group别名，InputAfterField按字段声明归属。同owner InputContent中的11个实际数值序列一并登记，图形opacity/width等无需popup打开即登记；文本X/Y的原ButtonSelecter及C06明确NotApplicable，不遍历任意视树猜模型。
+
+普通ReadProjection和Accepted先按正式Port校验原typed值/形状，再进行独立UI规范化；序列普通reader不能返回裸double冒充正式序列，零/多元素无法投影单值时Failed，保持已有已知模型和正式引用。新常量Prepare仍沿原单值输入入口，最终FreezeNumber保留正式序列。C05 ConstantBackup、CaptureAccepted历史捕获、suspended fallback和commit-null投影不再偶然读取宿主。
+
+引用切常量必须当次显式普通读取；无值/异常不取旧模型或旧缓存当成功。保留正式Accepted引用，允许未接纳常量输入态并以pending/invalid门禁要求明确新值；有效常量提案被宿主接受后才替换。Reference-only在读取前拒绝常量切换，不读、不改模式/Accepted。隐藏、换根和关闭继续复用原suspend、raw版本及回调代次，不清空原文。
+
+整数Int32按原Min相对Inc格点；Int64中间算术避免原Int32中间差溢出，最终Int32收窄和边界继续严格验证，非法Inc拒绝。极端中间溢出域为本方安全适配，不称VM逐值等价；其他宽度沿原本方合同。浮点使用double/ToEven，UI投影与正式存储资格分开：例如原Float32合法1.25可投影1.2，UI1.2不被反写；新候选仍按存储精确性Freeze，不静默窄化。原值与格点/显示精度不同不构成C05初始错误；原类型、有限性、范围、metadata和leaf/XML附加极值仍检查。C06没有启用本模型或新格点分支。
+
+## 最终同版候选验证
+
+本机既有NuGet缓存只读离线restore005自然成功；HALCON仅指定D:/MyWork/SunEyeVision_V2/libs/halcon，没有复制Release或算法库。
+
+- UI011自然exit0：6553警告、0错误、44.08秒。
+- 全量012自然exit0：6450警告、0错误、34.26秒。
+- 公共attempt011实9组自然exit0。payload.sourceCommit、productSourceCommit及执行commit均为66c25c70a，payloadPassed/identityPassed=true，产品源dirty为空；原CURRENT及旧未跟踪证据单列保留。实际Wpf SHA256 EDD1861DB4FEEED1C1EB3ACCAC15B8D40A19EBA85F9D4798E8F2A883920E1CC3，Contracts SHA256 1071293C515508329FEDE3492D8D9BF2C45095B7A87BDB9634917F24159E96E2。
+- 必要RangeRoundtrip启用原S4_RANGE_LOADED=1，attempt003自然exit0：42组，包括四区域性、0/2/9精度的Loaded单值/双端绑定与原Thumb实际提交；4个实际加载程序集路径SHA全匹配本候选。此前默认pure17组仅作历史补充，不冒称Loaded范围验证。
+
+公共9组覆盖：整数正负/非零Min/非整步/跨符号极大域/非法Inc及初始原值保留；double正负中点、0–9位、舍入同值版本、Float32投影和严格候选存储、坏CLR及非有限值；引用模型与历史getter零隐式读、显式解绑；无值/异常后的未接纳新输入；raw/隐藏/重建与旧叶；声明页/附加内容/范围排除；实际输入序列聚合及伪scalar/零/多项失败、只读权限；图形未开登记和打开投影/原ButtonSelecter排除；重绑/关闭拒旧根。宿主实际调试、文档接纳、取消、UndoRedo及保存复制由消费线同版真实窗口专项另验。
+
+## 失败保留与未验
+
+api-build和各次中间构建、attempt001–010均保留于Release/_validation/C05NumericModel-20261103。早期失败包括测试非record误用with、反射Render重载、图形夹具原EditorKind/步长不符，以及Float32夹具误假设静默窄化；attempt009虽实际9组通过但WIP/payload门禁拒签。bf5的同版9组是中间基线，不移签到最终66c25。
+
+原两份静态数值证据不证明每次Blob运行自动回读，也不证明普通GetParamValue等于订阅本轮执行值；本方ReadCurrentValue为明确宿主适配。未启动原VM/SDK，不扩C06比较夹值、算法、Workflow或SDK执行接口；没有新按钮或兼容入口。主仓正式集成、消费线完整生产链、真实VS和自然键鼠/人工分别记录；本候选不代签。原28目录/17组、B08 A00–A23完整范围保留。Catalog/O06/CURRENT未写，原任务账本脏内容与旧证据未覆盖；主线负责统一回原主方案和阶段导航。

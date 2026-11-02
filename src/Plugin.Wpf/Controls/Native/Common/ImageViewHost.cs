@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.Interface;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Common;
 

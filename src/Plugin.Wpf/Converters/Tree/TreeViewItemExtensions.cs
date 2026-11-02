@@ -1,8 +1,8 @@
-using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Platform.Convert;
 using SunEyeVision.Plugin.Wpf.Converters.Tree;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System.Windows;
 using System.Windows.Controls;

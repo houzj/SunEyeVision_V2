@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
 

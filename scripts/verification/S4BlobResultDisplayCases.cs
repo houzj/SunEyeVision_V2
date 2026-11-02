@@ -1,6 +1,6 @@
-using NativeRectangle=SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle;
-using NativeRectShape=SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape;
-using NativeShapeCanvas=SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.ShapeCanvas;
+using NativeRectangle=SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IRectangle;
+using NativeRectShape=SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.Shape.RectShape;
+using NativeShapeCanvas=SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.Shape.ShapeCanvas;
 using NativeOverlay=SunEyeVision.Plugin.Wpf.Presenters.Display.NativeGeometryOverlay;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
@@ -443,7 +443,7 @@ internal static class S2DocumentEditingCases
                 var projected=Geometry(originalScene).OfType<NativeRectangle>().ToArray();
                 Require(projected.Length==2&&projected.All(rect=>rect.ToolTip==$"CenterX:{rect.CenterPoint.X},CenterY:{rect.CenterPoint.Y} Width:{rect.Width} Height:{rect.Height} Angle:{rect.Angle}"),"同次各行Tips测量未对应实际矩形");
                 viewport.View.UpdateLayout();Pump();
-                var native=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+                var native=(SunEyeVision.Plugin.Wpf.Native.Display.ImageView.ImageViewBox)viewport.View;
                 var batch=native.ShapeList!.OfType<Tuple<string,object>>().Single(item=>item.Item1=="IRectangle");
                 Require(batch.Item2 is List<object> members&&members.Count==2&&members.All(item=>projected.Any(rect=>ReferenceEquals(rect,item))),"生产列表未走原Tuple或复制串换同次矩形");
                 var canvas=Visual(viewport.View).OfType<NativeShapeCanvas>().Single(item=>VisualTreeHelper.GetChildrenCount(item)>0);
@@ -622,7 +622,7 @@ internal static class S2DocumentEditingCases
             Case("检测多边形与扇形名义投影保实际kind，不伪造矩形",()=>{
                 var triangle=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(5,5),BlobLocalRoi.Point(12,5),BlobLocalRoi.Point(5,12)})}});
                 Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(triangle)}));
-                var inspectionPolygon=Geometry(Scene()).OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolygon>().Single();
+                var inspectionPolygon=Geometry(Scene()).OfType<SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IPolygon>().Single();
                 Require(Group(ResultGeometryRole.Inspection).Shapes.Single().Get<string>("kind")=="polygon"&&inspectionPolygon.Points.SequenceEqual(new[]{new Point(5,5),new Point(12,5),new Point(5,12)})&&inspectionPolygon.Stroke=="#FF0000FF","检测多边形顶点或原角色样式未保留");
                 using(var values=Publication().Borrow())Require(Geometry(Scene()).OfType<NativeRectangle>().Count()==values.Values!.Read(BlobSchema.BlobsPort).Count,"Blob结果矩形与检测ROI混淆");
                 var fields=Ring(0,Math.PI/2,0).CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);fields["kind"]="sector";
@@ -635,7 +635,7 @@ internal static class S2DocumentEditingCases
                     var ring=Geometry(Scene()).Single(item=>item.GetType().Name=="Annular");
                     Require(Math.Abs((double)Get(ring,"StartAngle")-Math.Min(values.Start,values.End))<1e-9&&Math.Abs((double)Get(ring,"AngleRange")-Math.Abs(values.End-values.Start))<1e-9&&(double)Get(ring,"InnerRadius")==values.Inner,"原扇环参数未保持同弧域");
                     Require(Group(ResultGeometryRole.Annulus).Shapes.Count==1&&Group(ResultGeometryRole.Inspection).Shapes.Count==0,"扇环被误画为矩形");
-                    var original=SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape.GetAnnularGeometry((SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAnnularSector)ring,64,64,1,1);
+                    var original=SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.Shape.AnnularSectorShape.GetAnnularGeometry((SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IAnnularSector)ring,64,64,1,1);
                     var field=original.GetType().BaseType!.GetField("geometry",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);var drawn=(System.Windows.Media.Geometry)field!.GetValue(original)!;
                     Point At(double radius,double angle)=>new(20+radius*Math.Cos(angle*Math.PI/180),20+radius*Math.Sin(angle*Math.PI/180));
                     if(values.End!=360)Require(drawn.FillContains(At(6,160))&&!drawn.FillContains(At(6,100))&&!drawn.FillContains(At(1,160)),"原renderer正负扇环实际弧域或孔洞不符");

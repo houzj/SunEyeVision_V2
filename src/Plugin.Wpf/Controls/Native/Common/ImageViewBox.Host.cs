@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using SunEyeVision.Plugin.Wpf.Native.Common;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+namespace SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 
 public partial class ImageViewBox
 {

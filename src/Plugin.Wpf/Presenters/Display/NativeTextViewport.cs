@@ -3,7 +3,7 @@ using System.Windows.Media;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

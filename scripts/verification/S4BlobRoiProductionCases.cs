@@ -198,7 +198,7 @@ internal static class S2DocumentEditingCases
                 var active=Session(owner,BlobLocalRoi.Mask);Require(active.Items.Count==8&&active.Items.All(item=>item.Visible)&&active.Items.Count(item=>item.Enabled)==4,"两组未完整显示或非当前组可改");
                 var presenter=Get(resultView,"_workspacePresenter");var pane=Get(presenter,"OutputPane");var viewport=(SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport)Get(pane,"Viewport");
                 Require(viewport.CurrentFrame is {} receipt&&receipt.Frame==active.Frame&&receipt.Coordinates==active.Coordinates,"实际单图receipt未绑定同帧同Domain");
-                var view=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+                var view=(SunEyeVision.Plugin.Wpf.Native.Display.ImageView.ImageViewBox)viewport.View;
                 var normal=((System.Collections.IEnumerable)view.ROIList).Cast<object>().ToArray();var shapes=((System.Collections.IEnumerable)view.ShapeList).Cast<object>().ToArray();
                 Require(active.Items.All(item=>normal.Any(row=>ReferenceEquals(row,item))||shapes.Any(row=>ReferenceEquals(row,item))),"实际原视口遗漏另一组几何");
                 Capture(first,"roi-parameters.png");Capture(view,"roi-two-groups.png");Require(control.TryCapture(out var error),"四形不可捕获："+error);

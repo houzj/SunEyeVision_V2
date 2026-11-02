@@ -1,0 +1,1128 @@
+{
+  "baseline": "99537c5abcf4f0861acc9f8b00b6c02d75abe843",
+  "branch": "codex/blob-display-neutral-20261103",
+  "scope": "独立worktree候选，非主仓正式或人工验收",
+  "builds": [
+    {
+      "exit": 0,
+      "errors": 0,
+      "name": "UI",
+      "log": "Release/_validation/display-neutral-20261103/ui-004.log",
+      "warnings": 6523
+    },
+    {
+      "exit": 0,
+      "errors": 0,
+      "name": "FullRelease",
+      "log": "Release/_validation/display-neutral-20261103/full-003.log",
+      "warnings": 6514
+    }
+  ],
+  "testResults": [
+    {
+      "track": "WindowPresentation",
+      "expectedPassed": 33,
+      "receiptPath": "Release/_validation/S4-20261025/WindowPresentation/attempt-004/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 4,
+        "pid": 27288,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-004"
+      },
+      "loadedCount": 5,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "BlobResultDisplay",
+      "expectedPassed": 44,
+      "receiptPath": "Release/_validation/S4-20261025/BlobResultDisplay/attempt-002/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 30448,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultDisplayCases.cs",
+        "caseSourceSha256": "F9E24D42C64CE22293E7CB0D93DCC29BEF88B18EC0D8D82D6AE9E2FF375AF572",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-002"
+      },
+      "loadedCount": 15,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "134317C6455C719E725485057DF4BA5048AB37F0281246FC30286FE84C4CD6B2"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "A100EACB9EA0044620F44EC77D4F6B1A0A01586C2110947C31A0B0065C8A7F6C"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "BD3FDAC22F330C7F4FEF0ADB478208FC0F9D201E4D570E88350213DF3E81DD51"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "73A5BA50699F9E9E93B397FBC6585703EA51965F898DAF6A90CF2045B68698DE"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "9AEFE12B5E339D7EE919B77CC7C66A3B5985D6CB50D44DBC688C355C84EE5CC2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "A733AF0FC687BECE726BBC9699B35D7DFD10407D0397FE252EA5C75E83605800"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "B14E957264F68720A952693A7C03EDF83274D1E3C48638823F70DE8BC4233DF0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "C69120E74DA745D9EEB61FEE59719EFAF4A47F450BB1698A4BC1B5B3BB5BC952"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "A1378F015FFFD497DA4CEC228F7511C95EBA474AC99E454DFA8025DCE6880970"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "7F27258D5C2EC1676E97241AA2399745BE5B7ED9D5D1BD7DEA568BAABC97A237"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "BlobCrosshairWorkspace",
+      "expectedPassed": 7,
+      "receiptPath": "Release/_validation/S4-20261025/BlobCrosshairWorkspace/attempt-002/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 35692,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobCrosshairWorkspaceCases.cs",
+        "caseSourceSha256": "7991DE105ADB24F1ECD58FE96F0EEC84D802C541C9497E4FFE5206FA5999E08C",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-002"
+      },
+      "loadedCount": 15,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "134317C6455C719E725485057DF4BA5048AB37F0281246FC30286FE84C4CD6B2"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "B14E957264F68720A952693A7C03EDF83274D1E3C48638823F70DE8BC4233DF0"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "73A5BA50699F9E9E93B397FBC6585703EA51965F898DAF6A90CF2045B68698DE"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "A100EACB9EA0044620F44EC77D4F6B1A0A01586C2110947C31A0B0065C8A7F6C"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "9AEFE12B5E339D7EE919B77CC7C66A3B5985D6CB50D44DBC688C355C84EE5CC2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "A733AF0FC687BECE726BBC9699B35D7DFD10407D0397FE252EA5C75E83605800"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "C69120E74DA745D9EEB61FEE59719EFAF4A47F450BB1698A4BC1B5B3BB5BC952"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "A1378F015FFFD497DA4CEC228F7511C95EBA474AC99E454DFA8025DCE6880970"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "BD3FDAC22F330C7F4FEF0ADB478208FC0F9D201E4D570E88350213DF3E81DD51"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "7F27258D5C2EC1676E97241AA2399745BE5B7ED9D5D1BD7DEA568BAABC97A237"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "BlobResultWorkspace",
+      "expectedPassed": 4,
+      "receiptPath": "Release/_validation/S4-20261025/BlobResultWorkspace/attempt-002/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 42272,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobResultWorkspaceCases.cs",
+        "caseSourceSha256": "744790FD8D4EF064237C0E833592DE57DB0015CE7B7EF2F7E5AF4B03E05A4568",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-002"
+      },
+      "loadedCount": 15,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "A100EACB9EA0044620F44EC77D4F6B1A0A01586C2110947C31A0B0065C8A7F6C"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "7F27258D5C2EC1676E97241AA2399745BE5B7ED9D5D1BD7DEA568BAABC97A237"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "134317C6455C719E725485057DF4BA5048AB37F0281246FC30286FE84C4CD6B2"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "B14E957264F68720A952693A7C03EDF83274D1E3C48638823F70DE8BC4233DF0"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "73A5BA50699F9E9E93B397FBC6585703EA51965F898DAF6A90CF2045B68698DE"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "9AEFE12B5E339D7EE919B77CC7C66A3B5985D6CB50D44DBC688C355C84EE5CC2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "A733AF0FC687BECE726BBC9699B35D7DFD10407D0397FE252EA5C75E83605800"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "C69120E74DA745D9EEB61FEE59719EFAF4A47F450BB1698A4BC1B5B3BB5BC952"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "A1378F015FFFD497DA4CEC228F7511C95EBA474AC99E454DFA8025DCE6880970"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "BD3FDAC22F330C7F4FEF0ADB478208FC0F9D201E4D570E88350213DF3E81DD51"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "B08NumericComposition",
+      "expectedPassed": 12,
+      "receiptPath": "Release/_validation/S4-20261025/B08NumericComposition/attempt-002/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 6136,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4B08NumericReferenceCompositionCases.cs",
+        "caseSourceSha256": "92B1B5EAA8141D583BEB9678C82162266CCE175D5DC5B0F5F2DB00FD51D6CABC",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-002"
+      },
+      "loadedCount": 15,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "134317C6455C719E725485057DF4BA5048AB37F0281246FC30286FE84C4CD6B2"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "BD3FDAC22F330C7F4FEF0ADB478208FC0F9D201E4D570E88350213DF3E81DD51"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "73A5BA50699F9E9E93B397FBC6585703EA51965F898DAF6A90CF2045B68698DE"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "A100EACB9EA0044620F44EC77D4F6B1A0A01586C2110947C31A0B0065C8A7F6C"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "9AEFE12B5E339D7EE919B77CC7C66A3B5985D6CB50D44DBC688C355C84EE5CC2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "A733AF0FC687BECE726BBC9699B35D7DFD10407D0397FE252EA5C75E83605800"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "B14E957264F68720A952693A7C03EDF83274D1E3C48638823F70DE8BC4233DF0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "C69120E74DA745D9EEB61FEE59719EFAF4A47F450BB1698A4BC1B5B3BB5BC952"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "A1378F015FFFD497DA4CEC228F7511C95EBA474AC99E454DFA8025DCE6880970"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "7F27258D5C2EC1676E97241AA2399745BE5B7ED9D5D1BD7DEA568BAABC97A237"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "BlobRoiPreview",
+      "expectedPassed": 24,
+      "receiptPath": "Release/_validation/S4-20261025/BlobRoiPreview/attempt-002/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 49128,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobRoiPreviewCases.cs",
+        "caseSourceSha256": "5CCB5F781086C8397C22A0AB8CE4692F4A834AAC6BFF162D14A5BC150BE98120",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobRoiPreview\\attempt-002"
+      },
+      "loadedCount": 15,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "134317C6455C719E725485057DF4BA5048AB37F0281246FC30286FE84C4CD6B2"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "BD3FDAC22F330C7F4FEF0ADB478208FC0F9D201E4D570E88350213DF3E81DD51"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "73A5BA50699F9E9E93B397FBC6585703EA51965F898DAF6A90CF2045B68698DE"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "6F122A743AF504394105573144A24DCB9683B9D056FA4E760D36E79B61FD143E"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "A100EACB9EA0044620F44EC77D4F6B1A0A01586C2110947C31A0B0065C8A7F6C"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "9AEFE12B5E339D7EE919B77CC7C66A3B5985D6CB50D44DBC688C355C84EE5CC2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "A733AF0FC687BECE726BBC9699B35D7DFD10407D0397FE252EA5C75E83605800"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "B14E957264F68720A952693A7C03EDF83274D1E3C48638823F70DE8BC4233DF0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "C69120E74DA745D9EEB61FEE59719EFAF4A47F450BB1698A4BC1B5B3BB5BC952"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "A1378F015FFFD497DA4CEC228F7511C95EBA474AC99E454DFA8025DCE6880970"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "7F27258D5C2EC1676E97241AA2399745BE5B7ED9D5D1BD7DEA568BAABC97A237"
+        }
+      ],
+      "loadedHashesMatch": true
+    },
+    {
+      "track": "WindowPresentation",
+      "expectedPassed": 1,
+      "receiptPath": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/receipt.json",
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 3,
+        "pid": 43084,
+        "exit": 0,
+        "timeoutMs": 900000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "O06WindowPresentationCases.cs",
+        "caseSourceSha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-003"
+      },
+      "loadedCount": 4,
+      "loaded": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "B63A3177335CDC0A543599415995F70FD0B8763620F0160B9D26703E2CCB06A7"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "321F7920CC174246C648219F4EA054A283D60FA818C542A22E5C97A1757F910D"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "B69B61D6EFD6892035E518309B6964C4127D7357A0B93DE404CA71ACDA426227"
+        }
+      ],
+      "loadedHashesMatch": true
+    }
+  ],
+  "resourceAudit": {
+    "exactAero2PackKeys": [
+      "themes/native/display/primitives/controls/themes/aero2/brushes.baml",
+      "themes/native/display/primitives/controls/themes/aero2/buttons.baml",
+      "themes/native/display/primitives/controls/themes/aero2/common.baml",
+      "themes/native/display/primitives/controls/chromes/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/buttonspinner/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/collectioncontrol/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/colorcanvas/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/colorpicker/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/datetimeupdown/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/datetimepicker/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/multilinetexteditor/themes/aero2.normalcolor.baml",
+      "themes/native/numeric/vmcontrols/controls/numericupdown/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/propertygrid/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/timepicker/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/timespanupdown/themes/aero2.normalcolor.baml",
+      "themes/native/display/primitives/controls/watermarktextbox/themes/aero2.normalcolor.baml"
+    ],
+    "assemblySha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E",
+    "legacyLogicalNames": [],
+    "packagedAssets": [
+      {
+        "sourceUnchanged": true,
+        "key": "SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Resources.鼠标双向箭头.png",
+        "sha256": "A99108913DCDA4764EC893D3F85F3ED3FE546210AEB0601281DFFFBF5D093DA3",
+        "kind": "EmbeddedResource"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Resources.鼠标旋转箭头.png",
+        "sha256": "1662C0A1871F70D5563813864E7D263FC01E4EFB7098BFEAEC036EA0E0B60488",
+        "kind": "EmbeddedResource"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Resources.旋转光标.png",
+        "sha256": "CD963C430184793CE839258F1DF71C4135F269C6B56AD18CFACE6D451D241A17",
+        "kind": "EmbeddedResource"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/collectioncontrol/images/delete16.png",
+        "sha256": "10009CF8854C08F93496707A728757786BDB7AF3DBBD4E9FEC4BBE09417DF016",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/multilinetexteditor/images/notes16.png",
+        "sha256": "970237AE6D9062675404702C7BAEED40320A0F90AB87AF36F541983DF0D1BCE8",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/advancedproperties11.png",
+        "sha256": "B16A17E3DA790F0EFBED6F88DEF96613954AC5128D0F264D16FE3F9CA8DE1752",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/categorize16.png",
+        "sha256": "416EE39246B98E377D04475687BB74E24E70D14EDD0D33764284378C3F33CD2A",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/clearfilter16.png",
+        "sha256": "6610C7A62AA1B639F443D292F3C0630A0668A8D662234AD27100AE54D83D6895",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/database11.png",
+        "sha256": "7F1FCB6CE0B050B83FC46E807D9E86F7B3FAA41417D09896237FB0196C14FF39",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/inheritance11.png",
+        "sha256": "517A0B269F697C39D4752E0AD4CF36F550C4A1B914B2A0854EE80636C60A373D",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/local11.png",
+        "sha256": "5F6635731289C823563CEA1A40E4388ABA88A1D27D8C9BD842F5ACF8B84D4146",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/resource11.png",
+        "sha256": "B9782BFBD52E9D090A2AEF54A4BA875D0090D71631058EAAF6C108F30A9D252F",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/sortascending16.png",
+        "sha256": "40B5E67231DD0129C92AC9DB03D5AB08E149A123447B022D2ACB3D0644EAB884",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/controls/propertygrid/images/style11.png",
+        "sha256": "2F37285C6126731FF7C127D6D8D00F885741885619C538F2FCB666305AD14990",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/arrow_down.png",
+        "sha256": "8BEB2C22CF6F94CDE60D62861BF71B2108C5E0FFFAB1685AED78D288A6BEEE97",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/arrow_left.png",
+        "sha256": "8A18F7685215D5DDD566530C054DE4B12217D43C3DD8D7C76CD6F71C2AF036DF",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/ask.png",
+        "sha256": "37BC6A989B13FDBF8D4DB14887DF8EB412F0665D476D71DF208B97A07839AE22",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/close_dis.png",
+        "sha256": "47CBC91A16B77AC8EC3DC3CDC5775EFAC0D3E8A8FDF6995BF433C4716B47811A",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/close.png",
+        "sha256": "3A6F55CF733368B9CD8D3C7422016D70B1A0D08B4E47F9588C785D701989192C",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/default.png",
+        "sha256": "8DB5346BA6741B8B4133F737E4CA3690C9E30FA88D4BD7162B0FB79D09B52344",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/error.png",
+        "sha256": "B358C47D10D75B7EF58A9E08854C48F404AFC869AF46048384861851F42D4D3A",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/ic_log_fold_click.png",
+        "sha256": "D1E361ED29FA554E1CE8165177C43873F51471B92200C4663932FE24B65220D9",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/ic_log_fold_disable.png",
+        "sha256": "238B5D4EAA7B47B6DB73EAC9989B64E98F8EF10B207A704DD5D8C551125FD959",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/ic_log_fold_normal.png",
+        "sha256": "14903B71FDAC11766316FE3A283A6FA88B1D03E25EBFD5F6254EFAB7E9A6D4DD",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/max_dis.png",
+        "sha256": "EFAFB788F896A096BAE1179D6284B5F31EA9D22F81014B4892141022FAEE227C",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/max.png",
+        "sha256": "5E2EC405B17730F464282B2ECC4DB1FD50EAD73D614BDD720C9FE47FA8321C6A",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/min_dis.png",
+        "sha256": "45354F61EF2113BB1C1C9D68EC6B32FE8613A55393AC0D096BF3E3B33E9A5B18",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/min.png",
+        "sha256": "5F0D9A6C02D10C080D34F1E5FF8D4261950AC9BC553D4CE5A09D3E699A0ABBB1",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/msg_close_click.png",
+        "sha256": "24B406738080B8D424FDDCB529C140D0DBE32184D762D0AA83B631804D65E037",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/msg_close_normal.png",
+        "sha256": "0F4714EAB21FED1C6A1C39B8E9842668BAB55572101CED871E5C199DC04C739E",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/ok.png",
+        "sha256": "CBD19E0D971CB6A314CE5CA03FFE1B900C582B0D02CB7FB6994F2D646BF08EEE",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/waring.png",
+        "sha256": "81AD52443294990CDD4C1D779DEAF1508FF9F4E138CA90C99A69EFC6FA28FB27",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_close_hov.png",
+        "sha256": "D44E14B566346A43C76F67A5526A8EC783F5DB5C684EDA791560F0812DF34A45",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_close_sel.png",
+        "sha256": "35FD60663844FA39BC2A06ED9AFFED17F89D76699AFA7BF977C37416F1EDC6AC",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_max_hov.png",
+        "sha256": "E06A94B049F78663231E1BC612B01A6661686A6E440C4CBF557A9490EA8CFEE2",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_max_sel.png",
+        "sha256": "B5BEBD2976D05BDC2DC8B716581654D1626428E257545C00BE274B602C20E655",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_min_hov.png",
+        "sha256": "20A6CC01EBCFDDBB661E5CA8233BF2D1F7C8BEC2BD4857BA52B8D10296B51DD2",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/win_min_sel.png",
+        "sha256": "51004A63F479C3BBABB98C04225D80749DB5CE8B811F2DAD9A733F4B362ACF0F",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/windowbg_click.png",
+        "sha256": "A212F228CDC4884DDAFCB3E080AFC39E430E628C2059A4E6A5428A1E15DB5DBD",
+        "kind": "WPF pack"
+      },
+      {
+        "sourceUnchanged": true,
+        "key": "themes/assets/native/display/primitives/resources/windowbg_hover.png",
+        "sha256": "C519D84F60507E99A4C2BDE44FCA676134E020865D1CABA73469405FE282465D",
+        "kind": "WPF pack"
+      }
+    ],
+    "moduleVersionId": "7976f8eb-8b5d-4531-9ab6-68147a8b4c91"
+  },
+  "typeAudit": {
+    "newTypes": [
+      "SunEyeVision.Plugin.Wpf.Native.Display.ImageView.ImageViewBox",
+      "SunEyeVision.Plugin.Wpf.Native.Display.Primitives.NativeMessageBox",
+      "SunEyeVision.Plugin.Wpf.Native.Display.Contracts.IRectangle",
+      "SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Styles.NativePalette",
+      "SunEyeVision.Plugin.Wpf.Native.Display.Contracts.RenderColors"
+    ],
+    "oldProductTypeCount": 0,
+    "note": "检查实际候选程序集类型定义，无旧名称兼容定义；不改原件来源身份",
+    "assemblySha256": "73A9D21EAC456CE9462E461B2F30D6026C0BE9AB9D0FC0D94280D85A70E4439E",
+    "moduleVersionId": "7976f8eb-8b5d-4531-9ab6-68147a8b4c91"
+  },
+  "exactUriSourceEvidence": {
+    "entries": [
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\expanderbutton.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/Primitives/resources/arrow_down.png",
+        "sourceRelative": "resources/arrow_down.png",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/styles/expanderbutton.xaml",
+        "targetSha256": "8BEB2C22CF6F94CDE60D62861BF71B2108C5E0FFFAB1685AED78D288A6BEEE97",
+        "sourceSha256": "8BEB2C22CF6F94CDE60D62861BF71B2108C5E0FFFAB1685AED78D288A6BEEE97",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\arrow_down.png",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/Primitives/resources/arrow_down.png",
+        "referenceSourceSha256": "9C297A16DDDB111D164A2DDC96A4DB2964F7CE4EE250BA7CDCEC9EF33D6AED98",
+        "sourceBytesEqualCurrent": true,
+        "oldUri": "/HikVisionControl;component/Resources/arrow_down.png"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2/brushes.xaml",
+        "sourceRelative": "controls/themes/aero2/brushes.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "02ECDD8DF31C2A66F69B54AC43CD193B27412AC508D0C307F382AC04EEA0D2E2",
+        "sourceSha256": "1028FFC5D8087D3F5081F64EA0D38B4DA75464B032C86ABB681659B93C3E0E21",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\brushes.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/themes/aero2/brushes.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/Themes/Aero2/Brushes.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2/buttons.xaml",
+        "sourceRelative": "controls/themes/aero2/buttons.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "79143376C4EA10F6B7F10484BFD8331C132690F80FF1561915A09CBC6C8EE519",
+        "sourceSha256": "F12A059E0835BB0F378388D34D16DDC74DCE1B8374FBD3845FE264BDF88B8185",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\buttons.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/themes/aero2/buttons.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/Themes/Aero2/Buttons.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2/common.xaml",
+        "sourceRelative": "controls/themes/aero2/common.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "DD20D31D64C86452AAD70313C5E1C61C869AB2D626F4A169ED7F65D376F4C867",
+        "sourceSha256": "FFC09DC99AB25EAA90F8A3FAE3B2B0FAD9EBFE99FEDB19E86765837A27B8AD22",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\common.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/themes/aero2/common.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/Themes/Aero2/Common.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/chromes/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/chromes/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "A04B5E4E98AE0B4E9D5309E149B323A962475B83D37B4A23FD4135FBCBF721D9",
+        "sourceSha256": "FFC47D23B9AC0045F9BE061E804EDDB02C96424EEC740D50F9E50CE1B514C47A",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\chromes\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/chromes/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/Chromes/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/buttonspinner/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/buttonspinner/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "5646879FE58A1983812CB4EED7F18467BBC4768424BB0FE03A5B4A92D3BA6A4E",
+        "sourceSha256": "D475B5CE05128FB42D3299B44FF4A46D4569C867C3E42A8F9C324A567E7F8CAB",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\buttonspinner\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/buttonspinner/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/ButtonSpinner/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/collectioncontrol/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/collectioncontrol/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "49E26A20FBD9463EB30D7535DEFD173F83BA403326320CE419A94BFBCD3EFF66",
+        "sourceSha256": "7B57B61F78DDB1B8F8A21358F5F9E1DBB9F34EE801D60E343C75439B47BFE70E",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\collectioncontrol\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/collectioncontrol/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/CollectionControl/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/colorcanvas/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/colorcanvas/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "6E2C87B2F8F4103FDFBAB2F98E2EFA73E7191B5016A80621DA140C8D7EF21A1F",
+        "sourceSha256": "ABD8391DF533D4EC830E384F690A186CCD80745044E4A59CEA75DD1D784A14B1",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorcanvas\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/colorcanvas/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/ColorCanvas/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/colorpicker/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/colorpicker/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "3F7B63CDB29F52F3BCF1E288C3D20E2DF158B439EEBDC1DF720D0C674BA25E83",
+        "sourceSha256": "BF3A199EB890A72FFA38A25BD60B1A44BB4F0D03545F828D3F8D90100BE34C0C",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorpicker\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/colorpicker/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/ColorPicker/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/datetimeupdown/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/datetimeupdown/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "F6EF4684E5128AA0551BA9AF794D4CEB7215053C736EE3CEBC539EB7EBD39ADB",
+        "sourceSha256": "7C9DFEF65F93CFDD799A2614ADA7B1FF3A8A7000C3914B49BCE7F98DE1ED4974",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimeupdown\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimeupdown/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/DateTimeUpDown/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/datetimepicker/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/datetimepicker/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "6505458CCB2B07DD8171B96AFB90B4E422B40CB20A578265E66B410931D348D4",
+        "sourceSha256": "BF4FBDC2312667008EFAC33C445E63E27A7CD0EF501763E9BCDD6C889FF078BE",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimepicker\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimepicker/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/DateTimePicker/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/multilinetexteditor/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/multilinetexteditor/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "22424B8EFFE34A95C52E2CF1A2120503B787D18410CADB9BF7F23F981B13D813",
+        "sourceSha256": "2FA0874A155200C9AE0A6362E5582528C87EFCAA6C5F91BF9C21981CD45053C3",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\multilinetexteditor\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/multilinetexteditor/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/MultiLineTextEditor/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Numeric manifest same VM.Controls original",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/numericupdown/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "A8FFEDF434C2F9C37040F057E2BB67FB7CB3B154C68394822477EFD3D2F8598F",
+        "sourceSha256": "4CDF579250DC77F3E4E0128612118FA221A65DBB0CC0EAFA58BDA0157B20FCDB",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/NumericUpDown/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/propertygrid/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/propertygrid/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "5239AB6E0DDB659A15C981978838543185D2AF4F7E79F8B0A275F3EF81E2C77F",
+        "sourceSha256": "C73E7BE7617DCB5AF550ADD09A5405F448775D3E88D5D0FD5034FEF03B2A6600",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/propertygrid/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/PropertyGrid/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/timepicker/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/timepicker/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "D76C0F9246378C9EB9F29EDDD6FC6B5E2F7EBD3EF27E8406704E3628B04F6242",
+        "sourceSha256": "AECAB95587DA67468561E308B1AB0AE1DB9A6995A4A2B81CE5387705EA4CB2B8",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timepicker\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timepicker/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/TimePicker/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/timespanupdown/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/timespanupdown/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "52187180FD8B950EA611FBDB863721F064A827C702C4C0757FBD1FAF34F9FE1E",
+        "sourceSha256": "755074E5AB5CBA15321E6B3FC6E39EFE97447EAC765287C6B86F8346B4725732",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timespanupdown\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timespanupdown/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/TimeSpanUpDown/Themes/Aero2.NormalColor.xaml"
+      },
+      {
+        "sourceKind": "Display provenance",
+        "referenceSource": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+        "targetPath": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/watermarktextbox/themes/aero2.normalcolor.xaml",
+        "sourceRelative": "controls/watermarktextbox/themes/aero2.normalcolor.xaml",
+        "referenceFile": "src/Plugin.Wpf/Themes/Native/Display/Primitives/controls/themes/aero2.normalcolor.xaml",
+        "targetSha256": "0823F57BE632B506B7571AD3910BCD8AA45D7661157F37BF9C935272E76BBB07",
+        "sourceSha256": "8C410E96CCCA43D3D5CC586B7E742347DE612A38C77C1DEE37B939136439DFE0",
+        "sourceFile": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\watermarktextbox\\themes\\aero2.normalcolor.xaml",
+        "newUri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/watermarktextbox/themes/aero2.normalcolor.xaml",
+        "referenceSourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+        "sourceBytesEqualCurrent": false,
+        "oldUri": "/HikVisionControl;component/Controls/WatermarkTextBox/Themes/Aero2.NormalColor.xaml"
+      }
+    ],
+    "status": "原件SHA和完整精确目标已核；非Generic主题替代"
+  },
+  "mapFileCount": 765,
+  "allMapHashesMatch": true,
+  "unchangedMovedBinaryAssets": 40,
+  "limitations": [
+    "未运行真实VS设计器，用户另验",
+    "未启动原版VM/SDK",
+    "主线须同步Catalog当前目标并正式集成验收",
+    "不宣称整个Blob或S2/S3完成"
+  ],
+  "preservedFailure": "资源入口attempt-002测试最初缺正式样式作用域，失败记录保留；测试加载原正式样式后attempt-003通过，未改产品行为"
+}

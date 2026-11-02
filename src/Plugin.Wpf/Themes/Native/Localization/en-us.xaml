@@ -74,11 +74,11 @@
   <sys:String x:Key="Lang_HstRslt">History</sys:String>
   <sys:String x:Key="Lang_Time">Time</sys:String>
   <sys:String x:Key="Lang_ModuData">Module Data</sys:String>
-  <!--HikMessageBox 第一版无-->
-  <!--HikMessageBox 按钮 -->
+  <!--NativeMessageBox 第一版无-->
+  <!--NativeMessageBox 按钮 -->
   <sys:String x:Key="Lang_Msg_Cancel">Cancel</sys:String>
-  <!--HikMessageBox 提示文字 -->
-  <!-- HikMessageBox Title-->
+  <!--NativeMessageBox 提示文字 -->
+  <!-- NativeMessageBox Title-->
   <sys:String x:Key="Lang_BackRun">Background Running</sys:String>
   <sys:String x:Key="Lang_StopBackRun">Exit and Stop</sys:String>
   <sys:String x:Key="Lang_UnNotify">Remember Me</sys:String>

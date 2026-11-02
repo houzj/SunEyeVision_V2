@@ -2,7 +2,7 @@ using System.Windows.Media.Imaging;
 using System.Windows;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display;
 using SunEyeVision.Plugin.Wpf.Native.Common;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

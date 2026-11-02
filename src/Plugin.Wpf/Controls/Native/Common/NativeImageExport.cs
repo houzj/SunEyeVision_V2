@@ -9,8 +9,8 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Common;
 
@@ -33,7 +33,7 @@ internal static class NativeImageExport
             root.Resources.MergedDictionaries.Add(owner.Resources);
             root.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/themes/generic.xaml", UriKind.Relative)
+                Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/ImageView/themes/generic.xaml", UriKind.Relative)
             });
             page = new ShapeItemsPage
             {

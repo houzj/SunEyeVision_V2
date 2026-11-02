@@ -29,7 +29,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private bool _shutdown;
         internal Func<string?> ReadClipboardText { get; set; } = () => Clipboard.ContainsText() ? Clipboard.GetText() : null;
         internal Action<string> WriteClipboardText { get; set; } = Clipboard.SetText;
-        private SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox? _copyNotice;
+        private SunEyeVision.Plugin.Wpf.Native.Display.Primitives.NativeMessageBox? _copyNotice;
         private System.Windows.Threading.DispatcherTimer? _copyNoticeTimer;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
@@ -132,10 +132,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_shutdown||_viewModel?.IsCurrentResultRow(row)!=true||!ReferenceEquals(ModuleResultTreeView.SelectedItem,row))return;
             WriteClipboardText(path);
             CloseCopyNotice();
-            var notice=SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox.CreateMessageBox(
+            var notice=SunEyeVision.Plugin.Wpf.Native.Display.Primitives.NativeMessageBox.CreateMessageBox(
                 SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Lang_CopySuccess"),
-                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageIcons.Ok,
-                SunEyeVision.Plugin.Wpf.Native.Display.VMControls.MessageButtons.NoButton);
+                SunEyeVision.Plugin.Wpf.Native.Display.Primitives.MessageIcons.Ok,
+                SunEyeVision.Plugin.Wpf.Native.Display.Primitives.MessageButtons.NoButton);
             if(notice is null)return;
             var owner=Window.GetWindow(this);
             if(owner is {IsVisible:true})notice.Owner=owner;

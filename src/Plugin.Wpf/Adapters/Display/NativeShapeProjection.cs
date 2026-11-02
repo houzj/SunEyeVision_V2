@@ -2,8 +2,8 @@ using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
+using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.Shape;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Display;
 
@@ -15,7 +15,7 @@ internal static class NativeShapeProjection
     // Keep semantic rows separate from the original result-list packaging. Other
     // independently owned selection/ROI/cross layers retain their direct items.
     internal static object[] Presentation(object[] items,
-        SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox view)
+        SunEyeVision.Plugin.Wpf.Native.Display.ImageView.ImageViewBox view)
     {
         var result = new List<object>();
         for (var index = 0; index < items.Length;)

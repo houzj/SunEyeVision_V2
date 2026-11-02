@@ -54,12 +54,6 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
             }
         }
         Editor.Bind(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(options,_supportedState is null?null:ValidateSupportedState),draft.Schema,supportedWindow:true,observe:value=>_displayUi=value));
-        if(Editor.Content is SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView fields)
-            foreach(var field in fields.Fields)
-            {
-                if(field.FieldId is "display.text.x" or "display.text.y")field.View.ToolTip="当前仅支持固定位置，动态位置来源尚未接入。";
-                if(field.FieldId=="display.text.content")field.View.ToolTip="当前支持{0}面积占位；动态文本来源尚未接入。";
-            }
         Editor.Changed+=RefreshSupportedState;
         if(_roiUi is not null)_roiUi.Changed+=OnUiOnlyChanged;
         if(_assistUi is not null)_assistUi.Changed+=OnUiOnlyChanged;

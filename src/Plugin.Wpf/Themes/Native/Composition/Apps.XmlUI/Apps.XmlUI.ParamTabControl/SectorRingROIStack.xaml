@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<localcontrol:ROIStackControl xmlns:b08n1="clr-namespace:SunEyeVision.Plugin.Wpf.Themes.Palettes" x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.SectorRingROIStack" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI"  xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData" xmlns:vm_port_0___="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
+<localcontrol:ROIStackControl xmlns:b08n1="clr-namespace:SunEyeVision.Plugin.Wpf.Themes.Palettes" x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.SectorRingROIStack" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl" xmlns:displayNative0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.ROI"  xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData" xmlns:vm_port_0___="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -63,7 +63,7 @@
             <TextBlock VerticalAlignment="Center" Text="{DynamicResource roiAnnulusOuterRadius}" ToolTip="{DynamicResource roiAnnulusOuterRadius}" />
           </localParamTab:LeftRightControl.LeftContent>
           <localParamTab:LeftRightControl.RightContent>
-            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="0" Maximum="{x:Static vm_port_1:SectorROI.MaxRadius}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="0" Maximum="{x:Static displayNative0:SectorROI.MaxRadius}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
               <vm_port_0:SliderArrangeBase.StartValue>
                 <MultiBinding Mode="TwoWay">
                   <MultiBinding.Converter>
@@ -86,7 +86,7 @@
             <TextBlock VerticalAlignment="Center" Text="{DynamicResource CircleInnerRadius}" ToolTip="{DynamicResource CircleInnerRadius}" />
           </localParamTab:LeftRightControl.LeftContent>
           <localParamTab:LeftRightControl.RightContent>
-            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="0" Maximum="{x:Static vm_port_1:SectorROI.MaxRadius}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="0" Maximum="{x:Static displayNative0:SectorROI.MaxRadius}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
               <vm_port_0:SliderArrangeBase.StartValue>
                 <MultiBinding Mode="TwoWay">
                   <MultiBinding.Converter>

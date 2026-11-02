@@ -30,6 +30,8 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     public long AcceptedRevision=>Editor.AcceptedRevision+(Composition?.RoiRevision??0);
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+        =>Editor.ReadNumericModels(scope,fieldId);
     public event Action? Changed {add{Editor.Changed+=value;_uiOnlyChanged+=value;}remove{Editor.Changed-=value;_uiOnlyChanged-=value;}}
     public bool TryCapture(out FieldSettings fields,out string error)=>Composition is {} composition?composition.TryCapture(out fields,out error):Editor.TryCapture(out fields,out error);
     private void OnUiOnlyChanged(){if(!_disposed)_uiOnlyChanged?.Invoke();}

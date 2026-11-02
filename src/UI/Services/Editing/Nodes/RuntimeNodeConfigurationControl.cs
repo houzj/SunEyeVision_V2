@@ -90,6 +90,20 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     }
     public void SetDataProvider(DataSourceQueryService query)=>_query=query;
     public void SetDebugCapture(Func<WorkflowNodeBase,RuntimeDebugInvocation> capture)=>_captureDebug=capture;
+    /// <summary>Explicit ordinary-parameter projection. It never resolves a source or starts execution.</summary>
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    {
+        Dispatcher.VerifyAccess();
+        var view=_view;var node=_node;var generation=_generation;var context=ToolEditorCommit.GetDraftContext(this);
+        bool Current()=>view is not null&&ReferenceEquals(view,_view)&&IsResultDisplayBinding(node,generation)
+            &&ReferenceEquals(context,ToolEditorCommit.GetDraftContext(this))&&(context is not ProductionEditorContext production||production.IsValid);
+        if(!Current())
+            return new[]{new NumericModelReadResult(fieldId??string.Empty,NumericModelReadStatus.Retired,"数值模型所属参数页已退役。")};
+        var results=view!.ReadNumericModels(scope,fieldId);
+        if(!Current())
+            return results.Select(item=>item with{Status=NumericModelReadStatus.Retired,Error="回读期间参数页已替换。"}).ToArray();
+        return results;
+    }
     public async Task RunDebugAsync()
     {
         Dispatcher.VerifyAccess();
@@ -155,6 +169,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
         var presentationOwner=ReferencePresentation();
+        var numericContext=ToolEditorCommit.GetDraftContext(this);
+        bool NumericReadCurrent()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+            &&ReferenceEquals(numericContext,ToolEditorCommit.GetDraftContext(this))
+            &&(numericContext is not ProductionEditorContext production||production.IsValid);
         var referenceOptions=new ReferenceFieldOptions(target=>
         {
             var candidates=configuration.IsDisplayField(target.Id)?ReadDisplayReferenceCandidates(generation):ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
@@ -164,12 +182,15 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         },(target,proposal)=>ValidateProposal(target,proposal,generation),FormatVariable:reference=>FormatVariable(reference,generation),
             ReadCurrentValue:port=>
             {
-                if(_disposed||generation!=_generation||!ReferenceEquals(_node,node))
+                if(!NumericReadCurrent())
                     throw new InvalidOperationException("参数当前值的编辑会话已失效。");
                 var current=node.RuntimeConfiguration!;
                 if(!current.SettingsSchema.Inputs.Any(parameter=>parameter.Id==port.Id))return null;
-                return ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context
+                var value=numericContext is ProductionEditorContext context
                     ?context.ReadCurrentParameter(port.Id):current.ReadCurrentParameter(port.Id);
+                if(!NumericReadCurrent()||!ReferenceEquals(current,node.RuntimeConfiguration))
+                    throw new InvalidOperationException("普通参数回读期间编辑会话已替换。");
+                return value;
             },WindowOwner:presentationOwner,ReadBehavior:port=>
             {
                 if(_disposed||generation!=_generation||!ReferenceEquals(_node,node))throw new InvalidOperationException("引用行为所属字段页已失效。");
@@ -217,6 +238,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
         if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;_syncedRevision=candidate.AcceptedRevision;_captureError="";
         _view.Changed+=Changed;Content=_view.View;
+        // One initialization per newly installed root. Running/debug completion does not call this.
+        if(ReferenceEquals(_view,candidate)&&IsResultDisplayBinding(node,generation))
+            ReadNumericModels(NumericModelReadScope.All);
         }
         catch(Exception failure)
         {

@@ -1,9 +1,0 @@
-<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views.ShapeToolBar"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:common="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Common.Views">
-    <!-- 形状工具栏 - 通用 ToolBarControl 薄封装（组合，仅做类型化事件映射） -->
-    <common:ToolBarControl x:Name="InnerToolBar"
-                           HorizontalAlignment="Center"
-                           SelectionChanged="OnInnerSelectionChanged"/>
-</UserControl>

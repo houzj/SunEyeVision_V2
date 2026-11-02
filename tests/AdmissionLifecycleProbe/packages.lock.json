@@ -1689,10 +1689,8 @@
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
-          "System.Drawing.Common": "[9.0.0, )"
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.wpf": {
@@ -1730,6 +1728,7 @@
           "SunEyeVision.CvAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.DeviceDriver": "[2.0.0-alpha.8, )",
           "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",

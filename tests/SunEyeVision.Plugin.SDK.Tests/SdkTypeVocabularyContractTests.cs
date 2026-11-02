@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Workflow;
 using Xunit;

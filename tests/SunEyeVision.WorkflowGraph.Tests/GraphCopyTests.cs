@@ -92,6 +92,22 @@ public sealed class GraphCopyTests
     }
 
     [Fact]
+    public void Typed_image_reference_adds_dependency_without_canvas_connection()
+    {
+        var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");
+        var source = RootCanvasFixture.Node("source");
+        var target = new WorkflowNodeBase("target", "target", "target", "BlobAnalysis")
+            { RuntimeConfiguration = RuntimeToolConfiguration.Create(RootCanvasFixture.Directory, "BlobAnalysis") };
+        var output = source.RuntimeConfiguration!.Schema.Outputs.Single(p => p.Id == "output.image");
+        var input = target.RuntimeConfiguration!.Schema.WorkflowImageInputId!;
+        target.RuntimeConfiguration = target.RuntimeConfiguration.WithFieldSettings(new Dictionary<string,ParameterSetting>
+        { [input] = new ReferenceSetting(new OutputReference(source.Id, output.Id, output.Type, new[] { "data" }, scopeId: flow.Id)) });
+        flow.Nodes.Add(source);flow.Nodes.Add(target);
+        var graph = WorkflowExecutionDependencyGraph.Compile(flow);
+        Assert.Contains(graph.Dependencies, dependency => dependency.SourceNodeId == source.Id && dependency.TargetNodeId == target.Id);
+    }
+
+    [Fact]
     public void Copy_preserves_admitted_configuration_and_does_not_mutate_source()
     {
         var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");

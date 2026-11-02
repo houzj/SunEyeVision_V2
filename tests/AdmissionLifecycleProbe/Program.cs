@@ -253,6 +253,15 @@ try
     await production.LoadPluginsAsync();
     if(production.LastAdmissionError is not null)throw new Exception("Production re-admission failed.");
     var activeDirectory=production.RuntimeDirectory??throw new Exception("Active generation missing.");
+    MustReject(()=>RuntimeNodeAdmission.Require(activeDirectory,imageNode),"foreign/retired directory generation");
+    MustReject(()=>RuntimeDebugInvocation.Capture(flow,activeDirectory,flow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"foreign generation debug");
+    var foreignEngine=new WorkflowEngine(new NullLogger(),activeDirectory); foreignEngine.RegisterWorkflow(flow);
+    var foreignRunner=new WorkflowExecutionEngine(foreignEngine,production,new NullLogger());
+    bool rejectedForeign=false;
+    try { using var foreign=await foreignRunner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id)); rejectedForeign=!foreign.Success; }
+    catch(InvalidOperationException) { rejectedForeign=true; }
+    if(!rejectedForeign)throw new Exception("Workflow accepted an old generation configuration.");
+    Console.WriteLine("probe: old runtime generation rejected for execution and debug admission");
     var activeFlow=new SunEyeVision.Workflow.Workflow("active-probe","active-probe");
     activeFlow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(activeDirectory,"ImageLoad")});
     var activeEngine=new WorkflowEngine(new NullLogger(),activeDirectory);activeEngine.RegisterWorkflow(activeFlow);

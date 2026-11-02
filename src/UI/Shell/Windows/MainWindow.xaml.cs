@@ -267,7 +267,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 ThemeMessageDialog.Show(ex.Message, "退出未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, this);
             }
         }
-        protected override void OnClosed(EventArgs e)
+        protected override async void OnClosed(EventArgs e)
         {
             _viewModel.CloseExecutionSnapshotDetails();
             _viewModel.SolutionDialogOwner = null;
@@ -296,11 +296,15 @@ namespace SunEyeVision.UI.Shell.Windows
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             ImageResultHost.Shutdown();
             _viewModel?.StopWorkflowCommand.Execute(null);
+            try { _viewModel?.ReleasePluginConsumersForShutdown(); }
+            catch(Exception ex) { VisionLogger.Instance.Log(LogLevel.Error,"关闭时释放插件消费者失败："+ex.Message,"MainWindow",ex); }
             _viewModel?.ReleaseDocumentHost();
             base.OnClosed(e);
 
-            // 防止存在无 Owner 的窗口或其他 WPF Dispatcher 对象使进程继续驻留。
-            Application.Current?.Shutdown();
+            // Dispatcher stays alive while existing invocation and reader leases drain.
+            try { if(Application.Current is SunEyeVision.UI.App app) await app.DrainPluginDirectoryAsync(); }
+            catch(Exception ex) { VisionLogger.Instance.Log(LogLevel.Error,"插件目录退役失败："+ex.Message,"MainWindow",ex); }
+            finally { Application.Current?.Shutdown(); }
         }
 
         public void ShowSolutionLoadingOverlay(string stage, string detail)

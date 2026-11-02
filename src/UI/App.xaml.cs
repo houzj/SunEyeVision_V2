@@ -52,6 +52,8 @@ public partial class App : Application
     private bool _releaseProbe;
     private bool _startupRejected;
     private bool _servicesReady;
+    private PluginManager? _pluginManager;
+    private IDisposable? _desktopDirectoryPin;
     private ApplicationDataPaths? _dataPaths;
     private string? _requestedSolutionPath;
     public StartPageSettings StartPreferences { get; private set; } = new();
@@ -227,6 +229,7 @@ public partial class App : Application
         // 1. 初始化插件管理器（在任何其他初始化之前）
         _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
+        _pluginManager = pluginManager;
         LogStartupStage("Plugin.Load begin", "source=release-payload.productComponents");
         await pluginManager.LoadPluginsAsync();
         try
@@ -310,6 +313,7 @@ public partial class App : Application
         _splashScreen?.UpdateStage("正在初始化解决方案", 65, "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
         var desktopAdmission=pluginManager.DesktopAdmission??throw new InvalidOperationException("缺少已准入运行目录。");
+        _desktopDirectoryPin=pluginManager.PinDesktopHost();
         ServiceInitializer.InitializeSolutionManager(_dataPaths!,desktopAdmission.Runtime);
         _servicesReady = true;
         _splashScreen?.UpdateStage("正在初始化解决方案", 70, "解决方案管理器准备完成");
@@ -462,6 +466,16 @@ public partial class App : Application
     {
         _instanceClosing = true;
         _singleInstance?.BeginClosing();
+    }
+
+    internal async Task DrainPluginDirectoryAsync()
+    {
+        var manager = _pluginManager;
+        if (manager is null) return;
+        _desktopDirectoryPin?.Dispose();
+        _desktopDirectoryPin=null;
+        await manager.UnloadPluginsAsync();
+        if (ReferenceEquals(_pluginManager, manager)) _pluginManager = null;
     }
 
     private Task<InstanceActivationResult> HandleInstanceActivationAsync(InstanceActivationRequest request)

@@ -27,6 +27,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private readonly Dictionary<Type, List<object>> _plugins = new();
         private static readonly object AdmissionGate=new();
         private static TaskCompletionSource? AdmissionTransition;
+        private static Guid? DesktopHostGeneration;
+        private static int DesktopHostPins;
         private readonly Guid _ownerId=Guid.NewGuid();
         private Guid? _ownedGeneration;
         private long _attempt;
@@ -39,6 +41,35 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             get { var current=ToolRegistry.CurrentAdmission; return current is null?null:new DesktopToolAdmission(current.Directory,current.Runtime); }
         }
         public IReadOnlyList<string> AdmissionFailures=>_admissionFailures.ToArray();
+
+        /// <summary>Keep a desktop workspace on one generation until it has released its consumers.</summary>
+        public IDisposable PinDesktopHost()
+        {
+            lock(AdmissionGate)
+            {
+                var current=ToolRegistry.CurrentAdmission;
+                if(AdmissionTransition is not null || current is null || current.Owner!=_ownerId || current.Runtime.Generation!=_ownedGeneration)
+                    throw new InvalidOperationException("桌面工作区不能绑定已变化的插件目录。");
+                if(DesktopHostGeneration is not null && DesktopHostGeneration!=current.Runtime.Generation)
+                    throw new InvalidOperationException("桌面工作区已绑定另一目录代次。");
+                DesktopHostGeneration=current.Runtime.Generation;DesktopHostPins++;
+                return new DesktopHostPin(current.Runtime.Generation);
+            }
+        }
+        private sealed class DesktopHostPin(Guid generation):IDisposable
+        {
+            private bool _released;
+            public void Dispose()
+            {
+                lock(AdmissionGate)
+                {
+                    if(_released)return;
+                    _released=true;
+                    if(DesktopHostGeneration!=generation || DesktopHostPins<=0)throw new InvalidOperationException("桌面目录租约状态不一致。");
+                    if(--DesktopHostPins==0)DesktopHostGeneration=null;
+                }
+            }
+        }
 
         public void AssertCompleteReleaseToolSet(IEnumerable<string> actualToolIds)
         {
@@ -120,6 +151,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 Task drained;
                 lock(AdmissionGate)
                 {
+                    if(DesktopHostPins!=0)throw new InvalidOperationException("桌面工作区仍使用当前目录，不能重载插件。");
                     if(AdmissionTransition is not null || attempt!=_attempt || expectedGeneration!=ToolRegistry.CurrentGeneration)
                         throw new InvalidOperationException("Admission attempt was superseded by another load or unload.");
                     // Validate commit scopes before making the prior generation unavailable.
@@ -143,7 +175,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     count=directory.ToolIds.Count;
                     AdmissionTransition=null;transition.TrySetResult();transition=null;
                 }
-                await signal.ConfigureAwait(false);
+                await ObserveRetirementSignalAsync(signal).ConfigureAwait(false);
             }
             catch(Exception ex)
             {
@@ -186,6 +218,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         var current=ToolRegistry.CurrentAdmission;
                         if(current is not null && current.Owner==_ownerId && current.Runtime.Generation==_ownedGeneration)
                         {
+                            if(DesktopHostPins!=0)throw new InvalidOperationException("桌面工作区尚未释放插件目录。");
                             transition=new(TaskCreationOptions.RunContinuationsAsynchronously);
                             AdmissionTransition=transition;
                             retiring=current.Runtime;
@@ -211,7 +244,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     _plugins.Clear();_toolCatalog.Clear();_ownedGeneration=null;
                     AdmissionTransition=null;transition.TrySetResult();transition=null;
                 }
-                await signal.ConfigureAwait(false);
+                await ObserveRetirementSignalAsync(signal).ConfigureAwait(false);
             }
             catch
             {
@@ -221,6 +254,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 throw;
             }
             _logger.LogInfo("插件卸载完成");
+        }
+        private async Task ObserveRetirementSignalAsync(Task signal)
+        {
+            // Publication or removal has already completed. A consumer callback failure
+            // must not turn an accepted generation into an apparent admission failure.
+            try { await signal.ConfigureAwait(false); }
+            catch(Exception error) { _logger.LogError("[发布准入] 退役通知回调失败："+error); }
         }
         /// <summary>
         /// 获取所有插件

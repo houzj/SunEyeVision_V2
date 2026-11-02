@@ -7,6 +7,7 @@ using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Workflow;
 
 var root=AppContext.BaseDirectory;
 var manager=new PluginManager();
@@ -16,6 +17,14 @@ if(manager.LastAdmissionError is not null)throw new Exception("Initial admission
 var previous=manager.RuntimeDirectory??throw new Exception("Missing admitted directory.");
 var oldDirectory=ToolRegistry.DirectoryCatalog??throw new Exception("Missing desktop directory.");
 var nonOwner=new PluginManager();
+using(var hostPin=manager.PinDesktopHost())
+{
+    await nonOwner.LoadPluginsAsync();
+    if(nonOwner.LastAdmissionError is null || !ReferenceEquals(previous,manager.RuntimeDirectory))
+        throw new Exception("A pinned desktop workspace allowed another manager to replace its generation.");
+    try{await manager.UnloadPluginsAsync();throw new Exception("A pinned desktop workspace allowed its owner to unload.");}
+    catch(InvalidOperationException){}
+}
 Console.WriteLine("probe: non-owner unload and failed reload");
 await nonOwner.UnloadPluginsAsync();
 if(!ReferenceEquals(previous,manager.RuntimeDirectory))throw new Exception("A manager without ownership cleared the active generation.");
@@ -103,6 +112,13 @@ reader.Dispose();
 await readerUnload.WaitAsync(TimeSpan.FromSeconds(10));
 await staleOwner.LoadPluginsAsync();
 if(staleOwner.LastAdmissionError is not null)throw new Exception("Could not restore owner after reader check.");
+var callbackGeneration=staleOwner.RuntimeDirectory??throw new Exception("Missing generation for callback failure check.");
+var callbackLease=callbackGeneration.AcquireInvocation();
+using var badCallback=callbackLease.RetirementToken.Register(()=>throw new InvalidOperationException("injected callback failure"));
+callbackLease.Dispose();
+await staleOwner.LoadPluginsAsync();
+if(staleOwner.LastAdmissionError is not null || staleOwner.RuntimeDirectory is null || ReferenceEquals(callbackGeneration,staleOwner.RuntimeDirectory))
+    throw new Exception("Published generation was reported rejected after a retirement callback failed.");
 // A genuine owner unload during preparation invalidates the stale candidate.
 var stale=new PluginManager(new NullLogger(),new CallbackCatalog(()=>
 {
@@ -111,7 +127,37 @@ var stale=new PluginManager(new NullLogger(),new CallbackCatalog(()=>
 await stale.LoadPluginsAsync();
 if(stale.LastAdmissionError is null || ToolRegistry.DirectoryCatalog is not null)
     throw new Exception("Stale prepared admission was published after owner unload.");
-Console.WriteLine("Desktop admission owner, failed-reload, recovery, reentrancy and stale-preparation checks passed; no active-run drain claimed.");
+Console.WriteLine("probe: production workflow result reader");
+var production=new PluginManager();
+await production.LoadPluginsAsync();
+if(production.LastAdmissionError is not null)throw new Exception("Production admission failed: "+production.LastAdmissionError);
+var productionDirectory=production.RuntimeDirectory??throw new Exception("Production directory missing.");
+var imageFile=Path.Combine(Path.GetTempPath(),"suneye-workflow-probe-"+Guid.NewGuid().ToString("N")+".bmp");
+try
+{
+    using(var writer=new BinaryWriter(File.Create(imageFile)))
+    {
+        writer.Write((ushort)0x4d42);writer.Write(54+8*8*3);writer.Write(0);writer.Write(54);writer.Write(40);writer.Write(8);writer.Write(8);writer.Write((ushort)1);writer.Write((ushort)24);writer.Write(0);writer.Write(8*8*3);for(int i=0;i<4;i++)writer.Write(0);
+        for(int y=0;y<8;y++)for(int x=0;x<8;x++){byte pixel=(byte)(x>=2&&x<6&&y>=2&&y<6?255:0);writer.Write(pixel);writer.Write(pixel);writer.Write(pixel);}
+    }
+    var flow=new SunEyeVision.Workflow.Workflow("admission-probe","admission-probe");
+    flow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(productionDirectory,"ImageLoad")});
+    var engine=new WorkflowEngine(new NullLogger(),productionDirectory);engine.RegisterWorkflow(flow);
+    var runner=new WorkflowExecutionEngine(engine,production,new NullLogger());
+    var request=new WorkflowRunRequest(flow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{"image",new(imageFile,1){LocalReadAdmission=_=>imageFile}}});
+    var run=await runner.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(30));
+    if(!run.Success)throw new Exception("Production workflow failed: "+string.Join(";",run.Errors));
+    var result=run.DeclaredOutputs.Single(o=>o.Identity.NodeId=="image");
+    var productionReader=run.AcquireDeclaredOutput(result.Identity);
+    run.Dispose();
+    var productionUnload=production.UnloadPluginsAsync();
+    await Task.Delay(100);
+    if(productionUnload.IsCompleted)throw new Exception("Production result reader did not hold generation open.");
+    productionReader.Dispose();
+    await productionUnload.WaitAsync(TimeSpan.FromSeconds(10));
+}
+finally{File.Delete(imageFile);}
+Console.WriteLine("Desktop admission and production workflow reader drain checks passed; desktop window shutdown remains unverified.");
 
 sealed class EmptyOutput:IToolOutput
 {

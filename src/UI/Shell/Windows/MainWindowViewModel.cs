@@ -4365,6 +4365,21 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             if(epoch!=_resultPublicationEpoch)return;
             _declaredResultActive=false;_declaredHistoricalResult=false;
         }
+        internal void ReleasePluginConsumersForShutdown()
+        {
+            var errors=new List<Exception>();
+            void Release(Action action){try{action();}catch(Exception error){errors.Add(error);}}
+            _cameraPresentationTimer?.Stop();
+            var pending=_pendingCameraPresentations.Values.ToArray();
+            _pendingCameraPresentations.Clear();
+            foreach(var item in pending)Release(()=>item.Lease?.Dispose());
+            Release(ReleaseProductionEditors);
+            Release(CloseResultPresentation);
+            Release(()=>_workflowContextService.Clear());
+            Release(()=>_nodeResultManager.ClearResultDisplay());
+            Release(()=>_executionManager.Dispose());
+            if(errors.Count>0)throw new AggregateException("关闭时释放插件消费者失败。",errors);
+        }
         public void UpdateModuleResults(DeclaredOutputSnapshot? result,string? nodeName,string? toolId=null,string? nodeId=null,
             ToolParameters? parameters=null)
         {

@@ -621,6 +621,32 @@ internal static class S2DocumentEditingCases
  }
  static void VerifyNativeResultRaster()
  {
+  Test("原结果视口ROI提示叠层真实命中与绘制退场保新租约",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(40,40),new(160,140))));using var session=model.Open();
+   using var viewport=new NativeResultViewport();viewport.View.Width=500;viewport.View.Height=380;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();var receipt=viewport.CurrentFrame!;
+   using var layer=viewport.CreateGeometryLayer();Require(layer.Present(receipt,1,new[]{
+    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(220,100),40,40,0),Colors.Lime,2,IncludeMeasurements:true),
+    new NativeGeometryOverlay(image.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(100,100),40,40,0),Colors.Lime,2,IncludeMeasurements:true)},()=>true),"结果矩形未接纳");Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape Rect(double x)=>Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(native).Single(shape=>shape.ToolTip is ToolTip tip&&tip.Content is string text&&text.StartsWith($"CenterX:{x},",StringComparison.Ordinal));
+   DependencyObject? Hit(double x)
+   {
+    native.UpdateLayout();Pump();var shape=Rect(x);var ratio=native.ControlToImageRadio;
+    return native.InputHitTest(shape.TranslatePoint(new Point(x*ratio,80*ratio),native)) as DependencyObject;
+   }
+   bool Within<T>(DependencyObject? item)where T:DependencyObject
+   {while(item is not null){if(item is T)return true;item=VisualTreeHelper.GetParent(item);}return false;}
+   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"真实结果轮廓不可命中");
+   var first=viewport.BeginRoiEditing(receipt,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();
+   Require(Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"不重叠结果被ROI整页拦截");
+   Require(Within<Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase>(Hit(100)),"原上层ROI拖动区域被结果图形抢占");
+   Require(session.BeginDraw("rectangle") is not null&&!native.ShapeHitTestVisible,"绘制准备仍允许结果命中");session.CancelDraw();Pump();
+   Require(native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"绘制取消未恢复结果命中");
+   using var next=viewport.BeginRoiEditing(receipt,session,()=>true);first.Dispose();Pump();
+   Require(next.IsCurrent&&native.ShapeHitTestVisible&&Within<Native.Display.VMBaseControls.Base.ImageView.Shape.RectShape>(Hit(220)),"旧租约清理破坏新会话结果命中");
+  });
   Test("原结果视口ROI借帧与结果文字共存并独立退场",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var probe=new RasterPixelsProbe(image);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(40,40),new(160,140))));using var session=model.Open();
@@ -628,11 +654,11 @@ internal static class S2DocumentEditingCases
    Require(text.Present(receipt,1,new[]{new NativeTextOverlay("Blob",new(10,10),18,Colors.Lime,1)},()=>true)&&geometry.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(200,100),20),Colors.Red)},()=>true),"结果层未接纳");
    var lease=viewport.BeginRoiEditing(receipt,session,()=>true);try
    {
-    session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(native).Single(x=>ReferenceEquals(x.DataContext,session.CurROIData));
+    session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(native.ShapeHitTestVisible,"仅接入ROI编辑即禁用结果图形命中");var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(native).Single(x=>ReferenceEquals(x.DataContext,session.CurROIData));
     Require(probe.Active==1&&ReferenceEquals(native.ROIList![0],session.Items[0])&&native.ShapeList!.Count==2&&roi.Template is not null&&roi.ContainerWidth>1,"ROI新借像素、复制投影或丢结果层/原手柄");
     roi.SetCurrentValue(Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectWidthProperty,150d);BindingOperations.GetMultiBindingExpression(roi,Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectWidthProperty)!.UpdateSource();typeof(Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase).GetMethod("NotifyROIParamChanged",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(roi,null);Pump();
-    Require(model.Writes==1&&model.Rows[0].Geometry.Get<double>("width")==150&&ReferenceEquals(native.ROIList[0],session.CurROIData),"原手柄未单次写同稳定对象");
-   }finally{lease.Dispose();}Pump();var view=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(view.ROIList is null&&view.ShapeList!.Count==2&&view.ImageDataSource is not null&&probe.Active==1&&session.IsCurrent,"ROI退场越权清结果/文字/背景或Dispose借用session");viewport.Dispose();Require(probe.Active==0&&probe.Released==1,"唯一像素lease未最终释放一次");
+    Require(model.Writes==1&&model.Rows[0].Geometry.Get<double>("width")==150&&ReferenceEquals(native.ROIList[0],session.CurROIData),"原手柄未单次写同稳定对象");Require(session.BeginDraw("rectangle") is not null,"未进入原绘制准备");Pump();Require(native.IsStateForDrawROI&&!native.ShapeHitTestVisible,"绘制期未禁用结果提示命中");session.CancelDraw();Pump();Require(!native.IsStateForDrawROI&&native.ShapeHitTestVisible,"取消绘制未恢复结果提示命中");
+   }finally{lease.Dispose();}Pump();var view=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(view.ShapeHitTestVisible&&view.ROIList is null&&view.ShapeList!.Count==2&&view.ImageDataSource is not null&&probe.Active==1&&session.IsCurrent,"ROI退场越权清结果/文字/背景或Dispose借用session");viewport.Dispose();Require(probe.Active==0&&probe.Released==1,"唯一像素lease未最终释放一次");
   });
   Test("原结果视口ROI退休回调重入保新会话绘制",()=>
   {
@@ -2575,7 +2601,7 @@ internal static class S2DocumentEditingCases
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
    var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));
-   using var session=model.Open();using var viewport=new NativeResultViewport();viewport.View.Width=420;viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");using var lease=viewport.BeginRoiEditing(viewport.CurrentFrame!,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   using var session=model.Open();using var viewport=new NativeResultViewport();viewport.View.Width=420;viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");using var lease=viewport.BeginRoiEditing(viewport.CurrentFrame!,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;Require(native.ShapeHitTestVisible,"仅接入ROI编辑即禁用结果图形命中");
    var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(viewport.View).Single();var part=(FrameworkElement)roi.Template.FindName("move",roi);
    var angle=roi.RectAngle;MouseEventHandler? lost=null;System.ComponentModel.DependencyPropertyDescriptor? descriptor=null;EventHandler? observer=null;
    try

@@ -47,7 +47,7 @@ internal static class NativeShapeProjection
                 || !double.IsFinite(overlay.Opacity) || overlay.Opacity is < 0 or > 1)
                 throw new ArgumentException("几何线宽或透明度无效。");
             if(overlay.RectangleCorners && overlay.Geometry is not PolygonGeometry)throw new ArgumentException("矩形角点声明必须提供有序四点。");
-            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,(overlay.Fill??Colors.Transparent).ToString());
+            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,(overlay.Fill??Colors.Transparent).ToString(),overlay.IncludeMeasurements);
             object shape = overlay.Geometry switch
             {
                 PointGeometry point => new PointProjection(style, Point(point.Point)),
@@ -120,14 +120,14 @@ internal static class NativeShapeProjection
         return double.IsFinite(degrees) ? degrees : throw new ArgumentException("几何角度转换超出原绘制范围。");
     }
     private sealed record TextProjection(string Content, Point Position, int FontSize, string Stroke, double Opacity) : IText;
-    private sealed record Style(string Stroke, double Thickness, double Opacity,string Fill);
+    private sealed record Style(string Stroke, double Thickness, double Opacity,string Fill,bool IncludeMeasurements);
     private abstract record ShapeProjection(Style Style) : IShape
     {
         public string Stroke => Style.Stroke;
         public double Opacity => Style.Opacity;
         public string Fill => Style.Fill;
         public double StrokeThickness => Style.Thickness;
-        public string ToolTip => "";
+        public virtual string ToolTip => "";
     }
     private sealed record PointProjection(Style Style, Point Point) : ShapeProjection(Style), IPoint;
     private sealed record LineProjection(Style Style, Point StartPoint, Point EndPoint) : ShapeProjection(Style), ILine
@@ -135,7 +135,12 @@ internal static class NativeShapeProjection
     private sealed record CircleProjection(Style Style, Point CenterPoint, double Radius) : ShapeProjection(Style), ICircle;
     private sealed record RectangleProjection(Style Style, Point CenterPoint, double Width, double Height, double Angle)
         : ShapeProjection(Style), IRectangle
-    { public double SkewAngleX => 0; public double SkewAngleY => 0; }
+    {
+        public double SkewAngleX => 0; public double SkewAngleY => 0;
+        // Original Blob/CheckZone Tips template. Values describe this frozen display primitive.
+        public override string ToolTip => Style.IncludeMeasurements
+            ? $"CenterX:{CenterPoint.X},CenterY:{CenterPoint.Y} Width:{Width} Height:{Height} Angle:{Angle}" : "";
+    }
     private sealed record EllipseProjection(Style Style, Point CenterPoint, double MajorRadius, double MinorRadius, double Angle)
         : ShapeProjection(Style), IEllipse;
     private sealed record PolygonProjection(Style Style, Point[] Vertices) : ShapeProjection(Style), IPolygon

@@ -25,7 +25,7 @@ internal static partial class NativeRoiResultProjection
                 var center=RoiGeometryEditing.Center(shape);var start=shape.Get<double>("start-radians");var end=shape.Get<double>("end-radians");var sweep=end-start;
                 items.Add(new Annular(new(center.X,center.Y),shape.Get<double>("inner-radius"),shape.Get<double>("outer-radius"),
                     (sweep<0?end:start)*180/Math.PI,Math.Abs(Math.Abs(sweep)-2*Math.PI)<=1e-9?360:Math.Abs(sweep)*180/Math.PI,
-                    row.Stroke.ToString(),row.Fill.ToString(),row.Width,row.Opacity));
+                    row.Stroke.ToString(),row.Fill.ToString(),row.Width,row.Opacity,row.IncludeMeasurements));
             }
             else
             {
@@ -35,13 +35,16 @@ internal static partial class NativeRoiResultProjection
                     "polygon"=>new PolygonGeometry(receipt.Coordinates,RoiGeometryEditing.Vertices(shape)),
                     _=>throw new ArgumentException("结果区域不支持该名义形状。")
                 };
-                var prepared=NativeShapeProjection.Geometry(receipt,new[]{new NativeGeometryOverlay(row.SourceFrame,geometry,row.Stroke,row.Width,row.Opacity,row.Fill)},maximum,maximumVertices,current);
+                var prepared=NativeShapeProjection.Geometry(receipt,new[]{new NativeGeometryOverlay(row.SourceFrame,geometry,row.Stroke,row.Width,row.Opacity,row.Fill,IncludeMeasurements:row.IncludeMeasurements)},maximum,maximumVertices,current);
                 vertices=checked(vertices+prepared.Vertices);items.AddRange(prepared.Items);
             }
         }
         NativeResultRaster.CheckCurrent(current);return new(items.ToArray(),items.Count,vertices);
     }
     private sealed record Annular(Point CenterPoint,double InnerRadius,double OuterRadius,double StartAngle,double AngleRange,
-        string Stroke,string Fill,double StrokeThickness,double Opacity):IAnnularSector
-    {public string ToolTip=>"";}
+        string Stroke,string Fill,double StrokeThickness,double Opacity,bool IncludeMeasurements):IAnnularSector
+    {
+        public string ToolTip=>IncludeMeasurements
+            ? $"CenterX:{CenterPoint.X} CenterY:{CenterPoint.Y} OuterRadius:{OuterRadius} InnerRadius:{InnerRadius} StartAngle:{StartAngle} AngleRange:{AngleRange}" : "";
+    }
 }

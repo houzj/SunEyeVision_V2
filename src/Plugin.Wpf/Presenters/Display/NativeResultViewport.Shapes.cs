@@ -11,8 +11,8 @@ using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
 public sealed record NativeGeometryOverlay(ImageFrameAddress SourceFrame, GeometryValue Geometry,
-    Color Stroke, double Thickness = 1, double Opacity = 1,Color? Fill=null,bool RectangleCorners=false);
-public sealed record NativeRoiResultOverlay(ImageFrameAddress SourceFrame,RecordValue Shape,Color Stroke,Color Fill,double Width,double Opacity);
+    Color Stroke, double Thickness = 1, double Opacity = 1,Color? Fill=null,bool RectangleCorners=false,bool IncludeMeasurements=false);
+public sealed record NativeRoiResultOverlay(ImageFrameAddress SourceFrame,RecordValue Shape,Color Stroke,Color Fill,double Width,double Opacity,bool IncludeMeasurements=false);
 public sealed record NativeResultShapeLimits(int MaximumShapes = 10000, int MaximumPolygonVertices = 1000000)
 {
     internal void Validate()

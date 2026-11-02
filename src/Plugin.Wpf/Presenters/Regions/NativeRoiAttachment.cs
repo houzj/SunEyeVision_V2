@@ -82,7 +82,8 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         NativeView.PropertyChanged+=OnNativeProjectionChanged;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
         EnsureCurrent();
-        NativeView.ShapeHitTestVisible=false;
+        // The original ImageViewBox gates result hit testing while drawing an ROI.
+        // Merely attaching editable ROI rows must not permanently suppress result Tips.
         EnsureCurrent();
         NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=CancelAutomaticDrawing;
         NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelAutomaticDrawing();};

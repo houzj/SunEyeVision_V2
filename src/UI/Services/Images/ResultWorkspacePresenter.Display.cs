@@ -95,7 +95,7 @@ internal sealed partial class ResultWorkspacePresenter
                     {
                         var style=group.Role switch {ResultGeometryRole.Inspection=>state.Appearance.Inspection,ResultGeometryRole.Mask=>state.Appearance.Mask,ResultGeometryRole.Annulus=>state.Appearance.Annulus,_=>null};
                         if(style?.Visible!=true||group.Coverage!=ResultGeometryCoverage.Explicit)continue;
-                        foreach(var shape in group.Shapes)roi.Add(new(frozen.SourceFrame,shape,Color(frozen.Passed?style.Ok:style.Ng),group.Role==ResultGeometryRole.Mask?System.Windows.Media.Color.FromRgb(255,84,0):Colors.Transparent,style.Width,style.Opacity));
+                        foreach(var shape in group.Shapes)roi.Add(new(frozen.SourceFrame,shape,Color(frozen.Passed?style.Ok:style.Ng),group.Role==ResultGeometryRole.Mask?System.Windows.Media.Color.FromRgb(255,84,0):Colors.Transparent,style.Width,style.Opacity,IncludeMeasurements:group.Role is ResultGeometryRole.Inspection or ResultGeometryRole.Annulus));
                     }
                 }
                 var geometry=new List<NativeGeometryOverlay>();var texts=new List<NativeTextOverlay>();var ids=new HashSet<long>();long textCharacters=0;
@@ -115,7 +115,7 @@ internal sealed partial class ResultWorkspacePresenter
                         var points=new List<Point2>();
                         for(var p=0;p<corners.Count;p++)
                         {if(corners.GetElement(p).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)throw new InvalidOperationException("矩形角点坐标域不匹配。");points.Add(point.Point);}
-                        geometry.Add(new(region.SourceFrame,new PolygonGeometry(receipt.Coordinates,points),Color(passed?appearance.Graphic.Ok:appearance.Graphic.Ng),appearance.Graphic.Width,appearance.Graphic.Opacity,RectangleCorners:true));
+                        geometry.Add(new(region.SourceFrame,new PolygonGeometry(receipt.Coordinates,points),Color(passed?appearance.Graphic.Ok:appearance.Graphic.Ng),appearance.Graphic.Width,appearance.Graphic.Opacity,RectangleCorners:true,IncludeMeasurements:true));
                     }
                     if(appearance.Text.Visible)
                     {

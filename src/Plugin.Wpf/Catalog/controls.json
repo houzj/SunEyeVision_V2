@@ -2641,7 +2641,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "99BB777736A0BAEB7CE8EB12136E529386715E3EBF3AD54C1E488F33658BD70C"
+            "sha256": "DA1456F2CF3B2EEC3406939CC66550818CBC3186CFFCDA55C0110201CE856D52"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -2700,7 +2700,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "99BB777736A0BAEB7CE8EB12136E529386715E3EBF3AD54C1E488F33658BD70C"
+            "sha256": "DA1456F2CF3B2EEC3406939CC66550818CBC3186CFFCDA55C0110201CE856D52"
           }
         ],
         "positiveCases": [
@@ -3524,7 +3524,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "99BB777736A0BAEB7CE8EB12136E529386715E3EBF3AD54C1E488F33658BD70C"
+            "sha256": "DA1456F2CF3B2EEC3406939CC66550818CBC3186CFFCDA55C0110201CE856D52"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -4512,7 +4512,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "99BB777736A0BAEB7CE8EB12136E529386715E3EBF3AD54C1E488F33658BD70C"
+            "sha256": "DA1456F2CF3B2EEC3406939CC66550818CBC3186CFFCDA55C0110201CE856D52"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -5734,11 +5734,11 @@
         "files": [
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
-            "sha256": "829BA44341FC08ABC9DF471F48C5DD546FC1A8B813D5282AEC6A1686EE430E94"
+            "sha256": "6D55D20DB52B284E28A73E5D736C654E13E13B9F7CEDC69452A88D245A306A80"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-            "sha256": "C30B0047C2B99A28687A662E065F556E0AE10229A80CF6B722D4ECC0A4DB5D74"
+            "sha256": "8610251E074D6354523DEAE074A6814B36259E560FE99D94483C458A3A5083DA"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
@@ -5783,7 +5783,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "99BB777736A0BAEB7CE8EB12136E529386715E3EBF3AD54C1E488F33658BD70C"
+            "sha256": "DA1456F2CF3B2EEC3406939CC66550818CBC3186CFFCDA55C0110201CE856D52"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -6428,7 +6428,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-          "sha256": "C30B0047C2B99A28687A662E065F556E0AE10229A80CF6B722D4ECC0A4DB5D74"
+          "sha256": "8610251E074D6354523DEAE074A6814B36259E560FE99D94483C458A3A5083DA"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",

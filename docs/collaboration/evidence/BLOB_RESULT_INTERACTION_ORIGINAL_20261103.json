@@ -1,0 +1,21 @@
+{
+  "sources": [
+    {
+      "sha256": "A1A2BCCFC0E6CD0A547365FB341EF91D58968F5B73A8E1A895DA6C02C9F6D122",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-九对象四ROI样式交互对照-20261102.md"
+    },
+    {
+      "sha256": "B3BC63E6CF7C8CA120BAF5B632BBE1359843138CF77CB5A64FC698EF22465112",
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\tool-rendering-entry-audit.resources\\IMVSBlobFindModuDisplay.xml"
+    },
+    {
+      "sha256": "73168438E06DFD74CAE70F910DB9AECDABF313DB0C376753652180C5BC35D006",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\ObjectBase.cs"
+    },
+    {
+      "sha256": "672D0B57519FA4E750E38E627910B9F11F1B28DA86E9E1980C607004954E5EAD",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\FeatureBase.cs"
+    }
+  ],
+  "kind": "既有原件静态证据身份，非原机运行回执"
+}

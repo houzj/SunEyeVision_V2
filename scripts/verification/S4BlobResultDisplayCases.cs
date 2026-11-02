@@ -370,12 +370,12 @@ internal static class S2DocumentEditingCases
                 foreach(var sample in new[]{(X:20d,Y:20d,W:8d,H:4d,A:.7),(X:20d,Y:20d,W:0d,H:6d,A:.3),(X:20d,Y:20d,W:6d,H:0d,A:.3),(X:20d,Y:20d,W:0d,H:0d,A:0d),(X:1e9,Y:1e9,W:20d,H:.04,A:-.7)})
                 {
                     var corners=Corners(sample.X,sample.Y,sample.W,sample.H,sample.A);
-                    Require(layer.Present(receipt,++revision,new[]{new NativeOverlay(receipt.Frame,new PolygonGeometry(receipt.Coordinates,corners),Colors.Lime,2,.5,RectangleCorners:true)},()=>viewport.CurrentFrame==receipt),"矩形角点被拒");
+                    Require(layer.Present(receipt,++revision,new[]{new NativeOverlay(receipt.Frame,new PolygonGeometry(receipt.Coordinates,corners),Colors.Lime,2,.5,RectangleCorners:true,IncludeMeasurements:true)},()=>viewport.CurrentFrame==receipt),"矩形角点被拒");
                     var shapes=(object[])Get(Get(layer,"_prepared"),"Items");Require(shapes.Length==1&&shapes[0] is NativeRectangle,"仍走多边形而非原矩形接口");
                     var rect=(NativeRectangle)shapes[0];var tolerance=1e-5;
                     Require(Math.Abs(rect.CenterPoint.X-sample.X)<tolerance&&Math.Abs(rect.CenterPoint.Y-sample.Y)<tolerance&&Math.Abs(rect.Width-sample.W)<tolerance&&Math.Abs(rect.Height-sample.H)<tolerance&&rect.StrokeThickness==2&&rect.Opacity==.5,"矩形参数或样式未保留");
                     Require(Math.Abs(Math.IEEERemainder(rect.Angle*Math.PI/180-sample.A,Math.PI))<1e-5,"矩形旋转角错误");
-                    var high=NativeRectShape.GetRectGeometry(rect,64,64,1,1);Require(high is not null,"原高质量矩形路径拒绝退化");
+                    var high=NativeRectShape.GetRectGeometry(rect,64,64,1,1);Require(high is not null,"原高质量矩形路径拒绝退化");Require(high.IsHitTestVisible&&((ToolTip)high.ToolTip).Content is string tip&&tip==rect.ToolTip&&tip==$"CenterX:{rect.CenterPoint.X},CenterY:{rect.CenterPoint.Y} Width:{rect.Width} Height:{rect.Height} Angle:{rect.Angle}","原Tips格式/冻结参数/命中入口未贯通");
                     var highRotation=((TransformGroup)high.RenderTransform).Children.OfType<RotateTransform>().Single();
                     Require(highRotation.Angle==rect.Angle&&highRotation.CenterX==rect.CenterPoint.X&&highRotation.CenterY==rect.CenterPoint.Y,"原高质量绘制旋转或中心未消费");
                     var canvas=new NativeShapeCanvas();NativeRectShape.AddRectGeometry(rect,64,64,1,1,canvas);Require(VisualTreeHelper.GetChildrenCount(canvas)==1,"原低质量矩形路径未生成绘制对象");
@@ -439,7 +439,12 @@ internal static class S2DocumentEditingCases
                 Require((int)Get(Get(Get(originalScene,"Layer"),"_prepared"),"Count")==4&&Words(originalScene).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"Blob Area:25","Blob Area:64"}),"未实际投影两个边框及两个Area文字");
                 Console.WriteLine("Scene styles="+string.Join(";",Items(originalScene).Select(item=>item.GetType().FullName+"/stroke="+Maybe(item,"StrokeThickness"))));
                 Require(Items(originalScene).Count(item=>Maybe(item,"StrokeThickness") is not null&&Maybe(item,"Texts") is null)==2,"未产生两条实际几何投影");
-                Require(Items(originalScene).Where(item=>Maybe(item,"StrokeThickness") is not null&&Maybe(item,"Texts") is null).All(item=>(double)Get(item,"StrokeThickness")==2),"原边框样式未消费");Capture(viewport.View,"display-default.png");
+                Require(Items(originalScene).Where(item=>Maybe(item,"StrokeThickness") is not null&&Maybe(item,"Texts") is null).All(item=>(double)Get(item,"StrokeThickness")==2),"原边框样式未消费");
+                var projected=Geometry(originalScene).OfType<NativeRectangle>().ToArray();
+                Require(projected.Length==2&&projected.All(rect=>rect.ToolTip==$"CenterX:{rect.CenterPoint.X},CenterY:{rect.CenterPoint.Y} Width:{rect.Width} Height:{rect.Height} Angle:{rect.Angle}"),"同次各行Tips测量未对应实际矩形");
+                viewport.View.UpdateLayout();Pump();
+                var controls=Visual(viewport.View).OfType<NativeRectShape>().Where(shape=>shape.IsVisible).ToArray();
+                Require(controls.Length==2&&controls.All(shape=>shape.IsHitTestVisible&&shape.ToolTip is ToolTip tip&&projected.Any(rect=>Equals(rect.ToolTip,tip.Content))),"真实Loaded原矩形未接Tips或父级禁用命中");Capture(viewport.View,"display-default.png");
             });
             var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();
             DeclaredFieldsView Fields()=>(DeclaredFieldsView)((DeclaredSettingsView)Get(control.Content,"Editor")).Content;

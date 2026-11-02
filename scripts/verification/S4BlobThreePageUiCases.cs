@@ -17,17 +17,18 @@ internal static partial class S2DocumentEditingCases
     const string ThreeLow="field:43bda03261df55b88f963bd18f2ba4d9";
     static object[] ThreeItems(object owner,string name)=>((IEnumerable)Get(owner,name)).Cast<object>().ToArray();
     static void ThreeCall(object owner,string method,params object?[] args)=>owner.GetType().GetMethod(method,Flags)!.Invoke(owner,args);
+    static string ThreeStamp(object configuration)=>(string)Get(configuration,"ConfigurationIdentity")+"|current="+(string)Get(configuration,"CurrentValuesIdentity");
     static void VerifyRealThreePageUi(Func<NativeRuntimeEditorWindow> open,string path,Func<object> formal,Func<int> history,Func<bool> save,Action reopen)
     {
-        var file=File.ReadAllBytes(path);var formalBefore=System.Text.Json.JsonSerializer.Serialize(formal());var position=history();
+        var file=File.ReadAllBytes(path);var formalBefore=ThreeStamp(formal());var position=history();
         var window=open();var control=window.EditorControl;var blob=control.Content;var composition=Get(blob,"_composition");
         var editor=(DeclaredSettingsView)Get(blob,"Editor");var fields=(DeclaredFieldsView)editor.Content;
         var run=Get(composition,"RunUi");var threshold=(NativeThresholdUiDraftControls)Get(run,"Threshold");
         var low=fields.Fields.Single(field=>field.FieldId==ThreeLow);var lowSetting=low.Setting;
         var draft=((ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!).DraftNode;
-        string Private()=>System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration);
+        string Private()=>ThreeStamp(draft.RuntimeConfiguration!);
         var privateBefore=Private();
-        void Unchanged(){Require(formalBefore==System.Text.Json.JsonSerializer.Serialize(formal())&&position==history()&&file.SequenceEqual(File.ReadAllBytes(path)),"UI预览污染正式配置、历史或文件");Require(privateBefore==Private(),"UI预览污染私有已支持Fields/CurrentValues");}
+        void Unchanged(){Require(formalBefore==ThreeStamp(formal())&&position==history()&&file.SequenceEqual(File.ReadAllBytes(path)),"UI预览污染正式配置、历史或文件");Require(privateBefore==Private(),"UI预览污染私有已支持Fields/CurrentValues");}
         void Page(int page){editor.SelectedPageIndex=page;window.UpdateLayout();Pump();}
         void Reject(){Require(!control.TryCapture(out var error)&&!string.IsNullOrWhiteSpace(error),"未支持预览被实际捕获");Require(!window.TryConfirm(out error)&&window.IsVisible,"未支持预览被真实确认");var task=control.RunDebugAsync();PumpUntil(()=>task.IsCompleted);try{task.GetAwaiter().GetResult();throw new Exception("未支持预览进入真实执行");}catch(InvalidOperationException){}Unchanged();}
         void Ready(){var ok=control.TryCapture(out var error);if(!ok)Console.WriteLine("UI_DIAG mode="+threshold.SelectedMode+" threshold="+threshold.HasUiChanges+" run="+Get(run,"HasUiChanges")+" rows="+string.Join(";",ThreeItems(threshold,"_editors").Cast<DeclaredFieldEditor>().Select(e=>e.FieldId+":"+e.Setting+"/p="+e.HasPendingEdits+"/bad="+e.HasInvalidText+"/raw="+(e.InputElement as TextBox)?.Text)));Require(ok,"恢复Single无法捕获："+error);}

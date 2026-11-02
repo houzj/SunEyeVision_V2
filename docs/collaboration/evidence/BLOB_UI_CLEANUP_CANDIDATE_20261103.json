@@ -1,0 +1,80 @@
+{
+  "schema": "blob-ui-cleanup-candidate/v1",
+  "scope": "本批两组合异常清理候选；不引用历史8组，不替代主仓/真实Blob整页/VS",
+  "baseline": "44761081124d944e15851e01102edc038cd7a904",
+  "productSourceCommit": "fd5146405182b2a2a5062a209b580662d204ad8d",
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+      "sha256": "E20357C4488C95426AE2301B8F9A72B17FCE88EAC3261085D610F52C594386DA"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "8D86B5C01CFF3FF87B2C05E8E8EF5E83A6C279F95BDB7402C4BAEAC898C8807C"
+    },
+    {
+      "path": "scripts/verification/BlobUiCleanupCases.cs",
+      "sha256": "A7D8E8B934FEB67A8986F5DCCA3BCB254163BAEC7E49234B3841FE74B6683F22"
+    },
+    {
+      "path": "scripts/verification/Run-BlobUiCleanupValidation.ps1",
+      "sha256": "25499AC24EA2539AF1668D98BD951CA97B584B6F4F5F754B4DD7FC3D74622E39"
+    }
+  ],
+  "builds": [
+    {
+      "errors": 0,
+      "warnings": 6545,
+      "sha256": "18BE349203EBB3D4EBDBA715555A242FC0D9C14D87321242A19CBEDCA55B3C10",
+      "exit": 0,
+      "path": "Release/_validation/BlobUiCleanup-20261103/ui-build-004.log",
+      "seconds": 63.07
+    },
+    {
+      "errors": 0,
+      "warnings": 6532,
+      "sha256": "A44DCDF5711B63097A6ADF7C10876E534C7F0C7C3BCFFD9E6A4F9983775313FC",
+      "exit": 0,
+      "path": "Release/_validation/BlobUiCleanup-20261103/full-build-005.log",
+      "seconds": 72.47
+    }
+  ],
+  "finalTest": {
+    "scope": "独立公共UI清理候选，不替代真实Blob三页/主仓/实际VS",
+    "exit": 0,
+    "identityPassed": true,
+    "passedCases": 4,
+    "productSourceCommit": "fd5146405182b2a2a5062a209b580662d204ad8d",
+    "commit": "fd5146405182b2a2a5062a209b580662d204ad8d",
+    "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\BlobUiCleanupCases.cs",
+    "sourceSha256": "A7D8E8B934FEB67A8986F5DCCA3BCB254163BAEC7E49234B3841FE74B6683F22",
+    "runnerSha256": "25499AC24EA2539AF1668D98BD951CA97B584B6F4F5F754B4DD7FC3D74622E39",
+    "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "C2BFE62AC2953E68F892F3638F7EBCF4BF9BE42E5346F9FBF45AFE5A5B4E7931",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "92916E109A98A33E96805942925E95F4408B9E74EA618F2EAAC5BFDFCCCF35CA",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "finalReceipt": "Release/_validation/BlobUiCleanup-20261103/attempt-004/receipt.json",
+  "finalReceiptSha256": "8D2967D64CCE47E7FB21D6CDDE621F73253FDCDAE3E945DBDE7E92EC0CCA6C45",
+  "failuresPreserved": [
+    "components-build-001:构造catch脚本插入未完全落地，语法失败",
+    "attempt-001及002:Assist Dispose替换受CRLF影响未实际落地，故障断言失败；修正实际body后通过"
+  ],
+  "notVerified": [
+    "主仓正式Release",
+    "Blob整页回归",
+    "真实VS/自然键鼠/人工",
+    "故障项内部Dispose未执行步骤不冒称无条件成功"
+  ]
+}

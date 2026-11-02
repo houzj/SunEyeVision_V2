@@ -1,0 +1,36 @@
+# ROI/Assist异常清理候选交接（2026-11-03）
+
+- 基线提交：44761081124d944e15851e01102edc038cd7a904；原公共八组已另由主线核收，本批不引用其成绩。
+- 当前分支/执行者：codex/blob-ui-preview-components-20261103，ui_preview_components。
+- 固定实施源码：fd5146405182b2a2a5062a209b580662d204ad8d，已先交主线统一提供Blob线接入。
+- 允许修改目录：src/Plugin.Wpf；实际产品仅Presenters/Regions/NativeAssistUiDraftControls.cs及NativeRoiUiDraftControls.cs。另新增BlobUiCleanupCases.cs与Run-BlobUiCleanupValidation.ps1独立故障专轨。
+- 目标：补齐这两个组合的完整异常清理路径，不扩ROI/Assist业务、执行、SDK或所有权合同。
+
+## 完整清理设计与实施
+
+两个组合Dispose入口首先设置disposed并清除Changed；先注销组合订阅，再脱离视图，最后逐项尝试全部自有editor/radio/state。Children.Clear、ROI两个参数panel.Clear及每项Dispose分别进入既有ParameterCleanup.Run；一项抛错不阻断后续，单异常保留原堆栈，多异常聚合，重入Dispose不重复执行或复活组件。
+
+Assist拥有_mode/_radio/_rows，不拥有传入_information；ROI拥有_states/_radios/_inheritEditors，不拥有传入继承来源/11参数或BindLocalEditors传入的视图。借入字段仅退订与脱离父级，不调用Dispose。ROI清理通过已经安置的参数panel快照及两个明确来源注销borrowed订阅，不在构造失败清理时重枚举可能已经失败的外部IReadOnlyList。
+
+Assist的_mode/_radio建立纳入构造try；ROI实际资源建立、事件注册和初始投影整段纳入try。部分初始化按已登记list与null安全检测清理；catch先调用Dispose，清理也失败时AggregateException保留原构造异常及清理异常，无清理异常则重抛原异常。
+
+## 本批专项出口
+
+四组全部由本次独立C#运行，不拼接历史成绩，测试没有新增产品钩子：
+
+1. Assist通过真实FrameworkElement.OnVisualParentChanged在Children.Clear注入异常，并通过原radio.NativeView.IsEnabledChanged再注入异常，核两个原异常均保留、12个自有字段及后置radio/state均尝试处置、借入信息字段仍可编辑；回调中重入Dispose不复活。
+2. ROI主panel及两个参数panel分别通过真实脱父级事件抛错，前两个radio的真实状态事件再抛错，核五个原异常完整聚合、三个panel都尝试清理、所有后置owned editor/radio/state都已退役。
+3. ROI经现有继承参数IReadOnlyList枚举在一项已安置后抛出原构造异常；通过已创建radio的真实状态事件令Dispose再失败，核原异常与清理异常均保留、部分初始化owned全数退役、borrowed来源和参数仍存活并解除实际已安装父级。
+4. Assist经传入信息字段标签的真实TextBlock.Text DP通知在构造SetLabel中抛错，核原异常保留，borrowed仍未销毁且可再次用于正常构造/Dispose。
+
+故障项自身Dispose抛错按原异常上报；本批验证组合会继续尝试后续资源，不将故障项内部未执行的步骤冒称无条件成功。两产品文件以外的内部控件清理不在本批扩展。
+
+## 构建、失败与边界
+
+最终UI/全量构建及本批四组实际加载SHA统一见同名JSON回执。所有程序均来自本独立worktree正常构建的Release/SunEyeVision_v1.0.0/SunEyeVision，HALCON仅指定共享只读来源；未复制其他Release或厂商库。
+
+失败保留于Release/_validation/BlobUiCleanup-20261103：components-build-001因构造catch插入未完整落地语法失败；attempt001/002故障轨证实Assist仍执行旧顺序清理（脚本替换受CRLF影响未改到Dispose body），已集中修正实际body；components-build003零错误及attempt003四组通过后才固定源码，不隐藏失败。
+
+没有修改主仓、Blob.Wpf、O06/Catalog、SDK/Runtime/Workflow；没有迁移或改变ROI/Assist业务。真实Blob整批生产窗口、主仓正式Release、自然键鼠、原厂等价及实际VS人工由主线/Blob线另验。本工作区既有CURRENT脏内容及旧untracked证据保留，原主方案统一由主线维护。
+
+最终结果：UI004自然exit0，6545警告/0错误/63.07秒；Full005自然exit0，6532警告/0错误/72.47秒；attempt004本批4组自然exit0，identityPassed=true且实际Wpf/Contracts路径SHA全部true，productSourceCommit=fd5146405182b2a2a5062a209b580662d204ad8d。精确源/日志/载荷SHA见同名JSON。

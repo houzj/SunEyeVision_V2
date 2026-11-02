@@ -127,7 +127,7 @@ public sealed class NodeConfigurationEditHostTests
         Assert.Equal(preview, model.Workflows[0].Nodes[0].SelectedDisplayReference);
     }
 
-    private static string PreviewReference()=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+    private static string PreviewReference()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
         new SunEyeVision.Plugin.Contracts.OutputReference("source","OutputImage",SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image),scopeId:"f"));
     [Fact]
     public void External_design_changes_are_rejected_instead_of_silently_overwritten()

@@ -306,7 +306,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>绑定路径字符串，数组类型追加 []</returns>
         public string GetBindingPath()
         {
-            return Binding switch { ReferenceSetting r => BindingReferenceSerializer.Serialize(r.Reference), VariableSetting v => BindingReferenceSerializer.Serialize(v.Reference), _ => throw new InvalidOperationException("来源缺少中立身份。") };
+            return Binding switch { ReferenceSetting r => SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(r.Reference), VariableSetting v => SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(v.Reference), _ => throw new InvalidOperationException("来源缺少中立身份。") };
         }
 
         /// <summary>
@@ -415,8 +415,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (value is string empty && string.IsNullOrWhiteSpace(empty)) return null;
             if (value is string str && !string.IsNullOrEmpty(str))
             {
-                try { return new AvailableDataSource { Binding = new ReferenceSetting(BindingReferenceSerializer.Deserialize(str)) }; }
-                catch (System.Text.Json.JsonException) { return new AvailableDataSource { Binding = new VariableSetting(BindingReferenceSerializer.DeserializeVariable(str)) }; }
+                try { return new AvailableDataSource { Binding = new ReferenceSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(str)) }; }
+                catch (System.Text.Json.JsonException) { return new AvailableDataSource { Binding = new VariableSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(str)) }; }
             }
             return base.ConvertFrom(context, culture, value);
         }

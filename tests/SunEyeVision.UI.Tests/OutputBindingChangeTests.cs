@@ -26,7 +26,7 @@ public sealed class OutputBindingChangeTests
     private static ProducerBinding Producer(string workflow,string node,OutputVariable output)
     {
         var port=BindingClrAdapter.DescribeOutput(output);
-        return new() { ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(node,port.Id,port.Type,
+        return new() { ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(node,port.Id,port.Type,
             scopeId:workflow,storage:port.Storage)) };
     }
     private static string Expression(ReceiveDataParameters p) => "source." + p.OutputDefinition().BindingKey;

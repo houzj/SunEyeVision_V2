@@ -67,7 +67,7 @@ public static class ImageSourceResolver
                 {
                     try
                     {
-                        var reference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(expression);
+                        var reference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(expression);
                         if(workflowId is not null&&reference.ScopeId!=workflowId)return new(ImageSourceResolutionKind.InvalidSelection);
                         selectedId=reference.NodeId;
                     }

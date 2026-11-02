@@ -86,6 +86,9 @@
   <Folder Name="/Tests/CanvasLayout.Tests/">
     <Project Path="tests/CanvasLayout.Tests/CanvasLayout.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/CanonicalCodec.Tests/">
+    <Project Path="tests/CanonicalCodec.Tests/CanonicalCodec.Tests.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.WorkflowGraph.Tests/">
     <Project Path="tests/SunEyeVision.WorkflowGraph.Tests/SunEyeVision.WorkflowGraph.Tests.csproj" />
   </Folder>

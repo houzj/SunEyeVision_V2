@@ -52,7 +52,7 @@ public class ImageSourceResolverTests
     public void SelectionFromAnotherWorkflowDoesNotResolveTheSameNodeId()
     {
         var source=Node("source",true);var target=Node("target");
-        target.SelectedDisplayReference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+        target.SelectedDisplayReference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
             new SunEyeVision.Plugin.Contracts.OutputReference("source","image",
                 SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image),scopeId:"other"));
         Assert.Equal(ImageSourceResolutionKind.InvalidSelection,
@@ -71,7 +71,7 @@ public class ImageSourceResolverTests
         Assert.Same(source, ImageSourceResolver.Resolve("source", nodes, edges).Source);
         Assert.Equal(ImageSourceResolutionKind.None, ImageSourceResolver.Resolve("missing", nodes, edges).Kind);
     }
-    private static string Reference(string node)=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(
+    private static string Reference(string node)=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
         new SunEyeVision.Plugin.Contracts.OutputReference(node,"image",
             SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image)));
 }

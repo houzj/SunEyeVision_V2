@@ -72,7 +72,7 @@ public sealed class BindingAdaptationB2Tests
         return ProducerFromPort(scope,node,BindingClrAdapter.DescribeOutput(output));
     }
     public static ProducerBinding ProducerFromPort(string scope,string node,Port port)
-        =>new(){ReferenceExpression=BindingReferenceSerializer.Serialize(
+        =>new(){ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
             new OutputReference(node,port.Id,port.Type,scopeId:scope,storage:port.Storage))};
     private static WorkflowNodeBase Node(string id, ToolParameters p) => new(id, id, id, "B2Test") { Parameters = p };
     private static SunEyeVision.Workflow.Workflow Flow(string id, params WorkflowNodeBase[] nodes)

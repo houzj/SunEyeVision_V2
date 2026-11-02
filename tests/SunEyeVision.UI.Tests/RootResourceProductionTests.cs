@@ -50,11 +50,11 @@ public sealed class RootResourceProductionTests
     var regionPort=BindingClrAdapter.DescribeOutput(query.FormalOutputContractReader("blob-a")!.Single(o=>BindingClrAdapter.OutputPortId(o)==BlobField(101)));
     context.Write(region,new ReferenceSetting(new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:root.Id)));
     Assert.Empty(root.Nodes[1].ParamSettings.Settings);Assert.Empty(root.RootConfiguration.RunParameters);
-    var priorReference=BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference);
+    var priorReference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference);
     Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("blob-a",regionPort.Id,regionPort.Type,scopeId:"other-root"))));
-    Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
+    Assert.Equal(priorReference,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
     Assert.NotNull(context.ValidateReference(region,new ReferenceSetting(new OutputReference("image",imagePort.Id,imagePort.Type,new[]{"data"},scopeId:root.Id))));
-    Assert.Equal(priorReference,BindingReferenceSerializer.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
+    Assert.Equal(priorReference,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Assert.IsType<ReferenceSetting>(context.Read(region)).Reference));
     Assert.DoesNotContain(context.Candidates(),candidate=>candidate.StoragePath=="input.local-address");
     var sequence=context.Add(context.Candidates().Single(candidate=>candidate.Node.Id=="image"&&candidate.StoragePath=="sequence.initial"));
     context.Write(sequence,new ConstantSetting(99L));Assert.Equal(99L,Assert.IsType<ConstantSetting>(context.Read(sequence)).Value);

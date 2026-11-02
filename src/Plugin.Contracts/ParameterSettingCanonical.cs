@@ -1,11 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.Contracts;
 
-namespace SunEyeVision.Plugin.Runtime;
+namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Versioned typed binding expression; no runtime values, result cache or editor objects are persisted.</summary>
-public static class BindingReferenceSerializer
+public static class ParameterSettingCanonical
 {
     private static readonly JsonSerializerOptions Options=CreateOptions();
     private static readonly JsonSerializerOptions FirstItemOptions=CreateOptions(ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback);
@@ -57,18 +56,6 @@ public static class BindingReferenceSerializer
     public static string Serialize(OutputReference reference)=>JsonSerializer.Serialize(new Document(FoundationContract.Major,FoundationContract.Minor,reference),Options);
     public static OutputReference Deserialize(string json,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
         => DeserializeVersion(json, FoundationContract.Major, FoundationContract.Minor,behavior);
-
-    /// <summary>Explicit in-memory legacy conversion. The document owner must resolve every old identity and declaration.
-    /// This does not change the strict current-version reader and never writes a file.</summary>
-    public static string MigrateVersion4(string json, Func<OutputReference, OutputReference> resolveLegacy)
-    {
-        ArgumentNullException.ThrowIfNull(resolveLegacy);
-        var legacy = DeserializeVersion(json, 4, 0);
-        var resolved = resolveLegacy(legacy) ?? throw new JsonException("Legacy binding has no approved mapping.");
-        var current = Serialize(resolved);
-        _ = Deserialize(current);
-        return current;
-    }
 
     private static OutputReference DeserializeVersion(string json, int major, int minor,ParameterReferenceBehavior behavior=ParameterReferenceBehavior.StrictExactlyOne)
     {
@@ -222,5 +209,44 @@ public static class BindingReferenceSerializer
             }
             writer.WriteEndObject();writer.WriteEndObject();
         }
+    }
+
+    public static void Write(Utf8JsonWriter writer,IReadOnlyDictionary<string,ParameterSetting> fields)
+    {
+        writer.WriteStartObject();
+        foreach(var (id,setting) in fields.OrderBy(pair=>pair.Key,StringComparer.Ordinal))
+        {
+            writer.WritePropertyName(id);writer.WriteStartObject();
+            if(setting is ConstantSetting constant){writer.WriteString("Kind","Constant");writer.WritePropertyName("Value");WriteValue(writer,constant.Value);}
+            else if(setting is DisplayExpressionSetting expression)
+            {
+                writer.WriteString("Kind","DisplayExpression");writer.WriteString("Text",expression.Text);writer.WriteStartArray("Slots");
+                foreach(var slot in expression.Slots)
+                {
+                    writer.WriteStartObject();writer.WriteString("Token",slot.Token);writer.WriteString("Format",slot.Format);
+                    if(slot.Reference is {} source){writer.WritePropertyName("Reference");writer.WriteRawValue(Serialize(source));}
+                    else{writer.WriteString("SelfPort",slot.Self!.PortId);writer.WriteStartArray("SelfMembers");foreach(var member in slot.Self.MemberFieldPath)writer.WriteStringValue(member);writer.WriteEndArray();}
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+            }
+            else if(setting is ReferenceSetting reference)
+            {writer.WriteString("Kind","Reference");writer.WritePropertyName("Reference");writer.WriteRawValue(Serialize(reference.Reference));writer.WriteString("Conversion",reference.Conversion.ToString());writer.WriteString("OriginId",reference.OriginId);writer.WriteString("RebindingReason",reference.RebindingReason);}
+            else if(setting is VariableSetting variable)
+            {writer.WriteString("Kind","Variable");writer.WritePropertyName("Reference");writer.WriteRawValue(Serialize(variable.Reference));writer.WriteString("Conversion",variable.Conversion.ToString());writer.WriteString("RebindingReason",variable.RebindingReason);}
+            else throw new JsonException("Persistent Unset must be absent.");
+            writer.WriteEndObject();
+        }
+        writer.WriteEndObject();
+    }
+    private static void WriteValue(Utf8JsonWriter writer,object? value)
+    {
+        if(value is null){writer.WriteNullValue();return;}
+        if(value is RecordValue record)
+        {writer.WriteStartObject();foreach(var item in record.CopyFields()){writer.WritePropertyName(item.Key);WriteValue(writer,item.Value);}writer.WriteEndObject();return;}
+        if(value is SequenceValue sequence){writer.WriteStartArray();foreach(var item in sequence)WriteValue(writer,item);writer.WriteEndArray();return;}
+        if(value is double[] array){writer.WriteStartArray();foreach(var item in array)writer.WriteNumberValue(item);writer.WriteEndArray();return;}
+        switch(value)
+        {case bool flag:writer.WriteBooleanValue(flag);break;case string text:writer.WriteStringValue(text);break;case long integer:writer.WriteNumberValue(integer);break;case double number when double.IsFinite(number):writer.WriteNumberValue(number);break;default:throw new JsonException("Unsupported configuration constant.");}
     }
 }

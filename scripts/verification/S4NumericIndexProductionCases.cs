@@ -36,7 +36,7 @@ internal static class S2DocumentEditingCases
             Case("已准入普通索引读取失败回零 "+label,()=>{using var f=new Fixture(indexLabel:label);f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);var at=new BindingSelection.AtField(f.Ref(f.Index,label=="empty-index"?"output.index-array":"output.index"),first);f.Accept(f.Ref(f.Source,"output.indices",selection:at));using var run=f.Run();ExpectInteger(f,run,37);});
         foreach(var label in new[]{"empty-main","big-main"})
             Case("主源空或Int32溢出硬失败 "+label,()=>{using var f=new Fixture(sourceLabel:label);f.Connect(f.Source,f.Target);f.Accept(f.Ref(f.Source,"output.indices"));using var run=f.Run();Require(!run.Success,"非法主值被回退");Require(!f.State.Trace.Contains("target"),"失败后执行消费者");});
-        Case("默认Strict构造与JSON拒绝数组索引",()=>{using var f=new Fixture();var index=f.Ref(f.Index,"output.index-array");Reject(()=>new BindingSelection.AtField(index));var r=f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(index,first));var json=BindingReferenceSerializer.Serialize(r);Reject(()=>BindingReferenceSerializer.Deserialize(json));Require(BindingReferenceSerializer.Deserialize(json,first).Selection is BindingSelection.AtField,"显式上下文未读回");});
+        Case("默认Strict构造与JSON拒绝数组索引",()=>{using var f=new Fixture();var index=f.Ref(f.Index,"output.index-array");Reject(()=>new BindingSelection.AtField(index));var r=f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(index,first));var json=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(r);Reject(()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(json));Require(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(json,first).Selection is BindingSelection.AtField,"显式上下文未读回");});
         Case("真实全局Int64数组动态索引",()=>{using var f=new Fixture();f.Connect(f.Source,f.Target);var variable=f.AddVariable("index-array",new long[]{1,2},"Integer[]");var at=new BindingSelection.AtVariable(f.VariableReference(variable),first);f.Accept(f.Ref(f.Source,"output.indices",selection:at));using var run=f.Run();ExpectInteger(f,run,90);});
         foreach(var label in new[]{"missing-index","fail"})
             Case("生产者缺必需输出或执行失败不得回退 "+label,()=>{using var f=new Fixture(indexLabel:label);f.Connect(f.Source,f.Target);f.Connect(f.Index,f.Target);f.Accept(f.Ref(f.Source,"output.indices",selection:new BindingSelection.AtField(f.Ref(f.Index,"output.index"),first)));using var run=f.Run();Require(!run.Success&&!f.State.Trace.Contains("target"),"生产者失败被回退执行");});
@@ -114,8 +114,8 @@ internal static class S2DocumentEditingCases
                 Require((repository.LastError??"").Contains(".RuntimeConfiguration: Binding reference contains an invalid or missing declaration.",StringComparison.Ordinal),"拒绝未发生在首次绑定声明读取："+repository.LastError);
                 var changedField=change=="toolId"?Probe.IntegerInput:Probe.NumberInput;
                 var expression=configuration["Fields"]![changedField]!["Reference"]!.ToJsonString();
-                Require(BindingReferenceSerializer.Deserialize(expression,first).Selection is BindingSelection.AtField,"同一引用在显式字段政策下无效");
-                Reject(()=>BindingReferenceSerializer.Deserialize(expression,ParameterReferenceBehavior.StrictExactlyOne));
+                Require(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(expression,first).Selection is BindingSelection.AtField,"同一引用在显式字段政策下无效");
+                Reject(()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(expression,ParameterReferenceBehavior.StrictExactlyOne));
                 // Restore only target identity. The exact same parsed/written document and binding remain valid.
                 if(change=="toolId")
                 {
@@ -196,11 +196,11 @@ internal static class S2DocumentEditingCases
             var draft=Host.BeginEdit(Flow.Id,Target.Id);draft.Node.RuntimeConfiguration=draft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{field,setting}});return draft;
         }
         public void Accept(OutputReference reference)=>Host.Commit(Draft(reference));
-        public string Relation()=>BindingReferenceSerializer.Serialize(((ReferenceSetting)Target.RuntimeConfiguration!.Fields.Read(Probe.NumberInput)).Reference);
+        public string Relation()=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(((ReferenceSetting)Target.RuntimeConfiguration!.Fields.Read(Probe.NumberInput)).Reference);
         public GlobalVariable AddVariable(string name,object? value,string type,OutputReference? producer=null)
         {
             var draft=Host.BeginVariableEdit();var variable=new GlobalVariable(name,value,type);
-            if(producer is not null)variable.ProducerBinding=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(producer)};
+            if(producer is not null)variable.ProducerBinding=new ProducerBinding{ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(producer)};
             draft.Configuration.GlobalVariables.Add(variable);Host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),draft);return Document.GlobalVariables.Single(item=>item.Id==variable.Id);
         }
         public VariableReference VariableReference(GlobalVariable variable,BindingSelection? selection=null)

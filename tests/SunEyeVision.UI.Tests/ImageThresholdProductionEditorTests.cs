@@ -126,7 +126,7 @@ public sealed class ImageThresholdProductionEditorTests
     {
         using var f = new Fixture();
         var text = f.ThresholdText(); text.Text = "173";
-        var preview = SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(
+        var preview = SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new SunEyeVision.Plugin.Contracts.OutputReference(
             f.Formal.Id,"OutputImage",SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image)));
         f.Formal.SelectedDisplayReference = preview;
         Assert.True(Assert.IsType<DefaultDebugWindow>(f.Window).TryConfirm(out var error), error);

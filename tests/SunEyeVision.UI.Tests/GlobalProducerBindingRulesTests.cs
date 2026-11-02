@@ -24,7 +24,7 @@ public sealed class GlobalProducerBindingRulesTests
         var parameters=new Parameters{Outputs=new[]{Output(portId,source)}};
         var flow=new SunEyeVision.Workflow.Workflow("flow","流程");
         flow.Nodes.Add(new WorkflowNodeBase("source","生产节点","生产节点","Test"){Parameters=parameters});
-        var producer=new ProducerBinding {ReferenceExpression=BindingReferenceSerializer.Serialize(
+        var producer=new ProducerBinding {ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
             new OutputReference("source",portId,source,members,scopeId:flow.Id)),WorkflowName="流程",NodeName="生产节点",ResultDisplayName="结果显示"};
         var variable=new GlobalVariable{Id="variable",Name="变量",Type=vocabulary,ProducerBinding=producer};
         return(new Solution{Workflows=new(){flow},GlobalVariables=new(){variable}},parameters,variable,producer);
@@ -86,7 +86,7 @@ public sealed class GlobalProducerBindingRulesTests
             new OutputReference("source","output.width",f.Producer.SourceReference.Type,selection:new BindingSelection.AtConstant(0),scopeId:"flow"),
             new OutputReference("source","output.width",f.Producer.SourceReference.Type)})
         {
-            f.Producer.ReferenceExpression=BindingReferenceSerializer.Serialize(reference);
+            f.Producer.ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference);
             Assert.Equal(BindingCompatibility.Incompatible,GlobalProducerBindingRules.Validate(f.Solution,f.Producer,f.Variable).State);
         }
     }
@@ -125,7 +125,7 @@ public sealed class GlobalProducerBindingRulesTests
             switch(change)
             {
                 case "node":f.Solution.Workflows[0].Nodes.Clear();break;
-                case "reference":f.Producer.ReferenceExpression=BindingReferenceSerializer.Serialize(
+                case "reference":f.Producer.ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(
                     new OutputReference("another","output.width",TypeRef.ScalarOf(ScalarKind.Int64),scopeId:"flow"));break;
                 case "target":f.Variable.Type="String";break;
             }

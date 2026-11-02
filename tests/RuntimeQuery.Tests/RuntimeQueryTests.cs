@@ -13,14 +13,14 @@ public sealed class RuntimeQueryTests
         var a=Source("one","port.with.dot");var b=Source("one","port.with.dot");b.DisplayName="改名";
         Assert.Equal(a,b);Assert.Equal(a.GetHashCode(),b.GetHashCode());Assert.NotEqual(a,Source("two","port.with.dot"));
         Assert.NotEqual(a,Source("one","port"));Assert.Equal("port.with.dot",a.PropertyName);
-        Assert.Equal("port.with.dot",BindingReferenceSerializer.Deserialize(a.GetBindingPath()).PortId);
+        Assert.Equal("port.with.dot",SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(a.GetBindingPath()).PortId);
         Assert.Equal(a,a.WithConnectionOwnership("edge"));
         Assert.Equal("connection:edge",Assert.IsType<ReferenceSetting>(a.WithConnectionOwnership("edge").Binding).OriginId);
     }
     [Fact] public void Variable_identity_and_invalid_binding_are_explicit()
     {
         var a=new AvailableDataSource { Binding=new VariableSetting(new VariableReference("solution","id",Number)) };
-        Assert.True(a.IsValid);Assert.Empty(a.SourceNodeId);Assert.Equal("id",BindingReferenceSerializer.DeserializeVariable(a.GetBindingPath()).VariableId);
+        Assert.True(a.IsValid);Assert.Empty(a.SourceNodeId);Assert.Equal("id",SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(a.GetBindingPath()).VariableId);
         Assert.NotEqual(a,new AvailableDataSource { Binding=new VariableSetting(new VariableReference("other","id",Number)) });
         Assert.Throws<ArgumentException>(()=>new AvailableDataSource { Binding=new ConstantSetting(1) });
         Assert.Throws<ArgumentException>(()=>new AvailableDataSource { Binding=null! });

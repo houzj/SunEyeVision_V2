@@ -210,7 +210,7 @@ internal static class S2DocumentEditingCases
     {
         var output=new OutputBindingChangeService().ReadContract(c.Threshold)!.Single(v=>v.Name==name);var port=BindingClrAdapter.DescribeOutput(output);
         return new ParamSetting{ParameterName=name,BindingType=BindingType.Binding,SourceNodeId="threshold",SourceWorkflowId=c.Flow.Id,SourceFieldId=output.FieldId,SourceProperty=name,
-            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference("threshold",port.Id,port.Type,fields,index is int i?new BindingSelection.AtConstant(i):BindingSelection.All,c.Flow.Id,port.Storage))};
+            ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference("threshold",port.Id,port.Type,fields,index is int i?new BindingSelection.AtConstant(i):BindingSelection.All,c.Flow.Id,port.Storage))};
     }
     private static ParamSetting Constant(string name,double value)=>ParamSetting.CreateConstant(name,value);
     private static int Count(ExecutionResult run)=>Convert.ToInt32(run.NodeResults["blob"].Result!.GetType().GetProperty("FilteredBlobCount")!.GetValue(run.NodeResults["blob"].Result));

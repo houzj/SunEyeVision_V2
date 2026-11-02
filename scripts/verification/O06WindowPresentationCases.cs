@@ -1330,7 +1330,7 @@ internal static class S2DocumentEditingCases
    foreach(var id in new[]{"a","returned","free"})returned.Nodes.Add(Node(id));
    var bridge=new SunEyeVision.Workflow.Workflow("candidate-bridge","桥接流程");bridge.Nodes.Add(Node("bridge"));
    var count=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.Field(11);
-   ProducerBinding Producer(string scope,string id)=>new(){ReferenceExpression=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(new OutputReference(id,count,DataType.Integer,scopeId:scope))};
+   ProducerBinding Producer(string scope,string id)=>new(){ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(id,count,DataType.Integer,scopeId:scope))};
    var cross=new Solution{Workflows=new(){returned,bridge},GlobalVariables=new(){
     new(){Id="candidate-out",Name="输出",Type="Integer",ProducerBinding=Producer(returned.Id,"a"),ConsumerBindings=new(){new(){WorkflowId=bridge.Id,NodeId="bridge",ParameterName="explicit-consumer"}}},
     new(){Id="candidate-back",Name="返回",Type="Integer",ProducerBinding=Producer(bridge.Id,"bridge"),ConsumerBindings=new(){new(){WorkflowId=returned.Id,NodeId="returned",ParameterName="explicit-consumer"}}}}};

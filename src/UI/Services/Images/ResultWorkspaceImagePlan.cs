@@ -18,7 +18,7 @@ internal sealed class ResultWorkspaceImageSource : System.ComponentModel.INotify
     public int NavigationIndex {get;}
     public bool IsUpstream {get;}
     public string? FileName { get; init; }
-    public string Key=>BindingReferenceSerializer.Serialize(Reference);
+    public string Key=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference);
     public bool CanOverlay=>false;
     private bool _isCheck;
     public bool IsCheck

@@ -181,8 +181,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
                 &&ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext {IsValid:true};
             if(!Current()||node.RuntimeConfiguration!.Fields.Read(fieldId) is not ReferenceSetting setting)return null;
-            var key=BindingReferenceSerializer.Serialize(setting.Reference);
-            bool SameInput()=>Current()&&node.RuntimeConfiguration!.Fields.Read(fieldId) is ReferenceSetting now&&BindingReferenceSerializer.Serialize(now.Reference)==key;
+            var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(setting.Reference);
+            bool SameInput()=>Current()&&node.RuntimeConfiguration!.Fields.Read(fieldId) is ReferenceSetting now&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(now.Reference)==key;
             return _roiFrameProvider?.Invoke(setting.Reference,SameInput);
         },fields=>
         {
@@ -336,7 +336,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     {
         if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)throw new InvalidOperationException("文本编辑会话已失效。");
         var node=_node;var version=context.Host.Capture().Version;var candidates=ReadDisplayReferenceCandidates(generation);
-        string Identity(DeclaredReferenceCandidate candidate)=>BindingReferenceSerializer.Serialize(candidate.Reference(BindingSelection.All))
+        string Identity(DeclaredReferenceCandidate candidate)=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(candidate.Reference(BindingSelection.All))
             +"|"+candidate.NodeDisplayName+"|"+candidate.OutputDisplayName+"|"+string.Join("|",candidate.MemberDisplayNames);
         var identities=candidates.Select(Identity).ToArray();
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)&&context.IsValid

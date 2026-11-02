@@ -184,7 +184,7 @@ public sealed class ResultWorkspaceProductionTests
         f.Shell.SelectedOutputItem=gray;Pump();
         var persisted=f.Selected.SelectedDisplayReference;
         Assert.Equal(gray.Key,persisted);
-        var reference=BindingReferenceSerializer.Deserialize(persisted!);
+        var reference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(persisted!);
         Assert.Equal("output.gray-image",reference.PortId);Assert.Equal(new[]{"data"},reference.MemberFieldPath);
         var file=Path.Combine(f.Directory,"selected-image.sln");
         Assert.True(ServiceInitializer.SolutionManager.SaveSolution(file));
@@ -193,16 +193,16 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Equal(persisted,reopenedNode.SelectedDisplayReference);
         var fragment=WorkflowFragmentCopy.Prepare(f.Flow,new[]{f.Source.Id,f.Selected.Id},f.Flow.Id,
             id=>id==f.Flow.Id?f.Flow:null,(node,_)=>new WorkflowNodeBase("copy-"+node.Id,node.Name,node.DispName,node.ToolType));
-        var copied=BindingReferenceSerializer.Deserialize(fragment.Nodes.Single(node=>node.Id=="copy-"+f.Selected.Id).SelectedDisplayReference!);
+        var copied=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(fragment.Nodes.Single(node=>node.Id=="copy-"+f.Selected.Id).SelectedDisplayReference!);
         Assert.Equal("copy-"+f.Source.Id,copied.NodeId);Assert.Equal(f.Flow.Id,copied.ScopeId);
         Assert.Equal(reference.PortId,copied.PortId);Assert.Equal(reference.MemberFieldPath,copied.MemberFieldPath);
         f.Main.RefreshNativeResultImages();Pump();
         Assert.Equal(persisted,Assert.IsType<ResultWorkspaceImageSource>(f.Shell.SelectedOutputItem).Key);
-        f.Selected.SelectedDisplayReference=BindingReferenceSerializer.Serialize(new OutputReference(
+        f.Selected.SelectedDisplayReference=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(new OutputReference(
             reference.NodeId,reference.PortId,reference.Type,new[]{"missing"},scopeId:reference.ScopeId,storage:reference.Storage));
         f.Main.RefreshNativeResultImages();Pump();
         Assert.Null(f.Shell.SelectedOutputItem);Assert.Null(f.Presenter.OutputPane.CurrentFrame);
-        Assert.Equal(new[]{"missing"},BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference).MemberFieldPath);
+        Assert.Equal(new[]{"missing"},SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(f.Selected.SelectedDisplayReference).MemberFieldPath);
     });
     [Fact]
     public void Unexecuted_image_source_uses_declared_names_without_published_snapshot()
@@ -303,7 +303,7 @@ public sealed class ResultWorkspaceProductionTests
         using var f = new Fixture(); var table = f.Main.CurrentResultPublication!; var input = f.Presenter.InputPane.CurrentFrame!;
         Assert.NotEqual(input.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame);
         f.SelectOutput(f.Source.Id); Assert.Equal(input.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame);
-        Assert.Equal(f.Source.Id,BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
+        Assert.Equal(f.Source.Id,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
         using var left = f.Presenter.InputPane.BorrowCurrentImage(); using var right = f.Presenter.OutputPane.BorrowCurrentImage();
         Assert.NotNull(left); Assert.NotNull(right); Assert.NotSame(left, right); Assert.Equal(left.Image.Frame, right.Image.Frame);
         f.Shell.SelectedInputItem = null; Pump(); Assert.Null(f.Presenter.InputPane.CurrentFrame);
@@ -311,7 +311,7 @@ public sealed class ResultWorkspaceProductionTests
         f.Shell.SelectedInputItem = f.Shell.InputItems.Cast<ResultWorkspaceImageSource>().First(); Pump();
         var restored = f.Presenter.InputPane.CurrentFrame;
         f.SelectOutput(f.Selected.Id); Assert.Equal(restored, f.Presenter.InputPane.CurrentFrame);
-        Assert.Equal(f.Selected.Id,BindingReferenceSerializer.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
+        Assert.Equal(f.Selected.Id,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(f.Selected.SelectedDisplayReference!).NodeId);
         Assert.NotEqual(restored!.Frame, f.Presenter.OutputPane.CurrentFrame!.Frame); Assert.Same(table, f.Main.CurrentResultPublication); Assert.True(table.IsCurrent());
     });
     [Fact]

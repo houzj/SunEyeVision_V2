@@ -33,14 +33,7 @@ $payloadPath=Join-Path $product 'release-payload.json'
 $payload=Get-Content $payloadPath -Raw|ConvertFrom-Json
 $testHead=git -C $root rev-parse HEAD
 $buildSourceCommit=[string]$payload.sourceCommit
-$buildCommitValid=($buildSourceCommit -match '^[0-9a-fA-F]{40}
-$productDirty=@(git -C $root status --porcelain -- src tools)
-$worktreeDirty=@(git -C $root status --porcelain)
-$payloadPassed=($buildCommitValid -and $payloadDiffRejected.Count -eq 0 -and $productDirty.Count -eq 0)
-if(!$identityPassed -or !$casesPassed -or !$payloadPassed){$exit=1}
-[ordered]@{scope='C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS';exit=$exit;buildSourceCommit=$buildSourceCommit;testHEAD=$testHead;payloadDiffPaths=$payloadDiffPaths;payloadDiffRejected=$payloadDiffRejected;payloadSourceCommit=$payload.sourceCommit;payloadSha256=(Get-FileHash $payloadPath -Algorithm SHA256).Hash;payloadPassed=$payloadPassed;productSourcesDirty=$productDirty;worktreeDirty=$worktreeDirty;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
-if($exit -ne 0){throw ('公共组件候选失败：'+$dir)}
-)
+$buildCommitValid=($buildSourceCommit -match '^[0-9a-fA-F]{40}$')
 $payloadDiffPaths=@();$payloadDiffRejected=@()
 if($buildCommitValid){
     git -C $root cat-file -e ($buildSourceCommit+'^{commit}') 2>$null
@@ -53,7 +46,7 @@ if($buildCommitValid){
 }
 $productDirty=@(git -C $root status --porcelain -- src tools)
 $worktreeDirty=@(git -C $root status --porcelain)
-$payloadPassed=($payload.sourceCommit -eq $expectedCommit -and $productDirty.Count -eq 0)
+$payloadPassed=($buildCommitValid -and $payloadDiffRejected.Count -eq 0 -and $productDirty.Count -eq 0)
 if(!$identityPassed -or !$casesPassed -or !$payloadPassed){$exit=1}
-[ordered]@{scope='C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS';exit=$exit;payloadSourceCommit=$payload.sourceCommit;payloadSha256=(Get-FileHash $payloadPath -Algorithm SHA256).Hash;payloadPassed=$payloadPassed;productSourcesDirty=$productDirty;worktreeDirty=$worktreeDirty;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
+[ordered]@{scope='C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS';exit=$exit;buildSourceCommit=$buildSourceCommit;testHEAD=$testHead;payloadDiffPaths=$payloadDiffPaths;payloadDiffRejected=$payloadDiffRejected;payloadSourceCommit=$payload.sourceCommit;payloadSha256=(Get-FileHash $payloadPath -Algorithm SHA256).Hash;payloadPassed=$payloadPassed;productSourcesDirty=$productDirty;worktreeDirty=$worktreeDirty;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
 if($exit -ne 0){throw ('公共组件候选失败：'+$dir)}

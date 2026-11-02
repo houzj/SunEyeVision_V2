@@ -90,6 +90,22 @@ public sealed class MainWorkspaceLayoutTests
             var state = new TopBarState();
             var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state };
             top.Measure(new Size(1600, 64)); top.Arrange(new Rect(0, 0, 1600, 64)); top.UpdateLayout();
+            var menu = Assert.IsType<Menu>(top.FindName("MainMenu"));
+            Assert.Equal(new[] { "文件(_F)", "设置", "工具(_T)", "系统", "帮助(_H)" },
+                menu.Items.Cast<MenuItem>().Select(item => item.Header.ToString()).ToArray());
+            var settings = (MenuItem)menu.Items[1];
+            Assert.False(settings.Items.OfType<MenuItem>().First(item => Equals(item.Header, "权限设置")).IsEnabled);
+            Assert.False(((MenuItem)menu.Items[2]).Items.OfType<MenuItem>().Single().IsEnabled);
+            var welcome = Assert.IsType<MenuItem>(top.FindName("WelcomeMenuItem"));
+            Assert.Same(state.ShowStartPageCommand, welcome.Command);
+            Assert.Contains(welcome, ((MenuItem)menu.Items[4]).Items.Cast<object>());
+            Assert.NotNull(top.FindName("UndoHistoryHotspot"));
+            Assert.Null(top.FindName("EditHistoryButton"));
+            var theme = Assert.IsType<Button>(top.FindName("ThemeToggleButton"));
+            var geometry = Assert.IsType<System.Windows.Shapes.Path>(Assert.IsType<Viewbox>(theme.Content).Child);
+            var darkIcon = geometry.Data.ToString();
+            state.IsDarkTheme = false; top.UpdateLayout();
+            Assert.NotEqual(darkIcon, geometry.Data.ToString());
             var buttons = new List<Button>(); CollectButtons(top, buttons);
             var save = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "保存 (Ctrl+S)")));
             var image = Assert.IsType<Image>(save.Content);
@@ -185,8 +201,12 @@ public sealed class MainWorkspaceLayoutTests
     {
         public FakeCommand Save { get; } = new();
         public System.Windows.Input.ICommand SaveCurrentSolutionCommand => Save;
+        public System.Windows.Input.ICommand ShowStartPageCommand { get; } = new FakeCommand();
+        public System.Windows.Input.ICommand ToggleThemeCommand { get; } = new FakeCommand();
         public System.Windows.Input.ICommand ToggleContinuousAllCommand { get; } = new FakeCommand();
         private bool _running;
+        private bool _dark = true;
+        public bool IsDarkTheme { get => _dark; set { _dark = value; PropertyChanged?.Invoke(this, new(nameof(IsDarkTheme))); } }
         public bool IsAllWorkflowsRunning { get => _running; set { _running = value; PropertyChanged?.Invoke(this, new(nameof(IsAllWorkflowsRunning))); } }
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }

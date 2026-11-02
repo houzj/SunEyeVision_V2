@@ -100,37 +100,49 @@
             </StackPanel>
 
             <!-- 菜单栏（行1） -->
-            <Menu Grid.Row="0" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalAlignment="Center">
+            <Menu x:Name="MainMenu" Grid.Row="0" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalAlignment="Center">
                 <MenuItem Header="文件(_F)" Style="{StaticResource TitleBarMenuButton}">
                     <MenuItem Header="新建方案(_N)" Command="{Binding NewSolutionCommand}" InputGestureText="Ctrl+N"/>
                     <MenuItem Header="打开方案(_O)" Command="{Binding OpenSolutionCommand}" InputGestureText="Ctrl+O"/>
-                    <MenuItem Header="从磁盘重新加载" Command="{Binding ReloadSolutionCommand}"/>
-                    <MenuItem Header="起始页 / 最近方案" Command="{Binding ShowStartPageCommand}"/>
+                    <MenuItem Header="打开最近方案" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="最近方案菜单尚未接入；可通过帮助中的欢迎页打开最近方案"/>
+                    <MenuItem Header="打开示例方案" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="示例方案入口尚未接入"/>
                     <Separator/>
-                    <MenuItem Header="保存当前(_S)" Command="{Binding SaveCurrentSolutionCommand}" InputGestureText="Ctrl+S"/>
+                    <MenuItem Header="保存方案(_S)" Command="{Binding SaveCurrentSolutionCommand}" InputGestureText="Ctrl+S"/>
+                    <MenuItem Header="另存方案" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="方案另存入口尚未接入"/>
+                    <Separator/>
+                    <MenuItem Header="导出算子代码" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="导出功能尚未接入"/>
+                    <MenuItem Header="导入流程" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="流程导入尚未接入"/>
                     <Separator/>
                     <MenuItem Header="退出(_X)" Click="ExitMenu_Click" InputGestureText="Alt+F4"/>
                 </MenuItem>
-                <MenuItem Header="视图(_V)" Style="{StaticResource TitleBarMenuButton}">
-                    <MenuItem Header="显示路径拐点(_P)" InputGestureText="Ctrl+P" Command="{Binding TogglePathPointsCommand}"/>
+                <MenuItem Header="设置" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="权限设置" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="权限设置尚未接入"/>
+                    <MenuItem Header="软件设置" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="软件设置尚未接入"/>
+                    <MenuItem Header="方案设置" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="方案设置尚未接入"/>
+                    <MenuItem Header="运行策略" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="运行策略尚未接入"/>
+                    <MenuItem Header="采集策略" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="采集策略尚未接入"/>
                     <Separator/>
+                    <MenuItem Header="显示路径拐点(_P)" InputGestureText="Ctrl+P" Command="{Binding TogglePathPointsCommand}"/>
                     <MenuItem Header="全屏(_F)" InputGestureText="F11" Click="ToggleFullscreen_Click"/>
                 </MenuItem>
-                <MenuItem Header="运行(_R)" Style="{StaticResource TitleBarMenuButton}">
-                    <MenuItem Header="运行(_R)" Command="{Binding RunWorkflowCommand}" InputGestureText="F5"/>
-                    <MenuItem Header="停止(_S)" Command="{Binding StopWorkflowCommand}" InputGestureText="Shift+F5"/>
-                </MenuItem>
                 <MenuItem Header="工具(_T)" Style="{StaticResource TitleBarMenuButton}">
-                    <MenuItem Header="全局变量管理(_G)" Command="{Binding ShowGlobalVariableManagerCommand}"/>
-                    <MenuItem Header="相机管理(_C)" Command="{Binding ShowCameraManagerCommand}"/>
-                    <MenuItem Header="通讯管理(_M)" Command="{Binding ShowCommunicationManagerCommand}"/>
+                    <MenuItem Header="一键标定引导" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="标定引导尚未接入"/>
+                </MenuItem>
+                <MenuItem Header="系统" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="日志" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="原件日志入口尚未接入"/>
+                    <MenuItem Header="通信设置" Command="{Binding ShowCommunicationManagerCommand}"/>
+                    <MenuItem Header="光源设置" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="光源设置尚未接入"/>
+                    <MenuItem Header="相机设置" Command="{Binding ShowCameraManagerCommand}"/>
                 </MenuItem>
                 <MenuItem Header="帮助(_H)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="语言" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="语言切换尚未接入"/>
                     <MenuItem Header="用户手册(_M)" InputGestureText="F1" Command="{Binding ShowHelpCommand}"/>
-                    <MenuItem Header="开发计划(_P)" Click="OpenPlan_Click" ToolTip="打开引导抓取开发计划看板"/>
+                    <MenuItem Header="在线帮助" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="在线帮助尚未接入"/>
+                    <MenuItem Header="版本信息" Command="{Binding ShowAboutCommand}"/>
+                    <MenuItem Header="更多信息" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="更多信息尚未接入"/>
+                    <MenuItem Header="社区" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="社区入口尚未接入"/>
                     <Separator/>
-                    <MenuItem Header="快捷键(_K)" Command="{Binding ShowShortcutsCommand}"/>
-                    <MenuItem Header="关于(_A)" Command="{Binding ShowAboutCommand}"/>
+                    <MenuItem x:Name="WelcomeMenuItem" Header="欢迎页" Command="{Binding ShowStartPageCommand}"/>
                 </MenuItem>
             </Menu>
 
@@ -142,11 +154,19 @@
             <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" WindowChrome.IsHitTestVisibleInChrome="True"><StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
 <Button ToolTip="保存 (Ctrl+S)" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding SaveCurrentSolutionCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarsave_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarsave_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
 <Button ToolTip="打开方案" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding OpenSolutionCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbaropen_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbaropen_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
-<Button Content="起始页" ToolTip="起始页 / 最近方案" Style="{StaticResource TitleBarButton}" Command="{Binding ShowStartPageCommand}"/>
 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Grid>
 <Button x:Name="UndoEditButton" ToolTip="撤销 (Ctrl+Z)" Style="{StaticResource TitleBarButton}" Command="{Binding UndoCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Grid x:Name="UndoHistoryHotspot" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="14" Height="14" Background="Transparent" ToolTip="操作记录：原件记录窗口尚未接入">
+  <Image Width="12" Height="12" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/combo_ic_triangle_normal.png"/>
+  <Popup Placement="Bottom" PlacementTarget="{Binding ElementName=UndoHistoryHotspot}" IsOpen="{Binding IsMouseOver, ElementName=UndoHistoryHotspot, Mode=OneWay}" AllowsTransparency="True" HorizontalOffset="-24">
+    <Border Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1" Padding="12,6">
+      <TextBlock Text="操作记录（尚未接入）" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+    </Border>
+  </Popup>
+</Grid>
+</Grid>
 <Button x:Name="RedoEditButton" ToolTip="重做 (Ctrl+Y)" Style="{StaticResource TitleBarButton}" Command="{Binding RedoCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
-<Button x:Name="EditHistoryButton" Content="历史" ToolTip="编辑历史" Style="{StaticResource TitleBarButton}" Click="EditHistoryClick"/>
 <Button Content="锁定" IsEnabled="False" ToolTip="锁定：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 <Button ToolTip="相机管理" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCameraManagerCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_topbar_camera_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_topbar_camera_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
@@ -161,7 +181,10 @@
 <Button Content="综合配置" IsEnabled="False" ToolTip="综合配置：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
 <Button Content="运行界面" IsEnabled="False" ToolTip="运行界面：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
-<Button Content="主题" ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}"/>
+<Button x:Name="ThemeToggleButton" Command="{Binding ToggleThemeCommand}">
+  <Button.Style><Style TargetType="Button" BasedOn="{StaticResource TitleBarButton}"><Setter Property="ToolTip" Value="切换到深色主题"/><Style.Triggers><DataTrigger Binding="{Binding IsDarkTheme}" Value="True"><Setter Property="ToolTip" Value="切换到浅色主题"/></DataTrigger></Style.Triggers></Style></Button.Style>
+  <Viewbox Width="18" Height="18"><Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"><Path.Style><Style TargetType="Path"><Setter Property="Data" Value="M 13,2 A 7,7 0 1 0 18,15 A 7,7 0 0 1 13,2 Z"/><Style.Triggers><DataTrigger Binding="{Binding IsDarkTheme}" Value="True"><Setter Property="Data" Value="M 10,2 L 10,4 M 10,16 L 10,18 M 2,10 L 4,10 M 16,10 L 18,10 M 4.3,4.3 L 5.7,5.7 M 14.3,14.3 L 15.7,15.7 M 15.7,4.3 L 14.3,5.7 M 5.7,14.3 L 4.3,15.7 M 14,10 A 4,4 0 1 1 6,10 A 4,4 0 1 1 14,10"/></DataTrigger></Style.Triggers></Style></Path.Style></Path></Viewbox>
+</Button>
             </StackPanel></ScrollViewer>
 
             <!-- 右侧：项目信息 + 窗口控制（第一行） -->

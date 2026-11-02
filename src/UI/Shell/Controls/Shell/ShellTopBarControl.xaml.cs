@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Controls.Shell
 {
@@ -37,21 +34,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if (window != null)
                     window.StateChanged -= OnWindowStateChanged;
             };
-        }
-
-        /// <summary>
-        /// 窗口状态变化 - 切换最大化/还原图标（VS 风格）。
-        /// </summary>
-        private void EditHistoryClick(object sender, RoutedEventArgs args)
-        {
-            if (DataContext is not ShellTopBarViewModel vm || sender is not Button button) return;
-            var menu = new ContextMenu { PlacementTarget = button, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
-            foreach (var location in vm.EditHistoryLocations)
-                menu.Items.Add(new MenuItem { Header = location.Description, IsCheckable = true, IsChecked = location.IsCurrent,
-                    Command = vm.NavigateEditHistoryCommand, CommandParameter = location });
-            if (menu.Items.Count == 0) menu.Items.Add(new MenuItem { Header = "暂无编辑历史", IsEnabled = false });
-            menu.Closed += (_, _) => button.ContextMenu = null;
-            button.ContextMenu = menu; menu.IsOpen = true;
         }
 
         private void OnWindowStateChanged(object? sender, EventArgs e)
@@ -107,37 +89,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             else
             {
                 Application.Current.Shutdown();
-            }
-        }
-
-        /// <summary>
-        /// 打开开发计划看板（plans/plan.html）。
-        /// 从当前执行目录向上查找解决方案根的 plans/ 目录（适配 Debug/Release 输出路径），
-        /// 用系统默认浏览器打开。
-        /// </summary>
-        private void OpenPlan_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 从运行目录逐级向上查找 plans/plan.html（dev/Debug → 解决方案根）
-                var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-                for (int i = 0; i < 6 && dir != null; i++, dir = dir.Parent)
-                {
-                    var candidate = Path.Combine(dir.FullName, "plans", "plan.html");
-                    if (File.Exists(candidate))
-                    {
-                        Process.Start(new ProcessStartInfo(candidate) { UseShellExecute = true });
-                        return;
-                    }
-                }
-
-                ThemeMessageDialog.Show("未找到开发计划文档 plans/plan.html。\n请确认计划文件存在于解决方案根目录的 plans/ 文件夹中。",
-                    "开发计划", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
-            }
-            catch (Exception ex)
-            {
-                ThemeMessageDialog.Show($"打开开发计划失败: {ex.Message}",
-                    "开发计划", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
             }
         }
 

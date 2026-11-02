@@ -3215,7 +3215,7 @@ SplitterPosition = position;
             queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
             var bindingWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;
             var bindingService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings;
-            queryService.WorkflowId = bindingWorkflow.Id;
+
             if (DocumentManager.CurrentSolution?.ExecutionOwner is { } solutionOwner) bindingWorkflow.AttachExecutionOwner(solutionOwner);
             queryService.ExecutionOwner = bindingWorkflow.ExecutionOwner;
             queryService.BindingCandidateNodeIds = id => bindingService.GetCandidateNodeIds(bindingWorkflow.Id, id);

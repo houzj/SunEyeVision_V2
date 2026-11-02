@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Services.Workflow;
 
 namespace SunEyeVision.UI.Shell.Windows;
 
@@ -124,12 +125,65 @@ public partial class MainWindowViewModel
                     throw;
                 }
             });
-            SubscribeToolExecutionCompleted(window,node,query,context);
+            SubscribeRuntimeExecutionCompleted(window,node,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
             _nodeDebugWindows[node.Id]=window;
             window.Closed+=(_,_)=>_nodeDebugWindows.Remove(node.Id);
             window.Show();return true;
         }
         catch{context.Discard();throw;}
+    }
+    private void SubscribeRuntimeExecutionCompleted(RuntimeToolEditorWindow window, Shared.WorkflowNode node, ProductionEditorContext context)
+    {
+        var resultContext=CurrentWorkflowContext;var session=DocumentManager.Session;var tab=WorkflowTabViewModel.SelectedTab;var closed=false;
+        bool OwnerCurrent()=>!closed&&window.IsLoaded&&ReferenceEquals(DocumentManager.Session,session)&&context.IsValid;
+        bool DisplayCurrent()=>OwnerCurrent()&&ReferenceEquals(tab,WorkflowTabViewModel.SelectedTab)
+            &&ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node)&&!_declaredHistoricalResult;
+        void Handler(object? sender,RuntimeToolExecutionEventArgs args)
+        {
+            var result=args.Result;
+            try
+            {
+                using var retained=result?.Retain();
+                void Apply()
+                {
+                    if(!OwnerCurrent())return;
+                    if(result is null)
+                    {
+                        if(args.Error is not null){context.DebugResults.RemoveNodeResult(node.Id);if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}}
+                        return;
+                    }
+                    if(result.ExecutionIdentity is {} identity&&(!identity.IsCurrent||!ReferenceEquals(identity.Owner,context.DebugOwner)))return;
+                    if(!context.TryAcceptDebugResult(result)||!OwnerCurrent())return;
+                    if(DisplayCurrent())_nodeResultManager.RefreshDebugPreview(context.DraftNode,result);
+                    if(OwnerCurrent())AddLog($"调试窗口执行完成: {node.Name}");
+                }
+                if(window.Dispatcher.CheckAccess())Apply();
+                else if(result is null)window.Dispatcher.BeginInvoke(new Action(Apply));
+                else
+                {
+                    var pending=new ResultDispatchLease(result);
+                    try
+                    {
+                        var operation=window.Dispatcher.BeginInvoke(new Action(()=>{using var lease=pending.Claim();if(lease is not null)Apply();}));
+                        operation.Aborted+=(_,_)=>pending.Dispose();
+                        if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)pending.Dispose();
+                    }
+                    catch{pending.Dispose();throw;}
+                }
+            }
+            catch(Exception error){AddLog($"处理执行结果失败: {error.Message}");}
+        }
+        void RestoreProductionDisplay()
+        {
+            context.Deactivated-=RestoreProductionDisplay;
+            if(!ReferenceEquals(resultContext,CurrentWorkflowContext)||!ReferenceEquals(SelectedNode,node))return;
+            if(resultContext?.GetNodeResult(node.Id)?.Result is { } production)_nodeResultManager.RefreshResultDisplay(node,production);
+            else{_nodeResultManager.ClearResultDisplay();ClearNativeImagePresentation();}
+            _=UpdateDataAnalysisControl(node);
+        }
+        window.ToolExecutionCompleted+=Handler;
+        context.Deactivated+=RestoreProductionDisplay;
+        window.Closed+=(_,_)=>{closed=true;window.ToolExecutionCompleted-=Handler;};
     }
 }

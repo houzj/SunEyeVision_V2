@@ -10,7 +10,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.UI.Features.ParameterSetting;
+
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared.Events;
 using SunEyeVision.UI.Services.Interaction;

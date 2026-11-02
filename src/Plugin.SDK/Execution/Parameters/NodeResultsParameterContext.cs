@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {

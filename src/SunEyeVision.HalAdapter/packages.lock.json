@@ -2,19 +2,6 @@
   "version": 1,
   "dependencies": {
     "net9.0-windows7.0": {
-      "Microsoft.Win32.SystemEvents": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
-      },
-      "System.Drawing.Common": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "uoozjI3+dlgKh2onFJcz8aNLh6TRCPlLSh8Dbuljc8CdvqXrxHOVysJlrHvlsOCqceqGBR1wrMPxlnzzhynktw==",
-        "dependencies": {
-          "Microsoft.Win32.SystemEvents": "9.0.0"
-        }
-      },
       "suneyevision.foundation": {
         "type": "Project"
       },
@@ -28,9 +15,6 @@
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },
-      "suneyevision.plugin.editing.wpf": {
-        "type": "Project"
-      },
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {
@@ -41,22 +25,14 @@
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
-          "System.Drawing.Common": "[9.0.0, )"
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.tool.kernels": {
         "type": "Project"
       }
     },
-    "net9.0-windows7.0/win-x64": {
-      "Microsoft.Win32.SystemEvents": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
-      }
-    }
+    "net9.0-windows7.0/win-x64": {}
   }
 }

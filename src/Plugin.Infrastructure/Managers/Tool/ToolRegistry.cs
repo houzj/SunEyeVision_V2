@@ -11,7 +11,6 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
 {

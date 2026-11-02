@@ -456,9 +456,6 @@
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },
-      "suneyevision.plugin.editing.wpf": {
-        "type": "Project"
-      },
       "suneyevision.plugin.infrastructure": {
         "type": "Project",
         "dependencies": {
@@ -480,10 +477,8 @@
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
-          "System.Drawing.Common": "[9.0.0, )"
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.wpf": {

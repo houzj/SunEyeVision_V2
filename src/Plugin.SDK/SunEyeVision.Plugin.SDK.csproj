@@ -18,7 +18,7 @@
     <Authors>SunEyeVision Team</Authors>
     <Company>SunEyeVision</Company>
     <Product>SunEyeVision Plugin SDK</Product>
-    <Description>SunEyeVision 插件开发SDK - 零依赖的纯契约层，现代化架构，包含ITool、IToolPlugin等核心接口，以及调试窗口基类和控件库</Description>
+    <Description>SunEyeVision Windows 插件 SDK，提供现行工作流、图像及运行支持合同。</Description>
     <Copyright>Copyright (c) 2026 SunEyeVision</Copyright>
     <PackageTags>vision;plugin;sdk;machine-vision;image-processing;wpf</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -35,32 +35,20 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
-  <!-- S4 对称架构：SDK 为纯契约层，零引擎引用（AC-1/D3）。System.Drawing.Common 仅用于
-       SDK UI 旋转光标渲染（RotatedCursor），非算法引擎，保留。 -->
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
-    <ProjectReference Include="../Plugin.Editing.Wpf/SunEyeVision.Plugin.Editing.Wpf.csproj" />
     <ProjectReference Include="../Tool.Kernels/SunEyeVision.Tool.Kernels.csproj" />
     <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </ItemGroup>
 
-  <!-- WPF 主题配置说明：
-       SDK 控件默认样式库位于 Themes\Generic.xaml（约定路径 = 程序集默认主题），
-       由 AssemblyInfo.cs 的 [assembly: ThemeInfo(...)] 声明其位置。
-       （原先此处的 <ThemeInfo Include="Themes\Generic.xaml" /> 是无效项：既不生成特性、也不起任何作用，
-         实测根因即"SDK 缺 ThemeInfo 特性 ⇒ WPF 不查 generic.xaml ⇒ 设计器里控件空白"，故删除。） -->
+  <ItemGroup><None Update="README.md" Pack="true" PackagePath="/" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Metadata\ToolGroups.xml" LogicalName="SunEyeVision.Plugin.SDK.Metadata.ToolGroups.xml" /></ItemGroup>
-  <ItemGroup><Compile Remove="Execution/Parameters/ToolDebugResultSnapshot.cs" /></ItemGroup>
   <ItemGroup>
-    <Compile Remove="Execution/Parameters/ArrayTreeFormatter.cs;Execution/Parameters/BindingInputCatalog.cs;Execution/Parameters/ImageSourceReference.cs;Execution/Parameters/MeasureGuideParameters.cs;Execution/Parameters/RoiParameters.cs;Execution/Parameters/SubroutineParameters.cs;Execution/Parameters/ISubroutineDebugService.cs;Execution/Parameters/SubroutineDebugServiceProvider.cs;Execution/Parameters/ToolExecutionPreparation.cs;Execution/Helpers/PositionCorrectionResolution.cs;Models/SubroutineLoopConfig.cs;Core/ToolExecutor*.cs;Core/ToolRunner.cs;UI/**/*.cs" />
-    <Compile Include="UI/Controls/Roi/Models/**/*.cs" Exclude="UI/Controls/Roi/Models/ShapeToolItem.cs" />
-    <Compile Remove="ViewModels/ToolViewModelBase.cs" />
-    <Compile Remove="Core/ToolExecutionRequest.cs;Core/IAsyncToolPlugin.cs;Execution/Parameters/RoiBindingInputs.cs" />
-    <Page Remove="UI/**/*.xaml;Themes/Generic.xaml" />
+    <!-- Group/循环迁移暂停，源码保留但不纳入产品编译。 -->
+    <Compile Remove="Execution/Parameters/SubroutineParameters.cs;Execution/Parameters/ISubroutineDebugService.cs;Execution/Parameters/SubroutineDebugServiceProvider.cs;Models/SubroutineLoopConfig.cs" />
   </ItemGroup>
 </Project>

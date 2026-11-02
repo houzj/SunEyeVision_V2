@@ -18,6 +18,7 @@ public sealed class ScopedNodeInfoProviderTests
             {RuntimeConfiguration=RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad")};
         flow.Nodes.Add(node);
         var provider=new ScopedNodeInfoProvider(document,flow.Id);
+        Assert.Equal(flow.Id,provider.ScopeId);
         Assert.Null(provider.GetSchema("missing"));Assert.NotNull(provider.GetSchema(node.Id));
         var original=node.RuntimeConfiguration;node.RuntimeConfiguration=null;
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));node.RuntimeConfiguration=original;
@@ -28,7 +29,8 @@ public sealed class ScopedNodeInfoProviderTests
         var documentId=document.Id;document.Id=Guid.NewGuid().ToString();
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));document.Id=documentId;
         var flowId=flow.Id;flow.Id=Guid.NewGuid().ToString();
-        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));flow.Id=flowId;
+        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
+        Assert.Throws<InvalidOperationException>(()=>provider.ScopeId);flow.Id=flowId;
         document.Workflows.Remove(flow);
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
         document.Workflows.Add(new SunEyeVision.Workflow.Workflow { Id=flowId });
@@ -37,5 +39,6 @@ public sealed class ScopedNodeInfoProviderTests
         Assert.NotNull(provider.GetSchema(node.Id));
         document.ExecutionOwner.Retire();
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
+        Assert.Throws<InvalidOperationException>(()=>provider.ScopeId);
     }
 }

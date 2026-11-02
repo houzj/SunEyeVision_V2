@@ -28,7 +28,7 @@ public sealed class ScopedNodeInfoProvider : INodeInfoProvider
         _flow=document.Workflows.SingleOrDefault(flow=>flow.Id==workflowId)
             ??throw new InvalidOperationException("流程不属于当前方案。");
     }
-    private WorkflowNodeBase? Find(string nodeId)
+    private void ValidateScope()
     {
         if(_document.Id!=_documentId || _flow.Id!=_workflowId ||
            !ReferenceEquals(_document.ExecutionOwner,_owner) || _owner.IsRetired)
@@ -37,6 +37,11 @@ public sealed class ScopedNodeInfoProvider : INodeInfoProvider
             throw new InvalidOperationException("方案运行目录已变更或退役。");
         if(_document.Workflows.Count(flow=>ReferenceEquals(flow,_flow))!=1||_document.Workflows.Count(flow=>flow.Id==_flow.Id)!=1)
             throw new InvalidOperationException("流程已退出当前方案或身份不唯一。");
+    }
+    public string ScopeId { get { ValidateScope(); return _workflowId; } }
+    private WorkflowNodeBase? Find(string nodeId)
+    {
+        ValidateScope();
         var nodes=_flow.Nodes.Where(node=>node.Id==nodeId).ToArray();
         if(nodes.Length>1)throw new InvalidOperationException("节点身份不唯一。");
         var node=nodes.SingleOrDefault();

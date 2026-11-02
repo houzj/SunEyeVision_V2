@@ -80,6 +80,59 @@ public sealed class MainWorkspaceLayoutTests
             splitter.ToggleCollapsed(); Assert.Equal(150, bottom.MinHeight); Assert.True(bottom.Height.IsStar);
         });
     }
+    [Fact]
+    public void Actual_top_bar_loads_original_images_and_disables_unavailable_entries()
+    {
+        RunSta(() =>
+        {
+            var app = new SunEyeVision.UI.App(); app.InitializeComponent();
+            var state = new TopBarState();
+            var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state };
+            top.Measure(new Size(1600, 64)); top.Arrange(new Rect(0, 0, 1600, 64)); top.UpdateLayout();
+            var buttons = new List<Button>(); CollectButtons(top, buttons);
+            var save = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "保存 (Ctrl+S)")));
+            var image = Assert.IsType<Image>(save.Content);
+            Assert.NotNull(image.Source);
+            Assert.Contains("toolbarsave_", image.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.Same(state.SaveCurrentSolutionCommand, save.Command);
+            state.Save.Enabled = false; state.Save.Notify(); top.UpdateLayout();
+            Assert.False(save.IsEnabled);
+            Assert.Contains("toolbarsave_disable", image.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            var continuous = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "连续运行或停止全部工作流")));
+            Assert.Same(state.ToggleContinuousAllCommand, continuous.Command);
+            var runImage = Assert.IsType<Image>(continuous.Content);
+            Assert.Contains("toolbarrunrepeat_normal", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            state.IsAllWorkflowsRunning = true; top.UpdateLayout();
+            Assert.Contains("toolbarstop_n", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            foreach (var name in new[] { "锁定", "触发", "脚本", "综合配置", "运行界面" })
+                Assert.False(Assert.Single(buttons.Where(b => Equals(b.Content, name))).IsEnabled);
+            Assert.DoesNotContain(buttons, b => Equals(b.ToolTip, "工作流"));
+        });
+    }
+
+    private sealed class TopBarState : System.ComponentModel.INotifyPropertyChanged
+    {
+        public FakeCommand Save { get; } = new();
+        public System.Windows.Input.ICommand SaveCurrentSolutionCommand => Save;
+        public System.Windows.Input.ICommand ToggleContinuousAllCommand { get; } = new FakeCommand();
+        private bool _running;
+        public bool IsAllWorkflowsRunning { get => _running; set { _running = value; PropertyChanged?.Invoke(this, new(nameof(IsAllWorkflowsRunning))); } }
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    }
+    private sealed class FakeCommand : System.Windows.Input.ICommand
+    {
+        public bool Enabled { get; set; } = true;
+        public bool CanExecute(object? parameter) => Enabled;
+        public void Execute(object? parameter) { }
+        public event EventHandler? CanExecuteChanged;
+        public void Notify() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+    private static void CollectButtons(DependencyObject node, List<Button> buttons)
+    {
+        if (node is Button button) buttons.Add(button);
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(node); i++)
+            CollectButtons(System.Windows.Media.VisualTreeHelper.GetChild(node, i), buttons);
+    }
     private static void InvokeLayout(string method, LayoutConfig config, ColumnDefinition right, CollapsibleSplitterBox splitter)
     {
         var type = typeof(MainWindow).Assembly.GetType("SunEyeVision.UI.Shell.Controls.Shell.MainWorkspaceLayout", throwOnError: true)!;

@@ -167,24 +167,5 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
         }
 
-        /// <summary>
-        /// 连续运行开关：开启时图标切换为红色停止符号
-        /// </summary>
-        private void ContinuousRunToggle_Checked(object sender, RoutedEventArgs e)
-        {
-            ContinuousRunIcon.Text = "\uE71A";
-            ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromRgb(0xFF, 0x52, 0x52));
-        }
-
-        /// <summary>
-        /// 连续运行开关：关闭时图标恢复为灰色连续符号
-        /// </summary>
-        private void ContinuousRunToggle_Unchecked(object sender, RoutedEventArgs e)
-        {
-            ContinuousRunIcon.Text = "\uEF3B";
-            ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0));
-        }
     }
 }

@@ -138,111 +138,38 @@
             <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Height="1"
                     Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" VerticalAlignment="Bottom"/>
 
-            <!-- 行2：工具栏（图标按钮横排，各占一半空间） -->
-            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
-                <Button ToolTip="起始页 / 最近方案" Style="{StaticResource TitleBarButton}" Command="{Binding ShowStartPageCommand}"><TextBlock Text="&#xE80F;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/></Button>
-                <Button ToolTip="保存 (Ctrl+S)" Style="{StaticResource TitleBarButton}" Command="{Binding SaveCurrentSolutionCommand}">
-                    <TextBlock Text="💾" FontSize="16"/>
-                </Button>
-                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
-
-                <Button x:Name="UndoEditButton" ToolTip="撤销 (Ctrl+Z)" Style="{StaticResource TitleBarButton}" Command="{Binding UndoCommand}">
-                    <Image Width="20" Height="20" Stretch="None"><Image.Style><Style TargetType="Image">
-                        <Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_normal.png"/>
-                        <Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_disable.png"/></DataTrigger></Style.Triggers>
-                    </Style></Image.Style></Image>
-                </Button>
-                <Button x:Name="RedoEditButton" ToolTip="重做 (Ctrl+Y)" Style="{StaticResource TitleBarButton}" Command="{Binding RedoCommand}">
-                    <Image Width="20" Height="20" Stretch="None"><Image.Style><Style TargetType="Image">
-                        <Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_normal.png"/>
-                        <Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_disable.png"/></DataTrigger></Style.Triggers>
-                    </Style></Image.Style></Image>
-                </Button>
-
-                <Button x:Name="EditHistoryButton" ToolTip="编辑历史" Style="{StaticResource TitleBarButton}" Click="EditHistoryClick"><TextBlock Text="⌄" FontSize="16"/></Button>
-                <!-- 运行（单次） -->
-                <Button ToolTip="运行 (F5)" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}">
-                    <TextBlock Text="&#xE768;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
-                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
-                </Button>
-                <!-- 连续运行/停止（切换按钮：点击立即切换，空闲🔁灰色，运行中⏹️红色+主色高亮） -->
-                <ToggleButton x:Name="ContinuousRunToggle"
-                              ToolTip="连续运行全部工作流"
-                              Command="{Binding ToggleContinuousAllCommand}"
-                              IsChecked="False"
-                              Checked="ContinuousRunToggle_Checked"
-                              Unchecked="ContinuousRunToggle_Unchecked"
-                              Padding="10,4" Cursor="Hand"
-                              WindowChrome.IsHitTestVisibleInChrome="True">
-                    <ToggleButton.Style>
-                        <Style TargetType="ToggleButton">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ToggleButton">
-                                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarButtonHoverBrush}}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ToggleButton.Style>
-                    <TextBlock x:Name="ContinuousRunIcon"
-                               Text="&#xEF3B;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
-                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
-                </ToggleButton>
-
-                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
-
-                <Button ToolTip="相机管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCameraManagerCommand}">
-                    <TextBlock Text="📷" FontSize="16"/>
-                </Button>
-                <Button ToolTip="通讯管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCommunicationManagerCommand}">
-                    <TextBlock Text="🔌" FontSize="16"/>
-                </Button>
-                <Button ToolTip="全局变量管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowGlobalVariableManagerCommand}">
-                    <TextBlock Text="🧮" FontSize="16"/>
-                </Button>
-
-                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
-
-                <!-- 主题切换按钮：亮色显示太阳，暗色显示月亮（MDL2 图标，Foreground 可控且主题适配） -->
-                <Button ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}">
-                    <TextBlock FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
-                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="&#xE706;"/>  <!-- 太阳 Sun -->
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsDarkTheme}" Value="True">
-                                        <Setter Property="Text" Value="&#xE708;"/>  <!-- 月亮 Moon -->
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Button>
-
-                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
-
-
-            </StackPanel>
+            <!-- 原件工具栏按功能分组；缺基础入口明确禁用。 -->
+            <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" WindowChrome.IsHitTestVisibleInChrome="True"><StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
+<Button ToolTip="保存 (Ctrl+S)" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding SaveCurrentSolutionCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarsave_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarsave_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button ToolTip="打开方案" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding OpenSolutionCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbaropen_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbaropen_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button Content="起始页" ToolTip="起始页 / 最近方案" Style="{StaticResource TitleBarButton}" Command="{Binding ShowStartPageCommand}"/>
+<Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Button x:Name="UndoEditButton" ToolTip="撤销 (Ctrl+Z)" Style="{StaticResource TitleBarButton}" Command="{Binding UndoCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_undo_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button x:Name="RedoEditButton" ToolTip="重做 (Ctrl+Y)" Style="{StaticResource TitleBarButton}" Command="{Binding RedoCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/toolbar_ic_topbar_redo_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button x:Name="EditHistoryButton" Content="历史" ToolTip="编辑历史" Style="{StaticResource TitleBarButton}" Click="EditHistoryClick"/>
+<Button Content="锁定" IsEnabled="False" ToolTip="锁定：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
+<Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Button ToolTip="相机管理" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCameraManagerCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_topbar_camera_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_topbar_camera_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Button ToolTip="全局变量管理" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding ShowGlobalVariableManagerCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_全局变量_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_全局变量_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button ToolTip="通讯管理" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCommunicationManagerCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_通信管理_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_通信管理_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button Content="触发" IsEnabled="False" ToolTip="触发：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
+<Button Content="脚本" IsEnabled="False" ToolTip="脚本：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
+<Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Button ToolTip="运行当前工作流 (F5)" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarstart_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarstart_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button x:Name="ContinuousRunToggle" ToolTip="连续运行或停止全部工作流" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleContinuousAllCommand}"><Image Width="20" Height="20"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarrunrepeat_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsAllWorkflowsRunning}" Value="True"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarstop_n.png"/></DataTrigger><DataTrigger Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/toolbarrunrepeat_disable.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
+<Button Content="综合配置" IsEnabled="False" ToolTip="综合配置：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
+<Button Content="运行界面" IsEnabled="False" ToolTip="运行界面：功能尚未接入" ToolTipService.ShowOnDisabled="True" Style="{StaticResource TitleBarButton}"/>
+<Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+<Button Content="主题" ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}"/>
+            </StackPanel></ScrollViewer>
 
             <!-- 右侧：项目信息 + 窗口控制（第一行） -->
             <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
                 <Border Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarProjectInfoBgBrush}}" CornerRadius="3" Padding="8,4" Margin="0,0,8,0"
                         Visibility="{Binding HasCurrentSolution, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="📦" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
+
                         <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>

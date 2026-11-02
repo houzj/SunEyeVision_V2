@@ -1,0 +1,20 @@
+{
+  "scope": "独立工作区候选；不是正式Release",
+  "baseline": "fa22c2dc1",
+  "productSource": "ce341300e497a5912f0670a45123e988c7e5d527",
+  "attempt": 17,
+  "exit": 0,
+  "passedCases": 10,
+  "caseSourceSha256": "602404F45F86C072590AB2D05BB7CCED577CB91EADC505307E9A79F97127EF7A",
+  "receiptSha256": "F417B090BC8BA61596EA9441C83FE5899C52A5A1AC6FC5EEAE0F6EF36D6BD343",
+  "loadedManifestSha256": "0D3B2BC426F9956153F07D1201F562930C65F957049A19E2C37905341E639295",
+  "loadedCount": 15,
+  "hashMismatches": 0,
+  "limits": [
+    "仅已支持的数值、逐叶ROI、文本和位置同窗范围",
+    "WPF事件注入非物理键鼠，实际VS与人工另记",
+    "固定宽度样本不单独证明混合同窗跨轮冻结",
+    "连续调试、mask、屏蔽继承、位置修正与组合ROI来源仍受保护",
+    "旧owner ID变化不独自证明旧回调与租约全部退役"
+  ]
+}

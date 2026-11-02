@@ -100,6 +100,10 @@ internal static class C05NumericModelCases
      Console.WriteLine($"unknown-integer physical={a.StartValue} min={l.Minimum} max={l.Maximum}");
      Call(F(c,"_commit"),"ProjectAccepted");FlushOwned(l,t,"unknown-integer");OpenCloseNative(a,l,t,"unknown-integer");
      Check(!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity&&!integral.HasPendingEdits,"整数物理target污染未知模型");
+     var retired=F(c,"_commit");Call(retired,"Dispose");
+     l.SetCurrentValue(Numbers.NumericControl.TextProperty,string.Empty);l.GetBindingExpression(Numbers.NumericControl.TextProperty)!.UpdateSource();
+     Check(Validation.GetHasError(l),"未建立旧owner事件退役探针");Call(a,"DoStartValueChange");
+     Check(Validation.GetHasError(l)&&!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity,"已退役事件仍恢复绑定或改变模型");
     }
    });
    Case("raw跨回读隐藏与重建保留模型及旧叶退役",()=>{

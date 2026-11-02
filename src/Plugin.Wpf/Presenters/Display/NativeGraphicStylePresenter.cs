@@ -233,7 +233,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     void IParameterVisibility.PrepareForVisibility(bool visible){_hidden=!visible;if(!visible)Close();}
     private void OnLoaded(object sender,RoutedEventArgs args)=>Attach();
     private void OnUnloaded(object sender,RoutedEventArgs args)=>Close();
-    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args){if(!IsVisible)Close();}
+    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args)=>((IParameterVisibility)this).PrepareForVisibility(IsVisible);
     private void OnEnabled(object sender,DependencyPropertyChangedEventArgs args){if(!IsEnabled)Close();}
     private void OnOpened(object? sender,EventArgs args)
     {

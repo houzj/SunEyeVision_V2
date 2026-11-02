@@ -106,9 +106,17 @@ internal static class BlobUiComponentCases
                 Check(toggle.TrySetConstant(true),"开启");Pump();Check(view.HasUiChanges&&field.Visibility==Visibility.Visible,"条件开关");field.RetireInteractions();Check(toggle.TrySetConstant(false),"恢复");Pump();Check(!view.HasUiChanges,"条件恢复");
             });
             Case("四缺值显示原眼baseline与退役",()=>{
-                using var view=new NativeDisplayUiDraftRows("图形显示",Enumerable.Range(0,4).Select(i=>new NativeDisplayUiDraftEntry("缺值"+i,true)));Show(view);Check(!view.HasUiChanges&&!view.HasPendingEdits,"默认眼true误脏");
+                using var view=new NativeDisplayUiDraftRows("图形显示",Enumerable.Range(0,4).Select(i=>new NativeDisplayUiDraftEntry("缺值"+i,true)));var entries=view.ExtractEntryViews();foreach(var entry in entries)Show(entry);Check(!view.HasUiChanges&&!view.HasPendingEdits,"默认眼true误脏");
                 var states=((System.Collections.IEnumerable)Field(view,"_states")).Cast<object>().ToArray();Check(states.Length==20,"非四完整样式");var eye=states[0];Check((bool)Call(eye,"TrySet",new ConstantSetting(false))!,"眼修改失败");Check(view.HasUiChanges,"眼修改漏报");
                 Check((bool)Call(eye,"TrySet",new ConstantSetting(true))!,"眼恢复失败");view.RetireInteractions();Check(!view.HasUiChanges,"眼恢复误脏");
+                var styles=((System.Collections.IEnumerable)Field(view,"_contents")).Cast<object>().ToArray();var style=styles[0];
+                Call(style,"Open");Pump();Check(Prop<bool>(style,"IsOpen"),"借出行退役后样式未正常重开");
+                var opacity=(TextBox)Call(style,"Input","ui-only-graphic-0.opacity")!;var changes=0;view.Changed+=()=>changes++;
+                opacity.Text="bad-opacity";Pump();Check(view.HasPendingEdits&&view.HasUiChanges&&changes>0,"样式raw未观测");
+                view.RetireInteractions();Pump();Check(!Prop<bool>(style,"IsOpen")&&view.HasPendingEdits,"样式退役未关窗或丢pending");
+                entries[0].Visibility=Visibility.Collapsed;Pump();view.RetireInteractions();entries[0].Visibility=Visibility.Visible;Pump();
+                Call(style,"Open");Pump();Check(Prop<bool>(style,"IsOpen"),"隐藏重显后样式被锁");
+                opacity=(TextBox)Call(style,"Input","ui-only-graphic-0.opacity")!;Check(opacity.Text=="bad-opacity","样式raw重开丢失");
             });
             Console.WriteLine($"公共组合{passed}组通过；仅候选UI组件，不替代Blob三页/实际VS验收。");return 0;
         }

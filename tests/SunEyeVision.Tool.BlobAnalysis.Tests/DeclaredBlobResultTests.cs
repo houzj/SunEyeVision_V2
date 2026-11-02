@@ -21,7 +21,7 @@ public sealed class DeclaredBlobResultTests
         var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger,directory);
         flow=workflows.CreateWorkflow("blob-"+Guid.NewGuid().ToString("N"),"blob");
         node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,BlobTool.Id).WithSettings(settings)};
-        flow.AddNode(node);return new(workflows,Substitute.For<IPluginManager>(),logger);
+        flow.AddNode(node);return new(workflows,logger);
     }
     [Fact]
     public async Task Sorted_filtered_boundary_records_keep_native_element_identity()

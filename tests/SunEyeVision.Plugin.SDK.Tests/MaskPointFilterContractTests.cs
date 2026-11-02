@@ -191,7 +191,8 @@ public class MaskPointFilterContractTests
     public void Composed_mask_without_result_context_reports_missing_context()
     {
         var pts = Points((100, 100));
-        var computed = Roi.CreateComposed("computed", ShapeType.RotatedRectangle);
+        var computed = Roi.CreateComposed("computed", ShapeType.RotatedRectangle,
+            new Dictionary<string, ParamSetting> { ["CenterX"] = ParamSetting.CreateBinding("CenterX", "Node1", "X") });
 
         var error = Assert.Throws<InvalidOperationException>(() =>
             ToolRegionHelper.FilterPointsOutOfMaskRois(pts, new[] { computed }, null));

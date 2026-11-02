@@ -1,0 +1,230 @@
+{
+  "status": "该数值命名与资源闭包实施及正式自测完成，非整个数值控件或Blob阶段完成",
+  "productCommit": "bd5e390ba",
+  "integratedCommit": "c1c3c1bd8",
+  "productRoot": "D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision",
+  "builds": {
+    "ui": {
+      "errors": 0,
+      "warnings": 6539,
+      "log": "Release/_validation/numeric-neutral-formal-ui-20261102.log",
+      "exit": 0
+    },
+    "full": {
+      "errors": 0,
+      "warnings": 6541,
+      "log": "Release/_validation/numeric-neutral-formal-full-20261102.log",
+      "exit": 0
+    }
+  },
+  "tests": [
+    {
+      "track": "NumericContract",
+      "attempt": 5,
+      "cases": 42,
+      "caseSourceSha256": "FD6A62D98FC0033BAFC0D12891F5E7B1DD2283F731C10839587EF44818F390D1",
+      "loaded": [
+        {
+          "name": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "FB29767C04A6EDEE7EBDE8A4A62E1A2650BB647791453554800825DE2FB9F758"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "D946B2BC728B8F13982A017A0C0504F72ADDADC442BEA89253BC7FE4459F3E6B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "3C09083F798BEEC8824DDC6250A35279D7E5123A92043878D41435E5A78AF0C8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "85DC806F9E79994BD8D13D58AD4062656A4BBF942A7AF192ADBEE8E6576DBBB7"
+        }
+      ],
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-005\\receipt.json"
+    },
+    {
+      "track": "BlobCrosshairWorkspace",
+      "attempt": 3,
+      "cases": 7,
+      "caseSourceSha256": "BE136E8C88088777C2E8DDA3417E8375AC9F1ED71CF541AC732541727BBAF0E3",
+      "loaded": [
+        {
+          "name": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "C73374F931837127D091EEE907ED85CD233973C783BF21E8E00EA91AD91F654F"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "85DC806F9E79994BD8D13D58AD4062656A4BBF942A7AF192ADBEE8E6576DBBB7"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "FB29767C04A6EDEE7EBDE8A4A62E1A2650BB647791453554800825DE2FB9F758"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "D946B2BC728B8F13982A017A0C0504F72ADDADC442BEA89253BC7FE4459F3E6B"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "FF8BA9E51FD4D0C8C238011F70500D995212479C065D0C918B6CFD697ACBD5E7"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "F51AC061690479550DB8CFC37DE87D5E0E71A5CF4093202B9F4F4381CA9F6417"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "EFDF9980E6E683AD4F82228760AB3F7DBF9DC7D40DEC78F270B39F5356BEF07A"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "B7B492F730711D7CD6EC1B585D097D8CCE246AF443C7A80F90409D4A1D077107"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "3C09083F798BEEC8824DDC6250A35279D7E5123A92043878D41435E5A78AF0C8"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "0A4C88DAF7D54229273697A31B50E81EEBE1CA43814119A0C53C39FDFD9670D0"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C3133BB01A2D9DA56C34561C18533F0E604AE5B036AA638DE56FF3E8DDB4EEC4"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "A678F4AC44C03355B899E5932D401E1EF1F4C4EBCE2EA9EC7B3D7AAEB7E8AD75"
+        },
+        {
+          "name": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "58FF35011CE8FC98A3DE1B9E8858C3B4B047ED8A43903B615A3905996811C63D"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "41BB69E73FC6A633768854F1AFC410C16C7EF128C4EFEE1BB1ACFF6045936760"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "0E1553E3886E401E0ED75782708B9F728B71C592260563F3CCD969E2F8C12329"
+        }
+      ],
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-003\\receipt.json"
+    },
+    {
+      "track": "B08NumericComposition",
+      "attempt": 4,
+      "cases": 12,
+      "caseSourceSha256": "EA0DC2DD99F72C7C29A6E19B49C57B33C1CFC1A3C926F05115795C13C8155734",
+      "loaded": [
+        {
+          "name": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "C73374F931837127D091EEE907ED85CD233973C783BF21E8E00EA91AD91F654F"
+        },
+        {
+          "name": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "FB29767C04A6EDEE7EBDE8A4A62E1A2650BB647791453554800825DE2FB9F758"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "3C09083F798BEEC8824DDC6250A35279D7E5123A92043878D41435E5A78AF0C8"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "F51AC061690479550DB8CFC37DE87D5E0E71A5CF4093202B9F4F4381CA9F6417"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "85DC806F9E79994BD8D13D58AD4062656A4BBF942A7AF192ADBEE8E6576DBBB7"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "41BB69E73FC6A633768854F1AFC410C16C7EF128C4EFEE1BB1ACFF6045936760"
+        },
+        {
+          "name": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "D946B2BC728B8F13982A017A0C0504F72ADDADC442BEA89253BC7FE4459F3E6B"
+        },
+        {
+          "name": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "EFDF9980E6E683AD4F82228760AB3F7DBF9DC7D40DEC78F270B39F5356BEF07A"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "B7B492F730711D7CD6EC1B585D097D8CCE246AF443C7A80F90409D4A1D077107"
+        },
+        {
+          "name": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "0A4C88DAF7D54229273697A31B50E81EEBE1CA43814119A0C53C39FDFD9670D0"
+        },
+        {
+          "name": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C3133BB01A2D9DA56C34561C18533F0E604AE5B036AA638DE56FF3E8DDB4EEC4"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "FF8BA9E51FD4D0C8C238011F70500D995212479C065D0C918B6CFD697ACBD5E7"
+        },
+        {
+          "name": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "A678F4AC44C03355B899E5932D401E1EF1F4C4EBCE2EA9EC7B3D7AAEB7E8AD75"
+        },
+        {
+          "name": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "58FF35011CE8FC98A3DE1B9E8858C3B4B047ED8A43903B615A3905996811C63D"
+        },
+        {
+          "name": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "0E1553E3886E401E0ED75782708B9F728B71C592260563F3CCD969E2F8C12329"
+        }
+      ],
+      "exit": 0,
+      "receipt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-004\\receipt.json"
+    }
+  ],
+  "sourceAudit": "主仓107个新数值目标存在且SHA匹配；原两家族正文仅计划内namespace与URI变化；6图片字节不变；历史source-integration-receipt原字节保留",
+  "candidateOnly": "三范围All各16已候选通过；正式本批未重复全部范围",
+  "pending": [
+    "VS设计时由用户另验；自然输入及统一人工未代签",
+    "此前B08总900秒超时与原确认长耗时根因未解释；最终整轨通过不注销",
+    "B08原A00–A23全范围与未实现功能、Blob/S2/S3完整范围继续保留"
+  ],
+  "next": "依据已核VM原件证据集中调整矩形显示通道及结果图文输出路由；ROI编辑路由已正确复用"
+}

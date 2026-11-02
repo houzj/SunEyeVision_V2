@@ -10,13 +10,18 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow;
 
-// Prevent Windows Error Reporting dialogs from interrupting interactive desktop use.
-ProbeErrorMode.DisableSystemDialogs();
-if (args.Contains("--hidden-node-window"))
+internal static class Program
 {
-    Environment.ExitCode = NodeWindowProbe.Run();
-    return;
+[STAThread]
+private static int Main(string[] args)
+{
+    ProbeErrorMode.DisableSystemDialogs();
+    if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
+    return RunAsync().GetAwaiter().GetResult();
 }
+
+private static async Task<int> RunAsync()
+{
 try
 {
 var root=AppContext.BaseDirectory;
@@ -338,7 +343,10 @@ Console.WriteLine("Desktop admission and production workflow reader drain checks
 catch (Exception error)
 {
     Console.Error.WriteLine(error);
-    Environment.ExitCode = 1;
+    return 1;
+}
+return 0;
+}
 }
 
 static class ProbeErrorMode

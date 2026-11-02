@@ -157,10 +157,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         var presentationOwner=ReferencePresentation();
         var referenceOptions=new ReferenceFieldOptions(target=>
         {
-            var candidates=ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
+            var candidates=configuration.IsDisplayField(target.Id)?ReadDisplayReferenceCandidates(generation):ReadReferenceCandidates(generation,manualParameters:settings.Inputs.Any(port=>port.Id==target.Id) && OutputBindingChangeService.IsOrdinaryNumericParameter(target));
             if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
             var behavior=configuration.GetParameterReferenceBehavior(target.Id);
-            return new(candidates,candidates.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,behavior)),ReadVariableCandidates(generation),behavior);
+            return new(candidates,candidates.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,behavior)),configuration.IsDisplayField(target.Id)?Array.Empty<VariableSelectionItem>():ReadVariableCandidates(generation),behavior);
         },(target,proposal)=>ValidateProposal(target,proposal,generation),FormatVariable:reference=>FormatVariable(reference,generation),
             ReadCurrentValue:port=>
             {
@@ -209,9 +209,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         try
         {
         if(_disposed||generation!=_generation){DisposeInput();return;}
+        var textExpressions=configuration.DisplaySettingsSchema.Inputs.Where(port=>(port.EditModes&FieldEditModes.DisplayExpression)!=0)
+            .ToDictionary(port=>port.Id,port=>new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions(()=>ReadTextExpressionSnapshot(generation)),StringComparer.Ordinal);
         candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
             new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
-                candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames));
+                candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames,TextExpressions:textExpressions));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
         if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;_syncedRevision=candidate.AcceptedRevision;_captureError="";
         _view.Changed+=Changed;Content=_view.View;
@@ -342,7 +344,39 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         return (sourceName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
             +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
     }
-    private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates(long generation,bool manualParameters=false)
+    private SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionSnapshot ReadTextExpressionSnapshot(long generation)
+    {
+        if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)throw new InvalidOperationException("文本编辑会话已失效。");
+        var node=_node;var version=context.Host.Capture().Version;var candidates=ReadDisplayReferenceCandidates(generation);
+        string Identity(DeclaredReferenceCandidate candidate)=>BindingReferenceSerializer.Serialize(candidate.Reference(BindingSelection.All))
+            +"|"+candidate.NodeDisplayName+"|"+candidate.OutputDisplayName+"|"+string.Join("|",candidate.MemberDisplayNames);
+        var identities=candidates.Select(Identity).ToArray();
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)&&context.IsValid
+            &&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)&&context.Host.Capture().Version==version
+            &&ReadDisplayReferenceCandidates(generation).Select(Identity).SequenceEqual(identities)
+            &&!_disposed&&generation==_generation&&ReferenceEquals(_node,node)&&context.IsValid&&context.Host.Capture().Version==version;
+        return new(candidates,candidate=>candidate.NodeDisplayName+"."+candidate.OutputDisplayName
+            +(candidate.MemberDisplayNames.Count==0?"":"."+string.Join(".",candidate.MemberDisplayNames)),Current);
+    }    private IReadOnlyList<DeclaredReferenceCandidate> ReadDisplayReferenceCandidates(long generation)
+    {
+        if(_disposed||generation!=_generation||_query is null||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true})return Array.Empty<DeclaredReferenceCandidate>();
+        var workflow=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.Workflows.SingleOrDefault(flow=>flow.Id==_query.WorkflowId);
+        if(workflow is null)return Array.Empty<DeclaredReferenceCandidate>();
+        var graph=WorkflowExecutionDependencyGraph.Compile(workflow);var ids=new HashSet<string>(StringComparer.Ordinal){_node.Id};
+        var pending=new Stack<string>(graph.GetPredecessors(_node.Id));while(pending.TryPop(out var id))if(ids.Add(id))foreach(var parent in graph.GetPredecessors(id))pending.Push(parent);
+        var result=new List<DeclaredReferenceCandidate>();
+        foreach(var node in workflow.Nodes.Where(node=>ids.Contains(node.Id)))
+        foreach(var output in _query.FormalOutputContractReader?.Invoke(node.Id)??Array.Empty<OutputVariable>())
+        {
+            if(output.Kind!=OutputVariableKind.Data)continue;
+            foreach(var candidate in DeclaredReferenceCandidateBuilder.Build(output,node.Id,workflow.Id,node.Name))
+            {
+                var type=candidate.SelectedType;while(type.Shape==ValueShape.Sequence)type=type.Element!;
+                if(type.Shape==ValueShape.Scalar&&type.Scalar is ScalarKind.Int64 or ScalarKind.Float64 or ScalarKind.Text)result.Add(candidate);
+            }
+        }
+        return result.AsReadOnly();
+    }    private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates(long generation,bool manualParameters=false)
     {
         if(_disposed||generation!=_generation||_query is null||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true})
             return Array.Empty<DeclaredReferenceCandidate>();

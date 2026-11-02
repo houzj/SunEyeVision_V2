@@ -92,6 +92,7 @@ public sealed class WorkflowExecutionDependencyGraph
             _ => new HashSet<string>(StringComparer.Ordinal),
             StringComparer.Ordinal);
         var dependencies = new List<WorkflowExecutionDependency>();
+        var retainedIssues=(inputIssues??new Dictionary<string,IReadOnlyList<ExecutionInputIssue>>()).ToDictionary(pair=>pair.Key,pair=>pair.Value.ToList(),StringComparer.Ordinal);
 
         void AddDependency(string sourceNodeId, string targetNodeId, WorkflowDependencyKind kind, string? parameterName = null)
         {
@@ -105,6 +106,15 @@ public sealed class WorkflowExecutionDependencyGraph
                 dependencies.Add(new WorkflowExecutionDependency(sourceNodeId, targetNodeId, kind, parameterName));
         }
 
+        // A deleted Runtime producer remains an explicit field identity, not a fictitious graph node.
+        // Preserve every existing dependency for cycle detection; readiness rejects only the missing field.
+        void AddRuntimeDependency(string source,string target,string field)
+        {
+            if(knownNodes.Contains(source)){AddDependency(source,target,WorkflowDependencyKind.ParameterBinding,field);return;}
+            if(!retainedIssues.TryGetValue(target,out var issues))retainedIssues[target]=issues=new();
+            var issue=new ExecutionInputIssue(field,field,"订阅来源节点不存在："+source);
+            if(!issues.Contains(issue))issues.Add(issue);
+        }
         foreach (var connection in workflow.Connections)
             AddDependency(connection.SourceNodeId, connection.TargetNodeId, WorkflowDependencyKind.Connection);
 
@@ -137,7 +147,7 @@ public sealed class WorkflowExecutionDependencyGraph
                 foreach(var dependency in WorkflowBindingContext.ReferenceNodes(reference,sourceWorkflowId??workflow.Id))
                 {
                     if(dependency.ScopeId!=(sourceWorkflowId??workflow.Id))throw new InvalidOperationException("Typed binding crosses the workflow scope.");
-                    AddDependency(dependency.NodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                    AddRuntimeDependency(dependency.NodeId,node.Id,fieldId);
                 }
             }
             if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
@@ -160,13 +170,13 @@ public sealed class WorkflowExecutionDependencyGraph
                         foreach(var dependency in WorkflowBindingContext.ReferenceNodes(index.Reference,sourceWorkflowId??workflow.Id))
                         {
                             if(dependency.ScopeId!=(sourceWorkflowId??workflow.Id))throw new InvalidOperationException("变量动态索引跨出工作流作用域。");
-                            AddDependency(dependency.NodeId,node.Id,WorkflowDependencyKind.ParameterBinding,fieldId);
+                            AddRuntimeDependency(dependency.NodeId,node.Id,fieldId);
                         }
                 }
         }
 
         var graph = new WorkflowExecutionDependencyGraph(predecessors, dependencies)
-        { InputIssues = inputIssues ?? new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>() };
+        { InputIssues = retainedIssues.ToDictionary(pair=>pair.Key,pair=>(IReadOnlyList<ExecutionInputIssue>)pair.Value.AsReadOnly(),StringComparer.Ordinal) };
         graph.GetTopologicalLayers(nodeIds);
         return graph;
     }

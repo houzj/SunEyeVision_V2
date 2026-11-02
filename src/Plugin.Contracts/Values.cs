@@ -21,8 +21,10 @@ public sealed class ToolSchema
             throw new ArgumentException("Ports require a declared type.");
         foreach(var port in Inputs.Concat(Outputs))NumericStorageRules.ValidateDeclaration(port);
         foreach(var port in Inputs.Concat(Outputs))
-            if((port.EditModes&~(FieldEditModes.Constant|FieldEditModes.Reference|FieldEditModes.NumericGeometry|FieldEditModes.Gesture))!=0
+            if((port.EditModes&~(FieldEditModes.Constant|FieldEditModes.Reference|FieldEditModes.NumericGeometry|FieldEditModes.Gesture|FieldEditModes.DisplayExpression))!=0
                 ||!Enum.IsDefined(port.DefaultPresence))throw new ArgumentException("Unknown editing capability or default-presence policy.");
+        if(Inputs.Concat(Outputs).Any(port=>(port.EditModes&FieldEditModes.DisplayExpression)!=0&&(port.Type!=DataType.Text||port.Choices is not null)))
+            throw new ArgumentException("Display expressions require a scalar non-enum text declaration.");
         if(Inputs.Concat(Outputs).Any(port=>port.Choices is not null&&port.Type!=TypeRef.ScalarOf(ScalarKind.Text)))throw new ArgumentException("Closed text choices require a scalar text port.");
         presentation?.Validate(Inputs);Presentation=presentation;
         OutputDisplay=OutputDisplayNode.Freeze(outputDisplay??Array.Empty<OutputDisplayNode>());

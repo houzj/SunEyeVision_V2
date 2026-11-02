@@ -8,8 +8,14 @@ public sealed record DeclaredOutputField(string Name,string DisplayName,string V
 /// consumers borrow declared values without creating SDK images or another result model.</summary>
 public sealed class DeclaredOutputSnapshot : IDisposable
 {
+    private readonly object _displayGate=new();
+    private ResultDisplaySourceSet? _displaySources;
+    private bool _released;
+    public string? DisplaySourceFailure {get;private set;}
+    public void RejectDisplaySources(string reason){lock(_displayGate){DisplaySourceFailure=reason;}}
     private readonly InputValues? _values;
     private readonly ResultResourceOwner? _resources;
+    private readonly ResultResourceOwner? _valueResources;
     private DeclaredOutputSnapshot(ToolSchema schema,long revision,RunIdentity identity,ExecutionStatus status,
         InputValues? values,ResultResourceOwner? resources,IEnumerable<Diagnostic> diagnostics,
         IReadOnlyDictionary<string,DeclaredOutputField>? fields=null,string? sourceWorkflowId=null,bool complete=true,
@@ -18,7 +24,8 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         if(schema.Inputs.Count!=0 || revision<0)throw new ArgumentException("A result requires the captured output-only declaration and revision.");
         if(executionIdentity is not null&&executionIdentity.ToInvocationIdentity(identity.NodeId)!=identity)
             throw new ArgumentException("Result identity differs from its admitted invocation.");
-        Schema=schema;SchemaRevision=revision;Identity=identity;Status=status;_values=values;_resources=resources;
+        Schema=schema;SchemaRevision=revision;Identity=identity;Status=status;_values=values;
+        _valueResources=resources;_resources=resources is null?null:new ResultResourceOwner(resources.Dispose);
         ExecutionIdentity=executionIdentity;Judgment=judgment;ExecutionTimeMs=elapsed;Output=output;
         Diagnostics=Array.AsReadOnly(diagnostics.ToArray());
         Fields=new System.Collections.ObjectModel.ReadOnlyDictionary<string,DeclaredOutputField>(
@@ -86,9 +93,50 @@ public sealed class DeclaredOutputSnapshot : IDisposable
             throw new ArgumentException("A completed successful output requires frozen values.",nameof(status));
         return new(schema,revision,identity,status,null,null,diagnostics,fields,sourceWorkflowId,complete,executionIdentity);
     }
-    public DeclaredOutputReader AcquireReader()=>new(this,_values,_resources?.Retain());
-    public IDisposable Retain()=>_resources?.Retain()??EmptyLease.Instance;
-    public void Dispose()=>_resources?.Dispose();
+    internal DeclaredOutputReader AcquireValueReader()=>new(this,_values,_valueResources?.Retain());
+    public void AttachDisplaySources(ResultDisplaySourceSet sources)
+    {
+        ArgumentNullException.ThrowIfNull(sources);
+        lock(_displayGate)
+        {
+            ObjectDisposedException.ThrowIf(_released,this);
+            if(_displaySources is not null)
+            {
+                if(_displaySources.Identities.ToHashSet().SetEquals(sources.Identities))return;
+                throw new InvalidOperationException("Display sources were already attached with different invocation identities.");
+            }
+            if(_resources is null)throw new InvalidOperationException("Only a value-owning result can retain display sources.");
+            var lease=sources.Acquire();
+            try{_resources.Own(lease);_displaySources=sources;}catch{lease.Dispose();throw;}
+        }
+    }
+    public DeclaredOutputReader AcquireReader()
+    {
+        lock(_displayGate)
+        {
+            var resources=_resources?.Retain();ResultDisplaySourceLease? display=null;
+            try{display=_displaySources?.Acquire();return new(this,_values,new JoinedLease(resources,display),display);}
+            catch{resources?.Dispose();display?.Dispose();throw;}
+        }
+    }
+    public IDisposable Retain()
+    {
+        lock(_displayGate)
+        {
+            var resources=_resources?.Retain();
+            try{return new JoinedLease(resources,_displaySources?.Acquire());}catch{resources?.Dispose();throw;}
+        }
+    }
+    public void Dispose()
+    {
+        lock(_displayGate){if(_released)return;_released=true;}
+        _resources?.Dispose();
+    }
+    private sealed class JoinedLease(IDisposable? resources,IDisposable? display):IDisposable
+    {
+        private IDisposable? _resources=resources,_display=display;
+        public void Dispose(){var first=Interlocked.Exchange(ref _display,null);var second=Interlocked.Exchange(ref _resources,null);if(second is not null)Release(first,second);else first?.Dispose();}
+    }
     private sealed class EmptyLease:IDisposable
     {internal static readonly EmptyLease Instance=new();public void Dispose(){} }
 }
@@ -99,8 +147,9 @@ public sealed class DeclaredOutputReader : IDisposable
     private InputValues? _values;
     private IDisposable? _lease;
     private bool _closed;
-    internal DeclaredOutputReader(DeclaredOutputSnapshot snapshot,InputValues? values,IDisposable? lease)
-    {Snapshot=snapshot;_values=values;_lease=lease;}
+    internal DeclaredOutputReader(DeclaredOutputSnapshot snapshot,InputValues? values,IDisposable? lease,ResultDisplaySourceLease? displaySources=null)
+    {Snapshot=snapshot;_values=values;_lease=lease;DisplaySources=displaySources;}
+    public ResultDisplaySourceLease? DisplaySources {get;}
     public DeclaredOutputSnapshot Snapshot {get;}
     public InputValues? Values {get{lock(_gate){ObjectDisposedException.ThrowIf(_closed,this);return _values;}}}
     public void Dispose()

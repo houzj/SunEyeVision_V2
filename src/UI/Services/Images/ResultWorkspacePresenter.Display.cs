@@ -14,11 +14,12 @@ internal sealed partial class ResultWorkspacePresenter
     private sealed class DisplayScene : IDisposable
     {
         internal readonly IResultValueLease Values;
+        internal readonly SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? Text;
         internal readonly NativeResultViewport.DisplaySceneLayer Layer;
         internal bool Disposed;
         internal readonly long Attempt;
-        internal DisplayScene(IResultValueLease values,NativeResultViewport.DisplaySceneLayer layer,long attempt){Values=values;Layer=layer;Attempt=attempt;}
-        public void Dispose(){if(Disposed)return;Disposed=true;Run([Layer.Dispose,Values.Dispose]);}
+        internal DisplayScene(IResultValueLease values,NativeResultViewport.DisplaySceneLayer layer,long attempt,SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? text=null){Values=values;Layer=layer;Attempt=attempt;Text=text;}
+        public void Dispose(){if(Disposed)return;Disposed=true;Run([Layer.Dispose,Values.Dispose,()=>Text?.Dispose()]);}
     }
     private DispatcherOperation? _displayRefresh;
     private long _displayRequest,_displayAttempt;
@@ -64,11 +65,24 @@ internal sealed partial class ResultWorkspacePresenter
             void ClearOriginal(){if(!Attempt())return;pane.Display=null;original?.Dispose();}
             if(state is null||publication is null||!Current()||pane.Image.CurrentFrame is not {} receipt)
             {ClearOriginal();continue;}
-            IResultValueLease? values=null;DisplayScene? candidate=null;
+            IResultValueLease? values=null;DisplayScene? candidate=null;SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? textLease=null;
             try
             {
                 state.Descriptor.Validate(publication.Schema);values=publication.Borrow();
                 if(values.Values is null||values.Stamp!=publication.Stamp||!Current()){values.Dispose();values=null;ClearOriginal();continue;}
+                if(state.Appearance.Text.Visible)
+                {
+                    textLease=state.BorrowText();
+                    var capturedText=textLease;
+                    capturedText.SetInvalidatedCallback(()=>
+                    {
+                        if(_shell.Dispatcher.HasShutdownStarted||_shell.Dispatcher.HasShutdownFinished)return;
+                        try{_shell.Dispatcher.BeginInvoke(DispatcherPriority.Render,new Action(()=>
+                        {if(!_disposed&&pane.Generation==paneGeneration&&ReferenceEquals(pane.Display?.Text,capturedText))QueueResultDisplay();}));}
+                        catch(TaskCanceledException){}
+                        catch(InvalidOperationException) when(_shell.Dispatcher.HasShutdownStarted||_shell.Dispatcher.HasShutdownFinished){}
+                    });
+                }
                 var rows=values.Values.Read(state.Descriptor.Rows.PortId);
                 foreach(var member in state.Descriptor.Rows.MemberFieldPath)rows=rows.GetField(member);
                 var roi=new List<NativeRoiResultOverlay>();
@@ -103,20 +117,19 @@ internal sealed partial class ResultWorkspacePresenter
                     }
                     if(appearance.Text.Visible)
                     {
-                        var area=Member(row,state.Descriptor.TextValue).GetScalar<double>();
                         if(appearance.Text.Content.Length>1_000_000)throw new ArgumentException("text-budget: 场景文字超过资源预算。");
-                        var content=string.Format(CultureInfo.CurrentCulture,appearance.Text.Content,area);textCharacters+=content.Length;
+                        var evaluated=textLease!.Evaluate(i);var content=evaluated.Content;textCharacters+=content.Length;
                         if(textCharacters>1_000_000)throw new ArgumentException("text-budget: 场景文字超过资源预算。");
-                        texts.Add(new(content,new Point(appearance.Text.X,appearance.Text.Y),
+                        texts.Add(new(content,new Point(evaluated.X,evaluated.Y),
                             checked((int)appearance.Text.FontSize),Color(passed?appearance.Text.Ok:appearance.Text.Ng),appearance.Text.Opacity));
                     }
                 }
-                if(!Current()||pane.Image.CurrentFrame!=receipt){values.Dispose();values=null;ClearOriginal();continue;}
+                if(!Current()||textLease?.IsCurrent==false||pane.Image.CurrentFrame!=receipt){values.Dispose();values=null;ClearOriginal();continue;}
                 if(!Attempt()){values.Dispose();values=null;continue;}
-                var layer=pane.Image.Viewport.CreateDisplaySceneLayer();candidate=new(values,layer,attempt);values=null;
+                var layer=pane.Image.Viewport.CreateDisplaySceneLayer();candidate=new(values,layer,attempt,textLease);values=null;textLease=null;
                 if(!Attempt()){candidate.Dispose();continue;}
                 pane.Display=candidate;original?.Dispose();
-                bool Owns()=>Current()&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,candidate)&&!candidate.Disposed&&pane.Image.CurrentFrame==receipt;
+                bool Owns()=>Current()&&candidate.Text?.IsCurrent!=false&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,candidate)&&!candidate.Disposed&&pane.Image.CurrentFrame==receipt;
                 if(!Owns()||!layer.Present(receipt,++_layerRevision,geometry,texts,Owns,roi))
                 {if(ReferenceEquals(pane.Display,candidate))pane.Display=null;candidate.Dispose();}
             }
@@ -124,11 +137,13 @@ internal sealed partial class ResultWorkspacePresenter
             {
                 // A runtime preparation failure clears this entire scene; never preserve half of a new publication.
                 var cleanup=new List<Action>();if(values is not null)cleanup.Add(values.Dispose);
+                if(textLease is not null){cleanup.Add(textLease.Dispose);textLease=null;}
                 if(candidate is not null){if(ReferenceEquals(pane.Display,candidate))pane.Display=null;cleanup.Add(candidate.Dispose);}
                 else cleanup.Add(ClearOriginal);
                 try{Run(cleanup);}catch(Exception failure){error=new AggregateException(error,failure);}
                 if(!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt)_main.AddLog("结果图文未显示："+error.Message);
             }
+            finally{textLease?.Dispose();}
         }
     }
     private static Color Color(ResultDisplayColor color)=>System.Windows.Media.Color.FromArgb(color.Alpha,color.Red,color.Green,color.Blue);

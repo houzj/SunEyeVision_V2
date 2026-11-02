@@ -52,6 +52,16 @@ internal sealed class DeclaredFieldState : IDisposable
     public event Action? Changed;
     internal event Action? ExplicitlyAccepted;
 
+    internal void NotifyEditSettled()
+    {
+        if(IsDisposed)return;
+        var failures=new List<Exception>();
+        foreach(Action listener in Changed?.GetInvocationList()??Array.Empty<Delegate>())
+        {if(IsDisposed)break;try{listener();}catch(Exception error){failures.Add(error);}}
+        if(failures.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        if(failures.Count>1)throw new AggregateException("字段已接纳，编辑状态通知失败。",failures);
+    }
+
     public DeclaredFieldState(Port port, ParameterSetting initial, Action<ParameterSetting> write,
         ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null,
         Func<ParameterSetting,bool>? propose=null,Func<ConstantSetting?>? readCurrentValue=null,ParameterReferenceBehavior referenceBehavior=ParameterReferenceBehavior.StrictExactlyOne)
@@ -209,6 +219,7 @@ internal sealed class DeclaredFieldState : IDisposable
 
     private ParameterSetting PrepareProposal(ParameterSetting proposal)
     {
+        if(proposal is DisplayExpressionSetting expression)return FieldSettings.Freeze(Port,expression);
         if(proposal is UnsetSetting&&Port.Required)throw new ArgumentException("必填项不能清除。");
         if(proposal is ConstantSetting constant)
         {
@@ -272,6 +283,7 @@ internal sealed class DeclaredFieldState : IDisposable
     internal static bool SameSetting(ParameterSetting left, ParameterSetting right) => (left, right) switch
     {
         (UnsetSetting, UnsetSetting) => true,
+        (DisplayExpressionSetting a,DisplayExpressionSetting b)=>a.SameExpression(b),
         (ConstantSetting a, ConstantSetting b) => SameValue(a.Value, b.Value),
         (ReferenceSetting a, ReferenceSetting b) => a.Conversion == b.Conversion && a.OriginId == b.OriginId
             && a.RebindingReason == b.RebindingReason && SameReference(a.Reference, b.Reference),
@@ -282,6 +294,7 @@ internal sealed class DeclaredFieldState : IDisposable
 
     private ParameterSetting PrepareInitial(ParameterSetting value)
     {
+        if(value is DisplayExpressionSetting expression)return FieldSettings.Freeze(Port,expression);
         if (value is not ConstantSetting constant) return value;
         try { return new ConstantSetting(ValueRules.Freeze(Port, constant.Value)); }
         catch (ArgumentException) when (Port.Choices is not null && constant.Value is string)
@@ -292,7 +305,7 @@ internal sealed class DeclaredFieldState : IDisposable
         }
     }
 
-    internal static ParameterSetting CopySetting(ParameterSetting value) => value is ConstantSetting { Value: double[] array }
+    internal static ParameterSetting CopySetting(ParameterSetting value) => value is DisplayExpressionSetting expression?expression.Copy():value is ConstantSetting { Value: double[] array }
         ? new ConstantSetting(array.ToArray()) : value;
 
     internal static bool SameReference(OutputReference a, OutputReference b) => SameSource(a,b) && SameSelection(a.Selection,b.Selection);

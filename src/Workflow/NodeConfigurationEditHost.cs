@@ -71,7 +71,18 @@ public sealed partial class NodeConfigurationEditHost
     private readonly Dictionary<string, GlobalVariable> _variableInstances;
     private bool _projecting;
     private bool _closed;
+    private bool _hasIssuedDraftOrRunAcceptance;
     internal void Close() {lock(_gate)_closed=true;}
+    internal void CloseUnusedForInitialPresentation()
+    {
+        lock(_gate)
+        {
+            EnsureOpen();
+            if(_hasIssuedDraftOrRunAcceptance||_projecting||_store.Capture().Version!=1)
+                throw new InvalidOperationException("配置宿主已用于编辑或运行，不能重新准备显示节点。");
+            _closed=true;
+        }
+    }
     private void EnsureOpen()
     {if(_closed)throw new InvalidOperationException("方案配置宿主已经退役。");}
     private readonly List<(GlobalVariable Variable, bool ValueChanged)> _structureNotifications = new();
@@ -136,6 +147,7 @@ public sealed partial class NodeConfigurationEditHost
             lock (_gate)
             {
                 EnsureBaseline();
+                _hasIssuedDraftOrRunAcceptance=true;
                 var identity = new ScopedNodeIdentity(workflowId, nodeId);
                 var node = Find(_store.Capture().CopyConfiguration(), identity);
                 return new(_owner, identity, node, NodeEditSignature(node),_nodeInstances[identity]);
@@ -152,6 +164,7 @@ public sealed partial class NodeConfigurationEditHost
             lock (_gate)
             {
                 EnsureBaseline();
+                _hasIssuedDraftOrRunAcceptance=true;
                 var published = _store.Capture();
                 var configuration = published.CopyConfiguration();
                 var captures = GlobalVariable.CaptureValues(_variableCollection);
@@ -291,6 +304,7 @@ public sealed partial class NodeConfigurationEditHost
                 var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点没有Runtime配置。");
                 _=runtime.Fields.Apply(changes); // Freeze every proposed value against its actual declaration.
                 var proposed=runtime.WithFieldSettings(changes);node.RuntimeConfiguration=proposed;
+                RuntimeDisplayBindings.Validate(flow,node,proposed,changes.Keys.ToHashSet(StringComparer.Ordinal));
                 var settingsErrors=proposed.ValidateSettings();
                 if(settingsErrors.Count!=0)throw new ArgumentException(settingsErrors[0].Message);
                 foreach(var (id,setting) in proposed.CaptureExecutionFields())

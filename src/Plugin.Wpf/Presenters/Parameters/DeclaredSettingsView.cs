@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using System.Windows;
 using System.Windows.Controls;
@@ -114,7 +114,8 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 ArgumentNullException.ThrowIfNull(snapshot.FormatExpression);ArgumentNullException.ThrowIfNull(snapshot.IsCurrent);
                 return snapshot with {FormatExpression=candidate=>Observe(()=>snapshot.FormatExpression(candidate)),
                     IsCurrent=()=>Current()&&snapshot.IsCurrent()&&Current()};
-            },option.ValidateText is null?null:text=>Observe(()=>option.ValidateText(text)));
+            },option.ValidateText is null?null:text=>Observe(()=>option.ValidateText(text)),
+                option.CreateSetting is null?null:proposal=>Observe(()=>option.CreateSetting(proposal)));
         },StringComparer.Ordinal);
         candidate=new(schema.Presentation.Fields.Select(presentation=>
         {

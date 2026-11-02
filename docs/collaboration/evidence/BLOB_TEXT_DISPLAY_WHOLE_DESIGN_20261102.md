@@ -1,0 +1,66 @@
+# Blob 文本显示完整组合设计（2026-11-02）
+
+## 基线与范围
+唯一候选目录 blob-reference-chain-20261101，分支 codex/blob-text-display-20261102，精确基线cdd5056c31b55e743355521e0c797e55715c309d；旧候选f0ce95c4保留，不新增worktree、不写主仓/用户方案、不启VM。原七行内容/OK色/NG色/字号/透明度/X/Y及文本眼睛原模板不另造界面；当前28个显示字段仍为同一RuntimeToolConfiguration.Fields正式owner。
+
+本批贯通内容表达式、X/Y显示阶段引用、前驱/自身来源资格、明确索引/空值、同次结果与私有调试显式源快照、合法草稿预览、确认取消/历史、复制/删除映射、严格保存重开和原场景资源退休。不把显示来源送算法输入、不建算法self环，不查latest源缓存补历史结果。无真实声明的Group/动态输出和未证分支保持保护。
+
+## 原件完整链及已证/未知
+原报告：D:/MyWork/REA逆向测试/docs/joint-audit/B08-文本显示链路静态证据-20261102.md（主线归档B08_TEXT_DISPLAY_ORIGINAL_20261102.md）；Group.xml SHA9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC、FeatureBase.cs SHA672D0B57519FA4E750E38E627910B9F11F1B28DA86E9E1980C607004954E5EAD、SetResultIOToModuleOperation.cs SHA128C8E2A13CCA393A27F3DF1E4AAA7001A78649E787F311E895C7C33A5BDD027。
+
+StringConfig为内嵌原控件，不是图形配置模态框：光标处于配对花括号内才打开int/float/string候选，来源为前驱+自身、排除TS/全局变量，选中VmIO.ModulePathName替换括号内片段。Feature.ValueA扫描token生成Mapping，Initializer/MapValueA处理本地化与编号占位；Value与Mapping经UserData持久/ReloadProperty恢复。GetValue(executeCount,index)依本次计数读映射，重复映射通过Array.IndexOf取首个映射索引再逐个Replace；不能替换为任意.NET string.Format。null映射替空，所有映射都无值且Mapping非空时整个内容为空。ID/ModuleDisplayName有明确特殊路径，任意格式后缀/表达式不据此开放。
+
+PositionX/Y默认Mapping=NULL/Value=0，不是质心。SetResultIOToModuleOperation建隐藏IsResultShow动态输出，保存RelateIO/RelateIndex并改feature.Mapping，不属算法参数输入。解析失败先移除/加回IO，选择器回旧值但后继监听最终状态未证。VmIO.GetValue在计数命中/常量等检查后，Value为Array且index>=0时空数组返回null、越界回0；不泛化到其他回调/合并分支。
+
+复制PasteFeature只证符合条件字符串的模块ID/名替换，重载证Value/Mapping；动态IO完整复制/磁盘恢复、内嵌绑定更新时机及失败监听仍有可追入口，不称静态穷尽。平台采用明确原子草稿/确认取消/Undo/保存合同，不冒称原厂失败或回滚等价。
+
+## 单一配置与最小共享合同
+Content需多来源且每个slot有稳定完整身份；不能把JSON引用藏在普通常量字符串、另建静态字典或绕过删除/复制管理。
+
+拟增Contracts的 `DisplayExpressionSetting : ParameterSetting`，包含只读Template及有序不可变slot列表。slot为明确Self字段路径或OutputReference（完整scope/node/port/type/storage/member/selection）；重复映射保留slot顺序，不按来源去重。默认原{0}/Area仍可在声明的本节点映射中归一化，中文{面积}由实际声明/现语言资源映射，不把任意名称或任意.NET格式语法当已支持。
+
+`FieldEditModes.DisplayExpression`仅内容Text字段声明；FieldSettings/ParameterEditSession/DeclaredFieldState冻结、克隆、SameSetting及已接纳历史均明确接受该类型且深复制。X/Y沿现ReferenceSetting/ConstantSetting，显示Schema允许这两字段Reference，禁止VariableSetting/未声明类型；其他25个显示字段保持Constant-only。`ResultDisplayAppearance`保存纯不可变文本计划/坐标设置，不在CaptureResultDisplay调用全显示字段Materialize。显示计划与解析后的文字/坐标分离，Renderer只收已解析纯值。
+
+统一引用访问/重映射覆盖表达式每个slot及其递归索引；RuntimeFieldJson新增封闭Kind、精确成员、深度/数量/纯元数据校验。FieldSettings.MapReferences、RuntimeToolConfiguration.MapReferences、BindingRelationCatalog/RuntimeInputBindings和OutputBindingChangeService删除/失效/复制路径全量看见显示引用；执行投影继续排除所有显示字段，不入算法Settings/current/BindingOrder/DAG。未就绪slot保身份并报具体失效，不猜同名新来源。
+
+## 同次读取与资源生命周期
+复用ExecutionResult.DeclaredOutputs/CaptureDeclaredOutputs/AcquireDeclaredOutput的本轮集合。该字典本身不保活；UI publication捕获显示读集合时必须对每个合格来源显式AcquireReader/Retain，在原NodeResultSnapshot/ExecutionResult租约有效期间完成，所有失败逐项释放。
+
+拟增Runtime `ResultDisplayReadLease`：不可变消费者RunIdentity、显示来源声明/身份集合及IBindingRunSnapshot；内部显式持DeclaredOutputReader，Dispose聚合释放。正常运行只从选中ExecutionResult的同DocumentSession/Run/Scope合格前驱及自身捕获，核expected identity/schema及目标snapshot匹配。不能在后续样式刷新时查NodeResultManager最新值；源更新不改此集合，目标退休才释放。自身值来自当前publication同一reader，不自持循环租约。
+
+私有调试复用RuntimeDebugInvocation的冻结声明/SourceIdentities捕获机制，额外只捕获合格显示来源，不物化无关参数或执行上游；来源run可能与本次private RunId不同，因此以显式捕获的source identity清单说明，不冒称同一正式根轮。捕获前后owner/config/source身份复核，部分捕获失败清全部reader。选定旧publication只解析其持有的来源集合，不补新缓存。
+
+复用现ParameterBindingService/BindingRunSnapshot的类型、成员、固定/动态索引及转换读取；显示编译scope为只读显示消费者，允许自身结果且只校验已捕获资格，不向算法依赖图加边。Self默认Area按本节点行读取；来源与显示行基数的处理仅在已核数组分支使用回退0，其他空值/越界给明确无值/诊断，不静默采用算法五整数首项政策。
+
+## UI、事务与场景
+NativeTextSession当前AcceptedText仅识别Constant、Accept构造Constant，必须同批改为显式表达式读写；原StringConfig的光标、花括号选择、pending原文、失焦关闭和旧请求退役完整复用。选择产生稳定slot，界面显示当前声明路径/本地化标签；不显示机器JSON、不拿友好名当唯一身份。X/Y原数值/订阅模板复用，来源由宿主显示阶段目录注入（前驱+自身int/float，排TS/全局），不借算法树自环限制或给普通字段放宽。
+
+实际主窗/私有EditorContext提供新配置候选验证，合法完整计划预览；非法pending或失效来源不能发布半套文字。所有已改字段/slot与X/Y一起捕获校验，确认先提交再换token，取消读最新正式。历史只回放配置，显示style revision不改RunIdentity、不执行算法；来源/定义变化按既有保守失效。Copy/Save/Undo保完整身份；旧context和旧树事件不写新token。
+
+ResultWorkspacePresenter复用每pane原子DisplayScene/TextProjection/MultiText，文字-only也必须匹配真实物理Frame/Domain及publication；XY已解析double需有限，字符/shape总预算维持。准备失败清本次整景，owner/request/epoch保护不清重入新景；所有显示源reader随scene/publication准确退出，不覆盖ROI编辑/继承只读层。
+
+## 实施文件边界
+Contracts：Editing.cs/FieldEditModes、FieldSettings/ParameterEditSession及ResultDisplayDescriptor、新表达式纯值/引用访问类型。
+Runtime：DeclaredOutputSnapshot或新ResultDisplayReadLease/现ExecutionResult借用入口，限制为立即消费的显示集合。
+Workflow：RuntimeFieldJson、RuntimeToolConfiguration显示捕获/复制；BindingRelationCatalog/RuntimeInputBindings/OutputBindingChangeService管理；正常结果集合与私有RuntimeDebugInvocation捕获，仅必要hunk，不扩Script/Group/工作流工作区。
+Wpf：NativeTextSession/NativeTextPresenter/TextExpressionOptions、DeclaredFieldState/DeclaredFieldsView显示组合与现数值引用适配；不引用Runtime/Workflow。
+UI：MainWindowResultPublication/MainWindowResultDisplay/MainWindowRuntimeEditing、RuntimeNodeConfigurationControl/ProductionEditorContext、ResultWorkspacePresenter.Display；BlobResultDisplay/BlobDisplayUi正式组装与声明。
+
+## 完整验收出口
+1. 纯合同：literal/默认Area/中文映射/多slot/重复slot/ID/模块名、未知格式拒绝；规范序列化、Copy/MapReferences、删源失效，非provider和算法字段不变。
+2. 同轮来源：两轮不同数据、同ID不同document、同物理frame不同publication；前驱刷新后旧scene仍只读被捕获轮，目标退休释放；私有显式source清单，全部/部分失败资源退出。
+3. 七行真实Host：原光标花括号候选插入、空/组节点不写，X/Y常量与前驱/自身来源，All/固定/动态索引、空数组/短数组/缺源；无算法self环、无隐式运行。
+4. 完整事务：合法草稿即时显示、非法pending不半发、确认/取消/Apply后新token、Undo/Redo、Copy、保存重开对象实际执行与重建显示；源删除恢复/改名/重映射及旧回调。
+5. 真实pane：两文字行、状态色、文字-only帧校验、双pane独立reader、空Blob结果、同帧/错帧/换源/隐藏关闭、ROI共存与异常重入。独立候选源码冻结后UI/full构建、专项及受影响回归，实际Loaded SHA逐轨审计。
+
+## 当前状态与保护
+已核入口并按本设计成片实施：正式表达式owner、JSON与复制映射、原文本控件、显示阶段解析、同轮/私有调试来源捕获和pane消费已落盘；冻结003 UI/全量构建0错误，首轮Core因ToolSchema能力白名单遗漏失败，冻结004正构建，尚无功能验收通过。表达式多引用统一管理与同轮reader租约是必须闭合的实际接口，不先做只会显示的临时补丁。未知原格式/回调基数、Group输出、动态IO完整原生序列化不假实现；未完成入口继续清楚保护。自然鼠标/系统焦点、VS及VM差分不由隐藏WPF事件自测代证。
+
+## 当前实现补充（验收前，不作完成声明）
+- `DisplayExpressionSetting`保存原文、有序slot和稳定OutputReference或相对Self路径；受控F/N/G/R数值格式为现有本方显示扩展，不据此声称原厂.NET格式。
+- 原文本入口提案同时携带旧正式setting、所选冻结candidate和替换span；手工编辑只能保已有slot或已证Self面积别名，不从同名目录重新猜身份。同名token多次出现而想绑定不同来源暂明确拒绝。
+- `ResultDisplaySourceSet`显式持raw value reader；每个目标从创建时即有raw owner与最终lifetime owner，后装来源lease挂最终owner。此前Retain仍保来源；raw reader不间接保display集合，避免A/B互持。
+- 正式运行在现有全轮CaptureDeclaredOutputs后、manager外发单snapshot前装配冻结前驱集合；同身份重复装配幂等，来源捕获失败只标显示不可用。私有调试在Capture时冻结显示专用前驱、在Execute返回和读者释放前附着，显示来源身份与算法SourceIdentities分开报告。
+- 显示引用不参加算法DAG/current/参数写入顺序；全量管理枚举包含(fieldId,slot index)稳定路径，复制映射每slot并保Self，来源删除保原身份等待修复。新字段提案校验限定本次显示改动；删除管理不被新提案必填校验阻塞。
+- 单个`ResultDisplayTextLease`在scene准备时借完整目标reader，在明确捕获的结果集合内复用ParameterBindingService；不查询最新结果。Self路径缓存一次，源schema/实际RunIdentity严格匹配。默认数组按行读取、超短回到首项目前为明确本方适配；显式非法索引及身份/声明变化拒绝，不能将其概括为VM所有分支。
+- 计划新增的Text轨已覆盖代码入口，但尚待实跑：真实七行手输Self/位置来源、确认取消UndoRedo、两轮64→80敏感值、前轮新旧lease、真正OpenSolution后新会话执行/显示、raw交叉/异常资源释放计数。文本花括号外源选择、两外源真实删除/Undo、并发与原生系统焦点仍未验，不以代码存在计通过。

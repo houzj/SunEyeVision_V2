@@ -262,9 +262,8 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"  总耗时: {(DateTime.Now - context.ExecutionStartTime).TotalMilliseconds:F2} ms");
             _logger.LogInfo($"======================================");
 
-            CaptureDeclaredRunOutputs(result,workflow);
-            ExecutionCompleted?.Invoke(this, result);
-            return result;
+            try{CaptureDeclaredRunOutputs(result,workflow);ExecutionCompleted?.Invoke(this,result);return result;}
+            catch{result.Dispose();throw;}
 #pragma warning restore CS0162
         }
 
@@ -397,9 +396,8 @@ namespace SunEyeVision.Workflow
             result.Success = result.Errors.Count == 0 && allResults.Values.All(node => node.Success);
             result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
             result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
-            CaptureDeclaredRunOutputs(result,workflow);
-            ExecutionCompleted?.Invoke(this, result);
-            return result;
+            try{CaptureDeclaredRunOutputs(result,workflow);ExecutionCompleted?.Invoke(this,result);return result;}
+            catch{result.Dispose();throw;}
         }
 
         /// <summary>
@@ -764,9 +762,8 @@ namespace SunEyeVision.Workflow
                 scope.State = WorkflowExecutionState.Stopped;
                 _logger.LogWarning("工作流执行被取消");
                 var cancelled=ExecutionResult.CreateCancelled();
-                cancelled.NodeResults=session.RootContext.GetAllNodeResults();
-                CaptureDeclaredRunOutputs(cancelled,execWorkflow);
-                return cancelled;
+                try{ cancelled.NodeResults=session.RootContext.GetAllNodeResults();CaptureDeclaredRunOutputs(cancelled,execWorkflow);return cancelled; }
+                catch(Exception failure){try{cancelled.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
             }
             catch (Exception ex)
             {
@@ -774,9 +771,8 @@ namespace SunEyeVision.Workflow
                 scope.State = WorkflowExecutionState.Error;
                 _logger.LogError($"工作流执行失败: {ex.Message}", ex);
                 var failed=ExecutionResult.CreateFailure($"{ex.Message}\n{ex.StackTrace}");
-                failed.NodeResults=session.RootContext.GetAllNodeResults();
-                CaptureDeclaredRunOutputs(failed,execWorkflow);
-                return failed;
+                try{ failed.NodeResults=session.RootContext.GetAllNodeResults();CaptureDeclaredRunOutputs(failed,execWorkflow);return failed; }
+                catch(Exception failure){try{failed.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
             }
             finally
             {
@@ -799,7 +795,11 @@ namespace SunEyeVision.Workflow
                     ?node.BindingContext!.WithoutResult(node,
                         outcome.Success?ExecutionStatus.NotExecuted:outcome.Status is ExecutionStatus.NotExecuted?ExecutionStatus.Failed:outcome.Status,
                         outcome.ErrorMessages.Select(message=>new SunEyeVision.Plugin.Contracts.Diagnostic("execution",message)))
-                    :node.BindingContext!.WithoutResult(node,ExecutionStatus.NotExecuted,Array.Empty<SunEyeVision.Plugin.Contracts.Diagnostic>()))));
+                    :node.BindingContext!.WithoutResult(node,ExecutionStatus.NotExecuted,Array.Empty<SunEyeVision.Plugin.Contracts.Diagnostic>()))));            var outputs=result.DeclaredOutputs;
+            foreach(var node in workflow.Nodes.OfType<AlgorithmNode>())
+                if(node.LastToolResult is {} snapshot)
+                    try{node.BindingContext?.AttachDisplaySources(node.Id,snapshot,outputs);}
+                    catch(Exception error){snapshot.RejectDisplaySources("显示来源捕获失败："+error.Message);}
         }
 
         private void ReleaseExecutionResources(WorkflowContext? context, Workflow workflow)

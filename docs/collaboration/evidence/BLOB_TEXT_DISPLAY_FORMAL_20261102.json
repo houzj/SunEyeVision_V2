@@ -1,0 +1,91 @@
+{
+  "sourceCommit": "ce341300e497a5912f0670a45123e988c7e5d527",
+  "scope": "主仓正式Release定向自测",
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "uiBuildExit": 0,
+  "fullBuildExit": 0,
+  "uiBuildSha256": "8BC4424FEA455BFE8F477FA5B8DB5F4A52127F18B7A03F3B6B5AE72C21D0EAE8",
+  "fullBuildSha256": "8937EAFF040AAC59A2F6148F92D5E1931793D72187F56B979A2297DC3AEEACF0",
+  "checks": [
+    {
+      "name": "Window",
+      "cases": 15,
+      "attempt": 6,
+      "exit": 0,
+      "caseSourceSha256": "1BB310D8EE231213EA268D7D99B1929C428030E72104147C66948A319EBF2418",
+      "receiptSha256": "29F97F15A347C530ACB095060BB5C1A73E717C58D983905BD3637A1AFD8FE5DD",
+      "loadedManifestSha256": "B61DB469B1D0C73A659B2E83ECA7D652D9831B187075B6F43AA4AEF17785BE80",
+      "loadedCount": 15,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-006"
+    },
+    {
+      "name": "Core",
+      "cases": 9,
+      "attempt": 7,
+      "exit": 0,
+      "caseSourceSha256": "1BB310D8EE231213EA268D7D99B1929C428030E72104147C66948A319EBF2418",
+      "receiptSha256": "639206DE7607283B5BBDFFE174308759C011DF2A87682A0A3F1D83505F091DB7",
+      "loadedManifestSha256": "B61DB469B1D0C73A659B2E83ECA7D652D9831B187075B6F43AA4AEF17785BE80",
+      "loadedCount": 15,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-007"
+    },
+    {
+      "name": "Text",
+      "cases": 6,
+      "attempt": 8,
+      "exit": 0,
+      "caseSourceSha256": "1BB310D8EE231213EA268D7D99B1929C428030E72104147C66948A319EBF2418",
+      "receiptSha256": "658735F505CEBB827BD48694E7C9B8C51B03852DC240635CDC5BC414DF3D1B82",
+      "loadedManifestSha256": "B61DB469B1D0C73A659B2E83ECA7D652D9831B187075B6F43AA4AEF17785BE80",
+      "loadedCount": 15,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-008"
+    },
+    {
+      "name": "TextSource",
+      "cases": 2,
+      "attempt": 9,
+      "exit": 0,
+      "caseSourceSha256": "1BB310D8EE231213EA268D7D99B1929C428030E72104147C66948A319EBF2418",
+      "receiptSha256": "80A49A1F88A7EAB700691F835FE596642D8CD1D7D7C60476199EE3A278FCE4F1",
+      "loadedManifestSha256": "B61DB469B1D0C73A659B2E83ECA7D652D9831B187075B6F43AA4AEF17785BE80",
+      "loadedCount": 15,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-009"
+    },
+    {
+      "name": "RuntimeDebug",
+      "cases": 10,
+      "attempt": 31,
+      "exit": 0,
+      "caseSourceSha256": "5524591A6E93DF888DF53A9F4869EEE6279C018E96AF0A445A053F5FE834A8C2",
+      "receiptSha256": "7671508BFD6FCCE2D725129BFA3598978636AFA215D30190AC26C6CC24183525",
+      "loadedManifestSha256": "D783BE846A059F4F46382D29E91C138484FF7CD3C801EE669CF0E8CF07CA5A17",
+      "loadedCount": 13,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeDebug\\attempt-031"
+    },
+    {
+      "name": "FieldEditing",
+      "cases": 38,
+      "attempt": 159,
+      "exit": 0,
+      "caseSourceSha256": "9E8F7B14C2609626D57B48834D4576F1B999BE4FC3E8F95461AFDF7723D67966",
+      "receiptSha256": "4366FCC567FC34662128E53A02BA1ACC8980BC5AD89CF7D354C03D4B75C08A02",
+      "loadedManifestSha256": "C6D5C45AA56A73356F10996633039AA17FD8C6B7FA612C72D26B8E816AD6BF3D",
+      "loadedCount": 12,
+      "hashMismatches": 0,
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-159"
+    }
+  ],
+  "limitations": [
+    "仅文本表达式与位置引用已验证范围，不能代表Blob、B08或三阶段全部完成",
+    "WPF来源树为事件注入，非自然键鼠",
+    "实际VS设计器由用户手动验证；本次未代验",
+    "用户统一人工验收另记",
+    "图像mask、屏蔽继承、位置修正和未支持的算法模式未因本批完成",
+    "原机复制及订阅恢复全语义、文本长度上限尚未完全证实"
+  ]
+}

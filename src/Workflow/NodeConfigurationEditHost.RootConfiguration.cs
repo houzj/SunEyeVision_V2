@@ -17,7 +17,7 @@ public sealed partial class NodeConfigurationEditHost
  private static string RootSignature(RootWorkflowConfiguration value)=>JsonSerializer.Serialize(value,WorkflowSerializationOptions.Compact);
  public RootWorkflowConfigurationEditDraft BeginRootEdit(string workflowId)
  {
-  try{lock(_gate){EnsureBaseline();var root=_design.Workflows.Single(w=>w.Id==workflowId&&!w.IsSubroutine);return new(_owner,root,root.RootConfiguration,RootSignature(root.RootConfiguration));}}
+  try{lock(_gate){EnsureBaseline();_hasIssuedDraftOrRunAcceptance=true;var root=_design.Workflows.Single(w=>w.Id==workflowId&&!w.IsSubroutine);return new(_owner,root,root.RootConfiguration,RootSignature(root.RootConfiguration));}}
   finally{FlushStructureNotifications();}
  }
  public bool HasPendingChanges(RootWorkflowConfigurationEditDraft draft)=>RootSignature(draft.Configuration)!=draft.Signature;

@@ -1,5 +1,6 @@
 ﻿using DocumentHistoryCoordinator = SunEyeVision.Workflow.DocumentHistoryCoordinator;
 using System;
+using ScopedNodeIdentity = SunEyeVision.Workflow.ScopedNodeIdentity;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -429,9 +430,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
         /// <summary>成对绑定一个实际容器；同一容器返回时恢复其编辑历史，不发布半份图。</summary>
         private DocumentHistoryCoordinator? _rootDocumentHistory;
-        private Action? _rootHistorySynchronize;
+        private Func<IReadOnlyList<ScopedNodeIdentity>>? _rootHistorySynchronize;
         private Func<string>? _rootHistorySignature;
-        public void BindRootDocumentHistory(DocumentHistoryCoordinator history, Action synchronize, Func<string> signature)
+        public void BindRootDocumentHistory(DocumentHistoryCoordinator history, Func<IReadOnlyList<ScopedNodeIdentity>> synchronize, Func<string> signature)
         {
             _rootDocumentHistory = history; _rootHistorySynchronize = synchronize; _rootHistorySignature = signature;
             BindCurrentRootHistory();

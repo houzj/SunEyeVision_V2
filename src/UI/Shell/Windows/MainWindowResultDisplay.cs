@@ -7,7 +7,7 @@ namespace SunEyeVision.UI.Shell.Windows;
 
 public partial class MainWindowViewModel
 {
-    internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent,ResultGeometrySnapshot? Geometry);
+    internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent,ResultGeometrySnapshot? Geometry,Func<SunEyeVision.Plugin.Runtime.ResultDisplayTextLease> BorrowText);
     private sealed class DisplayPreview : IDisposable
     {
         private sealed class Token
@@ -141,6 +141,7 @@ public partial class MainWindowViewModel
             return current is not null&&ReferenceEquals(current.ResultDisplay,descriptor)&&Equals(current.CaptureResultDisplay(),appearance)
                 &&revision==_resultDisplayRevision&&ReferenceEquals(session,DocumentManager.Session)&&ReferenceEquals(node,SelectedNode)&&PublicationOwner();
         }
-        return Current()?new(descriptor,appearance,revision,Current,(snapshot!.Output as IToolResultGeometryOutput)?.ResultGeometry):null;
+        return Current()?new(descriptor,appearance,revision,Current,(snapshot!.Output as IToolResultGeometryOutput)?.ResultGeometry,()=>
+        {if(!Current())throw new InvalidOperationException("文字显示来源已失效。");var lease=new SunEyeVision.Plugin.Runtime.ResultDisplayTextLease(snapshot,appearance.Text);try{if(!Current())throw new InvalidOperationException("文字显示来源在捕获期间已变化。");return lease;}catch(Exception failure){try{lease.Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}}):null;
     }
 }

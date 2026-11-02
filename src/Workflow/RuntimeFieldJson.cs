@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -29,6 +29,21 @@ internal static class RuntimeFieldJson
             ParameterSetting setting;
             if(kind.GetString()=="Constant")
             {Exact(item,"Kind","Value");setting=new ConstantSetting(ReadValue(port,item.GetProperty("Value")));}
+            else if(kind.GetString()=="DisplayExpression")
+            {
+                Exact(item,"Kind","Text","Slots");
+                var slots=new List<DisplayExpressionSlot>();
+                foreach(var slot in item.GetProperty("Slots").EnumerateArray())
+                {
+                    var token=slot.GetProperty("Token").GetString()??throw new JsonException("Expression token cannot be null.");
+                    if(slot.TryGetProperty("Reference",out var source))
+                    {Exact(slot,"Token","Reference","Format");slots.Add(new(token,BindingReferenceSerializer.Deserialize(source.GetRawText(),behavior),slot.GetProperty("Format").GetString()));}
+                    else
+                    {Exact(slot,"Token","SelfPort","SelfMembers","Format");slots.Add(new(token,new SunEyeVision.Plugin.Contracts.Results.Presentation.ResultFieldPath(
+                        slot.GetProperty("SelfPort").GetString()!,slot.GetProperty("SelfMembers").EnumerateArray().Select(member=>member.GetString()!)),slot.GetProperty("Format").GetString()));}
+                }
+                setting=new DisplayExpressionSetting(item.GetProperty("Text").GetString()??throw new JsonException("Expression text cannot be null."),slots);
+            }
             else if(kind.GetString()=="Reference")
             {
                 Exact(item,"Kind","Reference","Conversion","OriginId","RebindingReason");var name=item.GetProperty("Conversion").GetString();
@@ -89,6 +104,18 @@ internal static class RuntimeFieldJson
         {
             writer.WritePropertyName(id);writer.WriteStartObject();
             if(setting is ConstantSetting constant){writer.WriteString("Kind","Constant");writer.WritePropertyName("Value");WriteValue(writer,constant.Value);}
+            else if(setting is DisplayExpressionSetting expression)
+            {
+                writer.WriteString("Kind","DisplayExpression");writer.WriteString("Text",expression.Text);writer.WriteStartArray("Slots");
+                foreach(var slot in expression.Slots)
+                {
+                    writer.WriteStartObject();writer.WriteString("Token",slot.Token);writer.WriteString("Format",slot.Format);
+                    if(slot.Reference is {} source){writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(source));}
+                    else{writer.WriteString("SelfPort",slot.Self!.PortId);writer.WriteStartArray("SelfMembers");foreach(var member in slot.Self.MemberFieldPath)writer.WriteStringValue(member);writer.WriteEndArray();}
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+            }
             else if(setting is ReferenceSetting reference)
             {writer.WriteString("Kind","Reference");writer.WritePropertyName("Reference");writer.WriteRawValue(BindingReferenceSerializer.Serialize(reference.Reference));writer.WriteString("Conversion",reference.Conversion.ToString());writer.WriteString("OriginId",reference.OriginId);writer.WriteString("RebindingReason",reference.RebindingReason);}
             else if(setting is VariableSetting variable)

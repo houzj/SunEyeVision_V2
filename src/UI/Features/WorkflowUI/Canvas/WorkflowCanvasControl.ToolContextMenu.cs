@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -30,11 +30,11 @@ public partial class WorkflowCanvasControl
                 category.Items.Clear();
                 foreach(var tool in catalog.GetCategoryTools(group.Name))
                 {
-                    var item=new MenuItem{Header=tool.Name,Tag=tool,IsEnabled=Current()&&tool.IsAvailable,
+                    var item=new MenuItem{Header=tool.Name,Tag=tool,IsEnabled=Current()&&tool.CanActivate(),
                         ToolTip=tool.ToolTip,Opacity=tool.IsAvailable?1:.45,Icon=ToolMenuIcon(tool.IconSource,true)};
                     ToolTipService.SetShowOnDisabled(item,true);
                     item.Click+=(_,e)=>{
-                        e.Handled=true;if(!Current()||!tool.IsAvailable)return;
+                        e.Handled=true;if(!Current()||!tool.CanActivate())return;
                         AddVmContextTool(tab,tool,location);
                     };
                     category.Items.Add(item);

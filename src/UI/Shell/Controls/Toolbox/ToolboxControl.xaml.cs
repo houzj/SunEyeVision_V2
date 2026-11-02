@@ -69,7 +69,7 @@ public partial class ToolboxControl : UserControl
         return p.X>=0&&p.Y>=0&&p.X<=element.ActualWidth&&p.Y<=element.ActualHeight;
     }
     private void ToolDown(object sender,MouseButtonEventArgs e)
-    { if(sender is Border {Tag:ToolItem {IsAvailable:true} tool} border){_armed=border;_tool=tool;} }
+    { if(sender is Border {Tag:ToolItem {IsAvailable:true} tool} border && tool.CanActivate()){_armed=border;_tool=tool;} }
     private void ToolUp(object sender,MouseButtonEventArgs e){_armed=null;_tool=null;}
     private void ToolLostCapture(object sender,MouseEventArgs e){if(!_dragging){_armed=null;_tool=null;}}
     private void ToolMove(object sender,MouseEventArgs e)
@@ -77,7 +77,7 @@ public partial class ToolboxControl : UserControl
         if(_dragging||_armed==null||_tool==null)return;
         if(!ReferenceEquals(sender,_armed)){_armed=null;_tool=null;return;}
         var source=_armed;var tool=_tool;_armed=null;_tool=null;
-        if(!tool.IsAvailable||e.LeftButton!=MouseButtonState.Pressed)return;
+        if(!tool.CanActivate()||e.LeftButton!=MouseButtonState.Pressed)return;
         _dragging=true;
         try
         {

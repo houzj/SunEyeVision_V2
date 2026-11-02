@@ -1,106 +1,123 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 
-/// <summary>分类/条目只消费部署目录，类型装载由ToolRegistry使用入口负责。</summary>
+/// <summary>统一展示目录与当前准入状态；条目存在不意味着允许创建工具。</summary>
 public sealed class ToolboxViewModel : ViewModelBase
 {
     private readonly ToolDirectoryCatalog? _directory;
-    private bool _compact=true, _popup;
+    private readonly VmToolboxCatalog _catalog;
+    private readonly Func<string, ToolMetadata?> _resolve;
+    private readonly Func<string, bool> _hasRuntime;
+    private readonly Func<bool> _directoryCurrent;
+    private bool _compact = true, _popup;
     private string? _selected;
-    private string _status=string.Empty;
-    public string StatusMessage {get=>_status;private set=>SetProperty(ref _status,value);}
-    public ObservableCollection<ToolCategory> Categories {get;}=new();
-    // 显式全量探针按分类加载实际组件，仅显示当前产品实际准入项。
-    public ObservableCollection<ToolItem> AllTools => new(Categories.SelectMany(c=>BuildCategory(c.Name,true)));
-    public ObservableCollection<ToolItem> SelectedCategoryTools {get;}=new();
+    private string _status = string.Empty;
+    public string StatusMessage { get => _status; private set => SetProperty(ref _status, value); }
+    public ObservableCollection<ToolCategory> Categories { get; } = new();
+    public ObservableCollection<ToolItem> AllTools => new(Categories.SelectMany(c => BuildCategory(c.Name, true)));
+    public ObservableCollection<ToolItem> SelectedCategoryTools { get; } = new();
     public bool IsCompactMode
     {
-        get=>_compact;
-        set { if(SetProperty(ref _compact,value)) { ClosePopup(); OnPropertyChanged(nameof(PreferredWidth));
-            OnPropertyChanged(nameof(DisplayModeIcon)); OnPropertyChanged(nameof(DisplayModeTooltip)); } }
+        get => _compact;
+        set { if (SetProperty(ref _compact, value)) { ClosePopup(); OnPropertyChanged(nameof(PreferredWidth)); OnPropertyChanged(nameof(DisplayModeIcon)); OnPropertyChanged(nameof(DisplayModeTooltip)); } }
     }
-    public double PreferredWidth=>IsCompactMode?52:230;
-    public string DisplayModeIcon=>IsCompactMode?"»":"«";
-    public string DisplayModeTooltip=>IsCompactMode?"展开工具箱":"收起工具箱";
-    public bool IsCompactModePopupOpen {get=>_popup;set=>SetProperty(ref _popup,value);}
+    public double PreferredWidth => IsCompactMode ? 52 : 230;
+    public string DisplayModeIcon => IsCompactMode ? "»" : "«";
+    public string DisplayModeTooltip => IsCompactMode ? "展开工具箱" : "收起工具箱";
+    public bool IsCompactModePopupOpen { get => _popup; set => SetProperty(ref _popup, value); }
     public string? SelectedCategory
     {
-        get=>_selected;
+        get => _selected;
         set
         {
-            if(!SetProperty(ref _selected,value))return;
+            if (!SetProperty(ref _selected, value) && value == null) return;
             SelectedCategoryTools.Clear();
-            var category=Categories.FirstOrDefault(c=>c.Name==value);
-            if(category!=null) { LoadCategory(category); foreach(var t in category.Tools??new ObservableCollection<ToolItem>())SelectedCategoryTools.Add(t); }
-            foreach(var c in Categories)c.IsSelected=c.Name==value;
-            IsCompactModePopupOpen=IsCompactMode&&category!=null;
+            var category = Categories.FirstOrDefault(c => c.Name == value);
+            if (category != null) LoadCategory(category);
+            foreach (var c in Categories) c.IsSelected = c.Name == value;
+            IsCompactModePopupOpen = IsCompactMode && category != null;
         }
     }
-    public ICommand ToggleDisplayModeCommand {get;}
+    public ICommand ToggleDisplayModeCommand { get; }
     public ToolboxViewModel() : this(ToolRegistry.DirectoryCatalog) { }
-    public ToolboxViewModel(ToolDirectoryCatalog? directory)
+    public ToolboxViewModel(ToolDirectoryCatalog? directory) : this(directory, ToolRegistry.GetToolMetadata, ToolRegistry.HasRuntime,
+        () => ReferenceEquals(directory, ToolRegistry.DirectoryCatalog)) { }
+    internal ToolboxViewModel(ToolDirectoryCatalog? directory, Func<string, ToolMetadata?> resolve, Func<string, bool> hasRuntime, Func<bool> directoryCurrent)
     {
-        _directory=directory;
-        ToggleDisplayModeCommand=new RelayCommand(()=>IsCompactMode=!IsCompactMode);
-        if(directory==null)return; // VS设计器没有部署目录，不扫描工程或启动插件。
-        foreach(var g in directory.Groups.Where(g=>directory.CountCategory(g.Name)>0))
+        _directory = directory;
+        _resolve = resolve ?? throw new ArgumentNullException(nameof(resolve));
+        _hasRuntime = hasRuntime ?? throw new ArgumentNullException(nameof(hasRuntime));
+        _directoryCurrent = directoryCurrent ?? throw new ArgumentNullException(nameof(directoryCurrent));
+        _catalog = VmToolboxCatalog.Load();
+        ToggleDisplayModeCommand = new RelayCommand(() => IsCompactMode = !IsCompactMode);
+        foreach (var g in _catalog.Groups)
         {
-            var c=new ToolCategory(g.Name,g.Icon,g.Name,0,false){HoverIcon=g.HoverIcon};
-            c.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(ToolCategory.IsExpanded)&&c.IsExpanded)LoadCategory(c);};
+            var c = new ToolCategory(g.Name, g.Icon, g.Name, 0, false) { HoverIcon = g.HoverIcon };
+            c.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ToolCategory.IsExpanded) && c.IsExpanded) LoadCategory(c); };
             Categories.Add(c);
+            c.ToolCount = BuildCategory(c.Name, false).Count();
         }
-        foreach(var c in Categories)c.ToolCount=BuildCategory(c.Name,false).Count();
     }
-    /// <summary>工具箱与画布右键共用分类加载及可用态，不另维护工具清单。</summary>
-    public System.Collections.Generic.IReadOnlyList<ToolItem> GetCategoryTools(string name)
+    public IReadOnlyList<ToolItem> GetCategoryTools(string name)
     {
-        var category=Categories.FirstOrDefault(c=>c.Name==name);
-        if(category==null)return Array.Empty<ToolItem>();
+        var category = Categories.FirstOrDefault(c => c.Name == name);
+        if (category == null) return Array.Empty<ToolItem>();
         LoadCategory(category);
-        return category.Tools?.ToArray()??Array.Empty<ToolItem>();
+        return category.Tools?.ToArray() ?? Array.Empty<ToolItem>();
     }
     private void LoadCategory(ToolCategory category)
     {
-        if(category.Tools!=null)return;
+        try { category.Tools = new ObservableCollection<ToolItem>(BuildCategory(category.Name, true)); StatusMessage = string.Empty; }
+        catch (Exception ex) { category.Tools = new(); StatusMessage = "分类读取失败：" + ex.Message; }
+        if (SelectedCategory == category.Name)
+        {
+            SelectedCategoryTools.Clear();
+            foreach (var item in category.Tools) SelectedCategoryTools.Add(item);
+        }
+    }
+    private IEnumerable<ToolItem> BuildCategory(string name, bool load)
+    {
+        var verified = _catalog.Entries.Where(e => e.MappingVerified && e.ToolId != null).Select(e => e.ToolId!).ToHashSet(StringComparer.Ordinal);
+        foreach (var entry in _catalog.Entries.Where(e => e.Category == name))
+        {
+            var id = entry.ToolId ?? "vm:" + entry.Id;
+            var runtime = entry.MappingVerified && entry.ToolId != null ? _directory?.Find(entry.ToolId) : null;
+            var error = !entry.MappingVerified ? (entry.ToolId == null ? "尚未实现" : "工具映射尚未核实") :
+                _directory == null ? "运行目录不可用" : runtime == null ? "工具未部署或未准入" :
+                runtime.Category != entry.Category ? "部署分类与已核实映射不一致" : null;
+            if (error == null && load) error = CheckRuntime(runtime!);
+            yield return new ToolItem(entry.Name, entry.Category, "generic", entry.Name, id)
+            { CatalogIcon = entry.Icon, IsAvailable = load && error == null, LoadError = error ?? (load ? null : "等待加载"),
+              AvailabilityProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null : null };
+        }
+        if (_directory == null) yield break;
+        foreach (var runtime in _directory.GetCategory(name).Where(t => !verified.Contains(t.Id)))
+        {
+            var error = load ? CheckRuntime(runtime) : "等待加载";
+            yield return new ToolItem(runtime.DisplayName + "（已部署，未匹配目录）", runtime.Category, runtime.Icon, runtime.Description, runtime.Id)
+            { IsAvailable = load && error == null, LoadError = error,
+              AvailabilityProbe = error == null ? () => CheckRuntime(runtime) == null : null };
+        }
+    }
+    private string? CheckRuntime(DirectoryTool runtime)
+    {
         try
         {
-            category.Tools=new ObservableCollection<ToolItem>(BuildCategory(category.Name,true));
-            StatusMessage=string.Empty;
+            if (!_directoryCurrent() || !ReferenceEquals(_directory?.Find(runtime.Id), runtime)) return "运行目录已变化，请重新打开工具箱";
+            var metadata = _resolve(runtime.Id);
+            if (!_hasRuntime(runtime.Id)) return "工具运行组件未准入";
+            return metadata == null || metadata.Id != runtime.Id || metadata.Category != runtime.Category ? "工具未成功注册" : null;
         }
-        catch(Exception ex)
-        {
-            StatusMessage="分类读取失败："+ex.Message;
-            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,StatusMessage,"Toolbox",ex);
-        }
+        catch (Exception error) { return "工具加载失败：" + error.Message; }
     }
-    private System.Collections.Generic.IEnumerable<ToolItem> BuildCategory(string name,bool load)
-    {
-        foreach(var declaration in _directory?.GetCategory(name) ?? Array.Empty<DirectoryTool>())
-            yield return load ? LoadItem(declaration) : ToItem(declaration);
-    }
-    private static ToolItem LoadItem(DirectoryTool declaration)
-    {
-        try
-        {
-            var metadata=ToolRegistry.GetToolMetadata(declaration.Id);
-            if(metadata==null)throw new InvalidOperationException("工具未成功注册");
-            return ToItem(declaration);
-        }
-        catch(Exception error)
-        {
-            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,"工具加载失败："+declaration.Id,"Toolbox",error);
-            return new ToolItem(declaration.DisplayName,declaration.Category,declaration.Icon,declaration.Description,declaration.Id)
-            {IsAvailable=false,LoadError=error.Message};
-        }
-    }
-    private static ToolItem ToItem(DirectoryTool t)=>new(t.DisplayName,t.Category,t.Icon,t.Description,t.Id);
-    public void ClosePopup(){IsCompactModePopupOpen=false;SelectedCategory=null;}
+    public void ClosePopup() { IsCompactModePopupOpen = false; SelectedCategory = null; }
 }

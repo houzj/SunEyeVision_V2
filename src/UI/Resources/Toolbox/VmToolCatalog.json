@@ -6,7 +6,8 @@
         "Id": "ImageSourceModule",
         "Name": "图像源",
         "Icon": "ImageSourceModuleImageEnable.png",
-        "ToolId": "ImageLoad"
+        "ToolId": "ImageLoad",
+        "MappingVerified": true
       },
       {
         "Id": "ImageAcquisitionModule",
@@ -77,7 +78,8 @@
         "Id": "IMVSBlobFindModu",
         "Name": "Blob分析",
         "Icon": "IMVSBlobFindModuImageEnable.png",
-        "ToolId": "BlobAnalysis"
+        "ToolId": "BlobAnalysis",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSBlobFindLabelsModu",

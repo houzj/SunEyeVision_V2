@@ -41,7 +41,7 @@
    <ScrollViewer x:Name="Compact" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <ScrollViewer.Style><Style TargetType="ScrollViewer"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
     <ItemsControl ItemsSource="{Binding Categories}"><ItemsControl.ItemTemplate><DataTemplate>
-     <Border Style="{StaticResource Category}" Tag="{Binding}" ToolTip="{Binding ToolTip}" IsEnabled="{Binding IsAvailable}" ToolTipService.ShowOnDisabled="True" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
+     <Border Style="{StaticResource Category}" Tag="{Binding}" ToolTip="{Binding Name}" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
       <Image Source="{Binding IconSource}" Width="52" Height="50" Stretch="Uniform"/>
      </Border>
     </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>

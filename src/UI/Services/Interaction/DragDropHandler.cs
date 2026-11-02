@@ -126,7 +126,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true})
+            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true} active && active.CanActivate())
             {
                 e.Effects = DragDropEffects.Copy;
 
@@ -149,7 +149,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true})
+            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true} active && active.CanActivate())
             {
                 e.Effects = DragDropEffects.Copy;
 
@@ -212,7 +212,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 LogTimestamp("Drop", $"GetData(\"ToolItem\") 类型: {toolItemData?.GetType().Name ?? "null"}");
 #endif
 
-                if (toolItemData is not ToolItem {IsAvailable:true} item)
+                if (toolItemData is not ToolItem {IsAvailable:true} item || !item.CanActivate())
                 {
 #if DEBUG
                     LogTimestamp("Drop", "✗ 数据不是 ToolItem 类型");

@@ -39,7 +39,7 @@ public sealed class NativeUiConditionalFields : Decorator,IDisposable,IParameter
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)Switch).PrepareForVisibility(visible),()=>((IParameterVisibility)Dependent).PrepareForVisibility(visible&&Dependent.Visibility==Visibility.Visible)});}
     public void RetireInteractions()
-    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
+    {if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),()=>{if(!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});}
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;Switch.Changed-=Project;Dependent.Changed-=OnChanged;

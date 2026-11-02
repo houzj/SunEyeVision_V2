@@ -22,7 +22,7 @@ public sealed class NativeJudgmentUiDraftControls : StackPanel,IDisposable,IPara
     public bool HasPendingEdits=>!_disposed&&(_zero.HasPendingEdits||_ranges.Any(range=>range.HasPendingEdits));
     public bool HasInvalidInput=>!_disposed&&(_zero.HasInvalidText||_ranges.Any(range=>range.HasInvalidInput));
     public void RetireInteractions()
-    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
+    {if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),()=>{if(!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});}
     public bool HasUiChanges=>!_disposed&&(_zero.Setting is not ConstantSetting{Value:false}||_zero.HasPendingEdits||_ranges.Any(range=>range.HasChanges));
     public NativeJudgmentUiDraftControls()
     {

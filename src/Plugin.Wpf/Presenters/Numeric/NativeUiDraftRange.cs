@@ -47,7 +47,7 @@ public sealed class NativeUiDraftRange : Decorator,IDisposable,IParameterVisibil
     public bool HasPendingEdits=>!_disposed&&(_toggle.HasPendingEdits||_range.HasPendingEdits(0)||_range.HasPendingEdits(1));
     public bool HasInvalidInput=>!_disposed&&(_toggle.HasInvalidText||_lower.HasInvalidInput||_upper.HasInvalidInput);
     public void RetireInteractions()
-    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
+    {if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),()=>{if(!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});}
     public bool HasChanges=>!_disposed&&(_range.HasPendingEdits(0)||_range.HasPendingEdits(1)
         ||_lower.HasInvalidInput||_upper.HasInvalidInput||_lower.IsReferenceMode||_upper.IsReferenceMode
         ||!DeclaredFieldState.SameSetting(_toggle.Setting,_initialToggle)

@@ -31,7 +31,7 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable,IParameter
     public bool HasPendingEdits=>!_disposed&&(_fieldBaseline.Keys.Any(editor=>editor.HasPendingEdits)||_contents.OfType<NativeGraphicStylePresenter>().Any(view=>_baseline.Keys.Any(state=>view.HasPendingEdits(state.Port.Id))));
     public bool HasInvalidInput=>!_disposed&&(_states.Any(state=>state.HasInvalidInput)||_fieldBaseline.Keys.Any(editor=>editor.HasInvalidText));
     public void RetireInteractions()
-    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
+    {if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),()=>{if(!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});}
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {ParameterCleanup.Run(_contents.OfType<IParameterVisibility>().Select(view=>(Action)(()=>view.PrepareForVisibility(visible&&(view as FrameworkElement)?.Visibility==Visibility.Visible))).Concat(_contents.OfType<NativeColorPresenter>().Select(color=>(Action)(()=>{if(!visible)color.ClosePalette();}))));}
     private void OnRawChanged(object sender,TextChangedEventArgs args)=>OnUiChanged();

@@ -1,5 +1,5 @@
-﻿using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 
 public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 {
@@ -52,9 +52,9 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(SliderArrangeBase), new PropertyMetadata(false));
 
-	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_normal.png"));
+	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Arranged/combo_ic_top_normal.png"));
 
-	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png"));
+	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Arranged/combo_ic_top_click.png"));
 
 	public static readonly DependencyProperty TBorderBrushProperty = DependencyProperty.Register("TBorderBrush", typeof(Brush), typeof(SliderArrangeBase), new PropertyMetadata((Brush)new BrushConverter().ConvertFromString("#CCCCCC")));
 

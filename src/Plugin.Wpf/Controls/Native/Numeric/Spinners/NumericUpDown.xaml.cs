@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 
 public partial class NumericUpDown : UserControl, IComponentConnector
 {

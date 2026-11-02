@@ -275,9 +275,9 @@ internal static class S2DocumentEditingCases
         {
             window.Show();window.UpdateLayout();Pump();
             var text=(TextBox)field.InputElement!;
-            var native=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(field).Single();
+            var native=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange>(field).Single();
             var box=(ComboBox)native.FindName("CBox");
-            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);
             var up=(System.Windows.Controls.Primitives.RepeatButton)leaf.FindName("UpButton");
             var down=(System.Windows.Controls.Primitives.RepeatButton)leaf.FindName("DownButton");
             Check(text.Text=="10"&&writes.Count==0&&native.Minimum==0&&native.Maximum==100&&native.SliderTickFrequency==5,
@@ -334,9 +334,9 @@ internal static class S2DocumentEditingCases
         {
             window.Show();window.UpdateLayout();Pump();
             var text=(TextBox)field.InputElement!;
-            var native=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+            var native=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat>(field).Single();
             var box=(ComboBox)native.FindName("CBox");
-            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);
             var up=(System.Windows.Controls.Primitives.RepeatButton)leaf.FindName("UpButton");
             var down=(System.Windows.Controls.Primitives.RepeatButton)leaf.FindName("DownButton");
             Check(text.Text=="0.25"&&writes.Count==0&&native.DecimalDigits==2&&native.SliderTickFrequency==0.05,
@@ -560,7 +560,7 @@ internal static class S2DocumentEditingCases
             {
                 var view=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsView{DataContext=data};
                 Render(view,"native-crosshair-direct-config.png",380,380);
-                Check(Application.Current is null&&data.CrossDatas.Count==2&&Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(view).Count()==6,"辅助线配置视图本身无宿主独立创建完整原控件");
+                Check(Application.Current is null&&data.CrossDatas.Count==2&&Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange>(view).Count()==6,"辅助线配置视图本身无宿主独立创建完整原控件");
                 Check(CrosshairNumbers(view).SequenceEqual(data.CrossDatas.SelectMany(model=>new[]{Math.Round(model.CenterX),Math.Round(model.CenterY),model.StrokeThickness})),"配置视图未Loaded也显示真实数值而非短横占位");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairPreview())
@@ -568,7 +568,7 @@ internal static class S2DocumentEditingCases
                 Render(entry,"native-crosshair-xaml-entry.png",1040,430);
                 var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample>(entry).Single();
                 Check(Application.Current is null&&sample.Crosshairs.CrossDatas.Count==2,"辅助线真实XAML无Application创建同一两模型");
-                Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(entry).Count()==6
+                Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange>(entry).Count()==6
                     &&Descendants<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView>(entry).Count()==2,"辅助线设计时完整原六数值与两色板");
                 Check(CrosshairNumbers(entry).SequenceEqual(sample.Crosshairs.CrossDatas.SelectMany(model=>new[]{Math.Round(model.CenterX),Math.Round(model.CenterY),model.StrokeThickness})),"辅助线设计原数值模板已初始化并显示两模型");
                 sample.Crosshairs.CrossDatas[0].CenterPoint=new Point(100,90);Render(entry,"native-crosshair-design-edited.png",1040,430);
@@ -644,7 +644,7 @@ internal static class S2DocumentEditingCases
                 Render(entry,"native-four-way-constant-xaml-entry.png",1020,1100);
                 Check(Application.Current is null&&!text.IsReadOnly&&ReferenceEquals(text,Descendants<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(width.View).Single())
                     &&ReferenceEquals(popup,Descendants<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(width.View).Single(item=>item.Name=="rt"))
-                    &&!Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(width.View).Any()
+                    &&!Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat>(width.View).Any()
                     &&other.All(item=>Equals(sample.Fields.Fields.Single(field=>field.FieldId==item.Key).Setting,item.Value)),"设计同槽切常量保原文本弹层实例及其余四分量来源");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
@@ -1066,10 +1066,10 @@ internal static class S2DocumentEditingCases
     }
     private static IEnumerable<double> CrosshairNumbers(DependencyObject root)
     {
-        foreach(var field in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(root))
+        foreach(var field in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange>(root))
         {
             var box=(ComboBox)field.FindName("CBox");
-            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);
             var text=(TextBox)leaf.FindName("ValueText");
             yield return double.Parse(text.Text,CultureInfo.InvariantCulture);
         }

@@ -293,10 +293,10 @@ internal static class S2DocumentEditingCases
  }
  static void NativeScalarTemplate()
  {
-  var original=new Native.Numeric.HikPcUI.ListView.SliderArrangeFloat
+  var original=new Native.Numeric.Arranged.SliderArrangeFloat
       {Minimum=0,Maximum=1,SliderTickFrequency=.01,StartValue=.5,DecimalDigits=2};
   Show(original);Pump();
-  var numeric=Visuals<Native.Numeric.HikPcUI.ListView.NumericControl>(original).First(control=>control.IsVisible);
+  var numeric=Visuals<Native.Numeric.Arranged.NumericControl>(original).First(control=>control.IsVisible);
   var text=(TextBox)numeric.FindName("ValueText");
   Require(double.Parse(text.Text,CultureInfo.InvariantCulture)==.5,"原浮点模板未显示绑定值");
   original.StartValue=.37;Pump();
@@ -342,11 +342,11 @@ internal static class S2DocumentEditingCases
   var coordinator=Get(Get(field,"_numeric"),"_coordinator");var commit=Get(coordinator,"_commit");
   return "active="+Get(coordinator,"_active")+",sync="+Get(coordinator,"_syncing")+",deferred="+Get(coordinator,"_acceptedProjectionPending")+",suspended="+Get(commit,"_suspended")+",dirty="+Get(commit,"_dirty")+",rawVersion="+Get(commit,"_rawAcceptance")+",pending="+Get(commit,"_pendingRaw")+",current="+((TextBox)field.InputElement!).Text;
  }
- static Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
+ static Native.Numeric.Arranged.NumericControl OriginalNumberInput(DependencyObject field)
  {
-  var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
+  var original=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field).Single();
   var box=(ComboBox)original.FindName("CBox");box.ApplyTemplate();
-  return (Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+  return (Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);
  }
  static void CaptureInline(FrameworkElement view,string name)
  {
@@ -1055,8 +1055,8 @@ internal static class S2DocumentEditingCases
    using var fields=Create(values=>{writes++;accepted=values;writeFields.Add(values.Keys.ToArray());});Show(fields);
    var low=fields.Fields[0];var high=fields.Fields[1];
    Require(ReferenceEquals(low.View,high.View)&&!ReferenceEquals(low.InputElement,high.InputElement),"双端未共享一份真实组合或端点混用");
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
-   Require(native.SliderType==Native.Numeric.HikPcUI.ListView.SliderArrangeType.between&&native.IsVisibleOfChild==Visibility.Visible,"没有使用原between");
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(low.View).Single();
+   Require(native.SliderType==Native.Numeric.Arranged.SliderArrangeType.between&&native.IsVisibleOfChild==Visibility.Visible,"没有使用原between");
    var a=(TextBox)low.InputElement!;var b=(TextBox)high.InputElement!;a.Focus();a.Text="30";b.Text="40";
    Require(writes==0,"键入提前写入宿主");Require(fields.TryValidate(out var rangeError),rangeError);
    Require(writes==1&&accepted!.Count==2&&Equals(((ConstantSetting)accepted["low"]).Value,30d)&&Equals(((ConstantSetting)high.Setting).Value,40d),"最终捕获未单次完整接纳");
@@ -1100,7 +1100,7 @@ internal static class S2DocumentEditingCases
     var source=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",DataType.Number),Array.Empty<string>());
     var original=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
     using var fields=Create(values=>{writes++;accepted=values;},new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),lowSetting:endpoint==0?original:null,highSetting:endpoint==1?original:null);
-    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
+    Show(fields);var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
     var path=endpoint==0?"IsSubscribeLeft":"IsSubscribeRight";
     var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==path);
     Require(toggle.IsChecked==true&&writes==0,"初始引用状态未投影");toggle.IsChecked=false;Click(toggle);Pump();
@@ -1126,7 +1126,7 @@ internal static class S2DocumentEditingCases
      (new Port("low",type,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("low","下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:100,DecimalPlaces:0)},endpoint==0?(ParameterSetting)original:new ConstantSetting(Low())),
      (new Port("high",type,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("high","上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:100,DecimalPlaces:0)},endpoint==1?(ParameterSetting)original:new ConstantSetting(High()))},
      _=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())));
-    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
+    Show(fields);var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[endpoint].View).Single();
     var path=endpoint==0?"IsSubscribeLeft":"IsSubscribeRight";
     var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==path);
     toggle.IsChecked=false;Click(toggle);Pump();
@@ -1151,7 +1151,7 @@ internal static class S2DocumentEditingCases
     var original=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;
     using var fields=Create(_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),lowSetting:original);
     Show(fields);var field=fields.Fields[0];var input=(TextBox)field.InputElement!;
-    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Single();
+    var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field.View).Single();
     var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
     var state=((Array)field.View.GetType().GetField("_states",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!).GetValue(0)!;
     var fired=false;Action observer=()=>{if(fired||toggle.IsChecked!=false||(bool)state.GetType().GetProperty("IsReferenceMode")!.GetValue(state)!)return;fired=true;if(accept)Require(field.TrySetConstant(12d),"回调的新常量未接纳");else{input.SetCurrentValue(TextBox.TextProperty,"13");Require(input.Text=="13","回调未产生新原文");}};
@@ -1173,7 +1173,7 @@ internal static class S2DocumentEditingCases
    Require(writes==0&&a.IsKeyboardFocused&&a.Text=="30"&&b.Text=="bad","非法另一端仍提交或清原文/焦点");
    b.Text="40";Require(!fields.TryValidate(out _),"拒绝宿主时最终捕获被接纳");
    Require(writes==0&&a.Text=="30"&&b.Text=="40"&&Equals(((ConstantSetting)fields.Fields[0].Setting).Value,10d),"宿主拒绝丢原文或部分写入");
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[0].View).Single();
    Require(native.StartValue==10&&native.EndValue==20,"拒绝未恢复原DP");
    reject=false;Require(fields.TryValidate(out _)&&writes==1&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,40d),"拒绝后原文无法再次提交");
   });
@@ -1183,7 +1183,7 @@ internal static class S2DocumentEditingCases
    var candidate=new DeclaredReferenceCandidate("数值来源","source",null,new Port("values",TypeRef.SequenceOf(DataType.Number)),Array.Empty<string>());
    using var fields=Create(_=>writes++,new ReferenceFieldOptions(_=>{if(refreshFails)throw new InvalidOperationException("来源刷新失败");return new(new[]{candidate},Array.Empty<DeclaredReferenceCandidate>());},EditableIndex:true));
    Show(fields);var a=(TextBox)fields.Fields[0].InputElement!;
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[0].View).Single();
    var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeRight");
    toggle.IsChecked=true;Click(toggle);Pump();Require(native.IsSubscribeRight&&!native.IsSubscribeLeft,"右端错误使用左订阅槽");
    var session=native.SubscribeDataRight!;var type=session.GetType();
@@ -1213,7 +1213,7 @@ internal static class S2DocumentEditingCases
     var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
     var candidate=new DeclaredReferenceCandidate("数值来源","source",null,new Port("value",DataType.Number),Array.Empty<string>());
     using var fields=Create(values=>{writes++;accepted=values;},new ReferenceFieldOptions(_=>new(new[]{candidate},Array.Empty<DeclaredReferenceCandidate>())));
-    Show(fields);var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+    Show(fields);var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[0].View).Single();
     ToggleButton Toggle(int i)=>Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path==(i==0?"IsSubscribeLeft":"IsSubscribeRight"));
     var firstToggle=Toggle(first);firstToggle.IsChecked=true;Click(firstToggle);Pump();
     var otherToggle=Toggle(1-first);otherToggle.IsChecked=true;Click(otherToggle);Pump();
@@ -1238,7 +1238,7 @@ internal static class S2DocumentEditingCases
    using var independent=new DeclaredFieldsView(new[]{
     (new Port("a",DataType.Number),new FieldPresentation("a","a","g",0,FieldEditorKind.Scalar){Layout=new("p","s",PairWith:"b",Minimum:0,Maximum:10)},(ParameterSetting)new ConstantSetting(5d)),
     (new Port("b",DataType.Number,Storage:NumericStorage.Float64),new FieldPresentation("b","b","g",1,FieldEditorKind.Scalar){Layout=new("p","s",Minimum:20,Maximum:100)},(ParameterSetting)new ConstantSetting(60d))},_=>writes++);
-   Show(independent);Pump();var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(independent.Fields[0].View).Single();
+   Show(independent);Pump();var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(independent.Fields[0].View).Single();
    Require(independent.TryValidate(out _)&&writes==1&&native.EndValue==60,"独立端点边界被错拒或旧异步夹紧覆盖当前值");
   });
   Test("稳定Track四向极大域和原Thumb真实拖动保持有限映射",()=>
@@ -1253,7 +1253,7 @@ internal static class S2DocumentEditingCases
     Require(double.IsFinite(track.ValueFromDistance(10000,10000)),"超界拖动返回无穷");
    }
    var writes=0;using var fields=Create(_=>writes++,maximum:double.MaxValue);Show(fields);
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(fields.Fields[0].View).Single();
    Require(fields.Fields[1].TrySetConstant(double.MaxValue),"极大上限未接纳");writes=0;
    var combo=(ComboBox)native.FindName("CBox");combo.IsDropDownOpen=true;Pump();
    var popup=(Popup)combo.Template.FindName("PART_Popup",combo);var slider=Visuals<Slider>(popup.Child).Single(item=>item.Name=="SL_Bat1");slider.ApplyTemplate();
@@ -1388,7 +1388,7 @@ internal static class S2DocumentEditingCases
    new("expanded",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数量",
    new ReferenceSetting(sequence.Reference(BindingSelection.All)),write,new ReferenceFieldOptions(_=>new(new[]{sequence,alternate},new[]{index}),EditableIndex:true,Expand:expand,WindowOwner:windowOwner),
    new ConstantSetting(7L),presentation:presentation);
-  object Session(DeclaredFieldEditor field)=>Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single().SubscribeDataLeft!;
+  object Session(DeclaredFieldEditor field)=>Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field).Single().SubscribeDataLeft!;
   void Command(object session,string name,object? argument=null)=>((ICommand)session.GetType().GetProperty(name)!.GetValue(session)!).Execute(argument);
   object Leaf(System.Collections.IEnumerable roots)=>roots.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).First();
   Test("原扩展订阅窗实际Owner、原树选择、跟随与关闭释放",()=>
@@ -2763,7 +2763,7 @@ internal static class S2DocumentEditingCases
     Show(fields);Advanced(fields,0).IsExpanded=true;Pump();
     var value=fields.Fields.Single(field=>field.FieldId=="a.value");var lower=fields.Fields.Single(field=>field.FieldId=="a.low");var upper=fields.Fields.Single(field=>field.FieldId=="a.high");
     var text=(TextBox)value.InputElement!;var low=(TextBox)lower.InputElement!;var high=(TextBox)upper.InputElement!;
-    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(value.View).Single();var box=(ComboBox)native.FindName("CBox");
+    var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(value.View).Single();var box=(ComboBox)native.FindName("CBox");
     text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";low.Text="17";high.Text="23";
     fields.SelectedPageIndex=1;Pump();
     Require(!box.IsDropDownOpen&&writes==0&&attempts==0&&value.Setting is ConstantSetting{Value:35d}&&lower.Setting is ConstantSetting{Value:10L}&&upper.Setting is ConstantSetting{Value:20L},"切页接纳原文、半写双端或未关闭滑条");
@@ -2781,7 +2781,7 @@ internal static class S2DocumentEditingCases
    {
     Show(fields);Advanced(fields,0).IsExpanded=true;Pump();var access=fields.Fields.Single(field=>field.FieldId=="a.value");
     var identity=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
-    var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;
+    var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;
     ((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
     var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=((ReferenceWindowOwner)window.DataContext).CurrentRequest!;
     Require(window.IsVisible&&request.IsValid,"扩展引用窗口未实际打开");fields.SelectedPageIndex=1;Pump();
@@ -2817,7 +2817,7 @@ internal static class S2DocumentEditingCases
   Test("原高级收起保留浮点原文并关闭滑条，不接纳或改精度",()=>
   {
    var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
-   var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var box=(ComboBox)original.FindName("CBox");
+   var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;var original=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(access.View).Single();var box=(ComboBox)original.FindName("CBox");
    text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";Pump();var identity=access.View;Console.WriteLine("高级折叠前 writes="+writes+" raw="+text.Text+" value="+((ConstantSetting)access.Setting).Value+" popup="+box.IsDropDownOpen);
    advanced.IsExpanded=false;Pump();Require(!box.IsDropDownOpen&&writes==0&&access.Setting is ConstantSetting{Value:double accepted}&&accepted==35,"收起提交待编辑值或未关滑条 writes="+writes+" raw="+text.Text+" value="+((ConstantSetting)access.Setting).Value+" popup="+box.IsDropDownOpen);
    advanced.IsExpanded=true;Pump();Require(ReferenceEquals(access.View,identity)&&text.Text=="35.125"&&writes==0,"展开丢失高精度原文或重建编辑器");
@@ -2828,7 +2828,7 @@ internal static class S2DocumentEditingCases
   {
    var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
    var lower=fields.Fields.Single(field=>field.FieldId=="a.low");var upper=fields.Fields.Single(field=>field.FieldId=="a.high");var low=(TextBox)lower.InputElement!;var high=(TextBox)upper.InputElement!;
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(lower.View).Single();var box=(ComboBox)native.FindName("CBox");box.IsDropDownOpen=true;Pump();low.Focus();low.Text="17";high.Text="23";
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(lower.View).Single();var box=(ComboBox)native.FindName("CBox");box.IsDropDownOpen=true;Pump();low.Focus();low.Text="17";high.Text="23";
    advanced.IsExpanded=false;Pump();Require(!box.IsDropDownOpen&&writes==0&&lower.Setting is ConstantSetting{Value:10L}&&upper.Setting is ConstantSetting{Value:20L},"双端折叠发生写入或半写");
    advanced.IsExpanded=true;Pump();Require(low.Text=="17"&&high.Text=="23"&&writes==0,"双端折叠丢原文");Show(new TextBlock());
   });
@@ -2837,7 +2837,7 @@ internal static class S2DocumentEditingCases
    var source=new DeclaredReferenceCandidate("浮点来源","source",null,new Port("float",DataType.Number),Array.Empty<string>());var initial=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;
    using var fields=AdvancedFields(_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),initial);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
    var access=fields.Fields.Single(field=>field.FieldId=="a.value");var before=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
    var window=owner.OwnedWindows.Cast<Window>().OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single();var request=((ReferenceWindowOwner)window.DataContext).CurrentRequest!;
    advanced.IsExpanded=false;Pump();Require(window.IsVisible&&window.DataContext is ReferenceWindowOwner {IsExpanded:true,CurrentRequest:null}&&!request.IsValid&&writes==0&&before==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference),"字段折叠未保持空Root窗、退役目标或改变了引用");
    advanced.IsExpanded=true;Pump();Require(access.Setting is ReferenceSetting&&writes==0,"展开恢复成其他模式");Show(new TextBlock());Require(!window.IsVisible,"整个Root卸载未关闭空窗");
@@ -2852,7 +2852,7 @@ internal static class S2DocumentEditingCases
   Test("原高级关层状态观察者异常仍隐藏全部目标并保原文",()=>
   {
    var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;
-   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var box=(ComboBox)native.FindName("CBox");text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";
+   var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(access.View).Single();var box=(ComboBox)native.FindName("CBox");text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";
    var popup=(Popup)box.Template.FindName("PART_Popup",box);Require(popup.IsOpen,"实际滑条弹层未打开，不能测试关层异常");var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(ComboBox.IsDropDownOpenProperty,box.GetType());var invoked=false;EventHandler handler=(_,_)=>{if(!box.IsDropDownOpen){invoked=true;throw new InvalidOperationException("测试关层状态异常");}};descriptor.AddValueChanged(box,handler);
    var reported=false;try{advanced.IsExpanded=false;}catch(Exception){reported=true;}finally{descriptor.RemoveValueChanged(box,handler);}Pump();
    Require(invoked&&reported&&!box.IsDropDownOpen&&!popup.IsOpen&&access.View.Visibility==Visibility.Collapsed&&fields.Fields.Single(field=>field.FieldId=="a.low").View.Visibility==Visibility.Collapsed&&writes==0,"关层异常截断显隐或吞异常 invoked="+invoked+" reported="+reported+" popup="+box.IsDropDownOpen+" valueVisibility="+access.View.Visibility+" rangeVisibility="+fields.Fields.Single(field=>field.FieldId=="a.low").View.Visibility+" writes="+writes+" raw="+text.Text);
@@ -3026,7 +3026,7 @@ internal static class S2DocumentEditingCases
     {
      var field=Field(sample,port.Id);seen.Add(port.Id);
      Require(Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Any(popup=>popup.Name=="rt"),"未消费原订阅槽："+port.Id);
-     Require(!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Any(),"Assist错误生成滑条："+port.Id);
+     Require(!Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field.View).Any(),"Assist错误生成滑条："+port.Id);
      var y=field.View.TransformToAncestor(sample).Transform(new Point()).Y;
      Require(y>previous,"原角色行序或布局重叠："+port.Id);previous=y;
     }
@@ -4135,7 +4135,7 @@ internal static class S2DocumentEditingCases
    using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);
    var one=layer.CrossDatas[0];var two=layer.CrossDatas[1];var window=layer.OpenSettings(owner);Pump();
    Require(window.Owner==owner&&window.IsVisible&&one.IsVisible&&!two.IsVisible&&one.NeedsInitialization&&two.NeedsInitialization,"无图首开状态或非模态owner不符");
-   Require(Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).Count()==6&&Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).Count()==2,"原窗口未完整组装两条线");
+   Require(Visuals<Native.Numeric.Arranged.SliderArrange>(window).Count()==6&&Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).Count()==2,"原窗口未完整组装两条线");
    var label=Visuals<TextBlock>(window).First(text=>text.Text=="坐标X");Require(((SolidColorBrush)label.Foreground).Color==((SolidColorBrush)label.FindResource("ParamsTabForeground")).Color,"宿主样式污染原标签前景");
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(101,81,new byte[101*81]);Require(viewport.BindImage(image,()=>true),"图像拒绝");Pump();
    Require(!window.IsVisible&&(one.CenterPoint-new Point(40.4,32.4)).Length<1e-9&&(two.CenterPoint-new Point(60.6,48.6)).Length<1e-9&&one.Stroke=="#FFF76900"&&two.Stroke=="#FFFFFF00"&&!one.NeedsInitialization,"有效尺寸未一次初始化或旧窗未关闭");
@@ -4152,17 +4152,17 @@ internal static class S2DocumentEditingCases
   Test("c17-window 数值Enter失焦原色板双向绑定与关闭重开保留",()=>
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();
-   var controls=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).ToArray();var box=(ComboBox)controls[0].FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");text.Focus();text.Text="123.25";SendKey(text,Key.Enter,true);Pump();
-   Require(layer.CrossDatas[0].CenterX==123&&!text.IsKeyboardFocusWithin&&controls[0].GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)?.Status==BindingStatus.Active,"Enter未按原整数控件取整/回写/失焦或丢绑定");text.Focus();text.Text="bad";SendKey(text,Key.Enter,true);Require(layer.CrossDatas[0].CenterX==123&&text.Text=="bad"&&text.IsKeyboardFocusWithin,"非法原文未保留拒绝");text.Text="124.5";SendKey(text,Key.Enter,true);Pump();
+   var controls=Visuals<Native.Numeric.Arranged.SliderArrange>(window).ToArray();var box=(ComboBox)controls[0].FindName("CBox");var leaf=(Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");text.Focus();text.Text="123.25";SendKey(text,Key.Enter,true);Pump();
+   Require(layer.CrossDatas[0].CenterX==123&&!text.IsKeyboardFocusWithin&&controls[0].GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)?.Status==BindingStatus.Active,"Enter未按原整数控件取整/回写/失焦或丢绑定");text.Focus();text.Text="bad";SendKey(text,Key.Enter,true);Require(layer.CrossDatas[0].CenterX==123&&text.Text=="bad"&&text.IsKeyboardFocusWithin,"非法原文未保留拒绝");text.Text="124.5";SendKey(text,Key.Enter,true);Pump();
    var picker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).First();var binding=picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty);
    Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#7B123456",picker);Require(layer.CrossDatas[0].Stroke=="#7B123456"&&ReferenceEquals(binding,picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty)),"string/Brush回写或绑定失效");
    layer.CrossDatas[0].Stroke="#FF0000FF";Pump();Require(picker.CurrentColor.Color==Colors.Blue,"模型改色不回显");
    var capture=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);capture.Render(window);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(capture));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-crosshair-settings-window.png")))encoder.Save(file);
    window.Close();Pump();Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);
    Require(layer.CrossDatas[0].CenterX==124&&layer.CrossDatas[0].Stroke=="#FF0000FF","旧关闭色板写入模型或关闭回滚/未保原中点取整");var reopened=layer.OpenSettings(owner);Pump();Require(!ReferenceEquals(window,reopened)&&layer.CrossDatas[0].CenterX==124,"重开复用旧窗或重置");
-   var current=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(reopened).First();var original=current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty);layer.CrossDatas[0].CenterX=125.5;Pump();
-   Require(current.StartValue==126&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty))&&original?.Status==BindingStatus.Active,"模型推小数后取整替换原绑定");
-   var currentBox=(ComboBox)current.FindName("CBox");var currentLeaf=(Native.Numeric.HikPcUI.ListView.NumericControl)currentBox.Template.FindName("T1",currentBox);var currentText=(TextBox)currentLeaf.FindName("ValueText");currentText.Focus();currentText.Text="127.5";SendKey(currentText,Key.Enter,true);Pump();Require(layer.CrossDatas[0].CenterX==128&&!currentText.IsKeyboardFocusWithin&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)),"模型小数刷新后不能再次提交");reopened.Close();
+   var current=Visuals<Native.Numeric.Arranged.SliderArrange>(reopened).First();var original=current.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty);layer.CrossDatas[0].CenterX=125.5;Pump();
+   Require(current.StartValue==126&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty))&&original?.Status==BindingStatus.Active,"模型推小数后取整替换原绑定");
+   var currentBox=(ComboBox)current.FindName("CBox");var currentLeaf=(Native.Numeric.Arranged.NumericControl)currentBox.Template.FindName("T1",currentBox);var currentText=(TextBox)currentLeaf.FindName("ValueText");currentText.Focus();currentText.Text="127.5";SendKey(currentText,Key.Enter,true);Pump();Require(layer.CrossDatas[0].CenterX==128&&!currentText.IsKeyboardFocusWithin&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)),"模型小数刷新后不能再次提交");reopened.Close();
   });
   Test("c17-window 实际原十字拖动保持控件身份且同尺寸换帧退役",()=>
   {
@@ -4259,15 +4259,15 @@ internal static class S2DocumentEditingCases
   });
   Test("c17-window Enter中间绑定被接管立即停止旧提交",()=>
   {
-   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();var field=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).First();var box=(ComboBox)field.FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");var converter=new CrosshairCommitReentry();
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();var field=Visuals<Native.Numeric.Arranged.SliderArrange>(window).First();var box=(ComboBox)field.FindName("CBox");var leaf=(Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");var converter=new CrosshairCommitReentry();
    BindingOperations.SetBinding(text,TextBox.TextProperty,new Binding("Text"){Source=leaf,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit,Converter=converter});var before=layer.CrossDatas[0].CenterX;var fired=false;
-   converter.BeforeBack=()=>{fired=true;BindingOperations.SetBinding(leaf,Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty,new Binding("StartValue"){Source=field,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});};text.Focus();text.Text="199";SendKey(text,Key.Enter,true);
+   converter.BeforeBack=()=>{fired=true;BindingOperations.SetBinding(leaf,Native.Numeric.Arranged.NumericControl.TextProperty,new Binding("StartValue"){Source=field,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});};text.Focus();text.Text="199";SendKey(text,Key.Enter,true);
    Require(fired&&layer.CrossDatas[0].CenterX==before,"中间绑定替换后旧Enter仍写模型");window.Close();
   });
   Test("c17-window 原整数双端取整保绑定浮点不取整",()=>
   {
-   var source=new Border{Tag=125.5};var integer=new Native.Numeric.HikPcUI.ListView.SliderArrange{Minimum=0,Maximum=1000};BindingOperations.SetBinding(integer,Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,new Binding("Tag"){Source=source,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});var binding=integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty);Show(integer);Pump();Require(integer.EndValue==126&&binding?.Status==BindingStatus.Active,"原整数末端取整或绑定不符");source.Tag=128.5;Pump();Require(integer.EndValue==128&&ReferenceEquals(binding,integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty)),"原整数末端模型刷新断绑定");integer.SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,129.5);binding!.UpdateSource();Require((double)source.Tag==130,"末端取整后不能回写");
-   var floating=new Native.Numeric.HikPcUI.ListView.SliderArrangeFloat{Minimum=0,Maximum=1000,DecimalDigits=2,StartValue=125.5,EndValue=127.5};Show(floating);Pump();Require(floating.StartValue==125.5&&floating.EndValue==127.5,"浮点控件误取整");
+   var source=new Border{Tag=125.5};var integer=new Native.Numeric.Arranged.SliderArrange{Minimum=0,Maximum=1000};BindingOperations.SetBinding(integer,Native.Numeric.Arranged.SliderArrangeBase.EndValueProperty,new Binding("Tag"){Source=source,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});var binding=integer.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.EndValueProperty);Show(integer);Pump();Require(integer.EndValue==126&&binding?.Status==BindingStatus.Active,"原整数末端取整或绑定不符");source.Tag=128.5;Pump();Require(integer.EndValue==128&&ReferenceEquals(binding,integer.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.EndValueProperty)),"原整数末端模型刷新断绑定");integer.SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.EndValueProperty,129.5);binding!.UpdateSource();Require((double)source.Tag==130,"末端取整后不能回写");
+   var floating=new Native.Numeric.Arranged.SliderArrangeFloat{Minimum=0,Maximum=1000,DecimalDigits=2,StartValue=125.5,EndValue=127.5};Show(floating);Pump();Require(floating.StartValue==125.5&&floating.EndValue==127.5,"浮点控件误取整");
   });
  }
  static void VerifyCrossBindingLifetime()
@@ -4357,7 +4357,7 @@ internal static class S2DocumentEditingCases
   {
    Test("原数值内部文字不继承页面最小高度且完整落在边框内",()=>
    {
-    foreach(var leaf in new FrameworkElement[]{new Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl(),new Native.Numeric.HikPcUI.ListView.NumericControl(),new Native.Numeric.HikPcUI.Controls.NumericUpDown()})
+    foreach(var leaf in new FrameworkElement[]{new Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl(),new Native.Numeric.Arranged.NumericControl(),new Native.Numeric.Spinners.NumericUpDown()})
     {
      Show(leaf);Pump();
      var text=Visuals<TextBox>(leaf).Single();text.Text="320.13";Pump();
@@ -4417,7 +4417,7 @@ internal static class S2DocumentEditingCases
         {Layout=new("运行参数","参数",Minimum:0,Maximum:1,Increment:.01)};
     var field=new DeclaredFieldEditor(new("native-ratio",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),
         setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
-    Show(field);var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+    Show(field);var original=Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(field).Single();
     var text=(TextBox)field.InputElement!;text.Focus();Pump();
     var combo=(ComboBox)original.FindName("CBox");var popup=(Popup)combo.Template.FindName("PART_Popup",combo);
     Require(popup.IsOpen,"原浮点控件获得焦点未展开滑条");
@@ -4457,14 +4457,14 @@ internal static class S2DocumentEditingCases
     FieldPresentation Layout(bool allow)=>new("mode-count","数量","参数",0,FieldEditorKind.Scalar){Layout=new("运行参数","参数",Minimum:0,Maximum:255,AllowReference:allow)};
     using var field=new DeclaredFieldEditor(new("mode-count",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
         "数量",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,options,new ConstantSetting(7L),presentation:Layout(false));
-    Show(field);var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
+    Show(field);var original=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field).Single();
     var box=(ComboBox)original.FindName("CBox");
     var mode=Visuals<ToggleButton>(field).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
     mode.IsChecked=false;Click(mode);Pump();Require(!original.IsSubscribeLeft&&writes==1&&mode.Visibility==Visibility.Collapsed,"退出已有引用后仍允许新增订阅");
     mode.IsChecked=true;Click(mode);Require(!original.IsSubscribeLeft&&writes==1,"强制旧切换事件绕过禁止订阅");
     using var invalid=new DeclaredFieldEditor(new("mode-count",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
         "数量",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,options,new ConstantSetting(1000L),presentation:Layout(true));
-    Show(invalid);original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(invalid).Single();
+    Show(invalid);original=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(invalid).Single();
     mode=Visuals<ToggleButton>(invalid).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
     mode.IsChecked=false;Click(mode);Pump();Require(original.IsSubscribeLeft&&invalid.HasInvalidText&&writes==1,"越界backup先接纳后夹紧");
    });
@@ -4477,7 +4477,7 @@ internal static class S2DocumentEditingCases
     using var field=new DeclaredFieldEditor(new("reference-ratio",type,Storage:NumericStorage.Float64,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
         "比例",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,new SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),presentation:presentation);
     Show(field);Require(!field.HasInvalidText&&field.TryCommitPending()&&writes==0,"合法初始引用被隐藏数字越界污染");
-    var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+    var original=Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(field).Single();
     Require(original.IsSubscribeLeft,"初始引用没有显示原订阅槽");
    });
    Test("数值重入 解除订阅清空回调的新常量或引用不被旧尾部覆盖",()=>
@@ -4531,7 +4531,7 @@ internal static class S2DocumentEditingCases
     Show(field);var text=(TextBox)field.InputElement!;text.Text="bad";Show(new TextBlock());host.Children.Clear();host.Children.Add(field);owner.UpdateLayout();text=(TextBox)field.InputElement!;text.SetCurrentValue(TextBox.TextProperty,"detached");
     var state=field.GetType().GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field)!;var fired=false;
     TextChangedEventHandler replace=(_,_)=>{if(fired||text.Text!="bad")return;fired=true;state.GetType().GetMethod("EnterReferenceMode")!.Invoke(state,null);};text.TextChanged+=replace;
-    try{Pump();var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();Require(fired&&native.IsSubscribeLeft&&writes==0&&field.Setting is ConstantSetting{Value:.5}&&field.HasInvalidText,"未接纳的模式变化未同步原槽或提前写入");Require(field.TrySetConstant(7d)&&writes==1&&!native.IsSubscribeLeft&&!field.HasInvalidText,"模式重入后不能恢复实际常量");}
+    try{Pump();var native=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(field).Single();Require(fired&&native.IsSubscribeLeft&&writes==0&&field.Setting is ConstantSetting{Value:.5}&&field.HasInvalidText,"未接纳的模式变化未同步原槽或提前写入");Require(field.TrySetConstant(7d)&&writes==1&&!native.IsSubscribeLeft&&!field.HasInvalidText,"模式重入后不能恢复实际常量");}
     finally{text.TextChanged-=replace;Show(new TextBlock());}
    });
    Test("数值重入 恢复期间接纳版本ABA不复活旧非法原文",()=>
@@ -4566,7 +4566,7 @@ internal static class S2DocumentEditingCases
     {
      text.Text="1.234";Require(!field.TryCommitPending()&&fired&&writes==0&&value==.5&&text.Text=="1.23","ABA旧提案写入或恢复旧1.234");
      Require(field.TryCommitPending()&&value==1.23&&writes==1,"ABA后明确提交未单次接纳新原文");
-     Require(text.GetBindingExpression(TextBox.TextProperty)?.Status==BindingStatus.Active&&leaf.GetBindingExpression(Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty)?.Status==BindingStatus.Active,"ABA处理丢原两级绑定");
+     Require(text.GetBindingExpression(TextBox.TextProperty)?.Status==BindingStatus.Active&&leaf.GetBindingExpression(Native.Numeric.Arranged.NumericControl.TextProperty)?.Status==BindingStatus.Active,"ABA处理丢原两级绑定");
     }
     finally{text.TextChanged-=replace;Show(new TextBlock());}
    });
@@ -4602,7 +4602,7 @@ internal static class S2DocumentEditingCases
         setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
     Show(field);var text=(TextBox)field.InputElement!;
     var leaf=OriginalNumberInput(field);
-    var inner=BindingOperations.GetBinding(text,TextBox.TextProperty);var outer=BindingOperations.GetBinding(leaf,Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty);
+    var inner=BindingOperations.GetBinding(text,TextBox.TextProperty);var outer=BindingOperations.GetBinding(leaf,Native.Numeric.Arranged.NumericControl.TextProperty);
     Require(inner?.Mode==BindingMode.Default&&((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(text.GetType())).BindsTwoWayByDefault&&inner.UpdateSourceTrigger==UpdateSourceTrigger.LostFocus&&outer?.Mode==BindingMode.TwoWay&&outer.StringFormat=="0.00","没有保留两级原绑定/原浮点格式");
     text.Text="bad";Show(new TextBlock());Require(!field.TryCommitPending()&&value==.5&&writes==0,"卸载捕获丢失非法原文");
     Show(field);Require(((TextBox)field.InputElement!).Text=="bad"&&field.HasInvalidText,"重载未恢复非法原文");
@@ -4620,7 +4620,7 @@ internal static class S2DocumentEditingCases
     Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();text.Text="0.25";SendKey(text,Key.Enter,true);
     Require(value==2&&writes==0&&field.HasInvalidText&&text.IsKeyboardFocused&&text.Text=="0.25","越界Enter未拒绝并保留原文/焦点");
     text.Text="2";SendKey(text,Key.Enter,true);Require(value==2&&!field.HasInvalidText&&!text.IsKeyboardFocused,"纠正Enter未恢复");
-    var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+    var original=Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(field).Single();
     Require(original.Minimum==1&&original.Maximum==10,"编辑器擅自扩大声明范围");
     var number=OriginalNumberInput(field);
     Click((ButtonBase)number.FindName("UpButton"));Pump();
@@ -4651,7 +4651,7 @@ internal static class S2DocumentEditingCases
     var fields=(DeclaredFieldsView)settings.Content;var line=fields.Fields.Single(item=>item.FieldId=="width");var rgba=fields.Fields.Single(item=>item.FieldId=="rgba");
     StylePopup(settings,surface=>
     {
-     Require(!Visuals<DeclaredFieldEditor>(surface).Any()&&Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(surface).Count()==2,"原样式创建了隐藏编辑器或重复数值叶");
+     Require(!Visuals<DeclaredFieldEditor>(surface).Any()&&Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(surface).Count()==2,"原样式创建了隐藏编辑器或重复数值叶");
      ((TextBox)line.InputElement!).Text="7";Require(line.TryCommitPending()&&((ConstantSetting)line.Setting).Value.Equals(7d),"粗细未更新调用方草稿");
      Require(draft.Writes==1&&draft.CaptureFields().Get<double>("width")==7d,"粗细未恰一次写真实draft");
      var picker=(Native.Input.HikPcUI.ListView.ColorPickerControlView)rgba.InputElement!;var palette=Palette(picker);palette.IsDropDownOpen=true;Pump();
@@ -4762,9 +4762,9 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     var line=((DeclaredFieldsView)settings.Content).Fields.Single(field=>field.FieldId=="width");
     StylePopup(settings,surface=>
     {
-     var arrange=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(surface).Single(item=>Equals(item.Tag,"NativeGraphicThickness"));
-     arrange.SetBinding(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,new Binding("Missing"){Source=new object(),Mode=BindingMode.TwoWay});
-     Require(arrange.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)!.Status!=BindingStatus.Active,"未实际损坏原第三层绑定");
+     var arrange=Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(surface).Single(item=>Equals(item.Tag,"NativeGraphicThickness"));
+     arrange.SetBinding(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,new Binding("Missing"){Source=new object(),Mode=BindingMode.TwoWay});
+     Require(arrange.GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)!.Status!=BindingStatus.Active,"未实际损坏原第三层绑定");
      var states=line.View.GetType().GetField("_states",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(line.View)!;
      var state=states.GetType().GetProperty("Item")!.GetValue(states,new object[]{"width"})!;
      var changed=state.GetType().GetEvent("Changed")!;var calls=0;var armed=true;
@@ -4829,7 +4829,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     foreach(var pair in pairs)
     {
      var left=fields.Fields.Single(item=>item.FieldId==pair.FieldId);var right=fields.Fields.Single(item=>item.FieldId==pair.Layout!.PairWith);
-     Require(ReferenceEquals(left.View,right.View)&&Find<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(left.View).Single().SliderType==Native.Numeric.HikPcUI.ListView.SliderArrangeType.between,"Blob实际配对未使用一份原between："+pair.FieldId);
+     Require(ReferenceEquals(left.View,right.View)&&Find<Native.Numeric.Arranged.SliderArrangeBase>(left.View).Single().SliderType==Native.Numeric.Arranged.SliderArrangeType.between,"Blob实际配对未使用一份原between："+pair.FieldId);
     }
     FieldPresentation Metadata(string property)=>metadata.Single(f=>f.DisplayName==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition.Instance.Label(property));
     var count=Metadata("BlobCountLimit").Layout!;Require(count.Minimum==1&&count.Maximum==20000&&count.Increment==1,"数量XML范围或步进错误");
@@ -4846,7 +4846,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     Require(low.TrySetConstant(150L)&&highText.Text=="250"&&high.Setting is ConstantSetting{Value:200L}&&root.HasPendingEdits,
         "单端接纳时宿主提交或丢失了另一端合法原文");
     highText.Text="200";Require(high.TryCommitPending()&&low.TrySetConstant(100L),"无法恢复范围验证前置");Pump();
-    var range=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
+    var range=Visuals<Native.Numeric.Arranged.SliderArrangeBase>(low.View).Single();
     var rightToggle=Visuals<ToggleButton>(range).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeRight");
     rightToggle.IsChecked=true;Click(rightToggle);Pump();
     Require(high.HasInvalidText&&root.HasPendingEdits,"上限待选订阅没有作为未完成编辑");
@@ -4932,7 +4932,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
     foreach(var id in ids)
     {
      var field=fields.Fields.Single(item=>item.FieldId==id);
-     Require(field.View.IsVisible&&Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Any(popup=>popup.Name=="rt")&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"参数继承槽误用数值条或未显示："+id);
+     Require(field.View.IsVisible&&Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Any(popup=>popup.Name=="rt")&&!Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(field.View).Any(),"参数继承槽误用数值条或未显示："+id);
      if(id==ids[0])
      {
       var popup=Visuals<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>(field.View).Single(item=>item.Name=="rt");popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
@@ -5031,7 +5031,7 @@ var first=chart.PointToScreen(new Point(40,50));var second=chart.PointToScreen(n
    {
     var source=new DeclaredReferenceCandidate("来源","producer",null,new Port("value",DataType.Number,Storage:NumericStorage.Float32),Array.Empty<string>());var writes=0;
     using var fields=new DeclaredFieldsView(new[]{(new Port("value",DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("value","值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new UnsetSetting())},_=>writes++,new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>())),inlineConstants:new HashSet<string>{"value"});Show(fields);var field=fields.Fields.Single();
-    var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field.View).Single();Require(!text.IsReadOnly&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"同槽常量未使用原可编辑文本");
+    var text=Visuals<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox>(field.View).Single();Require(!text.IsReadOnly&&!Visuals<Native.Numeric.Arranged.SliderArrangeFloat>(field.View).Any(),"同槽常量未使用原可编辑文本");
     text.Focus();text.Text="0.1";SendKey(text,Key.Enter,true);Pump();Require(writes==1&&field.Setting is ConstantSetting{Value:double value}&&value==(double).1f&&!text.IsKeyboardFocusWithin,"Float32常量未单次接纳/失焦");
     text.Focus();text.Text="NaN";SendKey(text,Key.Enter,true);Require(writes==1&&text.Text=="NaN"&&text.IsKeyboardFocusWithin&&field.HasInvalidText,"非法常量丢原文或提交");
     text.Text="0.2";SendKey(text,Key.Enter,true);Require(writes==2&&!field.HasInvalidText,"纠正常量失败");

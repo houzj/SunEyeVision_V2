@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<local:SliderArrangeBase x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView" xmlns:presenters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Numeric" x:Name="UC_Arrange">
+<?xml version="1.0" encoding="utf-8"?>
+<local:SliderArrangeBase x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged" xmlns:presenters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Numeric" x:Name="UC_Arrange">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml" />
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/VmFieldStyles.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <Style x:Key="SliderStyle1" TargetType="{x:Type Slider}">
@@ -125,6 +125,17 @@
           </Trigger>
         </Style.Triggers>
       </Style>
+      <Style x:Key="NumStyle" TargetType="{x:Type local:NumericControl}">
+        <Setter Property="Visibility" Value="Visible" />
+        <Style.Triggers>
+          <DataTrigger Value="true" Binding="{Binding ElementName=UC_Arrange, Path=IsReadOnly}">
+            <Setter Property="Focusable" Value="False" />
+          </DataTrigger>
+          <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeRight}">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <Grid>
@@ -139,7 +150,7 @@
                     <Control>
                       <Control.Template>
                         <ControlTemplate TargetType="{x:Type Control}">
-                          <Border Margin="3" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" IsEnabled="{Binding ElementName=UC_Arrange, Path=NeedSlider}" Visibility="{Binding ElementName=UC_Arrange, Path=SliderVisibility}">
+                          <Border Margin="3" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Visibility="{Binding ElementName=UC_Arrange, Path=SliderVisibility}">
                             <Border VerticalAlignment="Center" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Height="{Binding ElementName=UC_Arrange, Path=SilderHeight}">
                               <Canvas Name="canvas" Background="#FFFFFFFF" Width="{Binding ElementName=UC_Arrange, Path=SilderWidth}">
                                 <Slider Name="SL_Bat1" KeyboardNavigation.DirectionalNavigation="None" IsSelectionRangeEnabled="True" TickPlacement="BottomRight" IsSnapToTickEnabled="True" VerticalAlignment="Center" Style="{DynamicResource SliderStyle1}" Background="#FFFFFFFF" Visibility="{Binding ElementName=UC_Arrange, Path=IsLeftSliderVisible}" Value="{Binding ElementName=UC_Arrange, Path=StartValue}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" SelectionStart="{Binding ElementName=UC_Arrange, Path=StartValueE}" SelectionEnd="{Binding ElementName=UC_Arrange, Path=EndValueE}" Width="{Binding ElementName=UC_Arrange, Path=SilderWidth}" TickFrequency="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" FocusVisualStyle="{x:Null}" SmallChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" LargeChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Clip="{Binding ElementName=UC_Arrange, Path=StartRectClip}" ValueChanged="SL_Bat1_ValueChanged" />
@@ -175,7 +186,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                       </Grid.ColumnDefinitions>
-                      <local:NumericControl x:Name="T1" Loaded="T1_Loaded" LostFocus="T1_LostFocus" OnNumericClick="T1_OnNumericClick" VerticalContentAlignment="Center" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=LeftSymbol}" Maximum="{Binding ElementName=UC_Arrange, Path=EndValueF}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumLeft}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumLeft}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}">
+                      <local:NumericControl x:Name="T1" Loaded="T1_Loaded" LostFocus="T1_LostFocus" OnNumericClick="T1_OnNumericClick" VerticalContentAlignment="Center" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=LeftSymbol}" Text="{Binding ElementName=UC_Arrange, Path=StartValue, Mode=TwoWay}" Maximum="{Binding ElementName=UC_Arrange, Path=EndValueF}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumLeft}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumLeft}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsReadOnly="{Binding ElementName=UC_Arrange, Path=IsReadOnly}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}">
                         <FrameworkElement.Style>
                           <Style TargetType="{x:Type local:NumericControl}">
                             <Setter Property="Visibility" Value="Visible" />
@@ -201,24 +212,13 @@
                       </ContentControl>
                       <ToggleButton Grid.Column="1" Style="{StaticResource EditLinkButton}" IsChecked="{Binding ElementName=UC_Arrange, Path=IsSubscribeLeft}" Visibility="{Binding ElementName=UC_Arrange, Path=IsSubscribeVisible}" Click="TypeChangeLeft_Click" />
                     </Grid>
-                    <Label Name="label" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Content="—" FontStretch="Expanded" BorderBrush="#FF000000" Foreground="#FFCECCCB" Visibility="{Binding ElementName=UC_Arrange, Path=IsVisibleOfLable}" />
+                    <Label Name="label" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Content="—" FontStretch="Expanded" Foreground="#FFCECCCB" Visibility="{Binding ElementName=UC_Arrange, Path=IsVisibleOfLable}" />
                     <Grid Grid.Column="2" Visibility="{Binding ElementName=UC_Arrange, Path=IsVisibleOfChild}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                       </Grid.ColumnDefinitions>
-                      <local:NumericControl x:Name="T2" Loaded="T2_Loaded" LostFocus="T2_LostFocus" OnNumericClick="T2_OnNumericClick" VerticalContentAlignment="Center" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=RightSymbol}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" Minimum="{Binding ElementName=UC_Arrange, Path=StartValueE}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumRight}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumRight}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}">
-                        <FrameworkElement.Style>
-                          <Style TargetType="{x:Type local:NumericControl}">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                              <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeRight}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                              </DataTrigger>
-                            </Style.Triggers>
-                          </Style>
-                        </FrameworkElement.Style>
-                      </local:NumericControl>
+                      <local:NumericControl x:Name="T2" Loaded="T2_Loaded" LostFocus="T2_LostFocus" OnNumericClick="T2_OnNumericClick" VerticalContentAlignment="Center" Style="{StaticResource NumStyle}" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=RightSymbol}" Text="{Binding ElementName=UC_Arrange, Path=EndValue, Mode=TwoWay}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" Minimum="{Binding ElementName=UC_Arrange, Path=StartValueE}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumRight}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumRight}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsReadOnly="{Binding ElementName=UC_Arrange, Path=IsReadOnly}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
                       <ContentControl ContentTemplate="{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}" Content="{Binding ElementName=UC_Arrange, Path=SubscribeDataRight}">
                         <FrameworkElement.Style>
                           <Style TargetType="{x:Type ContentControl}">

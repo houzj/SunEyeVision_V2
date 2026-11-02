@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
-using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 

@@ -3,8 +3,8 @@
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <Style x:Key="SliderStyle1" TargetType="{x:Type Slider}">
         <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />

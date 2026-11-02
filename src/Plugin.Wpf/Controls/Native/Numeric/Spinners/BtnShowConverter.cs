@@ -1,11 +1,11 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 
 [ValueConversion(typeof(bool), typeof(Visibility))]
 public class BtnShowConverter : IValueConverter

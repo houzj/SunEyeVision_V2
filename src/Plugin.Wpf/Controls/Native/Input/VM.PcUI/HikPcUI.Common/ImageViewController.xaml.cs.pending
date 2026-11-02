@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;

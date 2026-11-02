@@ -257,7 +257,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
       "source_sha256": "6D0A82850FDD0E98F4182FDA7C6AACD08F135BD20FC37068729BF3075AF72F63",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\NumericControl.xaml",
       "target_sha256": "D4F848D9A56CCB9DC769E689713A7094E0F0680B997DF970DF00CD610B9F7480",
       "kind": "xaml_control",
       "adaptations": [
@@ -268,7 +268,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_normal.png",
       "source_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\combo_ic_top_normal.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\combo_ic_top_normal.png",
       "target_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
       "kind": "original_asset",
       "adaptations": []
@@ -276,7 +276,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_click.png",
       "source_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\combo_ic_top_click.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\combo_ic_top_click.png",
       "target_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
       "kind": "original_asset",
       "adaptations": []
@@ -284,7 +284,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
       "source_sha256": "7FA31754DF042FAD31AE5E16A9149484C4956C1164FF7FED9F688FBE9FB4B7EF",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\NumericControl.xaml.cs",
       "target_sha256": "F5ED18766D6A21D0B99D5AE64E41B0817D6373D8E8EAE43EDF10AAA8027689E8",
       "kind": "csharp",
       "adaptations": [
@@ -296,7 +296,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumbericTextBox.cs",
       "source_sha256": "33CE253ED592613C7945F89EB34B8E25F258346CB19B0AD98AF0B07FEA09C33B",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumbericTextBox.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\NumbericTextBox.cs",
       "target_sha256": "7A5CD47217CBB5283C90A53BFB11064268D94E7A54A3AF26C7BFB95AD0B3D502",
       "kind": "csharp",
       "adaptations": [
@@ -307,7 +307,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
       "source_sha256": "D396ABA95014BE30B78CAFEFC199F85FE1BE41AF5910E9D9B36333F640B985FB",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrange.xaml",
       "target_sha256": "D3341B658B8531350522EFCA9C8A201C4B2DAC4274A590E7D52F75923B9A1ECC",
       "kind": "xaml_control",
       "adaptations": [
@@ -318,7 +318,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml.cs",
       "source_sha256": "40E9DDC63A2E3CFD5B9670DD59E1FBEEA249590AD74C5B540418B8EAB17C8BE3",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrange.xaml.cs",
       "target_sha256": "16A23E2293C22B7E06EB7AF8F74F8A8490A24B4E079411D322248A4BC1448865",
       "kind": "csharp",
       "adaptations": [
@@ -329,7 +329,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
       "source_sha256": "07784584F38D02CD288E65B4CE2AE66C3DDF170C795404FEAC042E7E83D94A00",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeFloat.xaml",
       "target_sha256": "9C7FF32A6F190C46E0FF5BAD2F0B1BBB2482763B1D8A3AF933A39275431B373E",
       "kind": "xaml_control",
       "adaptations": [
@@ -340,7 +340,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml.cs",
       "source_sha256": "88A03646B37396016244A42224773301B10F318620AAD5D114905CBEBDA7FF80",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeFloat.xaml.cs",
       "target_sha256": "0E897D5D94063F763146718288D562A80078B57473DB532150BFD09DF0ED8F9A",
       "kind": "csharp",
       "adaptations": [
@@ -351,7 +351,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
       "source_sha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeBase.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeBase.cs",
       "target_sha256": "8A8C21AA397690B1E9E84BFC2D24BB114899E012948A2753BB74B5CFFBC70FB6",
       "kind": "csharp",
       "adaptations": [
@@ -362,7 +362,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\滑块_normal.png",
       "source_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\滑块_normal.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\滑块_normal.png",
       "target_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
       "kind": "original_asset",
       "adaptations": []
@@ -370,7 +370,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\滑块_click.png",
       "source_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\滑块_click.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\滑块_click.png",
       "target_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
       "kind": "original_asset",
       "adaptations": []
@@ -378,7 +378,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml",
       "source_sha256": "6C2787ADE4865CABBFB28C8FC015C905A744C94EA6D21E782337D9E07F67E9B2",
-      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\Arranged\\SliderArrangeDictionary.xaml",
       "target_sha256": "3437BC43530C35DBE8C5FFCC8B5074362B067C8148083C7459BEACBCCB065EAD",
       "kind": "xaml_dictionary",
       "adaptations": [
@@ -389,7 +389,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml.cs",
       "source_sha256": "A873816DEF89BB8A5059A67FF8492623C0A34DD560D144D9F9BC63F6130476A2",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeDictionary.xaml.cs",
       "target_sha256": "EA80AB1795FBE68C54EEA234F077D50F43A73B5B9A51502D5D6C2ECB86B02BDF",
       "kind": "csharp",
       "adaptations": [
@@ -400,7 +400,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
       "source_sha256": "B5CAC6BC7A5DB08954C29AC8C342BBA39CB4DC1A999A737845591017B51EEAED",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\RangeRule.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\RangeRule.cs",
       "target_sha256": "8B0296AEA4D0110B72A8F62D2923BBBD9EFB0E734FC9D10612CDC4434EAC90CF",
       "kind": "csharp",
       "adaptations": [
@@ -412,7 +412,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SymbolType.cs",
       "source_sha256": "0E459CE0F463A3079213891692172780A31958D2A90FB36DEC94C6646578BEA4",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SymbolType.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SymbolType.cs",
       "target_sha256": "0930B9C4FF6617EA70EF1F1F821A780F6297F96C31350334850ADC902136B42C",
       "kind": "csharp",
       "adaptations": [
@@ -423,7 +423,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeType.cs",
       "source_sha256": "2109FF8DBDD75C4346B31550E56BEA7399C3494FED7960F3E621D120B6295D26",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeType.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeType.cs",
       "target_sha256": "E1BF1D0E4119355BAEC59AD4C9A164977EFA35E081B6384029C3B22967C1E842",
       "kind": "csharp",
       "adaptations": [
@@ -434,7 +434,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\microup.png",
       "source_sha256": "DB59B2B74065FD41243A360F9A670BC882791FB50A7EAAA0A118B10591B644E7",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\microup.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\microup.png",
       "target_sha256": "DB59B2B74065FD41243A360F9A670BC882791FB50A7EAAA0A118B10591B644E7",
       "kind": "original_asset",
       "adaptations": []
@@ -442,7 +442,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\microup_click.png",
       "source_sha256": "A0EF21C84C6468E4A2A787D11E2692327DA5ED2C16D4915C98BE1DA7AB7A2571",
-      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\microup_click.png",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\microup_click.png",
       "target_sha256": "A0EF21C84C6468E4A2A787D11E2692327DA5ED2C16D4915C98BE1DA7AB7A2571",
       "kind": "original_asset",
       "adaptations": []
@@ -450,7 +450,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml",
       "source_sha256": "B94A312665B864A0DA9CE8A60E27A6B0F00D12B267DCDDB6D5B55E4934C9495D",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\NumericUpDown.xaml",
       "target_sha256": "317E69933A006B4CDC30A44D0EDC9898B637BAD776165BAC1C22F21ABA82FD2C",
       "kind": "xaml_control",
       "adaptations": [
@@ -461,7 +461,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml.cs",
       "source_sha256": "560EA2A7A2C95A8256C39B0DB8E8CDF300F5C0097C2E3338E620F11D5D64CA17",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\NumericUpDown.xaml.cs",
       "target_sha256": "F51719B3648E8A0D42533182AAC76EFBF5DC00178303867C254BD71CBEABABB9",
       "kind": "csharp",
       "adaptations": [
@@ -472,7 +472,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\SliderArrangeType.cs",
       "source_sha256": "E3EE210B2A09D6BEC8674709EE10740B3D814C4C78192712C28D3B6FC8ACF5C1",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\SliderArrangeType.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\SliderArrangeType.cs",
       "target_sha256": "8D0651E26EDE133EF9C73026690759F4F76EE68352CAD6DCDFCAC69407E2BB68",
       "kind": "csharp",
       "adaptations": [
@@ -483,7 +483,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnHeightConverter.cs",
       "source_sha256": "BCB9824A4A8B60FCA482D34E02BE12EDA46A5CB0AFB2D5E64C30744AB6500435",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnHeightConverter.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnHeightConverter.cs",
       "target_sha256": "86C5AA74B3B2FD26E42E113AFDB13387A27FAAA0C6A82C237B9ED8AE0EC922CA",
       "kind": "csharp",
       "adaptations": [
@@ -494,7 +494,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowConverter.cs",
       "source_sha256": "9C5B34FEA848E22AD83606390653562F25C2D73188A494D3CB2D3B7CF2A68F13",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowConverter.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnShowConverter.cs",
       "target_sha256": "8ED8FAB866080BDF02AEC426B6B190E8F023B150F7A4A8FDECEF708A9766FC4D",
       "kind": "csharp",
       "adaptations": [
@@ -505,7 +505,7 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowGridConverter.cs",
       "source_sha256": "AB02E23D6C369B4F82EA81E5BCEAF8DE77D94142E325B587510EEBD4DCEF9964",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowGridConverter.cs",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnShowGridConverter.cs",
       "target_sha256": "D09D5865E268EB391BDAA4EB351EF23A5FEC60DCA8DFF448702B6C6C943A0B87",
       "kind": "csharp",
       "adaptations": [
@@ -1031,73 +1031,73 @@
     },
     {
       "source_type": "HikPcUI.ListView.NumericControl",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\NumericControl.xaml.cs"
     },
     {
       "source_type": "HikPcUI.ListView.NumbericTextBox",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumbericTextBox",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumbericTextBox.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumbericTextBox",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\NumbericTextBox.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SliderArrange",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrange.xaml.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SliderArrangeFloat",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeFloat.xaml.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SliderArrangeBase",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeBase.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeBase",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeBase.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SliderArrangeDictionary",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeDictionary",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeDictionary",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeDictionary.xaml.cs"
     },
     {
       "source_type": "HikPcUI.ListView.RangeRule",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\RangeRule.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.RangeRule",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\RangeRule.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SymbolType",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SymbolType",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SymbolType.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SymbolType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SymbolType.cs"
     },
     {
       "source_type": "HikPcUI.ListView.SliderArrangeType",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeType",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeType.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Arranged\\SliderArrangeType.cs"
     },
     {
       "source_type": "HikPcUI.Controls.NumericUpDown",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.NumericUpDown",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.NumericUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\NumericUpDown.xaml.cs"
     },
     {
       "source_type": "HikPcUI.Controls.SliderArrangeType",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.SliderArrangeType",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\SliderArrangeType.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.SliderArrangeType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\SliderArrangeType.cs"
     },
     {
       "source_type": "HikPcUI.Controls.BtnHeightConverter",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnHeightConverter",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnHeightConverter.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnHeightConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnHeightConverter.cs"
     },
     {
       "source_type": "HikPcUI.Controls.BtnShowConverter",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowConverter",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowConverter.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnShowConverter.cs"
     },
     {
       "source_type": "HikPcUI.Controls.BtnShowGridConverter",
-      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowGridConverter",
-      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowGridConverter.cs"
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowGridConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\Spinners\\BtnShowGridConverter.cs"
     },
     {
       "source_type": "VM.Controls.ByteUpDown",
@@ -1335,23 +1335,23 @@
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
-      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/NumericControl.xaml"
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/Arranged/NumericControl.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
-      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/SliderArrange.xaml"
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/Arranged/SliderArrange.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
-      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml"
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/Arranged/SliderArrangeFloat.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml",
-      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml"
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml",
-      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUiControls/NumericUpDown.xaml"
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/Spinners/NumericUpDown.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\controls\\commomdictionary.xaml",

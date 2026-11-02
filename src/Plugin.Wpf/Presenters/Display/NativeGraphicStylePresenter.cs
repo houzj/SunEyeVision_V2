@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,8 +12,8 @@ using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using NativePopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
 using NativePicker=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView;
-using NativeFloat=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat;
-using NativeArrange=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase;
+using NativeFloat=SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat;
+using NativeArrange=SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeBase;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

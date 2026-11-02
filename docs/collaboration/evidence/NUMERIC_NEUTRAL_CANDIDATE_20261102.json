@@ -1,0 +1,94 @@
+{
+  "status": "candidate_final_b08_whole_track_running",
+  "baseline": "17ed3c0c8",
+  "scope": "数值Arranged/Spinners完整命名、资源与消费者闭包，保持两家族行为",
+  "build": "最新Catalog已纳入候选UI与全量Release，11634自然exit0，均6539警告、0错误；不是正式构建",
+  "passed": [
+    {
+      "track": "NumericContract",
+      "state": "exit_0"
+    },
+    {
+      "track": "FieldEditing",
+      "state": "exit_0"
+    },
+    {
+      "track": "RangeRoundtrip",
+      "state": "exit_0"
+    },
+    {
+      "cases": 16,
+      "attempt": 21,
+      "state": "exit_0",
+      "scope": "Area All",
+      "track": "BlobRangeProduction"
+    },
+    {
+      "cases": 16,
+      "attempt": 22,
+      "state": "exit_0",
+      "scope": "Circularity All",
+      "track": "BlobRangeProduction"
+    },
+    {
+      "cases": 7,
+      "state": "exit_0",
+      "track": "BlobCrosshairWorkspace",
+      "log": "numeric-neutral-crosshair-layers.log"
+    },
+    {
+      "scope": "Rectangularity All",
+      "state": "exit_0",
+      "track": "BlobRangeProduction",
+      "cases": 16,
+      "attempt": 23
+    },
+    {
+      "cases": 42,
+      "attempt": 2,
+      "loadedMatched": 4,
+      "state": "exit_0",
+      "scope": "final catalog build",
+      "track": "NumericContract"
+    },
+    {
+      "cases": 7,
+      "attempt": 4,
+      "loadedMatched": 15,
+      "state": "exit_0",
+      "scope": "final catalog build",
+      "track": "BlobCrosshairWorkspace"
+    },
+    {
+      "cases": 2,
+      "attempt": 26,
+      "loadedMatched": 15,
+      "state": "exit_0",
+      "scope": "final catalog build diagnostic two cases only",
+      "track": "B08NumericComposition"
+    }
+  ],
+  "running": [
+    {
+      "scope": "final catalog build whole track serial",
+      "track": "B08NumericComposition",
+      "session": 19667
+    }
+  ],
+  "review": [
+    "源码本体逐文件仅计划内namespace与URI变更，两家族不合并",
+    "107个新目标路径及哈希复核通过",
+    "source-integration-receipt.json是历史来源回执，保留原字节不误称有效JSON全零旧路径"
+  ],
+  "remaining": [
+    "完整B08终态及其加载SHA核验",
+    "固定提交后集中集成正式Release",
+    "设计时及人工另记",
+    "此前B08900秒与Confirm长耗时根因仍未解释，不能由定向通过注销"
+  ],
+  "failuresRetained": [
+    "范围首次撤销断边后读取退役结果的测试前置失败，已增加不复活断言并重新执行",
+    "Crosshair旧总数3/2断言未计常驻结果图文，已按真实事件与图层对象身份重新验证",
+    "B08NumericComposition28547总900秒超时，最后BEGIN为同一真实窗口数值ROI与文本多映射位置引用确认历史重开执行；未定位具体步骤，不能推断迁名或产品根因。"
+  ]
+}

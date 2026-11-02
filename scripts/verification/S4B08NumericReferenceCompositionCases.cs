@@ -81,7 +81,7 @@ internal static class S2DocumentEditingCases
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=BindingId("LowThreshold");
         const string modeId="field:8ca20000000040008000000000000001";
-        NativeRuntimeEditorWindow Open()=>OpenFor(node);
+        NativeRuntimeEditorWindow Open(){Step("Open before");var opened=OpenFor(node);Step("Open after");return opened;}
         NativeRuntimeEditorWindow OpenFor(WorkflowNodeBase target)
         {
             vm.OpenDebugWindowCommand.Execute(target);Pump();
@@ -126,7 +126,7 @@ internal static class S2DocumentEditingCases
             try{var run=current.RunDebugAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(actual==expected,"真实算法未消费预期阈值："+actual+"/"+expected);Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:long value}&&value==expected,"私有当前值与算法不同");}
             finally{current.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);}
         }
-        void Confirm(NativeRuntimeEditorWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
+        void Confirm(NativeRuntimeEditorWindow window){Step("Confirm before");Require(window.TryConfirm(out var issue),"真实确认失败："+issue);Step("Confirm after");if(window.IsVisible){Step("Close before");window.Close();Step("Close after");}Step("Confirm Pump before");Pump();Step("Confirm Pump after");}
         long Current()=>node.RuntimeConfiguration!.ReadCurrentParameter(threshold)?.Value is long value?value:node.RuntimeConfiguration.Fields.Read(threshold) is ConstantSetting constant?(long)constant.Value!:throw new Exception("没有正式当前值");
         string Identity(ParameterSetting setting)=>setting switch{ReferenceSetting reference=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference.Reference),VariableSetting variable=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(variable.Reference),_=>throw new Exception("不是引用")};
         void SaveCheck(Func<ParameterSetting,bool> predicate,long expected)
@@ -167,14 +167,23 @@ internal static class S2DocumentEditingCases
         void Mix(NativeRuntimeEditorWindow window)
         {
 
+            Step("Mix 1");
             Constant(window,SettingId(nameof(BlobSettings.IsAreaFilterEnabled)),true);Constant(window,SettingId(nameof(BlobSettings.IsCircularityFilterEnabled)),true);Constant(window,SettingId(nameof(BlobSettings.IsRectangularityFilterEnabled)),true);
+            Step("Mix 2");
             Variable(window,threshold,values.Id,"0");Variable(window,SettingId(nameof(BlobSettings.FilterAreaMin)),areaValues.Id,"0");Variable(window,SettingId(nameof(BlobSettings.FilterAreaMax)),areaValues.Id,"1");
+            Step("Mix 3");
             var lowerSession=Session(Field(window,SettingId(nameof(BlobSettings.FilterAreaMin))));Choose(lowerSession,true,item=>Candidate(item)?.Reference(BindingSelection.All) is {} reference&&reference.ScopeId==flow.Id&&reference.NodeId==source.Id&&reference.PortId=="output.image"&&reference.Storage is null&&reference.Type==source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image").Type&&reference.Selection is BindingSelection.AllItems&&reference.MemberFieldPath.SequenceEqual(new[]{"width"}));
+            Step("Mix 4");
             var upperSession=Session(Field(window,SettingId(nameof(BlobSettings.FilterAreaMax))));SelectVariable(upperSession,true,indexVariable.Id);
+            Step("Mix 5");
             Require(Field(window,SettingId(nameof(BlobSettings.FilterAreaMin))).Setting is VariableSetting {Reference.Selection:BindingSelection.AtField fieldIndex}&&fieldIndex.Reference.PortId=="output.image"&&fieldIndex.Reference.MemberFieldPath.SequenceEqual(new[]{"width"})&&Field(window,SettingId(nameof(BlobSettings.FilterAreaMax))).Setting is VariableSetting {Reference.Selection:BindingSelection.AtVariable variableIndex}&&variableIndex.Reference.VariableId==indexVariable.Id,"真实双端动态索引身份未接纳");
+            Step("Mix 6");
             Constant(window,SettingId(nameof(BlobSettings.FilterCircularityMin)),.1);Variable(window,SettingId(nameof(BlobSettings.FilterCircularityMax)),floatValues.Id,"1");Constant(window,SettingId(nameof(BlobSettings.FilterRectangularityMin)),.1);Constant(window,SettingId(nameof(BlobSettings.FilterRectangularityMax)),1d);SetLocal(window);
+            Step("Mix 7");
             var editor=(DeclaredSettingsView)Get(Control(window).Content,"Editor");editor.SelectedPageIndex=2;window.UpdateLayout();Pump();var fields=(DeclaredFieldsView)editor.Content;
+            Step("Mix 8");
             foreach(var pair in new[]{(Id:BlobResultDisplay.Field(BlobResultDisplay.Inspection,"width"),Value:(object)3d),(Id:BlobResultDisplay.Field(BlobResultDisplay.Text,"content"),Value:(object)"Area={0}")}){var field=fields.Fields.Single(item=>item.FieldId==pair.Id);Require(field.TrySetConstant(pair.Value),field.Error);}
+            Step("Mix 9");
             Require(Control(window).TryCapture(out var error),error);
         }
         void Replay(long expected,double area)
@@ -252,24 +261,43 @@ internal static class S2DocumentEditingCases
             window=Open();var newDraft=Draft(window);var accepted=Stamp(newDraft.DraftNode.RuntimeConfiguration!);((ICommand)Get(oldSession,"ClickCommand")).Execute(oldChoice);Pump();Require(newDraft.IsValid&&Stamp(newDraft.DraftNode.RuntimeConfiguration!)==accepted,"同ID新owner被旧来源回调覆盖");Debug(window,8);window.Close();Pump();
         });
         Case("同一真实窗口数值ROI与文本多映射位置引用确认历史重开执行",()=>{
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 1"+Environment.NewLine);
             var before=Stamp(node.RuntimeConfiguration!);var window=Open();Mix(window);
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 2"+Environment.NewLine);
             var roiEditor=(DeclaredSettingsView)Get(Control(window).Content,"Editor");roiEditor.SelectedPageIndex=0;window.UpdateLayout();Pump();var roiUi=Logical(Control(window)).OfType<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiUiDraftControls>().Single();var radios=((System.Collections.IEnumerable)Get(roiUi,"_radios")).Cast<object>().ToArray();((ICommand)Get(radios[1],"ValueChangedCommand")).Execute(1);((ICommand)Get(radios[2],"ValueChangedCommand")).Execute(1);Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 3"+Environment.NewLine);
             var inputs=Logical(Control(window)).OfType<DeclaredInputFieldsView>().Single();var ids=BlobRoiInheritance.RectangleMembers.Select(member=>BlobRoiInheritance.Leaf(BlobRoiInheritance.RectangleParameters,member)).ToArray();var scalar=new[]{3d,3d,4d,4d,0d};for(var i=0;i<ids.Length;i++)Require(inputs.Fields.Single(field=>field.FieldId==ids[i]).TrySetConstant(scalar[i]),"逐叶ROI设置失败");
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 4"+Environment.NewLine);
             var width=inputs.Fields.Single(field=>field.FieldId==ids[2]);var widthToggle=Visual(width).OfType<ToggleButton>().Single(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");widthToggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);widthToggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));_activePopup=Visual(width).OfType<AppsPopup>().Single(value=>value.Name=="rt");_activePopup.ApplyTemplate();Choose(_activePopup.DataContext,false,value=>Candidate(value)?.Reference(BindingSelection.All) is {} reference&&reference.ScopeId==flow.Id&&reference.NodeId==source.Id&&reference.PortId=="output.image"&&reference.MemberFieldPath.SequenceEqual(new[]{"width"}));Constant(window,SettingId(nameof(BlobSettings.FilterAreaMax)),50L);
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 5"+Environment.NewLine);
             var editor=(DeclaredSettingsView)Get(Control(window).Content,"Editor");editor.SelectedPageIndex=2;window.UpdateLayout();Pump();var fields=(DeclaredFieldsView)editor.Content;
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 6"+Environment.NewLine);
             var contentId=BlobResultDisplay.Field(BlobResultDisplay.Text,"content");var xId=BlobResultDisplay.Field(BlobResultDisplay.Text,"x");
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 7"+Environment.NewLine);
             var text=fields.Fields.Single(field=>field.FieldId==contentId);var presenter=Get(text.View,"_textPresenter");var textSession=Get(presenter,"_session");var raw=Visual(text.View).OfType<TextBox>().Single();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 8"+Environment.NewLine);
             const string proposed="宽:{};面积:{面积}";raw.SetCurrentValue(TextBox.TextProperty,proposed);raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();Keyboard.Focus(raw);Pump();var caret=proposed.IndexOf("{}",StringComparison.Ordinal)+1;raw.SelectionStart=caret-1;raw.SelectionStart=caret;Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 9"+Environment.NewLine);
             PumpUntil(()=>Tree((System.Collections.IEnumerable)Get(textSession,"SourceNodes")).Any(item=>Candidate(item) is {} c&&c.NodeId==source.Id&&c.Output.Id=="output.image"&&c.MemberPath.SequenceEqual(new[]{"width"})));
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 10"+Environment.NewLine);
             var selected=Tree((System.Collections.IEnumerable)Get(textSession,"SourceNodes")).Single(item=>Candidate(item) is {} c&&c.NodeId==source.Id&&c.Output.Id=="output.image"&&c.MemberPath.SequenceEqual(new[]{"width"}));
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 11"+Environment.NewLine);
             var textPopup=Visual(text.View).OfType<AppsPopup>().Single();textPopup.ApplyTemplate();var part=(Popup)textPopup.Template.FindName("PART_Popup",textPopup)!;Require(part.IsOpen&&part.Child is not null,"原文本来源树未打开");
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 12"+Environment.NewLine);
             var tree=Visual(part.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();var native=(TreeView)tree.FindName("treeView");tree.UpdateLayout();Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 13"+Environment.NewLine);
             var item=(TreeViewItem?)tree.GetType().GetMethod("FindTreeViewItem",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{native,selected})??throw new Exception("文本来源容器未生成");item.IsSelected=true;Pump();item.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 14"+Environment.NewLine);
             Require(text.Setting is DisplayExpressionSetting expression&&expression.Slots.Any(slot=>slot.Reference?.NodeId==source.Id)&&expression.Slots.Any(slot=>slot.Self is not null),"同窗未接纳前驱与Self映射");
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 15"+Environment.NewLine);
             var position=fields.Fields.Single(field=>field.FieldId==xId);var popup=Logical(position.View).Concat(Visual(position.View)).OfType<AppsPopup>().First(value=>value.IsVisible);popup.IsDropDownOpen=true;popup.UpdateLayout();Pump();var positionSession=popup.DataContext;((ICommand)Get(positionSession,"DropDownCommand")).Execute(null);Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 16"+Environment.NewLine);
             var positionChoice=Tree((System.Collections.IEnumerable)Get(positionSession,"SourceNodes")).Single(value=>Candidate(value)?.Reference(BindingSelection.All) is {} reference&&reference.NodeId==source.Id&&reference.PortId=="output.image"&&reference.MemberFieldPath.SequenceEqual(new[]{"width"}));((ICommand)Get(positionSession,"ClickCommand")).Execute(positionChoice);popup.IsDropDownOpen=false;Pump();
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 17"+Environment.NewLine);
             Require(position.Setting is ReferenceSetting positionReference&&positionReference.Reference.NodeId==source.Id,"同窗位置引用未接纳");Expect(window,173,40);Confirm(window);
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 18"+Environment.NewLine);
             var accepted=Stamp(node.RuntimeConfiguration!);Require(node.RuntimeConfiguration!.Fields.Read(contentId) is DisplayExpressionSetting&&node.RuntimeConfiguration.Fields.Read(xId) is ReferenceSetting,"混合确认丢失显示引用");
+            File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" STEP 19"+Environment.NewLine);
             Replay(173,40);VerifyPublishedMixed("宽:8;面积:40",8,8);history.Undo();Pump();var beforeRoot=System.Text.Json.Nodes.JsonNode.Parse(before)!;var undoRoot=System.Text.Json.Nodes.JsonNode.Parse(Stamp(node.RuntimeConfiguration!))!;Require(beforeRoot["Fields"]!.ToJsonString()==undoRoot["Fields"]!.ToJsonString()&&beforeRoot["ParameterBindingOrder"]!.ToJsonString()==undoRoot["ParameterBindingOrder"]!.ToJsonString(),"混合Undo未恢复正式字段和绑定顺序");history.Redo();Pump();Require(node.RuntimeConfiguration!.Fields.Read(contentId) is DisplayExpressionSetting&&node.RuntimeConfiguration.Fields.Read(xId) is ReferenceSetting,"混合Redo丢显示引用");Replay(173,40);VerifyPublishedMixed("宽:8;面积:40",8,8);
         });
         Case("混合引用真实方案新会话重开后执行与图文显示",()=>{
@@ -321,7 +349,7 @@ internal static class S2DocumentEditingCases
             try{var item=dialog.BindItems.Single(row=>row.Reference.VariableId==id);((ListView)dialog.FindName("globalVarList")).SelectedItem=item;Visual(dialog).OfType<Button>().Single(button=>Equals(button.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));selected=true;}
             catch(Exception error){failure=error;ownedDialog.Close();}
         };
-        timer.Start();try{((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(manager);}finally{timer.Stop();}Pump();if(failure is not null)throw new Exception("原模态变量选择失败",failure);Require(selected,"原模态变量窗没有完成实际选择");
+        Step("Variable modal before "+id);timer.Start();try{((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(manager);}finally{timer.Stop();Step("Variable modal returned "+id);}Step("Variable Pump before");Pump();Step("Variable Pump after");if(failure is not null)throw new Exception("原模态变量选择失败",failure);Require(selected,"原模态变量窗没有完成实际选择");
     }
     private static string SettingId(string name)=>new BlobTool().SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(name)).FieldId;
     private static string BindingId(string name)=>((IToolParameterBindingNames)new BlobTool()).ParameterBindingNames.Single(pair=>pair.Value==name).Key;
@@ -357,9 +385,10 @@ internal static class S2DocumentEditingCases
     }
     private static IEnumerable<DependencyObject> Visual(DependencyObject root)
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
+    private static void Step(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"mixed-window-steps.log"),DateTime.UtcNow.ToString("O")+" "+phase+Environment.NewLine);
     private static void Case(string name,Action action)
     {
-        var filter=Environment.GetEnvironmentVariable("B08_NUMERIC_COMPOSITION_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;
+        var filter=Environment.GetEnvironmentVariable("B08_NUMERIC_COMPOSITION_CASE");if(!string.IsNullOrEmpty(filter)&&!filter.Split('|').Any(part=>name.Contains(part,StringComparison.Ordinal)))return;
         var file=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"reference-chain-progress.log");
         File.AppendAllText(file,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);
         try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(file,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}

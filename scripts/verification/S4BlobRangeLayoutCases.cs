@@ -117,7 +117,7 @@ internal static class S2DocumentEditingCases
         }
         first.Close();Pump();
         var standalone=new List<object>();
-        var numeric=new SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl
+        var numeric=new SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl
             {FontSize=14,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Top,
              Minimum=1,Maximum=999999999,MinValue=1,MaxValue=999999999,IsNeedCheckExtremumByXML=true,Text="999999999"};
         var isolated=new Window{Owner=shell,Title="迁入原数值控件独立宽度量测",Width=420,Height=150,Left=-10000,ShowActivated=false,ShowInTaskbar=false,Content=numeric};isolated.Show();

@@ -106,8 +106,8 @@ internal static class S2DocumentEditingCases
     var created=(NativeResultViewport.CrosshairLayer)Get(pane,"_cross");var active=created.CurrentWindow??throw new Exception("真实shell没有打开设置窗");
     Require(active.IsVisible&&ReferenceEquals(active.Owner,window)&&ReferenceEquals(active.DataContext,created),"设置窗没有借用实际Pane owner/模型");return active;
    }
-   Native.Numeric.HikPcUI.ListView.SliderArrange Number(Window settings,CrosshairSettings model,string property)
-    =>Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(settings).Single(control=>ReferenceEquals(control.DataContext,model)&&BindingOperations.GetBinding(control,Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)?.Path?.Path==property);
+   Native.Numeric.Arranged.SliderArrange Number(Window settings,CrosshairSettings model,string property)
+    =>Visuals<Native.Numeric.Arranged.SliderArrange>(settings).Single(control=>ReferenceEquals(control.DataContext,model)&&BindingOperations.GetBinding(control,Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)?.Path?.Path==property);
    ToggleButton Toggle(Window settings,CrosshairSettings model,string property)
     =>Visuals<ToggleButton>(settings).Single(control=>ReferenceEquals(control.DataContext,model)&&BindingOperations.GetBinding(control,ToggleButton.IsCheckedProperty)?.Path?.Path==property);
    var settings=OpenCross();var crosses=(NativeResultViewport.CrosshairLayer)Get(pane,"_cross");var one=crosses.CrossDatas[0];var two=crosses.CrossDatas[1];
@@ -117,27 +117,51 @@ internal static class S2DocumentEditingCases
     Require(CrossShapes().Count==2&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport).Count()==2,"实际视口未接入两个原CrossControl");
    });
    Case("原设置控件编辑双实例、颜色坐标及关闭重开",()=>{
-    var originalBinding=Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty);
-    Number(settings,one,"CenterX").SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,3d);Number(settings,one,"CenterY").SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,4d);Number(settings,one,"StrokeThickness").SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,2d);
+    var originalBinding=Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty);
+    Number(settings,one,"CenterX").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,3d);Number(settings,one,"CenterY").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,4d);Number(settings,one,"StrokeThickness").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,2d);
     Toggle(settings,two,"IsVisible").SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
     var picker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FF0000FF",picker);Pump();
     Require(one.CenterPoint==new Point(3,4)&&one.StrokeThickness==2&&one.Stroke=="#FF0000FF"&&two.IsVisible&&two.Stroke!="#FF0000FF","原控件未回写或双实例污染");
-    Require(originalBinding?.Status==BindingStatus.Active&&ReferenceEquals(originalBinding,Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)),"编辑替换了正式TwoWay绑定");
+    Require(originalBinding?.Status==BindingStatus.Active&&ReferenceEquals(originalBinding,Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)),"编辑替换了正式TwoWay绑定");
     var center=Visuals<Button>(settings).Single(button=>ReferenceEquals(button.Command,one.CenterCommand));Require(center.Command.CanExecute(center.CommandParameter),"实际居中按钮Command不可用");center.Command.Execute(center.CommandParameter);Pump();Require(one.CenterPoint==new Point(8,8),"原居中命令未消费当前真实尺寸");
     Toggle(settings,one,"IsLocked").SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();Require(one.IsLocked&&!two.IsLocked,"原锁定没有独立回写");Toggle(settings,one,"IsLocked").SetCurrentValue(ToggleButton.IsCheckedProperty,false);Pump();
     Capture(settings,"crosshair-production-settings.png");var prior=settings;settings.Close();Pump();Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);Require(one.Stroke=="#FF0000FF","关闭后旧色板写入");settings=OpenCross();Require(!ReferenceEquals(prior,settings)&&one.CenterPoint==new Point(8,8),"重开复用旧窗或无故重置");
    });
    Case("真实表高亮与辅助十字层独立共存",()=>{
-    var grid=Visuals<DataGrid>(Table().View).Single();grid.SelectedItem=grid.Items[0];Pump();Require(CrossShapes().Count==2&&((IList)viewport.ShapeList!).Count==3,"表选择覆盖辅助十字或未发布高亮");main.ClearResultHighlight();Pump();Require(CrossShapes().Count==2&&((IList)viewport.ShapeList!).Count==2,"清高亮删除辅助十字");
+    object? Field(object instance,string name)
+    {
+     for(var type=instance.GetType();type is not null;type=type.BaseType)
+      if(type.GetField(name,Flags) is {} field)return field.GetValue(instance);
+     throw new Exception("缺少图层字段："+name);
+    }
+    object[] Items(object layer)=>Field(layer,"_prepared") is {} prepared?(object[])Get(prepared,"Items"):Array.Empty<object>();
+    object[] Shapes()=>((IEnumerable?)viewport.ShapeList)?.Cast<object>().ToArray()??Array.Empty<object>();
+    bool Contains(object[] values,object item)=>values.Any(value=>ReferenceEquals(value,item));
+    var table=Table();var grid=Visuals<DataGrid>(table.View).Single();
+    var receipt=Receipt();var publication=Publication();var display=Get(pane,"Display");var displayLayer=Get(display,"Layer");
+    var originalDisplay=Items(displayLayer);var originalCross=CrossShapes().Cast<object>().ToArray();var selectionLayer=Get(pane,"Selection");
+    Require(originalDisplay.Length>0&&originalCross.Length==2,"缺少常驻图文或辅助十字前置");
+    ResultSelection? observed=null;
+    EventHandler<ResultSelection> handler=(sender,selection)=>{if(ReferenceEquals(sender,table))observed=selection;};
+    table.SelectionHighlightChanged+=handler;
+    try{grid.SelectedItem=grid.Items[0];Pump();}finally{table.SelectionHighlightChanged-=handler;}
+    Require(observed is not null&&observed.Publication==publication.Stamp&&Equals(observed.ElementIdentity,Get(grid.SelectedItem,"ElementIdentity")),"真实表事件的运行或元素身份不符");
+    Require(observed!.Targets.Count>0&&observed.Targets.All(target=>target.ImageFrame==receipt.Frame&&target.Coordinates==receipt.Coordinates&&target.Geometry.Count>0),"高亮目标不属当前图像帧或缺少几何");
+    var selected=Items(selectionLayer);var combined=Shapes();
+    Require(selected.Length>0&&Equals(Field(selectionLayer,"_receipt"),receipt)&&selected.All(item=>Contains(combined,item)),"选择图层未接纳当前帧高亮");
+    Require(ReferenceEquals(Get(pane,"Display"),display)&&originalDisplay.All(item=>Contains(combined,item))&&originalCross.All(item=>Contains(combined,item))&&CrossShapes().Count==2,"选择覆盖常驻图文或辅助十字");
+    main.ClearResultHighlight();Pump();combined=Shapes();
+    Require(Field(selectionLayer,"_prepared") is null&&selected.All(item=>!Contains(combined,item)),"清除高亮未只退役选择图层");
+    Require(publication.IsCurrent()&&Receipt()==receipt&&ReferenceEquals(Get(pane,"Display"),display)&&originalDisplay.All(item=>Contains(combined,item))&&originalCross.All(item=>Contains(combined,item))&&CrossShapes().Count==2,"清高亮删除常驻图文、辅助十字或改变帧");
    });
    var firstReceipt=Receipt();var oldWindow=settings;var oldNumber=Number(settings,one,"CenterX");var oldPicker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));
    Case("真实灰二值切换保物理帧并退役旧设置叶",()=>{
-    SelectImage(BlobSchema.Field(6));Until(()=>Receipt()!=firstReceipt);Require(Receipt().Frame==firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"同次灰/二值物理帧或坐标错配");Require(!oldWindow.IsVisible,"换图未关闭旧设置窗");settings=OpenCross();var accepted=one.CenterPoint;var stroke=one.Stroke;oldNumber.SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,99d);Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",oldPicker);Pump();Require(one.CenterPoint==accepted&&one.Stroke==stroke,"旧图设置叶写入当前帧");
+    SelectImage(BlobSchema.Field(6));Until(()=>Receipt()!=firstReceipt);Require(Receipt().Frame==firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"同次灰/二值物理帧或坐标错配");Require(!oldWindow.IsVisible,"换图未关闭旧设置窗");settings=OpenCross();var accepted=one.CenterPoint;var stroke=one.Stroke;oldNumber.SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,99d);Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",oldPicker);Pump();Require(one.CenterPoint==accepted&&one.Stroke==stroke,"旧图设置叶写入当前帧");
    });
    var beforeRerun=Receipt();var retiredWindow=settings;var retiredNumber=Number(settings,one,"CenterX");
    var oldLease=(IDisposable)output.GetType().GetMethod("BorrowCurrentImage",Flags)!.Invoke(output,null)!;borrowed.Add(oldLease);retainedImage=(IReadOnlyImage)Get(oldLease,"Image");
    Case("同尺寸真实重跑以新Run和Frame退役旧窗口",()=>{
-    var second=Publish(1);SelectImage();Until(()=>Receipt().Frame!=beforeRerun.Frame);Require(second.Identity!=first.Identity&&Receipt().Frame!=firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"重跑混用旧Run/物理帧");Require(!retiredWindow.IsVisible&&!(bool)Get(oldLease,"IsCurrent"),"重跑未退役旧窗口或来源租约");settings=OpenCross();var accepted=one.CenterPoint;retiredNumber.SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty,77d);Pump();Require(one.CenterPoint==accepted,"旧Run数值回调写新帧");
+    var second=Publish(1);SelectImage();Until(()=>Receipt().Frame!=beforeRerun.Frame);Require(second.Identity!=first.Identity&&Receipt().Frame!=firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"重跑混用旧Run/物理帧");Require(!retiredWindow.IsVisible&&!(bool)Get(oldLease,"IsCurrent"),"重跑未退役旧窗口或来源租约");settings=OpenCross();var accepted=one.CenterPoint;retiredNumber.SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,77d);Pump();Require(one.CenterPoint==accepted,"旧Run数值回调写新帧");
    });
    Case("真实空结果无假Blob行且辅助线仍属视图",()=>{
     var empty=Publish(0,true);SelectImage();Require(Visuals<DataGrid>(Table().View).Single().Items.Count==0,"空算法结果生成假行");settings=OpenCross();Require(CrossShapes().Count==2&&Receipt().Frame!=beforeRerun.Frame,"空图像帧错误或辅助线冒充Blob数据");

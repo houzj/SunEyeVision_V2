@@ -27,7 +27,7 @@ using Apps.Data.ShapeDefine;
 using Apps.Interface;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;

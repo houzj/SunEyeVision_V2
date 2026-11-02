@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;

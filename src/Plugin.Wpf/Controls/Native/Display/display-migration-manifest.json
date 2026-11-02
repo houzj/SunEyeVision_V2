@@ -12677,7 +12677,7 @@
     "/vm.controls;component/vm.utility/measuretext.cs": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMControls/VM.Utility/MeasureText.cs",
     "/vm.controls;component/vm.utility/treeviewscrolltobottombehavior.cs": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMControls/VM.Utility/TreeViewScrollToBottomBehavior.cs",
     "/vm.controls;component/vm.utility/uihelper.cs": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
-    "/vm.pcui;component/listview/sliderarrangedictionary.xaml": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml",
+    "/vm.pcui;component/listview/sliderarrangedictionary.xaml": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml",
     "/vmbasecontrols;component/base/imageview/containeritem.xaml": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ContainerItem.xaml",
     "/vmbasecontrols;component/base/imageview/cursor/arealeft.xaml": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeft.xaml",
     "/vmbasecontrols;component/base/imageview/cursor/arealeftrect.xaml": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftRect.xaml",

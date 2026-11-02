@@ -30,7 +30,7 @@ using Apps.XmlParser.ParamTab;
 using Hik.Util;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;

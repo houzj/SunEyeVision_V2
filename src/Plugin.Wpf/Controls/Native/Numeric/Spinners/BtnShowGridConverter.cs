@@ -1,17 +1,22 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 
-[ValueConversion(typeof(double), typeof(double))]
-public class BtnHeightConverter : IValueConverter
+[ValueConversion(typeof(bool), typeof(Visibility))]
+public class BtnShowGridConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		return (double?)value / 2.0;
+		if (System.Convert.ToBoolean(value))
+		{
+			return 1;
+		}
+		return 2;
 	}
 
 	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

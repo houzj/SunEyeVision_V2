@@ -540,7 +540,7 @@ internal static class S2DocumentEditingCases
             foreach(var field in new[]{lower,upper})
             {
                 var text=(TextBox)field.InputElement!;Require(text.IsLoaded&&text.IsVisible&&text.IsEnabled&&text.Text=="999999999","真实面积端点文本/状态不完整");
-                DependencyObject numeric=text;while(numeric is not SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl){numeric=VisualTreeHelper.GetParent(numeric)??throw new Exception("找不到原NumericControl");}
+                DependencyObject numeric=text;while(numeric is not SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl){numeric=VisualTreeHelper.GetParent(numeric)??throw new Exception("找不到原NumericControl");}
                 var tip=((FrameworkElement)numeric).ToolTip;Require(tip is string value&&value==text.Text,"原T1/T2 ToolTip未绑定完整当前文本");
                 window.Activate();text.Focus();Pump();Require(text.IsKeyboardFocused,"真实面积文本无法取得焦点");
                 void Key(Key key){text.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(text)!,Environment.TickCount,key){RoutedEvent=Keyboard.KeyDownEvent});window.UpdateLayout();Pump();}
@@ -1587,11 +1587,11 @@ internal static class S2DocumentEditingCases
         Require(NativeDescendants(field).OfType<AppsPopup>().All(button=>!button.IsDropDownOpen
             &&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),"来源接纳后原Popup实际未关闭");
     }
-    private static SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
+    private static SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl OriginalNumberInput(DependencyObject field)
     {
-        var original=NativeDescendants(field).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase>().Single();
+        var original=NativeDescendants(field).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeBase>().Single();
         var box=(ComboBox)original.FindName("CBox");box.ApplyTemplate();
-        return (SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+        return (SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl)box.Template.FindName("T1",box);
     }
     private static void Click(DependencyObject control,string tooltip)
     {

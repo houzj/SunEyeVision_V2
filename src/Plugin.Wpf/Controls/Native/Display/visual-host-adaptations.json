@@ -133,14 +133,14 @@
       "visual_member_adapter": true
     },
     {
-      "target": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/NumericControl.xaml.cs",
       "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
       "original_source_sha256": "7fa31754df042fad31ae5e16a9149484c4956c1164ff7fed9f688fbe9fb4b7ef",
       "adapted_sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8",
       "numeric_member_adapter": "invariant-literal-v1"
     },
     {
-      "target": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/RangeRule.cs",
       "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
       "original_source_sha256": "b5cac6bc7a5db08954c29ac8c342bba39cb4dc1a999a737845591017b51eeaed",
       "adapted_sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf",

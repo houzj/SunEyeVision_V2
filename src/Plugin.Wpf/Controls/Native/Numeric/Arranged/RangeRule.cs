@@ -1,10 +1,10 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 using System;
 using System.Globalization;
 using System.Windows.Controls;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 
 public class RangeRule : ValidationRule
 {

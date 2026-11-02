@@ -1,0 +1,29 @@
+[
+  {
+    "cases": 42,
+    "loadedMatched": 4,
+    "track": "NumericContract",
+    "exit": 0,
+    "caseSourceSha": "FD6A62D98FC0033BAFC0D12891F5E7B1DD2283F731C10839587EF44818F390D1",
+    "receipt": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-002\\receipt.json",
+    "attempt": 2
+  },
+  {
+    "cases": 7,
+    "loadedMatched": 15,
+    "track": "BlobCrosshairWorkspace",
+    "exit": 0,
+    "caseSourceSha": "F4E17C88A36716C14797697EA15B198728B12CED7181BD3346E9C07349EC7A23",
+    "receipt": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\BlobCrosshairWorkspace\\attempt-004\\receipt.json",
+    "attempt": 4
+  },
+  {
+    "cases": 2,
+    "loadedMatched": 15,
+    "track": "B08NumericComposition",
+    "exit": 0,
+    "caseSourceSha": "4ADC596AAFBB53F4B0BBD2CD5DA3BA57BF0ACAF85EF541A9BB24394AF55087CE",
+    "receipt": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-026\\receipt.json",
+    "attempt": 26
+  }
+]

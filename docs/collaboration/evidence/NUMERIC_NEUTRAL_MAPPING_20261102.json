@@ -1,0 +1,34 @@
+{
+  "mappings": {
+    "Native.Numeric.HikPcUI.Controls": "Native.Numeric.Spinners",
+    "Native.Numeric.HikPcUI.ListView": "Native.Numeric.Arranged"
+  },
+  "status": "candidate_pending_regression",
+  "source_identity": "Original vendor identities and source hashes remain in numeric-migration-manifest.json; this file records current product paths.",
+  "assets": [
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\滑块_click.png",
+      "sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2"
+    },
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\滑块_normal.png",
+      "sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2"
+    },
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\combo_ic_top_click.png",
+      "sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993"
+    },
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\combo_ic_top_normal.png",
+      "sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319"
+    },
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\microup_click.png",
+      "sha256": "A0EF21C84C6468E4A2A787D11E2692327DA5ED2C16D4915C98BE1DA7AB7A2571"
+    },
+    {
+      "path": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Arranged\\microup.png",
+      "sha256": "DB59B2B74065FD41243A360F9A670BC882791FB50A7EAAA0A118B10591B644E7"
+    }
+  ]
+}

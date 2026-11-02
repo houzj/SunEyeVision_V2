@@ -11,7 +11,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Fields;
-using Native=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using Native=SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 internal static class S2DocumentEditingCases
 {
  static readonly List<object> Rows=new();

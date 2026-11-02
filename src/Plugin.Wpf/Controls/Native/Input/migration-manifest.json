@@ -7411,7 +7411,7 @@
         "Internal XAML type pending: HikPcUI.ListView/ColorPickerControlView.xaml.cs"
       ],
       "cross_group_dependencies": [
-        "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange"
+        "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange"
       ],
       "xclass": "VMControls.WPF.CrossConfig",
       "root_element": "BaseWindow",
@@ -22006,7 +22006,7 @@
       "source_sha256": "FCF84F5D38999F68F80E4E16B3456BF6D437543095073DF80FD057C4995A09BB",
       "reasons": [],
       "cross_group_dependencies": [
-        "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumbericTextBox"
+        "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumbericTextBox"
       ],
       "xclass": "HikPcUI.ListView.IPTextBox",
       "root_element": "UserControl",
@@ -36444,19 +36444,19 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.Controls.BtnHeightConverter",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnHeightConverter",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnHeightConverter",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.Controls.BtnShowConverter",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowConverter",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowConverter",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.Controls.BtnShowGridConverter",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowGridConverter",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowGridConverter",
       "status": "other_group_numeric"
     },
     {
@@ -36552,7 +36552,7 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.Controls.NumericUpDown",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.NumericUpDown",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.NumericUpDown",
       "status": "other_group_numeric"
     },
     {
@@ -36576,7 +36576,7 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.Controls.SliderArrangeType",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.SliderArrangeType",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.SliderArrangeType",
       "status": "other_group_numeric"
     },
     {
@@ -37110,13 +37110,13 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.NumbericTextBox",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumbericTextBox",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumbericTextBox",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.NumericControl",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl",
       "status": "other_group_numeric"
     },
     {
@@ -37134,43 +37134,43 @@
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.RangeRule",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.RangeRule",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SliderArrange",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SliderArrangeBase",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeBase",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SliderArrangeDictionary",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeDictionary",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeDictionary",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SliderArrangeFloat",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SliderArrangeType",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeType",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeType",
       "status": "other_group_numeric"
     },
     {
       "assembly": "VM.PcUI",
       "original_full_type": "HikPcUI.ListView.SymbolType",
-      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SymbolType",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SymbolType",
       "status": "other_group_numeric"
     },
     {
@@ -39722,7 +39722,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.Controls.BtnHeightConverter",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnHeightConverter",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnHeightConverter",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnHeightConverter.cs",
       "output": null
@@ -39730,7 +39730,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.Controls.BtnShowConverter",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowConverter",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowConverter",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowConverter.cs",
       "output": null
@@ -39738,7 +39738,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.Controls.BtnShowGridConverter",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowGridConverter",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.BtnShowGridConverter",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowGridConverter.cs",
       "output": null
@@ -39866,7 +39866,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.Controls.NumericUpDown",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.NumericUpDown",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.NumericUpDown",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml.cs",
       "output": null
@@ -39898,7 +39898,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.Controls.SliderArrangeType",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.SliderArrangeType",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners.SliderArrangeType",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\SliderArrangeType.cs",
       "output": null
@@ -40612,7 +40612,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.NumbericTextBox",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumbericTextBox",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumbericTextBox",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumbericTextBox.cs",
       "output": null
@@ -40620,7 +40620,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.NumericControl",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.NumericControl",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
       "output": null
@@ -40644,7 +40644,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.RangeRule",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.RangeRule",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
       "output": null
@@ -40652,7 +40652,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SliderArrange",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml.cs",
       "output": null
@@ -40660,7 +40660,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SliderArrangeBase",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeBase",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
       "output": null
@@ -40668,7 +40668,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SliderArrangeDictionary",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeDictionary",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeDictionary",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml.cs",
       "output": null
@@ -40676,7 +40676,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SliderArrangeFloat",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeFloat",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml.cs",
       "output": null
@@ -40684,7 +40684,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SliderArrangeType",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeType",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrangeType",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeType.cs",
       "output": null
@@ -40692,7 +40692,7 @@
     {
       "assembly": "VM.PcUI",
       "original": "HikPcUI.ListView.SymbolType",
-      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SymbolType",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SymbolType",
       "status": "other_group_numeric",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SymbolType.cs",
       "output": null

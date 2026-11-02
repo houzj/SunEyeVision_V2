@@ -1,11 +1,11 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 
 public partial class SliderArrange : SliderArrangeBase, IComponentConnector, IStyleConnector
 {

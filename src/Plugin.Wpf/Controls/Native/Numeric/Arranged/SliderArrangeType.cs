@@ -1,6 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 
 public enum SliderArrangeType
 {

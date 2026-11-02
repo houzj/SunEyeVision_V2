@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<b08n0:BaseWindow xmlns:b08n0="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Foundation" x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.EditRoundedWindow"  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:pcuicontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView" Title="矩形圆角设置" Height="100" Width="300">
+<b08n0:BaseWindow xmlns:b08n0="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Foundation" x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.EditRoundedWindow"  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:pcuicontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged" Title="矩形圆角设置" Height="100" Width="300">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml" />
-        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Arranged/SliderArrangeDictionary.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>

@@ -2,7 +2,7 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  
  xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab"
- xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView"
+ xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged"
  xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView"
  xmlns:localization="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
  <ResourceDictionary.MergedDictionaries>

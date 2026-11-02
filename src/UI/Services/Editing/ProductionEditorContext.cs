@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Threading;
@@ -106,6 +107,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     internal Func<bool>? HasPendingViewEdits { get; set; }
     public object FormalNode { get; }
     public WorkflowNodeBase DraftNode => _draft.Node;
+    public bool OwnsDraft(object? node) => IsValid && (ReferenceEquals(node, _draft.Node) || _related.Values.Any(item => ReferenceEquals(node, item.Draft.Node)));
     public ScopedNodeIdentity Identity => _draft.Identity;
     public long OpenedVersion { get; }
     public string? LastRefreshError { get; private set; }

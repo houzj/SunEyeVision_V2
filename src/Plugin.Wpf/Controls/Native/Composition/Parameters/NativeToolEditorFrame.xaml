@@ -21,7 +21,7 @@
   <Border Grid.Row="2" Background="{DynamicResource GlobalBorderBg}" CornerRadius="0,0,2,2">
    <Grid>
     <Button x:Name="ResetButton" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,8,0" Width="24" Height="24"
-            ToolTip="重置运行参数（尚未接入）" Style="{StaticResource ResetBtnStyle}"
+            ToolTip="重置运行参数（尚未接入）" ToolTipService.ShowOnDisabled="True" Style="{StaticResource ResetBtnStyle}"
             Visibility="{Binding ResetVisibility,RelativeSource={RelativeSource AncestorType=UserControl}}"
             Command="{Binding ResetCommand,RelativeSource={RelativeSource AncestorType=UserControl}}"
             IsEnabled="{Binding ResetAvailable,RelativeSource={RelativeSource AncestorType=UserControl}}"/>

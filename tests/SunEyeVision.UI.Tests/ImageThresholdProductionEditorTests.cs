@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
@@ -111,10 +112,10 @@ public sealed class ImageThresholdProductionEditorTests
         using var f = new Fixture(); var text = f.ThresholdText(); var version = f.Host.Capture().Version;
         Assert.Null(((RoiParameters)f.Draft).ImageSource); // Saving configuration does not require a runtime image.
         text.Text = value.ToString(); Assert.Equal(128, Get(f.Published, "Threshold"));
-        Assert.True(ToolEditorCommit.TryValidateOpenEditors(null, out var error, n => ReferenceEquals(n, f.Formal)), error);
+        Assert.True(ToolEditorCommit.TryValidate(f.Control, out var error), error);
         Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Equal(value, Get(f.Draft, "Threshold"));
         if (confirm) Assert.True(Assert.IsType<DefaultDebugWindow>(f.Window).TryConfirm(out error), error);
-        else Assert.True(ToolEditorCommit.TryCommitOpenEditors(null, out error, n => ReferenceEquals(n, f.Formal)), error);
+        else Assert.True(ToolEditorCommit.TryCommit(f.Control, out error), error);
         Assert.Equal(value, Get(f.Published, "Threshold")); Assert.Equal(1, f.Publications);
         Assert.Equal(version + 1, f.Host.Capture().Version); Assert.Equal(0, f.LegacyCommits);
         Assert.NotSame(f.Published, f.Draft);
@@ -167,7 +168,7 @@ public sealed class ImageThresholdProductionEditorTests
     {
         using var f = new Fixture(); var text = f.ThresholdText(); var version = f.Host.Capture().Version;
         text.Text = "not-int";
-        Assert.False(ToolEditorCommit.TryValidateOpenEditors(null, out _, n => ReferenceEquals(n, f.Formal)));
+        Assert.False(ToolEditorCommit.TryValidate(f.Control, out _));
         Assert.False(Assert.IsType<DefaultDebugWindow>(f.Window).TryConfirm(out _)); Assert.Equal("not-int", text.Text);
         Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Equal(version, f.Host.Capture().Version);
         Assert.Equal(0, f.Publications); Assert.Equal(0, f.LegacyCommits);
@@ -239,7 +240,7 @@ public sealed class ImageThresholdProductionEditorTests
         using var f = new Fixture(); var other = new WorkflowNodeBase("threshold", "other", "other", "ImageThreshold") { Parameters = Plugin.Value.CreateInstance("SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters") as ToolParameters ?? throw new Exception() };
         Assert.Equal(f.Formal.Id, other.Id); Assert.NotSame(f.Formal, other);
         var text = f.ThresholdText(); text.Text = "181"; f.Current = false;
-        Assert.False(ToolEditorCommit.TryCommitOpenEditors(null, out _, n => ReferenceEquals(n, f.Formal)));
+        Assert.False(ToolEditorCommit.TryCommit(f.Control, out _));
         Assert.False(f.Context.IsActive); Assert.Empty(f.Active);
         Assert.Equal(128, Get(f.Published, "Threshold")); Assert.Equal(0, f.Publications);
     });
@@ -249,7 +250,7 @@ public sealed class ImageThresholdProductionEditorTests
         using var f = new Fixture(custom: true);
         Assert.Same(f.Control, Assert.IsType<CustomDebugWindow>(f.Window).EditorControl);
         f.ThresholdText().Text = "181";
-        Assert.True(ToolEditorCommit.TryCommitOpenEditors(null, out var error, n => ReferenceEquals(n, f.Formal)), error);
+        Assert.True(ToolEditorCommit.TryCommit(f.Control, out var error), error);
         Assert.Equal(181, Get(f.Published, "Threshold")); Assert.Equal(1, f.Publications);
         f.Window.Close(); Assert.Equal(1, f.Publications); Assert.Empty(f.Active); Assert.Equal(0, f.LegacyCommits);
     });

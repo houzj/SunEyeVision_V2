@@ -52,6 +52,8 @@ namespace SunEyeVision.UI.Services.Editing
             }
             catch (Exception ex)
             {
+                try { (context.DebugControl as IDisposable)?.Dispose(); }
+                catch (Exception cleanup) { VisionLogger.Instance.Log(LogLevel.Error, $"节点编辑器清理失败: {cleanup.Message}", "NodeOpenDecisionChain", cleanup); }
                 context.FailureReason = ex.Message;
                 VisionLogger.Instance.Log(LogLevel.Error,
                     $"节点打开失败: {ex.Message}",
@@ -117,14 +119,14 @@ namespace SunEyeVision.UI.Services.Editing
 
             if (context.DebugControl is System.Windows.Controls.UserControl control)
             {
-                // A declaration editor supplies configuration content, not a complete custom
-                // window layout/footer or a result event relay. It always needs the complete host shell.
-                System.Windows.Window window = context.WindowStyle == DebugWindowStyle.Custom&&control is not DeclaredToolConfigurationControl&&control is not RuntimeNodeConfigurationControl
-                    ? new SunEyeVision.Plugin.SDK.UI.Windows.CustomDebugWindow(control)
-                    : new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(control);
-                if (context.MainWindow is not null) window.Owner = context.MainWindow;
-                context.CreatedWindow = window;
-                return;
+                if (control is RuntimeNodeConfigurationControl runtimeControl)
+                {
+                    var runtimeWindow = new RuntimeToolEditorWindow(runtimeControl);
+                    if (context.MainWindow is not null) runtimeWindow.Owner = context.MainWindow;
+                    context.CreatedWindow = runtimeWindow;
+                    return;
+                }
+                throw new InvalidOperationException("该工具尚未接入当前运行目录的参数编辑宿主。");
             }
             context.CreatedWindow = null;        }
     }

@@ -25,10 +25,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private readonly List<IDisposable> _readers;
     private ResultDisplaySourceSet? _displaySources;
     private string? _displaySourceFailure;
-    private ImageSourceRunInput? _sourceInput;
+    private IHostInputPreparer? _hostInputPreparer;
     private RuntimeGenerationLease? _generation;
     private CancellationTokenSource? _generationCancellation;
-    private ICameraCaptureService? _cameraService;
     private Func<bool>? _previewCurrent;
     private int _started;
     private bool _disposed;
@@ -47,8 +46,9 @@ public sealed class RuntimeDebugInvocation : IDisposable
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
-        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
-        => CaptureCore(workflow,directory,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null,null,readDisplayCandidate);
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null,
+        IHostInputPreparer? hostInputPreparer=null)
+        => CaptureCore(workflow,directory,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null,null,readDisplayCandidate,hostInputPreparer);
 
     /// <summary>Resolve only explicitly requested active input ports from already published snapshots.
     /// No algorithm, parameter current value, settings materialization or upstream execution occurs.</summary>
@@ -79,7 +79,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
-        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null,IHostInputPreparer? hostInputPreparer=null)
     {
         ArgumentNullException.ThrowIfNull(workflow);
         RuntimeNodeAdmission.Require(directory,draft);
@@ -99,6 +99,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 throw new InvalidOperationException("调试配置目录代次在捕获期间发生变化。");
             }
             invocation._generation=generation;invocation._generationCancellation=linked;
+            invocation._hostInputPreparer=hostInputPreparer;
             return invocation;
         }
         catch(Exception failure)
@@ -334,11 +335,6 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 }
                 invocation._previewCurrent=Current;
             }
-            if(previewInputs is null&&node.ToolType=="ImageLoad")
-            {
-                invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths,owner,workflow.Id);
-                invocation._cameraService=cameraService;
-            }
             if(previewInputs is null&&configuration.ResultDisplay is not null&&graph is not null)
             {
                 var eligible=new HashSet<string>(StringComparer.Ordinal);var pending=new Stack<string>(graph.GetPredecessors(node.Id));
@@ -400,7 +396,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         if(Interlocked.Exchange(ref _started,1)!=0)throw new InvalidOperationException("调试输入快照只能执行一次。");
         IDisposable? admission=null;
         RuntimeGenerationLease? generation=null;
-        ImageSourceInvocationInputs? sourceLease=null;
+        PreparedHostInvocation? sourceLease=null;
 
         var resources=new FrozenOutputResources();ToolOutcome? outcome=null;DeclaredOutputSnapshot? result=null;bool transferred=false;Exception? failure=null;
         var timer=Stopwatch.StartNew();
@@ -417,16 +413,17 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     throw new InvalidOperationException("私有参数写入的调试身份已失效。");
             });
             var inputs=prepared.Inputs;
-            if(_sourceInput is not null)
+            var context=new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources);
+            if(_node.RuntimeConfiguration!.Directory.GetHostInputs(_node.RuntimeConfiguration.ToolId) is not null)
             {
-                sourceLease=await ImageSourceInvocationInputs.CaptureAsync(_node,_sourceInput,Identity.ToInvocationIdentity(_node.Id),
-                    _cameraService,null,Identity.CancellationToken).ConfigureAwait(false);
+                sourceLease=await HostInputCoordinator.PrepareAsync(_node.RuntimeConfiguration,
+                    _hostInputPreparer??throw new InvalidOperationException("调试缺少声明的宿主输入。"),prepared.Settings,Identity,_node.Id,context).ConfigureAwait(false);
                 var values=inputs.CopyValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
                 foreach(var pair in sourceLease.Values)
                     if(!values.TryAdd(pair.Key,pair.Value))throw new InvalidOperationException("图像源冻结输入与节点绑定冲突："+pair.Key);
                 inputs=new InputValues(_node.RuntimeConfiguration!.Schema.Inputs,values);
             }
-            outcome=await _node.ExecuteRuntimeAsync(_node.RuntimeConfiguration!,generation!,inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources,_sourceInput is null ? null : () => _sourceInput.AcceptLocalImage(Identity)),null,prepared.Settings).ConfigureAwait(false);
+            outcome=await _node.ExecuteRuntimeAsync(_node.RuntimeConfiguration!,generation!,inputs,sourceLease?.Context??context,null,prepared.Settings).ConfigureAwait(false);
             var generationResources=new GenerationResourceOwner(resources,generation!);
             generation=null;transferred=true;result=DeclaredOutputSnapshot.Capture(resultSchema,0,Identity,resultNodeId,outcome,generationResources,timer.Elapsed.TotalMilliseconds,sourceWorkflowId:_workflowId);
             if(result.IsSuccess)
@@ -449,8 +446,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
             _generationCancellation=null;
             try{Identity.CompleteCallbacks();}catch(Exception error){cleanup.Add(error);}
             finally{cleanup.AddRange(Release(_readers));}
-            try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
-            try{_sourceInput?.FinishRead();}catch(Exception error){cleanup.Add(error);}
+            if(sourceLease is not null)try{await sourceLease.DisposeAsync().ConfigureAwait(false);}catch(Exception error){cleanup.Add(error);}
+            try{_hostInputPreparer?.Dispose();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}if(!ReferenceEquals(outcome?.Output,resources))try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}try{generation?.Dispose();}catch(Exception error){cleanup.Add(error);}}
             if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Dispose();}catch(Exception error){cleanup.Add(error);}
@@ -467,11 +464,10 @@ public sealed class RuntimeDebugInvocation : IDisposable
         try{Interlocked.Exchange(ref _generation,null)?.Dispose();}catch(Exception error){errors.Add(error);}
         try{Identity.CompleteCallbacks();}catch(Exception error){errors.Add(error);}
         finally{errors.AddRange(Release(_readers));}
-        try{_sourceInput?.FinishRead();}catch(Exception error){errors.Add(error);}if(errors.Count>0)throw new AggregateException(errors);
+        try{_hostInputPreparer?.Dispose();}catch(Exception error){errors.Add(error);}if(errors.Count>0)throw new AggregateException(errors);
     }
     private static List<Exception> Release(List<IDisposable> readers)
     {var errors=new List<Exception>();foreach(var reader in readers)try{reader.Dispose();}catch(Exception error){errors.Add(error);}readers.Clear();return errors;}
-    private sealed record Context(RunIdentity Identity,CancellationToken Cancellation,IOutputResources Resources,Func<string>? LocalRead):IToolExecutionContext,ILocalImageReadContext
-    {public string AcceptLocalImage()=>LocalRead?.Invoke()??throw new InvalidOperationException("当前调试不提供本地图像读取接纳。");
-     public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime调试");}
+    private sealed record Context(RunIdentity Identity,CancellationToken Cancellation,IOutputResources Resources):IToolExecutionContext
+    {public void Log(string message)=>SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,message,"Runtime调试");}
 }

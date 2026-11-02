@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using System.IO;
@@ -13,6 +14,7 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
@@ -89,9 +91,9 @@ internal static class S2DocumentEditingCases
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
-        DefaultDebugWindow Open()
-        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<DefaultDebugWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
+        RuntimeToolEditorWindow Open()
+        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<RuntimeToolEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
+        RuntimeNodeConfigurationControl Control(RuntimeToolEditorWindow window)=>window.Editor;
         object Owner(RuntimeNodeConfigurationControl control)=>Get(control.Content,"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
         NativeRoiEditor Editor(object owner,string group)=>(NativeRoiEditor)((System.Collections.IDictionary)Get(owner,"_editors"))[group]!;
@@ -148,20 +150,88 @@ internal static class S2DocumentEditingCases
             timer.Tick+=(_,_)=>{var dialog=app.Windows.OfType<Window>().SingleOrDefault(item=>item.GetType().Name=="ThemeMessageDialog"&&item.IsVisible);if(DateTime.UtcNow>deadline){timer.Stop();failure=new TimeoutException("等待自有删除确认框超时");dialog?.Close();return;}if(dialog is null)return;try{Require(((TextBlock)dialog.FindName("TitleText")).Text=="确认删除","出现非删除确认，不执行Yes");timer.Stop();confirmed=true;((Button)dialog.FindName("YesButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));}catch(Exception error){failure=error;dialog.Close();}};
             timer.Start();try{vm.DeleteSelectedNodesCommand.Execute(null);}finally{timer.Stop();dialogs.Start();}Pump();if(failure is not null)throw failure;Require(confirmed&&!solutions.CurrentSolution!.Workflows.Single(flow=>flow.Id==flowId).Nodes.Any(node=>node.Id==id),"未经过主窗真实删除确认或节点仍存在");
         }
-        void PrivateDebug(DefaultDebugWindow window,bool expectedSuccess,Action<DeclaredOutputSnapshot,RuntimeDebugInvocation>? inspect=null)
+        void PrivateDebug(RuntimeToolEditorWindow window,bool expectedSuccess,Action<DeclaredOutputSnapshot,RuntimeDebugInvocation>? inspect=null)
         {
             var control=Control(window);var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)Get(control,"_captureDebug");RuntimeDebugInvocation? invocation=null;DeclaredOutputSnapshot? output=null;IDisposable? hold=null;Exception? observationFailure=null;var completed=false;var events=0;
-            SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{events++;try{if(args.Results is DeclaredOutputSnapshot result){output=result;hold=result.Retain();}}catch(Exception error){observationFailure=error;}completed=true;};
-            control.SetDebugCapture(draft=>{invocation=capture(draft);return invocation;});control.AddHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);
+            EventHandler<RuntimeToolExecutionEventArgs> observe=(_,args)=>{events++;try{if(args.Result is DeclaredOutputSnapshot result){output=result;hold=result.Retain();}}catch(Exception error){observationFailure=error;}completed=true;};
+            control.SetDebugCapture(draft=>{invocation=capture(draft);return invocation;});control.ExecutionCompleted+=observe;
             try
             {
-                Require(SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.CanExecute(null,control),"真实宿主调试命令未就绪");SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.Execute(null,control);PumpUntil(()=>completed&&!(bool)Get(control,"_running"));if(observationFailure is not null)throw observationFailure;
+                Require(window.ExecuteOnce.CanExecute(null),"真实宿主调试命令未就绪");window.ExecuteOnce.Execute(null);PumpUntil(()=>completed&&!(bool)Get(control,"_running"));if(observationFailure is not null)throw observationFailure;
                 Require(events==1&&((output?.IsSuccess==true)==expectedSuccess),"真实宿主调试结果不符：events="+events+" status="+output?.Status);
                 if(expectedSuccess){Require(invocation is not null&&output is not null,"成功调试未捕获实际快照");inspect?.Invoke(output!,invocation!);}else Require(invocation is null,"缺源调试进入了算法捕获/执行而非在正式准入拒绝");
             }
-            finally{control.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);if(!(bool)Get(control,"_disposed"))control.SetDebugCapture(capture);hold?.Dispose();}
+            finally{control.ExecutionCompleted-=observe;if(!(bool)Get(control,"_disposed"))control.SetDebugCapture(capture);hold?.Dispose();}
         }        if(scope is "All" or "Core")
         {
+            Case("无草稿节点编辑器在任何绑定写入之前拒绝提交",()=>{
+                var model=new DraftProbeValue();var text=new TextBox();
+                text.SetBinding(TextBox.TextProperty,new Binding(nameof(DraftProbeValue.Value)){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});
+                var editor=new DraftProbeEditor{Content=text};text.Text="修改后";
+                Require(!ToolEditorCommit.TryCommit(editor,out var error)&&error.Contains("尚未接入"),"无草稿节点编辑器未拒绝");
+                Require(model.Value=="原值"&&text.Text=="修改后","拒绝前已写入正式值或丢弃输入");
+                ToolEditorCommit.AttachDraftContext(editor,new ForeignDraftProbe());
+                Require(!ToolEditorCommit.TryCommit(editor,out error)&&error.Contains("尚未接入"),"非当前草稿节点编辑器未拒绝");
+                Require(model.Value=="原值"&&text.Text=="修改后","草稿身份错误时已写入正式值或丢弃输入");
+            });
+            Case("不受支持编辑视图打开失败后释放资源",()=>{
+                var rejected=new RejectedEditorProbe();var openContext=new NodeOpenContext{RuntimeDirectory=admission.Runtime};
+                Require(!new NodeOpenDecisionChain().Execute(node,openContext,()=>rejected),"不支持的编辑器被当作正式窗口");
+                Require(rejected.Disposed&&openContext.CreatedWindow is null,"打开失败后编辑视图未释放");
+            });
+            Case("现有Group参数页使用唯一事务准备并随会话退役",()=>{
+                var document=new Solution();var parent=new SunEyeVision.Workflow.Workflow("group-parent","主流程");
+                var child=new SunEyeVision.Workflow.Workflow("group-child","内部"){IsSubroutine=true};
+                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId=child.Id,Parameters=new SubroutineParameters{SubroutineId=child.Id}};
+                parent.Nodes.Add(owner);document.Workflows.Add(parent);document.Workflows.Add(child);
+                using var context=new ProductionEditorContext(new NodeConfigurationEditHost(document),parent.Id,owner,()=>true,_=>{});
+                var assembly=typeof(ProductionEditorContext).Assembly;
+                var sessionType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParameterSession",true)!;
+                var pageType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParametersControl",true)!;
+                Func<string,WorkflowNodeBase,bool> allowed=(_,_)=>false;
+                var groupSession=Activator.CreateInstance(sessionType,new object?[]{context,document,allowed,32,null})!;
+                var page=(UserControl)Activator.CreateInstance(pageType,BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{groupSession,null},null)!;
+                try { Require(ToolEditorCommit.TryPrepare(page,out var error),error);Require(context.IsValid,"Group 草稿提前失效");context.Discard();Require(!context.IsActive,"Group 会话未退役"); }
+                finally { (page as IDisposable)?.Dispose(); }
+            });
+            Case("图像源和Blob通过原件窗口打开，取消关闭保留草稿与重试释放",()=>{
+                foreach(var openWindow in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())openWindow.Close();Pump();
+                vm.OpenDebugWindowCommand.Execute(source);Pump();
+                var imageWindow=app.Windows.OfType<RuntimeToolEditorWindow>().Single(w=>w.IsVisible);
+                var imageContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(imageWindow.Editor)!;
+                Require(imageContext.IsValid&&imageContext.Identity.NodeId==source.Id,"图像源编辑草稿身份不匹配");
+                var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)Get(imageWindow.Editor,"_captureDebug");
+                var invalidDraft=imageContext.DraftNode.Clone();invalidDraft.Id="not-in-flow";var rejected=false;
+                try { using var ignored=capture(invalidDraft); } catch(InvalidOperationException) { rejected=true; }
+                Require(rejected,"无效节点调试捕获未拒绝");
+                using(var afterFailure=capture(imageContext.DraftNode)) { }
+                var sourceCompleted=false;var sourceSuccess=false;
+                EventHandler<RuntimeToolExecutionEventArgs> onSource=(_,args)=>{sourceCompleted=true;sourceSuccess=args.Result?.IsSuccess==true;};
+                imageWindow.ToolExecutionCompleted+=onSource;
+                Require(imageWindow.ExecuteOnce.CanExecute(null),"图像源实际调试命令不可用");imageWindow.ExecuteOnce.Execute(null);PumpUntil(()=>sourceCompleted&&!imageWindow.State.IsRunning);
+                Require(sourceSuccess,"图像源实际调试未取得成功结果");imageWindow.ToolExecutionCompleted-=onSource;
+                imageWindow.Close();Pump();Require(!imageContext.IsActive,"图像源关闭后草稿未退役");
+                Run();var window=Open();PrivateDebug(window,true);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(window.Editor)!;
+                System.ComponentModel.CancelEventHandler reject=(_,args)=>args.Cancel=true;
+                window.Closing+=reject;window.Close();Pump();Require(window.IsVisible&&context.IsValid,"取消关闭损坏窗口或草稿");
+                window.Closing-=reject;window.Close();Pump();Require(!context.IsActive,"关闭重试未释放草稿");
+            });
+            Case("真实Blob连续运行占位和宿主运行门禁及执行中关闭",()=>{
+                foreach(var old in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())old.Close();Pump();Run();
+                var window=Open();Require(!window.StartContinuous.CanExecute(null)&&!window.Stop.CanExecute(null),"未接入连续运行允许执行");
+                var frame=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.NativeToolEditorFrame)Get(window,"_frame");
+                var settings=Logical(window.Editor).OfType<DeclaredSettingsView>().Single();settings.SelectedPageIndex=1;Pump();
+                Capture(window,"runtime-editor-run.png");
+                var footerButtons=Visual(window).OfType<Button>().Where(button=>button.Content is string).ToArray();
+                var runButton=footerButtons.Single(button=>Equals(button.Content,"执行"));var confirmButton=footerButtons.Single(button=>Equals(button.Content,"确定"));
+                Require(runButton.IsEnabled&&confirmButton.IsEnabled,"有效编辑会话的实际执行/确认按钮不可用");
+                Require(frame.ResetVisibility==Visibility.Visible&&frame.ResetCommand is null&&!frame.ResetAvailable,"运行参数页缺少禁用重置占位");
+                settings.SelectedPageIndex=0;Pump();Require(frame.ResetVisibility==Visibility.Collapsed,"非运行参数页错误显示重置");
+                vm.IsRunning=true;Pump();Require(!window.ExecuteOnce.CanExecute(null),"工作流运行期间仍可调试");vm.IsRunning=false;Pump();
+                var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(window.Editor)!;
+                Require(window.ExecuteOnce.CanExecute(null),"单次执行不可用");window.ExecuteOnce.Execute(null);window.Close();PumpUntil(()=>!window.State.IsRunning);
+                Require(!context.IsActive&&!window.IsVisible,"执行中关闭后会话未退役");
+            });
             Case("正式显示声明与算法阶段隔离，常量模式及默认只创建一次",()=>{
                 var config=node.RuntimeConfiguration!;Require(config.SettingsSchema.Inputs.Count==55&&config.DisplaySettingsSchema.Inputs.Count==28&&config.EditorSettingsSchema.Inputs.Count==83,"算法/显示编辑声明边界错误");
                 Require(displaySchema.Inputs.Where(port=>port.Id!=Display(BlobResultDisplay.Text,"content")&&port.Id!=Display(BlobResultDisplay.Text,"x")&&port.Id!=Display(BlobResultDisplay.Text,"y")).All(port=>port.EditModes==FieldEditModes.Constant),"非文本角色被扩大订阅");
@@ -445,7 +515,7 @@ internal static class S2DocumentEditingCases
                 control.BindDraft((WorkflowNodeBase)Get(context,"DraftNode"));Pump();Require(!ReferenceEquals(Get(scopeOwner,"_token"),oldToken)&&Geometry(Scene()).Length==2,"成功真实草稿绑定未建立新代");window.Close();Pump();
             });
             Case("同schema同物理输入的另一节点不借旧节点publication样式",()=>{
-                foreach(var existing in app.Windows.OfType<DefaultDebugWindow>().Where(item=>item.IsVisible).ToArray())existing.Close();Pump();
+                foreach(var existing in app.Windows.OfType<RuntimeToolEditorWindow>().Where(item=>item.IsVisible).ToArray())existing.Close();Pump();
                 var old=Scene();var before=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result;
                 var second=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(second);
                 Require(before is not null&&ReferenceEquals(before,((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result)&&before.ExecutionIdentity?.IsCurrent==true&&!history.LastInvalidatedNodes.Any(item=>item.NodeId==node.Id),"新增无关节点错误退役原运行结果");
@@ -458,7 +528,7 @@ internal static class S2DocumentEditingCases
         if(scope is "All" or "Window")
         {
             Case("多节点纯样式事务及UndoRedo保结果，算法改变与Undo不复活旧publication",()=>{
-                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<DefaultDebugWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);var createdPeer=peer is null;if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
+                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);var createdPeer=peer is null;if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
                 Phase("peer-ready");var before=node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width;
                 var first=host.BeginEdit(flowId,node.Id);var second=host.BeginEdit(flowId,peer.Id);
                 first.Node.RuntimeConfiguration=first.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),7d}});
@@ -534,6 +604,8 @@ internal static class S2DocumentEditingCases
                 }
             });
             Case("三角色真实WPF眼睛样式确认取消UndoRedo只刷新不重跑",()=>{
+                void Step(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),"STEP "+phase+Environment.NewLine);
+                Step("before-roi");
                 var polygon=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(1,40),BlobLocalRoi.Point(5,40),BlobLocalRoi.Point(2,44)})}});
                 Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14)),Row(Ring(0,Math.PI))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(polygon)}));
                 var publication=Publication();var snapshot=Frozen();
@@ -541,7 +613,7 @@ internal static class S2DocumentEditingCases
                 var roles=new[]{(Role:ResultGeometryRole.Inspection,Id:BlobResultDisplay.Inspection),(Role:ResultGeometryRole.Mask,Id:BlobResultDisplay.Mask),(Role:ResultGeometryRole.Annulus,Id:BlobResultDisplay.Annulus)};
                 for(var i=0;i<roles.Length;i++)
                 {
-                    var (role,id)=roles[i];var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();
+                    var (role,id)=roles[i];Step("before-open-"+role);var window=Open();Step("after-open-"+role);var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();Step("after-page-"+role);
                     DeclaredFieldAccess Field(string name)=>((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==Display(id,name));
                     var eye=Visual(Field("visible").View).OfType<ToggleButton>().Single(button=>Equals(button.Tag,"NativeGraphicVisibility"));eye.SetCurrentValue(ToggleButton.IsCheckedProperty,false);eye.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
                     Require(Members(role).Length==0&&publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"原眼睛未隐藏对应角色或引发新执行："+role);
@@ -549,7 +621,7 @@ internal static class S2DocumentEditingCases
                     var width=3d+i;var opacity=new[]{.4,.5,.6}[i];var ok=PresentationDeclarations.Color((byte)(11+i),(byte)(21+i),(byte)(31+i));var ng=PresentationDeclarations.Color((byte)(151+i),(byte)(161+i),(byte)(171+i));
                     Require(Field("width").TrySetConstant(width)&&Field("opacity").TrySetConstant(opacity)&&Field("ok").TrySetConstant(ok)&&Field("ng").TrySetConstant(ng),"真实样式字段提案被拒绝："+role);Pump();
                     var expected=System.Windows.Media.Color.FromRgb((byte)(11+i),(byte)(21+i),(byte)(31+i)).ToString();Require(Members(role).Length==1&&Members(role).All(item=>(double)Get(item,"StrokeThickness")==width&&Math.Abs((double)Get(item,"Opacity")-opacity)<1e-12&&Equals(Get(item,"Stroke"),expected)),"草稿样式未投影到实际角色："+role);
-                    Require(control.TryCapture(out var error),error);var context=ToolEditorCommit.GetDraftContext(control)!;var args=new object?[]{null};Require((bool)context.GetType().GetMethod("TryCommitEditor")!.Invoke(context,args)!,args[0]?.ToString()??"真实确认失败");window.Close();Pump();
+                    Step("before-commit-"+role);Require(control.TryCapture(out var error),error);var context=ToolEditorCommit.GetDraftContext(control)!;var args=new object?[]{null};Require((bool)context.GetType().GetMethod("TryCommitEditor")!.Invoke(context,args)!,args[0]?.ToString()??"真实确认失败");Step("before-close-"+role);window.Close();Pump();Step("after-close-"+role);
                     Require(publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"确认仅样式却替换结果："+role);history.Undo();Pump();Require(Members(role).Length==1&&Members(role).All(item=>(double)Get(item,"StrokeThickness")==2),"样式Undo未恢复对应角色："+role);history.Redo();Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==width&&Equals(Get(item,"Stroke"),expected)),"样式Redo未恢复对应角色："+role);
                     var cancel=Open();var cancelControl=Control(cancel);var cancelEditor=(DeclaredSettingsView)Get(cancelControl.Content,"Editor");SelectResultPage(cancelEditor);var cancelField=((DeclaredFieldsView)cancelEditor.Content).Fields.Single(field=>field.FieldId==Display(id,"width"));Require(cancelField.TrySetConstant(9d),cancelField.Error);Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==9),"取消前合法草稿未实际预览");cancel.Close();Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==width)&&publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"取消未恢复最新正式样式："+role);
                 }
@@ -563,7 +635,7 @@ internal static class S2DocumentEditingCases
                 var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance,admission.Runtime);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
                 using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
                 var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
-                var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
+                var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
                 using(var result=task.GetAwaiter().GetResult())
                 {
                     Require(result.Success&&result.NodeResults[node.Id].Result is DeclaredOutputSnapshot,"真实重开执行失败");
@@ -910,5 +982,10 @@ internal static class S2DocumentEditingCases
     private static IEnumerable<DependencyObject> Visual(DependencyObject root)
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
+    private sealed class DraftProbeValue { public string Value {get;set;}="原值"; }
+    private sealed class DraftProbeEditor : ToolDebugControlBase { protected override object ExecuteTool()=>new GenericToolResults(); }
+    private sealed class RejectedEditorProbe : UserControl, IDisposable { public bool Disposed {get;private set;} public void Dispose()=>Disposed=true; }
+    private sealed class ForeignDraftProbe : IToolEditorDraftContext
+    { public object FormalNode {get;}=new(); public bool OwnsDraft(object? node)=>false; public bool TryCommitEditor(out string error){error="";return true;} public bool TryValidateEditor(out string error){error="";return true;} public void Discard(){} }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
 }

@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Contracts;
 using System.Collections.Generic;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;

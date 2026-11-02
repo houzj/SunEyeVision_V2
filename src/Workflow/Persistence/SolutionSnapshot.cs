@@ -21,16 +21,15 @@ public sealed class SolutionSnapshot
 
     internal static SolutionSnapshot PrepareJson(string json, string targetPath, bool untitled,RuntimeDirectorySnapshot directory)
     {
-        SolutionCompatibilityAdapter.CheckDuplicateKeys(json);
+        SolutionDocumentValidator.CheckDuplicateKeys(json);
         var root = JsonNode.Parse(json) ?? throw new System.Text.Json.JsonException("Empty solution snapshot.");
         if (untitled && (string.IsNullOrWhiteSpace(root["Name"]?.GetValue<string>()) || root["Name"]?.GetValue<string>() == "未命名方案"))
             root["Name"] = Path.GetFileNameWithoutExtension(targetPath);
         var diagnostics = new List<PersistenceDiagnostic>();
-        var legacy = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
-        SolutionCompatibilityAdapter.Prepare(root, diagnostics, deferLegacyBindingOwner: legacy);
+        SolutionDocumentValidator.Prepare(root, diagnostics);
         // Never consult the mutable source document again. Resolve the exact captured JSON
         // against its actual owner and static schemas before any target or recovery IO.
-        var candidate = new SolutionRepository(directory:directory).ReadFrozenCandidate(root, diagnostics, legacy);
+        var candidate = new SolutionRepository(directory:directory).ReadFrozenCandidate(root, diagnostics);
         var normalized = SolutionSemanticComparer.Canonicalize(SolutionSession.Serialize(candidate));
         return new SolutionSnapshot(normalized, normalized, Path.GetFullPath(targetPath), diagnostics.AsReadOnly());
     }

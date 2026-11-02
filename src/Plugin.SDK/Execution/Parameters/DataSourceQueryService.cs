@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

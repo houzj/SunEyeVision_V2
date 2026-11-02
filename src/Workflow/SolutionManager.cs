@@ -39,6 +39,8 @@ namespace SunEyeVision.Workflow;
 /// </remarks>
 public class SolutionManager
 {
+    // Instance-scoped transaction observer used for deterministic boundary verification.
+    internal Action<string>? CommitBoundary { get; set; }
     private string _solutionsDirectory;
     private string _configFilePath;
     private readonly ILogger _logger;
@@ -876,7 +878,9 @@ public class SolutionManager
         var current = CurrentSolution != null && CurrentFilePath != null && AtomicJsonFile.SamePath(CurrentFilePath, sourcePath);
         if(current)Session?.EnsureNotPreparingPresentation();
         var json = current ? Fingerprint(CurrentSolution!) : File.ReadAllText(sourcePath);
-        json = SolutionResourceResolver.RebaseCopy(json, Path.GetDirectoryName(Path.GetFullPath(sourcePath))!, Path.GetDirectoryName(Path.GetFullPath(targetFilePath))!);
+        // Validate the entire frozen source against the admitted generation before any destination write.
+        json = SolutionSnapshot.PrepareJson(json, sourcePath, untitled: false, RuntimeDirectory).Json;
+        json = SolutionResourceResolver.RebaseCopy(json, Path.GetDirectoryName(Path.GetFullPath(sourcePath))!, Path.GetDirectoryName(Path.GetFullPath(targetFilePath))!, RuntimeDirectory);
         var document = JsonNode.Parse(json)?.AsObject() ?? throw new InvalidDataException("源方案格式错误。");
         var id = Guid.NewGuid().ToString();
         document["Id"] = id;
@@ -888,7 +892,11 @@ public class SolutionManager
         {
             var metadata = _repository.LoadMetadata(targetFilePath) ?? throw new InvalidDataException("新方案元数据无法读取。");
             Solution? next = null;
-            if (switchToNewSolution) next = _repository.Load(targetFilePath) ?? throw new InvalidDataException("新方案加载失败：" + LastError);
+            if (switchToNewSolution)
+            {
+                var loaded = _repository.LoadCandidate(targetFilePath);
+                next = loaded.Candidate ?? throw new InvalidDataException("新方案加载失败：" + string.Join("；",loaded.Diagnostics.Where(item=>item.Severity=="Error").Select(item=>item.Message)));
+            }
             RegisterKnownSolution(metadata);
             ForceSaveSettings();
             if (next != null) SetCurrentSolution(next);
@@ -939,10 +947,17 @@ public class SolutionManager
     {
         var metadata = GetMetadata(solutionId) ?? throw new InvalidOperationException("方案记录不存在。");
         var recovery = _repository.GetRecoveryPath(metadata.FilePath);
-        var restored = _repository.Load(recovery, Path.GetDirectoryName(Path.GetFullPath(metadata.FilePath))!)
-            ?? throw new InvalidDataException("上一保存版本无法恢复：" + LastError);
+        if (!File.Exists(metadata.FilePath)) throw new FileNotFoundException("当前方案文件不存在，不能覆盖恢复。",metadata.FilePath);
+        var destinationHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(metadata.FilePath)));
+        var loaded = _repository.LoadCandidate(recovery, Path.GetDirectoryName(Path.GetFullPath(metadata.FilePath))!);
+        var restored = loaded.Candidate ?? throw new InvalidDataException("上一保存版本无法恢复：" + string.Join("；", loaded.Diagnostics.Where(item=>item.Severity=="Error").Select(item=>item.Message)));
         if (restored.Id != metadata.Id) throw new InvalidDataException("恢复文件身份不匹配，不会覆盖。");
-        AtomicJsonFile.Write(metadata.FilePath, File.ReadAllText(recovery));
+        var recoveryBytes = File.ReadAllBytes(recovery);
+        if (!string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(recoveryBytes)), loaded.SourceSha256, StringComparison.Ordinal))
+            throw new IOException("恢复文件在验证后发生变化，不会覆盖。");
+        var warning=SolutionFileCommit.Restore(metadata.FilePath,recovery,
+            new System.Text.UTF8Encoding(false, true).GetString(recoveryBytes).TrimStart('\uFEFF'),destinationHash,loaded.SourceSha256!,CommitBoundary);
+        if (warning is not null) _logger.Log(LogLevel.Warning,warning);
         restored.FilePath = metadata.FilePath;
         return restored;
     }
@@ -952,22 +967,39 @@ public class SolutionManager
         ArgumentNullException.ThrowIfNull(metadata);
         AtomicJsonFile.ValidateSolutionName(metadata.Name);
         if (!File.Exists(metadata.FilePath)) throw new FileNotFoundException("方案文件失效，请先重新定位。", metadata.FilePath);
+        var loaded = _repository.LoadCandidate(metadata.FilePath);
+        var candidate = loaded.Candidate
+            ?? throw new InvalidDataException("方案不符合当前格式或工具目录，不能修改元数据：" + string.Join("；", loaded.Diagnostics.Where(item=>item.Severity=="Error").Select(item=>item.Message)));
+        if (!string.Equals(candidate.Id, metadata.Id, StringComparison.Ordinal))
+            throw new InvalidDataException("方案身份与元数据不一致，不会覆盖。");
         var previous = GetMetadata(metadata.Id)?.Clone();
-        var original = File.ReadAllText(metadata.FilePath);
+        var originalBytes = File.ReadAllBytes(metadata.FilePath);
+        if (!string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(originalBytes)), loaded.SourceSha256, StringComparison.Ordinal))
+            throw new IOException("方案在验证后发生变化，不会覆盖。");
+        var original = new System.Text.UTF8Encoding(false, true).GetString(originalBytes).TrimStart('\uFEFF');
         var document = JsonNode.Parse(original)!.AsObject();
         document["Name"] = metadata.Name; document["Description"] = metadata.Description;
         var updated = document.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
-        AtomicJsonFile.Write(_repository.GetRecoveryPath(metadata.FilePath), original);
-        AtomicJsonFile.Write(metadata.FilePath, updated);
         try
         {
+            // Update the catalogue first. If it fails, neither the document nor its recovery
+            // file has been touched. The file commit then owns both-file compensation.
             _registry.Register(metadata); _cache.Set(metadata.Id, metadata); _settings.AddKnownSolution(metadata);
             ForceSaveSettings();
+            if (!File.Exists(metadata.FilePath) || !string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(metadata.FilePath))), loaded.SourceSha256, StringComparison.Ordinal))
+                throw new IOException("方案在提交前发生变化，不会覆盖。");
+            var warning=SolutionFileCommit.Write(metadata.FilePath, _repository.GetRecoveryPath(metadata.FilePath), updated, overwrite:true, boundary:CommitBoundary, expectedTargetHash:loaded.SourceSha256);
+            if (warning is not null) _logger.Log(LogLevel.Warning, warning);
         }
-        catch
+        catch (Exception failure)
         {
-            if (File.Exists(metadata.FilePath) && File.ReadAllText(metadata.FilePath) == updated) AtomicJsonFile.Write(metadata.FilePath, original);
-            if (previous != null) { _registry.Register(previous); _cache.Set(previous.Id, previous); _settings.AddKnownSolution(previous); }
+            try
+            {
+                if (previous != null) { _registry.Register(previous); _cache.Set(previous.Id, previous); _settings.AddKnownSolution(previous); }
+                else { _registry.Unregister(metadata.Id); _cache.Invalidate(metadata.Id); _settings.RemoveKnownSolution(metadata.Id); }
+                ForceSaveSettings();
+            }
+            catch (Exception cleanup) { throw new AggregateException("元数据更新失败且目录恢复失败。",failure,cleanup); }
             throw;
         }
         if (CurrentSolution?.Id == metadata.Id) { CurrentSolution.Name = metadata.Name; CurrentSolution.Description = metadata.Description; }

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace SunEyeVision.UI.Services.Editing;
 /// model or algorithm is created. The existing document participant owns publication.</summary>
 public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPendingState,IToolEditorCommitParticipant,IDisposable
 {
+    public event EventHandler<RuntimeToolExecutionEventArgs>? ExecutionCompleted;
     private WorkflowNodeBase _node=null!;
     private IToolSettingsView? _view;
     private ReferenceWindowOwner? _referenceWindowOwner;
@@ -73,20 +75,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         ||_inputs.Any(editor=>editor.HasPendingEdits);
     public RuntimeNodeConfigurationControl(WorkflowNodeBase node)
     {
-        CommandBindings.Add(new CommandBinding(Plugin.SDK.Commands.ToolCommands.Execute,async (_,e)=>
-        {
-            e.Handled=true;
-            try{await RunDebugAsync();}
-            catch(Exception error){Plugin.SDK.Logging.PluginLogger.Error(error.Message,nameof(RuntimeNodeConfigurationControl),error);}
-        },(_,e)=>{e.CanExecute=!_disposed&&!_running&&_captureDebug is not null;e.Handled=true;}));
         BindDraft(node.Clone());
-        Loaded+=(_,_)=>
-        {
-            if(Window.GetWindow(this) is Plugin.SDK.UI.Windows.DefaultDebugWindow window)
-            {window.ApplyCompactParameterLayout();
-                window.Width=Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English"?680:420;
-                window.Resources.MergedDictionaries.Add(Plugin.Wpf.EditorResources.Create());}
-        };
     }
     public void SetDataProvider(DataSourceQueryService query)=>_query=query;
     public void SetDebugCapture(Func<WorkflowNodeBase,RuntimeDebugInvocation> capture)=>_captureDebug=capture;
@@ -108,14 +97,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             result=await Task.Run(()=>invocation.ExecuteAsync());
             if(_disposed||generation!=_generation)
             {
-                if(!_disposed)RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs("草稿已重新绑定，旧调试结果已丢弃。",ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+                if(!_disposed)ExecutionCompleted?.Invoke(this,new(null,"草稿已重新绑定，旧调试结果已丢弃。"));
                 return;
             }
-            RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs(result,(long)result.ExecutionTimeMs,ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+            ExecutionCompleted?.Invoke(this,new(result,null));
         }
         catch(Exception error)
         {
-            if(!_disposed)RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs(error.Message,ToolDebugControlBase.ToolExecutionCompletedEvent,this));
+            if(!_disposed)ExecutionCompleted?.Invoke(this,new(null,error.Message));
             throw;
         }
         finally

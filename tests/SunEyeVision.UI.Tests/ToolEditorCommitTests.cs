@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -79,10 +80,10 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
         try
         {
             window.Show(); editor.UpdateLayout();
-            Assert.True(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out var clean, out var error), error);
-            Assert.Empty(clean); Assert.Equal(",", parameters.Separator);
+            Assert.False(ToolEditorCommit.TryPrepare(editor, out var error));
+            Assert.Contains("尚未接入", error); Assert.Equal(",", parameters.Separator);
             text.Text = ";";
-            Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out error));
+            Assert.False(ToolEditorCommit.TryCommit(editor, out error));
             Assert.Contains("尚未接入", error); Assert.Equal(",", parameters.Separator); Assert.Equal(";", text.Text);
         }
         finally { ToolEditorCommit.DiscardPendingEdits(editor); window.Close(); }
@@ -97,7 +98,7 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
         try
         {
             window.Show(); editor.UpdateLayout(); parameters.Separator = ";";
-            Assert.False(ToolEditorCommit.TryPrepareOpenDraftEditors(n => ReferenceEquals(n, node), out _, out var error));
+            Assert.False(ToolEditorCommit.TryPrepare(editor, out var error));
             Assert.Contains("尚未接入", error); Assert.Equal(";", parameters.Separator);
         }
         finally { ToolEditorCommit.DiscardPendingEdits(editor); window.Close(); }
@@ -212,30 +213,6 @@ public sealed class ToolEditorCommitTests(ITestOutputHelper output)
                 Assert.Single(node.Parameters.RebindingRequired);
             }
             finally { window.Close(); }
-        });
-    }
-    [Fact]
-    public void Open_editor_scope_is_respected_and_invalid_editor_prevents_other_pending_publications()
-    {
-        Sta(() =>
-        {
-            var a = new Value(); var b = new Value(); var ta = new TextBox(); var tb = new TextBox();
-            ta.SetBinding(TextBox.TextProperty, new Binding(nameof(Value.Number)) { Source = a, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
-            tb.SetBinding(TextBox.TextProperty, new Binding(nameof(Value.Number)) { Source = b, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
-            var ea = new Editor { Content = ta }; var eb = new Editor { Content = tb };
-            ea.SetCurrentNode(new WorkflowNodeBase("a", "a", "a", "SendData")); eb.SetCurrentNode(new WorkflowNodeBase("b", "b", "b", "SendData"));
-            var wa = new Window { Content = ea, ShowActivated = false, Left = -10000 }; var wb = new Window { Content = eb, ShowActivated = false, Left = -10000 };
-            try
-            {
-                wa.Show(); wb.Show(); ta.Text = "7"; tb.Text = "8";
-                Assert.True(ToolEditorCommit.TryCommitOpenEditors(id => id == "a", out _)); Assert.Equal(7, a.Number); Assert.Equal(1, b.Number);
-                ta.Text = "9"; tb.Text = "invalid";
-                Assert.False(ToolEditorCommit.TryCommitOpenEditors(null, out _)); Assert.Equal(7, a.Number); Assert.Equal(1, b.Number);
-                Assert.Equal("invalid", tb.Text);
-                tb.Text = "10"; Assert.True(ToolEditorCommit.TryCommitOpenEditors(null, out _)); Assert.Equal(9, a.Number); Assert.Equal(10, b.Number);
-            }
-            finally { wa.Close(); wb.Close(); }
-            ta.Text = "11"; Assert.True(ToolEditorCommit.TryCommitOpenEditors(null, out _)); Assert.Equal(9, a.Number);
         });
     }
     [Fact]

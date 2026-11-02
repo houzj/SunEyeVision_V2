@@ -187,11 +187,11 @@ public partial class WorkflowExecutionManager
         public IReadOnlySet<string> RootSourceIds { get; }
         public long IterationVersion { get; private set; }
         public bool RoundStarted { get; private set; }
-        public Func<SunEyeVision.Plugin.Runtime.ToolExecutionIdentity,string>? AdmissionFor(string sourceId)
+        public Func<SunEyeVision.Plugin.Contracts.RunIdentity,CancellationToken,string>? AdmissionFor(string sourceId)
         {
             var ticket=Consumed.SingleOrDefault(input=>input.SourceNodeId==sourceId);
-            return ticket is null ? null : identity => _sequences.AcceptRead(ticket,identity.RequestId,
-                !PendingSelections.Contains(sourceId) && (Advance || (ExplicitSourceId is not null && ExplicitSourceId!=sourceId)),identity.CancellationToken,
+            return ticket is null ? null : (identity,cancellation) => _sequences.AcceptRead(ticket,identity.RequestId,
+                !PendingSelections.Contains(sourceId) && (Advance || (ExplicitSourceId is not null && ExplicitSourceId!=sourceId)),cancellation,
                 RootSourceIds.Contains(sourceId)?NavigationDirection:0).Entry.Address;
         }
         public LocalImageReadRound FinishRound()

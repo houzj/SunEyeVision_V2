@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
@@ -87,8 +88,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             Closed += OnWindowClosed;
             Closing += (_, e) => {
                 // A later Closing handler can veto. Draft disposal belongs to Closed.
-                if (!_confirmed && !e.Cancel && SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(_control) is null
-                    && !SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorClose.TryClose(_control, this)) e.Cancel = true;
+                if (!_confirmed && !e.Cancel && SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.GetDraftContext(_control) is null
+                    && !SunEyeVision.Plugin.Editing.Wpf.ToolEditorClose.TryClose(_control, this)) e.Cancel = true;
             };
 
             PluginLogger.Success("CustomDebugWindow 构造函数完成", "CustomDebugWindow");
@@ -135,7 +136,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         public bool TryConfirm(out string error)
         {
-            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryCommit(_control, out error)) return false;
+            if (!SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.TryCommit(_control, out error)) return false;
             _confirmed = true;
             Close();
             return true;
@@ -156,8 +157,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnWindowClosed(object? sender, EventArgs e)
         {
-            if (SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(_control) is not null)
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.DiscardPendingEdits(_control);
+            if (SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.GetDraftContext(_control) is not null)
+                SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.DiscardPendingEdits(_control);
             PluginLogger.Info($"[绑定诊断] 自定义调试窗口 Closed | 控件={_control.GetType().Name}", "BindingDiag");
             // Closed retires an optional draft; it must never publish bindings again.
 

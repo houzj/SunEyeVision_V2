@@ -1,3 +1,8 @@
+## 2026-11-03 下一完整实体会话批进入独立源码实施
+
+整体设计4ff2887b6/e94与UI3f3已核，审查无新增阻断；主线冻结codec完整归Contracts、Execution唯一reader载体、Application最终跨字段准入和未准入JSON寿命，具体见原整体设计第11节。源码共享ABI13024cf8a由规范编码线固定，旧Runtime codec及字段writer退出，全直接消费者迁同一实现；独立验证中，不冒充87f4已集成。
+
+新实体/会话线platform-document-session-20261103与UI线platform-document-projection-20261103均已实际创建独立worktree并从130启动源码。A独占Domain/Application/Execution/Persistence/Workflow迁出/SDK非视觉查询/非UI测试/slnx，Runtime.csproj仅友元；B独占UI/Plugin.Wpf/WPF消费者与测试、UI引用。各自固定完整候选后统一集成，不留旧类型兼容桥，不把在途新类的定位编译计作生产完成。根87f4产品仍3da，未替换当前正式载荷，Group暂停。规范编码线已回报Graph38/SDK302/Input24/Image31/Blob11/Query7/Root38与字节金样3通过；最终宿主/证据核收未完，不交付。旧S4 ParameterValues脚本基线有已退役形参编译错误，不能当产品通过或删掉真实需求，改用当前有效宿主对应验证。
 ## 2026-11-03 下一整批设计核收与主仓回执
 
 核收独立设计f62efe546：唯一Contracts规范写入避免Domain/Execution反依Persistence，Application.Queries同程序集承接可信scope/BFS/DTO，持久化由Application捕获一致不可变输入后执行，禁止Persistence回调编辑Host。配置身份、CurrentValues、BindingOrder和V3写入须使用同一规范算法，不复制codec。查询结果裸Snapshot退出需与RuntimeDebugInvocation的实际reader获取、跨异步保留和释放完整切换。当前尚待精确裁决：internal AcquirePublishedResult不能供UI跨程序集直接调用；保存资源捕获及声明驱动读取须确保不把Runtime依赖带入Domain/Persistence。未冻结前不造产品接口。界面线按独立worktree继续完整投影/订阅清理设计，只读评审已完成实际依赖盘点。

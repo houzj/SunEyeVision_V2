@@ -1,3 +1,7 @@
+## 2026-11-02 V3 格式与资源公开入口回归
+
+产品源码基线 144e0182f（尚未包含后续 HostInputPreparation 在途文件）全量 Release 和测试工程构建 0 错；封包 SHA 450002C1C69D957A0DC9A1742EA7E2ADA260E6B354838335A1A26693F3256597。新增真实目录测试和四项设施边界共 10/10，覆盖旧/缺版本源不变、未绑定 Blob 保存、相对资源另存、公开 RestorePreviousSave 和备份哈希。日志 artifacts/v3-solution-tests.log；该批不证明元数据故障、公开恢复并发或正式/调试输入统一。
+
 ## 2026-11-02 输入资源与 V3 在途检查点
 
 声明/代次指纹、单一 Contracts 路径合同、严格 V3 和按声明的资源检查/另存正在整体切换；旧文件复制移动入口已退出。恢复事务设施的四项边界故障测试 4/4 通过，日志 artifacts/restore-boundary-tests-2.log；首次测试缺 using 未运行的失败日志保留。该结果不证明 RestorePreviousSave 公共入口、V3 合法编辑态、元数据回滚或正式/调试 HostInput 已完成；完整 Release 和集成未运行，本检查点不得交付。

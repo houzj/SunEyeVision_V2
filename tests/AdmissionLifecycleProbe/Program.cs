@@ -10,6 +10,10 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow;
 
+// Prevent Windows Error Reporting dialogs from interrupting interactive desktop use.
+ProbeErrorMode.DisableSystemDialogs();
+try
+{
 var root=AppContext.BaseDirectory;
 var manager=new PluginManager();
 Console.WriteLine("probe: initial admission");
@@ -246,6 +250,20 @@ try
 }
 finally{File.Delete(imageFile);}
 Console.WriteLine("Desktop admission and production workflow reader drain checks passed; desktop window shutdown remains unverified.");
+}
+catch (Exception error)
+{
+    Console.Error.WriteLine(error);
+    Environment.ExitCode = 1;
+}
+
+static class ProbeErrorMode
+{
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern uint SetErrorMode(uint mode);
+
+    public static void DisableSystemDialogs() => SetErrorMode(0x0001 | 0x0002 | 0x8000);
+}
 
 sealed class EmptyOutput:IToolOutput
 {

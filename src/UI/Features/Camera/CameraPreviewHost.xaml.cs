@@ -590,7 +590,8 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                 try { await session.DisposeAsync().ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         }
         _session = null;
-        try { ImageDisplay.ImageDataSource = null; } catch (Exception error) { failures.Add(error); }
+        try { await Dispatcher.InvokeAsync(() => ImageDisplay.ImageDataSource = null); }
+        catch (Exception error) { failures.Add(error); }
         try { _lifetime.Dispose(); } catch (Exception error) { failures.Add(error); }
         if (failures.Count == 0) completion.TrySetResult(true);
         else completion.TrySetException(new AggregateException("相机预览关闭或清理失败。", failures));

@@ -75,13 +75,7 @@ public static class ToolExecutionPreparation
                 value = OutputVariableResolver.Resolve(result, reference.PropertyName, reference.SourceNodeId);
             }
             var source = (property.GetValue(parameters) as AvailableDataSource)?.WithRuntimeValue(value)
-                ?? new AvailableDataSource
-                {
-                    SourceNodeId = reference.SourceNodeId, PropertyName = reference.PropertyName,
-                    SourceWorkflowId = reference.SourceWorkflowId, SourceFieldId = reference.SourceFieldId,
-                    AutomaticConnectionId = reference.AutomaticConnectionId,
-                    SourceNodeName = reference.SourceNodeName, DisplayName = reference.DisplayName, CurrentValue = value
-                };
+                ?? throw new InvalidOperationException("旧执行来源缺少中立身份，不能构造回退来源。 ");
             // Source equality compares paths; reset only this runtime copy so its setter accepts the new value.
             property.SetValue(parameters, null);
             property.SetValue(parameters, source);

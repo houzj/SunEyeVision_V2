@@ -12,5 +12,11 @@
     "每次Blob运行后必全量回读",
     "本地隐藏模型就是实时订阅执行值"
   ],
-  "remaining": "Blob宿主接口token/CIL回读调用者及普通native参数语义已交既有负责人同批继续"
+  "remaining": "native普通参数返回与订阅执行值关系、范围外动态调用尚未证；当前采用显式标明的宿主普通参数适配，不以每次运行自动回读补猜测。C05整链合同a3b3390f8，解绑输入澄清f04e19686；C06下一单元。",
+  "callerSupplement": {
+    "archived": "docs/collaboration/evidence/C05_ORIGINAL_READ_CALLER_EVIDENCE_20261103.md",
+    "source": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-C05运行回读调用者与单值合同补证-20261103.md",
+    "scope": "六程序集完整离线IL有限查找，未证明Blob运行结束自动回读；普通参数与绑定API已分离；不等于全安装或native排除",
+    "sha256": "CCAC4925AF7F43B96265EBC0A66320ED7D44992ADBDB7F44EEF3F6F8208B000F"
+  }
 }

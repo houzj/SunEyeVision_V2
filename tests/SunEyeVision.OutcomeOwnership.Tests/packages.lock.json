@@ -203,6 +203,9 @@
           "System.Text.Json": "[10.0.3, )"
         }
       },
+      "suneyevision.domain": {
+        "type": "Project"
+      },
       "suneyevision.foundation": {
         "type": "Project"
       },
@@ -257,6 +260,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }

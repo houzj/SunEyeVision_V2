@@ -1696,6 +1696,9 @@
           "System.IO.Ports": "[9.0.0, )"
         }
       },
+      "suneyevision.domain": {
+        "type": "Project"
+      },
       "suneyevision.foundation": {
         "type": "Project"
       },
@@ -1778,6 +1781,7 @@
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
           "SunEyeVision.CvAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.DeviceDriver": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
@@ -1795,6 +1799,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
         }

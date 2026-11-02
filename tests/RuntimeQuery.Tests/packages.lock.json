@@ -51,11 +51,6 @@
           "Newtonsoft.Json": "13.0.3"
         }
       },
-      "Microsoft.Win32.SystemEvents": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.3",
@@ -65,14 +60,6 @@
         "type": "Transitive",
         "resolved": "8.0.0",
         "contentHash": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg=="
-      },
-      "System.Drawing.Common": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "uoozjI3+dlgKh2onFJcz8aNLh6TRCPlLSh8Dbuljc8CdvqXrxHOVysJlrHvlsOCqceqGBR1wrMPxlnzzhynktw==",
-        "dependencies": {
-          "Microsoft.Win32.SystemEvents": "9.0.0"
-        }
       },
       "System.Reflection.Metadata": {
         "type": "Transitive",
@@ -128,9 +115,6 @@
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },
-      "suneyevision.plugin.editing.wpf": {
-        "type": "Project"
-      },
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {
@@ -141,22 +125,14 @@
       "suneyevision.plugin.sdk": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
-          "System.Drawing.Common": "[9.0.0, )"
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.tool.kernels": {
         "type": "Project"
       }
     },
-    "net9.0-windows7.0/win-x64": {
-      "Microsoft.Win32.SystemEvents": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
-      }
-    }
+    "net9.0-windows7.0/win-x64": {}
   }
 }

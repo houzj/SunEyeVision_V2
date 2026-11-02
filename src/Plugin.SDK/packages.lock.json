@@ -28,9 +28,6 @@
       "suneyevision.plugin.contracts": {
         "type": "Project"
       },
-      "suneyevision.plugin.editing.wpf": {
-        "type": "Project"
-      },
       "suneyevision.plugin.runtime": {
         "type": "Project",
         "dependencies": {

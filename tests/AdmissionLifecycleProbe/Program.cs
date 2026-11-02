@@ -12,6 +12,11 @@ using SunEyeVision.Workflow;
 
 // Prevent Windows Error Reporting dialogs from interrupting interactive desktop use.
 ProbeErrorMode.DisableSystemDialogs();
+if (args.Contains("--hidden-node-window"))
+{
+    Environment.ExitCode = NodeWindowProbe.Run();
+    return;
+}
 try
 {
 var root=AppContext.BaseDirectory;
@@ -182,49 +187,15 @@ catch(InvalidOperationException) { guardRejected=true; }
 if(!guardRejected)throw new Exception("Unadmitted workflow unexpectedly executed.");
 MustReject(()=>RuntimeDebugInvocation.Capture(rejectedFlow,productionDirectory,rejectedFlow.Nodes[0],new ToolExecutionOwner(),0,_=>null,CancellationToken.None),"unadmitted debug");
 Console.WriteLine("probe: tool admission, paused control flow, legacy factory, workflow and debug rejection passed");
-Exception? uiError=null;
-var uiThread=new Thread(()=>
+var openChain=new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain();
+bool editorConstructed=false;
+foreach(var rejectedNode in new[]{new WorkflowNodeBase("missing","missing","missing","UnknownTool"),new WorkflowNodeBase("paused","paused","paused","Subroutine") { SubroutineId="child" },new WorkflowNodeBase("mismatch","mismatch","mismatch","BlobAnalysis") { RuntimeConfiguration=declaredImage }})
 {
-    try
-    {
-        var chain=new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain();
-        bool created=false;
-        foreach(var rejectedNode in new[]{new WorkflowNodeBase("missing","missing","missing","UnknownTool"),new WorkflowNodeBase("paused","paused","paused","Subroutine") { SubroutineId="child" },new WorkflowNodeBase("mismatch","mismatch","mismatch","BlobAnalysis") { RuntimeConfiguration=declaredImage }})
-        {
-            var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory };
-            if(chain.Execute(rejectedNode,context,()=>{created=true;return new System.Windows.Controls.UserControl();}) || created || context.CreatedWindow is not null || string.IsNullOrWhiteSpace(context.FailureReason))
-                throw new Exception("Unadmitted node opened or constructed an editor.");
-        }
-        if(System.Windows.Application.Current is null)_=new System.Windows.Application{ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
-        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
-            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
-        foreach(var toolId in new[]{"ImageLoad","BlobAnalysis"})
-        {
-            var node=new WorkflowNodeBase("opened-"+toolId,toolId,toolId,toolId) { RuntimeConfiguration=RuntimeToolConfiguration.Create(productionDirectory,toolId), DebugWindowStyle=DebugWindowStyle.Custom };
-            var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory };
-            if(!chain.Execute(node,context))throw new Exception("Admitted Runtime open failed: "+toolId+" "+context.FailureReason);
-            if(context.WindowStyle!=DebugWindowStyle.Custom || context.Metadata?.RuntimeCatalog?.DisplayName != productionDirectory.GetCatalog(toolId)?.DisplayName)
-                throw new Exception("Node style or admitted metadata was lost: "+toolId);
-            if(context.CreatedWindow is not SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow || context.DebugControl is not SunEyeVision.UI.Services.Editing.RuntimeNodeConfigurationControl control)
-                throw new Exception("Real Runtime editor/window not constructed: "+toolId);
-            context.CreatedWindow.Left=-10000; context.CreatedWindow.Top=-10000; context.CreatedWindow.ShowActivated=false;
-            context.CreatedWindow.Show();
-            var pump=new System.Windows.Threading.DispatcherFrame();
-            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,new Action(()=>pump.Continue=false));
-            System.Windows.Threading.Dispatcher.PushFrame(pump);
-            if(!context.CreatedWindow.IsLoaded)throw new Exception("Runtime editor window did not load: "+toolId);
-            context.CreatedWindow.Close(); control.Dispose();
-        }
-        imageNode.DebugWindowStyle=DebugWindowStyle.None;
-        if(!chain.Execute(imageNode,new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory }))
-            throw new Exception("Admitted Runtime node was rejected by open decision chain.");
-        System.Windows.Application.Current.Shutdown();
-    }
-    catch(Exception error){uiError=error;}
-});
-uiThread.SetApartmentState(ApartmentState.STA);uiThread.Start();uiThread.Join();
-if(uiError is not null)throw new Exception("Node open admission test failed.",uiError);
-Console.WriteLine("probe: admitted open and unadmitted/paused open rejection passed");
+    var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext { RuntimeDirectory=productionDirectory };
+    if(openChain.Execute(rejectedNode,context,()=>{editorConstructed=true;return new System.Windows.Controls.UserControl();}) || editorConstructed || context.CreatedWindow is not null || string.IsNullOrWhiteSpace(context.FailureReason))
+        throw new Exception("Unadmitted node opened or constructed an editor.");
+}
+Console.WriteLine("probe: unadmitted/paused open rejection passed; real editor windows are a separate --hidden-node-window check");
 var guardDir=Path.Combine(AppContext.BaseDirectory,"tool-guard-case-"+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(guardDir);
 try

@@ -921,7 +921,7 @@ internal static class S2DocumentEditingCases
                 Require(rejected,"释放后的文本reader仍可读取");
             });
         }
-        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
+        shell.Close();app.Shutdown();Require(_passed>0,"未执行任何显示用例，请核查S4_BLOB_DISPLAY_SCOPE及名称过滤");Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
     }
     private static void SelectResultPage(DeclaredSettingsView editor)
     {

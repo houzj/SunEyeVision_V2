@@ -65,7 +65,9 @@ public sealed class ImageSourceDebugInvocationTests
             Flow=Engine.CreateWorkflow("debug-"+Guid.NewGuid().ToString("N"),"图像源调试");
             Node=ImageSourceTestRuntime.Node();Flow.Nodes.Add(Node);
             ImageSourceTestRuntime.Edit(Node,p=>{p.FilePaths=new(){"image.png"};p.CurrentIndex=0;p.SNInitialValue=7;});
-            Document=new Solution{Workflows=new(){Flow},ResourceBaseDirectory=DirectoryPath};
+            Document=new SolutionManager(Path.Combine(DirectoryPath,"solutions"),RootCanvasFixture.Directory).CreateUntitledSolution();
+            Document.Workflows.Clear();Document.Workflows.Add(Flow);Document.ResourceBaseDirectory=DirectoryPath;
+            Flow.AttachExecutionOwner(Document.ExecutionOwner);
             Host=new(Document);
         }
         public string WriteImage(string directory,byte pixel)
@@ -80,7 +82,7 @@ public sealed class ImageSourceDebugInvocationTests
             var actualDraft=draft??Host.BeginEdit(Flow.Id,Node.Id).Node;var actualOwner=owner??new ToolExecutionOwner();
             var paths=resolver??new SolutionResourceResolver(Document.ResourceBaseDirectory);
             var preparer=RuntimeHostInputAdapters.CreateDebug(actualDraft,Flow.Id,actualOwner,paths,camera);
-            try{return RuntimeDebugInvocation.Capture(Flow,Node.RuntimeConfiguration!.Directory,actualDraft,actualOwner,Host.Capture().Version,
+            try{return RuntimeDebugInvocation.Capture(Flow,Document.RuntimeDirectory!,actualDraft,actualOwner,Host.Capture().Version,
                 _=>throw new InvalidOperationException("图像源不得读取上游发布作为默认输入。"),cancellation,defaultImage,
                 resourcePaths:paths,cameraService:camera,hostInputPreparer:preparer);}
             catch{preparer?.Dispose();throw;}
@@ -217,7 +219,7 @@ public sealed class ImageSourceDebugInvocationTests
     public async Task Formal_request_releases_input_when_run_cannot_start()
     {
         using var fixture=new Fixture();
-        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<ILogger>());
         var input=new CountingPreparer();
         var request=new WorkflowRunRequest("missing-flow",hostInputs:new Dictionary<string,IHostInputPreparer>{{"source",input}});
         using var result=await engine.ExecuteWorkflowAsync(request);
@@ -229,7 +231,7 @@ public sealed class ImageSourceDebugInvocationTests
     public async Task Formal_request_reentry_is_rejected_without_disrupting_the_first_run()
     {
         using var fixture=new Fixture();var path=fixture.WriteImage(fixture.DirectoryPath,33);
-        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var engine=new WorkflowExecutionEngine(fixture.Engine,Substitute.For<ILogger>());
         using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();
         var preparer=new ImageSourceHostInputPreparer(path,7){LocalReadAdmission=(_,_)=>
         {entered.Set();if(!release.Wait(TimeSpan.FromSeconds(15)))throw new TimeoutException();return path;}};
@@ -250,7 +252,7 @@ public sealed class ImageSourceDebugInvocationTests
     public async Task Direct_formal_source_inputs_and_debug_share_pixels_domain_but_keep_distinct_run_and_frame_identities()
     {
         using var f=new Fixture();var path=f.WriteImage(f.DirectoryPath,40);
-        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<ILogger>());
         var sourceInputs=new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{f.Node.Id,new ImageSourceHostInputPreparer(path,7){LocalReadAdmission=(_,_)=>path}}};
         var request=new WorkflowRunRequest(f.Flow.Id,hostInputs:sourceInputs);
         sourceInputs[f.Node.Id]=new ImageSourceHostInputPreparer(path+".missing",99); // Request must retain its admitted immutable mapping.
@@ -275,7 +277,7 @@ public sealed class ImageSourceDebugInvocationTests
     public async Task Direct_formal_execution_rejects_missing_scheduler_input_and_persistent_constant_bypass()
     {
         using var f=new Fixture();var path=f.WriteImage(f.DirectoryPath,50);
-        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<ILogger>());
         using var fallback=HalImage.CreateFromBytes(new byte[]{90},1,1,1);
         using(var missing=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,fallback)))
             Assert.False(missing.Success);
@@ -396,7 +398,7 @@ public sealed class ImageSourceDebugInvocationTests
     public async Task Direct_formal_borrowed_camera_frame_remains_host_owned_after_run_disposal()
     {
         using var f=new Fixture();f.Camera();using var frame=new TrackedFrame();
-        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<IPluginManager>(),Substitute.For<ILogger>());
+        var executor=new WorkflowExecutionEngine(f.Engine,Substitute.For<ILogger>());
         var service=Substitute.For<ICameraCaptureService>();
         var request=new WorkflowRunRequest(f.Flow.Id,
             hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{f.Node.Id,new ImageSourceHostInputPreparer(null,7,service,frame.Frame)}});

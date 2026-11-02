@@ -18,6 +18,9 @@ private static int Main(string[] args)
     ProbeErrorMode.DisableSystemDialogs();
     try
     {
+        var payload=Environment.GetEnvironmentVariable("SUNEYE_INFRA_PRODUCT_ROOT");
+        if(string.IsNullOrWhiteSpace(payload)||!Path.IsPathFullyQualified(payload)||!Directory.Exists(payload))throw new InvalidOperationException("必须提供本工作区正式封包目录 SUNEYE_INFRA_PRODUCT_ROOT。");
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(payload))+Path.DirectorySeparatorChar);
         if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
         return RunAsync().GetAwaiter().GetResult();
     }

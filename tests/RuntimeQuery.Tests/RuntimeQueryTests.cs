@@ -42,7 +42,7 @@ public sealed class RuntimeQueryTests
     [Fact] public void Query_uses_scoped_schema_and_declared_display_without_runtime_result()
     {
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port.with.dot",Number)},outputDisplay:new[]{new OutputDisplayNode("port.with.dot","中文")});
-        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider){WorkflowId="scope"};
+        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider);
         var source=Assert.Single(query.GetAvailableDataSources("target"));
         var binding=Assert.IsType<ReferenceSetting>(source.Binding);
         Assert.Equal("scope",binding.Reference.ScopeId);Assert.Equal("port.with.dot",binding.Reference.PortId);Assert.Equal("中文",source.DisplayName);
@@ -51,10 +51,24 @@ public sealed class RuntimeQueryTests
         provider.Schema=null;Assert.Throws<InvalidOperationException>(()=>query.GetAvailableDataSources("target"));
         provider.Exists=false;Assert.Empty(query.GetAvailableDataSources("target"));
     }
+    [Fact] public void Query_scope_is_required_and_cannot_be_redirected()
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port",Number)});
+        var provider=new Provider(schema) { ScopeId="" };
+        Assert.Throws<ArgumentException>(()=>new DataSourceQueryService(provider,provider));
+        Assert.Throws<ArgumentNullException>(()=>new DataSourceQueryService(provider,null!));
+        provider.ScopeId="scope";
+        var query=new DataSourceQueryService(provider,provider);
+        Assert.Null(typeof(DataSourceQueryService).GetProperty(nameof(DataSourceQueryService.WorkflowId))!.SetMethod);
+        var reference=Assert.IsType<ReferenceSetting>(Assert.Single(query.GetNodeOutputProperties("node")).Binding);
+        Assert.Equal("scope",reference.Reference.ScopeId);
+        provider.ScopeId="other";
+        Assert.Throws<InvalidOperationException>(()=>query.GetNodeOutputProperties("node"));
+    }
     [Fact] public void Scalar_preview_reads_exact_port_under_reader_and_does_not_hold_resources()
     {
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port",Number),new Port("port.with.dot",Number)});
-        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider){WorkflowId="scope"};
+        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider);
         var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
         var resource=new Release();
         using var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",new ToolOutcome(true,new Output(),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),resource,0,sourceWorkflowId:"scope");
@@ -70,7 +84,7 @@ public sealed class RuntimeQueryTests
     [Fact] public void Foreign_scope_retired_domain_and_not_executed_are_not_current_results()
     {
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("port",Number),new Port("port.with.dot",Number)});
-        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider){WorkflowId="scope"};
+        var provider=new Provider(schema);var query=new DataSourceQueryService(provider,provider);
         var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
         using var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",new ToolOutcome(true,new Output(),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new Release(),0,sourceWorkflowId:"other");
         query.SetSootReader(_=>result);
@@ -88,6 +102,7 @@ public sealed class RuntimeQueryTests
     { public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>{{"port",11L},{"port.with.dot",22L}}; }
     private sealed class Provider(ToolSchema schema):IWorkflowConnectionProvider,INodeInfoProvider
     {
+        public string ScopeId { get; set; } = "scope";
         public ToolSchema? Schema=schema;
         public bool Exists=true;
         public List<string> GetParentNodeIds(string nodeId)=>new(){"node"};

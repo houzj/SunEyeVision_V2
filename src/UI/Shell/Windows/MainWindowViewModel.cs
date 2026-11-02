@@ -2677,11 +2677,19 @@ SplitterPosition = position;
 
                     if (result != MessageBoxResult.Yes)
                     {
+                        context.CreatedWindow.Close();
                         _openDebugWindow.Activate();
                         _openDebugWindow.Focus();
                         return;
                     }
                     _openDebugWindow.Close();
+                    if (_openDebugWindow?.IsLoaded == true)
+                    {
+                        context.CreatedWindow.Close();
+                        _openDebugWindow.Activate();
+                        _openDebugWindow.Focus();
+                        return;
+                    }
                 }
 
                 _openDebugWindow = context.CreatedWindow;
@@ -3721,6 +3729,7 @@ SplitterPosition = position;
                     var toolResult=result switch
                     {
                         DeclaredOutputSnapshot direct=>direct,
+                        RuntimeToolExecutionEventArgs args=>args.Result,
                         Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as DeclaredOutputSnapshot,
                         _=>null
                     };
@@ -3732,7 +3741,7 @@ SplitterPosition = position;
                             if(!OwnerCurrent())return;
                             if(toolResult is null)
                             {
-                                if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
+                                if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false} or RuntimeToolExecutionEventArgs {Error:not null})
                                 {
                                     editorContext?.DebugResults.RemoveNodeResult(node.Id);
                                     if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}

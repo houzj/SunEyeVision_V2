@@ -55,8 +55,9 @@ public partial class MainWindowViewModel
     private bool InitializeRuntimeEditor(object target,Shared.WorkflowNode node)
     {
         if(node.RuntimeConfiguration is null)return false;
-        if(target is not DefaultDebugWindow window||window.FindName("ContentHost") is not ContentControl {Content:RuntimeNodeConfigurationControl control})
+        if(target is not RuntimeToolEditorWindow window)
             throw new InvalidOperationException("Runtime参数窗口缺少中立配置视图。");
+        var control=window.Editor;
         var session=DocumentManager.Session??throw new InvalidOperationException("当前没有方案编辑会话。");
         var flow=session.Document.Workflows.Single(w=>w.Nodes.Any(n=>ReferenceEquals(n,node)));
         var host=GetProductionEditorHost(session);var query=CreateDataSourceQueryService(flow.Id);

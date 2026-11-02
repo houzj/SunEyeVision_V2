@@ -16167,3 +16167,8 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 独立工作树基线 111960d9f4a5db527a15e8ebd1f2592411abebe8；设计和原件证据见 evidence/图像源与Blob编辑宿主整体替换设计-20261102.html、图像源与Blob编辑宿主原件窗证据-20261102.html。
 - 已确定两工具正式编辑共用 RuntimeNodeConfigurationControl 和 SDK DefaultDebugWindow，原件参数框架及 BaseWindow 可复用；生产接线、关闭取消、连续调试及结果资源生命周期尚未迁移和验证。SDK ToolEditorCommit 被保存、全局变量及 Group 共用，切换不得另造事务双轨或改动暂停的 Group。
 - 本检查点仅设计和源码盘点，无产品变更、构建、运行或人工验收；后续需完整切换并以两工具真实载荷集中自测。
+
+### 编辑宿主实施中检查点（不可作为完成交付）
+- 独立候选以 BaseWindow 和 NativeToolEditorFrame 承载 Runtime 视图，图像源与 Blob 沿现有目录和草稿接入；旧的非 Runtime 参数控件入口拒绝，Group 未扩展。Type 化运行完成事件取代旧 SDK 可视基类路由事件。
+- 本树全量 Release 构建成功；隐藏桌面 BlobResultDisplay attempt-007 退出码 0、42 项通过，包含真实图像源/Blob 打开、单次运行和取消关闭后重试。该载荷生成后另添加 Closed 清理异常隔离；此后源码尚未重新构建和回归，不得把旧结果套用。
+- 唯一 ToolEditorCommit 事务仍位于 SDK.UI，且被保存、全局变量、Group 和旧控件共用；已确定中立 WPF 编辑事务层方案，尚未迁出和同步消费者。连续运行停止、运行中关闭、取消切换焦点与清理异常等仍需真实生产链验证，当前不符合整批交付条件。

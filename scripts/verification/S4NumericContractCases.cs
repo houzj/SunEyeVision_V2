@@ -18,6 +18,25 @@ internal static class S2DocumentEditingCases
     private static readonly List<object> Rows=new();
     [STAThread] private static int Main()
     {
+        var result=1;var thread=new Thread(()=>
+        {
+            IntPtr desktop=IntPtr.Zero;
+            try
+            {
+                desktop=CreateDesktop("SunEyeVision-C05-Numeric-"+Guid.NewGuid().ToString("N"),IntPtr.Zero,IntPtr.Zero,0,0x000F01FF,IntPtr.Zero);
+                if(desktop==IntPtr.Zero||!SetThreadDesktop(desktop))throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(),"数值专项隐藏桌面不可用，不回退用户桌面。");
+                result=Run();
+            }
+            catch(Exception error){Console.Error.WriteLine(error);}
+            finally{try{Application.Current?.Shutdown();}catch(Exception error){Console.Error.WriteLine(error);result=1;}if(desktop!=IntPtr.Zero)CloseDesktop(desktop);}
+        });thread.SetApartmentState(ApartmentState.STA);thread.Start();thread.Join();return result;
+    }
+    [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]
+    private static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]private static extern bool SetThreadDesktop(IntPtr desktop);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]private static extern bool CloseDesktop(IntPtr desktop);
+    private static int Run()
+    {
         try
         {
             if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};

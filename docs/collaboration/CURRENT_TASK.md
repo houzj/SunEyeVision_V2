@@ -1,3 +1,6 @@
+## 2026-11-02 关闭探针锁定与基线整合准备
+
+按主线指令固定新增 ShutdownLifecycleProbe 自身的 packages.lock.json，其他 restore 产生的既有 lock 工作区改动保留不提交。后续在本独立分支对照并尝试整合 dd369952e，重点保护新增显示来源 reader/文本租约与同代 owner、真实关闭次序；实际冲突和验证完成前不交付、不改 Group 或主工作区。
 ## 2026-11-02 关闭候选实际窗口验证（未完成）
 
 在 97a0ab584 上补充关闭子窗口期间局部 Dispatcher 异常捕获与安全重试。真实 MainWindow、正式 PluginManager 和手工资源/服务装配的独立 ProbeApp 五场景通过：正常、未保存取消、子窗口拒绝、子窗口 Closing 抛异常后重试、直接目录 lease 超时后释放。原始日志和范围见中立插件准入运行目录实施设计 HTML。ProbeApp 不运行完整 App.OnStartup；未覆盖 ce/4431 显示 reader、其他消费者清理异常、系统强制退出、旧 SDK/控制流及节点序号，禁止整体集成。恢复产生的 packages.lock.json 不提交。

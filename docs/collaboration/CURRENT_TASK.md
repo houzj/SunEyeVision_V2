@@ -1,3 +1,7 @@
+## 2026-11-02 真实视图与启动补验
+
+独立候选隐藏桌面运行 WPF TextSource 2 组、Text 6 组；额外验证 ImageResultControl.Shutdown 释放真实场景和文本 reader。真实 App.OnStartup 在独立根启动至 MainWindow Loaded、正常关闭并退出；入口为测试宿主 App.Run，预热关闭。未覆盖 MainWindow 持有显示 reader 时的完整排空、产品 exe 入口和系统强退，旧 SDK 与控制流分类仍未闭口，不可直接集成。详见中立插件目录实施设计 HTML 和验证日志。
+
 ## 2026-11-02 中立插件目录合并候选检查点（不可直接集成）
 
 本分支合入 dd369952e 作为独立候选；全量 Release 构建通过，ImageSource 31/31、Blob 11/11，真实工作流自动显示、调试上游值和文本 reader 排空探针通过。真实 MainWindow 关闭五场景通过，但使用直接目录 lease；完整 App 启动及真实 WPF 显示 reader 未验证。旧 SDK 创建路径仍可达，节点分类不足以安全禁用普通工具而保留 Group/控制流；保持未完成，不合主工作区。工作区先前的 14 个 lock 在途改动不纳入提交，内容备份于 artifacts/pre-merged-restore-locks；离线恢复后 Identity lock 增加测试依赖，差异同样保留待核。详见中立插件准入运行目录实施设计 HTML。

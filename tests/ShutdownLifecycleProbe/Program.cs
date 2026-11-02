@@ -17,8 +17,46 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        try { return Run(args); }
+        try { return args.Contains("full-startup-probe") ? RunFullStartup(args) : Run(args); }
         catch(Exception error) { Console.Error.WriteLine(error); return 1; }
+    }
+    [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]
+    private static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)] private static extern bool SetThreadDesktop(IntPtr desktop);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)] private static extern bool CloseDesktop(IntPtr desktop);
+    private static int RunFullStartup(string[] args)
+    {
+        var result=1;Exception? failure=null;
+        var thread=new Thread(()=>{try{result=RunFullStartupOnHiddenDesktop();}catch(Exception error){failure=error;}});
+        thread.SetApartmentState(ApartmentState.STA);thread.Start();thread.Join();
+        if(failure is not null)throw new Exception("隐藏桌面完整启动失败",failure);
+        return result;
+    }
+    private static int RunFullStartupOnHiddenDesktop()
+    {
+        var desktop=CreateDesktop("SunEyeVision-Startup-"+Guid.NewGuid().ToString("N"),IntPtr.Zero,IntPtr.Zero,0,0x000F01FF,IntPtr.Zero);
+        if(desktop==IntPtr.Zero||!SetThreadDesktop(desktop))throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(),"隐藏桌面不可用");
+        try
+        {
+            var app=new App();app.InitializeComponent();bool sawMain=false,closed=false;Exception? failure=null;
+            app.DispatcherUnhandledException+=(_,e)=>{failure=e.Exception;e.Handled=true;app.Shutdown(2);};
+            using var watchdog=new System.Threading.Timer(_=>{Console.Error.WriteLine("full-startup: watchdog expired");Environment.Exit(3);},null,TimeSpan.FromSeconds(75),Timeout.InfiniteTimeSpan);
+            var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(200)};
+            timer.Tick+=(_,_)=>
+            {
+                if(!sawMain&&app.MainWindow is MainWindow main&&main.IsVisible&&main.IsLoaded)
+                {
+                    sawMain=true;Console.WriteLine("full-startup: real App.OnStartup initialized and MainWindow loaded");
+                    main.Closed+=(_,_)=>{closed=true;Console.WriteLine("full-startup: MainWindow closed after drain");};
+                    main.Close();
+                }
+            };
+            timer.Start();var code=app.Run();timer.Stop();
+            if(failure is not null)throw new Exception("完整启动发生 Dispatcher 异常",failure);
+            if(!sawMain||!closed)throw new Exception("完整启动未到达主窗口加载并关闭。");
+            Console.WriteLine("full-startup: application Run exited "+code);return code;
+        }
+        finally{CloseDesktop(desktop);}
     }
     private static int Run(string[] args)
     {

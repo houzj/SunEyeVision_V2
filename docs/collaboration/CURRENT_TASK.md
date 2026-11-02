@@ -1,3 +1,95 @@
+## 2026-11-02 三线统一候选自测
+
+隔离候选 e5d8df163 全量 Release 重建、准入探针及测试工程构建通过；统一封包 SHA 4EDCC1A81D6BC94EF79D87D6A2E9C10A24B23E7A35A58B5EE67BF8AA27778046。以 --no-build 运行根流程 15/15、插件基础设施 25/25、ImageLoad 31/31、Blob 11/11；记录位于该工作区 artifacts/final-*-tests.log。真实编辑窗口与根画布 WPF 宿主仍未验证，隐藏桌面 170 尚待处理；候选未合入 87f4，单独测试不代表完整平台或人工验收。
+
+## 2026-11-02 三线统一候选
+
+隔离集成 e5d8df163 合并 2cb13ce70、根流程测试 46f4efc7e 和准入探针拆分 6bf9b05e7；任务记录冲突保留两侧。新的精确基线全量 Release、测试工程构建及封包回归进行中。准入探针拒绝验证和真实编辑窗口独立运行；窗口隐藏桌面 Win32 170 仍未解决，不计通过。
+
+## 2026-11-02 统一候选工具回归
+
+隔离集成候选 2cb13ce70 在不重建封包的情况下，ImageLoad 31/31、Blob 11/11 通过。首次 ImageLoad 漏设 S2_CASE_ROOT 导致 6 项失败，指定该候选 Release 内验证数据目录后全部通过；失败和通过日志均位于 artifacts/consolidated-imagesource*.log。准入测试节点打开仍因宿主初始化缺失失败，保护线正拆成正式初始化的独立隐藏桌面进程，不计通过。
+
+## 2026-11-02 统一候选真实载荷回归失败
+
+候选 2cb13ce70 全量 Release 和锁定依赖恢复通过；封包 681337513495F3F5C2227EF4A856E57D461DDB5289473325D5E6124796A435EB。迁移后插件测试 24/25，新增节点打开探针未初始化 SolutionManager 失败，异常已捕获，日志为独立集成目录 artifacts/consolidated-infra-tests.log；不可将该候选记为验证通过。已交独立保护线结合正式宿主初始化和隐藏桌面修复测试。
+
+## 2026-11-02 并行批次与统一候选
+
+插件候选 ffe509f68 的测试先构建后执行会改写共享 Release 文件，产生 Core.dll 清单 SHA 失配（24/25）；重新封包 E15CA0C305D225BFAD1F28C9CCDD85EAE639C44A18616D878AA957360097A22D 后以 --no-build 运行 25/25 通过，旧失败日志保留。根流程测试独立候选 cf2402524 的文档历史与根配置 7/7 通过，真实 WPF 宿主等尚未验证。准入保护 550df1f10 与插件测试在独立工作区合并为 2cb13ce70，完整 Release 构建 0 错，真实载荷集成验证进行中；直接别名专项 5/5，真实编辑窗口探针 Win32 170 未通过。
+
+## 2026-11-02 安全准入探针成功路径
+
+隔离测试候选 ffe509f68 的全量 Release 重建退出 0，重新封包 SHA C999F6E141192916BEA5837EF3E6807B33DF30C1E741A1E5FA6CBA69BEFF505F；更新后的探针以隐藏进程运行退出 0，覆盖准入恢复、并发加载、正式工作流、调试及结果 reader 代次排空，日志为该候选 artifacts/safe-probe-sealed.out.log。它不是主窗口关闭验证；候选仍未合入主工作区。
+
+## 2026-11-02 准入探针异常安全
+
+插件测试候选 ffe509f68 为 AdmissionLifecycleProbe 增加顶层异常日志和系统错误弹窗抑制；独立探针 Release 构建 0 错。对故意保持旧封包清单的真实运行，SHA 不匹配被记录并以退出码 1 安全结束，未弹窗；精确提交全量重建和成功路径重封包验证进行中。保护线真实窗口探针遇 Win32 170，已捕获并记录，不计窗口通过；Outcome 正式/调试清理及 reader 排空通过，直接别名未覆盖。
+
+## 2026-11-02 集成候选完整 WPF 回归
+
+隔离候选 3d27 的 BlobResultDisplay All 回归 attempt-008，使用增加步骤日志的测试源码，隐藏桌面运行退出 0、41 组通过；证据位于该工作区 Release/_validation/S4-20261025/BlobResultDisplay/attempt-008。此前 attempt-003 和 007 超时原因未查明，不能称已修复；本次不证明原厂像素、物理鼠标、设计器或最终集成验收。插件测试候选的 AdmissionLifecycleProbe 正在单独补充顶层异常记录和 Windows 系统弹窗抑制，修改后构建与回归尚在进行。
+
+## 2026-11-02 插件测试迁移独立回归
+
+插件线基于 3d27 的独立候选全量 Release 0 错，迁移后 Infrastructure 测试 25/25 通过（含真实载荷 AdmissionLifecycleProbe，无跳过），测试载荷 SHA 6F2AB3DC1F012DD31127A0AF2DFDDB3EBC79EFD4F49DCF25CCC0CA88A27AB837。旧私有隔间与 SDK ROI 反射是退出的旧合同，不声称同等覆盖；源码、矩阵及日志已固定提交 59a50df01；需要环境变量指定本工作区正式封包根，缺载荷明确失败；尚未合入当前工作区。
+
+## 2026-11-02 未准入保护候选核收
+
+独立保护线源码 cc623f85f 与测试 d2f4d6a3e、f8b9b75eb：正式准入探针在原 72dd 生产源码上通过缺配置、未准入、身份/代次不符、暂停控制流拒绝和 ImageLoad→Blob 正常执行、调试、保存重开、reader 排空；正向及拒绝场景在 3d27 基线的隔离整合仍进行。审查发现 NodeOpenDecisionChain 移除了旧元数据装配但保留 context.Metadata 样式判断，已要求核查正式工具窗口样式与真实打开，不能仅以允许打开断言闭口。
+
+## 2026-11-02 WPF 全流程超时诊断
+
+隔离集成中对超时的三角色样式场景加入仅输出步骤的诊断，不改产品或断言；按完整 All 重跑，session 75675 正运行。测试源码已不同于精确提交测试源码，结果单独记录；保留原 attempt-003 作为超时证据。诊断运行已完成三角色样式与七行文本控件，当前进入两外源复制删除场景；运行进程一次采样工作集约 3.53 GB、句柄 2204，未建立泄漏或性能因果。尚在 watchdog 时限内；原 attempt-003 超时根因仍未知。
+
+## 2026-11-02 完整回归超时场景定位
+
+精确候选 attempt-003 的 display-progress.log 显示最后开始“三角色真实WPF眼睛样式确认取消UndoRedo只刷新不重跑”，此前 30 个场景记录 PASS，该场景未记录 PASS/FAIL 即被 480 秒 watchdog 停止；同场景在独立 Roi attempt-004 通过。ApplicationIdle 消息泵可能受队列或跨组状态影响，但目前仅为假设，不作为根因结论；日志保留。
+
+## 2026-11-02 并行生产链实施状态
+
+未准入节点保护线以 72dda8682 为基线，已在独立工作区覆盖冻结前形态及代次、调试、打开、持久化与旧事件执行入口；尚在编译和真实目录回归，不代表与 d85/3d27 集成。插件测试迁移线正按旧目录扫描、加载、注册、元数据四类合同逐项替换为正式载荷与代次测试，保留/退出矩阵尚在实施。精确候选 ROI 专项 attempt-004 退出 0、10 组通过；完整回归超时原因仍未确认。
+
+## 2026-11-02 精确主窗 reader 与测试迁移
+
+基于 3d27b97df 的独立验证提交 52072dc69：全量 Release 0 错、6539 警告；真实 MainWindow 图像源→Blob 结果视图正常关闭、取消后重试均释放 reader 并排空目录。ProbeApp 手工装配，不代表完整 App 入口、外部 reader 或强退。精确候选完整 WPF 回归 attempt-003 达上限停止；单独 Roi 复现 attempt-004 退出 0、10 组通过，未复现该专项失败；文本专项 attempt-005 的 6 组与来源专项 attempt-006 的 2 组均通过；完整超时原因仍未确认，拆分通过不等于单次完整运行通过。旧 Plugin.Infrastructure 测试因已移除接口无法编译，已委托独立线整批迁移至新目录，不恢复旧 API。
+
+## 2026-11-02 精确候选无 WPF 宿主
+
+隔离提交 3d27b97df 的 NeutralReleaseProbe 从源码构建独立运行载荷，正式 NeutralHost 封包 SHA 82A213982158738CE0B7E15152292791901703B4403582533386097FFF08CF0B；实际执行 ImageLoad 与 BlobAnalysis，进程检查未加载 WPF、UI 或旧 SDK，退出 0。日志 integration-exact-neutral-run.log；不等于完整桌面宿主或所有工具迁移完成。
+
+## 2026-11-02 精确隔离集成候选
+
+插件准入与资源交接隔离工作区已固定候选 3d27b97dfd00127a5139d1d93e1f84e5762d9bb9。提交前的全量构建、图像源/Blob、资源故障和 WPF 回归通过，但载荷标识旧 HEAD，不能作为该提交的精确构建证据；精确提交全量 Release Rebuild 已通过（0 错、6539 警告），载荷 sourceCommit 与 3d27b97df 一致，SHA 98708073BC76A278A9FBACA6730021EFB947B212C284D5D14A77DD3FD7F3165A；同载荷图像源 31/31、Blob 11/11 通过；精确提交的测试专用载荷 SHA AC794D3B0099C91B7B1A4931DB2A3F54582C9BDEB61777D177F5676AA602BEBB；正式准入、正式/调试异常输出各释放一次及 reader 释放后代次排空均通过。精确载荷完整 WPF 回归 attempt-003 达 480 秒上限被自有 watchdog 停止，最后通过至扇环渲染，不能计通过；前一未提交合并构建的 41 组通过不代签本提交。插件 Infrastructure 测试工程未纳入解决方案，锁定恢复缺 Foundation；重算锁后编译仍因 PluginAssemblyPolicy、旧 PluginManager.LoadPlugins 等已移除接口失败，需整批迁移测试，不能恢复旧接口。未准入节点的恢复/打开/执行仍有风险，已委托单独 worktree 集中实现保护；主窗口 reader 关闭排空由另一线验证。候选未合入 87f4，不代表交付。
+
+## 2026-11-02 隔离封签回归与依赖锁
+
+隔离集成增加 Verify-SealRelativePath.ps1：令进程当前目录与 PowerShell 工作目录不同，确认相对路径封签使用目标工作区 Runtime 哈希，且不修改另一目录清单；测试通过。合并依赖锁重算后全量 locked restore 退出 0。隔离合并仍未提交，后续需核对锁变动并固定候选；旧 SDK 节点入口保护和主窗关闭排空尚待验证。
+
+## 2026-11-02 隔离集成显示与资源故障回归
+
+隔离候选完整 BlobResultDisplay 隐藏桌面回归 attempt-002 退出 0，41 组通过，源码 SHA D8F07CC92A63A8E49CAC4EE4641B9C36BA27B687546F6B5A3F9B43EF65A1F93C；非 VM 像素或物理鼠标验收。插件线在未集成资源修复的旧候选通过正式准入故障桩复现正式与调试两条会话清理失败后未返回输出泄漏；属于旧候选反例，不代表 d85f66a68 修复失败。测试专用组件 c606f6cca 已应用到隔离集成并由该工作区自建封包，SHA 671A56BCDC56DC8AD0E323327EF62630550D377874F55BAB4C2609A92B00988C。隐藏窗口故障探针退出 0：正式及调试清理输出各一次，reader 持有时阻止退役、释放后排空并只释放一次；日志 integration-outcome-run.log（CP936）。此前用户看到 OutcomeAdmissionProbe.exe 应用错误弹窗；并行线确认早期旧探针有顶层未捕获异常，可能为来源，无法仅凭截图确认同一进程。新版已顶层捕获并使用隐藏方式运行。会话线按 73d451f17 对完整准入与恢复进行可实施性核查，不做局部保护。
+
+## 2026-11-02 隔离集成生命周期探针
+
+隔离集成已有 WPF ReaderShutdown、ImageLoad 与 Blob 测试通过。AdmissionLifecycleProbe 已在合并后工作区构建并运行，退出 0；正式工作流自动显示、调试上游 width=8、跨节点文本 reader 持有退役代次及释放后排空通过。载荷 SHA B06C71F25BD8A768F3224DFF62482F3404815A6CB45AF9B8FEE0C700747E8916；日志 integration-admission-run.log。主窗关闭与故障桩测试不在该探针范围。旧资源故障 HostOwnershipTests 仍引用旧注册接口，独立插件线正准备正式准入的测试专用组件，不能将现有测试直接视为同代通过。
+
+## 2026-11-02 隔离集成 WPF 读者与方案切换设计
+
+隔离集成候选真实 WPF ReaderShutdown 隐藏桌面测试 attempt-001 退出 0：ImageResultControl.Shutdown 后显示场景及文本、数值 reader 释放，源码 SHA D8F07CC92A63A8E49CAC4EE4641B9C36BA27B687546F6B5A3F9B43EF65A1F93C；不等于主窗口持有 reader 时的完整排空或物理鼠标测试。节点编号线证据与整体设计提交 093dbe200：现有方案提交后 UI 逐项装配，缺覆盖所有编辑、调试、执行、通信和恢复的会话级准入；故不能只移动 manager 赋值或添加局部门禁，编号候选继续隔离。
+
+## 2026-11-02 隔离封签路径问题
+
+定位到候选 Seal-ReleasePayload.ps1 已解析 appRoot，却将相对 AppPath 传入生成器；底层 .NET 解析可能落入另一个工作区，导致 Foundation 身份不一致。隔离候选现传入解析后的 appRoot；相对路径封签成功，清单 Runtime 哈希与候选 DLL 一致，绝对路径封签也成功，载荷 SHA 43BAFC0C04BB4747A030B54EDB42C1067B0A1FB2E46F0677DE31003C7184DF42。候选合并尚未提交，未代表当前工作区交付；需继续同代资源故障、WPF 和关闭回归。
+
+## 2026-11-02 隔离集成构建与旧工具核查
+
+隔离工作区解决资源与代次冲突；锁定恢复因 Foundation 新引用与锁文件不一致失败，重算锁后全量 Release 构建 0 错、6539 警告；隔离候选同一载荷图像源 31/31、Blob 11/11。直接调用 Seal-ReleasePayload.ps1 两次报告 Foundation 提交身份不一致；只读核对程序集与 HEAD 相等后，同一 Release.Common 正式生成函数生成载荷 SHA 99251A86F79FA01F664B6809932C3F16BAE1C18FD2524D478ECE9C035DD7B22A。隔离合并尚未提交，载荷元数据 HEAD 不能代表全部在途源码；脚本异常待查。资源故障宿主测试需按新代目录重新装配，尚未跑。插件线核查正式载荷仅 ImageLoad、BlobAnalysis 的 Runtime 和 Editor；旧 SDK 二十个工程不等于已加载。工具箱已有按代次禁用，旧节点仍可读入，执行失败但编辑及恢复存在旧入口；Group/Subroutine 缺独立原生合同，不能宣称保留运行。节点编号证据 289405339 验证实际画布新增失败回滚及共享历史，未模拟鼠标；候选在方案切换失败时会新旧 manager 混用，需原子发布或覆盖所有入口的统一保护，尚不可集成。
+
+## 2026-11-02 插件与资源交接隔离集成
+
+新建隔离 worktree D:/MyWork/line-aiproject/platform-admission-ownership-integration-20261102，分支 codex/platform-admission-ownership-integration-20261102，起点 d85f66a68；候选 72dda8682 已在隔离工作区进入未提交合并，CURRENT_TASK、AlgorithmNode.Runtime、RuntimeDebugInvocation 的文本冲突已处理，代码保留直接别名保护和代次释放，尚未构建验证。合并后按同载荷重测资源交接、图像源、Blob、WPF 读者及关闭；旧 SDK/控制流仍须按完整链核查，候选不得直接交付。
+
 ## 2026-11-02 资源交接当前工作区验证
 
 已将候选 d68e0636 的四个生产文件及组件测试应用于当前独立工作区，涉及会话清理失败时未返回输出释放、直接别名只释放一次和结果捕获失败清理。当前工作区全量 Release 构建 0 错、6533 警告；资源交接组件及正式、调试宿主故障测试 6/6 通过（Release/_validation/outcome-current-tests.log）。正式载荷重封签 SHA B31ABC512CAAF5E3B842D837A9A47C1FA4BD35EFCB7342706395A2F1BA35EE15 后，图像源 31/31、Blob 11/11；日志 outcome-current-imagesource-final.log 和 outcome-current-blob-final.log。首次 31 项失败是 Runtime DLL 哈希与旧封签不一致；重封签后 25/31、其余 6 项缺 S2_CASE_ROOT，设置独立数据根后全部通过。该批未验证任意第三方嵌套所有权。节点编号候选 ffb592c51 的正式宿主通过 ImageLoad 准入、创建、复制、保存重开、多流程高水位与主窗共享历史 Undo/Redo；画布创建失败回滚及方案切换失败保护未验证，仍未集成。

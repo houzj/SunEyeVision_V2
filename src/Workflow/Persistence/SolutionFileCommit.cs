@@ -47,7 +47,7 @@ internal static class SolutionFileCommit
         internal bool Matches(string path) => File.Exists(path) && this == Read(path);
     }
 
-    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null)
+    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null, string? expectedTargetHash = null)
     {
         destination = Path.GetFullPath(destination);
         recovery = Path.GetFullPath(recovery);
@@ -55,7 +55,15 @@ internal static class SolutionFileCommit
         lock (Gates.GetOrAdd(destination, _ => new object()))
         {
             ThrowIfRecoveryRequired(destination);
-            return WriteLocked(destination, recovery, json, overwrite, boundary);
+            Stamp? expectedTarget = null;
+            if (expectedTargetHash is not null)
+            {
+                if (!File.Exists(destination)) throw new IOException("方案在验证后消失，不会覆盖。");
+                expectedTarget = Stamp.Read(destination);
+                if (!string.Equals(expectedTarget.Hash, expectedTargetHash, StringComparison.Ordinal))
+                    throw new IOException("方案在验证后发生变化，不会覆盖。");
+            }
+            return WriteLocked(destination, recovery, json, overwrite, boundary, expectedTarget);
         }
     }
 

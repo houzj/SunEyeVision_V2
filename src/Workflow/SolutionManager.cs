@@ -39,6 +39,8 @@ namespace SunEyeVision.Workflow;
 /// </remarks>
 public class SolutionManager
 {
+    // Instance-scoped transaction observer used for deterministic boundary verification.
+    internal Action<string>? CommitBoundary { get; set; }
     private string _solutionsDirectory;
     private string _configFilePath;
     private readonly ILogger _logger;
@@ -950,7 +952,7 @@ public class SolutionManager
         if (!string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(recoveryBytes)), loaded.SourceSha256, StringComparison.Ordinal))
             throw new IOException("恢复文件在验证后发生变化，不会覆盖。");
         var warning=SolutionFileCommit.Restore(metadata.FilePath,recovery,
-            new System.Text.UTF8Encoding(false, true).GetString(recoveryBytes).TrimStart('\uFEFF'),destinationHash,loaded.SourceSha256!);
+            new System.Text.UTF8Encoding(false, true).GetString(recoveryBytes).TrimStart('\uFEFF'),destinationHash,loaded.SourceSha256!,CommitBoundary);
         if (warning is not null) _logger.Log(LogLevel.Warning,warning);
         restored.FilePath = metadata.FilePath;
         return restored;
@@ -982,7 +984,7 @@ public class SolutionManager
             ForceSaveSettings();
             if (!File.Exists(metadata.FilePath) || !string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(metadata.FilePath))), loaded.SourceSha256, StringComparison.Ordinal))
                 throw new IOException("方案在提交前发生变化，不会覆盖。");
-            var warning=SolutionFileCommit.Write(metadata.FilePath, _repository.GetRecoveryPath(metadata.FilePath), updated, overwrite:true);
+            var warning=SolutionFileCommit.Write(metadata.FilePath, _repository.GetRecoveryPath(metadata.FilePath), updated, overwrite:true, boundary:CommitBoundary, expectedTargetHash:loaded.SourceSha256);
             if (warning is not null) _logger.Log(LogLevel.Warning, warning);
         }
         catch (Exception failure)

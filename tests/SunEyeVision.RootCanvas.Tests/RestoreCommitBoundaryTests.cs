@@ -11,6 +11,7 @@ public sealed class RestoreCommitBoundaryTests
 {
     private static readonly Type Commit=typeof(Solution).Assembly.GetType("SunEyeVision.Workflow.Persistence.SolutionFileCommit",true)!;
     private static readonly MethodInfo Restore=Commit.GetMethod("Restore",BindingFlags.Static|BindingFlags.NonPublic)!;
+    private static readonly MethodInfo Write=Commit.GetMethod("Write",BindingFlags.Static|BindingFlags.NonPublic)!;
     private static readonly MethodInfo Confirm=Commit.GetMethod("ConfirmRecovery",BindingFlags.Static|BindingFlags.NonPublic)!;
     private static string Hash(string path)=>Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
     private static (string Target,string Backup) Files()
@@ -23,6 +24,26 @@ public sealed class RestoreCommitBoundaryTests
     }
     private static object? Invoke(string target,string backup,string targetHash,string backupHash,Action<string>? boundary=null)
         =>Restore.Invoke(null,new object?[]{target,backup,"previous",targetHash,backupHash,boundary});
+
+    [Fact]
+    public void Validated_write_rejects_change_before_lock_without_touching_recovery()
+    {
+        var (target,backup)=Files();var expected=Hash(target);var backupHash=Hash(backup);
+        File.WriteAllText(target,"external-target");
+        var error=Assert.Throws<TargetInvocationException>(()=>Write.Invoke(null,new object?[]{target,backup,"updated",true,null,expected}));
+        Assert.IsAssignableFrom<IOException>(error.InnerException);
+        Assert.Equal("external-target",File.ReadAllText(target));Assert.Equal(backupHash,Hash(backup));
+    }
+
+    [Fact]
+    public void Validated_write_rejects_change_after_lock_without_touching_recovery()
+    {
+        var (target,backup)=Files();var expected=Hash(target);var backupHash=Hash(backup);
+        Action<string> boundary=phase=>{if(phase=="before-target-replace")File.WriteAllText(target,"external-target");};
+        var error=Assert.Throws<TargetInvocationException>(()=>Write.Invoke(null,new object?[]{target,backup,"updated",true,boundary,expected}));
+        Assert.IsAssignableFrom<IOException>(error.InnerException);
+        Assert.Equal("external-target",File.ReadAllText(target));Assert.Equal(backupHash,Hash(backup));
+    }
 
     [Fact]
     public void Successful_restore_preserves_source_backup()

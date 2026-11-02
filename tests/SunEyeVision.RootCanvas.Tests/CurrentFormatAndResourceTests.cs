@@ -11,12 +11,29 @@ namespace SunEyeVision.UI.Tests;
 [Collection("VM canvas UI")]
 public sealed class CurrentFormatAndResourceTests
 {
+    [Fact]
+    public void Metadata_catalogues_do_not_expose_or_retain_mutable_caller_objects()
+    {
+        var registry=new SolutionRegistry();var cache=new SolutionCache();
+        var item=new SolutionMetadata { Id="alias-test", Name="original", FilePath="original.solution" };
+        registry.Register(item);cache.Set(item.Id,item);
+        item.Name="external mutation";
+        Assert.Equal("original",registry.Get(item.Id)!.Name);
+        Assert.Equal("original",cache.Get(item.Id)!.Name);
+        registry.Query(candidate=>{candidate.Name="predicate mutation";return true;});
+        Assert.Equal("original",registry.Get(item.Id)!.Name);
+        var batch=new SolutionMetadata { Id="batch-test", Name="batch", FilePath="batch.solution" };
+        registry.RegisterBatch(new[]{batch});batch.Name="external mutation";
+        Assert.Equal("batch",registry.Get(batch.Id)!.Name);
+    }
     private static string Root()
     {
         var root=Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? throw new InvalidOperationException("Missing isolated test data root.");
         var directory=Path.Combine(root,"v3-solution",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);return directory;
     }
     private static string Hash(string path)=>Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+    private static void SetBoundary(SolutionManager manager,Action<string>? callback)
+        =>typeof(SolutionManager).GetProperty("CommitBoundary",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(manager,callback);
     private static (SolutionManager Manager,Solution Document,string Path) NewDocument(string tool="ImageLoad")
     {
         var root=Root();var manager=new SolutionManager(Path.Combine(root,"solutions"),RootCanvasFixture.Directory);
@@ -40,6 +57,40 @@ public sealed class CurrentFormatAndResourceTests
         Assert.Null(result.Candidate);Assert.True(result.HasErrors);Assert.Equal(before,Hash(path));
         var metadata=manager.GetMetadata(manager.CurrentSolution!.Id)!;
         Assert.Throws<InvalidDataException>(()=>manager.UpdateMetadata(metadata));Assert.Equal(before,Hash(path));
+    }
+
+    [Fact]
+    public void Metadata_update_rolls_back_catalogue_when_external_writer_changes_target()
+    {
+        var (manager,document,path)=NewDocument();var original=manager.GetMetadata(document.Id)!;
+        var proposed=original.Clone();proposed.Name="new-name";
+        var repository=(SolutionRepository)typeof(SolutionManager).GetField("_repository",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(manager)!;
+        var backup=repository.GetRecoveryPath(path);var before=File.Exists(backup)?Hash(backup):null;
+        SetBoundary(manager,phase=>{if(phase=="before-target-replace")File.WriteAllText(path,"external change");});
+        Assert.ThrowsAny<IOException>(()=>manager.UpdateMetadata(proposed));
+        Assert.Equal("external change",File.ReadAllText(path));
+        Assert.Equal(original.Name,manager.GetMetadata(document.Id)!.Name);
+        Assert.Equal(before,File.Exists(backup)?Hash(backup):null);
+    }
+
+    [Fact]
+    public void Metadata_update_does_not_keep_caller_alias_after_success()
+    {
+        var (manager,document,_)=NewDocument();var proposed=manager.GetMetadata(document.Id)!;
+        proposed.Name="new-name";manager.UpdateMetadata(proposed);proposed.Name="external mutation";
+        Assert.Equal("new-name",manager.GetMetadata(document.Id)!.Name);
+    }
+
+    [Fact]
+    public void Public_restore_preserves_concurrent_external_target_and_backup()
+    {
+        var (manager,document,path)=NewDocument();
+        Assert.True(manager.SaveSolution(),manager.LastError);
+        var repository=(SolutionRepository)typeof(SolutionManager).GetField("_repository",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(manager)!;
+        var backup=repository.GetRecoveryPath(path);var backupHash=Hash(backup);
+        SetBoundary(manager,phase=>{if(phase=="before-target-replace")File.WriteAllText(path,"external change");});
+        Assert.ThrowsAny<IOException>(()=>manager.RestorePreviousSave(document.Id));
+        Assert.Equal("external change",File.ReadAllText(path));Assert.Equal(backupHash,Hash(backup));
     }
 
     [Fact]

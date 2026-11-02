@@ -86,7 +86,7 @@ public class SolutionRegistry
         try
         {
             bool isNew = !_metadataMap.ContainsKey(metadata.Id);
-            _metadataMap[metadata.Id] = metadata;
+            _metadataMap[metadata.Id] = metadata.Clone();
 
             if (isNew)
             {
@@ -161,7 +161,7 @@ public class SolutionRegistry
             {
                 if (metadata != null && !string.IsNullOrEmpty(metadata.Id))
                 {
-                    _metadataMap[metadata.Id] = metadata;
+                    _metadataMap[metadata.Id] = metadata.Clone();
                     successCount++;
                 }
             }
@@ -267,8 +267,8 @@ public class SolutionRegistry
         try
         {
             return _metadataMap.Values
-                .Where(predicate)
                 .Select(m => m.Clone())
+                .Where(predicate)
                 .ToList();
         }
         finally

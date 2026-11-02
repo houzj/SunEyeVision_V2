@@ -3257,7 +3257,7 @@ SplitterPosition = position;
             // ★ 作用域工作流是子程序时，注入其输入端口（__SubroutineInputs__），
             //    使子程序内部配置数据源时能看到上层子程序的输入（与 GetDataProviderForNode 行为对齐）
             //    作用域是主流程时 FindParentSubroutineNodeId 返回 null，自动跳过，零影响
-            if (scopeWorkflowId != null)
+            if (bindingWorkflow.IsSubroutine)
             {
                 throw new InvalidOperationException("Group 数据查询尚未迁移，当前不可用。");
             }

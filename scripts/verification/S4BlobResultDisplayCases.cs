@@ -87,7 +87,16 @@ internal static class S2DocumentEditingCases
         var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(64,64,96,96,PixelFormats.Gray8,null,Pixels(),64)));using(var file=File.Create(imageFile))png.Save(file);
         var policy=ImageSourcePolicy.Read(source)!;policy.FilePaths=new(){imageFile};policy.CurrentIndex=0;policy.ForRunPaths=new(){imageFile};policy.SNInitialValue=1;policy.ApplyTo(source);vm.AddNodeToWorkflow(source);
         Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=source.Id,TargetNodeId=node.Id}),"真实图像连线失败");
-        var inputReference=((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput)).Reference;var key=BindingReferenceSerializer.Serialize(inputReference);
+        var inputSetting=node.RuntimeConfiguration!.Fields.Read(BlobTool.ImageInput);
+        if(inputSetting is not ReferenceSetting)
+        {
+            var query=typeof(MainWindowViewModel).GetMethod("GetDataProviderForNode",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{node}) as DataSourceQueryService;
+            if(query is null)try{query=vm.CreateDataSourceQueryService(vm.WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId);}catch(Exception error){Console.Error.WriteLine("query construction failure: "+error);}
+            var ids=query?.BindingCandidateNodeIds?.Invoke(node.Id)??Array.Empty<string>();
+            Console.Error.WriteLine($"auto-binding diagnostic: query={(query is null?"null":"present")} scope={query?.WorkflowId} candidates={string.Join(",",ids)} source={source.Id} sourceSchema={query?.GetSchema(source.Id)?.Outputs.Count} input={inputSetting.GetType().Name}");
+            throw new InvalidOperationException("连线后自动图像来源未建立。");
+        }
+        var inputReference=((ReferenceSetting)inputSetting).Reference;var key=BindingReferenceSerializer.Serialize(inputReference);
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();

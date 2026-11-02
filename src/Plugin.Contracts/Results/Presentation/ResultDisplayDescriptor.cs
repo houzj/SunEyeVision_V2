@@ -1,4 +1,4 @@
-﻿namespace SunEyeVision.Plugin.Contracts.Results.Presentation;
+namespace SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 /// <summary>Presentation-only fields: persisted with the tool, never invocation inputs or algorithm parameters.</summary>
 public interface IToolResultDisplayProvider
@@ -14,7 +14,8 @@ public sealed record ResultGraphicAppearance(bool Visible,ResultDisplayColor Ok,
 public sealed record ResultTextAppearance(bool Visible,string Content,ResultDisplayColor Ok,ResultDisplayColor Ng,
     double FontSize,double Opacity,double X,double Y);
 /// <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>
-public sealed record ResultDisplayAppearance(ResultGraphicAppearance Graphic,ResultTextAppearance Text);
+public sealed record ResultDisplayAppearance(ResultGraphicAppearance Graphic,ResultTextAppearance Text,
+    ResultGraphicAppearance? Inspection=null,ResultGraphicAppearance? Mask=null,ResultGraphicAppearance? Annulus=null);
 
 /// <summary>Only declared same-row output paths. Does not own values, resources, callbacks or a renderer.</summary>
 public sealed class ResultDisplayDescriptor

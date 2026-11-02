@@ -10,6 +10,7 @@ public static class BlobResultDisplay
 {
     public const string Graphic="display.blob";
     public const string Text="display.text";
+    public const string Inspection="display.inspection",Mask="display.mask",Annulus="display.annulus";
     public static string Field(string group,string role)=>group+"."+role;
     private sealed record Definition(Port Port,FieldPresentation Presentation,object Value);
     private static readonly IReadOnlyList<Definition> Definitions=Build();
@@ -27,15 +28,22 @@ public static class BlobResultDisplay
             var port=new Port(id,type,EditModes:FieldEditModes.Constant);
             result.Add(new(port,new(id,label,section,displayOrder+result.Count,type.Shape==ValueShape.Record?FieldEditorKind.Record:FieldEditorKind.Scalar){Layout=new("结果显示",section,
                 Minimum:minimum,Maximum:maximum,Increment:increment??1,DecimalPlaces:type==DataType.Number?decimals:0,
-                DialogGroup:dialog,DialogTitle:dialog is null?null:"Blob",DialogPrimary:primary)},value));
+                DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch {Inspection=>"ROI",Mask=>"屏蔽区域",Annulus=>"扇环检测区域",_=>"Blob"},DialogPrimary:primary)},value));
         }
         var ok=PresentationDeclarations.Color(102,255,0);var ng=PresentationDeclarations.Color(255,0,0);
-        Add(Field(Graphic,"visible"),"Blob","图像显示",DataType.Boolean,true,dialog:Graphic,primary:true);
-        Add(Field(Graphic,"ok"),"OK颜色","图像显示",PresentationDeclarations.Rgba,ok,dialog:Graphic);
-        Add(Field(Graphic,"ng"),"NG颜色","图像显示",PresentationDeclarations.Rgba,ng,dialog:Graphic);
-        Add(Field(Graphic,"opacity"),"透明度","图像显示",DataType.Number,1d,0,1,.01,Graphic);
-        Add(Field(Graphic,"width"),"线宽","图像显示",DataType.Number,2d,1,10,1,Graphic);
+        void GraphicFields(string group,string label,RecordValue color,double opacity=1)
+        {
+            Add(Field(group,"visible"),label,"图像显示",DataType.Boolean,true,dialog:group,primary:true);
+            Add(Field(group,"ok"),"OK颜色","图像显示",PresentationDeclarations.Rgba,color,dialog:group);
+            Add(Field(group,"ng"),"NG颜色","图像显示",PresentationDeclarations.Rgba,ng,dialog:group);
+            Add(Field(group,"opacity"),"透明度","图像显示",DataType.Number,opacity,0,1,.01,group);
+            Add(Field(group,"width"),"线宽","图像显示",DataType.Number,2d,1,10,1,group);
+        }
+        GraphicFields(Graphic,"Blob",ok);
+        GraphicFields(Inspection,"ROI",PresentationDeclarations.Color(0,0,255));
         Add(Field(Text,"visible"),"文本","图像显示",DataType.Boolean,true);
+        GraphicFields(Mask,"屏蔽区域",PresentationDeclarations.Color(0,0,255),.5);
+        GraphicFields(Annulus,"扇环检测区域",PresentationDeclarations.Color(0,0,255));
         Add(Field(Text,"content"),"内容","文本显示",DataType.Text,"Blob Area:{0}");
         Add(Field(Text,"ok"),"OK颜色","文本显示",PresentationDeclarations.Rgba,ok);
         Add(Field(Text,"ng"),"NG颜色","文本显示",PresentationDeclarations.Rgba,ng);
@@ -59,8 +67,9 @@ public static class BlobResultDisplay
         ResultDisplayColor Color(string group,string role)
         {var value=Read<RecordValue>(Field(group,role));return new(checked((byte)value.Get<long>("r")),checked((byte)value.Get<long>("g")),checked((byte)value.Get<long>("b")),checked((byte)value.Get<long>("a")));}
         var content=Read<string>(Field(Text,"content"));ValidateContent(content);
-        return new(new(Read<bool>(Field(Graphic,"visible")),Color(Graphic,"ok"),Color(Graphic,"ng"),Number(Graphic,"opacity"),Number(Graphic,"width")),
-            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),Number(Text,"x"),Number(Text,"y")));
+        ResultGraphicAppearance Style(string group)=>new(Read<bool>(Field(group,"visible")),Color(group,"ok"),Color(group,"ng"),Number(group,"opacity"),Number(group,"width"));
+        return new(Style(Graphic),
+            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),Number(Text,"x"),Number(Text,"y")),Style(Inspection),Style(Mask),Style(Annulus));
     }
     public static void ValidateContent(string content)
     {
@@ -72,6 +81,3 @@ public static class BlobResultDisplay
         catch(FormatException error){throw new ArgumentException("显示内容仅支持面积占位符{0}及其数值格式。",error);}
     }
 }
-
-
-

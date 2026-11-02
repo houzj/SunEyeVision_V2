@@ -1,7 +1,6 @@
 # Blob图文显示完整迁移设计（2026-11-01）
 
-当前状态（2026-11-02）：已在独立候选分支 codex/blob-result-display-20261101、源码基线a2ff34e4集中实施；冻结011标准UI/全量0错，Core5/真实Window15/RuntimeDebug7/RuntimeKernel19已有候选通过证据，公共字段38条通过日志（旧固定汇总31）已隐藏桌面exit0；五轨源码/DLL身份均核一致，尚未正式集成。原九项不缩减，仅实际外接矩形和Area文本接通，七项与动态位置保护。当前详细设计及逐项边界见 [实施设计](BLOB_RESULT_DISPLAY_IMPLEMENTATION_DESIGN_20261101.md)，失败记录保留，不将本方适配称VM等价。
-
+当前状态（2026-11-02）：首批真实外接矩形/Area文本已集成正式c8311cff；当前独立候选codex/blob-roi-result-display-20261102在该基线上完成检测ROI/屏蔽/扇环同次名义几何与正式样式接线。产品冻结002的UI/全量0错，Core5/Roi10/Window15/RuntimeDebug7/FieldEditing38/ROI预览24自然exit0，Loaded DLL均匹配候选；尚待集中正式集成，不称九项、S2/S3或VM等价完成。剩余最大内接矩形/轮廓点/基准点/运行点及动态文本位置继续保护。见 [当前实施设计](BLOB_RESULT_DISPLAY_IMPLEMENTATION_DESIGN_20261101.md)、[本阶段完整设计](BLOB_ROI_RESULT_DISPLAY_DESIGN_20261102.md) 及 [候选回执](BLOB_ROI_RESULT_DISPLAY_CANDIDATE_20261102.json)。本次几何非裁剪后像素区，四形/多屏蔽与总BusinessJudgment颜色均为明确适配；原历史证据/失败保留。
 ## 1. 原证据与纠正
 
 第一依据：D:/MyWork/REA逆向测试/docs/joint-audit/B08-结果显示配置到视口静态证据-20261101.md。

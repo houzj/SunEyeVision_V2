@@ -7,7 +7,7 @@ namespace SunEyeVision.UI.Shell.Windows;
 
 public partial class MainWindowViewModel
 {
-    internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent);
+    internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent,ResultGeometrySnapshot? Geometry);
     private sealed class DisplayPreview : IDisposable
     {
         private sealed class Token
@@ -141,7 +141,6 @@ public partial class MainWindowViewModel
             return current is not null&&ReferenceEquals(current.ResultDisplay,descriptor)&&Equals(current.CaptureResultDisplay(),appearance)
                 &&revision==_resultDisplayRevision&&ReferenceEquals(session,DocumentManager.Session)&&ReferenceEquals(node,SelectedNode)&&PublicationOwner();
         }
-        return Current()?new(descriptor,appearance,revision,Current):null;
+        return Current()?new(descriptor,appearance,revision,Current,(snapshot!.Output as IToolResultGeometryOutput)?.ResultGeometry):null;
     }
 }
-

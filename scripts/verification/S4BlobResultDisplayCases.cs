@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
@@ -76,7 +77,7 @@ internal static class S2DocumentEditingCases
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var scope=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_SCOPE")??"All";
-        Require(scope is "All" or "Core" or "Window","未知预览专项");
+        Require(scope is "All" or "Core" or "Window" or "Roi","未知显示专项");
         var resultView=new ImageResultControl{DataContext=vm.ImageResult};resultView.Initialize(vm);
         var shell=new Window{Width=1000,Height=850,Content=resultView,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -142,7 +143,7 @@ internal static class S2DocumentEditingCases
         if(scope is "All" or "Core")
         {
             Case("正式显示声明与算法阶段隔离，常量模式及默认只创建一次",()=>{
-                var config=node.RuntimeConfiguration!;Require(config.SettingsSchema.Inputs.Count==55&&config.DisplaySettingsSchema.Inputs.Count==13&&config.EditorSettingsSchema.Inputs.Count==68,"算法/显示编辑声明边界错误");
+                var config=node.RuntimeConfiguration!;Require(config.SettingsSchema.Inputs.Count==55&&config.DisplaySettingsSchema.Inputs.Count==28&&config.EditorSettingsSchema.Inputs.Count==83,"算法/显示编辑声明边界错误");
                 Require(displaySchema.Inputs.All(port=>port.EditModes==FieldEditModes.Constant),"显示可误订阅");
                 var execution=((System.Collections.IEnumerable)config.GetType().GetMethod("CaptureExecutionFields",Flags)!.Invoke(config,null)!).Cast<object>().Select(pair=>(string)Get(pair,"Key")).ToArray();Require(!execution.Intersect(displaySchema.Inputs.Select(port=>port.Id)).Any()&&config.ParameterBindingOrder.All(id=>!config.IsDisplayField(id)),"显示进入执行或参数写入顺序");
                 var appearance=config.CaptureResultDisplay()!;Require(appearance.Graphic.Ok.Red==102&&appearance.Graphic.Width==2&&appearance.Text.Content=="Blob Area:{0}"&&appearance.Text.X==0&&appearance.Text.FontSize==10,"原feature默认错误");
@@ -151,7 +152,7 @@ internal static class S2DocumentEditingCases
             Case("显示只在完整编辑集合接纳，算法WithSettings保持正式样式",()=>{
                 var original=node.RuntimeConfiguration!;var changed=original.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),4d}});
                 var algorithm=changed.WithSettings(new BlobSettings{Threshold=121});Require(algorithm.CaptureResultDisplay()!.Graphic.Width==4&&((BlobSettings)algorithm.CaptureSettings()).Threshold==121,"算法更新覆盖显示");
-                var editor=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(new BlobTool(),algorithm.Fields.Select(algorithm.EditorSettingsSchema.Inputs));Require(editor.Schema.Inputs.Count==68,"编辑集合丢显示");
+                var editor=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(new BlobTool(),algorithm.Fields.Select(algorithm.EditorSettingsSchema.Inputs));Require(editor.Schema.Inputs.Count==83&&editor.Schema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal).SetEquals(algorithm.EditorSettingsSchema.Inputs.Select(port=>port.Id)),"编辑集合丢显示");
                 var full=algorithm.WithSettingsFields(editor.CaptureValidatedFields());Require(full.Fields.Read(BlobTool.ImageInput) is ReferenceSetting&&full.CaptureResultDisplay()!.Graphic.Width==4,"编辑替换覆盖图像输入/样式");
                 var rejected=false;try{_=algorithm.WithSettingsFields(algorithm.Fields.Select(algorithm.SettingsSchema.Inputs));}catch(ArgumentException error){rejected=error.Message.Contains("display.")||error.Message.Contains("required");}Require(rejected,"算法only快照误当完整编辑集合");
                 var bad=false;try{_=changed.WithFieldSettings(new Dictionary<string,ParameterSetting>{{Display(BlobResultDisplay.Text,"x"),new ReferenceSetting(new OutputReference(source.Id,"image.width",DataType.Integer,scopeId:flowId))}});}catch(ArgumentException){bad=true;}Require(bad,"动态位置误入算法引用");
@@ -195,9 +196,9 @@ internal static class S2DocumentEditingCases
                 Console.WriteLine("Result groups="+string.Join(";",groupOrder));
                 Require(groupOrder.SequenceEqual(new[]{"结果判定","图像显示","文本显示"}),"原结果页三组顺序改变");
                 Console.WriteLine("Result row slots="+string.Join(";",rows.Select(row=>Get(Get(row,"GroupName"),"NameA")+":"+Maybe(Get(row,"View"),"DisplayNameA")+":"+Get(row,"View").GetType().FullName)));
-                var unavailable=Get(control.Content,"_displayUi");var contents=((System.Collections.IEnumerable)Get(unavailable,"_contents")).Cast<object>().OfType<FrameworkElement>().ToArray();Require(contents.Length==7&&contents.All(view=>!view.IsEnabled&&view.ToolTip is not null),"无生产值显示项可误编辑");
+                var unavailable=Get(control.Content,"_displayUi");var contents=((System.Collections.IEnumerable)Get(unavailable,"_contents")).Cast<object>().OfType<FrameworkElement>().ToArray();Require(contents.Length==4&&contents.All(view=>!view.IsEnabled&&view.ToolTip is not null),"无生产值显示项可误编辑");
                 var actualRows=rows.Where(row=>Equals(Get(Get(row,"GroupName"),"NameA"),"图像显示")).Select(row=>Get(row,"View")).ToArray();
-                var expectedRows=new object[]{Field(BlobResultDisplay.Graphic,"visible").View}.Concat(contents.Take(5)).Append(Field(BlobResultDisplay.Text,"visible").View).Concat(contents.Skip(5)).ToArray();
+                var expectedRows=new object[]{Field(BlobResultDisplay.Graphic,"visible").View,contents[0],Field(BlobResultDisplay.Inspection,"visible").View,contents[1],contents[2],contents[3],Field(BlobResultDisplay.Text,"visible").View,Field(BlobResultDisplay.Mask,"visible").View,Field(BlobResultDisplay.Annulus,"visible").View};
                 Require(actualRows.Length==9&&actualRows.Zip(expectedRows).All(pair=>ReferenceEquals(pair.First,pair.Second)),"原九行槽位顺序改变（含屏蔽→扇环）");
                 Require((string)Get(Field(BlobResultDisplay.Graphic,"visible").View,"DisplayNameA")=="Blob"&&(string)Get(Field(BlobResultDisplay.Text,"visible").View,"DisplayNameA")=="文本"&&(bool)Get(Field(BlobResultDisplay.Text,"visible").View,"PanVisibleA")==false,"未复用原图形/文本眼睛模板");
                 Console.WriteLine("Page="+editor.SelectedPageIndex+" tabs="+string.Join(";",Visual(editor).OfType<TabControl>().Select(t=>t.SelectedIndex+":"+string.Join(",",t.Items.Cast<object>().Select(o=>Maybe(o,"Header"))))));
@@ -289,7 +290,122 @@ internal static class S2DocumentEditingCases
                 history.Undo();Pump();Require(!current.IsCurrent()&&Maybe(outputPane,"Display") is null,"算法Undo复活旧运行结果");
             });
         }
-        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；九项中仅真实Blob矩形与Area文本开通，非VM像素/语言/物理鼠标等价。");return 0;
+        if(scope is "All" or "Roi")
+        {
+            ResultGeometrySnapshot Frozen() => ((IToolResultGeometryOutput)Get(Get(vm,"_resultPublicationSnapshot"),"Output")).ResultGeometry;
+            RecordValue Rectangle(double x,double y,double width,double height)=>new(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","rectangle"},{"center",BlobLocalRoi.Point(x,y)},{"width",width},{"height",height},{"angle-degrees",0d}});
+            RecordValue Ring(double start,double end,double inner=3)=>new(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","annulus"},{"center",BlobLocalRoi.Point(20,20)},{"inner-radius",inner},{"outer-radius",10d},{"start-radians",start},{"end-radians",end}});
+            RecordValue Row(RecordValue shape,bool enabled=true)=>BlobLocalRoi.Item(Guid.NewGuid(),"同次几何",shape,enabled);
+            void Roi(RecordValue inspection,RecordValue? mask=null){SetFormal(BlobLocalRoi.InputId,BlobLocalRoi.Root(inspection,mask??BlobLocalRoi.Group(BlobLocalRoi.None,Array.Empty<RecordValue>())));Run();}
+            ResultGeometryGroup Group(ResultGeometryRole role)=>Frozen().Groups.Single(group=>group.Role==role);
+            object[] RegionShapes()=>Geometry(Scene()).Where(item=>item.GetType().Name is "RectangleProjection" or "Annular" or "PolygonProjection").ToArray();
+            Case("几何快照深冻结容器且拒绝错误声明和非有限参数",()=>{
+                var shapes=new List<RecordValue>{BlobRoiDisplayProjection.Shape(Rectangle(9,9,14,14))};var groups=new List<ResultGeometryGroup>{new(ResultGeometryRole.Inspection,ResultGeometryCoverage.Explicit,shapes)};
+                var copy=new ResultGeometrySnapshot(Frozen().SourceFrame,RoiDeclarations.ImageFrame,true,groups);shapes.Clear();groups.Clear();Require(copy.Groups.Count==1&&copy.Groups[0].Shapes.Count==1,"快照共享了可写容器");
+                var rejected=false;try{_=new ResultGeometryGroup(ResultGeometryRole.Inspection,ResultGeometryCoverage.Explicit,new[]{Rectangle(9,9,14,14)});}catch(ArgumentException){rejected=true;}Require(rejected,"快照接纳私有/错误形状声明");
+                rejected=false;try{var fields=copy.Groups[0].Shapes[0].CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);fields["angle-degrees"]=double.NaN;_=new ResultGeometryGroup(ResultGeometryRole.Inspection,ResultGeometryCoverage.Explicit,new[]{new RecordValue(RoiDeclarations.Shape,fields)});}catch(ArgumentException){rejected=true;}Require(rejected,"快照接纳非有限几何");
+            });
+            Case("同次全域与无区域不伪造框，空结果仍保覆盖身份",()=>{
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.FullDomain,Array.Empty<RecordValue>()));
+                Require(Group(ResultGeometryRole.Inspection).Coverage==ResultGeometryCoverage.FullDomain&&Frozen().Groups.All(group=>group.Shapes.Count==0),"全域被伪造名义框");
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.None,Array.Empty<RecordValue>()));
+                Require(Group(ResultGeometryRole.Inspection).Coverage==ResultGeometryCoverage.None&&Geometry(Scene()).Length==0&&!Words(Scene()).Any(),"无检测区域产生虚假结果或几何");
+            });
+            Case("实际矩形与disabled按本次冻结值展示，后改草稿不替换结果",()=>{
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14)),Row(Rectangle(32,32,8,8),false)}));
+                var snapshot=Frozen();Require(Group(ResultGeometryRole.Inspection).Shapes.Count==1,"禁用形状伪装本次采用");
+                var rectangles=Geometry(Scene()).Where(item=>item.GetType().Name=="RectangleProjection").ToArray();Require(rectangles.Length==1&&(double)Get(rectangles[0],"Width")==14,"真实检测框未进入原renderer");
+                var window=Open();var control=Control(window);var draft=ToolEditorCommit.GetDraftContext(control)!;
+                var draftNode=(WorkflowNodeBase)Get(draft,"DraftNode");draftNode.RuntimeConfiguration=draftNode.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{BlobLocalRoi.InputId,BlobLocalRoi.Empty}});Pump();
+                Require(ReferenceEquals(snapshot,Frozen())&&Group(ResultGeometryRole.Inspection).Shapes.Count==1,"显示读了后改草稿");window.Close();Pump();
+            });
+            Case("多形屏蔽实际名义几何及原橙色Fill，零Blob不丢检测层",()=>{
+                var polygon=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(1,1),BlobLocalRoi.Point(3,1),BlobLocalRoi.Point(2,3)})}});
+                var sectorFields=Ring(0,Math.PI/2,0).CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);sectorFields["kind"]="sector";var sector=new RecordValue(BlobLocalRoi.ShapeType,sectorFields);
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(50,50,6,6))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(polygon),Row(Rectangle(10,40,4,4)),Row(Ring(0,2*Math.PI)),Row(sector)}));
+                Require(Group(ResultGeometryRole.Mask).Shapes.Count==4,"多形屏蔽被收窄");
+                var items=Geometry(Scene());Require(items.Length==5&&!Words(Scene()).Any(),"零Blob时实际几何丢失或伪造结果文本");
+                Require(items.Count(item=>Equals(Get(item,"Fill"),"#FFFF5400"))==4,"屏蔽填充未走原IShape.Fill");Capture(shell,"roi-multiple-mask-zero-result.png");
+            });
+            Case("检测多边形与扇形名义投影保实际kind，不伪造矩形",()=>{
+                var triangle=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(5,5),BlobLocalRoi.Point(12,5),BlobLocalRoi.Point(5,12)})}});
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(triangle)}));Require(Group(ResultGeometryRole.Inspection).Shapes.Single().Get<string>("kind")=="polygon"&&!Geometry(Scene()).Any(item=>item.GetType().Name=="RectangleProjection"),"多边形检测伪造矩形");
+                var fields=Ring(0,Math.PI/2,0).CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);fields["kind"]="sector";
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(new RecordValue(BlobLocalRoi.ShapeType,fields))}));Require(Group(ResultGeometryRole.Annulus).Shapes.Single().Get<string>("kind")=="sector"&&Geometry(Scene()).Any(item=>item.GetType().Name=="Annular"),"扇形kind或原扇环renderer丢失");
+            });
+            Case("正负扇环及完整环复用原接口，内半径零与孔洞不混",()=>{
+                foreach(var values in new[]{(Start:170d,End:150d,Inner:3d),(Start:150d,End:170d,Inner:3d),(Start:0d,End:360d,Inner:0d)})
+                {
+                    Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Ring(values.Start*Math.PI/180,values.End*Math.PI/180,values.Inner))}));
+                    var ring=Geometry(Scene()).Single(item=>item.GetType().Name=="Annular");
+                    Require(Math.Abs((double)Get(ring,"StartAngle")-Math.Min(values.Start,values.End))<1e-9&&Math.Abs((double)Get(ring,"AngleRange")-Math.Abs(values.End-values.Start))<1e-9&&(double)Get(ring,"InnerRadius")==values.Inner,"原扇环参数未保持同弧域");
+                    Require(Group(ResultGeometryRole.Annulus).Shapes.Count==1&&Group(ResultGeometryRole.Inspection).Shapes.Count==0,"扇环被误画为矩形");
+                    var original=SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape.GetAnnularGeometry((SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAnnularSector)ring,64,64,1,1);
+                    var field=original.GetType().BaseType!.GetField("geometry",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);var drawn=(System.Windows.Media.Geometry)field!.GetValue(original)!;
+                    Point At(double radius,double angle)=>new(20+radius*Math.Cos(angle*Math.PI/180),20+radius*Math.Sin(angle*Math.PI/180));
+                    if(values.End!=360)Require(drawn.FillContains(At(6,160))&&!drawn.FillContains(At(6,100))&&!drawn.FillContains(At(1,160)),"原renderer正负扇环实际弧域或孔洞不符");
+                    else Require(drawn.FillContains(At(6,90))&&drawn.FillContains(At(1,180))&&!drawn.FillContains(At(11,90)),"原renderer整圆/零内半径实际区域不符");Capture(shell,"roi-ring-"+values.Start+"-"+values.End+".png");
+                }
+            });
+            Case("三角色真实WPF眼睛样式确认取消UndoRedo只刷新不重跑",()=>{
+                var polygon=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(1,40),BlobLocalRoi.Point(5,40),BlobLocalRoi.Point(2,44)})}});
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14)),Row(Ring(0,Math.PI))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(polygon)}));
+                var publication=Publication();var snapshot=Frozen();
+                object[] Members(ResultGeometryRole role)=>Geometry(Scene()).Where(item=>role switch {ResultGeometryRole.Inspection=>item.GetType().Name=="RectangleProjection",ResultGeometryRole.Mask=>Equals(Maybe(item,"Fill"),"#FFFF5400"),_=>item.GetType().Name=="Annular"}).ToArray();
+                var roles=new[]{(Role:ResultGeometryRole.Inspection,Id:BlobResultDisplay.Inspection),(Role:ResultGeometryRole.Mask,Id:BlobResultDisplay.Mask),(Role:ResultGeometryRole.Annulus,Id:BlobResultDisplay.Annulus)};
+                for(var i=0;i<roles.Length;i++)
+                {
+                    var (role,id)=roles[i];var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);window.UpdateLayout();Pump();
+                    DeclaredFieldAccess Field(string name)=>((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==Display(id,name));
+                    var eye=Visual(Field("visible").View).OfType<ToggleButton>().Single(button=>Equals(button.Tag,"NativeGraphicVisibility"));eye.SetCurrentValue(ToggleButton.IsCheckedProperty,false);eye.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+                    Require(Members(role).Length==0&&publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"原眼睛未隐藏对应角色或引发新执行："+role);
+                    Require(Field("visible").TrySetConstant(true),Field("visible").Error);
+                    var width=3d+i;var opacity=new[]{.4,.5,.6}[i];var ok=PresentationDeclarations.Color((byte)(11+i),(byte)(21+i),(byte)(31+i));var ng=PresentationDeclarations.Color((byte)(151+i),(byte)(161+i),(byte)(171+i));
+                    Require(Field("width").TrySetConstant(width)&&Field("opacity").TrySetConstant(opacity)&&Field("ok").TrySetConstant(ok)&&Field("ng").TrySetConstant(ng),"真实样式字段提案被拒绝："+role);Pump();
+                    var expected=System.Windows.Media.Color.FromRgb((byte)(11+i),(byte)(21+i),(byte)(31+i)).ToString();Require(Members(role).Length==1&&Members(role).All(item=>(double)Get(item,"StrokeThickness")==width&&Math.Abs((double)Get(item,"Opacity")-opacity)<1e-12&&Equals(Get(item,"Stroke"),expected)),"草稿样式未投影到实际角色："+role);
+                    Require(control.TryCapture(out var error),error);var context=ToolEditorCommit.GetDraftContext(control)!;var args=new object?[]{null};Require((bool)context.GetType().GetMethod("TryCommitEditor")!.Invoke(context,args)!,args[0]?.ToString()??"真实确认失败");window.Close();Pump();
+                    Require(publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"确认仅样式却替换结果："+role);history.Undo();Pump();Require(Members(role).Length==1&&Members(role).All(item=>(double)Get(item,"StrokeThickness")==2),"样式Undo未恢复对应角色："+role);history.Redo();Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==width&&Equals(Get(item,"Stroke"),expected)),"样式Redo未恢复对应角色："+role);
+                    var cancel=Open();var cancelControl=Control(cancel);var cancelEditor=(DeclaredSettingsView)Get(cancelControl.Content,"Editor");SelectResultPage(cancelEditor);var cancelField=((DeclaredFieldsView)cancelEditor.Content).Fields.Single(field=>field.FieldId==Display(id,"width"));Require(cancelField.TrySetConstant(9d),cancelField.Error);Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==9),"取消前合法草稿未实际预览");cancel.Close();Pump();Require(Members(role).All(item=>(double)Get(item,"StrokeThickness")==width)&&publication.IsCurrent()&&ReferenceEquals(snapshot,Frozen()),"取消未恢复最新正式样式："+role);
+                }
+            });
+            Case("三角色样式和实际区域保存重开执行，复制不丢名义几何定义",()=>{
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(10,10,2,2))}));
+                SetFormal(Display(BlobResultDisplay.Mask,"width"),4d);var before=node.RuntimeConfiguration!;var formalSnapshot=Frozen();
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"同次几何配置保存失败");var bytes=File.ReadAllBytes(path);
+                var loaded=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("重开失败");var loadedFlow=loaded.Workflows.Single(f=>f.Id==flowId);var restored=loadedFlow.Nodes.Single(n=>n.Id==node.Id);
+                Require(Equals(restored.RuntimeConfiguration!.CaptureResultDisplay(),before.CaptureResultDisplay())&&Equals(before.Copy().CaptureResultDisplay(),before.CaptureResultDisplay()),"三角色样式保存/复制丢失");
+                var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
+                using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
+                var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
+                var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
+                using(var result=task.GetAwaiter().GetResult())
+                {
+                    Require(result.Success&&result.NodeResults[node.Id].Result is DeclaredOutputSnapshot,"真实重开执行失败");
+                    var output=(BlobOutput)((DeclaredOutputSnapshot)result.NodeResults[node.Id].Result!).Output!;
+                    Require(output.ResultGeometry.Groups.Single(group=>group.Role==ResultGeometryRole.Inspection).Shapes.Count==1&&output.ResultGeometry.Groups.Single(group=>group.Role==ResultGeometryRole.Mask).Shapes.Count==1,"重开执行未携带本次实际检测/屏蔽");
+                    Require(output.ResultGeometry.SourceFrame==output.Region.SourceFrame&&output.ResultGeometry.Coordinates==output.Region.Frame,"重开名义几何与实际结果资源帧不一致");
+                    Require(output.TotalArea==55,"实际屏蔽未裁掉9像素或检测串入另一个Blob");
+                }
+                loaded.ExecutionOwner.Retire();var window=Open();window.Close();Pump();Require(bytes.SequenceEqual(File.ReadAllBytes(path))&&ReferenceEquals(formalSnapshot,Frozen()),"取消改写文件或替换实际几何");
+            });
+            Case("三角色总业务NG颜色来自同次状态，独立于逐Blob通过色",()=>{
+                var polygon=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","polygon"},{"vertices",new SequenceValue(BlobLocalRoi.ShapeType.Fields.Single(field=>field.Id=="vertices").Type,new object?[]{BlobLocalRoi.Point(1,40),BlobLocalRoi.Point(5,40),BlobLocalRoi.Point(2,44)})}});
+                Roi(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(Rectangle(9,9,14,14)),Row(Ring(0,Math.PI))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{Row(polygon)}));
+                var draft=host.BeginEdit(flowId,node.Id);var settings=(BlobSettings)draft.Node.RuntimeConfiguration!.CaptureSettings();draft.Node.RuntimeConfiguration=draft.Node.RuntimeConfiguration.WithSettings(settings with {Judgments=settings.Judgments.Select(rule=>rule.Key=="blob-count"?rule with {Enabled=true,Minimum=99,Maximum=100}:rule).ToArray()});host.Commit(draft);Run();
+                Require(!Frozen().Passed,"同次总判定未实际NG");
+                var styles=new[]{(Role:ResultGeometryRole.Inspection,Style:node.RuntimeConfiguration!.CaptureResultDisplay()!.Inspection!),(Role:ResultGeometryRole.Mask,Style:node.RuntimeConfiguration!.CaptureResultDisplay()!.Mask!),(Role:ResultGeometryRole.Annulus,Style:node.RuntimeConfiguration!.CaptureResultDisplay()!.Annulus!)};
+                foreach(var (role,style) in styles)
+                {
+                    var expected=System.Windows.Media.Color.FromArgb(style.Ng.Alpha,style.Ng.Red,style.Ng.Green,style.Ng.Blue).ToString();var members=Geometry(Scene()).Where(item=>role switch{ResultGeometryRole.Inspection=>item.GetType().Name=="RectangleProjection",ResultGeometryRole.Mask=>Equals(Maybe(item,"Fill"),"#FFFF5400"),_=>item.GetType().Name=="Annular"}).ToArray();Require(members.Length==1&&members.All(item=>Equals(Get(item,"Stroke"),expected)),"总NG未投影对应角色色："+role);
+                }
+                using var values=Publication().Borrow();var rows=values.Values!.Read(BlobSchema.BlobsPort);Require(rows.Count>0&&Enumerable.Range(0,rows.Count).All(index=>rows.GetElement(index).GetField("judgment-passed").GetScalar<bool>()),"未形成总NG但逐Blob通过的敏感样本");history.Undo();Pump();Run();
+            });
+            Case("新几何同物理帧严格验证，错图与新publication退役旧整景",()=>{
+                var old=Scene();var oldSnapshot=Frozen();SelectInput();Pump();Require(Maybe(outputPane,"Display") is null&&(bool)Get(old,"Disposed"),"不同坐标域上游图仍显示Blob结果几何或泄漏旧scene租约");SelectBlob();var restored=Scene();Require(!ReferenceEquals(old,restored)&&ReferenceEquals(oldSnapshot,Frozen()),"选回未恢复当前结果");
+                Run();Require(!ReferenceEquals(restored,Scene())&&!ReferenceEquals(oldSnapshot,Frozen()),"新publication未退役旧场景");
+            });
+        }
+        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
     }
     private static void SelectResultPage(DeclaredSettingsView editor)
     {
@@ -369,30 +485,3 @@ internal static class S2DocumentEditingCases
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

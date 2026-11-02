@@ -10,11 +10,10 @@ internal static class BlobDisplayUi
     internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,ToolSchema schema,bool supportedWindow=false,Action<NativeDisplayUiDraftRows>? observe=null)
     {
         var display=new NativeDisplayUiDraftRows("图像显示",new[]{
-            new NativeDisplayUiDraftEntry("最大内接矩形",true),new NativeDisplayUiDraftEntry("ROI",true),
+            new NativeDisplayUiDraftEntry("最大内接矩形",true),
             new NativeDisplayUiDraftEntry("轮廓点",false),new NativeDisplayUiDraftEntry("基准点",true,InitiallyVisible:false),
-            new NativeDisplayUiDraftEntry("运行点",true,InitiallyVisible:false),new NativeDisplayUiDraftEntry("屏蔽区域",true),
-            new NativeDisplayUiDraftEntry("扇环检测区域",true)});
-        if(options.AdditionalAfterContent is {} assist){display.BindEntryVisibility(3,assist);display.BindEntryVisibility(4,assist);}
+            new NativeDisplayUiDraftEntry("运行点",true,InitiallyVisible:false)});
+        if(options.AdditionalAfterContent is {} assist){display.BindEntryVisibility(2,assist);display.BindEntryVisibility(3,assist);}
         var views=display.ExtractEntryViews();
         foreach(var view in views)
         {
@@ -25,8 +24,8 @@ internal static class BlobDisplayUi
         observe?.Invoke(display);
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
         var textEye=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text,"visible");
-        foreach(var view in views.Take(5))rows.Add(new(textEye,view,FollowAnchorVisibility:false,InsertBefore:true));
-        foreach(var view in views.Skip(5))rows.Add(new(textEye,view,FollowAnchorVisibility:false));
+        rows.Add(new(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,"visible"),views[0],FollowAnchorVisibility:false,InsertBefore:true));
+        foreach(var view in views.Skip(1))rows.Add(new(textEye,view,FollowAnchorVisibility:false,InsertBefore:true));
         var fields=schema.Presentation!.Fields.Where(field=>field.Group=="结果判定").ToArray();
         var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
         foreach(var field in fields)suppressed.Add(field.FieldId);
@@ -44,7 +43,7 @@ internal static class BlobDisplayUi
             _=>throw new InvalidOperationException("动态文本来源尚未接入。"),()=>true),value=>
             {try{SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.ValidateContent(value);return null;}catch(ArgumentException error){return error.Message;}}));
         return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,TextExpressions=expressions,
-            GraphicDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(graphic,Id(graphic,"visible"),Id(graphic,"ok"),Id(graphic,"ng"),Id(graphic,"opacity"),Id(graphic,"width"))},
+            GraphicDisplays=new[]{graphic,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Mask,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Annulus}.Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
             VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible"))},
             TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
     }

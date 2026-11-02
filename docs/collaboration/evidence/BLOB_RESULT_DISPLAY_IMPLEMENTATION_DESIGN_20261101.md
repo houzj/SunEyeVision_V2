@@ -1,4 +1,9 @@
 # C11–C13 Blob图像显示与文本正式组合实施设计
+## 2026-11-02 检测/屏蔽/扇环增量阶段
+
+首批外接矩形/Area文本已集成正式基线c8311cff。本阶段从该基线在独占候选实现同次名义几何输出、三个原槽正式样式及原renderer投影；最终产品冻结002，UI/全量均自然exit0，Core5/Roi10/Window15/RuntimeDebug7/FieldEditing38/ROI预览24均候选exit0，六轨Loaded DLL分别15/15/15/13/12/15与候选一致。具体设计、状态/帧/资源、原件与适配差异及未验范围见 [本阶段设计](BLOB_ROI_RESULT_DISPLAY_DESIGN_20261102.md)、[机器回执](BLOB_ROI_RESULT_DISPLAY_CANDIDATE_20261102.json) 和 [交接](BLOB_ROI_RESULT_DISPLAY_HANDOFF_20261102.md)。候选尚待主仓集中集成，不能代正式Release或VM/人工验收。
+
+正式显示字段现28、编辑83、算法仍55。几何是本次采用的名义形状，非Domain裁剪后像素区；FullDomain/None不造矩形。三角色总颜色按本方BusinessJudgment，不能称VM ModuStatus/LimitJudge等价。下述首批设计和历史验证保留，新阶段覆盖的旧保护项按完整清单更新。
 
 基线a2ff34e4fd2bd3357bd76a88b0bc66eef3368bf4；分支codex/blob-result-display-20261101，复用唯一候选工作区。旧预览98ebbc21分支保留。本批不改主仓/正式Release、不启VM、不扩其他工具/Script/双图owner。
 
@@ -14,15 +19,15 @@
 |---|---|
 |BlobFiled/Blob|原rect中心/宽高/角度及BlobStatus；本方同次Blobs.rotated-bounds/area/judgment-passed具备。开通矩形样式及真实边框，以本方四角投影适配，不称VM数值等价|
 |最大内接矩形|无真实生产值，原位置保持不可用|
-|CheckZone/ROI|本地/继承几何已有但publication无本轮实际采用值；保护，不读当前编辑器几何补旧结果|
+|CheckZone/ROI|本阶段从成功BlobOutput传本次实际采用的冻结名义形状；矩形沿原rect，检测polygon为本方适配。严核同次publication及物理帧/域，不读后改草稿；FullDomain/None无假框|
 |MatchLocation/Contour Point|outlinepoint双颜色/排列未闭合；保护，不用单外环线冒充|
 |FixtureInitPoint|无正式生产值，保持原位置条件并保护|
 |FixtureRunPoint|同上|
 |ResutlText/Show Text|同次Area及逐项状态具备；开通眼睛、七行内容/颜色/字号/透明度/常量位置；默认Blob Area:{0}。动态结果位置需独立结果阶段解析，本批保护，不制造算法自环|
-|BlindZone/ExternROI|本轮polygon结果几何传递缺，用户屏蔽多形不等价原polygon；保护|
-|CheckZoneAnnular/Annular|原renderer/继承物化具备，本轮结果几何传递缺；保护|
+|BlindZone/ExternROI|本阶段传本次enabled屏蔽名义形状，沿原polygon橙色Fill；四形/多项为用户扩展，不称原polygon或像素掩膜等价。无名义形状的像素Region仍Unavailable|
+|CheckZoneAnnular/Annular|本阶段传本次annulus/sector，复用原IAnnularSector；正负弧域/整环360/inner0已候选实测，不称VM角度/像素等价|
 
-全部九行保留原顺序/标签/模板/笔显隐。未实现项不能保存no-op状态；短Tooltip沿用户要求，不加常驻大段说明。原Blob初色#66ff00、NG#ff0000、opacity1、width2、visibletrue；不能沿用旧本方XML#00ff00。文本实际资源默认/范围逐项核后固化，原Content长度0x20，格式仅开放有实际消费者的受控{0}，未知表达式/动态位置不假实现。
+全部九行保留原顺序/标签/模板/笔显隐。未实现项不能保存no-op状态；短Tooltip沿用户要求，不加常驻大段说明。原Blob初色#66ff00、NG#ff0000、opacity1、width2、visibletrue；不能沿用旧本方XML#00ff00。文本实际资源默认/范围逐项核后固化，原模板LengthA=0x20不作为业务字符上限，格式仅开放有实际消费者的受控{0}，未知表达式/动态位置不假实现。
 
 ## 唯一owner与独立显示阶段合同
 
@@ -92,5 +97,3 @@ Window009/010确认关窗Undo正式width=2、publication仍有效、scene仍4；
 稳定窗口scope拥有配对事件订退；显示Token只在Control成功绑定Context实际DraftNode及稳定generation后创建。Apply后新代可再次预览；无改Undo安全重绑新正式值，有未确认草稿不重绑/不丢原文、旧覆盖不复活，最终Host冲突拒绝。算法正式确认经Context回调已证明缓存结果/旧publication/场景退役，Undo不复活。直接Host.Commit只证明失效集合，不代UI消费，相关诊断保留。
 
 原主设计已同步到BLOB_GRAPHIC_MIGRATION_DESIGN_20261101.md；完整候选回执BLOB_RESULT_DISPLAY_CANDIDATE_20261102.json、交接BLOB_RESULT_DISPLAY_HANDOFF_20261102.md。七个未实现图像对象及动态位置仍禁用；保存仅LoadCandidate值，不冒称重开宿主/执行；双pane、跨文档同ID、provider/proof异常重入直接注入、真实NG像素等本控件剩余直接验收项明确保留。默认截图原MultiText将两个Area分行，但VM排版/时序/像素等价未证。非自然键鼠、非VS/人工、非主仓正式验收，不称九项/Blob/S2/S3完成。
-
-

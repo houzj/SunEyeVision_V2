@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -71,6 +71,17 @@ internal sealed partial class ResultWorkspacePresenter
                 if(values.Values is null||values.Stamp!=publication.Stamp||!Current()){values.Dispose();values=null;ClearOriginal();continue;}
                 var rows=values.Values.Read(state.Descriptor.Rows.PortId);
                 foreach(var member in state.Descriptor.Rows.MemberFieldPath)rows=rows.GetField(member);
+                var roi=new List<NativeRoiResultOverlay>();
+                if(state.Geometry is {} frozen)
+                {
+                    if(frozen.SourceFrame!=receipt.Frame||frozen.Coordinates!=receipt.Coordinates)throw new InvalidOperationException("本次区域几何与当前图像不是同一物理帧或坐标域。");
+                    foreach(var group in frozen.Groups)
+                    {
+                        var style=group.Role switch {ResultGeometryRole.Inspection=>state.Appearance.Inspection,ResultGeometryRole.Mask=>state.Appearance.Mask,ResultGeometryRole.Annulus=>state.Appearance.Annulus,_=>null};
+                        if(style?.Visible!=true||group.Coverage!=ResultGeometryCoverage.Explicit)continue;
+                        foreach(var shape in group.Shapes)roi.Add(new(frozen.SourceFrame,shape,Color(frozen.Passed?style.Ok:style.Ng),group.Role==ResultGeometryRole.Mask?System.Windows.Media.Color.FromRgb(255,84,0):Colors.Transparent,style.Width,style.Opacity));
+                    }
+                }
                 var geometry=new List<NativeGeometryOverlay>();var texts=new List<NativeTextOverlay>();var ids=new HashSet<long>();long textCharacters=0;
                 DeclaredValueReader Member(DeclaredValueReader row,ResultFieldPath path)=>row.GetField(path.MemberFieldPath.Last());
                 for(var i=0;i<rows.Count;i++)
@@ -106,7 +117,7 @@ internal sealed partial class ResultWorkspacePresenter
                 if(!Attempt()){candidate.Dispose();continue;}
                 pane.Display=candidate;original?.Dispose();
                 bool Owns()=>Current()&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,candidate)&&!candidate.Disposed&&pane.Image.CurrentFrame==receipt;
-                if(!Owns()||!layer.Present(receipt,++_layerRevision,geometry,texts,Owns))
+                if(!Owns()||!layer.Present(receipt,++_layerRevision,geometry,texts,Owns,roi))
                 {if(ReferenceEquals(pane.Display,candidate))pane.Display=null;candidate.Dispose();}
             }
             catch(Exception error)

@@ -162,7 +162,8 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             }
             if (ordered.Any(x => !x.IsPass)) messages.Add($"[NG] {ordered.Count(x => !x.IsPass)} Blob未通过单项判断。");
             cancellation.ThrowIfCancellationRequested();
-            var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources });
+            var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources },
+                BlobResultGeometry.Capture(localRoi,input,isPass,settings.IsPositionCorrectionEnabled,inspection is not null,mask is not null));
             _ = new InputValues(BlobSchema.Outputs, output.ToValues());
             return output;
         }

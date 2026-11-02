@@ -1,3 +1,8 @@
+## 2026-11-02 Blob 检测/屏蔽/扇环同次结果显示正式自测
+
+- 基线ab514dbd集成候选5b9387a4；正式UI及全量Release构建成功，Core 5、Roi 10、Window 15、RuntimeDebug 7、FieldEditing 38、BlobRoiPreview 24组正式通过。实际加载程序集路径与SHA逐项核对，回执见 evidence/BLOB_ROI_RESULT_DISPLAY_FORMAL_20261102.json。Field末尾固定摘要31为旧文本，按实际38条通过记录计数。
+- 正式结果携带本次采用的名义检测、屏蔽和扇环纯几何与源帧，复用原图文scene与独立lease，三个原槽的显隐、样式、确认取消、历史和保存重开实际执行已覆盖；不新增可订阅假输出。FullDomain/None不伪造矩形，无法证明名义几何的像素Region/位置修正保持Unavailable。
+- 名义几何不是Domain裁剪后的实际像素区域；多形屏蔽是用户指定扩展，总BusinessJudgment选色为本方适配，VM像素/角度/状态/时序等价未证。其余四个缺真实值对象、图像mask、屏蔽继承、位置修正及动态文本位置未完成；自然键鼠、真实VS、用户人工及完整九项未验。不称Blob或S2/S3整体闭口。
 ## 2026-11-02 Blob判定比较指令独立复核
 
 - 原主函数及float/int/double helper四份asm的SHA与逆向报告一致；总面积由int32精确转double，单体面积/周长/轴长为float32转double。float比较先做float精度范围运算，不能使用C#的最小正数Epsilon替代机器epsilon。

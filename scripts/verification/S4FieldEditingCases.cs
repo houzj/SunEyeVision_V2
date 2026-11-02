@@ -900,7 +900,7 @@ internal static class S2DocumentEditingCases
         using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options))
         {
             Show(preview);var fields=(DeclaredFieldsView)preview.Content;fields.SelectedPageIndex=1;Pump();
-            Require(fields.Fields.Count==68&&fields.Fields.Select(field=>field.FieldId).ToHashSet(StringComparer.Ordinal).SetEquals(sample.Draft.Schema.Inputs.Select(port=>port.Id))&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
+            Require(fields.Fields.Count==83&&fields.Fields.Select(field=>field.FieldId).ToHashSet(StringComparer.Ordinal).SetEquals(sample.Draft.Schema.Inputs.Select(port=>port.Id))&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
             CaptureBlobPreview(preview,"design-sample");
         }
         Console.WriteLine("通过：真实Blob六项仅Single可用，九字段正式默认/整数范围/草稿写入、原三模式显隐、历史保留及ROI整窗保护");
@@ -1256,7 +1256,7 @@ internal static class S2DocumentEditingCases
         });
         string D(string group,string role)=>BlobResultDisplay.Field(group,role);
         options=options with {
-            GraphicDisplays=new[]{new NativeGraphicDisplayOptions(BlobResultDisplay.Graphic,D(BlobResultDisplay.Graphic,"visible"),D(BlobResultDisplay.Graphic,"ok"),D(BlobResultDisplay.Graphic,"ng"),D(BlobResultDisplay.Graphic,"opacity"),D(BlobResultDisplay.Graphic,"width"))},
+            GraphicDisplays=new[]{BlobResultDisplay.Graphic,BlobResultDisplay.Inspection,BlobResultDisplay.Mask,BlobResultDisplay.Annulus}.Select(group=>new NativeGraphicDisplayOptions(group,D(group,"visible"),D(group,"ok"),D(group,"ng"),D(group,"opacity"),D(group,"width"))).ToArray(),
             VisibilityDisplays=new[]{new NativeVisibilityDisplayOptions(D(BlobResultDisplay.Text,"visible"))},
             TextDisplays=new[]{new NativeTextDisplayOptions(D(BlobResultDisplay.Text,"content"),D(BlobResultDisplay.Text,"ok"),D(BlobResultDisplay.Text,"ng"),D(BlobResultDisplay.Text,"size"),D(BlobResultDisplay.Text,"opacity"),D(BlobResultDisplay.Text,"x"),D(BlobResultDisplay.Text,"y"))}};
         view.Bind(draft,options);

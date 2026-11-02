@@ -9,17 +9,9 @@ internal static class BlobLocalRoiProjection
 {
     internal static RecordValue ToNative(RecordValue shape)
     {
-        BlobLocalRoi.ValidateShape(shape);
-        var fields=shape.CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);
-        if(shape.Contains("angle-degrees"))fields["angle-degrees"]=BlobLocalRoi.NormalizeDegrees(shape.Get<double>("angle-degrees"));
-        if(shape.Contains("center")){var point=shape.Get<RecordValue>("center");fields["center"]=RoiGeometryEditing.Point(new(point.Get<double>("x"),point.Get<double>("y")));}
-        if(shape.Contains("vertices"))
-        {
-            fields["vertices"]=new SequenceValue(RoiDeclarations.Shape.Fields.Single(p=>p.Id=="vertices").Type,
-                shape.Get<SequenceValue>("vertices").Cast<RecordValue>().Select(p=>(object?)RoiGeometryEditing.Point(new(p.Get<double>("x"),p.Get<double>("y")))));
-            fields["closed"]=true;
-        }
-        return RoiGeometryEditing.Checked(fields);
+        var projected=BlobRoiDisplayProjection.Shape(shape);
+        RoiGeometryEditing.Validate(projected);
+        return projected;
     }
     internal static RecordValue FromNative(RecordValue shape,RecordValue? previous=null)
     {

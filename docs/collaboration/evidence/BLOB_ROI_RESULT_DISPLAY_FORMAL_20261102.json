@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-02",
+  "tracks": [
+    {
+      "name": "Core",
+      "groups": 5,
+      "loadedAssemblies": 15,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-003",
+      "caseSourceSha256": "FCAFD45A0AF40280B971D5622B6548E53405075F4925937A18CFA345706FB806"
+    },
+    {
+      "name": "Roi",
+      "groups": 10,
+      "loadedAssemblies": 15,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-004",
+      "caseSourceSha256": "FCAFD45A0AF40280B971D5622B6548E53405075F4925937A18CFA345706FB806"
+    },
+    {
+      "name": "Window",
+      "groups": 15,
+      "loadedAssemblies": 15,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultDisplay\\attempt-005",
+      "caseSourceSha256": "FCAFD45A0AF40280B971D5622B6548E53405075F4925937A18CFA345706FB806"
+    },
+    {
+      "name": "RuntimeDebug",
+      "groups": 7,
+      "loadedAssemblies": 13,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S3-20261025\\RuntimeDebug\\attempt-030",
+      "caseSourceSha256": "DE6D934C6F6B413B0B96A1AB5B2CFAC9DD9B2B0B3B53209347A0F2AC183683E7"
+    },
+    {
+      "name": "FieldEditing",
+      "groups": 38,
+      "loadedAssemblies": 12,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\FieldEditing\\attempt-158",
+      "caseSourceSha256": "9E8F7B14C2609626D57B48834D4576F1B999BE4FC3E8F95461AFDF7723D67966"
+    },
+    {
+      "name": "BlobRoiPreview",
+      "groups": 24,
+      "loadedAssemblies": 15,
+      "attempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRoiPreview\\attempt-003",
+      "caseSourceSha256": "463EB4A75151DF1FCFB212AA5EBEE786ABFA3C83BF25E19B21AFFB4EC9D0F9A1"
+    }
+  ],
+  "baseCommit": "ab514dbd",
+  "limitations": [
+    "Nominal geometries, not a depiction of final pixel domain",
+    "User requested multishape mask and BusinessJudgment colors are adaptations",
+    "Four other display objects, image mask, inherited mask, fixture, dynamic text positions remain protected",
+    "VM pixel/timing/state equivalence, natural keyboard/mouse, VS designer and human acceptance not verified"
+  ],
+  "builds": [
+    "UI Release exit 0",
+    "Full solution Release exit 0"
+  ],
+  "candidateCommit": "5b9387a4d619bfc3122f26b87f47e9fe23c894fd",
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision"
+}

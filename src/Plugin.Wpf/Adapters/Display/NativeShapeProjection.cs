@@ -46,7 +46,7 @@ internal static class NativeShapeProjection
             if (!double.IsFinite(overlay.Thickness) || overlay.Thickness <= 0
                 || !double.IsFinite(overlay.Opacity) || overlay.Opacity is < 0 or > 1)
                 throw new ArgumentException("几何线宽或透明度无效。");
-            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity);
+            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,(overlay.Fill??Colors.Transparent).ToString());
             object shape = overlay.Geometry switch
             {
                 PointGeometry point => new PointProjection(style, Point(point.Point)),
@@ -80,12 +80,12 @@ internal static class NativeShapeProjection
         return double.IsFinite(degrees) ? degrees : throw new ArgumentException("几何角度转换超出原绘制范围。");
     }
     private sealed record TextProjection(string Content, Point Position, int FontSize, string Stroke, double Opacity) : IText;
-    private sealed record Style(string Stroke, double Thickness, double Opacity);
+    private sealed record Style(string Stroke, double Thickness, double Opacity,string Fill);
     private abstract record ShapeProjection(Style Style) : IShape
     {
         public string Stroke => Style.Stroke;
         public double Opacity => Style.Opacity;
-        public string Fill => "#00000000";
+        public string Fill => Style.Fill;
         public double StrokeThickness => Style.Thickness;
         public string ToolTip => "";
     }

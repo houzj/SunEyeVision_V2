@@ -1076,7 +1076,8 @@ namespace SunEyeVision.Workflow
 
             try
             {
-                session.Configuration = request.Configuration ?? WorkflowRunConfiguration.Capture(request.WorkflowId, _workflowEngine.GetWorkflow);
+                session.Configuration = request.Configuration ?? WorkflowRunConfiguration.Capture(request.WorkflowId, _workflowEngine.GetWorkflow, _workflowEngine.RuntimeDirectory);
+                session.Configuration.RequireDirectory(_workflowEngine.RuntimeDirectory);
                 foreach (var flow in session.Configuration.Definitions)
                 {
                     if (flow.IsSubroutine) throw new InvalidOperationException("Group / 控制流当前尚未接入正式运行。");

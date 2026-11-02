@@ -25,7 +25,17 @@ public sealed class ScopedNodeInfoProviderTests
         var foreign=new ReleasePayloadAuthority(payload).PrepareRuntimeDirectory();
         node.RuntimeConfiguration=RuntimeToolConfiguration.Create(foreign,"ImageLoad");
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));node.RuntimeConfiguration=original;
+        var documentId=document.Id;document.Id=Guid.NewGuid().ToString();
+        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));document.Id=documentId;
+        var flowId=flow.Id;flow.Id=Guid.NewGuid().ToString();
+        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));flow.Id=flowId;
         document.Workflows.Remove(flow);
+        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
+        document.Workflows.Add(new SunEyeVision.Workflow.Workflow { Id=flowId });
+        Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
+        document.Workflows.Clear();document.Workflows.Add(flow);
+        Assert.NotNull(provider.GetSchema(node.Id));
+        document.ExecutionOwner.Retire();
         Assert.Throws<InvalidOperationException>(()=>provider.GetSchema(node.Id));
     }
 }

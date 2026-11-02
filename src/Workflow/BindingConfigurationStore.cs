@@ -376,6 +376,7 @@ public sealed class BindingConfigurationStore
                     SubroutineId = node.SubroutineId, GlobalIndex = node.GlobalIndex, LocalIndex = node.LocalIndex,
                     IsEnabled = node.IsEnabled, PositionX = node.PositionX, PositionY = node.PositionY,
                     Width = node.Width, Height = node.Height,
+                    AdditionalData = node.AdditionalData?.ToDictionary(entry => entry.Key, entry => entry.Value.Clone()),
                     RuntimeConfiguration = node.RuntimeConfiguration?.Copy(),
                     SelectedDisplayReference = node.SelectedDisplayReference
                 });

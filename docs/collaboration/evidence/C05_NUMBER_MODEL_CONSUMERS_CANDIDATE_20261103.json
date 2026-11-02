@@ -1,0 +1,1492 @@
+{
+  "schema": "c05-number-model-consumers-candidate/v1",
+  "scope": "独立worktree真实构建与消费者候选；主仓正式验收另记",
+  "baseline": "a3b3390f894191482a84bd969cb533aecdbfcc5c",
+  "productCommit": "f2e794533",
+  "head": "f2e794533d8db8235505ca6b4ccf98d908d82843",
+  "consumerCommits": [
+    "616fdb3dfe618d379740612b560fdffbaafac949",
+    "81f2fe21cc510dcf0ba7732acdc6a35efc179e71",
+    "4d2204b13a0020bed7350f71e9ea89d82a8b55ae"
+  ],
+  "publicOriginalCommits": [
+    "093c6f76c2de9c7f6a1dcd1cd82b2cfe1a728437",
+    "b179b18c7990d75b561bf8dbb83b3001a26b669d",
+    "bf5bac40d67ec1ea5d92936869b898b95360560d",
+    "66c25c70a76c3a897aed646f694c92d7b2617564"
+  ],
+  "source": [
+    {
+      "path": "scripts/verification/C05NumericModelCases.cs",
+      "rawSha256": "2D8E71D6DD21842328FCF2A545DCFE8E592F2A08BC4F9790B99DA5F014FCD689",
+      "gitBlob": "46f18f499f244fd9521bd781f1410aeca91cd52a"
+    },
+    {
+      "path": "scripts/verification/Run-C05NumericModelValidation.ps1",
+      "rawSha256": "5BD4DECB39B3A7CF48A681BE08548627E6D963742B4F3D3A213C310B655644FC",
+      "gitBlob": "7c032937df0455441c9d07b9fec87249570602b3"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "rawSha256": "0F26484E1B1BD09B344571B7C3186C7DBC9663999D155CF31ADD8940E0BEFE16",
+      "gitBlob": "5a828ccde31a0fe14d2c009f682cab2d58c14412"
+    },
+    {
+      "path": "scripts/verification/S4B08NumericReferenceCompositionCases.cs",
+      "rawSha256": "6EA88ABB69ADF8F12AA322999F3D64558E321BF58AF52EF85211AB52F1A87DC5",
+      "gitBlob": "ba546810cf4b2955c922c6aa6f9c78800ce98f68"
+    },
+    {
+      "path": "scripts/verification/S4BlobParameterProductionCases.cs",
+      "rawSha256": "6EF42C2CE279DAB5A045544559E64086E9B482FCC59F79D349C6DEF81619695F",
+      "gitBlob": "9a1ef97c0ab1ce64aa48e973efd845808d604474"
+    },
+    {
+      "path": "scripts/verification/S4C05NumberModelCases.cs",
+      "rawSha256": "759E894D8EB4BAD9288BADF95D348C8199B8130B03834DF4988396EFDF722CDC",
+      "gitBlob": "9b7f0da550a141d3fcb126cc338163cc60b2d4be"
+    },
+    {
+      "path": "scripts/verification/S4NumericContractCases.cs",
+      "rawSha256": "84F24BFD5EA5E0A7102AE1D8C6FF9737D00B9D96E2757838C92BED053B162554",
+      "gitBlob": "c133a4d101b31a9b53b563a6514933da4cc984f7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "rawSha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0",
+      "gitBlob": "55647b637950fb08998767676e0a7e407caa9406"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "rawSha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29",
+      "gitBlob": "07204fc0b7c7e2ef17dc43a668a2e9e1de4f975e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+      "rawSha256": "547881A566AB28F9FAB34CD8C7DC006F0C2707EB810A69C119258D620982F1F9",
+      "gitBlob": "e0974e2285c5e7526d87a03bdeddd8c3c3838d3f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "rawSha256": "E08982C285B73EEDBA3BC9C254D15025ECFBA4977E4B514C98A964F4A21D36AF",
+      "gitBlob": "5ae745c8dbe3fb6c305c248eedb5842ac0273191"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+      "rawSha256": "653EFCA632675F3FDCBCEF0E65C1E428F75C89326CAF1A5503FD087662433C5D",
+      "gitBlob": "01ed205ed0ae9833b27c8f339aaf9338fc29a7b5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "rawSha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+      "gitBlob": "92213ff776b0689f67ec5c4de645fa13e0934774"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "rawSha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789",
+      "gitBlob": "9b6e98a32b1c18903921e06f73ee8bcc6c70af73"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "rawSha256": "E39FC9E207D01796E0AEEDB8F7EF3366E36C6C564F2AFAB2ACCA6CF395F261E3",
+      "gitBlob": "85b0f158f3e06e32e7c987b047c1f2468f8ac196"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "rawSha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
+      "gitBlob": "5686b34afa6636602e38c2198c065c75e3ac9530"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "rawSha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
+      "gitBlob": "48f11500203480eda34f303d91947b2ac4de318a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
+      "rawSha256": "81932AF8F0F4A21DBEDBA7AD8A768F529D57F54BFDF14133FCA14281FCA1A6AF",
+      "gitBlob": "77904572d06e1b1b194adc8877e098e6993ddb67"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "rawSha256": "C15FF01D3EA9F52A28B67B1086C428249B8A9C23BE1F5CF658ABA8BDD6C7944C",
+      "gitBlob": "95768050cf45163a8926e3bee5b94c891aa47abf"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "rawSha256": "0FEC217F263B89C5900237DF6B563EFC75D5CC2D23414804D1A6763D3F3A093A",
+      "gitBlob": "a94bc815c91c88b3fae1771abf509c87420e27bf"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+      "rawSha256": "82731084CDBC1EF7F259F558DA49028CADB7BF10C4EFA82D3EFAE080E242F520",
+      "gitBlob": "14d72999687db620a2cf71a4239022d7f9e4ecdc"
+    }
+  ],
+  "builds": [
+    {
+      "log": "ui-002.log",
+      "kind": "UI",
+      "warnings": 6553,
+      "elapsed": "00:00:45.08",
+      "sha256": "AE87056F6534D3DE7A09DCC78EAF6083F5F657174D13F4EDB52339CCCA5F9BDF",
+      "exit": 0
+    },
+    {
+      "log": "full-002.log",
+      "kind": "Full",
+      "warnings": 6541,
+      "elapsed": "00:00:33.36",
+      "sha256": "FF426BB179C80B860F1C7D306A5DF8043D112487BD7E61F3FB41FF436CE28ED9",
+      "exit": 0
+    }
+  ],
+  "restore": {
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "lockChanges": false,
+    "exit": 0,
+    "log": "Release/_validation/c05-number-model-20261103/restore-001.log",
+    "copiedAssetsOrRelease": false,
+    "source": "C:/Users/houzhongjie/.nuget/packages"
+  },
+  "payload": [
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+      "sha256": "1EA05C52815674ED6B4C9F663D570B240510B40301D2A596F10319388A3E0C61"
+    },
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "B5429DE3F4BFAAF27A873418C70DD129980A6AE676E12568280E5157D39D8604"
+    },
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+      "sha256": "354A164AE4DE42FBF4AE3E5D7CF1DD8B13B2AF5ADCF6ACDC00BFABB38865B89B"
+    },
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+      "sha256": "C0D19D94738725A87F6793DB0E583E4E079110B595DAAB013BC6F72350C117D4"
+    },
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "sha256": "C99F0A797A004913E2226FAF15DB8CC8F15726332FDC2CAF26119F057467F7CD"
+    },
+    {
+      "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+      "sha256": "E3C24761C712E36003AC423BCE3D709EFC82BF6C78B3A11D7E7BD2C9799710A4"
+    }
+  ],
+  "tracks": [
+    {
+      "track": "C05NumberModels",
+      "passed": 6,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 19380,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4B08NumericReferenceCompositionCases.cs",
+        "caseSourceSha256": "6EA88ABB69ADF8F12AA322999F3D64558E321BF58AF52EF85211AB52F1A87DC5",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\C05NumberModels\\attempt-002"
+      },
+      "receiptSha256": "961A1B18FEA46B23CD336715FDCEC4D394B7701C4E446DEA105DFD718929CB32",
+      "loads": [
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "690305EDB3DC4F3BEEF10E541BE96A9F42C327074A16F648BFE55A95B96FDBB2",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1EA05C52815674ED6B4C9F663D570B240510B40301D2A596F10319388A3E0C61",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "B5429DE3F4BFAAF27A873418C70DD129980A6AE676E12568280E5157D39D8604",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "37AC4CA2BC6A19F92BFBA1A8EF3C76058E645607C3153FDCAFEA1755DAA108F1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "354A164AE4DE42FBF4AE3E5D7CF1DD8B13B2AF5ADCF6ACDC00BFABB38865B89B",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "68C1AEE6FA14BB5994FD7C8F00DE6407E133AECB5D3EF06C4106DF174D265640",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "8A3D0B804CAD9D31B26270871F5F2A81143B09A1D259FE5D9181809F4B6D8CA5",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "56F239EF2A874951124B41A5A987B527B7426D5C83AC8F6317407835936DABA0",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "C99F0A797A004913E2226FAF15DB8CC8F15726332FDC2CAF26119F057467F7CD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "8005B5B5856F479A2517C15F061AED3CA6C01FC37F1378D2CD183085653027FD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C0D19D94738725A87F6793DB0E583E4E079110B595DAAB013BC6F72350C117D4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "0ED537DB78033940C138C6FF7786A750D5F69A929215A2B9F3942FCB6FE239B1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "E3C24761C712E36003AC423BCE3D709EFC82BF6C78B3A11D7E7BD2C9799710A4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "7D17D2238E06362B234F9FB550C5A457EB9D32DDC5BA4CA4E95BD40D9A9FE1CC",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "9A2BD6C92D4CDDE3B12504DECAB494FD7720EB4A625FB6BBCF89D1F888A62C5D",
+          "matchesCurrent": true
+        }
+      ],
+      "extraSource": {
+        "path": "scripts/verification/S4C05NumberModelCases.cs",
+        "sha256": "759E894D8EB4BAD9288BADF95D348C8199B8130B03834DF4988396EFDF722CDC"
+      },
+      "report": null
+    },
+    {
+      "track": "B08NumericComposition",
+      "passed": 12,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 6,
+        "pid": 48132,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4B08NumericReferenceCompositionCases.cs",
+        "caseSourceSha256": "6EA88ABB69ADF8F12AA322999F3D64558E321BF58AF52EF85211AB52F1A87DC5",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-006"
+      },
+      "receiptSha256": "05A4443AB6FB87FBB7C6A52EDF9778DB1ED7D4C945F882812935ED1CD55EE00A",
+      "loads": [
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "690305EDB3DC4F3BEEF10E541BE96A9F42C327074A16F648BFE55A95B96FDBB2",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1EA05C52815674ED6B4C9F663D570B240510B40301D2A596F10319388A3E0C61",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "B5429DE3F4BFAAF27A873418C70DD129980A6AE676E12568280E5157D39D8604",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "37AC4CA2BC6A19F92BFBA1A8EF3C76058E645607C3153FDCAFEA1755DAA108F1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "354A164AE4DE42FBF4AE3E5D7CF1DD8B13B2AF5ADCF6ACDC00BFABB38865B89B",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "68C1AEE6FA14BB5994FD7C8F00DE6407E133AECB5D3EF06C4106DF174D265640",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "8A3D0B804CAD9D31B26270871F5F2A81143B09A1D259FE5D9181809F4B6D8CA5",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "56F239EF2A874951124B41A5A987B527B7426D5C83AC8F6317407835936DABA0",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "C99F0A797A004913E2226FAF15DB8CC8F15726332FDC2CAF26119F057467F7CD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "8005B5B5856F479A2517C15F061AED3CA6C01FC37F1378D2CD183085653027FD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C0D19D94738725A87F6793DB0E583E4E079110B595DAAB013BC6F72350C117D4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "0ED537DB78033940C138C6FF7786A750D5F69A929215A2B9F3942FCB6FE239B1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "E3C24761C712E36003AC423BCE3D709EFC82BF6C78B3A11D7E7BD2C9799710A4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "7D17D2238E06362B234F9FB550C5A457EB9D32DDC5BA4CA4E95BD40D9A9FE1CC",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "9A2BD6C92D4CDDE3B12504DECAB494FD7720EB4A625FB6BBCF89D1F888A62C5D",
+          "matchesCurrent": true
+        }
+      ],
+      "extraSource": {
+        "path": "scripts/verification/S4C05NumberModelCases.cs",
+        "sha256": "759E894D8EB4BAD9288BADF95D348C8199B8130B03834DF4988396EFDF722CDC"
+      },
+      "report": null
+    },
+    {
+      "track": "NumericContract",
+      "passed": 68,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 53008,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4NumericContractCases.cs",
+        "caseSourceSha256": "84F24BFD5EA5E0A7102AE1D8C6FF9737D00B9D96E2757838C92BED053B162554",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\NumericContract\\attempt-002"
+      },
+      "receiptSha256": "B02F21CA5647325CFE41D64D6B5CFAF7DEC7AA803E59C2E322F394FE1D02594E",
+      "loads": [
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "1EA05C52815674ED6B4C9F663D570B240510B40301D2A596F10319388A3E0C61",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "8A3D0B804CAD9D31B26270871F5F2A81143B09A1D259FE5D9181809F4B6D8CA5",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "B5429DE3F4BFAAF27A873418C70DD129980A6AE676E12568280E5157D39D8604",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "354A164AE4DE42FBF4AE3E5D7CF1DD8B13B2AF5ADCF6ACDC00BFABB38865B89B",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C0D19D94738725A87F6793DB0E583E4E079110B595DAAB013BC6F72350C117D4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "C99F0A797A004913E2226FAF15DB8CC8F15726332FDC2CAF26119F057467F7CD",
+          "matchesCurrent": true
+        }
+      ],
+      "extraSource": null,
+      "report": [
+        {
+          "Kind": "scalar",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0.125,
+          "Expected": 0.12,
+          "Accepted": "ConstantSetting { Value = 0.12 }",
+          "AcceptedValue": 0.12,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0.135,
+          "Expected": 0.14,
+          "Accepted": "ConstantSetting { Value = 0.14 }",
+          "AcceptedValue": 0.14,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 0,
+          "Expected": 0,
+          "Accepted": "ConstantSetting { Value = 0 }",
+          "AcceptedValue": 0,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "scalar",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-left",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Kind": "range-right",
+          "Source": 1,
+          "Expected": 1,
+          "Accepted": "ConstantSetting { Value = 1 }",
+          "AcceptedValue": 1,
+          "Writes": 1,
+          "Invalid": false,
+          "Error": "",
+          "IsLoaded": false,
+          "IsVisible": false,
+          "HasPresentationSource": false,
+          "Windows": 0,
+          "Passed": true
+        },
+        {
+          "Name": "舍入提案宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "宿主拒绝"
+          }
+        },
+        {
+          "Name": "拒绝后再次解绑可单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "提案拒绝保留引用且不调用写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "提案资格拒绝"
+          }
+        },
+        {
+          "Name": "解绑越界当前值保留引用",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入新的常量值。"
+          }
+        },
+        {
+          "Name": "宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "范围0宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "范围1宿主接纳同步关闭后不继续通知",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "notifications": 0
+          }
+        },
+        {
+          "Name": "scalar原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "scalar0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "scalar0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围1.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 1,
+            "Raw": "1.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range1越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range1绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "scalar原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "scalar0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "scalar0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 0,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range0越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range0绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "range原始越界不可借舍入进入范围-0.004",
+          "Passed": true,
+          "Detail": {
+            "Endpoint": 1,
+            "Raw": "-0.004",
+            "OriginalRangeRuleValid": false,
+            "result": false,
+            "writes": 0,
+            "accepted": 0.25,
+            "RetainedRaw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": false,
+            "HasPresentationSource": false
+          }
+        },
+        {
+          "Name": "range1越界原文修复后正常舍入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.38,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range1绝对上下端点可接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 3,
+            "accepted": 0
+          }
+        },
+        {
+          "Name": "scalar0必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "range0必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "range1必填空原文不隐式变零",
+          "Passed": true,
+          "Detail": {
+            "writes": 0,
+            "Error": "请输入数值。",
+            "Raw": ""
+          }
+        },
+        {
+          "Name": "双端舍入提案不被另一端旧动态值拒绝",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "low": 0.6,
+            "high": 0.8,
+            "error": ""
+          }
+        },
+        {
+          "Name": "整组绝对越界拒绝且两端原文保持",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "low": 0.6,
+            "high": 0.8,
+            "error": "数值超出允许范围。",
+            "Left": "0.404",
+            "Right": "1.004"
+          }
+        },
+        {
+          "Name": "scalar真实焦点转移后禁用时序",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": false,
+            "beforeTransfer": 0,
+            "beforeDisable": 1,
+            "valueBeforeDisable": 0.45,
+            "afterDisable": 1,
+            "valueAfterDisable": 0.45,
+            "afterPump": 1,
+            "accepted": 0.45,
+            "Raw": "0.45",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "scalar实际失焦恢复不重复写入",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 1,
+            "beforeDisable": 1
+          }
+        },
+        {
+          "Name": "range真实焦点转移后禁用时序",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": false,
+            "beforeTransfer": 0,
+            "beforeDisable": 1,
+            "valueBeforeDisable": 0.45,
+            "afterDisable": 1,
+            "valueAfterDisable": 0.45,
+            "afterPump": 1,
+            "accepted": 0.45,
+            "Raw": "0.45",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range实际失焦恢复不重复写入",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 1,
+            "beforeDisable": 1
+          }
+        },
+        {
+          "Name": "scalar真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "scalar排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "scalarlow恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "scalarlow卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "scalarlow重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "scalarlow拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 0,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "rangelow恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "rangelow卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "rangelow重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "rangelow拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "range真实Loaded路由失焦排队后禁用",
+          "Passed": true,
+          "Detail": {
+            "focused": true,
+            "IsLoaded": true,
+            "Endpoint": 1,
+            "InjectedLostKeyboardFocus": true,
+            "beforeTransfer": 0,
+            "beforeDisable": 0,
+            "valueBeforeDisable": 0.2,
+            "afterDisable": 0,
+            "valueAfterDisable": 0.2,
+            "afterPump": 0,
+            "accepted": 0.2,
+            "Raw": "0.21",
+            "Dpi": 144
+          }
+        },
+        {
+          "Name": "range排队禁用恢复原文",
+          "Passed": true,
+          "Detail": {
+            "Raw": "0.45",
+            "writes": 0,
+            "beforeDisable": 0
+          }
+        },
+        {
+          "Name": "rangehigh恢复后显式提交单次接纳",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45
+          }
+        },
+        {
+          "Name": "rangehigh卸载拒绝排队写入",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "IsLoaded": false
+          }
+        },
+        {
+          "Name": "rangehigh重载原文及宿主拒绝不半写",
+          "Passed": true,
+          "Detail": {
+            "writes": 1,
+            "accepted": 0.45,
+            "Error": "Loaded宿主拒绝",
+            "Raw": "0.55"
+          }
+        },
+        {
+          "Name": "rangehigh拒绝修复后显式提交",
+          "Passed": true,
+          "Detail": {
+            "writes": 2,
+            "accepted": 0.55,
+            "Error": ""
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MinCircularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MaxCircularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MinRectangularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "-0.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        },
+        {
+          "Name": "真实设计上下文原文界限MaxRectangularity",
+          "Passed": true,
+          "Detail": {
+            "result": false,
+            "Raw": "1.004",
+            "Error": "数值超出允许范围。",
+            "IsLoaded": true,
+            "IsVisible": true,
+            "ViewVisibility": "Visible",
+            "Windows": 1,
+            "HasPresentationSource": true
+          }
+        }
+      ]
+    },
+    {
+      "track": "BlobParameterProduction",
+      "passed": 21,
+      "receipt": {
+        "stage": "S4",
+        "validationScope": "Candidate",
+        "attempt": 2,
+        "pid": 52404,
+        "exit": 0,
+        "timeoutMs": 480000,
+        "productRoot": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+        "caseSource": "S4BlobParameterProductionCases.cs",
+        "caseSourceSha256": "6EF42C2CE279DAB5A045544559E64086E9B482FCC59F79D349C6DEF81619695F",
+        "scope": "独立worktree自行构建产物的候选检查，尚未集成或正式验收",
+        "logDir": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-002",
+        "track": "BlobParameterProduction",
+        "caseReport": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-002\\blob-parameter-production-report.json"
+      },
+      "receiptSha256": "D7B8AEBCB61F140D447E5A2293890DC47E33DEB504C7136DF074DBFA598A74DD",
+      "loads": [
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "C99F0A797A004913E2226FAF15DB8CC8F15726332FDC2CAF26119F057467F7CD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "56F239EF2A874951124B41A5A987B527B7426D5C83AC8F6317407835936DABA0",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "8A3D0B804CAD9D31B26270871F5F2A81143B09A1D259FE5D9181809F4B6D8CA5",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "354A164AE4DE42FBF4AE3E5D7CF1DD8B13B2AF5ADCF6ACDC00BFABB38865B89B",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "37AC4CA2BC6A19F92BFBA1A8EF3C76058E645607C3153FDCAFEA1755DAA108F1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "8005B5B5856F479A2517C15F061AED3CA6C01FC37F1378D2CD183085653027FD",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "C0D19D94738725A87F6793DB0E583E4E079110B595DAAB013BC6F72350C117D4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "B5429DE3F4BFAAF27A873418C70DD129980A6AE676E12568280E5157D39D8604",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Runtime.dll",
+          "sha256": "0ED537DB78033940C138C6FF7786A750D5F69A929215A2B9F3942FCB6FE239B1",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageSource.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.ImageSource.Wpf.dll",
+          "sha256": "E3C24761C712E36003AC423BCE3D709EFC82BF6C78B3A11D7E7BD2C9799710A4",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "690305EDB3DC4F3BEEF10E541BE96A9F42C327074A16F648BFE55A95B96FDBB2",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "68C1AEE6FA14BB5994FD7C8F00DE6407E133AECB5D3EF06C4106DF174D265640",
+          "matchesCurrent": true
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "D:\\MyWork\\line-aiproject\\blob-display-neutral-20261103\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "9A2BD6C92D4CDDE3B12504DECAB494FD7720EB4A625FB6BBCF89D1F888A62C5D",
+          "matchesCurrent": true
+        }
+      ],
+      "extraSource": null,
+      "report": {
+        "scope": "真实Blob九参数非前台生产链；实际窗口、VS设计器、人工和VM算法另验",
+        "passed": 21,
+        "failed": 0,
+        "cases": [
+          {
+            "name": "真实九字段稳定名称、VM默认和面积整数存储",
+            "passed": true
+          },
+          {
+            "name": "整工具统一字段经正式宿主调试冻结取消确认历史与重开",
+            "passed": true
+          },
+          {
+            "name": "整数面积两端边界接受并经真实宿主保存重开",
+            "passed": true
+          },
+          {
+            "name": "整数面积越界小数与倒置提案拒绝且正式九字段不半写",
+            "passed": true
+          },
+          {
+            "name": "阈值仍绑定且面积筛选关闭时已知面积越界拒绝且无半写",
+            "passed": true
+          },
+          {
+            "name": "九字段显式非空变量数组索引确认与保存重开",
+            "passed": true
+          },
+          {
+            "name": "无控制前序的真实Blob输出不能成为普通阈值来源",
+            "passed": true
+          },
+          {
+            "name": "真实Blob控制前序输出绑定经调度消费并保持稳定来源身份",
+            "passed": true
+          },
+          {
+            "name": "私有调试回执取消隔离、确认接纳及当前值重开",
+            "passed": true
+          },
+          {
+            "name": "后项索引失败仅保留私有已接纳前缀，正式九字段不变",
+            "passed": true
+          },
+          {
+            "name": "九参数配置编辑历史与运行值历史分离",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：None",
+            "passed": true
+          },
+          {
+            "name": "旧模式读取保留、保存确认及生产执行门禁：DoubleThreshold",
+            "passed": true
+          },
+          {
+            "name": "真实方案重开后空扩展数据不使连续结构同步自发增版",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：null",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：empty",
+            "passed": true
+          },
+          {
+            "name": "流程扩展数据快照复制保留形态且与正式及其他副本隔离：nonempty",
+            "passed": true
+          },
+          {
+            "name": "非空未知流程扩展仍受正式格式门禁，保存失败不覆盖已有文件",
+            "passed": true
+          },
+          {
+            "name": "窗口所属正式会话退役后旧草稿和私有回执不能确认",
+            "passed": true
+          },
+          {
+            "name": "极性显示标签与正式身份及Schema指纹分离",
+            "passed": true
+          },
+          {
+            "name": "极性未确认草稿与真实宿主历史保存重开保持正式键",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ],
+  "initializationOwner": "DeclaredSettingsView.Rebuild successful installed root tail All exactly once; not Runtime/Loaded/run-complete",
+  "ordinaryReadAdapter": "host CurrentValues only; no VM native value-equivalence claim",
+  "publicIndependentCandidate": {
+    "path": "D:/MyWork/line-aiproject/blob-reference-chain-20261101/docs/collaboration/evidence/C05_NUMERIC_MODEL_PUBLIC_CANDIDATE_20261103.json",
+    "scope": "公共另一worktree自己的同版9组及Loaded RangeRoundtrip42，不冒称本消费者载荷执行",
+    "commit": "1341d00ae5c2fafa864e341673844ae036253e78"
+  },
+  "intermediate": {
+    "passed": {
+      "NumericContract": 68,
+      "BlobParameterProduction": 21,
+      "B08NumericComposition": 12,
+      "C05NumberModels": 6
+    },
+    "product": "74dd0c459 / b179",
+    "note": "均自然通过，但合法原值/投影、权限和序列形状修正后不得移签最终载荷；原日志保留",
+    "builds": [
+      "ui-001.log",
+      "full-001.log"
+    ]
+  },
+  "protectedOrNotClaimed": [
+    "VM IMVS_GetParamValue与本方CurrentValues值等价未证",
+    "运行完成自动回读不添加",
+    "原失败双通知/回写与非finally未复制为安全合同",
+    "C06比较夹值及整组迁移未扩展",
+    "11继承输入普通producer未新增，无值Unavailable不补默认",
+    "VS和用户人工、主仓正式验收另记"
+  ],
+  "testIsolation": "实际WPF窗口运行在自有隐藏桌面，不切换用户桌面，不启动原VM/SDK",
+  "originalEvidence": [
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/joint-audit/B08-C05-C06数值模型订阅回读集中证据-20261103.md",
+      "sha256": "2144E62DB0434BAA491D021A9E76ABD787886936EAC8BCC90C8D8053FE47FD95"
+    },
+    {
+      "path": "D:/MyWork/REA逆向测试/docs/joint-audit/B08-C05运行回读调用者与单值合同补证-20261103.md",
+      "sha256": "CCAC4925AF7F43B96265EBC0A66320ED7D44992ADBDB7F44EEF3F6F8208B000F"
+    }
+  ],
+  "realViewImplementations": [
+    "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+    "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs"
+  ]
+}

@@ -47,6 +47,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _inheritance=inheritance;
         if(inheritance is not null&&(inheritance.InitialMode is <0 or >3||inheritance.RectangleParameters.Count!=5||inheritance.AnnulusParameters.Count!=6))
             throw new ArgumentException("继承组合需要四种模式、五个矩形参数和六个圆环参数。");
+        try
+        {
         var outputMask=new DeclaredFieldEditor(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
             new ConstantSetting(false),_=>{});
         _inheritEditors.Add(outputMask);Children.Add(outputMask);
@@ -94,6 +96,12 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         if(_imageInput is NativeRow {RightContent:ComboBox image})
         {image.SelectionChanged+=OnImageSelection;image.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
         ProjectVisibility();
+        }
+        catch(Exception failure)
+        {
+            try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     public bool IsLocalDrawing(string group)=>!_disposed&&Value(_area)==0&&Value(group=="inspection"?_detection:_mask)==0;
     public void BindLocalEditors(NativeRoiEditor detection,NativeRoiEditor mask)
@@ -197,16 +205,26 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        foreach(var editor in _inheritEditors)editor.Changed-=OnUiChanged;
-        foreach(var editor in InheritanceEditors())editor.Changed-=OnUiChanged;
-        if(_imageInput is NativeRow {RightContent:ComboBox image})
-        {image.SelectionChanged-=OnImageSelection;image.RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
-        foreach(var state in _states)state.Changed-=OnUiChanged;
-        if(_detectionShapes?.DataContext is ShapeContext detection)detection.PropertyChanged-=OnShapeChanged;
-        if(_maskShapes?.DataContext is ShapeContext mask)mask.PropertyChanged-=OnShapeChanged;Changed=null;
-        _area.Changed-=ProjectVisibility;_detection.Changed-=ProjectVisibility;_inherit.Changed-=ProjectVisibility;_mask.Changed-=ProjectVisibility;
+        Changed=null;
+        var editors=_inheritEditors.ToArray();
+        var borrowed=_inheritance is {} binding?_rectangleParameters.Children.OfType<DeclaredFieldEditor>()
+            .Concat(_circleParameters.Children.OfType<DeclaredFieldEditor>()).Append(binding.RectangleSource).Append(binding.AnnulusSource)
+            .Distinct().ToArray():Array.Empty<DeclaredFieldEditor>();
+        var radios=_radios.ToArray();var states=_states.ToArray();
         _detectionSource=null;_maskSource=null;
-        Children.Clear();_rectangleParameters.Children.Clear();_circleParameters.Children.Clear();
-        foreach(var editor in _inheritEditors)editor.Dispose();foreach(var radio in _radios)radio.Dispose();foreach(var state in _states)state.Dispose();
+        ParameterCleanup.Run(editors.Concat(borrowed).Select(editor=>(Action)(()=>editor.Changed-=OnUiChanged))
+            .Concat(new Action[]{()=>
+            {
+                if(_imageInput is NativeRow {RightContent:ComboBox image})
+                {image.SelectionChanged-=OnImageSelection;image.RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
+            }})
+            .Concat(states.Select(state=>(Action)(()=>{state.Changed-=OnUiChanged;state.Changed-=ProjectVisibility;})))
+            .Concat(new Action[]{
+                ()=>{if(_detectionShapes?.DataContext is ShapeContext detection)detection.PropertyChanged-=OnShapeChanged;},
+                ()=>{if(_maskShapes?.DataContext is ShapeContext mask)mask.PropertyChanged-=OnShapeChanged;},
+                ()=>Children.Clear(),()=>_rectangleParameters.Children.Clear(),()=>_circleParameters.Children.Clear()})
+            .Concat(editors.Select(editor=>(Action)editor.Dispose))
+            .Concat(radios.Select(radio=>(Action)radio.Dispose))
+            .Concat(states.Select(state=>(Action)state.Dispose)));
     }
 }

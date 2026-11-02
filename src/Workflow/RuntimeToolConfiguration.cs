@@ -284,10 +284,9 @@ public sealed partial class RuntimeToolConfiguration
         return new(definition,defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
     }
 
-    internal static RuntimeToolConfiguration Restore(string toolId, IReadOnlyDictionary<string,ParameterSetting> settings,
+    internal static RuntimeToolConfiguration Restore(IToolDefinition definition, IReadOnlyDictionary<string,ParameterSetting> settings,
         IReadOnlyDictionary<string,ParameterSetting> currentValues,IReadOnlyList<string> bindingOrder)
     {
-        var definition = ToolRegistry.CreateRuntime(toolId);
         return new(definition, settings,currentValues,bindingOrder:bindingOrder);
     }
 }
@@ -307,8 +306,8 @@ public sealed class RuntimeToolConfigurationJsonConverter : JsonConverter<Runtim
             || currentValues.ValueKind!=JsonValueKind.Object||!root.TryGetProperty("ParameterBindingOrder",out var bindingOrder)
             ||bindingOrder.ValueKind!=JsonValueKind.Array)
             throw new JsonException("Runtime configuration requires exactly ToolId, Fields, CurrentValues and ParameterBindingOrder.");
-        try { return RuntimeToolConfiguration.Restore(id.GetString()!, RuntimeFieldJson.Read(id.GetString()!,settings),
-            RuntimeFieldJson.Read(id.GetString()!,currentValues,currentValues:true),bindingOrder.EnumerateArray().Select(item=>
+        try { var definition=ToolRegistry.CreateRuntime(id.GetString()!); return RuntimeToolConfiguration.Restore(definition, RuntimeFieldJson.Read(definition,settings),
+            RuntimeFieldJson.Read(definition,currentValues,currentValues:true),bindingOrder.EnumerateArray().Select(item=>
                 item.ValueKind==JsonValueKind.String?item.GetString()!:throw new JsonException("Parameter binding order requires field IDs.")).ToArray()); }
         catch (Exception error) when (error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
         { throw new JsonException("Runtime configuration rejected: " + error.Message, error); }

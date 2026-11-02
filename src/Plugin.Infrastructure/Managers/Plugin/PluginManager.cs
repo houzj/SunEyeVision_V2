@@ -28,6 +28,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
+        public RuntimeDirectorySnapshot? RuntimeDirectory {get;private set;}
         public IReadOnlyList<string> AdmissionFailures=>_admissionFailures.ToArray();
 
         public void AssertCompleteReleaseToolSet(IEnumerable<string> actualToolIds)
@@ -44,7 +45,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
         }
 
-        public PluginManager(ILogger logger, IToolCatalog toolCatalog)
+        internal PluginManager(ILogger logger, IToolCatalog toolCatalog)
         {
             _logger = new AdmissionLogger(logger ?? throw new ArgumentNullException(nameof(logger)));
             _toolCatalog = toolCatalog ?? throw new ArgumentNullException(nameof(toolCatalog));
@@ -76,7 +77,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             try
             {
                 var authority = new ReleasePayloadAuthority(AppContext.BaseDirectory);
-                var components = authority.LoadToolComponents();
+                var snapshot = authority.PrepareDesktopDirectory();
+                var components = snapshot.Components;
                 var registration = _toolCatalog.PrepareRegistration(Array.Empty<Type>(), components);
                 var declarations = components.Where(c => c.Metadata.Role == SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c =>
                 {
@@ -92,6 +94,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     ToolRegistry.ConfigureDirectory(directory, EnsureToolLoaded);
                 }
                 _releaseAuthority = authority;
+                RuntimeDirectory = snapshot;
                 _logger.LogInfo($"产品组件准入完成：{directory.ToolIds.Count}个工具。");
             }
             catch (Exception ex)
@@ -115,6 +118,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             _logger.LogInfo("开始卸载插件...");
             _plugins.Clear();
             _toolCatalog.Clear();
+            RuntimeDirectory=null;
             _logger.LogInfo("插件卸载完成");
         }
 

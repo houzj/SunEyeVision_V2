@@ -44,5 +44,6 @@
          本工程是唯一引用 Infrastructure 的测试工程，专用于锁死这一层的不变量。 -->
     <InternalsVisibleTo Include="SunEyeVision.Plugin.Infrastructure.Tests" />
     <InternalsVisibleTo Include="SunEyeVision.Identity.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
   </ItemGroup>
 </Project>

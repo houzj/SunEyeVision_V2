@@ -67,14 +67,14 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// 注册工具类型（从 [Tool] 特性提取元数据）
         /// </summary>
         /// <param name="toolType">工具类型</param>
-        public static void RegisterTool(Type toolType)
+        internal static void RegisterTool(Type toolType)
         {
             var prepared=PrepareRegistration(new[]{toolType});
             using var commit=prepared.EnterCommit();
             commit.Publish();
         }
 
-        public static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes,IReadOnlyList<ToolComponentRegistration>? components=null)
+        internal static IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> toolTypes,IReadOnlyList<ToolComponentRegistration>? components=null)
         {
             ArgumentNullException.ThrowIfNull(toolTypes);
             Dictionary<string,Type> types;

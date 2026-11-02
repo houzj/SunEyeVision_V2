@@ -11,7 +11,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 /// 迁移期目录适配器。把新实例边界映射到现有 <see cref="ToolRegistry"/>，
 /// 使宿主调用点可先完成依赖注入，再替换内部存储。
 /// </summary>
-public sealed class ToolRegistryCatalog : IToolCatalog
+internal sealed class ToolRegistryCatalog : IToolCatalog
 {
     public int Count => ToolRegistry.GetToolCount();
 

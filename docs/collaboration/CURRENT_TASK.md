@@ -3105,3 +3105,6 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 
 ### 中立准入补修检查点（未完成）
 RuntimeDirectorySnapshot 构造入口收窄、Runtime-only 加载前排除 Editor、ExpectedTools 只读；headless 及含两个 Editor 的同目录桌面清单实测中立 Runtime 调用通过。命令和会话汇总在 Release/_validation/neutral-admission-20261102/desktop-runtime-only-session-summary.txt。桌面 ToolRegistry 仍为独立公开入口，恢复与运行未切换同代目录；WorkflowNode 已开始使用配置所持定义。此检查点不可作为完整交付。
+
+### 同代目录生产接线在途（未验证）
+基于 ebec005b：authority 增加桌面组件同代快照，PluginManager 持有快照并将其候选传旧注册代码；旧注册入口收窄为程序集内部；Runtime 配置字段/current 恢复共用一次 definition。此修改尚未编译/测试，ToolRegistry 可变运行字典和静态读取仍存在，Repository/Snapshot/Workflow/UI 未贯通同代注入；需继续完整替换，不能合入或称交付。保留构建 restore 产生的未暂存 lock 文件。

@@ -10,7 +10,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 /// <summary>
 /// 宿主可注入的工具目录边界。插件加载器依赖此接口，不再直接依赖静态注册表。
 /// </summary>
-public interface IToolCatalog
+internal interface IToolCatalog
 {
     int Count { get; }
 
@@ -39,13 +39,13 @@ public interface IToolCatalog
 
 
 /// <summary>One complete plugin assembly's prepared, unpublished catalog state.</summary>
-public interface IPreparedToolRegistration
+internal interface IPreparedToolRegistration
 {
     IToolCatalogCommitScope EnterCommit();
 }
 
 /// <summary>Synchronous scope. Validate all participating scopes before Publish; publication only swaps prepared state.</summary>
-public interface IToolCatalogCommitScope : IDisposable
+internal interface IToolCatalogCommitScope : IDisposable
 {
     void Publish();
 }

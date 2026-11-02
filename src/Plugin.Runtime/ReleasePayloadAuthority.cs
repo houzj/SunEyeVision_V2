@@ -123,6 +123,14 @@ public sealed class ReleasePayloadAuthority
     }
 
     /// <summary>Prepare one complete runtime generation from the approved physical payload.</summary>
+    /// <summary>Prepare the complete desktop projection and runtime identities in one admitted generation.</summary>
+    public RuntimeDirectorySnapshot PrepareDesktopDirectory()
+    {
+        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents());
+        if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
+            throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
+        return snapshot;
+    }
     public RuntimeDirectorySnapshot PrepareRuntimeDirectory()
     {
         var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents(null, runtimeOnly:true));

@@ -8,12 +8,14 @@ public sealed class RuntimeDirectorySnapshot
 {
     private sealed record Entry(ToolComponentRegistration Registration,Type SettingsType,Type OutputType,string Schema,string? SettingsSchema);
     private readonly IReadOnlyDictionary<string,Entry> _runtimes;
-    private RuntimeDirectorySnapshot(Dictionary<string,Entry> runtimes)
+    private RuntimeDirectorySnapshot(Dictionary<string,Entry> runtimes, ToolComponentRegistration[] components)
     {
         _runtimes=new ReadOnlyDictionary<string,Entry>(runtimes);
+        Components=Array.AsReadOnly(components);
         Generation=Guid.NewGuid();
     }
     public Guid Generation { get; }
+    public IReadOnlyList<ToolComponentRegistration> Components { get; }
     public IReadOnlyCollection<string> ToolIds => _runtimes.Keys.ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
     public IToolDefinition CreateDefinition(string toolId)
@@ -41,6 +43,6 @@ public sealed class RuntimeDirectorySnapshot
             if(!runtimes.TryAdd(component.Metadata.ToolId,entry))throw new InvalidOperationException("Duplicate runtime tool identity.");
         }
         if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");
-        return new RuntimeDirectorySnapshot(runtimes);
+        return new RuntimeDirectorySnapshot(runtimes,all);
     }
 }

@@ -150,6 +150,12 @@ foreach(var id in new[]{"Subroutine","Condition"})
 MustReject(()=>RuntimeNodeAdmission.Require(productionDirectory,new WorkflowNodeBase("linked","linked","linked","ImageLoad") { RuntimeConfiguration=declaredImage, SubroutineId="child" }),"subroutine identity");
 MustReject(()=>new WorkflowNodeBase("legacy","legacy","legacy","UnknownTool").CreateInstance(),"legacy SDK instance");
 MustReject(()=>WorkflowNodeFactory.CreateAlgorithmNode(productionDirectory,"UnknownTool","legacy","legacy","legacy"),"legacy SDK node factory");
+using(var eventBus=new SunEyeVision.Core.Events.EventBus(new NullLogger()))
+{
+    var oldEventPath=new EventEnabledWorkflow("old","old",eventBus);
+    if(oldEventPath.ExecuteNode(new WorkflowNodeBase("old","old","old","UnknownTool"),null).Success)
+        throw new Exception("Legacy event-based node execution reported success.");
+}
 var rejectedFlow=new SunEyeVision.Workflow.Workflow("rejected","rejected");
 rejectedFlow.Nodes.Add(new WorkflowNodeBase("bad","bad","bad","UnknownTool") { Parameters=new GenericToolParameters() });
 var rejectedEngine=new WorkflowEngine(new NullLogger(),productionDirectory);rejectedEngine.RegisterWorkflow(rejectedFlow);

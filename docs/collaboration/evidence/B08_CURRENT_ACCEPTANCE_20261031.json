@@ -1,5 +1,7 @@
 {
   "scope": "B08完整控件当前状态快照；旧清单保留作为历史，不以回归数量宣告整控件完成",
+  "latestMixedFormalUpdate": "57d0b3671/ce34130正式Release B08混合整窗10组通过，15个程序集SHA一致，见 B08_MIXED_TEXT_ROI_FORMAL_20261102.json；仅支持范围，不代表A22六出口、B08整体或物理输入全验。",
+  "latestFormalUpdate": "2026-11-02 ce34130：文本内容多来源与位置引用的已支持范围完成正式Release自测，回执 BLOB_TEXT_DISPLAY_FORMAL_20261102.json；A00–A23完整范围、真实VS和统一人工未因此整体完成。下述旧基线及各历史批次仅按各自范围解读。",
   "baseline": "正式源码914b2173：本地ROI已集成，UI及全量Release构建0错误；正式ROI四类专项、受限窗口、十字线和工作流回归见 BLOB_ROI_FORMAL_20261101.json。15171638及更早结果为历史，未重复通过的旧轨不冒充当前版本验证。",
   "sourceChecklist": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
   "sourceChecklistSha256": "7CD20F28D7AFCA9CE586968A53795969F558A695456D129E186F87D101FDC357",
@@ -175,7 +177,7 @@
       "currentStatus": "当前声明能力和15171638受限窗口已有条件性自测；原引用、布局历史回归与现受限窗口回归版本分列。缺失语义、六类整窗矩阵、旧极值失败及后续人工验收保留，不称完整B08或Blob/S2/S3完成。 正式BlobReferenceWindow attempt-001为当前受限低阈值引用补充九组自测证据；自然键鼠、剪贴板、连续、跨文档及九字段全交叉未验，非完整Blob或S2完成。 914b2173本地ROI候选与正式回执已收录；Polygon隐藏桌面捕获失败、旧RoiBindings未发布工具失败、自然键鼠、VS设计时、用户运行验收及完整B08范围仍未完成。 正式Release三组筛选范围各16组通过（独立双端引用、执行筛选、历史及重开），见 BLOB_RANGE_PRODUCTION_FORMAL_20261101.json；其他范围和原厂订阅回读差异仍保留。"
     }
   ],
-  "remaining": "原厂未产出输出与Group新增暂停；偏好持久化/Dirty/Undo未实现；ROI继承及结果图文正式组合未接入，本地绘制已接入。15171638受限整窗的确认/保存/执行已通过，原六类正向及数值引用索引未完成全矩阵；四浮点原厂语义与S3算法未完成；自然焦点、其他DPI、实际VS、部分输入身份组合及运行时MVID未独立验证；旧Float64极值测试失败保留。B08完整自测后统一人工验收。 正式低阈值引用整窗九组已通过；其余字段、自然输入、连续及ROI/图文仍未由本轨覆盖。",
+  "remaining": "原厂未产出输出与Group新增暂停；偏好持久化/Dirty/Undo未实现；检测ROI继承及部分结果图文已接入并分别正式自测；屏蔽继承和其余未支持图文仍未完成。15171638受限整窗的确认/保存/执行已通过，原六类正向及数值引用索引未完成全矩阵；四浮点原厂语义与S3算法未完成；自然焦点、其他DPI、实际VS、部分输入身份组合及运行时MVID未独立验证；旧Float64极值测试失败保留。B08完整自测后统一人工验收。 正式低阈值引用整窗九组已通过；其余字段、自然输入、连续及ROI/图文仍未由本轨覆盖。",
   "layoutFormalEvidence": "docs/collaboration/evidence/B08_FORMAL_LANGUAGE_LAYOUT_20261031.json",
   "roiFormalEvidence": "docs/collaboration/evidence/BLOB_ROI_FORMAL_20261101.json",
   "rangeFormalEvidence": "docs/collaboration/evidence/BLOB_RANGE_PRODUCTION_FORMAL_20261101.json"

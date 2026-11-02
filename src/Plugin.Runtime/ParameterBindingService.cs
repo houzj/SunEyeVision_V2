@@ -128,9 +128,13 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
     public BindingResolution ResolvePublishedBinding(BindingPlan plan,PublishedBindingSnapshot snapshot)
         =>Resolve(plan,snapshot,published:true);
 
+    /// <summary>Presentation-only caller owns an explicit immutable result set, including self.
+    /// Each expected source identity is independently captured; no latest-result lookup is performed.</summary>
+    public BindingResolution ResolveDisplayBinding(BindingPlan plan,IBindingRunSnapshot snapshot)=>Resolve(plan,snapshot,published:true,display:true);
+
     public BindingResolution ResolveIndexBinding(BindingPlan plan,IBindingRunSnapshot snapshot)=>Resolve(plan,snapshot,false,true);
     public BindingResolution ResolvePublishedIndexBinding(BindingPlan plan,PublishedBindingSnapshot snapshot)=>Resolve(plan,snapshot,true,true);
-    private BindingResolution Resolve(BindingPlan plan,IBindingRunSnapshot snapshot,bool published,bool indexSource=false)
+    private BindingResolution Resolve(BindingPlan plan,IBindingRunSnapshot snapshot,bool published,bool indexSource=false,bool display=false)
     {
         try
         {
@@ -138,8 +142,11 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 throw new BindingFault("consumer-unplanned","Consumer has no admitted request identity.");
             if(snapshot.Consumer!=plan.Consumer || snapshot.DocumentRevision!=plan.DocumentRevision || snapshot.ConsumerIdentity.DocumentSessionId!=plan.DocumentSessionId)
                 throw new BindingFault("document-changed","Binding plan belongs to another consumer or document revision.");
+            // Display distinguishes an unavailable mapped value from an unavailable dynamic index.
+            // Validate the frozen index first; ordinary invocation resolution keeps its original order and codes.
+            if(display&&plan.Source.Index is {} displayIndex)_=ReadOutputIndex(displayIndex,snapshot,published,plan.Behavior,true);
             object? source;
-            try{source=ReadReference(plan.Source,snapshot,published,plan.Behavior);}
+            try{source=ReadReference(plan.Source,snapshot,published,plan.Behavior,display);}
             catch(BindingFault fault)when(indexSource&&plan.Behavior==ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback&&fault.Code=="missing-value")
             {return new(true,0L,null);}
             if(indexSource)return new(true,ReadIntegerIndexValue(source,plan.Source.SelectedType,plan.Behavior),null);
@@ -190,7 +197,7 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         catch(Exception error)when(error is ArgumentException or InvalidOperationException or OverflowException)
         {return new(false,null,new("invalid-value",error.Message,targetPort.Id));}
     }
-    private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published,ParameterReferenceBehavior behavior)
+    private static object? ReadReference(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published,ParameterReferenceBehavior behavior,bool display=false)
     {
         if(!snapshot.TryGetExpectedSourceIdentity(plan.Source.Node,out var expected) || expected.RequestId==Guid.Empty)
             throw new BindingFault("source-unplanned","Source has no admitted request in this frozen dependency snapshot.");
@@ -216,10 +223,12 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
                 type=type.Fields.SingleOrDefault(field=>field.Id==member)?.Type
                     ??throw new BindingFault("missing-member","Declared member field no longer exists.",true);
             }
+            if(display&&value is null)return null;
             if(value is null)throw new BindingFault("index-null","Cannot select an item from null.");
             long index=plan.Reference.Selection is BindingSelection.AtConstant fixedIndex?fixedIndex.Index:
-                plan.VariableIndex is {} variable?ReadVariableIndex(variable,snapshot,behavior):ReadOutputIndex(plan.Index!,snapshot,published,behavior);
+                plan.VariableIndex is {} variable?ReadVariableIndex(variable,snapshot,behavior):ReadOutputIndex(plan.Index!,snapshot,published,behavior,display);
             var elements=Elements(value);
+            if(display&&elements.Length==0)return null;
             if(index<0 || index>=elements.Length)throw new BindingFault("index-range","Index is outside this invocation's sequence; no fallback item is used.");
             value=elements[(int)index];
         }
@@ -239,12 +248,14 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         return ReadIntegerIndexValue(captured.Value,captured.Source.Reference.Type,behavior);
     }
 
-    private static long ReadOutputIndex(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published,ParameterReferenceBehavior behavior)
+    private static long ReadOutputIndex(BindingReferencePlan plan,IBindingRunSnapshot snapshot,bool published,ParameterReferenceBehavior behavior,bool display=false)
     {
         object? value;
-        try{value=ReadReference(plan,snapshot,published,behavior);}
+        try{value=ReadReference(plan,snapshot,published,behavior,display);}
         catch(BindingFault fault)when(behavior==ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback&&fault.Code=="missing-value"){return 0;}
-        return ReadIntegerIndexValue(value,plan.SelectedType,behavior);
+        catch(BindingFault fault)when(display){throw new BindingFault("display-index-"+fault.Code,fault.Message,fault.Unresolved);}
+        try{return ReadIntegerIndexValue(value,plan.SelectedType,behavior);}
+        catch(ArgumentException fault)when(display){throw new BindingFault("display-index-value",fault.Message);}
     }
     private static long ReadIntegerIndexValue(object? value,TypeRef type,ParameterReferenceBehavior behavior)
     {

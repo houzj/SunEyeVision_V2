@@ -9,10 +9,16 @@ public sealed record TextExpressionSnapshot(
     Func<DeclaredReferenceCandidate,string> FormatExpression,
     Func<bool> IsCurrent);
 
+/// <summary>Atomic editor proposal. A browse selection carries its frozen identity;
+/// ordinary typing carries no new identity and can only retain existing mapped slots.</summary>
+public sealed record TextExpressionProposal(string Text,ParameterSetting Accepted,DeclaredReferenceCandidate? Selected=null,
+    string? Token=null,int? Start=null,int? End=null);
+
 /// <summary>Edits constant text containing host-owned expressions; does not resolve or execute them.</summary>
 public sealed record TextExpressionOptions(
     Func<TextExpressionSnapshot> ReadCandidates,
-    Func<string,string?>? ValidateText=null)
+    Func<string,string?>? ValidateText=null,
+    Func<TextExpressionProposal,ParameterSetting>? CreateSetting=null)
 {
     internal void Validate(Port port)
     {

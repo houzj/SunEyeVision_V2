@@ -67,7 +67,8 @@ public static class ParameterReferenceRules
                 throw new ArgumentException("Variable index declaration is not allowed by this consumer.");
         }
     }
-    internal static TypeRef SelectedType(OutputReference reference)
+    /// <summary>Projects the declared member/selection type without reading any runtime value.</summary>
+    public static TypeRef SelectedType(OutputReference reference)
     {
         var type=reference.Type;var position=0;
         if(reference.Selection is not BindingSelection.AllItems)

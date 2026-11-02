@@ -60,18 +60,65 @@ public sealed class DocumentEditProposal
 public sealed class DocumentEditSession
 {
     private readonly Dictionary<Guid, IDocumentEditParticipant> _participants = new();
-    private readonly Lazy<NodeConfigurationEditHost> _host;
+    private Lazy<NodeConfigurationEditHost> _host;
+    private readonly Solution _document;
+    private readonly int _ownerThread=Environment.CurrentManagedThreadId;
+    private bool _presentationPreparing,_initialPresentationUsed;
     private bool _busy;
     private bool _closed;
     public Guid SessionId { get; } = Guid.NewGuid();
     private DocumentHistoryCoordinator? _history;
     public DocumentHistoryCoordinator History {get{EnsureOpen();return _history ??= new(SessionId);}}
-    public NodeConfigurationEditHost Host {get{EnsureOpen();return _host.Value;}}
+    public NodeConfigurationEditHost Host {get{EnsureOpen();if(_presentationPreparing)throw new InvalidOperationException("方案节点正在准备显示，暂不能访问配置宿主。");return _host.Value;}}
     public int RegisteredScopeCount => _participants.Count;
     public bool HasPendingChanges => _participants.Values.Any(p => p.HasPendingChanges);
     public IReadOnlyList<string> RegisteredScopeKeys => _participants.Values.Select(p => p.ScopeKey).ToArray();
     public string? LastRefreshError { get; private set; }
-    internal DocumentEditSession(Solution document) => _host = new(() => new NodeConfigurationEditHost(document, History));
+    internal DocumentEditSession(Solution document) { _document=document;_host=CreateHost(); }
+    private Lazy<NodeConfigurationEditHost> CreateHost()=>new(()=>new NodeConfigurationEditHost(_document,History));
+
+    /// <summary>Retire an unused early host before initial UI node materialization, preserving this session and history.</summary>
+    public InitialPresentationScope BeginInitialPresentationMaterialization()
+    {
+        EnsureAvailable();
+        if(Environment.CurrentManagedThreadId!=_ownerThread||_initialPresentationUsed||_participants.Count!=0
+            ||_document.ExecutionOwner.HasEverStarted
+            ||(_history is {} history&&(history.Revision!=0||history.Position!=0||history.Entries.Length!=0||history.Fault is not null||history.IsApplying)))
+            throw new InvalidOperationException("当前编辑会话不能重新准备显示节点。");
+        var currentHistory=History;
+        _presentationPreparing=true;
+        IDisposable? historyGuard=null;
+        try
+        {
+            historyGuard=currentHistory.BlockInitialPresentationMutations();
+            if(_document.ExecutionOwner.HasEverStarted||_participants.Count!=0||currentHistory.Revision!=0
+                ||currentHistory.Position!=0||currentHistory.Entries.Length!=0||currentHistory.Fault is not null)
+                throw new InvalidOperationException("取得执行门禁期间会话已被使用，不能准备显示节点。");
+            var nextHost=CreateHost();if(_host.IsValueCreated)_host.Value.CloseUnusedForInitialPresentation();_host=nextHost;
+            return new InitialPresentationScope(this,historyGuard);
+        }
+        catch{try{historyGuard?.Dispose();}finally{_presentationPreparing=false;}throw;}
+    }
+    public void SealInitialPresentation()
+    {
+        EnsureOpen();
+        if(Environment.CurrentManagedThreadId!=_ownerThread||_presentationPreparing)throw new InvalidOperationException("显示节点准备尚未结束。");
+        _initialPresentationUsed=true;
+    }
+    internal bool IsPreparingInitialPresentation=>_presentationPreparing;
+    public sealed class InitialPresentationScope(DocumentEditSession owner,IDisposable historyGuard):IDisposable
+    {
+        private DocumentEditSession? _owner=owner;
+        private bool _completed;
+        public void Complete(){if(_owner is null)throw new ObjectDisposedException(nameof(InitialPresentationScope));_completed=true;}
+        public void Dispose()
+        {
+            var session=_owner;if(session is null)return;
+            if(Environment.CurrentManagedThreadId!=session._ownerThread)throw new InvalidOperationException("显示节点准备必须在方案所属线程结束。");
+            _owner=null;session._initialPresentationUsed=_completed;
+            try{historyGuard.Dispose();}finally{session._presentationPreparing=false;}
+        }
+    }
 
     public void Register(IDocumentEditParticipant participant)
     {
@@ -134,6 +181,7 @@ public sealed class DocumentEditSession
     public void Close()
     {
         if (_closed) return;
+        if(_presentationPreparing)throw new InvalidOperationException("显示节点准备期间不能关闭编辑会话。");
         _closed = true;
         if(_host.IsValueCreated)_host.Value.Close();
         var participants = _participants.Values.ToArray();
@@ -148,6 +196,6 @@ public sealed class DocumentEditSession
     private void EnsureAvailable()
     {
         EnsureOpen();
-        if (_busy) throw new InvalidOperationException("方案编辑事务不能重入。");
+        if (_busy||_presentationPreparing) throw new InvalidOperationException("方案编辑事务不能重入。");
     }
 }

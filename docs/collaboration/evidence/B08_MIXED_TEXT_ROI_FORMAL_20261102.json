@@ -1,0 +1,24 @@
+{
+  "scope": "主仓正式Release已支持混合整窗定向自测",
+  "testCommit": "57d0b3671",
+  "productCommit": "ce341300e497a5912f0670a45123e988c7e5d527",
+  "productUnchangedSinceProductCommit": true,
+  "formalAttempt": 2,
+  "exit": 0,
+  "passedCases": 10,
+  "formalSourceSha256": "E70DB9131F5BCD90A0FF1E68931E5EF315CEEDB08E770260884C1262101C86FF",
+  "candidateSourceSha256": "602404F45F86C072590AB2D05BB7CCED577CB91EADC505307E9A79F97127EF7A",
+  "sourceGitBlob": "ae949687878b8b815c98d409e8cda8fd8198e75b",
+  "sourceNote": "候选与正式工作树换行字节不同；经git clean过滤后均与同一提交blob一致，保留各自实际测试SHA",
+  "receiptSha256": "79E941B1FF9CF4133DD9E27EAA6B626DFC13FD1112733F15B1EFD1E7DEB15C41",
+  "loadedManifestSha256": "265FFAEDD73A3D012E6D54306174C8DDC37C3547D126ECC0FA0FA2669E6866A4",
+  "loadedCount": 15,
+  "hashMismatches": 0,
+  "limitations": [
+    "仅支持范围混合，不等于B08 A00-A23或Blob全部闭口",
+    "固定8像素样本不单独证明混合同窗跨轮冻结",
+    "WPF事件注入不是物理键鼠，VS和统一人工另记",
+    "连续调试、图像mask、屏蔽继承、位置修正、组合ROI来源仍受保护",
+    "新owner ID本身不能证明旧回调及全部租约退役"
+  ]
+}

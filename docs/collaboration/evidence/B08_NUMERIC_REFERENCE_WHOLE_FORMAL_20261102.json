@@ -1,0 +1,18 @@
+{
+  "testSha256": "6A142FBF19D0324B65CA8882A67AE6F22F227E9C0D05553A9C6578234E6C4BCD",
+  "loadedAssemblyCount": 15,
+  "passedGroups": 8,
+  "loadedAssembliesVerified": true,
+  "date": "2026-11-02",
+  "productCommit": "93b9b683f1dd849b89f6e776839fe1a79b028f66",
+  "limitations": [
+    "Text proposal is not natural keyboard focus or system clipboard",
+    "Original VM full unsubscribe semantics and timing not proven",
+    "Mixed frozen-value change and multi-parameter partial acceptance failure not directly tested",
+    "Continuous session, undeclared outputs, Group and persisted preference remain protected",
+    "Visual Studio designer and human acceptance not part of this run"
+  ],
+  "formalAttempt": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\B08NumericComposition\\attempt-001",
+  "candidateCommit": "f0ce95c4bf0a60360d6b0b088036fa0110a4490a",
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision"
+}

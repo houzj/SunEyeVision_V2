@@ -405,7 +405,7 @@ public sealed class OutputBindingChangeService
         do
         {
             added = false;
-            foreach (var relation in relations.Where(r => r.Input.Active && !invalidated.Contains(r.Target)))
+            foreach (var relation in relations.Where(r => r.Input.Active && (r.Node.RuntimeConfiguration?.IsExecutionFieldActive(r.Input.Key)!=false) && !invalidated.Contains(r.Target)))
                 if (BindingInputCatalog.TryReference(relation.Input.Read(), nodes.Keys.Where(k => k.WorkflowId == relation.Target.WorkflowId).Select(k => k.NodeId), relation.Input.ReferenceOnly, out var id, out _) &&
                     invalidated.Contains(new(relation.Input.ReadWorkflowId?.Invoke() ?? relation.Target.WorkflowId, id))) added |= invalidated.Add(relation.Target);
         } while (added);

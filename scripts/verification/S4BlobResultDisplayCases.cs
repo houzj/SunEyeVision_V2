@@ -77,7 +77,7 @@ internal static class S2DocumentEditingCases
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var scope=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_SCOPE")??"All";
-        Require(scope is "All" or "Core" or "Window" or "Roi","未知显示专项");
+        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource","未知显示专项");
         var resultView=new ImageResultControl{DataContext=vm.ImageResult};resultView.Initialize(vm);
         var shell=new Window{Width=1000,Height=850,Content=resultView,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -140,11 +140,32 @@ internal static class S2DocumentEditingCases
         IEnumerable<object> Words(object scene)=>Items(scene).Where(item=>Maybe(item,"Texts") is not null).SelectMany(item=>((System.Collections.IEnumerable)Get(item,"Texts")).Cast<object>());
         void Run(){var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Pump();SelectBlob();}
         void SetFormal(string id,object value){var edit=host.BeginEdit(flowId,node.Id);edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{id,value}});host.Commit(edit);Pump();}
-        if(scope is "All" or "Core")
+        void DeleteThroughHost(string id)
+        {
+            foreach(var item in vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes)item.IsSelected=false;foreach(var edge in vm.WorkflowTabViewModel.SelectedTab.WorkflowConnections)edge.IsSelected=false;
+            vm.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single(item=>item.Id==id).IsSelected=true;
+            dialogs.Stop();var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(20)};var confirmed=false;Exception? failure=null;var deadline=DateTime.UtcNow.AddSeconds(15);
+            timer.Tick+=(_,_)=>{var dialog=app.Windows.OfType<Window>().SingleOrDefault(item=>item.GetType().Name=="ThemeMessageDialog"&&item.IsVisible);if(DateTime.UtcNow>deadline){timer.Stop();failure=new TimeoutException("等待自有删除确认框超时");dialog?.Close();return;}if(dialog is null)return;try{Require(((TextBlock)dialog.FindName("TitleText")).Text=="确认删除","出现非删除确认，不执行Yes");timer.Stop();confirmed=true;((Button)dialog.FindName("YesButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));}catch(Exception error){failure=error;dialog.Close();}};
+            timer.Start();try{vm.DeleteSelectedNodesCommand.Execute(null);}finally{timer.Stop();dialogs.Start();}Pump();if(failure is not null)throw failure;Require(confirmed&&!solutions.CurrentSolution!.Workflows.Single(flow=>flow.Id==flowId).Nodes.Any(node=>node.Id==id),"未经过主窗真实删除确认或节点仍存在");
+        }
+        void PrivateDebug(DefaultDebugWindow window,bool expectedSuccess,Action<DeclaredOutputSnapshot,RuntimeDebugInvocation>? inspect=null)
+        {
+            var control=Control(window);var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)Get(control,"_captureDebug");RuntimeDebugInvocation? invocation=null;DeclaredOutputSnapshot? output=null;IDisposable? hold=null;Exception? observationFailure=null;var completed=false;var events=0;
+            SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{events++;try{if(args.Results is DeclaredOutputSnapshot result){output=result;hold=result.Retain();}}catch(Exception error){observationFailure=error;}completed=true;};
+            control.SetDebugCapture(draft=>{invocation=capture(draft);return invocation;});control.AddHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);
+            try
+            {
+                Require(SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.CanExecute(null,control),"真实宿主调试命令未就绪");SunEyeVision.Plugin.SDK.Commands.ToolCommands.Execute.Execute(null,control);PumpUntil(()=>completed&&!(bool)Get(control,"_running"));if(observationFailure is not null)throw observationFailure;
+                Require(events==1&&((output?.IsSuccess==true)==expectedSuccess),"真实宿主调试结果不符：events="+events+" status="+output?.Status);
+                if(expectedSuccess){Require(invocation is not null&&output is not null,"成功调试未捕获实际快照");inspect?.Invoke(output!,invocation!);}else Require(invocation is null,"缺源调试进入了算法捕获/执行而非在正式准入拒绝");
+            }
+            finally{control.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);if(!(bool)Get(control,"_disposed"))control.SetDebugCapture(capture);hold?.Dispose();}
+        }        if(scope is "All" or "Core")
         {
             Case("正式显示声明与算法阶段隔离，常量模式及默认只创建一次",()=>{
                 var config=node.RuntimeConfiguration!;Require(config.SettingsSchema.Inputs.Count==55&&config.DisplaySettingsSchema.Inputs.Count==28&&config.EditorSettingsSchema.Inputs.Count==83,"算法/显示编辑声明边界错误");
-                Require(displaySchema.Inputs.All(port=>port.EditModes==FieldEditModes.Constant),"显示可误订阅");
+                Require(displaySchema.Inputs.Where(port=>port.Id!=Display(BlobResultDisplay.Text,"content")&&port.Id!=Display(BlobResultDisplay.Text,"x")&&port.Id!=Display(BlobResultDisplay.Text,"y")).All(port=>port.EditModes==FieldEditModes.Constant),"非文本角色被扩大订阅");
+                Require(displaySchema.Inputs.Single(port=>port.Id==Display(BlobResultDisplay.Text,"content")).EditModes==(FieldEditModes.Constant|FieldEditModes.DisplayExpression)&&displaySchema.Inputs.Where(port=>port.Id==Display(BlobResultDisplay.Text,"x")||port.Id==Display(BlobResultDisplay.Text,"y")).All(port=>port.EditModes==(FieldEditModes.Constant|FieldEditModes.Reference)),"文本显示专属能力未声明");
                 var execution=((System.Collections.IEnumerable)config.GetType().GetMethod("CaptureExecutionFields",Flags)!.Invoke(config,null)!).Cast<object>().Select(pair=>(string)Get(pair,"Key")).ToArray();Require(!execution.Intersect(displaySchema.Inputs.Select(port=>port.Id)).Any()&&config.ParameterBindingOrder.All(id=>!config.IsDisplayField(id)),"显示进入执行或参数写入顺序");
                 var appearance=config.CaptureResultDisplay()!;Require(appearance.Graphic.Ok.Red==102&&appearance.Graphic.Width==2&&appearance.Text.Content=="Blob Area:{0}"&&appearance.Text.X==0&&appearance.Text.FontSize==10,"原feature默认错误");
                 var other=RuntimeToolConfiguration.Create("ImageLoad");Require(other.DisplaySettingsSchema.Inputs.Count==0&&other.EditorSettingsSchema.Fingerprint==other.SettingsSchema.Fingerprint,"无显示provider工具行为改变");
@@ -154,8 +175,8 @@ internal static class S2DocumentEditingCases
                 var algorithm=changed.WithSettings(new BlobSettings{Threshold=121});Require(algorithm.CaptureResultDisplay()!.Graphic.Width==4&&((BlobSettings)algorithm.CaptureSettings()).Threshold==121,"算法更新覆盖显示");
                 var editor=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(new BlobTool(),algorithm.Fields.Select(algorithm.EditorSettingsSchema.Inputs));Require(editor.Schema.Inputs.Count==83&&editor.Schema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal).SetEquals(algorithm.EditorSettingsSchema.Inputs.Select(port=>port.Id)),"编辑集合丢显示");
                 var full=algorithm.WithSettingsFields(editor.CaptureValidatedFields());Require(full.Fields.Read(BlobTool.ImageInput) is ReferenceSetting&&full.CaptureResultDisplay()!.Graphic.Width==4,"编辑替换覆盖图像输入/样式");
-                var rejected=false;try{_=algorithm.WithSettingsFields(algorithm.Fields.Select(algorithm.SettingsSchema.Inputs));}catch(ArgumentException error){rejected=error.Message.Contains("display.")||error.Message.Contains("required");}Require(rejected,"算法only快照误当完整编辑集合");
-                var bad=false;try{_=changed.WithFieldSettings(new Dictionary<string,ParameterSetting>{{Display(BlobResultDisplay.Text,"x"),new ReferenceSetting(new OutputReference(source.Id,"image.width",DataType.Integer,scopeId:flowId))}});}catch(ArgumentException){bad=true;}Require(bad,"动态位置误入算法引用");
+                var rejected=false;try{_=algorithm.WithSettingsFields(algorithm.Fields.Select(algorithm.SettingsSchema.Inputs));}catch(ArgumentException error){Console.WriteLine("MISSING_DISPLAY_REJECTION "+error);rejected=error.Message.Contains("display.")||error.Message.Contains("required")||error.Message=="文本内容设置无效。";}Require(rejected&&algorithm.Fields.Read(Display(BlobResultDisplay.Text,"content")) is ConstantSetting {Value:"Blob Area:{0}"},"算法only快照误当完整编辑集合或损坏原owner");
+                var widthPort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");var displayReference=new ReferenceSetting(new OutputReference(source.Id,widthPort.Id,widthPort.Type,new[]{"width"},scopeId:flowId,storage:widthPort.Storage));var positioned=changed.WithFieldSettings(new Dictionary<string,ParameterSetting>{{Display(BlobResultDisplay.Text,"x"),displayReference}});Require(positioned.Fields.Read(Display(BlobResultDisplay.Text,"x")) is ReferenceSetting&&positioned.ParameterBindingOrder.All(id=>!positioned.IsDisplayField(id)),"显示位置未保引用或进入算法顺序");
             });
             Case("保存与复制保显示，加载缺字段不补默认，非法参数仍拒绝",()=>{
                 var config=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),5d},{Display(BlobResultDisplay.Text,"content"),"A={0:F1}"}});
@@ -168,10 +189,169 @@ internal static class S2DocumentEditingCases
                 var edit=host.BeginEdit(flowId,node.Id);edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),3d}});var style=host.Commit(edit);Require(style.InvalidatedNodes.Count==0,"纯样式使执行结果失效");history.Undo();Pump();
                 edit=host.BeginEdit(flowId,node.Id);edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),3d},{FieldValue(nameof(BlobSettings.Threshold)),120L}});var mixed=host.Commit(edit);Require(mixed.InvalidatedNodes.Any(id=>id.NodeId==node.Id),"算法+样式被错误豁免");history.Undo();Pump();
             });
-            Case("受控面积格式、未知中文token明确拒绝而非静默替换",()=>{
+            Case("受控面积格式和中文面积映射，未知token明确拒绝",()=>{
                 BlobResultDisplay.ValidateContent(new string('a',40)+"{0:F2}");Require(string.Format(System.Globalization.CultureInfo.InvariantCulture,"A={0:F1}",25d)=="A=25.0","独立格式oracle错误");
-                foreach(var raw in new[]{"Blob面积:{面积}","{1}","{0,1000000000}"}){var rejected=false;try{BlobResultDisplay.ValidateContent(raw);}catch(ArgumentException){rejected=true;}Require(rejected,"不支持内容被伪接纳："+raw);}
+                BlobResultDisplay.ValidateContent("Blob面积:{面积}");foreach(var raw in new[]{"{不存在的来源}","{1}","{0,1000000000}"}){var rejected=false;try{BlobResultDisplay.ValidateContent(raw);}catch(ArgumentException){rejected=true;}Require(rejected,"不支持内容被伪接纳："+raw);}
             });
+        }
+        if(scope is "All" or "Core")
+        {
+            Case("显示来源早Retain后装配、交叉raw租约与最终释放计数",()=>{
+                var counts=new System.Collections.Concurrent.ConcurrentDictionary<string,int>();var owner=new ToolExecutionOwner();var run=Guid.NewGuid();
+                DeclaredOutputSnapshot Make(string id,bool throws=false)
+                {
+                    counts[id+"-output"]=0;counts[id+"-resource"]=0;
+                    var identity=owner.Begin("lifetime/"+id,run,FoundationContract.Major+"."+FoundationContract.Minor);
+                    var output=new ScalarOutput(()=>{counts.AddOrUpdate(id+"-output",1,(_,count)=>count+1);if(throws)throw new InvalidOperationException("injected-output-"+id);});
+                    return DeclaredOutputSnapshot.Capture(new ToolSchema(Array.Empty<Port>(),new[]{new Port("n",DataType.Number)}),0,identity,id,
+                        new ToolOutcome(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new ActionLease(()=>counts.AddOrUpdate(id+"-resource",1,(_,count)=>count+1)),0,sourceWorkflowId:"lifetime");
+                }
+                var a=Make("A");var b=Make("B");var target=Make("target");var early=target.Retain();
+                using(var set=new ResultDisplaySourceSet(new[]{a,b}))target.AttachDisplaySources(set);
+                a.Dispose();b.Dispose();target.Dispose();Require(counts.Values.All(count=>count==0),"早Retain未保后装集合或过早释放");
+                using(var reader=target.AcquireReader())Require(reader.DisplaySources is {} sources&&sources.TryGet(new("lifetime","A"),out var snapshot,out var values)&&values!.Read("n").GetScalar<double>()==1,"原owner释放后读者不能读取前驱");
+                early.Dispose();Require(counts.Values.All(count=>count==1),"最终租约未各释放恰好一次");
+                var first=Make("first");var second=Make("second");using(var set=new ResultDisplaySourceSet(new[]{second}))first.AttachDisplaySources(set);using(var set=new ResultDisplaySourceSet(new[]{first}))second.AttachDisplaySources(set);
+                first.Dispose();second.Dispose();Require(counts.Where(pair=>pair.Key.StartsWith("first")||pair.Key.StartsWith("second")).All(pair=>pair.Value==1),"ValueReader间接保display形成交叉循环");
+                var badA=Make("badA",true);var badB=Make("badB",true);var badTarget=Make("badTarget",true);
+                using(var set=new ResultDisplaySourceSet(new[]{badA,badB}))badTarget.AttachDisplaySources(set);badA.Dispose();badB.Dispose();
+                var failures=false;try{badTarget.Dispose();}catch(AggregateException error){failures=error.ToString().Contains("injected-output-badA")&&error.ToString().Contains("injected-output-badB")&&error.ToString().Contains("injected-output-badTarget");}
+                Require(failures&&counts.Where(pair=>pair.Key.StartsWith("bad")).All(pair=>pair.Value==1),"异常清理漏来源或丢原始异常");
+                var concurrentSource=Make("concurrent-source");var concurrentTarget=Make("concurrent-target");
+                using(var set=new ResultDisplaySourceSet(new[]{concurrentSource}))
+                {try{Task.WaitAll(Enumerable.Range(0,8).Select(_=>Task.Run(()=>concurrentTarget.AttachDisplaySources(set))).ToArray());}finally{concurrentSource.Dispose();concurrentTarget.Dispose();}}
+                Require(counts.Where(pair=>pair.Key.StartsWith("concurrent-")).All(pair=>pair.Value==1),"并发重复装配泄漏或重复释放");
+                var raceSource=Make("race-source");var raceTarget=Make("race-target");
+                using(var set=new ResultDisplaySourceSet(new[]{raceSource}))using(var barrier=new Barrier(2))
+                {try{var attach=Task.Run(()=>{barrier.SignalAndWait();try{raceTarget.AttachDisplaySources(set);}catch(ObjectDisposedException){}});var retire=Task.Run(()=>{barrier.SignalAndWait();raceTarget.Dispose();});Task.WaitAll(attach,retire);}finally{raceTarget.Dispose();raceSource.Dispose();}}
+                Require(counts.Where(pair=>pair.Key.StartsWith("race-")).All(pair=>pair.Value==1),"装配/末次释放竞争泄漏或重复释放");
+                var partial=Make("partial");IEnumerable<DeclaredOutputSnapshot> FailEnumeration(){yield return partial;throw new InvalidOperationException("injected-source-enumeration");}
+                var partialRejected=false;try{using var ignored=new ResultDisplaySourceSet(FailEnumeration());}catch(InvalidOperationException error){partialRejected=error.Message=="injected-source-enumeration";}finally{partial.Dispose();}
+                Require(partialRejected&&counts.Where(pair=>pair.Key.StartsWith("partial")).All(pair=>pair.Value==1),"来源集合中途失败泄漏已借读者");owner.Retire();
+            });
+        }        if(scope is "All" or "Core")
+        {
+            Case("首次显示准备保护历史、未登记草稿及失败重试",()=>{
+                DocumentEditSession Create(Solution solution)=>(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
+                var solution=new Solution();var editing=Create(solution);var history=editing.History;var oldHost=editing.Host;
+                var held=0;Func<IDisposable> gate=()=>{held++;return new ActionLease(()=>held--);};history.SetMutationLeaseProvider(gate);
+                using(var preparation=editing.BeginInitialPresentationMaterialization())
+                {
+                    var hostBlocked=false;try{_=editing.Host;}catch(InvalidOperationException){hostBlocked=true;}
+                    var historyBlocked=false;try{using var ignored=history.BeginCompositeMutation();}catch(InvalidOperationException){historyBlocked=true;}
+                    var closeBlocked=false;try{editing.Close();}catch(InvalidOperationException){closeBlocked=true;}
+                    var gateBlocked=false;try{history.ReleaseMutationLeaseProvider(gate);}catch(InvalidOperationException){gateBlocked=true;}
+                    Require(hostBlocked&&historyBlocked&&closeBlocked&&gateBlocked&&held==1,"准备期间宿主、历史、执行门禁或关闭可以重入");
+                }
+                Require(held==0,"失败准备未释放执行门禁");
+                var retired=false;try{oldHost.Capture();}catch(InvalidOperationException){retired=true;}
+                Require(retired&&ReferenceEquals(history,editing.History)&&!ReferenceEquals(oldHost,editing.Host),"失败回滚未退役旧宿主或误替换历史");
+                using(var retry=editing.BeginInitialPresentationMaterialization())retry.Complete();
+                var used=false;try{using var ignored=editing.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){used=true;}
+                Require(used,"成功准备后仍允许再次物化");editing.Close();
+                var draftSession=Create(new Solution());var draftHost=draftSession.Host;_ = draftHost.BeginVariableEdit();
+                var draftBlocked=false;try{using var ignored=draftSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){draftBlocked=true;}
+                Require(draftBlocked&&draftHost.Capture() is not null,"未登记草稿被关闭或覆盖");draftSession.Close();
+                var usedSolution=new Solution();var usedSession=Create(usedSolution);usedSolution.ExecutionOwner.Begin("test/node",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
+                var runBlocked=false;try{using var ignored=usedSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){runBlocked=true;}
+                Require(runBlocked,"已运行的会话被当作首次加载");usedSession.Close();usedSolution.ExecutionOwner.Retire();
+                var racedSolution=new Solution();var racedSession=Create(racedSolution);var racedHost=racedSession.Host;var racedHistory=racedSession.History;var racedHeld=0;
+                racedHistory.SetMutationLeaseProvider(()=>{racedHeld++;racedSolution.ExecutionOwner.Begin("test/race",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);return new ActionLease(()=>racedHeld--);});
+                var racedBlocked=false;try{using var ignored=racedSession.BeginInitialPresentationMaterialization();}catch(InvalidOperationException){racedBlocked=true;}
+                Require(racedBlocked&&racedHeld==0&&ReferenceEquals(racedHost,racedSession.Host),"取得门禁期间启动的运行未阻止重建或门禁泄漏");racedSession.Close();racedSolution.ExecutionOwner.Retire();
+                var managerRoot=Path.Combine(folder,"presentation-guard-manager");var manager=new SolutionManager(managerRoot);
+                var document=manager.CreateUntitledSolution();var sourcePath=Path.Combine(managerRoot,"before.solution");Require(manager.SaveCurrentDocument(sourcePath).FileWritten,"无法准备当前方案复制夹具");
+                var originalSession=manager.Session!;var managerEditing=originalSession.Editing;_=managerEditing.Host;
+                using(var preparation=managerEditing.BeginInitialPresentationMaterialization())
+                {
+                    var switchBlocked=false;try{manager.SetCurrentSolution(new Solution());}catch(InvalidOperationException){switchBlocked=true;}
+                    var closeBlocked=false;try{manager.CloseSolution(false);}catch(InvalidOperationException){closeBlocked=true;}
+                    var saveBlocked=false;try{manager.SaveCurrentDocument(Path.Combine(managerRoot,"unexpected.solution"));}catch(InvalidOperationException){saveBlocked=true;}
+                    var copyBlocked=false;try{manager.CopySolution(sourcePath,"blocked",targetDirectory:managerRoot);}catch(InvalidOperationException){copyBlocked=true;}
+                    Require(switchBlocked&&closeBlocked&&saveBlocked&&copyBlocked&&!File.Exists(Path.Combine(managerRoot,"blocked.solution"))&&ReferenceEquals(manager.Session,originalSession)&&ReferenceEquals(manager.CurrentSolution,document),"准备期间切换、关闭、保存或复制改变了当前方案");
+                }
+                _=document.ExecutionOwner.Begin("test/still-live",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
+                manager.CloseSolution(false);
+            });
+            Case("文字只随实际来源节点域退役，不随新轮或无关节点失效",()=>{
+                var owner=new ToolExecutionOwner();var run=Guid.NewGuid();
+                var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
+                DeclaredOutputSnapshot Make(string node,long value)=>DeclaredOutputSnapshot.Capture(schema,0,
+                    owner.Begin("domain/"+node,run,FoundationContract.Major+"."+FoundationContract.Minor),node,
+                    new ToolOutcome(true,new ValueOutput(new Dictionary<string,object?>{{"value",value}}),BusinessJudgment.Pass,Array.Empty<Diagnostic>()),
+                    new ActionLease(()=>{}),0,sourceWorkflowId:"domain");
+                using var source=Make("source",32);using var unrelated=Make("unrelated",7);using var target=Make("target",1);
+                using(var set=new ResultDisplaySourceSet(new[]{source,unrelated}))target.AttachDisplaySources(set);
+                var reference=new OutputReference("source","value",DataType.Integer,scopeId:"domain");
+                var expression=new DisplayExpressionSetting("值:{数}",new[]{new DisplayExpressionSlot("数",reference)});
+                using var lease=new ResultDisplayTextLease(target,new ResultTextAppearance(true,expression.Text,new(1,2,3),new(4,5,6),10,1,0,0,expression));
+                var callbacks=0;lease.SetInvalidatedCallback(()=>System.Threading.Interlocked.Increment(ref callbacks));
+                owner.Begin("domain/source",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
+                owner.RetireNode("domain/unrelated");
+                Require(lease.IsCurrent&&lease.Evaluate(0).Content=="值:32"&&callbacks==0,"来源新轮或无关节点退役破坏冻结值");
+                owner.RetireNode("domain/source");
+                Require(!lease.IsCurrent&&callbacks==1,"实际来源退役未使场景失效");
+                owner.Begin("domain/source",Guid.NewGuid(),FoundationContract.Major+"."+FoundationContract.Minor);
+                var rejected=false;try{lease.Evaluate(0);}catch(InvalidOperationException){rejected=true;}
+                Require(rejected&&!lease.IsCurrent&&callbacks==1,"同身份重建复活旧来源域");
+                lease.Dispose();owner.RetireNode("domain/source");Require(callbacks==1,"释放后旧回调仍触发");owner.Retire();
+            });
+            Case("内容解析区分声明null空数组与非法port索引及类型storage",()=>{
+                var owner=new ToolExecutionOwner();var run=Guid.NewGuid();var outputs=new List<DeclaredOutputSnapshot>();
+                DeclaredOutputSnapshot Make(string id,Port port,object? value,bool present=true)
+                {
+                    var identity=owner.Begin("typed-text/"+id,run,FoundationContract.Major+"."+FoundationContract.Minor);
+                    var output=new ValueOutput(present?new Dictionary<string,object?>{{port.Id,value}}:new Dictionary<string,object?>());
+                    var result=DeclaredOutputSnapshot.Capture(new ToolSchema(Array.Empty<Port>(),new[]{port}),0,identity,id,new ToolOutcome(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new ActionLease(()=>{}),0,sourceWorkflowId:"typed-text");outputs.Add(result);return result;
+                }
+                var nullable=Make("nullable",new("value",DataType.Number,Nullable:true),null);var scalar=Make("scalar",new("value",DataType.Number),2d);
+                var empty=Make("empty",new("value",TypeRef.SequenceOf((TypeRef)DataType.Number)),Array.Empty<double>());
+                var array=Make("array",new("value",TypeRef.SequenceOf((TypeRef)DataType.Number)),new[]{10d,20d});
+                var missingIndex=Make("index",new("index",DataType.Integer,Required:false),null,false);var integer=Make("integer",new("value",DataType.Integer),3L);
+                var validIndex=Make("valid-index",new("index",DataType.Integer),0L);var nullableArray=Make("nullable-array",new("value",TypeRef.SequenceOf((TypeRef)DataType.Number),Nullable:true),null);
+                var indexArrayType=TypeRef.SequenceOf((TypeRef)DataType.Integer);var indexArray=Make("index-array",new("value",indexArrayType),new SequenceValue(indexArrayType,new object?[]{0L}));var missingMain=Make("missing-main",new("value",DataType.Number,Required:false),null,false);
+                var target=Make("target",new("value",DataType.Number),1d);
+                OutputReference Ref(DeclaredOutputSnapshot source)=>new(source.Identity.NodeId,source.Schema.Outputs[0].Id,source.Schema.Outputs[0].Type,scopeId:"typed-text",storage:source.Schema.Outputs[0].Storage);
+                using(var sources=new ResultDisplaySourceSet(outputs.Where(output=>!ReferenceEquals(output,target))))target.AttachDisplaySources(sources);
+                string Read(DisplayExpressionSetting expression,int row=0)
+                {using var lease=new ResultDisplayTextLease(target,new ResultTextAppearance(true,expression.Text,new(1,2,3),new(4,5,6),10,1,0,0,expression));return lease.Evaluate(row).Content;}
+                DisplayExpressionSetting Expression(string text,params DisplayExpressionSlot[] slots)=>new(text,slots);
+                try
+                {
+                    Require(Read(Expression("A:{A};B:{B}",new DisplayExpressionSlot("A",Ref(nullable)),new DisplayExpressionSlot("B",Ref(scalar))))=="A:;B:2","合法null混合映射未保有值文本");
+                    Require(Read(Expression("缺本轮值:{A}",new DisplayExpressionSlot("A",Ref(missingMain))))=="","已声明主来源缺本轮值未按内容空值处理");
+                    Require(Read(Expression("全空:{A}",new DisplayExpressionSlot("A",Ref(nullable))))==""&&Read(Expression("空数组:{A}",new DisplayExpressionSlot("A",Ref(empty))))=="","全无值未返回空串");
+                    Require(Read(Expression("A:{A};B:{B}",new DisplayExpressionSlot("A",Ref(empty)),new DisplayExpressionSlot("B",Ref(scalar))))=="A:;B:2","空数组混合映射错误");
+                    Require(Read(Expression("{A}",new DisplayExpressionSlot("A",Ref(array))),3)=="10","本方已声明逐行短数组回首策略错误");
+                    var nullWithIndex=new OutputReference("nullable-array","value",nullableArray.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(Ref(validIndex)),scopeId:"typed-text");
+                    var emptyWithIndex=new OutputReference("empty","value",empty.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(Ref(validIndex)),scopeId:"typed-text");
+                    Require(Read(Expression("{A}",new DisplayExpressionSlot("A",nullWithIndex)))==""&&Read(Expression("{A}",new DisplayExpressionSlot("A",emptyWithIndex)))=="","有效动态索引下主来源null/空数组被误判索引失败");
+                    var badPort=new OutputReference("scalar","illegal",DataType.Number,scopeId:"typed-text");
+                    var badIndex=new OutputReference("index","illegal-index",DataType.Integer,scopeId:"typed-text");
+                    var dynamicMissing=new OutputReference("array","value",array.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(Ref(missingIndex)),scopeId:"typed-text");
+                    var nullWithMissingIndex=new OutputReference("nullable-array","value",nullableArray.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(Ref(missingIndex)),scopeId:"typed-text");
+                    var nestedIndex=new OutputReference("index-array","value",indexArrayType,selection:new BindingSelection.AtField(Ref(missingIndex)),scopeId:"typed-text");
+                    var recursiveMissing=new OutputReference("array","value",array.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(nestedIndex),scopeId:"typed-text");
+                    var dynamicBad=new OutputReference("array","value",array.Schema.Outputs[0].Type,selection:new BindingSelection.AtField(badIndex),scopeId:"typed-text");
+                    var outside=new OutputReference("array","value",array.Schema.Outputs[0].Type,selection:new BindingSelection.AtConstant(9),scopeId:"typed-text");
+                    var wrongType=new OutputReference("integer","value",DataType.Number,scopeId:"typed-text");
+                    var wrongStorage=new OutputReference("integer","value",DataType.Integer,scopeId:"typed-text",storage:NumericStorage.Int32);
+                    foreach(var (name,reference,expectedCode) in new[]{("内容非法port",badPort,"missing-output"),("动态索引非法port",dynamicBad,"missing-output"),("动态索引无本轮值",dynamicMissing,"display-index-missing-value"),("主源null但索引缺值",nullWithMissingIndex,"display-index-missing-value"),("递归索引缺值",recursiveMissing,"display-index-display-index-missing-value"),("显式索引越界",outside,"index-range"),("源类型改变",wrongType,"schema-changed"),("storage改变",wrongStorage,"schema-changed")})
+                    {var rejected=false;try{_=Read(Expression("{A}",new DisplayExpressionSlot("A",reference)));}catch(ArgumentException error){var code=Maybe(error,"Code")?.ToString();Console.WriteLine("TEXT_REJECT "+name+" CODE="+code+" "+error.Message);Require(code==expectedCode,name+"因无关诊断拒绝："+error);rejected=true;}Require(rejected,name+"被当普通空值吞掉");}
+                }
+                finally{var errors=new List<Exception>();foreach(var output in outputs)try{output.Dispose();}catch(Exception error){errors.Add(error);}owner.Retire();if(errors.Count!=0)throw new AggregateException(errors);}
+            });
+        }
+        SunEyeVision.UI.Shared.WorkflowNode? textSourceB=null;
+        if(scope=="TextSource")
+        {
+            textSourceB=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
+            var secondFile=Path.Combine(folder,"text-source-b.png");var secondPng=new PngBitmapEncoder();
+            secondPng.Frames.Add(BitmapFrame.Create(BitmapSource.Create(32,64,96,96,PixelFormats.Gray8,null,new byte[32*64],32)));
+            using(var file=File.Create(secondFile))secondPng.Save(file);
+            var secondPolicy=ImageSourcePolicy.Read(textSourceB)!;secondPolicy.FilePaths=new(){secondFile};secondPolicy.CurrentIndex=0;secondPolicy.ForRunPaths=new(){secondFile};secondPolicy.ApplyTo(textSourceB);
+            vm.AddNodeToWorkflow(textSourceB);
+            Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=textSourceB.Id,TargetNodeId=source.Id}),"第二文本来源控制前驱连接失败");
         }
         Run();var path=Path.Combine(folder,"display.solution");Require(solutions.SaveCurrentDocument(path).FileWritten,"正式夹具保存失败");
         if((scope is "All" or "Window")&&Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE")!="多节点纯样式")
@@ -218,7 +398,7 @@ internal static class S2DocumentEditingCases
                 foreach(var pair in values)Require(Field(BlobResultDisplay.Text,pair.Key).TrySetConstant(pair.Value!),"文本字段未接纳："+pair.Key);Pump();
                 var words=Words(Scene()).ToArray();Require(words.Length==2&&words.Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"A=25.0","A=64.0"})
                     &&words.All(word=>(int)Get(word,"FontSize")==14&&(Point)Get(word,"Position")==new Point(7,9)&&(double)Get(word,"Opacity")==.5&&(string)Get(word,"Stroke")=="#FF010203"),"文本七字段未进入真实原投影");
-                Require(!Field(BlobResultDisplay.Text,"content").TrySetConstant("Blob面积:{面积}"),"未知中文token被伪接纳");Pump();Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"A=25.0","A=64.0"}),"非法文本半发布");
+                Require(!Field(BlobResultDisplay.Text,"content").TrySetConstant("Blob面积:{不存在的来源}"),"未知中文token被伪接纳");Pump();Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"A=25.0","A=64.0"}),"非法文本半发布");
                 foreach(var field in textFields)Require(field.TrySetConstant(baseline[field.FieldId]!),field.Error);Pump();Require(publication.IsCurrent()&&node.RuntimeConfiguration!.CaptureResultDisplay()!.Text.Content=="Blob Area:{0}","文本草稿改正式或运行");
             });
             Case("原样式Popup非法pending关闭重开保原文，恢复后完整捕获",()=>{
@@ -265,7 +445,11 @@ internal static class S2DocumentEditingCases
                 control.BindDraft((WorkflowNodeBase)Get(context,"DraftNode"));Pump();Require(!ReferenceEquals(Get(scopeOwner,"_token"),oldToken)&&Geometry(Scene()).Length==2,"成功真实草稿绑定未建立新代");window.Close();Pump();
             });
             Case("同schema同物理输入的另一节点不借旧节点publication样式",()=>{
-                var old=Scene();var second=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(second);vm.SelectedNode=second;Pump();var captured=typeof(MainWindowViewModel).GetMethod("CaptureCurrentResultDisplay",Flags)!.Invoke(vm,new object[]{publication});Require(captured is null&&Maybe(outputPane,"Display") is null,"另一节点借用旧publication");vm.SelectedNode=node;Pump();SelectBlob();_=Scene();Require(Maybe(old,"Disposed") is true,"旧节点scene未退役");
+                foreach(var existing in app.Windows.OfType<DefaultDebugWindow>().Where(item=>item.IsVisible).ToArray())existing.Close();Pump();
+                var old=Scene();var before=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result;
+                var second=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(second);
+                Require(before is not null&&ReferenceEquals(before,((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result)&&before.ExecutionIdentity?.IsCurrent==true&&!history.LastInvalidatedNodes.Any(item=>item.NodeId==node.Id),"新增无关节点错误退役原运行结果");
+                vm.SelectedNode=second;Pump();var captured=typeof(MainWindowViewModel).GetMethod("CaptureCurrentResultDisplay",Flags)!.Invoke(vm,new object[]{publication});Require(captured is null&&Maybe(outputPane,"Display") is null,"另一节点借用旧publication");vm.SelectedNode=node;Pump();SelectBlob();_=Scene();Require(Maybe(old,"Disposed") is true,"旧节点scene未退役");
             });
             Case("同尺寸新publication换帧退役旧reader及场景",()=>{
                 var old=Scene();var oldPublication=Publication();var oldFrame=viewport.CurrentFrame!.Frame;Run();var current=Scene();Require(!ReferenceEquals(oldPublication,Publication())&&!oldPublication.IsCurrent()&&(bool)Get(old,"Disposed")&&viewport.CurrentFrame!.Frame!=oldFrame&&!ReferenceEquals(old,current),"重跑复用旧运行权威/scene");Capture(viewport.View,"display-rerun.png");
@@ -405,7 +589,226 @@ internal static class S2DocumentEditingCases
                 Run();Require(!ReferenceEquals(restored,Scene())&&!ReferenceEquals(oldSnapshot,Frozen()),"新publication未退役旧场景");
             });
         }
-        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
+        if(scope is "All" or "Text")
+        {
+            var textGroup=BlobResultDisplay.Text;var contentId=Display(textGroup,"content");var xId=Display(textGroup,"x");var yId=Display(textGroup,"y");
+            var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
+            var widthSource=new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"width"},scopeId:flowId,storage:imagePort.Storage);
+            void SetText(params (string Id,ParameterSetting Setting)[] fields)
+            {var draft=host.BeginEdit(flowId,node.Id);draft.Node.RuntimeConfiguration=draft.Node.RuntimeConfiguration!.WithFieldSettings(fields.ToDictionary(pair=>pair.Id,pair=>pair.Setting));host.ValidateRuntimeFieldProposals(draft,fields.ToDictionary(pair=>pair.Id,pair=>pair.Setting));host.Commit(draft);Pump();}
+            Case("文本显示同轮前驱及Self映射、X整数引用且不执行算法",()=>{
+                var current=Publication();var snapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");
+                using(var reader=snapshot.AcquireReader())Require(reader.DisplaySources is {} sources&&sources.TryGet(new(flowId,source.Id),out var captured,out var values)&&captured!.Identity.RunId==snapshot.Identity.RunId&&values!.Read(imagePort.Id).GetField("width").GetScalar<long>()==64,"日常正式运行未随结果保同轮图像来源");
+                var expression=BlobResultDisplay.ParseContent("W:{图像宽度};Blob面积:{面积}",new[]{new DisplayExpressionSlot("图像宽度",widthSource)});
+                SetText((contentId,expression),(xId,new ReferenceSetting(widthSource)),(yId,new ConstantSetting(7d)));
+                var words=Words(Scene()).ToArray();Require(current.IsCurrent()&&words.Length==2,"仅显示改动失效publication或丢文字");
+                Require(words.Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:64;Blob面积:25","W:64;Blob面积:64"}),"同轮前驱或中文Self表达式未实际消费");
+                Require(words.All(word=>((Point)Get(word,"Position")).X==64&&((Point)Get(word,"Position")).Y==7),"显示阶段数字来源未控制真实文字位置");
+            });
+            Case("表达式深冻结与JSON重开、每个slot复制重映射不改原配置",()=>{
+                var config=node.RuntimeConfiguration!;var expression=(DisplayExpressionSetting)config.Fields.Read(contentId);
+                var json=System.Text.Json.JsonSerializer.Serialize(config);var restored=System.Text.Json.JsonSerializer.Deserialize<RuntimeToolConfiguration>(json)!;
+                Require(((DisplayExpressionSetting)restored.Fields.Read(contentId)).SameExpression(expression),"表达式序列化丢失原文/引用/自体路径");
+                var replacement=Guid.NewGuid().ToString("N");var remapped=config.MapReferences(reference=>reference.NodeId==source.Id?new OutputReference(replacement,reference.PortId,reference.Type,reference.MemberFieldPath,reference.Selection,reference.ScopeId,reference.Storage):reference);
+                Require(((DisplayExpressionSetting)remapped.Fields.Read(contentId)).Slots.Where(slot=>slot.Reference is not null).All(slot=>slot.Reference!.NodeId==replacement)
+                    &&((ReferenceSetting)remapped.Fields.Read(xId)).Reference.NodeId==replacement&&((DisplayExpressionSetting)config.Fields.Read(contentId)).SameExpression(expression),"嵌套复制映射漏slot或污染原owner");
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"表达式正式方案保存失败");var reopened=new SolutionRepository().LoadCandidate(path).Candidate!;
+                try{var loaded=reopened.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==node.Id).RuntimeConfiguration!;Require(((DisplayExpressionSetting)loaded.Fields.Read(contentId)).SameExpression(expression)&&BindingReferenceSerializer.Serialize(((ReferenceSetting)loaded.Fields.Read(xId)).Reference)==BindingReferenceSerializer.Serialize(widthSource),"方案重开丢失文本映射或X身份");}finally{reopened.ExecutionOwner.Retire();}
+            });
+            Case("重复映射按原顺序替换，空字面量与非法来源原子拒绝",()=>{
+                SetText((contentId,BlobResultDisplay.ParseContent("{面积}|{面积}")),(xId,new ConstantSetting(0d)),(yId,new ConstantSetting(0d)));
+                Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"25|25","64|64"}),"重复映射未依原source重复替换");
+                SetText((contentId,new ConstantSetting("literal-only")));Require(Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"literal-only")),"不引用面积的纯文字未实际显示");
+                SetText((contentId,new ConstantSetting("")));Require(Geometry(Scene()).Length==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"")),"空文字误清Blob几何或仍显示旧文字");
+                SetText((contentId,BlobResultDisplay.ParseContent("{面积}|{面积}")));
+                var before=node.RuntimeConfiguration!;var bad=new OutputReference(source.Id,"不存在的端口",DataType.Number,scopeId:flowId);
+                var draft=host.BeginEdit(flowId,node.Id);var rejected=false;try{host.ValidateRuntimeFieldProposals(draft,new Dictionary<string,ParameterSetting>{{xId,new ReferenceSetting(bad)}});}catch(ArgumentException error){rejected=error.Message.Contains("source",StringComparison.OrdinalIgnoreCase)||error.Message.Contains("field",StringComparison.OrdinalIgnoreCase)||error.Message.Contains("来源");}
+                Require(rejected&&ReferenceEquals(node.RuntimeConfiguration,before),"非法新来源误接纳或写正式配置");
+            });
+        }        if(scope is "All" or "Text")
+        {
+            Case("真实七行文本控件与位置来源选择、非法原文、确认取消和UndoRedo",()=>{
+                var contentId=Display(BlobResultDisplay.Text,"content");var xId=Display(BlobResultDisplay.Text,"x");
+                var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
+                var widthSource=new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"width"},scopeId:flowId,storage:imagePort.Storage);
+                var formal=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);var publication=Publication();var bytes=File.ReadAllBytes(path);
+                var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
+                DeclaredFieldAccess Field(string id)=>((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==id);
+                var text=Field(contentId);Require(text.TrySetConstant("Blob面积:{面积}"),text.Error);Pump();
+                Require(text.Setting is DisplayExpressionSetting&&Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"Blob面积:25","Blob面积:64"}),"原文本控件确认未生成映射或未进入真实场景");
+                var position=(DeclaredFieldEditor)Field(xId).View;
+                Console.WriteLine("TEXT_POSITION_ROUTE "+System.Text.Json.JsonSerializer.Serialize(new{inline=(bool)Get(position,"_inlineConstantReference"),view=position.GetType().FullName,popups=Visual(position).OfType<AppsPopup>().Count()}));Require((bool)Get(position,"_inlineConstantReference"),"文本坐标未走原ButtonSelecter内联常量/来源组合");
+                SelectSource(position,widthSource);Pump();
+                Require(Field(xId).Setting is ReferenceSetting reference&&BindingReferenceSerializer.Serialize(reference.Reference)==BindingReferenceSerializer.Serialize(widthSource),"真实位置来源按钮未接纳完整引用身份");
+                Require(Words(Scene()).All(word=>((Point)Get(word,"Position")).X==64),"真实位置草稿未进入当前publication文字");
+                Require(!text.TrySetConstant("{无此来源}"),"非法手输表达式误接纳");Require(!control.TryCapture(out var error)&&error.Length>0,"非法原文未阻整窗捕获");
+                Require(text.TrySetConstant("Blob面积:{面积}"),text.Error);Require(control.TryCapture(out error),error);
+                window.Close();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==formal&&File.ReadAllBytes(path).SequenceEqual(bytes)&&publication.IsCurrent(),"关闭取消写正式配置/文件或运行结果");
+                window=Open();control=Control(window);editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
+                var accepted=((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==contentId);Require(accepted.TrySetConstant("已确认:{面积}"),accepted.Error);Require(control.TryCommitEditor(out error),error);window.Close();Pump();
+                Require(node.RuntimeConfiguration!.Fields.Read(contentId) is DisplayExpressionSetting saved&&saved.Text=="已确认:{面积}"&&publication.IsCurrent(),"真实确认丢映射或触发算法");
+                history.Undo();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==formal&&publication.IsCurrent(),"文本确认Undo未恢复正式配置或失效结果");history.Redo();Pump();Require(((DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId)).Text=="已确认:{面积}"&&publication.IsCurrent(),"文本确认Redo丢映射或失效结果");
+            });
+        }        if(scope is "All" or "Text")
+        {
+            Case("两真实外源整片复制映射及删除A保B和Undo恢复",()=>{
+                var other=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");var otherFile=Path.Combine(folder,"other-input.png");var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(32,48,96,96,PixelFormats.Gray8,null,new byte[32*48],32)));using(var file=File.Create(otherFile))encoder.Save(file);
+                var policy=ImageSourcePolicy.Read(other)!;policy.FilePaths=new(){otherFile};policy.CurrentIndex=0;policy.ForRunPaths=new(){otherFile};policy.ApplyTo(other);vm.AddNodeToWorkflow(other);
+                Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=other.Id,TargetNodeId=source.Id}),"第二图像来源的真实前驱控制链失败");Run();
+                OutputReference Width(WorkflowNodeBase item){var port=item.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");return new(item.Id,port.Id,port.Type,new[]{"width"},scopeId:flowId,storage:port.Storage);}
+                var a=Width(source);var b=Width(other);var contentId=Display(BlobResultDisplay.Text,"content");
+                var edit=host.BeginEdit(flowId,node.Id);edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{contentId,BlobResultDisplay.ParseContent("A:{A};B:{B}",new[]{new DisplayExpressionSlot("A",a),new DisplayExpressionSlot("B",b)})}});host.ValidateRuntimeFieldProposals(edit,new Dictionary<string,ParameterSetting>{{contentId,edit.Node.RuntimeConfiguration.Fields.Read(contentId)}});host.Commit(edit);Pump();
+                Require(Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:64;B:32")),"两个真实前驱来源未独立消费");
+                var currentFlow=solutions.CurrentSolution!.Workflows.Single(item=>item.Id==flowId);var oldIds=currentFlow.Nodes.Select(item=>item.Id).ToHashSet(StringComparer.Ordinal);
+                foreach(var item in vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes)item.IsSelected=false;source.IsSelected=true;node.IsSelected=true;vm.SelectedNode=node;
+                Require(vm.CopyCanvasSelection()&&vm.PasteCanvasSelection(new Point(700,400)),"真实主窗整片复制/粘贴入口拒绝");Pump();
+                var copies=vm.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Where(item=>!oldIds.Contains(item.Id)).ToArray();
+                var copiedTarget=copies.Single(item=>item.ToolType==BlobTool.Id);var copiedSource=copies.Single(item=>item.ToolType=="ImageLoad");
+                var copiedExpression=(DisplayExpressionSetting)copiedTarget.RuntimeConfiguration!.Fields.Read(contentId);Require(copiedExpression.Slots.Single(slot=>slot.Token=="A").Reference!.NodeId==copiedSource.Id&&copiedExpression.Slots.Single(slot=>slot.Token=="B").Reference!.NodeId==other.Id,"主窗整片复制漏映射A或误映射未选B");
+                var copiedFile=Path.Combine(folder,"copied-input.png");var copiedPixels=new byte[40*64];var originalPixels=Pixels();for(var row=0;row<64;row++)Array.Copy(originalPixels,row*64,copiedPixels,row*40,40);var copiedEncoder=new PngBitmapEncoder();copiedEncoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(40,64,96,96,PixelFormats.Gray8,null,copiedPixels,40)));using(var file=File.Create(copiedFile))copiedEncoder.Save(file);
+                var sourceDraft=host.BeginEdit(flowId,copiedSource.Id);var copiedPolicy=ImageSourcePolicy.Read(sourceDraft.Node)!;copiedPolicy.FilePaths=new(){copiedFile};copiedPolicy.CurrentIndex=0;copiedPolicy.ForRunPaths=new(){copiedFile};copiedPolicy.ApplyTo(sourceDraft.Node);host.Commit(sourceDraft);Pump();                node.IsSelected=false;vm.SelectedNode=copiedTarget;copiedTarget.IsSelected=true;Pump();var copyRun=vm.RunSelectedImageAsync();PumpUntil(()=>copyRun.IsCompleted);copyRun.GetAwaiter().GetResult();Pump();
+                workspace.SelectedOutputItem=workspace.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==copiedTarget.Id&&reference.PortId==BlobSchema.Field(5));Pump();Require(Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:40;B:32")),"复制后的真实执行/场景未消费映射来源");
+                copiedTarget.IsSelected=false;vm.SelectedNode=node;node.IsSelected=true;Pump();SelectBlob();var beforeDelete=Publication();var targetSnapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");using var targetLease=targetSnapshot.Retain();
+                var formalStamp=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);var normalContext=(WorkflowContext)Get(vm,"CurrentWorkflowContext");var sourceAIdentity=normalContext.GetNodeResult(source.Id)!.Result!.Identity;var sourceBIdentity=normalContext.GetNodeResult(other.Id)!.Result!.Identity;
+                var debugWindow=Open();PrivateDebug(debugWindow,true,(result,invocation)=>{
+                    Require(result.Identity.DocumentSessionId!=sourceAIdentity.DocumentSessionId&&invocation.DisplaySourceIdentities.Contains(sourceAIdentity)&&invocation.DisplaySourceIdentities.Contains(sourceBIdentity)&&!invocation.SourceIdentities.Contains(sourceBIdentity),"私有显示专用来源身份未与算法来源区分");
+                    using var reader=result.AcquireReader();Require(reader.DisplaySources is {} sources&&sources.TryGet(new(flowId,source.Id),out var frozenA,out var aValues)&&sources.TryGet(new(flowId,other.Id),out var frozenB,out var bValues)&&frozenA!.Identity==sourceAIdentity&&frozenB!.Identity==sourceBIdentity&&aValues!.Read("output.image").GetField("width").GetScalar<long>()==64&&bValues!.Read("output.image").GetField("width").GetScalar<long>()==32,"Execute返回释放算法readers后显示集合失效或读latest");
+                    Require(((DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot")).Identity==result.Identity&&Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:64;B:32")),"真实私有调试未进入同身份场景");
+                });debugWindow.Close();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==formalStamp&&normalContext.GetNodeResult(source.Id)!.Result!.Identity==sourceAIdentity&&normalContext.GetNodeResult(other.Id)!.Result!.Identity==sourceBIdentity,"私有调试写正式配置或隐式重跑来源");SelectBlob();                var before=(DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId);currentFlow=solutions.CurrentSolution!.Workflows.Single(item=>item.Id==flowId);
+                Require(targetSnapshot.ExecutionIdentity?.IsCurrent==true,"删除前目标实际运行已失效");DeleteThroughHost(source.Id);
+                var missing=(DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId);Require(missing.SameExpression(before)&&missing.Slots.Single(slot=>slot.Token=="B").Reference!.NodeId==other.Id,"删除A清掉文本映射或误写B");Require(!beforeDelete.IsCurrent()&&targetSnapshot.ExecutionIdentity?.IsCurrent==false,"真实上游控制/图像链删除后旧publication或实际运行仍有效");
+                vm.SelectedNode=node;node.IsSelected=true;Pump();var invalidWindow=Open();PrivateDebug(invalidWindow,false);invalidWindow.Close();Pump();
+                var beforeIndependent=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(copiedTarget.Id)?.Result?.Identity;var invalidRun=vm.RunSelectedImageAsync();PumpUntil(()=>invalidRun.IsCompleted);invalidRun.GetAwaiter().GetResult();Pump();var invalidContext=(WorkflowContext)Get(vm,"CurrentWorkflowContext");Require(invalidContext.GetNodeResult(node.Id)?.Result?.IsSuccess!=true&&invalidContext.GetNodeResult(copiedTarget.Id)?.Result?.IsSuccess==true&&invalidContext.GetNodeResult(copiedTarget.Id)!.Result!.Identity!=beforeIndependent&&targetSnapshot.ExecutionIdentity?.IsCurrent==false,"缺源消费者执行了旧值、独立节点未运行或旧结果复活");                history.Undo();Pump();Require(((DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId)).SameExpression(before)&&!beforeDelete.IsCurrent()&&targetSnapshot.ExecutionIdentity?.IsCurrent==false,"撤销删除丢映射或复活旧运行");vm.SelectedNode=node;node.IsSelected=true;Pump();Run();Require(Words(Scene()).Count()==2&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:64;B:32")),"删除Undo后的真实新运行未恢复两来源");
+                history.Redo();Pump();Require(((DisplayExpressionSetting)node.RuntimeConfiguration!.Fields.Read(contentId)).SameExpression(before),"自动图像源删除Redo丢显示引用");vm.SelectedNode=node;node.IsSelected=true;Pump();var redoRun=vm.RunSelectedImageAsync();PumpUntil(()=>redoRun.IsCompleted);redoRun.GetAwaiter().GetResult();Pump();Require(((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result?.IsSuccess!=true,"自动图像源删除Redo后消费者仍执行");history.Undo();Pump();vm.SelectedNode=node;node.IsSelected=true;Pump();Run();
+                var threshold=FieldValue(nameof(BlobSettings.Threshold));var manual=new ReferenceSetting(b);var manualDraft=host.BeginEdit(flowId,node.Id);manualDraft.Node.RuntimeConfiguration=manualDraft.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{threshold,manual}});host.ValidateRuntimeFieldProposals(manualDraft,new Dictionary<string,ParameterSetting>{{threshold,manual}});host.Commit(manualDraft);Pump();Run();Require(((BlobOutput)((DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot")).Output!).ThresholdMinUsed==32,"手动算法来源B未实际消费32");
+                var manualIdentity=BindingReferenceSerializer.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference);var expressionBefore=(DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId);
+                void CheckManualMissing()
+                {
+                    Require(BindingReferenceSerializer.Serialize(((ReferenceSetting)node.RuntimeConfiguration!.Fields.Read(threshold)).Reference)==manualIdentity&&((DisplayExpressionSetting)node.RuntimeConfiguration.Fields.Read(contentId)).SameExpression(expressionBefore)&&node.RuntimeConfiguration.ReadCurrentParameter(threshold) is {Value:32L},"手动缺源清关系、改另一slot或篡改已接纳值");
+                    vm.SelectedNode=node;node.IsSelected=true;Pump();var missingWindow=Open();PrivateDebug(missingWindow,false);missingWindow.Close();Pump();
+                    var prior=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(copiedTarget.Id)?.Result?.Identity;var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Pump();var context=(WorkflowContext)Get(vm,"CurrentWorkflowContext");var failed=context.GetNodeResult(node.Id)?.Result;var independent=context.GetNodeResult(copiedTarget.Id)?.Result;
+                    Require(failed?.IsSuccess!=true&&independent?.IsSuccess==true&&independent.Identity!=prior,"手动缺源消费者用旧值执行、或独立仅显示失效节点未实际新跑");
+                    vm.SelectedNode=copiedTarget;copiedTarget.IsSelected=true;node.IsSelected=false;Pump();workspace.SelectedOutputItem=workspace.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==copiedTarget.Id&&reference.PortId==BlobSchema.Field(5));Pump();Require(((DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot")).Identity==independent!.Identity&&Maybe(outputPane,"Display") is null,"仅显示来源缺失伪造数值或沿用旧场景");
+                }
+                DeleteThroughHost(other.Id);CheckManualMissing();history.Undo();Pump();vm.SelectedNode=node;node.IsSelected=true;Pump();Run();Require(((BlobOutput)((DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot")).Output!).ThresholdMinUsed==32&&Words(Scene()).All(word=>Equals(Get(word,"Content"),"A:64;B:32")),"手动来源Undo后新执行/双slot未恢复");history.Redo();Pump();CheckManualMissing();history.Undo();Pump();vm.SelectedNode=node;node.IsSelected=true;Pump();Run();
+            });            Case("两轮不同图像量测保前轮显示冻结，真正方案重开后执行显示",()=>{
+                var contentId=Display(BlobResultDisplay.Text,"content");var xId=Display(BlobResultDisplay.Text,"x");
+                var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
+                var widthSource=new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"width"},scopeId:flowId,storage:imagePort.Storage);
+                var edit=host.BeginEdit(flowId,node.Id);edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{contentId,BlobResultDisplay.ParseContent("W:{宽};A:{面积}",new[]{new DisplayExpressionSlot("宽",widthSource)})},{xId,new ReferenceSetting(widthSource)}});host.Commit(edit);Pump();
+                var before=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");using var retained=before.Retain();using var oldText=new ResultDisplayTextLease(before,node.RuntimeConfiguration!.CaptureResultDisplay()!.Text);
+                Require(oldText.Evaluate(0).Content.StartsWith("W:64;",StringComparison.Ordinal),"前轮宽度前置失败");
+                var pixels=new byte[80*64];var original=Pixels();for(var row=0;row<64;row++)Array.Copy(original,row*64,pixels,row*80,64);
+                var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(80,64,96,96,PixelFormats.Gray8,null,pixels,80)));using(var file=File.Create(imageFile))encoder.Save(file);
+                Run();var after=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");
+                using var recreatedOldText=new ResultDisplayTextLease(before,node.RuntimeConfiguration!.CaptureResultDisplay()!.Text);Require(recreatedOldText.Evaluate(0).Content.StartsWith("W:64;",StringComparison.Ordinal),"新轮后从旧snapshot重新借用丢前驱");
+                Require(before.Identity!=after.Identity&&oldText.Evaluate(0).Content.StartsWith("W:64;",StringComparison.Ordinal),"新轮来源覆盖前轮已保留显示值");
+                Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:80;A:25","W:80;A:64"})&&Words(Scene()).All(word=>((Point)Get(word,"Position")).X==80),"新轮未消费真实新宽度/位置或形状丢失");
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"新表达式方案保存失败");var previousSession=solutions.Session;var targetId=node.Id;var reopened=solutions.OpenSolution(path)??throw new Exception("真实方案重开失败");Pump();Require(!ReferenceEquals(previousSession,solutions.Session),"未进入新文档会话");
+                var selected=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(item=>item.Id==targetId);vm.SelectedNode=selected;selected.IsSelected=true;Pump();
+                var tracePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"reopen-trace.txt");
+                void TraceReopen(string message)=>File.AppendAllText(tracePath,DateTime.UtcNow.ToString("O")+" "+message+Environment.NewLine);
+                var manager=(SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager)Get(vm,"_executionManager");
+                EventHandler<SunEyeVision.UI.Services.Workflow.WorkflowExecutionEventArgs> onError=(_,args)=>TraceReopen("ERROR "+args.WorkflowId+" "+args.ErrorMessage);
+                EventHandler<SunEyeVision.UI.Services.Workflow.WorkflowExecutionEventArgs> onStart=(_,args)=>TraceReopen("START "+args.WorkflowId);
+                EventHandler<SunEyeVision.UI.Services.Workflow.WorkflowExecutionEventArgs> onDone=(_,args)=>TraceReopen("DONE "+args.WorkflowId);
+                EventHandler<SunEyeVision.UI.Services.Workflow.NodeExecutionResultEventArgs> onNode=(_,args)=>TraceReopen("NODE "+args.Node.Id+" "+args.Result.Status+" "+args.Result.ErrorMessage);
+                manager.WorkflowExecutionError+=onError;manager.WorkflowExecutionStarted+=onStart;manager.WorkflowExecutionCompleted+=onDone;manager.NodeExecutionCompleted+=onNode;
+                try
+                {
+                    var active=Maybe(vm,"ActiveInputSource");TraceReopen("BEFORE selected="+vm.SelectedNode?.Id+" active="+(active is null?null:Maybe(active,"NodeId"))+" owner="+solutions.CurrentSolution!.ExecutionOwner.Id+" status="+vm.StatusText);
+                    var newHost=solutions.Session!.Editing.Host;var store=(BindingConfigurationStore)Get(newHost,"_store");
+                    var definition=store.Capture().CopyConfiguration().Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==targetId);
+                    var live=solutions.CurrentSolution.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(item=>item.Id==targetId);
+                    var identityProperty=typeof(RuntimeToolConfiguration).GetProperty("ConfigurationIdentity",BindingFlags.Instance|BindingFlags.NonPublic)!;
+                    var liveIdentity=(string)identityProperty.GetValue(live.RuntimeConfiguration!)!;var formalIdentity=(string)identityProperty.GetValue(definition.RuntimeConfiguration!)!;
+                    File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"reopen-live-config.json"),liveIdentity);
+                    File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"reopen-formal-config.json"),formalIdentity);
+                    var instances=(System.Collections.IDictionary)Get(newHost,"_nodeInstances");var registered=instances[new ScopedNodeIdentity(flowId,targetId)];
+                    TraceReopen("CONFIG same="+(liveIdentity==formalIdentity)+" registered="+ReferenceEquals(live,registered)+" selected="+ReferenceEquals(live,selected));
+                    var rerun=vm.RunSelectedImageAsync();PumpUntil(()=>rerun.IsCompleted);rerun.GetAwaiter().GetResult();Pump();
+                    var current=Maybe(vm,"CurrentWorkflowContext") as WorkflowContext;
+                    foreach(var item in solutions.CurrentSolution.Workflows.Single(flow=>flow.Id==flowId).Nodes)
+                    {var output=current?.GetNodeResult(item.Id)?.Result;TraceReopen("CTX "+item.Id+" "+item.Name+" "+output?.Status+" "+output?.ErrorMessage+" "+output?.Identity);}
+                    TraceReopen("BEFORE_SELECT snapshot="+(Maybe(vm,"_resultPublicationSnapshot") as DeclaredOutputSnapshot)?.Identity+" status="+vm.StatusText);
+                    SelectBlob();TraceReopen("AFTER_SELECT snapshot="+(Maybe(vm,"_resultPublicationSnapshot") as DeclaredOutputSnapshot)?.Identity+" status="+vm.StatusText);
+                }
+                finally{manager.WorkflowExecutionError-=onError;manager.WorkflowExecutionStarted-=onStart;manager.WorkflowExecutionCompleted-=onDone;manager.NodeExecutionCompleted-=onNode;}
+                var loadedSnapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");Require(loadedSnapshot.Identity.DocumentSessionId==solutions.CurrentSolution!.ExecutionOwner.Id&&loadedSnapshot.Identity.DocumentSessionId!=before.Identity.DocumentSessionId,"重开后仍使用旧文档运行身份");
+                Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:80;A:25","W:80;A:64"})&&Words(Scene()).All(word=>((Point)Get(word,"Position")).X==80),"真实重开执行未保表达式/位置引用或实际结果");Capture(resultView,"text-reopened.png");
+            });
+        }        if(scope is "All" or "TextSource")
+        {
+            Case("原文本花括号来源事件链与旧容器退出（WPF事件注入）",()=>{
+                var contentId=Display(BlobResultDisplay.Text,"content");var baseline=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);
+                var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
+                var field=((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==contentId);var textPresenter=Get(field.View,"_textPresenter");var session=Get(textPresenter,"_session");
+                var raw=Visual(field.View).OfType<TextBox>().Single();raw.SetCurrentValue(TextBox.TextProperty,"值:{}");raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();raw.SelectionStart=3;raw.SelectionLength=0;
+                var focus=Keyboard.Focus(raw);Pump();raw.SelectionStart=2;raw.SelectionStart=3;Pump();
+                File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-focus.json"),System.Text.Json.JsonSerializer.Serialize(new{raw.IsKeyboardFocused,raw.IsFocused,raw.Text,raw.SelectionStart,focusType=focus?.GetType().FullName,sourceCount=((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Count()}));
+                Require(raw.IsKeyboardFocused,"隔离桌面未取得原文本框WPF键盘焦点；不手工RaiseEvent伪造焦点、不回退用户桌面");
+                PumpUntil(()=>((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Any());
+                IEnumerable<object> Nodes(System.Collections.IEnumerable nodes){foreach(var item in nodes){yield return item;foreach(var child in Nodes((System.Collections.IEnumerable)Get(item,"EnumEntrysA")))yield return child;}}
+                var selected=Nodes((System.Collections.IEnumerable)Get(session,"SourceNodes")).Single(item=>Maybe(item,"Candidate") is SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate candidate&&candidate.NodeId==source.Id&&candidate.Output.Id=="output.image"&&candidate.MemberPath.SequenceEqual(new[]{"width"}));
+                var popup=Visual(field.View).OfType<AppsPopup>().Single();popup.ApplyTemplate();var part=(Popup)popup.Template.FindName("PART_Popup",popup)!;Require(part.IsOpen&&part.Child is not null,"原文本来源Popup未实际打开");
+                var tree=Visual(part.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();var native=(TreeView)tree.FindName("treeView");tree.UpdateLayout();Pump();
+                var container=(TreeViewItem?)tree.GetType().GetMethod("FindTreeViewItem",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{native,selected})??throw new Exception("原文本来源目标容器未生成");
+                var previousScene=Maybe(outputPane,"Display");
+                container.IsSelected=true;Pump();container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();
+                Require(field.Setting is DisplayExpressionSetting expression&&expression.Slots.Single().Reference is {} reference&&reference.NodeId==source.Id&&reference.PortId=="output.image"&&reference.MemberFieldPath.SequenceEqual(new[]{"width"})&&reference.ScopeId==flowId,"原文本树事件未保选择来源身份");
+                void TraceScene(string stage)
+                {
+                    var current=Maybe(outputPane,"Display");var preview=Maybe(vm,"_displayPreview");
+                    var contents=current is null?Array.Empty<string>():Words(current).Select(word=>(string)Get(word,"Content")).ToArray();
+                    var data=new{stage,sameScene=ReferenceEquals(previousScene,current),contents,setting=System.Text.Json.JsonSerializer.Serialize(field.Setting),pending=Maybe(session,"_pending")?.ToString(),acceptedRevision=Maybe(editor,"AcceptedRevision"),syncedRevision=Maybe(control,"_syncedRevision"),displayRevision=Maybe(vm,"_resultDisplayRevision"),captureError=Maybe(control,"_captureError")?.ToString(),previewAppearance=preview is null?null:Maybe(preview,"Appearance")?.ToString()};
+                    File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-source-trace.jsonl"),System.Text.Json.JsonSerializer.Serialize(data)+Environment.NewLine);
+                }
+                TraceScene("after-selection");
+                try{PumpUntil(()=>Maybe(outputPane,"Display") is {} current&&Words(current).Count()==2&&Words(current).All(word=>Equals(Get(word,"Content"),"值:64")));}
+                catch{TraceScene("timeout");throw;}
+                TraceScene("accepted");
+                window.Close();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==baseline,"来源选择取消写正式配置");
+                window=Open();control=Control(window);var context=ToolEditorCommit.GetDraftContext(control)!;var draft=(WorkflowNodeBase)context.GetType().GetProperty("DraftNode")!.GetValue(context)!;var draftBefore=System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration!);
+                container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();Require(window.IsVisible&&System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration!)==draftBefore,"旧文本容器写新草稿或关闭新窗");window.Close();Pump();
+            });
+            if(scope=="TextSource")Case("真实文本树连续选择两来源、编辑确认并重开消费",()=>{
+                var second=textSourceB??throw new Exception("缺第二文本来源夹具");
+                var contentId=Display(BlobResultDisplay.Text,"content");var window=Open();var control=Control(window);
+                var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
+                var field=((DeclaredFieldsView)editor.Content).Fields.Single(item=>item.FieldId==contentId);
+                var textPresenter=Get(field.View,"_textPresenter");var session=Get(textPresenter,"_session");
+                var raw=Visual(field.View).OfType<TextBox>().Single();
+                IEnumerable<object> Nodes(System.Collections.IEnumerable nodes){foreach(var item in nodes){yield return item;foreach(var child in Nodes((System.Collections.IEnumerable)Get(item,"EnumEntrysA")))yield return child;}}
+                void Choose(string proposed,string sourceId)
+                {
+                    raw.SetCurrentValue(TextBox.TextProperty,proposed);raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();
+                    Keyboard.Focus(raw);Pump();var caret=proposed.LastIndexOf("{}",StringComparison.Ordinal)+1;Require(caret>0,"缺待选择的花括号");
+                    raw.SelectionStart=caret-1;raw.SelectionStart=caret;Pump();
+                    PumpUntil(()=>Nodes((System.Collections.IEnumerable)Get(session,"SourceNodes")).Any(item=>Maybe(item,"Candidate") is SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate c&&c.NodeId==sourceId&&c.Output.Id=="output.image"&&c.MemberPath.SequenceEqual(new[]{"width"})));
+                    var selected=Nodes((System.Collections.IEnumerable)Get(session,"SourceNodes")).Single(item=>Maybe(item,"Candidate") is SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate c&&c.NodeId==sourceId&&c.Output.Id=="output.image"&&c.MemberPath.SequenceEqual(new[]{"width"}));
+                    var popup=Visual(field.View).OfType<AppsPopup>().Single();popup.ApplyTemplate();var part=(Popup)popup.Template.FindName("PART_Popup",popup)!;
+                    Require(part.IsOpen&&part.Child is not null,"原文本来源Popup未实际打开");
+                    var tree=Visual(part.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();var native=(TreeView)tree.FindName("treeView");tree.UpdateLayout();Pump();
+                    var item=(TreeViewItem?)tree.GetType().GetMethod("FindTreeViewItem",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{native,selected})??throw new Exception("来源树目标容器未生成");
+                    item.IsSelected=true;Pump();item.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();
+                }
+                Choose("前:{};后",source.Id);
+                Require(field.Setting is DisplayExpressionSetting first&&first.Slots.Count==1&&first.Slots[0].Reference?.NodeId==source.Id,"第一次真实选择未保存来源A");
+                PumpUntil(()=>Maybe(outputPane,"Display") is {} scene&&Words(scene).Count()==2&&Words(scene).All(word=>Equals(Get(word,"Content"),"前:64;后")));
+                Choose(raw.Text+";中:{};尾",second.Id);
+                Require(field.Setting is DisplayExpressionSetting two&&two.Slots.Count==2&&two.Slots.Any(slot=>slot.Reference?.NodeId==source.Id)&&two.Slots.Any(slot=>slot.Reference?.NodeId==second.Id),"第二次真实选择丢失A或B身份");
+                PumpUntil(()=>Maybe(outputPane,"Display") is {} scene&&Words(scene).Count()==2&&Words(scene).All(word=>Equals(Get(word,"Content"),"前:64;后;中:32;尾")));
+                raw.SetCurrentValue(TextBox.TextProperty,raw.Text.Replace("前:","前缀:",StringComparison.Ordinal).Replace(";后;",";后缀;",StringComparison.Ordinal));
+                raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();Require(control.TryCommitEditor(out var error),error);Pump();
+                Require(node.RuntimeConfiguration!.Fields.Read(contentId) is DisplayExpressionSetting committed&&committed.Slots.Count==2&&committed.Slots.Any(slot=>slot.Reference?.NodeId==source.Id)&&committed.Slots.Any(slot=>slot.Reference?.NodeId==second.Id),"确认后双来源身份丢失");
+                window.Close();Pump();Require(solutions.SaveCurrentDocument(path).FileWritten,"双来源正式保存失败");
+                var targetId=node.Id;var oldOwner=solutions.CurrentSolution!.ExecutionOwner.Id;_=solutions.OpenSolution(path)??throw new Exception("双来源方案重开失败");Pump();
+                var reopened=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(item=>item.Id==targetId);vm.SelectedNode=reopened;reopened.IsSelected=true;Pump();
+                Require(reopened.RuntimeConfiguration!.Fields.Read(contentId) is DisplayExpressionSetting restored&&restored.Slots.Count==2&&restored.Slots.Any(slot=>slot.Reference?.NodeId==source.Id)&&restored.Slots.Any(slot=>slot.Reference?.NodeId==second.Id),"重开后双来源身份丢失");
+                Run();var snapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");Require(snapshot.Identity.DocumentSessionId!=oldOwner&&snapshot.Identity.DocumentSessionId==solutions.CurrentSolution!.ExecutionOwner.Id,"双来源重开执行使用旧会话");
+                PumpUntil(()=>Maybe(outputPane,"Display") is {} scene&&Words(scene).Count()==2&&Words(scene).All(word=>Equals(Get(word,"Content"),"前缀:64;后缀;中:32;尾")));
+            });
+        }        shell.Close();app.Shutdown();Console.WriteLine("Blob正式图文组合："+_passed+"组通过；仅具真实生产值项目开通，非VM像素/语言/物理鼠标等价。");return 0;
     }
     private static void SelectResultPage(DeclaredSettingsView editor)
     {
@@ -414,7 +817,11 @@ internal static class S2DocumentEditingCases
         tabs.SelectedItem=header;editor.UpdateLayout();Pump();
         Require(ReferenceEquals(tabs.SelectedItem,header)&&Equals(header.Header,"结果显示"),"未实际选中结果显示页");
     }
-    private static byte[] Pixels(){var pixels=new byte[4096];for(var y=5;y<13;y++)for(var x=5;x<13;x++)pixels[y*64+x]=200;for(var y=30;y<35;y++)for(var x=30;x<35;x++)pixels[y*64+x]=200;return pixels;}
+    private sealed class ValueOutput(IReadOnlyDictionary<string,object?> values):IToolOutput,IDisposable
+    {public IReadOnlyDictionary<string,object?> ToValues()=>values;public void Dispose(){}}    private sealed class ScalarOutput(Action disposed):IToolOutput,IDisposable
+    {public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>{{"n",1d}};public void Dispose()=>disposed();}
+    private sealed class ActionLease(Action dispose):IDisposable
+    {public void Dispose()=>dispose();}    private static byte[] Pixels(){var pixels=new byte[4096];for(var y=5;y<13;y++)for(var x=5;x<13;x++)pixels[y*64+x]=200;for(var y=30;y<35;y++)for(var x=30;x<35;x++)pixels[y*64+x]=200;return pixels;}
     private sealed class ActionCommand(Action<object?> action):ICommand {public bool CanExecute(object? value)=>true;public void Execute(object? value)=>action(value);public event EventHandler? CanExecuteChanged {add{}remove{}}}
     private sealed class Spy(bool fail):IDisposable {public int Count;public void Dispose(){Count++;if(fail)throw new InvalidOperationException("reader-release-marker");}}
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
@@ -445,7 +852,7 @@ internal static class S2DocumentEditingCases
             if(expected is null)return (bool)node.GetType().GetProperty("Clear")!.GetValue(node)!;
             var candidate=node.GetType().GetProperty("Candidate")!.GetValue(node);if(candidate is null)return false;
             var reference=(OutputReference)candidate.GetType().GetMethod("Reference")!.Invoke(candidate,new object[]{BindingSelection.All})!;
-            return reference.NodeId==expected.NodeId&&reference.PortId==expected.PortId&&reference.MemberFieldPath.SequenceEqual(expected.MemberFieldPath);
+            return BindingReferenceSerializer.Serialize(reference)==BindingReferenceSerializer.Serialize(expected);
         });        ((ICommand)session.GetType().GetProperty("ClickCommand")!.GetValue(session)!).Execute(item);popup.IsDropDownOpen=false;Pump();
     }
     private static string SettingId(string name)=>new BlobTool().SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName==BlobParameterDefinition.Instance.Label(name)).FieldId;

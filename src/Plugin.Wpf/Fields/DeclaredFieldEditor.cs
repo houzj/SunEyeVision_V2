@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Globalization;
@@ -54,9 +54,10 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             ||_presentation?.Layout?.PairWith is not null||_presentation?.Layout?.DialogPrimary==true)
             throw new ArgumentException("文本表达式与现有字段组合冲突。");
         var generation=_renderGeneration;var acceptance=_state.AcceptanceVersion;
-        if(_state.Accepted is ConstantSetting {Value:string text})
+        var initialText=_state.Accepted switch {ConstantSetting {Value:string text}=>text,DisplayExpressionSetting expression=>expression.Text,_=>null};
+        if(initialText is not null)
         {
-            var error=options.ValidateText?.Invoke(text);
+            var error=options.ValidateText?.Invoke(initialText);
             if(IsDisposed||generation!=_renderGeneration||acceptance!=_state.AcceptanceVersion)return;
             if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
         }
@@ -241,7 +242,13 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             }
             return;
         }
-        var value = ((ConstantSetting)_setting).Value;
+        // Expression identity stays in the formal state; the first Render runs before the text presenter is attached.
+        var value = _setting switch
+        {
+            ConstantSetting constant=>constant.Value,
+            DisplayExpressionSetting expression when _port.Type==DataType.Text&&(_port.EditModes&FieldEditModes.DisplayExpression)!=0=>expression.Text,
+            _=>throw new ArgumentException("字段设置与原编辑器声明不匹配："+_port.Id)
+        };
         if (_port.Type.Shape == ValueShape.Resource) { _body.Children.Add(new TextBlock { Text = "运行时资源，请选择来源" }); return; }
         if (_port.Type.Shape == ValueShape.Scalar)
         {

@@ -89,7 +89,7 @@ public sealed partial class NodeConfigurationEditHost
 
     /// <summary>Called only inside an authorized session-history operation after its graph algorithm
     /// has accepted a formal graph. This does not turn external/Group edits into root history.</summary>
-    public void AcceptDocumentGraphHistory()
+    public IReadOnlyList<ScopedNodeIdentity> AcceptDocumentGraphHistory()
     {
         if (_documentHistory?.IsApplying != true)
             throw new InvalidOperationException("图历史接受必须处于当前方案的正式历史事务中。");
@@ -98,9 +98,10 @@ public sealed partial class NodeConfigurationEditHost
             var next = BindingConfigurationStore.Copy(_design);
             var candidate = new BindingConfigurationSnapshot(0, next,
                 SolutionExecutionDependencyGraph.Compile(next, checkReadiness: false));
-            _store.ReplayAccepted(candidate, _ => { });
+            var publication = _store.ReplayAccepted(candidate, _ => { });
             _nodeInstances.Clear();
             foreach (var pair in Nodes(_design)) _nodeInstances.Add(pair.Key, pair.Value);
+            return publication.InvalidatedNodes;
         }
     }
 

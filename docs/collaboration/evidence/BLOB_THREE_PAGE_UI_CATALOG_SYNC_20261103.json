@@ -1,0 +1,85 @@
+{
+  "schema": "blob-three-page-ui-catalog-sync/v1",
+  "originalIdentityFieldsPreserved": 1267,
+  "changedCurrentRows": [],
+  "currentSources": [
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+      "sha256": "0F82026E5993F8E9D0116B480699DAC5589B5D1B53F4E432F95AE7162B353C9B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "sha256": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeUiDraftRange.cs",
+      "sha256": "35F10B287CC39AA07CC05A01CE1CD1ED2731BD93BC2492A1CE99094A65497E7D"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeJudgmentUiDraftControls.cs",
+      "sha256": "DBA28669E106D436575228C73468BF5A151CC68F8BA6081BE66FB54F87ADDFE3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeThresholdUiDraftControls.cs",
+      "sha256": "5801F67FFF79DF61AF07737DCCB57A6BD1A3A119461DE014DFCCC2B404D46E63"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeUiConditionalFields.cs",
+      "sha256": "7E69613DD0502C29553B3F6B0F0A486D65863F5375D900F4D94AD404DB6FAE7B"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+      "sha256": "83E68061C0265DAA227130066E2051D44E83CCC5B32BE61E625CEFD5B85237B1"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "CC01BA29D51A03E1E0EFBE58172C2DC92D0DBD9881DDC39A60005563E9DE7709"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "C874E2662361F7F77FA62D35F338FAF5645BB5E0F29CC7835DE7A83D37180CE2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "sha256": "7D1CAF67692AB40D304F1079ED6B13D4C3A1456A0DA806D798AEAA7147C1965C"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sha256": "0F8B9F5EB74717DF2DAB86D1FD03ED78BC74FC32AD676A0DC7DC5C5AD6EB8E32"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "2611D7466FC28AA2C8D057CE32156C3287B498A7D72EDF1C7A83AC22A1965F2C"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUiState.cs",
+      "sha256": "67DB04113B3E097A28A2A5B6A207AED6185F375294299865C80278FE1D2B62E0"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs",
+      "sha256": "BA667494E0620B874956164B4A3EA2C4D55F04BB526210293F8A88CD5C11D529"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiPreviewScope.cs",
+      "sha256": "202D0FEDF554656AD26D9CB63D2FA9630510D32AE0E27AD35007289E3D8F7D92"
+    }
+  ],
+  "mappingCounts": {
+    "direct": 96,
+    "sharedGroups": 8,
+    "sharedMembers": 54
+  },
+  "formal": "尚未构建验收"
+}

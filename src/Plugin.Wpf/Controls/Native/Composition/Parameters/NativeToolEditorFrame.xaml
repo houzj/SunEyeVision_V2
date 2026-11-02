@@ -24,7 +24,7 @@
             ToolTip="重置运行参数（尚未接入）" Style="{StaticResource ResetBtnStyle}"
             Visibility="{Binding ResetVisibility,RelativeSource={RelativeSource AncestorType=UserControl}}"
             Command="{Binding ResetCommand,RelativeSource={RelativeSource AncestorType=UserControl}}"
-            IsEnabled="{Binding ResetAvailable,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            IsEnabled="{Binding ResetAvailable,RelativeSource={RelativeSource AncestorType=UserControl}}" ToolTipService.ShowOnDisabled="True"/>
    <ItemsControl x:Name="BottomCommands" Height="32" HorizontalAlignment="Right">
     <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><Trigger Property="ItemsSource" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers></Style></ItemsControl.Style>
     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,14,4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>

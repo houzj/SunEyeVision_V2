@@ -77,15 +77,15 @@ internal static class S2DocumentEditingCases
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=BindingId("LowThreshold");
         const string modeId="field:8ca20000000040008000000000000001";
-        DefaultDebugWindow Open()=>OpenFor(node);
-        DefaultDebugWindow OpenFor(WorkflowNodeBase target)
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow Open()=>OpenFor(node);
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow OpenFor(WorkflowNodeBase target)
         {
             vm.OpenDebugWindowCommand.Execute(target);Pump();
-            var window=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
+            var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
             window.UpdateLayout();Pump();return window;
         }
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
-        TextBox Threshold(DefaultDebugWindow window)
+        RuntimeNodeConfigurationControl Control(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>window.EditorControl;
+        TextBox Threshold(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)
         {
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
             return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;
@@ -116,9 +116,9 @@ internal static class S2DocumentEditingCases
         var roiVariables=host.BeginVariableEdit();var roiValues=new GlobalVariable("ROI真实宽度序列",new double[]{2,4,6,2,4,6,2,4,6},"Double[]");roiVariables.Configuration.GlobalVariables.Add(roiValues);host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),roiVariables);
         var multiVariables=host.BeginVariableEdit();var rectangleSeries=new[]{new[]{1d,5d},new[]{1d,5d},new[]{2d,2d},new[]{2d,2d},new[]{0d,0d}}.Select((v,i)=>new GlobalVariable("ROI矩形叶"+i,v,"Double[]")).ToArray();
         var annulusSeries=new[]{new[]{1d,5d},new[]{1d,5d},new[]{1d,1d},new[]{2d,2d},new[]{0d,0d},new[]{360d,360d}}.Select((v,i)=>new GlobalVariable("ROI圆环叶"+i,v,"Double[]")).ToArray();foreach(var v in rectangleSeries.Concat(annulusSeries))multiVariables.Configuration.GlobalVariables.Add(v);host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),multiVariables);
-        DeclaredFieldAccess Low(DefaultDebugWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
-        ProductionEditorContext Draft(DefaultDebugWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
-        void Debug(DefaultDebugWindow window,long expected)
+        DeclaredFieldAccess Low(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
+        ProductionEditorContext Draft(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
+        void Debug(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window,long expected)
         {
             long? actual=null;var current=Control(window);
             SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{if(args.Results is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {Output:BlobOutput output})actual=output.ThresholdMinUsed;};
@@ -126,7 +126,7 @@ internal static class S2DocumentEditingCases
             try{var run=current.RunDebugAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(actual==expected,"真实算法未消费预期阈值："+actual+"/"+expected);Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:long value}&&value==expected,"私有当前值与算法不同");}
             finally{current.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);}
         }
-        void Confirm(DefaultDebugWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
+        void Confirm(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
         long Current()=>node.RuntimeConfiguration!.ReadCurrentParameter(threshold)?.Value is long value?value:node.RuntimeConfiguration.Fields.Read(threshold) is ConstantSetting constant?(long)constant.Value!:throw new Exception("没有正式当前值");
         string Identity(ParameterSetting setting)=>setting switch{ReferenceSetting reference=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference.Reference),VariableSetting variable=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(variable.Reference),ConstantSetting constant=>System.Text.Json.JsonSerializer.Serialize(constant.Value),UnsetSetting=>"Unset",_=>throw new Exception("不是支持设置")};
         int? expectedReplayCount=null;
@@ -221,22 +221,22 @@ internal static class S2DocumentEditingCases
             });
         }
         if(Included("Model"))InheritanceModelCases();
-        SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor Input(DefaultDebugWindow w,string id)=>Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single().Fields.Single(editor=>editor.FieldId==id);
+        SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor Input(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,string id)=>Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single().Fields.Single(editor=>editor.FieldId==id);
         object InputSession(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)
         {_activePopup=Visual(field).OfType<AppsPopup>().Single(p=>p.Name=="rt"&&p.DataContext?.GetType().Name=="ReferenceFieldSession"&&((Port)Get(p.DataContext,"Target")).Id==field.FieldId);_activePopup.ApplyTemplate();return _activePopup.DataContext;}
-        void Radio(DefaultDebugWindow w,int index,int selected)
+        void Radio(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int index,int selected)
         {
             var ui=Logical(Control(w)).OfType<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiUiDraftControls>().Single();
             var radio=((System.Collections.IEnumerable)Get(ui,"_radios")).Cast<object>().ElementAt(index);
             var command=(ICommand)Get(radio,"ValueChangedCommand");Require(command.CanExecute(selected),"原radio不可操作："+index+"/"+selected);command.Execute(selected);Pump();
         }
-        void SetMode(DefaultDebugWindow w,int? selected){Radio(w,1,selected is null?0:1);if(selected is not null)Radio(w,2,selected.Value);}
+        void SetMode(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int? selected){Radio(w,1,selected is null?0:1);if(selected is not null)Radio(w,2,selected.Value);}
         void ReferenceInput(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)
         {if(field.Setting is ReferenceSetting or VariableSetting)return;var toggle=Visual(field).OfType<ToggleButton>().Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();}
-        void Populate(DefaultDebugWindow w)
+        void Populate(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w)
         {SetMode(w,1);foreach(var pair in RectangleFields().Where(pair=>pair.Key!=BlobRoiInheritance.ModeId))Require(Input(w,pair.Key).TrySetConstant(((double[])((ConstantSetting)pair.Value).Value!)[0]),"真实数值控件拒绝："+pair.Key);}
         TextBox NumericText(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)=>(TextBox)Get(Get(field,"_numeric"),"TextEditor");
-        (int Count,double Area,bool Center,bool Corner,bool Second,bool Outside,bool RingEdge,bool FirstHole,bool FirstRingEdge) Observe(DefaultDebugWindow w)
+        (int Count,double Area,bool Center,bool Corner,bool Second,bool Outside,bool RingEdge,bool FirstHole,bool FirstRingEdge) Observe(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w)
         {
             object? trace=null;
             if(Environment.GetEnvironmentVariable("BLOB_ROI_TRACE_ONLY")=="AllMin")
@@ -265,18 +265,27 @@ internal static class S2DocumentEditingCases
             }
             loaded.ExecutionOwner.Retire();
         }
-        void RingFields(DefaultDebugWindow w,string stage)
+        void RingFields(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,string stage)
         {
             var config=Draft(w).DraftNode.RuntimeConfiguration!;var fields=BlobRoiInheritance.AnnulusMembers.Select(member=>BlobRoiInheritance.Leaf(BlobRoiInheritance.AnnulusParameters,member)).Select(id=>{var field=Input(w,id);var state=Get(field,"_state");return new{Id=id,EditorKind=field.Setting.GetType().Name,EditorIdentity=Identity(field.Setting),DraftKind=config.Fields.Read(id).GetType().Name,DraftIdentity=Identity(config.Fields.Read(id)),ReferenceMode=(bool)Get(state,"IsReferenceMode"),field.HasPendingEdits,field.HasInvalidText,field.Error};}).ToArray();
             File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"ring-fields.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{Stage=stage,Mode=BlobRoiInheritance.ReadMode(config.Fields),Fields=fields,Errors=config.Validate().Select(d=>new{d.Code,d.Message,d.FieldId}).ToArray()})+Environment.NewLine);
         }
+        void EnsureSource()
+        {
+            if(Context().GetNodeResult(source.Id)?.Result is not DeclaredOutputSnapshot {IsSuccess:true})
+            {
+                vm.SelectedNode=source;source.IsSelected=true;var rerun=vm.RunSelectedImageAsync();PumpUntil(()=>rerun.IsCompleted);rerun.GetAwaiter().GetResult();
+                Require(Context().GetNodeResult(source.Id)?.Result is DeclaredOutputSnapshot {IsSuccess:true},"图变更后未能重新生成上游来源结果");vm.SelectedNode=node;node.IsSelected=true;Pump();
+            }
+        }
         if(Included("Window"))
         {
+            EnsureSource();
             Case("原默认面积10合法过滤9像素继承，关闭筛选恢复同一几何",()=>{
                 var w=Open();Populate(w);Require(Input(w,rectangleIds[2]).TrySetConstant(2d),"宽2不能提交");var control=Control(w);var tabs=Logical(control).OfType<TabControl>().Single();tabs.SelectedIndex=1;Pump();var area=Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.IsAreaFilterEnabled)));Require(area.TrySetConstant(true),"原面积开关不能开启");Require(((BlobSettings)Draft(w).DraftNode.RuntimeConfiguration!.CaptureSettings()).FilterAreaMin==10,"不是原默认下限10");tabs.SelectedIndex=0;Pump();var rejected=Observe(w);Require(rejected.Count==0&&rejected.Area==0,"默认面积10未过滤9像素区域");tabs.SelectedIndex=1;Pump();Require(area.TrySetConstant(false),"原面积开关不能关闭");tabs.SelectedIndex=0;Pump();var restored=Observe(w);Require(restored.Count==1&&restored.Area==9&&restored.Center&&!restored.Corner,"关闭筛选未恢复原9像素几何");w.Close();Pump();
             });
             Case("真实原四态条件与十一叶，空组合候选拒绝且预览有短Tooltip",()=>{
-                var w=Open();var inputs=Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single();Require(rectangleIds.All(id=>inputs.Fields.Count(f=>f.FieldId==id)==1),"原五叶未绑定同一正式输入");var ui=Logical(Control(w)).OfType<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiUiDraftControls>().Single();Require(Visual(ui).OfType<RadioButton>().Count()>=8,"原四态radio消失");Require(ui.ToolTip?.ToString()?.Contains("预览尚未接入")==true,"未接入预览标识缺失");
+                var w=Open();var inputs=Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single();Require(rectangleIds.All(id=>inputs.Fields.Count(f=>f.FieldId==id)==1),"原五叶未绑定同一正式输入");var ui=Logical(Control(w)).OfType<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiUiDraftControls>().Single();Require(Visual(ui).OfType<RadioButton>().Count()>=8,"原四态radio消失");
                 foreach(var selected in new[]{0,1,2,3}){SetMode(w,selected);Require(!Control(w).TryCapture(out error)&&error.Contains("继承来源"),"空模式未拒绝："+selected+"/"+error);Require(Input(w,BlobRoiInheritance.RectangleSource).IsVisible==(selected==0)&&Input(w,BlobRoiInheritance.AnnulusSource).IsVisible==(selected==2),"组合来源条件显隐错误："+selected);var rectPanel=(Panel)Get(ui,"_rectangleParameters");var ringPanel=(Panel)Get(ui,"_circleParameters");Require(rectPanel.IsVisible==(selected==1)&&ringPanel.IsVisible==(selected==3),"参数组条件显隐错误");}
                 SetMode(w,0);var sourceSession=InputSession(Input(w,BlobRoiInheritance.RectangleSource));var window=Expanded(sourceSession,false);Require(!Tree((System.Collections.IEnumerable)Get(sourceSession,"SourceNodes")).Any(item=>Candidate(item)is not null),"无正式组合生产者却制造候选");SetMode(w,null);Require(Control(w).TryCapture(out error),error);w.Close();Pump();
             });
@@ -332,8 +341,10 @@ internal static class S2DocumentEditingCases
         }
         if(Included("Publication"))
         {
+            EnsureSource();
             Case("真实确认保存重开对象执行矩形裁剪，休眠引用身份和取消保留",()=>{
-                var w=Open();Populate(w);var width=Input(w,rectangleIds[2]);ReferenceInput(width);var session=InputSession(width);SelectVariable(session,false,roiValues.Id);SetIndex(session,"0");Require(Observe(w).Area==9,"保存前未实际裁剪");Confirm(w);var expected=ConfigurationIdentity(node.RuntimeConfiguration!);Require(solutions.SaveCurrentDocument(path).FileWritten,"继承方案保存失败");
+                void Trace(string step)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"publication-steps.log"),DateTime.UtcNow.ToString("O")+" "+step+Environment.NewLine);
+                Trace("Open BEGIN");var w=Open();Trace("Open PASS");Populate(w);Trace("Populate PASS");var width=Input(w,rectangleIds[2]);ReferenceInput(width);Trace("ReferenceInput PASS");var session=InputSession(width);Trace("SelectVariable BEGIN");SelectVariable(session,false,roiValues.Id);Trace("SelectVariable PASS");SetIndex(session,"0");Require(Observe(w).Area==9,"保存前未实际裁剪");Trace("Observe PASS");Confirm(w);Trace("Confirm PASS");var expected=ConfigurationIdentity(node.RuntimeConfiguration!);Require(solutions.SaveCurrentDocument(path).FileWritten,"继承方案保存失败");Trace("Save PASS");
                 var loaded=new SolutionRepository().LoadCandidate(path).Candidate??throw new Exception("重开继承方案失败");var loadedFlow=loaded.Workflows.Single(f=>f.Id==flow.Id);var restored=loadedFlow.Nodes.Single(n=>n.Id==node.Id);Require(ConfigurationIdentity(restored.RuntimeConfiguration!)==expected,"保存重开丢完整输入/变量/索引身份");
                 var ownEngine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);ownEngine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var publication=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);using var globals=new WorkflowGlobalRunValues(loaded.Id,publication.GlobalDefinitions,publication.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));var executor=new WorkflowExecutionEngine(ownEngine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
                 var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=publication.Configuration,ExecutionOwner=publication.ExecutionOwner,ProducedGlobals=globals,ParameterValues=publication.ParameterValues,ResourcePaths=publication.ResourcePaths});PumpUntil(()=>task.IsCompleted);
@@ -443,8 +454,8 @@ internal static class S2DocumentEditingCases
     private static object Session(DeclaredFieldAccess field){_activePopup=Visual(field.View).OfType<AppsPopup>().Single(item=>item.Name=="rt"&&item.DataContext?.GetType().GetProperty("Target",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)?.GetValue(item.DataContext) is Port target&&target.Id==field.FieldId);_activePopup.ApplyTemplate();return _activePopup.DataContext;}
     private static void Subscribe(DeclaredFieldAccess field){if(field.Setting is ReferenceSetting or VariableSetting)return;var right=field.FieldId==BindingId("MaxArea");var candidates=Visual(field.View).OfType<ToggleButton>().ToArray();var matches=candidates.Where(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path==(right?"IsSubscribeRight":"IsSubscribeLeft")).ToArray();Require(matches.Length==1,"原订阅按钮数量不符：field="+field.FieldId+";loaded="+field.View.IsLoaded+";visible="+field.View.IsVisible+";paths="+string.Join(",",candidates.Select(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path)));var toggle=matches[0];toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();}
     private static IEnumerable<object> Tree(System.Collections.IEnumerable nodes){foreach(var node in nodes){yield return node!;foreach(var child in Tree((System.Collections.IEnumerable)Get(node!,"EnumEntrysA")))yield return child;}}
-    private static ReferenceWindowOwner Root(DefaultDebugWindow window)=>(ReferenceWindowOwner)typeof(RuntimeNodeConfigurationControl).GetField("_referenceWindowOwner",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(((ContentControl)window.FindName("ContentHost")).Content)!;
-    private static SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow Expanded(object session,bool index){var owner=(DefaultDebugWindow)Window.GetWindow(_activePopup!)!;((ICommand)Get(session,"PopSubscribeWindowCommand")).Execute(null);Pump();var root=Root(owner);var window=owner.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);Require(ReferenceEquals(window.Owner,owner)&&ReferenceEquals(window.DataContext,root)&&root.CurrentRequest is {IsValid:true} request&&request.Target.Id==((Port)Get(session,"Target")).Id,"展开窗/Owner/目标不是正式同一Root");var english=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English";Require(window.Width==(english?320:240),"非模态窗语言宽度不符");if(index){var text=(string)Get(session,"CurValueA");((ICommand)Get(session,"FocusedCommand")).Execute(new SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs{Text=text,IsFocus=true,SelectionStart=text.LastIndexOf('[')+1});Pump();Require(root.CurrentRequest is{IsValid:true,IsIndex:true,HasSelection:true}&&window.IsSubscribeIndex,"索引真实焦点适配未切原索引树");}var none=english?"None":"无";foreach(var nodes in new[]{root.SourceNodes,root.IndexNodes}){var clear=Tree((System.Collections.IEnumerable)nodes).Single(item=>(bool)Get(item,"Clear"));Require((string)Get(clear,"Name")==none,"当前语言原树无项未使用正式None资源");}var shownTree=ExpandedTree(window,index);var shownClear=Tree((System.Collections.IEnumerable)(index?root.IndexNodes:root.SourceNodes)).Single(item=>(bool)Get(item,"Clear"));var clearContainer=Container(shownTree,shownClear);Require(Visual(clearContainer).OfType<TextBlock>().Any(text=>text.Text==none),"实际原树容器未渲染本语言None文本");return window;}
+    private static ReferenceWindowOwner Root(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>(ReferenceWindowOwner)typeof(RuntimeNodeConfigurationControl).GetField("_referenceWindowOwner",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(window.EditorControl)!;
+    private static SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow Expanded(object session,bool index){var owner=(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow)Window.GetWindow(_activePopup!)!;((ICommand)Get(session,"PopSubscribeWindowCommand")).Execute(null);Pump();var root=Root(owner);var window=owner.OwnedWindows.OfType<SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow>().Single(w=>w.IsVisible);Require(ReferenceEquals(window.Owner,owner)&&ReferenceEquals(window.DataContext,root)&&root.CurrentRequest is {IsValid:true} request&&request.Target.Id==((Port)Get(session,"Target")).Id,"展开窗/Owner/目标不是正式同一Root");var english=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English";Require(window.Width==(english?320:240),"非模态窗语言宽度不符");if(index){var text=(string)Get(session,"CurValueA");((ICommand)Get(session,"FocusedCommand")).Execute(new SunEyeVision.Plugin.Wpf.Interop.Windows.TextBoxFocusEventArgs{Text=text,IsFocus=true,SelectionStart=text.LastIndexOf('[')+1});Pump();Require(root.CurrentRequest is{IsValid:true,IsIndex:true,HasSelection:true}&&window.IsSubscribeIndex,"索引真实焦点适配未切原索引树");}var none=english?"None":"无";foreach(var nodes in new[]{root.SourceNodes,root.IndexNodes}){var clear=Tree((System.Collections.IEnumerable)nodes).Single(item=>(bool)Get(item,"Clear"));Require((string)Get(clear,"Name")==none,"当前语言原树无项未使用正式None资源");}var shownTree=ExpandedTree(window,index);var shownClear=Tree((System.Collections.IEnumerable)(index?root.IndexNodes:root.SourceNodes)).Single(item=>(bool)Get(item,"Clear"));var clearContainer=Container(shownTree,shownClear);Require(Visual(clearContainer).OfType<TextBlock>().Any(text=>text.Text==none),"实际原树容器未渲染本语言None文本");return window;}
     private static SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView ExpandedTree(SunEyeVision.Plugin.Wpf.Controls.Parameters.ParamSubscribeWindow window,bool index)=>(SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView)window.FindName(index?"indextreeView":"treeView");
     private static TreeViewItem Container(SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView tree,object item){tree.UpdateLayout();Pump();var native=(TreeView)tree.FindName("treeView");return (TreeViewItem?)tree.GetType().GetMethod("FindTreeViewItem",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,new object[]{native,item})??throw new Exception("原树未生成实际目标容器");}
     private static void FireDoubleClick(TreeViewItem container){container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();}

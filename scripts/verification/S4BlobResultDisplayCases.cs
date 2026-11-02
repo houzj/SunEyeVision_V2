@@ -89,9 +89,9 @@ internal static class S2DocumentEditingCases
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
-        DefaultDebugWindow Open()
-        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<DefaultDebugWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
+        NativeRuntimeEditorWindow Open()
+        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<NativeRuntimeEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
+        RuntimeNodeConfigurationControl Control(NativeRuntimeEditorWindow window)=>window.EditorControl;
         object Owner(RuntimeNodeConfigurationControl control)=>Get(control.Content,"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
         NativeRoiEditor Editor(object owner,string group)=>(NativeRoiEditor)((System.Collections.IDictionary)Get(owner,"_editors"))[group]!;
@@ -148,7 +148,7 @@ internal static class S2DocumentEditingCases
             timer.Tick+=(_,_)=>{var dialog=app.Windows.OfType<Window>().SingleOrDefault(item=>item.GetType().Name=="ThemeMessageDialog"&&item.IsVisible);if(DateTime.UtcNow>deadline){timer.Stop();failure=new TimeoutException("等待自有删除确认框超时");dialog?.Close();return;}if(dialog is null)return;try{Require(((TextBlock)dialog.FindName("TitleText")).Text=="确认删除","出现非删除确认，不执行Yes");timer.Stop();confirmed=true;((Button)dialog.FindName("YesButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));}catch(Exception error){failure=error;dialog.Close();}};
             timer.Start();try{vm.DeleteSelectedNodesCommand.Execute(null);}finally{timer.Stop();dialogs.Start();}Pump();if(failure is not null)throw failure;Require(confirmed&&!solutions.CurrentSolution!.Workflows.Single(flow=>flow.Id==flowId).Nodes.Any(node=>node.Id==id),"未经过主窗真实删除确认或节点仍存在");
         }
-        void PrivateDebug(DefaultDebugWindow window,bool expectedSuccess,Action<DeclaredOutputSnapshot,RuntimeDebugInvocation>? inspect=null)
+        void PrivateDebug(NativeRuntimeEditorWindow window,bool expectedSuccess,Action<DeclaredOutputSnapshot,RuntimeDebugInvocation>? inspect=null)
         {
             var control=Control(window);var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)Get(control,"_captureDebug");RuntimeDebugInvocation? invocation=null;DeclaredOutputSnapshot? output=null;IDisposable? hold=null;Exception? observationFailure=null;var completed=false;var events=0;
             SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{events++;try{if(args.Results is DeclaredOutputSnapshot result){output=result;hold=result.Retain();}}catch(Exception error){observationFailure=error;}completed=true;};
@@ -445,7 +445,7 @@ internal static class S2DocumentEditingCases
                 control.BindDraft((WorkflowNodeBase)Get(context,"DraftNode"));Pump();Require(!ReferenceEquals(Get(scopeOwner,"_token"),oldToken)&&Geometry(Scene()).Length==2,"成功真实草稿绑定未建立新代");window.Close();Pump();
             });
             Case("同schema同物理输入的另一节点不借旧节点publication样式",()=>{
-                foreach(var existing in app.Windows.OfType<DefaultDebugWindow>().Where(item=>item.IsVisible).ToArray())existing.Close();Pump();
+                foreach(var existing in app.Windows.OfType<NativeRuntimeEditorWindow>().Where(item=>item.IsVisible).ToArray())existing.Close();Pump();
                 var old=Scene();var before=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result;
                 var second=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(second);
                 Require(before is not null&&ReferenceEquals(before,((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result)&&before.ExecutionIdentity?.IsCurrent==true&&!history.LastInvalidatedNodes.Any(item=>item.NodeId==node.Id),"新增无关节点错误退役原运行结果");
@@ -458,7 +458,7 @@ internal static class S2DocumentEditingCases
         if(scope is "All" or "Window")
         {
             Case("多节点纯样式事务及UndoRedo保结果，算法改变与Undo不复活旧publication",()=>{
-                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<DefaultDebugWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
+                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<NativeRuntimeEditorWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
                 Phase("peer-ready");var before=node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width;
                 var first=host.BeginEdit(flowId,node.Id);var second=host.BeginEdit(flowId,peer.Id);
                 first.Node.RuntimeConfiguration=first.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),7d}});
@@ -474,6 +474,12 @@ internal static class S2DocumentEditingCases
                 history.Undo();Pump();Require(!current.IsCurrent()&&Maybe(outputPane,"Display") is null,"算法Undo复活旧运行结果");
             });
         }
+        if(scope=="All")
+        {
+            // Window组创建的无输入临时节点已完成隔离断言；后续真实工作流重开必须移除它。
+            foreach(var peer in vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Where(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id).ToArray())DeleteThroughHost(peer.Id);
+            vm.SelectedNode=node;node.IsSelected=true;Pump();
+        }
         if(scope is "All" or "Roi")
         {
             ResultGeometrySnapshot Frozen() => ((IToolResultGeometryOutput)Get(Get(vm,"_resultPublicationSnapshot"),"Output")).ResultGeometry;
@@ -484,6 +490,7 @@ internal static class S2DocumentEditingCases
             ResultGeometryGroup Group(ResultGeometryRole role)=>Frozen().Groups.Single(group=>group.Role==role);
             object[] RegionShapes()=>Geometry(Scene()).Where(item=>item.GetType().Name is "RectangleProjection" or "Annular" or "PolygonProjection").ToArray();
             Case("几何快照深冻结容器且拒绝错误声明和非有限参数",()=>{
+                Run(); // 上一组可能已退役旧结果；必须由真实工作流生成新快照。
                 var shapes=new List<RecordValue>{BlobRoiDisplayProjection.Shape(Rectangle(9,9,14,14))};var groups=new List<ResultGeometryGroup>{new(ResultGeometryRole.Inspection,ResultGeometryCoverage.Explicit,shapes)};
                 var copy=new ResultGeometrySnapshot(Frozen().SourceFrame,RoiDeclarations.ImageFrame,true,groups);shapes.Clear();groups.Clear();Require(copy.Groups.Count==1&&copy.Groups[0].Shapes.Count==1,"快照共享了可写容器");
                 var rejected=false;try{_=new ResultGeometryGroup(ResultGeometryRole.Inspection,ResultGeometryCoverage.Explicit,new[]{Rectangle(9,9,14,14)});}catch(ArgumentException){rejected=true;}Require(rejected,"快照接纳私有/错误形状声明");
@@ -564,7 +571,7 @@ internal static class S2DocumentEditingCases
                 var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
                 using(var result=task.GetAwaiter().GetResult())
                 {
-                    Require(result.Success&&result.NodeResults[node.Id].Result is DeclaredOutputSnapshot,"真实重开执行失败");
+                    Require(result.Success&&result.NodeResults[node.Id].Result is DeclaredOutputSnapshot,"真实重开执行失败："+System.Text.Json.JsonSerializer.Serialize(result.NodeResults.Select(pair=>new{Node=pair.Key,Result=pair.Value.Result?.ToString()})));
                     var output=(BlobOutput)((DeclaredOutputSnapshot)result.NodeResults[node.Id].Result!).Output!;
                     Require(output.ResultGeometry.Groups.Single(group=>group.Role==ResultGeometryRole.Inspection).Shapes.Count==1&&output.ResultGeometry.Groups.Single(group=>group.Role==ResultGeometryRole.Mask).Shapes.Count==1,"重开执行未携带本次实际检测/屏蔽");
                     Require(output.ResultGeometry.SourceFrame==output.Region.SourceFrame&&output.ResultGeometry.Coordinates==output.Region.Frame,"重开名义几何与实际结果资源帧不一致");
@@ -591,6 +598,11 @@ internal static class S2DocumentEditingCases
         }
         if(scope is "All" or "Text")
         {
+            if(scope=="All")
+            {
+                SetFormal(BlobLocalRoi.InputId,BlobLocalRoi.Root(BlobLocalRoi.Group(BlobLocalRoi.FullDomain,Array.Empty<RecordValue>()),BlobLocalRoi.Group(BlobLocalRoi.None,Array.Empty<RecordValue>())));
+                Run();
+            }
             var textGroup=BlobResultDisplay.Text;var contentId=Display(textGroup,"content");var xId=Display(textGroup,"x");var yId=Display(textGroup,"y");
             var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
             var widthSource=new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"width"},scopeId:flowId,storage:imagePort.Storage);
@@ -601,7 +613,7 @@ internal static class S2DocumentEditingCases
                 using(var reader=snapshot.AcquireReader())Require(reader.DisplaySources is {} sources&&sources.TryGet(new(flowId,source.Id),out var captured,out var values)&&captured!.Identity.RunId==snapshot.Identity.RunId&&values!.Read(imagePort.Id).GetField("width").GetScalar<long>()==64,"日常正式运行未随结果保同轮图像来源");
                 var expression=BlobResultDisplay.ParseContent("W:{图像宽度};Blob面积:{面积}",new[]{new DisplayExpressionSlot("图像宽度",widthSource)});
                 SetText((contentId,expression),(xId,new ReferenceSetting(widthSource)),(yId,new ConstantSetting(7d)));
-                var words=Words(Scene()).ToArray();Require(current.IsCurrent()&&words.Length==2,"仅显示改动失效publication或丢文字");
+                var words=Words(Scene()).ToArray();Require(current.IsCurrent()&&words.Length==2,"仅显示改动失效publication或丢文字：current="+current.IsCurrent()+" words="+words.Length);
                 Require(words.Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:64;Blob面积:25","W:64;Blob面积:64"}),"同轮前驱或中文Self表达式未实际消费");
                 Require(words.All(word=>((Point)Get(word,"Position")).X==64&&((Point)Get(word,"Position")).Y==7),"显示阶段数字来源未控制真实文字位置");
             });
@@ -739,6 +751,17 @@ internal static class S2DocumentEditingCases
             });
         }        if(scope is "All" or "TextSource")
         {
+            if(scope=="All")
+            {
+                // 上一组真实重开了方案，重新取得当前会话对象与该组需要的64像素图像。
+                node=(SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(item=>item.Id==node.Id);
+                source=(SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single(item=>item.Id==source.Id);
+                host=solutions.Session!.Editing.Host;history=solutions.Session.History;
+                flow=solutions.CurrentSolution!.Workflows.Single(item=>item.Id==flowId);
+                var fresh=new PngBitmapEncoder();fresh.Frames.Add(BitmapFrame.Create(BitmapSource.Create(64,64,96,96,PixelFormats.Gray8,null,Pixels(),64)));
+                using(var file=File.Create(imageFile))fresh.Save(file);
+                vm.SelectedNode=node;node.IsSelected=true;Pump();Run();
+            }
             Case("原文本花括号来源事件链与旧容器退出（WPF事件注入）",()=>{
                 var contentId=Display(BlobResultDisplay.Text,"content");var baseline=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);
                 var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);

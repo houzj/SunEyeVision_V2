@@ -15,6 +15,7 @@ public interface INativeToolCommands
     ICommand Stop { get; }
     ICommand ExecuteOnce { get; }
     ICommand Confirm { get; }
+    string? ContinuousUnavailableReason => null;
     event EventHandler Changed;
 }
 
@@ -77,8 +78,10 @@ internal sealed class NativeToolCommandPresenter : IDisposable
         if(valid&&!SyncCommands(request))return;
         var texts=new[]{_labels.Continuous,_labels.Stop,_labels.ExecuteOnce,_labels.Confirm};
         var templates=new[]{"ContinuousExecuteBottomCommand","StopExecuteBottomCommand","ExecuteOnceBottomCommand","BottomCommand"};
+        var unavailableReason=valid?_source.ContinuousUnavailableReason:null;
+        if(!Current(request))return;
         var items=Enumerable.Range(0,4).Select(index=>new NativeToolCommandItem(templates[index],texts[index],
-            valid&&(index!=3||state.ConfirmVisible),state,_commands[index])).ToArray();
+            valid&&(index!=3||state.ConfirmVisible),state,_commands[index],index==0?unavailableReason:null)).ToArray();
         _present(items);
         foreach(var command in _commands){if(!Current(request))break;command.Notify();}
         }
@@ -176,7 +179,7 @@ internal sealed class NativeToolCommandPresenter : IDisposable
 }
 
 internal sealed record NativeToolCommandItem(string TemplateKey,string DisplayNameA,bool CustomVisibleA,
-    NativeToolCommandState State,ICommand ClickCommand)
+    NativeToolCommandState State,ICommand ClickCommand,string? UnavailableReason)
 {
     public bool IsContinuous=>State.IsContinuous;
     public bool IsRunning=>State.IsRunning;

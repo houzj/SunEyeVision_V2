@@ -55,8 +55,13 @@ public partial class MainWindowViewModel
     private bool InitializeRuntimeEditor(object target,Shared.WorkflowNode node)
     {
         if(node.RuntimeConfiguration is null)return false;
-        if(target is not DefaultDebugWindow window||window.FindName("ContentHost") is not ContentControl {Content:RuntimeNodeConfigurationControl control})
-            throw new InvalidOperationException("Runtime参数窗口缺少中立配置视图。");
+        if(target is not Window window)throw new InvalidOperationException("Runtime参数窗口缺少宿主。");
+        var control=target switch
+        {
+            NativeRuntimeEditorWindow native=>native.EditorControl,
+            DefaultDebugWindow legacy when legacy.FindName("ContentHost") is ContentControl {Content:RuntimeNodeConfigurationControl editor}=>editor,
+            _=>throw new InvalidOperationException("Runtime参数窗口缺少中立配置视图。")
+        };
         var session=DocumentManager.Session??throw new InvalidOperationException("当前没有方案编辑会话。");
         var flow=session.Document.Workflows.Single(w=>w.Nodes.Any(n=>ReferenceEquals(n,node)));
         var host=GetProductionEditorHost(session);var query=CreateDataSourceQueryService(flow.Id);
@@ -71,6 +76,12 @@ public partial class MainWindowViewModel
         context.Deactivated+=control.Dispose;
         try
         {
+            if(window is NativeRuntimeEditorWindow native)
+            {
+                native.SetHostAvailability(()=>context.IsValid&&!IsRunning);
+                System.ComponentModel.PropertyChangedEventHandler runningChanged=(_,args)=>{if(args.PropertyName==nameof(IsRunning))native.NotifyState();};
+                PropertyChanged+=runningChanged;context.Deactivated+=()=>PropertyChanged-=runningChanged;
+            }
             control.SetRoiFrameProvider((reference,current)=>context.IsValid?RuntimeRoiFrameBorrow?.Invoke(reference,()=>context.IsValid&&current()):null);
             void RefreshRoi()=>control.Dispatcher.BeginInvoke(new Action(()=>{if(context.IsValid)try{control.RefreshRoiFrame();}catch(Exception error){AddLog("ROI预览刷新失败："+error.Message);}}));
             ResultWorkspaceChanged+=RefreshRoi;RoiFrameAvailabilityChanged+=RefreshRoi;context.Deactivated+=()=>{ResultWorkspaceChanged-=RefreshRoi;RoiFrameAvailabilityChanged-=RefreshRoi;};

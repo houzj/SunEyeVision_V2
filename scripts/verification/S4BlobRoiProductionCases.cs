@@ -88,9 +88,9 @@ internal static class S2DocumentEditingCases
         var flowId=vm.WorkflowTabViewModel.SelectedTab.RootWorkflowId;var host=solutions.Session!.Editing.Host;var history=solutions.Session.History;
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
-        DefaultDebugWindow Open()
-        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<DefaultDebugWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow Open()
+        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
+        RuntimeNodeConfigurationControl Control(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>window.EditorControl;
         object Owner(RuntimeNodeConfigurationControl control)=>Get(control.Content,"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
         NativeRoiEditor Editor(object owner,string group)=>(NativeRoiEditor)((System.Collections.IDictionary)Get(owner,"_editors"))[group]!;

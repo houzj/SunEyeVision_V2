@@ -74,15 +74,15 @@ internal static class S2DocumentEditingCases
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=BindingId("LowThreshold");
         const string modeId="field:8ca20000000040008000000000000001";
-        DefaultDebugWindow Open()=>OpenFor(node);
-        DefaultDebugWindow OpenFor(WorkflowNodeBase target)
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow Open()=>OpenFor(node);
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow OpenFor(WorkflowNodeBase target)
         {
             vm.OpenDebugWindowCommand.Execute(target);Pump();
-            var window=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
+            var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
             window.UpdateLayout();Pump();return window;
         }
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
-        TextBox Threshold(DefaultDebugWindow window)
+        RuntimeNodeConfigurationControl Control(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>window.EditorControl;
+        TextBox Threshold(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)
         {
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
             return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;

@@ -165,6 +165,13 @@ namespace SunEyeVision.UI.Services.Editing
 
             if (context.DebugControl is System.Windows.Controls.UserControl control)
             {
+                if (context.Node.ToolType == "BlobAnalysis" && control is RuntimeNodeConfigurationControl runtime)
+                {
+                    var native = new NativeRuntimeEditorWindow(runtime);
+                    if (context.MainWindow is not null) native.Owner = context.MainWindow;
+                    context.CreatedWindow = native;
+                    return;
+                }
                 // A declaration editor supplies configuration content, not a complete custom
                 // window layout/footer or a result event relay. It always needs the complete host shell.
                 System.Windows.Window window = context.WindowStyle == DebugWindowStyle.Custom&&control is not DeclaredToolConfigurationControl&&control is not RuntimeNodeConfigurationControl

@@ -75,15 +75,15 @@ internal static class S2DocumentEditingCases
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=BindingId("LowThreshold");
         const string modeId="field:8ca20000000040008000000000000001";
-        DefaultDebugWindow Open()=>OpenFor(node);
-        DefaultDebugWindow OpenFor(WorkflowNodeBase target)
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow Open()=>OpenFor(node);
+        SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow OpenFor(WorkflowNodeBase target)
         {
             vm.OpenDebugWindowCommand.Execute(target);Pump();
-            var window=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
+            var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
             window.UpdateLayout();Pump();return window;
         }
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
-        TextBox Threshold(DefaultDebugWindow window)
+        RuntimeNodeConfigurationControl Control(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>window.EditorControl;
+        TextBox Threshold(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)
         {
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
             return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;
@@ -110,9 +110,9 @@ internal static class S2DocumentEditingCases
         var setup=Open();var setupControl=Control(setup);var imageField=Logical(setupControl).OfType<DeclaredInputFieldsView>().Single().Fields.Single(f=>f.FieldId==BlobTool.ImageInput);var imageCombo=(ComboBox)imageField.InputElement!;
         imageCombo.SelectedItem=imageCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting r&&r.Reference.NodeId==source.Id&&r.Reference.PortId=="output.image"&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"data"}));Pump();Require(setup.TryConfirm(out var error),error);if(setup.IsVisible)setup.Close();Pump();Require(solutions.SaveCurrentDocument(path).FileWritten,"基准方案保存失败");
         var initialRun=vm.RunSelectedImageAsync();PumpUntil(()=>initialRun.IsCompleted);initialRun.GetAwaiter().GetResult();Require(Context().GetNodeResult(source.Id)?.Result is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {IsSuccess:true},"正式上游未产生本次源快照");
-        DeclaredFieldAccess Low(DefaultDebugWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
-        ProductionEditorContext Draft(DefaultDebugWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
-        void Debug(DefaultDebugWindow window,long expected)
+        DeclaredFieldAccess Low(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
+        ProductionEditorContext Draft(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
+        void Debug(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window,long expected)
         {
             long? actual=null;var current=Control(window);
             SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{if(args.Results is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {Output:BlobOutput output})actual=output.ThresholdMinUsed;};
@@ -120,7 +120,7 @@ internal static class S2DocumentEditingCases
             try{var run=current.RunDebugAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(actual==expected,"真实算法未消费预期阈值："+actual+"/"+expected);Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:long value}&&value==expected,"私有当前值与算法不同");}
             finally{current.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);}
         }
-        void Confirm(DefaultDebugWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
+        void Confirm(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
         long Current()=>node.RuntimeConfiguration!.ReadCurrentParameter(threshold)?.Value is long value?value:node.RuntimeConfiguration.Fields.Read(threshold) is ConstantSetting constant?(long)constant.Value!:throw new Exception("没有正式当前值");
         string Identity(ParameterSetting setting)=>setting switch{ReferenceSetting reference=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference.Reference),VariableSetting variable=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(variable.Reference),_=>throw new Exception("不是引用")};
         void SaveCheck(Func<ParameterSetting,bool> predicate,long expected)

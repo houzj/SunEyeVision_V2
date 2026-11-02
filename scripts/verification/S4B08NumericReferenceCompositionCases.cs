@@ -33,6 +33,10 @@ using SunEyeVision.Workflow;
 internal static class S2DocumentEditingCases
 {
     private static int _passed;
+    private sealed class ThrowAfterDispose(IDisposable inner):IDisposable
+    {
+        public void Dispose(){inner.Dispose();throw new InvalidOperationException("测试：命令租约清理故障");}
+    }
     [STAThread] private static int Main()
     {
         var result=1;
@@ -77,15 +81,15 @@ internal static class S2DocumentEditingCases
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=BindingId("LowThreshold");
         const string modeId="field:8ca20000000040008000000000000001";
-        DefaultDebugWindow Open()=>OpenFor(node);
-        DefaultDebugWindow OpenFor(WorkflowNodeBase target)
+        NativeRuntimeEditorWindow Open()=>OpenFor(node);
+        NativeRuntimeEditorWindow OpenFor(WorkflowNodeBase target)
         {
             vm.OpenDebugWindowCommand.Execute(target);Pump();
-            var window=app.Windows.OfType<DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
+            var window=app.Windows.OfType<NativeRuntimeEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("实际打开命令没有创建Runtime窗口");
             window.UpdateLayout();Pump();return window;
         }
-        RuntimeNodeConfigurationControl Control(DefaultDebugWindow window)=>(RuntimeNodeConfigurationControl)((ContentControl)window.FindName("ContentHost")).Content;
-        TextBox Threshold(DefaultDebugWindow window)
+        RuntimeNodeConfigurationControl Control(NativeRuntimeEditorWindow window)=>window.EditorControl;
+        TextBox Threshold(NativeRuntimeEditorWindow window)
         {
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
             return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;
@@ -112,9 +116,9 @@ internal static class S2DocumentEditingCases
         var setup=Open();var setupControl=Control(setup);var imageField=Logical(setupControl).OfType<DeclaredInputFieldsView>().Single().Fields.Single(f=>f.FieldId==BlobTool.ImageInput);var imageCombo=(ComboBox)imageField.InputElement!;
         imageCombo.SelectedItem=imageCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting r&&r.Reference.NodeId==source.Id&&r.Reference.PortId=="output.image"&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"data"}));Pump();Require(setup.TryConfirm(out var error),error);if(setup.IsVisible)setup.Close();Pump();Require(solutions.SaveCurrentDocument(path).FileWritten,"基准方案保存失败");
         var initialRun=vm.RunSelectedImageAsync();PumpUntil(()=>initialRun.IsCompleted);initialRun.GetAwaiter().GetResult();Require(Context().GetNodeResult(source.Id)?.Result is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {IsSuccess:true},"正式上游未产生本次源快照");
-        DeclaredFieldAccess Low(DefaultDebugWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
-        ProductionEditorContext Draft(DefaultDebugWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
-        void Debug(DefaultDebugWindow window,long expected)
+        DeclaredFieldAccess Low(NativeRuntimeEditorWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
+        ProductionEditorContext Draft(NativeRuntimeEditorWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
+        void Debug(NativeRuntimeEditorWindow window,long expected)
         {
             long? actual=null;var current=Control(window);
             SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observe=(_,args)=>{if(args.Results is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {Output:BlobOutput output})actual=output.ThresholdMinUsed;};
@@ -122,7 +126,7 @@ internal static class S2DocumentEditingCases
             try{var run=current.RunDebugAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(actual==expected,"真实算法未消费预期阈值："+actual+"/"+expected);Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:long value}&&value==expected,"私有当前值与算法不同");}
             finally{current.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,observe);}
         }
-        void Confirm(DefaultDebugWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
+        void Confirm(NativeRuntimeEditorWindow window){Require(window.TryConfirm(out var issue),"真实确认失败："+issue);if(window.IsVisible)window.Close();Pump();}
         long Current()=>node.RuntimeConfiguration!.ReadCurrentParameter(threshold)?.Value is long value?value:node.RuntimeConfiguration.Fields.Read(threshold) is ConstantSetting constant?(long)constant.Value!:throw new Exception("没有正式当前值");
         string Identity(ParameterSetting setting)=>setting switch{ReferenceSetting reference=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(reference.Reference),VariableSetting variable=>SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Serialize(variable.Reference),_=>throw new Exception("不是引用")};
         void SaveCheck(Func<ParameterSetting,bool> predicate,long expected)
@@ -139,28 +143,28 @@ internal static class S2DocumentEditingCases
         var variableSetup=host.BeginVariableEdit();var areaValues=new GlobalVariable("混合面积上下端",new long[]{20,30,20,20,20,20,20,20,20},"Integer[]");var floatValues=new GlobalVariable("混合浮点上下端",new double[]{.1,1},"Double[]");variableSetup.Configuration.GlobalVariables.Add(areaValues);variableSetup.Configuration.GlobalVariables.Add(floatValues);host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),variableSetup);
         string Stamp(RuntimeToolConfiguration configuration)=>System.Text.Json.JsonSerializer.Serialize(configuration);
         void FormalEdit(Action<NodeConfigurationEditDraft> write){var edit=host.BeginEdit(flow.Id,node.Id);write(edit);host.Commit(edit);Pump();}
-        DeclaredFieldAccess Field(DefaultDebugWindow window,string id){Threshold(window);foreach(var advanced in Logical(Control(window)).OfType<NativeAdvancedPresenter>().ToArray()){advanced.NativeView.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Require(advanced.IsExpanded,"原高级Checked链未展开");}window.UpdateLayout();Pump();return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(field=>field.FieldId==id);}
-        void Constant(DefaultDebugWindow window,string id,object value){var field=Field(window,id);Require(field.TrySetConstant(value),id+":"+field.Error);}
+        DeclaredFieldAccess Field(NativeRuntimeEditorWindow window,string id){Threshold(window);foreach(var advanced in Logical(Control(window)).OfType<NativeAdvancedPresenter>().ToArray()){advanced.NativeView.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Require(advanced.IsExpanded,"原高级Checked链未展开");}window.UpdateLayout();Pump();return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(field=>field.FieldId==id);}
+        void Constant(NativeRuntimeEditorWindow window,string id,object value){var field=Field(window,id);Require(field.TrySetConstant(value),id+":"+field.Error);}
         void UseConstant(DeclaredFieldAccess field)
         {
             var toggles=Visual(field.View).OfType<ToggleButton>().Where(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path is "IsSubscribeLeft" or "IsSubscribeRight").ToArray();
             var path=field.FieldId==SettingId(nameof(BlobSettings.FilterAreaMax))||field.FieldId==SettingId(nameof(BlobSettings.FilterCircularityMax))||field.FieldId==SettingId(nameof(BlobSettings.FilterRectangularityMax))?"IsSubscribeRight":"IsSubscribeLeft";
             var toggle=toggles.Single(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path==path);toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,false);toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();
         }
-        void Variable(DefaultDebugWindow window,string id,string variableId,string index)
+        void Variable(NativeRuntimeEditorWindow window,string id,string variableId,string index)
         {var field=Field(window,id);Subscribe(field);var session=Session(field);SelectVariable(session,false,variableId);SetIndex(session,index);Require(field.Setting is VariableSetting selected&&selected.Reference.VariableId==variableId,"原变量选择未实际接纳："+id);}
         RecordValue Rect(double x,double y,double width,double height)=>new(BlobLocalRoi.ShapeType,new Dictionary<string,object?>{{"kind","rectangle"},{"center",BlobLocalRoi.Point(x,y)},{"width",width},{"height",height},{"angle-degrees",0d}});
         var local=BlobLocalRoi.Root(BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{BlobLocalRoi.Item(Guid.NewGuid(),"混合检测",Rect(3,3,4,4))}),BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{BlobLocalRoi.Item(Guid.NewGuid(),"混合屏蔽",Rect(0,7,.5,.5))}));
-        void SetLocal(DefaultDebugWindow window)
+        void SetLocal(NativeRuntimeEditorWindow window)
         {var inputs=Logical(Control(window)).OfType<DeclaredInputFieldsView>().Single();inputs.WriteUnpresentedInput(BlobLocalRoi.InputId,new ConstantSetting(local));Require(BlobLocalRoi.Same(Draft(window).DraftNode.RuntimeConfiguration!.Fields.Get<RecordValue>(BlobLocalRoi.InputId),local),"正式输入提案未进入本地ROI草稿");}
-        (long Threshold,int Count,double Area) Observe(DefaultDebugWindow window)
+        (long Threshold,int Count,double Area) Observe(NativeRuntimeEditorWindow window)
         {
             (long Threshold,int Count,double Area)? observed=null;var control=Control(window);SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler listener=(_,args)=>{if(args.Results is DeclaredOutputSnapshot {Output:BlobOutput output})observed=(output.ThresholdMinUsed??-1,output.Count,output.TotalArea);};control.AddHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,listener);
             try{var task=control.RunDebugAsync();PumpUntil(()=>task.IsCompleted);task.GetAwaiter().GetResult();Require(observed is not null,"实际Blob调用未发布成功结果");return observed!.Value;}finally{control.RemoveHandler(ToolDebugControlBase.ToolExecutionCompletedEvent,listener);}
         }
-        void Expect(DefaultDebugWindow window,long expected,double area)
+        void Expect(NativeRuntimeEditorWindow window,long expected,double area)
         {var actual=Observe(window);Require(actual.Threshold==expected&&actual.Count==1&&actual.Area==area,"实际Blob消费/筛选/区域不符："+actual+" expected="+expected+"/"+area);}
-        void Mix(DefaultDebugWindow window)
+        void Mix(NativeRuntimeEditorWindow window)
         {
 
             Constant(window,SettingId(nameof(BlobSettings.IsAreaFilterEnabled)),true);Constant(window,SettingId(nameof(BlobSettings.IsCircularityFilterEnabled)),true);Constant(window,SettingId(nameof(BlobSettings.IsRectangularityFilterEnabled)),true);
@@ -188,6 +192,27 @@ internal static class S2DocumentEditingCases
             var prepared=Get(Get(scene!,"Layer"),"_prepared");var items=(object[])Get(prepared,"Items");var rectangles=items.Where(item=>item.GetType().Name=="RectangleProjection").ToArray();Require(rectangles.Length==2&&rectangles.Any(item=>(double)Get(item,"Width")==roiWidth&&(double)Get(item,"StrokeThickness")==3),"混合正式结果未显示本次检测/屏蔽及当前正式样式");
             var words=items.Where(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)).SelectMany(item=>((System.Collections.IEnumerable)Get(item,"Texts")).Cast<object>()).ToArray();Require(words.Length==1&&Equals(Get(words[0],"Content"),expectedText),"混合正式文本未消费同次结果");if(expectedX is {} x)Require(((Point)Get(words[0],"Position")).X==x,"混合文本位置未消费同次来源");Capture((FrameworkElement)resultView,"mixed-publication-scene.png");
         }
+        Case("真实Blob窗使用唯一公共原底栏并执行返回结果",()=>{
+            var window=Open();var control=Control(window);var frames=Visual(window).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.NativeToolEditorFrame>().ToArray();Require(frames.Length==1,"Blob窗未使用唯一公共底栏");var frame=frames[0];
+            var tabs=Logical(control).OfType<TabControl>().Single();tabs.SelectedIndex=0;window.UpdateLayout();Pump();Require(frame.ResetVisibility==Visibility.Collapsed,"非运行参数页出现重置");tabs.SelectedIndex=1;window.UpdateLayout();Pump();Require(frame.ResetVisibility==Visibility.Visible&&!frame.ResetAvailable,"运行页未呈现受保护的原重置入口");var reset=(Button)Get(frame,"ResetButton");Require(ToolTipService.GetShowOnDisabled(reset)&&reset.ToolTip?.ToString()?.Contains("尚未接入")==true,"禁用重置的未接入提示不可见");
+            window.Content=null;Pump();window.Content=frame;window.UpdateLayout();Pump();var footer=(ItemsControl)Get(frame,"BottomCommands");Require(footer.Items.Count==4,"底栏重挂载后未恢复原命令");
+            Button ButtonNamed(string label)=>Visual(footer).OfType<Button>().Single(button=>Equals(button.Content,label));
+            var continuous=ButtonNamed("连续执行");var execute=ButtonNamed("执行");var confirm=ButtonNamed("确定");Require(!continuous.IsEnabled&&Equals(continuous.ToolTip,"连续执行尚未接入")&&execute.IsEnabled&&confirm.IsEnabled,"原底栏可用状态或保护提示错误");
+            void Click(Button button)=>typeof(Button).GetMethod("OnClick",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(button,null);
+            var completed=0;SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observed=(_,args)=>{if(args.Results is DeclaredOutputSnapshot {IsSuccess:true})completed++;};window.ToolExecutionCompleted+=observed;
+            EventHandler faultyObserver=(_,_)=>throw new InvalidOperationException("测试：状态观察者故障");window.Changed+=faultyObserver;
+            try{Click(execute);Require(!execute.IsEnabled&&!confirm.IsEnabled,"执行中命令未受保护");PumpUntil(()=>completed==1&&execute.IsEnabled);Require(completed==1&&Draft(window).DebugResults.GetNodeResult(node.Id)?.Result is DeclaredOutputSnapshot {IsSuccess:true},"原底栏实际按钮未将结果传播到正式宿主调试缓存");}finally{window.Changed-=faultyObserver;window.ToolExecutionCompleted-=observed;}
+            System.ComponentModel.CancelEventHandler cancelClose=(_,args)=>args.Cancel=true;window.Closing+=cancelClose;
+            try{Require(!window.TryConfirm(out var closeError)&&closeError.Contains("参数已提交")&&window.IsVisible,"确认提交后取消关闭未准确报告");}finally{window.Closing-=cancelClose;}
+            Click(confirm);Pump();Require(!window.IsVisible,"原底栏实际确认按钮未关闭窗口");
+        });
+        Case("原底栏执行中关闭退役草稿并拒绝迟到结果",()=>{
+            var window=Open();var control=Control(window);var context=Draft(window);var frame=Visual(window).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.NativeToolEditorFrame>().Single();var footer=(ItemsControl)Get(frame,"BottomCommands");
+            var execute=Visual(footer).OfType<Button>().Single(button=>Equals(button.Content,"执行"));var delivered=0;SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventHandler observed=(_,_)=>delivered++;window.ToolExecutionCompleted+=observed;
+            typeof(Button).GetMethod("OnClick",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(execute,null);Require((bool)Get(control,"_running"),"执行未进入运行态");
+            var leaseField=typeof(NativeRuntimeEditorWindow).GetField("_commandLease",BindingFlags.Instance|BindingFlags.NonPublic)!;leaseField.SetValue(window,new ThrowAfterDispose((IDisposable)leaseField.GetValue(window)!));window.Close();Pump();
+            PumpUntil(()=>!(bool)Get(control,"_running")&&context.DebugOwner.ActiveRuns==0);Require(!context.IsValid&&delivered==0,"关闭后旧草稿或迟到结果仍可发布");
+        });
         Case("整窗未消费解绑读取种入137而非来源173或默认100，取消不发布",()=>{
             FormalEdit(edit=>edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{threshold,137L}}));var before=Stamp(node.RuntimeConfiguration!);var bytes=File.ReadAllBytes(path);var position=history.Position;var window=Open();Variable(window,threshold,values.Id,"0");Require(Draft(window).DraftNode.RuntimeConfiguration!.ReadCurrentParameter(threshold) is {Value:137L},"未消费时种入值不是137");UseConstant(Low(window));Require(Low(window).Setting is ConstantSetting {Value:137L},"未消费解绑读了来源/默认/错误backup");Debug(window,137);window.Close();Pump();Require(Stamp(node.RuntimeConfiguration!)==before&&bytes.SequenceEqual(File.ReadAllBytes(path))&&history.Position==position,"取消私有解绑发布了正式配置/历史/文件");
         });

@@ -10,6 +10,11 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 /// The document owner decides when to capture, commit, cancel and dispose.</summary>
 public partial class BlobParameterEditor : UserControl,IToolSettingsView
 {
+    private static readonly DependencyPropertyKey SelectedPageIndexPropertyKey=DependencyProperty.RegisterReadOnly(nameof(SelectedPageIndex),typeof(int),typeof(BlobParameterEditor),new PropertyMetadata(1));
+    public static readonly DependencyProperty SelectedPageIndexProperty=SelectedPageIndexPropertyKey.DependencyProperty;
+    public int SelectedPageIndex=>(int)GetValue(SelectedPageIndexProperty);
+    private static readonly System.ComponentModel.DependencyPropertyDescriptor PageDescriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(DeclaredSettingsView.SelectedPageIndexProperty,typeof(DeclaredSettingsView));
+    private void SelectedPageChanged(object? sender,EventArgs args)=>SetValue(SelectedPageIndexPropertyKey,Editor.SelectedPageIndex);
     private NativeAssistUiDraftControls? _assistUi;
     private BlobSupportedWindowState? _supportedState;
     private BlobLocalRoiOwner? _roiOwner;
@@ -22,6 +27,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     public BlobParameterEditor()
     {
         InitializeComponent();
+        PageDescriptor.AddValueChanged(Editor,SelectedPageChanged);SelectedPageChanged(this,EventArgs.Empty);
     }
     public BlobParameterEditor(IToolSettingsDraft draft,ToolSettingsViewOptions options)
         :this()
@@ -80,6 +86,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
+        PageDescriptor.RemoveValueChanged(Editor,SelectedPageChanged);
         Editor.Changed-=RefreshSupportedState;
         if(_roiUi is not null)_roiUi.Changed-=OnUiOnlyChanged;
         if(_assistUi is not null)_assistUi.Changed-=OnUiOnlyChanged;

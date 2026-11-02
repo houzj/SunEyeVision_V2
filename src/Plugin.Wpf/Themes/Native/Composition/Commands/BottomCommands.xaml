@@ -62,7 +62,7 @@
     </Button>
   </DataTemplate>
   <DataTemplate x:Key="ContinuousExecuteBottomCommand">
-    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{Binding DisplayNameA}">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{Binding DisplayNameA}" ToolTip="{Binding UnavailableReason}" ToolTipService.ShowOnDisabled="True">
       <FrameworkElement.Style>
         <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
           <Setter Property="Command" Value="{Binding ClickCommand}" />

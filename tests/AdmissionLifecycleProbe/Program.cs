@@ -16,8 +16,12 @@ internal static class Program
 private static int Main(string[] args)
 {
     ProbeErrorMode.DisableSystemDialogs();
-    if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
-    return RunAsync().GetAwaiter().GetResult();
+    try
+    {
+        if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
+        return RunAsync().GetAwaiter().GetResult();
+    }
+    catch(Exception error) { Console.Error.WriteLine(error); return 1; }
 }
 
 private static async Task<int> RunAsync()

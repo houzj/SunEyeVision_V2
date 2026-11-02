@@ -64,8 +64,8 @@ internal static class NodeWindowProbe
                 var node=viewModel.WorkflowTabViewModel.SelectedTab!.CreateNode(id);viewModel.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
                 viewModel.OpenDebugWindowCommand.Execute(node);
                 var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
-                var window=app.Windows.OfType<SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("正式打开命令没有显示编辑器: "+id);
-                if(window.FindName("ContentHost") is not System.Windows.Controls.ContentControl { Content:RuntimeNodeConfigurationControl control }||SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(control) is not ProductionEditorContext {IsValid:true})throw new Exception("正式编辑会话未接入: "+id);
+                var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("正式打开命令没有显示编辑器: "+id);
+                if(window.Editor is not RuntimeNodeConfigurationControl control||SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.GetDraftContext(control) is not ProductionEditorContext {IsValid:true})throw new Exception("正式编辑会话未接入: "+id);
                 if(!window.IsLoaded)throw new Exception("真实窗口未加载: "+id);
                 Console.WriteLine("window probe: closing "+id);window.Close();Console.WriteLine("window probe: close returned "+id);
                 if(window.IsVisible||ServiceInitializer.SolutionManager.Session!.Editing.RegisteredScopeCount!=0)throw new Exception("窗口或编辑会话未释放: "+id);

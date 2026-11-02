@@ -996,7 +996,7 @@ public partial class App : Application
         }
 
         // 打开全局变量选择对话框（带搜索/分组筛选/表格视图，按数据类型过滤）
-        var selectedVariable = GlobalVariableSelectDialog.ShowSelect(solutionManager, filterType);
+        var selectedVariable = GlobalVariableSelectionService.Choose(solutionManager, filterType: filterType);
         if (selectedVariable != null)
         {
             paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);

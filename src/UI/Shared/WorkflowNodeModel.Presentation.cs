@@ -5,6 +5,8 @@ using SunEyeVision.Plugin.SDK.Models;
 namespace SunEyeVision.UI.Shared;
 public partial class WorkflowNode
 {
+    // 展示专用临时模型，不进入方案、执行或撤销历史。
+    [JsonIgnore] public bool IsToolboxPreview { get; init; }
     private SubroutineParameters? _vmGroupParameters;
     private SubroutineLoopConfig? _vmGroupLoop;
     [JsonIgnore] public bool IsGroupLoopEnabled => IsSubroutineNode && Parameters is SubroutineParameters p && p.LoopConfig.EnableLoop;

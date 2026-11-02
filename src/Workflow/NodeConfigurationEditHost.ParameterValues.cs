@@ -45,6 +45,7 @@ public sealed partial class NodeConfigurationEditHost
             EnsureOpen();
             if(!ReferenceEquals(snapshot,_store.Capture()))
                 throw new InvalidOperationException("参数值接纳入口必须对应当前正式配置快照。");
+            _hasIssuedDraftOrRunAcceptance=true;
             var owner=_design.ExecutionOwner;
             var instances=_nodeInstances.ToDictionary(pair=>pair.Key,pair=>pair.Value);
             var configurations=Nodes(snapshot.CopyConfiguration()).Where(pair=>pair.Value.RuntimeConfiguration is not null)

@@ -43,6 +43,7 @@ public sealed class ParameterEditSession
         if(p.EditModes!=FieldEditModes.None&&((s is ConstantSetting&&(p.EditModes&FieldEditModes.Constant)==0)
             ||(s is ReferenceSetting&&(p.EditModes&FieldEditModes.Reference)==0)))
             throw new ArgumentException("This setting mode is not allowed by the declared field capabilities.");
+        if(s is DisplayExpressionSetting expression)return FieldSettings.Freeze(p,expression);
         if(s is ConstantSetting c)
         {
             if (ContainsResource(p.Type))

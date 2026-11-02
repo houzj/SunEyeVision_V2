@@ -17,11 +17,10 @@ public sealed class DeclaredBlobResultTests
 {
     private static WorkflowExecutionEngine Engine(BlobSettings settings,out SunEyeVision.Workflow.Workflow flow,out WorkflowNodeBase node)
     {
-        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot);
-        Assert.True(PluginLoader.LoadPlugins());
-        var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger);
+        var directory=SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory();
+        var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger,directory);
         flow=workflows.CreateWorkflow("blob-"+Guid.NewGuid().ToString("N"),"blob");
-        node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(settings)};
+        node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,BlobTool.Id).WithSettings(settings)};
         flow.AddNode(node);return new(workflows,Substitute.For<IPluginManager>(),logger);
     }
     [Fact]
@@ -56,10 +55,10 @@ public sealed class DeclaredBlobResultTests
     {
         using var input=HalImage.CreateFromBytes(new byte[32*32],32,32,1);
         var executor=Engine(new BlobSettings(),out var flow,out var node);
-        var expression=BindingReferenceSerializer.Serialize(new OutputReference("missing","missing-image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:flow.Id));
-        node.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,ReferenceExpression=expression});
+        var reference=new OutputReference("missing","missing-image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:flow.Id);
+        node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(reference)}});
         using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
-        Assert.False(run.Success);Assert.Equal(expression,node.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression);
+        Assert.False(run.Success);Assert.Equal(reference,Assert.IsType<ReferenceSetting>(node.RuntimeConfiguration.Fields.Read(BlobTool.ImageInput)).Reference);
         Assert.Equal(1024,input.GetPixelData().Length);
     }
     [Theory]

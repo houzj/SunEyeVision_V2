@@ -74,6 +74,7 @@ public class SolutionManager
         {
             if(_changingSession)throw new InvalidOperationException("方案切换清理期间不能重入切换。");
             if(ReferenceEquals(Session?.Document,value))return;
+            Session?.EnsureNotPreparingPresentation();
             if(value is not null)
             {
                 if(value.RuntimeDirectory is not null && !ReferenceEquals(value.RuntimeDirectory,RuntimeDirectory))throw new InvalidOperationException("方案运行目录代次不一致。");
@@ -230,6 +231,7 @@ public class SolutionManager
     /// <returns>创建的元数据对象</returns>
     public SolutionMetadata CreateNewSolution(SolutionMetadata metadata)
     {
+        Session?.EnsureNotPreparingPresentation();
         AtomicJsonFile.ValidateSolutionName(metadata.Name);
         var desiredPath = string.IsNullOrWhiteSpace(metadata.FilePath) ? Path.Combine(metadata.DirectoryPath, metadata.Name + ".solution") : metadata.FilePath;
         if (File.Exists(desiredPath)) throw new IOException("目标方案已存在，不会覆盖：" + desiredPath);
@@ -329,6 +331,7 @@ public class SolutionManager
     /// <returns>解决方案对象，失败返回 null</returns>
     public Solution? OpenSolution(string filePath)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (string.IsNullOrEmpty(filePath))
         {
             _logger.Log(LogLevel.Warning, "打开解决方案失败：文件路径为空", "SolutionManager");
@@ -432,6 +435,7 @@ public class SolutionManager
     /// </remarks>
     public void SetCurrentSolutionSilently(Solution solution, string filePath)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (solution == null || string.IsNullOrEmpty(filePath))
         {
             _logger.Log(LogLevel.Warning, "静默设置当前解决方案失败：参数无效", "SolutionManager");
@@ -463,6 +467,7 @@ public class SolutionManager
     /// </remarks>
     public bool SaveSolutionDirect(Solution solution, string filePath, SolutionMetadata? metadata = null)
     {
+        if(ReferenceEquals(solution,CurrentSolution))Session?.EnsureNotPreparingPresentation();
         try
         {
             _logger.Log(LogLevel.Info, $"[SaveSolutionDirect] 开始保存解决方案: Id={solution.Id} -> {filePath}", "SolutionManager");
@@ -513,6 +518,7 @@ public class SolutionManager
 
     public SolutionSaveResult SaveCurrentDocument(string? filePath = null, bool overwrite = true)
     {
+        Session?.EnsureNotPreparingPresentation();
         _saveError = null; LastSaveWarning = null;
         var session = Session;
         if (session == null) return SaveFailure("没有当前内存方案。");
@@ -561,6 +567,7 @@ public class SolutionManager
     private SolutionSaveResult SaveFailure(string error) { _saveError = error; return new(false, error); }
     public Solution CreateUntitledSolution()
     {
+        Session?.EnsureNotPreparingPresentation();
         var previousRecentId = _settings.CurrentSolutionId;
         var document = Solution.Create(); document.Name = "未命名方案";
         document.Workflows.Add(new Workflow(Guid.NewGuid().ToString(), "流程1"));
@@ -571,6 +578,7 @@ public class SolutionManager
 
     public SolutionMetadata? SaveAsSolution(string filePath, string? newName = null, string? newDescription = null)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (string.IsNullOrEmpty(filePath))
         {
             _logger.Log(LogLevel.Warning, "另存为解决方案失败：未指定保存路径", "SolutionManager");
@@ -596,6 +604,7 @@ public class SolutionManager
     /// </summary>
     public void CloseSolution(bool saveChanges = true)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (saveChanges && HasUnsavedChanges && (string.IsNullOrEmpty(CurrentFilePath) || !SaveSolution()))
             throw new IOException("保存失败，方案保持打开：" + LastError);
         RetirePreviousExecutionOwners(null);
@@ -608,6 +617,7 @@ public class SolutionManager
 
     private void RetirePreviousExecutionOwners(Solution? next)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (!ReferenceEquals(CurrentSolution, next) && CurrentSolution is {} previous)
         {
             try { previous.ExecutionOwner.Retire(); }
@@ -864,6 +874,7 @@ public class SolutionManager
         if (AtomicJsonFile.SamePath(sourcePath, targetFilePath)) throw new IOException("副本或另存目标不能是源方案自身。");
         if (File.Exists(targetFilePath)) throw new IOException("目标方案已存在，不会覆盖：" + targetFilePath);
         var current = CurrentSolution != null && CurrentFilePath != null && AtomicJsonFile.SamePath(CurrentFilePath, sourcePath);
+        if(current)Session?.EnsureNotPreparingPresentation();
         var json = current ? Fingerprint(CurrentSolution!) : File.ReadAllText(sourcePath);
         json = SolutionResourceResolver.RebaseCopy(json, Path.GetDirectoryName(Path.GetFullPath(sourcePath))!, Path.GetDirectoryName(Path.GetFullPath(targetFilePath))!);
         var document = JsonNode.Parse(json)?.AsObject() ?? throw new InvalidDataException("源方案格式错误。");
@@ -1444,6 +1455,7 @@ public class SolutionManager
 
     public void SetCurrentSolution(Solution solution, bool registerInCatalog)
     {
+        Session?.EnsureNotPreparingPresentation();
         if (solution == null)
             throw new ArgumentNullException(nameof(solution));
 

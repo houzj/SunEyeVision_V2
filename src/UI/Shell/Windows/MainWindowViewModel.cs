@@ -1775,6 +1775,49 @@ SplitterPosition = position;
 
             try
             {
+                var loadSession=DocumentManager.Session;
+                if(loadSession is null||!ReferenceEquals(loadSession.Document,solution))
+                    throw new InvalidOperationException("待加载方案的编辑会话已变化。");
+                var editing=loadSession.Editing;
+                bool CanMaterialize()=>ReferenceEquals(DocumentManager.Session,loadSession)
+                    &&ReferenceEquals(DocumentManager.CurrentSolution,solution)
+                    &&editing.RegisteredScopeCount==0&&!_executionManager.IsAnyRunning();
+                var replacements=new List<(SunEyeVision.Workflow.Workflow Flow,int Index,WorkflowNodeBase Original,WorkflowNode Replacement)>();
+                foreach(var flow in solution.Workflows)
+                for(var index=0;index<flow.Nodes.Count;index++)
+                {
+                    var original=flow.Nodes[index];
+                    if(original is WorkflowNode)continue;
+                    var presentation=WorkflowNode.FromBase(original);
+                    presentation.OnDeserialized();
+                    replacements.Add((flow,index,original,presentation));
+                }
+                if(replacements.Count!=0)
+                {
+                    if(!CanMaterialize()||loadSession.IsDirty)throw new InvalidOperationException("当前方案不能准备显示节点。");
+                    using var preparation=editing.BeginInitialPresentationMaterialization();
+                    try
+                    {
+                        foreach(var item in replacements)
+                        {
+                            if(!CanMaterialize()||!ReferenceEquals(item.Flow.Nodes[item.Index],item.Original))
+                                throw new InvalidOperationException("准备显示节点期间方案已变化。");
+                            item.Flow.Nodes[item.Index]=item.Replacement;
+                        }
+                        if(!CanMaterialize())throw new InvalidOperationException("准备显示节点期间方案已变化。");
+                        preparation.Complete();
+                    }
+                    catch(Exception failure)
+                    {
+                        var failures=new List<Exception>{failure};
+                        foreach(var item in replacements.AsEnumerable().Reverse())
+                            try{if(ReferenceEquals(item.Flow.Nodes[item.Index],item.Replacement))item.Flow.Nodes[item.Index]=item.Original;}
+                            catch(Exception error){failures.Add(error);}
+                        if(failures.Count>1)throw new AggregateException("显示节点准备回滚失败。",failures);
+                        throw;
+                    }
+                }
+                editing.SealInitialPresentation();
                 LogInfo($"=== 开始加载解决方案 ===");
                 LogInfo($"解决方案ID: {solution.Id}");
                 LogInfo($"解决方案版本: {solution.Version}");
@@ -1808,12 +1851,6 @@ SplitterPosition = position;
 
                 foreach (var workflow in solution.Workflows)
                 {
-                    for (var nodeIndex = 0; nodeIndex < workflow.Nodes.Count; nodeIndex++)
-                    {
-                        workflow.Nodes[nodeIndex] = WorkflowNode.FromBase(workflow.Nodes[nodeIndex]);
-                        workflow.Nodes[nodeIndex].OnDeserialized();
-                    }
-
                     _logger?.LogInfo($"[StartupTrace] LoadSolution workflow begin | name={workflow.Name}, subroutine={workflow.IsSubroutine}", "MainWindowViewModel");
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
@@ -2498,11 +2535,15 @@ SplitterPosition = position;
                 _workflowEngine, solution,
                 configure: () =>
                 {
-                    foreach (var node in selectedNodes) CleanupBindingsForDeletedNode(definition.Id, node.Id);
+                    // Finish the whole graph deletion's binding mutations before compiling once.
                     foreach (var conn in allAffectedConnections)
                         AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId,
                             definition.Nodes.FirstOrDefault(n => n.Id == conn.TargetNodeId), conn.Id);
-                    bindingService.ReconcileAll();
+                    foreach (var node in selectedNodes) CleanupBindingsForDeletedNode(definition.Id, node.Id);
+                    var changes=bindingService.ReconcileAll();
+                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                    if(!IsRunning)foreach(var id in bindingService.InvalidatedNodes.Where(item=>item.WorkflowId==_workflowEngine.CurrentWorkflow?.Id))CurrentWorkflowContext?.RemoveNodeResult(id.NodeId);
+                    if(changes.Count>0)AddLog("节点删除，已解除绑定："+string.Join("；",changes.Select(change=>change.NodeName+"."+change.InputName)));
                 },
                 refresh: () =>
                 {
@@ -3443,7 +3484,7 @@ SplitterPosition = position;
             };
             queryService.SelectReceiveVariable = () =>
             {
-                var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectDialog.ShowSelect(
+                var selected = SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableSelectionService.Choose(
                     SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager);
                 return selected == null ? null : new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(
                     selected.Id, selected.Name, selected.Group, selected.Type);
@@ -5146,10 +5187,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="nodeId">被删除的节点ID</param>
         private void CleanupBindingsForDeletedNode(string workflowId, string nodeId)
         {
-            var changes = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Commit(workflowId, nodeId);
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-            if (!IsRunning) foreach (var id in SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id)) CurrentWorkflowContext?.RemoveNodeResult(id.NodeId);
-            if (changes.Count > 0) AddLog("节点删除，已解除绑定：" + string.Join("；", changes.Select(c => c.NodeName + "." + c.InputName)));
+            // The owning DeleteWorkflowItemsCommand reconciles once after all removed nodes and edges.
             var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
             if (solution?.GlobalVariables == null)
                 return;
@@ -5160,8 +5198,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 gv.ConsumerBindings.RemoveAll(c => c.NodeId == nodeId && c.WorkflowId == workflowId);
             }
 
-            // 重建模块结果 FlatRows（变更新绑定状态显示）
-            BuildFlatRows();
+            // The enclosing graph command refreshes the complete result tree after reconciliation.
         }
 
         /// <summary>

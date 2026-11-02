@@ -7,6 +7,8 @@ namespace SunEyeVision.Plugin.Runtime;
 /// <summary>方案/节点的运行准入Owner；退役与受控发布共享同一临界区。</summary>
 public sealed class ToolExecutionOwner
 {
+    private bool _hasEverStarted;
+    public bool HasEverStarted { get { lock(_gate)return _hasEverStarted; } }
     private readonly object _gate = new();
     private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
     private sealed class ScopeAdmissions(Guid root)
@@ -54,6 +56,7 @@ public sealed class ToolExecutionOwner
             var root=rootRunId==Guid.Empty?runId:rootRunId;
             if((rootRunId!=Guid.Empty && _activeRoot!=root) || (rootRunId==Guid.Empty && _activeRoot!=Guid.Empty))
                 throw new InvalidOperationException("Node admission does not belong to the host's active root session.");
+            _hasEverStarted=true;
             if (!_domains.TryGetValue(nodeId, out var generation)) _domains[nodeId] = generation = Guid.NewGuid();
             var requestId = Guid.NewGuid();
             if(!_latest.TryGetValue(nodeId,out var admitted) || admitted.Root!=root)
@@ -77,6 +80,12 @@ public sealed class ToolExecutionOwner
             publish?.Invoke();
             return true;
         }
+    }
+    internal bool IsDomainCurrent(ToolExecutionIdentity identity)
+    {
+        lock (_gate)
+            return !_retired && _domains.TryGetValue(identity.NodeId, out var generation)
+                && generation == identity.NodeGeneration;
     }
     internal void CompleteCallbacks(ToolExecutionIdentity identity)
     {
@@ -180,6 +189,8 @@ public sealed class ToolExecutionIdentity
     internal void SetContractIdentity(string value) => Volatile.Write(ref _attempt.ContractIdentity,value);
     public string Domain => Owner.Domain(NodeId, NodeGeneration);
     public bool IsCurrent => Owner.Publish(this, null);
+    /// <summary>Whether the captured node generation still exists, independent of later runs.</summary>
+    public bool IsDomainCurrent => Owner.IsDomainCurrent(this);
     internal bool TryCaptureResult()
     {
         var captured=false;

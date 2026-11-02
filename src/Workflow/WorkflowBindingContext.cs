@@ -18,6 +18,7 @@ internal sealed class WorkflowBindingContext : IDisposable
     private readonly Dictionary<string,AlgorithmNode> _nodes;
     private readonly IReadOnlyDictionary<BindingNodeId,RunIdentity> _expected;
     private readonly string _scope;
+    private readonly IReadOnlyDictionary<string,IReadOnlyCollection<string>> _displayPredecessors;
     private readonly RuntimeParameterValueAcceptance? _parameterValues;
     private readonly long _documentRevision;
     private readonly WorkflowRunSession _session;
@@ -178,6 +179,15 @@ internal sealed class WorkflowBindingContext : IDisposable
         return null;
     }
 
+    internal void AttachDisplaySources(string nodeId,DeclaredOutputSnapshot result,IReadOnlyList<DeclaredOutputSnapshot> outputs)
+    {
+        if(!_nodes.TryGetValue(nodeId,out var node)||node.RuntimeConfiguration?.ResultDisplay is null||!result.IsSuccess)return;
+        var eligible=_displayPredecessors[nodeId];
+        var sources=outputs.Where(source=>source.SourceWorkflowId==_scope&&eligible.Contains(source.Identity.NodeId)
+            &&_expected.TryGetValue(new(_scope,source.Identity.NodeId),out var expected)&&source.Identity==expected).ToArray();
+        using var set=new ResultDisplaySourceSet(sources);
+        result.AttachDisplaySources(set);
+    }
     internal static IEnumerable<BindingNodeId> ReferenceNodes(OutputReference reference,string defaultScope)
     {
         yield return new(reference.ScopeId??defaultScope,reference.NodeId);
@@ -189,6 +199,15 @@ internal sealed class WorkflowBindingContext : IDisposable
         IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource>? variables=null,WorkflowRunRequest? request=null)
     {
         _scope=scope.WorkflowId;_session=session;_executionScope=scope;
+        var displayPredecessors=new Dictionary<string,IReadOnlyCollection<string>>(StringComparer.Ordinal);
+        foreach(var target in workflow.Nodes)
+        {
+            var found=new HashSet<string>(StringComparer.Ordinal);var pending=new Stack<string>(graph.GetPredecessors(target.Id));
+            while(pending.TryPop(out var id))if(found.Add(id))foreach(var parent in graph.GetPredecessors(id))pending.Push(parent);
+            if(found.Contains(target.Id))throw new InvalidOperationException("Display source graph contains a cycle.");
+            displayPredecessors.Add(target.Id,Array.AsReadOnly(found.ToArray()));
+        }
+        _displayPredecessors=displayPredecessors;
         _parameterValues=request?.ParameterValues;
         _globalProducers=Array.AsReadOnly((request?.GlobalProducers??Array.Empty<WorkflowGlobalProducerOperation>()).Where(item=>item.Source.ScopeId==_scope).ToArray());
         _producedGlobals=request?.ProducedGlobals;

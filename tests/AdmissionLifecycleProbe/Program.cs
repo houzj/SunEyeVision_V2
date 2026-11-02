@@ -5,6 +5,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow;
@@ -149,11 +150,22 @@ try
     if(!run.Success)throw new Exception("Production workflow failed: "+string.Join(";",run.Errors));
     var result=run.DeclaredOutputs.Single(o=>o.Identity.NodeId=="image");
     var productionReader=run.AcquireDeclaredOutput(result.Identity);
+    using var displaySources=new ResultDisplaySourceSet(new[]{result});
+    var displayLease=displaySources.Acquire();
+    var textLease=new ResultDisplayTextLease(result,new ResultTextAppearance(true,"probe",new ResultDisplayColor(255,255,255),new ResultDisplayColor(255,0,0),12,1,0,0));
+    if(textLease.Evaluate(0).Content!="probe")throw new Exception("Display text lease did not evaluate its frozen result.");
+    displaySources.Dispose();
     run.Dispose();
     var productionUnload=production.UnloadPluginsAsync();
     await Task.Delay(100);
     if(productionUnload.IsCompleted)throw new Exception("Production result reader did not hold generation open.");
     productionReader.Dispose();
+    await Task.Delay(100);
+    if(productionUnload.IsCompleted)throw new Exception("Display source reader did not hold generation open.");
+    displayLease.Dispose();
+    await Task.Delay(100);
+    if(productionUnload.IsCompleted)throw new Exception("Display text reader did not hold generation open.");
+    textLease.Dispose();
     await productionUnload.WaitAsync(TimeSpan.FromSeconds(10));
     await production.LoadPluginsAsync();
     if(production.LastAdmissionError is not null)throw new Exception("Production re-admission failed.");
@@ -175,6 +187,50 @@ try
     using(var completed=await activeRun.WaitAsync(TimeSpan.FromSeconds(10)))
         if(completed.Success)throw new Exception("A workflow retired during execution reported success.");
     await activeUnload.WaitAsync(TimeSpan.FromSeconds(10));
+    await production.LoadPluginsAsync();
+    if(production.LastAdmissionError is not null)throw new Exception("Display generation admission failed.");
+    var displayDirectory=production.RuntimeDirectory??throw new Exception("Display generation missing.");
+    var imageConfig=RuntimeToolConfiguration.Create(displayDirectory,"ImageLoad");
+    var sourcePort=imageConfig.Schema.Outputs.Single(port=>port.Id=="output.image");
+    var imageRef=new OutputReference("image",sourcePort.Id,sourcePort.Type,new[]{"data"},scopeId:"display-probe");
+    var widthRef=new OutputReference("image",sourcePort.Id,sourcePort.Type,new[]{"width"},scopeId:"display-probe");
+    var blobConfig=RuntimeToolConfiguration.Create(displayDirectory,"BlobAnalysis").WithFieldSettings(new Dictionary<string,ParameterSetting>
+    {
+        ["input.image"]=new ReferenceSetting(imageRef),
+        ["display.text.content"]=new DisplayExpressionSetting("width={w}",new[]{new DisplayExpressionSlot("w",widthRef)})
+    });
+    var displayFlow=new SunEyeVision.Workflow.Workflow("display-probe","display-probe");
+    displayFlow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad"){RuntimeConfiguration=imageConfig});
+    displayFlow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){RuntimeConfiguration=blobConfig});
+    displayFlow.Connections.Add(new WorkflowConnection{Id="edge",SourceNodeId="image",TargetNodeId="blob"});
+    var displayEngine=new WorkflowEngine(new NullLogger(),displayDirectory);displayEngine.RegisterWorkflow(displayFlow);
+    var displayRunner=new WorkflowExecutionEngine(displayEngine,production,new NullLogger());
+    var displayRequest=new WorkflowRunRequest(displayFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{"image",new(imageFile,1){LocalReadAdmission=_=>imageFile}}});
+    var displayRun=await displayRunner.ExecuteWorkflowAsync(displayRequest).WaitAsync(TimeSpan.FromSeconds(30));
+    if(!displayRun.Success)throw new Exception("Automatic display workflow failed: "+string.Join(";",displayRun.Errors));
+    var blobResult=displayRun.DeclaredOutputs.Single(o=>o.Identity.NodeId=="blob");
+    using(var blobReader=blobResult.AcquireReader())
+        if(blobReader.DisplaySources?.CaptureResults().Any(item=>item.Node.NodeId=="image")!=true)throw new Exception("Workflow did not capture the automatic display source.");
+    var automaticText=new ResultDisplayTextLease(blobResult,blobConfig.CaptureResultDisplay()!.Text);
+    if(automaticText.Evaluate(0).Content!="width=8")throw new Exception("Cross-node display expression resolved an unexpected value.");
+    Console.WriteLine("probe: automatic display source and upstream width=8 passed");
+    DeclaredOutputSnapshot? Published(string id)=>displayRun.DeclaredOutputs.SingleOrDefault(output=>output.Identity.NodeId==id);
+    using(var debug=RuntimeDebugInvocation.Capture(displayFlow,displayFlow.Nodes.Single(node=>node.Id=="blob"),new ToolExecutionOwner(),0,
+        Published,CancellationToken.None,publishedOwner:displayFlow.ExecutionOwner,readDisplayCandidate:Published))
+    using(var debugResult=await debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)))
+    {
+        if(!debugResult.IsSuccess)throw new Exception("Debug execution failed: "+debugResult.ErrorMessage);
+        using var debugText=new ResultDisplayTextLease(debugResult,blobConfig.CaptureResultDisplay()!.Text);
+        if(debugText.Evaluate(0).Content!="width=8")throw new Exception("Debug display expression resolved an unexpected value.");
+        Console.WriteLine("probe: runtime debug execution and upstream width=8 passed");
+    }
+    displayRun.Dispose();
+    var displayUnload=production.UnloadPluginsAsync();
+    await Task.Delay(100);
+    if(displayUnload.IsCompleted)throw new Exception("Cross-node text view did not retain its generation.");
+    Console.WriteLine("probe: cross-node text reader retained retiring generation");
+    automaticText.Dispose();
+    await displayUnload.WaitAsync(TimeSpan.FromSeconds(10));
 }
 finally{File.Delete(imageFile);}
 Console.WriteLine("Desktop admission and production workflow reader drain checks passed; desktop window shutdown remains unverified.");

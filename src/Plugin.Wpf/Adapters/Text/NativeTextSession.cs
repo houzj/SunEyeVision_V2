@@ -69,7 +69,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     }
     private void OnSelectionChanged(object sender,System.Windows.RoutedEventArgs args)
     {if(ReferenceEquals(sender,_text))_selectionVersion++;}
-    private string AcceptedText()=>_state.Accepted is ConstantSetting {Value:string text}?text:"";
+    private string AcceptedText()=>_state.Accepted switch {ConstantSetting {Value:string text}=>text,DisplayExpressionSetting expression=>expression.Text,_=>""};
     private bool Current()
     {
         if(_disposed||_state.IsDisposed)return false;
@@ -167,10 +167,10 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
         var node=ReferenceFieldSession.Unwrap(value);var lease=_browse;var snapshot=_snapshot;
         if(node is not {Candidate:{} candidate,Clear:false}||lease is null||snapshot is null
             ||!Contains(SourceNodes,node)||!LeaseCurrent(lease))return;
-        string proposed;string? error;
+        string proposed;string? error;string? selectedToken=null;
         try
         {
-            var token=snapshot.FormatExpression(_originalCandidates[candidate]);
+            var token=snapshot.FormatExpression(_originalCandidates[candidate]);selectedToken=token;
             if(!LeaseCurrent(lease))return;
             if(string.IsNullOrEmpty(token)||token.Contains('{')||token.Contains('}'))throw new ArgumentException("文本来源标记无效。");
             proposed=lease.Raw[..(lease.Start+1)]+token+lease.Raw[lease.End..];
@@ -201,7 +201,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
                 _restoring=true;
                 try{handler(project,proposed,proposed.Length-(lease.Raw.Length-lease.End),OwnsCaret);}
                 finally{_restoring=false;}
-            });
+            },new(proposed,_state.Accepted,candidate,selectedToken,lease.Start,lease.End),()=>LeaseCurrent(lease));
     }
     private static bool Contains(IEnumerable<ReferenceTreeNode> nodes,ReferenceTreeNode target)
         =>nodes.Any(node=>ReferenceEquals(node,target)||Contains(node.EnumEntrysA,target));
@@ -229,12 +229,18 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
         if(!string.IsNullOrEmpty(error)){_state.SetEditError(error);return false;}
         return Accept(proposed,version,original);
     }
-    private bool Accept(string proposed,long version,string original,Action? afterWrite=null,Action<Action>? projection=null)
+    private bool Accept(string proposed,long version,string original,Action? afterWrite=null,Action<Action>? projection=null,TextExpressionProposal? expressionProposal=null,Func<bool>? proposalCurrent=null)
     {
         if(_committing||!SameRaw(version,original))return false;
-        var acceptedVersion=_state.AcceptanceVersion;_committing=true;
-        bool accepted=false;
-        try{accepted=_state.TrySet(new ConstantSetting(proposed));afterWrite?.Invoke();}
+        var acceptedVersion=_state.AcceptanceVersion;
+        ParameterSetting prepared;
+        try{prepared=_options?.CreateSetting?.Invoke(expressionProposal??new(proposed,_state.Accepted))??new ConstantSetting(proposed);}
+        catch(Exception failure)when(failure is ArgumentException or InvalidOperationException)
+        {if(SameRaw(version,original)&&acceptedVersion==_state.AcceptanceVersion)_state.SetEditError(failure.Message);return false;}
+        if(!SameRaw(version,original)||acceptedVersion!=_state.AcceptanceVersion||proposalCurrent?.Invoke()==false
+            ||!SameRaw(version,original)||acceptedVersion!=_state.AcceptanceVersion)return false;
+        _committing=true;bool accepted=false;
+        try{accepted=_state.TrySet(prepared);afterWrite?.Invoke();}
         finally
         {
             _committing=false;
@@ -246,6 +252,7 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
     private void OnAccepted(Action<Action>? projection)
     {
         if(!Current())return;
+        var hadPending=_pending is not null;var acceptanceVersion=_state.AcceptanceVersion;
         _pending=null;var version=++_rawVersion;
         ParameterCleanup.Run(new Action[]{ClearSourceError,
             ()=>{if(Current()&&version==_rawVersion)InvalidateTree();},
@@ -253,7 +260,8 @@ internal sealed class NativeTextSession : INotifyPropertyChanged,IDisposable
             {
                 void Project(){if(Current()&&version==_rawVersion)Notify(nameof(RawText));}
                 if(projection is null)Project();else projection(Project);
-            }}});
+            }},
+            ()=>{if(hadPending&&Current()&&version==_rawVersion&&_pending is null&&acceptanceVersion==_state.AcceptanceVersion)_state.NotifyEditSettled();}});
     }
     internal void SetSuspended(bool suspended)
     {

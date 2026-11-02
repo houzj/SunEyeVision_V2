@@ -39,9 +39,21 @@ internal static class BlobDisplayUi
         var text=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text;
         string Id(string group,string role)=>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(group,role);
         var expressions=options.TextExpressions?.ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal)??new();
-        expressions.Add(Id(text,"content"),new(()=>new(Array.Empty<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>(),
-            _=>throw new InvalidOperationException("动态文本来源尚未接入。"),()=>true),value=>
-            {try{SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.ValidateContent(value);return null;}catch(ArgumentException error){return error.Message;}}));
+        var contentId=Id(text,"content");var sourceOptions=expressions.GetValueOrDefault(contentId);
+        expressions[contentId]=new(sourceOptions?.ReadCandidates??(()=>new(Array.Empty<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>(),
+            _=>throw new InvalidOperationException("文本来源尚未就绪。"),()=>true)),CreateSetting:proposal=>
+        {
+            var slots=proposal.Accepted is DisplayExpressionSetting existing?existing.Slots.ToList():new List<DisplayExpressionSlot>();
+            if(proposal.Selected is {} selected)
+            {
+                if(proposal.Token is not {Length:>0} token)throw new ArgumentException("文本来源标记无效。");
+                var reference=selected.Reference(BindingSelection.All);
+                if(proposal.Text.Split("{"+token+"}",StringSplitOptions.None).Length>2&&slots.Any(slot=>slot.Token==token&&slot.Reference is {} old&&SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.SameReferenceIdentity(old,reference)==false))
+                    throw new ArgumentException("文本来源名称不唯一，请使用不同的来源名称。");
+                slots.RemoveAll(slot=>slot.Token==token);slots.Add(new(token,reference));
+            }
+            return SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.ParseContent(proposal.Text,slots);
+        });
         return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,TextExpressions=expressions,
             GraphicDisplays=new[]{graphic,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Mask,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Annulus}.Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
             VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible"))},

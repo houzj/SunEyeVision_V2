@@ -23,6 +23,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private readonly Func<Action<string,object?>,(InputValues Inputs,object Settings)> _prepare;
     private RuntimeToolConfiguration? _acceptedParameters;
     private readonly List<IDisposable> _readers;
+    private ResultDisplaySourceSet? _displaySources;
+    private string? _displaySourceFailure;
     private ImageSourceRunInput? _sourceInput;
     private RuntimeGenerationLease? _generation;
     private CancellationTokenSource? _generationCancellation;
@@ -32,6 +34,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private bool _disposed;
     public ToolExecutionIdentity Identity {get;}
     public IReadOnlyList<RunIdentity> SourceIdentities {get;}
+    public IReadOnlyList<RunIdentity> DisplaySourceIdentities=>_displaySources?.Identities??Array.Empty<RunIdentity>();
     /// <summary>Private parameter-write receipt, independent of algorithm outcome. Never a formal publication.</summary>
     public RuntimeToolConfiguration? AcceptedParameters=>Volatile.Read(ref _acceptedParameters)?.Copy();
     private RuntimeDebugInvocation(string workflowId,WorkflowNodeBase node,ToolExecutionIdentity identity,List<IDisposable> readers,
@@ -44,8 +47,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
-        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null)
-        => CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null);
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
+        => CaptureCore(workflow,draft,owner,revision,readPublished,cancellation,defaultImage,publishedOwner,resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,null,null,readDisplayCandidate);
 
     /// <summary>Resolve only explicitly requested active input ports from already published snapshots.
     /// No algorithm, parameter current value, settings materialization or upstream execution occurs.</summary>
@@ -76,7 +79,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
-        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null)
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
     {
         var directory=draft.RuntimeConfiguration?.Directory??throw new InvalidOperationException("调试节点没有已准入运行目录。");
         var generation=directory.AcquireInvocation();
@@ -85,7 +88,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         {
             linked=CancellationTokenSource.CreateLinkedTokenSource(cancellation,generation.RetirementToken);
             var invocation=CaptureCoreHeld(workflow,draft,owner,revision,readPublished,linked.Token,defaultImage,publishedOwner,
-                resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,previewInputs,observeVariables);
+                resourcePaths,cameraService,solutionId,variables,sourceWorkflows,readScopedPublished,previewInputs,observeVariables,readDisplayCandidate);
             if(!ReferenceEquals(invocation._node.RuntimeConfiguration?.Directory,directory))
             {
                 invocation.Dispose();
@@ -106,7 +109,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         Func<string,DeclaredOutputSnapshot?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
         IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null,
         string? solutionId=null,IReadOnlyList<GlobalVariable>? variables=null,IReadOnlyList<Workflow>? sourceWorkflows=null,
-        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null)
+        Func<BindingNodeId,DeclaredOutputSnapshot?>? readScopedPublished=null,IReadOnlySet<string>? previewInputs=null,Action<IReadOnlyCollection<string>>? observeVariables=null,Func<string,DeclaredOutputSnapshot?>? readDisplayCandidate=null)
     {
         ArgumentNullException.ThrowIfNull(workflow);ArgumentNullException.ThrowIfNull(draft);ArgumentNullException.ThrowIfNull(owner);
         if(!workflow.Nodes.Any(n=>n.Id==draft.Id&&n.ToolType==draft.ToolType))throw new InvalidOperationException("调试节点不属于当前工作流。");
@@ -332,6 +335,51 @@ public sealed class RuntimeDebugInvocation : IDisposable
                 invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths,owner,workflow.Id);
                 invocation._cameraService=cameraService;
             }
+            if(previewInputs is null&&configuration.ResultDisplay is not null&&graph is not null)
+            {
+                var eligible=new HashSet<string>(StringComparer.Ordinal);var pending=new Stack<string>(graph.GetPredecessors(node.Id));
+                while(pending.TryPop(out var id))if(eligible.Add(id))foreach(var parent in graph.GetPredecessors(id))pending.Push(parent);
+                eligible.Remove(node.Id);
+                var selected=readDisplayCandidate is not null?eligible:RuntimeDisplayBindings.References(configuration)
+                    .Where(pair=>configuration.IsDisplayField(pair.Key)||pair.Key.StartsWith("display-slot:",StringComparison.Ordinal))
+                    .SelectMany(pair=>WorkflowBindingContext.ReferenceNodes(pair.Setting.Reference,workflow.Id))
+                    .Where(source=>source.ScopeId==workflow.Id&&eligible.Contains(source.NodeId))
+                    .Select(source=>source.NodeId).ToHashSet(StringComparer.Ordinal);
+                var readDisplay=readDisplayCandidate??readPublished;
+                ResultDisplaySourceSet? set=null;
+                try
+                {
+                    var displaySnapshots=new List<DeclaredOutputSnapshot>();
+                    foreach(var id in selected)
+                    {
+                        cancellation.ThrowIfCancellationRequested();
+                        var current=readDisplay(id);
+                        var key=new BindingNodeId(workflow.Id,id);
+                        if(observed.TryGetValue(key,out var frozen)&&!ReferenceEquals(frozen,current))
+                            throw new InvalidOperationException("显示来源与已冻结的执行输入不属于同一次捕获。");
+                        var source=observed.TryGetValue(key,out frozen)?frozen:current;
+                        if(source is null||!source.IsSuccess||!source.IsComplete||source.SourceWorkflowId!=workflow.Id
+                            ||source.Identity.NodeId!=id||source.Identity.DocumentSessionId!=(publishedOwner??owner).Id)continue;
+                        displaySnapshots.Add(source);
+                    }
+                    set=new ResultDisplaySourceSet(displaySnapshots);
+                    if(displaySnapshots.Any(source=>!ReferenceEquals(readDisplay(source.Identity.NodeId),source)))
+                        throw new InvalidOperationException("捕获显示来源期间已发布结果发生变化。");
+                    readers.Add(set);invocation._displaySources=set;set=null;
+                }
+                catch(Exception error)
+                {
+                    Exception? cleanupFailure=null;
+                    try{set?.Dispose();}catch(Exception cleanup){cleanupFailure=cleanup;}
+                    if(error is OutOfMemoryException||cancellation.IsCancellationRequested)
+                    {
+                        if(cleanupFailure is not null)throw new AggregateException(error,cleanupFailure);
+                        throw;
+                    }
+                    invocation._displaySourceFailure=cleanupFailure is null?"显示来源捕获失败："+error.Message
+                        :"显示来源捕获及释放失败："+error.Message+"；"+cleanupFailure.Message;
+                }
+            }
             return invocation;
         }
         catch(Exception failure)
@@ -377,6 +425,16 @@ public sealed class RuntimeDebugInvocation : IDisposable
             outcome=await _node.ExecuteRuntimeAsync(_node.RuntimeConfiguration!,generation!,inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources,_sourceInput is null ? null : () => _sourceInput.AcceptLocalImage(Identity)),null,prepared.Settings).ConfigureAwait(false);
             var generationResources=new GenerationResourceOwner(resources,generation!);
             generation=null;transferred=true;result=DeclaredOutputSnapshot.Capture(resultSchema,0,Identity,resultNodeId,outcome,generationResources,timer.Elapsed.TotalMilliseconds,sourceWorkflowId:_workflowId);
+            if(result.IsSuccess)
+            {
+                if(_displaySourceFailure is not null)result.RejectDisplaySources(_displaySourceFailure);
+                else if(_displaySources is not null)
+                {
+                    try{result.AttachDisplaySources(_displaySources);}
+                    catch(Exception error) when(error is not OutOfMemoryException && !Identity.CancellationToken.IsCancellationRequested)
+                    {result.RejectDisplaySources("显示来源捕获失败："+error.Message);}
+                }
+            }
             return result;
         }
         catch(Exception error){failure=error;throw;}

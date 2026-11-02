@@ -24,24 +24,24 @@ public sealed class ImageSourceRuntimeTests
     [Fact]
     public void Settings_defaults_and_full_payload_round_trip_only_through_runtime_configuration()
     {
-        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot);
-        Assert.True(PluginLoader.LoadPlugins());
+        var directory=SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory();
+        var options=WorkflowSerializationOptions.For(directory);
         var files=new List<string>{"assets/a.png","assets/b.png"};
         var settings=new ImageSourceSettings{FileReferences=files,StartIndex=1,SelectedReferences=new[]{"assets/b.png"},RunMode="selected",
             AutoSwitch=false,StopAtLast=true,SourceKind="camera",CameraDeviceId="device",CameraTimeoutMs=4200,OutputFormat="rgb24",InitialSequence=25};
-        var node=new WorkflowNodeBase("source","源","源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad").WithSettings(settings)};
+        var node=new WorkflowNodeBase("source","源","源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,"ImageLoad").WithSettings(settings)};
         files.Clear();
-        var json=JsonSerializer.Serialize(node,WorkflowSerializationOptions.Default);
+        var json=JsonSerializer.Serialize(node,options);
         Assert.DoesNotContain("\"ImageSourceConfig\"",json);Assert.DoesNotContain("\"InputSource\"",json);
         Assert.DoesNotContain("\"OutputCache\"",json);Assert.DoesNotContain("\"LastResult\"",json);
-        var restored=JsonSerializer.Deserialize<WorkflowNodeBase>(json,WorkflowSerializationOptions.Default)!;
+        var restored=JsonSerializer.Deserialize<WorkflowNodeBase>(json,options)!;
         var actual=Assert.IsType<ImageSourceSettings>(restored.RuntimeConfiguration!.CaptureSettings());
         Assert.Equal(new[]{"assets/a.png","assets/b.png"},actual.FileReferences);Assert.Equal(1,actual.StartIndex);
         Assert.Equal(new[]{"assets/b.png"},actual.SelectedReferences);Assert.Equal("selected",actual.RunMode);
         Assert.False(actual.AutoSwitch);Assert.True(actual.StopAtLast);Assert.Equal("camera",actual.SourceKind);
         Assert.Equal("device",actual.CameraDeviceId);Assert.Equal(4200,actual.CameraTimeoutMs);Assert.Equal("rgb24",actual.OutputFormat);Assert.Equal(25,actual.InitialSequence);
-        var empty=RuntimeToolConfiguration.Create("ImageLoad");
-        var reopened=JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(empty,WorkflowSerializationOptions.Default),WorkflowSerializationOptions.Default)!;
+        var empty=RuntimeToolConfiguration.Create(directory,"ImageLoad");
+        var reopened=JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(empty,options),options)!;
         var defaults=Assert.IsType<ImageSourceSettings>(reopened.CaptureSettings());
         Assert.Empty(defaults.FileReferences);Assert.Empty(defaults.SelectedReferences);Assert.Equal(-1,defaults.StartIndex);Assert.Empty(reopened.Validate());
     }

@@ -10,7 +10,7 @@
 
     <!-- ============ 窗口 / 面板底色 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#F5F5F5</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TitleBarBackground}">#F5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarBackground}">#FAFAFA</Color>
     <Color x:Key="{x:Static base:ThemeKeys.PanelBackground}">#FFFFFF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.WorkspaceBackground}">#F5F5F5</Color>
 

@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
@@ -37,7 +37,11 @@ public sealed partial class DeclaredFieldsView
                     ||a.VisibleWhen!=b.VisibleWhen||first.Group!=p.Group||!Gates(ids[0]).SequenceEqual(Gates(id)))
                     throw new ArgumentException("文本七行必须共享组装区及活动条件。");
             }
-            Constant(option.ContentFieldId,TypeRef.ScalarOf(ScalarKind.Text));
+            var content=declarations[option.ContentFieldId];
+            if(content.Port.Type!=DataType.Text||content.Port.Nullable||!content.Port.Required||content.Port.Choices is not null
+                ||(content.Port.EditModes&FieldEditModes.Constant)==0||(content.Port.EditModes&~(FieldEditModes.Constant|FieldEditModes.DisplayExpression))!=0)
+                throw new ArgumentException("文本内容必须具有正式字符串及表达式能力。");
+            _=FieldSettings.Freeze(content.Port,content.Value);
             Constant(option.OkColorFieldId,PresentationDeclarations.Rgba);Constant(option.NgColorFieldId,PresentationDeclarations.Rgba);
             Number(option.FontSizeFieldId,6,72,1);Number(option.OpacityFieldId,0,1,.1);
             foreach(var id in new[]{option.PositionXFieldId,option.PositionYFieldId})

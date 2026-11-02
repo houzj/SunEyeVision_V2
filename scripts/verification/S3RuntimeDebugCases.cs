@@ -111,6 +111,37 @@ internal static class S2DocumentEditingCases
                 var result=WithoutUiPump(request.ExecuteAsync);try{Require(result.Output is BlobOutput {TotalArea:16},"缺省图像未进入调试");}finally{result.Dispose();}
                 Reject(()=>WithoutUiPump(request.ExecuteAsync));
             });
+            Case("显示来源采集失败只禁用显示，不阻断调试算法或读取执行输入",()=>
+            {
+                var draft=consumer.Clone();draft.RuntimeConfiguration=configuration.Copy();
+                using var request=RuntimeDebugInvocation.Capture(flow,draft,owner,9,_=>throw new Exception("不应读取执行来源"),default,image,
+                    readDisplayCandidate:_=>throw new InvalidOperationException("显示来源测试异常"));
+                using var result=WithoutUiPump(request.ExecuteAsync);
+                Require(result.Output is BlobOutput {TotalArea:16}&&result.IsSuccess,"显示来源异常阻断了算法");
+                Require(result.DisplaySourceFailure?.Contains("显示来源测试异常")==true,"显示失败未标记");
+            });
+            Case("非本次取消的显示异常与执行显示来源更新均不污染本次算法",()=>
+            {
+                var draft=consumer.Clone();draft.RuntimeConfiguration=configuration.Copy();
+                using(var request=RuntimeDebugInvocation.Capture(flow,draft,owner,9,_=>null,default,image,
+                    readDisplayCandidate:_=>throw new OperationCanceledException("提供者取消")))
+                using(var result=WithoutUiPump(request.ExecuteAsync))
+                    Require(result.IsSuccess&&result.DisplaySourceFailure?.Contains("提供者取消")==true,"无关取消中断算法或未标记");
+                using(var request=RuntimeDebugInvocation.Capture(flow,consumer,owner,9,_=>current,default,
+                    readDisplayCandidate:_=>null))
+                using(var result=WithoutUiPump(request.ExecuteAsync))
+                    Require(result.IsSuccess&&result.DisplaySourceFailure?.Contains("同一次捕获")==true,"上游更新时混用来源或阻断算法");
+            });
+            Case("显示二次读取时取消释放未转交的来源租约",()=>
+            {
+                var resource=typeof(DeclaredOutputSnapshot).GetField("_valueResources",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(current)!;
+                int Count()=>(int)typeof(ResultResourceOwner).GetField("_references",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(resource)!;
+                var before=Count();var reads=0;using var stop=new CancellationTokenSource();
+                var draft=consumer.Clone();draft.RuntimeConfiguration=configuration.Copy();
+                Reject(()=>RuntimeDebugInvocation.Capture(flow,draft,owner,9,_=>null,stop.Token,image,publishedOwner:current.ExecutionIdentity!.Owner,
+                    readDisplayCandidate:_=>{if(++reads==2){stop.Cancel();throw new OperationCanceledException(stop.Token);}return current;}));
+                Require(reads==2&&Count()==before,"取消后来源租约未释放");
+            });
             Case("画布执行连线与来源引用组成的循环，以及缺少图像来源，均在算法前拒绝",()=>
             {
                 var connection=new WorkflowConnection{Id="debug-cycle",SourceNodeId=consumer.Id,TargetNodeId=source.Id};flow.Connections.Add(connection);

@@ -295,7 +295,9 @@ public sealed class BindingConfigurationStore
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration?.ExecutionConfigurationIdentity,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
-        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
+        // The selected display is presentation state, not an input of the completed invocation.
+        // Keep it in NodeSignature/persistence and the next-run image selection path.
+        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null
     }, WorkflowSerializationOptions.Compact);
 
     // Runtime initialization timestamps are not binding changes. Initial values are configuration.

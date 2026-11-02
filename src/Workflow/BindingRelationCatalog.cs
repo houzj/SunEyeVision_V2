@@ -36,13 +36,13 @@ public static class BindingRelationCatalog
         =>node.RuntimeConfiguration is not null?Array.Empty<ParamSetting>():node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).ToArray();
     public static ReferenceSetting? GetReference(WorkflowNodeBase node,string key)
     {
-        if(node.RuntimeConfiguration is {} runtime)return runtime.Fields.Read(key) as ReferenceSetting;
+        if(node.RuntimeConfiguration is {} runtime)return RuntimeDisplayBindings.References(runtime).FirstOrDefault(entry=>entry.Key==key).Setting;
         var setting=GetSetting(node,key);
         return setting?.ReferenceExpression is {} expression?new(BindingReferenceSerializer.Deserialize(expression),setting.Conversion):null;
     }
     public static IReadOnlyDictionary<string,ReferenceSetting> References(WorkflowNodeBase node,bool executionOnly=false)
         =>node.RuntimeConfiguration is {} runtime
-            ?runtime.Fields.Capture().Where(pair=>pair.Value is ReferenceSetting&&(!executionOnly||runtime.IsExecutionFieldActive(pair.Key))).ToDictionary(pair=>pair.Key,pair=>(ReferenceSetting)pair.Value,StringComparer.Ordinal)
+            ?RuntimeDisplayBindings.References(runtime).Where(pair=>!executionOnly||runtime.IsExecutionFieldActive(pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Setting,StringComparer.Ordinal)
             :Settings(node).Where(setting=>setting.BindingType==BindingType.Binding&&setting.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,setting.ParameterName))
                 .ToDictionary(setting=>setting.ParameterName,setting=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression!),setting.Conversion),StringComparer.Ordinal);
     /// <summary>Execution-only view. The unfiltered Describe remains the document's reference-management inventory.</summary>

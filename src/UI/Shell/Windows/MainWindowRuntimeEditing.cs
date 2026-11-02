@@ -107,7 +107,8 @@ public partial class MainWindowViewModel
                     resourcePaths:SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document),
                     cameraService:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
                     solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
-                    readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result);
+                    readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,
+                    readDisplayCandidate:id=>query.GetNodeContext(id)?.Result);
             });
             SubscribeToolExecutionCompleted(window,node,query,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);

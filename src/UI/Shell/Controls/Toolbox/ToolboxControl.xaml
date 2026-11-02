@@ -44,9 +44,10 @@
      <Grid x:Name="categoryHost" Tag="{Binding}" local:ToolboxControl.PointerLeft="True" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
       <Border Style="{StaticResource Category}" ToolTip="{Binding Name}"><Image Source="{Binding IconSource}" Width="52" Height="50" Stretch="Uniform"/></Border>
       <Popup Placement="Right" AllowsTransparency="True" MaxHeight="{Binding ActualHeight, ElementName=ToolboxRoot}">
-       <Popup.Style><Style TargetType="Popup"><Setter Property="IsOpen" Value="{Binding IsMouseOver, ElementName=categoryHost}"/><Style.Triggers>
+       <Popup.Style><Style TargetType="Popup"><Setter Property="IsOpen" Value="{Binding IsMouseOver, ElementName=categoryHost, Mode=OneWay}"/><Style.Triggers>
         <DataTrigger Binding="{Binding Path=(local:ToolboxControl.PointerLeft), ElementName=categoryHost}" Value="False"><Setter Property="IsOpen" Value="True"/></DataTrigger>
-        <DataTrigger Binding="{Binding IsMouseOver, ElementName=ToolboxRoot}" Value="False"><Setter Property="IsOpen" Value="False"/></DataTrigger>
+        <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsMouseOver, ElementName=ToolboxRoot}" Value="False"/><Condition Binding="{Binding IsDragging, ElementName=ToolboxRoot}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="IsOpen" Value="False"/></MultiDataTrigger>
+        <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsDragging, ElementName=ToolboxRoot}" Value="True"/><Condition Binding="{Binding IsSelected}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="IsOpen" Value="True"/></MultiDataTrigger>
        </Style.Triggers></Style></Popup.Style>
        <Grid Width="235" Background="#02FFFFFF">
         <Border Margin="6,8,8,8" CornerRadius="4" BorderThickness="2" BorderBrush="#171716">

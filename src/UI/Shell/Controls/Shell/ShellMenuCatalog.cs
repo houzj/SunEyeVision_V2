@@ -44,14 +44,14 @@ internal static class ShellMenuCatalog
         new ShellMenuEntry("toolbar-only","",ShowInMenu:false,Children:new[] {
             new ShellMenuEntry("undo","撤销","UndoCommand",ToolGroup:"group0",Priority:2,ToolTip:"撤销 (Ctrl+Z)",Icon:Workflow+"toolbar_ic_topbar_undo_normal.png",DisabledIcon:Workflow+"toolbar_ic_topbar_undo_disable.png",ToolName:"UndoEditButton",Special:"undo"),
             new ShellMenuEntry("redo","重做","RedoCommand",ToolGroup:"group0",Priority:3,ToolTip:"重做 (Ctrl+Y)",Icon:Workflow+"toolbar_ic_topbar_redo_normal.png",DisabledIcon:Workflow+"toolbar_ic_topbar_redo_disable.png",ToolName:"RedoEditButton"),
-            new ShellMenuEntry("lock","锁定",DisabledReason:"锁定：功能尚未接入",ToolGroup:"group0",Priority:4),
+            new ShellMenuEntry("lock","锁定",DisabledReason:"锁定：功能尚未接入",ToolGroup:"group0",Priority:4,Icon:Native+"ic_topbar_lock_normal.png",DisabledIcon:Native+"ic_topbar_lock_disable.png"),
             new ShellMenuEntry("variable","全局变量管理","ShowGlobalVariableManagerCommand",ToolGroup:"group2",Priority:1,ToolTip:"全局变量管理",Icon:Native+"ic_全局变量_normal.png",DisabledIcon:Native+"ic_全局变量_disable.png"),
-            new ShellMenuEntry("trigger","触发",DisabledReason:"触发：功能尚未接入",ToolGroup:"group2",Priority:3),
-            new ShellMenuEntry("script","脚本",DisabledReason:"脚本：功能尚未接入",ToolGroup:"group2",Priority:4),
+            new ShellMenuEntry("trigger","触发",DisabledReason:"触发：功能尚未接入",ToolGroup:"group2",Priority:3,Icon:Workflow+"toolbar_ic_topbar_全局触发_normal.png"),
+            new ShellMenuEntry("script","脚本",DisabledReason:"脚本：功能尚未接入",ToolGroup:"group2",Priority:4,Icon:Native+"ic_script_normal.png",DisabledIcon:Native+"ic_script_disable.png"),
             new ShellMenuEntry("run","运行当前工作流","RunWorkflowCommand",ToolGroup:"group3",Priority:0,ToolTip:"运行当前工作流 (F5)",Icon:Native+"toolbarstart_normal.png",DisabledIcon:Native+"toolbarstart_disable.png"),
             new ShellMenuEntry("continuous","连续运行",DisabledReason:"全流程连续运行尚未接入：缺少可区分连续与单次运行的正式状态",ToolGroup:"group3",Priority:1,Icon:Native+"toolbarrunrepeat_disable.png",ToolName:"ContinuousRunToggle"),
-            new ShellMenuEntry("config","综合配置",DisabledReason:"综合配置：功能尚未接入",ToolGroup:"group3",Priority:2),
-            new ShellMenuEntry("frontend","运行界面",DisabledReason:"运行界面：功能尚未接入",ToolGroup:"group3",Priority:3),
+            new ShellMenuEntry("config","综合配置",DisabledReason:"综合配置：功能尚未接入",ToolGroup:"group3",Priority:2,Icon:Workflow+"toolbar_ic_topbar_综合配置_normal.png"),
+            new ShellMenuEntry("frontend","运行界面",DisabledReason:"运行界面：功能尚未接入",ToolGroup:"group3",Priority:3,Icon:Workflow+"toolbar_ic_topbar_fronted_normal.png"),
             new ShellMenuEntry("theme","主题","ToggleThemeCommand",ToolGroup:"group4",Priority:0,ToolName:"ThemeToggleButton",Special:"theme") })
     };
 

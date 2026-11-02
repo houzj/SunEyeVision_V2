@@ -6,7 +6,7 @@
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
-             d:DesignHeight="64" d:DesignWidth="1600">
+             d:DesignHeight="81" d:DesignWidth="1600">
 
     <UserControl.Resources>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -72,7 +72,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
             <Setter Property="Padding" Value="12,4"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
         </Style>
 
@@ -82,21 +82,21 @@
     <Border Background="{DynamicResource ThemeTitleBarBackgroundBrush}"
             BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}"
             BorderThickness="0,0,0,1">
-        <Grid Height="64">
+        <Grid Height="81">
             <Grid.RowDefinitions>
-                <RowDefinition Height="32"/>  <!-- 行1：菜单栏 -->
-                <RowDefinition Height="32"/>  <!-- 行2：工具栏 -->
+                <RowDefinition Height="34"/>  <!-- 行1：菜单栏 -->
+                <RowDefinition Height="47"/>  <!-- 行2：工具栏 -->
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>  <!-- Logo -->
+                <ColumnDefinition Width="184"/>  <!-- Logo -->
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>  <!-- 窗口控制 -->
             </Grid.ColumnDefinitions>
 
             <!-- Logo：跨两行，垂直居中，放大 -->
             <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
-                <Image Source="{DynamicResource SunEyeVision.BrandLogo}" Width="72" Height="55" Stretch="Uniform" VerticalAlignment="Center"/>
-                <TextBlock Text="SunEyeVision" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center" Margin="8,0,18,0"/>
+                <Image Source="{DynamicResource SunEyeVision.BrandLogo}" Width="60" Height="55" Stretch="Uniform" VerticalAlignment="Center"/>
+                <TextBlock Text="SunEyeVision" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center" Margin="6,0,0,0"/>
             </StackPanel>
 
             <!-- 菜单栏（行1） -->
@@ -107,15 +107,25 @@
                     Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" VerticalAlignment="Bottom"/>
 
             <!-- 原件工具栏按功能分组；缺基础入口明确禁用。 -->
-            <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" WindowChrome.IsHitTestVisibleInChrome="True"><StackPanel x:Name="ToolbarItems" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0"/></ScrollViewer>
+            <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" WindowChrome.IsHitTestVisibleInChrome="True"><StackPanel x:Name="ToolbarItems" Orientation="Horizontal" VerticalAlignment="Center"/></ScrollViewer>
+                <Button x:Name="RunModeButton" Grid.Column="1" Style="{StaticResource TitleBarButton}" IsEnabled="False"
+                        ToolTip="运行模式：功能尚未接入" ToolTipService.ShowOnDisabled="True" Margin="6,0,8,0" Padding="0">
+                    <StackPanel Orientation="Horizontal" Opacity="0.45">
+                        <Image Width="24" Height="24" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/frontend/ic_topbar_运行fronted_normal.png"/>
+                        <TextBlock Text="运行模式" FontSize="13" Margin="6,0,8,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
 
             <!-- 右侧：项目信息 + 窗口控制（第一行） -->
             <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                <Border Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarProjectInfoBgBrush}}" CornerRadius="3" Padding="8,4" Margin="0,0,8,0"
+                <Border Background="Transparent" Padding="6,0" Margin="0,0,8,0"
                         Visibility="{Binding HasCurrentSolution, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
-                        <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentSolutionName}" FontSize="13" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
                 <Button ToolTip="最小化" ToolTipService.InitialShowDelay="0"

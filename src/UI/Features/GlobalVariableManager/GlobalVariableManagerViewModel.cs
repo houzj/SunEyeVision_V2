@@ -253,7 +253,10 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             ExportCommand = new RelayCommand(Export, CanExport);
             SaveCommand = new RelayCommand(Save, CanSave);
             CloseCommand = new RelayCommand(Close, () => true);
-            OpenTargetParameterCommand = new RelayCommand<object?>(OpenTargetParameter, _ => true);
+            // The legacy handler writes name-based __GlobalVars__ settings rather than the
+            // current VariableSetting contract. Keep the entry unavailable until the formal
+            // target-field adapter and its transaction have been migrated together.
+            OpenTargetParameterCommand = new RelayCommand<object?>(OpenTargetParameter, _ => false);
         }
 
         /// <summary>
@@ -787,10 +790,12 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                     return;
                 }
 
-                var result = TargetParameterDialog.ShowDialog(
+                var result = TargetParameterSelectionService.Choose(
                     currentSolution.Workflows,
                     variable.ConsumerBindings,
-                    variable.Type);
+                    variable.Type,
+                    currentSolution.GlobalVariables.Where(other => other.Id != variable.Id)
+                        .SelectMany(other => other.ConsumerBindings).ToArray());
 
                 if (result != null)
                 {

@@ -20,12 +20,12 @@ public sealed record ResultDisplayAppearance(ResultGraphicAppearance Graphic,Res
 /// <summary>Only declared same-row output paths. Does not own values, resources, callbacks or a renderer.</summary>
 public sealed class ResultDisplayDescriptor
 {
-    public ResultDisplayDescriptor(ResultFieldPath rows,ResultFieldPath identity,ResultFieldPath quadrilateral,
+    public ResultDisplayDescriptor(ResultFieldPath rows,ResultFieldPath identity,ResultFieldPath rectangleCorners,
         ResultFieldPath geometrySource,ResultFieldPath textValue,ResultFieldPath passed)
-    {Rows=rows;Identity=identity;Quadrilateral=quadrilateral;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;}
+    {Rows=rows;Identity=identity;RectangleCorners=rectangleCorners;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;}
     public ResultFieldPath Rows {get;}
     public ResultFieldPath Identity {get;}
-    public ResultFieldPath Quadrilateral {get;}
+    public ResultFieldPath RectangleCorners {get;}
     public ResultFieldPath GeometrySource {get;}
     public ResultFieldPath TextValue {get;}
     public ResultFieldPath Passed {get;}
@@ -33,7 +33,7 @@ public sealed class ResultDisplayDescriptor
     {
         var rows=Rows.Resolve(schema);
         if(rows.Shape!=ValueShape.Sequence||rows.Element?.Shape!=ValueShape.Record)throw new ArgumentException("Display rows require declared record results.");
-        foreach(var path in new[]{Identity,Quadrilateral,GeometrySource,TextValue,Passed})
+        foreach(var path in new[]{Identity,RectangleCorners,GeometrySource,TextValue,Passed})
             if(path.PortId!=Rows.PortId||path.MemberFieldPath.Count!=Rows.MemberFieldPath.Count+1
                 ||!path.MemberFieldPath.Take(Rows.MemberFieldPath.Count).SequenceEqual(Rows.MemberFieldPath))
                 throw new ArgumentException("Display paths must address members of the same declared rows.");
@@ -41,9 +41,9 @@ public sealed class ResultDisplayDescriptor
         {var type=path.Resolve(schema);if(type.Shape!=ValueShape.Sequence)throw new ArgumentException("Display member lost its row cardinality.");return type.Element!;}
         if(Element(Identity)!=DataType.Integer||Element(Passed)!=DataType.Boolean||Element(TextValue)!=DataType.Number
             ||Element(GeometrySource)!=TypeRef.ResourceOf(ResourceKind.Region))throw new ArgumentException("Display identity, status, value or physical geometry source differs from its declaration.");
-        var geometry=Element(Quadrilateral);
+        var geometry=Element(RectangleCorners);
         if(geometry.Shape!=ValueShape.Sequence||geometry.Element?.Shape!=ValueShape.Geometry||geometry.Element.Geometry!=GeometryKind.Point||geometry.Count!=CountConstraint.Exactly(4))
-            throw new ArgumentException("Display quadrilaterals require declared point sequences.");
+            throw new ArgumentException("Display rectangles require four ordered declared corner points.");
     }
 }
 

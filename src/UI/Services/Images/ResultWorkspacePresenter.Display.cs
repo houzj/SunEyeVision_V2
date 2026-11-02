@@ -63,6 +63,8 @@ internal sealed partial class ResultWorkspacePresenter
             var original=pane.Display;var paneGeneration=pane.Generation;
             bool Attempt()=>!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,original);
             void ClearOriginal(){if(!Attempt())return;pane.Display=null;original?.Dispose();}
+            // Original result ShapeList belongs to the output view; input keeps its independent editable ROIList.
+            if(!ReferenceEquals(pane,_output)){ClearOriginal();continue;}
             if(state is null||publication is null||!Current()||pane.Image.CurrentFrame is not {} receipt)
             {ClearOriginal();continue;}
             IResultValueLease? values=null;DisplayScene? candidate=null;SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? textLease=null;
@@ -109,11 +111,11 @@ internal sealed partial class ResultWorkspacePresenter
                     var appearance=state.Appearance;
                     if(appearance.Graphic.Visible)
                     {
-                        var corners=Member(row,state.Descriptor.Quadrilateral);if(corners.Count!=4)throw new InvalidOperationException("外接矩形缺少四个真实角点。");
+                        var corners=Member(row,state.Descriptor.RectangleCorners);if(corners.Count!=4)throw new InvalidOperationException("外接矩形缺少四个真实角点。");
                         var points=new List<Point2>();
                         for(var p=0;p<corners.Count;p++)
                         {if(corners.GetElement(p).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)throw new InvalidOperationException("矩形角点坐标域不匹配。");points.Add(point.Point);}
-                        geometry.Add(new(region.SourceFrame,new PolygonGeometry(receipt.Coordinates,points),Color(passed?appearance.Graphic.Ok:appearance.Graphic.Ng),appearance.Graphic.Width,appearance.Graphic.Opacity));
+                        geometry.Add(new(region.SourceFrame,new PolygonGeometry(receipt.Coordinates,points),Color(passed?appearance.Graphic.Ok:appearance.Graphic.Ng),appearance.Graphic.Width,appearance.Graphic.Opacity,RectangleCorners:true));
                     }
                     if(appearance.Text.Visible)
                     {

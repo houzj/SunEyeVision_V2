@@ -1,0 +1,38 @@
+[
+  {
+    "path": "scripts/verification/S3RuntimeKernelCases.cs",
+    "sha256": "EF92BEEBBDF49E6E973E4C2303AD2EA3A6E774B4A2018A7BEAADA1542F692E9A"
+  },
+  {
+    "path": "scripts/verification/S4B08NumericReferenceCompositionCases.cs",
+    "sha256": "F8C400B1DBD1EC2D12B83DD6E20C8A465ECC92C7EBBC7D5FB85A97142EA2F977"
+  },
+  {
+    "path": "scripts/verification/S4BlobResultDisplayCases.cs",
+    "sha256": "06E50962C48F6C8C077A985DFBDD37D32D830E295A824D9BE4B27DEA8A56FFAE"
+  },
+  {
+    "path": "scripts/verification/S4BlobResultWorkspaceCases.cs",
+    "sha256": "DD81E93B93801030D48E8D09540A2BEC98EB142B9727709B220C2E671A2A34A7"
+  },
+  {
+    "path": "src/Plugin.Contracts/Results/Presentation/ResultDisplayDescriptor.cs",
+    "sha256": "F0746085865E78F187EF5E51D9AF3DB50B5B86B82D9DAC7E271D6910CBD05AB9"
+  },
+  {
+    "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
+    "sha256": "829BA44341FC08ABC9DF471F48C5DD546FC1A8B813D5282AEC6A1686EE430E94"
+  },
+  {
+    "path": "src/Plugin.Wpf/Catalog/controls.json",
+    "sha256": "4D3F48D30AC7F462B1E36D155208F462CEEE53EEE90F573C5715D9D3FD075E4B"
+  },
+  {
+    "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+    "sha256": "C30B0047C2B99A28687A662E065F556E0AE10229A80CF6B722D4ECC0A4DB5D74"
+  },
+  {
+    "path": "src/UI/Services/Images/ResultWorkspacePresenter.Display.cs",
+    "sha256": "714E90E83F44893B1663A0F3FFD7378B7A21F62E96C5C080A3F9AE57447773E0"
+  }
+]

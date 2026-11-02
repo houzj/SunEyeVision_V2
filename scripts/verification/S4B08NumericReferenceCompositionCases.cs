@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.UI.Shell.Controls.Shell;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
@@ -198,7 +199,39 @@ internal static class S2DocumentEditingCases
             vm.SelectedNode=node;node.IsSelected=true;var execution=vm.RunSelectedImageAsync();PumpUntil(()=>execution.IsCompleted);execution.GetAwaiter().GetResult();Pump();
             var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();workspace.SelectedOutputItem=workspace.OutputItems.Cast<object>().Single(item=>Get(item,"Reference") is OutputReference reference&&reference.NodeId==node.Id&&reference.PortId==BlobSchema.Field(5));Pump();
             var presenter=Get(resultView,"_workspacePresenter");var pane=Get(presenter,"_output");object? scene=null;PumpUntil(()=>{try{scene=Get(pane,"Display");return scene is not null;}catch(NullReferenceException){return false;}});
-            var prepared=Get(Get(scene!,"Layer"),"_prepared");var items=(object[])Get(prepared,"Items");var rectangles=items.Where(item=>item.GetType().Name=="RectangleProjection").ToArray();Require(rectangles.Length==2&&rectangles.Any(item=>(double)Get(item,"Width")==roiWidth&&(double)Get(item,"StrokeThickness")==3),"混合正式结果未显示本次检测/屏蔽及当前正式样式");
+            var prepared=Get(Get(scene!,"Layer"),"_prepared");var items=(object[])Get(prepared,"Items");var rectangles=items.OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle>().ToArray();
+            var geometry=((IToolResultGeometryOutput)Get(Get(vm,"_resultPublicationSnapshot"),"Output")).ResultGeometry;
+            var receipt=((SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport)Get(Get(presenter,"OutputPane"),"Viewport")).CurrentFrame!;
+            Require(geometry.SourceFrame==receipt.Frame&&geometry.Coordinates==receipt.Coordinates,"混合显示不是同一物理帧/坐标域");
+            var appearance=node.RuntimeConfiguration!.CaptureResultDisplay()!;var matched=new HashSet<object>(ReferenceEqualityComparer.Instance);
+            string ColorOf(ResultDisplayColor color)=>Color.FromArgb(color.Alpha,color.Red,color.Green,color.Blue).ToString();
+            void Match(Func<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle,bool> predicate,ResultGraphicAppearance style,bool passed,string fill)
+            {
+                var choices=rectangles.Where(rect=>predicate(rect)&&rect.Stroke==ColorOf(passed?style.Ok:style.Ng)&&rect.Fill==fill&&rect.StrokeThickness==style.Width&&Math.Abs(rect.Opacity-style.Opacity)<1e-9).ToArray();
+                Require(choices.Length==1&&matched.Add(choices[0]),"混合场景缺失、重复或串用某个结果/区域矩形及样式");
+            }
+            using(var displayed=((SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication)Get(vm,"CurrentResultPublication")).Borrow())
+            {
+                var rows=displayed.Values!.Read(BlobSchema.BlobsPort);
+                for(var rowIndex=0;rowIndex<rows.Count;rowIndex++)
+                {
+                    var row=rows.GetElement(rowIndex);var corners=row.GetField("rotated-bounds");
+                    Match(rect=>{
+                        var angle=rect.Angle*Math.PI/180;var cs=Math.Cos(angle);var sn=Math.Sin(angle);
+                        return corners.Count==4&&Enumerable.Range(0,4).All(index=>{var point=((PointGeometry)corners.GetElement(index).GetGeometry()).Point;var dx=point.X-rect.CenterPoint.X;var dy=point.Y-rect.CenterPoint.Y;return Math.Abs(Math.Abs(dx*cs+dy*sn)-rect.Width/2)<1e-6&&Math.Abs(Math.Abs(-dx*sn+dy*cs)-rect.Height/2)<1e-6;});
+                    },appearance.Graphic,row.GetField("judgment-passed").GetScalar<bool>(),Colors.Transparent.ToString());
+                }
+                var regionRectangles=0;
+                foreach(var group in geometry.Groups)foreach(var shape in group.Shapes.Where(shape=>shape.Get<string>("kind")=="rectangle"))
+                {
+                    regionRectangles++;var center=shape.Get<PointGeometry>("center").Point;
+                    var style=group.Role==ResultGeometryRole.Inspection?appearance.Inspection!:group.Role==ResultGeometryRole.Mask?appearance.Mask!:throw new Exception("夹具出现未声明的矩形角色");
+                    if(group.Role==ResultGeometryRole.Inspection)Require(shape.Get<double>("width")==roiWidth&&style.Width==3,"检测区域或正式样式不符敏感夹具");
+                    Match(rect=>Math.Abs(rect.CenterPoint.X-center.X)<1e-8&&Math.Abs(rect.CenterPoint.Y-center.Y)<1e-8&&rect.Width==shape.Get<double>("width")&&rect.Height==shape.Get<double>("height")&&Math.Abs(Math.IEEERemainder(rect.Angle-shape.Get<double>("angle-degrees"),360))<1e-8,
+                        style,geometry.Passed,group.Role==ResultGeometryRole.Mask?"#FFFF5400":Colors.Transparent.ToString());
+                }
+                Require(regionRectangles==2&&rectangles.Length==rows.Count+regionRectangles&&matched.Count==rectangles.Length,"结果/检测/屏蔽矩形未逐项完整对应");
+            }
             var words=items.Where(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)).SelectMany(item=>((System.Collections.IEnumerable)Get(item,"Texts")).Cast<object>()).ToArray();Require(words.Length==1&&Equals(Get(words[0],"Content"),expectedText),"混合正式文本未消费同次结果");if(expectedX is {} x)Require(((Point)Get(words[0],"Position")).X==x,"混合文本位置未消费同次来源");Capture((FrameworkElement)resultView,"mixed-publication-scene.png");
         }
         Case("真实Blob窗使用唯一公共原底栏并执行返回结果",()=>{

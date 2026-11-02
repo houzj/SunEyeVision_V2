@@ -1,0 +1,12 @@
+# Blob原矩形与结果路由候选交接（2026-11-02）
+- 基线提交：1e9d7ad46；主仓其后fe735c2cd仅协作协议及交接文档变更，正式集成前同步。
+- 分支/唯一写者：codex/blob-render-chain-20261102，复用D:/MyWork/line-aiproject/blob-reference-chain-20261101，本对话唯一修改，审查线只读；未新增Worktree。
+- 完整设计：BLOB_RECTANGLE_OUTPUT_WHOLE_DESIGN_20261102.md；原证BLOB_RENDER_CHAIN_ALIGNMENT_20261102.md及REA本轮静态补证。
+- 已实施：RectangleCorners明确四点语义；公开显示适配标记驱动原IRectangle/RectShape，正常、0宽高/全0、正负旋转及有界数值精度校验；不改HALCON算法或输出/方案数据格式，不放宽公共Positive几何合同。结果图文只在输出视口，ROI编辑原单/双图路由保持，旧场景只清自身租约。
+- 消费闭包：Contracts、Plugin.Wpf投影/视口、UI结果Presenter、Catalog本地SHA及独立RuntimeKernel/图文/工作区/B08验证消费者同步；不留Quadrilateral旧别名或图形类型回退。
+- 候选构建：UI/全量002自然exit0，6524/6539警告，0错误；全过程保留001及复审修正。
+- 同版验证：显示All44、真实结果工作区4、运行层19、B08完整12、辅助十字7、ROI预览24均自然exit0，加载15/15/4/15/15/15个程序集SHA匹配；完整回执BLOB_RECTANGLE_OUTPUT_CANDIDATE_20261102.json及source-freeze-003.json。
+- 实际样本：HALCON面积61/21/16/16/1，45度旋转、横/竖线15×0、单像素0×0；原高低质量几何/变换和WPF截图已查，不称VM算法/像素/自然键鼠等价。
+- 失败保留：早期显示/工作区/B08验证按旧多边形/全场总数推断ROI或高亮，已按同次源、角色几何/样式及独立层身份核对；旧13字段前提与本次测试字段名/缺using错误均保留，不把修测试称产品修复。
+- 未完成：主仓正式集成/构建与消费者验收；VS由用户独立验、统一人工另记；原机全部样式/交互、原生缓冲所有权、导出native及S3算法等价未由本批证明。
+- 保护/禁止：不改工作流独立目录或合并111960d9f；主仓CURRENT_TASK与两架构HTML及.codebuddy/tmp/现有改动不得覆盖。先同步已固定协议基线，再由主仓集中集成，不复制候选Release或现成厂商程序。

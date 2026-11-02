@@ -228,8 +228,11 @@ internal static class S2DocumentEditingCases
                 var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe();
                 Require(definition.Table.Columns.Count==10&&definition.Table.Validate(schema).Count==0,"表格声明未加载或字段映射无效");
                 var provider=(SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)new BlobTool();provider.ResultDisplay.Validate(schema);
-                Require(provider.DisplaySettingsSchema.Inputs.Count==13&&provider.DisplaySettingsSchema.Inputs.All(port=>port.EditModes==FieldEditModes.Constant)
-                    &&provider.ResultDisplay.Quadrilateral.MemberFieldPath.SequenceEqual(new[]{"rotated-bounds"})
+                var expectedDisplayIds=new[]{"display.blob","display.inspection","display.mask","display.annulus"}.SelectMany(group=>new[]{"visible","ok","ng","opacity","width"}.Select(role=>group+"."+role))
+                    .Concat(new[]{"visible","content","ok","ng","size","opacity","x","y"}.Select(role=>"display.text."+role)).Order().ToArray();
+                Require(provider.DisplaySettingsSchema.Inputs.Select(port=>port.Id).Order().SequenceEqual(expectedDisplayIds)&&provider.DisplaySettingsSchema.Inputs.All(port=>port.EditModes==
+                    (port.Id=="display.text.content"?FieldEditModes.Constant|FieldEditModes.DisplayExpression:port.Id is "display.text.x" or "display.text.y"?FieldEditModes.Constant|FieldEditModes.Reference:FieldEditModes.Constant))
+                    &&provider.ResultDisplay.RectangleCorners.MemberFieldPath.SequenceEqual(new[]{"rotated-bounds"})
                     &&provider.ResultDisplay.TextValue.MemberFieldPath.SequenceEqual(new[]{"area"}),"正式显示阶段/实际输出映射无效");
                 var appearance=provider.CaptureResultDisplay(new FieldSettings(provider.DisplaySettingsSchema.Inputs,provider.CreateDisplaySettings().CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))));
                 Require(appearance.Graphic.Ok.Green==255&&appearance.Graphic.Ok.Red==102&&appearance.Text.Content=="Blob Area:{0}","正式新建样式默认不符合已核feature声明");

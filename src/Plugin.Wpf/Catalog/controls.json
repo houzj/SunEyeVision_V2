@@ -5734,11 +5734,11 @@
         "files": [
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
-            "sha256": "162FBB056792B58138F56986E4034DD98EB46292AE5F65F0AB9494843F8EEA0B"
+            "sha256": "829BA44341FC08ABC9DF471F48C5DD546FC1A8B813D5282AEC6A1686EE430E94"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-            "sha256": "036139CEEC0A4AA489D1ED68C85569A37FD5952D6314101CCA22A74ED92A3C74"
+            "sha256": "C30B0047C2B99A28687A662E065F556E0AE10229A80CF6B722D4ECC0A4DB5D74"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
@@ -6428,7 +6428,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
-          "sha256": "036139CEEC0A4AA489D1ED68C85569A37FD5952D6314101CCA22A74ED92A3C74"
+          "sha256": "C30B0047C2B99A28687A662E065F556E0AE10229A80CF6B722D4ECC0A4DB5D74"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",

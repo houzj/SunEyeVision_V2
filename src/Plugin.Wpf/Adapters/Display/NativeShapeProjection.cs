@@ -46,6 +46,7 @@ internal static class NativeShapeProjection
             if (!double.IsFinite(overlay.Thickness) || overlay.Thickness <= 0
                 || !double.IsFinite(overlay.Opacity) || overlay.Opacity is < 0 or > 1)
                 throw new ArgumentException("几何线宽或透明度无效。");
+            if(overlay.RectangleCorners && overlay.Geometry is not PolygonGeometry)throw new ArgumentException("矩形角点声明必须提供有序四点。");
             var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,(overlay.Fill??Colors.Transparent).ToString());
             object shape = overlay.Geometry switch
             {
@@ -56,6 +57,7 @@ internal static class NativeShapeProjection
                     rectangle.Height, Degrees(rectangle.AngleRadians)),
                 SunEyeVision.Plugin.Contracts.EllipseGeometry ellipse => new EllipseProjection(style, Point(ellipse.Center), ellipse.RadiusX,
                     ellipse.RadiusY, Degrees(ellipse.AngleRadians)),
+                PolygonGeometry polygon when overlay.RectangleCorners => RectangleFromCorners(style,polygon),
                 PolygonGeometry polygon => Polygon(style, polygon),
                 ArcGeometry arc when Math.Abs(arc.SweepRadians) == 2 * Math.PI
                     => new CircleProjection(style, Point(arc.Center), arc.Radius),
@@ -72,6 +74,44 @@ internal static class NativeShapeProjection
             if (vertices > maximumVertices) throw new ArgumentException("shape-budget: 完整多边形顶点超过准入预算。");
             return new PolygonProjection(style, polygon.Vertices.Select(Point).ToArray());
         }
+    }
+    // This is a display adaptation of the producer's ordered rectangle corners.
+    // Keep zero extents accepted by the original IRectangle/RectShape contract.
+    private static object RectangleFromCorners(Style style,PolygonGeometry corners)
+    {
+        if(corners.Vertices.Count!=4)throw new ArgumentException("矩形需要四个有序角点。");
+        var a=corners.Vertices[0];var b=corners.Vertices[1];var c=corners.Vertices[2];var d=corners.Vertices[3];
+        var ux=b.X-a.X;var uy=b.Y-a.Y;var vx=c.X-b.X;var vy=c.Y-b.Y;
+        var width=Length(ux,uy);var height=Length(vx,vy);
+        if(!double.IsFinite(width)||!double.IsFinite(height))throw new ArgumentException("矩形边长超出原绘制范围。");
+        if(width==0&&height==0)
+        {
+            if(d.X!=a.X||d.Y!=a.Y)throw new ArgumentException("退化矩形四角不一致。");
+            return new RectangleProjection(style,Point(a),0,0,0);
+        }
+        var scale=Math.Max(1,Math.Max(width,height));
+        var magnitude=corners.Vertices.Max(point=>Math.Max(Math.Abs(point.X),Math.Abs(point.Y)));
+        var coordinateError=16*(Math.BitIncrement(magnitude)-magnitude);
+        if(!double.IsFinite(coordinateError))throw new ArgumentException("矩形坐标精度超出原绘制范围。");
+        var shortest=width==0?height:height==0?width:Math.Min(width,height);
+        if(coordinateError>shortest*1e-3)throw new ArgumentException("当前坐标精度不足以确认矩形直角。");
+        var tolerance=1e-9*scale+coordinateError;
+        var rounding=coordinateError/scale;
+        var perpendicularTolerance=1e-9*(width/scale)*(height/scale)
+            +2*rounding*((width/scale)+(height/scale))+4*rounding*rounding;
+        if(Math.Abs((d.X-a.X)-vx)>tolerance||Math.Abs((d.Y-a.Y)-vy)>tolerance
+            ||Math.Abs((c.X-d.X)-ux)>tolerance||Math.Abs((c.Y-d.Y)-uy)>tolerance
+            ||Math.Abs((ux/scale)*(vx/scale)+(uy/scale)*(vy/scale))>perpendicularTolerance)
+            throw new ArgumentException("声明的四点不构成有序直角矩形。");
+        var center=new Point2(a.X*.5+c.X*.5,a.Y*.5+c.Y*.5);
+        var angle=width>0?Math.Atan2(uy,ux):height>0?Math.Atan2(-vx,vy):0;
+        return new RectangleProjection(style,Point(center),width,height,Degrees(angle));
+    }
+    private static double Length(double x,double y)
+    {
+        var scale=Math.Max(Math.Abs(x),Math.Abs(y));
+        if(scale==0)return 0;
+        return scale*Math.Sqrt((x/scale)*(x/scale)+(y/scale)*(y/scale));
     }
     private static Point Point(Point2 value) => new(value.X, value.Y);
     private static double Degrees(double value)

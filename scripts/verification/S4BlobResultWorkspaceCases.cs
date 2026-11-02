@@ -30,6 +30,9 @@ internal static class S2DocumentEditingCases
 {
  const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
  static object Get(object value,string name)=>value.GetType().GetProperty(name,Flags)?.GetValue(value)??value.GetType().GetField(name,Flags)?.GetValue(value)??throw new Exception("缺少真实宿主成员："+name);
+ static object? Field(object value,string name)
+ {for(var type=value.GetType();type is not null;type=type.BaseType)if(type.GetField(name,Flags|BindingFlags.DeclaredOnly) is {} field)return field.GetValue(value);throw new Exception("缺少真实图层字段："+name);}
+ static object[] LayerItems(object layer)=>Field(layer,"_prepared") is {} prepared?(object[])Get(prepared,"Items"):Array.Empty<object>();
  static void Call(object value,string name,params object?[] args)=>value.GetType().GetMethod(name,Flags)!.Invoke(value,args);
  static void Require(bool value,string message){if(!value)throw new Exception(message);}
  static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
@@ -115,6 +118,12 @@ internal static class S2DocumentEditingCases
      Require(grayDomain.ReadRuns(0,4096).Span.SequenceEqual(expected)&&binaryDomain.ReadRuns(0,4096).Span.SequenceEqual(expected),"灰/二值输出没有保留真实Domain runs");
     }results.UpdateNodeResult(source,(DeclaredOutputSnapshot)run.NodeResults[source.Id].Result!,false,context);results.UpdateNodeResult(node,snapshot,true,context);Pump();return snapshot;
    }
+   var pane=Get(presenter,"_output");var selectionLayer=Get(pane,"Selection");
+   object[] Shapes()=>((IEnumerable?)viewport.ShapeList)?.Cast<object>().ToArray()??Array.Empty<object>();
+   bool Contains(object[] values,object item)=>values.Any(value=>ReferenceEquals(value,item));
+   object? DisplayScene()=>Field(pane,"Display");
+   object[] DisplayItems()=>DisplayScene() is {} scene?LayerItems(Get(scene,"Layer")):Array.Empty<object>();
+   object[] SelectionItems()=>LayerItems(selectionLayer);
    IResultPublication Publication()=>(IResultPublication)Get(main,"CurrentResultPublication");
    IToolResultView Table()=>(IToolResultView)Get(main,"_activeResultView");
    void SelectImage(string? port=null,string? selectedNode=null)
@@ -129,12 +138,13 @@ internal static class S2DocumentEditingCases
     Require(!grid.CanUserSortColumns&&!grid.CanUserReorderColumns,"占位改变原表排序/重排门禁");
     var cell=grid.Items[0].GetType().GetProperty("Item")!;foreach(var key in new[]{"angle","long-axis","short-axis"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),"未实现"),"未证特征显示伪数值");
     using(var reader=snapshot.AcquireReader()){var record=(RecordValue)reader.Values!.Get<SequenceValue>(BlobSchema.BlobsPort)[0]!;foreach(var key in new[]{"area","perimeter","centroid-x","centroid-y","circularity","rectangularity"})Require(Equals(cell.GetValue(grid.Items[0],new object[]{key}),record.Get<double>(key)),"已有真实特征被占位替换："+key);}
+    var permanent=DisplayScene();var permanentItems=DisplayItems();Require(permanent is not null&&permanentItems.OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle>().Count()==grid.Items.Count&&permanentItems.Any(item=>item.GetType().Name.Contains("MultiText",StringComparison.Ordinal)),"真实夹具缺同次常驻结果矩形/文字");
     ResultSelection? selected=null;object? senderIdentity=null;EventHandler<ResultSelection> capture=(sender,value)=>{senderIdentity=sender;selected=value;};table.SelectionHighlightChanged+=capture;
     try{grid.SelectedItem=null;grid.SelectedItem=grid.Items[0];Pump();}finally{table.SelectionHighlightChanged-=capture;}
     Require(ReferenceEquals(senderIdentity,table),"真实Blob包装事件sender不是活动BlobResultView，而是"+senderIdentity?.GetType().Name);
     Require(selected is {Targets.Count:1}&&selected.Publication==publication.Stamp,"真实表事件未携带同次Stamp和几何");
     var receipt=(SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultFrameReceipt)Get(output,"CurrentFrame");Require(selected!.Targets[0].ImageFrame==receipt.Frame&&selected.Targets[0].Coordinates==receipt.Coordinates,"表事件与显示物理帧/域不匹配：target="+selected.Targets[0].ImageFrame+"/"+selected.Targets[0].Coordinates+"；viewport="+receipt.Frame+"/"+receipt.Coordinates);
-    Require(viewport.ShapeList is IList {Count:1},"真实订阅没有把表选择传到ResultWorkspacePresenter高亮");return selected;
+    var highlight=SelectionItems();var combined=Shapes();Require(highlight.Length==1&&Equals(Field(selectionLayer,"_receipt"),receipt)&&highlight.All(item=>Contains(combined,item)),"真实订阅没有把表选择传到独立同帧高亮层");Require(ReferenceEquals(DisplayScene(),permanent)&&permanentItems.All(item=>Contains(combined,item)),"选择覆盖常驻结果矩形或文字");return selected;
    }
    var first=Publish(0);Until(()=>Get(main,"_activeResultView") is IToolResultView);SelectImage();var oldPublication=Publication();VerifyWrapper(oldPublication);var oldSelection=SelectRow(first);var oldFrame=oldSelection.Targets[0].ImageFrame;
    var oldLease=(IDisposable)output.GetType().GetMethod("BorrowCurrentImage",Flags)!.Invoke(output,null)!;borrowed.Add(oldLease);retainedImage=(IReadOnlyImage)Get(oldLease,"Image");Require((bool)Get(oldLease,"IsCurrent"),"当前图像租约未建立");
@@ -149,7 +159,9 @@ internal static class S2DocumentEditingCases
    Require(!(bool)Get(oldLease,"IsCurrent"),"重跑后旧图像租约仍可发布");var layer=viewport.ShapeList;var shape=((IList)layer!)[0];
    // Re-deliver the captured real event through the production handler, never invent a selection payload.
    Call(main,"OnDeclaredSelectionHighlightChanged",Table(),oldSelection);Pump();Require(ReferenceEquals(layer,viewport.ShapeList)&&ReferenceEquals(shape,((IList)viewport.ShapeList!)[0]),"旧Stamp选择覆盖新高亮");
-   main.ClearResultHighlight();Pump();Require(viewport.ShapeList is null||((IList)viewport.ShapeList).Count==0,"真实清空高亮未生效");
+   var selectedItems=SelectionItems();var permanentBeforeClear=DisplayScene();var permanentItemsBeforeClear=DisplayItems();
+   main.ClearResultHighlight();Pump();var combinedAfterClear=Shapes();Require(SelectionItems().Length==0&&selectedItems.All(item=>!Contains(combinedAfterClear,item)),"真实清空高亮未生效");
+   Require(ReferenceEquals(DisplayScene(),permanentBeforeClear)&&permanentItemsBeforeClear.All(item=>Contains(combinedAfterClear,item)),"清高亮删除常驻图文");
    var emptySnapshot=Publish(0,true);SelectImage();var emptyGrid=Visuals<DataGrid>(Table().View).Single();Require(emptyGrid.Items.Count==0&&emptyGrid.Columns.Count==10,"空结果制造占位假行或丢表头");
    Require(emptyGrid.Columns.Cast<DataGridColumn>().Where(column=>column.Header?.ToString()?.Contains("未实现")==true).Count()==3&&emptyGrid.ToolTip?.ToString()?.Contains("空结果不代表")==true,"空结果表未明确保留三项未实现说明");
    foreach(var order in new[]{BlobSortMode.SortModeAscend,BlobSortMode.SortModeDecend})
@@ -162,7 +174,7 @@ internal static class S2DocumentEditingCases
      ResultSelection? selected=null;EventHandler<ResultSelection> capture=(_,value)=>selected=value;sortedView.SelectionHighlightChanged+=capture;try{sortedGrid.SelectedItem=null;sortedGrid.SelectedItem=sortedGrid.Items[index];Pump();}finally{sortedView.SelectionHighlightChanged-=capture;}
      var record=records[index];Require(selected is {Targets.Count:1}&&Equals(selected.ElementIdentity,record.Get<long>("element-id"))&&selected.Publication==Publication().Stamp,"排序后选择使用行号替代真实element-id或Stamp");
      var vertices=record.Get<SequenceValue>("rotated-bounds").Cast<PointGeometry>().Select(point=>point.Point).ToArray();Require(selected!.Targets[0].Geometry.Single() is PolygonGeometry polygon&&polygon.Vertices.SequenceEqual(vertices),"排序后的事件几何不属于同一记录");
-     Require(viewport.ShapeList is IList {Count:1},"排序选择没有呈现唯一高亮");var rendered=((IEnumerable<Point>)Get(((IList)viewport.ShapeList!)[0]!,"Points")).Select(point=>new Point2(point.X,point.Y));Require(rendered.SequenceEqual(vertices),"排序后实际图层高亮与选中记录错配");
+     var highlights=SelectionItems();Require(highlights.Length==1&&highlights.All(item=>Contains(Shapes(),item))&&DisplayItems().All(item=>Contains(Shapes(),item)),"排序选择未在独立层呈现或覆盖常驻图文");var rendered=((IEnumerable<Point>)Get(highlights.Single(),"Points")).Select(point=>new Point2(point.X,point.Y));Require(rendered.SequenceEqual(vertices),"排序后实际选择层高亮与选中记录错配");
     }
    }
    view.Shutdown();Require(!(bool)Get(oldLease,"IsCurrent"),"工作区关闭复活旧租约");oldLease.Dispose();oldLease.Dispose();borrowed.Clear();

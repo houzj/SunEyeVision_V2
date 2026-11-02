@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,7 +33,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     [TemplatePart(Name = PART_DecreaseButton, Type = typeof(RepeatButton))]
     [TemplatePart(Name = PART_Slider, Type = typeof(Slider))]
     [TemplatePart(Name = PART_SliderPopup, Type = typeof(Popup))]
-    public class NumericUpDown : Control
+    public class NumericUpDown : Control, IEditorNumericParticipant
     {
         private const string PART_TextBox = "PART_TextBox";
         private const string PART_IncreaseButton = "PART_IncreaseButton";

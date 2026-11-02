@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls;
+namespace SunEyeVision.Plugin.Editing.Wpf;
 
 /// <summary>Closing is not execution: invalid input must have an explicit escape path.</summary>
 public static class ToolEditorClose

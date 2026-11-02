@@ -1,15 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls;
+namespace SunEyeVision.Plugin.Editing.Wpf;
 
 /// <summary>可选的专属编辑事务；未实现此接口的工具保持原有提交规则。</summary>
 public interface IToolEditorCommitParticipant
@@ -28,125 +26,83 @@ public interface IToolEditorPendingState
 public interface IToolEditorDraftContext : IToolEditorCommitParticipant
 {
     object FormalNode { get; }
+    bool OwnsDraft(object? node);
     bool TryPrepareEditor(out string error) => TryValidateEditor(out error);
     void Discard();
 }
 
+public interface IEditorViewParticipant
+{
+ FrameworkElement Element { get; }
+ object? CurrentNode { get; }
+ bool SuppressClosePersistence { get; set; }
+ void PersistParameterBindings();
+ bool ValidateParameters();
+ void RefreshCommittedBindings(bool onlyInvalidated);
+}
+public interface IEditorNumericParticipant
+{
+ bool HasPendingEdit { get; }
+ bool TryValidatePendingEdit(out string error);
+ bool TryCommitPendingEdit(out string error);
+ void DiscardPendingEdit();
+}
 /// <summary>UI-only pending edit submission. Never reads display text to reconstruct parameters.</summary>
 public static class ToolEditorCommit
 {
-    private static readonly List<WeakReference<ToolDebugControlBase>> Editors = new();
-    private sealed record LegacyBaseline(string? Signature);
-    private static readonly ConditionalWeakTable<ToolDebugControlBase, LegacyBaseline> LegacyBaselines = new();
+    private static readonly List<WeakReference<IEditorViewParticipant>> Editors = new();
     private static readonly DependencyProperty DraftContextProperty = DependencyProperty.RegisterAttached(
         "DraftContext", typeof(IToolEditorDraftContext), typeof(ToolEditorCommit));
     public static void AttachDraftContext(FrameworkElement editor, IToolEditorDraftContext context)
     { editor.Dispatcher.VerifyAccess(); editor.SetValue(DraftContextProperty, context ?? throw new ArgumentNullException(nameof(context))); }
     public static IToolEditorDraftContext? GetDraftContext(FrameworkElement editor) => editor.GetValue(DraftContextProperty) as IToolEditorDraftContext;
-    private static object? FormalNode(ToolDebugControlBase editor) => GetDraftContext(editor)?.FormalNode ?? editor.CurrentNode;
+    private static object? FormalNode(IEditorViewParticipant editor) => GetDraftContext(editor.Element)?.FormalNode;
     /// <summary>Cancel pending control edits only. Already live-written parameters are not rolled back.</summary>
     public static void DiscardPendingEdits(FrameworkElement root)
     {
         root.Dispatcher.VerifyAccess();
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();
         GetDraftContext(root)?.Discard();
-        foreach (var numeric in elements.OfType<NumericUpDown>()) numeric.DiscardPendingEdit();
-        foreach (var editor in elements.OfType<ToolDebugControlBase>()) editor.SuppressClosePersistence = true;
+        foreach (var numeric in elements.OfType<IEditorNumericParticipant>()) numeric.DiscardPendingEdit();
+        foreach (var editor in elements.OfType<IEditorViewParticipant>()) editor.SuppressClosePersistence = true;
         foreach (var grid in elements.OfType<DataGrid>())
         { grid.CancelEdit(DataGridEditingUnit.Cell); grid.CancelEdit(DataGridEditingUnit.Row); }
         foreach (var group in elements.Select(e => e.BindingGroup).OfType<BindingGroup>().Distinct()) group.CancelEdit();
         foreach (var binding in elements.SelectMany(Bindings).Distinct())
         { binding.UpdateTarget(); System.Windows.Controls.Validation.ClearInvalid(binding); }
     }
-    internal static void Register(ToolDebugControlBase editor)
+    public static void Register(IEditorViewParticipant editor)
     {
         lock (Editors) { Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); Editors.Add(new(editor)); }
-        // Keep the first baseline through temporary Unloaded/Loaded cycles.
-        if (GetDraftContext(editor) is null) LegacyBaselines.GetValue(editor, e => new(LegacySignature(e)));
     }
-    internal static void Unregister(ToolDebugControlBase editor)
+    public static void Unregister(IEditorViewParticipant editor)
     { lock (Editors) Editors.RemoveAll(e => !e.TryGetTarget(out var target) || ReferenceEquals(target, editor)); }
 
     public static void RefreshCommittedBindings()
     {
-        ToolDebugControlBase[] editors;
-        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
-        foreach (var editor in editors.Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded))
+        IEditorViewParticipant[] editors;
+        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<IEditorViewParticipant>().ToArray();
+        foreach (var editor in editors.Where(e => e.Element.Dispatcher.CheckAccess() && e.Element.IsLoaded && GetDraftContext(e.Element) is not null))
         {
             editor.RefreshCommittedBindings(onlyInvalidated: true);
         }
     }
 
-    /// <summary>Validate every matching open editor before any save-side source updates.</summary>
-    public static bool TryValidateOpenEditors(Func<string, bool>? includeNode, out string error) => TryValidateOpenEditors(includeNode, out error, null);
-    public static bool TryValidateOpenEditors(Func<string, bool>? includeNode, out string error, Func<object, bool>? ownsNode)
-    {
-        ToolDebugControlBase[] editors;
-        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
-        foreach (var editor in editors.Where(editor => editor.Dispatcher.CheckAccess() && editor.IsLoaded && PresentationSource.FromVisual(editor) != null &&
-            (includeNode == null || editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string id && includeNode(id)) &&
-            (ownsNode == null || FormalNode(editor) is { } formalNode && ownsNode(formalNode))))
-            if (!TryValidate(editor, out error)) return false;
-        error = ""; return true;
-    }
-
-    public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error) => TryCommitOpenEditors(includeNode, out error, null);
-
-    /// <summary>Prepare only private drafts. Detect legacy pending changes before any source flush.</summary>
-    public static bool TryPrepareOpenDraftEditors(Func<object, bool> ownsNode,
-        out IReadOnlyList<IToolEditorDraftContext> contexts, out string error, bool includeDrafts = true)
-    {
-        ToolDebugControlBase[] selected;
-        lock (Editors) selected = Editors.Select(e => e.TryGetTarget(out var target) ? target : null)
-            .OfType<ToolDebugControlBase>().Where(e => e.Dispatcher.CheckAccess() && e.IsLoaded &&
-                PresentationSource.FromVisual(e) != null && (includeDrafts || GetDraftContext(e) is null) && FormalNode(e) is { } node && ownsNode(node)).ToArray();
-        contexts = Array.Empty<IToolEditorDraftContext>();
-        foreach (var editor in selected.Where(e => GetDraftContext(e) is null))
-        {
-            var elements = Walk(editor).OfType<FrameworkElement>().ToArray();
-            var signature = LegacySignature(editor);
-            var baseline = LegacyBaselines.GetValue(editor, e => new(LegacySignature(e)));
-            if (signature is null || baseline.Signature != signature ||
-                elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
-                elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
-                elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e)))
-            {
-                error = "此工具尚未接入方案草稿事务，存在未提交编辑；请保留当前编辑并先处理该工具窗口。";
-                return false;
-            }
-        }
-        foreach (var editor in selected.Where(e => GetDraftContext(e) != null))
-            if (!TryPrepare(editor, out error)) return false;
-        contexts = selected.Select(GetDraftContext).OfType<IToolEditorDraftContext>().Distinct().ToArray();
-        error = ""; return true;
-    }
-    private static string? LegacySignature(ToolDebugControlBase editor)
-    {
-        try
-        {
-            var node = editor.CurrentNode;
-            var parameters = node?.GetType().GetProperty("Parameters")?.GetValue(node);
-            var settings = node?.GetType().GetProperty("ParamSettings")?.GetValue(node);
-            return JsonSerializer.Serialize(new {
-                Parameters = parameters is null ? null : JsonSerializer.Serialize(parameters, parameters.GetType()),
-                Settings = settings is null ? null : JsonSerializer.Serialize(settings, settings.GetType()) });
-        }
-        catch { return null; }
-    }
     public static bool HasPendingEdits(FrameworkElement root)
     {
         root.Dispatcher.VerifyAccess();
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();
         return elements.OfType<IToolEditorPendingState>().Any(editor=>editor.HasPendingEdits) ||
-            elements.OfType<NumericUpDown>().Any(n => n.HasPendingEdit) ||
+            elements.OfType<IEditorNumericParticipant>().Any(n => n.HasPendingEdit) ||
             elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
             elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e));
     }
 
     public static bool TryPrepare(FrameworkElement root, out string error)
     {
+        if (root is IEditorViewParticipant candidate && (GetDraftContext(root) is not { } draft || !draft.OwnsDraft(candidate.CurrentNode))) { error = "此编辑器尚未接入有效的方案草稿事务。"; return false; }
         if (!TryFlush(root, out error)) return false;
-        if (root is ToolDebugControlBase control)
+        if (root is IEditorViewParticipant control)
         {
             control.PersistParameterBindings();
             if (!control.ValidateParameters()) { error = "参数验证失败，请检查输入参数。"; return false; }
@@ -154,27 +110,11 @@ public static class ToolEditorCommit
         if (GetDraftContext(root) is { } context) return context.TryPrepareEditor(out error);
         error = ""; return true;
     }
-    public static bool TryCommitOpenEditors(Func<string, bool>? includeNode, out string error, Func<object, bool>? ownsNode)
-    {
-        ToolDebugControlBase[] editors;
-        lock (Editors) editors = Editors.Select(e => e.TryGetTarget(out var target) ? target : null).OfType<ToolDebugControlBase>().ToArray();
-        var selected = editors.Where(editor => editor.Dispatcher.CheckAccess() && editor.IsLoaded && PresentationSource.FromVisual(editor) != null &&
-            (includeNode == null || editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string id && includeNode(id)) &&
-            (ownsNode == null || FormalNode(editor) is { } formalNode && ownsNode(formalNode))).ToArray();
-        foreach (var editor in selected)
-            if (!TryValidate(editor, out error)) return false;
-        foreach (var editor in selected)
-        {
-            if (!TryCommit(editor, out error)) return false;
-            if (GetDraftContext(editor) is null) editor.PersistParameterBindings();
-        }
-        error = ""; return true;
-    }
-
     public static bool TryCommit(FrameworkElement root, out string error)
     {
+        if (root is IEditorViewParticipant candidate && (GetDraftContext(root) is not { } draft || !draft.OwnsDraft(candidate.CurrentNode))) { error = "此编辑器尚未接入有效的方案草稿事务。"; return false; }
         if (!TryFlush(root, out error)) return false;
-        if (root is ToolDebugControlBase control)
+        if (root is IEditorViewParticipant control)
         {
             control.PersistParameterBindings(); // CurrentNode is the private draft for production contexts.
             if (!control.ValidateParameters()) { error = "参数验证失败，请检查输入参数。"; return false; }
@@ -185,23 +125,18 @@ public static class ToolEditorCommit
             return context.TryCommitEditor(out error); // Never call the legacy live query callback.
         }
         if (root is IToolEditorCommitParticipant participant && !participant.TryCommitEditor(out error)) return false;
-        if (root is ToolDebugControlBase editor && editor.DataProvider is SunEyeVision.Plugin.SDK.Execution.Parameters.DataSourceQueryService query &&
-            editor.CurrentNode?.GetType().GetProperty("Id")?.GetValue(editor.CurrentNode) is string nodeId)
-        {
-            try { query.CommitOutputConfiguration?.Invoke(nodeId); }
-            catch (Exception ex) { error = "输出配置校验失败：" + ex.Message; return false; }
-        }
         error = ""; return true;
     }
 
     public static bool TryValidate(FrameworkElement root, out string error)
     {
         root.Dispatcher.VerifyAccess();
+        if (root is IEditorViewParticipant candidate && (GetDraftContext(root) is not { } draft || !draft.OwnsDraft(candidate.CurrentNode))) { error = "此编辑器尚未接入有效的方案草稿事务。"; return false; }
         if (GetDraftContext(root) is { } context)
         {
             // Flushing is safe here: every source belongs to the private editor draft.
             if (!TryFlush(root, out error)) return false;
-            if (root is ToolDebugControlBase editor)
+            if (root is IEditorViewParticipant editor)
             {
                 editor.PersistParameterBindings();
                 if (!editor.ValidateParameters()) { error = "参数验证失败，请检查输入参数。"; return false; }
@@ -209,7 +144,7 @@ public static class ToolEditorCommit
             return context.TryValidateEditor(out error);
         }
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();
-        foreach (var numeric in elements.OfType<NumericUpDown>())
+        foreach (var numeric in elements.OfType<IEditorNumericParticipant>())
             if (!numeric.TryValidatePendingEdit(out error)) return false;
         var bindings = elements.SelectMany(Bindings).Where(b => b.IsDirty).Distinct().ToArray();
         var groups = elements.Select(e => e.BindingGroup).OfType<BindingGroup>().Where(g => g.IsDirty).Distinct().ToArray();
@@ -224,7 +159,7 @@ public static class ToolEditorCommit
     {
         root.Dispatcher.VerifyAccess();
         var elements = Walk(root).OfType<FrameworkElement>().ToArray();
-        var numerics = elements.OfType<NumericUpDown>().ToArray();
+        var numerics = elements.OfType<IEditorNumericParticipant>().ToArray();
         foreach (var numeric in numerics) if (!numeric.TryValidatePendingEdit(out error)) return false;
         var bindings = elements.SelectMany(Bindings).Where(b => b.IsDirty).Distinct().ToArray();
         var groups = elements.Select(e => e.BindingGroup).OfType<BindingGroup>().Where(g => g.IsDirty).Distinct().ToArray();

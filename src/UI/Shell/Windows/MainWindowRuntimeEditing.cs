@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Workflow;
 using System;
 using System.Linq;
@@ -69,6 +70,11 @@ public partial class MainWindowViewModel
         context.PrepareView=()=>control.TryCapture(out var error)?null:error;
         context.HasPendingViewEdits=()=>control.HasPendingEdits;
         ToolEditorCommit.AttachDraftContext(control,context);
+        window.SetRunAvailability(()=>context.IsValid&&!IsRunning);
+        void AvailabilityChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
+        { if(args.PropertyName==nameof(IsRunning))window.RefreshRunAvailability(); }
+        PropertyChanged+=AvailabilityChanged;
+        context.Deactivated+=()=>PropertyChanged-=AvailabilityChanged;
         context.Deactivated+=control.Dispose;
         try
         {

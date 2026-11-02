@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
@@ -1228,7 +1229,7 @@ SplitterPosition = position;
                     if (target != null) SetSelectedTab(target);
                 }
                 SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
                 RefreshRootTabReadiness(); UpdateUndoRedoCommands();
             }
             catch (Exception ex)
@@ -2541,7 +2542,7 @@ SplitterPosition = position;
                             definition.Nodes.FirstOrDefault(n => n.Id == conn.TargetNodeId), conn.Id);
                     foreach (var node in selectedNodes) CleanupBindingsForDeletedNode(definition.Id, node.Id);
                     var changes=bindingService.ReconcileAll();
-                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                    SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
                     if(!IsRunning)foreach(var id in bindingService.InvalidatedNodes.Where(item=>item.WorkflowId==_workflowEngine.CurrentWorkflow?.Id))CurrentWorkflowContext?.RemoveNodeResult(id.NodeId);
                     if(changes.Count>0)AddLog("节点删除，已解除绑定："+string.Join("；",changes.Select(change=>change.NodeName+"."+change.InputName)));
                 },
@@ -2549,7 +2550,7 @@ SplitterPosition = position;
                 {
                     // 撤销恢复配置后重建基线，避免用“删除后”的合同再次裁掉已恢复引用。
                     bindingService.AcceptHistoryConfiguration(solution);
-                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                    SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
                     BuildFlatRows();
                 });
             tab.CommandManager.Execute(command);
@@ -3489,7 +3490,7 @@ SplitterPosition = position;
                     .Where(v => string.IsNullOrEmpty(v.RebindingReason) && string.IsNullOrEmpty(v.BindingValidationPending)).ToDictionary(v => v.Name, v => v.Value);
                 queryService.SetGlobalVariables(globals);
                 foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
                 if (!IsRunning)
                 {
                     foreach (var affected in bindingService.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id)) CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System.Reflection;
 using System;
 using System.Linq;
 using System.Threading;
@@ -194,7 +195,7 @@ public sealed class ProductionEditorContextTests
             aw.Show(); bw.Show(); ae.UpdateLayout(); be.UpdateLayout();
             ((ProtocolParseParameters)ac.DraftNode.Parameters).Separator = ";";
             ((ProtocolParseParameters)bc.DraftNode.Parameters).Separator = "|";
-            Assert.True(ToolEditorCommit.TryCommitOpenEditors(id => id == "parse", out var error, node => ReferenceEquals(node, a.Node)), error);
+            Assert.True(ToolEditorCommit.TryCommit(ae, out var error), error);
             Assert.Equal(";", ((ProtocolParseParameters)a.Node.Parameters).Separator);
             Assert.Equal(",", ((ProtocolParseParameters)b.Node.Parameters).Separator);
             Assert.Equal("|", ((ProtocolParseParameters)bc.DraftNode.Parameters).Separator);

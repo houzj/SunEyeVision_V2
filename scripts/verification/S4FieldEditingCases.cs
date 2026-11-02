@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -314,7 +315,7 @@ internal static class S2DocumentEditingCases
                 .SetValue(context,(Func<string?>)(()=>control.TryCapture(out var error)?null:error));
             typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("HasPendingViewEdits",BindingFlags.Instance|BindingFlags.NonPublic)!
                 .SetValue(context,(Func<bool>)(()=>control.HasPendingEdits));
-            control.BindDraft(context.DraftNode);SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.AttachDraftContext(control,context);
+            control.BindDraft(context.DraftNode);SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.AttachDraftContext(control,context);
             Show(control);var fields=Descendants(control).OfType<DeclaredFieldsView>().Single();fields.SelectedPageIndex=1;Pump();CaptureBlobPreview(control,"production-host");
             var thresholdId=access.Presentation!.Fields.Single(f=>f.DisplayName==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition.Instance.Label("Threshold")).FieldId;
             ((TextBox)fields.Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="201";

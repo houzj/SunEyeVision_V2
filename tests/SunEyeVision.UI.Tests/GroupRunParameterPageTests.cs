@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;

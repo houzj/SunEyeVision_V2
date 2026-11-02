@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Core;

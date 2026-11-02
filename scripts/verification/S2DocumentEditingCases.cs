@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Runtime;
 using System.IO;
 using System.Reflection;
@@ -97,11 +98,11 @@ internal static class S2DocumentEditingCases
             Context = new(Model.Editing.Host, "flow", Model.A, () => true, Bind, documentEdits: Model.Editing);
             query.ExecutionOwner = Context.DebugOwner; query.EditScopeCancellation = Context.DebugCancellation;
             Bind(Context.DraftNode);
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.AttachDraftContext(Control, Context);
+            SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.AttachDraftContext(Control, Context);
             typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("PrepareView", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(Context, (Func<string?>)(() => SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryPrepare(Control, out var error) ? null : error));
+                .SetValue(Context, (Func<string?>)(() => SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.TryPrepare(Control, out var error) ? null : error));
             typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("HasPendingViewEdits", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(Context, (Func<bool>)(() => SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.HasPendingEdits(Control)));
+                .SetValue(Context, (Func<bool>)(() => SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.HasPendingEdits(Control)));
             Window.Show(); Pump();
         }
         public static void Pump()

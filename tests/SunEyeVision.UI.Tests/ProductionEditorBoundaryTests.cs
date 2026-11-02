@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

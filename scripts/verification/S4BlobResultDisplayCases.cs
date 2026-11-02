@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using System.IO;
@@ -13,6 +14,7 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
@@ -162,6 +164,36 @@ internal static class S2DocumentEditingCases
             finally{control.ExecutionCompleted-=observe;if(!(bool)Get(control,"_disposed"))control.SetDebugCapture(capture);hold?.Dispose();}
         }        if(scope is "All" or "Core")
         {
+            Case("无草稿节点编辑器在任何绑定写入之前拒绝提交",()=>{
+                var model=new DraftProbeValue();var text=new TextBox();
+                text.SetBinding(TextBox.TextProperty,new Binding(nameof(DraftProbeValue.Value)){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});
+                var editor=new DraftProbeEditor{Content=text};text.Text="修改后";
+                Require(!ToolEditorCommit.TryCommit(editor,out var error)&&error.Contains("尚未接入"),"无草稿节点编辑器未拒绝");
+                Require(model.Value=="原值"&&text.Text=="修改后","拒绝前已写入正式值或丢弃输入");
+                ToolEditorCommit.AttachDraftContext(editor,new ForeignDraftProbe());
+                Require(!ToolEditorCommit.TryCommit(editor,out error)&&error.Contains("尚未接入"),"非当前草稿节点编辑器未拒绝");
+                Require(model.Value=="原值"&&text.Text=="修改后","草稿身份错误时已写入正式值或丢弃输入");
+            });
+            Case("不受支持编辑视图打开失败后释放资源",()=>{
+                var rejected=new RejectedEditorProbe();var openContext=new NodeOpenContext{RuntimeDirectory=admission.Runtime};
+                Require(!new NodeOpenDecisionChain().Execute(node,openContext,()=>rejected),"不支持的编辑器被当作正式窗口");
+                Require(rejected.Disposed&&openContext.CreatedWindow is null,"打开失败后编辑视图未释放");
+            });
+            Case("现有Group参数页使用唯一事务准备并随会话退役",()=>{
+                var document=new Solution();var parent=new SunEyeVision.Workflow.Workflow("group-parent","主流程");
+                var child=new SunEyeVision.Workflow.Workflow("group-child","内部"){IsSubroutine=true};
+                var owner=new WorkflowNodeBase("group-node","Group1","Group1","Subroutine") {SubroutineId=child.Id,Parameters=new SubroutineParameters{SubroutineId=child.Id}};
+                parent.Nodes.Add(owner);document.Workflows.Add(parent);document.Workflows.Add(child);
+                using var context=new ProductionEditorContext(new NodeConfigurationEditHost(document),parent.Id,owner,()=>true,_=>{});
+                var assembly=typeof(ProductionEditorContext).Assembly;
+                var sessionType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParameterSession",true)!;
+                var pageType=assembly.GetType("SunEyeVision.UI.Services.Editing.GroupRunParametersControl",true)!;
+                Func<string,WorkflowNodeBase,bool> allowed=(_,_)=>false;
+                var groupSession=Activator.CreateInstance(sessionType,new object?[]{context,document,allowed,32,null})!;
+                var page=(UserControl)Activator.CreateInstance(pageType,BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{groupSession,null},null)!;
+                try { Require(ToolEditorCommit.TryPrepare(page,out var error),error);Require(context.IsValid,"Group 草稿提前失效");context.Discard();Require(!context.IsActive,"Group 会话未退役"); }
+                finally { (page as IDisposable)?.Dispose(); }
+            });
             Case("图像源和Blob通过原件窗口打开，取消关闭保留草稿与重试释放",()=>{
                 foreach(var openWindow in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())openWindow.Close();Pump();
                 vm.OpenDebugWindowCommand.Execute(source);Pump();
@@ -172,6 +204,22 @@ internal static class S2DocumentEditingCases
                 System.ComponentModel.CancelEventHandler reject=(_,args)=>args.Cancel=true;
                 window.Closing+=reject;window.Close();Pump();Require(window.IsVisible&&context.IsValid,"取消关闭损坏窗口或草稿");
                 window.Closing-=reject;window.Close();Pump();Require(!context.IsActive,"关闭重试未释放草稿");
+            });
+            Case("真实Blob连续运行占位和宿主运行门禁及执行中关闭",()=>{
+                foreach(var old in app.Windows.OfType<RuntimeToolEditorWindow>().ToArray())old.Close();Pump();Run();
+                var window=Open();Require(!window.StartContinuous.CanExecute(null)&&!window.Stop.CanExecute(null),"未接入连续运行允许执行");
+                var frame=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.NativeToolEditorFrame)Get(window,"_frame");
+                var settings=Logical(window.Editor).OfType<DeclaredSettingsView>().Single();settings.SelectedPageIndex=1;Pump();
+                Capture(window,"runtime-editor-run.png");
+                var footerButtons=Visual(window).OfType<Button>().Where(button=>button.Content is string).ToArray();
+                var runButton=footerButtons.Single(button=>Equals(button.Content,"执行"));var confirmButton=footerButtons.Single(button=>Equals(button.Content,"确定"));
+                Require(runButton.IsEnabled&&confirmButton.IsEnabled,"有效编辑会话的实际执行/确认按钮不可用");
+                Require(frame.ResetVisibility==Visibility.Visible&&frame.ResetCommand is null&&!frame.ResetAvailable,"运行参数页缺少禁用重置占位");
+                settings.SelectedPageIndex=0;Pump();Require(frame.ResetVisibility==Visibility.Collapsed,"非运行参数页错误显示重置");
+                vm.IsRunning=true;Pump();Require(!window.ExecuteOnce.CanExecute(null),"工作流运行期间仍可调试");vm.IsRunning=false;Pump();
+                var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(window.Editor)!;
+                Require(window.ExecuteOnce.CanExecute(null),"单次执行不可用");window.ExecuteOnce.Execute(null);window.Close();PumpUntil(()=>!window.State.IsRunning);
+                Require(!context.IsActive&&!window.IsVisible,"执行中关闭后会话未退役");
             });
             Case("正式显示声明与算法阶段隔离，常量模式及默认只创建一次",()=>{
                 var config=node.RuntimeConfiguration!;Require(config.SettingsSchema.Inputs.Count==55&&config.DisplaySettingsSchema.Inputs.Count==28&&config.EditorSettingsSchema.Inputs.Count==83,"算法/显示编辑声明边界错误");
@@ -923,5 +971,10 @@ internal static class S2DocumentEditingCases
     private static IEnumerable<DependencyObject> Visual(DependencyObject root)
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
+    private sealed class DraftProbeValue { public string Value {get;set;}="原值"; }
+    private sealed class DraftProbeEditor : ToolDebugControlBase { protected override object ExecuteTool()=>new GenericToolResults(); }
+    private sealed class RejectedEditorProbe : UserControl, IDisposable { public bool Disposed {get;private set;} public void Dispose()=>Disposed=true; }
+    private sealed class ForeignDraftProbe : IToolEditorDraftContext
+    { public object FormalNode {get;}=new(); public bool OwnsDraft(object? node)=>false; public bool TryCommitEditor(out string error){error="";return true;} public bool TryValidateEditor(out string error){error="";return true;} public void Discard(){} }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
 }

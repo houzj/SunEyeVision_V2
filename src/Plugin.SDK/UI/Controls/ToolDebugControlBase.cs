@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
@@ -130,7 +131,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// - WPF 控件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/
     /// - 路由事件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/routed-events-overview
     /// </remarks>
-    public abstract partial class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer
+    public abstract partial class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer, IEditorViewParticipant
     {
         private bool _asyncCommandRunning;
         #region INotifyPropertyChanged 实现
@@ -536,7 +537,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
             // 关闭/切换调试窗口时做一次最终落盘，避免绑定选择事件在控件
             // 尚未完成 Loaded 或窗口关闭竞态中丢失。
-            if (!SuppressClosePersistence) PersistParameterBindings();
+            if (!SuppressClosePersistence && ToolEditorCommit.GetDraftContext(this) is not null) PersistParameterBindings();
 
             foreach (var control in _parameterBindingControls)
                 control.BindingConfigChanged -= OnParameterBindingChanged;
@@ -938,7 +939,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         /// <summary>Retained for host compatibility; it no longer permits non-upstream candidates.</summary>
         public bool IncludeOtherBindingSources { get; set; }
-        internal bool SuppressClosePersistence { get; set; }
+        public bool SuppressClosePersistence { get; set; }
+        FrameworkElement IEditorViewParticipant.Element => this;
 
         private void PopulateParameterSources(DataSourceQueryService dataProvider)
         {

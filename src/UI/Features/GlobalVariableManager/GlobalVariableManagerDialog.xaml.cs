@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
@@ -302,7 +303,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             finally { _refreshing = false; }
         }
         internal bool HasRetainedPendingEdits => _pendingNames.Count != 0 || _pendingValues.Count != 0 ||
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.HasPendingEdits(this);
+            SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.HasPendingEdits(this);
         internal string PendingEditStamp => System.Text.Json.JsonSerializer.Serialize(new { Names = _pendingNames, Values = _pendingValues });
         internal void AcknowledgeRetainedEdits(string stamp)
         {
@@ -359,7 +360,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             foreach (var box in Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableValueEditor"))
                 if (!TryParseValueEditor(box, out _, out error,
                     box.DataContext is GlobalVariable v && _valueEdits.Contains(v.Id))) return false;
-            return SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryValidate(this, out error);
+            return SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.TryValidate(this, out error);
         }
         private bool TryValidateRetainedEdits(out string error)
         {
@@ -388,7 +389,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 .Where(b => b.Name == "VariableValueEditor" && !b.IsReadOnly)
                 .Select(b => (Box: b, Text: b.Text)).ToArray();
             // Commit normal bindings and DataGrid rows first; invalid edits are not cancelled.
-            if (!SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.TryPrepare(this, out error)) return false;
+            if (!SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.TryPrepare(this, out error)) return false;
             foreach (var entry in nameEditors)
             {
                 entry.Box.SetCurrentValue(TextBox.TextProperty, entry.Text);

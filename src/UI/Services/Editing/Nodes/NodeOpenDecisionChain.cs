@@ -52,6 +52,8 @@ namespace SunEyeVision.UI.Services.Editing
             }
             catch (Exception ex)
             {
+                try { (context.DebugControl as IDisposable)?.Dispose(); }
+                catch (Exception cleanup) { VisionLogger.Instance.Log(LogLevel.Error, $"节点编辑器清理失败: {cleanup.Message}", "NodeOpenDecisionChain", cleanup); }
                 context.FailureReason = ex.Message;
                 VisionLogger.Instance.Log(LogLevel.Error,
                     $"节点打开失败: {ex.Message}",

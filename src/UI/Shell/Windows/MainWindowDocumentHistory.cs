@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Core;
 using System.Windows.Input;
@@ -46,7 +47,7 @@ public partial class MainWindowViewModel
                 var tab = WorkflowTabViewModel.Tabs.FirstOrDefault(t => t.RootWorkflowId == rootId);
                 if (tab != null) SetSelectedTab(tab);
                 SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
             } catch (Exception error) { StatusText = "历史跳转已停止：" + error.Message; }
         }, request => request is EditHistoryLocation location && CanNavigateEditHistory(location));
     private bool CanNavigateEditHistory(EditHistoryLocation location) => CanEditRootWorkspace

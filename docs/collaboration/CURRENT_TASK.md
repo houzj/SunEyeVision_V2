@@ -16172,3 +16172,8 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 独立候选以 BaseWindow 和 NativeToolEditorFrame 承载 Runtime 视图，图像源与 Blob 沿现有目录和草稿接入；旧的非 Runtime 参数控件入口拒绝，Group 未扩展。Type 化运行完成事件取代旧 SDK 可视基类路由事件。
 - 本树全量 Release 构建成功；隐藏桌面 BlobResultDisplay attempt-007 退出码 0、42 项通过，包含真实图像源/Blob 打开、单次运行和取消关闭后重试。该载荷生成后另添加 Closed 清理异常隔离；此后源码尚未重新构建和回归，不得把旧结果套用。
 - 唯一 ToolEditorCommit 事务仍位于 SDK.UI，且被保存、全局变量、Group 和旧控件共用；已确定中立 WPF 编辑事务层方案，尚未迁出和同步消费者。连续运行停止、运行中关闭、取消切换焦点与清理异常等仍需真实生产链验证，当前不符合整批交付条件。
+
+### 2026-11-03 编辑宿主与唯一事务候选
+- 已在独立分支迁出唯一 WPF 编辑事务服务，删除 SDK 旧 helper，调用方同步接线；运行时编辑宿主使用 BaseWindow 与 NativeToolEditorFrame。旧视觉扫描和无草稿写入退出，非 Runtime 旧视图入口受保护。Group 未新增迁移，既有 Group 空参数页仅做接线验证。
+- 完整 Release 与锁定离线还原通过；attempt-014 旧候选 44 组通过，最终候选 attempt-017 验证打开失败释放，attempt-021 验证实际按钮、连续禁用占位、重置占位、根流程运行门禁和执行中关闭。源码/载荷哈希、截图与结果边界见 evidence/统一WPF编辑事务抽离设计-20261102.html，不能将旧 44 组称为最终载荷全测。
+- 连续调试与重置业务未接入；SDK 内 Group/旧工具可视类型仍待后续整体迁移退出。完整 Group、UI.Tests 旧工具引用、VS 设计器和人工验收未完成。资源线 HostInput 准备器 API 需要在其提交固定后按唯一合同接线、验证捕获失败释放与成功转移；主线集成前不可称全平台闭环。

@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Editing.Wpf;
+using System;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Workflow;
@@ -14,11 +15,7 @@ public partial class MainWindowViewModel
         try
         {
             var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
-            var nodes = session.Document.Workflows.SelectMany(w => w.Nodes).Cast<object>().ToArray();
-            // Compatibility guard only. Registered draft scopes are prepared by the document,
-            // including hidden/unloaded views, never rediscovered from the visual tree.
-            if (!ToolEditorCommit.TryPrepareOpenDraftEditors(
-                node => nodes.Any(n => ReferenceEquals(n, node)), out _, out error, includeDrafts: false)) return false;
+            // The document owns every admitted draft, including unloaded views.
             if (accept)
             {
                 var publication = session.Editing.AcceptAll();

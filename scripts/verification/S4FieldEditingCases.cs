@@ -897,8 +897,9 @@ internal static class S2DocumentEditingCases
             Require(!view.TryCapture(out _,out _),"不可用历史模式或ROI未接通窗错误确认");
         }
         var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
-        using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options))
+        using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView())
         {
+            SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(preview,sample);
             Show(preview);var fields=(DeclaredFieldsView)preview.Content;fields.SelectedPageIndex=1;Pump();
             Require(fields.Fields.Count==83&&fields.Fields.Select(field=>field.FieldId).ToHashSet(StringComparer.Ordinal).SetEquals(sample.Draft.Schema.Inputs.Select(port=>port.Id))&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
             CaptureBlobPreview(preview,"design-sample");

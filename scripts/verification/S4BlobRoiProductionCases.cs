@@ -91,7 +91,7 @@ internal static class S2DocumentEditingCases
         SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow Open()
         {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
         RuntimeNodeConfigurationControl Control(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow window)=>window.EditorControl;
-        object Owner(RuntimeNodeConfigurationControl control)=>Get(control.Content,"_roiOwner");
+        object Owner(RuntimeNodeConfigurationControl control)=>Get(Get(control.Content,"_composition"),"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
         NativeRoiEditor Editor(object owner,string group)=>(NativeRoiEditor)((System.Collections.IDictionary)Get(owner,"_editors"))[group]!;
         void SelectInput(bool doubleImage=false)

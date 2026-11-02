@@ -96,7 +96,7 @@ internal static partial class S2DocumentEditingCases
         NativeRuntimeEditorWindow Open()
         {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<NativeRuntimeEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
         RuntimeNodeConfigurationControl Control(NativeRuntimeEditorWindow window)=>window.EditorControl;
-        object Owner(RuntimeNodeConfigurationControl control)=>Get(control.Content,"_roiOwner");
+        object Owner(RuntimeNodeConfigurationControl control)=>Get(Get(control.Content,"_composition"),"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
         NativeRoiEditor Editor(object owner,string group)=>(NativeRoiEditor)((System.Collections.IDictionary)Get(owner,"_editors"))[group]!;
         void SelectInput(bool doubleImage=false)
@@ -358,6 +358,13 @@ internal static partial class S2DocumentEditingCases
             Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=textSourceB.Id,TargetNodeId=source.Id}),"第二文本来源控制前驱连接失败");
         }
         Run();var path=Path.Combine(folder,"display.solution");Require(solutions.SaveCurrentDocument(path).FileWritten,"正式夹具保存失败");
+        if(Environment.GetEnvironmentVariable("S4_BLOB_THREE_PAGE_UI_ONLY")=="1")
+        {
+            VerifyRealThreePageUi(Open,path,()=>node.RuntimeConfiguration!,()=>history.Position,
+                ()=>solutions.SaveCurrentDocument(path).FileWritten,
+                ()=>{var id=node.Id;Require(solutions.OpenSolution(path) is not null,"Single正式保存重开失败");Pump();node=(SunEyeVision.UI.Shared.WorkflowNode)vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.Single(item=>item.Id==id);vm.SelectedNode=node;node.IsSelected=true;Pump();var reopened=Open();Require(reopened.EditorControl.TryCapture(out var issue),issue);reopened.Close();Pump();});
+            shell.Close();app.Shutdown();Console.WriteLine("真实三页UI："+_passed+"组通过；UI-only功能保护与VS人工范围另记。");return 0;
+        }
         if(Environment.GetEnvironmentVariable("S4_NATIVE_EXPORT_ONLY")=="1")
         {
             VerifyNativeExportWhole(viewport,()=>Scene(),()=>Publication(),()=>Run(),path,
@@ -479,7 +486,7 @@ internal static partial class S2DocumentEditingCases
                 Console.WriteLine("Result groups="+string.Join(";",groupOrder));
                 Require(groupOrder.SequenceEqual(new[]{"结果判定","图像显示","文本显示"}),"原结果页三组顺序改变");
                 Console.WriteLine("Result row slots="+string.Join(";",rows.Select(row=>Get(Get(row,"GroupName"),"NameA")+":"+Maybe(Get(row,"View"),"DisplayNameA")+":"+Get(row,"View").GetType().FullName)));
-                var unavailable=Get(control.Content,"_displayUi");var contents=((System.Collections.IEnumerable)Get(unavailable,"_contents")).Cast<object>().OfType<FrameworkElement>().ToArray();Require(contents.Length==4&&contents.All(view=>!view.IsEnabled&&view.ToolTip is not null),"无生产值显示项可误编辑");
+                var unavailable=Get(Get(control.Content,"_composition"),"_displayUi");var contents=((System.Collections.IEnumerable)Get(unavailable,"_contents")).Cast<object>().OfType<FrameworkElement>().ToArray();Require(contents.Length==4&&contents.All(view=>view.IsEnabled),"四缺值对象未接入仅UI样式预览");
                 var actualRows=rows.Where(row=>Equals(Get(Get(row,"GroupName"),"NameA"),"图像显示")).Select(row=>Get(row,"View")).ToArray();
                 var expectedRows=new object[]{Field(BlobResultDisplay.Graphic,"visible").View,contents[0],Field(BlobResultDisplay.Inspection,"visible").View,contents[1],contents[2],contents[3],Field(BlobResultDisplay.Text,"visible").View,Field(BlobResultDisplay.Mask,"visible").View,Field(BlobResultDisplay.Annulus,"visible").View};
                 Require(actualRows.Length==9&&actualRows.Zip(expectedRows).All(pair=>ReferenceEquals(pair.First,pair.Second)),"原九行槽位顺序改变（含屏蔽→扇环）");

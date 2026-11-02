@@ -188,7 +188,7 @@ internal static class S2DocumentEditingCases
     private static void DesignBounds()
     {
         var sample=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
-        using var presenter=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();presenter.Bind(sample.Draft,sample.Options);presenter.SelectedPageIndex=1;
+        using var presenter=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(presenter,sample);presenter.SelectedPageIndex=1;
         var fields=(DeclaredFieldsView)presenter.Content;
         var tool=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool();var names=((IToolParameterBindingNames)tool).ParameterBindingNames;
         foreach(var label in new[]{"圆度使能","矩形度使能"})

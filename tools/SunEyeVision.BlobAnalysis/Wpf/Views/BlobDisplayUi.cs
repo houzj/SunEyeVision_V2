@@ -7,7 +7,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 internal static class BlobDisplayUi
 {
-    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,ToolSchema schema,bool supportedWindow=false,Action<NativeDisplayUiDraftRows>? observe=null)
+    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,ToolSchema schema,Action<NativeDisplayUiDraftRows>? observe=null,Action<NativeJudgmentUiDraftControls>? observeJudgment=null)
     {
         var display=new NativeDisplayUiDraftRows("图像显示",new[]{
             new NativeDisplayUiDraftEntry("最大内接矩形",true),
@@ -15,12 +15,6 @@ internal static class BlobDisplayUi
             new NativeDisplayUiDraftEntry("运行点",true,InitiallyVisible:false)});
         if(options.AdditionalAfterContent is {} assist){display.BindEntryVisibility(2,assist);display.BindEntryVisibility(3,assist);}
         var views=display.ExtractEntryViews();
-        foreach(var view in views)
-        {
-            if(supportedWindow)view.IsEnabled=false;
-            view.ToolTip="此显示对象尚未接入。";
-            System.Windows.Controls.ToolTipService.SetShowOnDisabled(view,true);
-        }
         observe?.Invoke(display);
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
         var textEye=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text,"visible");
@@ -31,8 +25,7 @@ internal static class BlobDisplayUi
         foreach(var field in fields)suppressed.Add(field.FieldId);
         if(fields.Length!=0)
         {
-            var judgment=new NativeJudgmentUiDraftControls {IsEnabled=false,ToolTip="原厂判定聚合、空结果及比较语义尚未接通，当前不能编辑。"};
-            System.Windows.Controls.ToolTipService.SetShowOnDisabled(judgment,true);
+            var judgment=new NativeJudgmentUiDraftControls();observeJudgment?.Invoke(judgment);
             rows.Add(new(fields[0].FieldId,judgment,FollowAnchorVisibility:false,InsertBefore:true));
         }
         var graphic=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Graphic;

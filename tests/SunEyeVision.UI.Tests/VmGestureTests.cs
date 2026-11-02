@@ -40,8 +40,10 @@ public sealed class VmGestureTests
         control.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml", UriKind.Relative) });
         node = new WorkflowNode { Id = "a", ToolType = "ImageLoad", DispName = "图像源1", GlobalIndex = 2, Position = new CanvasPoint(150, 90) };
         var target = new WorkflowNode { Id = "b", ToolType = "BlobAnalysis", DispName = "Blob分析1", GlobalIndex = 1, Position = new CanvasPoint(350, 290) };
-        var model = new WorkflowTabViewModel(RootCanvasFixture.Directory); model.SetNodes(new ObservableCollection<NodeBase> { node, target });
-        model.SetConnections(new ObservableCollection<Connection> { new() { Id = "wire", SourceNodeId = "a", TargetNodeId = "b", SourcePort = "BottomPort", TargetPort = "TopPort" } });
+        var document=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CreateUntitledSolution(); var flow=document.Workflows[0];
+        node.RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"ImageLoad"); target.RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(RootCanvasFixture.Directory,"BlobAnalysis");
+        flow.Nodes.Add(node);flow.Nodes.Add(target);flow.Connections.Add(new() { Id = "wire", SourceNodeId = "a", TargetNodeId = "b", SourcePort = "BottomPort", TargetPort = "TopPort" });
+        var model = new WorkflowTabViewModel(RootCanvasFixture.Directory) { Id=flow.Id }; model.SetNodes(flow.Nodes); model.SetConnections(flow.Connections);
         control.DataContext = model; control.Measure(new Size(700, 450)); control.Arrange(new Rect(0, 0, 700, 450)); control.UpdateLayout();
         return control;
     }
@@ -295,19 +297,17 @@ public sealed class VmGestureTests
         Assert.True((bool)permission.GetValue(control)!);tab.IsRunning=true;Assert.False((bool)permission.GetValue(control)!);
         tab.IsRunning=false;Assert.True((bool)permission.GetValue(control)!);control.DataContext=null;
     });
-#if !CANVAS_LAYOUT_TESTS
     [Fact] public void Gesture_stamps_detect_replaced_node_identity_and_nested_unnotified_parameter_changes() => Sta(() =>
     {
         var control=Create(out var node);var tab=(WorkflowTabViewModel)control.DataContext;
-        node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1,2}};
+        var manager=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
         var before=Call(control,"VmGraphStamp",tab);var configuration=Call(control,"VmConfigurationStamp",tab);Assert.NotNull(configuration);
-        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(3);
+        var draft=manager.Session!.Editing.Host.BeginEdit(tab.Id,node.Id);RootCanvasFixture.SetValue(draft.Node,3);manager.Session.Editing.Host.Commit(draft);
         Assert.Equal(before,Call(control,"VmGraphStamp",tab));Assert.NotEqual(configuration,Call(control,"VmConfigurationStamp",tab));
-        var replacement=new WorkflowNode{Id=node.Id,Name=node.Name,ToolType=node.ToolType,Position=node.Position,Parameters=node.Parameters,ParamSettings=node.ParamSettings};
+        var replacement=new WorkflowNode{Id=node.Id,Name=node.Name,ToolType=node.ToolType,Position=node.Position,RuntimeConfiguration=node.RuntimeConfiguration};
         tab.WorkflowNodes[0]=replacement;Assert.NotEqual(before,Call(control,"VmGraphStamp",tab));control.DataContext=null;
     });
 
-#endif
     [Fact] public void Wire_right_click_preserves_node_selection_and_installs_its_own_delete_binding_and_menu() => Sta(() =>
     {
         var control=Create(out var node);var tab=(WorkflowTabViewModel)control.DataContext;node.IsSelected=true;
@@ -320,17 +320,15 @@ public sealed class VmGestureTests
         control.DataContext=null;Assert.Null(Field(control,"_vmSelectedWirePath"));Assert.False(tab.WorkflowConnections.Single().IsSelected);
     });
 
-#if !CANVAS_LAYOUT_TESTS
     [Fact] public void Rename_session_rejects_nested_config_change_and_switching_owner_cancels_editor() => Sta(() =>
     {
-        var control=Create(out var node);node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1}};
+        var control=Create(out var node);var manager=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;var tab=(WorkflowTabViewModel)control.DataContext;
         Assert.True((bool)Call(control,"BeginVmNodeRename",node)!);Assert.True(node.IsEditingName);
         Assert.True((bool)Call(control,"ValidVmNodeRename",node)!);
-        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(2);Assert.False((bool)Call(control,"ValidVmNodeRename",node)!);
+        var draft=manager.Session!.Editing.Host.BeginEdit(tab.Id,node.Id);RootCanvasFixture.SetValue(draft.Node,2);manager.Session.Editing.Host.Commit(draft);Assert.False((bool)Call(control,"ValidVmNodeRename",node)!);
         control.DataContext=null;Assert.False(node.IsEditingName);Assert.Null(Field(control,"_vmRenameNode"));
     });
 
-#endif
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection : ICollectionFixture<WorkflowRuntimeFixture> { }

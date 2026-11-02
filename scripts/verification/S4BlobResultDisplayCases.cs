@@ -79,7 +79,7 @@ internal static class S2DocumentEditingCases
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel(admission);solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var scope=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_SCOPE")??"All";
-        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource" or "ReaderShutdown" or "CloseMatrix","未知显示专项");
+        Require(scope is "All" or "Core" or "Window" or "Roi" or "Text" or "TextSource" or "ReaderShutdown" or "CloseMatrix" or "CanvasLayout","未知显示专项");
         var resultView=new ImageResultControl{DataContext=vm.ImageResult};resultView.Initialize(vm);
         var shell=new Window{Width=1000,Height=850,Content=resultView,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
@@ -424,6 +424,30 @@ internal static class S2DocumentEditingCases
             Require(vm.AddConnectionToWorkflow(new WorkflowConnection{Id=Guid.NewGuid().ToString("N"),SourceNodeId=textSourceB.Id,TargetNodeId=source.Id}),"第二文本来源控制前驱连接失败");
         }
         Run();var path=Path.Combine(folder,"display.solution");Require(solutions.SaveCurrentDocument(path).FileWritten,"正式夹具保存失败");
+        if(scope=="CanvasLayout")
+        {
+            Case("真实画布手工路径移动撤销复制保存重开并运行图像源与Blob",()=>{
+                var tab=vm.WorkflowTabViewModel.SelectedTab!;var edge=tab.WorkflowConnections.Single(item=>item.SourceNodeId==source.Id&&item.TargetNodeId==node.Id);
+                var originalPath=new[]{new Point(150,115),new Point(150,180),new Point(350,180),new Point(350,300)};
+                tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.EditConnectionPathCommand(edge,null,originalPath,()=>{}));
+                var before=new Point(source.Position.X,source.Position.Y);var after=new Point(before.X+35,before.Y+20);
+                tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodesSnapshotCommand(new[]{(source,before,after)},tab.WorkflowConnections));
+                Require(edge.ManualPathPoints is null&&source.Position.X==after.X&&source.Position.Y==after.Y,"移动未清手工路径或坐标不符");
+                tab.CommandManager.Undo();Require(source.Position.X==before.X&&source.Position.Y==before.Y&&edge.ManualPathPoints!.Select(p=>new Point(p.X,p.Y)).SequenceEqual(originalPath),"撤销未完整恢复位置和折线");
+                var oldIds=solutions.CurrentSolution!.Workflows.Single(item=>item.Id==flowId).Nodes.Select(item=>item.Id).ToHashSet(StringComparer.Ordinal);
+                foreach(var item in tab.WorkflowNodes)item.IsSelected=false;source.IsSelected=true;node.IsSelected=true;vm.SelectedNode=node;
+                Require(vm.CopyCanvasSelection()&&vm.PasteCanvasSelection(new Point(700,400)),"真实画布复制粘贴失败");Pump();
+                var copies=tab.WorkflowNodes.Where(item=>!oldIds.Contains(item.Id)).ToArray();var copySource=copies.Single(item=>item.ToolType=="ImageLoad");var copyBlob=copies.Single(item=>item.ToolType==BlobTool.Id);
+                var copiedEdge=tab.WorkflowConnections.Single(item=>item.SourceNodeId==copySource.Id&&item.TargetNodeId==copyBlob.Id);
+                Require(copiedEdge.ManualPathPoints is {Length:4}&&copiedEdge.ManualPathPoints.Zip(edge.ManualPathPoints!).All(pair=>pair.First.X-pair.Second.X==copySource.Position.X-source.Position.X&&pair.First.Y-pair.Second.Y==copySource.Position.Y-source.Position.Y),"复制未按节点偏移保留手工折线");
+                var copySourceId=copySource.Id;var copyBlobId=copyBlob.Id;var copyPath=copiedEdge.ManualPathPoints.ToArray();
+                Require(solutions.SaveCurrentDocument(path).FileWritten,"布局方案保存失败");solutions.CloseSolution(false);Require(solutions.OpenSolution(path) is not null,"布局方案重开失败");Pump();
+                tab=vm.WorkflowTabViewModel.SelectedTab!;var reopenedEdge=tab.WorkflowConnections.Single(item=>item.SourceNodeId==copySourceId&&item.TargetNodeId==copyBlobId);
+                Require(reopenedEdge.ManualPathPoints!.SequenceEqual(copyPath),"重开后折线改变");var reopenedBlob=tab.WorkflowNodes.Single(item=>item.Id==copyBlobId);vm.SelectedNode=reopenedBlob;reopenedBlob.IsSelected=true;Pump();
+                var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Pump();
+                var current=(WorkflowContext)Get(vm,"CurrentWorkflowContext");Require(current.GetNodeResult(copySourceId)?.Result?.IsSuccess==true&&current.GetNodeResult(copyBlobId)?.Result?.IsSuccess==true,"重开后复制节点未实际完成图像源与Blob运行");
+            });
+        }
         if(scope=="CloseMatrix")
         {
             Case("私有调试完成关闭恢复原生产快照并退役私有执行域",()=>{

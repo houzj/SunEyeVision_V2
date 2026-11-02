@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
@@ -18,6 +19,10 @@ public sealed class NativeJudgmentUiDraftControls : StackPanel,IDisposable,IPara
     internal IEnumerable<FrameworkElement> Rows=>Children.Cast<FrameworkElement>();
     private bool _disposed;
     public event Action? Changed;
+    public bool HasPendingEdits=>!_disposed&&(_zero.HasPendingEdits||_ranges.Any(range=>range.HasPendingEdits));
+    public bool HasInvalidInput=>!_disposed&&(_zero.HasInvalidText||_ranges.Any(range=>range.HasInvalidInput));
+    public void RetireInteractions()
+    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
     public bool HasUiChanges=>!_disposed&&(_zero.Setting is not ConstantSetting{Value:false}||_zero.HasPendingEdits||_ranges.Any(range=>range.HasChanges));
     public NativeJudgmentUiDraftControls()
     {
@@ -47,10 +52,10 @@ public sealed class NativeJudgmentUiDraftControls : StackPanel,IDisposable,IPara
     }
     private void OnChanged(){if(!_disposed)Changed?.Invoke();}
     private void Project()
-    {foreach(var row in _advancedRows){(row as IParameterVisibility)?.PrepareForVisibility(_advanced.IsExpanded&&IsVisible);row.Visibility=_advanced.IsExpanded?Visibility.Visible:Visibility.Collapsed;}}
+    {ParameterCleanup.Run(_advancedRows.Select(row=>(Action)(()=>{(row as IParameterVisibility)?.PrepareForVisibility(_advanced.IsExpanded&&IsVisible);row.Visibility=_advanced.IsExpanded?Visibility.Visible:Visibility.Collapsed;})));}
     private void OnVisible(object sender,DependencyPropertyChangedEventArgs args)=>((IParameterVisibility)this).PrepareForVisibility(IsVisible);
     void IParameterVisibility.PrepareForVisibility(bool visible)
-    {foreach(var row in Children.OfType<IParameterVisibility>())row.PrepareForVisibility(visible&&(row as FrameworkElement)?.Visibility==Visibility.Visible);}
+    {ParameterCleanup.Run(Children.OfType<IParameterVisibility>().Select(row=>(Action)(()=>row.PrepareForVisibility(visible&&(row as FrameworkElement)?.Visibility==Visibility.Visible))));}
     public void Dispose()
-    {if(_disposed)return;_disposed=true;Changed=null;_zero.Changed-=OnChanged;_advanced.Changed-=Project;IsVisibleChanged-=OnVisible;foreach(var range in _ranges)range.Changed-=OnChanged;Children.Clear();foreach(var item in _owned)item.Dispose();}
+    {if(_disposed)return;_disposed=true;Changed=null;_zero.Changed-=OnChanged;_advanced.Changed-=Project;IsVisibleChanged-=OnVisible;foreach(var range in _ranges)range.Changed-=OnChanged;ParameterCleanup.Run(new Action[]{()=>Children.Clear()}.Concat(_owned.Select(item=>(Action)item.Dispose)));}
 }

@@ -43,6 +43,8 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     public string DisplayNameA {get;}
     public string DescriptionA=>DisplayNameA;
     public bool PanVisibleA=>_roles.ShowStyleButton;
+    internal event Action? PendingChanged;
+    private void OnPendingText(object sender,TextChangedEventArgs args){if(!_disposed&&!_syncing&&!_closing&&Editable&&IsOpen)PendingChanged?.Invoke();}
     internal bool IsOpen=>_popup?.IsDropDownOpen==true;
     internal FrameworkElement? Surface=>_surface;
     internal NativeGraphicStylePresenter(NativeGraphicDisplayOptions roles,IReadOnlyDictionary<string,DeclaredFieldState> states,
@@ -128,7 +130,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
             if(surface is null){RetireTemplate();return;}
             if(ReferenceEquals(surface,_surface))return;
             ReleaseSurface();if(!Alive())return;
-            _surface=surface;var generation=++_generation;
+            _surface=surface;surface.AddHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnPendingText));var generation=++_generation;
             bool Same()=>Current()&&generation==_generation&&ReferenceEquals(surface,_surface)
                 &&ReferenceEquals(template,_host.ContentTemplate)&&ReferenceEquals(_popup,popup)
                 &&ReferenceEquals(popup.Template.FindName("PART_Popup",popup),popupPart)&&ReferenceEquals(popupPart.Child,child)
@@ -287,7 +289,7 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_attachEpoch++;
+        if(_disposed)return;_disposed=true;PendingChanged=null;_attachEpoch++;
         ParameterCleanup.Run(new Action[]{Close,ReleaseSurface,
             ()=>{foreach(var state in _states.Values)state.Changed-=OnState;},
             ()=>{if(_eye is not null)_eye.Click-=OnEye;if(_popup is not null){_popup.DropDownOpened-=OnOpened;_popup.DropDownClosed-=OnClosed;}},

@@ -44,6 +44,10 @@ public sealed class NativeUiDraftRange : Decorator,IDisposable,IParameterVisibil
         }
         catch{_lower.Dispose();_upper.Dispose();throw;}
     }
+    public bool HasPendingEdits=>!_disposed&&(_toggle.HasPendingEdits||_range.HasPendingEdits(0)||_range.HasPendingEdits(1));
+    public bool HasInvalidInput=>!_disposed&&(_toggle.HasInvalidText||_lower.HasInvalidInput||_upper.HasInvalidInput);
+    public void RetireInteractions()
+    {if(_disposed)return;((IParameterVisibility)this).PrepareForVisibility(false);if(IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}
     public bool HasChanges=>!_disposed&&(_range.HasPendingEdits(0)||_range.HasPendingEdits(1)
         ||_lower.HasInvalidInput||_upper.HasInvalidInput||_lower.IsReferenceMode||_upper.IsReferenceMode
         ||!DeclaredFieldState.SameSetting(_toggle.Setting,_initialToggle)
@@ -58,11 +62,11 @@ public sealed class NativeUiDraftRange : Decorator,IDisposable,IParameterVisibil
     }
     private void OnVisible(object sender,DependencyPropertyChangedEventArgs args)=>((IParameterVisibility)this).PrepareForVisibility(IsVisible);
     void IParameterVisibility.PrepareForVisibility(bool visible)
-    {((IParameterVisibility)_toggle).PrepareForVisibility(visible);((IParameterVisibility)_range).PrepareForVisibility(visible&&_range.Visibility==Visibility.Visible);}
+    {ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)_toggle).PrepareForVisibility(visible),()=>((IParameterVisibility)_range).PrepareForVisibility(visible&&_range.Visibility==Visibility.Visible)});}
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;_toggle.Changed-=Project;_lower.Changed-=OnChanged;_upper.Changed-=OnChanged;
         IsVisibleChanged-=OnVisible;RemoveHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRawChanged));
-        Child=null;_toggle.Dispose();_range.Dispose();_lower.Dispose();_upper.Dispose();
+        ParameterCleanup.Run(new Action[]{()=>Child=null,_toggle.Dispose,_range.Dispose,_lower.Dispose,_upper.Dispose});
     }
 }

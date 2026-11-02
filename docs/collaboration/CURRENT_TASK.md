@@ -1,3 +1,10 @@
+## 2026-11-03 布局中立化87f4集成自测闭口
+
+产品源码 3da199a27ab700e1f738c01f5ded35a0da8d447d，UI/全量Release均0错（全量6061警告）；最终桌面封包 2BFE76B2F94448B501AF31062A8E52377573043563BD5B5BA36CCFED4DEEF0D5。Domain6/Canvas40/Graph38/Root38/Query7/Input24/Infrastructure25/SDK302/Image31/Blob11同载无重编通过。真实根宿主、相机样本帧PID21244退出0，隐藏CanvasLayout1/Core14/Window15/Reader1/Close3通过；attempt031～035逐项核真实加载路径与SHA。完整证据Release/_validation/layout-integrated-20261103/final-evidence.json。无WPF425e39c56独立封包及V3旧Point金样分别记录；不冒充最终UI提交同产物。原主计划、剩余矩阵、布局与职责分层主文档统一更新。
+
+本批七类布局值使用无WPF Domain.CanvasPoint，UI显式转换、唯一现行模型；V3四字段非有限读写拒绝并保全源文件；路径标记原标量/Point错误集中修正。整个Workflow仍含SDK/UI状态，领域实体和方案会话尚未拆完。Group暂停，人工/设计器/物理设备/主仓合并未做，全平台目标保持。
+
+下一批唯一ToolConfiguration/DocumentSession/AdmittedNodeView整体设计进行中，三个设计/审计HTML已保全。评审五项必须冻结：查询适配器归Application而非Execution反向依赖会话；Runtime受控CreateDefinition跨程序集入口；Domain复用Contracts.FieldSettings且无第二可写表；FindNode先验证scope/成员唯一与owner/目录再允许缺节点null；definition缓存不持长期调用租约且不按实时值变化重建。源码实施未启动，不以设计计完成。
 ## 2026-11-03 布局中立化集中合入进行中
 
 主线核收UI完整候选368913771/记录8e84f8622，独立同载包7019593A57662E2C4B72819DAF1847B60C85CBDE2A94320D764E4AF677E119D7下Canvas40/Root38/Domain6/Graph31及真实CanvasLayout、Core/Window链通过。只读边界评审未发现新WPF转换缺口。域739c5e51f另修四字段非有限布局读写，固定域38/38，无ABI变化。当前先合入UI完整祖先，再补有限校验与实际Domain依赖断言，尚未作87f4本地构建自测；不借候选成绩。V3金样与原生成器PDB源码checksum已核一致，旧实际运行加载路径未记录的限制保留。Group暂停，整个Workflow仍非最终Domain实体，也未整体去WPF。

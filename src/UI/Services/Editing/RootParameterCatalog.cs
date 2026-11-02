@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Workflow;
@@ -55,7 +55,7 @@ internal static class RootParameterCatalog
  }
  private static IReadOnlyList<RootParameterCandidate> DescribeRuntime(WorkflowNodeBase node,RuntimeToolConfiguration runtime)
  {
-  return runtime.BindingTargets.Where(port=>port.EditModes!=FieldEditModes.None).Select(port=>
+  return runtime.BindingTargets.Where(port=>!runtime.IsDisplayField(port.Id)&&port.EditModes!=FieldEditModes.None).Select(port=>
   {
    var schema=runtime.SettingsSchema?.Inputs.Any(field=>field.Id==port.Id)==true?runtime.SettingsSchema:runtime.Schema;
    var presentation=schema?.Presentation?.Fields.SingleOrDefault(field=>field.FieldId==port.Id)

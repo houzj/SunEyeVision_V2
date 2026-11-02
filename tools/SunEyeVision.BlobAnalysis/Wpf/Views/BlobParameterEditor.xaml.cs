@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -48,6 +48,12 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
             }
         }
         Editor.Bind(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(options,_supportedState is null?null:ValidateSupportedState),draft.Schema,supportedWindow:true,observe:value=>_displayUi=value));
+        if(Editor.Content is SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView fields)
+            foreach(var field in fields.Fields)
+            {
+                if(field.FieldId is "display.text.x" or "display.text.y")field.View.ToolTip="当前仅支持固定位置，动态位置来源尚未接入。";
+                if(field.FieldId=="display.text.content")field.View.ToolTip="当前支持{0}面积占位；动态文本来源尚未接入。";
+            }
         Editor.Changed+=RefreshSupportedState;
         if(_roiUi is not null)_roiUi.Changed+=OnUiOnlyChanged;
         if(_assistUi is not null)_assistUi.Changed+=OnUiOnlyChanged;
@@ -80,7 +86,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
         if(_displayUi is not null)_displayUi.Changed-=OnUiOnlyChanged;_uiOnlyChanged=null;
         if(_roiOwner is not null)_roiOwner.Changed-=OnUiOnlyChanged;
         var errors=new List<Exception>();
-        foreach(var action in new Action[]{()=>_roiOwner?.Dispose(),()=>_supportedState?.Dispose(),Editor.Dispose})try{action();}catch(Exception error){errors.Add(error);}
+        foreach(var action in new Action[]{()=>_roiOwner?.Dispose(),()=>_supportedState?.Dispose(),()=>_displayUi?.Dispose(),Editor.Dispose})try{action();}catch(Exception error){errors.Add(error);}
         if(errors.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();if(errors.Count>1)throw new AggregateException(errors);
     }
 }

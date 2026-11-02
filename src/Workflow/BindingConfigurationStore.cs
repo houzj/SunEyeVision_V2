@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -247,7 +247,7 @@ public sealed class BindingConfigurationStore
         var newNodes = after.Workflows.SelectMany(w => w.Nodes.Select(n => (Id: new ScopedNodeIdentity(w.Id, n.Id), Node: n))).ToDictionary(p => p.Id, p => p.Node);
         var affected = new HashSet<ScopedNodeIdentity>(reconciled);
         foreach (var id in oldNodes.Keys.Union(newNodes.Keys))
-            if (!oldNodes.TryGetValue(id, out var oldNode) || !newNodes.TryGetValue(id, out var newNode) || NodeSignature(oldNode) != NodeSignature(newNode)) affected.Add(id);
+            if (!oldNodes.TryGetValue(id, out var oldNode) || !newNodes.TryGetValue(id, out var newNode) || NodeExecutionSignature(oldNode) != NodeExecutionSignature(newNode)) affected.Add(id);
         var oldEdges = before.Workflows.SelectMany(w => w.Connections.Select(c => (w.Id, c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort))).ToHashSet();
         var newEdges = after.Workflows.SelectMany(w => w.Connections.Select(c => (w.Id, c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort))).ToHashSet();
         foreach (var edge in oldEdges.Except(newEdges).Concat(newEdges.Except(oldEdges)))
@@ -286,6 +286,14 @@ public sealed class BindingConfigurationStore
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
         Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
+        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
+        ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
+    }, WorkflowSerializationOptions.Compact);
+
+    private static string NodeExecutionSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
+    {
+        node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
+        Runtime = node.RuntimeConfiguration?.ExecutionConfigurationIdentity,
         Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
         ParamSettings = node.RuntimeConfiguration is null ? node.ParamSettings : null, node.SelectedDisplayReference
     }, WorkflowSerializationOptions.Compact);

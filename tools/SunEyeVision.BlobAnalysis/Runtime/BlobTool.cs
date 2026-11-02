@@ -1,10 +1,10 @@
-using SunEyeVision.Plugin.Contracts;
+﻿using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
@@ -18,6 +18,10 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;
+    public ToolSchema DisplaySettingsSchema=>BlobResultDisplay.Schema;
+    public InputValues CreateDisplaySettings()=>BlobResultDisplay.Defaults();
+    public ResultDisplayDescriptor ResultDisplay=>BlobResultDisplay.Descriptor;
+    public ResultDisplayAppearance CaptureResultDisplay(FieldSettings fields)=>BlobResultDisplay.Capture(fields);
     public IReadOnlyDictionary<string,string> ParameterBindingNames=>BlobParameterDefinition.Instance.ParameterBindingNames;
     public InputValues ReadSettings(object settings)=>BlobParameterDefinition.Instance.ReadSettings(settings as BlobSettings??throw new ArgumentException("BlobSettings is required."));
     public object MaterializeSettings(InputValues values)=>BlobParameterDefinition.Instance.MaterializeSettings(values);

@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Contracts;
+﻿using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Runtime;
 
@@ -13,14 +13,15 @@ public sealed class ToolSettingsEditSession : IToolSettingsDraft
         ArgumentNullException.ThrowIfNull(definition);
         _definition=definition;
         _declaration=definition as IToolSettingsFields??throw new ArgumentException("Runtime settings are not declared.");
-        _draft=new(_declaration.SettingsSchema,fields,ValidateEdit);
+        _draft=new(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(definition),fields,ValidateEdit);
         ValidateComplete(_draft.CaptureFields());
     }
     private void ValidateEdit(FieldSettings candidate)
     {
-        foreach(var port in _declaration.SettingsSchema.Inputs.Where(port=>port.Required))
+        foreach(var port in SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(_definition).Inputs.Where(port=>port.Required))
             if(candidate.Read(port.Id) is UnsetSetting)throw new ArgumentException("Missing required setting: "+port.Id);
-        foreach(var presentation in _declaration.SettingsSchema.Presentation?.Fields??Array.Empty<FieldPresentation>())
+        _=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.Capture(_definition,candidate);
+        foreach(var presentation in SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(_definition).Presentation?.Fields??Array.Empty<FieldPresentation>())
         {
             if(presentation.Layout is not { } layout||candidate.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} value)continue;
             var number=Convert.ToDouble(value.Value,System.Globalization.CultureInfo.InvariantCulture);
@@ -31,8 +32,9 @@ public sealed class ToolSettingsEditSession : IToolSettingsDraft
     private void ValidateComplete(FieldSettings candidate)
     {
         ValidateEdit(candidate);
-        if(candidate.Capture().Values.Any(value=>value is ReferenceSetting or VariableSetting))return;
-        var settings=_declaration.MaterializeSettings(candidate.Materialize(new Dictionary<string,object?>()));
+        var algorithm=candidate.Select(_declaration.SettingsSchema.Inputs);
+        if(algorithm.Capture().Values.Any(value=>value is ReferenceSetting or VariableSetting))return;
+        var settings=_declaration.MaterializeSettings(algorithm.Materialize(new Dictionary<string,object?>()));
         var errors=_definition.Validate(settings);
         if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
     }

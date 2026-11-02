@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Globalization;
@@ -140,7 +140,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         if(inlineConstantReference)
         {
             if(port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
-                ||port.EditModes!=(FieldEditModes.Constant|FieldEditModes.Reference))throw new ArgumentException("内联常量需要数值常量/引用字段。");
+                ||port.EditModes is not (FieldEditModes.Constant or (FieldEditModes.Constant|FieldEditModes.Reference)))throw new ArgumentException("内联常量需要数值常量或常量/引用字段。");
             _inlineConstantReference=true;
         }
         if(integerRadioOptions is not null)

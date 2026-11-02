@@ -155,11 +155,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     {
         EnsureCurrent();
         if (!ReferenceEquals(host, _host)) throw new InvalidOperationException("编辑范围属于另一个方案。");
-        if (!HasPendingChanges && AllDrafts().Any(_host.HasPublishedNodeChanged))
-        {
-            RefreshCandidates();
-            _bindDraft(_draft.Node);
-        }
+        TryRefreshUnmodifiedPublishedDraft();
         var viewError = PrepareView?.Invoke();
         if (!string.IsNullOrEmpty(viewError)) throw new InvalidOperationException(viewError);
         if (!TryPrepareEditor(out var error)) throw new InvalidOperationException(error);
@@ -180,6 +176,21 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         AcceptPublication(publication);
     }
     public void Cancel() => Discard();
+
+    // The same safe rebind used by Prepare; never replaces accepted or raw view edits.
+    internal bool TryRefreshUnmodifiedPublishedDraft()
+    {
+        EnsureCurrent();
+        var opening=_draft;
+        if(HasPendingChanges||!ReferenceEquals(opening,_draft)||!IsValid)return false;
+        if(!AllDrafts().Any(_host.HasPublishedNodeChanged))return true;
+        if(HasPendingChanges||!ReferenceEquals(opening,_draft)||!IsValid)return false;
+        RefreshCandidates();
+        var refreshed=_draft;
+        _bindDraft(refreshed.Node);
+        var clean=!HasPendingChanges;
+        return clean&&IsValid&&ReferenceEquals(refreshed,_draft);
+    }
 
     public bool TryValidateEditor(out string error)
     {

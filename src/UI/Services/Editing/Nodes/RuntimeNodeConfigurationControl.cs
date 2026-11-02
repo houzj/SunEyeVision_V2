@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,6 +45,23 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private long _syncedRevision;
     private string _captureError="";
     private bool _running;
+    internal event Action? ResultDisplayEdited;
+    internal event Action<WorkflowNodeBase,long>? ResultDisplayBound;
+    internal bool IsResultDisplayBinding(WorkflowNodeBase node,long generation)
+        =>!_disposed&&_view is not null&&generation==_generation&&ReferenceEquals(node,_node)&&ReferenceEquals(Content,_view.View);
+    internal bool TryGetResultDisplayBinding(out WorkflowNodeBase node,out long generation)
+    {node=_node;generation=_generation;return node is not null&&IsResultDisplayBinding(node,generation);}
+    internal bool TryCaptureResultDisplay(out SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayDescriptor? descriptor,out SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayAppearance? appearance)
+    {
+        descriptor=null;appearance=null;if(_disposed||_view is null||_view.HasPendingEdits||_view.HasInvalidInput||_view.AcceptedRevision!=_syncedRevision)return false;
+        var generation=_generation;var node=_node;var configuration=node.RuntimeConfiguration;
+        if(configuration?.ResultDisplay is not {} declared)return false;
+        var captured=configuration.CaptureResultDisplay();
+        if(_disposed||generation!=_generation||!ReferenceEquals(_node,node)||!ReferenceEquals(node.RuntimeConfiguration,configuration))return false;
+        descriptor=declared;appearance=captured;return captured is not null;
+    }
+    private void NotifyResultDisplayEdited()
+    {foreach(var handler in ResultDisplayEdited?.GetInvocationList()??Array.Empty<Delegate>())try{((Action)handler)();}catch(Exception error){_captureError=error.Message;}}
     private Func<WorkflowNodeBase,RuntimeDebugInvocation>? _captureDebug;
     private Func<WorkflowNodeBase,IReadOnlyCollection<string>,RuntimeInputPreviewLease>? _captureRoiInputs;
     internal void SetRoiInputCapture(Func<WorkflowNodeBase,IReadOnlyCollection<string>,RuntimeInputPreviewLease> capture)=>_captureRoiInputs=capture;
@@ -134,7 +151,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(_disposed||generation!=_generation)return;
         _node=node;
         var configuration=node.RuntimeConfiguration??throw new ArgumentException("Runtime configuration is required.");
-        var settings=configuration.SettingsSchema??throw new ArgumentException("Runtime settings metadata is required.");
+        var settings=configuration.EditorSettingsSchema??throw new ArgumentException("Runtime settings metadata is required.");
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
         var presentationOwner=ReferencePresentation();
@@ -192,7 +209,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         try
         {
         if(_disposed||generation!=_generation){DisposeInput();return;}
-        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.SettingsSchema.Inputs),
+        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.Fields.Select(configuration.EditorSettingsSchema.Inputs),
             new(referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
                 candidate=>ValidateSettingsCandidate(candidate,generation),ValidateComposition:group=>ValidateSettingsChanges(group,generation),RoiFrames:_roiFrames));
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
@@ -208,12 +225,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             try{try{candidate?.Dispose();}finally{DisposeInput();}}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
         }
+        foreach(var callback in ResultDisplayBound?.GetInvocationList()??Array.Empty<Delegate>())
+        {if(!IsResultDisplayBinding(node,generation))return;((Action<WorkflowNodeBase,long>)callback)(node,generation);}
     }
     private void Changed()
     {
         if(_syncing||_capturing||_disposed||_view is not {} view)return;
         var node=_node;var generation=_generation;var revision=view.AcceptedRevision;
-        if(revision==_syncedRevision)return;
+        if(revision==_syncedRevision){NotifyResultDisplayEdited();return;}
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(node,_node)&&ReferenceEquals(view,_view)&&revision==view.AcceptedRevision;
         try
         {
@@ -231,6 +250,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
         {if(Current())_captureError=error.Message;}
+        NotifyResultDisplayEdited();
     }
     public bool TryValidateEditor(out string error)
     {

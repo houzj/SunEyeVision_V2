@@ -97,6 +97,8 @@ public partial class MainWindowViewModel
                     readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,inputFieldIds:fields,observeVariables:ids=>WatchVariables(ids));
             });
             control.BindDraft(context.DraftNode);
+            var displayPreview=InstallResultDisplayPreview(session,node,context,control);
+            context.Deactivated+=displayPreview.Dispose;
             control.SetDebugCapture(draft=>
             {
                 if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止工作流后调试此节点。");

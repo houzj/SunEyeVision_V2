@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.ComponentModel;
 using SunEyeVision.Plugin.Contracts;
@@ -42,8 +42,10 @@ public static class BlobDesignData
         public DesignDraft()
         {
             var declaration=(IToolSettingsFields)Tool;
-            _draft=new(declaration.SettingsSchema,new FieldSettings(declaration.SettingsSchema.Inputs,
-                declaration.ReadSettings(new BlobSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
+            var schema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(Tool);
+            var values=declaration.ReadSettings(new BlobSettings()).CopyValues().Concat(Tool.CreateDisplaySettings().CopyValues())
+                .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
+            _draft=new(schema,new FieldSettings(schema.Inputs,values));
         }
         public ToolSchema Schema=>_draft.Schema;
         public long Revision=>_draft.Revision;

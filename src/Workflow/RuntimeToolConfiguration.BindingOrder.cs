@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -25,7 +25,7 @@ public sealed partial class RuntimeToolConfiguration
             throw new ArgumentException("Execution input selection must contain unique declared inputs and every required input.");
         return ids;
     }
-    public bool IsExecutionFieldActive(string id)=>BindingTargets.Any(port=>port.Id==id)
+    public bool IsExecutionFieldActive(string id)=>!IsDisplayField(id)&&BindingTargets.Any(port=>port.Id==id)
         &&(!Schema.Inputs.Any(port=>port.Id==id)||_executionInputs.Contains(id));
     private IReadOnlyDictionary<string,string> FreezeBindingNames()
     {

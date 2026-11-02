@@ -17,6 +17,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         internal long Generation;
         internal readonly ResultImagePane Image;
         internal readonly NativeResultViewport.GeometryLayer Selection;
+        internal DisplayScene? Display;
+        internal void ClearDisplay(){var previous=Display;Display=null;previous?.Dispose();}
         private NativeResultViewport.CrosshairLayer? _cross;
         internal NativeResultViewport.CrosshairLayer Cross=>_cross??=Image.Viewport.CreateCrosshairLayer();
         internal Pane(FrameworkElement view)
@@ -26,7 +28,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             catch{Image.Dispose();throw;}
         }
         internal void ClearGraphics()=>Selection.Clear();
-        public void Dispose()=>Run(new Action[]{ClearGraphics,()=>_cross?.Dispose(),Selection.Dispose,Image.Dispose});
+        public void Dispose()=>Run(new Action[]{ClearDisplay,ClearGraphics,()=>_cross?.Dispose(),Selection.Dispose,Image.Dispose});
     }
     private readonly MainWindowViewModel _main;
     private readonly ResultWorkspaceShell _shell;
@@ -57,6 +59,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
         _doubleImage.AddValueChanged(shell,DoubleImageChanged);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
+        main.ResultDisplayChanged+=QueueResultDisplay;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
         main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
         main.ResultWorkspaceRootSettled+=RootSettled;
@@ -178,13 +181,14 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         ++_selectionGeneration;
         bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
         if(!Current())return;
-        pane.ClearGraphics();
+        pane.ClearDisplay();pane.ClearGraphics();
         if(!Current())return;
         if(source?.Publication is not {} publication){pane.Image.ClearUnlessRetained();return;}
         if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
             ()=>Current()&&source.Current()&&Current(),out var error))
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
         else if(Current())SetImageName(pane,source.FileName);
+        if(Current())QueueResultDisplay();
     }
     private static void SetImageName(Pane pane,string? name)
         =>pane.Image.Viewport.View.SetCurrentValue(
@@ -317,6 +321,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     }
     private void ReportDisplayDefinitionGap()
     {
+        if(_main.SelectedNode?.RuntimeConfiguration?.ResultDisplay is not null)return;
         var publication=_main.CurrentResultPublication;
         if(publication is null||!publication.IsCurrent()||ReferenceEquals(publication,_displayDefinitionNotice))return;
         _displayDefinitionNotice=publication;
@@ -368,6 +373,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         var cancellation=_previewCancellation;_previewCancellation=null;
         Run(new Action[]{
             ()=>_main.ResultWorkspaceChanged-=Refresh,
+            ()=>_main.ResultDisplayChanged-=QueueResultDisplay,()=>{_displayRefresh?.Abort();_displayRefresh=null;},
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
             ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,

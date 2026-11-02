@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -35,7 +35,7 @@ public sealed partial class DeclaredFieldsView
         foreach(var id in textCoordinates??new HashSet<string>())
         {
             if(!declarations.TryGetValue(id,out var field))throw new ArgumentException("文本坐标引用未知字段。");
-            if(field.Port.EditModes==(FieldEditModes.Constant|FieldEditModes.Reference))
+            if(field.Port.EditModes is FieldEditModes.Constant or (FieldEditModes.Constant|FieldEditModes.Reference))
             {
                 SunEyeVision.Plugin.Wpf.Adapters.Fields.InlineConstantRules.Validate(field.Port,field.Presentation,field.Value);
                 _inlineConstants.Add(id);

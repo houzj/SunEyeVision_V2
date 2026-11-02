@@ -89,6 +89,9 @@ public partial class MainWindowViewModel
     }
     private void DocumentHistoryChanged(object? sender, EventArgs args)
     {
+        var displaySession=DocumentManager.Session;
+        var displayHistory=sender as DocumentHistoryCoordinator;
+        var displayRevision=displayHistory?.Revision;
         var failures = new List<Exception>();
         void Refresh(Action action) { try { action(); } catch (Exception error) { failures.Add(error); } }
         if (sender is DocumentHistoryCoordinator history && !history.IsClosed
@@ -97,6 +100,13 @@ public partial class MainWindowViewModel
             Refresh(() => RefreshReplayedResults(session, history));
         Refresh(RefreshAcceptedImageSourceViews);
         Refresh(RefreshCurrentResultBindings);
+        Refresh(() =>
+        {
+            if(_documentHostReleased||displaySession is null||displayHistory is null||displayHistory.IsClosed
+                ||!ReferenceEquals(DocumentManager.Session,displaySession)||!ReferenceEquals(displaySession.History,displayHistory)
+                ||displayHistory.Revision!=displayRevision)return;
+            NotifyResultDisplayChanged();
+        });
         Refresh(RefreshRootTabReadiness); Refresh(UpdateCurrentSolutionInfo); Refresh(UpdateUndoRedoCommands);
         Refresh(() => OnPropertyChanged(nameof(CanUndoRootWorkspace)));
         Refresh(() => OnPropertyChanged(nameof(CanRedoRootWorkspace)));

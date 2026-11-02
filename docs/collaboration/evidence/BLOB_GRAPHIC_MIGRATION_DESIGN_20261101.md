@@ -1,6 +1,6 @@
 # Blob图文显示完整迁移设计（2026-11-01）
 
-状态：可审核实施设计，产品未实施、未构建或验收。产品核查基线主仓6d36e7fdd763e833f34dd53cc315a3be0d30b137。本文件只写指定集成区文档；不批准逐行解闸，不新增无人消费的接口，不把九行均可编辑作为阶段完成。
+当前状态（2026-11-02）：已在独立候选分支 codex/blob-result-display-20261101、源码基线a2ff34e4集中实施；冻结011标准UI/全量0错，Core5/真实Window15/RuntimeDebug7/RuntimeKernel19已有候选通过证据，公共字段38条通过日志（旧固定汇总31）已隐藏桌面exit0；五轨源码/DLL身份均核一致，尚未正式集成。原九项不缩减，仅实际外接矩形和Area文本接通，七项与动态位置保护。当前详细设计及逐项边界见 [实施设计](BLOB_RESULT_DISPLAY_IMPLEMENTATION_DESIGN_20261101.md)，失败记录保留，不将本方适配称VM等价。
 
 ## 1. 原证据与纠正
 
@@ -28,38 +28,30 @@ ObjectBase.cs:131–246、382–424、454–493已证模块UI参数UserData键�
 
 九行原清单不缩减。Blob默认#66ff00/#ff0000/opacity1/linewidth2/IsDisplay=true；其他对象初值逐项从原Display XML导入不可全局套用绿色。未实现行显示原因并不可编辑，不能保存no-op状态。颜色/透明度/线宽原字段依赖须全部一致；Point/Outline特殊分派不能套普通Status规则。原九配置之外还有Input/Blob/Binary/OutputMask图像对象和Data Record/Result List；本批不扩双图叠加/背景owner或图像导出基础。
 
-## 3. 当前源码与可复用闭包
+## 3. 当前源码与实际复用闭包
 
-- tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs:15–24创建NativeDisplayUiDraftRows；现九行与七文本字段均UI-only，不能保留为第二状态源。
-- src/Plugin.Wpf/Fields/NativeDisplayOptions.cs提供NativeGraphicDisplayOptions与NativeTextDisplayOptions；原眼睛、样式popup、颜色及文本组装直接复用。替换临时实例，不重绘图标或模板。
-- BlobDisplayDefinition.cs静态Graphics/Texts并无正式运行消费者；BlobDisplay.xml当前外接矩形/质心/轮廓等非原九对象清单，必须按上述矩阵整理，不能让两套声明同时生效。
-- NativeResultViewport.Shapes.cs:45–52、229–239的GeometryLayer/TextLayer已具备独立层revision、receipt和isCurrent；NativeResultViewport.cs:239–249有RegionLayer。本批不写新渲染器，也不改变严格物理帧/坐标proof。
-- BlobResultView.xaml.cs:47目前仅交表；ResultWorkspacePresenter.cs:299明确显示缺口，只另有选择高亮。ResultSelection只表达选择，不能借它运输常驻图形。
-- IResultPublication当前Borrow只含输出，无本次显示配置；IToolResultView无常驻图层描述；ResultProjectionDescriptor的Geometry属于表选择，不能错用。
-
+- BlobResultDisplay.cs提供独立13项显示声明；算法BlobSettings/SettingsSchema仍55项。RuntimeToolConfiguration.Fields为唯一正式owner，EditorSettingsSchema合并68项，注册准入、真实Host、JSON与设计示例均走完整编辑快照；算法/current/绑定顺序仅算法子集。
+- BlobDisplayUi复用NativeGraphicDisplayOptions、NativeVisibilityDisplayOptions与NativeTextDisplayOptions；九行原序、原三页与判定→图像→文本组序保持，七项缺生产值禁用，不保留第二可写临时矩形/文本状态。
+- BlobDisplayDefinition/BlobDisplay.xml仅保留表声明；旧Graphics/Texts已移除，避免静态样式与正式字段双轨。
+- NativeResultViewport.DisplayScene薄适配在一次原ShapeLayer事务中消费既有Geometry/Text投影与预算，没有新renderer或双图owner。ResultWorkspacePresenter.Display每pane持独立publication reader，逐行RegionReader核实际物理frame/coordinates/domain；文字-only也不按尺寸猜同域。
+- MainWindowResultDisplay管理实际document/node/window scope与成功BindDraft token代次；当前正式样式与有效草稿即时刷新同一publication，非法pending保最后完整有效外观。旧token/关闭/回调不能清新owner。ProductionEditorContext复用现安全无改重绑，有改草稿保值并沿原Host并发冲突。
 ## 4. 单一正式owner及配置保存
 
 唯一配置owner为节点RuntimeConfiguration.Fields和现DocumentEditSession/Host，新增Blob正式字段不另建配置服务。建议稳定字段角色：display.blob.{visible,ok,ng,opacity,width}；display.text.{visible,content,ok,ng,size,opacity,x,y}。最终fieldId按现唯一注册规则集中确定，不能以显示标签作身份。字段仅接真正启用的对象；其他原行无可写假字段。
 
-内容字段保留原StringConfig与原长度声明0x20；字符计数/格式串转义未核时必须在实现前定清，不擅自扩大。size6..72、opacity0..1 step.01、width1..10 step1。颜色统一正式Rgba。Text默认Blob Area:{0}、逐Blob Area数组及状态同索引；允许字面量和受控占位规则须用同一解析器校验/格式化，未知语法明确拒绝，不能静默回退空串。
+内容复用原StringConfig；LengthA=0x20不证明业务截断，未实施无证32硬上限。场景总UTF-16字符预算1000000为本方资源保护、无截断。size6..72、图形opacity0..1 step.01、文本opacity0..1 step.1、width1..10 step1。颜色统一正式Rgba。Text默认Blob Area:{0}、逐Blob Area数组及状态同索引；允许字面量和受控占位规则须用同一解析器校验/格式化，未知语法明确拒绝，不能静默回退空串。
 
 X/Y的原来源为前驱及自身int/float、SetResultIOToModuleOperation显示输出位置，与算法输入订阅不同。最小范围支持明确常量坐标；动态位置只有在整批引入本次输出读取阶段及引用资格后才开放。不能把自身结果作为普通输入参数注入，制造自依赖；不能在WPF查询运行值。动态位置未实现时保留原位置行及清晰原因，本阶段不得宣称七行全部原语义完成。
 
 现编辑Host校验、复制、撤销重做、保存重开复用。Style popup确认/取消同一字段草稿；任一值非法不得半写，关闭前退役回调，禁用/隐藏/换节点/换文档均不写新代。真实已实现显示字段应可捕获；ROI/判定等其他no-op保护不因本批解除。
 
-## 5. 同次冻结和publication的最小接线
+## 5. 同次publication与当前显示修订
 
-必须先冻结正式配置，再执行；publication必须携带本次实际采用的不可变显示快照。不得宿主在呈现时读取当前节点设置，不得把样式伪造成算法结果/可订阅端口。
+本次算法结果仍按正式执行快照发布，显示样式采用“同一已发布publication＋当前正式显示配置/有效草稿”的独立修订策略；这是本方宿主时序，不称原厂全部竞态已证，不再要求样式冻结进算法publication。算法、输入、休眠引用、工具/schema等任一真实执行配置变化仍原失效，只有已验证纯常量显示字段不失效现结果。
 
-实施批需要一个最小、工具无关、立即有生产者和消费者的显示接入合同；这是现合同缺口，不是新渲染基础。最终签名由共享合同唯一负责人冻结，本设计不先写接口。建议职责分成两部分：
+IToolResultDisplayProvider只交声明路径、独立显示schema、默认及纯值外观；ResultDisplayDescriptor复用ResultFieldPath逐项校验。字段不进入算法SettingsSchema、执行/Debug解析或current；复制/删除/历史/JSON管理保全量。RunIdentity与样式revision独立。
 
-1. 运行元数据：在现正式执行结果/DeclaredOutputSnapshot中附带不可变已接纳显示配置快照（按本次RunIdentity和SchemaRevision），再由ToolResultViews.FromSnapshot投到publication。传输位置属于结果元数据，不在Schema输出树创建假数值端口，不给普通订阅资格。元数据只有冻结标量/表达式描述，不能持有WPF、回调或新资源owner。
-2. 显示声明：工具注册的结果呈现声明以正式路径描述对象、状态、内容、几何和配置角色；宿主统一读取，不依赖Blob CLR类、不反射私有XML、不按中文名字特判。只加入本批Blob外接矩形与文本两个真正可消费描述；未知对象保持原页面禁用。
-
-生产者是Blob正式设置捕获和Blob现结果声明；传递者是现执行snapshot→ToolResultViews；消费者是现ResultWorkspacePresenter。三者同一提交接通，禁止只交付“以后用”的公共接口。实现前需确认调试、工作流、失败/取消及历史publication均用同一传输点；缺配置元数据的旧/声明publication不得读取当前设置补齐，只显示图像和表，不画常驻层并给明确诊断。
-
-如果用户禁止任何公共合同扩展，本方案到此阻塞，不能只在Blob内完成：现接口没有冻结显示配置/常驻声明路径。不得通过SelectionHighlightChanged、静态字典或插件查宿主控件逃避该缺口。
-
+MainWindowResultDisplay在实际文档会话/流程/节点实例/publication身份匹配后捕获不可变外观；ResultWorkspacePresenter准备同publication全部图文后原子安装，每pane单独lease。provider/proof抛错或同步重入按request/epoch/scene引用保护只清自己的旧场景。prepare失败清旧整景、不声称保留；配置非法在入口拒绝，不发布半套。
 ## 6. 现有宿主图层与租约
 
 在ResultWorkspacePresenter.Pane内复用GeometryLayer/TextLayer，各Pane自身层与选择层、十字线分开。宿主按同次publication借一次独立IResultValueLease，解析完整候选场景后才原子安装；每层拥有自己的revision，有共同的当前publication/Pane generation检查。分层更新不能因兄弟层revision改变使已安装层proof失效。
@@ -76,8 +68,8 @@ RegionLayer当前不用于伪装原ROI矩形/ExternROI多边形；将来正式�
 
 - Blob Runtime：BlobParameters.xml、BlobSettings、BlobParameterDefinition绑定、BlobDisplayDefinition/BlobDisplay.xml；明确冻结配置元数据，不增加未实现算法。
 - Blob Wpf：BlobDisplayUi、真实参数编辑器及设计样例走同一组装；移除对应UI-only行，不改共享原模板。
-- 共享合同/Runtime：仅现执行snapshot和结果呈现声明的最小冻结显示接入，由唯一负责人统一实施；不能由Wpf引用Runtime/Workflow执行服务。
-- UI：ToolResultViews及ResultWorkspacePresenter/Pane消费上述接入，不新增viewport或双图owner。
+- 共享合同/Runtime：独立Editor显示schema、纯显示描述与外观捕获同批接通，不扩算法snapshot元数据；Wpf不引用Runtime/Workflow执行服务。
+- UI：MainWindowResultDisplay及ResultWorkspacePresenter/Pane消费上述接入，不新增viewport或双图owner。
 - 测试：公共控件既有回归+Blob真实宿主/结果工作区整链。其他ROI、位置、判定、轴算法、输出图像、OpenCV导出不纳入隐式扩建。
 
 ## 8. 一次实施与阶段验收
@@ -87,7 +79,7 @@ RegionLayer当前不用于伪装原ROI矩形/ExternROI多边形；将来正式�
 必需自动验收：
 
 1. 真实Blob页面眼睛、样式popup、颜色、opacity、width；文本字面/默认模板、颜色、字号、常量XY；合法/非法整组、取消、禁用、隐藏、重绑和迟到回调。原七个未实现图形对象的眼/笔均不可误用，动态XY单列未实现。
-2. 正式Host确认/取消、复制、撤销重做、保存重开；运行冻结后改草稿不改变已有场景，重新运行才使用新配置；不改变算法数值/输出请求语义。
+2. 正式Host确认/取消、复制、撤销重做、保存重开；有效显示草稿即时预览同一结果且不执行算法，取消读最新正式值，确认/Undo/Redo刷新样式不失效publication；不改变算法数值/输出请求语义。
 3. 同次双Blob不同面积/判定/排序/限数，矩形与文本各对应element-id；零结果零假图形/文字，NG色有真实依据；缺边界和空资源不借旧值。
 4. 实际ResultWorkspace生产入口：表/图同publication，原图/灰图/二值切换，严格Frame/Domain拒绝，双Pane只更新匹配一侧；选择高亮与常驻层独立，清高亮不删常驻层，清图按产品语义统一退役。
 5. 重跑、失败、预取消/运行中取消、窗口隐藏关闭、换节点/文档/同ID重开、观察者重入异常；记录最后reader释放，独立读者不被提前释放，新代不能被旧清理覆盖。
@@ -97,6 +89,8 @@ RegionLayer当前不用于伪装原ROI矩形/ExternROI多边形；将来正式�
 
 阶段可交付：原Blob矩形与Show Text在明确受限语义下的正式生产接入、九项布局和不可用边界；不是九对象全实现，不是Blob整工具完成。原最大内接矩形、ROI矩形、outlinepoint、基准/运行点、多边形屏蔽、扇环及动态显示位置均保留具体依赖。只有补齐对应生产值/证据后才能接入；不得偷用近似值或扩其他基础凑完成。
 
-## 9. 当前执行决定
+## 9. 当前交付边界
 
-渲染基础够用；仅Blob文件修改不能完成。本方案需最小共享显示元数据及描述接入；按用户当前“缺其他基础不扩展”的决定，暂不实施该公共合同或移除整窗保护，保留完整后续范围及依赖，不将其计为产品完成。原报告可追的FeatureBase/显示位置/数组索引与native资源边界继续集中补证；未知未被证明穷尽，不一概当原机缺失。
+渲染基础已沿原图层复用，必要共享编辑阶段/纯显示描述与真实消费者已集中接通；不再以缺新渲染基础为由保留全部显示占位。原九项中的七个无真实本轮输出对象与动态位置继续禁用；本地/继承ROI物化已有，但缺实际本轮publication几何传递，不能读当前草稿拼旧结果。
+
+中文{面积}token映射、多对象文本原厂数量/排版、VM像素/样式时序等价未证。当前受控{0}逐Blob Area、常量XY为明确适配，默认两样本沿原MultiText renderer实测分为两行，排布与VM等价未证；不自行加行偏移或用质心冒充。当前只验LoadCandidate值与复制，不冒称重开宿主渲染/执行已验；双pane共存、异常注入/跨文档同ID等未新增直接实测项以候选回执单列，不能从代码推作通过。VS/自然鼠标/DPI/人工仍未验，由主线正式集成后统一安排。

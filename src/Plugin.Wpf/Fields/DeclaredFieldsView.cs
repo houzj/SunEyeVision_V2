@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Windows;
@@ -194,7 +194,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null,
   IReadOnlyList<NativeAssistOptions>? assistCompositions=null,IReadOnlySet<string>? headerlessSectionAnchors=null,
   IReadOnlyDictionary<string,double>? pageLabelWidths=null,
-  IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null)
+  IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
+  IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
@@ -284,6 +285,14 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   _textExpressions=textOptions;
   var graphicOptions=ValidateGraphics(declarations,graphicDisplays,paired,radios,imageProviders,textOptions);
   var graphicIds=graphicOptions.Values.SelectMany(GraphicIds).ToHashSet(StringComparer.Ordinal);
+  var visibilityIds=new HashSet<string>(StringComparer.Ordinal);
+  foreach(var option in visibilityDisplays??Array.Empty<NativeVisibilityDisplayOptions>())
+  {
+   if(!visibilityIds.Add(option.VisibleFieldId)||graphicIds.Contains(option.VisibleFieldId)||!declarations.TryGetValue(option.VisibleFieldId,out var declared)
+       ||declared.Port.Type!=DataType.Boolean||!declared.Port.Required||declared.Port.EditModes!=FieldEditModes.Constant||declared.Presentation.Layout?.DialogGroup is not null)
+       throw new ArgumentException("眼睛行必须具有唯一正式常量布尔字段。");
+  }
+  graphicIds.UnionWith(visibilityIds);
   ValidateTextDisplays(declarations,textDisplayOptions,graphicIds,paired,radios,imageProviders,inlineConstants,textOptions);
   foreach(var option in textDisplayOptions)
   {
@@ -313,6 +322,14 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      value=>graphic.TrySetConstant(fieldId,value),()=>graphic.TryCommitPending(fieldId),handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
     _rows.Add(id,graphic);
    }
+  }
+  foreach(var id in visibilityIds)
+  {
+   var state=states[id];var roles=new NativeGraphicDisplayOptions(id,id,id,id,id,ShowStyleButton:false);
+   var graphic=new NativeGraphicStylePresenter(roles,new Dictionary<string,DeclaredFieldState>{{id,state}},_groupPresentations,CurrentGroup,visibilityOnly:true);
+   _displayCompositions.Add(graphic);_rows.Add(id,graphic);
+   access.Add(id,new(id,graphic,()=>state.Accepted,()=>state.HasInvalidInput,()=>false,()=>state.Error,()=>graphic.Input(id),
+       value=>graphic.TrySetConstant(id,value),()=>!state.HasInvalidInput,handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
   }
   foreach(var field in all)
   {

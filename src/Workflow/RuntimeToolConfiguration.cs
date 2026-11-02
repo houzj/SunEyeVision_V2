@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -30,7 +30,9 @@ public sealed partial class RuntimeToolConfiguration
             .Intersect(_settingsFields.SettingsSchema.Inputs.Select(p=>p.Id),StringComparer.Ordinal).Any())
             throw new ArgumentException("Runtime input and settings field identities must be distinct.");
         _referenceBehaviors=frozenBehaviors??ParameterReferenceRules.Freeze(definition);
+        _=EditorSettingsSchema;
         Fields=new(BindingTargets,settings);
+        _=CaptureResultDisplay();
         _executionInputs=FreezeExecutionInputs();
         foreach(var pair in Fields.Capture())
         {
@@ -65,25 +67,24 @@ public sealed partial class RuntimeToolConfiguration
     public string ToolId => _definition.ToolId;
     public Type SettingsType => _definition.SettingsType;
     /// <summary>Editing and dependency identity deliberately excludes live parameter values.</summary>
-    internal string ConfigurationIdentity
+    internal string ConfigurationIdentity=>CaptureConfigurationIdentity(false);
+    internal string ExecutionConfigurationIdentity=>CaptureConfigurationIdentity(true);
+    private string CaptureConfigurationIdentity(bool executionOnly)
     {
-        get
-        {
             using var buffer=new System.IO.MemoryStream();
             using(var writer=new Utf8JsonWriter(buffer))
             {
                 writer.WriteStartObject();writer.WriteString("ToolId",ToolId);
-                writer.WriteString("InputSchema",Schema.Fingerprint);writer.WriteString("SettingsSchema",SettingsSchema.Fingerprint);
+                writer.WriteString("InputSchema",Schema.Fingerprint);writer.WriteString("SettingsSchema",SettingsSchema.Fingerprint);writer.WriteString("DisplaySchema",DisplaySettingsSchema.Fingerprint);
                 writer.WritePropertyName("ReferenceBehaviors");writer.WriteStartObject();
                 foreach(var pair in _referenceBehaviors.OrderBy(p=>p.Key,StringComparer.Ordinal))writer.WriteString(pair.Key,pair.Value.ToString());writer.WriteEndObject();
-                writer.WritePropertyName("Fields");RuntimeFieldJson.Write(writer,Fields.Capture());
+                writer.WritePropertyName("Fields");RuntimeFieldJson.Write(writer,Fields.Capture().Where(pair=>!executionOnly||!IsDisplayField(pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
                 writer.WritePropertyName("ParameterBindingOrder");WriteBindingOrder(writer,export:false);
                 writer.WritePropertyName("ParameterBindingNames");writer.WriteStartObject();
                 foreach(var pair in _bindingNames.OrderBy(pair=>pair.Key,StringComparer.Ordinal))writer.WriteString(pair.Key,pair.Value);
                 writer.WriteEndObject();writer.WriteEndObject();
             }
             return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
-        }
     }
     internal string CurrentValuesIdentity
     {
@@ -136,7 +137,7 @@ public sealed partial class RuntimeToolConfiguration
     internal RuntimeToolConfiguration PreserveCurrentValuesFrom(RuntimeToolConfiguration live)
     {
         ArgumentNullException.ThrowIfNull(live);
-        if(ToolId!=live.ToolId||Schema.Fingerprint!=live.Schema.Fingerprint||SettingsSchema.Fingerprint!=live.SettingsSchema.Fingerprint)
+        if(ToolId!=live.ToolId||Schema.Fingerprint!=live.Schema.Fingerprint||EditorSettingsSchema.Fingerprint!=live.EditorSettingsSchema.Fingerprint)
             throw new ArgumentException("Current parameter values belong to another declaration.",nameof(live));
         var values=CaptureCurrentValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         foreach(var port in SettingsSchema.Inputs)
@@ -203,6 +204,7 @@ public sealed partial class RuntimeToolConfiguration
     /// input groups are complete. Final admission always uses Validate.</summary>
     internal IReadOnlyList<Diagnostic> ValidateSettings()
     {
+        _=CaptureResultDisplay();
         var settings=Fields.Select(SettingsSchema.Inputs);
         var known=(_definition as IToolKnownSettingsValidation)?.ValidateKnownSettings(settings)??Array.Empty<Diagnostic>();
         if(known.Count!=0)return known;
@@ -219,7 +221,7 @@ public sealed partial class RuntimeToolConfiguration
     {
         return Fields.Select(SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>());
     }
-    public IReadOnlyList<Port> BindingTargets => Schema.Inputs.Concat(SettingsSchema?.Inputs??Array.Empty<Port>()).ToArray();
+    public IReadOnlyList<Port> BindingTargets => Schema.Inputs.Concat(SettingsSchema.Inputs).Concat(DisplaySettingsSchema.Inputs).ToArray();
     public RuntimeToolConfiguration WithFieldValues(IReadOnlyDictionary<string,object?> changes)
     {
         return WithFieldSettings(changes.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
@@ -241,7 +243,7 @@ public sealed partial class RuntimeToolConfiguration
     public RuntimeToolConfiguration RestoreFieldFrom(string fieldId,RuntimeToolConfiguration opening)
     {
         ArgumentNullException.ThrowIfNull(opening);
-        if(ToolId!=opening.ToolId||Schema.Fingerprint!=opening.Schema.Fingerprint||SettingsSchema.Fingerprint!=opening.SettingsSchema.Fingerprint)
+        if(ToolId!=opening.ToolId||Schema.Fingerprint!=opening.Schema.Fingerprint||EditorSettingsSchema.Fingerprint!=opening.EditorSettingsSchema.Fingerprint)
             throw new ArgumentException("Opening configuration belongs to a different tool declaration.");
         _=Fields.Read(fieldId);var original=opening.Fields.Read(fieldId);
         var values=Fields.Capture().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
@@ -256,7 +258,7 @@ public sealed partial class RuntimeToolConfiguration
     }
     public RuntimeToolConfiguration WithSettingsFields(FieldSettings settings,IReadOnlyList<string>? proposalOrder=null)
     {
-        var ids=SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+        var ids=EditorSettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
         if(settings.Declarations.Keys.Any(id=>!ids.Contains(id)))throw new ArgumentException("Settings snapshot contains invocation inputs.");
         if(proposalOrder is not null&&(proposalOrder.Any(id=>!ids.Contains(id))||proposalOrder.Distinct(StringComparer.Ordinal).Count()!=proposalOrder.Count))
             throw new ArgumentException("Settings proposal order contains unknown or duplicate fields.");
@@ -275,8 +277,10 @@ public sealed partial class RuntimeToolConfiguration
     {
         var definition = ToolRegistry.CreateRuntime(toolId);
         var fields=definition as IToolSettingsFields??throw new ArgumentException("Runtime requires a settings declaration.");
-        return new(definition,fields.ReadSettings(definition.CreateSettings()).CopyValues()
-            .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
+        var defaults=fields.ReadSettings(definition.CreateSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        if(definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider display)
+            foreach(var value in display.CreateDisplaySettings().CopyValues())defaults.Add(value.Key,value.Value);
+        return new(definition,defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal));
     }
 
     internal static RuntimeToolConfiguration Restore(string toolId, IReadOnlyDictionary<string,ParameterSetting> settings,

@@ -38,6 +38,15 @@ internal static class S2DocumentEditingCases
     private static void Show(UIElement view){owner.Content=view;owner.UpdateLayout();Pump();}
     [STAThread] private static int Main()
     {
+        var result=1;
+        var thread=new Thread(()=>{IntPtr desktop=IntPtr.Zero;try{desktop=CreateDesktop("SunEyeVision-Fields-"+Guid.NewGuid().ToString("N"),IntPtr.Zero,IntPtr.Zero,0,0x000F01FF,IntPtr.Zero);if(desktop==IntPtr.Zero||!SetThreadDesktop(desktop))throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(),"独立隐藏桌面不可用；不回退普通桌面。");Console.WriteLine("字段回归独立隐藏桌面，不切换用户桌面。");result=RunFieldCases();}catch(Exception error){Console.Error.WriteLine(error);}finally{if(desktop!=IntPtr.Zero)CloseDesktop(desktop);}});
+        thread.SetApartmentState(ApartmentState.STA);thread.Start();thread.Join();return result;
+    }
+    [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]private static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]private static extern bool SetThreadDesktop(IntPtr desktop);
+    [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]private static extern bool CloseDesktop(IntPtr desktop);
+    private static int RunFieldCases()
+    {
         try
         {
             if(Environment.GetEnvironmentVariable("B08_REFERENCE_WINDOW_CULTURE") is {Length:>0} culture){Require(culture is "zh-CN" or "en-US","未知窗口验证语言");System.Globalization.CultureInfo.CurrentUICulture=System.Globalization.CultureInfo.GetCultureInfo(culture);}
@@ -290,10 +299,12 @@ internal static class S2DocumentEditingCases
             var xml=System.Xml.Linq.XDocument.Load(xmlStream);var rule=xml.Descendants("Judgment").Single(e=>(string?)e.Attribute("key")=="total-area");
             var key=(string)rule.Attribute("minimumFieldId")!;
             var initialFields=new FieldSettings(access.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
-            VerifyBlobPage(xml,initialFields);
+            var editorSchema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema((IToolDefinition)definition);
+            var editorFields=new FieldSettings(editorSchema.Inputs,initialFields.Capture().Concat(((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)definition).CreateDisplaySettings().CopyValues().Select(pair=>new KeyValuePair<string,ParameterSetting>(pair.Key,new ConstantSetting(pair.Value)))).ToDictionary(pair=>pair.Key,pair=>pair.Value));
+            VerifyBlobPage(xml,editorFields);
             var updated=(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)definition.MaterializeSettings(initialFields.Apply(new Dictionary<string,ParameterSetting>{{key,new ConstantSetting(12d)}}).Materialize(new Dictionary<string,object?>()));
             Require(updated.Judgments.Single(r=>r.Key=="total-area").Minimum==12&&updated.Judgments.Single(r=>r.Key=="max-area")==settings.Judgments.Single(r=>r.Key=="max-area"),"嵌套同名最小值写错判定");
-            Console.WriteLine("通过：正式Runtime XML的53个唯一设置字段及嵌套判定精确读写，不创建旧Blob参数");
+            Console.WriteLine("通过：正式Runtime XML的55个唯一设置字段及嵌套判定精确读写，不创建旧Blob参数");
             var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
             var flow=new SunEyeVision.Workflow.Workflow("flow","字段草稿");flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);
             var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
@@ -889,7 +900,7 @@ internal static class S2DocumentEditingCases
         using(var preview=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(sample.Draft,sample.Options))
         {
             Show(preview);var fields=(DeclaredFieldsView)preview.Content;fields.SelectedPageIndex=1;Pump();
-            Require(fields.Fields.Count==55&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
+            Require(fields.Fields.Count==68&&fields.Fields.Select(field=>field.FieldId).ToHashSet(StringComparer.Ordinal).SetEquals(sample.Draft.Schema.Inputs.Select(port=>port.Id))&&((ComboBox)fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode")).InputElement!).Items.Count==6,"独立设计数据未走同一正式组装链");
             CaptureBlobPreview(preview,"design-sample");
         }
         Console.WriteLine("通过：真实Blob六项仅Single可用，九字段正式默认/整数范围/草稿写入、原三模式显隐、历史保留及ROI整窗保护");
@@ -1223,7 +1234,7 @@ internal static class S2DocumentEditingCases
     private static void VerifySettingsCandidate(IToolSettingsFields definition,object settings)
     {
         var tool=(IToolDefinition)definition;
-        FieldSettings Initial()=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+        FieldSettings Initial()=>new(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(tool).Inputs,definition.ReadSettings(settings).CopyValues().Concat(((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)tool).CreateDisplaySettings().CopyValues()).ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
         var draft=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial());
         var schema=draft.Schema;
         using var declaration=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
@@ -1241,8 +1252,13 @@ internal static class S2DocumentEditingCases
                 &&draft.CaptureFields().Get<long>(low)==100,
                 "宿主没有取得完整常量和引用候选，或预检前污染草稿");
             if(reject)throw new InvalidOperationException("整组候选拒绝");
-            if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial()));
+            if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,Initial()),view.Options);
         });
+        string D(string group,string role)=>BlobResultDisplay.Field(group,role);
+        options=options with {
+            GraphicDisplays=new[]{new NativeGraphicDisplayOptions(BlobResultDisplay.Graphic,D(BlobResultDisplay.Graphic,"visible"),D(BlobResultDisplay.Graphic,"ok"),D(BlobResultDisplay.Graphic,"ng"),D(BlobResultDisplay.Graphic,"opacity"),D(BlobResultDisplay.Graphic,"width"))},
+            VisibilityDisplays=new[]{new NativeVisibilityDisplayOptions(D(BlobResultDisplay.Text,"visible"))},
+            TextDisplays=new[]{new NativeTextDisplayOptions(D(BlobResultDisplay.Text,"content"),D(BlobResultDisplay.Text,"ok"),D(BlobResultDisplay.Text,"ng"),D(BlobResultDisplay.Text,"size"),D(BlobResultDisplay.Text,"opacity"),D(BlobResultDisplay.Text,"x"),D(BlobResultDisplay.Text,"y"))}};
         view.Bind(draft,options);
         var method=typeof(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView).GetMethod("WriteGroup",BindingFlags.Instance|BindingFlags.NonPublic)!;
         var group=new Dictionary<string,ParameterSetting>{{low,new ConstantSetting(73L)},{high,new ReferenceSetting(source.Reference(BindingSelection.All))}};

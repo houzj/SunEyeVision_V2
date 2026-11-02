@@ -150,8 +150,13 @@ public static partial class ToolRegistry
                 throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
             if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
             _=definition.Describe();
-            if(definition is IToolSettingsFields)
-                _=new ToolSettingsEditSession(definition,new FieldSettings(((IToolSettingsFields)definition).SettingsSchema.Inputs,((IToolSettingsFields)definition).ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal))).CaptureValidatedFields();
+            if(definition is IToolSettingsFields settingsFields)
+            {
+                var defaults=settingsFields.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
+                if(definition is IToolResultDisplayProvider display)
+                    foreach(var pair in display.CreateDisplaySettings().CopyValues())defaults.Add(pair.Key,new ConstantSetting(pair.Value));
+                _=new ToolSettingsEditSession(definition,new FieldSettings(ResultDisplayFields.EditorSchema(definition).Inputs,defaults)).CaptureValidatedFields();
+            }
         }
     }
 }

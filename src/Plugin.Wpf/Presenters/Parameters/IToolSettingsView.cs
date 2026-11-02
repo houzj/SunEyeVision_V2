@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
@@ -37,7 +37,8 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlySet<string>? SuppressedFieldRows=null,
     IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
     IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null,
-    SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null)
+    SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null,
+    IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -14,7 +14,7 @@ internal static class RuntimeFieldJson
     {
         var definition=ToolRegistry.CreateRuntime(toolId);
         var declared=definition as IToolSettingsFields??throw new JsonException("Runtime settings are not declared.");
-        var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs))
+        var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs).Concat(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.Schema(definition).Inputs))
             .ToDictionary(port=>port.Id,StringComparer.Ordinal);
         // Tool identity and declaration are available before the first binding is decoded.
         var behaviors=ParameterReferenceRules.Freeze(definition);

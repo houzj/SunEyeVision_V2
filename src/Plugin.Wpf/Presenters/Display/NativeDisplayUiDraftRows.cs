@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -60,6 +60,13 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
         ArgumentNullException.ThrowIfNull(source);
         if(index<0||index>=_rows.Count)throw new ArgumentOutOfRangeException(nameof(index));
         BindingOperations.SetBinding(_rows[index].View!,VisibilityProperty,new Binding(nameof(Visibility)){Source=source,Mode=BindingMode.OneWay});
+    }
+    /// <summary>Borrow the original row views into the caller's existing group; this instance still owns their transient states.</summary>
+    public IReadOnlyList<FrameworkElement> ExtractEntryViews()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var rows=_rows.ToArray();var views=rows.Select(row=>row.View!).ToArray();_rows.Clear();
+        ParameterCleanup.Run(rows.Select(row=>(Action)row.Dispose));return Array.AsReadOnly(views);
     }
     public NativeDisplayUiDraftRows(string section,IEnumerable<NativeDisplayUiDraftEntry> entries,bool includeTextSettings=false)
     {

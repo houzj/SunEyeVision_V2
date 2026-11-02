@@ -16,7 +16,8 @@ internal static class S2DocumentEditingCases
     }
     private static FieldSettings Initial(IToolSettingsFields definition,object settings)=>new(definition.SettingsSchema.Inputs,definition.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
     private static IReadOnlyDictionary<string,ParameterSetting> Constants(Dictionary<string,object?> values)=>values.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value));
-    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureValidatedFields().Materialize(new Dictionary<string,object?>()));
+    private static BlobSettings Materialize(IToolSettingsDraft draft)=>(BlobSettings)((IToolSettingsFields)new BlobTool()).MaterializeSettings(draft.CaptureValidatedFields().Select(new BlobTool().SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
+    private static FieldSettings InitialEditor(BlobTool tool,object settings) { var schema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(tool); return new(schema.Inputs,tool.ReadSettings(settings).CopyValues().Concat(tool.CreateDisplaySettings().CopyValues()).ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))); }
     private static int _passed;
     private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, BlobCountLimit = 20000 };
     private static int Main()
@@ -25,7 +26,7 @@ internal static class S2DocumentEditingCases
         {
             Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
                 var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
-                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,Initial(provider,original));
+                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,InitialEditor(definition,original));
                 Require(provider.SettingsSchema.Inputs.Count==55&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
                 string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
                 var connectivity=provider.SettingsSchema.Inputs.Single(port=>port.Id==BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.Connectivity)));
@@ -55,7 +56,7 @@ internal static class S2DocumentEditingCases
                 Require(draft.CaptureFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
             });
             Case("设置整组候选只预检一次，拒绝或回调重入均不改变草稿",()=>{
-                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,Initial((IToolSettingsFields)tool,new BlobSettings()));
+                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,InitialEditor(tool,new BlobSettings()));
                 string Field(string label)=>draft.Schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
                 var low=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var high=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
@@ -63,7 +64,7 @@ internal static class S2DocumentEditingCases
                 var calls=0;
                 draft.ApplyFields(Constants(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}}),candidate=>
                 {
-                    calls++;var next=(BlobSettings)((IToolSettingsFields)tool).MaterializeSettings(candidate.Materialize(new Dictionary<string,object?>()));
+                    calls++;var next=(BlobSettings)((IToolSettingsFields)tool).MaterializeSettings(candidate.Select(tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
                     Require(next.Threshold==220&&next.UpperThreshold==230&&Materialize(draft).Threshold==100,
                         "候选不完整或宿主接纳前污染草稿");
                 });
@@ -225,11 +226,13 @@ internal static class S2DocumentEditingCases
             });
             Case("显示XML声明源校验、样式与表格投影",()=>{
                 var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe();
-                Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==10
-                    &&definition.Table.Validate(schema).Count==0,"显示定义未加载或字段映射无效");
-                Require(definition.Graphics.Single(x=>x.Key=="inspection-roi").InputSource
-                    &&definition.Graphics.Single(x=>x.Key=="blobs").Source.PortId==BlobSchema.BlobsPort
-                    &&definition.Texts.Single().Source.MemberFieldPath.SequenceEqual(new[]{"area"}),"输入/输出显示来源混淆");
+                Require(definition.Table.Columns.Count==10&&definition.Table.Validate(schema).Count==0,"表格声明未加载或字段映射无效");
+                var provider=(SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)new BlobTool();provider.ResultDisplay.Validate(schema);
+                Require(provider.DisplaySettingsSchema.Inputs.Count==13&&provider.DisplaySettingsSchema.Inputs.All(port=>port.EditModes==FieldEditModes.Constant)
+                    &&provider.ResultDisplay.Quadrilateral.MemberFieldPath.SequenceEqual(new[]{"rotated-bounds"})
+                    &&provider.ResultDisplay.TextValue.MemberFieldPath.SequenceEqual(new[]{"area"}),"正式显示阶段/实际输出映射无效");
+                var appearance=provider.CaptureResultDisplay(new FieldSettings(provider.DisplaySettingsSchema.Inputs,provider.CreateDisplaySettings().CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value))));
+                Require(appearance.Graphic.Ok.Green==255&&appearance.Graphic.Ok.Red==102&&appearance.Text.Content=="Blob Area:{0}","正式新建样式默认不符合已核feature声明");
                 string Xml(){using var s=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobDisplay.xml")!;return new StreamReader(s).ReadToEnd();}
                 void Reject(Action<XElement> mutate)
                 {
@@ -237,11 +240,12 @@ internal static class S2DocumentEditingCases
                     using var stream=new MemoryStream(Encoding.UTF8.GetBytes(root.ToString()));
                     Throws<InvalidDataException>(()=>BlobDisplayDefinition.Read(stream,schema));
                 }
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("member","unknown"));
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("okColor","#GG0000"));
-                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("opacity","1.1"));
-                Reject(r=>r.Element("Graphics")!.Add(new XElement(r.Element("Graphics")!.Elements().First())));
-                Reject(r=>r.Element("Texts")!.Elements().First().SetAttributeValue("port","unknown"));
+                var displayFields=new FieldSettings(provider.DisplaySettingsSchema.Inputs,provider.CreateDisplaySettings().CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value)));
+                Throws<ArgumentException>(()=>provider.CaptureResultDisplay(displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.opacity",new ConstantSetting(1.1d)}})));
+                Throws<ArgumentException>(()=>displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.ok",new ConstantSetting("#GG0000")}}));
+                Throws<ArgumentException>(()=>displayFields.Apply(new Dictionary<string,ParameterSetting>{{"display.blob.opacity",new ReferenceSetting(new OutputReference("unknown","unknown",DataType.Number))}}));
+                Reject(r=>r.Add(new XElement("Graphics")));
+                Reject(r=>r.Add(new XElement("Texts")));
                 Reject(r=>r.Element("Table")!.SetAttributeValue("identity","missing"));
                 Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("member","unknown"));
                 Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("decimals","16"));

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -123,6 +123,7 @@ public partial class MainWindowViewModel
                 UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
         }
         RefreshCurrentResultBindings();
+        NotifyResultDisplayChanged();
         RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
     }

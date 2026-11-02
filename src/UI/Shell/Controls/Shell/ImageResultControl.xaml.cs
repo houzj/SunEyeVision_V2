@@ -251,7 +251,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 WorkflowName=root.Name,NodeName=node.DispName,ResultDisplayName=endpoint.ResultPath};
             var choices=expected.Document.GlobalVariables.Where(variable=>
                 (!remove||variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression)
-                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable).State is
+                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable,expected.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。")).State is
                     SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
             if(choices.Count==0)
             {

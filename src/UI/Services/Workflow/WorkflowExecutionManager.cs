@@ -1202,7 +1202,7 @@ namespace SunEyeVision.UI.Services.Workflow
             var operations=new List<WorkflowGlobalProducerOperation>();
             foreach(var variable in definitions.Where(variable=>variable.ProducerBinding is not null))
             {
-                var validation=GlobalProducerBindingRules.Validate(definition,variable.ProducerBinding!,variable);
+                var validation=GlobalProducerBindingRules.Validate(definition,variable.ProducerBinding!,variable,configuration.Directory);
                 if(validation.State is not (SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional))
                 {variable.BindingValidationPending=validation.Reason;continue;}
                 if(!GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason))

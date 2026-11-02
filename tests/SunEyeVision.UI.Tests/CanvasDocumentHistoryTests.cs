@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI.Commands;
@@ -56,5 +56,17 @@ public sealed class CanvasDocumentHistoryTests:IDisposable
         edge.ManualPathPoints=new[]{new Point(1,2),new Point(3,4)};Assert.True(session.History.CanUndo);
         commands.Undo();Assert.Null(edge.ManualPathPoints);
         Assert.Throws<InvalidOperationException>(commands.Clear);
+    }
+    [Fact]
+    public void Failed_connection_binding_rolls_back_edge_and_runtime_configuration_without_history()
+    {
+        var (session,root,commands)=Model();var source=Node("source");var target=Node("target");
+        commands.Execute(new AddNodeCommand(root.Nodes,source));commands.Execute(new AddNodeCommand(root.Nodes,target));
+        var beforeHistory=session.History.Entries.Count;var edge=new WorkflowConnection("failed","source","target");
+        Assert.Throws<InvalidOperationException>(()=>commands.Execute(new AddConnectionCommand(root.Connections,edge,root.Nodes,()=>{
+            RootCanvasFixture.SetValue(target,17);
+            throw new InvalidOperationException("正式来源查询失败");
+        })));
+        Assert.Empty(root.Connections);Assert.Equal(1,RootCanvasFixture.Value(target));Assert.Equal(beforeHistory,session.History.Entries.Count);
     }
 }

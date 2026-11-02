@@ -20,7 +20,7 @@ public partial class MainWindowViewModel
             var draft=host.BeginVariableEdit();
             var variable=draft.Configuration.GlobalVariables.SingleOrDefault(item=>item.Id==variableId)
                 ??throw new InvalidOperationException("所选变量已不属于当前方案。");
-            var validation=GlobalProducerBindingRules.Validate(expected.Document,request,variable);
+            var validation=GlobalProducerBindingRules.Validate(expected.Document,request,variable,expected.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"));
             if(validation.State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional))
                 throw new InvalidOperationException(validation.Reason);
             if(remove)

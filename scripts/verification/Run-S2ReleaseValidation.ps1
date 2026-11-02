@@ -1,11 +1,11 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','NativeExport','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal',
       [ValidateRange(0,900)][int]$TimeoutSeconds=0)
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','NativeExport','B08NumericComposition','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 # Formal validation must run from the primary checkout, before creating any output.
 $gitDir = git -C $root rev-parse --absolute-git-dir
@@ -154,13 +154,21 @@ if($Track -eq 'BlobReferenceWindow'){$source='S4BlobReferenceWindowCases.cs'}
 if($Track -eq 'BlobExpandedReference'){$source='S4BlobExpandedReferenceCases.cs'}
 if($Track -eq 'BlobRoiInheritance'){$source='S4BlobRoiInheritanceCases.cs'}
 if($Track -eq 'BlobRoiPreview'){$source='S4BlobRoiPreviewCases.cs'}
-if($Track -eq 'BlobResultDisplay'){$source='S4BlobResultDisplayCases.cs'}
+if($Track -in @('BlobResultDisplay','NativeExport')){$source='S4BlobResultDisplayCases.cs'}
 if($Track -eq 'B08NumericComposition'){$source='S4B08NumericReferenceCompositionCases.cs'}
 if($Track -eq 'BlobRangeProduction'){$source='S4BlobRangeProductionCases.cs'}
 if($Track -eq 'BlobCrosshairWorkspace'){$source='S4BlobCrosshairWorkspaceCases.cs'}
 if($Track -eq 'BlobResultWorkspace'){$source='S4BlobResultWorkspaceCases.cs'}
 if($Track -eq 'ManualReferenceQualification'){$source='S4ManualReferenceQualificationCases.cs'}
 if($Track -eq 'NumericIndexProduction'){$source='S4NumericIndexProductionCases.cs'}
+$env:S4_NATIVE_EXPORT_ONLY=if($Track -eq 'NativeExport'){'1'}else{$null}
+if($source -eq 'S4BlobResultDisplayCases.cs')
+{
+    $extra=Join-Path $PSScriptRoot 'S4NativeExportCases.cs'
+    Copy-Item -LiteralPath $extra -Destination (Join-Path $dir 'NativeExport.cs')
+    Copy-Item -LiteralPath $extra -Destination (Join-Path $logDir 'native-export.cs.txt')
+    [ordered]@{path='scripts/verification/S4NativeExportCases.cs';sha256=(Get-FileHash -LiteralPath $extra -Algorithm SHA256).Hash}|ConvertTo-Json|Set-Content (Join-Path $logDir 'extra-source.json') -Encoding utf8
+}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash

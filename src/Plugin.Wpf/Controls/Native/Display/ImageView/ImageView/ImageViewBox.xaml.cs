@@ -2216,6 +2216,8 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	// The display owner may validate its frame/layer receipt while preparing an immutable export.
 	internal Func<bool, BitmapSource> NativePrepareExport { get; set; }
+    internal Func<SaveFileDialog, bool?> NativeSelectExportFile { get; set; }
+    internal Action<Exception> NativeReportExportError { get; set; }
 
 	public void SaveOriginalImage()
 	{
@@ -2231,7 +2233,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 					Title = AppLocalizationService.GetLang("Lang_SaveAs")
 				};
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
-				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
+				if ((NativeSelectExportFile is {} select ? select(saveFileDialog) : saveFileDialog.ShowDialog()) == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
 					NativeImageExport.SavePrepared(saveFileDialog.FileName, prepared);
 				}
@@ -2239,7 +2241,8 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		}
 		catch (Exception ex)
 		{
-			NativeMessageBox.Show(ex.Message, MessageIcons.Error);
+			if (NativeReportExportError is {} report) report(ex);
+            else NativeMessageBox.Show(ex.Message, MessageIcons.Error);
 		}
 	}
 
@@ -2258,7 +2261,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 					Title = AppLocalizationService.GetLang("Lang_SaveAs")
 				};
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
-				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
+				if ((NativeSelectExportFile is {} select ? select(saveFileDialog) : saveFileDialog.ShowDialog()) == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
 					NativeImageExport.SavePrepared(saveFileDialog.FileName, prepared);
 				}
@@ -2266,7 +2269,8 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		}
 		catch (Exception ex)
 		{
-			NativeMessageBox.Show(ex.Message, MessageIcons.Error);
+			if (NativeReportExportError is {} report) report(ex);
+            else NativeMessageBox.Show(ex.Message, MessageIcons.Error);
 		}
 	}
 

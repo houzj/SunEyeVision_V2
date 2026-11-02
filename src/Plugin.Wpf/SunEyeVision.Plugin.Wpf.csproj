@@ -11,6 +11,8 @@
     <Using Remove="System.Windows.Forms" />
     <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
     <PackageReference Include="System.Management" Version="7.0.0" />
     <Resource Include="Themes/Assets/**/*.*" />
   </ItemGroup>

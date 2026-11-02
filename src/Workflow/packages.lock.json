@@ -129,6 +129,8 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
+          "OpenCvSharp4": "[4.13.0.20260222, )",
+          "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "System.Management": "[7.0.0, )"
         }

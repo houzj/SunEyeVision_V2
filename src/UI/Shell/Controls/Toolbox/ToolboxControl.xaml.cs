@@ -1,73 +1,64 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 public partial class ToolboxControl : UserControl
 {
+    public static readonly DependencyProperty PointerLeftProperty = DependencyProperty.RegisterAttached("PointerLeft", typeof(bool), typeof(ToolboxControl), new PropertyMetadata(true));
+    public static void SetPointerLeft(DependencyObject target, bool value)=>target.SetValue(PointerLeftProperty,value);
+    public static bool GetPointerLeft(DependencyObject target)=>(bool)target.GetValue(PointerLeftProperty);
+    private readonly HashSet<FrameworkElement> _categories = new();
     private ToolboxViewModel? Model=>DataContext as ToolboxViewModel;
-    private FrameworkElement? _anchor;
     private Border? _armed;
     private ToolItem? _tool;
     private bool _dragging;
     private Window? _window;
-    private long _generation;
     public ToolboxControl()
     {
         InitializeComponent(); Loaded+=OnLoaded; Unloaded+=OnUnloaded;
-        DataContextChanged+=(_,e)=>{Close();ToolPopup.DataContext=e.NewValue;};
+        DataContextChanged+=(_,e)=>{if(e.OldValue is ToolboxViewModel old){old.PropertyChanged-=ModelChanged;old.ClosePopup();}ResetCategories();if(e.NewValue is ToolboxViewModel next)next.PropertyChanged+=ModelChanged;};
         PreviewKeyDown+=(_,e)=>{if(e.Key==Key.Escape){Close();e.Handled=true;}};
     }
     private void OnLoaded(object sender,RoutedEventArgs e)
     {
-        ToolPopup.DataContext=DataContext;
+        if(Model is { } model){model.PropertyChanged-=ModelChanged;model.PropertyChanged+=ModelChanged;}
         _window=Window.GetWindow(this);
         if(_window!=null) { _window.Deactivated-=WindowDeactivated; _window.Deactivated+=WindowDeactivated; }
     }
     private void OnUnloaded(object sender,RoutedEventArgs e)
     {
-        Close();_armed=null;_tool=null;
+        Close();ResetCategories();_armed=null;_tool=null;
+        if(Model is { } model)model.PropertyChanged-=ModelChanged;
         if(_window!=null)_window.Deactivated-=WindowDeactivated;
         _window=null;
     }
     private void WindowDeactivated(object? sender,EventArgs e){if(!_dragging)Close();}
-    private void Close(){_generation++;Model?.ClosePopup();_anchor=null;}
+    private void ResetCategories(){foreach(var item in _categories)SetPointerLeft(item,true);_categories.Clear();}
+    private void ModelChanged(object? sender,PropertyChangedEventArgs e){if(e.PropertyName==nameof(ToolboxViewModel.IsCompactMode)&&sender is ToolboxViewModel {IsCompactMode:false})ResetCategories();}
+    private void Close(){ResetCategories();Model?.ClosePopup();}
     private void CategoryEnter(object sender,MouseEventArgs e)=>Open(sender);
     private void CategoryFocus(object sender,KeyboardFocusChangedEventArgs e)=>Open(sender);
     private void Open(object sender)
     {
-        if(_dragging||Model is not {IsCompactMode:true} model||sender is not FrameworkElement {Tag:ToolCategory category} anchor)return;
-        _generation++;_anchor=anchor;ToolPopup.PlacementTarget=anchor;
-        ToolPopup.MaxHeight=Math.Max(0,ActualHeight);
-        PopupScroll.MaxHeight=Math.Max(0,ActualHeight-80);
+        if(_dragging||Model is not {IsCompactMode:true} model||sender is not FrameworkElement {Tag:ToolCategory category})return;
+        foreach(var item in _categories)if(!ReferenceEquals(item,sender))SetPointerLeft(item,true);
+        _categories.Add((FrameworkElement)sender);
+        SetPointerLeft((FrameworkElement)sender,false);
         model.SelectedCategory=category.Name;
-        PopupHitArea.DataContext=model;
-        PopupTitle.Text=category.Name;
-        model.IsCompactModePopupOpen=true;
     }
-    private void CategoryLeave(object sender,MouseEventArgs e)=>ScheduleClose();
-    private void PopupEnter(object sender,MouseEventArgs e){_generation++;}
-    private void PopupLeave(object sender,MouseEventArgs e)=>ScheduleClose();
-    private void ScheduleClose()
+    private void CategoryLeave(object sender,MouseEventArgs e)
     {
-        var generation=++_generation;
-        Dispatcher.BeginInvoke(DispatcherPriority.Input,new Action(()=>
-        {
-            if(generation!=_generation||_dragging||_anchor?.IsMouseOver==true||PopupHitArea.IsMouseOver)return;
-            // Popup独立呈现源：局部坐标直接比较DIP，不把屏幕像素加上DIP宽高。
-            if(Inside(_anchor)||Inside(PopupHitArea))return;
-            Close();
-        }));
+        if(sender is not FrameworkElement item)return;
+        var p=e.GetPosition(item);
+        if(p.X<0||p.Y<0||p.X>item.RenderSize.Width||p.Y>item.RenderSize.Height)SetPointerLeft(item,true);
     }
-    private static bool Inside(FrameworkElement? element)
-    {
-        if(element?.IsVisible!=true)return false;
-        var p=Mouse.GetPosition(element);
-        return p.X>=0&&p.Y>=0&&p.X<=element.ActualWidth&&p.Y<=element.ActualHeight;
-    }
+    // 原件以工具箱根控件 IsMouseOver 控制整个分类弹窗会话。
+    private void ToolboxLeave(object sender,MouseEventArgs e){if(!_dragging&&!IsMouseOver)Close();}
     private void ToolDown(object sender,MouseButtonEventArgs e)
     { if(sender is Border {Tag:ToolItem {IsAvailable:true} tool} border && tool.CanActivate()){_armed=border;_tool=tool;} }
     private void ToolUp(object sender,MouseButtonEventArgs e){_armed=null;_tool=null;}

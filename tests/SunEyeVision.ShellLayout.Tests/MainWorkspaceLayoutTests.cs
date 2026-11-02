@@ -138,6 +138,22 @@ public sealed class MainWorkspaceLayoutTests
         empty.IsCompactMode = false;
         empty.Categories[0].IsExpanded = true;
         var toolbox = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl { DataContext = empty };
+        empty.IsCompactMode = true;
+        empty.SelectedCategory = "采集";
+        Assert.True(empty.IsCompactModePopupOpen);
+        var replacement = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(null);
+        toolbox.DataContext = replacement;
+        Assert.False(empty.IsCompactModePopupOpen);
+        Assert.Null(empty.SelectedCategory);
+        Assert.False(replacement.IsCompactModePopupOpen);
+        toolbox.DataContext = empty;
+        empty.SelectedCategory = "采集";
+        typeof(SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl)
+            .GetMethod("ToolboxLeave", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(toolbox, new object[] { toolbox, new System.Windows.Input.MouseEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0) });
+        Assert.False(empty.IsCompactModePopupOpen);
+        Assert.Null(empty.SelectedCategory);
+        empty.IsCompactMode = false;
         toolbox.Measure(new Size(230, 650)); toolbox.Arrange(new Rect(0, 0, 230, 650)); toolbox.UpdateLayout();
         var borders = new List<Border>(); CollectBorders(toolbox, borders);
         Assert.Contains(borders, b => b.DataContext is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem { Name: "图像源" } && !b.IsEnabled);

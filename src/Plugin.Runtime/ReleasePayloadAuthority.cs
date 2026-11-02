@@ -25,7 +25,7 @@ public sealed class ReleasePayloadAuthority
     private readonly HashSet<string> _frameworkPayloadPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkNames=new(StringComparer.Ordinal);
     private readonly string _mode;
-    public IReadOnlyDictionary<string,string> ExpectedTools=>_expectedTools;
+    public IReadOnlyDictionary<string,string> ExpectedTools=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(_expectedTools);
 
     public ReleasePayloadAuthority(string appRoot)
     {
@@ -125,15 +125,18 @@ public sealed class ReleasePayloadAuthority
     /// <summary>Prepare one complete runtime generation from the approved physical payload.</summary>
     public RuntimeDirectorySnapshot PrepareRuntimeDirectory()
     {
-        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents());
+        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents(null, runtimeOnly:true));
         if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
             throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
         return snapshot;
     }
     public IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds=null)
+        =>LoadToolComponents(toolIds, runtimeOnly:false);
+
+    private IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds,bool runtimeOnly)
     {
         var result=new List<ToolComponentRegistration>();
-        foreach(var group in _components.Where(c=>toolIds==null||toolIds.Contains(c.Metadata.ToolId)).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
+        foreach(var group in _components.Where(c=>(!runtimeOnly||c.Metadata.Role==ToolComponentRole.Runtime) && (toolIds==null||toolIds.Contains(c.Metadata.ToolId))).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
         {
             var path=Resolve(group.Key);
             if(!File.Exists(path)&&group.All(c=>c.Metadata.Role==ToolComponentRole.Editor))continue;

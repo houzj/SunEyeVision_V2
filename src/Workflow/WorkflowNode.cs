@@ -191,7 +191,7 @@ namespace SunEyeVision.Workflow
         {
             if (configuration.ToolId != ToolType || context.Identity.NodeId != Id)
                 throw new InvalidOperationException("Runtime配置或执行上下文与节点身份不符。");
-            return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(ToolRegistry.CreateRuntime(configuration.ToolId),
+            return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(configuration.Definition,
                 resolvedSettings??configuration.CaptureSettings(), inputs, context, outputRequests);
         }
 

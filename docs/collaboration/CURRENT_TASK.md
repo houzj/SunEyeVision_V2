@@ -3102,3 +3102,6 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 
 ### 中立准入在途检查点（未完成）
 独立分支基线 80d09b28。已迁移唯一 ReleasePayloadAuthority 与 Runtime 默认设置/schema 准入到 Plugin.Runtime，桌面编译接入；正在实现中立快照与发行器 NeutralHost。真实无 WPF 探针已用源码构建、独立产物封装并成功运行 ImageLoad + Blob，非正式工作流或桌面完整验证。生产 ToolRegistry、配置恢复、执行与桌面均尚未切换同代快照；失败原子性、关闭排空、全量回归未完，不得合入。Identity 测试恢复 NU1301 / NU1101 缺测试包；见方案。
+
+### 中立准入补修检查点（未完成）
+RuntimeDirectorySnapshot 构造入口收窄、Runtime-only 加载前排除 Editor、ExpectedTools 只读；headless 及含两个 Editor 的同目录桌面清单实测中立 Runtime 调用通过。命令和会话汇总在 Release/_validation/neutral-admission-20261102/desktop-runtime-only-session-summary.txt。桌面 ToolRegistry 仍为独立公开入口，恢复与运行未切换同代目录；WorkflowNode 已开始使用配置所持定义。此检查点不可作为完整交付。

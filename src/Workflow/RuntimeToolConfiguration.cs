@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -64,6 +64,7 @@ public sealed partial class RuntimeToolConfiguration
         => (_definition as IToolManualReferenceSources)?.ManualReferenceSources
             .Select(source => new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray()
             ?? Array.Empty<ManualReferenceSource>();
+    internal IToolDefinition Definition => _definition;
     public string ToolId => _definition.ToolId;
     public Type SettingsType => _definition.SettingsType;
     /// <summary>Editing and dependency identity deliberately excludes live parameter values.</summary>

@@ -33,7 +33,6 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
-  <!-- 退出旧 SDK 可视、旧宿主及 Group 合同；范围和替代验证见同目录迁移清单。 -->
-  <ItemGroup><Compile Remove="ToolDebugResultSnapshotTests.cs;ImageFrameProvenanceTests.cs;ArcGuideHitTestContractTests.cs;CommunicationAnalysisControlTests.cs;GeometryToolkitContractTests.cs;MeasureBandAlignmentContractTests.cs;MeasureInteractionModelContractTests.cs;RoiRenderLightweightContractTests.cs;SdkDefaultThemeDesignTimeContractTests.cs;SdkThemeContractTests.cs;ThemeResourceResolutionTests.cs;ToolItemContractTests.cs;PositionCorrectionResolutionTests.cs;ExecutionAdmissionTests.cs;ParamBindingDisplayContractTests.cs;ToolSideEffectReceiptTests.cs;ToolExecutorContextTests.cs;ExplicitConstantConversionTests.cs" /></ItemGroup>
-  <ItemGroup><Compile Remove="AnnularSectorDisplayContractTests.cs;ArrayTreeFormatterTests.cs;DisplayCollectorGeometryContractTests.cs;FilterDataSourcesByTypeTests.cs;GeometryFieldSchemaContractTests.cs;RoiBindingContractTests.cs;RoiComposeAllContractTests.cs;RoiDesignTimeGroupsContractTests.cs;RoiDisplayTextContractTests.cs;RuntimeParameterSnapshotTests.cs;SolutionExecutionDependencyGraphTests.cs;SubroutineDisplayItemTypeContractTests.cs;ToolParameterSnapshotTests.cs;ViewportScalingContractTests.cs;WorkflowExecutionDependencyGraphTests.cs" /></ItemGroup>
+  <!-- Group 专属测试保留，等待 Group 重新启用。 -->
+  <ItemGroup><Compile Remove="SubroutineDisplayItemTypeContractTests.cs" /></ItemGroup>
 </Project>

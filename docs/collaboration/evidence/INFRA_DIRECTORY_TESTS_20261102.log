@@ -1,0 +1,37 @@
+D:\MyWork\line-aiproject\platform-infrastructure-tests-20261102\tests\bin\Release\SunEyeVision.Plugin.Infrastructure.Tests.dll (.NETCoreApp,Version=v9.0)的测试运行
+总共 1 个测试文件与指定模式相匹配。
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 9.0.20)
+[xUnit.net 00:00:00.56]   Discovering: SunEyeVision.Plugin.Infrastructure.Tests
+[xUnit.net 00:00:00.66]   Discovered:  SunEyeVision.Plugin.Infrastructure.Tests
+[xUnit.net 00:00:01.82]   Starting:    SunEyeVision.Plugin.Infrastructure.Tests
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ToolDirectoryCatalogTests.Group_manifest_cannot_declare_tool_producers_or_duplicate_categories [534 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ToolDirectoryCatalogTests.Only_admitted_entries_form_directory_and_category_order [306 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ToolDirectoryCatalogTests.Group_xml_rejects_external_entity [14 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ToolDirectoryCatalogTests.Duplicate_identity_unknown_category_and_empty_runtime_are_rejected [4 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "duplicate-path") [1 s]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "escape") [199 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "schema") [233 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "duplicate-tool") [253 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "identity") [301 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "unknown-framework-mode") [244 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Corrupt_or_ambiguous_authority_is_rejected(corruption: "missing-frameworks") [262 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Self_contained_framework_winner_provenance_cannot_conflict_with_payload(corruption: "identity") [227 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Self_contained_framework_winner_provenance_cannot_conflict_with_payload(corruption: "pack") [215 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Self_contained_framework_winner_provenance_cannot_conflict_with_payload(corruption: "path") [266 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Self_contained_framework_winner_provenance_cannot_conflict_with_payload(corruption: "empty") [274 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Product_anchor_must_approve_the_actual_Default_Foundation_identity_and_bytes(corruption: "identity") [585 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Product_anchor_must_approve_the_actual_Default_Foundation_identity_and_bytes(corruption: "bytes") [260 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Product_anchor_must_approve_the_actual_Default_Foundation_identity_and_bytes(corruption: "missing") [239 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Nonempty_header_conflicting_with_approved_actual_Foundation_is_rejected(field: "artifactVersion") [249 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Nonempty_header_conflicting_with_approved_actual_Foundation_is_rejected(field: "sourceCommit") [194 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.BuildId_is_an_opaque_nonempty_generator_identifier_not_a_PE_identity [377 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Approved_bytes_are_rechecked_at_use_and_unlisted_paths_are_rejected [622 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.Missing_authority_does_not_infer_approval_from_the_directory [324 ms]
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.ReleasePayloadAuthorityTests.AppContext_style_root_with_trailing_separator_matches_its_payload_ancestors [306 ms]
+[xUnit.net 00:00:38.96]   Finished:    SunEyeVision.Plugin.Infrastructure.Tests
+  已通过 SunEyeVision.Plugin.Infrastructure.Tests.AdmittedDirectoryIntegrationTests.Sealed_real_host_exercises_atomic_admission_generations_and_readers [37 s]
+
+测试运行成功。
+测试总数: 25
+     通过数: 25
+总时间: 40.8509 秒

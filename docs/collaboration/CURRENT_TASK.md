@@ -1,3 +1,7 @@
+## 2026-11-02 插件基础设施测试迁移
+
+独立 worktree 基于 3d27b97df，移除已退役旧 SDK 扫描、隔间与元数据注册合同测试，以权威载荷、Runtime 目录、原子代次与真实 reader 生产探针替代；保留仍适用的权威负例。全量 Release 0 错，迁移测试 25/25 通过无跳过，载荷 SHA 6F2AB3DC1F012DD31127A0AF2DFDDB3EBC79EFD4F49DCF25CCC0CA88A27AB837。旧隔间和 ROI 反射未声称等价，主线集成待做；迁移矩阵及原始日志见 evidence/插件基础设施测试迁移矩阵-20261102.html。
+
 ## 隔离集成候选核查点（未交付）
 
 合并 d85f66a68 与 72dda8682，保留资源别名保护和代次释放；封签脚本统一使用已解析 appRoot，相对路径回归通过。重算锁后全量 locked restore、Release 构建（0 错、6539 警告）通过；图像源 31/31、Blob 11/11；真实 WPF 结果显示 41 组、ReaderShutdown 1 组；AdmissionLifecycleProbe 与正式准入故障探针退出 0。测试记录的载荷和日志在工作区 integration-*.log、Release/_validation。未覆盖主窗口持有 reader 的完整排空；未准入普通工具的内存打开与执行仍有旧 SDK 路径，Group/控制流暂停且不能称可运行。该检查点仅供继续集成，不是最终验收或 87f4 已集成。

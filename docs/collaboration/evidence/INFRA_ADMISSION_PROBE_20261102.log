@@ -1,0 +1,11 @@
+probe: initial admission
+probe: admitted runtime metadata and schema identities are unique
+probe: non-owner unload and failed reload
+probe: recovered admission
+probe: concurrent load and unload completed
+probe: reentrant preparation
+probe: production workflow result reader
+probe: automatic display source and upstream width=8 passed
+probe: runtime debug execution and upstream width=8 passed
+probe: cross-node text reader retained retiring generation
+Desktop admission and production workflow reader drain checks passed; desktop window shutdown remains unverified.

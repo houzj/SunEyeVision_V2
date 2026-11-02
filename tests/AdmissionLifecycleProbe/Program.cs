@@ -17,6 +17,18 @@ await manager.LoadPluginsAsync();
 if(manager.LastAdmissionError is not null)throw new Exception("Initial admission failed: "+manager.LastAdmissionError);
 var previous=manager.RuntimeDirectory??throw new Exception("Missing admitted directory.");
 var oldDirectory=ToolRegistry.DirectoryCatalog??throw new Exception("Missing desktop directory.");
+var admittedIds=previous.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+if(!admittedIds.SequenceEqual(new[]{"BlobAnalysis","ImageLoad"}))throw new Exception("Unexpected admitted Runtime identities.");
+var metadata=ToolRegistry.GetAllToolMetadata().ToArray();
+if(metadata.Select(m=>m.Id).Distinct(StringComparer.Ordinal).Count()!=metadata.Length || !metadata.Select(m=>m.Id).OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(admittedIds))
+    throw new Exception("Registry metadata does not match the admitted generation.");
+foreach(var id in admittedIds)
+{
+    var definition=previous.CreateDefinition(id);var schema=definition.Describe();var catalog=previous.GetCatalog(id)??throw new Exception("Missing admitted catalog: "+id);
+    if(definition.ToolId!=id||schema.Inputs.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=schema.Inputs.Count||schema.Outputs.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=schema.Outputs.Count||string.IsNullOrWhiteSpace(catalog.DisplayName))
+        throw new Exception("Invalid admitted definition/schema/catalog: "+id);
+}
+Console.WriteLine("probe: admitted runtime metadata and schema identities are unique");
 var nonOwner=new PluginManager();
 using(var hostPin=manager.PinDesktopHost())
 {

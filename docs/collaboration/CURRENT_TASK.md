@@ -3108,3 +3108,6 @@ RuntimeDirectorySnapshot 构造入口收窄、Runtime-only 加载前排除 Edito
 
 ### 同代目录生产接线在途（未验证）
 基于 ebec005b：authority 增加桌面组件同代快照，PluginManager 持有快照并将其候选传旧注册代码；旧注册入口收窄为程序集内部；Runtime 配置字段/current 恢复共用一次 definition。此修改尚未编译/测试，ToolRegistry 可变运行字典和静态读取仍存在，Repository/Snapshot/Workflow/UI 未贯通同代注入；需继续完整替换，不能合入或称交付。保留构建 restore 产生的未暂存 lock 文件。
+
+### 准入重载状态在途（仍未完成）
+独立分支 f46c8edf 后合并 authority、Runtime 快照、桌面目录为 ToolRegistry 同锁发布对象，reload 失败保留旧对象，加载/卸载共享门；真实桌面载荷探针成功→失败→恢复及一次竞争通过。会话汇总 Release/_validation/neutral-admission-20261102/desktop-reload-session-summary.txt。仅探针构建覆盖本次修改；旧静态目录、生产显式注入、活动运行 stop/drain/结果读者及全量回归未完成，不可合入。

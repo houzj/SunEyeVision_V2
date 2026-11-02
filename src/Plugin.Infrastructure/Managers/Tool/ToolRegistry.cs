@@ -30,19 +30,24 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         private static Dictionary<string, ToolMetadata> _metadataCache = new();
         private static readonly object _lock = new();
         private static long _registrationGeneration;
-        public static SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? DirectoryCatalog { get; private set; }
-        private static Action<string>? _ensureDirectoryTool;
-        public static void ConfigureDirectory(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog catalog, Action<string> ensureLoaded)
+        internal sealed record PublishedToolAdmission(
+            SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog Directory,
+            SunEyeVision.Plugin.Runtime.ReleasePayloadAuthority Authority,
+            SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot Runtime,
+            Action<string> EnsureLoaded);
+        private static PublishedToolAdmission? _admission;
+        internal static PublishedToolAdmission? CurrentAdmission { get { lock(_lock) return _admission; } }
+        public static SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? DirectoryCatalog => CurrentAdmission?.Directory;
+        internal static void ConfigureDirectory(PublishedToolAdmission admission)
         {
-            lock(_lock) { DirectoryCatalog=catalog; _ensureDirectoryTool=ensureLoaded; }
+            lock(_lock) _admission=admission;
         }
         private static void EnsureDirectoryTool(string id)
         {
             Action<string>? ensure;
-            lock(_lock) { if(_toolTypes.ContainsKey(id)||_runtimeComponents.ContainsKey(id))return; ensure=_ensureDirectoryTool; }
+            lock(_lock) { if(_toolTypes.ContainsKey(id)||_runtimeComponents.ContainsKey(id))return; ensure=_admission?.EnsureLoaded; }
             ensure?.Invoke(id);
         }
-
         // ========================================
         // 缓存结构：基于具体类型的缓存池（优化方案）
         // ========================================
@@ -399,7 +404,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
-                DirectoryCatalog=null; _ensureDirectoryTool=null;
+                _admission=null;
                 _toolTypes.Clear();
                 _runtimeComponents.Clear();_editorComponents.Clear();
                 _metadataCache.Clear();

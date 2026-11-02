@@ -24,20 +24,24 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private readonly ILogger _logger;
         private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
-        private ReleasePayloadAuthority? _releaseAuthority;
+        private static readonly object AdmissionGate=new();
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
-        public RuntimeDirectorySnapshot? RuntimeDirectory {get;private set;}
+        public RuntimeDirectorySnapshot? RuntimeDirectory => ToolRegistry.CurrentAdmission?.Runtime;
         public IReadOnlyList<string> AdmissionFailures=>_admissionFailures.ToArray();
 
         public void AssertCompleteReleaseToolSet(IEnumerable<string> actualToolIds)
         {
-            if(_releaseAuthority is null||LastAdmissionError is not null||_lastRejectedCount!=0)
+            lock(AdmissionGate)
+            {
+            var admission=ToolRegistry.CurrentAdmission;
+            if(admission is null||LastAdmissionError is not null||_lastRejectedCount!=0)
                 throw new InvalidDataException("Release plugin admission failed: "+(LastAdmissionError??string.Join("; ",_admissionFailures)));
             var actual=actualToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
-            var expected=_releaseAuthority.ExpectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+            var expected=admission.Authority.ExpectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
             if(!actual.SequenceEqual(expected,StringComparer.Ordinal))throw new InvalidDataException("Registered toolbox differs from the complete declared release ToolId set.");
+            }
         }
 
         public PluginManager(ILogger logger)
@@ -73,7 +77,19 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         /// <summary>只加载当前宿主正式载荷声明的Runtime与可选编辑器。</summary>
         public void LoadPlugins()
         {
-            LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
+            string? error; int count;
+            lock(AdmissionGate)
+            {
+                LoadPluginsCore();
+                error=LastAdmissionError; count=ToolRegistry.DirectoryCatalog?.ToolIds.Count??0;
+            }
+            if(error is null)_logger.LogInfo($"产品组件准入完成：{count}个工具。");
+            else _logger.LogError("[发布准入] " + error);
+        }
+
+        private void LoadPluginsCore()
+        {
+            LastAdmissionError=null;_lastRejectedCount=0;_admissionFailures.Clear();
             try
             {
                 var authority = new ReleasePayloadAuthority(AppContext.BaseDirectory);
@@ -87,20 +103,20 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         catalog.IconKey, catalog.Description, c.EntryType.FullName!, c.EntryType.Assembly.Location, true);
                 }).ToArray();
                 var directory = new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory, "ToolGroups.xml"), declarations, authority.VerifyApprovedFile);
+                var admission = new ToolRegistry.PublishedToolAdmission(directory,authority,snapshot,EnsureToolLoaded);
                 // 分类、组件和所有校验先完成，之后才发布注册和目录。
                 using (var commit = registration.EnterCommit())
                 {
                     commit.Publish();
-                    ToolRegistry.ConfigureDirectory(directory, EnsureToolLoaded);
+                    ToolRegistry.ConfigureDirectory(admission);
                 }
-                _releaseAuthority = authority;
-                RuntimeDirectory = snapshot;
-                _logger.LogInfo($"产品组件准入完成：{directory.ToolIds.Count}个工具。");
+
+
             }
             catch (Exception ex)
             {
                 LastAdmissionError = ex.GetType().Name + ": " + ex.Message;
-                _logger.LogError("[发布准入] " + LastAdmissionError);
+
             }
         }
 
@@ -116,9 +132,12 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         public void UnloadPlugins()
         {
             _logger.LogInfo("开始卸载插件...");
+            lock(AdmissionGate)
+            {
             _plugins.Clear();
             _toolCatalog.Clear();
-            RuntimeDirectory=null;
+
+            }
             _logger.LogInfo("插件卸载完成");
         }
 

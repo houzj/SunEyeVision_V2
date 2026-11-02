@@ -28,12 +28,12 @@ internal sealed class WorkflowBindingContext : IDisposable
     private readonly Dictionary<string,IReadOnlyDictionary<string,RuntimeVariableBindingPlan>> _variablePlans=new(StringComparer.Ordinal);
 
 
-    private static Dictionary<string,Declaration> CaptureDeclarations(Workflow workflow,string scope,Guid executionScope)
+    private static Dictionary<string,Declaration> CaptureDeclarations(Workflow workflow,string scope,Guid executionScope,RuntimeDirectorySnapshot directory)
     {
         var result=new Dictionary<string,Declaration>(StringComparer.Ordinal);
         foreach(var node in workflow.Nodes)
         {
-            var declaration=new OutputBindingChangeService().ReadContract(node)??throw new InvalidOperationException("节点缺少已准入输出声明："+node.Id);
+            var declaration=new OutputBindingChangeService().ReadContract(node,directory)??throw new InvalidOperationException("节点缺少已准入输出声明："+node.Id);
             var schema=new ToolSchema(Array.Empty<Port>(),declaration.Outputs,outputDisplay:declaration.OutputDisplay);
             var outputs=new ReadOnlyDictionary<string,Port>(schema.Outputs.ToDictionary(port=>port.Id,StringComparer.Ordinal));
             var projection=node.RuntimeConfiguration!.ResultProjection;
@@ -45,11 +45,11 @@ internal sealed class WorkflowBindingContext : IDisposable
         }
         return result;
     }
-    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId,Solution? solution=null)
+    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId,RuntimeDirectorySnapshot directory,Solution? solution=null)
     {
         if(ReferenceOwnershipError(workflow,node,fieldId,setting,scopeId) is {} ownershipError)
             return new(BindingCompatibility.Incompatible,ownershipError);
-        var declarations=CaptureDeclarations(workflow,scopeId,Guid.Empty);
+        var declarations=CaptureDeclarations(workflow,scopeId,Guid.Empty,directory);
         using var variables=solution is null?null:new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
         var scope=new BindingScopeSnapshot(new(scopeId,node.Id),workflow.ExecutionOwner.Id,0,
             declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
@@ -64,7 +64,7 @@ internal sealed class WorkflowBindingContext : IDisposable
     internal static void ValidateVariable(Solution solution,Workflow workflow,WorkflowNodeBase node,string fieldId,VariableSetting setting)
     {
         using var globals=new WorkflowGlobalRunValues(solution.Id,solution.GlobalVariables,Array.Empty<KeyValuePair<string,object?>>());
-        var declarations=CaptureDeclarations(workflow,workflow.Id,Guid.Empty);
+        var declarations=CaptureDeclarations(workflow,workflow.Id,Guid.Empty,solution.RuntimeDirectory??throw new InvalidOperationException("方案缺少已准入目录。"));
         var scope=new BindingScopeSnapshot(new(workflow.Id,node.Id),workflow.ExecutionOwner.Id,0,
             declarations.Values.Select(value=>value.Source),declarations.Values.Select(value=>value.Source.Node),
             Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>(),globals.CaptureBindingSources());
@@ -133,7 +133,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(_globalProducers.Count>0&&_producedGlobals is null)
             throw new InvalidOperationException("已声明全局生产操作但缺少本批运行值槽。");
         _documentRevision=session.Configuration?.DocumentRevision??0;
-        _declarations=CaptureDeclarations(workflow,_scope,scope.RunId);
+        _declarations=CaptureDeclarations(workflow,_scope,scope.RunId,session.Configuration?.Directory??throw new InvalidOperationException("运行缺少已准入目录。"));
         _nodes=workflow.Nodes.OfType<AlgorithmNode>().ToDictionary(n=>n.Id,StringComparer.Ordinal);
         var owner=session.ExecutionOwner??throw new InvalidOperationException("Root execution owner is not activated.");
         var predecessors=workflow.Nodes.Select(n=>new KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>(

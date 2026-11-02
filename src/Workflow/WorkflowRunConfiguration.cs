@@ -28,6 +28,7 @@ public sealed class WorkflowRunConfiguration
         _workflows = copied.ToDictionary(w => w.Id, StringComparer.Ordinal);
     }
     public long DocumentRevision {get;}
+    public RuntimeDirectorySnapshot Directory => _directory;
     public static WorkflowRunConfiguration Capture(IEnumerable<Workflow> workflows,RuntimeDirectorySnapshot directory,long documentRevision=0) => new(workflows,directory,documentRevision);
     public static WorkflowRunConfiguration Capture(string rootWorkflowId, Func<string, Workflow?> resolve,RuntimeDirectorySnapshot directory,long documentRevision=0)
     {

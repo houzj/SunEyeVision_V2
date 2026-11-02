@@ -63,10 +63,16 @@ public sealed class SolutionExecutionDependencyGraph
 
     public static string GetScopedNodeId(string workflowId, string nodeId) => $"{workflowId}/{nodeId}";
 
-    public static SolutionExecutionDependencyGraph Compile(Solution solution, bool checkReadiness = true)
+    public static SolutionExecutionDependencyGraph Compile(Solution solution, bool checkReadiness = true, SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot? expectedDirectory = null)
     {
         if (solution == null)
             throw new ArgumentNullException(nameof(solution));
+        if(checkReadiness)
+        {
+            expectedDirectory ??= solution.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入目录。");
+            if(!expectedDirectory.IsActive || (solution.RuntimeDirectory is {} actual && !ReferenceEquals(actual,expectedDirectory)))
+                throw new InvalidOperationException("方案运行目录代次已变更或退役。");
+        }
 
         var workflows = solution.Workflows ?? new List<Workflow>();
         var nodeLookup = new Dictionary<string, WorkflowNodeBase>(StringComparer.Ordinal);
@@ -97,7 +103,7 @@ public sealed class SolutionExecutionDependencyGraph
             // Local input faults are owned by their consumer, not by the whole solution.
             // Candidate reconciliation must retain unresolved-but-explicit binding edges for cycle checking.
             // Runtime readiness still omits failed inputs so unrelated nodes can execute.
-            var localIssues = checkReadiness ? OutputBindingChangeService.GetExecutionInputIssues(workflow, workflow.Id) : null;
+            var localIssues = checkReadiness ? OutputBindingChangeService.GetExecutionInputIssues(workflow, expectedDirectory!, workflow.Id) : null;
             var local = WorkflowExecutionDependencyGraph.Compile(workflow, null, workflow.Id, localIssues,solution.Id);
             foreach (var dependency in local.Dependencies)
             {

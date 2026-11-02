@@ -26,6 +26,14 @@ public sealed class RunConfigurationTests
         var payload = Environment.GetEnvironmentVariable("SUNEYE_ROOT_TEST_PAYLOAD")!;
         var foreign = new ReleasePayloadAuthority(payload).PrepareRuntimeDirectory();
         Assert.Throws<InvalidOperationException>(() => WorkflowRunConfiguration.Capture(new[] { flow }, foreign));
+        var reader = new OutputBindingChangeService();
+        Assert.NotNull(reader.ReadContract(flow.Nodes[0], directory));
+        Assert.Throws<InvalidOperationException>(() => reader.ReadContract(flow.Nodes[0], foreign));
+        Assert.Throws<InvalidOperationException>(() => OutputBindingChangeService.GetExecutionInputIssues(flow, foreign));
+        var manager = new SolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!, Guid.NewGuid().ToString("N")), directory);
+        var document = manager.CreateUntitledSolution();
+        Assert.Throws<InvalidOperationException>(() => SolutionExecutionDependencyGraph.Compile(document, expectedDirectory: foreign));
+        Assert.NotNull(SolutionExecutionDependencyGraph.Compile(document, checkReadiness: false));
     }
 
     [Fact]

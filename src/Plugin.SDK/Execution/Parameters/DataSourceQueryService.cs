@@ -30,14 +30,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationReceiveService { get; set; }
         public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationSendService { get; set; }
         public Action<string>? CommitOutputConfiguration { get; set; }
-        public string? WorkflowId { get; set; }
+        private readonly string _scopeId;
+        public string WorkflowId => string.Equals(_scopeId, _nodeInfoProvider.ScopeId, StringComparison.Ordinal)
+            ? _scopeId : throw new InvalidOperationException("节点声明提供者的流程作用域发生变化。 ");
         public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; set; }
         /// <summary>Optional private editor lifetime; production queries leave this unset.</summary>
         public System.Threading.CancellationToken EditScopeCancellation { get; set; }
         /// <summary>Editor run boundary captures published values, never another scope's pending variables.</summary>
         public Func<IDictionary<string, object?>?>? CapturePublishedGlobals { get; set; }
-        /// <summary>Host's configuration snapshot factory, shared with workflow execution.</summary>
-        public Func<ToolParameters, ToolParameters>? CreateParameterSnapshot { get; set; }
         public Func<string, IReadOnlyList<string>>? BindingCandidateNodeIds { get; set; }
         public Func<string, IReadOnlyList<string>>? ExistingBindingSourceNodeIds { get; set; }
         public ToolSchema? GetSchema(string nodeId)
@@ -120,12 +120,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 工作流连接提供者（外部注入）
         /// </summary>
-        private readonly IWorkflowConnectionProvider? _connectionProvider;
+        private readonly IWorkflowConnectionProvider _connectionProvider;
 
         /// <summary>
         /// 节点信息提供者（外部注入）
         /// </summary>
-        private readonly INodeInfoProvider? _nodeInfoProvider;
+        private readonly INodeInfoProvider _nodeInfoProvider;
 
         /// <summary>
         /// 属性元数据提供者(可选,用于设计时优化)
@@ -147,38 +147,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 创建数据源查询服务
-        /// </summary>
-        public DataSourceQueryService()
-        {
-        }
-
-        /// <summary>
-        /// 创建数据源查询服务（带依赖注入）
-        /// </summary>
-        /// <param name="connectionProvider">工作流连接提供者</param>
-        /// <param name="nodeInfoProvider">节点信息提供者</param>
-        public DataSourceQueryService(
-            IWorkflowConnectionProvider? connectionProvider,
-            INodeInfoProvider? nodeInfoProvider = null)
-        {
-            _connectionProvider = connectionProvider;
-            _nodeInfoProvider = nodeInfoProvider;
-        }
-
-        /// <summary>
         /// 创建数据源查询服务（带依赖注入和 Logger）
         /// </summary>
         /// <param name="connectionProvider">工作流连接提供者</param>
         /// <param name="nodeInfoProvider">节点信息提供者</param>
         /// <param name="logger">Logger</param>
         public DataSourceQueryService(
-            IWorkflowConnectionProvider? connectionProvider,
-            INodeInfoProvider? nodeInfoProvider,
+            IWorkflowConnectionProvider connectionProvider,
+            INodeInfoProvider nodeInfoProvider,
             ILogger? logger = null)
         {
-            _connectionProvider = connectionProvider;
-            _nodeInfoProvider = nodeInfoProvider;
+            _connectionProvider = connectionProvider ?? throw new ArgumentNullException(nameof(connectionProvider));
+            _nodeInfoProvider = nodeInfoProvider ?? throw new ArgumentNullException(nameof(nodeInfoProvider));
+            _scopeId = nodeInfoProvider.ScopeId;
+            if (string.IsNullOrWhiteSpace(_scopeId))
+                throw new ArgumentException("节点声明提供者必须绑定流程作用域。", nameof(nodeInfoProvider));
             _logger = logger;
         }
 
@@ -561,6 +544,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public interface INodeInfoProvider
     {
+        /// <summary>节点声明所属的固定流程作用域。</summary>
+        string ScopeId { get; }
         /// <summary>
         /// 获取节点名称
         /// </summary>

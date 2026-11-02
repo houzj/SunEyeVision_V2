@@ -32,7 +32,7 @@ internal sealed class DeclaredFieldState : IDisposable
             if(value is null)return new(Port.Id,NumericModelReadStatus.Unavailable);
             var prepared=model.Prepare(value.Value!);
             if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
-            var status=model.Install(NativeNumericSequenceProjection.Single(Port,prepared.Value!));
+            var status=model.Install(NativeNumericSequenceProjection.Single(Port,prepared.Value!),force:model.HasValue&&!Equals(model.Value,NativeNumericSequenceProjection.Single(Port,value.Value!)));
             return !Current()||request!=_numericRead||acceptance!=AcceptanceVersion?new(Port.Id,NumericModelReadStatus.Retired):new(Port.Id,status);
         }
         catch(Exception error)

@@ -21,6 +21,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly List<DeclaredFieldAccess> _fields=new();
  private readonly Dictionary<string,string> _numericModelPages=new(StringComparer.Ordinal);
  private string[] _numericPageKeys=[];
+ private readonly Dictionary<TabItem,string> _numericTabPages=[];
  private readonly Dictionary<string,DeclaredFieldEditor> _editors=new(StringComparer.Ordinal);
  private readonly Dictionary<string,FrameworkElement> _rows=new(StringComparer.Ordinal);
  private readonly List<NativeRangePresenter> _ranges=new();
@@ -415,7 +416,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      _rowGateAnchors.Add(view,field.Port.Id);
     }
    }
-   var tab=new TabItem{Header=page.Key,Content=body};
+   var tab=new TabItem{Header=page.Key,Content=body};_numericTabPages.Add(tab,page.Key);
    tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
   }
   Content=tabs;UpdateVisibility();
@@ -492,7 +493,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-   _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+   _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
    foreach(var release in _visualSourceCleanup)release();_visualSourceCleanup.Clear();_visualSources.Clear();

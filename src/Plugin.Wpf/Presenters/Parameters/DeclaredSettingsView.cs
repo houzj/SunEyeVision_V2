@@ -48,7 +48,14 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var fields=_fields;var generation=_generation;var draft=Draft;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(fields,_fields)&&ReferenceEquals(draft,Draft);
         if(!Current()||fields is null)return new[]{new NumericModelReadResult(fieldId??"",_disposed?NumericModelReadStatus.Retired:NumericModelReadStatus.Unavailable)};
-        return fields.ReadNumericModels(scope,fieldId,Current);
+        var input=_inputContent as DeclaredInputFieldsView;var options=Options??new();
+        bool OwnsInput()=>Current()&&ReferenceEquals(input,_inputContent);
+        if(scope==NumericModelReadScope.Field&&input?.Fields.Any(field=>field.FieldId==fieldId)==true)
+            return input.ReadNumericModels(scope,fieldId,true,true,OwnsInput);
+        var result=fields.ReadNumericModels(scope,fieldId,Current);
+        if(input is null||scope==NumericModelReadScope.Field)return result;
+        var extra=input.ReadNumericModels(scope,null,fields.HasNumericInputPage(options.InputAfterField,options.InputSection),fields.NumericInputPage(options.InputAfterField,options.InputSection),OwnsInput);
+        return Array.AsReadOnly(result.Concat(extra).ToArray());
     }
     public event Action? Changed;
     public DeclaredSettingsView() { }
@@ -177,6 +184,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.PageChanged+=OnPageChanged;
             _fields=candidate;_inputContent=nextInput;
             Content=candidate;
+            if(Current()&&ReferenceEquals(_fields,candidate))ReadNumericModels(NumericModelReadScope.All);
         }
         catch(Exception failure)
         {

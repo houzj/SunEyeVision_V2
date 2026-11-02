@@ -16,8 +16,9 @@ internal sealed class NativeNumericModel
     {_port=port;_layout=layout;Accept(accepted);}
     internal ConstantSetting Prepare(object value,bool checkBounds=true)
     {
-        var frozen=NativeNumericSequenceProjection.Applies(_port)?NativeNumericSequenceProjection.FreezeNumber(_port,NativeNumericSequenceProjection.Single(_port,value)):ValueRules.Freeze(_port,value);
-        var scalar=NativeNumericSequenceProjection.Single(_port,frozen!);
+        var floating=_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port);
+        var scalar=NativeNumericSequenceProjection.Single(_port,value);
+        var frozen=floating?scalar:ValueRules.Freeze(_port,value);
         NativeNumericCommit.EnsureRepresentable(new(frozen));
         var number=Convert.ToDouble(scalar,System.Globalization.CultureInfo.InvariantCulture);
         if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
@@ -32,7 +33,7 @@ internal sealed class NativeNumericModel
                 throw new ArgumentException("整数最小值、最大值及正步长必须是有效Int32格点。");
             var integer=checked((int)(long)scalar);var start=checked((int)low);var step=checked((int)increment);
             if(integer>=low&&integer<=high)
-            {var offset=checked(integer-start);integer=checked(checked(offset/step*step)+start);}
+            {var offset=checked((long)integer-start);integer=checked((int)checked(offset/step*step+start));}
             frozen=(long)integer;
         }
         else if(_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port))
@@ -48,9 +49,10 @@ internal sealed class NativeNumericModel
         if(setting is not ConstantSetting constant)return;
         try{Install(NativeNumericSequenceProjection.Single(_port,Prepare(constant.Value!,false).Value!),false);}catch(Exception error)when(error is ArgumentException or OverflowException or FormatException){HasValue=false;Value=null;Version++;}
     }
-    internal NumericModelReadStatus Install(object value,bool publish=true)
+    internal NumericModelReadStatus Install(object value,bool publish=true,bool force=false)
     {
-        if(HasValue&&Equals(Value,value))return NumericModelReadStatus.Unchanged;
+        if(_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port))value=Math.Round(Convert.ToDouble(value,System.Globalization.CultureInfo.InvariantCulture),_layout?.DecimalPlaces??2,MidpointRounding.ToEven);
+        if(!force&&HasValue&&Equals(Value,value))return NumericModelReadStatus.Unchanged;
         HasValue=true;Value=value;Version++;
         if(publish)ParameterCleanup.Run((Changed?.GetInvocationList().Cast<Action>()??Enumerable.Empty<Action>()).Select(handler=>(Action)(()=>handler())));
         return NumericModelReadStatus.Updated;

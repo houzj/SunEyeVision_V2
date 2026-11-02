@@ -29,9 +29,11 @@
   <ItemGroup>
     <!-- 契约测试需直接使用 HalconDotNet 类型（HRegion/HImage/HOperatorSet），框架库非传递引用 -->
     <Reference Include="halcondotnetxl">
-      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <HintPath>$(HalconSourceRoot)/net/halcondotnetxl.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup><Compile Remove="ToolDebugResultSnapshotTests.cs;ImageFrameProvenanceTests.cs" /></ItemGroup>
+  <!-- 退出旧 SDK 可视、旧宿主及 Group 合同；范围和替代验证见同目录迁移清单。 -->
+  <ItemGroup><Compile Remove="ToolDebugResultSnapshotTests.cs;ImageFrameProvenanceTests.cs;ArcGuideHitTestContractTests.cs;CommunicationAnalysisControlTests.cs;GeometryToolkitContractTests.cs;MeasureBandAlignmentContractTests.cs;MeasureInteractionModelContractTests.cs;RoiRenderLightweightContractTests.cs;SdkDefaultThemeDesignTimeContractTests.cs;SdkThemeContractTests.cs;ThemeResourceResolutionTests.cs;ToolItemContractTests.cs;PositionCorrectionResolutionTests.cs;ExecutionAdmissionTests.cs;ParamBindingDisplayContractTests.cs;ToolSideEffectReceiptTests.cs;ToolExecutorContextTests.cs;ExplicitConstantConversionTests.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="AnnularSectorDisplayContractTests.cs;ArrayTreeFormatterTests.cs;DisplayCollectorGeometryContractTests.cs;FilterDataSourcesByTypeTests.cs;GeometryFieldSchemaContractTests.cs;RoiBindingContractTests.cs;RoiComposeAllContractTests.cs;RoiDesignTimeGroupsContractTests.cs;RoiDisplayTextContractTests.cs;RuntimeParameterSnapshotTests.cs;SolutionExecutionDependencyGraphTests.cs;SubroutineDisplayItemTypeContractTests.cs;ToolParameterSnapshotTests.cs;ViewportScalingContractTests.cs;WorkflowExecutionDependencyGraphTests.cs" /></ItemGroup>
 </Project>

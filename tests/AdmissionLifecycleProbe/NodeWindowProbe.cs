@@ -10,6 +10,7 @@ using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
 internal static class NodeWindowProbe
@@ -38,35 +39,37 @@ internal static class NodeWindowProbe
 
     private static void RunWindows()
     {
+        Console.WriteLine("window probe: loading plugins");
         var manager=new PluginManager();manager.LoadPluginsAsync().GetAwaiter().GetResult();
         if(manager.LastAdmissionError is not null)throw new Exception(manager.LastAdmissionError);
         var directory=manager.RuntimeDirectory??throw new Exception("没有已准入目录。");
+        Console.WriteLine("window probe: plugins admitted");
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
-        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
+        foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/NodeStyleResources.xaml","Resources/Styles/ConnectionStyleResources.xaml","Resources/Styles/CanvasStyleResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
             app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
-        var root=Path.Combine(AppContext.BaseDirectory,"node-window-probe-"+Guid.NewGuid().ToString("N"));
+        var root=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","node-window-probe-"+Guid.NewGuid().ToString("N")));
         var paths=new ApplicationDataLocationService(Path.Combine(root,"locator.json")).Prepare(root);
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,directory);
+        SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
+        var viewModel=new MainWindowViewModel(manager.DesktopAdmission??throw new Exception("缺少桌面准入。"));
         ServiceInitializer.SolutionManager.CreateUntitledSolution();
+        if(viewModel.WorkflowTabViewModel.SelectedTab is null)viewModel.NewWorkflowCommand.Execute(null);
+        var shell=new Window{Width=620,Height=400,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
+        Console.WriteLine("window probe: services ready");
         try
         {
-            var chain=new NodeOpenDecisionChain();var image=RuntimeToolConfiguration.Create(directory,"ImageLoad");bool created=false;
-            foreach(var node in new[]{new WorkflowNodeBase("missing","missing","missing","UnknownTool"),new WorkflowNodeBase("paused","paused","paused","Subroutine"){SubroutineId="child"},new WorkflowNodeBase("mismatch","mismatch","mismatch","BlobAnalysis"){RuntimeConfiguration=image}})
-            {
-                var context=new NodeOpenContext{RuntimeDirectory=directory};
-                if(chain.Execute(node,context,()=>{created=true;return new System.Windows.Controls.UserControl();})||created||context.CreatedWindow is not null||string.IsNullOrWhiteSpace(context.FailureReason))throw new Exception("未准入节点未拒绝打开。");
-            }
             foreach(var id in new[]{"ImageLoad","BlobAnalysis"})
             {
-                var node=new WorkflowNodeBase("opened-"+id,id,id,id){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,id),DebugWindowStyle=DebugWindowStyle.Custom};
-                var context=new NodeOpenContext{RuntimeDirectory=directory};
-                if(!chain.Execute(node,context))throw new Exception("节点打开失败: "+id+" "+context.FailureReason);
-                if(context.WindowStyle!=DebugWindowStyle.Custom||context.Metadata?.RuntimeCatalog?.DisplayName!=directory.GetCatalog(id)?.DisplayName)throw new Exception("窗口样式或同代目录丢失: "+id);
-                if(context.CreatedWindow is not SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow||context.DebugControl is not RuntimeNodeConfigurationControl control)throw new Exception("未构造真实编辑器: "+id);
-                context.CreatedWindow.ShowActivated=false;context.CreatedWindow.ShowInTaskbar=false;context.CreatedWindow.Show();
+                Console.WriteLine("window probe: constructing "+id);
+                var node=viewModel.WorkflowTabViewModel.SelectedTab!.CreateNode(id);viewModel.AddNodeToWorkflow(node);node.DebugWindowStyle=DebugWindowStyle.Custom;
+                viewModel.OpenDebugWindowCommand.Execute(node);
                 var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
-                if(!context.CreatedWindow.IsLoaded)throw new Exception("真实窗口未加载: "+id);
-                context.CreatedWindow.Close();control.Dispose();Console.WriteLine("隐藏桌面真实窗口通过: "+id);
+                var window=app.Windows.OfType<SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("正式打开命令没有显示编辑器: "+id);
+                if(window.FindName("ContentHost") is not System.Windows.Controls.ContentControl { Content:RuntimeNodeConfigurationControl control }||SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.GetDraftContext(control) is not ProductionEditorContext {IsValid:true})throw new Exception("正式编辑会话未接入: "+id);
+                if(!window.IsLoaded)throw new Exception("真实窗口未加载: "+id);
+                Console.WriteLine("window probe: closing "+id);window.Close();Console.WriteLine("window probe: close returned "+id);
+                if(window.IsVisible||ServiceInitializer.SolutionManager.Session!.Editing.RegisteredScopeCount!=0)throw new Exception("窗口或编辑会话未释放: "+id);
+                Console.WriteLine("隐藏桌面真实窗口通过: "+id);
             }
         }
         finally { app.Shutdown(); }

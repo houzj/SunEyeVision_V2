@@ -7,7 +7,7 @@ namespace SunEyeVision.Tool.NPointCalibration;
 
 public sealed class NPointCalibrationResults : ToolResults
 {
-    [JsonIgnore] public SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? ResourcePaths { get; set; }
+    [JsonIgnore] public SunEyeVision.Plugin.Contracts.IResourcePathResolver? ResourcePaths { get; set; }
     public int TranslationSamples { get; set; }
     public int RotationSamples { get; set; }
     public int RequiredTranslationSamples { get; set; }

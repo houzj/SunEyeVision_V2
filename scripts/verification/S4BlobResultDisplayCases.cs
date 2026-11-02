@@ -199,7 +199,18 @@ internal static class S2DocumentEditingCases
                 vm.OpenDebugWindowCommand.Execute(source);Pump();
                 var imageWindow=app.Windows.OfType<RuntimeToolEditorWindow>().Single(w=>w.IsVisible);
                 var imageContext=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(imageWindow.Editor)!;
-                Require(imageContext.IsValid&&imageContext.Identity.NodeId==source.Id,"图像源编辑草稿身份不匹配");imageWindow.Close();Pump();Require(!imageContext.IsActive,"图像源关闭后草稿未退役");
+                Require(imageContext.IsValid&&imageContext.Identity.NodeId==source.Id,"图像源编辑草稿身份不匹配");
+                var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)Get(imageWindow.Editor,"_captureDebug");
+                var invalidDraft=imageContext.DraftNode.Clone();invalidDraft.Id="not-in-flow";var rejected=false;
+                try { using var ignored=capture(invalidDraft); } catch(InvalidOperationException) { rejected=true; }
+                Require(rejected,"无效节点调试捕获未拒绝");
+                using(var afterFailure=capture(imageContext.DraftNode)) { }
+                var sourceCompleted=false;var sourceSuccess=false;
+                EventHandler<RuntimeToolExecutionEventArgs> onSource=(_,args)=>{sourceCompleted=true;sourceSuccess=args.Result?.IsSuccess==true;};
+                imageWindow.ToolExecutionCompleted+=onSource;
+                Require(imageWindow.ExecuteOnce.CanExecute(null),"图像源实际调试命令不可用");imageWindow.ExecuteOnce.Execute(null);PumpUntil(()=>sourceCompleted&&!imageWindow.State.IsRunning);
+                Require(sourceSuccess,"图像源实际调试未取得成功结果");imageWindow.ToolExecutionCompleted-=onSource;
+                imageWindow.Close();Pump();Require(!imageContext.IsActive,"图像源关闭后草稿未退役");
                 Run();var window=Open();PrivateDebug(window,true);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(window.Editor)!;
                 System.ComponentModel.CancelEventHandler reject=(_,args)=>args.Cancel=true;
                 window.Closing+=reject;window.Close();Pump();Require(window.IsVisible&&context.IsValid,"取消关闭损坏窗口或草稿");
@@ -624,7 +635,7 @@ internal static class S2DocumentEditingCases
                 var engine=new WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance,admission.Runtime);engine.RegisterWorkflow(loadedFlow);var ownHost=new NodeConfigurationEditHost(loaded);var published=WorkflowPublishedConfiguration.Capture(ownHost.Capture(),loaded,ownHost);
                 using var globals=new WorkflowGlobalRunValues(loaded.Id,published.GlobalDefinitions,published.GlobalDefinitions.Select(v=>new KeyValuePair<string,object?>(v.Id,v.Value)));
                 var executor=new WorkflowExecutionEngine(engine,new PluginManager(),SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance);
-                var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
+                var task=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(loadedFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}}){Configuration=published.Configuration,ExecutionOwner=published.ExecutionOwner,ProducedGlobals=globals,ParameterValues=published.ParameterValues,ResourcePaths=published.ResourcePaths});PumpUntil(()=>task.IsCompleted);
                 using(var result=task.GetAwaiter().GetResult())
                 {
                     Require(result.Success&&result.NodeResults[node.Id].Result is DeclaredOutputSnapshot,"真实重开执行失败");

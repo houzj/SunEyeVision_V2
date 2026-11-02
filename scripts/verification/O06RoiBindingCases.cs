@@ -68,7 +68,7 @@ internal static class S2DocumentEditingCases
         }
         public RoiParameters Producer=>(RoiParameters)Threshold.Parameters;
         public RoiParameters Consumer=>(RoiParameters)Blob.Parameters;
-        public ExecutionResult Run()=>new WorkflowExecutionEngine(Engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(Flow.Id,sourceInputs:SourceInputs(Flow))).GetAwaiter().GetResult();
+        public ExecutionResult Run()=>new WorkflowExecutionEngine(Engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(Flow.Id,hostInputs:SourceInputs(Flow))).GetAwaiter().GetResult();
         public void Rectangles()
         {
             Producer.InspectionRois.Rois.Clear();
@@ -189,7 +189,7 @@ internal static class S2DocumentEditingCases
         Require(repository.Save(solution,path),repository.LastError??"保存失败");var loaded=repository.LoadCandidate(path).Candidate??throw new Exception(repository.LastError??"重开失败");
         var flow=loaded.Workflows.Single();var restored=(RoiParameters)flow.Nodes.Single(n=>n.Id=="blob").Parameters;var saved=restored.InspectionRois.Rois.Single();
         Require(saved.Id==roi.Id&&saved.ParameterBindings!["CenterX"].ReferenceExpression==roi.ParameterBindings!["CenterX"].ReferenceExpression&&!saved.HasRuntimeBinding("CenterX"),"重开丢索引/绑定或错误持久化缓存");
-        var engine=new WorkflowEngine(new CheckLogger());engine.RegisterWorkflow(flow);using var run=new WorkflowExecutionEngine(engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,sourceInputs:SourceInputs(flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded))){ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded)}).GetAwaiter().GetResult();Success(run);Require(Count(run)==1,"重开后未真实执行typed索引");
+        var engine=new WorkflowEngine(new CheckLogger());engine.RegisterWorkflow(flow);using var run=new WorkflowExecutionEngine(engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,hostInputs:SourceInputs(flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded))){ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded)}).GetAwaiter().GetResult();Success(run);Require(Count(run)==1,"重开后未真实执行typed索引");
     }
     private static void CircleDeclaration()
     {
@@ -222,14 +222,14 @@ internal static class S2DocumentEditingCases
         var policy=ImageSourcePolicy.Read(node)!;policy.FilePaths=new(){ImagePath};policy.CurrentIndex=0;policy.SNInitialValue=1;policy.ApplyTo(node);
         return node;
     }
-    private static IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs(Workflow flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver? resolver=null)
+    private static IReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer> SourceInputs(Workflow flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver? resolver=null)
     {
         resolver??=new(Root);
         return flow.Nodes.Where(node=>node.ToolType=="ImageLoad").ToDictionary(node=>node.Id,node=>
         {
             var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源不是正式Runtime配置。");
             var address=resolver.ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
-            return new ImageSourceRunInput(address,policy.SNInitialValue) { LocalReadAdmission=_=>address };
+            return (SunEyeVision.Plugin.Contracts.IHostInputPreparer)new ImageSourceHostInputPreparer(address,policy.SNInitialValue) { LocalReadAdmission=(_,_)=>address };
         },StringComparer.Ordinal);
     }
     private static void Source(WorkflowNodeBase node,string producer,string output)=>node.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(node.Parameters,new ImageSourceReference(producer,output,producer,output));

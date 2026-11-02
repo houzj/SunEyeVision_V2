@@ -220,7 +220,7 @@ internal static class S2DocumentEditingCases
                 var restored=reopened.Workflows.Single(flow=>flow.Id==flowId).Nodes.Single(value=>value.Id==node.Id).RuntimeConfiguration!.Fields.Get<RecordValue>(BlobLocalRoi.InputId);Require(BlobLocalRoi.Same(accepted,restored),"重开不是同一纯值定义");
                 var loadedEngine=new WorkflowEngine(new CheckLogger());foreach(var flow in reopened.Workflows)loadedEngine.RegisterWorkflow(flow);
                 var executor=new WorkflowExecutionEngine(loadedEngine,plugins,new CheckLogger());
-                var request=new WorkflowRunRequest(flowId,null,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}})
+                var request=new WorkflowRunRequest(flowId,null,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}})
                     {Configuration=WorkflowRunConfiguration.Capture(reopened.Workflows),ExecutionOwner=reopened.ExecutionOwner,ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(reopened)};
                 var restoredRun=executor.ExecuteWorkflowAsync(request);PumpUntil(()=>restoredRun.IsCompleted);using var restoredResult=restoredRun.GetAwaiter().GetResult();Require(restoredResult.Success&&restoredResult.NodeResults[node.Id].Result is DeclaredOutputSnapshot {IsSuccess:true},"真实重开对象未进入正式引擎执行");
                 var execute=vm.RunSelectedImageAsync();PumpUntil(()=>execute.IsCompleted);execute.GetAwaiter().GetResult();
@@ -250,7 +250,7 @@ internal static class S2DocumentEditingCases
                 var box=previous.Items.First(item=>item.Group==BlobLocalRoi.Inspection&&item.Kind=="rectangle");Require(previous.Select(box.Group,box.Id),"换帧前不能选框");first.UpdateLayout();Pump();
                 var text=Visual(editor.NativeView).OfType<TextBox>().First(item=>item.Name=="ValueText"&&item.IsVisible);var baseline=text.Text;Require(text.Focus(),"换帧原文无焦点");text.SetCurrentValue(TextBox.TextProperty,"frame-raw");Pump();
                 var document=solutions.CurrentSolution!;var executor=new WorkflowExecutionEngine((WorkflowEngine)Get(vm,"_workflowEngine"),plugins,new CheckLogger());
-                var request=new WorkflowRunRequest(flowId,null,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{source.Id,new ImageSourceRunInput(imageFile,1){LocalReadAdmission=_=>imageFile}}})
+                var request=new WorkflowRunRequest(flowId,null,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{source.Id,new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}})
                     {Configuration=WorkflowRunConfiguration.Capture(document.Workflows),ExecutionOwner=document.ExecutionOwner,ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document)};
                 var task=executor.ExecuteWorkflowAsync(request);PumpUntil(()=>task.IsCompleted);using var execution=task.GetAwaiter().GetResult();Require(execution.Success,"外部正式执行失败");
                 var context=(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",Flags)!.GetValue(vm)!;var results=(SunEyeVision.UI.Services.Workflow.NodeResultManager)Get(vm,"_nodeResultManager");

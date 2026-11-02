@@ -12,33 +12,56 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 namespace SunEyeVision.Workflow;
 
 /// <summary>Host-selected immutable input for one source in one round; not persistent settings.</summary>
-public sealed record ImageSourceRunInput
+public sealed class ImageSourceHostInputPreparer : IHostInputPreparer
 {
-    public ImageSourceRunInput(string? localAddress, long sequenceNumber)
+    public ImageSourceHostInputPreparer(string? localAddress, long sequenceNumber, ICameraCaptureService? cameraService=null, CameraFrame? borrowedFrame=null)
     {
         if(sequenceNumber<0)throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
-        LocalAddress=localAddress;SequenceNumber=sequenceNumber;
+        LocalAddress=localAddress;SequenceNumber=sequenceNumber;_cameraService=cameraService;_borrowedFrame=borrowedFrame;
     }
     public string? LocalAddress {get;}
     public long SequenceNumber {get;}
     /// <summary>Run-scoped admission supplied by the host, never a persistent setting.</summary>
-    public Func<SunEyeVision.Plugin.Runtime.ToolExecutionIdentity,string>? LocalReadAdmission {get;init;}
+    private readonly ICameraCaptureService? _cameraService;
+    private readonly CameraFrame? _borrowedFrame;
+    public string CapabilityId=>"image-source";
+    public int CapabilityVersion=>1;
+    public IReadOnlyList<string> Services=>LocalAddress is null ? new[]{"camera-frame"} : new[]{"local-image-read"};
+    public Func<RunIdentity,CancellationToken,string>? LocalReadAdmission {get;init;}
     internal Action? ReadFinished {get;init;}
     private int _readFinished;
     internal void FinishRead()
     {
         if(Interlocked.Exchange(ref _readFinished,1)==0)ReadFinished?.Invoke();
     }
-    internal string AcceptLocalImage(SunEyeVision.Plugin.Runtime.ToolExecutionIdentity identity)
+    public void Dispose()=>FinishRead();
+    public async ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context)
     {
-        var admission=LocalReadAdmission??throw new InvalidOperationException("本轮没有已接入的本地图像读取接纳。");
-        string? address=null;
-        if(!identity.TryInvokeCallback(()=>address=admission(identity)))
+        var policy=ImageSourcePolicy.ReadFields(context.Identity.NodeId,context.Settings);
+        var acquired=await ImageSourceInvocationInputs.CaptureAsync(policy,this,context.Identity,_cameraService,_borrowedFrame,context.Cancellation).ConfigureAwait(false);
+        return new Prepared(acquired,context,LocalReadAdmission);
+    }
+    private sealed class Prepared(ImageSourceInvocationInputs acquired,HostInputPreparationContext context,Func<RunIdentity,CancellationToken,string>? admission):IPreparedHostInputs
+    {
+        private ImageSourceInvocationInputs? _acquired=acquired;
+        public IReadOnlyDictionary<string,object?> Values=>_acquired?.Values??throw new ObjectDisposedException(nameof(Prepared));
+        public IToolExecutionContext BindContext(IToolExecutionContext inner)=>new LocalContext(inner,context,admission);
+        public ValueTask DisposeAsync(){Interlocked.Exchange(ref _acquired,null)?.Dispose();return ValueTask.CompletedTask;}
+    }
+    private sealed class LocalContext(IToolExecutionContext inner,HostInputPreparationContext request,Func<RunIdentity,CancellationToken,string>? admission):IToolExecutionContext,ILocalImageReadContext
+    {
+        public RunIdentity Identity=>inner.Identity;
+        public CancellationToken Cancellation=>inner.Cancellation;
+        public IOutputResources Resources=>inner.Resources;
+        public void Log(string message)=>inner.Log(message);
+        public string AcceptLocalImage()
         {
-            identity.CancellationToken.ThrowIfCancellationRequested();
-            throw new InvalidOperationException("图像读取身份已退役、取消或被替换。");
+            var accept=admission??throw new InvalidOperationException("本轮没有已接入的本地图像读取接纳。");
+            string? address=null;
+            if(!request.Gate.TryInvoke(()=>address=accept(request.Identity,request.Cancellation)))
+            {request.Cancellation.ThrowIfCancellationRequested();throw new InvalidOperationException("图像读取身份已退役、取消或被替换。");}
+            return address??throw new InvalidOperationException("图像读取接纳没有返回地址。");
         }
-        return address??throw new InvalidOperationException("图像读取接纳没有返回地址。");
     }
 }
 
@@ -50,20 +73,10 @@ internal sealed class ImageSourceInvocationInputs : IDisposable
     private ImageSourceInvocationInputs(Dictionary<string,object?> values,IDisposable? imageOwner=null)
     {Values=new ReadOnlyDictionary<string,object?>(values);_imageOwner=imageOwner;}
 
-    internal static ImageSourceRunInput PrepareDebug(WorkflowNodeBase node,IResourcePathResolver? resourcePaths,
-        SunEyeVision.Plugin.Runtime.ToolExecutionOwner owner,string workflowId)
-    {
-        var policy=ImageSourcePolicy.Read(node)??throw new InvalidOperationException("图像源没有正式Runtime设置。");
-        if(policy.SourceKind==ImageSourceKind.Camera)return new(null,policy.SNInitialValue);
-        var resolver=resourcePaths as Persistence.SolutionResourceResolver
-            ??throw new InvalidOperationException("图像源调试缺少冻结资源基目录。");
-        return ImageSourceDebugCursor.For(owner).Prepare(workflowId,policy,resolver);
-    }
-    internal static async Task<ImageSourceInvocationInputs> CaptureAsync(WorkflowNodeBase frozenNode,ImageSourceRunInput input,
+    internal static async Task<ImageSourceInvocationInputs> CaptureAsync(ImageSourcePolicy policy,ImageSourceHostInputPreparer input,
         RunIdentity identity,ICameraCaptureService? cameraService,CameraFrame? borrowedFrame,CancellationToken cancellation)
     {
         cancellation.ThrowIfCancellationRequested();
-        var policy=ImageSourcePolicy.Read(frozenNode)??throw new InvalidOperationException("图像源没有正式Runtime设置。");
         var values=new Dictionary<string,object?>(StringComparer.Ordinal){["input.sequence"]=input.SequenceNumber};
         if(policy.SourceKind==ImageSourceKind.Local)
         {

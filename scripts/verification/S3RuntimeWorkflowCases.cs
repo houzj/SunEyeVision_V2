@@ -44,7 +44,7 @@ internal static class S2DocumentEditingCases
                 var host=new NodeConfigurationEditHost(document);
                 var publication=WorkflowPublishedConfiguration.Capture(host.Capture(),document,host);
                 try{return WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(current.Id,image,
-                    nodeParameterOverrides:overrides is null?null:new Dictionary<string,IReadOnlyDictionary<string,object?>>{{first.Id,overrides}},sourceInputs:SourceInputs(current))
+                    nodeParameterOverrides:overrides is null?null:new Dictionary<string,IReadOnlyDictionary<string,object?>>{{first.Id,overrides}},hostInputs:SourceInputs(current))
                     {Configuration=publication.Configuration,ExecutionOwner=publication.ExecutionOwner,
                      ParameterValues=publication.ParameterValues,ResourcePaths=publication.ResourcePaths},token));}
                 finally{document.ExecutionOwner.Retire();}
@@ -232,13 +232,13 @@ internal static class S2DocumentEditingCases
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
-    private static IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs(Workflow flow)
+    private static IReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer> SourceInputs(Workflow flow)
         =>flow.Nodes.Where(node=>node.ToolType=="ImageLoad").ToDictionary(node=>node.Id,node=>
         {
             var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源没有正式Runtime配置。");
             var address=new SolutionResourceResolver(Environment.GetEnvironmentVariable("S2_CASE_ROOT")).ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
             // This fixture owns a fixed file; sequence-service admission is covered by ImageSourceRecovery.
-            return new ImageSourceRunInput(address,policy.SNInitialValue){LocalReadAdmission=_=>address};
+            return (SunEyeVision.Plugin.Contracts.IHostInputPreparer)new ImageSourceHostInputPreparer(address,policy.SNInitialValue){LocalReadAdmission=(_,_)=>address};
         },StringComparer.Ordinal);
     private static DeclaredOutputSnapshot Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as DeclaredOutputSnapshot??throw new Exception("没有中立宿主结果："+id);
     private static string Setting(string property)

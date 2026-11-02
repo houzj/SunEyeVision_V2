@@ -9,14 +9,14 @@ using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Workflow.Persistence;
 
-/// <summary>Validates current documents and applies documented V1 conversions in memory; never writes the input file.</summary>
-internal static class SolutionCompatibilityAdapter
+/// <summary>Strict validation of the current document format; never changes source bytes.</summary>
+internal static class SolutionDocumentValidator
 {
-    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics, bool deferLegacyBindingOwner = false)
+    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics)
     {
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
-        var legacy = SolutionFormatPolicy.ReadVersion(root) == SolutionFormatPolicy.Legacy;
+        _ = SolutionFormatPolicy.ReadVersion(root);
         RejectUnknownMembers(root, "$", SerializableFields(typeof(Solution)));
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
@@ -25,8 +25,8 @@ internal static class SolutionCompatibilityAdapter
             var path = "$.GlobalVariables[" + i + "]";
             RequireId(variable, path);
             RejectUnknownMembers(variable, path, SerializableFields(typeof(GlobalVariable)));
-            SolutionVariableValuePolicy.Prepare(variable, path, legacy, CanonicalType,
-                (code, diagnosticPath, message) => diagnostics.Add(new(code, "Compatibility", "Warning", diagnosticPath, message)));
+            SolutionVariableValuePolicy.Prepare(variable, path, CanonicalType,
+                (code, diagnosticPath, message) => diagnostics.Add(new(code, "Validation", "Warning", diagnosticPath, message)));
         }
         if (root["Devices"] is JsonArray devices)
         for (int i = 0; i < devices.Count; i++)
@@ -41,7 +41,7 @@ internal static class SolutionCompatibilityAdapter
             foreach (var field in new[] { "Name", "Type", "Port", "Status", "IsEnabled", "Settings", "CreatedTime", "ModifiedTime" })
                 if (device is JsonObject deviceObject && !deviceObject.ContainsKey(field)) missing.Add(field);
             if (missing.Count > 0)
-                diagnostics.Add(new("COMPAT_DEVICE_DEFAULTS", "Compatibility", "Warning", path, "Legacy optional defaults applied: " + string.Join(", ", missing)));
+                throw new JsonException("Required device fields are missing: " + string.Join(", ", missing), path, null, null);
             if (device["WorkflowRef"] != null && (device["WorkflowRef"] is not JsonValue workflowRef || !workflowRef.TryGetValue<string>(out _)))
                 throw new JsonException("WorkflowRef must be a string or null.", path + ".WorkflowRef", null, null);
             foreach (var field in new[] { "Name", "Manufacturer", "Model", "SerialNumber", "IpAddress", "Description" })
@@ -115,7 +115,8 @@ internal static class SolutionCompatibilityAdapter
                 RequireId(node, path + ".Nodes[" + n + "]");
                 RejectUnknownMembers(node, path + ".Nodes[" + n + "]", SerializableFields(typeof(WorkflowNodeBase)));
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
-                SolutionBindingExpressionPolicy.Validate(node["ParamSettings"], path + ".Nodes[" + n + "].ParamSettings", legacy && deferLegacyBindingOwner);
+                if (node is JsonObject nodeObject && (nodeObject.ContainsKey("Parameters") || nodeObject.ContainsKey("ParamSettings")))
+                    throw new JsonException("Current Runtime nodes cannot contain SDK parameter models.", path + ".Nodes[" + n + "]", null, null);
             }
             else if (workflow["Nodes"] != null) throw new JsonException("Nodes must be an array.", path + ".Nodes", null, null);
             if (workflow["Connections"] is JsonArray edges)
@@ -134,12 +135,6 @@ internal static class SolutionCompatibilityAdapter
                 }
             }
             else if (workflow["Connections"] != null) throw new JsonException("Connections must be an array.", path + ".Connections", null, null);
-        }
-        if (legacy && !deferLegacyBindingOwner)
-        {
-            SolutionFormatPolicy.PromoteCandidate(root);
-            diagnostics.Add(new("COMPAT_FORMAT_1_TO_2", "Compatibility", "Warning", "$.SchemaVersion",
-                "Format 1 was adapted to format 2 in memory; the source file is unchanged."));
         }
     }
 

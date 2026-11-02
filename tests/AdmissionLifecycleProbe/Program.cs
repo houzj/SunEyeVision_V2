@@ -10,13 +10,18 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow;
 
-// Prevent Windows Error Reporting dialogs from interrupting interactive desktop use.
-ProbeErrorMode.DisableSystemDialogs();
-if (args.Contains("--hidden-node-window"))
+internal static class Program
 {
-    Environment.ExitCode = NodeWindowProbe.Run();
-    return;
+[STAThread]
+private static int Main(string[] args)
+{
+    ProbeErrorMode.DisableSystemDialogs();
+    if (args.Contains("--hidden-node-window")) return NodeWindowProbe.Run();
+    return RunAsync().GetAwaiter().GetResult();
 }
+
+private static async Task<int> RunAsync()
+{
 try
 {
 var root=AppContext.BaseDirectory;
@@ -236,7 +241,7 @@ try
     flow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(productionDirectory,"ImageLoad")});
     var engine=new WorkflowEngine(new NullLogger(),productionDirectory);engine.RegisterWorkflow(flow);
     var runner=new WorkflowExecutionEngine(engine,production,new NullLogger());
-    var request=new WorkflowRunRequest(flow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{"image",new(imageFile,1){LocalReadAdmission=_=>imageFile}}});
+    var request=new WorkflowRunRequest(flow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{"image",new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}});
     var run=await runner.ExecuteWorkflowAsync(request).WaitAsync(TimeSpan.FromSeconds(30));
     if(!run.Success)throw new Exception("Production workflow failed: "+string.Join(";",run.Errors));
     var result=run.DeclaredOutputs.Single(o=>o.Identity.NodeId=="image");
@@ -276,8 +281,8 @@ try
     var activeRunner=new WorkflowExecutionEngine(activeEngine,production,new NullLogger());
     using var entered=new ManualResetEventSlim();
     using var release=new ManualResetEventSlim();
-    var activeRequest=new WorkflowRunRequest(activeFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>
-    {{"image",new(imageFile,1){LocalReadAdmission=_=>{entered.Set();if(!release.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("Probe did not release active image read.");return imageFile;}}}});
+    var activeRequest=new WorkflowRunRequest(activeFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>
+    {{"image",new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>{entered.Set();if(!release.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("Probe did not release active image read.");return imageFile;}}}});
     var activeRun=Task.Run(()=>activeRunner.ExecuteWorkflowAsync(activeRequest));
     if(!entered.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("Production workflow did not enter image read.");
     var activeUnload=production.UnloadPluginsAsync();
@@ -305,7 +310,7 @@ try
     displayFlow.Connections.Add(new WorkflowConnection{Id="edge",SourceNodeId="image",TargetNodeId="blob"});
     var displayEngine=new WorkflowEngine(new NullLogger(),displayDirectory);displayEngine.RegisterWorkflow(displayFlow);
     var displayRunner=new WorkflowExecutionEngine(displayEngine,production,new NullLogger());
-    var displayRequest=new WorkflowRunRequest(displayFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>{{"image",new(imageFile,1){LocalReadAdmission=_=>imageFile}}});
+    var displayRequest=new WorkflowRunRequest(displayFlow.Id,hostInputs:new Dictionary<string,SunEyeVision.Plugin.Contracts.IHostInputPreparer>{{"image",new ImageSourceHostInputPreparer(imageFile,1){LocalReadAdmission=(_,_)=>imageFile}}});
     var displayRun=await displayRunner.ExecuteWorkflowAsync(displayRequest).WaitAsync(TimeSpan.FromSeconds(30));
     if(!displayRun.Success)throw new Exception("Automatic display workflow failed: "+string.Join(";",displayRun.Errors));
     var blobResult=displayRun.DeclaredOutputs.Single(o=>o.Identity.NodeId=="blob");
@@ -338,7 +343,10 @@ Console.WriteLine("Desktop admission and production workflow reader drain checks
 catch (Exception error)
 {
     Console.Error.WriteLine(error);
-    Environment.ExitCode = 1;
+    return 1;
+}
+return 0;
+}
 }
 
 static class ProbeErrorMode

@@ -146,7 +146,7 @@ public class SolutionCache
 
         var entry = new CacheEntry
         {
-            Metadata = metadata,
+            Metadata = metadata.Clone(),
             CachedTime = DateTime.Now
         };
 

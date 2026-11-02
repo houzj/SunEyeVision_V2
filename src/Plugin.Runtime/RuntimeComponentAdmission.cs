@@ -24,6 +24,7 @@ public static class RuntimeComponentAdmission
             throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
         if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
         _=definition.Describe();
+        _=ToolHostDeclarationRules.ValidateAndFingerprint(definition);
         if(definition is IToolSettingsFields settingsFields)
         {
             var defaults=settingsFields.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);

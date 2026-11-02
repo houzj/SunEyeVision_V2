@@ -109,13 +109,24 @@ public partial class MainWindowViewModel
             control.SetDebugCapture(draft=>
             {
                 if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止工作流后调试此节点。");
-                return SunEyeVision.Workflow.RuntimeDebugInvocation.Capture(flow,session.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"),draft,context.DebugOwner,host.Capture().Version,
-                    id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
-                    resourcePaths:SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document),
-                    cameraService:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
-                    solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
-                    readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,
-                    readDisplayCandidate:id=>query.GetNodeContext(id)?.Result);
+                var paths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document);
+                var camera=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime;
+                var preparer=RuntimeHostInputAdapters.CreateDebug(draft,flow.Id,context.DebugOwner,paths,camera);
+                try
+                {
+                    return RuntimeDebugInvocation.Capture(flow,session.Document.RuntimeDirectory ?? throw new InvalidOperationException("方案缺少已准入运行目录。"),draft,context.DebugOwner,host.Capture().Version,
+                        id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
+                        resourcePaths:paths,cameraService:camera,
+                        solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
+                        readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,
+                        readDisplayCandidate:id=>query.GetNodeContext(id)?.Result,hostInputPreparer:preparer);
+                }
+                catch(Exception failure)
+                {
+                    try { preparer?.Dispose(); }
+                    catch(Exception cleanup) { throw new AggregateException(failure,cleanup); }
+                    throw;
+                }
             });
             SubscribeToolExecutionCompleted(window,node,query,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);

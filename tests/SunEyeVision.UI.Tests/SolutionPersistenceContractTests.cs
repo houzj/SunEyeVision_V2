@@ -133,10 +133,10 @@ public sealed class SolutionPersistenceContractTests
     public void Relative_resource_requires_base_and_never_changes_reference()
     {
         var resolver = new SolutionResourceResolver(Path.GetTempPath());
-        var resource = resolver.Resolve("FilePath", "missing/sub.png", SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileRead);
+        var resource = resolver.Resolve("FilePath", "missing/sub.png", SunEyeVision.Plugin.Contracts.ResourcePurpose.FileRead);
         Assert.Equal("missing/sub.png", resource.Reference);
         Assert.True(Path.IsPathRooted(resource.Address));
-        Assert.Throws<InvalidDataException>(() => new SolutionResourceResolver(null).Resolve("FilePath", "sub.png", SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileRead));
+        Assert.Throws<InvalidDataException>(() => new SolutionResourceResolver(null).Resolve("FilePath", "sub.png", SunEyeVision.Plugin.Contracts.ResourcePurpose.FileRead));
     }
 
     [Fact]

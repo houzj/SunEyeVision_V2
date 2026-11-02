@@ -20,7 +20,7 @@ internal sealed class ImageSourceDebugCursor
     private long _generation;
     private bool _active;
 
-    internal ImageSourceRunInput Prepare(string workflowId,ImageSourcePolicy policy,SolutionResourceResolver resolver)
+    internal ImageSourceHostInputPreparer Prepare(string workflowId,ImageSourcePolicy policy,SolutionResourceResolver resolver)
     {
         var plan=ImageSourcePolicy.CreateLocalPlan(policy.NodeId,policy,resolver);
         if(plan.Entries.Count==0)
@@ -42,9 +42,9 @@ internal sealed class ImageSourceDebugCursor
             }
             var ticket=_sequences.GetInputs(workflowId,_generation).Single();
             _active=true;
-            return new ImageSourceRunInput(ticket.Entry?.Address??string.Empty,policy.SNInitialValue)
+            return new ImageSourceHostInputPreparer(ticket.Entry?.Address??string.Empty,policy.SNInitialValue)
             {
-                LocalReadAdmission=identity=>_sequences.AcceptRead(ticket,identity.RequestId,true,identity.CancellationToken).Entry.Address,
+                LocalReadAdmission=(identity,cancellation)=>_sequences.AcceptRead(ticket,identity.RequestId,true,cancellation).Entry.Address,
                 ReadFinished=()=>Finish(ticket)
             };
         }

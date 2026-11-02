@@ -47,7 +47,7 @@ internal static class SolutionFileCommit
         internal bool Matches(string path) => File.Exists(path) && this == Read(path);
     }
 
-    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null)
+    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null, string? expectedTargetHash = null)
     {
         destination = Path.GetFullPath(destination);
         recovery = Path.GetFullPath(recovery);
@@ -55,7 +55,45 @@ internal static class SolutionFileCommit
         lock (Gates.GetOrAdd(destination, _ => new object()))
         {
             ThrowIfRecoveryRequired(destination);
-            return WriteLocked(destination, recovery, json, overwrite, boundary);
+            Stamp? expectedTarget = null;
+            if (expectedTargetHash is not null)
+            {
+                if (!File.Exists(destination)) throw new IOException("方案在验证后消失，不会覆盖。");
+                expectedTarget = Stamp.Read(destination);
+                if (!string.Equals(expectedTarget.Hash, expectedTargetHash, StringComparison.Ordinal))
+                    throw new IOException("方案在验证后发生变化，不会覆盖。");
+            }
+            return WriteLocked(destination, recovery, json, overwrite, boundary, expectedTarget);
+        }
+    }
+
+    /// <summary>Restore a previously validated snapshot without mutating its source backup.
+    /// Uses the same target gate and compensation logic as ordinary saves.</summary>
+    internal static string? Restore(string destination, string sourceRecovery, string json,
+        string expectedDestinationHash, string expectedRecoveryHash, Action<string>? boundary = null)
+    {
+        destination=Path.GetFullPath(destination); sourceRecovery=Path.GetFullPath(sourceRecovery);
+        if (AtomicJsonFile.SamePath(destination,sourceRecovery)) throw new IOException("Target and recovery must differ.");
+        lock (Gates.GetOrAdd(destination,_=>new object()))
+        {
+            ThrowIfRecoveryRequired(destination);
+            if (!File.Exists(destination) || !File.Exists(sourceRecovery)) throw new IOException("方案或恢复文件不存在，不会覆盖。");
+            var target=Stamp.Read(destination); var source=Stamp.Read(sourceRecovery);
+            if (!string.Equals(target.Hash,expectedDestinationHash,StringComparison.Ordinal) ||
+                !string.Equals(source.Hash,expectedRecoveryHash,StringComparison.Ordinal))
+                throw new IOException("方案或恢复文件在验证后发生变化，不会覆盖。");
+            var privateRecovery=Path.Combine(Path.GetDirectoryName(destination)!,
+                "."+Path.GetFileName(destination)+"."+Guid.NewGuid().ToString("N")+".restore-backup");
+            var preserve=false; string? warning=null, cleanupWarning=null;
+            try { warning=WriteLocked(destination,privateRecovery,json,true,boundary,target,sourceRecovery,source); }
+            catch (SolutionSaveRecoveryRequiredException) { preserve=true; throw; }
+            finally
+            {
+                if (!preserve) try { if (File.Exists(privateRecovery)) File.Delete(privateRecovery); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                { cleanupWarning="恢复成功，临时备份待清理："+privateRecovery+"；"+error.Message; }
+            }
+            return warning is null ? cleanupWarning : cleanupWarning is null ? warning : warning+"；"+cleanupWarning;
         }
     }
 
@@ -79,7 +117,8 @@ internal static class SolutionFileCommit
         }
     }
 
-    private static string? WriteLocked(string destination, string recovery, string json, bool overwrite, Action<string>? boundary)
+    private static string? WriteLocked(string destination, string recovery, string json, bool overwrite, Action<string>? boundary,
+        Stamp? expectedTarget=null,string? expectedSourcePath=null,Stamp? expectedSource=null)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         string Temporary(string path) => Path.Combine(Path.GetDirectoryName(path)!,
@@ -103,12 +142,15 @@ internal static class SolutionFileCommit
             }
             if (!File.Exists(destination))
             {
+                if (expectedTarget is not null) throw new IOException("方案在恢复前已消失，不会覆盖。");
                 File.Move(pending, destination);
                 committed = true;
                 return null;
             }
             if (!overwrite) throw new IOException("目标方案已存在，不会覆盖：" + destination);
             previousTarget = Stamp.Read(destination);
+            if (expectedTarget is not null && previousTarget != expectedTarget)
+                throw new IOException("方案在恢复前发生变化，不会覆盖。");
             var preflightTarget = previousTarget;
             previousRecovery = File.Exists(recovery) ? Stamp.Read(recovery) : null;
             // Prepare central-volume storage before changing either visible file.
@@ -119,10 +161,16 @@ internal static class SolutionFileCommit
             if (!previousTarget.Matches(destination) || !previousTarget.Matches(pendingRecovery))
                 throw new IOException("方案在准备保存时被外部修改，未提交。");
             boundary?.Invoke("before-target-replace");
+            if (expectedTarget is not null && !expectedTarget.Matches(destination))
+                throw new IOException("方案在恢复提交前发生变化，不会覆盖。");
+            if (expectedSource is not null && !expectedSource.Matches(expectedSourcePath!))
+                throw new IOException("恢复文件在提交前发生变化，不会覆盖。");
             File.Replace(pending, destination, oldTarget, ignoreMetadataErrors: true);
             targetReplaced = true;
             previousTarget = Stamp.Read(oldTarget);
             boundary?.Invoke("target-replaced");
+            if (expectedSource is not null && !expectedSource.Matches(expectedSourcePath!))
+                throw new IOException("恢复文件在提交期间发生变化，恢复原方案。");
             RequireOwnPayload("目标替换后");
             // The same-volume backup is the actual replaced file, not a later live read.
             if (previousTarget != preflightTarget) throw new IOException("目标在替换时被外部修改；恢复实际被替换的盘前态。");

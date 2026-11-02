@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Workflow;
 
 /// <summary>一次根工作流运行的冻结输入。</summary>
 /// <remarks>冻结数据不能引用方案设计节点；宿主接纳能力只允许按原始运行身份提交纯参数值。</remarks>
-public sealed class WorkflowRunRequest
+public sealed class WorkflowRunRequest : IDisposable
 {
     public WorkflowRunRequest(
         string workflowId,
@@ -23,7 +24,7 @@ public sealed class WorkflowRunRequest
         IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeBindingOverrides = null,
         SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null,
         SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? communicationOutputs = null,
-        IReadOnlyDictionary<string,ImageSourceRunInput>? sourceInputs = null)
+        IReadOnlyDictionary<string,IHostInputPreparer>? hostInputs = null)
     {
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("工作流 ID 不能为空。", nameof(workflowId));
@@ -44,13 +45,13 @@ public sealed class WorkflowRunRequest
         NodeBindingOverrides = (nodeBindingOverrides ?? new Dictionary<string, IReadOnlyDictionary<string, object?>>())
             .ToDictionary(p => p.Key, p => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(p.Value));
         CameraFrames = new Dictionary<string, CameraFrame>(cameraFrames ?? new Dictionary<string, CameraFrame>());
-        var sources=new Dictionary<string,ImageSourceRunInput>(StringComparer.Ordinal);
-        foreach(var pair in sourceInputs??new Dictionary<string,ImageSourceRunInput>())
+        var sources=new Dictionary<string,IHostInputPreparer>(StringComparer.Ordinal);
+        foreach(var pair in hostInputs??new Dictionary<string,IHostInputPreparer>())
         {
-            if(string.IsNullOrWhiteSpace(pair.Key)||pair.Value is null)throw new ArgumentException("图像源运行输入缺少节点身份或值。",nameof(sourceInputs));
+            if(string.IsNullOrWhiteSpace(pair.Key)||pair.Value is null)throw new ArgumentException("宿主输入缺少节点身份或值。",nameof(hostInputs));
             sources.Add(pair.Key,pair.Value);
         }
-        SourceInputs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,ImageSourceRunInput>(sources);
+        HostInputs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,IHostInputPreparer>(sources);
     }
 
     private IReadOnlyList<WorkflowGlobalProducerOperation> _globalProducers=Array.Empty<WorkflowGlobalProducerOperation>();
@@ -73,12 +74,21 @@ public sealed class WorkflowRunRequest
     public string WorkflowId { get; }
     public WorkflowRunConfiguration? Configuration { get; init; }
     public SunEyeVision.Plugin.Runtime.ToolExecutionOwner? ExecutionOwner { get; init; }
-    public SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? ResourcePaths { get; init; }
+    public SunEyeVision.Plugin.Contracts.IResourcePathResolver? ResourcePaths { get; init; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; }
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }
     /// <summary>Immutable source selections, separate from persistent settings and parameter bindings.</summary>
-    public IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs { get; }
+    public IReadOnlyDictionary<string,IHostInputPreparer> HostInputs { get; }
+    private int _disposed;
+    public void Dispose()
+    {
+        if(System.Threading.Interlocked.Exchange(ref _disposed,1)!=0)return;
+        var errors=new List<Exception>();
+        foreach(var input in new HashSet<IHostInputPreparer>(HostInputs.Values,System.Collections.Generic.ReferenceEqualityComparer.Instance))
+            try{input.Dispose();}catch(Exception error){errors.Add(error);}
+        if(errors.Count>0)throw new AggregateException("宿主输入释放失败。",errors);
+    }
     public IVisionImage? InputImage { get; }
     public IReadOnlyDictionary<string, object?> GlobalVariables { get; }
     public IReadOnlyDictionary<string, object> RuntimeParameters { get; }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -47,27 +47,6 @@ public class RunContext
     public RunContext(List<GlobalVariable> globalVariables)
     {
         _globalVariables = globalVariables ?? new List<GlobalVariable>();
-    }
-
-    /// <summary>
-    /// 获取节点参数
-    /// </summary>
-    /// <remarks>
-    /// 参数已嵌入在节点中，直接从节点获取
-    /// </remarks>
-    public ToolParameters? GetNodeParameters(string nodeId)
-    {
-        var node = Workflow.GetNode(nodeId);
-        return node?.Parameters;
-    }
-
-    /// <summary>
-    /// 获取节点参数（指定类型）
-    /// </summary>
-    public T? GetNodeParameters<T>(string nodeId) where T : ToolParameters
-    {
-        var parameters = GetNodeParameters(nodeId);
-        return parameters as T;
     }
 
     /// <summary>
@@ -168,7 +147,7 @@ public class RunContext
         // 验证所有启用的节点都有参数
         foreach (var node in GetEnabledNodes())
         {
-            if (node.Parameters == null)
+            if (node.RuntimeConfiguration == null)
             {
                 errors.Add($"节点 {node.Name} ({node.Id}) 没有参数配置");
             }

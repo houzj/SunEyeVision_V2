@@ -12,7 +12,6 @@ internal static class SolutionDocumentBindingValidator
         foreach (var node in workflow.Nodes)
         {
             if (node.RuntimeConfiguration is null) throw new JsonException("A current node requires an admitted Runtime configuration.");
-            if (node.ParamSettings.Settings.Any()) throw new JsonException("Runtime nodes reject SDK ParamSettings.");
             var issues = RuntimeInputBindings.Validate(workflow, node, workflow.Id, validateAdmission);
             if (issues.Count > 0) throw new JsonException(issues[0].Message);
         }

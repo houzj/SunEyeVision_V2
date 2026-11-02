@@ -13,7 +13,7 @@ namespace SunEyeVision.Workflow;
 /// <summary>One workflow plan's frozen declarations and admitted attempts. No latest-result identity inference.</summary>
 internal sealed class WorkflowBindingContext : IDisposable
 {
-    private sealed record Declaration(BindingSource Source,IReadOnlyDictionary<string,OutputVariable> Outputs,bool Complete);
+    private sealed record Declaration(BindingSource Source,IReadOnlyDictionary<string,Port> Outputs,IReadOnlyDictionary<string,DeclaredOutputField> Fields,bool Complete);
     private readonly Dictionary<string,Declaration> _declarations;
     private readonly Dictionary<string,AlgorithmNode> _nodes;
     private readonly IReadOnlyDictionary<BindingNodeId,RunIdentity> _expected;
@@ -30,101 +30,20 @@ internal sealed class WorkflowBindingContext : IDisposable
 
     private static Dictionary<string,Declaration> CaptureDeclarations(Workflow workflow,string scope,Guid executionScope)
     {
-        var reader=new OutputBindingChangeService();
         var result=new Dictionary<string,Declaration>(StringComparer.Ordinal);
         foreach(var node in workflow.Nodes)
         {
-            var outputs=new Dictionary<string,OutputVariable>(StringComparer.Ordinal);
-            var ports=new List<Port>();
-            var complete=true;
-            foreach(var output in reader.ReadContract(node)??Array.Empty<OutputVariable>())
-            {
-                if(output.Kind!=OutputVariableKind.Data)continue;
-                try
-                {
-                    var port=BindingClrAdapter.DescribeOutput(output);
-                    ports.Add(port);outputs.Add(port.Id,output);
-                }
-                catch(ArgumentException)
-                {
-                    complete=false;
-                    // An unsupported declaration is never inferred from a value. Its existing dedicated
-                    // adapter remains responsible until its explicit canonical bridge is implemented.
-                }
-            }
-            var schema=new ToolSchema(Array.Empty<Port>(),ports,outputDisplay:ports.Select(port=>
-            {
-                var output=outputs[port.Id];
-                var name=!string.IsNullOrWhiteSpace(output.DisplayName)?output.DisplayName:
-                    !string.IsNullOrWhiteSpace(output.Name)?output.Name:port.Id;
-                return new OutputDisplayNode(port.Id,name,output.DisplayMembers);
-            }));
-            result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),new ReadOnlyDictionary<string,OutputVariable>(outputs),complete));
+            var declaration=new OutputBindingChangeService().ReadContract(node)??throw new InvalidOperationException("节点缺少已准入输出声明："+node.Id);
+            var schema=new ToolSchema(Array.Empty<Port>(),declaration.Outputs,outputDisplay:declaration.OutputDisplay);
+            var outputs=new ReadOnlyDictionary<string,Port>(schema.Outputs.ToDictionary(port=>port.Id,StringComparer.Ordinal));
+            var projection=node.RuntimeConfiguration!.ResultProjection;
+            var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
+                ?projection.Columns.Where(column=>column.Value is not null).Select(column=>column.Value!.PortId).ToHashSet(StringComparer.Ordinal):null;
+            var fields=new ReadOnlyDictionary<string,DeclaredOutputField>(schema.Outputs.ToDictionary(port=>port.Id,
+                port=>new DeclaredOutputField(port.Id,schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,"",null,null,null,shown is null||shown.Contains(port.Id)),StringComparer.Ordinal));
+            result.Add(node.Id,new(new(new(scope,node.Id),executionScope,schema,0),outputs,fields,true));
         }
         return result;
-    }
-
-    private static BindingCompilation? CompileSetting(WorkflowNodeBase node,ParamSetting setting,
-        IReadOnlyDictionary<string,Declaration> declarations,BindingScopeSnapshot scope)
-    {
-        if(setting.BindingType!=BindingType.Binding)return null;
-        if(node.RuntimeConfiguration is { } runtime)
-        {
-            if(!string.IsNullOrEmpty(setting.RebindingReason))return Unavailable("rebind-required",setting.RebindingReason);
-            var target=runtime.BindingTargets.SingleOrDefault(port=>port.Id==setting.ParameterName);
-            if(target is null)return Unavailable("target-declaration","Unknown Runtime input port.");
-            if((target.EditModes&FieldEditModes.Reference)==0)return Unavailable("target-mode","Runtime input does not allow a reference.");
-            if(setting.ReferenceExpression is null)return Unavailable("target-reference","Runtime input requires an explicit semantic reference.");
-            try{return new ParameterBindingService().CompileBinding(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression),target,scope,setting.Conversion);}
-            catch(System.Text.Json.JsonException error){return Unavailable("reference",error.Message);}
-        }
-        var explicitReference=setting.ReferenceExpression is not null;
-        var property=node.Parameters.GetType().GetProperty(setting.ParameterName);
-        var declared=(node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields().SingleOrDefault(field=>field.StoragePath==setting.ParameterName);
-        var roi=RoiBindingInputs.Describe(node.Parameters).SingleOrDefault(slot=>slot.Key==setting.ParameterName);
-        if(declared is null&&roi is null&&(property is not {CanWrite:true} || !BindingClrAdapter.TryDescribe(property.PropertyType,out _,out _)))
-            return explicitReference?Unavailable("target-declaration","This input has no canonical writable-property declaration."):null;
-        if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
-            return Unavailable("target-mode","This declared field does not allow a reference.");
-        OutputReference reference;
-        try
-        {
-            if(explicitReference)reference=BindingReferenceSerializer.Deserialize(setting.ReferenceExpression!);
-            else
-            {
-                if(setting.SourceNodeId is null||setting.SourceNodeId.StartsWith("__",StringComparison.Ordinal))return null;
-                if(setting.SourceWorkflowId is {Length:>0} declaredScope && declaredScope!=scope.Consumer.ScopeId)
-                    return Unavailable("scope","Source is outside the consumer workflow.");
-                if(!declarations.TryGetValue(setting.SourceNodeId,out var source))return Unavailable("source","Source declaration is unavailable.");
-                var path=PropertyPathParser.ParsePropertyPath(setting.SourceProperty??"");
-                if(path.Count==0)return Unavailable("path","Source field is missing.");
-                var output=source.Outputs.Values.FirstOrDefault(o=>setting.SourceFieldId.HasValue
-                    ?o.FieldId==setting.SourceFieldId:string.Equals(o.Name,path[0].propertyName,StringComparison.OrdinalIgnoreCase));
-                if(output is null)return null; // Explicit geometry/resource adapters are not silently reinterpreted here.
-                if(path.Any(part=>part.typeFilter!=null)||path.Skip(1).Any(part=>part.arrayIndex.HasValue))return null;
-                var port=source.Source.Schema.Outputs.Single(p=>p.Id==BindingClrAdapter.OutputPortId(output));
-                BindingSelection selection=path[0].arrayIndex is >=0
-                    ?port.Type.Shape!=ValueShape.Sequence&&path[0].arrayIndex==0?BindingSelection.All:new BindingSelection.AtConstant(path[0].arrayIndex!.Value)
-                    :BindingSelection.All;
-                reference=new(setting.SourceNodeId,port.Id,port.Type,path.Skip(1).Select(part=>part.propertyName),selection,scope.Consumer.ScopeId,port.Storage);
-            }
-            var target=roi?.Target(reference)??declared?.Port??BindingClrAdapter.DescribePort(setting.ParameterName,property!.PropertyType);
-            return new ParameterBindingService().CompileBinding(reference,target,scope,setting.Conversion);
-        }
-        catch(Exception fault) when(fault is System.Text.Json.JsonException or ArgumentException or InvalidOperationException or FormatException)
-        {return Unavailable("reference",fault.Message);}
-        static BindingCompilation Unavailable(string code,string message)=>new(BindingCompatibility.Unresolved,null,new(code,message));
-    }
-
-    internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,ParamSetting setting,string scopeId)
-    {
-        var declarations=CaptureDeclarations(workflow,scopeId,Guid.Empty);
-        var scope=new BindingScopeSnapshot(new(scopeId,node.Id),workflow.ExecutionOwner.Id,0,
-            declarations.Values.Select(d=>d.Source),declarations.Values.Select(d=>d.Source.Node),
-            Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
-        var compiled=CompileSetting(node,setting,declarations,scope);
-        return compiled is null?new(BindingCompatibility.Unresolved,"Binding declaration is unavailable.")
-            :new(compiled.Compatibility,compiled.Diagnostic?.Message??"适配");
     }
     internal static BindingValidation ValidateTyped(Workflow workflow,WorkflowNodeBase node,string fieldId,ReferenceSetting setting,string scopeId,Solution? solution=null)
     {
@@ -256,20 +175,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                 node.CompiledBindings=new ReadOnlyDictionary<string,BindingPlan>(plans);
                 continue;
             }
-            var settings=node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).GroupBy(setting=>setting.ParameterName,StringComparer.Ordinal);
-            foreach(var candidates in settings)
-            {
-                if(candidates.Count()!=1)throw new InvalidOperationException("ROI_BINDING_DUPLICATE: 参数绑定存在重复存储："+candidates.Key);
-                var setting=candidates.Single();
-                if(!BindingInputCatalog.IsInputActive(node.Parameters,setting.ParameterName))continue;
-                if(graph.InputIssues.TryGetValue(node.Id,out var existingIssues)&&existingIssues.Any(i=>i.InputKey==setting.ParameterName))continue;
-                var compiled=CompileSetting(node,setting,_declarations,compilationScope);
-                if(compiled is null)continue;
-                if(compiled.Plan is null)errors.Add(new(setting.ParameterName,setting.ParameterName,compiled.Diagnostic?.Message??"Binding is not ready."));
-                else plans.Add(setting.ParameterName,compiled.Plan);
-            }
-            if(errors.Count>0)additional.Add(node.Id,errors);
-            node.CompiledBindings=new ReadOnlyDictionary<string,BindingPlan>(plans);
+            throw new InvalidOperationException("节点缺少已准入 Runtime 配置。");
         }
         graph.AddInputIssues(additional);
         // Freeze demand from this scope's compiled consumers before any producer starts.
@@ -278,15 +184,6 @@ internal sealed class WorkflowBindingContext : IDisposable
         foreach(var consumer in _nodes.Values.Where(n=>n.IsEnabled))
         {
             foreach(var plan in consumer.CompiledBindings.Values)CollectDemand(plan.Source);
-            // Existing image/geometry source slots have dedicated CLR adapters rather than a
-            // writable canonical property. Their frozen relation descriptors are still real consumers.
-            foreach(var input in BindingRelationCatalog.DescribeExecution(consumer).Where(i=>i.Active&&!i.InternalProjection))
-            {
-                if(BindingRelationCatalog.GetReference(consumer,input.Key) is not null)continue;
-                if(BindingRelationCatalog.SourceWorkflowId(consumer,input,_scope)!=_scope)continue;
-                if(BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
-                    CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());
-            }
         }
         // Published variables and subroutine returns are consumers too, even when no local
         // algorithm node reads this port. Only the admitted configuration/catalog supplies demand.
@@ -296,12 +193,6 @@ internal sealed class WorkflowBindingContext : IDisposable
                     &&_declarations.TryGetValue(variable.ProducerNodeId,out var variableSource)
                     &&variableSource.Outputs.ContainsKey(variable.ProducerField))
                     variableDemand.Add(new(variable.ProducerField));
-        foreach(var caller in session.Configuration?.Definitions??Array.Empty<Workflow>())
-            foreach(var consumer in caller.Nodes.Where(n=>n.IsEnabled))
-                foreach(var input in BindingRelationCatalog.DescribeExecution(consumer).Where(i=>i.Active&&i.InternalProjection))
-                    if(BindingRelationCatalog.SourceWorkflowId(consumer,input,caller.Id)==_scope
-                        &&BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
-                        CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());
         foreach(var producer in _globalProducers)
             if(demands.TryGetValue(producer.Source.NodeId,out var requested))requested.Add(new(producer.Source.PortId,producer.Source.MemberFieldPath));
         foreach(var node in _nodes.Values)
@@ -313,19 +204,11 @@ internal sealed class WorkflowBindingContext : IDisposable
                 list.Add(new(reference.Reference.PortId,reference.Reference.MemberFieldPath));
             if(reference.Index is { } index)CollectDemand(index);
         }
-        void CollectDeclaredDemand(string sourceId,string path,Guid? fieldId=null)
-        {
-            if(!demands.TryGetValue(sourceId,out var list)||!_declarations.TryGetValue(sourceId,out var source))return;
-            var root=PropertyPathParser.ExtractPropertyName(path.Split('.')[0]);
-            var output=source.Outputs.Values.FirstOrDefault(o=>fieldId is Guid id?o.FieldId==id:
-                string.Equals(o.Name,root,StringComparison.OrdinalIgnoreCase));
-            if(output is not null)list.Add(new(BindingClrAdapter.OutputPortId(output)));
-        }
         var expected=new Dictionary<BindingNodeId,RunIdentity>();
         foreach(var node in _nodes.Values)
         {
             node.AdmittedIdentity=owner.Begin(_scope+"/"+node.Id,scope.RunId,FoundationContract.Major+"."+FoundationContract.Minor,session.CancellationToken,
-                (node.Parameters as IExecutionAdmissionProvider)?.ExecutionAdmission,session.RunId);
+                rootRunId:session.RunId);
             node.BindingContext=this;
             node.BindingOutputSchema=_declarations[node.Id].Source.Schema;
             expected.Add(new(_scope,node.Id),node.AdmittedIdentity.ToInvocationIdentity(node.Id));
@@ -362,8 +245,7 @@ internal sealed class WorkflowBindingContext : IDisposable
     internal Func<ToolOutcome,IDisposable,double,DeclaredOutputSnapshot> PrepareResult(AlgorithmNode node)
     {
         var declaration=_declarations[node.Id];
-        var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
-            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        var fields=declaration.Fields;
         var identity=node.AdmittedIdentity!;var nodeId=node.Id;
         return (outcome,resources,elapsed)=>DeclaredOutputSnapshot.Capture(declaration.Source.Schema,declaration.Source.SchemaRevision,
             identity,nodeId,outcome,resources,elapsed,fields,_scope,declaration.Complete);
@@ -371,8 +253,7 @@ internal sealed class WorkflowBindingContext : IDisposable
     internal DeclaredOutputSnapshot WithoutResult(AlgorithmNode node,ExecutionStatus status,IEnumerable<Diagnostic> diagnostics)
     {
         var declaration=_declarations[node.Id];
-        var fields=declaration.Outputs.ToDictionary(item=>item.Key,item=>new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
-            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        var fields=declaration.Fields;
         return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,
             node.AdmittedIdentity!.ToInvocationIdentity(node.Id),status,diagnostics,fields,_scope,declaration.Complete,node.AdmittedIdentity);
     }

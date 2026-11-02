@@ -149,25 +149,13 @@ public static class WorkflowDefinitionValidator
 
         foreach (var node in workflow.Nodes)
         {
-            foreach (var setting in validateBindings
-                ? node.ParamSettings?.GetDynamicSettings() ?? Enumerable.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting>()
-                : Enumerable.Empty<SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting>())
-            {
-                if (string.IsNullOrWhiteSpace(setting.SourceNodeId) ||
-                    string.IsNullOrWhiteSpace(setting.SourceProperty))
-                {
-                    errors.Add($"节点 {node.Name} 的参数 {setting.ParameterName} 绑定定义不完整。");
-                    continue;
-                }
-
-                if (setting.SourceNodeId != "__GlobalVars__" &&
-                    setting.SourceNodeId != "__SubroutineInputs__" &&
-                    !known.Contains(setting.SourceNodeId))
-                {
-                    errors.Add($"节点 {node.Name} 的参数 {setting.ParameterName} 引用了不存在的源节点 {setting.SourceNodeId}。");
-                }
-            }
-
+            if(validateBindings && node.RuntimeConfiguration is null)
+                errors.Add($"节点 {node.Name} 缺少 Runtime 配置。");
+            else if(validateBindings)
+                foreach(var (field,setting) in BindingRelationCatalog.References(node,true))
+                    foreach(var source in WorkflowBindingContext.ReferenceNodes(setting.Reference,workflow.Id))
+                        if(source.ScopeId==workflow.Id&&!known.Contains(source.NodeId))
+                            errors.Add($"节点 {node.Name} 的参数 {field} 引用了不存在的源节点 {source.NodeId}。");
             if (!string.IsNullOrWhiteSpace(node.SubroutineId))
             {
                 if (string.Equals(node.SubroutineId, workflow.Id, StringComparison.Ordinal))

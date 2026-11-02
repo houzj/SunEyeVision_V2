@@ -19,12 +19,7 @@ namespace SunEyeVision.Workflow
     /// </summary>
     public partial class AlgorithmNode : WorkflowNodeBase
     {
-        /// <summary>
-        /// 工具实例
-        /// </summary>
-        public IToolPlugin? Tool { get; set; }
-
-        /// <summary>运行请求提供的共享采集服务，不属于节点持久化状态。</summary>
+/// <summary>运行请求提供的共享采集服务，不属于节点持久化状态。</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public IResourcePathResolver? ResourcePaths { get; set; }
         public ICameraCaptureService? CameraCaptureService { get; set; }
@@ -60,11 +55,6 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public DeclaredOutputSnapshot? LastToolResult { get; private set; }
 
-        public AlgorithmNode(string id, string name, string dispName, IToolPlugin tool)
-            : base(id, name, dispName, "Algorithm")
-        {
-            Tool = tool;
-        }
         public AlgorithmNode(string id,string name,string dispName,RuntimeToolConfiguration configuration)
             :base(id,name,dispName,configuration.ToolId)
         {RuntimeConfiguration=configuration.Copy();}
@@ -131,36 +121,6 @@ namespace SunEyeVision.Workflow
         }
 
 
-
-        /// <summary>
-        /// 获取强类型参数
-        /// </summary>
-        /// <remarks>
-        /// 直接返回节点的 Parameters 属性，避免反射转换开销。
-        /// 参数已由工作流引擎在创建节点时设置正确的类型。
-        /// </remarks>
-        private ToolParameters GetTypedParameters()
-        {
-            // 如果参数已经是正确的类型，直接返回
-            if (Tool != null && Parameters.GetType() == Tool.ParamsType)
-                return Parameters;
-
-            // ✅ 如果参数类型不匹配，直接抛出异常
-            throw new InvalidOperationException(
-                $"参数类型不匹配。工具 {ToolType} 期望 {Tool.ParamsType?.Name ?? "null"}, 实际为 {Parameters.GetType().Name}");
-        }
-
-        private static ToolParameters CreateExecutionParameters(ToolParameters designParameters)
-        {
-            if (designParameters.GetType().GetConstructor(Type.EmptyTypes) == null)
-                return designParameters;
-
-            if (Activator.CreateInstance(designParameters.GetType()) is not ToolParameters runtimeParameters)
-                return designParameters;
-
-            runtimeParameters.CopyFrom(designParameters);
-            return runtimeParameters;
-        }
 
         /// <summary>
         /// 将 DeclaredOutputSnapshot 转换为 AlgorithmResult

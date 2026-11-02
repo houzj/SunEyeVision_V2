@@ -34,7 +34,7 @@ internal static class ShellMenuCatalog
         new ShellMenuEntry("tools","工具(_T)",Children:new[]{Disabled("calibrate","一键标定引导")}),
         new ShellMenuEntry("system","系统",Children:new[] {
             Disabled("log","日志"),
-            new ShellMenuEntry("communication","通信设置","ShowCommunicationManagerCommand",ToolGroup:"group2",Priority:2,ToolTip:"通讯管理",Icon:Native+"ic_通信管理_normal.png",DisabledIcon:Native+"ic_通信管理_disable.png"),
+            new ShellMenuEntry("communication","通信设置","ShowCommunicationManagerCommand",ToolGroup:"group2",Priority:2,ToolTip:"通信配置尚未迁移：缺少通信字段的正式来源身份与新控件接入",Icon:Native+"ic_通信管理_normal.png",DisabledIcon:Native+"ic_通信管理_disable.png"),
             Disabled("light","光源设置"),
             new ShellMenuEntry("camera","相机设置","ShowCameraManagerCommand",ToolGroup:"group1",Priority:0,ToolTip:"相机管理",Icon:Native+"ic_topbar_camera_normal.png",DisabledIcon:Native+"ic_topbar_camera_disable.png") }),
         new ShellMenuEntry("help","帮助(_H)",Children:new[] {

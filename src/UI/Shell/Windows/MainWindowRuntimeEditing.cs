@@ -4,8 +4,6 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.UI.Services.Editing;
 
 namespace SunEyeVision.UI.Shell.Windows;
@@ -38,11 +36,9 @@ public partial class MainWindowViewModel
         }
         foreach(var edge in incoming.Where(edge=>candidates.Contains(edge.SourceNodeId)))
         foreach(var id in new[]{edge.SourceNodeId})
-        foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<Plugin.SDK.Execution.Results.OutputVariable>())
+        foreach(var schema in new[]{query.GetSchema(id)}.OfType<Plugin.Contracts.ToolSchema>())
+        foreach(var port in schema.Outputs)
         {
-            if(output.Kind!=Plugin.SDK.Execution.Results.OutputVariableKind.Data)continue;
-            Plugin.Contracts.Port port;
-            try{port=Plugin.SDK.Execution.Parameters.BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
             var members=ImageMembers(port.Type,Array.Empty<string>()).FirstOrDefault();
             if(members is null)continue;
             var reference=new Plugin.Contracts.OutputReference(id,port.Id,port.Type,members,scopeId:query.WorkflowId,storage:port.Storage);
@@ -50,7 +46,7 @@ public partial class MainWindowViewModel
             // A present setting (including a broken automatic reference) is never silently replaced.
             node.RuntimeConfiguration=runtime.WithFieldSettings(new System.Collections.Generic.Dictionary<string,Plugin.Contracts.ParameterSetting>{
                 [target]=new Plugin.Contracts.ReferenceSetting(reference,OriginId:"connection:"+edge.Id)});
-            AddLog($"自动绑定图像源: {node.Name} → {output.DisplayName??output.Name}");return;
+            AddLog($"自动绑定图像源: {node.Name} → {schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id}");return;
         }
     }
     private bool InitializeRuntimeEditor(object target,Shared.WorkflowNode node)

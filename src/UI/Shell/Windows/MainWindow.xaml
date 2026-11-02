@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI"
         xmlns:windows="clr-namespace:SunEyeVision.UI.Shell.Windows"
-        xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK"
         xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
         xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
         xmlns:convertersPath="clr-namespace:SunEyeVision.UI.Converters.Path"
@@ -16,7 +15,6 @@
         xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
 
         xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
-        xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
         Title="太阳眼视觉 - 机器视觉平台" Height="900" Width="1600"

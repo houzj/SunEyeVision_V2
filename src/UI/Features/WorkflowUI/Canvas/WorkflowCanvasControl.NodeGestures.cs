@@ -29,7 +29,7 @@ public partial class WorkflowCanvasControl
 
     private static int VmIdentity(object? value) => value == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
     private string VmGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{VmIdentity(tab.WorkflowNodes)}:{VmIdentity(tab.WorkflowConnections)}|"+string.Join(";",
-        tab.WorkflowNodes.Select(n => $"{n.Id}:{VmIdentity(n)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}:{VmIdentity(n.Parameters)}:{VmIdentity(n.ParamSettings)}")) + "|" +
+        tab.WorkflowNodes.Select(n => $"{n.Id}:{VmIdentity(n)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}")) + "|" +
         string.Join(";", tab.WorkflowConnections.Select(c => $"{c.Id}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}"));
     private bool ValidVmNodeMove(VmNodeMoveSession session) => CanEditVmCanvas &&
         ReferenceEquals(DataContext, session.Owner) && ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, session.Tab) &&

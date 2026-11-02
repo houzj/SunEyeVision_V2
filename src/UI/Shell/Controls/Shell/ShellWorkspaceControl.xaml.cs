@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -649,6 +649,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             OpenSubroutineParameterDialog(selectedTab);
         }
 
+#if SUNEYE_GROUP_LEGACY
         /// <summary>
         /// 统一的子程序调试窗口打开逻辑（消除两个入口点的重复代码）
         /// </summary>
@@ -756,6 +757,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
         }
 
+#endif
+        private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
+            => _viewModel?.LogWarning("Group 参数编辑尚未迁移，当前不可用。", "Navigation");
+        public void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
+            => _viewModel?.LogWarning("Group 参数编辑尚未迁移，当前不可用。", "Navigation");
         #endregion
 
         private void WorkspaceScaleRequested(double scale)

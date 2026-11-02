@@ -44,7 +44,6 @@ using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -409,15 +408,7 @@ namespace SunEyeVision.UI.Shell.Windows
                         // 未运行也从 _typeCache 显示属性表结构
                         DeclaredOutputSnapshot? tempResult = null;
 
-                        // 动态工具：从 Parameters 输出契约构造临时结果（设计态）
-                        if (value.Parameters is IOutputContractProvider provider)
-                        {
-                            var contract = provider.GetOutputContract();
-                            if (contract.Count > 0)
-                                tempResult = null;
-                        }
-
-                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id, value.Parameters);
+                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id);
 
                         // 清空旧节点残留在图像上的图形覆盖，防止显示错位
                         _nodeResultManager.ClearResultGraphics();
@@ -935,7 +926,7 @@ SplitterPosition = position;
             // 管理器
             ShowGlobalVariableManagerCommand = new RelayCommand(ExecuteShowGlobalVariableManager);
             ShowCameraManagerCommand = new RelayCommand(ExecuteShowCameraManager);
-            ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager);
+            ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager, () => false);
             // The default Tab is created silently before subscriptions; bind its editable definition now.
             if (solutionManager.CurrentSolution == null) SolutionApplication.CreateNew();
             else LoadSolutionToWorkflowTabs(solutionManager.CurrentSolution);
@@ -1580,26 +1571,12 @@ SplitterPosition = position;
                 if (rootWorkflow == null)
                     throw new InvalidOperationException($"SaveSolutionData: 引擎中未找到根工作流 (ID: {tab.Id})");
 
-                // 调试窗口绑定写入的是打开窗口所持有的 UI 节点。保存前按稳定节点
-                // ID 显式同步到引擎节点，避免 UI/引擎实例不一致时 ParamSettings
-                // 只留在内存中的 UI 对象，重启后绑定退回常量。
+                // 编辑由方案会话统一提交；不在保存时复制旧参数模型。
                 foreach (var uiNode in tab.WorkflowNodes)
                 {
-                    if (uiNode is WorkflowNode uiDiagnosticNode)
-                        LogNodeStorageIdentity(uiDiagnosticNode, "方案保存前");
-
-                    var engineNode = rootWorkflow.Nodes.FirstOrDefault(n => n.Id == uiNode.Id);
-                    if (engineNode == null || ReferenceEquals(engineNode, uiNode))
-                        continue;
-
-                    engineNode.ParamSettings = uiNode.ParamSettings;
-                    var bindingCount = uiNode.ParamSettings?.Count ?? 0;
-                    if (bindingCount > 0)
-                    {
-                        _logger?.LogInfo(
-                            $"[绑定持久化] 保存前同步节点={uiNode.Id} 参数绑定数={bindingCount}",
-                            "MainWindowViewModel");
-                    }
+                    var engineNode = rootWorkflow.Nodes.SingleOrDefault(n => n.Id == uiNode.Id);
+                    if (engineNode is not null && !ReferenceEquals(engineNode, uiNode))
+                        throw new InvalidOperationException("保存失败：工作区节点与当前工作流不属于同一编辑会话。");
                 }
 
                 foreach (var node in rootWorkflow.Nodes)
@@ -1608,15 +1585,6 @@ SplitterPosition = position;
                     {
                         workflow.Nodes.Add(node);
                     }
-                }
-
-                // 最终序列化对象也按 ID 对齐一次，确保 Solution 中保留的是最新
-                // 的 ParamSettings，而不是旧的同 ID 节点实例。
-                foreach (var persistedNode in workflow.Nodes)
-                {
-                    var sourceNode = rootWorkflow.Nodes.FirstOrDefault(n => n.Id == persistedNode.Id);
-                    if (sourceNode != null && !ReferenceEquals(sourceNode, persistedNode))
-                        persistedNode.ParamSettings = sourceNode.ParamSettings;
                 }
 
                 // 移除 Solution 中已从引擎根工作流删除的节点
@@ -1848,7 +1816,7 @@ SplitterPosition = position;
                 // 为每个工作流创建标签页
                 int totalNodes = 0;
                 int totalConnections = 0;
-                int totalParams = 0;
+
 
                 foreach (var workflow in solution.Workflows)
                 {
@@ -1874,22 +1842,13 @@ SplitterPosition = position;
                     totalNodes += workflow.Nodes.Count;
                     totalConnections += workflow.Connections.Count;
 
-                    // 统计参数数量
-                    foreach (var node in workflow.Nodes)
-                    {
-                        if (node.Parameters != null)
-                        {
-                            totalParams += node.Parameters.GetAllParameterProperties().Count();
-                        }
-                    }
                 }
 
                 LogInfo($"\n=== 加载完成 ===");
                 LogSuccess($"✓ 工作流数量: {solution.Workflows.Count}");
                 LogSuccess($"✓ 节点总数: {totalNodes}");
                 LogSuccess($"✓ 连接总数: {totalConnections}");
-                LogSuccess($"✓ 参数总数: {totalParams}");
-                LogSuccess($"✓ 节点参数已自动加载到 WorkflowNode.Parameters 中");
+
 
                 // 验证加载结果
                 if (WorkflowTabViewModel.Tabs.Count == 0)
@@ -1911,9 +1870,7 @@ SplitterPosition = position;
                     LogSuccess($"标签页创建成功，当前标签页: {WorkflowTabViewModel.SelectedTab?.Name ?? "（无）"}");
                 }
 
-                // ★ 脚本预编译（编译与执行解耦）：方案加载后全量预热可预编译工具的编译缓存，
-                //   保证首次执行命中缓存零编译。通过 IPrecompilableTool 接口调用，不依赖具体工具类型。
-                PreCompileScriptNodes(solution);
+
             }
             catch (Exception ex)
             {
@@ -1921,85 +1878,6 @@ SplitterPosition = position;
                 LogError($"堆栈跟踪: {ex.StackTrace}");
                 throw;
             }
-        }
-
-        /// <summary>
-        /// 方案加载后预编译所有可预编译工具节点（如脚本工具）。
-        /// 编译与执行解耦：提前编译入工具进程级缓存，保证首次执行命中缓存零编译。
-        /// 通过 <see cref="IPrecompilableTool"/> 接口调用，不依赖具体工具类型；
-        /// 并行执行（半核，不抢占启动其他任务）；失败仅记录告警，不阻塞打开工作区。
-        /// </summary>
-        /// <param name="solution">已加载的解决方案（含主工作流与子程序工作流）</param>
-        private void PreCompileScriptNodes(Solution solution)
-        {
-            if (solution?.Workflows == null)
-            {
-                return;
-            }
-
-            var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();
-            _logger?.LogInfo($"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}", nameof(MainWindowViewModel));
-            foreach (var n in allNodes.Where(n=>n.RuntimeConfiguration is null))
-            {
-                var tool = ToolRegistry.CreateToolInstance(n.ToolType);
-                _logger?.LogInfo(
-                    $"[预编译] 节点=[{n.Name}] ToolType=[{n.ToolType}] ParamsType=[{n.Parameters?.GetType().Name ?? "null"}] Tool=[{tool?.GetType().Name ?? "null"}] IsPrecompilable=[{tool is IPrecompilableTool}]",
-                    nameof(MainWindowViewModel));
-            }
-
-            var precompilableNodes = allNodes
-                .Where(n => n.RuntimeConfiguration is null&&n.Parameters != null)
-                .Select(n => new
-                {
-                    Node = n,
-                    Tool = ToolRegistry.CreateToolInstance(n.ToolType)
-                })
-                .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)
-                .ToList();
-
-            _logger?.LogInfo($"[预编译] 可预编译节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
-
-            if (precompilableNodes.Count == 0)
-            {
-                _logger?.LogInfo("[预编译] 无可预编译节点，跳过", nameof(MainWindowViewModel));
-                return;
-            }
-
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-
-            _logger?.LogInfo($"[预编译] 开始预编译, 节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
-
-            // 后台 Task 并行预编译：
-            // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁
-            // - 多脚本并行，启动时间不随脚本数成倍增加
-            // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）
-            var parallelOptions = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)
-            };
-
-            var snapshot = precompilableNodes.ToList();
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                Parallel.ForEach(snapshot, parallelOptions, x =>
-                {
-                    try
-                    {
-                        var tool = (IPrecompilableTool)x.Tool!;
-                        var errors = tool.PreCompile(x.Node.Parameters!);
-                        _logger?.LogInfo(
-                            $"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}" + (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
-                            nameof(MainWindowViewModel));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError($"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}", nameof(MainWindowViewModel));
-                    }
-                });
-            }).GetAwaiter().GetResult();
-
-            sw.Stop();
-            LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");
         }
 
         internal bool CanNavigateLocalImages()
@@ -2233,62 +2111,14 @@ SplitterPosition = position;
             if (definition.Nodes.Any(existing => existing.Id == node.Id))
                 throw new InvalidOperationException($"工作流中已存在节点: {node.Id}");
 
-            AppCommands.IUndoableCommand command;
-            if(string.Equals(node.ToolType,"Subroutine",StringComparison.OrdinalIgnoreCase))
-                command=new AppCommands.AddGroupNodeCommand(definition,uiNode,_workflowEngine,
-                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
-            else command=new AppCommands.AddNodeCommand(definition.Nodes,uiNode);
+            if (RuntimeNodeAdmission.IsPausedControlFlow(node.ToolType,node.SubroutineId))
+                throw new InvalidOperationException("Group 和控制流尚未迁移，当前不可添加。");
+            AppCommands.IUndoableCommand command = new AppCommands.AddNodeCommand(definition.Nodes,uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
             // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
             TryAutoBindImageSource(uiNode);
 
-            // ★ 新添加节点若是可预编译工具（脚本工具），异步预编译 + 沙箱预热，
-            //   避免首次执行现场编译+建沙箱冷启动（40-60ms），实现首次与后续执行时间一致。
-            PrecompileNodeIfNeeded(uiNode);
-        }
-
-        /// <summary>
-        /// 单个节点预编译 + 沙箱预热：新添加的可预编译工具（脚本工具）异步预编译，
-        /// 消除首次执行冷启动（现场编译+建沙箱 40-60ms）。与方案加载后全量预编译
-        /// （<see cref="PreCompileScriptNodes"/>）共用 <see cref="IPrecompilableTool.PreCompile"/> 通道。
-        /// 防御：非可预编译工具/参数为空/预编译异常 → 静默跳过，不阻塞节点添加。
-        /// </summary>
-        /// <param name="node">新添加的工作流节点</param>
-        private void PrecompileNodeIfNeeded(WorkflowNodeBase node)
-        {
-            if(node.RuntimeConfiguration is not null)return;
-            try
-            {
-                if (node.Parameters == null)
-                    return;
-
-                var tool = ToolRegistry.CreateToolInstance(node.ToolType);
-                if (tool is not IPrecompilableTool precompilable)
-                    return;
-
-                _logger?.LogInfo($"[预编译] 新添加节点=[{node.Name}] 异步预编译", nameof(MainWindowViewModel));
-                System.Threading.Tasks.Task.Run(() =>
-                {
-                    try
-                    {
-                        var errors = precompilable.PreCompile(node.Parameters!);
-                        _logger?.LogInfo(
-                            $"[预编译] 新添加节点=[{node.Name}] 预编译完成, 诊断数={errors.Count}" +
-                            (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
-                            nameof(MainWindowViewModel));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError($"[预编译] 新添加节点=[{node.Name}] 预编译异常: {ex.Message}",
-                            nameof(MainWindowViewModel));
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"[预编译] 新添加节点预编译失败: {ex.Message}", nameof(MainWindowViewModel));
-            }
         }
 
         /// <summary>
@@ -2402,42 +2232,8 @@ SplitterPosition = position;
                 AddLog($"图像源已清空: {targetNode.Name}（自动来源连线已删除，需重新选择）");
         }
 
-        /// <summary>
-        /// 从 DataSourceQueryService 取可用数据源列表中的第一个 IVisionImage 源，
-        /// 统一设置到节点参数的 ImageSource 属性。
-        /// 单一路径，无回退 — DataSourceQueryService 返回所有可用数据源
-        /// （包含真实上游节点输出 + 子程序合成端口 __SubroutineInputs__）。
-        /// </summary>
         private void TryAutoBindImageSource(WorkflowNodeBase node, WorkflowConnection? connection = null)
-        {
-            if(node?.RuntimeConfiguration is not null)
-            {TryAutoBindRuntimeImageSource(node,connection);return;}
-            if (node?.Parameters == null) return;
-
-            var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");
-            if (imageSourceProp == null) return;
-            if (node.Parameters.RebindingRequired.ContainsKey("ImageSource")) return;
-
-            // 已有来源不覆盖，包含用户确认的子程序输入。
-            if (imageSourceProp.GetValue(node.Parameters) is AvailableDataSource current
-                && !string.IsNullOrEmpty(current.SourceNodeId))
-                return;
-
-            if (node is not SunEyeVision.UI.Shared.WorkflowNode uiNode) return;
-
-            var dataProvider = GetDataProviderForNode(uiNode);
-            if (dataProvider is not IDataSourceQueryService queryService) return;
-
-            var firstImageSource = queryService.GetAvailableDataSources(node.Id)
-                .FirstOrDefault(ds => ds.PropertyType != null
-                    && (typeof(IVisionImage).IsAssignableFrom(ds.PropertyType)||typeof(Plugin.Contracts.IReadOnlyImage).IsAssignableFrom(ds.PropertyType)));
-
-            if (firstImageSource != null)
-            {
-                imageSourceProp.SetValue(node.Parameters, firstImageSource.WithConnectionOwnership(connection != null && firstImageSource.SourceNodeId == connection.SourceNodeId ? connection.Id : null));
-                AddLog($"自动绑定图像源: {node.Name} → {firstImageSource.DropdownDisplayText}");
-            }
-        }
+            => TryAutoBindRuntimeImageSource(node, connection);
 
         /// <summary>
         /// 清除所有节点选中状态
@@ -2582,59 +2378,6 @@ SplitterPosition = position;
             return changed&&intent==_nodeSelectionIntent&&ReferenceEquals(_selectedNode,node);
         }
 
-        /// <summary>Only the live editor of the selected document node may refresh its shared result tree.</summary>
-        internal void SubscribeOutputContractRefresh(Window window, SunEyeVision.UI.Shared.WorkflowNode node)
-        {
-            var parameters = node.Parameters;
-            if (parameters is not INotifyOutputContractChanged notifier || parameters is not IOutputContractProvider provider)
-                return;
-
-            var session = DocumentManager.Session;
-            var tab = WorkflowTabViewModel?.SelectedTab;
-            var displayedNodes = tab?.WorkflowNodes;
-            var workflow = session?.Document.Workflows.FirstOrDefault(flow => flow.Nodes.Any(item => ReferenceEquals(item, node)));
-            var dispatcher = window.Dispatcher;
-            int closed = 0;
-            long latestNotification = 0;
-            Action refreshContract = () =>
-            {
-                if (System.Threading.Volatile.Read(ref closed) != 0 || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
-                    return;
-                var notification = System.Threading.Interlocked.Increment(ref latestNotification);
-                var selection = System.Threading.Volatile.Read(ref _outputContractSelectionGeneration);
-                _ = dispatcher.BeginInvoke(new Action(() =>
-                {
-                    bool IsCurrent() => System.Threading.Volatile.Read(ref closed) == 0
-                        && notification == System.Threading.Volatile.Read(ref latestNotification)
-                        && selection == System.Threading.Volatile.Read(ref _outputContractSelectionGeneration)
-                        && window.IsLoaded && ReferenceEquals(_openDebugWindow, window)
-                        && session != null && ReferenceEquals(DocumentManager.Session, session)
-                        && ReferenceEquals(SelectedNode, node) && ReferenceEquals(node.Parameters, parameters)
-                        && tab != null && ReferenceEquals(WorkflowTabViewModel?.SelectedTab, tab)
-                        && displayedNodes != null && ReferenceEquals(tab.WorkflowNodes, displayedNodes)
-                        && displayedNodes.Any(item => ReferenceEquals(item, node))
-                        && workflow != null && session.Document.Workflows.Any(flow => ReferenceEquals(flow, workflow))
-                        && workflow.Nodes.Any(item => ReferenceEquals(item, node));
-
-                    if (!IsCurrent()||_declaredHistoricalResult) return;
-                    var contract = provider.GetOutputContract();
-                    // A provider can notify again or reenter selection/document/window changes while reading.
-                    if (IsCurrent())
-                        UpdateModuleResults(null, node.Name, node.ToolType, node.Id);
-                }), System.Windows.Threading.DispatcherPriority.Background);
-            };
-            notifier.OutputContractChanged += refreshContract;
-            window.Closed += OnClosed;
-            void OnClosed(object? sender, EventArgs args)
-            {
-                System.Threading.Interlocked.Exchange(ref closed, 1);
-                System.Threading.Interlocked.Increment(ref latestNotification);
-                // Unsubscribe the captured instance even if node.Parameters was replaced meanwhile.
-                notifier.OutputContractChanged -= refreshContract;
-                window.Closed -= OnClosed;
-            }
-        }
-
         private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
         {
             if (node == null) return;
@@ -2664,8 +2407,6 @@ SplitterPosition = position;
                     AddLog($"ℹ️ 节点 '{node.Name}' 无调试界面，无需打开窗口");
                     return;
                 }
-                if (context.CreatedWindow is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow iconWindow)
-                    iconWindow.ToolIconKey = node.Icon;
 
                 // 调试窗口单例管理
                 if (_openDebugWindow?.IsLoaded == true)
@@ -2696,7 +2437,7 @@ SplitterPosition = position;
                 _openDebugWindow = context.CreatedWindow;
                 _openDebugWindow.Title = node.Name;
 
-                SubscribeOutputContractRefresh(_openDebugWindow, node);
+
 
                 _openDebugWindow.Closed += (s, e) =>
                 {
@@ -2705,17 +2446,7 @@ SplitterPosition = position;
                         _ = UpdateDataAnalysisControl(node);
                     if (SelectedNode?.IsSelected == true)
                     {
-                        // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
-                        if (SelectedNode.Parameters is IOutputContractProvider provider)
-                        {
-                            var contract = provider.GetOutputContract();
-                            if (contract.Count > 0)
-                            {
-                                DeclaredOutputSnapshot? tempResult = null;
-                                UpdateModuleResults(tempResult, SelectedNode.Name, SelectedNode.ToolType, SelectedNode.Id);
-                            }
-                        }
-
+                        UpdateModuleResults(null, SelectedNode.Name, SelectedNode.ToolType, SelectedNode.Id);
                         // ★ 修复：关闭调试窗口时清空主窗口结果层几何（算法结果轮廓/矩形/十字/文本
                         //   + 检测/屏蔽区域），避免残留"不可编辑的区域"。原 RefreshResultDisplay 会
                         //   把 result.Display 重新画到结果层，导致 Blob 等工具关闭窗口后轮廓残留。
@@ -2915,6 +2646,7 @@ SplitterPosition = position;
             }
         }
 
+#if SUNEYE_GROUP_LEGACY
         /// <summary>
         /// 子程序输出增量更新入口：按变更类型对模块结果树 + 主界面图像源下拉做局部更新，
         /// 替代原来的"每字符全量重建"。
@@ -3197,6 +2929,7 @@ SplitterPosition = position;
             return current;
         }
 
+#endif
         /// <summary>
         /// 延迟设置 SelectedDisplayImageSourceIndex，确保 WPF 先处理完 ItemsSource 的 CollectionChanged 事件
         /// （Clear + Add × N）后再设置 SelectedIndex，避免 ComboBox 内部因竞态条件选中项丢失
@@ -3384,6 +3117,7 @@ SplitterPosition = position;
         /// <summary>
         /// 为子程序工作流注册输入端口数据源提供者
         /// </summary>
+#if SUNEYE_GROUP_LEGACY
         private void RegisterSubroutineInputProvider(DataSourceQueryService queryService, string subWorkflowId)
         {
             try
@@ -3447,9 +3181,10 @@ SplitterPosition = position;
         /// 创建 DataSourceQueryService（供子程序参数对话框使用，无需特定节点上下文）
         /// </summary>
         /// <param name="scopeWorkflowId">可选：限定到指定工作流的作用域（子程序内部数据源查询用）</param>
+#endif
         public DataSourceQueryService CreateDataSourceQueryService(string? scopeWorkflowId = null)
         {
-            var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
+
 
             IWorkflowConnectionProvider connectionProvider;
             INodeInfoProvider nodeInfoProvider;
@@ -3459,7 +3194,7 @@ SplitterPosition = position;
                 var subWorkflow = _workflowEngine.GetWorkflow(scopeWorkflowId)
                     ?? throw new InvalidOperationException($"子程序工作流未找到: {scopeWorkflowId}");
                 connectionProvider = subWorkflow;
-                nodeInfoProvider = subWorkflow;
+
                 LogInfo($"✓ 创建作用域查询服务 → 子程序工作流: {subWorkflow.Name} (ID: {scopeWorkflowId})");
             }
             else
@@ -3467,12 +3202,15 @@ SplitterPosition = position;
                 var workflow = _workflowEngine.CurrentWorkflow
                     ?? throw new InvalidOperationException("当前工作流为空");
                 connectionProvider = workflow;
-                nodeInfoProvider = workflow;
+
             }
 
-            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider)
+            var querySession = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
+            var queryWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;
+            nodeInfoProvider = new ScopedNodeInfoProvider(querySession.Document, queryWorkflow.Id);
+            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider)
             { ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(DocumentManager.CurrentSolution) };
-            queryService.CreateParameterSnapshot = SunEyeVision.Workflow.ToolParameterSnapshot.Create;
+
             queryService.CommunicationReceiveService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Receives;
             queryService.CommunicationSendService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends;
             var bindingWorkflow = (SunEyeVision.Workflow.Workflow)connectionProvider;
@@ -3482,7 +3220,7 @@ SplitterPosition = position;
             queryService.ExecutionOwner = bindingWorkflow.ExecutionOwner;
             queryService.BindingCandidateNodeIds = id => bindingService.GetCandidateNodeIds(bindingWorkflow.Id, id);
             queryService.ExistingBindingSourceNodeIds = id => bindingService.GetExistingBindingSourceNodeIds(bindingWorkflow.Id, id);
-            queryService.FormalOutputContractReader = id => bindingWorkflow.Nodes.FirstOrDefault(n => n.Id == id) is { } n ? bindingService.ReadContract(n) : null;
+
             queryService.CommitOutputConfiguration = id =>
             {
                 var changes = bindingService.Commit(bindingWorkflow.Id, id);
@@ -3521,7 +3259,7 @@ SplitterPosition = position;
             //    作用域是主流程时 FindParentSubroutineNodeId 返回 null，自动跳过，零影响
             if (scopeWorkflowId != null)
             {
-                RegisterSubroutineInputProvider(queryService, scopeWorkflowId);
+                throw new InvalidOperationException("Group 数据查询尚未迁移，当前不可用。");
             }
 
             // 子程序输出已通过 GetNodeOutputProperties（IOutputContractProvider）走正常通道，
@@ -3547,280 +3285,12 @@ SplitterPosition = position;
             return null;
         }
 
-        /// <summary>
-        /// 初始化调试目标（统一入口）
-        /// </summary>
-        /// <param name="target">初始化目标（IToolControlInitializer 或 Window）</param>
-        /// <param name="node">当前节点</param>
-        private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, SunEyeVision.UI.Shared.WorkflowNode node)
+        private System.Threading.Tasks.Task InitializeToolControlAsync(object target, SunEyeVision.UI.Shared.WorkflowNode node)
         {
-            if(InitializeRuntimeEditor(target,node))return;
-            // ★ 性能剪口：首次打开调试窗口的完整耗时
-            var perfSw = System.Diagnostics.Stopwatch.StartNew();
-
-            SunEyeVision.UI.Services.Editing.ProductionEditorContext? editorContext = null;
-            try
-            {
-                // 获取初始化接口
-                var initializer = ResolveInitializer(target);
-                if (initializer == null)
-                {
-                    AddLog($"⚠️ 初始化目标不支持 IToolControlInitializer: {target.GetType().Name}");
-                    return;
-                }
-
-                editorContext = CreateProductionEditorContext(target, node, out var editorDataProvider);
-                var editingNode = editorContext?.DraftNode ?? node;
-                // ① 设置当前节点
-                var stepSw = System.Diagnostics.Stopwatch.StartNew();
-                initializer.SetCurrentNode(editingNode);
-                stepSw.Stop();
-                _logger?.LogInfo($"[Perf] SetCurrentNode: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
-                AddLog($"✅ 已设置当前节点");
-
-                // ② 设置节点参数
-                if (editingNode.Parameters != null)
-                {
-                    stepSw.Restart();
-                    initializer.SetParameters(editingNode.Parameters);
-                    stepSw.Stop();
-                    _logger?.LogInfo($"[Perf] SetParameters: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
-                    AddLog($"✅ 已初始化节点参数");
-                }
-
-                // ③ 设置数据提供者
-                var dataProvider = editorDataProvider ?? GetDataProviderForNode(node);
-                if (dataProvider != null)
-                {
-                    stepSw.Restart();
-                    initializer.SetDataProvider(dataProvider);
-                    stepSw.Stop();
-                    _logger?.LogInfo($"[Perf] SetDataProvider: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
-                    AddLog($"✅ 已初始化数据提供者");
-                }
-
-                // ④ 设置主窗口 ImageControl（可选）
-                // 注意：已移到 debugWindow.Show() 之后调用，确保 OverlayCanvas 已准备就绪
-
-                // ⑤ 异步初始化
-                stepSw.Restart();
-                await initializer.InitializeAsync();
-                stepSw.Stop();
-                _logger?.LogInfo($"[Perf] InitializeAsync: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
-                AddLog($"✅ 调试控件初始化完成");
-
-                // 窗口路径的额外处理
-                if (target is System.Windows.Window debugWindow)
-                {
-                    // 缓存数据提供者（已在 _workflowDsqsCache 中按 WorkflowId 缓存）
-
-                    // 订阅执行完成事件
-                    SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!, editorContext);
-
-                    // 🔍 日志监控：准备调用 SetMainImageControl
-                    AddLog($"🔍 [监控] 准备显示窗口并设置 ImageControl");
-
-                    // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
-                    stepSw.Restart();
-                    debugWindow.Show();
-                    stepSw.Stop();
-                    _logger?.LogInfo($"[Perf] debugWindow.Show(): {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
-                    AddLog($"✅ 调试窗口已显示");
-
-                    // 缓存调试窗口（用于工作流执行完成后通知刷新）
-                    _nodeDebugWindows[node.Id] = debugWindow;
-
-                    AddLog("原主视口不再接受旧SDK绘制；区域编辑仅由具备实际输入证明的原会话接入。");
-
-                    // 窗口关闭清理
-                    debugWindow.Closed += (s, e) =>
-                    {
-                        // 1. 移除调试窗口缓存（DSQS 仍在 _workflowDsqsCache 中缓存，工作流删除时统一清理）
-                        _nodeDebugWindows.Remove(node.Id);
-
-                        // 4. 刷新当前选中节点的结果显示（如果有）
-                        if (SelectedNode != null && SelectedNode.IsSelected)
-                        {
-                            var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
-                            if (executionResult?.Result != null)
-                            {
-                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
-                            }
-                        }
-                    };
-                }
-
-                perfSw.Stop();
-                _logger?.LogInfo($"[Perf] 调试窗口打开总耗时: {perfSw.ElapsedMilliseconds}ms | 节点: {node.Name}", "MainWindowViewModel");
-            }
-            catch (Exception ex)
-            {
-                if (editorContext != null) editorContext.Dispose();
-                if (_productionEditors.Count == 0) ClearProductionEditorHost();
-                var errorDetails = new System.Text.StringBuilder();
-                errorDetails.AppendLine($"❌ 初始化调试目标失败: {ex.Message}");
-                var innerEx = ex.InnerException;
-                while (innerEx != null)
-                {
-                    errorDetails.AppendLine($"  → 内部异常: {innerEx.Message}");
-                    innerEx = innerEx.InnerException;
-                }
-                AddLog(errorDetails.ToString());
-            }
+            if (!InitializeRuntimeEditor(target,node)) throw new InvalidOperationException("该节点尚未接入正式运行时编辑器。");
+            return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 解析初始化接口
-        /// </summary>
-        private Plugin.SDK.UI.Controls.IToolControlInitializer? ResolveInitializer(object target)
-        {
-            // 直接实现接口
-            if (target is Plugin.SDK.UI.Controls.IToolControlInitializer directInitializer)
-                return directInitializer;
-
-            // DefaultDebugWindow 实现了接口
-            if (target is Plugin.SDK.UI.Windows.DefaultDebugWindow debugWindow)
-                return debugWindow;
-
-            // 兼容旧窗口：尝试从内部字段获取控件
-            if (target is System.Windows.Window window)
-            {
-                var controlField = window.GetType().GetField("_control",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (controlField?.GetValue(window) is Plugin.SDK.UI.Controls.IToolControlInitializer innerInitializer)
-                    return innerInitializer;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 订阅调试窗口的执行完成事件
-        /// </summary>
-        private void SubscribeToolExecutionCompleted(System.Windows.Window debugWindow, SunEyeVision.UI.Shared.WorkflowNode node,
-            IDataSourceQueryService dataProvider, ProductionEditorContext? editorContext = null)
-        {
-            var resultContext = CurrentWorkflowContext;
-            var resultSession=DocumentManager.Session;var resultTab=WorkflowTabViewModel.SelectedTab;var closed=false;
-            bool OwnerCurrent()=>!closed&&debugWindow.IsLoaded&&ReferenceEquals(DocumentManager.Session,resultSession)
-                &&(editorContext?.IsValid??true);
-            bool DisplayCurrent()=>OwnerCurrent()&&ReferenceEquals(resultTab,WorkflowTabViewModel.SelectedTab)
-                &&ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node)&&!_declaredHistoricalResult;
-            var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
-            if (eventInfo == null)
-            {
-                AddLog($"⚠️ [调试窗口事件] {debugWindow.GetType().Name} 未定义 ToolExecutionCompleted 事件 | 结果将无法传播到数据分析控件");
-                return;
-            }
-
-            AddLog($"🔍 [调试窗口事件] 找到 {eventInfo.EventHandlerType.Name} 事件，准备订阅 | 节点={node.Name}");
-
-            // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
-            var eventHandlerType = eventInfo.EventHandlerType;
-
-            // 创建委托方法
-            var invokeMethod = eventHandlerType.GetMethod("Invoke");
-            var parameters = invokeMethod?.GetParameters();
-
-            if (parameters != null && parameters.Length == 2)
-            {
-                // 创建通用的处理方法
-                Action<object?, object?> handlerAction=(sender,result)=>
-                {
-                    var toolResult=result switch
-                    {
-                        DeclaredOutputSnapshot direct=>direct,
-                        RuntimeToolExecutionEventArgs args=>args.Result,
-                        Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as DeclaredOutputSnapshot,
-                        _=>null
-                    };
-                    try
-                    {
-                        using var dispatchLease=toolResult?.Retain();
-                        void Apply()
-                        {
-                            if(!OwnerCurrent())return;
-                            if(toolResult is null)
-                            {
-                                if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false} or RuntimeToolExecutionEventArgs {Error:not null})
-                                {
-                                    editorContext?.DebugResults.RemoveNodeResult(node.Id);
-                                    if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}
-                                }
-                                return;
-                            }
-                            if(toolResult.ExecutionIdentity is {} identity&&(!identity.IsCurrent||
-                                !ReferenceEquals(identity.Owner,editorContext?.DebugOwner??DocumentManager.CurrentSolution?.ExecutionOwner)))return;
-                            if(editorContext is not null)
-                            {
-                                if(!editorContext.TryAcceptDebugResult(toolResult)||!OwnerCurrent())return;
-                                if(DisplayCurrent())_nodeResultManager.RefreshDebugPreview(editorContext.DraftNode,toolResult);
-                            }
-                            else
-                            {
-                                _nodeResultManager.UpdateNodeResult(node,toolResult,refreshDisplay:DisplayCurrent(),targetContext:resultContext);
-                                if(OwnerCurrent())NotifyDebugWindowExternalResult(node.Id);
-                            }
-                            // UpdateModuleResults is the sole tree/table publication entrance.
-                            if(OwnerCurrent())AddLog($"✅ 调试窗口执行完成: {node.Name}");
-                        }
-                        if(debugWindow.Dispatcher.CheckAccess())Apply();
-                        else if(toolResult is null)debugWindow.Dispatcher.BeginInvoke(new Action(Apply));
-                        else
-                        {
-                            var pending=new ResultDispatchLease(toolResult);
-                            try
-                            {
-                                var operation=debugWindow.Dispatcher.BeginInvoke(new Action(()=>
-                                {
-                                    using var lease=pending.Claim();
-                                    if(lease is not null)Apply();
-                                }));
-                                operation.Aborted+=(_,_)=>pending.Dispose();
-                                if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)pending.Dispose();
-                            }
-                            catch{pending.Dispose();throw;}
-                        }
-                    }
-                    catch(Exception error){AddLog($"⚠️ 处理执行结果失败: {error.Message}");}
-                };
-
-                // 创建委托
-                var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
-
-                // 订阅事件
-                eventInfo.AddEventHandler(debugWindow, handler);
-                if (editorContext is not null)
-                {
-                    void RestoreProductionDisplay()
-                    {
-                        editorContext.Deactivated -= RestoreProductionDisplay;
-                        if (!ReferenceEquals(resultContext, CurrentWorkflowContext) || !ReferenceEquals(SelectedNode, node)) return;
-                        if (resultContext?.GetNodeResult(node.Id)?.Result is { } productionResult)
-                            _nodeResultManager?.RefreshResultDisplay(node, productionResult);
-                        else
-                        {
-                            _nodeResultManager?.ClearResultDisplay();
-                            ClearNativeImagePresentation();
-                        }
-                        // Recreate the analysis view from the formal context. Passing null to a
-                        // legacy analysis control can leave the previous preview rows visible.
-                        _ = UpdateDataAnalysisControl(node);
-                    }
-                    editorContext.Deactivated += RestoreProductionDisplay;
-                }
-
-                // 窗口关闭时取消订阅（防止内存泄漏）
-                debugWindow.Closed += (s, e) =>
-                {
-                    closed=true;eventInfo.RemoveEventHandler(debugWindow, handler);
-                };
-            }
-        }
-
-        /// <summary>
-        /// 通知指定节点的调试窗口：外部结果已到达
-        /// </summary>
         private void NotifyDebugWindowExternalResult(string nodeId)
         {
             if (_nodeDebugWindows.TryGetValue(nodeId, out var window))
@@ -3975,9 +3445,7 @@ SplitterPosition = position;
             static string Identity(object? value)
                 => value == null ? "null" : $"{value.GetType().Name}@{RuntimeHelpers.GetHashCode(value)}";
             static string Settings(object? value)
-                => value is WorkflowNodeBase node
-                    ? $"ParamSettings@{RuntimeHelpers.GetHashCode(node.ParamSettings)} count={node.ParamSettings?.Count ?? 0}"
-                    : "ParamSettings=null";
+                => value is WorkflowNodeBase { RuntimeConfiguration: {} config } ? $"RuntimeConfiguration@{RuntimeHelpers.GetHashCode(config)}" : "RuntimeConfiguration=null";
 
             _logger?.LogInfo(
                 $"[SSOT诊断] {stage} | nodeId={uiNode.Id} | " +
@@ -4367,23 +3835,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
         /// <param name="nodeId">节点ID，用于绑定状态反查</param>
         /// <param name="parameters">工具参数（设计态时用于回退读取检测区/屏蔽区 RoI 结构）</param>
-        private bool TryShowDeclaredSchema(IReadOnlyList<OutputVariable> contract,string? nodeName,string? nodeId)
-        {
-            var fields=contract.Where(output=>output.Kind==OutputVariableKind.Data).ToArray();
-            if(fields.Length==0&&SelectedNode?.Id==nodeId&&SelectedNode.RuntimeConfiguration?.Schema.Outputs.Count>0)return false;
-            SunEyeVision.Plugin.Contracts.ToolSchema schema;
-            try{schema=new(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),fields.Select(BindingClrAdapter.DescribeOutput),
-                outputDisplay:fields.Select(output=>new SunEyeVision.Plugin.Contracts.OutputDisplayNode(BindingClrAdapter.OutputPortId(output),
-                    string.IsNullOrWhiteSpace(output.DisplayName)?output.Name:output.DisplayName,output.DisplayMembers)));}
-            catch(ArgumentException){return false;}
-            var metadata=fields.ToDictionary(BindingClrAdapter.OutputPortId,output=>new DeclaredOutputField(output.Name,output.DisplayName,
-                output.VariableType,output.DeclaredType,output.FieldId,output.Group,output.DisplayInResultPanel),StringComparer.Ordinal);
-            var config=SelectedNode?.Id==nodeId?SelectedNode.RuntimeConfiguration:null;
-            var names=ToolResultViews.DisplayNames(schema,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),config?.Schema,config?.ResultProjection);
-            PresentDeclaration(schema,nodeName,names,
-                DeclaredBindings(schema,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
-            return true;
-        }
         private IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(SunEyeVision.Plugin.Contracts.ToolSchema schema,string? nodeId,string? workflowId=null)
         {
             var session=DocumentManager.Session;
@@ -4437,8 +3888,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             Release(()=>_executionManager.Dispose());
             if(errors.Count>0)throw new AggregateException("关闭时释放插件消费者失败。",errors);
         }
-        public void UpdateModuleResults(DeclaredOutputSnapshot? result,string? nodeName,string? toolId=null,string? nodeId=null,
-            ToolParameters? parameters=null)
+        public void UpdateModuleResults(DeclaredOutputSnapshot? result,string? nodeName,string? toolId=null,string? nodeId=null)
         {
             if(_declaredHistoricalResult)return;
             if(nodeId is not null&&SelectedNode?.Id!=nodeId)return;
@@ -4449,20 +3899,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 var debugScope=identity is null?null:_productionEditors.FirstOrDefault(context=>ReferenceEquals(context.DebugOwner,identity.Owner));
                 if(owner())PresentSnapshot(snapshot,nodeName,()=>debugScope?.IsValid!=false
                     &&(snapshot.Status is not (ExecutionStatus.Success or ExecutionStatus.PartialSuccess)||identity?.IsCurrent!=false));
-                return;
-            }
-            IReadOnlyList<OutputVariable>? contract=parameters is IOutputContractProvider provider?provider.GetOutputContract():null;
-            if(contract is null&&SelectedNode is SunEyeVision.UI.Shared.WorkflowNode selected)
-            {
-                if(selected.Parameters is IOutputContractProvider selectedProvider)contract=selectedProvider.GetOutputContract();
-                else if(GetDataProviderForNode(selected) is DataSourceQueryService query)
-                    contract=query.FormalOutputContractReader?.Invoke(selected.Id);
-            }
-            if(!owner())return;
-            if(contract is not null&&TryShowDeclaredSchema(contract,nodeName,nodeId))
-            {
-                if(result is not null)
-                    AddLog("该运行未发布完整声明快照，结果仅显示正式字段声明，不读取或转换未准入值。");
                 return;
             }
             // A loaded runtime definition already owns an output declaration. The
@@ -4482,348 +3918,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 return;
             }
             ClearResultDisplay();
-        }
-
-        /// <summary>
-        /// 模块结果分组固定顺序（索引越小越靠前）。
-        /// 以 '/' 结尾的键为**前缀键**：匹配其**自身**与全部**子分组**（如 "拟合结果/" 覆盖
-        /// "拟合结果" 与 "拟合结果/圆2"），使工具新增元素（点3/圆4…）时无需再改本表（rule-016 声明式）。
-        /// 执行信息置顶；算法产出（拟合结果 / 结果）往前；输入回显在后。
-        /// 命名规范见《按图形绑定优化方案》改动 11：顶层组名只允许 输入 / 拟合结果 / 结果（+ 执行信息）。
-        /// </summary>
-        private static readonly string[] ModuleResultGroupOrder =
-        [
-            // 执行信息：执行耗时（基类）+ 节点状态（判定 OK/NG，工具追加）
-            "执行信息",
-            // 结果往前方：算法产出（拟合几何/残差/点数/派生量）紧跟执行信息
-            "拟合结果/",
-            "结果",
-            // 基本信息/输入信息居中
-            "基本信息",
-            "输入信息",
-            // 输入回显：元素输入（点1/点2）→ 卡尺（引导线 → 测量带）→ 其余输入（检测区/屏蔽区图形）
-            "输入/点1",
-            "输入/点2",
-            "输入/卡尺/引导线",
-            "输入/卡尺/测量带",
-            "输入/",
-            // 参数回写最后
-            "参数回写",
-        ];
-
-        /// <summary>
-        /// 分组排序索引：先精确匹配，键以 '/' 结尾时再做前缀匹配；未知分组返回 int.MaxValue（排最后，再按名排序）。
-        /// </summary>
-        private static int GroupOrderIndex(string groupName)
-        {
-            for (var i = 0; i < ModuleResultGroupOrder.Length; i++)
-            {
-                var key = ModuleResultGroupOrder[i];
-                if (key.Length > 0 && key[^1] == '/')
-                {
-                    // 前缀键：既匹配父组本身（"拟合结果"），也匹配其子分组（"拟合结果/圆2"）
-                    if (groupName == key[..^1] || groupName.StartsWith(key, StringComparison.Ordinal))
-                        return i;
-                    continue;
-                }
-
-                if (groupName == key)
-                    return i;
-            }
-
-            return int.MaxValue;
-        }
-
-        /// <summary>
-        /// 按类型格式化反射取出的值
-        /// </summary>
-        private static string FormatTypedValue(object? value, Type propertyType)
-        {
-            // 长度 1 数组解包显示，避免单个 bool[1] 渲染成难看的 "[1个]"（底层仍是 T[1]，决策3）
-            if (value is Array a && a.Length == 1)
-                value = a.GetValue(0);
-
-            return value switch
-            {
-                null => "--",
-                double d  => $"{d:F3}",
-                float f   => $"{f:F3}",
-                int i     => i.ToString(),
-                long l    => l.ToString(),
-                bool b    => b ? "是" : "否",
-                string s  => string.IsNullOrEmpty(s) ? "--" : s,
-                // 数组类型：用分号连接显示实际值（而非 [N个]）
-                double[] dArr => dArr.Length == 0
-                    ? "--" : string.Join(";", dArr.Select(v => v.ToString("0.###"))),
-                int[] iArr    => iArr.Length == 0
-                    ? "--" : string.Join(";", iArr),
-                string[] sArr => sArr.Length == 0
-                    ? "--" : string.Join(";", sArr),
-                // 图像类型：显示尺寸摘要，不落类型名（图像值走「图像结果」Tab，结果树仅示占位）
-                IVisionImage image => $"[图像 {image.Width}×{image.Height}]",
-                Array arr => $"[{arr.Length}个]",
-                System.Collections.IEnumerable e when !(e is string) => $"[{e.Cast<object>().Count()}个]",
-                _         => value.ToString() ?? "--"
-            };
-        }
-
-        /// <summary>
-        /// 构建可监视数组的字段聚合节点。
-        /// 按形状分组（RoiShape 按 ShapeType），每字段一行，多元素值用分号串联，不按 [i] 索引展开树。
-        /// </summary>
-        private static void BuildMonitorableArrayNodes(ModuleResultNode parent, System.Collections.IEnumerable items)
-        {
-            var list = items.Cast<object>().Where(x => x is IMonitorable).ToList();
-            if (list.Count == 0)
-            {
-                // 设计期（未运行/未绘制）：ROI(RoiShape[]) 空数组也按 ShapeType 枚举出结构，
-                // 分组下用默认几何实例反射属性名生成属性行（值 --）。声明式，不依赖绘制数据（rule-016）。
-                if (items is RoiShape[])
-                {
-                    BuildDesignTimeShapeGroups(parent);
-                }
-                return;
-            }
-
-            parent.IsGroup = true;
-            parent.DisplayValue = null;
-
-            // ROI 元素（RoiShape，契约值）：按形状分组后再字段聚合
-            if (list[0] is RoiShape)
-            {
-                AppendShapeGroupedNodes(parent, list.Cast<RoiShape>().GroupBy(sp => sp.ShapeType).OrderBy(g => g.Key));
-                return;
-            }
-
-            // 普通几何数组（如算法产物 RotatedRect2d[]/Point2d[]）：直接字段聚合
-            AppendFieldAggregation(parent, list);
-        }
-
-        /// <summary>
-        /// 设计期 RoI 空数组结构：按 ShapeType 枚举出形状分组，分组下用默认几何实例反射属性字段名生成属性行（值 --）。
-        /// 声明式，不读绘制数据（rule-016），创建节点即见完整三层结构；运行后由有值分支收敛为实际形状并填值。
-        /// </summary>
-        private static void BuildDesignTimeShapeGroups(ModuleResultNode parent)
-        {
-            parent.IsGroup = true;
-            parent.DisplayValue = null;
-
-            foreach (var type in Enum.GetValues<ShapeType>())
-            {
-                if (type == ShapeType.None) continue;
-
-                var shapeNode = new ModuleResultNode
-                {
-                    DisplayName = ShapeTypeDisplayName(type),
-                    IsGroup = true,
-                    IsExpanded = false,
-                    BindingInfo = CreateShapeBindingInfo(parent.BindingInfo, type)
-                };
-                AppendDesignTimeShapeFields(shapeNode, type);
-                parent.Children.Add(shapeNode);
-            }
-        }
-
-        /// <summary>
-        /// 为设计期形状分组生成属性字段行（默认几何实例经 RoiShape.GetMonitorFields，值 --）。
-        /// 与运行期同源：RoiShape.GetMonitorFields 对 Rectangle(Rect) 等有字段兜底。
-        /// </summary>
-        private static void AppendDesignTimeShapeFields(ModuleResultNode shapeNode, ShapeType type)
-        {
-            foreach (var field in RoiFieldSchema.GetFields(type))
-            {
-                shapeNode.Children.Add(new ModuleResultNode
-                {
-                    DisplayName = field.DisplayName,
-                    DisplayValue = "--",
-                    IsGroup = false,
-                    BindingInfo = CreateFieldBindingInfo(shapeNode.BindingInfo, field)
-                });
-            }
-        }
-
-        /// <summary>
-        /// 单值 IMonitorable 字段展开（如 IVisionImage → 宽度/高度/通道数）。
-        /// 与数组版 BuildMonitorableArrayNodes 对称，与脚本监视树的 IMonitorable 展开对齐。
-        /// 根节点保留原占位值（[图像 640×480]），元数据作为子节点展开。
-        /// </summary>
-        private static void BuildMonitorableFields(ModuleResultNode parent, IMonitorable monitorable)
-        {
-            var fields = monitorable.GetMonitorFields();
-            if (fields.Count == 0)
-                return;
-
-            parent.IsGroup = true; // 有子节点 → 可展开
-            foreach (var (fieldName, fieldValue) in fields)
-            {
-                parent.Children.Add(new ModuleResultNode
-                {
-                    DisplayName = fieldName,
-                    DisplayValue = FormatTypedValue(fieldValue, fieldValue?.GetType()),
-                    IsGroup = false
-                });
-            }
-        }
-
-        /// <summary>
-        /// 把按形状类型分组的几何元素聚合为子节点（每形状组一行，组内按字段聚合）。
-        /// RoiShape 与历史 ShapeParameters 共用（两者均有 ShapeType + IMonitorable）。
-        /// </summary>
-        private static void AppendShapeGroupedNodes(ModuleResultNode parent, System.Collections.Generic.IEnumerable<System.Linq.IGrouping<SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType, object>> shapeGroups)
-        {
-            foreach (var shapeGroup in shapeGroups)
-            {
-                var shapeNode = new ModuleResultNode
-                {
-                    DisplayName = $"{ShapeTypeDisplayName(shapeGroup.Key)} ({shapeGroup.Count()}项)",
-                    IsGroup = true,
-                    IsExpanded = false,
-                    BindingInfo = CreateShapeBindingInfo(parent.BindingInfo, shapeGroup.Key)
-                };
-                AppendRoiShapeFieldAggregation(shapeNode, shapeGroup, shapeGroup.Key);
-                parent.Children.Add(shapeNode);
-            }
-        }
-
-        /// <summary>运行期 ROI 图形字段仍采用 <see cref="RoiFieldSchema"/> 生成绑定路径，展示值只从实际图形读取。</summary>
-        private static void AppendRoiShapeFieldAggregation(
-            ModuleResultNode parent,
-            IEnumerable<object> items,
-            ShapeType shapeType)
-        {
-            var monitorableItems = items.OfType<IMonitorable>().ToList();
-            foreach (var field in RoiFieldSchema.GetFields(shapeType))
-            {
-                var values = monitorableItems.Select(item =>
-                {
-                    var actual = item.GetMonitorFields().FirstOrDefault(entry => entry.FieldName == field.DisplayName);
-                    return FormatTypedValue(actual.FieldValue, field.ValueType);
-                });
-                parent.Children.Add(new ModuleResultNode
-                {
-                    DisplayName = field.DisplayName,
-                    DisplayValue = string.Join("; ", values),
-                    IsGroup = false,
-                    BindingInfo = CreateFieldBindingInfo(parent.BindingInfo, field)
-                });
-            }
-        }
-
-        /// <summary>
-        /// 把元素集合按字段聚合追加为子节点（每字段一行，值用分号串联）。
-        /// 以第一个元素的字段列表为准，跨所有元素按字段名取值。
-        /// </summary>
-        private static void AppendFieldAggregation(ModuleResultNode parent, System.Collections.IEnumerable items)
-        {
-            var monitorableItems = items.Cast<object>().Where(x => x is IMonitorable).Cast<IMonitorable>().ToList();
-            if (monitorableItems.Count == 0)
-                return;
-
-            var firstFields = monitorableItems[0].GetMonitorFields();
-            foreach (var (fieldName, _) in firstFields)
-            {
-                // 多元素聚合值用分号串联（不带序号/前缀，保持数据纯净，区分各元素依赖上游标识/排序）
-                var fieldValues = monitorableItems.Select(item =>
-                {
-                    var field = item.GetMonitorFields().FirstOrDefault(f => f.FieldName == fieldName);
-                    return FormatTypedValue(field.FieldValue, field.FieldValue?.GetType() ?? typeof(object));
-                });
-                parent.Children.Add(new ModuleResultNode
-                {
-                    DisplayName = $"{fieldName} ({monitorableItems.Count}项)",
-                    DisplayValue = string.Join("; ", fieldValues),
-                    IsGroup = false
-                });
-            }
-        }
-
-        // Geometry reflection fields are display-only: they have no formal record-member declaration.
-        private static ResultBindingInfo? CreateShapeBindingInfo(ResultBindingInfo? parent,ShapeType type)=>null;
-        private static ResultBindingInfo? CreateFieldBindingInfo(ResultBindingInfo? parent,RoiFieldDef field)=>null;
-
-        /// <summary>
-        /// 设计态 RoI 契约变量回退：从工具参数读取检测区/屏蔽区结构。
-        /// 结果运行值缺失时，仍应在结果树中展示用户已绘制的区域结构。
-        /// </summary>
-        private static object? ResolveRoiDesignValue(string propertyName, ToolParameters? parameters)
-        {
-            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RoiParameters roiParams)
-                return null;
-
-            IEnumerable<Roi>? rois = propertyName switch
-            {
-                nameof(ToolResults.InspectionGeometries) => roiParams.InspectionRois?.Rois,
-                nameof(ToolResults.MaskGeometries) => roiParams.MaskRois?.Rois,
-                _ => null
-            };
-
-            return rois?
-                .Where(r => r.IsEnabled)
-                .Select(r => r.LocalGeometry)
-                .OfType<RoiShape>()
-                .Where(sp => sp.Geometry != null)
-                .ToArray();
-        }
-
-        /// <summary>
-        /// ShapeType → 中文显示名（结果树形状分组节点用）
-        /// </summary>
-        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType shapeType)
-        {
-            return shapeType switch
-            {
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Circle => "圆",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.RotatedRectangle => "旋转矩形",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Polygon => "多边形",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Annulus => "圆环",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Line => "直线",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Arc => "弧形",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Point => "点",
-                _ => shapeType.ToString()
-            };
-        }
-
-        /// <summary>
-        /// 判断是否为图像/图形类型（应在图像显示控件展示，不在结果表中展示）
-        /// </summary>
-        private static bool IsVisualResultType(Type? propertyType)
-        {
-            if (propertyType == null)
-                return false;
-
-            var fullName = propertyType.FullName;
-            if (fullName == null)
-                return false;
-
-            // 图像类型：IVisionImage, HImage, HalImage, CvImage, Mat 及其派生
-            if (fullName.Contains("IVisionImage") ||
-                fullName.Contains("HImage") ||
-                fullName.Contains("HalImage") ||
-                fullName.Contains("CvImage") ||
-                fullName.Contains("OpenCvSharp.Mat"))
-                return true;
-
-            // 区域/图形类型：IVisionRegion, CvRegion 及其派生
-            if (fullName.Contains("IVisionRegion") ||
-                fullName.Contains("CvRegion"))
-                return true;
-
-            // 检查基类链（处理继承关系）
-            var baseType = propertyType.BaseType;
-            while (baseType != null)
-            {
-                var baseName = baseType.FullName;
-                if (baseName != null &&
-                    (baseName.Contains("OpenCvSharp.Mat") ||
-                     baseName.Contains("IVisionImage") ||
-                     baseName.Contains("CvImage") ||
-                     baseName.Contains("IVisionRegion") ||
-                     baseName.Contains("CvRegion")))
-                    return true;
-                baseType = baseType.BaseType;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -5276,61 +4370,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 显示通讯管理器
         /// </summary>
-        private void ExecuteShowCommunicationManager()
-        {
-            try
-            {
-                LogInfo("打开通讯管理器");
-
-                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                var currentSolution = solutionManager.CurrentSolution;
-
-                if (currentSolution == null)
-                {
-                    ThemeMessageDialog.Show("请先打开一个解决方案", "提示",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
-                    return;
-                }
-
-                var viewModel = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerViewModel(solutionManager);
-                try
-                {
-                    var dialog = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerDialog(viewModel);
-                    dialog.ShowDialog();
-                }
-                finally
-                {
-                    // Also release window subscriptions if creation or ShowDialog fails.
-                    // Disposal is idempotent and never stops the shared communications service.
-                    _ = viewModel.DisposeAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError($"打开通讯管理器失败: {ex.Message}");
-            }
-        }
+        private void ExecuteShowCommunicationManager() => LogWarning("通信字段绑定及配置界面尚未迁移，当前不可用。");
 
         #endregion
 
-        /// <summary>
-        /// 默认工具插件 - 用于测试
-        /// </summary>
-        private class DefaultToolPlugin : IToolPlugin
-        {
-            public Type ParamsType => typeof(GenericToolParameters);
-            public Type ResultType => typeof(GenericToolResults);
-            public IReadOnlyList<OutputVariable> OutputVariables => Array.Empty<OutputVariable>();
-
-            public ToolResults Run(ToolParameters parameters)
-            {
-                return new GenericToolResults();
-            }
-
-            public bool HasDebugWindow => false;
-            public System.Windows.Window? CreateDebugWindow() => null;
-            public ToolParameters GetDefaultParameters() => new GenericToolParameters();
-        }
     }
 
     /// <summary>

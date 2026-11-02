@@ -49,13 +49,13 @@ public sealed class NodeResultManager
     {
         using var lease=result.Retain();
         if(result.ExecutionIdentity?.IsCurrent==false)return;
-        _viewModel.UpdateModuleResults(result,node.Name,node.ToolType,node.Id,node.Parameters);
+        _viewModel.UpdateModuleResults(result,node.Name,node.ToolType,node.Id);
     }
     public void RefreshDebugPreview(WorkflowNodeBase draft,DeclaredOutputSnapshot result)
     {
         using var lease=result.Retain();
         if(result.ExecutionIdentity?.IsCurrent==false)return;
-        _viewModel.UpdateModuleResults(result,draft.Name,draft.ToolType,draft.Id,draft.Parameters);
+        _viewModel.UpdateModuleResults(result,draft.Name,draft.ToolType,draft.Id);
     }
     public void ClearResultDisplay()=>_viewModel.ClearResultDisplay();
     public void ClearResultGraphics()=>_viewModel.ClearResultGraphics();

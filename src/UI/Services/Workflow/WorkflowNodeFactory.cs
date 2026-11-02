@@ -37,7 +37,7 @@ namespace SunEyeVision.UI.Services.Workflow
             // 获取局部序号（优先从空洞池获取）
             int localIndex = _sequenceManager.GetNextLocalIndex(workflowIdSafe, algorithmType);
 
-            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, prepared.Parameters, prepared.Runtime);
+            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, prepared);
         }
 
         public NodeModel CreateIndexedNode(string algorithmType, int localIndex, string? name = null, string? workflowId = null)
@@ -54,13 +54,13 @@ namespace SunEyeVision.UI.Services.Workflow
             // 获取全局索引（跨所有工作流共享）
             int globalIndex = _sequenceManager.GetNextGlobalIndex();
 
-            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, prepared.Parameters, prepared.Runtime);
+            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, prepared);
         }
 
         /// <summary>
         /// 创建节点的内部实现
         /// </summary>
-        private NodeModel CreateIndexedNodeInternal(string algorithmType, int globalIndex, int localIndex, string? name, string workflowId, ToolParameters? preparedParameters, SunEyeVision.Workflow.RuntimeToolConfiguration? preparedRuntime)
+        private NodeModel CreateIndexedNodeInternal(string algorithmType, int globalIndex, int localIndex, string? name, string workflowId, SunEyeVision.Workflow.RuntimeToolConfiguration preparedRuntime)
         {
             if (string.IsNullOrWhiteSpace(algorithmType))
             {
@@ -93,16 +93,16 @@ namespace SunEyeVision.UI.Services.Workflow
             node.LocalIndex = localIndex;
 
             // 初始化节点参数
-            if (preparedParameters != null) node.Parameters = preparedParameters;
+
             node.RuntimeConfiguration = preparedRuntime;
 
             return node;
         }
 
-        private (ToolParameters? Parameters, SunEyeVision.Workflow.RuntimeToolConfiguration? Runtime) PrepareConfiguration(string toolId)
+        private SunEyeVision.Workflow.RuntimeToolConfiguration PrepareConfiguration(string toolId)
         {
             if (!_directory.Contains(toolId))throw new InvalidOperationException("工具未准入："+toolId);
-            return (null, SunEyeVision.Workflow.RuntimeToolConfiguration.Create(_directory,toolId));
+            return SunEyeVision.Workflow.RuntimeToolConfiguration.Create(_directory,toolId);
         }
     }
 }

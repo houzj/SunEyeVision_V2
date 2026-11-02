@@ -1,7 +1,6 @@
 using SunEyeVision.Plugin.Editing.Wpf;
 using System;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Shell.Windows;

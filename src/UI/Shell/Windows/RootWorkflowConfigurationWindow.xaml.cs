@@ -76,8 +76,8 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private string FormatReference(OutputReference reference)
  {
-  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.Query.FormalOutputContractReader?.Invoke(reference.NodeId)?.FirstOrDefault(o=>BindingClrAdapter.OutputPortId(o)==reference.PortId);
-  return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??output?.Name??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
+  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.Query.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
+  return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
  }
  private void EditParametersClick(object sender,RoutedEventArgs e)=>Safe(()=>
  {
@@ -121,13 +121,14 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
   {
    var result=_readResult(node.Id);if(result==null)continue;
    using var reader=result.AcquireReader();
-   foreach(var output in _context.Query.FormalOutputContractReader?.Invoke(node.Id)??Array.Empty<OutputVariable>())
+   foreach(var schema in new[]{_context.Query.GetSchema(node.Id)}.OfType<ToolSchema>())
+   foreach(var port in schema.Outputs)
    {
-    if(output.Kind!=OutputVariableKind.Data)continue;Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
+
     if(port.Type.Shape!=ValueShape.Scalar)continue;
     object? value=reader.Values?.Contains(port.Id)==true?reader.Values.Get<object?>(port.Id):null;
     var text=value switch{null=>"",string str=>str.Length>1024?str[..1024]+"…":str,bool or byte or short or int or long or float or double or decimal=>Convert.ToString(value,CultureInfo.InvariantCulture)??"",_=>"非标量运行值"};
-    rows.Add(new(node.DispName+" · "+(output.DisplayName??output.Name),text));
+    rows.Add(new(node.DispName+" · "+(schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id),text));
    }
   }
   Results.ItemsSource=rows;RefreshImagePreview();

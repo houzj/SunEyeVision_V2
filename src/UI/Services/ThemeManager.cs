@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.UI.Themes;
-using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.UI.Themes.Base;
+
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Services
@@ -79,7 +79,7 @@ namespace SunEyeVision.UI.Services
             ApplyThemeDictionary(_currentTheme);
             WindowTitleBarThemer.UpdateTheme(_currentTheme == AppTheme.Dark);
             // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）
-            SdkWindowTheme.SetDark(_currentTheme == AppTheme.Dark);
+
             _logger.Log(LogLevel.Info, $"主题系统初始化完成，当前主题: {_currentTheme}", "ThemeManager");
         }
 
@@ -98,7 +98,7 @@ namespace SunEyeVision.UI.Services
             // 刷新所有已打开弹窗的系统标题栏（切主题瞬间即时跟随）
             WindowTitleBarThemer.UpdateTheme(theme == AppTheme.Dark);
             // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）
-            SdkWindowTheme.SetDark(theme == AppTheme.Dark);
+
 
             // 持久化用户选择
             try
@@ -136,7 +136,7 @@ namespace SunEyeVision.UI.Services
         /// <summary>
         /// 替换 MergedDictionaries 中的主题字典。
         /// 主题字典追加到集合末尾（最高优先级），覆盖 AppResources 合入的 SDK DefaultTheme.xaml 兜底值。
-        /// 追加前先做 SDK key 契约校验，确保每个 SdkThemeKeys 常量在主题字典中都有定义，
+        /// 追加前先做 SDK key 契约校验，确保每个 ThemeKeys 常量在主题字典中都有定义，
         /// 防止 SDK 控件因 key 缺失静默回退到 DefaultTheme 兜底值（违反 rule-015）。
         /// </summary>
         private void ApplyThemeDictionary(AppTheme theme)
@@ -162,19 +162,19 @@ namespace SunEyeVision.UI.Services
 
             // 2. 创建新主题字典并校验 SDK key 契约
             var themeDict = CreateThemeDictionary(theme);
-            ValidateSdkThemeKeys(themeDict);
+            ValidateThemeKeys(themeDict);
 
             // 3. 追加到末尾（最高优先级），覆盖 AppResources 合入的 SDK DefaultTheme 兜底值
             merged.Add(themeDict);
         }
 
         /// <summary>
-        /// 校验 SDK 语义 key 契约：遍历 SdkThemeKeys 全部常量，确认每个 key 在主题字典中都有定义。
+        /// 校验 SDK 语义 key 契约：遍历 ThemeKeys 全部常量，确认每个 key 在主题字典中都有定义。
         /// 若缺失则抛异常（rule-015 报错优先，不静默回退到 DefaultTheme 兜底值）。
         /// </summary>
-        private static void ValidateSdkThemeKeys(ResourceDictionary themeDict)
+        private static void ValidateThemeKeys(ResourceDictionary themeDict)
         {
-            var missing = typeof(SdkThemeKeys)
+            var missing = typeof(ThemeKeys)
                 .GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue()!)
@@ -184,9 +184,9 @@ namespace SunEyeVision.UI.Services
             if (missing.Length > 0)
             {
                 throw new InvalidOperationException(
-                    $"SDK 主题 key 契约校验失败，以下 key 未在当前主题字典 {themeDict.Source} 中定义，SDK 控件将静默回退到 DefaultTheme 兜底值: "
+                    $"主题 key 契约校验失败，以下 key 未在当前主题字典 {themeDict.Source} 中定义，部分控件可能无法显示正确主题: "
                     + string.Join(", ", missing)
-                    + "。请检查 SdkThemeKeys 与 UI 主题字典（ThemeKeys + Light/DarkTheme）的一致性。");
+                    + "。请检查 ThemeKeys 与 UI 主题字典（ThemeKeys + Light/DarkTheme）的一致性。");
             }
         }
 

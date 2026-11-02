@@ -491,8 +491,8 @@ internal static class CommunicationReceiveProcessor
     {
         foreach (var output in definition.AssemblyOutputs)
         {
-            if (!output.SourceFieldId.HasValue)
-                output.ResolveBindingIdentity();
+            if (!output.SourceFieldId.HasValue && !string.IsNullOrWhiteSpace(output.BindingSource))
+                throw new InvalidOperationException("通信字段绑定尚未迁移，请重新配置。");
             if (!output.SourceFieldId.HasValue)
             {
                 output.Value = null;

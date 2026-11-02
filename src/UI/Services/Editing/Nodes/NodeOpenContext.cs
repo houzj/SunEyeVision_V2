@@ -25,12 +25,7 @@ namespace SunEyeVision.UI.Services.Editing
         /// </summary>
         public WorkflowNodeBase Node { get; set; } = null!;
 
-        /// <summary>
-        /// 工具实例（从节点创建）
-        /// </summary>
-        public IToolPlugin? ToolInstance { get; set; }
-
-        /// <summary>
+/// <summary>
         /// 工具元数据（从 ToolRegistry 获取）
         /// </summary>
         public ToolMetadata? Metadata { get; set; }

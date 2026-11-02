@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Controls.Foundation;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Parameters;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -87,42 +87,7 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
         => ConfigureVariablePublications("", nodeId, mappings);
 
     public void ConfigureVariablePublications(string workflowId, string nodeId, IReadOnlyList<SendVariablePublication> mappings)
-    {
-        var solution = Solution;
-        var owners = solution.Workflows.Where(w => (string.IsNullOrEmpty(workflowId) || w.Id == workflowId) && w.Nodes.Any(n => n.Id == nodeId)).ToArray();
-        if (owners.Length != 1) throw new InvalidOperationException("无法确定发送节点工作流作用域。");
-        if (mappings.Select(m => m.VariableId).Distinct().Count() != mappings.Count) throw new InvalidOperationException("同一变量不能重复配置。");
-        var pending = mappings.Select(m => (Mapping: m, Variable: solution.GlobalVariables.FirstOrDefault(v => v.Id == m.VariableId)
-            ?? throw new InvalidOperationException("目标变量不存在。"))).ToArray();
-        var owner = owners[0];
-        var node = owner.Nodes.Single(n => n.Id == nodeId);
-        var outputs = new OutputBindingChangeService().ReadContract(node)
-            ?? throw new InvalidOperationException("发送节点尚无正式输出声明。");
-        var assignments = pending.Select(item =>
-        {
-            var (mapping, variable) = item;
-            if (variable.Type != mapping.DataType) throw new InvalidOperationException("目标变量类型已变化。");
-            if (variable.ProducerBinding is { } existing &&
-                (existing.SourceReference.NodeId != nodeId || existing.SourceReference.ScopeId != owner.Id))
-                throw new InvalidOperationException("目标变量已有其他生产来源。");
-            var output = outputs.SingleOrDefault(o => o.Name == mapping.OutputKey)
-                ?? throw new InvalidOperationException("发送字段不属于节点的正式输出声明。");
-            var port = BindingClrAdapter.DescribeOutput(output);
-            var producer = new ProducerBinding
-            {
-                ReferenceExpression = BindingReferenceSerializer.Serialize(new OutputReference(nodeId, port.Id, port.Type,
-                    scopeId: owner.Id, storage: port.Storage)),
-                WorkflowName = owner.Name, NodeName = node.Name, ResultDisplayName = output.DisplayName
-            };
-            var validation = GlobalProducerBindingRules.Validate(solution, producer, variable);
-            if (validation.State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional)) throw new InvalidOperationException(validation.Reason);
-            return (Variable: variable, Producer: producer);
-        }).ToArray();
-        foreach (var variable in solution.GlobalVariables.Where(v => v.ProducerBinding is { } producer &&
-            producer.SourceReference.NodeId == nodeId && producer.SourceReference.ScopeId == owner.Id))
-            variable.ProducerBinding = null;
-        foreach (var assignment in assignments) assignment.Variable.ProducerBinding = assignment.Producer;
-    }
+        => throw new InvalidOperationException("通信变量发布的正式字段身份尚未迁移，当前不可用。");
 
     public async Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default)
     {
@@ -131,31 +96,7 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
         if (request.Inputs.Count == 0) throw new FormatException("请配置发送数据。");
         foreach (var input in request.Inputs) CommunicationSendTypes.Validate(input.Value, input.DataType);
         if (request.Kind == "Variable")
-        {
-            if (request.Inputs.Count != 1) throw new FormatException("变量提交单元必须为一项。");
-            var input = request.Inputs[0];
-            var variable = solution.GlobalVariables.FirstOrDefault(v => v.Id == input.TargetId) ?? throw new InvalidOperationException("目标变量不存在。");
-            CommunicationSendTypes.RequireTarget(input.DataType, variable.Type, variable.Name);
-            var value = CommunicationReceiveService.Normalize(input.Value);
-            if (CommunicationReceiveService.ValueType(value) != variable.Type) throw new FormatException("发送值与变量类型不一致。");
-            var producer = variable.ProducerBinding;
-            var owners = solution.Workflows.Where(w => w.Nodes.Any(n => n.Id == request.NodeId)).ToArray();
-            var workflowId = request.WorkflowId ?? (owners.Length == 1 ? owners[0].Id : null);
-            var node = solution.Workflows.FirstOrDefault(w => w.Id == workflowId)?.Nodes.FirstOrDefault(n => n.Id == request.NodeId);
-            var output = node == null ? null : new OutputBindingChangeService().ReadContract(node)?.SingleOrDefault(o => o.FieldId == input.FieldId);
-            var source = producer?.SourceReference;
-            if (source == null || output == null || source.NodeId != request.NodeId || source.ScopeId != workflowId ||
-                source.PortId != BindingClrAdapter.OutputPortId(output) || source.MemberFieldPath.Count != 0 ||
-                source.Selection is not BindingSelection.AllItems || GlobalProducerBindingRules.Validate(solution, producer!, variable).State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional))
-                throw new InvalidOperationException("请重新确认发送变量绑定；发送节点不是目标变量生产者。");
-            return new(variable.Name, value, ct =>
-            {
-                ct.ThrowIfCancellationRequested();
-                if (!ReferenceEquals(solution, Solution) || !ReferenceEquals(producer, variable.ProducerBinding)) throw new InvalidOperationException("变量来源配置已变化。");
-                // The tool output is the publication. Never overwrite persisted design initial values.
-                return Task.FromResult(1);
-            });
-        }
+            throw new InvalidOperationException("通信变量发布的正式字段身份尚未迁移，当前不可用。");
         CommunicationSendEventDefinition definition;
         if (request.Kind == "Event")
         {

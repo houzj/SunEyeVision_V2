@@ -17,7 +17,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 请求更新模块结果。宿主按当前选中节点及方案/运行身份决定接纳；
         /// 调用方不能依赖画布节点的 IsSelected 投影代替宿主选择。
         /// </summary>
-        void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
+        void UpdateModuleResults(DeclaredOutputSnapshot? result, string? nodeName, string? toolId = null, string? nodeId = null);
 
         void ClearResultGraphics();
         void ClearResultHighlight();

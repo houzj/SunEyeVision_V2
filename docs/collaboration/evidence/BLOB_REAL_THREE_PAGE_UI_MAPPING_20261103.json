@@ -1898,7 +1898,7 @@
     "五阈值模式、额外筛选判定、四缺值显示仅窗口local预览；未恢复变更拒绝捕获/运行/确认，永不入方案",
     "主菜单保存合同不扩展，按既有editor准备路径允许明确拒绝，恢复原Single后原正式保存链继续"
   ],
-  "verification": "pending-final-candidate",
+  "verification": "candidate-four-tracks-passed-see-BLOB_REAL_THREE_PAGE_UI_CANDIDATE_20261103.json;VS-manual-unverified",
   "manualUnverified": [
     "VS实际设计器与原厂并排外观验收由用户另验"
   ]

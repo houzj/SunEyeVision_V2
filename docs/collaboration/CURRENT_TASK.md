@@ -1,6 +1,6 @@
 ## 2026-11-03 画布 UI 中立坐标独立候选
 
-领域 ABI 2910bfceb 和 V3 金样回归 b5bef7ce7 已接入独立分支。UI 全量初版 0 错，CanvasLayout 40/40、Root 38/38，隐藏 Text 六组及真实布局→移动→撤销→复制→保存重开→图像源/Blob 执行链通过；最终源码封包与同载荷复验仍在进行。完整范围、原脚本替代及未验见 evidence/画布几何中立化-界面适配整链-20261103.html；Group 不扩。
+领域 ABI 2910bfceb 和 V3 金样回归 b5bef7ce7 已接入独立分支。UI 全量初版 0 错，CanvasLayout 40/40、Root 38/38，隐藏 Text 六组及真实布局→移动→撤销→复制→保存重开→图像源/Blob 执行链通过；源码 368913771 完整 Release 0 错；同载包 Canvas 40、Root 38、Domain 6、Graph 31，隐藏 Core 14、Window 15、CanvasLayout 整链均通过，封包 SHA 7019593A57662E2C4B72819DAF1847B60C85CBDE2A94320D764E4AF677E119D7。完整范围、原脚本替代及未验见 evidence/画布几何中立化-界面适配整链-20261103.html；Group 不扩。
 
 ## 2026-11-03 SDK旧源退出集中合入
 

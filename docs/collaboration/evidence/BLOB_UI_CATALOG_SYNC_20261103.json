@@ -1,0 +1,149 @@
+{
+  "schema": "blob-ui-catalog-sync/v1",
+  "sourceIntegration": "a06e90b7c",
+  "originalIdentityFieldsPreserved": 1267,
+  "changedRows": [
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C10.original-advanced-expand",
+      "section": "dependencies"
+    },
+    {
+      "current": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF",
+      "old": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "entry": "C10.original-advanced-expand",
+      "section": "dependencies"
+    },
+    {
+      "current": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93",
+      "old": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "entry": "C10.original-advanced-expand",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C01.original-parameter-host",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C01.original-parameter-host",
+      "section": "localDependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C02.vm-enumeration-g-image-source",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C04.apps-xmlui-boolean",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C03.original-enumeration",
+      "section": "dependencies"
+    },
+    {
+      "current": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF",
+      "old": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "entry": "C05.original-number-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93",
+      "old": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "entry": "C05.original-number-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF",
+      "old": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "entry": "C07.original-expanded-reference-window",
+      "section": "dependencies"
+    },
+    {
+      "current": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93",
+      "old": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "entry": "C07.original-expanded-reference-window",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C09.original-integer-radio",
+      "section": "dependencies"
+    },
+    {
+      "current": "0F82026E5993F8E9D0116B480699DAC5589B5D1B53F4E432F95AE7162B353C9B",
+      "old": "40A04A53FBF5BCBEDE0D1811A46319B73D9CA57957662F0AF22F55494D67A57E",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+      "entry": "C13.original-text-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C13.original-text-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876",
+      "old": "8A19CC150BB05200C1C29F4310F623EEF19ECA8E8BD4E667DB2817F8D69E0D9B",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "entry": "C13.original-text-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF",
+      "old": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "entry": "C13.original-text-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
+      "old": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "entry": "C13.original-graphic-style-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876",
+      "old": "8A19CC150BB05200C1C29F4310F623EEF19ECA8E8BD4E667DB2817F8D69E0D9B",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+      "entry": "C13.original-graphic-style-composition",
+      "section": "dependencies"
+    },
+    {
+      "current": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF",
+      "old": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C",
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "entry": "C13.original-graphic-style-composition",
+      "section": "dependencies"
+    }
+  ],
+  "currentSourceCount": 9,
+  "formal": "未构建，不移签候选成绩"
+}

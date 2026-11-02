@@ -71,7 +71,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
@@ -79,11 +79,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C"
+          "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -212,7 +212,7 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "localSha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29",
+          "localSha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
@@ -275,7 +275,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -517,7 +517,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -684,7 +684,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -758,7 +758,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -1391,11 +1391,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C"
+          "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/StableSliderTrack.cs",
@@ -1846,11 +1846,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C"
+          "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C662CF516111D1CC3BE5AED647E419E761A19988578F6871BCFE1D4043967435"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -3065,7 +3065,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -4094,7 +4094,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
-          "sha256": "40A04A53FBF5BCBEDE0D1811A46319B73D9CA57957662F0AF22F55494D67A57E"
+          "sha256": "0F82026E5993F8E9D0116B480699DAC5589B5D1B53F4E432F95AE7162B353C9B"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -4310,7 +4310,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
@@ -4342,7 +4342,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
-          "sha256": "8A19CC150BB05200C1C29F4310F623EEF19ECA8E8BD4E667DB2817F8D69E0D9B"
+          "sha256": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
@@ -4350,7 +4350,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C"
+          "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -4935,7 +4935,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "E811127A2E280C591CEDB13D24FFF466AE18AD5AD880A38568AE3982F0421A29"
+          "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
@@ -4967,11 +4967,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
-          "sha256": "8A19CC150BB05200C1C29F4310F623EEF19ECA8E8BD4E667DB2817F8D69E0D9B"
+          "sha256": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "34819666DB0379EDA8A185CD4B3EA353ADDA0B793403A4C9EA1AB3CC0112580C"
+          "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -6935,5 +6935,50 @@
         "status": "当前正式产品源15171638；低阈值真实窗口引用九组已在正式Release定向通过。各entry原validation保留为历史版本，不可直接视为当前整体验收；ROI、图文和其他完整能力仍有未完成。"
       }
     }
-  ]
+  ],
+  "currentUiPreviewCandidate": {
+    "sourceIntegration": "a06e90b7c",
+    "candidateProduct": "e645ad9aa20aa25e9e343ac777f4ccc8526e5c5e",
+    "candidateReport": "docs/collaboration/evidence/BLOB_UI_COMPONENTS_CANDIDATE_20261103.json",
+    "status": "公共组合候选自测通过且源码已集成；主仓正式与Blob整页未验",
+    "scope": "窗口内纯UI状态及交互退役，不代表控件真实功能或算法闭口",
+    "currentSources": [
+      {
+        "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "sha256": "9AE413116BD530EEFE61F26F705C4AFB7401DDBF2E952CCB7244ED0A1E0629CA"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Display/NativeDisplayUiDraftRows.cs",
+        "sha256": "0F82026E5993F8E9D0116B480699DAC5589B5D1B53F4E432F95AE7162B353C9B"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
+        "sha256": "51ADECC72D60B398E60957A4A98E4DB45454FE2FF6652829917E3F60C855E876"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "sha256": "B114490CD967F4987AB0684F3A8AE47B624F6F434819F276574C739658C2B5BF"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+        "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Numeric/NativeUiDraftRange.cs",
+        "sha256": "35F10B287CC39AA07CC05A01CE1CD1ED2731BD93BC2492A1CE99094A65497E7D"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Parameters/NativeJudgmentUiDraftControls.cs",
+        "sha256": "DBA28669E106D436575228C73468BF5A151CC68F8BA6081BE66FB54F87ADDFE3"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Parameters/NativeThresholdUiDraftControls.cs",
+        "sha256": "5801F67FFF79DF61AF07737DCCB57A6BD1A3A119461DE014DFCCC2B404D46E63"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Parameters/NativeUiConditionalFields.cs",
+        "sha256": "7E69613DD0502C29553B3F6B0F0A486D65863F5375D900F4D94AD404DB6FAE7B"
+      }
+    ]
+  }
 }

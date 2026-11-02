@@ -1,3 +1,12 @@
+## 2026-11-03 新批联合UI编译与独立自测核收
+
+主线16e7fa35c增加ToolExecutionOwner.IsRetired只读状态，Runtime独立OutDir编译0错，未覆盖既有桌面Release。域候选c3fc7b4cf的Workflow构建与中立真实载荷21/21、查询be7305357的SDK构建与7/7日志已主线实际核收，非87f4新批集成结果。只读scope合同最终为INodeInfoProvider.ScopeId，DataSourceQueryService不允许重定向WorkflowId且不留空provider构造；provider逐次验文档/流程ID、对象、目录与owner退役。
+
+联合UI检查点a2964bd3c已0错；相机独立线保留采集/帧复制/取消释放，复用原件视口和参数控件，样本帧与停止/关闭/迟到帧隐藏宿主通过，发现并修关闭清图Dispatcher问题，双向参数与最终固定待做。无消费旧GenericParamsTemplate/ManufacturerTemplateSelector退出，未为其另迁缺失ParamGroup闭包。早期无界探针仅编译输出后主动停止，不记产品超时；后续使用实际隐藏桌面和75秒watchdog。
+
+完整Release当前由旧SDK测试消费者阻断，域线接续迁tests/SunEyeVision.Plugin.SDK.Tests及正式Blob双参构造；UI线迁有效S4/Root/Admission宿主，新批尚未统一封包或交付。原测试需求、退出理由、相应新测试/未实现须保留，不能将停用计通过；SDK Compile Remove只是现阶段闭包，最终目标树仍需清理不再消费的旧实现（Group例外）。主HTML已集中同步当前事实与待项。
+
+技术总监回执主仓b2966be94/显示中立映射aaa15e760；已回复共享边界，不要求rebase/停工，不将双方候选混成正式成绩。
 ## 2026-11-03 新批共享范围补齐与隔离纠正
 
 域/UI/查询已开始独立源码迁移，尚无可运行组合。补冻结ScopedNodeInfoProvider(Solution,string)：捕获方案目录并逐次验证ReferenceEquals/active、scope归属及节点同代，不在Workflow用节点目录自证。AvailableDataSource唯一required ParameterSetting身份，纯旧SourceFieldId/BindingSuffix与旧CLR/字符串树一并退出；查询线独占SDK直接旧宿主编译闭包，UI线处理通信/Group旧可视入口及必要非视觉共用类型，禁止新绑定降回旧模型。通信缺正式字段来源身份，本批不造第三类引用，入口保护并保留非视觉基础。各线可合入已固定接口检查点aa332c168核对联编但不可编辑对方文件或称检查点可运行。

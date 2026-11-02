@@ -144,11 +144,14 @@ public static class CommunicationTriggerEvaluation
 
     public static void ValidateTarget(WorkflowNodeBase node, CommunicationParameterAssignment assignment)
     {
-        var property = node.Parameters.GetType().GetProperty(assignment.Property);
-        var declared = assignment.Kind == "运行参数"
-            ? node.Parameters is IRuntimeParameterContract runtime && runtime.GetRuntimeParameters().Any(p => p.Bindable && p.PropertyName == assignment.Property)
-            : assignment.Kind == "模块输入" && node.Parameters is IInputSlotContract input && input.GetInputSlots().Any(p => p.Bindable && p.PropertyName == assignment.Property);
-        if (!declared || property?.CanWrite != true || !property.PropertyType.IsInstanceOfType(assignment.Value))
-            throw new InvalidOperationException($"参数绑定目标失效或类型不匹配：{node.Name}.{assignment.Property}。");
+        var configuration=node.RuntimeConfiguration??throw new InvalidOperationException("节点缺少已准入 Runtime 配置。");
+        if(assignment.Kind=="模块输入")throw new InvalidOperationException("通信触发的模块输入覆盖尚未接入正式身份合同。");
+        var ports=assignment.Kind=="运行参数"?configuration.SettingsSchema.Inputs:
+            throw new InvalidOperationException("参数绑定目标类型无效。");
+        var port=ports.SingleOrDefault(item=>item.Id==assignment.Property)
+            ??throw new InvalidOperationException($"参数绑定目标已失效：{node.Name}.{assignment.Property}。");
+        try{_=SunEyeVision.Plugin.Contracts.ValueRules.Freeze(port,assignment.Value);}
+        catch(Exception failure)when(failure is ArgumentException or InvalidOperationException)
+        {throw new InvalidOperationException($"参数绑定目标类型不匹配：{node.Name}.{assignment.Property}。",failure);}
     }
 }

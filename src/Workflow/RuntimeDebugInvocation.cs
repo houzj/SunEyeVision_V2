@@ -215,8 +215,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
                     !ReferenceEquals(admitted.Owner,publishedOwner??workflow.ExecutionOwner)||admitted.NodeId!=dependency.ScopeId+"/"+dependency.NodeId||published.SourceWorkflowId!=dependency.ScopeId||
                     published.Identity!=admitted.ToInvocationIdentity(dependency.NodeId))
                     throw new InvalidOperationException("来源结果不属于当前工作流的完整成功发布。");
-                var declaration=new ToolSchema(Array.Empty<Port>(),(new OutputBindingChangeService().ReadContract(sourceNode)??Array.Empty<OutputVariable>())
-                    .Where(p=>p.Kind==OutputVariableKind.Data).Select(BindingClrAdapter.DescribeOutput));
+                var originalDeclaration=new OutputBindingChangeService().ReadContract(sourceNode)??throw new InvalidOperationException("来源缺少正式输出声明。");
+                var declaration=new ToolSchema(Array.Empty<Port>(),originalDeclaration.Outputs,outputDisplay:originalDeclaration.OutputDisplay);
                 if(declaration.Fingerprint!=published.Schema.Fingerprint)throw new InvalidOperationException("来源声明已更改，请重新运行来源节点。");
                 if(previewInputs is not null&&!ReferenceEquals(sourceConfiguration,sourceNode.RuntimeConfiguration))throw new InvalidOperationException("预览来源配置在捕获期间已变化。");
                 var reader=published.AcquireReader();readers.Add(reader);

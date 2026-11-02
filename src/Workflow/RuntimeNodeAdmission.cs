@@ -34,7 +34,5 @@ public static class RuntimeNodeAdmission
         var configuration = node.RuntimeConfiguration ?? throw new InvalidOperationException("节点缺少已准入 Runtime 配置：" + node.Id);
         if (!string.Equals(configuration.ToolId, node.ToolType, StringComparison.Ordinal))
             throw new InvalidOperationException("节点工具身份不一致：" + node.Id);
-        if ((node.Parameters is not null && (node.Parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters generic || generic.GetParameterNames().Any())) || node.ParamSettings.Settings.Any())
-            throw new InvalidOperationException("Runtime 节点不能包含旧 SDK 参数或绑定：" + node.Id);
     }
 }

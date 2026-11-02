@@ -17,16 +17,13 @@ public sealed record ExecutionInputIssue(string InputKey, string InputName, stri
 public sealed class OutputBindingChangeService
 {
     private Solution? _solution;
-    private Dictionary<ScopedNodeIdentity, IReadOnlyList<OutputVariable>?> _contracts = new();
-    private Dictionary<(ScopedNodeIdentity Node, string Input), (string Interpretation, string Expression)> _policies = new();
-    private Dictionary<string, string> _variableTypes = new();
-    public Func<WorkflowNodeBase, IReadOnlyList<OutputVariable>?>? StaticContractReader { get; set; }
+    private Dictionary<ScopedNodeIdentity, ToolSchema?> _contracts = new();
     public IReadOnlyList<ScopedNodeIdentity> InvalidatedNodes { get; private set; } = Array.Empty<ScopedNodeIdentity>();
     public IReadOnlyList<string> InvalidatedNodeIds => InvalidatedNodes.Select(n => n.NodeId).Distinct().ToArray();
 
     public void Reset(Solution? solution)
     {
-        StaticContractReader = null; _solution = solution; InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
+        _solution = solution; InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
         Capture();
     }
 
@@ -53,10 +50,8 @@ public sealed class OutputBindingChangeService
     internal OutputBindingChangeService ForCandidate(Solution candidate) => new()
     {
         _solution = candidate,
-        _contracts = new(_contracts),
-        _policies = new(_policies),
-        _variableTypes = new(_variableTypes),
-        StaticContractReader = StaticContractReader
+        _contracts = new(_contracts)
+
     };
 
     /// <summary>Read-only validation of the frozen local execution model; never modifies design configuration.</summary>
@@ -67,72 +62,17 @@ public sealed class OutputBindingChangeService
     }
 
     /// <summary>Read-only node-scoped validation of a frozen plan. Invalid inputs never abort unrelated nodes.</summary>
-    public static IReadOnlyDictionary<string, IReadOnlyList<ExecutionInputIssue>> GetExecutionInputIssues(Workflow workflow, string? sourceWorkflowId = null)
+    public static IReadOnlyDictionary<string,IReadOnlyList<ExecutionInputIssue>> GetExecutionInputIssues(Workflow workflow,string? sourceWorkflowId=null)
     {
-        var reader = new OutputBindingChangeService();
-        var nodes = workflow.Nodes.ToDictionary(n => n.Id);
-        var issues = new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>(StringComparer.Ordinal);
-        foreach (var node in workflow.Nodes)
+        var issues=new Dictionary<string,IReadOnlyList<ExecutionInputIssue>>(StringComparer.Ordinal);
+        foreach(var node in workflow.Nodes)
         {
-            if(node.RuntimeConfiguration is not null)
-            {
-                var runtimeIssues=RuntimeInputBindings.Validate(workflow,node,sourceWorkflowId??workflow.Id);
-                if(runtimeIssues.Count>0)issues.Add(node.Id,runtimeIssues);
-                continue;
-            }
-            var nodeIssues = new List<ExecutionInputIssue>();
-            var declaredInputs = BindingRelationCatalog.Describe(node);
-            foreach (var input in declaredInputs.Where(i => i.Active && !i.InternalProjection))
-            {
-                void Add(string reason) => nodeIssues.Add(new(input.Key, input.Name, $"{node.Name}.{input.Name} [{input.Key}]：{reason}"));
-                if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) { Add("需要重新绑定：" + required); continue; }
-                if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) { Add("待校验：" + pending); continue; }
-                if(BindingRelationCatalog.GetSetting(node,input.Key) is {ReferenceExpression:not null} typed)
-                {
-                    var validation=WorkflowBindingContext.ValidateTyped(workflow,node,typed,sourceWorkflowId??workflow.Id);
-                    if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)Add(validation.Reason);
-                    continue;
-                }
-                var expression = input.Read();
-                if (!BindingInputCatalog.TryReference(expression, nodes.Keys, input.ReferenceOnly, out var id, out var path))
-                {
-                    if (input.ReferenceOnly && !string.IsNullOrWhiteSpace(expression)) Add("绑定来源格式无效，请重新绑定。");
-                    continue;
-                }
-                if (string.IsNullOrWhiteSpace(path)) { Add("绑定路径不完整，请重新绑定。"); continue; }
-                if (id.StartsWith("__", StringComparison.Ordinal))
-                {
-                    if (id is not ("__GlobalVars__" or "__VariableId__" or "__SubroutineInputs__")) Add("绑定来源不存在，请重新绑定。");
-                    continue;
-                }
-                if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
-                { Add("绑定来源跨出当前工作流作用域，请使用全局变量。"); continue; }
-                try
-                {
-                    var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes,
-                        BindingRelationCatalog.GetSetting(node,input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic)
-                        : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
-                    if (validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved) Add(validation.Reason);
-                }
-                catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
-                {
-                    Add("来源输出契约无效：" + ex.Message);
-                }
-            }
-            // An invalidated ordinary ParamSetting may already have been removed from the model.
-            foreach (var key in node.Parameters.RebindingRequired.Keys.Concat(node.Parameters.BindingValidationPending.Keys).Distinct())
-            {
-                if (declaredInputs.Any(i => i.Key == key) || !BindingInputCatalog.IsInputActive(node.Parameters, key)) continue;
-                if (key.StartsWith("Row:") || key.StartsWith("Part:") || key.StartsWith("Variable:")) continue;
-                var reason = node.Parameters.RebindingRequired.TryGetValue(key, out var required)
-                    ? "需要重新绑定：" + required : "待校验：" + node.Parameters.BindingValidationPending[key];
-                nodeIssues.Add(new(key, key, $"{node.Name}.{key}：{reason}"));
-            }
-            if (nodeIssues.Count > 0) issues[node.Id] = nodeIssues.ToArray();
+            if(node.RuntimeConfiguration is null){issues.Add(node.Id,new[]{new ExecutionInputIssue("runtime-configuration","Runtime","节点缺少已准入 Runtime 配置。")});continue;}
+            var errors=RuntimeInputBindings.Validate(workflow,node,sourceWorkflowId??workflow.Id);
+            if(errors.Count>0)issues.Add(node.Id,errors);
         }
         return issues;
     }
-
     public IReadOnlyList<string> GetCandidateNodeIds(string workflowId, string targetId)
     {
         var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
@@ -188,276 +128,90 @@ public sealed class OutputBindingChangeService
         var frozen=new ManualReferenceQualification(workflow,workflow.Id,targetId);
         return reference=>reference is not null && frozen.Validate(reference) is null;
     }
-    public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId, string targetId)
+    public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId,string targetId)
     {
-        var flow = _solution?.Workflows.FirstOrDefault(w => w.Id == workflowId);
-        var node = flow?.Nodes.FirstOrDefault(n => n.Id == targetId);
-        if (flow == null || node == null) return Array.Empty<string>();
-        var ids = flow.Nodes.Select(n => n.Id).ToArray();
-        return BindingRelationCatalog.Describe(node).Where(i => i.Active && !i.InternalProjection &&
-            BindingRelationCatalog.SourceWorkflowId(node, i, workflowId) == workflowId)
-            .Select(i => BindingInputCatalog.TryReference(i.Read(), ids, i.ReferenceOnly, out var id, out _) && ids.Contains(id) ? id : null)
-            .OfType<string>().Distinct().ToArray();
+        var flow=_solution?.Workflows.FirstOrDefault(w=>w.Id==workflowId);
+        var node=flow?.Nodes.FirstOrDefault(n=>n.Id==targetId);
+        if(flow is null||node?.RuntimeConfiguration is null)return Array.Empty<string>();
+        var ids=flow.Nodes.Select(n=>n.Id).ToHashSet(StringComparer.Ordinal);
+        return BindingRelationCatalog.References(node,true).Values.SelectMany(setting=>WorkflowBindingContext.ReferenceNodes(setting.Reference,workflowId))
+            .Where(reference=>reference.ScopeId==workflowId&&ids.Contains(reference.NodeId)).Select(reference=>reference.NodeId).Distinct(StringComparer.Ordinal).ToArray();
     }
 
-    private static IReadOnlyList<OutputVariable> DescribeRuntimeOutputs(ToolSchema schema,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor? projection)
+    public ToolSchema? ReadContract(WorkflowNodeBase node)
     {
-        var shown=projection?.Kind==SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
-            ?projection.Columns.Where(column=>column.Value is not null).Select(column=>column.Value!.PortId).ToHashSet(StringComparer.Ordinal):null;
-        return schema.Outputs.Select(port=>new OutputVariable
+        ArgumentNullException.ThrowIfNull(node);
+        var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点缺少已准入 Runtime 配置："+node.Id);
+        RuntimeNodeAdmission.Require(runtime.Directory,node);
+        return runtime.Schema;
+    }
+
+    private IReadOnlyList<OutputBindingChange> Reconcile(ScopedNodeIdentity? committed,bool all)
+    {
+        InvalidatedNodes=Array.Empty<ScopedNodeIdentity>();
+        if(_solution is null)return Array.Empty<OutputBindingChange>();
+        var nodes=_solution.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node))).ToDictionary(item=>item.Id,item=>item.Node);
+        var current=nodes.ToDictionary(pair=>pair.Key,pair=>ReadContract(pair.Value));
+        var changes=new List<(Action Apply,Action Undo)>();var notices=new List<OutputBindingChange>();var invalidated=new HashSet<ScopedNodeIdentity>();
+        var pendingConfigurations=new Dictionary<WorkflowNodeBase,(RuntimeToolConfiguration Before,RuntimeToolConfiguration After)>();
+        foreach(var variable in _solution.GlobalVariables)
         {
-        PortId=port.Id,Name=port.Id,DisplayName=schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,
-        DisplayMembers=schema.FindOutputDisplay(port.Id)?.Children??Array.Empty<OutputDisplayNode>(),ValueDeclaration=port.Type,AllowsNull=port.Nullable,
-        DeclaredType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?typeof(IReadOnlyImage):null,
-        VariableType=port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image?"Image":"",
-        IsCollection=port.Type.Shape==ValueShape.Sequence,Kind=OutputVariableKind.Data,DisplayInResultPanel=shown is null||shown.Contains(port.Id)
-        }).ToArray();
-    }
-
-    public IReadOnlyList<OutputVariable>? ReadContract(WorkflowNodeBase node)
-    {
-        if(node.RuntimeConfiguration is { } runtime)return DescribeRuntimeOutputs(runtime.Schema,runtime.ResultProjection);
-        var contract = node.Parameters is IOutputContractProvider provider ? provider.GetOutputContract() : StaticContractReader?.Invoke(node);
-        if (contract == null && ToolRegistry.ToolExists(node.ToolType))
-            contract = ToolRegistry.GetAllPropertyMetadata(node.ToolType).Select(m => new OutputVariable
-            {
-                Name = m.PropertyName, DisplayName = m.DisplayName, VariableType = SdkTypeVocabulary.ToTypeVocabulary(m.DeclaredType ?? m.PropertyType!) ?? "",
-                DeclaredType = m.DeclaredType, ValueDeclaration=m.ValueDeclaration,AllowsNull=m.AllowsNull, IsCollection = m.IsCollection, FixedCount = m.FixedCount, FieldId = m.FieldId, Group = m.GroupName
-            }).ToArray();
-        return contract?.Select(o => o.CopyDeclaration()).ToArray();
-    }
-
-    private IReadOnlyList<OutputBindingChange> Reconcile(ScopedNodeIdentity? committed, bool all)
-    {
-        InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
-        if (_solution == null) return Array.Empty<OutputBindingChange>();
-        var nodes = _solution.Workflows.SelectMany(w => w.Nodes.Select(n => (Id: new ScopedNodeIdentity(w.Id, n.Id), Node: n))).ToDictionary(p => p.Id, p => p.Node);
-        var current = nodes.ToDictionary(p => p.Key, p => ReadContract(p.Value));
-        var relations = BindingRelationCatalog.Describe(_solution);
-        var plan = new List<(Action Apply, Action Undo)>(); var notices = new List<OutputBindingChange>();
-        var invalidated = new HashSet<ScopedNodeIdentity>(); var invalidVariables = new HashSet<string>();
-        var pendingVariables = new Dictionary<string, string>();
-
-        foreach (var variable in _solution.GlobalVariables)
-        {
-            if (variable.ProducerBinding is not { } producer) continue;
-            var validation = GlobalProducerBindingRules.Validate(_solution, producer, variable, source =>
-            {
-                var reference = producer.SourceReference;
-                return current.GetValueOrDefault(new ScopedNodeIdentity(reference.ScopeId!, source.Id));
-            });
-            var priorPending = variable.BindingValidationPending;
-            if (validation.State == BindingCompatibility.Unresolved)
-            {
-                pendingVariables[variable.Id] = validation.Reason;
-                plan.Add((() => variable.BindingValidationPending = validation.Reason, () => variable.BindingValidationPending = priorPending));
-            }
-            else if (validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional)
-                plan.Add((() => variable.BindingValidationPending = "", () => variable.BindingValidationPending = priorPending));
+            if(variable.ProducerBinding is not {} producer)continue;
+            var validation=GlobalProducerBindingRules.Validate(_solution,producer,variable,source=>current.GetValueOrDefault(new(producer.SourceReference.ScopeId!,source.Id)));
+            var oldPending=variable.BindingValidationPending;
+            if(validation.State==BindingCompatibility.Unresolved)
+                changes.Add((()=>variable.BindingValidationPending=validation.Reason,()=>variable.BindingValidationPending=oldPending));
+            else if(validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional)
+                changes.Add((()=>variable.BindingValidationPending="",()=>variable.BindingValidationPending=oldPending));
             else
             {
-                invalidVariables.Add(variable.Id);
-                var prior = variable.RebindingReason; var consumers = variable.ConsumerBindings.ToList();
-                plan.Add((() => { variable.ProducerBinding = null; variable.RebindingReason = validation.Reason; variable.BindingValidationPending = ""; variable.ConsumerBindings.Clear(); },
-                    () => { variable.ProducerBinding = producer; variable.RebindingReason = prior; variable.BindingValidationPending = priorPending; variable.ConsumerBindings = consumers; }));
-                foreach (var consumer in consumers)
+                var oldReason=variable.RebindingReason;var consumers=variable.ConsumerBindings.ToList();
+                changes.Add((()=>{variable.ProducerBinding=null;variable.RebindingReason=validation.Reason;variable.BindingValidationPending="";variable.ConsumerBindings.Clear();},
+                    ()=>{variable.ProducerBinding=producer;variable.RebindingReason=oldReason;variable.BindingValidationPending=oldPending;variable.ConsumerBindings=consumers;}));
+                foreach(var consumer in consumers)
                 {
-                    var targets = nodes.Where(p => p.Key.NodeId == consumer.NodeId && (string.IsNullOrEmpty(consumer.WorkflowId) || p.Key.WorkflowId == consumer.WorkflowId)).ToArray();
-                    if (targets.Length == 1) Mark(targets[0].Key, targets[0].Value, consumer.ParameterName, "全局变量输入来源已变化，请重新绑定", false);
-                }
-            }
-        }
-
-        foreach (var relation in relations)
-        {
-            var input = relation.Input; var expression = input.Read();
-            var parameters = relation.Node.Parameters;
-            if(relation.Node.RuntimeConfiguration is not null && BindingRelationCatalog.GetReference(relation.Node,input.Key) is {} runtimeReference)
-            {
-                // Invalid Runtime sources remain explicit references. Readiness is recomputed from declarations;
-                // never resurrect an old literal or write SDK parameter markers for this node.
-                continue;
-            }
-            if(BindingRelationCatalog.GetSetting(relation.Node,input.Key) is {ReferenceExpression:not null} typed)
-            {
-                var workflow=_solution.Workflows.Single(w=>w.Id==relation.Target.WorkflowId);
-                var typedValidation=WorkflowBindingContext.ValidateTyped(workflow,relation.Node,typed,workflow.Id);
-                if(typedValidation.State==BindingCompatibility.Unresolved)Mark(relation.Target,relation.Node,input.Key,typedValidation.Reason,true);
-                else if(typedValidation.State==BindingCompatibility.Incompatible)
-                {Mark(relation.Target,relation.Node,input.Key,typedValidation.Reason,false);UpdateMarker(parameters.BindingValidationPending,input.Key,null);}
-                else
-                {UpdateMarker(parameters.BindingValidationPending,input.Key,null);if(all||committed==relation.Target)UpdateMarker(parameters.RebindingRequired,input.Key,null);}
-                continue;
-            }
-            // A cleared marker is not a new empty constant. Explicit ordinary constants have their own descriptor.
-            if (expression.Length == 0 && input.ValidateLiteral == null)
-            {
-                if (parameters.BindingValidationPending.ContainsKey(input.Key)) UpdateMarker(parameters.BindingValidationPending, input.Key, null);
-                continue;
-            }
-            if (expression.Length == 0 && parameters.RebindingRequired.ContainsKey(input.Key) &&
-                !relation.Node.ParamSettings.Settings.Any(s => s.ParameterName == input.Key && s.BindingType == BindingType.Constant)) continue;
-            // Recognition is solution-wide; resolution remains strictly in the consumer's scope.
-            var localIds = nodes.Keys.Concat(_contracts.Keys).Select(k => k.NodeId);
-            var bound = BindingInputCatalog.TryReference(expression, localIds, input.ReferenceOnly, out var sourceId, out var path);
-            BindingValidation validation;
-            OutputVariable? oldOutput = null; OutputVariable? nextOutput = null;
-            if (bound && sourceId == "__SubroutineInputs__")
-            {
-                var parents = nodes.Values.Where(n => n.Parameters is SubroutineParameters p &&
-                    (string.IsNullOrEmpty(n.SubroutineId) ? p.SubroutineId : n.SubroutineId) == relation.Target.WorkflowId).ToArray();
-                var ports = parents.SelectMany(n => ((SubroutineParameters)n.Parameters).Inputs).Where(p => p.Name == PropertyPathParser.ExtractPropertyName(path)).ToArray();
-                validation = ports.Length == 0 ? new(BindingCompatibility.Unresolved, "子程序输入端口契约暂不可用，等待校验")
-                    : BindingContractValidator.Validate(ports.Select(p => new OutputVariable { Name = p.Name, VariableType = p.TypeName, IsCollection = false }).ToArray(), path, input.AllowedTypes);
-            }
-            else if (bound && (sourceId == "__GlobalVars__" || sourceId == "__VariableId__"))
-            {
-                parameters.BindingSourceIdentities.TryGetValue(input.Key, out var savedVariable);
-                var variable = _solution.GlobalVariables.FirstOrDefault(v => savedVariable?.Expression == expression && savedVariable.VariableId != null ? v.Id == savedVariable.VariableId
-                    : sourceId == "__VariableId__" ? v.Id == path : v.Name == PropertyPathParser.ExtractPropertyName(path));
-                if (variable != null && sourceId == "__GlobalVars__" && savedVariable?.Expression == expression && savedVariable.VariableId != null)
-                {
-                    var oldName = PropertyPathParser.ExtractPropertyName(path.Split('.')[0]);
-                    var updated = sourceId + "." + variable.Name + path[oldName.Length..];
-                    if (updated != expression) plan.Add((() => input.Write(updated), () => input.Write(expression)));
-                    path = variable.Name + path[oldName.Length..];
-                }
-                validation = variable == null || invalidVariables.Contains(variable.Id) || !string.IsNullOrEmpty(variable.RebindingReason)
-                    ? new(BindingCompatibility.Incompatible, "全局变量不存在或输入来源已失效，请重新绑定")
-                    : pendingVariables.TryGetValue(variable.Id, out var pendingVariable) ? new(BindingCompatibility.Unresolved, pendingVariable)
-                    : BindingContractValidator.Validate(new[] { new OutputVariable { Name = "Value", VariableType = variable.Type, IsCollection = SdkTypeVocabulary.ToSystemType(variable.Type)?.IsArray } },
-                        sourceId == "__VariableId__" ? "Value" : "Value" + path[variable.Name.Length..], input.AllowedTypes);
-                if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && variable != null && !input.AllowsTypeChange &&
-                    _variableTypes.TryGetValue(variable.Id, out var oldVariableType) && oldVariableType != variable.Type)
-                    validation = new(BindingCompatibility.Incompatible, "全局变量类型已变化，请重新绑定");
-            }
-            else if (bound)
-            {
-                var source = new ScopedNodeIdentity(BindingRelationCatalog.SourceWorkflowId(relation.Node, input, relation.Target.WorkflowId), sourceId);
-                if (source == relation.Target) throw new InvalidOperationException("输入绑定不能引用节点自身。");
-                if (source.WorkflowId != relation.Target.WorkflowId && !input.InternalProjection || !nodes.ContainsKey(source))
-                    validation = new(BindingCompatibility.Incompatible, "来源不在当前工作流中；跨流程请使用全局变量，请重新绑定");
-                else
-                {
-                    _contracts.TryGetValue(source, out var previous);
-                    var root = PropertyPathParser.ExtractPropertyName(path.Split('.')[0]);
-                    oldOutput = previous?.FirstOrDefault(o => o.Name == root);
-                    nextOutput = current[source]?.FirstOrDefault(o => o.Name == root);
-                    parameters.BindingSourceIdentities.TryGetValue(input.Key, out var savedSource);
-                    var fieldId = input.ReadFieldId?.Invoke() ?? (savedSource?.Expression == expression && savedSource.WorkflowId == source.WorkflowId ? savedSource.FieldId : null) ?? oldOutput?.FieldId;
-                    if (fieldId != null && nextOutput?.FieldId != fieldId)
+                    var targets=nodes.Where(pair=>pair.Key.NodeId==consumer.NodeId&&(string.IsNullOrEmpty(consumer.WorkflowId)||pair.Key.WorkflowId==consumer.WorkflowId)).ToArray();
+                    if(targets.Length!=1)continue;
+                    var target=targets[0];var original=target.Value.RuntimeConfiguration??throw new InvalidOperationException("节点缺少 Runtime 配置。");
+                    var runtime=pendingConfigurations.TryGetValue(target.Value,out var pending)?pending.After:original;
+                    var key=consumer.InputKey??consumer.ParameterName;
+                    if(runtime.Fields.Read(key) is VariableSetting setting)
                     {
-                        nextOutput = current[source]?.FirstOrDefault(o => o.FieldId == fieldId);
-                        if (nextOutput != null)
-                        {
-                            var newExpression = sourceId + "." + nextOutput.Name + path[root.Length..];
-                            plan.Add((() => input.Write(newExpression), () => input.Write(expression)));
-                            path = nextOutput.Name + path[root.Length..];
-                        }
+                        var replacement=runtime.WithFieldSettings(new Dictionary<string,ParameterSetting>{{key,setting with{RebindingReason="全局变量输入来源已变化，请重新绑定"}}});
+                        pendingConfigurations[target.Value]=(original,replacement);
                     }
-                    validation = fieldId != null && nextOutput == null && current[source] != null
-                        ? new(BindingCompatibility.Incompatible, "原输出身份已删除，请重新绑定")
-                        : BindingContractValidator.Validate(current[source], path, input.AllowedTypes,
-                            BindingRelationCatalog.GetSetting(relation.Node,input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic);
-                    if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && !input.AllowsTypeChange && oldOutput != null && nextOutput != null && oldOutput.VariableType != nextOutput.VariableType)
-                        validation = new(BindingCompatibility.Incompatible, "上游输出类型已变化，请重新绑定");
+                    invalidated.Add(target.Key);notices.Add(new(target.Value.Name,key,"全局变量输入来源已变化，请重新绑定",target.Value.Id,target.Key.WorkflowId));
                 }
             }
-            else if (input.ReferenceOnly) validation = new(BindingCompatibility.Incompatible, "绑定来源格式无效，请重新绑定");
-            else if (input.ValidateLiteral != null) validation = input.ValidateLiteral(expression) is { } error
-                ? new(BindingCompatibility.Incompatible, error) : new(BindingCompatibility.Compatible, "常量适配");
-            else continue;
-
-            if (validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional && bound && _policies.TryGetValue((relation.Target, input.Key), out var policy) &&
-                policy.Expression == expression && policy.Interpretation != input.InterpretationKey)
-                validation = new(BindingCompatibility.Incompatible, "输入解释规则已变化，请重新绑定");
-            if (validation.State == BindingCompatibility.Unresolved)
-                Mark(relation.Target, relation.Node, input.Key, validation.Reason, true);
-            else if (validation.State == BindingCompatibility.Incompatible)
-            {
-                if (bound) plan.Add((() => input.Write(""), () => input.Write(expression)));
-                foreach (var variable in _solution.GlobalVariables)
-                    foreach (var consumer in variable.ConsumerBindings.Where(c => c.NodeId == relation.Target.NodeId &&
-                        (string.IsNullOrEmpty(c.WorkflowId) || c.WorkflowId == relation.Target.WorkflowId) &&
-                        (c.InputKey != null ? c.InputKey == input.Key : c.ParameterName == input.Key || c.ParameterName == input.Name)).ToArray())
-                        plan.Add((() => variable.ConsumerBindings.Remove(consumer), () => variable.ConsumerBindings.Add(consumer)));
-                Mark(relation.Target, relation.Node, input.Key, validation.Reason, false);
-                UpdateMarker(parameters.BindingValidationPending, input.Key, null);
-            }
-            else
-            {
-                UpdateMarker(parameters.BindingValidationPending, input.Key, null);
-                if (all || committed == relation.Target) UpdateMarker(parameters.RebindingRequired, input.Key, null);
-            }
         }
-        var applied = new Stack<Action>();
-        try
-        {
-            foreach (var action in plan) { applied.Push(action.Undo); action.Apply(); }
-            SolutionExecutionDependencyGraph.Compile(_solution, checkReadiness: false);
-        }
-        catch { while (applied.Count > 0) applied.Pop()(); throw; }
-        foreach (var pair in current)
-            if (_contracts.TryGetValue(pair.Key, out var old) && old != null && pair.Value != null &&
-                !old.Select(Signature).SequenceEqual(pair.Value.Select(Signature))) invalidated.Add(pair.Key);
-        foreach (var missing in _contracts.Keys.Except(current.Keys)) invalidated.Add(missing);
+        foreach(var (node,configuration) in pendingConfigurations)
+            changes.Add((()=>node.RuntimeConfiguration=configuration.After,()=>node.RuntimeConfiguration=configuration.Before));
+        var applied=new Stack<Action>();
+        try{foreach(var change in changes){applied.Push(change.Undo);change.Apply();}SolutionExecutionDependencyGraph.Compile(_solution,checkReadiness:false);}
+        catch{while(applied.Count>0)applied.Pop()();throw;}
+        foreach(var pair in current)
+            if(_contracts.TryGetValue(pair.Key,out var old)&&old is not null&&pair.Value is not null&&
+                (old.Fingerprint!=pair.Value.Fingerprint||System.Text.Json.JsonSerializer.Serialize(old.OutputDisplay)!=System.Text.Json.JsonSerializer.Serialize(pair.Value.OutputDisplay)))
+                invalidated.Add(pair.Key);
+        foreach(var missing in _contracts.Keys.Except(current.Keys))invalidated.Add(missing);
         bool added;
         do
         {
-            added = false;
-            foreach (var relation in relations.Where(r => r.Input.Active && (r.Node.RuntimeConfiguration?.IsExecutionFieldActive(r.Input.Key)!=false) && !invalidated.Contains(r.Target)))
-                if (BindingInputCatalog.TryReference(relation.Input.Read(), nodes.Keys.Where(k => k.WorkflowId == relation.Target.WorkflowId).Select(k => k.NodeId), relation.Input.ReferenceOnly, out var id, out _) &&
-                    invalidated.Contains(new(relation.Input.ReadWorkflowId?.Invoke() ?? relation.Target.WorkflowId, id))) added |= invalidated.Add(relation.Target);
-        } while (added);
-        InvalidatedNodes = invalidated.ToArray();
-        foreach (var id in invalidated) if (nodes.TryGetValue(id, out var node)) { node.LastResult = null; node.OutputCache = null; }
-        Capture(); return notices.Distinct().ToArray();
-
-        void UpdateMarker(Dictionary<string, string> markers, string key, string? reason)
-        {
-            var had = markers.TryGetValue(key, out var old);
-            if (reason == old || reason == null && !had) return;
-            plan.Add((() => { if (reason == null) markers.Remove(key); else markers[key] = reason; },
-                () => { if (had) markers[key] = old!; else markers.Remove(key); }));
-        }
-        void Mark(ScopedNodeIdentity identity, WorkflowNodeBase node, string key, string reason, bool pending)
-        {
-            UpdateMarker(pending ? node.Parameters.BindingValidationPending : node.Parameters.RebindingRequired, key, reason);
-            invalidated.Add(identity); notices.Add(new(node.Name, key, reason, node.Id, identity.WorkflowId));
-        }
+            added=false;
+            foreach(var (identity,node) in nodes)
+            {
+                if(invalidated.Contains(identity)||node.RuntimeConfiguration is null)continue;
+                if(BindingRelationCatalog.References(node,true).Values.SelectMany(setting=>WorkflowBindingContext.ReferenceNodes(setting.Reference,identity.WorkflowId))
+                    .Any(source=>invalidated.Contains(new(source.ScopeId,source.NodeId))))added|=invalidated.Add(identity);
+            }
+        }while(added);
+        InvalidatedNodes=invalidated.ToArray();
+        foreach(var id in invalidated)if(nodes.TryGetValue(id,out var node)){node.LastResult=null;node.OutputCache=null;}
+        Capture();return notices.Distinct().ToArray();
     }
-
     private void Capture()
     {
-        _contracts = _solution == null ? new() : _solution.Workflows.SelectMany(w => w.Nodes.Select(n => (Id: new ScopedNodeIdentity(w.Id, n.Id), Node: n))).ToDictionary(p => p.Id, p => ReadContract(p.Node));
-        _policies = _solution == null ? new() : BindingRelationCatalog.Describe(_solution).ToDictionary(r => (r.Target, r.Input.Key), r => (r.Input.InterpretationKey, r.Input.Read()));
-        _variableTypes = _solution?.GlobalVariables.ToDictionary(v => v.Id, v => v.Type) ?? new();
-        if (_solution == null) return;
-        foreach (var variable in _solution.GlobalVariables)
-        {
-            foreach (var consumer in variable.ConsumerBindings)
-            {
-                var targets = _solution.Workflows.Where(w => string.IsNullOrEmpty(consumer.WorkflowId) || w.Id == consumer.WorkflowId)
-                    .SelectMany(w => w.Nodes.Where(n => n.Id == consumer.NodeId).Select(n => (Workflow: w.Id, Node: n))).ToArray();
-                if (targets.Length != 1) continue;
-                var descriptor = BindingRelationCatalog.Describe(targets[0].Node).FirstOrDefault(i => consumer.InputKey != null ? i.Key == consumer.InputKey : i.Key == consumer.ParameterName || i.Name == consumer.ParameterName);
-                if (descriptor == null) continue;
-                consumer.WorkflowId = targets[0].Workflow; consumer.InputKey = descriptor.Key;
-                if (descriptor.Key.StartsWith("Input:", StringComparison.Ordinal)) consumer.ParameterName = descriptor.Name;
-            }
-        }
-        foreach (var relation in BindingRelationCatalog.Describe(_solution))
-        {
-            var expression = relation.Input.Read();
-            var ids = _contracts.Keys.Where(k => k.WorkflowId == relation.Target.WorkflowId).Select(k => k.NodeId);
-            var identities = relation.Node.Parameters.BindingSourceIdentities;
-            if (!BindingInputCatalog.TryReference(expression, ids, relation.Input.ReferenceOnly, out var id, out var path)) { identities.Remove(relation.Input.Key); continue; }
-            if (identities.TryGetValue(relation.Input.Key, out var prior) && prior.Expression == expression && (prior.FieldId != null || prior.VariableId != null)) continue;
-            var scope = relation.Input.ReadWorkflowId?.Invoke() ?? relation.Target.WorkflowId;
-            var field = _contracts.GetValueOrDefault(new(scope, id))?.FirstOrDefault(o => o.Name == PropertyPathParser.ExtractPropertyName(path.Split('.')[0]));
-            var variable = _solution.GlobalVariables.FirstOrDefault(v => id == "__VariableId__" ? v.Id == path : id == "__GlobalVars__" && v.Name == PropertyPathParser.ExtractPropertyName(path.Split('.')[0]));
-            identities[relation.Input.Key] = new(expression, scope, id, relation.Input.ReadFieldId?.Invoke() ?? field?.FieldId, variable?.Id);
-        }
+        _contracts=_solution is null?new():_solution.Workflows.SelectMany(flow=>flow.Nodes.Select(node=>(Id:new ScopedNodeIdentity(flow.Id,node.Id),Node:node)))
+            .ToDictionary(item=>item.Id,item=>ReadContract(item.Node));
     }
-    private static string Signature(OutputVariable o) => $"{o.FieldId}/{o.Name}/{o.VariableType}/{o.DeclaredType}/{o.IsCollection}/{o.FixedCount}/{o.Kind}/{o.DisplayName}/{o.ValueDeclaration?.Fingerprint}/{o.AllowsNull}";
 }

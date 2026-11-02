@@ -542,8 +542,7 @@ public sealed partial class NodeConfigurationEditHost
                 }
                 else
                 {
-                    var result = node.Parameters.Validate();
-                    if (!result.IsValid) throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "节点参数无效。");
+                    throw new InvalidOperationException("节点缺少已准入 Runtime 配置。");
                 }
                 if (issues.TryGetValue(node.Id, out var inputIssues) && inputIssues.Count > 0)
                     throw new InvalidOperationException(inputIssues[0].Message);
@@ -634,8 +633,7 @@ public sealed partial class NodeConfigurationEditHost
         internal bool Applied;
         internal readonly List<(Workflow Root,RootWorkflowConfiguration Before,RootWorkflowConfiguration After)> Roots=new();
         internal List<GlobalVariable>? PreviousOrder;
-        internal readonly List<(WorkflowNodeBase Node, SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters Parameters,
-            SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSettingContainer Settings, RuntimeToolConfiguration? Runtime)> Nodes = new();
+        internal readonly List<(WorkflowNodeBase Node, RuntimeToolConfiguration? Runtime)> Nodes = new();
         internal readonly List<(GlobalVariable Variable, GlobalVariable.ConfigurationState Configuration, GlobalVariable.ValueState Value)> Variables = new();
         internal readonly List<string> AddedInstances = new();
         internal readonly List<(GlobalVariable Variable, bool ValueChanged)> Notifications = new();
@@ -644,7 +642,7 @@ public sealed partial class NodeConfigurationEditHost
         {
             if (!Applied) return;
             foreach(var root in Roots)root.Root.ApplyRootConfigurationRaw(root.Before);
-            foreach (var node in Nodes) { node.Node.Parameters = node.Parameters; node.Node.ParamSettings = node.Settings; node.Node.RuntimeConfiguration = node.Runtime; }
+            foreach (var node in Nodes) node.Node.RuntimeConfiguration = node.Runtime;
             foreach (var variable in Variables)
             {
                 variable.Variable.ApplyConfigurationRaw(variable.Configuration);
@@ -682,7 +680,7 @@ public sealed partial class NodeConfigurationEditHost
             var target = _nodeInstances[pair.Key];
             if (ParametersSignature(target) != ParametersSignature(pair.Value)
                 ||target.RuntimeConfiguration?.CurrentValuesIdentity!=pair.Value.RuntimeConfiguration?.CurrentValuesIdentity)
-                projection.Nodes.Add((target, target.Parameters, target.ParamSettings, target.RuntimeConfiguration));
+                projection.Nodes.Add((target, target.RuntimeConfiguration));
         }
         var configChanged = plans.ToDictionary(p => p.Next.Id,
             p => VariableConfigurationSignature(p.Target) != VariableConfigurationSignature(p.Next), StringComparer.Ordinal);
@@ -704,8 +702,8 @@ public sealed partial class NodeConfigurationEditHost
         foreach (var pair in nextNodes)
             if (projection.Nodes.Any(p => ReferenceEquals(p.Node, _nodeInstances[pair.Key])))
             {
-                _nodeInstances[pair.Key].Parameters = pair.Value.Parameters;
-                _nodeInstances[pair.Key].ParamSettings = pair.Value.ParamSettings;
+
+
                 _nodeInstances[pair.Key].RuntimeConfiguration = pair.Value.RuntimeConfiguration;
                 RawMutationCompleted();
             }
@@ -843,9 +841,8 @@ public sealed partial class NodeConfigurationEditHost
     }, WorkflowSerializationOptions.Compact);
     private static string ToolConfigurationSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
-        Type = node.RuntimeConfiguration?.SettingsType.FullName ?? node.Parameters.GetType().FullName,
+        Type = node.RuntimeConfiguration?.SettingsType.FullName,
         Runtime = node.RuntimeConfiguration?.ConfigurationIdentity,
-        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null, node.ParamSettings
     }, WorkflowSerializationOptions.Compact);
     private static string VariableConfigurationSignature(GlobalVariable variable) => JsonSerializer.Serialize(new
     {
@@ -877,9 +874,7 @@ public sealed partial class NodeConfigurationEditHost
     private static void SetParameters(WorkflowNodeBase target, WorkflowNodeBase source)
     {
         target.RuntimeConfiguration = source.RuntimeConfiguration?.Copy();
-        target.Parameters = source.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(source.Parameters)
-            : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
-        target.ParamSettings = BindingConfigurationStore.CopySettings(source.ParamSettings);
+
     }
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact)
         ?? throw new InvalidOperationException("无法复制编辑绑定设置。");

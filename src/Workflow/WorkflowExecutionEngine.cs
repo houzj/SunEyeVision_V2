@@ -46,9 +46,7 @@ namespace SunEyeVision.Workflow
     public class WorkflowExecutionEngine
     {
         private readonly WorkflowEngine _workflowEngine;
-        private readonly IPluginManager _pluginManager;
         private readonly ILogger _logger;
-        private readonly ToolExecutor _toolExecutor;
 
         // 根运行会话。当前执行器明确只承载一个根运行；并发请求会被拒绝，避免过去
         // `_currentContext` 与 `_cancellationTokenSource` 被后一次运行静默覆盖。
@@ -86,19 +84,13 @@ namespace SunEyeVision.Workflow
         /// 创建工作流执行引擎
         /// </summary>
         /// <param name="workflowEngine">工作流引擎</param>
-        /// <param name="pluginManager">插件管理器</param>
         /// <param name="logger">日志器</param>
-        /// <param name="toolExecutor">工具执行器（可选，不提供时自动创建）</param>
         public WorkflowExecutionEngine(
             WorkflowEngine workflowEngine,
-            IPluginManager pluginManager,
-            ILogger logger,
-            ToolExecutor? toolExecutor = null)
+            ILogger logger)
         {
             _workflowEngine = workflowEngine ?? throw new ArgumentNullException(nameof(workflowEngine));
-            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _toolExecutor = toolExecutor ?? new ToolExecutor(new ParameterResolver());
             // ★ SSOT 统一由 WorkflowContext 管理，引擎不再维护独立 DSQS
         }
 
@@ -696,12 +688,8 @@ namespace SunEyeVision.Workflow
         private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node,
             SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs)
         {
-            if(node.RuntimeConfiguration is { } runtime)
-                return new ToolExecutionProfile(ToolConcurrencyKind.ResourceExclusive,runtime.Capabilities.ResourceKeys,1);
-            if (node is AlgorithmNode { Tool: IToolExecutionProfileProvider provider })
-                return provider.DescribeExecution(node.Parameters, communicationInputs) ?? ToolExecutionProfile.LegacyExclusive;
-
-            return ToolExecutionProfile.LegacyExclusive;
+            var runtime=node.RuntimeConfiguration??throw new InvalidOperationException("节点缺少已准入 Runtime 配置。");
+            return new ToolExecutionProfile(ToolConcurrencyKind.ResourceExclusive,runtime.Capabilities.ResourceKeys,1);
         }
 
         /// <summary>
@@ -748,7 +736,6 @@ namespace SunEyeVision.Workflow
             foreach (var node in source.Nodes)
             {
                 // Group/旧 SDK 分支暂不可接纳；保留现有 Group 源码等待后续迁移。
-                ToolParameters? executionParameters = null;
                 RuntimeNodeAdmission.Require(_workflowEngine.RuntimeDirectory, node);
                 var configuration=node.RuntimeConfiguration!.Copy();
                 if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
@@ -760,12 +747,9 @@ namespace SunEyeVision.Workflow
                 }
                 var executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
                 // 复制参数绑定配置
-                executionNode.ParamSettings = new ParamSettingContainer();
                 if (request != null && request.NodeBindingOverrides.TryGetValue(node.Id, out var overrides))
                 {
-                    if(executionNode.RuntimeConfiguration is {} configured)
-                        executionNode.RuntimeConfiguration=configured.WithFieldValues(overrides);
-                    else foreach(var value in overrides)executionNode.ParamSettings.SetSetting(ParamSetting.CreateConstant(value.Key,value.Value));
+                    executionNode.RuntimeConfiguration=executionNode.RuntimeConfiguration!.WithFieldValues(overrides);
                 }
                 executionNode.CameraCaptureService = request?.CameraCaptureService;
                 executionNode.ResourcePaths = request?.ResourcePaths;
@@ -786,6 +770,8 @@ namespace SunEyeVision.Workflow
                     executionNode.HostInputPreparer=sourceInput;
                 }
 
+                // Group implementation is preserved but excluded until its separate migration.
+#if false
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
                 if (executionParameters is ISubWorkflowExecutor executor)
                 {
@@ -811,6 +797,7 @@ namespace SunEyeVision.Workflow
                     };
                 }
 
+#endif
                 target.AddNode(executionNode);
             }
 

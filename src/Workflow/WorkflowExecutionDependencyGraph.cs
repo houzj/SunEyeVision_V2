@@ -120,26 +120,6 @@ public sealed class WorkflowExecutionDependencyGraph
 
         foreach (var node in workflow.Nodes)
         {
-            foreach (var input in BindingRelationCatalog.DescribeExecution(node).Where(i => i.Active))
-            {
-                if(BindingRelationCatalog.GetReference(node,input.Key) is not null)continue;
-                if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
-                if (inputIssues?.TryGetValue(node.Id, out var failures) == true && failures.Any(f => f.InputKey == input.Key)) continue;
-                if (!BindingInputCatalog.TryReference(input.Read(), knownNodes, input.ReferenceOnly, out var sourceId, out var path)) continue;
-                if (string.IsNullOrWhiteSpace(path)) throw new InvalidOperationException($"节点 {node.Name} 的 {input.Name} 绑定不完整。");
-                if (sourceId is "__GlobalVars__" or "__VariableId__")
-                {
-                    var variable = variables?.FirstOrDefault(v => sourceId == "__VariableId__" ? v.Id == path : v.Name == PropertyPathParser.ExtractPropertyName(path));
-                    if (variable is { HasProducer: true } && knownNodes.Contains(variable.ProducerNodeId) &&
-                        (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
-                        AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
-                    continue;
-                }
-                if (sourceId == "__SubroutineInputs__") continue;
-                if (BindingRelationCatalog.SourceWorkflowId(node, input, sourceWorkflowId ?? workflow.Id) != (sourceWorkflowId ?? workflow.Id))
-                    throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
-                AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
-            }
             foreach(var (fieldId,setting) in BindingRelationCatalog.References(node,executionOnly:true))
             {
                 if(inputIssues?.TryGetValue(node.Id,out var failures)==true&&failures.Any(f=>f.InputKey==fieldId))continue;
@@ -150,14 +130,6 @@ public sealed class WorkflowExecutionDependencyGraph
                     AddRuntimeDependency(dependency.NodeId,node.Id,fieldId);
                 }
             }
-            if (node.Parameters is SunEyeVision.Plugin.SDK.Models.Communication.IReceiveVariableInputProvider receive)
-                foreach (var id in receive.GetReceiveVariableIds())
-                {
-                    var variable = variables?.FirstOrDefault(v => v.Id == id && v.HasProducer);
-                    if (variable != null && knownNodes.Contains(variable.ProducerNodeId)
-                        && (string.IsNullOrEmpty(variable.ProducerWorkflowId) || variable.ProducerWorkflowId == (sourceWorkflowId ?? workflow.Id)))
-                        AddDependency(variable.ProducerNodeId, node.Id, WorkflowDependencyKind.ParameterBinding, "ReceiveVariable");
-                }
             if(node.RuntimeConfiguration is not null)
                 foreach(var (fieldId,reference) in BindingRelationCatalog.VariableReferences(node,executionOnly:true))
                 {

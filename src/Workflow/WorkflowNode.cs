@@ -162,14 +162,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public double Height { get; set; } = 90;
 
-        /// <summary>
-        /// 节点参数
-        /// </summary>
-        private ToolParameters _parameters = null!;
-        public ToolParameters Parameters { get => _parameters; set => SetProperty(ref _parameters, value); }
-
         /// <summary>Neutral Runtime settings. A Runtime node persists this payload
-        /// instead of SDK Parameters; the host owns bindings in ParamSettings.</summary>
+        /// as the sole source of fields and bindings.</summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public RuntimeToolConfiguration? RuntimeConfiguration { get; set; }
 
@@ -185,15 +179,6 @@ namespace SunEyeVision.Workflow
             return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(configuration.Definition,
                 resolvedSettings??configuration.CaptureSettings(), inputs, context, outputRequests);
         }
-
-        /// <summary>
-        /// 参数绑定配置
-        /// </summary>
-        /// <remarks>
-        /// 支持参数与父节点输出的动态绑定。
-        /// 用于在执行时自动从父节点获取参数值。
-        /// </remarks>
-        public ParamSettingContainer ParamSettings { get; set; }
 
         /// <summary>
         /// 用户选择的图像显示来源，保存正式 OutputReference 表达式。
@@ -523,8 +508,6 @@ namespace SunEyeVision.Workflow
             Name = string.Empty;
             DispName = string.Empty;
             ToolType = string.Empty;
-            Parameters = new GenericToolParameters();
-            ParamSettings = new ParamSettingContainer();
         }
 
         /// <summary>
@@ -536,8 +519,6 @@ namespace SunEyeVision.Workflow
             Name = name;
             DispName = dispName;
             ToolType = toolType;
-            Parameters = new GenericToolParameters();
-            ParamSettings = new ParamSettingContainer();
         }
 
         /// <summary>
@@ -636,99 +617,11 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 创建工具实例（的初始化处理方法）
-        /// </summary>
-        public virtual IToolPlugin? CreateInstance()
-        {
-            throw new InvalidOperationException("旧 SDK 节点实例入口已停用；请使用已准入 Runtime 执行或调试。");
-        }
-        /// <summary>
-        /// 从字典创建节点（仅用于兼容旧格式 JSON 的反序列化）
-        /// </summary>
-        public static WorkflowNodeBase FromDictionary(Dictionary<string, object> dict)
-        {
-            var id = dict.TryGetValue("Id", out var idVal) ? idVal?.ToString() ?? Guid.NewGuid().ToString() : Guid.NewGuid().ToString();
-            var name = dict.TryGetValue("Name", out var nameVal) ? nameVal?.ToString() ?? "Node" : "Node";
-            var dispName = dict.TryGetValue("DispName", out var dispNameVal) ? dispNameVal?.ToString() ?? string.Empty : string.Empty;
-            var toolType = dict.TryGetValue("ToolType", out var toolTypeVal) ? toolTypeVal?.ToString() ?? string.Empty : string.Empty;
-            var isEnabled = dict.TryGetValue("IsEnabled", out var enabledVal) && Convert.ToBoolean(enabledVal);
-
-            // 读取位置属性
-            var positionX = dict.TryGetValue("PositionX", out var xVal) ? Convert.ToDouble(xVal) : 0.0;
-            var positionY = dict.TryGetValue("PositionY", out var yVal) ? Convert.ToDouble(yVal) : 0.0;
-            var width = dict.TryGetValue("Width", out var wVal) ? Convert.ToDouble(wVal) : 140.0;
-            var height = dict.TryGetValue("Height", out var hVal) ? Convert.ToDouble(hVal) : 90.0;
-
-            // 读取索引属性
-            var localIndex = dict.TryGetValue("LocalIndex", out var localIdx) ? Convert.ToInt32(localIdx) : -1;
-            var globalIndex = dict.TryGetValue("GlobalIndex", out var globalIdx) ? Convert.ToInt32(globalIdx) : -1;
-
-            // 推断节点类型（优先读取 NodeType 字段，否则从 ToolType 推断）
-            NodeType nodeType = NodeType.Algorithm;
-            if (dict.TryGetValue("NodeType", out var typeVal))
-            {
-                if (typeVal is int intVal && Enum.IsDefined(typeof(NodeType), intVal))
-                {
-                    nodeType = (NodeType)intVal;
-                }
-                else if (typeVal is string strVal && Enum.TryParse<NodeType>(strVal, out var parsed))
-                {
-                    nodeType = parsed;
-                }
-            }
-
-            var node = new WorkflowNodeBase(id, name, dispName, toolType)
-            {
-                LocalIndex = localIndex,
-                GlobalIndex = globalIndex,
-                IsEnabled = isEnabled,
-                PositionX = positionX,
-                PositionY = positionY,
-                Width = width,
-                Height = height
-            };
-
-            // 恢复参数
-            if (dict.TryGetValue("Parameters", out var paramsVal) && paramsVal != null)
-            {
-                // 参数对象已经由 JsonSerializer 直接反序列化
-                // 无需使用 Dictionary 转换层
-                if (paramsVal is ToolParameters parameters)
-                {
-                    node.Parameters = parameters;
-                    // 🔍 详细日志：节点参数恢复成功
-                    var paramSummary = parameters.GetParameterSummary();
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"✅ [节点参数恢复] 节点: {name} | 类型: {parameters.GetType().Name} | 值: {paramSummary}",
-                        "WorkflowNode");
-                }
-                else
-                {
-                    // ✅ 如果参数为 null 或类型不匹配，直接抛出异常
-                    throw new InvalidOperationException(
-                        $"节点 {name} 参数恢复失败：期望 ToolParameters，实际为 {paramsVal?.GetType().Name ?? "null"}");
-                }
-            }
-            else
-            {
-                // ✅ 参数为空时直接抛出异常
-                throw new InvalidOperationException($"节点 {name} 参数为空");
-            }
-
-            // 恢复参数绑定
-            if (dict.TryGetValue("ParamSettings", out var bindingsVal) && bindingsVal is Dictionary<string, object> bindingsDict)
-            {
-                node.ParamSettings = ParamSettingContainer.FromDictionary(bindingsDict);
-            }
-
-            return node;
-        }
-
-        /// <summary>
         /// 克隆节点
         /// </summary>
         public WorkflowNodeBase Clone()
         {
+            RuntimeNodeAdmission.RequireShape(this);
             var cloned = new WorkflowNodeBase(
                 Id,
                 $"{Name}_副本",
@@ -738,9 +631,7 @@ namespace SunEyeVision.Workflow
             {
                 IsEnabled = IsEnabled,
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
-                Parameters = Parameters,
                 RuntimeConfiguration = RuntimeConfiguration?.Copy(),
-                ParamSettings = RuntimeConfiguration is null ? ParamSettings?.Clone() : ParamSettings.Settings.Any() ? throw new InvalidOperationException("Runtime节点不能复制旧ParamSettings。") : new ParamSettingContainer(),
                 PositionX = PositionX,
                 PositionY = PositionY,
                 Width = Width,

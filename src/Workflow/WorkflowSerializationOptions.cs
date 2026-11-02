@@ -54,7 +54,7 @@ namespace SunEyeVision.Workflow
                     if(!ReferenceEquals(_defaultSource,source))
                     {
                         var options=new JsonSerializerOptions(source){WriteIndented=true};
-                        ConfigureNodeSettings(options);
+
                         options.Converters.Add(new WorkflowJsonConverter());
                         _default=options;_defaultSource=source;
                     }
@@ -88,7 +88,7 @@ namespace SunEyeVision.Workflow
                     if(!ReferenceEquals(_compactSource,source))
                     {
                         var options=new JsonSerializerOptions(source){WriteIndented=false};
-                        ConfigureNodeSettings(options);
+
                         options.Converters.Add(new WorkflowJsonConverter());
                         _compact=options;_compactSource=source;
                     }
@@ -104,21 +104,6 @@ namespace SunEyeVision.Workflow
             options.Converters.Insert(0,new RuntimeToolConfigurationJsonConverter(directory));
             options.Converters.Insert(0,new WorkflowJsonConverter(directory));
             return options;
-        }
-        private static void ConfigureNodeSettings(JsonSerializerOptions options)
-        {
-            options.TypeInfoResolver = (options.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>
-            {
-                if (!typeof(WorkflowNodeBase).IsAssignableFrom(info.Type)) return;
-                foreach (var property in info.Properties)
-                    if (property.Name is nameof(WorkflowNodeBase.Parameters) or nameof(WorkflowNodeBase.ParamSettings))
-                        property.ShouldSerialize = (owner, _) =>
-                        {
-                            var node=(WorkflowNodeBase)owner;
-                            if(node.RuntimeConfiguration is not null&&node.ParamSettings.Settings.Any())throw new JsonException("Runtime nodes cannot contain SDK ParamSettings.");
-                            return node.RuntimeConfiguration is null;
-                        };
-            });
         }
     }
 }

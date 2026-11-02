@@ -408,6 +408,17 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         return _children.All(child=>child.TryCommitPending());
     }
 
+    /// <summary>Retire transient interactions without accepting or discarding pending input.</summary>
+    public void RetireInteractions()
+    {
+        if(_disposed)return;
+        var resume=_presentationVisible&&IsVisible;
+        ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),
+            ()=>{if(resume&&!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});
+    }
+    internal long NumericEditVersion=>_numeric?.EditVersion??0;
+    internal void RestoreUiProjectionRaw(string raw)
+    {if(_disposed||_numeric is null)return;_numeric.RestoreUiProjectionRaw(new(raw,_state.AcceptanceVersion));_numeric.PrepareForVisibility(_presentationVisible&&IsVisible);}
     private bool _presentationVisible=true;
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {

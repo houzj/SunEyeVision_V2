@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Contracts;
@@ -17,7 +18,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 public sealed record NativeDisplayUiDraftEntry(string Label,bool ShowStyleButton,bool InitiallyVisible=true);
 
 /// <summary>Original graphic rows using transient UI state until the host owns display settings.</summary>
-public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
+public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable,IParameterVisibility
 {
     private readonly ObservableCollection<NativeParameterRow> _rows=[];
     private readonly List<IDisposable> _contents=[];
@@ -27,6 +28,14 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
     private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _fieldBaseline=[];
     private readonly Dictionary<NativeColorPresenter,Color> _colorBaseline=[];
     public event Action? Changed;
+    public bool HasPendingEdits=>!_disposed&&(_fieldBaseline.Keys.Any(editor=>editor.HasPendingEdits)||_contents.OfType<NativeGraphicStylePresenter>().Any(view=>_baseline.Keys.Any(state=>view.HasPendingEdits(state.Port.Id))));
+    public bool HasInvalidInput=>!_disposed&&(_states.Any(state=>state.HasInvalidInput)||_fieldBaseline.Keys.Any(editor=>editor.HasInvalidText));
+    public void RetireInteractions()
+    {if(_disposed)return;ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false)}
+        .Concat(_contents.OfType<IParameterVisibility>().Select(view=>(Action)(()=>{if(!_disposed&&view is FrameworkElement element&&element.IsVisible)view.PrepareForVisibility(true);}))));}
+    void IParameterVisibility.PrepareForVisibility(bool visible)
+    {ParameterCleanup.Run(_contents.OfType<IParameterVisibility>().Select(view=>(Action)(()=>view.PrepareForVisibility(visible&&(view as FrameworkElement)?.Visibility==Visibility.Visible))).Concat(_contents.OfType<NativeColorPresenter>().Select(color=>(Action)(()=>{if(!visible)color.ClosePalette();}))));}
+    private void OnRawChanged(object sender,TextChangedEventArgs args)=>OnUiChanged();
     public bool HasUiChanges=>!_disposed&&(_baseline.Any(pair=>pair.Key.HasInvalidInput||!DeclaredFieldState.SameSetting(pair.Key.Accepted,pair.Value))
         ||_fieldBaseline.Any(pair=>pair.Key.HasPendingEdits||!DeclaredFieldState.SameSetting(pair.Key.Setting,pair.Value))
         ||_colorBaseline.Any(pair=>pair.Key.SelectedColor!=pair.Value)
@@ -95,13 +104,13 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
             var roles=new NativeGraphicDisplayOptions(groupId,ids[0],ids[1],ids[2],ids[3],ids[4],entry.ShowStyleButton);
             var view=new NativeGraphicStylePresenter(roles,states,presentations,()=>!_disposed);
             view.Visibility=entry.InitiallyVisible?Visibility.Visible:Visibility.Collapsed;
-            _contents.Add(view);
+            _contents.Add(view);view.PendingChanged+=OnUiChanged;
             _rows.Add(new NativeParameterRow(group,view));
         }
         if(includeTextSettings)AddTextSettings();
         SetRows(_rows);
         foreach(var state in _states){_baseline.Add(state,state.Accepted);state.Changed+=OnUiChanged;}
-        foreach(var editor in _contents.OfType<DeclaredFieldEditor>()){_fieldBaseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;}
+        foreach(var editor in _contents.OfType<DeclaredFieldEditor>()){_fieldBaseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;editor.AddHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRawChanged));}
         foreach(var color in _contents.OfType<NativeColorPresenter>()){_colorBaseline.Add(color,color.SelectedColor);color.SelectedColorChanged+=OnColorChanged;}
         }
         catch(Exception failure)
@@ -151,7 +160,8 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable
     {
         if(_disposed)return;_disposed=true;
         foreach(var state in _baseline.Keys)state.Changed-=OnUiChanged;
-        foreach(var editor in _fieldBaseline.Keys)editor.Changed-=OnUiChanged;
+        foreach(var editor in _fieldBaseline.Keys){editor.Changed-=OnUiChanged;editor.RemoveHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRawChanged));}
+        foreach(var view in _contents.OfType<NativeGraphicStylePresenter>())view.PendingChanged-=OnUiChanged;
         foreach(var color in _colorBaseline.Keys)color.SelectedColorChanged-=OnColorChanged;Changed=null;
         ParameterCleanup.Run(new Action[]{()=>SetRows(null)}
             .Concat(_rows.Select(row=>(Action)(()=>{if(row.View is {} view)BindingOperations.ClearBinding(view,VisibilityProperty);})))

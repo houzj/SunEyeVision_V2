@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:camera="clr-namespace:SunEyeVision.UI.Features.Camera"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf"
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.Visibility"
         mc:Ignorable="d"
         Title="相机管理器"
@@ -129,12 +129,14 @@
                         HorizontalAlignment="Right" VerticalAlignment="Center"
                         Padding="8,0" Click="CameraPreviewButton_Click"
                         ToolTip="打开预览/调试窗口" Style="{StaticResource ToolButtonStyle}"/>
-                <controls:ToggleSwitch Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                       SwitchWidth="40" SwitchHeight="20"
+                <controls:ContentToggleSwitch Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center"
                                        IsChecked="{Binding IsConnected, Mode=OneWay}"
                                        IsEnabled="{Binding CanToggleConnection}"
                                        ToolTip="连接/断开相机"
-                                       CheckedChanged="CameraConnectionToggle_CheckedChanged"/>
+                                       OnCheckedChange="CameraConnectionToggle_CheckedChanged">
+                    <controls:ContentToggleSwitch.OffContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/off-dark.png"/></controls:ContentToggleSwitch.OffContent>
+                    <controls:ContentToggleSwitch.OnContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/on-dark.png"/></controls:ContentToggleSwitch.OnContent>
+                </controls:ContentToggleSwitch>
             </Grid>
         </DataTemplate>
     </Window.Resources>

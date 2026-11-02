@@ -530,7 +530,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         await Dispatcher.InvokeAsync(() =>
         {
             if (Volatile.Read(ref _stopped) != 0 || cancellationToken.IsCancellationRequested) return;
-            ImageDisplay.SourceImage = bitmap;
+            ImageDisplay.ImageDataSource = CameraBitmapImageData.Create(bitmap);
             if (_activeConfigurationStale)
                 StatusText.Text = "设备采集配置已改变，请停止后重新启动";
             else if (_activeMode == CameraTriggerMode.Continuous)
@@ -590,6 +590,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                 try { await session.DisposeAsync().ConfigureAwait(true); } catch (Exception error) { failures.Add(error); }
         }
         _session = null;
+        try { ImageDisplay.ImageDataSource = null; } catch (Exception error) { failures.Add(error); }
         try { _lifetime.Dispose(); } catch (Exception error) { failures.Add(error); }
         if (failures.Count == 0) completion.TrySetResult(true);
         else completion.TrySetException(new AggregateException("相机预览关闭或清理失败。", failures));

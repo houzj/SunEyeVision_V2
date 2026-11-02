@@ -2,11 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SunEyeVision.UI.Features.Camera"
-             xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf"
+             xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              Background="Transparent">
     <UserControl.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:CameraNumericFormatConverter x:Key="CameraNumericFormatConverter"/>
         <Style TargetType="TextBox">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
@@ -22,6 +28,7 @@
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
         </Style>
+      </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
@@ -95,18 +102,21 @@
                                                TextTrimming="CharacterEllipsis" ToolTip="{Binding Unit}"
                                                Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                                     <Grid Grid.Column="1">
-                                        <controls:NumericUpDown Value="{Binding NumericValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        <numeric:DoubleUpDown Value="{Binding NumericValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Minimum="{Binding MinimumValue}" Maximum="{Binding MaximumValue}"
-                                                SmallChange="{Binding IncrementValue}" LargeChange="{Binding LargeIncrementValue}"
-                                                DecimalPlaces="{Binding DecimalPlaces}" ShowSlider="False" MinHeight="32"
+                                                Increment="{Binding IncrementValue}" IsEnabled="{Binding IsEditable}"
+                                                FormatString="{Binding DecimalPlaces, Converter={StaticResource CameraNumericFormatConverter}}" MinHeight="32"
                                                 Visibility="{Binding IsNumeric, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                         <TextBox Text="{Binding ValueText, UpdateSourceTrigger=PropertyChanged}" MinHeight="32" Padding="6"
                                                  IsReadOnly="{Binding IsReadOnly}"
                                                  Visibility="{Binding IsTextValue, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                        <controls:ToggleSwitch IsChecked="{Binding BooleanValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                OnText="启用" OffText="关闭" ShowText="True" VerticalAlignment="Center"
+                                        <controls:ContentToggleSwitch IsChecked="{Binding BooleanValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                VerticalAlignment="Center"
                                                 IsEnabled="{Binding IsEditable}"
-                                                Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <controls:ContentToggleSwitch.OffContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/off-dark.png"/></controls:ContentToggleSwitch.OffContent>
+                                            <controls:ContentToggleSwitch.OnContent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Inputs/Switch/on-dark.png"/></controls:ContentToggleSwitch.OnContent>
+                                        </controls:ContentToggleSwitch>
                                         <ComboBox ItemsSource="{Binding EnumValues}" Style="{StaticResource ThemeComboBoxStyle}"
                                                   ItemContainerStyle="{StaticResource ThemeComboBoxItemStyle}"
                                                   SelectedValuePath="Value" SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"

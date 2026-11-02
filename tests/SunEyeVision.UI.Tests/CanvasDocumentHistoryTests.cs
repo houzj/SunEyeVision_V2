@@ -62,11 +62,11 @@ public sealed class CanvasDocumentHistoryTests:IDisposable
     {
         var (session,root,commands)=Model();var source=Node("source");var target=Node("target");
         commands.Execute(new AddNodeCommand(root.Nodes,source));commands.Execute(new AddNodeCommand(root.Nodes,target));
-        var beforeHistory=session.History.Entries.Count;var edge=new WorkflowConnection("failed","source","target");
+        var beforeHistory=session.History.Entries.Count();var edge=new WorkflowConnection("failed","source","target");
         Assert.Throws<InvalidOperationException>(()=>commands.Execute(new AddConnectionCommand(root.Connections,edge,root.Nodes,()=>{
             RootCanvasFixture.SetValue(target,17);
             throw new InvalidOperationException("正式来源查询失败");
         })));
-        Assert.Empty(root.Connections);Assert.Equal(1,RootCanvasFixture.Value(target));Assert.Equal(beforeHistory,session.History.Entries.Count);
+        Assert.Empty(root.Connections);Assert.Equal(1,RootCanvasFixture.Value(target));Assert.Equal(beforeHistory,session.History.Entries.Count());
     }
 }

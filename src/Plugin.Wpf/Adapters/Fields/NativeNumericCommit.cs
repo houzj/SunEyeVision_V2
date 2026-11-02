@@ -225,7 +225,7 @@ internal sealed class NativeNumericCommit : IDisposable
         if(_state.IsReferenceMode&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
         var constant=model is not null?model.HasValue?new ConstantSetting(model.Value):null:_state.Accepted as ConstantSetting??_state.ConstantBackup;
         if(constant is null)
-        {if(model is not null){var empty=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),empty);}return;}
+        {if(model is not null){if(_state.IsReferenceMode)RestoreUnknownReferenceTarget();else{var empty=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),empty);}}return;}
         EnsureRepresentable(constant);
         if(_suspended&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
         string expected;
@@ -256,6 +256,28 @@ internal sealed class NativeNumericCommit : IDisposable
             IsDirty=false;_rawError="";_pendingRaw=null;
         }
         finally{_syncing=syncing;if(!_syncing&&_validateRaw)ValidateRaw();}
+    }
+    private void RestoreUnknownReferenceTarget()
+    {
+        // The subscribed slot keeps its original physical target. It is not a known
+        // field value: never install it in the model or use it as a constant proposal.
+        if(_owner is null||_valueProperty is null)return;
+        var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
+        var inner=_text.GetBindingExpression(TextBox.TextProperty);
+        if(outer is null)return;
+        var stamp=Stamp();var expected=Format(_owner.GetValue(_valueProperty));
+        bool Owned()=>Matches(stamp)&&_state.IsReferenceMode&&!IsDirty
+            &&_state.NumericModel is {HasValue:false}
+            &&ReferenceEquals(outer,_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty))
+            &&ReferenceEquals(inner,_text.GetBindingExpression(TextBox.TextProperty));
+        void Restore(Action action){if(Owned())WriteText(expected,action,stamp);}
+        // Attempt every owned binding even if another cleanup throws; a reentrant
+        // edit, rebind or disposal invalidates the remaining restoration actions.
+        ParameterCleanup.Run(new Action[]{
+            ()=>Restore(()=>Validation.ClearInvalid(outer)),
+            ()=>Restore(outer.UpdateTarget),
+            ()=>{if(inner is not null)Restore(()=>Validation.ClearInvalid(inner));},
+            ()=>{if(inner is not null)Restore(inner.UpdateTarget);}});
     }
     public void BeginConstantEntry()
     {

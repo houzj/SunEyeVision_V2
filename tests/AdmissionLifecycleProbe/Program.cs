@@ -155,6 +155,26 @@ try
     if(productionUnload.IsCompleted)throw new Exception("Production result reader did not hold generation open.");
     productionReader.Dispose();
     await productionUnload.WaitAsync(TimeSpan.FromSeconds(10));
+    await production.LoadPluginsAsync();
+    if(production.LastAdmissionError is not null)throw new Exception("Production re-admission failed.");
+    var activeDirectory=production.RuntimeDirectory??throw new Exception("Active generation missing.");
+    var activeFlow=new SunEyeVision.Workflow.Workflow("active-probe","active-probe");
+    activeFlow.Nodes.Add(new WorkflowNodeBase("image","image","image","ImageLoad") {RuntimeConfiguration=RuntimeToolConfiguration.Create(activeDirectory,"ImageLoad")});
+    var activeEngine=new WorkflowEngine(new NullLogger(),activeDirectory);activeEngine.RegisterWorkflow(activeFlow);
+    var activeRunner=new WorkflowExecutionEngine(activeEngine,production,new NullLogger());
+    using var entered=new ManualResetEventSlim();
+    using var release=new ManualResetEventSlim();
+    var activeRequest=new WorkflowRunRequest(activeFlow.Id,sourceInputs:new Dictionary<string,ImageSourceRunInput>
+    {{"image",new(imageFile,1){LocalReadAdmission=_=>{entered.Set();if(!release.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("Probe did not release active image read.");return imageFile;}}}});
+    var activeRun=Task.Run(()=>activeRunner.ExecuteWorkflowAsync(activeRequest));
+    if(!entered.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("Production workflow did not enter image read.");
+    var activeUnload=production.UnloadPluginsAsync();
+    await Task.Delay(100);
+    if(activeUnload.IsCompleted)throw new Exception("Unload completed while production workflow was executing.");
+    release.Set();
+    using(var completed=await activeRun.WaitAsync(TimeSpan.FromSeconds(10)))
+        if(completed.Success)throw new Exception("A workflow retired during execution reported success.");
+    await activeUnload.WaitAsync(TimeSpan.FromSeconds(10));
 }
 finally{File.Delete(imageFile);}
 Console.WriteLine("Desktop admission and production workflow reader drain checks passed; desktop window shutdown remains unverified.");

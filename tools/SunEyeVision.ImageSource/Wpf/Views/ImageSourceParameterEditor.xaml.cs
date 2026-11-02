@@ -70,6 +70,8 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
     public long AcceptedRevision=>Editor.AcceptedRevision;
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+        =>Editor.ReadNumericModels(scope,fieldId);
     public event Action? Changed { add => ViewChanged += value; remove => ViewChanged -= value; }
     private void OnFieldsChanged(){_source?.RefreshSourceDraft();ViewChanged?.Invoke();}
     private void OnSourceChanged()

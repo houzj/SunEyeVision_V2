@@ -1142,12 +1142,15 @@ public sealed class ResultWorkspaceProductionTests
             contract.Where(output => output.DisplayInResultPanel).Select(output => output.PortId));
         Assert.Contains(contract, output => output.PortId == "output.source-kind" && !output.DisplayInResultPanel);
         Assert.True(ToolRegistry.HasRuntime("BlobAnalysis"));
-        using var blob = ToolRegistry.CreateCurrentResultView("BlobAnalysis");
-        Assert.NotNull(blob);
-        f.Shell.CurrentResultContent = blob!.View; Pump();
+        var blob = new SunEyeVision.UI.Shared.WorkflowNode("blob", "Blob分析", "Blob分析", "BlobAnalysis")
+            { RuntimeConfiguration = RuntimeToolConfiguration.Create("BlobAnalysis") };
+        f.Flow.Nodes.Add(blob);
+        f.Main.SelectedNode = blob; Pump();
+        Assert.NotNull(f.Shell.CurrentResultContent);
         Assert.Equal(Visibility.Visible, current.Visibility);
         current.IsSelected = true;
-        f.Shell.CurrentResultContent = null; Pump();
+        f.Main.SelectedNode = f.Source; Pump();
+        Assert.Null(f.Shell.CurrentResultContent);
         Assert.Equal(Visibility.Collapsed, current.Visibility);
         Assert.True(Assert.IsType<TabItem>(f.Shell.FindName("HistoryTab")).IsSelected);
     });

@@ -1,3 +1,10 @@
+## 2026-11-03 节点配置、图编辑与声明查询整链设计冻结
+
+依据848309292实际消费者完成三路只读审查，已写 evidence/节点配置图编辑与声明查询整链重构-20261103.html。冻结节点退出Parameters/ParamSettings，INodeInfoProvider/GetNodeContext使用实际ToolSchema，来源投影required ParameterSetting Binding（ReferenceSetting/VariableSetting）保留完整作用域/原始Port/成员/选择/TypeRef身份，不以CLR/字符串/Guid回退。OutputBindingChangeService返回Schema；投影、结果reader与ROI资源仍分工明确，Schema不能替代租约或完整手势版本。严格V3继续拒绝旧JSON字段。
+
+已授权三独立工作树：platform-runtime-graph-20261103独占Workflow域/执行/持久化，platform-runtime-ui-20261103独占UI与Plugin.Wpf表现，platform-runtime-query-20261103独占SDK查询及直接消费者；基线均848309292。Group源保留、当前产品排除暂停实现且入口不可误用，不迁新增语义。新批尚未构建/验证，不计完成。架构参考当前SHA7D72051F33AE9DE1740068A95B2C99585096E097B62F70F0DCD303A7998F15C4，持续证据变更仅按本批影响核收。
+
+已按用户持续授权向技术总监对话发送本批848309292自测及下一批共享合同/合并边界；不合并主仓、不要求对方停工，消息发送成功不算收到其反馈。
 ## 2026-11-03 输入资源与编辑事务本批自测闭口
 
 87f4集成产品d744d5bfd（包含7cc513488旧调度退出），完整Release0错；最终封包4EEAE78E329A04D761D21FD6EA8E3344C55C8C819856C09D757E2FDC7E3ECE15。无重编根流程/V3/身份36、输入24、准入25、图像源31、Blob11均通过；实际根宿主复制/历史/保存重开/排空通过。隐藏窗口attempt-011/012通过且加载哈希一致，主线已查看实际运行页截图。无WPF独立源码构建执行两工具且未加载WPF/UI/SDK，封包567109D4917C9D9D50A27F401EF6E1241430ABBBEB1684141CC78995D2FADE0D。日志Release/_validation/platform-integrated-20261103。

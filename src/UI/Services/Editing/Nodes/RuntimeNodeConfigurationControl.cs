@@ -238,9 +238,6 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
         if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;_syncedRevision=candidate.AcceptedRevision;_captureError="";
         _view.Changed+=Changed;Content=_view.View;
-        // One initialization per newly installed root. Running/debug completion does not call this.
-        if(ReferenceEquals(_view,candidate)&&IsResultDisplayBinding(node,generation))
-            ReadNumericModels(NumericModelReadScope.All);
         }
         catch(Exception failure)
         {

@@ -2111,7 +2111,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
-          "localSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+          "localSha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2696,7 +2696,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
-            "sha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+            "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
@@ -4014,7 +4014,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
-          "localSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+          "localSha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C"
         },
         {
           "originalType": "VMBaseControls.ImageViewBox",
@@ -4206,7 +4206,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
-          "sha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+          "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ShapeAndRoiMarginCvt.cs",
@@ -4488,7 +4488,7 @@
       "verificationDependencies": [
         {
           "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
-          "sha256": "CDA981F546CFCAC2BAF11395553D94CFE412D96FBDE37DCE415E2DF4E31C14AB",
+          "sha256": "D097B1B699F95923A43BED4B732D8786A95AA2047D88A34906F203295A0FCAA6",
           "usage": "仅正式绘字导出验证，实际视口另用RenderTargetBitmap检查"
         }
       ],
@@ -6121,11 +6121,11 @@
       "sourceFiles": [
         {
           "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
-          "sha256": "CDA981F546CFCAC2BAF11395553D94CFE412D96FBDE37DCE415E2DF4E31C14AB"
+          "sha256": "D097B1B699F95923A43BED4B732D8786A95AA2047D88A34906F203295A0FCAA6"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
-          "sha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+          "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
@@ -6133,15 +6133,23 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
-          "sha256": "AC6382B9149E6A06A51D9FAFB3BAE8B2ABDD126F78406C2DF6CB530A4B2D0618"
+          "sha256": "63AD5FDC23541F0D5A360F130A6C070469307FEC73A95962A86955DC8F68AB1D"
         },
         {
           "path": "scripts/verification/O06WindowPresentationCases.cs",
-          "sha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+          "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
           "sha256": "E15F6BA657396CE6CFA186609016FA432963F125174221207EBDBF4B956C2A2A"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.Drawing.cs",
+          "sha256": "40D6FB6C9880E806CD84D172A1D1AE44F9126F7E58E6B68CE859CAB553D925C9"
+        },
+        {
+          "path": "scripts/verification/S4NativeExportCases.cs",
+          "sha256": "6ABE2727CC417D3AB7ADC35101B6062944AE44B0F21312C9BF3AECFCBFAEA5AD"
         }
       ],
       "consumers": [
@@ -6149,18 +6157,65 @@
         "原ImageViewBox两导出命令"
       ],
       "validation": {
-        "status": "CANDIDATE_SNAPSHOT_AND_ORIGINAL_PIXELS_10_PASSED_ORIGINAL_RENDER_ALGORITHM_PENDING",
-        "report": "docs/collaboration/evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json",
-        "candidateWindowPassed": 10,
-        "formalReleaseValidated": false
+        "implementation": "原托管几何/编码与菜单冻结链已集成；保护分支未实现",
+        "historicalSourceBoundary": "sourceAssemblies中旧实施状态文字按当时取证记录保留，当前实施与验收以本对象及回执为准",
+        "design": "docs/collaboration/evidence/C17_NATIVE_EXPORT_WHOLE_DESIGN_20261103.md",
+        "numericEvidence": "docs/collaboration/evidence/C17_NATIVE_EXPORT_NUMERIC_CIL_20261103.md",
+        "formalStatusAuthority": "以formalReport实际回执为准；缺回执即未正式验证",
+        "formalReport": "docs/collaboration/evidence/C17_NATIVE_EXPORT_FORMAL_20261103.json",
+        "candidateReport": "docs/collaboration/evidence/C17_NATIVE_EXPORT_CANDIDATE_20261103.json"
       },
       "remaining": [
-        "本批UI/full同源正式构建/EXE/关联回归未执行",
-        "实际文件对话框/物理操作/VS/VM同态和人工未验",
-        "完整C17原CrossConfig及两个CrossData未实施",
-        "完整raster/ROI/背景导出语义仍只读核证，不用该七组代签",
-        "C08 FullDomain和C09完整Unset/真实位姿仍待",
-        "两个独立layer proof可交叉使先验层失效而不通知；来源generation/失效通知合同尚需完善，有限轮询不作原子证明。"
+        "PutTextZh原生字体ABI/函数体及实际加载未闭合，非空可见文字/有效坐标轴与角度导出受保护，不计实现",
+        "原定制native与当前4.13的图形像素/字形/编码字节同态未证明",
+        "Gray16仅fallback原图PNG，正式视口主链未接；16位带图形、不能保真位深/alpha的编码受保护",
+        "共享映射双头只尽力校验，未知ABA并发一致性未证明；正式冻结IReadOnlyImage主链分别记录",
+        "实际系统文件选择/自然输入/VS与统一人工另记，不作为已实现范围自动自测前置",
+        "旧remaining原始范围保存在validationHistory；C08/C09及C17其他组合须按原全清单追踪，不能由导出单元代签"
+      ],
+      "validationHistory": [
+        null,
+        {
+          "asOfCatalogCommit": "b2966be94e95edc35da36136bb892714742a7c2a",
+          "validation": {
+            "status": "CANDIDATE_SNAPSHOT_AND_ORIGINAL_PIXELS_10_PASSED_ORIGINAL_RENDER_ALGORITHM_PENDING",
+            "report": "docs/collaboration/evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json",
+            "candidateWindowPassed": 10,
+            "formalReleaseValidated": false
+          },
+          "remaining": [
+            "本批UI/full同源正式构建/EXE/关联回归未执行",
+            "实际文件对话框/物理操作/VS/VM同态和人工未验",
+            "完整C17原CrossConfig及两个CrossData未实施",
+            "完整raster/ROI/背景导出语义仍只读核证，不用该七组代签",
+            "C08 FullDomain和C09完整Unset/真实位姿仍待",
+            "两个独立layer proof可交叉使先验层失效而不通知；来源generation/失效通知合同尚需完善，有限轮询不作原子证明。"
+          ]
+        }
+      ],
+      "platformDependencies": [
+        {
+          "declaredLicense": "Apache-2.0（本机nuspec）",
+          "role": "当前托管API；不等同原定制程序集",
+          "version": "4.13.0.20260222",
+          "package": "OpenCvSharp4"
+        },
+        {
+          "declaredLicense": "Apache-2.0（本机nuspec）",
+          "role": "当前Windows native；不等同原字体ABI",
+          "version": "4.13.0.20260222",
+          "package": "OpenCvSharp4.runtime.win"
+        }
+      ],
+      "deploymentDependencies": [
+        {
+          "path": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+          "sha256": "4BC2322875EB19008F946C38E7D120D0CFA0188D3115ECED483CA2AE2A40BB50"
+        },
+        {
+          "path": "src/Plugin.Wpf/packages.lock.json",
+          "sha256": "3C5EF798199817E1928088067EF067E3E4FB84E4D6529F84E24E5A6D22CC2B8B"
+        }
       ]
     },
     {
@@ -6199,7 +6254,7 @@
         },
         {
           "path": "scripts/verification/O06WindowPresentationCases.cs",
-          "sha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+          "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3"
         }
       ],
       "dependencies": [
@@ -6305,7 +6360,7 @@
       "sourceFiles": [
         {
           "path": "scripts/verification/O06WindowPresentationCases.cs",
-          "sha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+          "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3"
         },
         {
           "path": "scripts/verification/S4DesignTimeCases.cs",
@@ -6449,7 +6504,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
-          "sha256": "AC6382B9149E6A06A51D9FAFB3BAE8B2ABDD126F78406C2DF6CB530A4B2D0618"
+          "sha256": "63AD5FDC23541F0D5A360F130A6C070469307FEC73A95962A86955DC8F68AB1D"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
@@ -6819,11 +6874,11 @@
     }
   ],
   "currentIntegration": {
-    "productCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
-    "evidenceCommit": "300b924d",
-    "uncommittedCandidate": false,
-    "evidence": "docs/collaboration/evidence/B08_REFERENCE_WINDOW_CHAIN_FORMAL_20261101.json",
-    "status": "当前正式产品源15171638；低阈值真实窗口引用九组已在正式Release定向通过。各entry原validation保留为历史版本，不可直接视为当前整体验收；ROI、图文和其他完整能力仍有未完成。"
+    "integrated": "5c0c43c7e64a99e3b860113b04849e913c675c21",
+    "statusAuthority": "以正式回执为准，缺回执即尚未正式验收",
+    "formalReport": "docs/collaboration/evidence/C17_NATIVE_EXPORT_FORMAL_20261103.json",
+    "batch": "C17原图与可见图形导出",
+    "candidate": "0ab27d64a3df9f07e1998eefa0fe88b96a0a3af4"
   },
   "currentStatusReview": {
     "updated": "2026-11-01",
@@ -6869,6 +6924,16 @@
       "uncommittedCandidate": true,
       "evidence": "docs/collaboration/evidence/C09_ROOT_PROXY_CANDIDATE_20261029.json",
       "status": "C09根代理真实窗口/保存历史同源候选核收；数值重入与完整阶段门禁继续。"
+    },
+    {
+      "date": "2026-11-03",
+      "previousCurrentIntegration": {
+        "productCommit": "151716388ccb880bf83e9c2544ffb0d59e4dcc28",
+        "evidenceCommit": "300b924d",
+        "uncommittedCandidate": false,
+        "evidence": "docs/collaboration/evidence/B08_REFERENCE_WINDOW_CHAIN_FORMAL_20261101.json",
+        "status": "当前正式产品源15171638；低阈值真实窗口引用九组已在正式Release定向通过。各entry原validation保留为历史版本，不可直接视为当前整体验收；ROI、图文和其他完整能力仍有未完成。"
+      }
     }
   ]
 }

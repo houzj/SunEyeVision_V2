@@ -1,0 +1,84 @@
+{
+  "candidate": "0ab27d64a3df9f07e1998eefa0fe88b96a0a3af4",
+  "scope": "当前目标与C17元数据更新，原来源身份保留，正式结果由回执唯一声明",
+  "protectedOriginFields": 1275,
+  "catalogAfterSha256": "90A9A70B4A7E3E61AD7DC861567F070EFBEA0EAA4D6796FC8332CCAA6495D394",
+  "recordsUpdated": 12,
+  "originFieldsEqual": true,
+  "catalogBeforeSha256": "52762A2D071A255D4CD018626BCBAFC900FC820B06B5B632C442DCBAEB36A1D9",
+  "changes": [
+    {
+      "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
+      "location": "/entries/12/sourceFiles/22",
+      "oldSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+    },
+    {
+      "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
+      "location": "/entries/12/roiGestureCandidate/localFiles/7",
+      "oldSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+    },
+    {
+      "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
+      "location": "/entries/16/sourceFiles/55",
+      "oldSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+    },
+    {
+      "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
+      "location": "/entries/16/dependencies/28",
+      "oldSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+    },
+    {
+      "sha256": "D097B1B699F95923A43BED4B732D8786A95AA2047D88A34906F203295A0FCAA6",
+      "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
+      "location": "/entries/16/verificationDependencies/0",
+      "oldSha256": "CDA981F546CFCAC2BAF11395553D94CFE412D96FBDE37DCE415E2DF4E31C14AB"
+    },
+    {
+      "sha256": "D097B1B699F95923A43BED4B732D8786A95AA2047D88A34906F203295A0FCAA6",
+      "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
+      "location": "/entries/23/sourceFiles/0",
+      "oldSha256": "CDA981F546CFCAC2BAF11395553D94CFE412D96FBDE37DCE415E2DF4E31C14AB"
+    },
+    {
+      "sha256": "BE97A73E16B7F60480B8E425ABFE1DA5651CF9E1A556B6607464CB9CC6AF455C",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/ImageView/ImageView/ImageViewBox.xaml.cs",
+      "location": "/entries/23/sourceFiles/1",
+      "oldSha256": "98D6C54A115E7D3A4CE90918578B7E1DC579C44B02999F312856DB0186C10341"
+    },
+    {
+      "sha256": "63AD5FDC23541F0D5A360F130A6C070469307FEC73A95962A86955DC8F68AB1D",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+      "location": "/entries/23/sourceFiles/3",
+      "oldSha256": "AC6382B9149E6A06A51D9FAFB3BAE8B2ABDD126F78406C2DF6CB530A4B2D0618"
+    },
+    {
+      "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3",
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "location": "/entries/23/sourceFiles/4",
+      "oldSha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+    },
+    {
+      "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3",
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "location": "/entries/24/sourceFiles/2",
+      "oldSha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+    },
+    {
+      "sha256": "A3160859E3D319DEDB522F424162FE491B7595AF248EEE739273D71155494FF3",
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "location": "/entries/25/sourceFiles/0",
+      "oldSha256": "89D87C836B1A2B26F0F8E7C50FAF290D9F34063DACC589EC42062B68E85115F6"
+    },
+    {
+      "sha256": "63AD5FDC23541F0D5A360F130A6C070469307FEC73A95962A86955DC8F68AB1D",
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+      "location": "/entries/25/sourceFiles/36",
+      "oldSha256": "AC6382B9149E6A06A51D9FAFB3BAE8B2ABDD126F78406C2DF6CB530A4B2D0618"
+    }
+  ],
+  "integrated": "5c0c43c7e64a99e3b860113b04849e913c675c21"
+}

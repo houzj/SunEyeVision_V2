@@ -30,7 +30,7 @@ internal sealed class DeclaredFieldState : IDisposable
             var read=_readCurrentValue;var value=read?.Invoke();
             if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
             if(value is null)return new(Port.Id,NumericModelReadStatus.Unavailable);
-            var prepared=model.Prepare(value.Value!);
+            var prepared=model.ReadProjection(value.Value!);
             if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
             var status=model.Install(NativeNumericSequenceProjection.Single(Port,prepared.Value!),force:model.HasValue&&!Equals(model.Value,NativeNumericSequenceProjection.Single(Port,value.Value!)));
             return !Current()||request!=_numericRead||acceptance!=AcceptanceVersion?new(Port.Id,NumericModelReadStatus.Retired):new(Port.Id,status);
@@ -273,6 +273,7 @@ internal sealed class DeclaredFieldState : IDisposable
     public bool TryUseConstant()
     {
         if (IsDisposed) return false;
+        if(NumericModel is not null&&(Port.EditModes&FieldEditModes.Constant)==0){SetEditError("此字段不允许常量。");return false;}
         if(NumericModel is {} model&&_accepted is ReferenceSetting or VariableSetting)
         {
             var result=ReadNumericModel();

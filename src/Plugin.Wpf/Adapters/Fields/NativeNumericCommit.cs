@@ -144,6 +144,7 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public void ValidateStored(ConstantSetting setting)
     {
+        if(!_paired&&_state.NumericModel is {} model){model.ReadProjection(setting.Value!);return;}
         var prepared=PrepareValue(setting.Value!);
         if(!NativeNumericSequenceProjection.Same(_state.Port,prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
     }

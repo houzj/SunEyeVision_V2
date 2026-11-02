@@ -14,10 +14,11 @@ internal sealed class NativeNumericModel
     internal event Action? Changed;
     internal NativeNumericModel(Port port,FieldLayout? layout,ParameterSetting accepted)
     {_port=port;_layout=layout;Accept(accepted);}
-    internal ConstantSetting Prepare(object value,bool checkBounds=true)
+    internal ConstantSetting Prepare(object value,bool checkBounds=true,bool freezeStorage=true)
     {
         var floating=_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port);
         var scalar=NativeNumericSequenceProjection.Single(_port,value);
+        if(floating&&scalar is not double)throw new ArgumentException("浮点数值必须使用有限Double，不接受隐式CLR转换。");
         var frozen=floating?scalar:ValueRules.Freeze(_port,value);
         NativeNumericCommit.EnsureRepresentable(new(frozen));
         var number=Convert.ToDouble(scalar,System.Globalization.CultureInfo.InvariantCulture);
@@ -40,14 +41,19 @@ internal sealed class NativeNumericModel
         {
             if((_layout?.DecimalPlaces??2) is var digits)
             {if(digits is <0 or >9)throw new ArgumentException("原浮点控件仅支持0至9位编辑精度。");number=Math.Round(number,digits,MidpointRounding.ToEven);}
-            frozen=NativeNumericSequenceProjection.FreezeNumber(_port,number);
+            frozen=freezeStorage?NativeNumericSequenceProjection.FreezeNumber(_port,number):number;
         }
         return new(frozen);
+    }
+    internal ConstantSetting ReadProjection(object value,bool checkBounds=true)
+    {
+        var stored=NativeNumericSequenceProjection.Applies(_port)?NativeNumericSequenceProjection.FreezeNumber(_port,NativeNumericSequenceProjection.Single(_port,value)):ValueRules.Freeze(_port,value);
+        return Prepare(stored!,checkBounds,freezeStorage:false);
     }
     internal void Accept(ParameterSetting setting)
     {
         if(setting is not ConstantSetting constant)return;
-        try{Install(NativeNumericSequenceProjection.Single(_port,Prepare(constant.Value!,false).Value!),false);}catch(Exception error)when(error is ArgumentException or OverflowException or FormatException){HasValue=false;Value=null;Version++;}
+        try{Install(NativeNumericSequenceProjection.Single(_port,ReadProjection(constant.Value!,false).Value!),false);}catch(Exception error)when(error is ArgumentException or OverflowException or FormatException){HasValue=false;Value=null;Version++;}
     }
     internal NumericModelReadStatus Install(object value,bool publish=true,bool force=false)
     {

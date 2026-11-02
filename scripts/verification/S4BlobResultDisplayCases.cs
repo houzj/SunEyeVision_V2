@@ -449,7 +449,7 @@ internal static class S2DocumentEditingCases
                 var old=Scene();var before=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result;
                 var second=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(second);
                 Require(before is not null&&ReferenceEquals(before,((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result)&&before.ExecutionIdentity?.IsCurrent==true&&!history.LastInvalidatedNodes.Any(item=>item.NodeId==node.Id),"新增无关节点错误退役原运行结果");
-                vm.SelectedNode=second;Pump();var captured=typeof(MainWindowViewModel).GetMethod("CaptureCurrentResultDisplay",Flags)!.Invoke(vm,new object[]{publication});Require(captured is null&&Maybe(outputPane,"Display") is null,"另一节点借用旧publication");vm.SelectedNode=node;Pump();SelectBlob();_=Scene();Require(Maybe(old,"Disposed") is true,"旧节点scene未退役");
+                vm.SelectedNode=second;Pump();var captured=typeof(MainWindowViewModel).GetMethod("CaptureCurrentResultDisplay",Flags)!.Invoke(vm,new object[]{publication});Require(captured is null&&Maybe(outputPane,"Display") is null,"另一节点借用旧publication");vm.SelectedNode=node;Pump();SelectBlob();_=Scene();Require(Maybe(old,"Disposed") is true,"旧节点scene未退役");DeleteThroughHost(second.Id);vm.SelectedNode=node;node.IsSelected=true;Pump();
             });
             Case("同尺寸新publication换帧退役旧reader及场景",()=>{
                 var old=Scene();var oldPublication=Publication();var oldFrame=viewport.CurrentFrame!.Frame;Run();var current=Scene();Require(!ReferenceEquals(oldPublication,Publication())&&!oldPublication.IsCurrent()&&(bool)Get(old,"Disposed")&&viewport.CurrentFrame!.Frame!=oldFrame&&!ReferenceEquals(old,current),"重跑复用旧运行权威/scene");Capture(viewport.View,"display-rerun.png");
@@ -458,7 +458,7 @@ internal static class S2DocumentEditingCases
         if(scope is "All" or "Window")
         {
             Case("多节点纯样式事务及UndoRedo保结果，算法改变与Undo不复活旧publication",()=>{
-                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<DefaultDebugWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
+                void Phase(string phase)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log"),DateTime.UtcNow.ToString("O")+" MULTI "+phase+Environment.NewLine);Phase("before-window-close");foreach(var existingWindow in app.Windows.OfType<DefaultDebugWindow>().ToArray())existingWindow.Close();Pump();Phase("after-window-close");var current=Publication();var peer=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes.FirstOrDefault(item=>item.Id!=node.Id&&item.RuntimeConfiguration?.ToolId==BlobTool.Id);var createdPeer=peer is null;if(peer is null){peer=vm.WorkflowTabViewModel.SelectedTab.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(peer);}
                 Phase("peer-ready");var before=node.RuntimeConfiguration!.CaptureResultDisplay()!.Graphic.Width;
                 var first=host.BeginEdit(flowId,node.Id);var second=host.BeginEdit(flowId,peer.Id);
                 first.Node.RuntimeConfiguration=first.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{Display(BlobResultDisplay.Graphic,"width"),7d}});
@@ -471,9 +471,11 @@ internal static class S2DocumentEditingCases
                 var algorithmContext=ToolEditorCommit.GetDraftContext(algorithmControl)!;var commitArgs=new object?[]{null};Require((bool)algorithmContext.GetType().GetMethod("TryCommitEditor")!.Invoke(algorithmContext,commitArgs)!,commitArgs[0]?.ToString()??"真实算法确认失败");Pump();
                 var actualResult=((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(node.Id)?.Result;Console.WriteLine("ProductionAlgorithm cachedResult="+(actualResult is null?"null":"present")+" cachedCurrent="+actualResult?.ExecutionIdentity?.IsCurrent+" publicationCurrent="+current.IsCurrent()+" pane="+(Maybe(outputPane,"Display") is null?"null":"present"));
                 Require(!current.IsCurrent(),"正式算法确认后旧publication仍current");Require(Maybe(outputPane,"Display") is null,"正式算法确认后旧图层未撤");algorithmWindow.Close();Pump();
-                history.Undo();Pump();Require(!current.IsCurrent()&&Maybe(outputPane,"Display") is null,"算法Undo复活旧运行结果");
+                history.Undo();Pump();Require(!current.IsCurrent()&&Maybe(outputPane,"Display") is null,"算法Undo复活旧运行结果");if(createdPeer){DeleteThroughHost(peer.Id);vm.SelectedNode=node;node.IsSelected=true;Pump();}
             });
         }
+        // Window coverage intentionally retires the publication; ROI coverage needs a fresh real run.
+        if(scope == "All") Run();
         if(scope is "All" or "Roi")
         {
             ResultGeometrySnapshot Frozen() => ((IToolResultGeometryOutput)Get(Get(vm,"_resultPublicationSnapshot"),"Output")).ResultGeometry;
@@ -589,6 +591,8 @@ internal static class S2DocumentEditingCases
                 Run();Require(!ReferenceEquals(restored,Scene())&&!ReferenceEquals(oldSnapshot,Frozen()),"新publication未退役旧场景");
             });
         }
+        // ROI coverage changes the execution domain; restore the full-domain sample before text coverage.
+        if(scope == "All"){SetFormal(BlobLocalRoi.InputId,BlobLocalRoi.Empty);Run();}
         if(scope is "All" or "Text")
         {
             var textGroup=BlobResultDisplay.Text;var contentId=Display(textGroup,"content");var xId=Display(textGroup,"x");var yId=Display(textGroup,"y");
@@ -601,7 +605,7 @@ internal static class S2DocumentEditingCases
                 using(var reader=snapshot.AcquireReader())Require(reader.DisplaySources is {} sources&&sources.TryGet(new(flowId,source.Id),out var captured,out var values)&&captured!.Identity.RunId==snapshot.Identity.RunId&&values!.Read(imagePort.Id).GetField("width").GetScalar<long>()==64,"日常正式运行未随结果保同轮图像来源");
                 var expression=BlobResultDisplay.ParseContent("W:{图像宽度};Blob面积:{面积}",new[]{new DisplayExpressionSlot("图像宽度",widthSource)});
                 SetText((contentId,expression),(xId,new ReferenceSetting(widthSource)),(yId,new ConstantSetting(7d)));
-                var words=Words(Scene()).ToArray();Require(current.IsCurrent()&&words.Length==2,"仅显示改动失效publication或丢文字");
+                var words=Words(Scene()).ToArray();Require(current.IsCurrent()&&words.Length==2,$"仅显示改动失效publication或丢文字: current={current.IsCurrent()}, words={words.Length}");
                 Require(words.Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:64;Blob面积:25","W:64;Blob面积:64"}),"同轮前驱或中文Self表达式未实际消费");
                 Require(words.All(word=>((Point)Get(word,"Position")).X==64&&((Point)Get(word,"Position")).Y==7),"显示阶段数字来源未控制真实文字位置");
             });
@@ -737,7 +741,10 @@ internal static class S2DocumentEditingCases
                 var loadedSnapshot=(DeclaredOutputSnapshot)Get(vm,"_resultPublicationSnapshot");Require(loadedSnapshot.Identity.DocumentSessionId==solutions.CurrentSolution!.ExecutionOwner.Id&&loadedSnapshot.Identity.DocumentSessionId!=before.Identity.DocumentSessionId,"重开后仍使用旧文档运行身份");
                 Require(Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"W:80;A:25","W:80;A:64"})&&Words(Scene()).All(word=>((Point)Get(word,"Position")).X==80),"真实重开执行未保表达式/位置引用或实际结果");Capture(resultView,"text-reopened.png");
             });
-        }        if(scope is "All" or "TextSource")
+        }
+        // The preceding production reopen replaces node and session instances; use the new document owners.
+        if(scope == "All"){var nodes=vm.WorkflowTabViewModel.SelectedTab!.WorkflowNodes;node=(SunEyeVision.UI.Shared.WorkflowNode)nodes.Single(item=>item.Id==node.Id);source=(SunEyeVision.UI.Shared.WorkflowNode)nodes.Single(item=>item.Id==source.Id);host=solutions.Session!.Editing.Host;history=solutions.Session.History;}
+        if(scope is "All" or "TextSource")
         {
             Case("原文本花括号来源事件链与旧容器退出（WPF事件注入）",()=>{
                 var contentId=Display(BlobResultDisplay.Text,"content");var baseline=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);
@@ -764,7 +771,8 @@ internal static class S2DocumentEditingCases
                     File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-source-trace.jsonl"),System.Text.Json.JsonSerializer.Serialize(data)+Environment.NewLine);
                 }
                 TraceScene("after-selection");
-                try{PumpUntil(()=>Maybe(outputPane,"Display") is {} current&&Words(current).Count()==2&&Words(current).All(word=>Equals(Get(word,"Content"),"值:64")));}
+                long expectedWidth;using(var sourceValues=((DeclaredOutputSnapshot)((WorkflowContext)Get(vm,"CurrentWorkflowContext")).GetNodeResult(source.Id)!.Result!).AcquireReader())expectedWidth=sourceValues.Values!.Read("output.image").GetField("width").GetScalar<long>();
+                try{PumpUntil(()=>Maybe(outputPane,"Display") is {} current&&Words(current).Count()==2&&Words(current).All(word=>Equals(Get(word,"Content"),"值:"+expectedWidth)));}
                 catch{TraceScene("timeout");throw;}
                 TraceScene("accepted");
                 window.Close();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==baseline,"来源选择取消写正式配置");
@@ -826,7 +834,7 @@ internal static class S2DocumentEditingCases
     private sealed class Spy(bool fail):IDisposable {public int Count;public void Dispose(){Count++;if(fail)throw new InvalidOperationException("reader-release-marker");}}
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
     static object? Maybe(object value,string name){for(var type=value.GetType();type is not null;type=type.BaseType){var property=type.GetProperty(name,Flags|BindingFlags.DeclaredOnly);if(property is not null)return property.GetValue(value);var field=type.GetField(name,Flags|BindingFlags.DeclaredOnly);if(field is not null)return field.GetValue(value);}return null;}
-    static object Get(object value,string name)=>Maybe(value,name)??throw new Exception("缺真实成员："+name);
+    static object Get(object value,string name){for(var type=value.GetType();type is not null;type=type.BaseType){var property=type.GetProperty(name,Flags|BindingFlags.DeclaredOnly);if(property is not null)return property.GetValue(value)??throw new Exception("真实成员值为空："+name);var field=type.GetField(name,Flags|BindingFlags.DeclaredOnly);if(field is not null)return field.GetValue(value)??throw new Exception("真实成员值为空："+name);}throw new Exception("缺真实成员："+name);}
     static RecordValue NativeShape(string kind,double angle=0,double start=0,double sweep=Math.PI/2)
     {
         if(kind=="polygon")return RoiGeometryEditing.Create(kind,new(0,0),new(0,0),new[]{new Point2(4,5),new Point2(12,5),new Point2(4,19)});

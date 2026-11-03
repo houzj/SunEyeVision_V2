@@ -124,7 +124,7 @@ internal sealed class DocumentUiFixture:IDisposable
     internal void Save(string? name=null)
     {
         var file=Path.Combine(DirectoryPath,name??"document.solution");
-        Session.SaveAs(file,Path.Combine(DirectoryPath,"document.recovery"),DirectoryPath,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SdkVariableValueExtensionCodec(scope),File.Exists(file)?SunEyeVision.Persistence.TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)))):SunEyeVision.Persistence.TargetExpectation.Missing);UiRuntime.Pump();
+        Session.SaveAs(file,Path.Combine(DirectoryPath,"document.recovery"),DirectoryPath,VariableVocabularyCapture.FromCandidate(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new{GlobalVariables=Session.Document.GlobalVariables.Select(variable=>new{variable.Type}).ToArray()})),new System.Text.Json.JsonSerializerOptions(),scope=>new ComplexVariableValueCodec(scope),File.Exists(file)?SunEyeVision.Persistence.TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)))):SunEyeVision.Persistence.TargetExpectation.Missing);UiRuntime.Pump();
     }
     public void Dispose()
     {

@@ -115,7 +115,7 @@ internal static partial class S2DocumentEditingCases
         var history=solutions.Session!.History;var host=solutions.Session.Editing.Host;
         var variableEdit=host.BeginVariableEdit();var values=new GlobalVariable("真实阈值数组",new long[]{173,90,37,60,70,80,100,110,111},"Integer[]");var indexVariable=new GlobalVariable("真实索引",1L,"Integer");variableEdit.Configuration.GlobalVariables.Add(values);variableEdit.Configuration.GlobalVariables.Add(indexVariable);host.CommitBatch(Array.Empty<NodeConfigurationEditDraft>(),variableEdit);
         var setup=Open();var setupControl=Control(setup);var imageField=Logical(setupControl).OfType<DeclaredInputFieldsView>().Single().Fields.Single(f=>f.FieldId==BlobTool.ImageInput);var imageCombo=(ComboBox)imageField.InputElement!;
-        imageCombo.SelectedItem=imageCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting r&&r.Reference.NodeId==source.Id&&r.Reference.PortId=="output.image"&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"data"}));Pump();Require(setup.TryConfirm(out var error),error);if(setup.IsVisible)setup.Close();Pump();Require(solutions.SaveCurrentDocument(path).FileWritten,"基准方案保存失败");
+        var imageChoice=imageCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is ReferenceSetting r&&r.Reference.NodeId==source.Id&&r.Reference.PortId=="output.image"&&r.Reference.MemberFieldPath.SequenceEqual(new[]{"data"}));Require(Equals(imageChoice.Content,source.Name+".图像"),"图像来源未显示声明组合父名称");imageCombo.SelectedItem=imageChoice;Pump();Require(setup.TryConfirm(out var error),error);if(setup.IsVisible)setup.Close();Pump();Require(solutions.SaveCurrentDocument(path).FileWritten,"基准方案保存失败");
         var initialRun=vm.RunSelectedImageAsync();PumpUntil(()=>initialRun.IsCompleted);initialRun.GetAwaiter().GetResult();Require(Context().GetNodeResult(source.Id)?.Result is SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot {IsSuccess:true},"正式上游未产生本次源快照");
         DeclaredFieldAccess Low(NativeRuntimeEditorWindow window){Threshold(window);return Logical(Control(window)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold);}
         ProductionEditorContext Draft(NativeRuntimeEditorWindow window)=>(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(window))!;
@@ -361,7 +361,23 @@ internal static partial class S2DocumentEditingCases
     private static object Get(object target,string name){for(var type=target.GetType();type is not null;type=type.BaseType){var flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly;var property=type.GetProperty(name,flags);if(property is not null)return property.GetValue(target)!;var field=type.GetField(name,flags);if(field is not null)return field.GetValue(target)!;}throw new MissingMemberException(target.GetType().FullName,name);}
     private static DeclaredReferenceCandidate? Candidate(object item)=>(DeclaredReferenceCandidate?)Get(item,"Candidate");
     private static AppsPopup? _activePopup;
-    private static object Session(DeclaredFieldAccess field){_activePopup=Visual(field.View).OfType<AppsPopup>().Single(item=>item.Name=="rt"&&item.DataContext?.GetType().Name=="ReferenceFieldSession"&&((Port)Get(item.DataContext,"Target")).Id==field.FieldId);_activePopup.ApplyTemplate();return _activePopup.DataContext;}
+    private static readonly Dictionary<object,DeclaredFieldAccess> SessionFields=new();
+    private static readonly Dictionary<object,ParameterSetting> SessionSources=new();
+    private static object Session(DeclaredFieldAccess field){_activePopup=Visual(field.View).OfType<AppsPopup>().Single(item=>item.Name=="rt"&&item.DataContext?.GetType().Name=="ReferenceFieldSession"&&((Port)Get(item.DataContext,"Target")).Id==field.FieldId);_activePopup.ApplyTemplate();var session=_activePopup.DataContext;SessionFields[session]=field;return session;}
+    private static void SetSelection(object session,BindingSelection selection)
+    {
+        var field=SessionFields[session];
+        var source=SessionSources.GetValueOrDefault(session)??field.Setting;
+        ParameterSetting proposal=source switch
+        {
+            VariableSetting v=>v with {Reference=new VariableReference(v.Reference.SolutionId,v.Reference.VariableId,v.Reference.Type,selection,v.Reference.Storage)},
+            ReferenceSetting r=>r with {Reference=new OutputReference(r.Reference.NodeId,r.Reference.PortId,r.Reference.Type,r.Reference.MemberFieldPath,selection,r.Reference.ScopeId,r.Reference.Storage)},
+            _=>throw new InvalidOperationException("索引命令需要现有引用。")
+        };
+        var window=(NativeRuntimeEditorWindow)(Window.GetWindow(field.View)??throw new InvalidOperationException("字段没有所属窗口。"));
+        var editor=(DeclaredSettingsView)Get(window.EditorControl.Content,"Editor");
+        Require(editor.TrySetFields(new Dictionary<string,ParameterSetting>{{field.FieldId,proposal}}),"非视觉索引提案被拒绝："+field.Error);Pump();
+    }
     private static bool Right(DeclaredFieldAccess field)=>new[]{nameof(BlobSettings.FilterAreaMax),nameof(BlobSettings.FilterCircularityMax),nameof(BlobSettings.FilterRectangularityMax)}.Any(name=>BlobParameterDefinition.Instance.SettingsFieldId(name)==field.FieldId);
     private static void Subscribe(DeclaredFieldAccess field)
         {
@@ -372,20 +388,21 @@ internal static partial class S2DocumentEditingCases
     }
     private static IEnumerable<object> Tree(System.Collections.IEnumerable nodes){foreach(var node in nodes){yield return node!;foreach(var child in Tree((System.Collections.IEnumerable)Get(node!,"EnumEntrysA")))yield return child;}}
     private static void Choose(object session,bool index,Func<object,bool> predicate)
-    {if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();if(index)session.GetType().GetProperty("IsTextDropDownOpen")!.SetValue(session,true);var nodes=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).ToArray();var matches=nodes.Where(predicate).ToArray();var selected=matches.Select(item=>Candidate(item)?.Reference(BindingSelection.All)).FirstOrDefault(reference=>reference is not null);var alternatives=nodes.Select(item=>Candidate(item)?.Reference(BindingSelection.All)).Where(reference=>reference is not null&&(selected is null||reference.NodeId==selected.NodeId&&reference.MemberFieldPath.SequenceEqual(selected.MemberFieldPath))).Select(reference=>BindingReferenceSerializer.Serialize(reference!)).ToArray();File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-candidates.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{Target=((Port)Get(session,"Target")).Id,Index=index,Matches=matches.Length,Alternatives=alternatives})+Environment.NewLine);var item=matches.Single();_lastChoice=item;((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(item);Pump();}
+    {if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();var nodes=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).ToArray();var matches=nodes.Where(predicate).ToArray();var selected=matches.Select(item=>Candidate(item)?.Reference(BindingSelection.All)).FirstOrDefault(reference=>reference is not null);var alternatives=nodes.Select(item=>Candidate(item)?.Reference(BindingSelection.All)).Where(reference=>reference is not null&&(selected is null||reference.NodeId==selected.NodeId&&reference.MemberFieldPath.SequenceEqual(selected.MemberFieldPath))).Select(reference=>BindingReferenceSerializer.Serialize(reference!)).ToArray();File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-candidates.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{Target=((Port)Get(session,"Target")).Id,Index=index,Matches=matches.Length,Alternatives=alternatives})+Environment.NewLine);var item=matches.Single();_lastChoice=item;if(index)SetSelection(session,(bool)Get(item,"Clear")?BindingSelection.All:new BindingSelection.AtField(Candidate(item)!.Reference(BindingSelection.All)));else ((ICommand)Get(session,"ClickCommand")).Execute(item);Pump();}
     private static void SetIndex(object session,string index)
-    {var value=(string)Get(session,"CurValueA");var start=value.LastIndexOf('[');Require(start>=0,"真实引用文本没有索引槽："+value);session.GetType().GetProperty("CurValueA")!.SetValue(session,value[..(start+1)]+index+"]");Require((bool)session.GetType().GetMethod("TryCommitPending")!.Invoke(session,null)!,"索引原文未被实际合同接纳："+index);Pump();}
+    {SetSelection(session,new BindingSelection.AtConstant(int.Parse(index,System.Globalization.CultureInfo.InvariantCulture)));}
     private static void SelectVariable(object session,bool index,string id)
     {
+        if(index){var solution=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution!;SetSelection(session,new BindingSelection.AtVariable(new VariableReference(solution.Id,id,DataType.Integer,BindingSelection.All,NumericStorage.Int64)));return;}
         // Complete popup preparation before starting the modal waiter; no queued callback races a pre-dialog Pump.
         if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}
-        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();if(index)session.GetType().GetProperty("IsTextDropDownOpen")!.SetValue(session,true);
+        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();
         var manager=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).Single(item=>(bool)Get(item,"VariableManager"));
         Exception? failure=null;var selected=false;VariableSelectionDialog? ownedDialog=null;var deadline=DateTime.UtcNow.AddSeconds(15);var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(20)};
         timer.Tick+=(_,_)=>{
             if(DateTime.UtcNow>deadline){timer.Stop();failure=new TimeoutException("等待自有真实变量模态窗超过15秒");ownedDialog?.Close();return;}
             var dialog=Application.Current.Windows.OfType<VariableSelectionDialog>().SingleOrDefault(window=>window.IsVisible);if(dialog is null)return;ownedDialog=dialog;timer.Stop();
-            try{var item=dialog.BindItems.Single(row=>row.Reference.VariableId==id);((ListView)dialog.FindName("globalVarList")).SelectedItem=item;Visual(dialog).OfType<Button>().Single(button=>Equals(button.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));selected=true;}
+            try{var item=dialog.BindItems.Single(row=>row.Reference.VariableId==id);SessionSources[session]=new VariableSetting(item.Reference);((ListView)dialog.FindName("globalVarList")).SelectedItem=item;Visual(dialog).OfType<Button>().Single(button=>Equals(button.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));selected=true;}
             catch(Exception error){failure=error;ownedDialog.Close();}
         };
         Step("Variable modal before "+id);timer.Start();try{((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(manager);}finally{timer.Stop();Step("Variable modal returned "+id);}Step("Variable Pump before");Pump();Step("Variable Pump after");if(failure is not null)throw new Exception("原模态变量选择失败",failure);Require(selected,"原模态变量窗没有完成实际选择");

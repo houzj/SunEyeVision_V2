@@ -81,6 +81,7 @@ public sealed partial class DeclaredFieldsView
         ArgumentNullException.ThrowIfNull(proposals);
         Dispatcher.VerifyAccess();
         if(_submitting||_disposed)return false;
+        NativeRangePresenter? rangeRoute=null;KeyValuePair<string,ParameterSetting> rangeChange=default;
         _submitting=true;
         try
         {
@@ -88,10 +89,19 @@ public sealed partial class DeclaredFieldsView
             var changes=proposals.ToArray();
             var states=_fieldStates.ToDictionary(x=>x.Port.Id,StringComparer.Ordinal);
             if(changes.Any(x=>!states.ContainsKey(x.Key)||x.Value is null))throw new ArgumentException("组合提案含未知字段或空设置。");
-            if(changes.Any(x=>_pairedFields.Contains(x.Key)))throw new ArgumentException("范围端点必须通过原双端组合及绑定上下文联合编辑。");
-            return SubmitCore(changes.Select(x=>(states[x.Key],x.Value)).ToArray(),true,replacePending);
+            if(changes.Any(x=>_pairedFields.Contains(x.Key)))
+            {
+                if(changes.Length!=1||changes[0].Value is not (ReferenceSetting or VariableSetting))
+                    throw new ArgumentException("范围常量或多项提案必须通过原双端组合及绑定上下文联合编辑。");
+                rangeChange=new(changes[0].Key,DeclaredFieldState.CopySetting(changes[0].Value));
+                rangeRoute=_ranges.Single(range=>range.ContainsField(rangeChange.Key));
+            }
+            else return SubmitCore(changes.Select(x=>(states[x.Key],x.Value)).ToArray(),true,replacePending);
         }
         finally{_submitting=false;}
+        // Qualification was guarded above. The original range now acquires the
+        // existing single group transaction itself; no bypass through SubmitCore.
+        return rangeRoute!.TrySetReferenceFromCommand(rangeChange.Key,rangeChange.Value);
     }
     private bool SubmitRange(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,Action installed)
     {

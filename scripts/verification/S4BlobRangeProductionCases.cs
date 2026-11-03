@@ -288,27 +288,44 @@ internal static class S2DocumentEditingCases
     }
     private static DeclaredReferenceCandidate? Candidate(object item)=>(DeclaredReferenceCandidate?)Get(item,"Candidate");
     private static AppsPopup? _activePopup;
+    private static readonly Dictionary<object,DeclaredFieldAccess> SessionFields=new();
+    private static readonly Dictionary<object,ParameterSetting> SessionSources=new();
     private static bool Right(DeclaredFieldAccess f)=>f.FieldId is "field:cdce3e942b555fa58489e08eeb39236f" or "field:1a8be75176b350f09f3cd64506c136da" or "field:c38989cfdf9e51799d27e0eeee34e726";
-    private static object Session(DeclaredFieldAccess f){var native=Get(f.View,"NativeView");var session=Get(native,Right(f)?"SubscribeDataRight":"SubscribeDataLeft");_activePopup=Visual(f.View).OfType<AppsPopup>().Single(p=>p.Name=="rt"&&ReferenceEquals(p.DataContext,session));_activePopup.ApplyTemplate();return session;}
+    private static object Session(DeclaredFieldAccess f){var native=Get(f.View,"NativeView");var session=Get(native,Right(f)?"SubscribeDataRight":"SubscribeDataLeft");_activePopup=Visual(f.View).OfType<AppsPopup>().Single(p=>p.Name=="rt"&&ReferenceEquals(p.DataContext,session));_activePopup.ApplyTemplate();SessionFields[session]=f;return session;}
+    private static void SetSelection(object session,BindingSelection selection)
+    {
+        var field=SessionFields[session];
+        var source=SessionSources.GetValueOrDefault(session)??field.Setting;
+        ParameterSetting proposal=source switch
+        {
+            VariableSetting v=>v with {Reference=new VariableReference(v.Reference.SolutionId,v.Reference.VariableId,v.Reference.Type,selection,v.Reference.Storage)},
+            ReferenceSetting r=>r with {Reference=new OutputReference(r.Reference.NodeId,r.Reference.PortId,r.Reference.Type,r.Reference.MemberFieldPath,selection,r.Reference.ScopeId,r.Reference.Storage)},
+            _=>throw new InvalidOperationException("索引命令需要现有引用。")
+        };
+        var window=(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow)(Window.GetWindow(field.View)??throw new InvalidOperationException("字段没有所属窗口。"));
+        var editor=(DeclaredSettingsView)Get(window.EditorControl.Content,"Editor");
+        Require(editor.TrySetFields(new Dictionary<string,ParameterSetting>{{field.FieldId,proposal}}),"非视觉索引提案被拒绝："+field.Error);Pump();
+    }
     private static void UseConstant(DeclaredFieldAccess field){var toggle=Visual(field.View).OfType<ToggleButton>().Single(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path==(Right(field)?"IsSubscribeRight":"IsSubscribeLeft"));Require(toggle.IsChecked==true,"原订阅按钮状态不真");toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,false);toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();}
     private static void Subscribe(DeclaredFieldAccess field)
     {if(field.Setting is ReferenceSetting or VariableSetting)return;var toggle=Visual(field.View).OfType<ToggleButton>().Single(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path==(Right(field)?"IsSubscribeRight":"IsSubscribeLeft"));toggle.IsChecked=true;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();}
     private static IEnumerable<object> Tree(System.Collections.IEnumerable nodes){foreach(var node in nodes){yield return node!;foreach(var child in Tree((System.Collections.IEnumerable)Get(node!,"EnumEntrysA")))yield return child;}}
     private static void Choose(object session,bool index,Func<object,bool> predicate)
-    {if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();if(index)session.GetType().GetProperty("IsTextDropDownOpen")!.SetValue(session,true);var item=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).Single(predicate);_lastChoice=item;((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(item);Pump();}
+    {if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();var item=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).Single(predicate);_lastChoice=item;if(index)SetSelection(session,(bool)Get(item,"Clear")?BindingSelection.All:new BindingSelection.AtField(Candidate(item)!.Reference(BindingSelection.All)));else{if(Candidate(item) is {} candidate)SessionSources[session]=new ReferenceSetting(candidate.Reference(BindingSelection.All));((ICommand)Get(session,"ClickCommand")).Execute(item);}Pump();}
     private static void SetIndex(object session,string index)
-    {var value=(string)Get(session,"CurValueA");var start=value.LastIndexOf('[');Require(start>=0,"真实引用文本没有索引槽："+value);session.GetType().GetProperty("CurValueA")!.SetValue(session,value[..(start+1)]+index+"]");Require((bool)session.GetType().GetMethod("TryCommitPending")!.Invoke(session,null)!,"索引原文未被实际合同接纳："+index);Pump();}
+    {SetSelection(session,new BindingSelection.AtConstant(int.Parse(index,System.Globalization.CultureInfo.InvariantCulture)));}
     private static void SelectVariable(object session,bool index,string id)
     {
+        if(index){var solution=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution!;SetSelection(session,new BindingSelection.AtVariable(new VariableReference(solution.Id,id,DataType.Integer,BindingSelection.All,NumericStorage.Int64)));return;}
         // Complete popup preparation before starting the modal waiter; no queued callback races a pre-dialog Pump.
         if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}
-        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();if(index)session.GetType().GetProperty("IsTextDropDownOpen")!.SetValue(session,true);
+        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();
         var manager=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).Single(item=>(bool)Get(item,"VariableManager"));
         Exception? failure=null;var selected=false;VariableSelectionDialog? ownedDialog=null;var deadline=DateTime.UtcNow.AddSeconds(15);var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(20)};
         timer.Tick+=(_,_)=>{
             if(DateTime.UtcNow>deadline){timer.Stop();failure=new TimeoutException("等待自有真实变量模态窗超过15秒");ownedDialog?.Close();return;}
             var dialog=Application.Current.Windows.OfType<VariableSelectionDialog>().SingleOrDefault(window=>window.IsVisible);if(dialog is null)return;ownedDialog=dialog;timer.Stop();
-            try{var item=dialog.BindItems.Single(row=>row.Reference.VariableId==id);((ListView)dialog.FindName("globalVarList")).SelectedItem=item;Visual(dialog).OfType<Button>().Single(button=>Equals(button.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));selected=true;}
+            try{var item=dialog.BindItems.Single(row=>row.Reference.VariableId==id);SessionSources[session]=new VariableSetting(item.Reference);((ListView)dialog.FindName("globalVarList")).SelectedItem=item;Visual(dialog).OfType<Button>().Single(button=>Equals(button.Content,dialog.TryFindResource("Confirm"))).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));selected=true;}
             catch(Exception error){failure=error;ownedDialog.Close();}
         };
         timer.Start();try{((ICommand)Get(session,index?"IndexClickCommand":"ClickCommand")).Execute(manager);}finally{timer.Stop();}Pump();if(failure is not null)throw new Exception("原模态变量选择失败",failure);Require(selected,"原模态变量窗没有完成实际选择");

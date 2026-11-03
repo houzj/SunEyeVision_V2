@@ -136,7 +136,6 @@ internal static class BlobRunUi
             state=new BlobRunUiState(draft,settingsView,threshold,sortPreview,supportedFeatures,created,ranges);
             observe?.Invoke(state);
             return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,FieldVisibilitySources=gates,
-                ReferenceOptions=options.ReferenceOptions is {} reference?reference with{EditableIndex=true}:null,
                 ValidateUiState=()=>
                 {
                     var previous=options.ValidateUiState?.Invoke();

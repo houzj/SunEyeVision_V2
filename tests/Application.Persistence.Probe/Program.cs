@@ -87,5 +87,6 @@ sealed class PendingParticipant : SunEyeVision.Application.Editing.IDocumentEdit
 {
  public Guid ScopeId { get; }=Guid.NewGuid(); public string ScopeKey=>"pending"; public bool HasPendingChanges=>true; public bool IsValid=>true;
  public SunEyeVision.Application.Editing.DocumentEditProposal Prepare(SunEyeVision.Application.Editing.NodeConfigurationEditHost host)=>throw new NotSupportedException();
+ public void Acknowledge(SunEyeVision.Application.Editing.DocumentEditProposal proposal, SunEyeVision.Application.DocumentEditReceipt receipt) => throw new NotSupportedException();
  public void Cancel() { }
 }

@@ -255,7 +255,90 @@ manager.CloseCurrent();
 Check(!restoredPresentation.IsCurrent && restoredPresentation.RetirementToken.IsCancellationRequested,
     "方案关闭必须退役仍打开的呈现能力。");
 Console.WriteLine("PASS 节点呈现准入、删除退役、回调隔离、撤销不复活和方案关闭");
-Console.WriteLine("17 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
+var saveSession = manager.CreateNew();
+var saveFlow = saveSession.GetWorkflows().Single();
+var saveGraph = saveSession.PrepareGraphEdit(saveFlow.Id);
+var saveNode = saveSession.CreateNode(saveGraph, "TransactionProbe", new CanvasPoint(0, 0));
+saveSession.CommitGraphEdit(saveGraph, "保存测试节点");
+var saveHost = saveSession.Editing.Host;
+var saveNodeDraft = saveHost.BeginEdit(saveFlow.Id, saveNode.Id);
+var saveRootDraft = saveHost.BeginRootEdit(saveFlow.Id);
+saveNodeDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(31L) });
+saveRootDraft.Configuration = new RootWorkflowConfiguration { RunParameters = ImmutableArray.Create(
+    new RootParameterProxy(Guid.NewGuid(), saveNode.Id, saveNode.ToolType, "threshold", "threshold", "保存阈值")) };
+var acknowledgeCount = 0; var editorPending = true;
+var saveParticipant = new SaveParticipant("保存参数与根配置",
+    () => editorPending,
+    host => DocumentEditProposal.Prepare(host, nodes: new[] { saveNodeDraft }, roots: new[] { saveRootDraft }),
+    (proposal, receipt) =>
+    {
+        Check(ReferenceEquals(receipt.Session, saveSession), "回执须属于原会话。");
+        saveNodeDraft = saveHost.RebaseAcceptedDraft(saveNodeDraft, proposal);
+        saveRootDraft = saveHost.RebaseAcceptedDraft(saveRootDraft, proposal);
+        acknowledgeCount++; editorPending = false;
+    });
+saveSession.Editing.Register(saveParticipant);
+var saveRoot = Path.Combine(AppContext.BaseDirectory, "_validation", "accepted-edit-save", Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(saveRoot);
+var savePath = Path.Combine(saveRoot, "accepted.solution");
+var saveTypes = new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>());
+var saveOptions = new System.Text.Json.JsonSerializerOptions();
+saveSession.SaveAs(savePath, Path.Combine(saveRoot, "backup"), saveRoot, saveTypes, saveOptions, _ => null);
+Check(acknowledgeCount == 1 && !saveParticipant.HasPendingChanges && saveFlow.RootConfiguration.RunParameters.Length == 1,
+    "另存须整批接受编辑并重基窗口。");
+void ChangeSavedThreshold(long value) { saveNodeDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(value) }); editorPending = true; }
+ChangeSavedThreshold(32L);
+saveSession.Save(savePath, Path.Combine(saveRoot, "backup"), saveTypes, saveOptions);
+Check(acknowledgeCount == 2 && !saveParticipant.HasPendingChanges, "保存必须接受重基后的第二次编辑。");
+ChangeSavedThreshold(33L);
+var copyPath = Path.Combine(saveRoot, "copy.solution");
+saveSession.SaveCopy(copyPath, Path.Combine(saveRoot, "copy-backup"), saveRoot, saveTypes, saveOptions, _ => null);
+Check(acknowledgeCount == 3 && saveSession.LastWrittenSnapshot!.TargetPath == savePath, "保存副本接受编辑但不改活动文件身份。");
+ChangeSavedThreshold(34L);
+_ = saveSession.CaptureForSave(saveTypes, saveOptions);
+Check(acknowledgeCount == 4 && !saveParticipant.HasPendingChanges, "显式保存捕获须使用同一编辑链。");
+ChangeSavedThreshold(35L);
+using (var saveCanceled = new CancellationTokenSource())
+{
+    saveCanceled.Cancel();
+    try { saveSession.Save(savePath, Path.Combine(saveRoot, "backup"), saveTypes, saveOptions, cancellationToken: saveCanceled.Token); throw new Exception("应取消保存。"); }
+    catch (OperationCanceledException) { }
+}
+Check(acknowledgeCount == 4 && saveParticipant.HasPendingChanges &&
+    (long)((ConstantSetting)saveNode.Configuration.Fields.Read("threshold")).Value! == 34L,
+    "预先取消不得接受私有编辑。");
+saveSession.Editing.Unregister(saveParticipant.ScopeId);
+var reopenedSave = manager.Open(copyPath, _ => saveTypes, _ => null, saveOptions);
+var reopenedSaveNode = reopenedSave.GetNodes(saveFlow.Id).Single();
+Check((long)((ConstantSetting)reopenedSaveNode.Configuration.Fields.Read("threshold")).Value! == 33L &&
+    reopenedSave.GetWorkflows().Single().RootConfiguration.RunParameters.Length == 1,
+    "真实重开必须读到副本中的参数与根配置。");
+Console.WriteLine("PASS 保存、另存、副本及捕获共同接受编辑回执，取消保留草稿和真实重开");
+var failedAckDraft = reopenedSave.Editing.Host.BeginEdit(saveFlow.Id, reopenedSaveNode.Id);
+failedAckDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(44L) });
+var beforeFailedAck = File.ReadAllBytes(copyPath);
+var failedAck = new SaveParticipant("受控回执失败", () => true,
+    host => DocumentEditProposal.Prepare(host, nodes: new[] { failedAckDraft }),
+    (_, _) => throw new InvalidOperationException("受控窗口刷新失败"));
+reopenedSave.Editing.Register(failedAck);
+try { reopenedSave.Save(copyPath, Path.Combine(saveRoot, "copy-backup"), saveTypes, saveOptions); throw new Exception("回执失败须报告。"); }
+catch (AggregateException) { }
+Check(beforeFailedAck.SequenceEqual(File.ReadAllBytes(copyPath)) &&
+    (long)((ConstantSetting)reopenedSaveNode.Configuration.Fields.Read("threshold")).Value! == 44L,
+    "回执失败不得写文件，也不得伪装回滚已正式接受的编辑。");
+reopenedSave.Editing.Unregister(failedAck.ScopeId);
+var prepareFailure = new SaveParticipant("受控准备失败", () => true,
+    _ => throw new InvalidOperationException("受控准备失败"), (_, _) => throw new Exception("不得确认失败提案"));
+reopenedSave.Editing.Register(prepareFailure);
+Reject(() => reopenedSave.Save(copyPath, Path.Combine(saveRoot, "copy-backup"), saveTypes, saveOptions));
+Check(beforeFailedAck.SequenceEqual(File.ReadAllBytes(copyPath)), "准备失败不得覆盖已有文件。");
+reopenedSave.Editing.Unregister(prepareFailure.ScopeId);
+reopenedSave.Save(copyPath, Path.Combine(saveRoot, "copy-backup"), saveTypes, saveOptions);
+var failedAckRecovered = manager.Open(copyPath, _ => saveTypes, _ => null, saveOptions);
+Check((long)((ConstantSetting)failedAckRecovered.GetNodes(saveFlow.Id).Single().Configuration.Fields.Read("threshold")).Value! == 44L,
+    "处理失败参与者后须能保存并真实重开已接受编辑。");
+Console.WriteLine("PASS 保存准备与回执失败保护原文件，已提交编辑保留并可再次保存重开");
+Console.WriteLine("19 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }
@@ -282,4 +365,17 @@ public sealed class TransactionProbeDefinition : IToolDefinition<TransactionSett
     public IReadOnlyList<Diagnostic> Validate(TransactionSettings settings) => Array.Empty<Diagnostic>();
     public ToolCapabilities Capabilities() => ToolCapabilities.None;
     public IToolSession<TransactionSettings, WorkspaceProbeOutput> CreateSession() => throw new NotSupportedException("仅事务准入探针。");
+}
+
+public sealed class SaveParticipant(string key, Func<bool> pending,
+    Func<NodeConfigurationEditHost, DocumentEditProposal> prepare,
+    Action<DocumentEditProposal, DocumentEditReceipt> acknowledge) : IDocumentEditParticipant
+{
+    public Guid ScopeId { get; } = Guid.NewGuid();
+    public string ScopeKey => key;
+    public bool HasPendingChanges => pending();
+    public bool IsValid => true;
+    public DocumentEditProposal Prepare(NodeConfigurationEditHost host) => prepare(host);
+    public void Acknowledge(DocumentEditProposal proposal, DocumentEditReceipt receipt) => acknowledge(proposal, receipt);
+    public void Cancel() { }
 }

@@ -21,6 +21,22 @@ public sealed partial class DocumentSession
         IVariableValueExtensionCodec? codec = null, string? sourceDirectory = null)
     {
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
+        AcceptEditorsForSave();
+        return CaptureAcceptedDocument(variableTypes, options, codec, sourceDirectory);
+    }
+
+    // Saving accepts the same private editor batch as Apply. Acknowledgements run before
+    // any persistence lock, so rebase/cleanup cannot execute inside the snapshot gate.
+    private void AcceptEditorsForSave()
+    {
+        EnsureOwnerCanEdit();
+        if (Editing.HasPendingChanges) Editing.Apply();
+        EnsureOwnerCanEdit();
+    }
+
+    private EncodedSolutionDocument CaptureAcceptedDocument(FrozenVariableTypeCatalog variableTypes,
+        JsonSerializerOptions options, IVariableValueExtensionCodec? codec, string? sourceDirectory)
+    {
         EnsureOwnerCanEdit();
         using var mutation=_owner.BeginDocumentMutation();
         lock (_gate)
@@ -48,6 +64,8 @@ public sealed partial class DocumentSession
     {
         cancellationToken.ThrowIfCancellationRequested();
         if(expected?.Kind==TargetExpectationKind.Unchecked) throw new ArgumentException("方案会话保存必须校验目标身份。",nameof(expected));
+        ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
+        AcceptEditorsForSave();
         EnsureOwnerCanEdit();
         using var mutation=_owner.BeginDocumentMutation();
         long revision; EncodedSolutionDocument encoded;
@@ -61,7 +79,7 @@ public sealed partial class DocumentSession
                 expected=TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(_lastWrittenSnapshot.CopyBytes())));
             }
             sourceDirectory ??= _lastWrittenSnapshot is null ? null : Path.GetDirectoryName(_lastWrittenSnapshot.TargetPath);
-            revision=ChangeRevision; encoded=CaptureForSave(variableTypes,options,codec,sourceDirectory);
+            revision=ChangeRevision; encoded=CaptureAcceptedDocument(variableTypes,options,codec,sourceDirectory);
         }
         mutation.Dispose();
         var receipt=SolutionFileCommit.Write(encoded.BindTarget(destination,expected ?? TargetExpectation.Missing),recoveryPath,cancellationToken:cancellationToken);
@@ -89,6 +107,8 @@ public sealed partial class DocumentSession
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory); ArgumentNullException.ThrowIfNull(createCodec);
         if(expected?.Kind==TargetExpectationKind.Unchecked) throw new ArgumentException("方案会话另存为必须校验目标身份。",nameof(expected));
         cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
+        AcceptEditorsForSave();
         EnsureOwnerCanEdit();
         using var mutation=_owner.BeginDocumentMutation();
         long revision; EncodedSolutionDocument encoded;

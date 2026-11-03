@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// 数据库类型枚举
@@ -46,7 +46,7 @@ public enum DatabaseType
 /// <remarks>
 /// 用于配置数据库连接，支持多种数据库类型。
 /// </remarks>
-public class DatabaseConfiguration : ObservableObject
+public class DatabaseConfiguration
 {
     private bool _enabled = false;
     private DatabaseType _type = DatabaseType.MySQL;
@@ -61,7 +61,7 @@ public class DatabaseConfiguration : ObservableObject
     public bool Enabled
     {
         get => _enabled;
-        set => SetProperty(ref _enabled, value, "启用数据库");
+        internal set => _enabled = value;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class DatabaseConfiguration : ObservableObject
     public DatabaseType Type
     {
         get => _type;
-        set => SetProperty(ref _type, value, "数据库类型");
+        internal set => _type = value;
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class DatabaseConfiguration : ObservableObject
     public string ConnectionString
     {
         get => _connectionString;
-        set => SetProperty(ref _connectionString, value, "连接字符串");
+        internal set => _connectionString = value;
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class DatabaseConfiguration : ObservableObject
     public int ConnectionTimeout
     {
         get => _connectionTimeout;
-        set => SetProperty(ref _connectionTimeout, value, "连接超时");
+        internal set => _connectionTimeout = value;
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class DatabaseConfiguration : ObservableObject
     public int MaxPoolSize
     {
         get => _maxPoolSize;
-        set => SetProperty(ref _maxPoolSize, value, "最大连接池");
+        internal set => _maxPoolSize = value;
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public class DatabaseConfiguration : ObservableObject
     public int MinPoolSize
     {
         get => _minPoolSize;
-        set => SetProperty(ref _minPoolSize, value, "最小连接池");
+        internal set => _minPoolSize = value;
     }
 
     /// <summary>
@@ -209,3 +209,4 @@ public class DatabaseConfiguration : ObservableObject
         }
     }
 }
+

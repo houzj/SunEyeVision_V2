@@ -7,16 +7,18 @@ using System.Threading.Tasks;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Execution;
 
 /// <summary>One common admission/ownership path for formal and debug host input.</summary>
 internal static class HostInputCoordinator
 {
-    internal static async ValueTask<PreparedHostInvocation> PrepareAsync(RuntimeToolConfiguration configuration,
+    internal static async ValueTask<PreparedHostInvocation> PrepareAsync(ExecutionNodeSnapshot configuration,
         IHostInputPreparer preparer, object settings, ToolExecutionIdentity identity,
         string nodeId, IToolExecutionContext baseContext)
     {
-        var declaration=configuration.Directory.GetHostInputs(configuration.ToolId)
+        if (ToolHostDeclarationRules.ValidateAndFingerprint(configuration.Definition) != configuration.HostDeclarations.Fingerprint)
+            throw new InvalidOperationException("宿主输入声明与冻结执行快照不一致。");
+        var declaration=configuration.Directory.GetHostInputs(configuration.Configuration.ToolId)
             ?? throw new InvalidOperationException("工具未声明宿主输入能力。");
         if(preparer.CapabilityId!=declaration.CapabilityId || preparer.CapabilityVersion!=declaration.Version)
             throw new InvalidOperationException("宿主输入能力与准入目录不一致。");

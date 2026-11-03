@@ -7,7 +7,7 @@ using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Workflow;
 
-public sealed record ScopedNodeIdentity(string WorkflowId, string NodeId);
+
 
 public static class BindingRelationCatalog
 {
@@ -38,3 +38,4 @@ public static class BindingRelationCatalog
             .ToDictionary(pair=>pair.Key,pair=>pair.Setting,StringComparer.Ordinal);
     }
 }
+

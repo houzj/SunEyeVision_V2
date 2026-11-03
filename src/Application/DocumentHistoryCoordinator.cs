@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace SunEyeVision.Workflow;
+using SunEyeVision.Domain.Workflows;
+
+namespace SunEyeVision.Application;
 
 public enum DocumentHistoryDirection { Forward, Backward }
 public sealed record DocumentHistoryScope(string RootId, string ContainerId);
@@ -266,3 +268,4 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         Release(discarded); Notify(); Changed = null; _mutationLeaseProvider = null;
     }
 }
+

@@ -1,18 +1,44 @@
-## 2026-11-03 V4 当前文档编码候选
+## 2026-11-03 根接管生产事务并集成实体会话候选
 
-新增同步 Capture 当前领域定义、严格声明重读和只持冻结字节的目标绑定；含相对资源跨目录重定位及重读，覆盖当前编辑、原子写重开、跨目录路径与真实 Mat 借用/释放。需要主线 Session owner/ValueGate 调用与最终声明准入、正式打开保存和关闭排空集成回归；Group 暂停。
+已核A明确交接7636e9729，集成cc27261b6；执行两检查点6a803/d487对应e7b8/32d已接，未合主仓。根唯一写Domain核心/Application核心/正式Manager/Runtime Owner排他；A仅Execution与旧执行源退出，B仅Editing+UI，C变量通信/Persistence/Infrastructure，避免同树并写。
 
-## 2026-11-03 V4 解码所有权与扩展数据候选
+实际新增DocumentSession.CreateNew、CommitGraphEdit、Undo/Redo与统一Changed生产入口：至少一个真实根流程；完整候选先图/自动引用/变量依赖修复后单历史安装，无变化不造历史；正式Owner编辑租约排他根/节点运行，同线程内部历史嵌套；执行失效按唯一workflow/node域退役，清理观察者失败独立记录。名称及几何与执行配置区分，通知锁外并拒重入。
 
-本线完成单次解码 scope 防复用和解码/清理异常聚合；方案、流程、节点及变量候选支持显式嵌套 AdditionalData 并克隆数据。设备属性由领域线补全序列化标注。局部 Persistence 测试 38/38；Application 当前文档捕获编码、设备联编、完整保存/打开及运行资源排空未完成，不计整链完成。
+Application定位构建0错；中立事务8组通过（复合添加、过期、移动、连线自动引用、删除同实体恢复、运行排他、通知异常、关闭）。首次探针未声明WorkflowImageInputId而测试自动引用失败，补完整测试声明后通过，产品不为测试降低规则；记录Release/_validation/application-graph-publication-20261103。测试目录以实际中立声明准入，未冒称真实图像源/Blob或完整生产Manager。参数/变量CommitEdit、持久化打开保存、执行调度、UI实际接线尚未完成；本次在途构建已改本树Release依赖，旧ED669封包只是历史成绩，当前未重新封包/不得启动交付。全量/宿主/人工/设计器/主线集成未验，目标保持。
+## 2026-11-03 原件开窗证据核收与V4整体策略冻结
 
-## 2026-11-03 V4 纯持久化在途
+长期用户原则已同源写AGENTS/取证约定及原全平台计划：UI/控件模型/交互/工具组织原件直接迁，HALCON算法对标；只留必要身份/执行保存/资源平台接缝，不能演变重设计。原开窗静态报告已按原格式归档VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md，SHA50A2370844A9355286E624318E2B476399216BE2A6DF8B299589591C2E4BF03B，核三个源SHA及关键关闭/根缓存调用。原件先Close旧窗再开，不据此推窗口缓存或恰一次Bind；UI将退出本方无原证额外Yes/No替换对话。独立限定窗首轮拒绝/取消通过、确认替换失败后改Closed信号并复验通过；冷热计时未与旧版同环境对照，不称提速，新架构/故障/设计时还未验。
 
-唯一持久化线已接收 V4 门禁、冻结声明，真实字段解码与双卷事务正在迁移；资源按单次读取 scope 登记本次新建 Mat、失败释放及一次转移。组件定位通过不代表整链：严格方案 DTO/validator、资源计划、导入导出、会话与 UI 尚未接通，写入入口未交付。
+技术总监已正式核同意方案SchemaVersion4：新节点Configuration，旧3/RuntimeConfiguration/派生ConsumerBindings严格拒绝不覆盖原文件，无旧桥，Contracts codec版本/字节不变。老主仓曾有派生列表写入，当前87f4创建入口已退出，残余消费者按整链删除；不是VM文档格式。A继续Application/Host/原子图/Execution及生产Manager，C已接管纯Persistence整层V4/元数据/原子保存/恢复/解码资源scope和变量独立导入导出，Domain.Persistence冻结声明由C写；B续UI实际消费者。各自工作树仍在途，当前87f4正式产品仍f8/ED669，不交付新方案链。详情已统一原主HTML而非仅账本。
+## 2026-11-03 在途实体会话真实接缝与原厂优先规则
 
-## 2026-11-03 方案变量及通信迁移在途
+已只读核三树真实源码，非文档推定：A的638f8ab7a/4f36b8104为实体、可信scope、ChangeSet及图草稿准备检查点，Application定位0错，原子图提交/引用修复/生产文档工厂仍缺；B已在同一UI独立树互合真实源码，不造空提交/旧桥，整体构建目前在旧Workflow编辑Host访问Domain内部raw/CAS处失败，待A将Host整体迁Application，不加Workflow友元掩盖。原overview终结后由workflow_domain接续同一UI唯一写权，未分走图职责。C的f92/0234含纯Persistence+正式Infrastructure.Persistence引用、真实SDK/OpenCV复杂值适配与通信owner状态；当前仅组件验证，未通过整体方案保存/关闭或UI生产链，不计完成。
 
-基线 13024cf8a，领域绑定合同来自 7d019a3a9。变量及通信定义、状态职责拆分正在实施，Domain 定位构建与七项局部自测、通信受控状态四项及正式 Persistence/SDK 适配六项局部测试通过；旧消费者、持久化真实方案保存链、应用会话和 UI/驱动全链尚未贯通，不能交付或称已迁移。通信状态 owner 按实际会话与定义实例绑定，删除/关闭需停驱动排空后释放；值原子操作仅 Application 友元。详见 evidence/方案变量通信领域迁移设计-20261103.html。
+重要范围纠偏：UI.csproj明确排除旧CommunicationManager绝大多数Page/Compile，仅六个非视觉helper纳入；保留源码不等于活动界面，不直接恢复旧自研管理器。通信服务现DeviceLifetime/断连/停止复用，删除、同ID重建及迟到Dispatcher必须核真实实例和状态；旧源码通知线程不能凭假设强制owner。变量Image新Mat只有本次解码范围拥有，候选失败释放、成功交正式文档，运行/编辑/历史及reader排空后释放；导入导出与方案保存共享同一宿主codec/解码scope。正式/调试当前仍仅接纯值变量，不为本批扩图像变量执行语义。保存真实复杂值在捕获时编码，不把Mat/可变矩阵或ROI借用冒称不可变域快照。
+
+主仓用户最新“解决问题优先对照原厂设计”已同步AGENTS.md和取证约定。开窗本方双BindDraft/已有窗检查晚是确证线索，不是VM内部策略；原VM完整链由主仓已向既有负责人集中取静态原证，未有回件、未授权新原机测试。B正按正式草稿/设计时/拒绝替换/失败/迟到全生命周期设计和冷/热分段计时推进，不把未验候选367c当完成。其他实体会话与通信源码继续，不等证据全停。
+## 2026-11-03 实体会话关键路径增设方案数据独立线
+
+经已授权并行策略，实际创建platform-solution-data-20261103独立worktree/分支，从13024cf8a起，由规范编码线接手GlobalVariable/Communication整族；实体会话线已停止写该族并保全未完成草稿至自身Release/_validation，双方不并写。共享ProducerBinding/ConsumerBinding源7d019a3a9仅供接线，尚非完整可交付模型。A继续SolutionDefinition/DocumentSession/原子图事务/历史/执行/持久化组装及Domain.csproj；C独占两族Domain/运行状态/值converter/纯值策略和非UI消费者，B独占全部UI可视接线。变量raw/CAS保持内部原协议且仅Application友元，Value converter由Persistence对单Value属性注册；通信状态与配置分离。词汇以Contracts TypeRef/纯值声明唯一权威、CLR视觉映射留宿主适配，不复制两表。不把定位编译/临时草稿测试计生产完成。
+
+技术总监已核收f8c05a6c1/619212e56、ED669...A5B71载荷和Text6实际回执；后续统一改Contracts.ParameterSettingCanonical，明确不恢复旧codec或兼容桥。本次消息不代表主仓已合入，不覆盖其C05/Blob花括号来源专项，双方成绩不互借。新ABI固定后再集中交接，无需互相停工/rebase。完整平台目标继续，当前87f4工作树仅文档新记录，产品仍为f8正式自测载荷。
+## 2026-11-03 规范编码87f4集成自测闭口，实体会话继续
+
+产品合入f8c05a6c19f13833cef1e50047461601c6ee2128，自身完整Release0错/3357警告，封包ED669DEB11F72BD318553BAE8343F78C6EEB805C24B88995B446456DC37A5B71。规范3/Graph39(含当前值正式保存重开1)/SDK302/输入24/图像源31/Blob11/查询7/Root38同载no-build全部通过；隐藏Text6，attempt036 PID49388退出0，Contracts/Runtime/Workflow/UI四实际加载路径及SHA逐项核对。原编码主文档、全平台计划和剩余矩阵统一更新。证据Release/_validation/canonical-integrated-20261103/final-evidence.json。首次full缺新测试assets失败，锁定restore后通过，原日志保留；旧S4当前值/数值脚本编译失败不计通过。人工/设计器/主仓合并未做，Group暂停。
+
+下一整批两条源码线继续：领域线在独立树集中处理真实Solution全部业务字段、唯一配置/可信准入、DocumentSession原子图事务与历史、执行/持久化；UI线前置缓存生命周期3cc5d6cec自身UI0错、14项通过，完整组合仍需后端真实ABI，不借前置成绩计整批完成。只读评审已交实际变量/设备/通信/事件/DB等依赖给领域线，不以假Solution或JsonElement替业务。公共ABI未形成前不强合半成品，原目标与清单保持。
+## 2026-11-03 共享规范编码集中合入，待本地集成验证
+
+已保留双方设计及候选记录，合入13024cf8a/4c26614e2的唯一Contracts编码和全部直接消费者。下一实体/会话与UI完整迁移继续在两个独立worktree；当前87f4接下来重建正式Release并相称回归，不能借独立候选成绩。
+
+## 2026-11-03 下一完整实体会话批进入独立源码实施
+
+整体设计4ff2887b6/e94与UI3f3已核，审查无新增阻断；主线冻结codec完整归Contracts、Execution唯一reader载体、Application最终跨字段准入和未准入JSON寿命，具体见原整体设计第11节。源码共享ABI13024cf8a由规范编码线固定，旧Runtime codec及字段writer退出，全直接消费者迁同一实现；独立验证中，不冒充87f4已集成。
+
+新实体/会话线platform-document-session-20261103与UI线platform-document-projection-20261103均已实际创建独立worktree并从130启动源码。A独占Domain/Application/Execution/Persistence/Workflow迁出/SDK非视觉查询/非UI测试/slnx，Runtime.csproj仅友元；B独占UI/Plugin.Wpf/WPF消费者与测试、UI引用。各自固定完整候选后统一集成，不留旧类型兼容桥，不把在途新类的定位编译计作生产完成。根87f4产品仍3da，未替换当前正式载荷，Group暂停。规范编码线已回报Graph38/SDK302/Input24/Image31/Blob11/Query7/Root38与字节金样3通过；最终宿主/证据核收未完，不交付。旧S4 ParameterValues脚本基线有已退役形参编译错误，不能当产品通过或删掉真实需求，改用当前有效宿主对应验证。
+## 2026-11-03 中立参数编码候选交接
+
+产品源码 13024cf8a；全量 Release 0 错。规范金样、真实 V3 保存重开与消费者回归、隐藏桌面文本六项通过；新增当前值保存重开测试直接调用内部接收方法，不替代完整运行发布验证。旧 S4 当前值和数值脚本依赖退役接口不能编译。详细证据见 evidence/中立参数规范编码迁移-20261103.html；候选未集成主线、Group 暂停。
 
 ## 2026-11-03 下一整批设计核收与主仓回执
 
@@ -16438,9 +16464,4 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 已在独立分支整合资源线 ad3948688 和单次所有权修正 b5b67bfd4（本树 19bd0b1d0），Runtime 调试使用唯一 HostInput 准备器；捕获失败释放、成功由 invocation 接管。
 - 统一封包全量 Release 0 错；封包后无重编图像源正式/调试 24/24、输入身份与所有权 3/3；隐藏 WPF attempt-025 检查图像源捕获失败释放与 Blob 实际调试，attempt-026 检查门禁、禁用占位和执行中关闭。统一载荷哈希、测试日志及快照范围见 evidence/统一WPF编辑事务抽离设计-20261102.html。
 - 上述为独立候选，主线合并其它调度变更后须重建重验；完整 Group、旧 SDK 可视完全退出、自然输入、设计器与人工验收未完成，连续调试及重置业务保持禁用占位。此前 44 组属于旧载荷，不计为本次完整回归。
-
-
-
-
-
 

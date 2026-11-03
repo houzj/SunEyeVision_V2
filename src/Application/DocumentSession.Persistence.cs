@@ -69,6 +69,18 @@ public sealed partial class DocumentSession
         FrozenVariableTypeCatalog variableTypes,JsonSerializerOptions options,
         Func<DecodedResourcesScope,IVariableValueExtensionCodec?> createCodec,
         TargetExpectation? expected=null,CancellationToken cancellationToken=default)
+        => SaveAsCore(destination,recoveryPath,sourceDirectory,variableTypes,options,createCodec,expected,cancellationToken,true);
+
+    public FrozenSaveReceipt SaveCopy(string destination,string recoveryPath,string sourceDirectory,
+        FrozenVariableTypeCatalog variableTypes,JsonSerializerOptions options,
+        Func<DecodedResourcesScope,IVariableValueExtensionCodec?> createCodec,
+        TargetExpectation? expected=null,CancellationToken cancellationToken=default)
+        => SaveAsCore(destination,recoveryPath,sourceDirectory,variableTypes,options,createCodec,expected,cancellationToken,false);
+
+    private FrozenSaveReceipt SaveAsCore(string destination,string recoveryPath,string sourceDirectory,
+        FrozenVariableTypeCatalog variableTypes,JsonSerializerOptions options,
+        Func<DecodedResourcesScope,IVariableValueExtensionCodec?> createCodec,
+        TargetExpectation? expected,CancellationToken cancellationToken,bool updateBaseline)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory); ArgumentNullException.ThrowIfNull(createCodec);
         if(expected?.Kind==TargetExpectationKind.Unchecked) throw new ArgumentException("方案会话另存为必须校验目标身份。",nameof(expected));
@@ -79,6 +91,12 @@ public sealed partial class DocumentSession
             EnsureOwnerCanEdit(); _preparing=true;
             try
             {
+                if(_lastWrittenSnapshot is not null && !string.Equals(
+                    Path.TrimEndingDirectorySeparator(Path.GetFullPath(sourceDirectory)),
+                    Path.TrimEndingDirectorySeparator(Path.GetDirectoryName(_lastWrittenSnapshot.TargetPath)!),StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("源资源目录与当前打开或已保存的方案位置不一致。");
+                if(!updateBaseline && _lastWrittenSnapshot is not null && string.Equals(Path.GetFullPath(destination),_lastWrittenSnapshot.TargetPath,StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("保存副本不能覆盖当前方案。");
                 using var mutation=_owner.BeginDocumentMutation();
                 lock(GlobalVariable.ValueGate)
                 {
@@ -99,7 +117,7 @@ public sealed partial class DocumentSession
             finally { _preparing=false; }
         }
         var receipt=SolutionFileCommit.Write(encoded.BindTarget(destination,expected ?? TargetExpectation.Missing),recoveryPath,cancellationToken:cancellationToken);
-        lock(_gate) { if (!_closed && !_closing && !_owner.IsRetired && _directory.IsActive) { _lastWrittenSnapshot=receipt.WrittenSnapshot; _lastWrittenRevision=revision; } }
+        lock(_gate) { if (updateBaseline && !_closed && !_closing && !_owner.IsRetired && _directory.IsActive) { _lastWrittenSnapshot=receipt.WrittenSnapshot; _lastWrittenRevision=revision; } }
         return receipt;
     }
 

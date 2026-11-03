@@ -22,6 +22,10 @@ try {
  if(reopened.GetNodes(flow.Id).Single().Id!="n")throw new Exception("重开节点错误");
  var samePathReceipt=reopened.Save(path,Path.Combine(root,"backup"),catalog,new JsonSerializerOptions());
  if(!ReferenceEquals(reopened.LastWrittenSnapshot,samePathReceipt.WrittenSnapshot))throw new Exception("同路径保存基线错误");
+ reopened.SaveCopy(Path.Combine(root,"copy.solution"),Path.Combine(root,"copy.backup"),root,catalog,new JsonSerializerOptions(),_=>null);
+ if(!ReferenceEquals(reopened.LastWrittenSnapshot,samePathReceipt.WrittenSnapshot))throw new Exception("保存副本改变当前基线");
+ var rejectedCopy=false; try { reopened.SaveCopy(path,Path.Combine(root,"copy.backup"),root,catalog,new JsonSerializerOptions(),_=>null,TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))); } catch(InvalidOperationException) { rejectedCopy=true; }
+ if(!rejectedCopy)throw new Exception("副本覆盖当前方案");
  try { reopened.SaveAs(path,Path.Combine(root,"backup"),root,catalog,new JsonSerializerOptions(),_=>null);throw new Exception("另存未拒绝现有文件"); } catch(IOException) { }
  File.AppendAllText(path," ");
  try { reopened.Save(path,Path.Combine(root,"backup"),catalog,new JsonSerializerOptions());throw new Exception("未拒绝外部更改"); } catch(IOException) { }

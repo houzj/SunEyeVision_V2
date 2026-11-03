@@ -22,3 +22,9 @@
 同一真实控件覆盖：普通标量/序列/变量的原对应文字、组合固定/动态索引及来源切换的后缀，普通数值原只读门禁；图像父组合下拉和实际resource身份；真实原生WPF来源/索引事件、清空/取消、组拒绝与raw；候选更名/同名新ID/类型或成员变化、刷新与代次；真实窗口未失焦确认、Undo/Redo、复制/文件重开及同次执行值；关闭/重绑迟到请求不写新owner。测试按真实层区分UI准入、非视觉参数命令与执行，不借反射改状态伪造可用UI，不弱化原断言换取通过。
 
 复用既有B08/来源资格/展开与变量/混合窗/ROI与图文消费者证据，按新改动运行相称完整批，不做九字段×全部事件的盲目组合扩测或重复无关导出测试。主仓同一正式Release标准UI/full、实际加载与封包一致后记本控件实施闭口。实际VS/自然键鼠/统一人工另记。原A00–A23、Catalog28/17组及未做范围全部保留：Group暂停、未知producer/动态输出、偏好持久化、连续会话及算法等缺基础须明确保护和替换位置，不能宣称功能已实现，也不为它们提前扩写其他基础。
+## 已核必要接缝（本批统一裁决）
+
+- 原 GetFrontFilterTree 按 ComType 提供资格，ReadOnly 仅约束文本/焦点编辑。来源与变量的既有声明/selection资格不能因 EditableIndex=false 删除序列；本批将这两个职责解耦，不能为了恢复数值只读而隐藏原合法来源。
+- IMAGE 父组合标签由宿主既有 imageSources 回调按声明父级投影并保正式资源 MemberPath，公共继续消费所给 Label，不猜中文或“数据”后缀。
+- 现有 DeclaredSettingsView.TrySetFields 已是非视觉参数命令，但 paired 提案一律拒绝。允许最窄内部接入：单个paired ReferenceSetting/VariableSetting交原 NativeRangePresenter.TryAcceptEndpoint，完整经过原 BeginRange/SubmitRange、host校验/原子接纳/模型版本/退役；不加public/SDK/Workflow签名，不直接SubmitCore绕过range。多端混合/常量仍原范围完整路径或明确拒绝，不能半写。路由须在同Dispatcher、CurrentGroup/非重入与字段快照核对后交原范围取得唯一事务，不能在_submitting已占用后再BeginRange，也不能删除重入保护。
+- 保留不支持形状的明确拒绝：旧[固定/动态]切scalar不得静默变ALL；类型投影/变量构造的异常须在现有提案错误边界转拒绝，不可成为WPF未处理异常，不伪装绑定成功。

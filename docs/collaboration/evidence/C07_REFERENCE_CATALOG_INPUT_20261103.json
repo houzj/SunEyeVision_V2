@@ -1,0 +1,37 @@
+{
+  "catalogCurrentRecordsUpdated": 19,
+  "sourceBaseline": "2a96da3134a5fa1b7964968165775db25295d9b1",
+  "files": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230",
+      "gitBlob": "9696ec593e1f34cec9e4496e1434815dcd211925"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
+      "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979",
+      "gitBlob": "acfb4db13ef375470411b6384a17c3e593af3549"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sha256": "9FA938F7130E2198EAF90520A4F063D68ACA8DBAAD597B1C9E0E719C96DAD0BA",
+      "gitBlob": "9bfff2ec3aed717fb568f7b724a27f2349f15f1b"
+    },
+    {
+      "path": "src/UI/Services/Editing/DeclaredReferenceCandidateBuilder.cs",
+      "sha256": "AA7C1679AB7E381690470C7E32A25FD4B16466FB619EE142409036348761FF17",
+      "gitBlob": "749f2adbf34dbfb422077b5bf1899a8b558eba1d"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "93BCF980B970178A46DFF646C9A93D844B8CB8C1E4ADE0963C4EE272AE19F6C8",
+      "gitBlob": "319279a3dd1fba0a22e8e00fedf868661c306e70"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sha256": "46CCC779BEFB0B8449AFA52646BE97EF5C51703AD4A84F89B70113563F4BFDF9",
+      "gitBlob": "4d22109f3d614d84f949b26925fa4e497b874d48"
+    }
+  ],
+  "scope": "C07当前6产品源码，原Catalog身份未改；正式构建输入非闭口"
+}

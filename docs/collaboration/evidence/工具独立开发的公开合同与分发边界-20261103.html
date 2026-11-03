@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具独立开发：公开合同与分发边界</title>
+<style>body{margin:0;background:#111b26;color:#e5edf5;font:15px/1.8 "Microsoft YaHei",sans-serif}main{max-width:1120px;margin:auto;padding:32px 24px}h1{font-size:29px}h2{margin-top:30px;color:#a9d8ff}p{color:#bbcddd}a{color:#91ceff}table{border-collapse:collapse;width:100%;background:#1c2c3b}td,th{padding:13px;border:1px solid #38526a;text-align:left;vertical-align:top}th{background:#294158}.notice{border-left:4px solid #ffb05a;padding:18px;background:#26313d}.flow{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.box{flex:1;min-width:210px;padding:18px;border:1px solid #55758e;border-radius:8px;background:#1c2c3b}.arrow{align-self:center;color:#ffb05a;font-size:26px}code{color:#bfe0f7;overflow-wrap:anywhere}.later{color:#ffcf8b}svg{max-width:100%;height:auto}footer{margin-top:30px;color:#a0b7c9}@media(max-width:700px){table{display:block;overflow:auto}}</style></head><body><main>
+<h1>工具独立开发：公开合同与分发边界</h1><div class="notice"><strong>2026-11-03 用户最新裁决：</strong>本轮继续使用项目引用完成平台重构，不制作工具开发包、模板或仓库外工程，也不把这些后续交付作为当前目标的闭口前置。架构必须支持以后只引用公开 DLL、无需框架源码或重编框架的独立工具开发；不需要因此推翻现行分层。</div>
+<p>本页核收侧边聊天的完整需求，并以用户最新范围覆盖其先前“本次制作开发包并做外部工程验收”的安排。公开边界现在约束源码，制包与独立开发实测以后单独安排。当前没有发布新开发包。</p>
+<h2>1. 同一套公开合同，两种引用方式</h2>
+<svg viewBox="0 0 1040 250" role="img" aria-label="当前项目引用与未来DLL引用共用Contracts和Wpf两层公开合同"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#ffb05a"/></marker></defs>
+<g fill="#1d3549" stroke="#729bb9"><rect x="20" y="28" width="290" height="75" rx="8"/><rect x="20" y="145" width="290" height="75" rx="8"/><rect x="390" y="28" width="310" height="75" rx="8"/><rect x="390" y="145" width="310" height="75" rx="8"/><rect x="785" y="65" width="235" height="125" rx="8"/></g>
+<g fill="#edf6ff" font-family="Microsoft YaHei,sans-serif" text-anchor="middle" font-size="18"><text x="165" y="59">当前：仓内工具工程</text><text x="165" y="85">ProjectReference</text><text x="165" y="176">后续：源码外工具工程</text><text x="165" y="202">发布 DLL 引用</text><text x="545" y="59">Plugin.Contracts</text><text x="545" y="85">无 WPF 的运行与声明合同</text><text x="545" y="176">Plugin.Wpf</text><text x="545" y="202">控件、模板与公开编辑呈现</text><text x="902" y="106">同版发布应用程序</text><text x="902" y="135">组件清单与准入</text><text x="902" y="164">真实运行 / 联合调试</text></g>
+<g stroke="#ffb05a" stroke-width="2" fill="none" marker-end="url(#arrow)"><path d="M310 65H380"/><path d="M310 182H380"/><path d="M700 65H748V102H775"/><path d="M700 182H748V155H775"/></g></svg>
+<p><strong>Contracts 与 Wpf 保持两个 DLL，不合成一个 DLL。</strong>未来可以统一打成一个开发包分发；包内依然保留分层程序集和完整传递依赖。纯 Runtime 工具不因开发包的存在被强制引入 WPF、HALCON 或窗口宿主。</p>
+<h2>2. 公开与内部边界</h2><table><tr><th>角色</th><th>允许的直接依赖</th><th>约束</th></tr>
+<tr><td>工具 Runtime</td><td>Plugin.Contracts；按算法需要的中立适配层和算法依赖</td><td>输入、参数、能力和输出由公开声明表达。不得引用 UI/App、Application、Execution、Persistence、旧 Workflow 或旧 Plugin.SDK。</td></tr>
+<tr><td>工具 WPF 组件</td><td>本工具 Runtime、Plugin.Wpf；其公开签名所需的合同依赖</td><td>专属界面通过公开工厂与编辑呈现合同接入，不反向取得宿主内部服务或会话实现。</td></tr>
+<tr><td>Plugin.Editing.Wpf</td><td>是否属于公开开发面，按实际公开接口及传递签名审定</td><td>不因它存在就要求所有工具引用；宿主内部编辑适配不无差别加入开发包。</td></tr>
+<tr><td>框架宿主</td><td>内部应用、执行、持久化及基础设施</td><td>按组件声明、能力和身份提供输入、变量、设备资源与结果消费；不按具体工具名或具体工具类型写接入特判。</td></tr></table>
+<h2>3. 当前源码已核事实与缺口</h2><table><tr><th>实际位置</th><th>读取结果</th><th>结论</th></tr>
+<tr><td>tools/SunEyeVision.ImageSource/Runtime 和 tools/SunEyeVision.BlobAnalysis/Runtime 的 csproj</td><td>目标 net9.0/x64，直接引用 Plugin.Contracts、HalAdapter.Runtime 和 halcondotnetxl。</td><td>符合当前两个 HALCON 工具的算法依赖方向；不将 HALCON 推广为所有工具必需依赖。读取工程文件不等同于最终发布依赖审计通过。</td></tr>
+<tr><td>两工具的 Wpf csproj</td><td>目标 net9.0-windows/x64，直接引用各自 Runtime 与 Plugin.Wpf。</td><td>当前继续使用这些项目引用；以后改成公开 DLL 引用时不改变工具模型或宿主机制。</td></tr>
+<tr><td>src/Plugin.Contracts、Plugin.Wpf</td><td>Contracts 为 net9.0；Wpf 为独立 Windows/WPF 工程并引用 Contracts。</td><td>保留分层；未来开发包须进一步按实际构建/PE/资源分析列出完整传递依赖。</td></tr>
+<tr><td>现有 PluginDevKit</td><td>仍包含旧 Plugin.SDK/Abstractions 引用，props 强制 WPF，准备脚本会构建 SDK 和框架运行时。</td><td class="later">它不是新架构开发包，不能凭目录存在算完成。本轮不改造或发布；后续整批替换，不保留旧开发方式回退。</td></tr>
+<tr><td>Directory.Build.targets、product/ToolComponents.props、installer/Release.Common.ps1、ReleasePayloadAuthority</td><td>当前组件属性、插件目录、版本及载荷哈希已有正式构建/准入规则。</td><td>未来必须导出可脱离仓库的公共构建与部署能力；仅复制 DLL 不能替代组件注册、合同版本和载荷一致性校验。</td></tr></table>
+<h2>4. 当前批次与后续开发包任务分开</h2><table><tr><th>编号</th><th>交付内容</th><th>本轮范围</th><th>验证出口</th></tr>
+<tr><td>DEV-A01</td><td>固定 Contracts/Wpf 分层及工具不反依宿主内部的架构边界</td><td>当前实施约束</td><td>按全部活动工具的项目依赖、公开签名和最终程序集引用核验；不能只靠目录图。</td></tr>
+<tr><td>DEV-A02</td><td>保留按声明与能力接入、版本与组件身份、构建部署规则</td><td>当前平台整链范围</td><td>正式图像源/Blob 加载、参数、执行、结果及取消释放，按既有目标验证。</td></tr>
+<tr><td>DEV-P01</td><td>公开 DLL 清单、传递依赖、合同/组件版本说明和统一开发包</td><td class="later">后续，不制作</td><td>包内仍为分层 DLL；依赖按真实公开签名与运行资源闭包列出，外部工具不需框架源码。</td></tr>
+<tr><td>DEV-P02</td><td>Runtime-only 与 Runtime+Wpf 两个模板、通用组件清单/构建/部署规则</td><td class="later">后续，不制作</td><td>不要求重编框架，不复制框架 DLL 到每个插件私有目录制造双份身份，不按具体工具名特判。</td></tr>
+<tr><td>DEV-P03</td><td>VS 外部程序启动/附加进程、工作目录和独立开发数据、PDB/源码断点说明</td><td class="later">后续，不实施</td><td>用同版发布应用真实联合调试；独立小宿主仅作补充，不是该开发方式的前置条件。</td></tr>
+<tr><td>DEV-P04</td><td>真实仓库外工程仅使用发布 DLL 构建图像源或 Blob，再部署同版应用</td><td class="later">后续独立验收，不阻塞本轮</td><td>没有框架 csproj/源码引用；工具自身 Runtime/Wpf 工程可互相引用。核加载、参数窗、流程、结果、取消释放及真实断点。仓内 ProjectReference 通过不能转签本项。</td></tr></table>
+<h2>5. 边界保持不变</h2><p>不恢复旧 SDK、旧格式或双轨模型；当前不新增包管理、热重载或运行环境框架。产品结构按 SunEyeVision 职责命名，原厂厂商和产品标识只保留在来源、许可与取证记录。原有全平台目标范围、Group/循环暂停、分工作区写权和各类验收分记规则保持。</p>
+<footer>来源：已收到的侧边聊天完整交接；2026-11-03 本聊天用户最新裁决。侧聊临时会话无法读取历史，本文只核收已送达内容，不冒称已读其全部历史。源码核查基线：637cbf230；本轮未制作或发布新开发包。<br><a href="全平台目标源码树重构计划-20261102.html">返回全平台主计划</a> · <a href="全平台剩余迁移矩阵-20261102.html">剩余迁移矩阵</a></footer>
+</main></body></html>

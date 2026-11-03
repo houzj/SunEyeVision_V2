@@ -43,9 +43,14 @@ Numeric.Arranged（C05/C06）、Coordinates（ROI坐标）、UpDown（独立spin
 
 仅复用现有两候选树，不新增工作树：
 - 公共实施线唯一写Plugin.Wpf产品源、主题、资源、当前Catalog路径/哈希及本批迁移映射脚本；不改历史证据。
-- 消费者线唯一写src/UI、tools和scripts/validation受影响类型/路径定位，基于同一映射同步，不自行改公共控件。
+- 消费者线唯一写src/UI、tools和scripts/verification现有真实测试/runner的受影响类型/路径定位（原validation路径笔误已核正；公共线仅本批专用迁移/结构检查，不双写这些既有测试），基于同一映射同步，不自行改公共控件。
 - 主线唯一合同、原方案、任务账本、集中合并和正式Release核验；候选构建必须各自真实部署，不拷贝主仓Release或厂商库。
 
 两线固定产品提交后互接；当前Catalog更新localPath/localSha256、dependencies.path/sha256及current集成路径/类型。originalAssembly/originalType/originalPath/originalSha256/MVID和历史migration-manifest固定快照不改，当前与历史分列。
 
 实施前检查目标碰撞和URI闭包；实施后静态校验无本映射旧产品标识/失效引用、保来源字段不变及移动文件内容对应。标准UI/full Release构建；相称回归复用公共C07 10、B08混合12、ROI真实预览/窗口及图文All44以实际runner范围为准，核真实资源加载/同版身份和封包。纯命名不重复扩大算法/无关导出测试；失败按具体证据整批修正。候选与主仓正式分开，VS/人工另记，产品改名不称新功能完成。
+
+## 实施前闭包核对补充
+- Windows资源路径按大小写无关查找实际文件；namespace仍精确映射。源码与URI中的ResourceDictionaries/resources大小写不得造成漏迁。
+- 同一UpDown家族的Themes/Native/Numeric/VMControls/controls/numericupdown/themes两份XAML同步到Numeric/UpDown对应路径，消费者O06WindowPresentation实际主题断言同步。仅组织映射，16项原主题组成不变。
+- 消费者现有17个verification测试修改已固定e8028cdc0；两份原厂来源路径脚本及旧Boolean别名不存在断言不替换，src/UI/tools未发现本批产品引用。不是17个功能新增或测试通过。

@@ -1,0 +1,23 @@
+{
+  "status": "EVIDENCE_ARCHIVED_NOT_IMPLEMENTED",
+  "original": "D:\\MyWork\\REA逆向测试\\docs\\joint-audit\\B08-S3原生到HALCON完整迁移证据矩阵-20261103.md",
+  "archive": "docs/collaboration/evidence/VM_BLOB_S3_FULL_CHAIN_MATRIX_20261103.md",
+  "sha256": "5DBEA912900BEE077B4B819BBCA2C4957BD4866D5290A103E2175C14C5CDF009",
+  "relativeLinksResolveAgainst": "D:/MyWork/REA逆向测试/docs/joint-audit",
+  "currentRuntime": "tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs",
+  "currentRuntimeSha256": "745654B292349BF03EFA0F1F00CE9CD3757693AA2DF714007F82F2B84A0251BA",
+  "currentGate": "ExecuteAsync及ExecuteCore均只允许SingleThreshold，其余分支存在不代表可达",
+  "provenBoundary": [
+    "8bit单阈值p>=t与p<t的已核标量分支",
+    "8bit双阈值low<=p<=high及补分支",
+    "限定矩形非边缘孔洞0<A<=T分支"
+  ],
+  "unproven": [
+    "自动与两种软阈值公式/取样域，具体静态路径仍可追",
+    "任意域/像素格式和真实连通分支映射",
+    "筛选排序截取顺序/特征公式及独立图像输出像素",
+    "完整位置修正和原机数值/像素差分"
+  ],
+  "phase": "仅准备S3原证；仍先S2完整控件与单工具集成，不提前接通算法或声称VM等价",
+  "runtimeStarted": false
+}

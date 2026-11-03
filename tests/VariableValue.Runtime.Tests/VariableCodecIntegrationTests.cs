@@ -7,6 +7,8 @@ using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Communication;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Contracts;
 using Xunit;
 
 public sealed class VariableCodecIntegrationTests
@@ -18,6 +20,22 @@ public sealed class VariableCodecIntegrationTests
         using var image=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23));
         object[] values={7L,2.5,"汉字<&",true,new long[]{1,2},new double[]{1.25,2.5},new BinaryPayload(new byte[]{1,2,3}),new AffineMatrix(1,2,3,4,5,6),new RoiShape(),image};
         Assert.Equal(expected,values.Select(value => JsonSerializer.Serialize(value,typeof(object),Options())).ToArray());
+    }
+    [Theory]
+    [InlineData("Integer")] [InlineData("integer")] [InlineData("Integer[]")] [InlineData("integer[]")]
+    [InlineData("Double")] [InlineData("Double[]")] [InlineData("Float")] [InlineData("Float[]")]
+    [InlineData("String")] [InlineData("String[]")] [InlineData("Boolean")] [InlineData("Boolean[]")]
+    [InlineData("boolean[]")] [InlineData("Image")] [InlineData("ROI")] [InlineData("Unknown")]
+    public void Neutral_pure_declaration_matches_existing_binding_contract(string vocabulary)
+    {
+        var original = vocabulary switch { "Integer[]"=>typeof(long[]),"Double[]"=>typeof(double[]),"String[]"=>typeof(string[]),"Boolean[]"=>typeof(bool[]),_=>SdkTypeVocabulary.ToSystemType(vocabulary) };
+        var prior = original is not null && BindingClrAdapter.TryDescribe(original,out var type,out var storage)
+            && (type.Shape==ValueShape.Scalar || type.Shape==ValueShape.Sequence && type.Element!.Shape==ValueShape.Scalar);
+        var current=VariableValueDeclarations.TryGetPort(vocabulary,out var port);
+        Assert.Equal(prior,current);
+        if(!prior)return;
+        Assert.True(BindingClrAdapter.TryDescribe(original!,out var expectedType,out var expectedStorage));
+        Assert.Equal(expectedType,port.Type);Assert.Equal(expectedStorage,port.Storage);
     }
     [Fact] public void Binary_and_matrix_use_real_sdk_types()
     {
@@ -65,6 +83,7 @@ public sealed class VariableCodecIntegrationTests
         Assert.NotSame(image,loaded);Assert.Equal(2,loaded.Rows);Assert.Equal(3,loaded.Cols);Assert.Equal((byte)23,loaded.At<byte>(0,0));
     }
 }
+
 
 
 

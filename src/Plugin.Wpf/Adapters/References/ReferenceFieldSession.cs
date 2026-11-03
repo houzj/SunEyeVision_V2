@@ -195,6 +195,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private bool SelectSourceSetting(Func<BindingSelection,ParameterSetting> create)
     {
         var old=DisplaySetting;var selection=old is null?BindingSelection.All:ReferenceSettingParts.Selection(old);
+        var acceptance=_state.AcceptanceVersion;var generation=_uiGeneration;
+        bool UnacceptedCurrent()=>!_disposed&&!_state.IsDisposed&&acceptance==_state.AcceptanceVersion&&generation==_uiGeneration;
         try
         {
             var proposal=create(selection);
@@ -209,9 +211,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             SetPending(Label(proposal)+raw[bracket..]);RestoreSelection();Notify(nameof(CurValueA));
             return TryCommitPendingFromUi();
         }
-        catch(Exception error)when(error is ArgumentException or FormatException or OverflowException or InvalidOperationException)
+        catch(Exception error)when((error is ArgumentException or FormatException or OverflowException or InvalidOperationException)&&UnacceptedCurrent())
         {
-            if(!_disposed&&!_state.IsDisposed){_state.SetEditError(error.Message);RestoreSelection();Notify(nameof(CurValueA));}
+            _state.SetEditError(error.Message);
+            if(UnacceptedCurrent()){RestoreSelection();if(UnacceptedCurrent())Notify(nameof(CurValueA));}
             return false;
         }
     }

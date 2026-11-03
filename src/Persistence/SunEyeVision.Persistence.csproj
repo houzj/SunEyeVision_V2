@@ -4,4 +4,6 @@
     <ProjectReference Include="../Domain/SunEyeVision.Domain.csproj" />
     <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
   </ItemGroup>
-</Project>
+<ItemGroup><InternalsVisibleTo Include="SunEyeVision.Persistence.Tests" /><InternalsVisibleTo Include="SunEyeVision.Infrastructure.Persistence" /></ItemGroup></Project>
+
+

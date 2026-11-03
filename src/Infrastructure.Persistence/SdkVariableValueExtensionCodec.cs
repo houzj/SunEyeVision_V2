@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OpenCvSharp;
 using SunEyeVision.Persistence.Variables;
+using SunEyeVision.Persistence;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
@@ -12,6 +13,8 @@ namespace SunEyeVision.Infrastructure.Persistence;
 /// <summary>Explicit host codec for existing SDK and OpenCV variable values.</summary>
 public sealed class SdkVariableValueExtensionCodec : IVariableValueExtensionCodec
 {
+    private readonly DecodedResourcesScope _scope;
+    public SdkVariableValueExtensionCodec(DecodedResourcesScope scope) => _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     public bool SupportsType(string typeName)
     {
         var type=SdkTypeVocabulary.ToSystemType(typeName);
@@ -51,11 +54,12 @@ public sealed class SdkVariableValueExtensionCodec : IVariableValueExtensionCode
     private static object ParsePure<T>(JsonElement element, Func<JsonElement,T> parse) => element.ValueKind == JsonValueKind.Array ? element.EnumerateArray().Select(parse).ToArray() : parse(element)!;
     private static AffineMatrix ReadMatrix(JsonElement value) => new(value.GetProperty("M11").GetDouble(),value.GetProperty("M12").GetDouble(),value.GetProperty("M21").GetDouble(),value.GetProperty("M22").GetDouble(),value.GetProperty("OffsetX").GetDouble(),value.GetProperty("OffsetY").GetDouble());
     private static Dictionary<string,double> WriteMatrix(AffineMatrix value) => new() { ["M11"]=value.M11,["M12"]=value.M12,["M21"]=value.M21,["M22"]=value.M22,["OffsetX"]=value.OffsetX,["OffsetY"]=value.OffsetY };
-    private static Mat ReadImage(JsonElement value)
+    private Mat ReadImage(JsonElement value)
     {
         if(value.ValueKind!=JsonValueKind.String || string.IsNullOrEmpty(value.GetString())) throw new JsonException("Image requires nonempty Base64 PNG data.");
         var image=Mat.FromImageData(Convert.FromBase64String(value.GetString()!),ImreadModes.Unchanged);
         if(image.Empty()){image.Dispose();throw new JsonException("Image decode returned empty pixels.");}
+        _scope.RegisterNew(image);
         return image;
     }
     private static string WriteImage(Mat image)

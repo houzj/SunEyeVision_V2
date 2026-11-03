@@ -13,13 +13,14 @@ using Xunit;
 
 public sealed class VariableCodecIntegrationTests
 {
-    private static JsonSerializerOptions Options() { var options=new JsonSerializerOptions();options.Converters.Add(new GlobalVariableValueConverter(new SdkVariableValueExtensionCodec()));return options; }
+    private static JsonSerializerOptions Options(DecodedResourcesScope scope) { var options=new JsonSerializerOptions();options.Converters.Add(new GlobalVariableValueConverter(new SdkVariableValueExtensionCodec(scope)));return options; }
     [Fact] public void Current_v3_wrapper_bytes_match_original_converter_for_actual_values()
     {
+        using var scope=new DecodedResourcesScope();
         var expected=File.ReadAllLines(Path.Combine(AppContext.BaseDirectory,"variable-values-v3.golden.txt"));
         using var image=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23));
         object[] values={7L,2.5,"汉字<&",true,new long[]{1,2},new double[]{1.25,2.5},new BinaryPayload(new byte[]{1,2,3}),new AffineMatrix(1,2,3,4,5,6),new RoiShape(),image};
-        Assert.Equal(expected,values.Select(value => JsonSerializer.Serialize(value,typeof(object),Options())).ToArray());
+        Assert.Equal(expected,values.Select(value => JsonSerializer.Serialize(value,typeof(object),Options(scope))).ToArray());
     }
     [Theory]
     [InlineData("Integer")] [InlineData("integer")] [InlineData("Integer[]")] [InlineData("integer[]")]
@@ -39,22 +40,24 @@ public sealed class VariableCodecIntegrationTests
     }
     [Fact] public void Binary_and_matrix_use_real_sdk_types()
     {
+        using var scope=new DecodedResourcesScope();
         var binary=new BinaryPayload(new byte[]{1,2,3});
-        var json=JsonSerializer.Serialize((object)binary,Options());
-        Assert.Equal(binary.ToBase64(),Assert.IsType<BinaryPayload>(JsonSerializer.Deserialize<object>(json,Options())).ToBase64());
+        var json=JsonSerializer.Serialize((object)binary,Options(scope));
+        Assert.Equal(binary.ToBase64(),Assert.IsType<BinaryPayload>(JsonSerializer.Deserialize<object>(json,Options(scope))).ToBase64());
         var matrix=new AffineMatrix(1,2,3,4,5,6);
-        json=JsonSerializer.Serialize((object)matrix,Options());
-        var actual=Assert.IsType<AffineMatrix>(JsonSerializer.Deserialize<object>(json,Options()));
+        json=JsonSerializer.Serialize((object)matrix,Options(scope));
+        var actual=Assert.IsType<AffineMatrix>(JsonSerializer.Deserialize<object>(json,Options(scope)));
         Assert.Equal(matrix.M11,actual.M11);Assert.Equal(matrix.OffsetY,actual.OffsetY);
     }
     [Fact] public void Real_variable_property_uses_extension_without_hijacking_other_object_properties()
     {
-        var options=SolutionSerializationOptions.Configure(new JsonSerializerOptions(),new SdkVariableValueExtensionCodec());
+        using var scope=new DecodedResourcesScope();
+        var options=SolutionSerializationOptions.Configure(new JsonSerializerOptions(),new SdkVariableValueExtensionCodec(scope));
         var variable=new GlobalVariable("图片",new Mat(2,3,MatType.CV_8UC1,Scalar.All(23)),"Image");
         using var original=Assert.IsType<Mat>(variable.Value);
         var json=JsonSerializer.Serialize(variable,options);
         var restored=JsonSerializer.Deserialize<GlobalVariable>(json,options)!;
-        using var loaded=Assert.IsType<Mat>(restored.Value);
+        var loaded=Assert.IsType<Mat>(restored.Value);
         Assert.Equal((byte)23,loaded.At<byte>(0,0));
         var communication=new Communication { Name="设备",Settings=new(){["port"]=123L} };
         json=JsonSerializer.Serialize(communication,options);
@@ -62,29 +65,48 @@ public sealed class VariableCodecIntegrationTests
     }
     [Fact] public void Invalid_resources_and_unsupported_carriers_fail_explicitly()
     {
-        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"!\"}",Options()));
-        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Transform\",\"Value\":{}}",Options()));
-        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"AA==\"}",Options()));
+        using var scope=new DecodedResourcesScope();
+        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"!\"}",Options(scope)));
+        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Transform\",\"Value\":{}}",Options(scope)));
+        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"AA==\"}",Options(scope)));
         using var empty=new Mat();
-        Assert.Throws<JsonException>(()=>JsonSerializer.Serialize((object)empty,Options()));
+        Assert.Throws<JsonException>(()=>JsonSerializer.Serialize((object)empty,Options(scope)));
     }
     [Fact] public void Roi_shape_preserves_real_sdk_type()
     {
+        using var scope=new DecodedResourcesScope();
         var shape=new RoiShape { Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Point2d(12.5,34.25) };
-        var json=JsonSerializer.Serialize((object)shape,Options());
+        var json=JsonSerializer.Serialize((object)shape,Options(scope));
         Assert.Equal(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"roi-v3.golden.txt")),json);
-        var loaded=Assert.IsType<RoiShape[]>(JsonSerializer.Deserialize<object>(json,Options()));
+        var loaded=Assert.IsType<RoiShape[]>(JsonSerializer.Deserialize<object>(json,Options(scope)));
         var point=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Geometry.Point2d>(Assert.Single(loaded).Geometry);
         Assert.Equal(12.5,point.X); Assert.Equal(34.25,point.Y);
     }
     [Fact] public void Image_roundtrip_owns_a_new_real_mat()
     {
+        using var scope=new DecodedResourcesScope();
         using var image=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23));
-        var json=JsonSerializer.Serialize((object)image,Options());
-        using var loaded=Assert.IsType<Mat>(JsonSerializer.Deserialize<object>(json,Options()));
+        var json=JsonSerializer.Serialize((object)image,Options(scope));
+        var loaded=Assert.IsType<Mat>(JsonSerializer.Deserialize<object>(json,Options(scope)));
         Assert.NotSame(image,loaded);Assert.Equal(2,loaded.Rows);Assert.Equal(3,loaded.Cols);Assert.Equal((byte)23,loaded.At<byte>(0,0));
     }
+    [Fact] public void Decoded_image_is_disposed_on_failed_candidate_and_transfer_is_single_owner()
+    {
+        using var input=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23));
+        using var writerScope=new DecodedResourcesScope();
+        var json=JsonSerializer.Serialize((object)input,Options(writerScope));
+        var failedScope=new DecodedResourcesScope();
+        var failed=Assert.IsType<Mat>(JsonSerializer.Deserialize<object>(json,Options(failedScope)));
+        failedScope.Dispose(); Assert.True(failed.IsDisposed);
+        var scope=new DecodedResourcesScope();
+        var published=Assert.IsType<Mat>(JsonSerializer.Deserialize<object>(json,Options(scope)));
+        using var owner=scope.Transfer(); scope.Dispose(); Assert.False(published.IsDisposed);
+        Assert.Throws<InvalidOperationException>(()=>scope.Transfer());
+        owner.Dispose(); Assert.True(published.IsDisposed); owner.Dispose();
+    }
 }
+
+
 
 
 

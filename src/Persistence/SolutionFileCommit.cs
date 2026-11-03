@@ -6,7 +6,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SunEyeVision.Workflow.Persistence;
+namespace SunEyeVision.Persistence;
 
 public sealed record SolutionRecoveryFile(string Role, string Path, bool Exists);
 
@@ -30,12 +30,12 @@ public sealed class SolutionSaveRecoveryRequiredException : IOException
     public bool CentralRestored { get; }
     public IReadOnlyList<SolutionRecoveryFile> RetainedFiles { get; }
     public string RecoveryInstructions => "停止继续保存并解除外部锁；仅使用存在的暂存文件，先保留当前内容。目标已恢复时不要再找已消耗的本地前版；中央未恢复时核对中央前版暂存文件。双盘均恢复原SHA/长度/mtime后显式ConfirmSaveRecovery，不推进未确认的已保存基线。";
-    public SolutionSnapshot? AttemptedSnapshot { get; internal set; }
+    public FrozenSolutionDocument? AttemptedSnapshot { get; internal set; }
 }
 
 /// <summary>Serializes in-process writers to one solution. Each replacement is on its own volume.
 /// A recovery commit failure compensates the target; this is not crash-atomic across two files.</summary>
-internal static class SolutionFileCommit
+public static class SolutionFileCommit
 {
     private static readonly ConcurrentDictionary<string, object> Gates = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, RecoveryState> Blocked = new(StringComparer.OrdinalIgnoreCase);
@@ -47,35 +47,58 @@ internal static class SolutionFileCommit
         internal bool Matches(string path) => File.Exists(path) && this == Read(path);
     }
 
-    internal static string? Write(string destination, string recovery, string json, bool overwrite, Action<string>? boundary = null, string? expectedTargetHash = null)
+    internal static string? Write(string destination, string recovery, byte[] bytes, bool overwrite, Action<string>? boundary = null, TargetExpectation? targetExpectation = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         destination = Path.GetFullPath(destination);
         recovery = Path.GetFullPath(recovery);
         if (AtomicJsonFile.SamePath(destination, recovery)) throw new IOException("Target and recovery must differ.");
         lock (Gates.GetOrAdd(destination, _ => new object()))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ThrowIfRecoveryRequired(destination);
             Stamp? expectedTarget = null;
-            if (expectedTargetHash is not null)
+            if (targetExpectation?.Kind == TargetExpectationKind.Missing)
+            {
+                if (File.Exists(destination)) throw new IOException("目标方案已存在，不会覆盖。");
+                overwrite=false;
+            }
+            if (targetExpectation?.Kind == TargetExpectationKind.MatchSha256)
             {
                 if (!File.Exists(destination)) throw new IOException("方案在验证后消失，不会覆盖。");
                 expectedTarget = Stamp.Read(destination);
-                if (!string.Equals(expectedTarget.Hash, expectedTargetHash, StringComparison.Ordinal))
+                if (!string.Equals(expectedTarget.Hash, targetExpectation!.Sha256, StringComparison.Ordinal))
                     throw new IOException("方案在验证后发生变化，不会覆盖。");
             }
-            return WriteLocked(destination, recovery, json, overwrite, boundary, expectedTarget);
+            return WriteLocked(destination, recovery, bytes, overwrite, boundary, expectedTarget, cancellationToken: cancellationToken);
         }
     }
 
+    public static FrozenSaveReceipt Write(FrozenSolutionDocument document, string recovery, bool overwrite = true, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        try { var warning=Write(document.TargetPath,recovery,document.CopyBytes(),overwrite,targetExpectation:document.TargetExpectation,cancellationToken:cancellationToken); return new(document,warning); }
+        catch(SolutionSaveRecoveryRequiredException error) { error.AttemptedSnapshot ??= document; throw; }
+    }
+
+    public static FrozenSaveReceipt Restore(FrozenSolutionDocument document, string sourceRecovery, string expectedTargetHash, string expectedRecoveryHash, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(document); cancellationToken.ThrowIfCancellationRequested();
+        var bytes=document.CopyBytes();
+        if (!string.Equals(Convert.ToHexString(SHA256.HashData(bytes)),expectedRecoveryHash,StringComparison.Ordinal)) throw new IOException("恢复候选字节与已校验备份不一致。");
+        try { var warning=Restore(document.TargetPath,sourceRecovery,bytes,expectedTargetHash,expectedRecoveryHash,cancellationToken:cancellationToken); return new(document,warning); }
+        catch(SolutionSaveRecoveryRequiredException error) { error.AttemptedSnapshot ??= document; throw; }
+    }
     /// <summary>Restore a previously validated snapshot without mutating its source backup.
     /// Uses the same target gate and compensation logic as ordinary saves.</summary>
-    internal static string? Restore(string destination, string sourceRecovery, string json,
-        string expectedDestinationHash, string expectedRecoveryHash, Action<string>? boundary = null)
+    internal static string? Restore(string destination, string sourceRecovery, byte[] bytes,
+        string expectedDestinationHash, string expectedRecoveryHash, Action<string>? boundary = null, CancellationToken cancellationToken = default)
     {
         destination=Path.GetFullPath(destination); sourceRecovery=Path.GetFullPath(sourceRecovery);
         if (AtomicJsonFile.SamePath(destination,sourceRecovery)) throw new IOException("Target and recovery must differ.");
         lock (Gates.GetOrAdd(destination,_=>new object()))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ThrowIfRecoveryRequired(destination);
             if (!File.Exists(destination) || !File.Exists(sourceRecovery)) throw new IOException("方案或恢复文件不存在，不会覆盖。");
             var target=Stamp.Read(destination); var source=Stamp.Read(sourceRecovery);
@@ -85,7 +108,7 @@ internal static class SolutionFileCommit
             var privateRecovery=Path.Combine(Path.GetDirectoryName(destination)!,
                 "."+Path.GetFileName(destination)+"."+Guid.NewGuid().ToString("N")+".restore-backup");
             var preserve=false; string? warning=null, cleanupWarning=null;
-            try { warning=WriteLocked(destination,privateRecovery,json,true,boundary,target,sourceRecovery,source); }
+            try { warning=WriteLocked(destination,privateRecovery,bytes,true,boundary,target,sourceRecovery,source,cancellationToken); }
             catch (SolutionSaveRecoveryRequiredException) { preserve=true; throw; }
             finally
             {
@@ -104,7 +127,7 @@ internal static class SolutionFileCommit
 
     /// <summary>Explicit acknowledgement after external recovery. Never guesses which version to retain,
     /// changes files or releases the gate unless both visible files have the exact pre-save identity.</summary>
-    internal static void ConfirmRecovery(string destination)
+    public static void ConfirmRecovery(string destination)
     {
         destination = Path.GetFullPath(destination);
         lock (Gates.GetOrAdd(destination, _ => new object()))
@@ -117,8 +140,8 @@ internal static class SolutionFileCommit
         }
     }
 
-    private static string? WriteLocked(string destination, string recovery, string json, bool overwrite, Action<string>? boundary,
-        Stamp? expectedTarget=null,string? expectedSourcePath=null,Stamp? expectedSource=null)
+    private static string? WriteLocked(string destination, string recovery, byte[] bytes, bool overwrite, Action<string>? boundary,
+        Stamp? expectedTarget=null,string? expectedSourcePath=null,Stamp? expectedSource=null,CancellationToken cancellationToken=default)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         string Temporary(string path) => Path.Combine(Path.GetDirectoryName(path)!,
@@ -131,7 +154,7 @@ internal static class SolutionFileCommit
         string? warning = null;
         try
         {
-            File.WriteAllText(pending, json, new UTF8Encoding(false));
+            File.WriteAllBytes(pending, bytes);
             // Ownership is fixed from our own closed staging file BEFORE replacement. A later
             // destination read may prove equality, but can never redefine what this operation wrote.
             installedTarget = Stamp.Read(pending);
@@ -140,6 +163,7 @@ internal static class SolutionFileCommit
                 if (!installedTarget.Matches(destination))
                     throw new IOException("保存目标在" + point + "被外部替换；不覆盖外部现物。");
             }
+            cancellationToken.ThrowIfCancellationRequested();
             if (!File.Exists(destination))
             {
                 if (expectedTarget is not null) throw new IOException("方案在恢复前已消失，不会覆盖。");
@@ -165,6 +189,7 @@ internal static class SolutionFileCommit
                 throw new IOException("方案在恢复提交前发生变化，不会覆盖。");
             if (expectedSource is not null && !expectedSource.Matches(expectedSourcePath!))
                 throw new IOException("恢复文件在提交前发生变化，不会覆盖。");
+            cancellationToken.ThrowIfCancellationRequested();
             File.Replace(pending, destination, oldTarget, ignoreMetadataErrors: true);
             targetReplaced = true;
             previousTarget = Stamp.Read(oldTarget);

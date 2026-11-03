@@ -1,3 +1,8 @@
+## 2026-11-04 根配置草稿所属查询捕获代次整链修复通过
+
+根产品dafcf3c98（前置f7增加draft验证/真实回归；首次PowerShell保留变量使host替换未执行，before测试真实失败已保留）。host.OwnsRoot实际委托draft捕获scope→现Session.ValidateScope；删除→Undo同实体旧draft仍false/写入拒绝，新draft true且正常可编辑。全61工程Release0错6150warn，载荷1F304C6C643EEA28B59FC2EFD5D07E2337D492375C56850E3B3530B701540906：Editing39/39、根UI23/23、真实Main根操作/复制HALCON/保存重开/双主题/关闭排空退出0；root-draft-generation-*20261104和TRX。根无活跃构建测试句柄。原主HTML与矩阵当前作用域待办改为真实修复回执；联合5bf/1EBE证据保原版范围。
+
+C已从192d48807新独立实施树D:/MyWork/line-aiproject/platform-complex-persistence-20261104启动完整复杂值/持久化/Domain/Application/实际UI非视觉和通信消费者，根不并写其文件；C不改本批两个Editing文件。当前其UI定位联编0错，不计整批完成/不可提前封包交付，旧测试须迁至新规范并真实资源验证。A测量整组设计384c58正核几何/绘制模式与当前frame能力；B变量UI只读设计bad313待根核收。18工具/全局变量/最终目标树/SDK完整范围保持，Group/新循环暂停，人工/VS/主仓分列。
 ## 2026-11-04 Blob完整新会话与中立画布统一集成通过
 
 根产品5bf65949e（前置3a6画布中立命名、7bf根集合UI、3c可信目录、79域修复、b927采集连续）。61工程locked restore通过，Release0错6150warn；同版载荷1EBEECBE2FF6EA5B48B24DD5E1B7C3515AA5CA41199C3C1762F2E56A36539FFA：冷FixedSoft新testhost1、Blob36、UI227、Canvas27、Shell5全过且0skip；真实主窗根操作/复制HALCON/保存重开/双主题/关闭/OLE及连续暂停恢复/取消与同意Stop-await关闭均exit0，生产工厂RunChain13无WPF/UI/SDK和CoreContinuous15组过。blob-canvas-unified-*20261104+TRX为根证据。源图像/Blob字段与共享控件整批已合，不再标仅独立候选。根无活跃构建/测试句柄。

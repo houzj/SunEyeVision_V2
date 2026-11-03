@@ -17,6 +17,11 @@ if defined DO_RESTORE (
 echo 正在构建 %BUILD_TARGET%（Release）...
 dotnet build "%BUILD_TARGET%" --configuration Release --no-restore
 if errorlevel 1 goto :fail
+where pwsh >nul 2>&1
+if errorlevel 1 goto :fail
+echo 正在生成本次构建的正式载荷清单...
+pwsh -NoProfile -ExecutionPolicy Bypass -File installer\Seal-ReleasePayload.ps1 -AppPath "%~dp0Release\SunEyeVision_v1.0.0\SunEyeVision"
+if errorlevel 1 goto :fail
 echo 构建完成：Release\SunEyeVision_v1.0.0\SunEyeVision
 if not defined CI pause
 exit /b 0

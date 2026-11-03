@@ -60,10 +60,11 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
     {
         ArgumentNullException.ThrowIfNull(context);
         context.EnsureCurrent();
+        var signature = Describe(context).Value;
         var key = (context.EditSessionId, context.NodeGeneration);
         lock (_gate)
         {
-            if (!_cursors.TryGetValue(key, out var cursor)) return Array.Empty<ImageSourceReadReceipt>();
+            if (!_cursors.TryGetValue(key, out var cursor) || cursor.Signature != signature) return Array.Empty<ImageSourceReadReceipt>();
             var result = cursor.Completed.ToArray(); cursor.Completed.Clear();
             return Array.AsReadOnly(result);
         }
@@ -73,11 +74,12 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
     {
         ArgumentNullException.ThrowIfNull(context); ArgumentNullException.ThrowIfNull(receipt);
         context.EnsureCurrent();
+        var signature = Describe(context).Value;
         lock (_gate)
             return !_disposed && !context.NodeRetirement.IsCancellationRequested &&
                 receipt.SessionId == context.EditSessionId && receipt.NodeGeneration == context.NodeGeneration &&
                 _cursors.TryGetValue((context.EditSessionId, context.NodeGeneration), out var cursor) &&
-                cursor.CursorId == receipt.CursorId && cursor.SelectionVersion == receipt.SelectionVersion;
+                cursor.Signature == signature && cursor.CursorId == receipt.CursorId && cursor.SelectionVersion == receipt.SelectionVersion;
     }
     private void PublishReceipt(HostInputFactoryContext context, Cursor cursor, long version, LocalImageReadRound round)
     {
@@ -86,14 +88,15 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         {
             if (_disposed || context.NodeRetirement.IsCancellationRequested ||
                 !_cursors.TryGetValue(key, out var current) || !ReferenceEquals(current, cursor) || cursor.SelectionVersion != version) return;
+            if (round.Accepted.Count == 0) return;
+            cursor.SelectionVersion = checked(cursor.SelectionVersion + 1);
+            cursor.Completed.Clear();
             foreach (var read in round.Accepted)
-                cursor.Completed.Enqueue(new(context.EditSessionId, context.NodeGeneration, cursor.CursorId, version, read));
+                cursor.Completed.Enqueue(new(context.EditSessionId, context.NodeGeneration, cursor.CursorId, cursor.SelectionVersion, read));
         }
     }
-    private Cursor GetCursor(HostInputFactoryContext context)
+    private static (ImageSourcePolicy Policy, string Value) Describe(HostInputFactoryContext context)
     {
-        context.EnsureCurrent();
-        context.NodeRetirement.ThrowIfCancellationRequested();
         var selected = context.Fields.Select(context.SettingsSchema.Inputs);
         var resolved = selected.Capture().Where(pair => pair.Value is ReferenceSetting or VariableSetting)
             .ToDictionary(pair => pair.Key, pair => context.CurrentValues.TryGetValue(pair.Key, out var value)
@@ -101,7 +104,13 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         var policy = ImageSourcePolicy.ReadFields(context.Node.NodeId, selected.Materialize(resolved));
         var plan = policy.SourceKind == ImageSourceKind.Local
             ? ImageSourcePolicy.CreateLocalPlan(context.Node.NodeId, policy, context.ResourcePaths) : null;
-        var signature = JsonSerializer.Serialize(new { policy, plan });
+        return (policy, JsonSerializer.Serialize(new { policy, plan }));
+    }
+    private Cursor GetCursor(HostInputFactoryContext context)
+    {
+        context.EnsureCurrent();
+        context.NodeRetirement.ThrowIfCancellationRequested();
+        var (policy, signature) = Describe(context);
         var key = (context.EditSessionId, context.NodeGeneration);
         Cursor? replaced = null;
         Cursor cursor;

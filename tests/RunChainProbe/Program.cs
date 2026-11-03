@@ -60,8 +60,14 @@ internal static class Program
         var receipts = factory.TakeCompletedReads(context);
         if (receipts.Count != 1 || receipts[0].Read.Entry.OriginalIndex != 1 || !factory.IsReceiptCurrent(context, receipts[0]))
             throw new Exception("选图后的读取收据或实际来源不一致");
+        using (var nextBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var nextRun = nextBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+            if (!nextRun.Workflows[flow.Id].Success) throw new Exception("连续执行失败");
+        if (factory.IsReceiptCurrent(context, receipts[0])) throw new Exception("旧收据在下一次读取后仍有效");
+        var latest = factory.TakeCompletedReads(context);
+        if (latest.Count != 1 || latest[0].Read.Entry.OriginalIndex != 0) throw new Exception("连续运行未自动切换图像");
         factory.SelectIndex(context, 0);
-        if (factory.IsReceiptCurrent(context, receipts[0])) throw new Exception("旧收据在新选择后仍有效");
+        if (factory.IsReceiptCurrent(context, latest[0])) throw new Exception("旧收据在新选择后仍有效");
         Console.WriteLine("PASS: 连续轮次、选图及旧收据失效");
         factory.SelectIndex(context, 1);
         File.Delete(imagePath2);

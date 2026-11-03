@@ -157,12 +157,17 @@ public sealed class MainWorkspaceLayoutTests
             state.Save.Enabled = false; state.Save.Notify(); top.UpdateLayout();
             Assert.False(save.IsEnabled);
             Assert.Contains("toolbarsave_disable", image.Source.ToString(), StringComparison.OrdinalIgnoreCase);
-            var continuous = Assert.Single(buttons.Where(b => (b.ToolTip as string)?.StartsWith("全流程连续运行尚未接入") == true));
-            Assert.False(continuous.IsEnabled); Assert.Null(continuous.Command);
+            var continuous = Assert.Single(buttons.Where(b => Equals(b.ToolTip, "连续运行")));
+            Assert.True(continuous.IsEnabled); Assert.Same(state.ToggleContinuousAllCommand, continuous.Command);
             var runImage = Assert.IsType<Image>(continuous.Content);
-            Assert.Contains("toolbarrunrepeat_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
-            state.IsAllWorkflowsRunning = true; top.UpdateLayout();
+            Assert.Contains("toolbarrunrepeat_normal", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            state.IsContinuousRunning = true; top.UpdateLayout();
+            Assert.True(continuous.IsEnabled);
+            Assert.Contains("toolbarstop_n", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            state.Continuous.Enabled = false; state.Continuous.Notify(); top.UpdateLayout();
             Assert.False(continuous.IsEnabled);
+            Assert.Contains("toolbarstop_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
+            state.IsContinuousRunning = false; top.UpdateLayout();
             Assert.Contains("toolbarrunrepeat_disable", runImage.Source.ToString(), StringComparison.OrdinalIgnoreCase);
             foreach (var name in new[] { "锁定", "触发", "脚本", "综合配置", "运行界面" })
             {
@@ -415,11 +420,12 @@ public sealed class MainWorkspaceLayoutTests
         public System.Windows.Input.ICommand SaveCurrentSolutionCommand => Save;
         public System.Windows.Input.ICommand ShowStartPageCommand { get; } = new FakeCommand();
         public System.Windows.Input.ICommand ToggleThemeCommand { get; } = new FakeCommand();
-        public System.Windows.Input.ICommand ToggleContinuousAllCommand { get; } = new FakeCommand();
+        public FakeCommand Continuous { get; } = new();
+        public System.Windows.Input.ICommand ToggleContinuousAllCommand => Continuous;
         private bool _running;
         private bool _dark = true;
         public bool IsDarkTheme { get => _dark; set { _dark = value; PropertyChanged?.Invoke(this, new(nameof(IsDarkTheme))); } }
-        public bool IsAllWorkflowsRunning { get => _running; set { _running = value; PropertyChanged?.Invoke(this, new(nameof(IsAllWorkflowsRunning))); } }
+        public bool IsContinuousRunning { get => _running; set { _running = value; PropertyChanged?.Invoke(this, new(nameof(IsContinuousRunning))); } }
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }
     private sealed class FakeCommand : System.Windows.Input.ICommand

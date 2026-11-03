@@ -13,11 +13,15 @@ public sealed record NodeChange(ScopedNodeIdentity Identity, NodeDefinition Node
 public sealed record RemovedNode(ScopedNodeIdentity Identity, NodeDefinition Node, int OriginalIndex);
 public sealed record ConnectionChange(string WorkflowId, ConnectionDefinition Connection, ConnectionChangeKind Kind,
     string? OldSourceNodeId, string? OldTargetNodeId);
-public sealed record VariableChange(GlobalVariable Variable, VariableChangeKind Kind, string? OldId, int? OldIndex);
+public sealed record VariableChange(GlobalVariable Variable, VariableChangeKind Kind, string? OldId, int? OldIndex, bool ValueChanged = false);
+[Flags]
+public enum WorkflowChangedAspect { RootConfiguration = 1 }
+public sealed record WorkflowChange(WorkflowDefinition Workflow, WorkflowChangedAspect Aspects);
 public sealed record DocumentChangeSet(Guid EditSessionId, long Revision, DocumentChangeOrigin Origin,
     ImmutableArray<NodeChange> ChangedNodes, ImmutableArray<RemovedNode> RemovedNodes,
     ImmutableArray<ConnectionChange> ChangedConnections, ImmutableArray<VariableChange> ChangedVariables,
-    ImmutableArray<ScopedNodeIdentity> ExecutionInvalidatedNodes);
+    ImmutableArray<ScopedNodeIdentity> ExecutionInvalidatedNodes,
+    ImmutableArray<WorkflowChange> ChangedWorkflows = default);
 
 public sealed partial class DocumentSession
 {
@@ -51,12 +55,13 @@ public sealed partial class DocumentSession
     {
         if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("方案通知必须在所属线程执行。");
         var observers = Changed;
-        if (observers is null) { LastObserverError = null; return; }
         var failures = new List<Exception>();
         _notifying = true;
         try
         {
-            foreach (EventHandler<DocumentChangeSet> handler in observers.GetInvocationList())
+            foreach (var variable in change.ChangedVariables.Where(item => item.Kind != VariableChangeKind.Removed))
+                variable.Variable.EmitConfigurationNotifications(variable.ValueChanged, failures);
+            foreach (EventHandler<DocumentChangeSet> handler in observers?.GetInvocationList() ?? Array.Empty<Delegate>())
                 try { handler(this, change); } catch (Exception error) { failures.Add(error); }
         }
         finally { _notifying = false; }

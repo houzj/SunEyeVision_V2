@@ -80,25 +80,21 @@ public sealed partial class DocumentSession
             EnsureOwnerCanEdit();
             using var mutation = _owner.BeginDocumentMutation();
             if (origin == DocumentChangeOrigin.Undo ? !History.CanUndo : !History.CanRedo) return false;
-            var before = Document.Workflows.ToDictionary(flow => flow, GraphState.Capture,
-                (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
-            var variables = GlobalVariable.CaptureDefinitions(Document.GlobalVariables.ToArray());
+            var before = CaptureEditState();
             var revision = checked(ChangeRevision + 1);
             _preparing = true;
             try
             {
                 if (!(origin == DocumentChangeOrigin.Undo ? History.Undo() : History.Redo())) return false;
-                var after = Document.Workflows.ToDictionary(flow => flow, GraphState.Capture,
-                    (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
-                var effects = ProjectGraphChange(before, after);
-                var variableChanges = Document.GlobalVariables.Select((variable, index) => (variable, index))
-                    .Where(item => VariableConfigurationSignature(variables[item.index]) != VariableConfigurationSignature(item.variable))
-                    .Select(item => new VariableChange(item.variable, VariableChangeKind.Updated,
-                        variables[item.index].Id, item.index));
+                var after = CaptureEditState();
+                var effects = ProjectGraphChange(before.Graphs, after.Graphs);
+                var variableChanges = ProjectVariableChanges(before, after);
                 change = new DocumentChangeSet(EditSessionId, revision, origin,
                     effects.Nodes.ToImmutableArray(), effects.Removed.ToImmutableArray(),
                     effects.Connections.ToImmutableArray(), variableChanges.ToImmutableArray(),
-                    History.LastInvalidatedNodes.ToImmutableArray());
+                    History.LastInvalidatedNodes.ToImmutableArray(),
+                    after.Roots.Where(pair => before.Roots[pair.Key] != pair.Value)
+                        .Select(pair => new WorkflowChange(pair.Key, WorkflowChangedAspect.RootConfiguration)).ToImmutableArray());
                 ChangeRevision = revision;
                 RetireChangedDomains(change);
             }

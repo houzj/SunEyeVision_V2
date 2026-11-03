@@ -174,7 +174,7 @@ public sealed class ToolExecutionOwner
         {
             if (_retired) return;
             if (_documentMutation) throw new InvalidOperationException("方案正在提交编辑，不能退役。");
-            if (_activeRuns != 0) throw new InvalidOperationException("脚本仍在运行或清理，方案保持打开；请停止并等待排空。");
+            if (_activeRuns != 0 || _activeRoot != Guid.Empty) throw new InvalidOperationException("流程或脚本仍在运行或清理，方案保持打开；请停止并等待排空。");
             _retired = true;
             foreach (var domain in _domains) domains.Add(Domain(domain.Key, domain.Value));
             _domains.Clear(); _latest.Clear();

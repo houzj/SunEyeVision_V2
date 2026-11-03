@@ -1,4 +1,4 @@
-namespace SunEyeVision.UI.Services.PathCalculators.VmRouting;
+namespace SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting;
 
 public readonly record struct RoutePoint(double X, double Y);
 public readonly record struct RouteRect(double X, double Y, double Width, double Height)

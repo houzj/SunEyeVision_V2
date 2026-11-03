@@ -316,7 +316,7 @@ public sealed class MainWorkspaceLayoutTests
             showPreview.Invoke(previewHandler, new object[] { image, new Point(100, 100), canvasA });
             var preview = Assert.IsType<Border>(Assert.Single(canvasA.Children.Cast<UIElement>()));
             var previewPresenter = Assert.IsType<ContentPresenter>(preview.Child);
-            Assert.Same(Assert.IsType<ItemsControl>(canvasHost.FindName("VmNodeItems")).ItemTemplate, previewPresenter.ContentTemplate);
+            Assert.Same(Assert.IsType<ItemsControl>(canvasHost.FindName("CanvasNodeItems")).ItemTemplate, previewPresenter.ContentTemplate);
             var previewNode = Assert.IsAssignableFrom<object>(previewPresenter.Content);
             Assert.Equal(admission.Runtime.GetCatalog("ImageLoad")!.IconKey,
                 Assert.IsAssignableFrom<SunEyeVision.UI.Features.WorkflowUI.Canvas.ICanvasToolIconSource>(previewNode).ToolIconKey);

@@ -5,17 +5,17 @@ using System.Windows.Shapes;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using Xunit;
 namespace SunEyeVision.UI.Tests;
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class CanvasInteractionSessionTests
 {
  [Fact] public void Actual_placement_feedback_respects_occupied_bottom_port_and_clears()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var parent=f.Add();var child=f.Add("BlobAnalysis",350,290);var edge=f.Connect(parent,child,"BottomPort","TopPort");
   var parentRect=f.Projection(parent).NodeRect;
-  f.View.UpdateVmPlacementFeedback(new Point(parentRect.X+55,parentRect.Y+85),30,Array.Empty<string>());
-  Assert.NotNull(UiRuntime.Field<object>(f.View,"_vmNodeHotRegion"));Assert.Null(f.View.VmAvailableHotPredecessor());
-  f.Canvas.Delete(Array.Empty<CanvasNodeProjection>(),new[]{edge});UiRuntime.Pump();Assert.Equal(parent.Id,f.View.VmAvailableHotPredecessor());
-  f.View.ClearVmPlacementFeedback();Assert.Null(UiRuntime.Field<object>(f.View,"_vmNodeHotRegion"));
+  f.View.UpdateCanvasPlacementFeedback(new Point(parentRect.X+55,parentRect.Y+85),30,Array.Empty<string>());
+  Assert.NotNull(UiRuntime.Field<object>(f.View,"_canvasNodeHotRegion"));Assert.Null(f.View.CanvasAvailableHotPredecessor());
+  f.Canvas.Delete(Array.Empty<CanvasNodeProjection>(),new[]{edge});UiRuntime.Pump();Assert.Equal(parent.Id,f.View.CanvasAvailableHotPredecessor());
+  f.View.ClearCanvasPlacementFeedback();Assert.Null(UiRuntime.Field<object>(f.View,"_canvasNodeHotRegion"));
  });
  [Fact] public void Actual_wire_hit_area_does_not_start_blank_drag_and_right_click_preserves_node_selection()=>UiRuntime.Run(()=>
  {
@@ -32,12 +32,12 @@ public sealed class CanvasInteractionSessionTests
   using var f=new DocumentUiFixture(); f.Add(); f.Host.UpdateLayout(); UiRuntime.Pump();
   var canvas=(System.Windows.Controls.Canvas)f.View.FindName("WorkflowCanvas");
   var handle=new Rectangle { Width=6, Height=6 }; canvas.Children.Add(handle);
-  UiRuntime.Field<List<Rectangle>>(f.View,"_vmWireHandles").Add(handle);
+  UiRuntime.Field<List<Rectangle>>(f.View,"_canvasWireHandles").Add(handle);
   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});
   Assert.False(UiRuntime.Field<bool>(f.View,"_isBoxSelecting"));
   canvas.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});
   Assert.True(UiRuntime.Field<bool>(f.View,"_isBoxSelecting"));
-  UiRuntime.Call(f.View,"CancelVmCanvasGesture"); Assert.False(UiRuntime.Field<bool>(f.View,"_isBoxSelecting"));
+  UiRuntime.Call(f.View,"CancelCanvasGesture"); Assert.False(UiRuntime.Field<bool>(f.View,"_isBoxSelecting"));
  });
  [Fact] public void Insertion_hover_uses_actual_rendered_edge_and_restores_stroke()=>UiRuntime.Run(()=>
  {
@@ -46,16 +46,16 @@ public sealed class CanvasInteractionSessionTests
   var points=edge.PathPoints.Select(p=>new Point(p.X,p.Y)).ToArray();
   var pair=Enumerable.Range(0,points.Length-1).Select(i=>(A:points[i],B:points[i+1])).OrderByDescending(p=>(p.B-p.A).Length).First();
   var pointer=pair.A+(pair.B-pair.A)*.5;
-  Assert.Same(edge,UiRuntime.Call(f.View,"FindVmInsertionWire",pointer,Array.Empty<string>()));
-  UiRuntime.Call(f.View,"UpdateVmInsertionWire",pointer,Array.Empty<string>());
-  var visual=UiRuntime.Field<System.Windows.Shapes.Path>(f.View,"_vmInsertionView"); Assert.Equal(10d,visual.StrokeThickness);
-  UiRuntime.Call(f.View,"ClearVmInsertionWire"); Assert.Equal(2d,visual.StrokeThickness);
-  Assert.Null(UiRuntime.Call(f.View,"FindVmInsertionWire",pointer,new[]{a.Id}));
+  Assert.Same(edge,UiRuntime.Call(f.View,"FindCanvasInsertionWire",pointer,Array.Empty<string>()));
+  UiRuntime.Call(f.View,"UpdateCanvasInsertionWire",pointer,Array.Empty<string>());
+  var visual=UiRuntime.Field<System.Windows.Shapes.Path>(f.View,"_canvasInsertionView"); Assert.Equal(10d,visual.StrokeThickness);
+  UiRuntime.Call(f.View,"ClearCanvasInsertionWire"); Assert.Equal(2d,visual.StrokeThickness);
+  Assert.Null(UiRuntime.Call(f.View,"FindCanvasInsertionWire",pointer,new[]{a.Id}));
  });
  [Fact] public void Running_tab_rejects_canvas_gesture_until_stopped()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture(); f.Add(); f.Host.UpdateLayout(); UiRuntime.Pump();
-  var property=f.View.GetType().GetProperty("CanEditVmCanvas",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!;
+  var property=f.View.GetType().GetProperty("CanEditCanvas",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!;
   Assert.True((bool)property.GetValue(f.View)!); f.Tab.IsRunning=true;
   Assert.False((bool)property.GetValue(f.View)!);
   var canvas=(System.Windows.Controls.Canvas)f.View.FindName("WorkflowCanvas");
@@ -91,19 +91,19 @@ public sealed class CanvasInteractionSessionTests
  [Fact] public void Control_drag_copies_once_and_escape_cancels_preview()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var original=f.Add();var projection=f.Projection(original);projection.IsSelected=true;
-  var start=new Point(original.PositionX,original.PositionY);UiRuntime.Call(f.View,"ArmVmNodeMove",projection,start);
-  var move=UiRuntime.Field<object>(f.View,"_vmNodeMove")!;move.GetType().GetProperty("Copy")!.SetValue(move,true);
-  UiRuntime.Call(f.View,"PreviewVmNodeMove",move,new Point(start.X+50,start.Y+40));UiRuntime.Call(f.View,"CancelVmNodeMove");
+  var start=new Point(original.PositionX,original.PositionY);UiRuntime.Call(f.View,"ArmCanvasNodeMove",projection,start);
+  var move=UiRuntime.Field<object>(f.View,"_canvasNodeMove")!;move.GetType().GetProperty("Copy")!.SetValue(move,true);
+  UiRuntime.Call(f.View,"PreviewCanvasNodeMove",move,new Point(start.X+50,start.Y+40));UiRuntime.Call(f.View,"CancelCanvasNodeMove");
   Assert.Single(f.Canvas.Nodes);Assert.Equal(start.X,original.PositionX);
-  UiRuntime.Call(f.View,"ArmVmNodeMove",projection,start);move=UiRuntime.Field<object>(f.View,"_vmNodeMove")!;move.GetType().GetProperty("Copy")!.SetValue(move,true);
+  UiRuntime.Call(f.View,"ArmCanvasNodeMove",projection,start);move=UiRuntime.Field<object>(f.View,"_canvasNodeMove")!;move.GetType().GetProperty("Copy")!.SetValue(move,true);
   var token=(string)move.GetType().GetProperty("Token")!.GetValue(move)!;
-  var format=(string)typeof(WorkflowCanvasControl).GetField("VmNodeDragFormat",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.GetRawConstantValue()!;
+  var format=(string)typeof(WorkflowCanvasControl).GetField("CanvasNodeDragFormat",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.GetRawConstantValue()!;
   var data=new DataObject();data.SetData(format,token);var canvas=(System.Windows.Controls.Canvas)f.View.FindName("WorkflowCanvas");
   var ctor=typeof(DragEventArgs).GetConstructors(System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public).Single(item=>item.GetParameters().Length==5);
   var args=(DragEventArgs)ctor.Invoke(new object[]{data,DragDropKeyStates.ControlKey,DragDropEffects.Copy,canvas,new Point(start.X+50,start.Y+40)});
   args.RoutedEvent=DragDrop.PreviewDropEvent;var count=f.Session.HistoryEntries.Count;canvas.RaiseEvent(args);UiRuntime.Pump();
   Assert.Equal(DragDropEffects.Copy,args.Effects);Assert.Equal(2,f.Canvas.Nodes.Count);Assert.Equal(start.X,original.PositionX);Assert.Equal(count+1,f.Session.HistoryEntries.Count);
-  Assert.True(f.Session.Undo());Assert.Single(f.Canvas.Nodes);UiRuntime.Call(f.View,"CancelVmNodeMove");
+  Assert.True(f.Session.Undo());Assert.Single(f.Canvas.Nodes);UiRuntime.Call(f.View,"CancelCanvasNodeMove");
  });
  [Fact] public void Right_click_copy_targets_the_node_under_menu_instead_of_old_selection()=>UiRuntime.Run(()=>
  {

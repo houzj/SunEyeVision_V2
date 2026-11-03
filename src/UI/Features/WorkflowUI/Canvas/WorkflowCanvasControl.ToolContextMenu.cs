@@ -7,7 +7,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
     /// <summary>原件DiagramPage/恢复ToolNavigation：空白右键直接展开分类，在菜单打开点添加。</summary>
-    internal void PopulateVmToolContextMenu(ContextMenu menu,Point location)
+    internal void PopulateCanvasToolContextMenu(ContextMenu menu,Point location)
     {
         while(menu.Items.Count>1)menu.Items.RemoveAt(1);
         var tab=CurrentWorkflowTab;
@@ -15,7 +15,7 @@ public partial class WorkflowCanvasControl
         if(tab?.DocumentCanvas==null||session==null||_viewModel==null)return;
         var canvas=tab.DocumentCanvas;
         var catalog=_viewModel.Toolbox;
-        bool Current()=>CanEditVmCanvas&&ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab,tab)
+        bool Current()=>CanEditCanvas&&ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab,tab)
             &&ReferenceEquals(CurrentWorkflowTab,tab)&&ReferenceEquals(tab.DocumentCanvas,canvas)
             &&ReferenceEquals(Adapters.ServiceInitializer.SolutionManager.CurrentSession,session);
         menu.Items.Add(new Separator());
@@ -33,7 +33,7 @@ public partial class WorkflowCanvasControl
                     ToolTipService.SetShowOnDisabled(item,true);
                     item.Click+=(_,e)=>{
                         e.Handled=true;if(!Current()||!tool.CanActivate())return;
-                        AddVmContextTool(tab,tool,location);
+                        AddCanvasContextTool(tab,tool,location);
                     };
                     category.Items.Add(item);
                 }
@@ -44,11 +44,11 @@ public partial class WorkflowCanvasControl
     }
     private static Image ToolMenuIcon(string source,bool available)=>new(){Width=20,Height=20,
         Opacity=available?1:.35,Source=new BitmapImage(new Uri(source,UriKind.Absolute))};
-    private void AddVmContextTool(WorkflowTabViewModel tab,ToolItem tool,Point location)
+    private void AddCanvasContextTool(WorkflowTabViewModel tab,ToolItem tool,Point location)
     {
         try
         {
-            if(!CanEditVmCanvas||!tool.CanActivate()||tab.DocumentCanvas is not { } canvas)return;
+            if(!CanEditCanvas||!tool.CanActivate()||tab.DocumentCanvas is not { } canvas)return;
             canvas.CreateNode(tool.ToolId,new CanvasPoint(Math.Clamp(Math.Round(location.X/5)*5,55,4945),Math.Clamp(Math.Round(location.Y/5)*5,15,4985)));
             WorkflowCanvas.Focus();
         }

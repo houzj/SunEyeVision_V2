@@ -29,7 +29,7 @@ public sealed class FormalCanvasCompositionTests
   {
    window.Show();Pump();window.UpdateLayout();var canvas=main.WorkflowTabViewModel.SelectedTab!.DocumentCanvas!;Assert.Empty(canvas.Nodes);
    var first=canvas.CreateNode("ImageLoad",new(150,120));var second=canvas.CreateNode("BlobAnalysis",new(350,240));Pump();window.UpdateLayout();
-   var view=Assert.IsType<WorkflowCanvasControl>(workspace.GetCurrentWorkflowCanvas());Assert.Same(main.WorkflowTabViewModel.SelectedTab,view.DataContext);var items=Assert.IsType<ItemsControl>(view.FindName("VmNodeItems"));Assert.Same(canvas.Nodes,items.ItemsSource);Assert.Same(first,canvas.Nodes[0].Definition);Assert.Same(second,canvas.Nodes[1].Definition);
+   var view=Assert.IsType<WorkflowCanvasControl>(workspace.GetCurrentWorkflowCanvas());Assert.Same(main.WorkflowTabViewModel.SelectedTab,view.DataContext);var items=Assert.IsType<ItemsControl>(view.FindName("CanvasNodeItems"));Assert.Same(canvas.Nodes,items.ItemsSource);Assert.Same(first,canvas.Nodes[0].Definition);Assert.Same(second,canvas.Nodes[1].Definition);
    canvas.Connect(new(Guid.NewGuid().ToString("N"),first.Id,second.Id,"BottomPort","TopPort"));Assert.Single(canvas.Connections);session.Undo();Assert.Empty(canvas.Connections);session.Redo();Assert.Single(canvas.Connections);
    var original=first.Position;canvas.MoveNodes(new Dictionary<CanvasNodeProjection,SunEyeVision.Domain.Workflows.CanvasPoint>{{canvas.Nodes[0],new(200,175)}});Assert.Equal(200,first.Position.X);session.Undo();Assert.Equal(original,first.Position);Assert.Same(first,session.FindNode(session.GetWorkflows().Single().Id,first.Id));
    main.SelectedNode=first;Assert.Same(first,main.SelectedNode);Assert.True(main.CanEditWorkflowCanvas);

@@ -1,0 +1,380 @@
+[
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConnectionGestures.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConnectionGestures.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "A1BBCC266362B2E51D6363C0DAED6F4363170AC8DB4A4433375775A1D0A51DF5",
+    "AfterTextSha256": "9DD69BEE51FD53432DEDF1FE1CE560847FFAA11E021CDF7B09D691355604C25F"
+  },
+  {
+    "Before": "src/UI/Services/Interaction/VmSelectionLayout.cs",
+    "After": "src/UI/Services/Interaction/SelectionLayoutCalculator.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "79EA4EBE784D432E53C43016B074800DBF55C7A66C976D9B24CAA857C11DB911",
+    "AfterTextSha256": "3792870E574239823D573D1D565B39CA06F540385B0D816D3ADEC2F11632F2D6"
+  },
+  {
+    "Before": "src/UI/GlobalUsings.cs",
+    "After": "src/UI/GlobalUsings.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "FF7826C4156313BDE1D0B954359ABED10F969F98CCE1FAB7F7CC3BB5C71898D1",
+    "AfterTextSha256": "9B2BE2769783887DA067A8EE0716BCF5D043BD6B64784173481B8FE17D3E4207"
+  },
+  {
+    "Before": "tests/SunEyeVision.RootCanvas.Tests/RootWorkspaceHostRuntimeTests.cs",
+    "After": "tests/SunEyeVision.RootCanvas.Tests/RootWorkspaceHostRuntimeTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "562FFF635F10355198B460AC88CF2477CD7116A2839011B4C4DBF3A2E48C16CD",
+    "AfterTextSha256": "B825A210F93FEF84DD01D51C7831F12F1E1C592A85B2E684AD08396799A2C8D2"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/Session/WorkspaceAndResultsSessionTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/Session/WorkspaceAndResultsSessionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "93F9951FB5E617C30E11A2BB21C9D4413DF24EE27A605871B8471542223934F8",
+    "AfterTextSha256": "E10639F83E472E835C6C8A63EA4316207BA9A3EC188B348272A5FE8F067E16D2"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/Geometry.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/Geometry.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3E6D9B4BD8884DE6751EBF470FAF7391AE5E5C5290D7AEACF864AB282BC50F3A",
+    "AfterTextSha256": "B0DA1F8B58DAD7FF9C5AC7E432CFD5BC8FDA839FF8BBECF8C27B01C9978CA058"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.PlacementFeedback.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.PlacementFeedback.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "5A18189268F2DBE5E0B84AF884CCD6C7F7C64CBBD94D228F8E8A5BC73F22199D",
+    "AfterTextSha256": "07CDC41BDAB020172BC159815EBE40D7818B430079183E36FADF4878B609B113"
+  },
+  {
+    "Before": "tests/SunEyeVision.ShellLayout.Tests/MainWorkspaceLayoutTests.cs",
+    "After": "tests/SunEyeVision.ShellLayout.Tests/MainWorkspaceLayoutTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "F43F8F26EACD1769E3B7BB408AE533E8BF9DE9E7DB031E810E83C8922813CF5B",
+    "AfterTextSha256": "C2C77EBC6BA0671CA843A6AE23A76B9713C23A73AAE6776F0D12C7E3811E9011"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/RootWorkflowOverviewTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/RootWorkflowOverviewTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3408AEA697AA56EB885706FBAFA9F34A04E6996211D9CDBAC5554A876321352B",
+    "AfterTextSha256": "816C3285624886A7CF0FA8FCE59B41B3EC6107E818089F80F332328F853575DF"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ToolContextMenu.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ToolContextMenu.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "4A25D77A70D4A51A5BB7A00BC4E6F41DBC033E96EE4476802CC8DF98467A321D",
+    "AfterTextSha256": "FA25E5794FBFD2014748DDEE29111CE0630381B600F60586E5399B8A8D196077"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/VmPlacementGeometryTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/NodePlacementGeometryTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "D23B982E34EE6C97292DD0838B0A3C4D7DEA5D6C22F15B8DC00AB81DE907E79D",
+    "AfterTextSha256": "B5AAE6B8FCE4BCC3216871A887B9CE3FC0BE476B625F363EB993C0B3AA3882C6"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/Session/AssemblyTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/Session/AssemblyTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "DF37F9FC8B0CC05B76BBE7E5D1C0D5C8670A7776CE3B2E624B18D5A91BC2D744",
+    "AfterTextSha256": "CD2CBE00353E9FCC190240118E58ED25203E054B9E9A123563AEE9B4561EB2E2"
+  },
+  {
+    "Before": "tests/SunEyeVision.RootCanvas.Tests/CurrentFormatAndResourceTests.cs",
+    "After": "tests/SunEyeVision.RootCanvas.Tests/CurrentFormatAndResourceTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "ABCFA512A9C8F35B30B00EE7F56EFE1979FA3A708AA3D0B6BA5CA9A59902F2FC",
+    "AfterTextSha256": "CA1900AAB2F77C45407D599F19DDB394E7E63ABF21189240217E2D85B25BFCA7"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/POINT.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/POINT.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "F848BDC331844E31780F89F5A1F242D29402773ED519F9B0E2456353D25BB5FE",
+    "AfterTextSha256": "1001AF55F6C7828129DADBA86E8907CA27539AB33F0F228E10D54F51B196DE29"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/PathCalculatorFactory.cs",
+    "After": "src/UI/Services/PathCalculators/PathCalculatorFactory.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "98383FD6997928FFA284A52E499F4860DFE89C0813E9C823B97D6F5A7A44430A",
+    "AfterTextSha256": "0734A7AA7DD35B7044AC2D37BAD16B07D6B68DC8FCD3C38EC786C2C467D2D16A"
+  },
+  {
+    "Before": "src/UI/Services/Interaction/VmPlacementCalculator.cs",
+    "After": "src/UI/Services/Interaction/NodePlacementCalculator.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "E7CBE3EFB21B027B6AECD3930CE90B1C596D5988EB2F0B833C15B6A5F0D91078",
+    "AfterTextSha256": "36DB9EA270EBA16F9A6E00516BF05A40C47859B8CC4386B4A7FF5BAA6566A17F"
+  },
+  {
+    "Before": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs",
+    "After": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "A943A60E119762553BE27A365A1CDEEEDABD7C2EF132550F1802B29E46083FE6",
+    "AfterTextSha256": "6BB2D138B247E6A0DEAAAE5CC75542A1EC34B0F99038427251EEFBF1F77FC05A"
+  },
+  {
+    "Before": "tests/CanvasLayout.Tests/CanvasInteractionSessionTests.cs",
+    "After": "tests/CanvasLayout.Tests/CanvasInteractionSessionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "20CB37AA4DF5B4FDE78C9779946CB4621F2B3449A3F4EAB30AF1494A9FA30CAC",
+    "AfterTextSha256": "29FCA0AA583C72E4D5F2D52D35E0BCED95AF62C60A7800762A3A268C0B6D03BD"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GroupSelection.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GroupSelection.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "A4114B9479D26A77275369B37F45EA1CB0240B25FF94936ED5DDDB9D3EE645B0",
+    "AfterTextSha256": "61F94465D6A6D5C3BFC355B28F220BAEA4E068A48798E48C1672DB1EA64B2F7C"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WorkspaceLifecycle.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WorkspaceLifecycle.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "79B65F7E460EB8FA5B9B80FF16A7F88BDE470C1052E39F7589B252A3B2EF56D7",
+    "AfterTextSha256": "8D461CB76B928A886B06CCEC3417CD98F1DB3E755F8C2EA61241022F71CEAD1C"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/VmOrthogonalRouter.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/OrthogonalRouter.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "13B7574FD68C9573CA54281774135773E4C841F9470D3F70D135D05DD95120DC",
+    "AfterTextSha256": "AAEC0BC047A43BB6CC72D0D5ED9F978C66C7B2BE6B34377A3974D89371AF7D62"
+  },
+  {
+    "Before": "tests/SunEyeVision.RootCanvas.Tests/ScopedNodeInfoProviderTests.cs",
+    "After": "tests/SunEyeVision.RootCanvas.Tests/ScopedNodeInfoProviderTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "ED19E7437D2D56ABA81CC0A9AB3169842C687A22DF35618C0EDE0C17A92853D6",
+    "AfterTextSha256": "37B32A1086EBA42BF1E6A3D35FA17A8B8D8749FD30EAAAAAE4FA70AEB4D5A3BD"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "73AD959267041706E3F961270C2D0B64F2322EC2F0340C33FB3EC305F7599219",
+    "AfterTextSha256": "C6B3CD0A30FDFD453D8710E029318C690799BB7DC870409E3011628F6D76813C"
+  },
+  {
+    "Before": "tests/CanvasLayout.Tests/AssemblyTests.cs",
+    "After": "tests/CanvasLayout.Tests/AssemblyTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3ACAD77F96396552151DE0C986682BD2D2FD69F9D7E00E9EC7E82A414C3BC150",
+    "AfterTextSha256": "CFD2CA20C02459534E458F1A86A8D6D3328E9DF55BE62142D72990E4324FA4BE"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/VmSelectionLayoutTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/SelectionLayoutCalculatorTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "E810B44DBD2C9F3AEF8A4C69F8997A9ACA1424C0AD7556541687CD63A699554D",
+    "AfterTextSha256": "C292CF31F5240FAFA328C1CBEDF72E573BAE37E6A1A7D70D03513BD824E2807D"
+  },
+  {
+    "Before": "tests/SunEyeVision.RootCanvas.Tests/HostInputCoordinatorTests.cs",
+    "After": "tests/SunEyeVision.RootCanvas.Tests/HostInputCoordinatorTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "50AAD3A386D5CE246993D84A65216D8D3B13A0FA6FE0175EB9DA8D65FD468796",
+    "AfterTextSha256": "77411879734E846C50E8A407332A603CA070179D42D4DBBF77BB02B83C77A709"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "394A031B9E77FB0970C806620F5C94150DE2467C69A9C67F380F039614C95CB0",
+    "AfterTextSha256": "76D7A0934EBC0DDACFBCF16721229FE5B035E6223F9CFA62CA4D11BA037D2AD1"
+  },
+  {
+    "Before": "src/UI/Services/Connection/ConnectionPathCache.cs",
+    "After": "src/UI/Services/Connection/ConnectionPathCache.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "71F652362F4E3F82FF5FD7FF39DD53E63C3F2B06771EC23D13BD5E39F4E13AAC",
+    "AfterTextSha256": "509F30A92B355D2FDA5992281516B95EF827579118925DDBE3435DF3BA1C2C32"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConfigurationStamp.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConfigurationStamp.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "A8CC6E2D4C337202945CB631FAF5F19423349B29F14F7DB8B01E5EF6EBBAEAAB",
+    "AfterTextSha256": "F473C5818856A1DE2768F7DB066281A031B1CF841DCB50B3011942DBB76DC4AB"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/APoint.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/APoint.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "841764B34F29BA46F8CE4EF042793D435EDA83304C36762CFA17700775921996",
+    "AfterTextSha256": "F1EE356BC57E826A85DA6B7C7D98859434FD5F605CAAE97506B64F558C6876D5"
+  },
+  {
+    "Before": "src/UI/Converters/Node/VmGroupBackgroundConverter.cs",
+    "After": "src/UI/Converters/Node/GroupNodeBackgroundConverter.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "989AC348A8D742CDC8588948F510EF088C6F8607BFE8E8111835C9D8813B14B7",
+    "AfterTextSha256": "964B08C18B0A589706F4FA222FEB3F879FD9D56805C4CA6EED7AB453408F8F40"
+  },
+  {
+    "Before": "tests/CanvasLayout.Tests/CanvasGeometrySessionTests.cs",
+    "After": "tests/CanvasLayout.Tests/CanvasGeometrySessionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "8D33E79FEB21EF0C9B647BFD91EE7896929F63D22C3C96E207C7C2026BB03ECD",
+    "AfterTextSha256": "90D9603BA49762998182CD86AF3D64A2E139A801D248D7E4A9E15E6443E46ECB"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GeometryTracking.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GeometryTracking.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "51A0D9CDAEB842DD99C74A64E56FBF2B50DD0E969724657DF4B1CB7F968F75DD",
+    "AfterTextSha256": "7A24B634D862499D1935BA99184EDCC63C26D8900835BDC3DBFB23D577EDA9A7"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.NodeGestures.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.NodeGestures.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "63AE047D81A421C75E811BECFBDBA44434E76D479362B9969FC50AFFD7F8D951",
+    "AfterTextSha256": "CE6E9BA6396C9F9C7CC0874E07F4815459F3C26DAFF5B2ECEE46B6D9FB4DE0AC"
+  },
+  {
+    "Before": "src/UI/Services/Node/PortService.cs",
+    "After": "src/UI/Services/Node/PortService.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "CA749A191BF65FC506E8CC3766B606F55547BF09C7ED8BE70254987EA2ACE323",
+    "AfterTextSha256": "5C1FD59EF6A78F79FDFD1B476BAB0B731C93157EC62BF8939F4961BB394C2796"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/Session/CanvasSessionTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/Session/CanvasSessionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "D178698661CFEAC9460A4D9B1432D8B492E867A0CF98030AF80042AA7E04744C",
+    "AfterTextSha256": "B0ECB7787E5D95E8AA241464B812B5712C3A795ADF193020EE14D47906917F4D"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Clipboard.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Clipboard.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "38F95A8224C4463834B750EA309768832B40CC33E23E2FF9D58AB22FF51F427E",
+    "AfterTextSha256": "AD1A533790FF54C083B30C5563B1A166CC33DC3D921B8D93D75F3CAD3EF8F683"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WireEditing.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WireEditing.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3C198352D1CC2562972382AD48BFE7F928CCA07EDBCC524A6E1EED742F6F21F0",
+    "AfterTextSha256": "3933518A5E51E622B49FB9180F0D0CEE9A014F31068F1D9436C84767ABBFF048"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/AStar.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/AStar.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3703FE1108A47B3A9E85372EE99D2B0E21E511E8B351096CF63A2E979EDCEFAC",
+    "AfterTextSha256": "CB5D771BFA95281F2292FB553B0756A7BC9C98A01F99ADF3F510849CF52AA4C9"
+  },
+  {
+    "Before": "src/UI/Resources/Styles/NodeStyleResources.xaml",
+    "After": "src/UI/Resources/Styles/NodeStyleResources.xaml",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "354F268208CD6F052AE3D20620362763CADDB80BBD551D15188A2002229F3497",
+    "AfterTextSha256": "29AFEBC4D242AAA61609D8843453644A8F68D48D7EF52068339B92430AC78AD7"
+  },
+  {
+    "Before": "src/UI/Services/Rendering/VmExecutionPort.cs",
+    "After": "src/UI/Services/Rendering/ExecutionPortShape.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "2A8370175641E3F5899E1633589196D196114B540C41B971BCFBFD70083750B1",
+    "AfterTextSha256": "CE120ED2ED7851EE6E6CA41E8E9C0D5106ABA23C5E8D85D21D8F562B7DF7F1F0"
+  },
+  {
+    "Before": "src/UI/Services/Interaction/PortPositionService.cs",
+    "After": "src/UI/Services/Interaction/PortPositionService.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "4AD2CEB455EEDC3168A500D7E2F6F7001392473EBA98E88C4B9DF2AEEB01803E",
+    "AfterTextSha256": "FCEEE1F4FEE69791BB895B79CDDAF95B161B47DB4592D59E9268BE346F66FA29"
+  },
+  {
+    "Before": "tests/SunEyeVision.ShellLayout.Tests/FormalCanvasCompositionTests.cs",
+    "After": "tests/SunEyeVision.ShellLayout.Tests/FormalCanvasCompositionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "B3EAACE8E7E3C4860AFEBF273D67858057ADF988126BDC6A729265FF323ADBB9",
+    "AfterTextSha256": "3D6C6AA71D51E8F5278384EFA8FE59CCD61E565E15635026D886D6222100C9EA"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.InsertionGestures.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.InsertionGestures.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "07B9613DC918C94AC9998567002CC2701E848C22AEA624244A83FAA8D27AE4BE",
+    "AfterTextSha256": "147C123D3DBC5055D6466AABD07855DB1643DC9395E4CA5835EEF6AD7A970800"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/ConnectorOrientation.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/ConnectorOrientation.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "40D9B4B51D51C63609E9002F80EB9B94BC37514E29E74C64D346837FFC00566C",
+    "AfterTextSha256": "95464CC6F4527EB515C1D28F8502F52A5AB332D26E7EA5964BCCC5288959F194"
+  },
+  {
+    "Before": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Rename.cs",
+    "After": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Rename.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3BD398DFF0F58DB722DB1B0E39DFA84D6AB80614C952607C40044CF119EA2774",
+    "AfterTextSha256": "014122809A954BC6BADC78D844CE1CE9A3F6931267165BF0F51DB8DF68DDB1AE"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/PathFinder.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/PathFinder.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "2F6E0B26827CCDEC9FC5083915B081E30A56AEF1A15911355D5DCF709F9BF688",
+    "AfterTextSha256": "1D4D833DF8E7A579A65181141D7BF7AC3028312EDB85BAA9306F1DF402E36C60"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/VmPathCalculatorTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/OrthogonalPathCalculatorTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "BB2911E2F0CC3BBD54055898F1B89E9E990A906309194E4FB925872BF81FD3AE",
+    "AfterTextSha256": "C66AF1EEFF5C39AFA23BB733E9B1214C2A2405DF5DE70FD4D4C780118BBD79F9"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmPathCalculator.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalPathCalculator.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "CBFAEF24DF1CC235563319BDA0724378C62F68D31D9D3798090221C4930E22BA",
+    "AfterTextSha256": "256A1D6019E5FAA2F1C08467418C2FFD82C5D16E7DA40D9E5AB844EB0D1BAF12"
+  },
+  {
+    "Before": "src/UI/Services/PathCalculators/VmRouting/RouteTypes.cs",
+    "After": "src/UI/Services/PathCalculators/OrthogonalRouting/RouteTypes.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3271E5AB16F81C86544E1C886CA8A0C554716DFAAAEF03CAF9AAC9F0BF86FA78",
+    "AfterTextSha256": "4311ABE6A4C21BCEA348CB6188E01490A9FD7DAA25AF236596C7AD7BBEF35C4E"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/WorkspaceTimingPresentationTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/WorkspaceTimingPresentationTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "983F97821EA9F02902D1B923CA132F44D0AA7F8974808B298B22F75DDC8498C5",
+    "AfterTextSha256": "8AD50EDB9F8F93143995BB48BBA422F2C84115A4E77C31F3546068A4EC3EE44D"
+  },
+  {
+    "Before": "src/UI/Services/Interaction/DragDropHandler.cs",
+    "After": "src/UI/Services/Interaction/DragDropHandler.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "D4ED1DE6249B486CFCD9D379658C2C399A7624DDF58F77A5FD3E2A35269F3851",
+    "AfterTextSha256": "3FD532B6BB97B532C50F50F016870DA7494B1D19A045D337D21C64731ACC638B"
+  },
+  {
+    "Before": "tests/SunEyeVision.UI.Tests/Session/DocumentFilesSessionTests.cs",
+    "After": "tests/SunEyeVision.UI.Tests/Session/DocumentFilesSessionTests.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "3B576971BAF7C61DDF51C6033E092A9292B08280A4806168CBF4B5BD11E1D906",
+    "AfterTextSha256": "C8C40D0ABB8269DC8F25B86E7D8B39E2F478FC49BDDEEB95D33A4FDFEE7F476C"
+  },
+  {
+    "Before": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+    "After": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+    "OnlyDeclaredRenaming": true,
+    "BeforeTextSha256": "96F8078635FDBFEF50CC509D6129C23996E5FB88419B58DE7959B99B9776A705",
+    "AfterTextSha256": "60A3367A7FBE745316B2EE3C97A32BDE11FF635318C02610514024B79925EAEC"
+  }
+]

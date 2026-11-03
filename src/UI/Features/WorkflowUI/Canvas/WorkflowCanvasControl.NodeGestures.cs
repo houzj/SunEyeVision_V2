@@ -8,8 +8,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 public partial class WorkflowCanvasControl
 {
-    private const string VmNodeDragFormat = "SunEyeVision.VmNodeMove.Token";
-    private sealed class VmNodeMoveSession
+    private const string CanvasNodeDragFormat = "SunEyeVision.Canvas.NodeMove.Token";
+    private sealed class NodeDragSession
     {
         public required object Owner { get; init; }
         public required WorkflowTabViewModel Tab { get; init; }
@@ -22,42 +22,42 @@ public partial class WorkflowCanvasControl
         public List<FrameworkElement> Ghosts { get; } = new();
         public bool Copy { get; set; }
     }
-    private VmNodeMoveSession? _vmNodeMove;
-    private bool _vmNodeOleActive;
-    private Window? _vmGestureWindow;
+    private NodeDragSession? _canvasNodeMove;
+    private bool _canvasNodeOleActive;
+    private Window? _canvasGestureWindow;
 
-    private static int VmIdentity(object? value) => value == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
-    private string VmGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{VmIdentity(tab.DocumentCanvas)}|"+string.Join(";",
-        tab.DocumentCanvas?.Nodes.Select(n => $"{n.Id}:{VmIdentity(n.Definition)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}") ?? Array.Empty<string>()) + "|" +
-        string.Join(";", tab.DocumentCanvas?.Connections.Select(c => $"{c.Id}:{VmIdentity(c.Definition)}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}") ?? Array.Empty<string>());
-    private bool ValidVmNodeMove(VmNodeMoveSession session) => CanEditVmCanvas &&
+    private static int CanvasIdentity(object? value) => value == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
+    private string CanvasGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{CanvasIdentity(tab.DocumentCanvas)}|"+string.Join(";",
+        tab.DocumentCanvas?.Nodes.Select(n => $"{n.Id}:{CanvasIdentity(n.Definition)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}") ?? Array.Empty<string>()) + "|" +
+        string.Join(";", tab.DocumentCanvas?.Connections.Select(c => $"{c.Id}:{CanvasIdentity(c.Definition)}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}") ?? Array.Empty<string>());
+    private bool ValidCanvasNodeMove(NodeDragSession session) => CanEditCanvas &&
         ReferenceEquals(DataContext, session.Owner) && ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, session.Tab) &&
-        VmGraphStamp(session.Tab) == session.Stamp;
+        CanvasGraphStamp(session.Tab) == session.Stamp;
 
-    private void InitializeVmNodeGestures()
+    private void InitializeCanvasNodeGestures()
     {
         WorkflowCanvas.Focusable = true;
         WorkflowCanvas.AllowDrop = true;
-        WorkflowCanvas.PreviewDragOver += VmNodeDragOver;
-        WorkflowCanvas.PreviewDrop += VmNodeDrop;
-        WorkflowCanvas.DragLeave += (_, e) => { if (_vmNodeOleActive && !VmDropInside(e.GetPosition(WorkflowCanvas))) HideVmNodeGhosts(); };
-        WorkflowCanvas.LostMouseCapture += (_, _) => { if (!_vmNodeOleActive) CancelVmCanvasGesture(); };
-        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && !VmTextInputOwnsKeyboard()) { CancelVmCanvasGesture(); ClearVmWireSelection(); e.Handled = true; } };
-        DataContextChanged += (_, _) => CancelVmCanvasGesture();
+        WorkflowCanvas.PreviewDragOver += CanvasNodeDragOver;
+        WorkflowCanvas.PreviewDrop += CanvasNodeDrop;
+        WorkflowCanvas.DragLeave += (_, e) => { if (_canvasNodeOleActive && !CanvasDropInside(e.GetPosition(WorkflowCanvas))) HideCanvasNodeGhosts(); };
+        WorkflowCanvas.LostMouseCapture += (_, _) => { if (!_canvasNodeOleActive) CancelCanvasGesture(); };
+        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && !CanvasTextInputOwnsKeyboard()) { CancelCanvasGesture(); ClearCanvasWireSelection(); e.Handled = true; } };
+        DataContextChanged += (_, _) => CancelCanvasGesture();
         Loaded += (_, _) =>
         {
-            if (_vmGestureWindow != null) _vmGestureWindow.Deactivated -= VmGestureDeactivated;
-            _vmGestureWindow = Window.GetWindow(this);
-            if (_vmGestureWindow != null) _vmGestureWindow.Deactivated += VmGestureDeactivated;
+            if (_canvasGestureWindow != null) _canvasGestureWindow.Deactivated -= CanvasGestureDeactivated;
+            _canvasGestureWindow = Window.GetWindow(this);
+            if (_canvasGestureWindow != null) _canvasGestureWindow.Deactivated += CanvasGestureDeactivated;
         };
         Unloaded += (_, _) =>
         {
-            CancelVmCanvasGesture();
-            if (_vmGestureWindow != null) _vmGestureWindow.Deactivated -= VmGestureDeactivated;
-            _vmGestureWindow = null;
+            CancelCanvasGesture();
+            if (_canvasGestureWindow != null) _canvasGestureWindow.Deactivated -= CanvasGestureDeactivated;
+            _canvasGestureWindow = null;
         };
     }
-    private static bool VmTextInputOwnsKeyboard()
+    private static bool CanvasTextInputOwnsKeyboard()
     {
         DependencyObject? focus = Keyboard.FocusedElement as DependencyObject;
         while (focus != null)
@@ -68,101 +68,101 @@ public partial class WorkflowCanvasControl
         }
         return false;
     }
-    private void VmGestureDeactivated(object? sender, EventArgs e)
+    private void CanvasGestureDeactivated(object? sender, EventArgs e)
     {
-        if (!_vmNodeOleActive) CancelVmCanvasGesture();
+        if (!_canvasNodeOleActive) CancelCanvasGesture();
     }
-    private void CancelVmCanvasGesture()
+    private void CancelCanvasGesture()
     {
         // 清状态先于释放捕获，防止 LostMouseCapture 重入。
-        CancelVmNodeRename();
-        CancelVmNodeMove();
+        CancelCanvasNodeRename();
+        CancelCanvasNodeMove();
         _isPanning = false; _isBoxSelecting = false; _isDraggingConnection = false;
         _dragConnectionSourceNode = null; _dragConnectionSourcePort = null;
         if (_dragConnectionSourceBorder != null) SetPortsVisibility(_dragConnectionSourceBorder, false);
         if (_highlightedTargetNodeBorder != null) SetPortsVisibility(_highlightedTargetNodeBorder, false);
         _dragConnectionSourceBorder = null; _highlightedTargetNodeBorder = null;
-        _vmConnectionTarget = null; _vmConnectionTab = null; _vmConnectionStamp = null; _vmConnectionConfigurationStamp = null; _vmConnectionStarted = false;
-        foreach (var port in VmPorts(WorkflowCanvas)) { port.Visibility = Visibility.Collapsed; port.IsHighlighted = false; }
+        _canvasConnectionTarget = null; _canvasConnectionTab = null; _canvasConnectionStamp = null; _canvasConnectionConfigurationStamp = null; _canvasConnectionStarted = false;
+        foreach (var port in CanvasPorts(WorkflowCanvas)) { port.Visibility = Visibility.Collapsed; port.IsHighlighted = false; }
         if (_tempConnectionLine != null) _tempConnectionLine.Visibility = Visibility.Collapsed;
         _tempConnectionGeometry?.Figures.Clear();
         SelectionBox?.EndSelection();
         Cursor = Cursors.Arrow;
-        FinishVmWireDrag(false);
+        FinishCanvasWireDrag(false);
         if (Mouse.Captured is DependencyObject captured && (captured == WorkflowCanvas || WorkflowCanvas.IsAncestorOf(captured)))
             Mouse.Capture(null);
     }
-    private void ArmVmNodeMove(CanvasNodeProjection node, Point pointer)
+    private void ArmCanvasNodeMove(CanvasNodeProjection node, Point pointer)
     {
-        CancelVmNodeMove();
+        CancelCanvasNodeMove();
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
-        if (tab == null || !CanEditVmCanvas) return;
-        _vmNodeMove = new VmNodeMoveSession
+        if (tab == null || !CanEditCanvas) return;
+        _canvasNodeMove = new NodeDragSession
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
             Before = (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。"))
                 .Where(n => n.IsSelected).ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY)),
-            Stamp = VmGraphStamp(tab), ConfigurationStamp = VmConfigurationStamp(tab)
+            Stamp = CanvasGraphStamp(tab), ConfigurationStamp = CanvasConfigurationStamp(tab)
         };
     }
-    private void StartVmNodeMove(MouseEventArgs e)
+    private void StartCanvasNodeMove(MouseEventArgs e)
     {
-        var session = _vmNodeMove;
-        if (session == null || !ValidVmNodeMove(session)) { CancelVmNodeMove(); return; }
+        var session = _canvasNodeMove;
+        if (session == null || !ValidCanvasNodeMove(session)) { CancelCanvasNodeMove(); return; }
         session.Copy = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
-        _vmNodeOleActive = true;
-        QueryContinueDragEventHandler query = (_, args) => { if (!ValidVmNodeMove(session)) args.Action = DragAction.Cancel; };
+        _canvasNodeOleActive = true;
+        QueryContinueDragEventHandler query = (_, args) => { if (!ValidCanvasNodeMove(session)) args.Action = DragAction.Cancel; };
         WorkflowCanvas.QueryContinueDrag += query;
         try
         {
-            DragDrop.DoDragDrop(WorkflowCanvas, new DataObject(VmNodeDragFormat, session.Token, false), session.Copy ? DragDropEffects.Copy : DragDropEffects.Move);
+            DragDrop.DoDragDrop(WorkflowCanvas, new DataObject(CanvasNodeDragFormat, session.Token, false), session.Copy ? DragDropEffects.Copy : DragDropEffects.Move);
         }
         finally
         {
             WorkflowCanvas.QueryContinueDrag -= query;
-            _vmNodeOleActive = false;
-            CancelVmNodeMove();
+            _canvasNodeOleActive = false;
+            CancelCanvasNodeMove();
         }
         e.Handled = true;
     }
-    private bool ReadVmNodeMove(DragEventArgs e, out VmNodeMoveSession session)
+    private bool ReadCanvasNodeMove(DragEventArgs e, out NodeDragSession session)
     {
-        session = _vmNodeMove!;
-        return session != null && e.Data.GetDataPresent(VmNodeDragFormat, false) &&
-            e.Data.GetData(VmNodeDragFormat, false) is string token && token == session.Token;
+        session = _canvasNodeMove!;
+        return session != null && e.Data.GetDataPresent(CanvasNodeDragFormat, false) &&
+            e.Data.GetData(CanvasNodeDragFormat, false) is string token && token == session.Token;
     }
-    private bool VmDropInside(Point point)
+    private bool CanvasDropInside(Point point)
     {
         if (!new Rect(0, 0, WorkflowCanvas.ActualWidth, WorkflowCanvas.ActualHeight).Contains(point)) return false;
         var viewport = FindScrollViewer();
         return viewport == null || new Rect(0, 0, viewport.ActualWidth, viewport.ActualHeight)
             .Contains(WorkflowCanvas.TranslatePoint(point, viewport));
     }
-    private void VmNodeDragOver(object sender, DragEventArgs e)
+    private void CanvasNodeDragOver(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(VmNodeDragFormat, false)) return;
+        if (!e.Data.GetDataPresent(CanvasNodeDragFormat, false)) return;
         e.Handled = true; e.Effects = DragDropEffects.None;
-        if (!ReadVmNodeMove(e, out var session) || !ValidVmNodeMove(session) ||
-            !VmNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, false) || !VmDropInside(e.GetPosition(WorkflowCanvas)))
-        { HideVmNodeGhosts(); return; }
+        if (!ReadCanvasNodeMove(e, out var session) || !ValidCanvasNodeMove(session) ||
+            !CanvasNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, false) || !CanvasDropInside(e.GetPosition(WorkflowCanvas)))
+        { HideCanvasNodeGhosts(); return; }
         e.Effects = session.Copy ? DragDropEffects.Copy : DragDropEffects.Move;
-        PreviewVmNodeMove(session, e.GetPosition(WorkflowCanvas));
+        PreviewCanvasNodeMove(session, e.GetPosition(WorkflowCanvas));
     }
-    private void VmNodeDrop(object sender, DragEventArgs e)
+    private void CanvasNodeDrop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(VmNodeDragFormat, false)) return;
+        if (!e.Data.GetDataPresent(CanvasNodeDragFormat, false)) return;
         e.Handled = true; e.Effects = DragDropEffects.None;
-        if (!ReadVmNodeMove(e, out var session) || !ValidVmNodeMove(session) ||
-            session.ConfigurationStamp == null || session.ConfigurationStamp != VmConfigurationStamp(session.Tab) ||
-            !VmNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, true) || !VmDropInside(e.GetPosition(WorkflowCanvas))) return;
-        PreviewVmNodeMove(session, e.GetPosition(WorkflowCanvas));
+        if (!ReadCanvasNodeMove(e, out var session) || !ValidCanvasNodeMove(session) ||
+            session.ConfigurationStamp == null || session.ConfigurationStamp != CanvasConfigurationStamp(session.Tab) ||
+            !CanvasNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, true) || !CanvasDropInside(e.GetPosition(WorkflowCanvas))) return;
+        PreviewCanvasNodeMove(session, e.GetPosition(WorkflowCanvas));
         if (session.After.Count == 1)
         {
             var single = session.After.Single();
-            session.After[single.Key] = ResolveVmPlacement(single.Value, single.Key.NodeRect.Height);
+            session.After[single.Key] = ResolveCanvasPlacement(single.Value, single.Key.NodeRect.Height);
         }
         var positions = session.After.Select(p => (Node: p.Key, Before: session.Before[p.Key], After: p.Value)).ToArray();
-        var insertion = session.After.Count == 1 ? _vmInsertionWire : null;
+        var insertion = session.After.Count == 1 ? _canvasInsertionWire : null;
         if (session.Copy)
         {
             if (_viewModel?.DuplicateCanvasNodes(session.After)==true)e.Effects=DragDropEffects.Copy;
@@ -180,13 +180,13 @@ public partial class WorkflowCanvasControl
                 item => new SunEyeVision.Domain.Workflows.CanvasPoint(item.Value.X, item.Value.Y)));
         e.Effects = session.Copy && insertion == null ? DragDropEffects.Copy : DragDropEffects.Move;
     }
-    private static bool VmNodeDropEffectAllowed(bool copy, DragDropKeyStates keys, DragDropEffects allowed, bool dropping)
+    private static bool CanvasNodeDropEffectAllowed(bool copy, DragDropKeyStates keys, DragDropEffects allowed, bool dropping)
     {
         var control = (keys & DragDropKeyStates.ControlKey) != 0;
         return copy == control && (!copy || !dropping || keys == DragDropKeyStates.ControlKey) &&
             (allowed & (copy ? DragDropEffects.Copy : DragDropEffects.Move)) != 0;
     }
-    private void PreviewVmNodeMove(VmNodeMoveSession session, Point pointer)
+    private void PreviewCanvasNodeMove(NodeDragSession session, Point pointer)
     {
         var delta = pointer - session.Pointer;
         if (session.Ghosts.Count == 0 && Math.Abs(delta.X) <= 3 && Math.Abs(delta.Y) <= 3)
@@ -194,7 +194,7 @@ public partial class WorkflowCanvasControl
         var left = session.Before.Min(p => p.Value.X - p.Key.NodeRect.Width / 2);
         var top = session.Before.Min(p => p.Value.Y - p.Key.NodeRect.Height / 2);
         delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top + delta.Y) / 5) * 5 - top);
-        RemoveVmNodeGhosts();
+        RemoveCanvasNodeGhosts();
         session.After.Clear();
         foreach (var pair in session.Before)
         {
@@ -203,7 +203,7 @@ public partial class WorkflowCanvasControl
             var position = new Point(Math.Clamp(pair.Value.X + delta.X, width / 2, 5000 - width / 2),
                 Math.Clamp(pair.Value.Y + delta.Y, height / 2, 5000 - height / 2));
             session.After[node] = position;
-            var visual = FindVmNodeVisual(WorkflowCanvas, node);
+            var visual = FindCanvasNodeVisual(WorkflowCanvas, node);
             if (visual == null) continue;
             // 原件DiagramItem_PreviewMouseMove：后代边界+不拉伸的0.7镜像。
             var bounds = VisualTreeHelper.GetDescendantBounds(visual);
@@ -217,27 +217,27 @@ public partial class WorkflowCanvasControl
         if (session.After.Count == 1)
         {
             var single = session.After.Single();
-            UpdateVmPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
+            UpdateCanvasPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
         }
-        else ClearVmPlacementFeedback();
-        UpdateVmInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
+        else ClearCanvasPlacementFeedback();
+        UpdateCanvasInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
     }
-    private static Border? FindVmNodeVisual(DependencyObject parent, CanvasNodeProjection node)
+    private static Border? FindCanvasNodeVisual(DependencyObject parent, CanvasNodeProjection node)
     {
         if (parent is Border border && border.Name == "HitAreaBorder" && ReferenceEquals(border.Tag, node)) return border;
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
-            var result = FindVmNodeVisual(VisualTreeHelper.GetChild(parent, i), node);
+            var result = FindCanvasNodeVisual(VisualTreeHelper.GetChild(parent, i), node);
             if (result != null) return result;
         }
         return null;
     }
-    private void HideVmNodeGhosts() { RemoveVmNodeGhosts(); ClearVmPlacementFeedback(); ClearVmInsertionWire(); }
-    private void RemoveVmNodeGhosts()
+    private void HideCanvasNodeGhosts() { RemoveCanvasNodeGhosts(); ClearCanvasPlacementFeedback(); ClearCanvasInsertionWire(); }
+    private void RemoveCanvasNodeGhosts()
     {
-        if (_vmNodeMove == null) return;
-        foreach (var ghost in _vmNodeMove.Ghosts) WorkflowCanvas.Children.Remove(ghost);
-        _vmNodeMove.Ghosts.Clear();
+        if (_canvasNodeMove == null) return;
+        foreach (var ghost in _canvasNodeMove.Ghosts) WorkflowCanvas.Children.Remove(ghost);
+        _canvasNodeMove.Ghosts.Clear();
     }
-    private void CancelVmNodeMove() { HideVmNodeGhosts(); _vmNodeMove = null; }
+    private void CancelCanvasNodeMove() { HideCanvasNodeGhosts(); _canvasNodeMove = null; }
 }

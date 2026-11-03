@@ -81,14 +81,14 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 显示临时节点（完全复刻真实节点的胶囊外观，半透明 + 蓝色虚线边框）
         /// </summary>
-        internal static Point SnapVmPoint(Point point)=>new(Math.Round(point.X/5)*5,Math.Round(point.Y/5)*5);
+        internal static Point SnapCanvasPoint(Point point)=>new(Math.Round(point.X/5)*5,Math.Round(point.Y/5)*5);
         private void ShowTempNode(ToolItem item,Point position,ControlsCanvas canvas)
         {
             if(_tempDragNode?.Tag is string id&&id==item.ToolId&&ReferenceEquals(_tempDragNode.Parent,canvas))
             {_tempDragNode.Visibility=Visibility.Visible;UpdateTempNodePosition(position);return;}
             if(_tempDragNode?.Parent is ControlsCanvas previous)previous.Children.Remove(_tempDragNode);
             var preview = new ToolboxNodePreview(item);
-            var presenter = new ContentPresenter { Content = preview, ContentTemplate = _canvasControl.GetVmNodeTemplate() };
+            var presenter = new ContentPresenter { Content = preview, ContentTemplate = _canvasControl.GetCanvasNodeTemplate() };
             _tempDragNode=new Border{Width=preview.HitAreaWidth,Height=preview.HitAreaHeight,Opacity=.7,
                 Child=presenter,Tag=item.ToolId,IsHitTestVisible=false};
             ControlsCanvas.SetZIndex(_tempDragNode,10000);canvas.Children.Add(_tempDragNode);UpdateTempNodePosition(position);
@@ -120,9 +120,9 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         private void UpdateTempNodePosition(Point position)
         {
-            position=SnapVmPoint(position);
-            _canvasControl.UpdateVmPlacementFeedback(position, _tempNodeHeight);
-            _canvasControl.UpdateVmInsertionWire(position, Array.Empty<string>());
+            position=SnapCanvasPoint(position);
+            _canvasControl.UpdateCanvasPlacementFeedback(position, _tempNodeHeight);
+            _canvasControl.UpdateCanvasInsertionWire(position, Array.Empty<string>());
             if (_tempDragNode != null)
             {
                 ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempDragNode.Width / 2);
@@ -186,7 +186,7 @@ namespace SunEyeVision.UI.Services.Interaction
             {
                 e.Effects = DragDropEffects.None;
                 HideTempNode();
-                _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire();
+                _canvasControl.ClearCanvasPlacementFeedback(); _canvasControl.ClearCanvasInsertionWire();
             }
             e.Handled = true;
         }
@@ -198,7 +198,7 @@ namespace SunEyeVision.UI.Services.Interaction
         {
             if (!e.Data.GetDataPresent("ToolItem")) return;
             HideTempNode();
-            _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire();
+            _canvasControl.ClearCanvasPlacementFeedback(); _canvasControl.ClearCanvasInsertionWire();
             e.Handled = true;
         }
 
@@ -280,12 +280,12 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 
                 var viewModel = GetOwningViewModel();
                 if (!viewModel.CanEditWorkflowCanvas || workflowTab.DocumentCanvas is not { } graph) return;
-                _canvasControl.UpdateVmPlacementFeedback(SnapVmPoint(dropPosition), _tempNodeHeight);
-                var insertion = _canvasControl.FindVmInsertionWire(dropPosition, Array.Empty<string>());
-                var predecessorId = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
+                _canvasControl.UpdateCanvasPlacementFeedback(SnapCanvasPoint(dropPosition), _tempNodeHeight);
+                var insertion = _canvasControl.FindCanvasInsertionWire(dropPosition, Array.Empty<string>());
+                var predecessorId = insertion == null ? _canvasControl.CanvasAvailableHotPredecessor() : null;
                 var predecessor = predecessorId == null ? null : graph.Nodes.SingleOrDefault(node => node.Id == predecessorId);
                 if (predecessorId != null && predecessor == null) throw new InvalidOperationException("自动连接的前驱节点已失效。");
-                var placement = _canvasControl.ResolveVmPlacement(SnapVmPoint(dropPosition), _tempNodeHeight);
+                var placement = _canvasControl.ResolveCanvasPlacement(SnapCanvasPoint(dropPosition), _tempNodeHeight);
                 graph.CreateNode(item.ToolId, new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985)), insertion, predecessor);
 #if DEBUG
                 LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.DocumentCanvas?.Nodes.Count}");
@@ -300,7 +300,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 ThemeMessageDialog.Show($"拖放节点失败: {ex.Message}\n\n类型: {ex.GetType().Name}", "错误",
                     MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
-            finally { HideTempNode(); _canvasControl.ClearVmPlacementFeedback(); _canvasControl.ClearVmInsertionWire(); }
+            finally { HideTempNode(); _canvasControl.ClearCanvasPlacementFeedback(); _canvasControl.ClearCanvasInsertionWire(); }
         }
 
         /// <summary>

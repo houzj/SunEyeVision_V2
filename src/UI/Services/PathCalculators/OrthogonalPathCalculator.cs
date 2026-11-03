@@ -1,27 +1,27 @@
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.UI.Services.Path;
-using Vm = SunEyeVision.UI.Services.PathCalculators.VmRouting;
+using Routing = SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting;
 using Direction = SunEyeVision.UI.Services.Path.PortDirection;
 namespace SunEyeVision.UI.Services.PathCalculators;
 
 /// <summary>将宿主中心坐标与四向端口接入恢复的VM正交路由，不改变工作流模型。</summary>
-public sealed class VmPathCalculator : IPathCalculator
+public sealed class OrthogonalPathCalculator : IPathCalculator
 {
-    private static Vm.PortDirection Convert(Direction d)=>d switch
-    {Direction.Left=>Vm.PortDirection.Left,Direction.Right=>Vm.PortDirection.Right,Direction.Top=>Vm.PortDirection.Up,_=>Vm.PortDirection.Down};
-    private static Vm.RouteRect Convert(Rect r)=>new(r.X,r.Y,r.Width,r.Height);
+    private static Routing.PortDirection Convert(Direction d)=>d switch
+    {Direction.Left=>Routing.PortDirection.Left,Direction.Right=>Routing.PortDirection.Right,Direction.Top=>Routing.PortDirection.Up,_=>Routing.PortDirection.Down};
+    private static Routing.RouteRect Convert(Rect r)=>new(r.X,r.Y,r.Width,r.Height);
     public Point[] CalculatePreviewPath(Point source,Point target,Direction from,Rect sourceRect)
     {
-        return Vm.VmOrthogonalRouter.Preview(new(new(source.X,source.Y),Convert(from),Convert(sourceRect)),new(target.X,target.Y))
+        return Routing.OrthogonalRouter.Preview(new(new(source.X,source.Y),Convert(from),Convert(sourceRect)),new(target.X,target.Y))
             .Select(p=>new Point(p.X,p.Y)).ToArray();
     }
     public Point[] CalculateOrthogonalPath(Point source,Point target,Direction from,Direction to,Rect sourceRect,Rect targetRect,params Rect[] obstacles)
     {
-        var result=Vm.VmOrthogonalRouter.Route(new(new(source.X,source.Y),Convert(from),Convert(sourceRect)),
+        var result=Routing.OrthogonalRouter.Route(new(new(source.X,source.Y),Convert(from),Convert(sourceRect)),
             new(new(target.X,target.Y),Convert(to),Convert(targetRect)),obstacles.Select(Convert),5000,5000,1_100_000);
-        if(result.Status is Vm.VmRouteStatus.InvalidInput or Vm.VmRouteStatus.BudgetExceeded)
-            throw new InvalidOperationException("VM连线路由输入超出画布或端口边界："+result.Status);
+        if(result.Status is Routing.OrthogonalRouteStatus.InvalidInput or Routing.OrthogonalRouteStatus.BudgetExceeded)
+            throw new InvalidOperationException("画布连线路由输入超出画布或端口边界："+result.Status);
         return result.Points.Select(p=>new Point(p.X,p.Y)).ToArray();
     }
     public PathGeometry CreatePathGeometry(Point[] points)

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.UI.Services.Workflow;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class WorkspaceTimingPresentationTests
 {
  [Fact]

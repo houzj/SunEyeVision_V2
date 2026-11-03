@@ -5,7 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 namespace SunEyeVision.UI.Converters.Node;
 /// <summary>GROUP原件背景图的选择、执行和禁用优先级；不重绘原始像素。</summary>
-public sealed class VmGroupBackgroundConverter : IMultiValueConverter
+public sealed class GroupNodeBackgroundConverter : IMultiValueConverter
 {
     private static readonly ConcurrentDictionary<string, ImageBrush> Brushes = new();
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

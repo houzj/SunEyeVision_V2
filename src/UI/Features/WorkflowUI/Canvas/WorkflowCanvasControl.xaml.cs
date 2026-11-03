@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.Collections.Generic;
 
@@ -119,7 +119,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
     private Border? _highlightedTargetBorder = null; // 高亮的目标节点Border（用于恢复原始样式）
 
-    private VmExecutionPort? _highlightedTargetPort = null; // 高亮的目标端口（VmExecutionPort）
+    private ExecutionPortShape? _highlightedTargetPort = null; // 高亮的目标端口（ExecutionPortShape）
 
     private string? _lastHighlightedPort = null; // 上次高亮的端口名称
 
@@ -578,11 +578,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         {
 
             InitializeComponent();
-            InitializeVmWireEditing();
-            InitializeVmNodeGestures();
-            InitializeVmGeometryTracking();
-            InitializeVmGroupSelection();
-            InitializeVmCanvasClipboard();
+            InitializeCanvasWireEditing();
+            InitializeCanvasNodeGestures();
+            InitializeCanvasGeometryTracking();
+            InitializeCanvasSelection();
+            InitializeCanvasClipboard();
 
 
 
@@ -1014,7 +1014,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                     if (parent == null) break;
                     portScope = parent;
                 }
-                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(portScope);
+                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ExecutionPortShape>(portScope);
 
                 foreach (var ellipse in ellipses)
 
@@ -1067,7 +1067,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             if (e.ClickCount == 2)
 
             {
-                _vmBoxSelectionActive = false; ClearVmSelectionFrame();
+                _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame();
 
                 if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
 
@@ -1112,11 +1112,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 return;
             }
 
-            if (!CanEditVmCanvas) { e.Handled = true; return; }
+            if (!CanEditCanvas) { e.Handled = true; return; }
             if (!node.IsSelected) { ClearAllSelections(); node.IsSelected = true; }
             _viewModel.SelectedNode = node.Definition;
             WorkflowCanvas.Focus();
-            ArmVmNodeMove(node, e.GetPosition(WorkflowCanvas));
+            ArmCanvasNodeMove(node, e.GetPosition(WorkflowCanvas));
             e.Handled = true;
         }
 
@@ -1128,7 +1128,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Node_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (_vmNodeMove != null && !_vmNodeOleActive) CancelVmNodeMove();
+            if (_canvasNodeMove != null && !_canvasNodeOleActive) CancelCanvasNodeMove();
         }
 
         /// <summary>
@@ -1139,8 +1139,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Node_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_vmNodeMove != null && !_vmNodeOleActive && e.LeftButton == MouseButtonState.Pressed)
-                StartVmNodeMove(e);
+            if (_canvasNodeMove != null && !_canvasNodeOleActive && e.LeftButton == MouseButtonState.Pressed)
+                StartCanvasNodeMove(e);
         }
 
         /// <summary>
@@ -1261,8 +1261,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Port_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is VmExecutionPort port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
-                BeginVmConnection(node, side);
+            if (sender is ExecutionPortShape port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
+                BeginCanvasConnection(node, side);
             e.Handled = true;
         }
 
@@ -1296,7 +1296,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         /// <summary>端口鼠标释放：只消费移动阶段记录的目标。</summary>
         private void Port_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (_isDraggingConnection) { FinishVmConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; }
+            if (_isDraggingConnection) { FinishCanvasConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; }
         }
 
 
@@ -1424,7 +1424,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            // 获取节点对象（支持 Border 或 VmExecutionPort 作为 sender）
+            // 获取节点对象（支持 Border 或 ExecutionPortShape 作为 sender）
 
             CanvasNodeProjection? targetNode = null;
 
@@ -1438,7 +1438,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             }
 
-            else if (sender is VmExecutionPort ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
+            else if (sender is ExecutionPortShape ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
 
             {
 
@@ -1642,14 +1642,14 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             DependencyObject? current = e.OriginalSource as DependencyObject;
             while (current != null && current != WorkflowCanvas)
             {
-                if (ReferenceEquals(current, _vmSelectionFrame) || current is VmExecutionPort ||
+                if (ReferenceEquals(current, _canvasSelectionFrame) || current is ExecutionPortShape ||
                     current is Border { Tag: CanvasNodeProjection } ||
-                    current is Rectangle handle && _vmWireHandles.Contains(handle) ||
+                    current is Rectangle handle && _canvasWireHandles.Contains(handle) ||
                     current is FrameworkElement { DataContext: CanvasConnectionProjection }) return;
                 current = VisualTreeHelper.GetParent(current);
             }
-            if (!CanEditVmCanvas) { e.Handled = true; return; }
-            CancelVmCanvasGesture();
+            if (!CanEditCanvas) { e.Handled = true; return; }
+            CancelCanvasGesture();
             WorkflowCanvas.Focus();
             _mouseDownPosition = e.GetPosition(WorkflowCanvas);
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
@@ -1678,9 +1678,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void WorkflowCanvas_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (_vmWireDrag != null) return;
-            if (!CanEditVmCanvas) { CancelVmCanvasGesture(); return; }
-            if (_isDraggingConnection) { PreviewVmConnection(e); return; }
+            if (_canvasWireDrag != null) return;
+            if (!CanEditCanvas) { CancelCanvasGesture(); return; }
+            if (_isDraggingConnection) { PreviewCanvasConnection(e); return; }
             if (_isPanning)
             {
                 if ((Keyboard.Modifiers & ModifierKeys.Control) == 0) return;
@@ -1712,17 +1712,17 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void WorkflowCanvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (_vmWireDrag != null) { FinishVmWireDrag(true); e.Handled = true; return; }
-            if (_isDraggingConnection) { FinishVmConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; return; }
+            if (_canvasWireDrag != null) { FinishCanvasWireDrag(true); e.Handled = true; return; }
+            if (_isDraggingConnection) { FinishCanvasConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; return; }
             if (_isPanning || _isBoxSelecting)
             {
-                if (_isBoxSelecting) _vmBoxSelectionActive = VmSelectedNodes().Length > 0;
+                if (_isBoxSelecting) _canvasBoxSelectionActive = CanvasSelectedNodes().Length > 0;
                 _isPanning = false; _isBoxSelecting = false;
-                DrawVmSelectionFrame();
+                DrawCanvasSelectionFrame();
                 SelectionBox?.EndSelection(); Cursor = Cursors.Arrow;
                 WorkflowCanvas.ReleaseMouseCapture(); e.Handled = true;
             }
-            if (!_vmNodeOleActive) CancelVmNodeMove();
+            if (!_canvasNodeOleActive) CancelCanvasNodeMove();
         }
 
 
@@ -1736,7 +1736,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private void ClearAllSelections()
 
         {
-            _vmBoxSelectionActive = false; ClearVmSelectionFrame();
+            _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame();
 
             if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
 
@@ -2217,7 +2217,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private VmExecutionPort? GetPortElement(Border nodeBorder, string portName)
+        private ExecutionPortShape? GetPortElement(Border nodeBorder, string portName)
 
         {
 
@@ -2247,7 +2247,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 {
 
-                    return element as VmExecutionPort;
+                    return element as ExecutionPortShape;
 
                 }
 
@@ -2368,7 +2368,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             // 原件连接由焦点决定，不按Ctrl/Shift切换成多条连接选择；节点组选可保留。
             foreach (var edge in tab.DocumentCanvas.Connections) edge.IsSelected = ReferenceEquals(edge, connection);
 
-            SelectVmWire(connection,hitPath);
+            SelectCanvasWire(connection,hitPath);
 
             // 阻止事件冒泡，避免触发框选
             e.Handled = true;
@@ -2561,10 +2561,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private void NodeContextMenu_Rename_Click(object sender, RoutedEventArgs e)
         {
             e.Handled=true;
-            if(sender is not MenuItem {Parent:ContextMenu {PlacementTarget:FrameworkElement placementTarget}} || placementTarget.DataContext is not CanvasNodeProjection node || !BeginVmNodeRename(node))return;
+            if(sender is not MenuItem {Parent:ContextMenu {PlacementTarget:FrameworkElement placementTarget}} || placementTarget.DataContext is not CanvasNodeProjection node || !BeginCanvasNodeRename(node))return;
             Dispatcher.BeginInvoke(new Action(()=>
             {
-                if(!ValidVmNodeRename(node)){CancelVmNodeRename();return;}
+                if(!ValidCanvasNodeRename(node)){CancelCanvasNodeRename();return;}
                 var textBox=FindVisualChild<TextBox>(placementTarget);
                 if(textBox!=null){textBox.Focus();textBox.SelectAll();}
             }),System.Windows.Threading.DispatcherPriority.Input);
@@ -2573,12 +2573,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private void NodeRenameTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if(sender is not TextBox {DataContext:CanvasNodeProjection node})return;
-            if(e.Key==Key.Enter){CommitVmNodeRename(node,false);e.Handled=true;}
-            else if(e.Key==Key.Escape){CancelVmNodeRename();e.Handled=true;}
+            if(e.Key==Key.Enter){CommitCanvasNodeRename(node,false);e.Handled=true;}
+            else if(e.Key==Key.Escape){CancelCanvasNodeRename();e.Handled=true;}
         }
         private void NodeRenameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if(sender is TextBox {DataContext:CanvasNodeProjection node}&&node.IsEditingName)CommitVmNodeRename(node,true);
+            if(sender is TextBox {DataContext:CanvasNodeProjection node}&&node.IsEditingName)CommitCanvasNodeRename(node,true);
         }
 
         /// <summary>
@@ -2587,7 +2587,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private void SubroutineNodeSettings_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            var canEdit=CanEditVmCanvas;
+            var canEdit=CanEditCanvas;
             if (!canEdit && _viewModel?.IsDebugWindowOpen != true) return;
 
             if (sender is FrameworkElement element && element.DataContext is CanvasNodeProjection node)

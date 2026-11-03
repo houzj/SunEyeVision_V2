@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class CurrentFormatAndResourceTests
 {
     [Fact]

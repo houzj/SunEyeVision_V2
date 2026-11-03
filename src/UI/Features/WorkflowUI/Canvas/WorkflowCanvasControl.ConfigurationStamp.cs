@@ -2,7 +2,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
     // Document session and editing version identify accepted configuration as one unit.
-    private string? VmConfigurationStamp(WorkflowTabViewModel tab)
+    private string? CanvasConfigurationStamp(WorkflowTabViewModel tab)
     {
         var session = Adapters.ServiceInitializer.SolutionManager.CurrentSession;
         if (session is null || !session.GetWorkflows().Any(flow => flow.Id == tab.CurrentWorkflowId)) return null;

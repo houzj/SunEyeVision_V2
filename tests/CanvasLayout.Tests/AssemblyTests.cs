@@ -6,4 +6,4 @@ public sealed class CanvasDesktop : IDisposable
  public CanvasDesktop()=>SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
  public void Dispose()=>SunEyeVision.TestShared.WpfTestDispatcher.ShutdownOwned();
 }
-[CollectionDefinition("VM canvas UI")] public sealed class CanvasCollection : ICollectionFixture<CanvasDesktop> { }
+[CollectionDefinition("Canvas UI")] public sealed class CanvasCollection : ICollectionFixture<CanvasDesktop> { }

@@ -13,7 +13,7 @@ namespace SunEyeVision.UI.Services.PathCalculators
         /// <returns>VM正交路径计算器实例</returns>
         public static IPathCalculator CreateCalculator()
         {
-            return new VmPathCalculator();
+            return new OrthogonalPathCalculator();
         }
     }
 }

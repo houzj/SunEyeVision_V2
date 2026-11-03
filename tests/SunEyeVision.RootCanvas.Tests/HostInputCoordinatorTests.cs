@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class HostInputCoordinatorTests
 {
     private sealed class Context(RunIdentity identity,CancellationToken cancellation,IOutputResources resources):IToolExecutionContext

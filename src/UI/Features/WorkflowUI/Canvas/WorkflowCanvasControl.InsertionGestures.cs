@@ -5,18 +5,18 @@ using SunEyeVision.UI.Shared;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
-    private CanvasConnectionProjection? _vmInsertionWire;
-    private System.Windows.Shapes.Path? _vmInsertionView;
-    private static IEnumerable<System.Windows.Shapes.Path> VmVisualPaths(DependencyObject parent)
+    private CanvasConnectionProjection? _canvasInsertionWire;
+    private System.Windows.Shapes.Path? _canvasInsertionView;
+    private static IEnumerable<System.Windows.Shapes.Path> CanvasVisualPaths(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
             if (child is System.Windows.Shapes.Path path) yield return path;
-            foreach (var nested in VmVisualPaths(child)) yield return nested;
+            foreach (var nested in CanvasVisualPaths(child)) yield return nested;
         }
     }
-    internal CanvasConnectionProjection? FindVmInsertionWire(Point pointer, IEnumerable<string> excluded)
+    internal CanvasConnectionProjection? FindCanvasInsertionWire(Point pointer, IEnumerable<string> excluded)
     {
         var tab = CurrentWorkflowTab; if (tab?.DocumentCanvas == null) return null;
         var ids = excluded.ToHashSet();
@@ -26,20 +26,20 @@ public partial class WorkflowCanvasControl
                 _connectionPathCache?.GetPath(edge).StrokeContains(new Pen(Brushes.Black, 10), pointer) == true) return edge;
         return null;
     }
-    internal void UpdateVmInsertionWire(Point pointer, IEnumerable<string> excluded)
+    internal void UpdateCanvasInsertionWire(Point pointer, IEnumerable<string> excluded)
     {
-        var candidate = FindVmInsertionWire(pointer, excluded);
-        ClearVmInsertionWire(); _vmInsertionWire = candidate;
+        var candidate = FindCanvasInsertionWire(pointer, excluded);
+        ClearCanvasInsertionWire(); _canvasInsertionWire = candidate;
         if (candidate == null) return;
-        _vmInsertionView = VmVisualPaths(WorkflowCanvas).FirstOrDefault(p => ReferenceEquals(p.DataContext, candidate) && !p.IsHitTestVisible && p.Stroke != null);
-        if (_vmInsertionView == null) return;
-        _vmInsertionView.SetCurrentValue(Shape.StrokeThicknessProperty, 10d);
-        _vmInsertionView.SetCurrentValue(Shape.StrokeProperty, new SolidColorBrush(Color.FromRgb(255, 167, 15)));
+        _canvasInsertionView = CanvasVisualPaths(WorkflowCanvas).FirstOrDefault(p => ReferenceEquals(p.DataContext, candidate) && !p.IsHitTestVisible && p.Stroke != null);
+        if (_canvasInsertionView == null) return;
+        _canvasInsertionView.SetCurrentValue(Shape.StrokeThicknessProperty, 10d);
+        _canvasInsertionView.SetCurrentValue(Shape.StrokeProperty, new SolidColorBrush(Color.FromRgb(255, 167, 15)));
     }
-    internal void ClearVmInsertionWire()
+    internal void ClearCanvasInsertionWire()
     {
-        if (_vmInsertionView != null)
-        { _vmInsertionView.ClearValue(Shape.StrokeThicknessProperty); _vmInsertionView.ClearValue(Shape.StrokeProperty); }
-        _vmInsertionView = null; _vmInsertionWire = null;
+        if (_canvasInsertionView != null)
+        { _canvasInsertionView.ClearValue(Shape.StrokeThicknessProperty); _canvasInsertionView.ClearValue(Shape.StrokeProperty); }
+        _canvasInsertionView = null; _canvasInsertionWire = null;
     }
 }

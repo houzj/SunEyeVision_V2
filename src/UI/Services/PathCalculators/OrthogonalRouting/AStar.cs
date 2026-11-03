@@ -7,7 +7,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace SunEyeVision.UI.Services.PathCalculators.VmRouting.Original;
+namespace SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting.Search;
 
 internal class AStar
 {

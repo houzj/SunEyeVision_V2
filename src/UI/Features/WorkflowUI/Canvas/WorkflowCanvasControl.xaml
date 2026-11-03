@@ -24,7 +24,7 @@
         <convertersPath:CoordinateOffsetConverter x:Key="CoordinateOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
         <convertersNode:ToolNodeIconConverter x:Key="ToolNodeIcon"/>
-        <convertersNode:VmGroupBackgroundConverter x:Key="VmGroupBackground"/>
+        <convertersNode:GroupNodeBackgroundConverter x:Key="GroupNodeBackground"/>
 
         <!-- 使用缓存的节点转换器（性能优化） -->
         <rendering:CachedNodeBackgroundConverter x:Key="NodeBackgroundColorConverter"/>
@@ -193,7 +193,7 @@
         </ItemsControl>
 
         <!-- 节点 -->
-        <ItemsControl x:Name="VmNodeItems" ItemsSource="{Binding DocumentCanvas.Nodes}">
+        <ItemsControl x:Name="CanvasNodeItems" ItemsSource="{Binding DocumentCanvas.Nodes}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -346,13 +346,13 @@
 
                             <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                     <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>
-                                    <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource VmGroupBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>
+                                    <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource GroupNodeBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>
                                 </DataTrigger>
                             </Style.Triggers></Style>
                         </Border.Style>
                     </Border>
                             <!-- 连接点 - 上 -->
-                            <rendering:VmExecutionPort Name="TopPortEllipse"
+                            <rendering:ExecutionPortShape Name="TopPortEllipse"
                                      Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Top"
@@ -366,7 +366,7 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 下 -->
-                            <rendering:VmExecutionPort Name="BottomPortEllipse"
+                            <rendering:ExecutionPortShape Name="BottomPortEllipse"
                                      Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Bottom"
@@ -380,7 +380,7 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 左 -->
-                            <rendering:VmExecutionPort Name="LeftPortEllipse"
+                            <rendering:ExecutionPortShape Name="LeftPortEllipse"
                                      Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center"
@@ -394,7 +394,7 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 右 -->
-                            <rendering:VmExecutionPort Name="RightPortEllipse"
+                            <rendering:ExecutionPortShape Name="RightPortEllipse"
                                      Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Center"

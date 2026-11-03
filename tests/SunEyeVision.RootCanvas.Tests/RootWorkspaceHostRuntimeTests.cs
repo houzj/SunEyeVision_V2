@@ -15,7 +15,7 @@ using Xunit;
 namespace SunEyeVision.UI.Tests;
 
 /// <summary>Extracts root-tab/document parts of RootWorkspaceHostTests using real Runtime admission.</summary>
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class RootWorkspaceHostRuntimeTests
 {
     [DllImport("user32.dll",CharSet=CharSet.Unicode,SetLastError=true)] private static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);

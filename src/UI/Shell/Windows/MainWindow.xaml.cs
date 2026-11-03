@@ -151,7 +151,7 @@ namespace SunEyeVision.UI.Shell.Windows
             SwitchToDefaultConfiguration();
         }
         /// <summary>
-        /// 切换到默认配置：WorkflowCanvasControl画布 + VmPathCalculator路径计算器
+        /// 切换到默认配置：WorkflowCanvasControl画布 + OrthogonalPathCalculator路径计算器
         /// </summary>
         private void SwitchToDefaultConfiguration()
         {

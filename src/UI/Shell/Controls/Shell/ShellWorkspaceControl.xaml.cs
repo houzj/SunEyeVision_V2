@@ -1228,7 +1228,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
         }
         private Point _miniMapPointerStart,_miniMapRegionStart;
-        private void NavigateVmMiniMap(Point topLeft)
+        private void NavigateCanvasMiniMap(Point topLeft)
         {
             var viewer=_canvasScrollViewer;
             if(viewer==null||viewer.ExtentWidth<=0||viewer.ExtentHeight<=0)return;
@@ -1248,7 +1248,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 Math.Min(viewer.ActualHeight/viewer.ExtentHeight*MiniMapHeight,MiniMapHeight));
             _isDraggingMiniMapView=true;
             var requested=region.Contains(point)?region.Location:new Point(point.X-region.Width/2,point.Y-region.Height/2);
-            if(!region.Contains(point))NavigateVmMiniMap(requested);
+            if(!region.Contains(point))NavigateCanvasMiniMap(requested);
             _miniMapPointerStart=point;_miniMapRegionStart=requested;
             e.Handled=true;
         }
@@ -1261,7 +1261,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var point=e.GetPosition(MiniMapCanvas);
             if(point==_miniMapPointerStart)return;
             if(!MiniMapCanvas.IsMouseCaptured)MiniMapCanvas.CaptureMouse();
-            NavigateVmMiniMap(_miniMapRegionStart+(point-_miniMapPointerStart));
+            NavigateCanvasMiniMap(_miniMapRegionStart+(point-_miniMapPointerStart));
             e.Handled=true;
         }
         /// <summary>

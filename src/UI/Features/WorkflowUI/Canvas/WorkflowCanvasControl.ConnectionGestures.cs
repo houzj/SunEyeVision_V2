@@ -7,56 +7,56 @@ using SunEyeVision.UI.Services.Rendering;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
-    private WorkflowTabViewModel? _vmConnectionTab;
-    private string? _vmConnectionStamp, _vmConnectionConfigurationStamp;
-    private CanvasNodeProjection? _vmConnectionTarget;
-    private bool _vmConnectionStarted;
-    private static readonly string[] VmSides = { "LeftPort", "TopPort", "RightPort", "BottomPort" };
-    private void BeginVmConnection(CanvasNodeProjection node, string side)
+    private WorkflowTabViewModel? _canvasConnectionTab;
+    private string? _canvasConnectionStamp, _canvasConnectionConfigurationStamp;
+    private CanvasNodeProjection? _canvasConnectionTarget;
+    private bool _canvasConnectionStarted;
+    private static readonly string[] CanvasSides = { "LeftPort", "TopPort", "RightPort", "BottomPort" };
+    private void BeginCanvasConnection(CanvasNodeProjection node, string side)
     {
-        CancelVmCanvasGesture();
+        CancelCanvasGesture();
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
-        if (!CanEditVmCanvas || tab?.DocumentCanvas == null || !tab.DocumentCanvas.Nodes.Contains(node) || !VmSides.Contains(side)) return;
-        ClearVmWireSelection(); WorkflowCanvas.Focus();
-        _vmConnectionTab = tab; _vmConnectionStamp = VmGraphStamp(tab); _vmConnectionConfigurationStamp = VmConfigurationStamp(tab); _vmConnectionTarget = null; _vmConnectionStarted = false;
+        if (!CanEditCanvas || tab?.DocumentCanvas == null || !tab.DocumentCanvas.Nodes.Contains(node) || !CanvasSides.Contains(side)) return;
+        ClearCanvasWireSelection(); WorkflowCanvas.Focus();
+        _canvasConnectionTab = tab; _canvasConnectionStamp = CanvasGraphStamp(tab); _canvasConnectionConfigurationStamp = CanvasConfigurationStamp(tab); _canvasConnectionTarget = null; _canvasConnectionStarted = false;
         _dragConnectionSourceNode = node; _dragConnectionSourcePort = side; _isDraggingConnection = true;
         _dragConnectionStartPoint = GetPortPositionByName(node, side);
     }
-    private bool ValidVmConnection() => CanEditVmCanvas && _vmConnectionTab != null &&
-        ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, _vmConnectionTab) && VmGraphStamp(_vmConnectionTab) == _vmConnectionStamp;
-    private static IEnumerable<VmExecutionPort> VmPorts(DependencyObject parent)
+    private bool ValidCanvasConnection() => CanEditCanvas && _canvasConnectionTab != null &&
+        ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, _canvasConnectionTab) && CanvasGraphStamp(_canvasConnectionTab) == _canvasConnectionStamp;
+    private static IEnumerable<ExecutionPortShape> CanvasPorts(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is VmExecutionPort port) yield return port;
-            foreach (var nested in VmPorts(child)) yield return nested;
+            if (child is ExecutionPortShape port) yield return port;
+            foreach (var nested in CanvasPorts(child)) yield return nested;
         }
     }
-    private void PreviewVmConnection(MouseEventArgs e)
+    private void PreviewCanvasConnection(MouseEventArgs e)
     {
-        if (!ValidVmConnection() || e.LeftButton != MouseButtonState.Pressed) { CancelVmCanvasGesture(); return; }
+        if (!ValidCanvasConnection() || e.LeftButton != MouseButtonState.Pressed) { CancelCanvasGesture(); return; }
         var pointer = e.GetPosition(WorkflowCanvas);
-        if (!_vmConnectionStarted)
+        if (!_canvasConnectionStarted)
         {
-            _vmConnectionStarted = true;
+            _canvasConnectionStarted = true;
             WorkflowCanvas.CaptureMouse();
             // 捕获会触发旧持有者的 LostMouseCapture；只继续有效会话。
             if (!_isDraggingConnection) return;
         }
         var source = _dragConnectionSourceNode!;
-        _vmConnectionTarget = _vmConnectionTab!.DocumentCanvas!.Nodes.OfType<CanvasNodeProjection>().Reverse().FirstOrDefault(node =>
+        _canvasConnectionTarget = _canvasConnectionTab!.DocumentCanvas!.Nodes.OfType<CanvasNodeProjection>().Reverse().FirstOrDefault(node =>
         {
             if (ReferenceEquals(node, source)) return false;
             var bounds = node.NodeRect; bounds.Inflate(10, 10);
-            return bounds.Contains(pointer) || VmSides.Any(side => VmPortHitRect(node, side).Contains(pointer));
+            return bounds.Contains(pointer) || CanvasSides.Any(side => CanvasPortHitRect(node, side).Contains(pointer));
         });
-        var targetSide = _vmConnectionTarget == null ? null : VmNearestSide(_vmConnectionTarget, pointer);
-        foreach (var port in VmPorts(WorkflowCanvas))
+        var targetSide = _canvasConnectionTarget == null ? null : CanvasNearestSide(_canvasConnectionTarget, pointer);
+        foreach (var port in CanvasPorts(WorkflowCanvas))
         {
             var node = port.DataContext as CanvasNodeProjection;
-            port.Visibility = ReferenceEquals(node, source) || ReferenceEquals(node, _vmConnectionTarget) ? Visibility.Visible : Visibility.Collapsed;
-            port.IsHighlighted = ReferenceEquals(node, _vmConnectionTarget) && port.Tag as string == targetSide;
+            port.Visibility = ReferenceEquals(node, source) || ReferenceEquals(node, _canvasConnectionTarget) ? Visibility.Visible : Visibility.Collapsed;
+            port.IsHighlighted = ReferenceEquals(node, _canvasConnectionTarget) && port.Tag as string == targetSide;
         }
         if (_tempConnectionLine != null)
         {
@@ -67,7 +67,7 @@ public partial class WorkflowCanvasControl
         UpdateTempConnectionPath(_dragConnectionStartPoint, pointer);
         e.Handled = true;
     }
-    private Rect VmPortHitRect(CanvasNodeProjection node, string side)
+    private Rect CanvasPortHitRect(CanvasNodeProjection node, string side)
     {
         var a = GetPortPositionByName(node, side);
         return side switch
@@ -78,17 +78,17 @@ public partial class WorkflowCanvasControl
             _ => new Rect(a.X - 15, a.Y, 30, 20)
         };
     }
-    private string VmNearestSide(CanvasNodeProjection node, Point pointer) => VmSides.OrderBy(side => (GetPortPositionByName(node, side) - pointer).LengthSquared).First();
-    private void FinishVmConnection(Point pointer)
+    private string CanvasNearestSide(CanvasNodeProjection node, Point pointer) => CanvasSides.OrderBy(side => (GetPortPositionByName(node, side) - pointer).LengthSquared).First();
+    private void FinishCanvasConnection(Point pointer)
     {
         var source = _dragConnectionSourceNode; var side = _dragConnectionSourcePort;
-        var target = _vmConnectionTarget;
-        var commit = _vmConnectionStarted && ValidVmConnection() && _vmConnectionConfigurationStamp != null &&
-            _vmConnectionConfigurationStamp == VmConfigurationStamp(_vmConnectionTab!) && VmDropInside(pointer) && source != null && target != null;
-        var targetSide = target == null ? null : VmNearestSide(target, pointer);
-        var canvas = _vmConnectionTab?.DocumentCanvas;
+        var target = _canvasConnectionTarget;
+        var commit = _canvasConnectionStarted && ValidCanvasConnection() && _canvasConnectionConfigurationStamp != null &&
+            _canvasConnectionConfigurationStamp == CanvasConfigurationStamp(_canvasConnectionTab!) && CanvasDropInside(pointer) && source != null && target != null;
+        var targetSide = target == null ? null : CanvasNearestSide(target, pointer);
+        var canvas = _canvasConnectionTab?.DocumentCanvas;
         // 清状态及释放捕获必须在提交之前，PortUp 不再有第二个创建机会。
-        CancelVmCanvasGesture();
+        CancelCanvasGesture();
         if (commit && canvas != null)
         {
             try { canvas.Connect(new SunEyeVision.Domain.Workflows.ConnectionDefinition(Guid.NewGuid().ToString("N"), source!.Id, target!.Id, side!, targetSide!)); }

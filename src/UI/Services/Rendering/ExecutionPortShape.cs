@@ -4,9 +4,9 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 namespace SunEyeVision.UI.Services.Rendering;
 /// <summary>VM四向执行端口：独立热区与朝向内侧的三边矩形手柄。</summary>
-public sealed class VmExecutionPort : Shape
+public sealed class ExecutionPortShape : Shape
 {
-    public static readonly DependencyProperty IsHighlightedProperty=DependencyProperty.Register(nameof(IsHighlighted),typeof(bool),typeof(VmExecutionPort),new FrameworkPropertyMetadata(false,FrameworkPropertyMetadataOptions.AffectsMeasure|FrameworkPropertyMetadataOptions.AffectsRender));
+    public static readonly DependencyProperty IsHighlightedProperty=DependencyProperty.Register(nameof(IsHighlighted),typeof(bool),typeof(ExecutionPortShape),new FrameworkPropertyMetadata(false,FrameworkPropertyMetadataOptions.AffectsMeasure|FrameworkPropertyMetadataOptions.AffectsRender));
     public bool IsHighlighted {get=>(bool)GetValue(IsHighlightedProperty);set=>SetValue(IsHighlightedProperty,value);}
     public Point Anchor=>Tag as string switch
     {"LeftPort"=>new(Width,Height/2),"RightPort"=>new(0,Height/2),"TopPort"=>new(Width/2,Height),_=>new(Width/2,0)};

@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using Xunit;
 namespace SunEyeVision.UI.Tests;
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class WorkspaceAndResultsSessionTests
 {
  [Fact] public void Root_run_settings_undo_preserves_independent_navigation_and_save_dirty_identity()=>UiRuntime.Run(()=>

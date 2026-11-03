@@ -4,7 +4,7 @@ using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
 using Xunit;
 namespace SunEyeVision.UI.Tests;
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class DocumentFilesSessionTests
 {
  [Fact] public void Save_and_actual_main_reopen_retire_old_selection_projection_and_presentation()=>UiRuntime.Run(()=>

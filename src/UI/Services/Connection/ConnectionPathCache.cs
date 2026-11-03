@@ -403,7 +403,7 @@ namespace SunEyeVision.UI.Services.Connection
                 ? AttachManualEndpoints(manual.Select(point=>point.ToWpf()).ToArray(),sourcePos,targetPos,sourceDirection,targetDirection)
                 : _pathCalculator.CalculateOrthogonalPath(sourcePos,targetPos,sourceDirection,targetDirection,sourceNodeRect,targetNodeRect,allNodeRects);
             var displayPoints=manual is {Count:>1}
-                ? SunEyeVision.UI.Services.PathCalculators.VmRouting.VmOrthogonalRouter.Passivate(pathPoints.Select(p=>new SunEyeVision.UI.Services.PathCalculators.VmRouting.RoutePoint(p.X,p.Y)).ToArray()).Select(p=>new Point(p.X,p.Y)).ToArray()
+                ? SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting.OrthogonalRouter.Passivate(pathPoints.Select(p=>new SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting.RoutePoint(p.X,p.Y)).ToArray()).Select(p=>new Point(p.X,p.Y)).ToArray()
                 : pathPoints;
             var pathGeometry=_pathCalculator.CreatePathGeometry(displayPoints);
             UpdateConnectionPathPoints(connection,pathPoints);

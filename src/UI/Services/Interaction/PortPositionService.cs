@@ -44,7 +44,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
                 // 3. 在Border中查找端口Ellipse（通过Name匹配）
                 var ellipseName = $"{portName}Ellipse";
-                var portEllipse = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(nodeBorder)
+                var portEllipse = WorkflowVisualHelper.FindAllVisualChildren<ExecutionPortShape>(nodeBorder)
                     .FirstOrDefault(e => e.Name == ellipseName);
 
                 if (portEllipse == null)

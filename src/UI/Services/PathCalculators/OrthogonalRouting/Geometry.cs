@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace SunEyeVision.UI.Services.PathCalculators.VmRouting.Original;
+namespace SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting.Search;
 // System.Windows value-type geometry adapter. Closed/inclusive rectangle intersection mirrors WPF Rect.
 internal readonly record struct Point(double X,double Y)
 {

@@ -1,15 +1,15 @@
 using System.Windows;
 namespace SunEyeVision.UI.Services.Interaction;
-public sealed record VmPlacementNode(string Id, Rect Bounds);
-public sealed record VmAlignmentGuide(bool Vertical, double Axis, double Start, double End);
-public sealed record VmHotPlacement(Point TopLeft, string PredecessorId);
-public sealed record VmPlacementResult(IReadOnlyList<VmAlignmentGuide> Guides, VmHotPlacement? Hot);
+public sealed record PlacementNode(string Id, Rect Bounds);
+public sealed record AlignmentGuide(bool Vertical, double Axis, double Start, double End);
+public sealed record HotPlacement(Point TopLeft, string PredecessorId);
+public sealed record PlacementResult(IReadOnlyList<AlignmentGuide> Guides, HotPlacement? Hot);
 /// <summary>WorkflowGestures.DrawAlignmentGuides/UpdateNodeHotRegion的宿主坐标适配。</summary>
-public static class VmPlacementCalculator
+public static class NodePlacementCalculator
 {
-    public static VmPlacementResult Calculate(Rect moving, IReadOnlyList<VmPlacementNode> others, double scale, VmHotPlacement? previous)
+    public static PlacementResult Calculate(Rect moving, IReadOnlyList<PlacementNode> others, double scale, HotPlacement? previous)
     {
-        var guides = new List<VmAlignmentGuide>(); scale = Math.Max(.001, scale);
+        var guides = new List<AlignmentGuide>(); scale = Math.Max(.001, scale);
         foreach (var vertical in new[] { true, false })
         foreach (var fraction in new[] { 0d, 1d, .5 })
         {
@@ -21,7 +21,7 @@ public static class VmPlacementCalculator
             var end = Math.Max(vertical ? moving.Bottom : moving.Right, vertical ? neighbor.Bounds.Bottom : neighbor.Bounds.Right) + 5 / scale;
             guides.Add(new(vertical, axis, start, end));
         }
-        VmHotPlacement? hot = null;
+        HotPlacement? hot = null;
         var nearest = others.Where(n => n.Bounds.X == moving.X && n.Bounds.Y < moving.Y).OrderBy(n => moving.Y - n.Bounds.Y).FirstOrDefault();
         if (nearest != null && nearest.Bounds.Y + 70 - nearest.Bounds.Height < moving.Y && moving.Y < nearest.Bounds.Y + 70 + nearest.Bounds.Height)
             hot = new(new Point(nearest.Bounds.X, nearest.Bounds.Y + 70 - moving.Height / 2 + nearest.Bounds.Height / 2), nearest.Id);

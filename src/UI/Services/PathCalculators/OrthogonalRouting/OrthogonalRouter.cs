@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.UI.Services.PathCalculators.VmRouting.Original;
-namespace SunEyeVision.UI.Services.PathCalculators.VmRouting;
-public enum VmRouteStatus { Success, OriginalFallback, InvalidInput, BudgetExceeded }
-public sealed record VmRouteResult(VmRouteStatus Status,IReadOnlyList<RoutePoint> Points);
+using SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting.Search;
+namespace SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting;
+public enum OrthogonalRouteStatus { Success, OriginalFallback, InvalidInput, BudgetExceeded }
+public sealed record OrthogonalRouteResult(OrthogonalRouteStatus Status,IReadOnlyList<RoutePoint> Points);
 /// <summary>Original VM 5-unit AStar and PathFinder pipeline. Original fallback can cross unrelated nodes.</summary>
-public static class VmOrthogonalRouter
+public static class OrthogonalRouter
 {
     private static readonly object Gate=new();
     // DiagramPage retains one APoint[,] map and resets its per-search state through
@@ -14,15 +14,15 @@ public static class VmOrthogonalRouter
     // APoint objects for every connection on the fixed 5000x5000 workflow canvas.
     private static APoint[,]? cachedMap;
     private static int cachedMapWidth,cachedMapHeight;
-    public static VmRouteResult Route(RoutePort source,RoutePort target,IEnumerable<RouteRect> obstacles,double canvasWidth,double canvasHeight,int maxCells=250000)
+    public static OrthogonalRouteResult Route(RoutePort source,RoutePort target,IEnumerable<RouteRect> obstacles,double canvasWidth,double canvasHeight,int maxCells=250000)
     {
         var raw=obstacles.Append(source.Owner).Append(target.Owner).Distinct().ToArray();
         if(!double.IsFinite(canvasWidth)||!double.IsFinite(canvasHeight)||canvasWidth<0||canvasHeight<0||canvasWidth>int.MaxValue-160||canvasHeight>int.MaxValue-160||
-            !Valid(source)||!Valid(target)||raw.Any(r=>!double.IsFinite(r.X)||!double.IsFinite(r.Y)||!double.IsFinite(r.Right)||!double.IsFinite(r.Bottom)||r.X<0||r.Y<0||r.Width<=0||r.Height<=0))return Fail(VmRouteStatus.InvalidInput);
+            !Valid(source)||!Valid(target)||raw.Any(r=>!double.IsFinite(r.X)||!double.IsFinite(r.Y)||!double.IsFinite(r.Right)||!double.IsFinite(r.Bottom)||r.X<0||r.Y<0||r.Width<=0||r.Height<=0))return Fail(OrthogonalRouteStatus.InvalidInput);
         int width=(int)canvasWidth/5+32,height=(int)canvasHeight/5+32;
-        if((long)width*height>maxCells)return Fail(VmRouteStatus.BudgetExceeded);
+        if((long)width*height>maxCells)return Fail(OrthogonalRouteStatus.BudgetExceeded);
         Point start=Offset(source),end=Offset(target);int sx=(int)start.X/5+1,sy=(int)start.Y/5+1,tx=(int)end.X/5+1,ty=(int)end.Y/5+1;
-        if(sx<0||sy<0||tx<0||ty<0||sx>=width||tx>=width||sy>=height||ty>=height)return Fail(VmRouteStatus.InvalidInput);
+        if(sx<0||sy<0||tx<0||ty<0||sx>=width||tx>=width||sy>=height||ty>=height)return Fail(OrthogonalRouteStatus.InvalidInput);
         var all=raw.Select(Inflated).ToList();var pair=new List<Rect>{Inflated(source.Owner),Inflated(target.Owner)};
         lock(Gate)
         {
@@ -46,12 +46,12 @@ public static class VmOrthogonalRouter
             points=PathFinder.OptimizeLinePoints(points,pair,all,Orientation(source.Direction),Orientation(target.Direction));
             points.Insert(0,new(source.Anchor.X,source.Anchor.Y));points.Add(new(target.Anchor.X,target.Anchor.Y));
             var turns=PathFinder.GetTurnPoints(points);PathFinder.RechargeLinePoints(turns,all);
-            return new(fallback?VmRouteStatus.OriginalFallback:VmRouteStatus.Success,turns.Select(p=>new RoutePoint(p.X,p.Y)).ToArray());
+            return new(fallback?OrthogonalRouteStatus.OriginalFallback:OrthogonalRouteStatus.Success,turns.Select(p=>new RoutePoint(p.X,p.Y)).ToArray());
         }
     }
     public static IReadOnlyList<RoutePoint> Preview(RoutePort source,RoutePoint sink)=>PathFinder.GetConnectionLine(source,new Point(sink.X,sink.Y)).Select(p=>new RoutePoint(p.X,p.Y)).ToArray();
     public static IReadOnlyList<RoutePoint> Passivate(IReadOnlyList<RoutePoint> points){var copy=points.Select(p=>new Point(p.X,p.Y)).ToList();PathFinder.Passivation(copy);return copy.Select(p=>new RoutePoint(p.X,p.Y)).ToArray();}
-    private static VmRouteResult Fail(VmRouteStatus s)=>new(s,Array.Empty<RoutePoint>());
+    private static OrthogonalRouteResult Fail(OrthogonalRouteStatus s)=>new(s,Array.Empty<RoutePoint>());
     private static Rect Inflated(RouteRect r)=>new(r.X-5,r.Y-5,r.Width+10,r.Height+10);
     private static ConnectorOrientation Orientation(PortDirection d)=>d switch{PortDirection.Left=>ConnectorOrientation.Left,PortDirection.Right=>ConnectorOrientation.Right,PortDirection.Up=>ConnectorOrientation.Top,_=>ConnectorOrientation.Bottom};
     private static Point Offset(RoutePort p)=>p.Direction switch{PortDirection.Left=>new(p.Anchor.X-5,p.Anchor.Y),PortDirection.Right=>new(p.Anchor.X+5,p.Anchor.Y),PortDirection.Up=>new(p.Anchor.X,p.Anchor.Y-5),_=>new(p.Anchor.X,p.Anchor.Y+5)};

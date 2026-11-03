@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -8,7 +8,7 @@ using System.Windows.Media;
 using SunEyeVision.UI.Shell.Controls.Shell;
 using Xunit;
 namespace SunEyeVision.UI.Tests;
-[Collection("VM canvas UI")]
+[Collection("Canvas UI")]
 public sealed class RootWorkflowOverviewTests
 {
  [Theory]

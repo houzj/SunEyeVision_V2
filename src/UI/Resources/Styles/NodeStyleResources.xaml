@@ -91,7 +91,7 @@
     <!-- 端口样式 -->
     <!-- ======================================== -->
     
-    <Style x:Key="PortEllipseStyle" TargetType="rendering:VmExecutionPort">
+    <Style x:Key="PortEllipseStyle" TargetType="rendering:ExecutionPortShape">
         <Setter Property="Fill" Value="#FFA719"/><Setter Property="Stroke" Value="#444444"/>
         <Setter Property="StrokeThickness" Value="1"/><Setter Property="Cursor" Value="Cross"/>
         <Setter Property="Panel.ZIndex" Value="10"/><Setter Property="Stretch" Value="None"/>

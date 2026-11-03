@@ -1,8 +1,8 @@
 using System.Windows;
 namespace SunEyeVision.UI.Services.Interaction;
-public enum VmNodeAlignment { Left, CenterX, Right, Top, CenterY, Bottom }
+public enum NodeAlignment { Left, CenterX, Right, Top, CenterY, Bottom }
 /// <summary>RectDragPanal.menuAlgClick/menuLayoutClick的实际尺寸公式；输入输出均为左上角。</summary>
-public static class VmSelectionLayout
+public static class SelectionLayoutCalculator
 {
     public static Rect Bounds(IReadOnlyList<Rect> nodes)
     {
@@ -10,16 +10,16 @@ public static class VmSelectionLayout
         var area = nodes[0]; foreach (var node in nodes.Skip(1)) area.Union(node);
         area.Inflate(10, 10); return area;
     }
-    public static Point[] Align(IReadOnlyList<Rect> nodes, VmNodeAlignment alignment)
+    public static Point[] Align(IReadOnlyList<Rect> nodes, NodeAlignment alignment)
     {
         var area = Bounds(nodes);
         return nodes.Select(n => alignment switch
         {
-            VmNodeAlignment.Left => new Point(area.Left + 10, n.Y),
-            VmNodeAlignment.Right => new Point(area.Right - n.Width - 10, n.Y),
-            VmNodeAlignment.CenterX => new Point(area.Left + Snap((area.Width - n.Width) / 2), n.Y),
-            VmNodeAlignment.Top => new Point(n.X, area.Top + 10),
-            VmNodeAlignment.Bottom => new Point(n.X, area.Bottom - n.Height - 10),
+            NodeAlignment.Left => new Point(area.Left + 10, n.Y),
+            NodeAlignment.Right => new Point(area.Right - n.Width - 10, n.Y),
+            NodeAlignment.CenterX => new Point(area.Left + Snap((area.Width - n.Width) / 2), n.Y),
+            NodeAlignment.Top => new Point(n.X, area.Top + 10),
+            NodeAlignment.Bottom => new Point(n.X, area.Bottom - n.Height - 10),
             _ => new Point(n.X, area.Top + Snap((area.Height - n.Height) / 2))
         }).ToArray();
     }

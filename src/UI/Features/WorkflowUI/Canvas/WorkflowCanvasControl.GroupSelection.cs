@@ -9,20 +9,20 @@ using SunEyeVision.UI.Shared;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
-    private bool _vmBoxSelectionActive;
-    private Rectangle? _vmSelectionFrame;
-    private CanvasNodeProjection[] VmSelectedNodes() => CurrentWorkflowTab?.DocumentCanvas?.Nodes.Where(n => n.IsSelected).ToArray() ?? Array.Empty<CanvasNodeProjection>();
-    private void ClearVmSelectionFrame()
+    private bool _canvasBoxSelectionActive;
+    private Rectangle? _canvasSelectionFrame;
+    private CanvasNodeProjection[] CanvasSelectedNodes() => CurrentWorkflowTab?.DocumentCanvas?.Nodes.Where(n => n.IsSelected).ToArray() ?? Array.Empty<CanvasNodeProjection>();
+    private void ClearCanvasSelectionFrame()
     {
-        if (_vmSelectionFrame != null) WorkflowCanvas.Children.Remove(_vmSelectionFrame);
-        _vmSelectionFrame = null;
+        if (_canvasSelectionFrame != null) WorkflowCanvas.Children.Remove(_canvasSelectionFrame);
+        _canvasSelectionFrame = null;
     }
-    private void DrawVmSelectionFrame()
+    private void DrawCanvasSelectionFrame()
     {
-        ClearVmSelectionFrame();
-        var nodes = VmSelectedNodes();
-        if (!_vmBoxSelectionActive || nodes.Length == 0 || !CanEditVmCanvas || _isBoxSelecting) return;
-        var area = VmSelectionLayout.Bounds(nodes.Select(n => n.NodeRect).ToArray());
+        ClearCanvasSelectionFrame();
+        var nodes = CanvasSelectedNodes();
+        if (!_canvasBoxSelectionActive || nodes.Length == 0 || !CanEditCanvas || _isBoxSelecting) return;
+        var area = SelectionLayoutCalculator.Bounds(nodes.Select(n => n.NodeRect).ToArray());
         var frame = new Rectangle { Width = area.Width, Height = area.Height, RadiusX = 3, RadiusY = 3,
             Stroke = new SolidColorBrush(Color.FromArgb(127,218,120,15)), StrokeThickness = 2,
             StrokeDashArray = new DoubleCollection { 5, 2 },
@@ -30,66 +30,66 @@ public partial class WorkflowCanvasControl
         System.Windows.Controls.Canvas.SetLeft(frame, area.X); System.Windows.Controls.Canvas.SetTop(frame, area.Y); Panel.SetZIndex(frame, 50);
         frame.MouseLeftButtonDown += (_, e) =>
         {
-            if (!CanEditVmCanvas) return;
-            WorkflowCanvas.Focus(); var selected = VmSelectedNodes();
-            if (selected.Length > 0) ArmVmNodeMove(selected[0], e.GetPosition(WorkflowCanvas));
+            if (!CanEditCanvas) return;
+            WorkflowCanvas.Focus(); var selected = CanvasSelectedNodes();
+            if (selected.Length > 0) ArmCanvasNodeMove(selected[0], e.GetPosition(WorkflowCanvas));
             e.Handled = true;
         };
-        frame.MouseMove += (_, e) => { if (_vmNodeMove != null && !_vmNodeOleActive && e.LeftButton == MouseButtonState.Pressed) StartVmNodeMove(e); };
-        frame.MouseLeftButtonUp += (_, _) => { if (!_vmNodeOleActive) CancelVmNodeMove(); };
-        frame.ContextMenu = CreateVmSelectionMenu(); _vmSelectionFrame = frame; WorkflowCanvas.Children.Add(frame);
+        frame.MouseMove += (_, e) => { if (_canvasNodeMove != null && !_canvasNodeOleActive && e.LeftButton == MouseButtonState.Pressed) StartCanvasNodeMove(e); };
+        frame.MouseLeftButtonUp += (_, _) => { if (!_canvasNodeOleActive) CancelCanvasNodeMove(); };
+        frame.ContextMenu = CreateCanvasSelectionMenu(); _canvasSelectionFrame = frame; WorkflowCanvas.Children.Add(frame);
     }
-    private ContextMenu CreateVmSelectionMenu()
+    private ContextMenu CreateCanvasSelectionMenu()
     {
         var menu = new ContextMenu();
         void Add(ItemsControl owner, string name, Action action)
         {
-            var item = new MenuItem { Header = name, IsEnabled = CanEditVmCanvas };
-            item.Click += (_, _) => { if (CanEditVmCanvas) action(); }; owner.Items.Add(item);
+            var item = new MenuItem { Header = name, IsEnabled = CanEditCanvas };
+            item.Click += (_, _) => { if (CanEditCanvas) action(); }; owner.Items.Add(item);
         }
-        Add(menu, "删除", () => CurrentWorkflowTab?.DocumentCanvas?.Delete(VmSelectedNodes(), Array.Empty<CanvasConnectionProjection>()));
+        Add(menu, "删除", () => CurrentWorkflowTab?.DocumentCanvas?.Delete(CanvasSelectedNodes(), Array.Empty<CanvasConnectionProjection>()));
         Add(menu, "复制", () => _viewModel?.CopyCanvasSelection());
-        Add(menu, "禁用", () => SetVmSelectionEnabled(false)); Add(menu, "启用", () => SetVmSelectionEnabled(true));
+        Add(menu, "禁用", () => SetCanvasSelectionEnabled(false)); Add(menu, "启用", () => SetCanvasSelectionEnabled(true));
         menu.Items.Add(new Separator());
         var align = new MenuItem { Header = "对齐" }; menu.Items.Add(align);
-        foreach (var item in new[] { ("左对齐", VmNodeAlignment.Left), ("水平居中", VmNodeAlignment.CenterX), ("右对齐", VmNodeAlignment.Right),
-            ("顶部对齐", VmNodeAlignment.Top), ("垂直居中", VmNodeAlignment.CenterY), ("底部对齐", VmNodeAlignment.Bottom) })
-            Add(align, item.Item1, () => AlignVmSelection(item.Item2));
+        foreach (var item in new[] { ("左对齐", NodeAlignment.Left), ("水平居中", NodeAlignment.CenterX), ("右对齐", NodeAlignment.Right),
+            ("顶部对齐", NodeAlignment.Top), ("垂直居中", NodeAlignment.CenterY), ("底部对齐", NodeAlignment.Bottom) })
+            Add(align, item.Item1, () => AlignCanvasSelection(item.Item2));
         var layout = new MenuItem { Header = "分布" }; menu.Items.Add(layout);
-        Add(layout, "水平分布", () => DistributeVmSelection(true)); Add(layout, "垂直分布", () => DistributeVmSelection(false));
+        Add(layout, "水平分布", () => DistributeCanvasSelection(true)); Add(layout, "垂直分布", () => DistributeCanvasSelection(false));
         return menu;
     }
-    private void ApplyVmSelectionPositions(CanvasNodeProjection[] nodes, Point[] topLeft)
+    private void ApplyCanvasSelectionPositions(CanvasNodeProjection[] nodes, Point[] topLeft)
     {
-        var tab = CurrentWorkflowTab; if (tab == null || nodes.Length != topLeft.Length || !CanEditVmCanvas) return;
+        var tab = CurrentWorkflowTab; if (tab == null || nodes.Length != topLeft.Length || !CanEditCanvas) return;
         var positions = nodes.Select((node, i) => (Node: node, Before: node.Position.ToWpf(),
             After: new Point(topLeft[i].X + node.NodeRect.Width / 2, topLeft[i].Y + node.NodeRect.Height / 2))).ToArray();
         if (positions.Any(p => p.Before != p.After)) tab.DocumentCanvas?.MoveNodes(positions.ToDictionary(p => p.Node, p => new SunEyeVision.Domain.Workflows.CanvasPoint(p.After.X, p.After.Y)));
-        DrawVmSelectionFrame();
+        DrawCanvasSelectionFrame();
     }
-    private void AlignVmSelection(VmNodeAlignment alignment)
-    { var nodes = VmSelectedNodes(); ApplyVmSelectionPositions(nodes, VmSelectionLayout.Align(nodes.Select(n => n.NodeRect).ToArray(), alignment)); }
-    private void DistributeVmSelection(bool horizontal)
-    { var nodes = VmSelectedNodes(); ApplyVmSelectionPositions(nodes, VmSelectionLayout.Distribute(nodes.Select(n => n.NodeRect).ToArray(), horizontal)); }
-    private void SetVmSelectionEnabled(bool enabled)
+    private void AlignCanvasSelection(NodeAlignment alignment)
+    { var nodes = CanvasSelectedNodes(); ApplyCanvasSelectionPositions(nodes, SelectionLayoutCalculator.Align(nodes.Select(n => n.NodeRect).ToArray(), alignment)); }
+    private void DistributeCanvasSelection(bool horizontal)
+    { var nodes = CanvasSelectedNodes(); ApplyCanvasSelectionPositions(nodes, SelectionLayoutCalculator.Distribute(nodes.Select(n => n.NodeRect).ToArray(), horizontal)); }
+    private void SetCanvasSelectionEnabled(bool enabled)
     {
-        if (!CanEditVmCanvas) return;
-        var nodes = VmSelectedNodes();
+        if (!CanEditCanvas) return;
+        var nodes = CanvasSelectedNodes();
         if (nodes.Any(n => n.IsEnabled != enabled)) CurrentWorkflowTab?.DocumentCanvas?.Edit(enabled ? "启用节点" : "禁用节点",
             draft => { foreach (var node in nodes) draft.SetNodeEnabled(node.Definition, enabled); });
     }
-    private void InitializeVmGroupSelection()
+    private void InitializeCanvasSelection()
     {
-        DataContextChanged += (_, _) => { _vmBoxSelectionActive = false; ClearVmSelectionFrame(); };
-        Unloaded += (_, _) => ClearVmSelectionFrame();
+        DataContextChanged += (_, _) => { _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame(); };
+        Unloaded += (_, _) => ClearCanvasSelectionFrame();
         PreviewKeyDown += (_, e) =>
         {
-            if (VmTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditVmCanvas) return;
+            if (CanvasTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditCanvas) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.C or Key.V)
             { if(e.Key==Key.C)_viewModel?.CopyCanvasSelection();else _viewModel?.PasteCanvasSelection(); e.Handled = true; return; }
-            if (!_vmBoxSelectionActive) return;
+            if (!_canvasBoxSelectionActive) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.A or Key.F)
-            { SetVmSelectionEnabled(e.Key == Key.A); e.Handled = true; }
+            { SetCanvasSelectionEnabled(e.Key == Key.A); e.Handled = true; }
         };
     }
 }

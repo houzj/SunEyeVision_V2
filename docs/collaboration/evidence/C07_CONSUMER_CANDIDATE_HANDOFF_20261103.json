@@ -1,0 +1,13 @@
+{
+  "scope": "C07消费者及公共组合候选交接，不替代主仓正式验收或B08/Blob整体闭口",
+  "workspace": "D:/MyWork/line-aiproject/blob-display-neutral-20261103",
+  "finalHead": "e77f92a2c53bee2541f17babc1ca0e3206c8d6e4",
+  "canonicalComparison": {"otherCommit": "fad3bf336", "paths": ["src", "tools"], "command": "git diff --name-status fad3bf336 e77f92a2c -- src tools", "output": "", "catalogIncluded": false},
+  "finalBuild": {"uiExit": 0, "uiSeconds": 50.43, "uiWarnings": 6553, "fullExit": 0, "fullSeconds": 43.59, "fullWarnings": 6555},
+  "finalPublic": {"receipt": "Release/_validation/C07Reference-20261103/attempt-001/receipt.json", "exit": 0, "cases": 10, "sourceSha256": "A64322A13CAEB206DECCF12CEFEAED2C47022FEDCB1A629BA71EAA077F3FA93A", "loadedCount": 2, "loadedIdentityPassed": true},
+  "finalPayload": {"entries": 201, "filesIncludingManifest": 202, "fileHashMismatches": 0, "manifestSha256": "08C27B4D808FDEF90794060B737E0E784A66AAC3A67C7348DF8D89019498EAA4"},
+  "priorConsumer": {"commit": "280d735a3", "referenceReceipt": "Release/_validation/S4-20261025/BlobReferenceWindow/attempt-004/receipt.json", "referenceCases": 9, "mixedReceipt": "Release/_validation/S4-20261025/B08NumericComposition/attempt-010/receipt.json", "mixedCases": 12, "loadedCountEach": 15, "loadedHashMismatches": 0, "manifestSha256": "F1B7AC5B525718A0923B1FD0D71A5F3085399CA7B751CFBC811DB743DA9E782E", "transferredToFinal": false},
+  "priorRanges": {"commit": "5818f03a5", "circularityReceipt": "Release/_validation/S4-20261025/BlobRangeProduction/Circularity/All/attempt-002/receipt.json", "circularityPassed": 16, "rectangularityReceipt": "Release/_validation/S4-20261025/BlobRangeProduction/Rectangularity/All/attempt-002/receipt.json", "rectangularityPassed": 16, "areaReceipt": "Release/_validation/S4-20261025/BlobRangeProduction/Area/All/attempt-003/receipt.json", "areaPassedBeforeFailure": 13, "areaExit": 1, "testCorrection": "c88c2d0fe", "transferredToFinal": false},
+  "referenceTestCorrections": ["4836b1b93", "05a063033"],
+  "boundaries": ["未声明生产者、Group、偏好持久化、连续运行和算法未因候选通过而实现", "真实VS、自然键鼠和用户人工验收另记", "正式主仓构建与生产矩阵另验"]
+}

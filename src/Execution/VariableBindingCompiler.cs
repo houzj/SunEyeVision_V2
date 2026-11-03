@@ -10,6 +10,56 @@ internal sealed record VariableBindingPlan(VariableSetting Setting, Port Source,
 /// <summary>Compile against the invocation's frozen pure-value declarations and actual graph scope.</summary>
 internal static class VariableBindingCompiler
 {
+    internal static BindingResolution Resolve(VariableBindingPlan plan, string solutionId, IBindingRunSnapshot snapshot)
+        => ResolveCore(plan, solutionId, snapshot, null);
+
+    internal static BindingResolution ResolvePublished(VariableBindingPlan plan, string solutionId, PublishedBindingSnapshot snapshot)
+        => ResolveCore(plan, solutionId, snapshot, snapshot);
+
+    private static BindingResolution ResolveCore(VariableBindingPlan plan, string solutionId,
+        IBindingRunSnapshot snapshot, PublishedBindingSnapshot? published)
+    {
+        try
+        {
+            var reference = plan.Setting.Reference;
+            if (solutionId != reference.SolutionId || !snapshot.TryGetVariable(reference, out var captured)
+                || captured.ConsumerIdentity != snapshot.ConsumerIdentity
+                || captured.Source.Reference.SolutionId != reference.SolutionId
+                || captured.Source.Reference.VariableId != reference.VariableId
+                || captured.Source.Reference.Type != reference.Type || captured.Source.Reference.Storage != reference.Storage)
+                return new(false, null, new("variable-unavailable", "变量在本批运行尚未产生有效值。", plan.Target.Id));
+            if (captured.Issue is { } issue) return new(false, null, issue);
+            var value = captured.Value;
+            if (reference.Selection is not BindingSelection.AllItems)
+            {
+                long index;
+                if (reference.Selection is BindingSelection.AtConstant constant) index = constant.Index;
+                else if (plan.VariableIndex is { } variable)
+                    index = ParameterBindingService.ReadVariableIndex(variable, snapshot, plan.Behavior);
+                else
+                {
+                    var service = new ParameterBindingService();
+                    var resolved = published is null ? service.ResolveIndexBinding(plan.Index!, snapshot)
+                        : service.ResolvePublishedIndexBinding(plan.Index!, published);
+                    if (!resolved.Success) return resolved;
+                    index = resolved.Value is long integer ? integer : throw new ArgumentException("变量动态索引没有整数标量值。");
+                }
+                var elements = value switch
+                {
+                    SequenceValue sequence => sequence.ToArray(),
+                    double[] numbers => numbers.Cast<object?>().ToArray(),
+                    _ => throw new ArgumentException("变量索引需要本次有效序列。")
+                };
+                if (index < 0 || index >= elements.Length) throw new ArgumentException("变量索引超出本次序列范围，不使用首项回退。");
+                value = elements[index];
+            }
+            return new ParameterBindingService().ResolveValue(value, plan.SelectedType, plan.Target,
+                plan.Setting.Conversion, plan.Behavior);
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or OverflowException)
+        { return new(false, null, new("variable-value", error.Message, plan.Target.Id)); }
+    }
+
     internal static VariableBindingPlan Compile(VariableSetting setting, Port target, string solutionId,
         IReadOnlyDictionary<string, Port> declarations, IBindingCompilationScope scope,
         ParameterReferenceBehavior behavior = ParameterReferenceBehavior.StrictExactlyOne)

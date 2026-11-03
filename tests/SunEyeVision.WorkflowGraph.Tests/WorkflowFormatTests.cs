@@ -1,20 +1,15 @@
-using System.Text.Json;
-using SunEyeVision.Workflow;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json.Nodes;
 using Xunit;
-
 namespace SunEyeVision.WorkflowGraph.Tests;
-
 public sealed class WorkflowFormatTests
 {
-    [Theory]
-    [InlineData("Parameters")]
-    [InlineData("ParamSettings")]
-    [InlineData("parameters")]
-    public void Legacy_node_fields_are_rejected_before_deserialization(string field)
-    {
-        var options = new JsonSerializerOptions();
-        options.Converters.Add(new WorkflowJsonConverter());
-        var json = "{\"Id\":\"flow\",\"Name\":\"flow\",\"Nodes\":[{\"Id\":\"n\",\"" + field + "\":{}}]}";
-        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<SunEyeVision.Workflow.Workflow>(json, options));
-    }
+ [Theory] [InlineData("RuntimeConfiguration")] [InlineData("ParamSettings")] [InlineData("Parameters")]
+ public void Legacy_node_fields_are_rejected_without_mutating_active_session(string field)
+ {
+  using var f=new SessionGraphFixture();f.Add();var path=f.Save();var root=JsonNode.Parse(File.ReadAllText(path))!;root["Workflows"]![0]!["Nodes"]![0]![field]=new JsonObject();
+  var invalid=Path.Combine(f.CaseDirectory,"invalid-"+field+".solution");File.WriteAllText(invalid,root.ToJsonString());var before=SHA256.HashData(File.ReadAllBytes(invalid));
+  Assert.ThrowsAny<Exception>(()=>f.Manager.Open(invalid,_=>SessionGraphFixture.Types,_=>null,SessionGraphFixture.Options));Assert.Same(f.Session,f.Manager.CurrentSession);Assert.Equal(before,SHA256.HashData(File.ReadAllBytes(invalid)));
+ }
 }

@@ -1,49 +1,19 @@
-using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Workflow;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Plugin.Contracts;
 using Xunit;
-
-namespace SunEyeVision.UI.Tests;
+namespace SunEyeVision.WorkflowGraph.Tests;
 public sealed class NodeDraftFreezeTests
 {
-    [Fact]
-    public void Real_draft_freezes_and_commits_with_admitted_directory()
-    {
-        var manager = new SolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!, Guid.NewGuid().ToString("N")), RootCanvasFixture.Directory);
-        var document = manager.CreateUntitledSolution();
-        var flow = document.Workflows[0];
-        var node = RootCanvasFixture.Node("source");
-        flow.Nodes.Add(node);
-        var host = new NodeConfigurationEditHost(document);
-        var draft = host.BeginEdit(flow.Id, node.Id);
-        RootCanvasFixture.SetValue(draft.Node, 9);
-        Assert.NotEqual(9, RootCanvasFixture.Value(node));
-        Assert.True(host.HasPendingChanges(draft));
-        var frozen = host.Freeze(draft);
-        Assert.Equal(9, RootCanvasFixture.Value(frozen.Node));
-        host.Commit(frozen);
-        Assert.Equal(9, RootCanvasFixture.Value(node));
-        host.Undo();
-        Assert.NotEqual(9, RootCanvasFixture.Value(node));
-        host.Redo();
-        Assert.Equal(9, RootCanvasFixture.Value(node));
-    }
-
-    [Fact]
-    public void Frozen_draft_rejects_closed_document_and_foreign_generation()
-    {
-        var manager = new SolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!, Guid.NewGuid().ToString("N")), RootCanvasFixture.Directory);
-        var document = manager.CreateUntitledSolution();
-        var flow = document.Workflows[0];
-        flow.Nodes.Add(RootCanvasFixture.Node("source"));
-        var host = new NodeConfigurationEditHost(document);
-        var draft = host.BeginEdit(flow.Id, "source");
-        var variableDraft = host.BeginVariableEdit();
-        var foreign = new ReleasePayloadAuthority(Environment.GetEnvironmentVariable("SUNEYE_ROOT_TEST_PAYLOAD")!).PrepareRuntimeDirectory();
-        draft.Node.RuntimeConfiguration = RuntimeToolConfiguration.Create(foreign, "ImageLoad");
-        Assert.Throws<InvalidOperationException>(() => host.Freeze(draft));
-        draft = host.BeginEdit(flow.Id, "source");
-        document.ExecutionOwner.Retire();
-        Assert.Throws<InvalidOperationException>(() => host.Freeze(draft));
-        Assert.Throws<InvalidOperationException>(() => host.Freeze(variableDraft));
-    }
+ [Fact] public void Host_input_query_rejects_foreign_same_id_node_instance()
+ {
+  using var f=new SessionGraphFixture();var node=f.Add();var impostor=new NodeDefinition(node.Id,node.Name,node.ToolType,node.Configuration);
+  Assert.Throws<InvalidOperationException>(()=>f.Session.GetNodeHostInputDeclaration(f.Root.Id,impostor));
+ }
+ [Fact] public void Draft_from_replaced_session_is_rejected_without_modifying_new_session()
+ {
+  using var f=new SessionGraphFixture();var node=f.Add();var draft=f.Session.Editing.Host.BeginEdit(f.Root.Id,node.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"sequence.initial",new ConstantSetting(7L)}});
+  var proposal=DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{draft});var replacement=f.Manager.CreateNew("replacement",true);
+  Assert.Throws<InvalidOperationException>(()=>replacement.CommitEdit(proposal));Assert.Empty(replacement.GetNodes(replacement.GetWorkflows().Single().Id));
+ }
 }

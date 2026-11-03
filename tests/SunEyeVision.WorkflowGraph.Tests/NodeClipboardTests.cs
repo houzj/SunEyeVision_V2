@@ -41,6 +41,21 @@ public sealed class NodeClipboardTests
   var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.RenameNode(a,"新名称");f.Session.CommitGraphEdit(edit,"重命名来源");
   var pasted=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300));
   Assert.Single(pasted.Nodes);Assert.Equal(b.ToolType,pasted.Nodes[0].ToolType);
+ } [Fact] public void A_new_same_name_node_never_replaces_the_captured_actual_source()
+ {
+  using var f=new SessionGraphFixture();var source=f.Add();var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{source});
+  var remove=f.Session.PrepareGraphEdit(f.Root.Id);remove.DeleteNodesAndConnections(new[]{source},Array.Empty<ConnectionDefinition>());f.Session.CommitGraphEdit(remove,"删除来源");
+  var replacement=f.Add();Assert.NotSame(source,replacement);Assert.Equal(source.Name,replacement.Name);
+  var before=f.Session.HistoryEntries.Count;Assert.Empty(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300)).Nodes);
+  Assert.Equal(before,f.Session.HistoryEntries.Count);
+ }
+ [Fact] public void Nonuniform_placement_clears_copied_manual_path_in_same_transaction()
+ {
+  using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("BlobAnalysis",200,20);var edge=f.Connect(a,b);
+  var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.EditConnectionPath(edge,new[]{new CanvasPoint(80,30),new CanvasPoint(100,30)});f.Session.CommitGraphEdit(edit,"折点");
+  var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{a,b});var positions=new Dictionary<NodeDefinition,CanvasPoint>{{a,new(400,300)},{b,new(700,300)}};
+  var before=f.Session.HistoryEntries.Count;var result=f.Session.PasteNodeClipboard(f.Root.Id,fragment,positions[a],positions);
+  Assert.Null(Assert.Single(result.Connections).ManualPathPoints);Assert.Equal(before+1,f.Session.HistoryEntries.Count);
  } [Fact] public void Same_scope_external_incoming_connection_is_recreated_and_rebound()
  {
   using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("BlobAnalysis",200,20);var edge=f.Connect(a,b);

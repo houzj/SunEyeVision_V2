@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
 
-public sealed class CommunicationTriggerDefinition : ObservableObject
+namespace SunEyeVision.Domain.Solutions;
+
+public sealed class CommunicationTriggerDefinition : SolutionObservableObject
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     private string _Source = "Event";
@@ -50,7 +50,7 @@ public sealed class CommunicationParameterMapping
     public string TargetKind { get; set; } = "运行参数";
 }
 
-public sealed class CommunicationResponseDefinition : ObservableObject
+public sealed class CommunicationResponseDefinition : SolutionObservableObject
 {
     private bool _Enabled = false;
     public bool Enabled { get => _Enabled; set => SetProperty(ref _Enabled, value); }

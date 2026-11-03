@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>Persisted OPC UA string NodeId configuration; values and quality live in the runtime.</summary>
 public sealed class OpcUaDataPoint

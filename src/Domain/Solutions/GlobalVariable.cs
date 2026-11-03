@@ -1,65 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>A value/revision pair captured under ValueGate. Editable primitive arrays are copied.
 /// Other legacy values remain borrowed and read-only; this type confers no resource ownership.</summary>
 public sealed record GlobalVariableValueSnapshot(object? Value, long Revision);
 
-/// <summary>
-/// 消费者绑定：标记哪个工具的哪个参数绑定到此全局变量
-/// </summary>
-public class ConsumerBinding
-{
-    /// <summary>消费者所属工作流 ID。旧方案没有该字段，加载旧方案时由编译器按节点 ID 兼容解析。</summary>
-    public string WorkflowId { get; set; } = string.Empty;
-
-    /// <summary>消费者节点ID</summary>
-    public string NodeId { get; set; } = string.Empty;
-
-    /// <summary>消费者节点名称</summary>
-    public string NodeName { get; set; } = string.Empty;
-
-    /// <summary>消费者所属工作流名称</summary>
-    public string WorkflowName { get; set; } = string.Empty;
-
-    /// <summary>绑定的参数名称（属性名）</summary>
-    public string ParameterName { get; set; } = string.Empty;
-    public string? InputKey { get; set; }
-
-    /// <summary>参数中文显示名称</summary>
-    public string ParameterDisplayName { get; set; } = string.Empty;
-
-    /// <summary>消费者稳定键，包含工作流作用域，避免跨工作流节点 ID 冲突。</summary>
-    [JsonIgnore]
-    public string BindingKey => $"{WorkflowId}|{NodeId}|{InputKey ?? ParameterName}";
-
-    /// <summary>显示路径："工作流名.节点名.参数显示名"</summary>
-    [JsonIgnore]
-    public string DisplayPath => $"{WorkflowName}.{NodeName}.{ParameterDisplayName}";
-}
-
-/// <summary>
-/// 全局变量的唯一生产者：某工作流节点的一个结果字段。
-/// 一个变量只允许一个生产者，避免并发写入时出现“最后写入者获胜”的不确定结果。
-/// </summary>
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public class ProducerBinding
-{
-    public string ReferenceExpression { get; set; } = string.Empty;
-    [JsonIgnore]
-    public SunEyeVision.Plugin.Contracts.OutputReference SourceReference =>
-        SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(ReferenceExpression);
-    public string WorkflowName { get; set; } = string.Empty;
-    public string NodeName { get; set; } = string.Empty;
-    public string ResultDisplayName { get; set; } = string.Empty;
-    [JsonIgnore]
-    public string DisplayPath => $"{WorkflowName}.{NodeName}.{ResultDisplayName}";
-}
 
 /// <summary>
 /// 全局变量
@@ -90,7 +39,7 @@ public class ProducerBinding
 ///   "Description": "二值化阈值"
 /// }
 /// </remarks>
-public class GlobalVariable : ObservableObject
+public class GlobalVariable : SolutionObservableObject
 {
     [System.Text.Json.Serialization.JsonExtensionData]
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
@@ -148,7 +97,7 @@ public class GlobalVariable : ObservableObject
     /// 使用 GlobalVariableValueConverter 保留类型信息，
     /// 序列化格式：{ "Type": "Integer", "Value": 128 }
     /// </remarks>
-    [JsonConverter(typeof(GlobalVariableValueConverter))]
+    
     public object? Value
     {
         get { lock (ValueGate) return _value; }
@@ -506,10 +455,10 @@ public class GlobalVariable : ObservableObject
     // Runtime declarations identify scalar/sequence shape explicitly. The manager's
     // IsComplexValue property describes its current text-editor capability, not value ownership.
     internal static bool IsPureValueDeclaration(string type)
-        =>GlobalProducerBindingRules.TryDescribeTarget(type,out _,out _,out _);
+        =>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(type,out _);
     private static bool IsValidType(string type)
     {
-        return IsPureValueDeclaration(type)||SdkTypeVocabulary.ToSystemType(type) != null;
+        return !string.IsNullOrWhiteSpace(type);
     }
 
     /// <summary>
@@ -529,96 +478,3 @@ public class GlobalVariable : ObservableObject
     }
 }
 
-/// <summary>
-/// 全局变量管理器
-/// </summary>
-public class GlobalVariableManager
-{
-    private readonly Dictionary<string, GlobalVariable> _variables = new();
-
-    /// <summary>
-    /// 获取所有变量
-    /// </summary>
-    public List<GlobalVariable> GetAll()
-    {
-        return _variables.Values.ToList();
-    }
-
-    /// <summary>
-    /// 获取变量
-    /// </summary>
-    public GlobalVariable? Get(string name)
-    {
-        return _variables.TryGetValue(name, out var variable) ? variable : null;
-    }
-
-    /// <summary>
-    /// 添加变量
-    /// </summary>
-    public void Add(GlobalVariable variable)
-    {
-        if (string.IsNullOrWhiteSpace(variable.Name))
-            throw new ArgumentException("变量名称不能为空");
-
-        _variables[variable.Name] = variable;
-    }
-
-    /// <summary>
-    /// 移除变量
-    /// </summary>
-    public bool Remove(string name)
-    {
-        return _variables.Remove(name);
-    }
-
-    /// <summary>
-    /// 更新变量
-    /// </summary>
-    public bool Update(GlobalVariable variable)
-    {
-        if (string.IsNullOrWhiteSpace(variable.Name))
-            return false;
-
-        if (!_variables.ContainsKey(variable.Name))
-            return false;
-
-        _variables[variable.Name] = variable;
-        return true;
-    }
-
-    /// <summary>
-    /// 设置变量值
-    /// </summary>
-    public void SetValue(string name, object? value)
-    {
-        if (!_variables.TryGetValue(name, out var variable))
-            return;
-
-        variable.Value = value;
-        variable.ModifiedTime = DateTime.Now;
-    }
-
-    /// <summary>
-    /// 获取变量值
-    /// </summary>
-    public object? GetValue(string name)
-    {
-        return _variables.TryGetValue(name, out var variable) ? variable.Value : null;
-    }
-
-    /// <summary>
-    /// 检查变量是否存在
-    /// </summary>
-    public bool Contains(string name)
-    {
-        return _variables.ContainsKey(name);
-    }
-
-    /// <summary>
-    /// 清空所有变量
-    /// </summary>
-    public void Clear()
-    {
-        _variables.Clear();
-    }
-}

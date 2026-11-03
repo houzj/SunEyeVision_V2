@@ -13,6 +13,12 @@
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
+  <Folder Name="/Src/Application/">
+    <Project Path="Src/Application/SunEyeVision.Application.csproj" />
+  </Folder>
+  <Folder Name="/Src/Persistence/">
+    <Project Path="Src/Persistence/SunEyeVision.Persistence.csproj" />
+  </Folder>
   <Folder Name="/Src/Domain/">
     <Project Path="Src/Domain/SunEyeVision.Domain.csproj" />
   </Folder>
@@ -93,3 +99,4 @@
     <Project Path="tests/SunEyeVision.WorkflowGraph.Tests/SunEyeVision.WorkflowGraph.Tests.csproj" />
   </Folder>
 </Solution>
+

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// 执行模式枚举
@@ -57,7 +57,7 @@ public enum ErrorHandlingStrategy
 /// <remarks>
 /// 用于配置工作流的执行策略，包括并发控制、错误处理等。
 /// </remarks>
-public class ExecutionStrategy : ObservableObject
+public class ExecutionStrategy
 {
     private WorkflowExecutionMode _mode = WorkflowExecutionMode.Sequential;
     private int _maxConcurrency = 1;
@@ -73,7 +73,7 @@ public class ExecutionStrategy : ObservableObject
     public WorkflowExecutionMode Mode
     {
         get => _mode;
-        set => SetProperty(ref _mode, value, "执行模式");
+        internal set => _mode = value;
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class ExecutionStrategy : ObservableObject
     public int MaxConcurrency
     {
         get => _maxConcurrency;
-        set => SetProperty(ref _maxConcurrency, value, "最大并发数");
+        internal set => _maxConcurrency = value;
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class ExecutionStrategy : ObservableObject
     public bool EnableAsyncExecution
     {
         get => _enableAsyncExecution;
-        set => SetProperty(ref _enableAsyncExecution, value, "异步执行");
+        internal set => _enableAsyncExecution = value;
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class ExecutionStrategy : ObservableObject
     public bool EnableProgressReport
     {
         get => _enableProgressReport;
-        set => SetProperty(ref _enableProgressReport, value, "进度报告");
+        internal set => _enableProgressReport = value;
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public class ExecutionStrategy : ObservableObject
     public bool EnableLogging
     {
         get => _enableLogging;
-        set => SetProperty(ref _enableLogging, value, "日志记录");
+        internal set => _enableLogging = value;
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ public class ExecutionStrategy : ObservableObject
     public ErrorHandlingStrategy ErrorHandling
     {
         get => _errorHandling;
-        set => SetProperty(ref _errorHandling, value, "错误处理");
+        internal set => _errorHandling = value;
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ public class ExecutionStrategy : ObservableObject
     public int Timeout
     {
         get => _timeout;
-        set => SetProperty(ref _timeout, value, "超时时间");
+        internal set => _timeout = value;
     }
 
     /// <summary>
@@ -246,3 +246,4 @@ public class ExecutionStrategy : ObservableObject
         }
     }
 }
+

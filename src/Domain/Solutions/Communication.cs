@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// 通讯类型枚举
@@ -53,30 +53,17 @@ public enum CommunicationType
 }
 
 /// <summary>
-/// 通讯设备运行状态，由通讯运行时更新，不写入方案文件。
-/// </summary>
-public enum CommunicationRuntimeStatus
-{
-    Disconnected,
-    Connecting,
-    Connected,
-    Faulted
-}
-
-/// <summary>
 /// 通讯模型
 /// </summary>
 /// <remarks>
 /// 用于管理解决方案中的通讯设备配置；具体运行行为由协议驱动实现。
 /// </remarks>
-public class Communication : ObservableObject
+public class Communication : SolutionObservableObject
 {
     private string _name = "";
     private bool _enabled = true;
     private CommunicationType _connectionType = CommunicationType.HTTP;
     private string _description = "";
-    private CommunicationRuntimeStatus _runtimeStatus = CommunicationRuntimeStatus.Disconnected;
-    private bool _isRuntimeOperationInProgress;
 
     /// <summary>
     /// 通讯ID
@@ -103,7 +90,7 @@ public class Communication : ObservableObject
         get => _enabled;
         set
         {
-            if (SetProperty(ref _enabled, value, "是否启用")) OnPropertyChanged(nameof(CanToggleRuntime));
+            SetProperty(ref _enabled, value, "是否启用");
         }
     }
 
@@ -124,93 +111,6 @@ public class Communication : ObservableObject
         get => _description;
         set => SetProperty(ref _description, value, "通讯描述");
     }
-
-    /// <summary>
-    /// 当前运行时连接状态。该状态不写入方案文件。
-    /// </summary>
-    [JsonIgnore]
-    public CommunicationRuntimeStatus RuntimeStatus
-    {
-        get => _runtimeStatus;
-        set
-        {
-            if (SetProperty(ref _runtimeStatus, value, "通讯状态"))
-            {
-                OnPropertyChanged(nameof(IsRuntimeActive));
-                OnPropertyChanged(nameof(IsActuallyConnected));
-                OnPropertyChanged(nameof(ProtocolStatusText));
-                OnPropertyChanged(nameof(RuntimeStatusText));
-            }
-        }
-    }
-
-    [JsonIgnore]
-    public bool IsRuntimeActive => RuntimeStatus is CommunicationRuntimeStatus.Connecting or CommunicationRuntimeStatus.Connected;
-
-    [JsonIgnore]
-    public bool IsActuallyConnected => RuntimeStatus == CommunicationRuntimeStatus.Connected;
-
-    private bool _isConnectionEnabled;
-    private bool _isWaitingForReconnect;
-    private string _runtimeConnectionDescription = "";
-    private string _runtimeConnectionError = "";
-
-    /// <summary>Runtime connection intent, independent of the actual transport state.</summary>
-    [JsonIgnore]
-    public bool IsConnectionEnabled
-    {
-        get => _isConnectionEnabled;
-        set => SetProperty(ref _isConnectionEnabled, value);
-    }
-
-    [JsonIgnore]
-    public bool IsWaitingForReconnect
-    {
-        get => _isWaitingForReconnect;
-        set => SetProperty(ref _isWaitingForReconnect, value);
-    }
-
-    [JsonIgnore]
-    public string RuntimeConnectionDescription
-    {
-        get => _runtimeConnectionDescription;
-        set
-        {
-            if (!SetProperty(ref _runtimeConnectionDescription, value)) return;
-            OnPropertyChanged(nameof(RuntimeStatusText));
-            OnPropertyChanged(nameof(ProtocolStatusText));
-        }
-    }
-
-    [JsonIgnore]
-    public string RuntimeConnectionError
-    {
-        get => _runtimeConnectionError;
-        set
-        {
-            if (SetProperty(ref _runtimeConnectionError, value)) OnPropertyChanged(nameof(HasRuntimeConnectionError));
-        }
-    }
-
-    [JsonIgnore]
-    public bool HasRuntimeConnectionError => !string.IsNullOrWhiteSpace(RuntimeConnectionError);
-
-    [JsonIgnore]
-    public bool IsRuntimeOperationInProgress
-    {
-        get => _isRuntimeOperationInProgress;
-        set
-        {
-            if (SetProperty(ref _isRuntimeOperationInProgress, value))
-                OnPropertyChanged(nameof(CanToggleRuntime));
-        }
-    }
-
-    [JsonIgnore]
-    public bool CanToggleRuntime => SupportsRuntimeToggle && IsEnabled && !IsRuntimeOperationInProgress;
-
-    [JsonIgnore]
-    public string ProtocolStatusText => $"{ProtocolDisplayName} · {RuntimeStatusText}";
 
     /// <summary>
     /// 设备端点地址。使用 Settings 保存，兼容旧的 host/ipAddress 键。
@@ -300,7 +200,7 @@ public class Communication : ObservableObject
                 _ => "tcp-client"
             };
         }
-        set { Settings["protocolKey"] = value ?? ""; OnPropertyChanged(); OnPropertyChanged(nameof(ProtocolStatusText)); OnPropertyChanged(nameof(IsTcpClient)); OnPropertyChanged(nameof(IsTcpServer)); OnPropertyChanged(nameof(IsUdp)); OnPropertyChanged(nameof(SupportsRuntimeToggle)); OnPropertyChanged(nameof(CanToggleRuntime)); OnPropertyChanged(nameof(IsModbus)); OnPropertyChanged(nameof(IsPlainSerial)); OnPropertyChanged(nameof(IsS7)); OnPropertyChanged(nameof(IsCip)); OnPropertyChanged(nameof(IsOpcUa)); OnPropertyChanged(nameof(IsHttp)); OnPropertyChanged(nameof(IsRawProtocol)); }
+        set { Settings["protocolKey"] = value ?? ""; OnPropertyChanged(); OnPropertyChanged(nameof(IsTcpClient)); OnPropertyChanged(nameof(IsTcpServer)); OnPropertyChanged(nameof(IsUdp)); OnPropertyChanged(nameof(SupportsRuntimeToggle)); OnPropertyChanged(nameof(IsModbus)); OnPropertyChanged(nameof(IsPlainSerial)); OnPropertyChanged(nameof(IsS7)); OnPropertyChanged(nameof(IsCip)); OnPropertyChanged(nameof(IsOpcUa)); OnPropertyChanged(nameof(IsHttp)); OnPropertyChanged(nameof(IsRawProtocol)); }
     }
 
     [JsonIgnore] public string ProtocolDisplayName => Settings.TryGetValue("protocolDisplayName", out var value) ? Convert.ToString(value) ?? ConnectionType.ToString() : ProtocolKey == "modbus" ? "Modbus通信" : ConnectionType switch
@@ -430,6 +330,11 @@ public class Communication : ObservableObject
     [JsonIgnore] public bool IsModbusRtu => IsModbus && (ModbusMode is "串口" or "Serial" or "Rtu");
     [JsonIgnore] public bool IsModbusTcp => IsModbus && !IsModbusRtu;
 
+    private bool GetBoolSetting(string key)
+    {
+        if (!Settings.TryGetValue(key, out var value)) return false;
+        return value switch { bool boolean => boolean, _ when bool.TryParse(Convert.ToString(value), out var parsed) => parsed, _ => false };
+    }
     private string GetStringSetting(string key, string fallback = "") => Settings.TryGetValue(key, out var value) ? Convert.ToString(value) ?? fallback : fallback;
     private int GetIntSetting(string key, int fallback = 0)
     {
@@ -469,26 +374,6 @@ public class Communication : ObservableObject
 
     [JsonIgnore]
     public string ConnectionString => GetConnectionString();
-
-    [JsonIgnore]
-    public string RuntimeStatusText => !string.IsNullOrEmpty(RuntimeConnectionDescription) ? RuntimeConnectionDescription : RuntimeStatus switch
-    {
-        CommunicationRuntimeStatus.Connected => "已连接",
-        CommunicationRuntimeStatus.Connecting => "连接中",
-        CommunicationRuntimeStatus.Faulted => "故障",
-        _ => "已断开"
-    };
-
-    private bool GetBoolSetting(string key)
-    {
-        if (!Settings.TryGetValue(key, out var value)) return false;
-        return value switch
-        {
-            bool boolean => boolean,
-            _ when bool.TryParse(Convert.ToString(value), out var parsed) => parsed,
-            _ => false
-        };
-    }
 
     /// <summary>
     /// 通讯设置（JSON格式）

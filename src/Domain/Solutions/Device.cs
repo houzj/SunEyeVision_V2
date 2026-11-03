@@ -1,9 +1,9 @@
 using System.Linq;
 using System;
 using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// 设备类型枚举
@@ -78,7 +78,7 @@ public enum DeviceStatus
 /// <remarks>
 /// 用于管理解决方案中的所有设备，包括相机、光源、PLC等。
 /// </remarks>
-public class Device : ObservableObject
+public class Device
 {
     [System.Text.Json.Serialization.JsonExtensionData]
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
@@ -105,7 +105,7 @@ public class Device : ObservableObject
     public string Name
     {
         get => _name;
-        set => SetProperty(ref _name, value, "设备名称");
+        internal set => _name = value;
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class Device : ObservableObject
     public string Manufacturer
     {
         get => _manufacturer;
-        set => SetProperty(ref _manufacturer, value, "制造商");
+        internal set => _manufacturer = value;
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class Device : ObservableObject
     public string Model
     {
         get => _model;
-        set => SetProperty(ref _model, value, "型号");
+        internal set => _model = value;
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public class Device : ObservableObject
     public string SerialNumber
     {
         get => _serialNumber;
-        set => SetProperty(ref _serialNumber, value, "序列号");
+        internal set => _serialNumber = value;
     }
 
     /// <summary>
@@ -146,7 +146,7 @@ public class Device : ObservableObject
     public string IpAddress
     {
         get => _ipAddress;
-        set => SetProperty(ref _ipAddress, value, "IP地址");
+        internal set => _ipAddress = value;
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public class Device : ObservableObject
     public int Port
     {
         get => _port;
-        set => SetProperty(ref _port, value, "端口号");
+        internal set => _port = value;
     }
 
     /// <summary>
@@ -164,7 +164,7 @@ public class Device : ObservableObject
     public DeviceStatus Status
     {
         get => _status;
-        set => SetProperty(ref _status, value, "设备状态");
+        internal set => _status = value;
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ public class Device : ObservableObject
     public bool IsEnabled
     {
         get => _enabled;
-        set => SetProperty(ref _enabled, value, "是否启用");
+        internal set => _enabled = value;
     }
 
     /// <summary>
@@ -182,7 +182,7 @@ public class Device : ObservableObject
     public string? WorkflowRef
     {
         get => _workflowRef;
-        set => SetProperty(ref _workflowRef, value, "引用工作流");
+        internal set => _workflowRef = value;
     }
 
     /// <summary>
@@ -191,7 +191,7 @@ public class Device : ObservableObject
     public string Description
     {
         get => _description;
-        set => SetProperty(ref _description, value, "设备描述");
+        internal set => _description = value;
     }
 
     /// <summary>
@@ -290,3 +290,4 @@ public class Device : ObservableObject
         }
     }
 }
+

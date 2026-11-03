@@ -25,7 +25,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         internal readonly Queue<ImageSourceReadReceipt> Completed = new();
     }
     private readonly object _gate = new();
-    private readonly Dictionary<(Guid Session, Guid Node), Cursor> _cursors = new();
+    private readonly Dictionary<(Guid Session, Guid Node, Guid? Debug), Cursor> _cursors = new();
     private readonly ICameraCaptureService? _cameraService;
     private bool _disposed;
     public ImageSourceHostInputFactory(ICameraCaptureService? cameraService = null) => _cameraService = cameraService;
@@ -61,7 +61,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         ArgumentNullException.ThrowIfNull(context);
         context.EnsureCurrent();
         var signature = Describe(context).Value;
-        var key = (context.EditSessionId, context.NodeGeneration);
+        var key = (context.EditSessionId, context.NodeGeneration, context.DebugScopeId);
         lock (_gate)
         {
             if (!_cursors.TryGetValue(key, out var cursor) || cursor.Signature != signature) return Array.Empty<ImageSourceReadReceipt>();
@@ -78,12 +78,12 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         lock (_gate)
             return !_disposed && !context.NodeRetirement.IsCancellationRequested &&
                 receipt.SessionId == context.EditSessionId && receipt.NodeGeneration == context.NodeGeneration &&
-                _cursors.TryGetValue((context.EditSessionId, context.NodeGeneration), out var cursor) &&
+                _cursors.TryGetValue((context.EditSessionId, context.NodeGeneration, context.DebugScopeId), out var cursor) &&
                 cursor.Signature == signature && cursor.CursorId == receipt.CursorId && cursor.SelectionVersion == receipt.SelectionVersion;
     }
     private void PublishReceipt(HostInputFactoryContext context, Cursor cursor, long version, LocalImageReadRound round)
     {
-        var key = (context.EditSessionId, context.NodeGeneration);
+        var key = (context.EditSessionId, context.NodeGeneration, context.DebugScopeId);
         lock (_gate)
         {
             if (_disposed || context.NodeRetirement.IsCancellationRequested ||
@@ -111,7 +111,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         context.EnsureCurrent();
         context.NodeRetirement.ThrowIfCancellationRequested();
         var (policy, signature) = Describe(context);
-        var key = (context.EditSessionId, context.NodeGeneration);
+        var key = (context.EditSessionId, context.NodeGeneration, context.DebugScopeId);
         Cursor? replaced = null;
         Cursor cursor;
         lock (_gate)
@@ -124,7 +124,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
                 cursor = new Cursor(signature, new ImageSourceRunSequence(context.Node.WorkflowId, new[] { policy }, context.ResourcePaths));
                 _cursors[key] = cursor;
                 var captured = cursor;
-                cursor.Retirement = context.NodeRetirement.Register(() => Retire(key, captured));
+                cursor.Retirement = (context.DebugScopeId is null ? context.NodeRetirement : context.DebugRetirement).Register(() => Retire(key, captured));
             }
         }
         if (replaced is not null) { replaced.Retirement.Dispose(); replaced.Sequence.Dispose(); }
@@ -133,7 +133,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         return cursor;
     }
 
-    private void Retire((Guid Session, Guid Node) key, Cursor cursor)
+    private void Retire((Guid Session, Guid Node, Guid? Debug) key, Cursor cursor)
     {
         lock (_gate)
             if (_cursors.TryGetValue(key, out var current) && ReferenceEquals(current, cursor)) _cursors.Remove(key);

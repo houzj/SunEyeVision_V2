@@ -64,8 +64,9 @@ internal static class Program
         var receipts = factory.TakeCompletedReads(context);
         if (receipts.Count != 1 || receipts[0].Read.Entry.OriginalIndex != 1 || !factory.IsReceiptCurrent(context, receipts[0]))
             throw new Exception("选图后的读取收据或实际来源不一致");
+        using var editorDebug = session.OpenDebugSession(flow.Id, blob);
         var privateDraft = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
-        using (var previewDebug = session.CaptureDebug(privateDraft, null, _ => { }, previewInputs: new[] { "input.image" }))
+        using (var previewDebug = editorDebug.Capture(privateDraft, null, _ => { }, previewInputs: new[] { "input.image" }))
         {
             using (var preview = previewDebug.CaptureInputs())
             {
@@ -74,28 +75,28 @@ internal static class Program
                 try { previewDebug.Dispose(); throw new Exception("预览未排空时调试意外释放"); } catch (InvalidOperationException) { }
             }
         }
-        using (var debug = session.CaptureDebug(privateDraft, null, _ => { }))
+        using (var debug = editorDebug.Capture(privateDraft, null, _ => { }))
         using (var debugResult = debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
         {
             if (!debugResult.IsSuccess) throw new Exception("真实私有 Blob 调试失败");
             debug.AcceptParameters();
         }
-        using (var stale = session.CaptureDebug(privateDraft, null, _ => { }))
+        using (var stale = editorDebug.Capture(privateDraft, null, _ => { }))
         {
             var field = privateDraft.Configuration.Fields.Capture().First(pair => pair.Value is ConstantSetting);
             privateDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [field.Key] = field.Value });
             try { using var ignored = stale.ExecuteAsync().GetAwaiter().GetResult(); throw new Exception("旧草稿调试意外成功"); }
             catch (InvalidOperationException) { }
         }
-        using (var cancelledDebug = session.CaptureDebug(privateDraft, null, _ => { }))
+        using (var cancelledDebug = editorDebug.Capture(privateDraft, null, _ => { }))
         {
             cancelledDebug.Cancel();
             try { using var ignored = cancelledDebug.ExecuteAsync().GetAwaiter().GetResult(); throw new Exception("取消的调试意外成功"); }
             catch (OperationCanceledException) { }
         }
-        if (session.ActiveActivities.Count != 0) throw new Exception("取消调试后方案活动未释放");
+        if (session.ActiveActivities.Count != 1) throw new Exception("取消调试后仍有未释放的调用活动");
         var debugSourceDraft = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
-        using (var staleSource = session.CaptureDebug(debugSourceDraft, null, _ => { }))
+        using (var staleSource = editorDebug.Capture(debugSourceDraft, null, _ => { }))
         {
             using (var replacing = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
             using (var replaced = replacing.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
@@ -135,6 +136,24 @@ internal static class Program
             catch (OperationCanceledException) { }
         }
         if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("取消前未读取却生成收据");
+        editorDebug.Dispose();
+        using (var sourceEditor = session.OpenDebugSession(flow.Id, source))
+        {
+            string ReadPrivate()
+            {
+                var privateSource = session.Editing.Host.BeginEdit(flow.Id, source.Id);
+                using var invocation = sourceEditor.Capture(privateSource, null, _ => { }, hostFactory: factory);
+                using var result = invocation.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+                if (!result.IsSuccess) throw new Exception("私有图像源执行失败");
+                using var reader = result.AcquireReader();
+                return reader.Values!.Get<string>("output.file");
+            }
+            if (!string.Equals(ReadPrivate(), imagePath, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(ReadPrivate(), imagePath2, StringComparison.OrdinalIgnoreCase))
+                throw new Exception("私有图像源游标没有独立跨次切换");
+            if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("私有读取污染正式运行回执");
+        }
+        Console.WriteLine("PASS: 私有图像源连续游标与正式运行隔离");
         var remove = session.PrepareGraphEdit(flow.Id);
         remove.DeleteNodesAndConnections(new[] { source }, Array.Empty<ConnectionDefinition>());
         session.CommitGraphEdit(remove, "删除图像源");

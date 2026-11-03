@@ -10,8 +10,8 @@ namespace SunEyeVision.Application;
 public sealed partial class DocumentSession
 {
     /// <summary>Capture one private draft against the current document and retained published readers.</summary>
-    public DocumentDebugInvocation CaptureDebug(NodeConfigurationEditDraft draft, IHostInputPreparer? hostInput,
-        Action<string> log, CancellationToken cancellation = default, IReadOnlyCollection<string>? previewInputs = null)
+    internal DocumentDebugInvocation CaptureDebug(DocumentDebugSession debugSession, NodeConfigurationEditDraft draft, IHostInputPreparer? hostInput,
+        Action<string> log, CancellationToken cancellation, IReadOnlyCollection<string>? previewInputs, IHostInputFactory? hostFactory, Action onReleased)
     {
         ArgumentNullException.ThrowIfNull(draft); ArgumentNullException.ThrowIfNull(log);
         EnsureOwnerCanEdit();
@@ -22,8 +22,9 @@ public sealed partial class DocumentSession
         var displayReaders = new List<DeclaredOutputReader>();
         ExecutionVariableValues? variables = null;
         ToolExecutionOwner? debugOwner = null;
+        IHostInputPreparer? createdHost = null;
         IDisposable? activity = AcquireActivityLease("私有工具调试");
-        CancellationTokenSource? debugCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        CancellationTokenSource? debugCancellation = null;
         try
         {
             Dictionary<WorkflowDefinition, GraphState> states;
@@ -39,6 +40,8 @@ public sealed partial class DocumentSession
                 try
                 {
                     _ = RequireCurrent(proposal.Opening);
+                    var lifetime = CaptureNodeLifetime(proposal.Opening.Scope, draft.Node);
+                    debugCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellation, lifetime.Retirement, debugSession.Retirement);
                     flows = Document.Workflows.ToArray();
                     states = flows.ToDictionary(flow => flow, GraphState.Capture,
                         (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
@@ -85,6 +88,23 @@ public sealed partial class DocumentSession
                     var capturedVariables = CaptureRuntimeVariables(flows, definitions);
                     variables = capturedVariables.Values;
                     producers = capturedVariables.Producers;
+                    if (hostInput is null && previewInputs is null && hostFactory is not null && proposal.Candidate.HostDeclarations.HostInputs is { } declaration)
+                    {
+                        var formal = CaptureHostInputContextCore(proposal.Opening.Scope, proposal.Opening)
+                            ?? throw new InvalidOperationException("调试宿主声明缺失。");
+                        var configuration = proposal.Candidate.Configuration;
+                        var context = new HostInputFactoryContext(formal.Node, formal.EditSessionId, formal.NodeGeneration,
+                            formal.NodeRetirement, configuration.ToolId, proposal.Candidate.Schema, proposal.Candidate.SettingsSchema,
+                            new FieldSettings(configuration.Fields.Declarations.Values, configuration.Fields.Capture()),
+                            configuration.CaptureCurrentValues(), declaration, formal.ResourcePaths, () =>
+                            {
+                                formal.EnsureCurrent();
+                                if (debugSession.Retirement.IsCancellationRequested || !draft.IsCapturedCurrent(token))
+                                    throw new InvalidOperationException("私有调试草稿或编辑器已退役。");
+                            }, debugSession.Id, debugSession.Retirement);
+                        createdHost = hostFactory.Create(context);
+                        hostInput = createdHost;
+                    }
                     if (!draft.IsCapturedCurrent(token) || !states.All(pair => pair.Value.MatchesCurrent(pair.Key)))
                         throw new InvalidOperationException("调试捕获期间草稿或流程已变化。");
                 }
@@ -133,10 +153,11 @@ public sealed partial class DocumentSession
             var target = workflow.Nodes.Single(item => item.Node.NodeId == draft.Node.Id).Node;
             debugOwner = new ToolExecutionOwner();
             var invocation = ExecutionDebugInvocation.Capture(workflow, target, debugOwner, readers, displayReaders,
-                snapshots.Values.ToArray(), producers, variables, hostInput, null, null, Current, log, debugCancellation.Token, previewInputs);
+                snapshots.Values.ToArray(), producers, variables, hostInput, null, null, Current, log, (debugCancellation ?? throw new InvalidOperationException("调试取消域缺失。")).Token, previewInputs);
             variables.Dispose(); variables = null;
-            var wrapper = new DocumentDebugInvocation(draft, token, invocation, debugOwner, Current, activity, debugCancellation);
+            var wrapper = new DocumentDebugInvocation(draft, token, invocation, debugOwner, Current, activity, debugCancellation, onReleased);
             debugCancellation = null;
+            createdHost = null;
             activity = null;
             return wrapper;
         }
@@ -145,6 +166,7 @@ public sealed partial class DocumentSession
             var errors = new List<Exception> { failure };
             foreach (var reader in readers.Concat(displayReaders)) try { reader.Dispose(); } catch (Exception error) { errors.Add(error); }
             try { variables?.Dispose(); } catch (Exception error) { errors.Add(error); }
+            try { createdHost?.Dispose(); } catch (Exception error) { errors.Add(error); }
             try { debugOwner?.Retire(); } catch (Exception error) { errors.Add(error); }
             try { activity?.Dispose(); } catch (Exception error) { errors.Add(error); }
             try { debugCancellation?.Dispose(); } catch (Exception error) { errors.Add(error); }
@@ -165,9 +187,10 @@ public sealed class DocumentDebugInvocation : IDisposable
     private int _completed, _accepted, _disposed;
     private IDisposable? _activity;
     private CancellationTokenSource? _cancellation;
+    private Action? _onReleased;
     internal DocumentDebugInvocation(NodeConfigurationEditDraft draft, NodeDraftDebugToken token,
-        ExecutionDebugInvocation invocation, ToolExecutionOwner owner, Func<bool> isCurrent, IDisposable activity, CancellationTokenSource cancellation)
-    { _draft = draft; _token = token; _invocation = invocation; _owner = owner; _isCurrent = isCurrent; _activity = activity; _cancellation = cancellation; }
+        ExecutionDebugInvocation invocation, ToolExecutionOwner owner, Func<bool> isCurrent, IDisposable activity, CancellationTokenSource cancellation, Action onReleased)
+    { _draft = draft; _token = token; _invocation = invocation; _owner = owner; _isCurrent = isCurrent; _activity = activity; _cancellation = cancellation; _onReleased = onReleased; }
     public async Task<DeclaredOutputSnapshot> ExecuteAsync()
     {
         var result = await _invocation.ExecuteAsync().ConfigureAwait(false);
@@ -193,6 +216,7 @@ public sealed class DocumentDebugInvocation : IDisposable
         {
             Interlocked.Exchange(ref _cancellation, null)?.Dispose();
             Interlocked.Exchange(ref _activity, null)?.Dispose();
+            Interlocked.Exchange(ref _onReleased, null)?.Invoke();
         }
     }
 }

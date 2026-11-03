@@ -59,7 +59,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
@@ -75,11 +75,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
@@ -87,7 +87,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D"
+          "sha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeAdvancedPresenter.cs",
@@ -207,7 +207,7 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "localSha256": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A",
+          "localSha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
@@ -217,7 +217,7 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "localSha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D",
+          "localSha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
@@ -271,7 +271,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -279,7 +279,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D"
+          "sha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -380,7 +380,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
@@ -595,7 +595,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -708,7 +708,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         }
       ],
       "consumers": [
@@ -786,7 +786,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         }
       ],
       "consumers": [
@@ -1068,7 +1068,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
@@ -1237,7 +1237,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "localSha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "localSha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -1363,11 +1363,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -1387,11 +1387,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
@@ -1415,7 +1415,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
-          "sha256": "547881A566AB28F9FAB34CD8C7DC006F0C2707EB810A69C119258D620982F1F9"
+          "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -1423,7 +1423,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
-          "sha256": "653EFCA632675F3FDCBCEF0E65C1E428F75C89326CAF1A5503FD087662433C5D"
+          "sha256": "9911C695B3C030526EA89CEF9ADA69E9BCA81657BBD2E2D540A43B5C68FDCDA2"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -1592,7 +1592,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "localSha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "localSha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -1718,11 +1718,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -1751,7 +1751,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC",
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1766,7 +1766,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D",
+          "sha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         }
       ],
@@ -1894,7 +1894,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
@@ -1902,7 +1902,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D"
+          "sha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
@@ -3121,7 +3121,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -3149,7 +3149,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Fields/FieldGroupCandidate.cs",
@@ -3165,7 +3165,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "26B4A859DE94DA3A779269330152B3213E57C691EEAEE61266C583021BFD9F0D"
+          "sha256": "55BEC8D00346DF49BAE98B5F02A752B5D9DDF65F14BD1A05F4AF84EC81F15745"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
@@ -3748,7 +3748,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "localSha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "localSha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -4146,11 +4146,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4326,7 +4326,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "sha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "sha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeDictionary.xaml.cs",
@@ -4374,7 +4374,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
@@ -4398,7 +4398,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -4740,7 +4740,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "localSha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "localSha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -4875,11 +4875,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4951,7 +4951,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "sha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "sha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeDictionary.xaml.cs",
@@ -4999,7 +4999,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
@@ -5019,7 +5019,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -6086,7 +6086,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "A8EB37B5F04BB958F85D568775257A30069D0FAEAF812A94F1F9D68FDD116B1A"
+          "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -6508,7 +6508,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
-          "sha256": "AA6902D8B16926EC2F8297BE72EDF5585DF404F6416EDCC4545BF0E645C06FA0"
+          "sha256": "EBC2DF1CDC5DB4E3A985304A74CC986773B0B5D8C419E7CA8C950257DFD500D8"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeDictionary.xaml.cs",
@@ -7112,20 +7112,20 @@
     ]
   },
   "currentC05NumericIntegration": {
-    "status": "未知引用隐藏绑定与原生弹窗修正已合入，正式重建验收待完成",
+    "status": "C05正式闭口见外部正式回执；本项文件SHA已同步C06共用源码，C06正式验收待完成",
     "evidence": "docs/collaboration/evidence/C05_NUMERIC_CATALOG_SYNC_20261103.json",
     "files": [
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-        "sha256": "413608FFA1E1EDD7A27B699D6B04F45662FD6AC22AAF2E7A2468F3201F9261C0"
+        "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-        "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
+        "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
-        "sha256": "547881A566AB28F9FAB34CD8C7DC006F0C2707EB810A69C119258D620982F1F9"
+        "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0"
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -7133,15 +7133,15 @@
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
-        "sha256": "653EFCA632675F3FDCBCEF0E65C1E428F75C89326CAF1A5503FD087662433C5D"
+        "sha256": "9911C695B3C030526EA89CEF9ADA69E9BCA81657BBD2E2D540A43B5C68FDCDA2"
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-        "sha256": "A142B966609A8935C926AD8622F20A2302C2594182F76B27B3BE42251B078DDC"
+        "sha256": "9498F72FF5131BD628B4D48525B34A265C3E50B74E32B2E1BA543A153BC21B29"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-        "sha256": "F01A564AF747FA5721FAC23FA7641A792E984D0C4C7365D02B1B49EF2396A789"
+        "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -7173,5 +7173,61 @@
       }
     ],
     "sourceBaseline": "48678980fc3b205c90ed8c6e37b2e2ac545129ec"
+  },
+  "currentC06NumericIntegration": {
+    "status": "完整公共与真实消费者已集成，正式构建验收待完成；非功能闭口",
+    "sourceBaseline": "656470c4d49f33f82317a5bd2802ab4abe8e6bea",
+    "evidence": "docs/collaboration/evidence/C06_WHOLE_CONTROL_MIGRATION_CONTRACT_20261103.md",
+    "publicCandidate": "docs/collaboration/evidence/C06_NUMERIC_RANGE_PUBLIC_CANDIDATE_20261103.json",
+    "files": [
+      {
+        "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+        "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8",
+        "gitBlob": "ae705c72fc69fee26d79fd61e677c9fd3f3f5d9b"
+      },
+      {
+        "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+        "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA",
+        "gitBlob": "6f25b4106b8a69d5e66a8372b8002cd2911c6438"
+      },
+      {
+        "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+        "sha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6",
+        "gitBlob": "547e5049171dd606bb0403064241a8a79b34722f"
+      },
+      {
+        "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
+        "sha256": "B494FA3FA9CACCA10BECB6B75B6BF526F74EBD87E85A92AF50A4B4EB9BBCD3F2",
+        "gitBlob": "8c03cd46ba217caec5e14dcedab0ed43abb17243"
+      },
+      {
+        "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+        "sha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316",
+        "gitBlob": "be7914378ef840cc8e96d7bcf67b06b535f8dce3"
+      },
+      {
+        "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "sha256": "C87AC43DD4C9BCE59AA7329458036FD79FD16C2EC7D8FBC09D7B59A9BB4A37CD",
+        "gitBlob": "47422a1bdc9d06138e1e49d9e95358e4efbb52a6"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE",
+        "gitBlob": "7b1ea80794a02f9ab61c823c3e7d222d66f758e4"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+        "sha256": "E63E045EAECAE02F4284A46D86066536AA2180FF97BAC0B3096CF170891B927E",
+        "gitBlob": "212df8959431deef3e62e1f5df7629b94557c896"
+      }
+    ],
+    "adaptations": [
+      "typed long bridge for original Int32, checked Int64 intermediate safety inherited from C05; extreme overflow domain not claimed VM-equivalent",
+      "ordinary typed callback/InvariantCulture string bridge is host adaptation; original local parse0/exceptionMax only comparison, never known/execution/formal defaults",
+      "host read/accept uses existing Changed/state owner protected projection, original NativeValue setter retains synchronous TwoWay notification",
+      "existing complete group draft transaction replaces native global writes; no SDK or Workflow interface expansion",
+      "borrowed native generation only retires obsolete owner callbacks; original normal dispatcher/event ordering retained",
+      "per-owned reference binding cleanup runs outside business input gates, retains model/reference/raw and never writes source/globalValidation"
+    ]
   }
 }

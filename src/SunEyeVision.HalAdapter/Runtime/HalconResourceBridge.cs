@@ -17,8 +17,11 @@ public static class HalconResourceBridge
             d = pose.Get<double>("m21"), e = pose.Get<double>("m11");
         using var homography = new HTuple(new[] { a, b, pose.Get<double>("offset-y") + .5 - .5 * (a + b),
             d, e, pose.Get<double>("offset-x") + .5 - .5 * (d + e) });
-        HOperatorSet.AffineTransRegion(source, out var transformed, homography, "nearest_neighbor");
-        using (transformed) return new HRegion(transformed);
+        return CreateWithoutImplicitClipping(() =>
+        {
+            HOperatorSet.AffineTransRegion(source, out var transformed, homography, "nearest_neighbor");
+            using (transformed) return new HRegion(transformed);
+        });
     }
 
 
@@ -74,6 +77,8 @@ public static class HalconResourceBridge
 
     private static HRegion CopyRegion(IRegionReadLease reader, int width, int height)
     {
+        if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+        if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
         if (reader.Frame.Domain != CoordinateDomain.Image || reader.Frame.Unit != CoordinateUnit.Pixel)
             throw new InvalidDataException("Blob region must use image pixel coordinates.");
         if (reader.RunCount < 0 || reader.RunCount > (long)width * height)
@@ -100,8 +105,43 @@ public static class HalconResourceBridge
         using var rows = new HTuple(runs.Select(r => r.Row).ToArray());
         using var starts = new HTuple(runs.Select(r => r.FirstColumn).ToArray());
         using var ends = new HTuple(runs.Select(r => r.LastColumnInclusive).ToArray());
-        HOperatorSet.GenRegionRuns(out var value, rows, starts, ends);
-        using (value) return new HRegion(value);
+        return CreateWithoutImplicitClipping(() =>
+        {
+            HOperatorSet.GenRegionRuns(out var value, rows, starts, ends);
+            using (value) return new HRegion(value);
+        });
+    }
+
+    // Region runs carry an explicit validated pixel grid. Native creation must not
+    // clip them to the previous image size of this worker thread. The same rule
+    // applies to affine results before the caller's explicit target-domain intersection.
+    private static HRegion CreateWithoutImplicitClipping(Func<HRegion> create)
+    {
+        HOperatorSet.GetSystem("tsp_clip_region", out var previous);
+        HRegion? result = null;
+        Exception? failure = null;
+        try
+        {
+            HOperatorSet.SetSystem("tsp_clip_region", "false");
+            result = create();
+            return result;
+        }
+        catch (Exception error) { failure = error; throw; }
+        finally
+        {
+            var cleanup = new List<Exception>();
+            try { HOperatorSet.SetSystem("tsp_clip_region", previous); }
+            catch (Exception error) { cleanup.Add(error); }
+            try { previous.Dispose(); }
+            catch (Exception error) { cleanup.Add(error); }
+            if (cleanup.Count != 0)
+            {
+                if (result is not null)
+                    try { result.Dispose(); } catch (Exception error) { cleanup.Add(error); }
+                if (failure is not null) cleanup.Insert(0, failure);
+                throw new AggregateException("区域创建后的线程状态或资源恢复失败。", cleanup);
+            }
+        }
     }
 
     public static FrozenRegionResource CaptureRegion(HRegion source, CoordinateFrame coordinates, ImageFrameAddress frame)

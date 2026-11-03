@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="../Domain/SunEyeVision.Domain.csproj" />
     <ProjectReference Include="../Execution/SunEyeVision.Execution.csproj" />
+    <ProjectReference Include="../Persistence/SunEyeVision.Persistence.csproj" />
     <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </ItemGroup>

@@ -1,3 +1,9 @@
+## 2026-11-03 VS 全项目加载失败修复
+
+用户报告87f4解决方案51项目全卸载。实际项目文件51/51均存在；本机VS18 Full MSBuild复现Directory.Build.props的GetRelativePath MSB4186（CLI Core可用，Full不提供此API）。已替换Full/Core共同API，51项目逐一用VS自带MSBuild评估全部通过；UI正式输出及Probe隔离输出同时核实。vs-project-evaluation-before/after与vs-all-projects-evaluation-20261103.json记录证据。未控制用户VS/关闭编辑；界面卸载状态需重新加载，不删除缓存。
+
+当前整合：1a25c8ee8实际参数窗调试已本树UI Release0错/7真实窗口通过，实际Main调试/正式运行/保存重开/关闭7项通过；Domain冻结声明22通过。C测试919/940整合至39444324b/bdc89e0f5，尚待根同版测试。A完整四非UI候选af3de8199待合，B四周边UI测试仍在途。installer退休产物清理与Domain测试源码尚未归并提交，保留在途；原目标全平台范围和未实现节点复制/连续运行等保持，Group暂停。
+
 ## 2026-11-03 当前闭口快照及完整验证图
 
 已闭口本批：043旧Workflow退出、87f中立消费者（正常UI0错、UI191、Session23、Execution16、真实ControlNamingProbe图像/ROI通过）。当前合B7e实际窗口调试；A四非UI、B周边UI测试、C图与画布测试独立迁移。根新增15实际新架构验证工程进sln，首次全量35错，不能仅凭UI191签整平台。tests非.Tests支持宿主输出隔离至Release/_validation/bin；包版本/hash审计未升级。根配置probe先构建依赖改变产品哈希，被准入正确拒入，最终重封no-build复验，不绕过门禁。

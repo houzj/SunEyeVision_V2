@@ -54,8 +54,10 @@
     <OutDir Condition="'$(Configuration)'=='Release' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Release\</OutDir>
     <!-- 所有 tests 下的非 xUnit 验证宿主也必须隔离；不能写入正式 App 目录。
          各 ProjectReference 子项目独立评估此属性，产品工程仍按自身输出构建。 -->
-    <_ValidationProjectRelativePath>$([System.IO.Path]::GetRelativePath('$(WorktreeBasePath)', '$(MSBuildProjectDirectory)'))</_ValidationProjectRelativePath>
-    <_IsValidationSupportProject Condition="$(_ValidationProjectRelativePath.StartsWith('tests\')) Or $(_ValidationProjectRelativePath.StartsWith('tests/'))">true</_IsValidationSupportProject>
+    <!-- VS 使用 Full MSBuild；这里只用 Full / Core 共同具备的路径及字符串函数。 -->
+    <_ValidationProjectDirectory>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)').Replace('\','/').ToUpperInvariant())/</_ValidationProjectDirectory>
+    <_ValidationProjectsRoot>$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)tests').Replace('\','/').ToUpperInvariant())/</_ValidationProjectsRoot>
+    <_IsValidationSupportProject Condition="$(_ValidationProjectDirectory.StartsWith('$(_ValidationProjectsRoot)'))">true</_IsValidationSupportProject>
     <OutputPath Condition="'$(_IsValidationSupportProject)'=='true' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)Release\_validation\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
     <OutDir Condition="'$(_IsValidationSupportProject)'=='true' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(OutputPath)</OutDir>
     <AppendTargetFrameworkToOutputPath Condition="'$(_IsValidationSupportProject)'=='true'">false</AppendTargetFrameworkToOutputPath>

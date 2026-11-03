@@ -219,7 +219,43 @@ Check(publisher.GetAwaiter().GetResult(), "已有合法发布应完成后再进�
 releaseTask.GetAwaiter().GetResult();
 finished.Set(); watchdog.Join();
 Console.WriteLine("PASS 真实迟到发布回调与文档编辑锁序");
-Console.WriteLine("16 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
+var presentationSession = manager.CreateNew();
+var presentationFlow = presentationSession.GetWorkflows().Single();
+var presentationDraft = presentationSession.PrepareGraphEdit(presentationFlow.Id);
+var presentationNode = presentationSession.CreateNode(presentationDraft, "TransactionProbe", new CanvasPoint(0, 0));
+presentationSession.CommitGraphEdit(presentationDraft, "呈现节点");
+var presentation = presentationSession.AdmitPresentation(presentationFlow.Id, presentationNode.Id);
+Check(presentation.IsCurrent && presentationSession.GetNodeSettingsSchema(presentationFlow.Id, presentationNode.Id)!.Inputs.Any(port => port.Id == "threshold"),
+    "呈现必须使用实际节点声明。");
+var presentationMove = presentationSession.PrepareGraphEdit(presentationFlow.Id);
+presentationMove.MoveNode(presentationNode, new CanvasPoint(2, 3));
+presentationSession.CommitGraphEdit(presentationMove, "呈现保持");
+Check(presentation.IsCurrent, "位置编辑不得错误退役节点呈现。");
+var retirementCalls = 0;
+using var presentationRegistration = presentation.RetirementToken.Register(() =>
+{
+    retirementCalls++;
+    Check(!presentation.IsCurrent, "退役回调不得看到仍可用的能力。");
+    Reject(() => presentationSession.PrepareGraphEdit(presentationFlow.Id));
+    // Another thread must be able to read while cleanup callbacks are running.
+    Check(Task.Run(() => presentationSession.GetWorkflows().Count).Wait(TimeSpan.FromSeconds(2)),
+        "呈现清理不能在持有方案门锁时调用。");
+    throw new InvalidOperationException("受控呈现清理失败");
+});
+var presentationDelete = presentationSession.PrepareGraphEdit(presentationFlow.Id);
+presentationDelete.DeleteNodesAndConnections(new[] { presentationNode }, Array.Empty<ConnectionDefinition>());
+presentationSession.CommitGraphEdit(presentationDelete, "删除呈现节点");
+Check(retirementCalls == 1 && !presentation.IsCurrent && presentationSession.LastPresentationReleaseError is AggregateException,
+    "清理失败不得回滚删除，且必须保留诊断。");
+Check(presentationSession.Undo() && ReferenceEquals(presentationFlow.Nodes.Single(), presentationNode) && !presentation.IsCurrent,
+    "撤销恢复实体不能复活已退出窗口的呈现能力。");
+var restoredPresentation = presentationSession.AdmitPresentation(presentationFlow.Id, presentationNode.Id);
+Check(restoredPresentation.IsCurrent, "恢复实体须重新准入独立呈现生命周期。");
+manager.CloseCurrent();
+Check(!restoredPresentation.IsCurrent && restoredPresentation.RetirementToken.IsCancellationRequested,
+    "方案关闭必须退役仍打开的呈现能力。");
+Console.WriteLine("PASS 节点呈现准入、删除退役、回调隔离、撤销不复活和方案关闭");
+Console.WriteLine("17 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }

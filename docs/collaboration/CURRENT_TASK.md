@@ -1,3 +1,7 @@
+## 2026-11-03 真实节点呈现生命周期接线
+
+根新增实际节点签发 ToolPresentationAdmission、Settings/Display schema 查询，删除时锁外取消且撤销不复活旧视图，关闭方案统一退役。17项实际Session事务探针通过，日志Release/_validation/presentation-session-20261103.log；中立组件，尚非WPF/正式工具或全量通过。B接宿主工厂与实际参数窗，不给工具引入App依赖；保存参与者统一提交/回执仍由根接续，A运行闭包与C根配置继续独立worktree。主HTML同步。
+
 ## 2026-11-03 恢复目标并核收侧聊工具开发边界
 
 用户已直接恢复全平台目标；A执行与Application运行闭包、B完整UI与编辑/参数开窗、C通信三线按原独立worktree恢复，未终止无法归属的dotnet进程。执行5589候选已合637cbf230；GraphDependencySnapshot真实直接前驱/边查询已固定cc419da79供A整图捕获，缺失stale来源不制造节点。

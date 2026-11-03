@@ -67,7 +67,7 @@ public sealed partial class DocumentSession
             finally { _preparing = false; }
         }
         mutation.Dispose();
-        NotifyChanged(change);
+        CompleteChangePublication(change);
         return change;
     }
 
@@ -104,7 +104,7 @@ public sealed partial class DocumentSession
             finally { _preparing = false; }
         }
         mutation.Dispose();
-        NotifyChanged(change);
+        CompleteChangePublication(change);
         return true;
     }
 
@@ -121,6 +121,7 @@ public sealed partial class DocumentSession
     // roll it back, and every invalidated domain must still be retired before new admission.
     private void RetireChangedDomains(DocumentChangeSet change)
     {
+        QueueRemovedPresentations(change);
         var failures = new List<Exception>();
         foreach (var identity in change.ExecutionInvalidatedNodes)
             try { _owner.RetireNode(ExecutionNodeSnapshot.MakeOwnerDomainId(identity.WorkflowId, identity.NodeId)); }

@@ -94,7 +94,7 @@ public sealed partial class DocumentSession
             finally { _preparing = false; }
         }
         mutation.Dispose();
-        if (receipt.Change is { } committed) NotifyChanged(committed);
+        if (receipt.Change is { } committed) CompleteChangePublication(committed);
         return receipt;
     }
 

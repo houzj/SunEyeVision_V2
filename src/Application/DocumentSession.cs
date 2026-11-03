@@ -282,13 +282,15 @@ public sealed partial class DocumentSession : IDisposable
             _definitions.Clear();
         }
         _directoryRetirement.Dispose();
+        Exception? presentationFailure = null;
+        try { RetirePresentations(); } catch (Exception error) { presentationFailure = error; }
         Exception? editingFailure = null;
         try { Editing.Dispose(); editingFailure = Editing.LastReleaseError; } catch (Exception error) { editingFailure = error; }
         Exception? historyFailure = null;
         try { History.Dispose(); } catch (Exception error) { historyFailure = error; }
         Exception? decodedResourceFailure = null;
         try { ReleaseDecodedResources(); } catch (Exception error) { decodedResourceFailure = error; }
-        var failures = new[] { retireFailure, editingFailure, historyFailure, decodedResourceFailure }.OfType<Exception>().ToArray();
+        var failures = new[] { retireFailure, presentationFailure, editingFailure, historyFailure, decodedResourceFailure }.OfType<Exception>().ToArray();
         if (failures.Length == 1) throw failures[0];
         if (failures.Length > 1) throw new AggregateException("方案关闭时部分清理失败。", failures);
     }

@@ -1,3 +1,7 @@
+## 2026-11-03 运行结果与会话释放集中集成
+
+合入A4b51241bd与945锁外读者/无上下文通知修正（本线59d5517fb），根补失效reader队列锁外释放以及Dispose在Editing/History后decoded前释放结果。真实关闭泄漏负例已转正，Execution11/11（含最后会话引用与外部借用/Undo），19Session事务复验通过。日志session-runtime-publications-20261103-integrated.log、session-runtime-transaction-integration-20261103.log；首次NETSDK1004缺assets已锁定还原，旧失败保留。主HTML同步。不代表正式ImageLoad→Blob/主窗/全量通过；B完整UI、C引用来源查询及SaveAs基址只读复现、A调试/运行异常继续。
+
 ## 2026-11-03 保存统一接受参与者编辑与回执
 
 已集成B57322cecd为f596ec383（保本线Execution测试原文件，新增原Editing测试目录），CaptureForSave/Save/SaveAs/SaveCopy统一Editing.Apply，锁外准备/回执后捕获正式文档；19场景通过，参数+根配置重开、副本身份、取消、准备/回执失败保护原文件均已验。真实Session/OpenCV资源探针0退出，解码取消、替换拒绝、关闭释放/文件SHA保护通过；仍非正式工具/WPF或整平台完成。原主HTML同步，B真实参数窗/相机生命周期、A运行闭包、C根配置继续；当前本线Release仍在途非封包，不能借局部通过交付。

@@ -122,6 +122,7 @@ public sealed partial class DocumentSession
     private void RetireChangedDomains(DocumentChangeSet change)
     {
         QueueRemovedPresentations(change);
+        _invalidatedRuntimePublications.AddRange(TakeInvalidatedRuntimePublications(change.ExecutionInvalidatedNodes));
         var failures = new List<Exception>();
         foreach (var identity in change.ExecutionInvalidatedNodes)
             try { _owner.RetireNode(ExecutionNodeSnapshot.MakeOwnerDomainId(identity.WorkflowId, identity.NodeId)); }

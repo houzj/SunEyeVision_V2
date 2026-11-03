@@ -9,6 +9,7 @@ public sealed partial class DocumentSession
     private readonly Dictionary<SunEyeVision.Domain.Workflows.NodeDefinition, CancellationTokenSource> _nodePresentations =
         new(ReferenceEqualityComparer.Instance);
     private readonly List<CancellationTokenSource> _removedPresentations = new();
+    private readonly List<IDisposable> _invalidatedRuntimePublications = new();
     public Exception? LastPresentationReleaseError { get; private set; }
 
     public ToolSchema? GetNodeSettingsSchema(string workflowId, string nodeId)
@@ -64,7 +65,12 @@ public sealed partial class DocumentSession
         try
         {
             CancellationTokenSource[] removed;
-            lock (_gate) { removed = _removedPresentations.ToArray(); _removedPresentations.Clear(); }
+            IDisposable[] invalidatedResults;
+            lock (_gate)
+            {
+                removed = _removedPresentations.ToArray(); _removedPresentations.Clear();
+                invalidatedResults = _invalidatedRuntimePublications.ToArray(); _invalidatedRuntimePublications.Clear();
+            }
             var failures = new List<Exception>();
             foreach (var lifetime in removed)
             {
@@ -72,6 +78,11 @@ public sealed partial class DocumentSession
                 finally { lifetime.Dispose(); }
             }
             LastPresentationReleaseError = failures.Count == 0 ? null : new AggregateException("节点已移除，部分呈现清理观察者失败。", failures);
+            var resultFailures = new List<Exception>();
+            foreach (var publication in invalidatedResults)
+                try { publication.Dispose(); } catch (Exception error) { resultFailures.Add(error); }
+            LastRuntimeReleaseError = resultFailures.Count == 0 ? null :
+                new AggregateException("编辑已提交，部分失效结果 reader 释放失败。", resultFailures);
             NotifyChanged(change);
         }
         finally { _notifying = false; }

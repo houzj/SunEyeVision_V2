@@ -7,26 +7,41 @@ using Xunit;
 namespace SunEyeVision.WorkflowGraph.Tests;
 public sealed class NodeClipboardTests
 {
- [Fact] public void Internal_nodes_and_edges_copy_atomically_survive_source_deletion_and_reopen()
+ [Fact] public void Internal_nodes_and_edges_copy_atomically_and_reopen()
  {
   using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("BlobAnalysis",200,20);var edge=f.Connect(a,b);
   var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.EditConnectionPath(edge,new[]{new CanvasPoint(80,30),new CanvasPoint(100,30)});f.Session.CommitGraphEdit(edit,"折点");
   var output=f.Session.GetNodeSchema(f.Root.Id,a.Id)!.Outputs.Single(port=>port.Id=="output.image");
   f.Session.SetNodeDisplayReference(f.Root.Id,b,ParameterSettingCanonical.Serialize(new OutputReference(a.Id,output.Id,output.Type,new[]{"data"},scopeId:f.Root.Id)));
   var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{a,b});
-  var remove=f.Session.PrepareGraphEdit(f.Root.Id);remove.DeleteNodesAndConnections(new[]{a,b},Array.Empty<ConnectionDefinition>());f.Session.CommitGraphEdit(remove,"删除原节点");
   var count=f.Session.HistoryEntries.Count;var receipt=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300));
-  Assert.Equal(2,receipt.Nodes.Count);var copied=Assert.Single(receipt.Connections);Assert.Equal(2,f.Session.GetNodes(f.Root.Id).Count);
+  Assert.Equal(2,receipt.Nodes.Count);var copied=Assert.Single(receipt.Connections);Assert.Equal(4,f.Session.GetNodes(f.Root.Id).Count);
   var copySource=receipt.Nodes.Single(node=>node.ToolType=="ImageLoad");var copyTarget=receipt.Nodes.Single(node=>node.ToolType=="BlobAnalysis");
   var binding=Assert.IsType<ReferenceSetting>(copyTarget.Configuration.Fields.Read("input.image"));
   Assert.Equal(copySource.Id,binding.Reference.NodeId);Assert.Equal(f.Root.Id,binding.Reference.ScopeId);Assert.Equal("connection:"+copied.Id,binding.OriginId);
   Assert.Equal(copySource.Id,ParameterSettingCanonical.Deserialize(copyTarget.SelectedDisplayReference!).NodeId);
   Assert.Equal(new CanvasPoint(470,310),copied.ManualPathPoints![0]);Assert.Equal(count+1,f.Session.HistoryEntries.Count);
-  Assert.True(f.Session.Undo());Assert.Empty(f.Session.GetNodes(f.Root.Id));Assert.True(f.Session.Redo());Assert.Equal(2,f.Session.GetNodes(f.Root.Id).Count);
+  Assert.True(f.Session.Undo());Assert.Equal(2,f.Session.GetNodes(f.Root.Id).Count);Assert.True(f.Session.Redo());Assert.Equal(4,f.Session.GetNodes(f.Root.Id).Count);
   var path=f.Save();var reopened=f.Manager.Open(path,_=>SessionGraphFixture.Types,_=>null,SessionGraphFixture.Options);
-  Assert.Equal(2,reopened.GetNodes(f.Root.Id).Count);Assert.Single(reopened.GetConnections(f.Root.Id));
+  Assert.Equal(4,reopened.GetNodes(f.Root.Id).Count);Assert.Equal(2,reopened.GetConnections(f.Root.Id).Count);
  }
- [Fact] public void Same_scope_external_incoming_connection_is_recreated_and_rebound()
+ [Fact] public void Missing_sources_are_skipped_without_creating_empty_history()
+ {
+  using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("ImageLoad",200,20);
+  var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{a,b});
+  var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.DeleteNodesAndConnections(new[]{a},Array.Empty<ConnectionDefinition>());f.Session.CommitGraphEdit(edit,"删除来源");
+  var partial=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300));Assert.Single(partial.Nodes);
+  edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.DeleteNodesAndConnections(new[]{b},Array.Empty<ConnectionDefinition>());f.Session.CommitGraphEdit(edit,"删除来源");
+  var before=f.Session.HistoryEntries.Count;var empty=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(500,300));
+  Assert.Empty(empty.Nodes);Assert.Equal(before,f.Session.HistoryEntries.Count);
+ } [Fact] public void Renaming_copied_source_invalidates_its_original_name_path()
+ {
+  using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("ImageLoad",200,20);
+  var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{a,b});
+  var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.RenameNode(a,"新名称");f.Session.CommitGraphEdit(edit,"重命名来源");
+  var pasted=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300));
+  Assert.Single(pasted.Nodes);Assert.Equal(b.ToolType,pasted.Nodes[0].ToolType);
+ } [Fact] public void Same_scope_external_incoming_connection_is_recreated_and_rebound()
  {
   using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("BlobAnalysis",200,20);var edge=f.Connect(a,b);
   var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{b});var pasted=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,200));
@@ -34,13 +49,13 @@ public sealed class NodeClipboardTests
   var binding=Assert.IsType<ReferenceSetting>(Assert.Single(pasted.Nodes).Configuration.Fields.Read("input.image"));
   Assert.Equal(a.Id,binding.Reference.NodeId);Assert.Equal("connection:"+copied.Id,binding.OriginId);
  }
- [Fact] public void Captured_configuration_is_not_changed_by_later_source_edit()
+ [Fact] public void Paste_reads_configuration_after_later_source_edit()
  {
   using var f=new SessionGraphFixture();var source=f.Add();
   void Set(long value){var draft=f.Session.Editing.Host.BeginEdit(f.Root.Id,source.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"sequence.initial",new ConstantSetting(value)}});f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{draft}));}
   Set(17);var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{source});Set(29);
   var pasted=Assert.Single(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300)).Nodes);
-  Assert.Equal(17L,Assert.IsType<ConstantSetting>(pasted.Configuration.Fields.Read("sequence.initial")).Value);
+  Assert.Equal(29L,Assert.IsType<ConstantSetting>(pasted.Configuration.Fields.Read("sequence.initial")).Value);
   Assert.Equal(29L,Assert.IsType<ConstantSetting>(source.Configuration.Fields.Read("sequence.initial")).Value);
  }
  [Fact] public void First_actual_selection_is_the_stable_paste_anchor_even_if_not_leftmost()
@@ -157,9 +172,9 @@ public sealed class NodeClipboardTests
   var remove=f.Session.PrepareGraphEdit(f.Root.Id);remove.DeleteNodesAndConnections(new[]{node},Array.Empty<ConnectionDefinition>());f.Session.CommitGraphEdit(remove,"删除源节点");
   using(var variables=f.Session.Editing.Host.BeginVariableEdit())
   {variables.Variables.Clear();f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,variables:variables));}
-  var count=f.Session.HistoryEntries.Count;Assert.Throws<InvalidOperationException>(()=>f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(250,250)));
+  var count=f.Session.HistoryEntries.Count;Assert.Empty(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(250,250)).Nodes);
   Assert.Equal(count,f.Session.HistoryEntries.Count);Assert.True(f.Session.Undo());Assert.Same(actual,Assert.Single(f.Session.Document.GlobalVariables));
-  Assert.Single(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(250,250)).Nodes);
+  Assert.True(f.Session.Undo());Assert.Single(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(250,250)).Nodes);
  }
  [Fact] public void Inactive_roi_with_variable_index_is_validated_for_target_scope_and_current_variable_type()
  {
@@ -185,7 +200,7 @@ public sealed class NodeClipboardTests
   var remove=session.PrepareGraphEdit(sourceFlow.Id);remove.DeleteNodesAndConnections(new[]{currentTarget},Array.Empty<ConnectionDefinition>());session.CommitGraphEdit(remove,"删除源");
   using(var variables=session.Editing.Host.BeginVariableEdit())
   {variables.Variables.Single().Type="Double";variables.SetValue(variable.Id,0d);session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host,variables:variables));}
-  before=session.HistoryEntries.Count;Assert.ThrowsAny<Exception>(()=>session.PasteNodeClipboard(sourceFlow.Id,fragment,new CanvasPoint(500,200)));
+  before=session.HistoryEntries.Count;Assert.Empty(session.PasteNodeClipboard(sourceFlow.Id,fragment,new CanvasPoint(500,200)).Nodes);
   Assert.Equal(before,session.HistoryEntries.Count);Assert.Single(session.GetNodes(sourceFlow.Id));
   var occupied=session.GetWorkflows().SelectMany(flow=>session.GetNodes(flow.Id)).Select(node=>node.GlobalIndex).ToHashSet();
   var expected=Enumerable.Range(1,occupied.Count+1).First(index=>!occupied.Contains(index));

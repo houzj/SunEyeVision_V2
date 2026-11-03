@@ -6,10 +6,10 @@ using SunEyeVision.Plugin.Runtime;
 namespace SunEyeVision.Application;
 
 /// <summary>Session-issued private definition snapshot. It never holds invocation results or mutable graph collections.</summary>
-public sealed class NodeClipboardFragment
+internal sealed class FrozenNodeClipboard
 {
     internal sealed record Dependency(string WorkflowId, NodeDefinition Actual, Guid Generation, CancellationToken Retirement, bool EdgeOnly);
-    internal NodeClipboardFragment(DocumentSession owner, RuntimeDirectorySnapshot directory, string flowId,
+    internal FrozenNodeClipboard(DocumentSession owner, RuntimeDirectorySnapshot directory, string flowId,
         FragmentNodeSnapshot[] nodes, FragmentEdgeSnapshot[] edges, Dependency[] dependencies, GlobalVariable[] variables)
     { Owner=owner; Directory=directory; WorkflowId=flowId; Nodes=nodes; Edges=edges; Dependencies=dependencies; Variables=variables; }
     internal DocumentSession Owner { get; }
@@ -22,9 +22,37 @@ public sealed class NodeClipboardFragment
     public CanvasPoint Anchor => Nodes[0].Position;
 }
 
+/// <summary>A session-owned ordered selection; definitions are read again when pasted.</summary>
+public sealed class NodeClipboardFragment
+{
+    internal sealed record Source(NodeDefinition Actual, string Id, string Name);
+    internal NodeClipboardFragment(DocumentSession owner, RuntimeDirectorySnapshot directory, WorkflowDefinition flow, Source[] sources)
+    { Owner=owner; Directory=directory; Flow=flow; FlowName=flow.Name; Sources=sources; }
+    internal DocumentSession Owner { get; }
+    internal RuntimeDirectorySnapshot Directory { get; }
+    internal WorkflowDefinition Flow { get; }
+    internal string FlowName { get; }
+    internal Source[] Sources { get; }
+
+}
 public sealed partial class DocumentSession
 {
     public NodeClipboardFragment CaptureNodeClipboard(string workflowId, IReadOnlyList<NodeDefinition> actualNodes)
+    {
+        ArgumentNullException.ThrowIfNull(actualNodes); EnsureOwnerCanEdit();
+        lock (_gate)
+        {
+            var scope=OpenScope(workflowId); ValidateScopeCore(scope);
+            if(scope.Flow.IsSubroutine || actualNodes.Count==0 || actualNodes.Distinct(ReferenceEqualityComparer.Instance).Count()!=actualNodes.Count ||
+               actualNodes.Any(node=>!scope.Flow.Nodes.Any(actual=>ReferenceEquals(actual,node))))
+                throw new InvalidOperationException("复制范围必须是当前流程实际且不重复的普通节点。");
+            if(actualNodes.Any(node=>string.Equals(node.ToolType,"Subroutine",StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(node.ToolType,"Condition",StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(node.SubroutineId)))
+                throw new InvalidOperationException("控制流节点复制尚未接入。");
+            return new(this,_directory,scope.Flow,actualNodes.Select(node=>new NodeClipboardFragment.Source(node,node.Id,node.Name)).ToArray());
+        }
+    }
+    private FrozenNodeClipboard FreezeNodeClipboard(string workflowId, IReadOnlyList<NodeDefinition> actualNodes)
     {
         ArgumentNullException.ThrowIfNull(actualNodes);
         EnsureOwnerCanEdit();
@@ -43,7 +71,7 @@ public sealed partial class DocumentSession
             var opening=GraphState.Capture(scope.Flow);
             CandidateInputValidation.Validate(_documentId,workflowId,_owner.Id,ChangeRevision,opening,Document.GlobalVariables,ids,false,AdmitConfiguration,false);
             CandidateDisplayValidation.Validate(workflowId,_owner.Id,ChangeRevision,opening,ids,false,AdmitConfiguration);
-            var dependencies=new Dictionary<(string,string),NodeClipboardFragment.Dependency>();
+            var dependencies=new Dictionary<(string,string),FrozenNodeClipboard.Dependency>();
             var variables=new Dictionary<string,GlobalVariable>(StringComparer.Ordinal);
             void CaptureReference(OutputReference reference)
             {
@@ -85,24 +113,41 @@ public sealed partial class DocumentSession
                 return new FragmentEdgeSnapshot(edge.Id,edge.SourceNodeId,edge.TargetNodeId,edge.SourcePort,edge.TargetPort,
                     edge.ManualPathPoints is null?null:Array.AsReadOnly(edge.ManualPathPoints.ToArray()));
             }).ToArray();
-            return new NodeClipboardFragment(this,_directory,workflowId,nodes,edges,dependencies.Values.ToArray(),variables.Values.ToArray());
+            return new FrozenNodeClipboard(this,_directory,workflowId,nodes,edges,dependencies.Values.ToArray(),variables.Values.ToArray());
         }
     }
 
-    public sealed record NodePasteReceipt(IReadOnlyList<NodeDefinition> Nodes, IReadOnlyList<ConnectionDefinition> Connections, DocumentChangeSet Change);
+    public IReadOnlyList<NodeDefinition> ResolveNodeClipboardSources(NodeClipboardFragment fragment)
+    {
+        ArgumentNullException.ThrowIfNull(fragment); EnsureOwnerCanEdit();
+        if(!ReferenceEquals(fragment.Owner,this) || !ReferenceEquals(fragment.Directory,_directory))
+            throw new InvalidOperationException("复制来源不属于当前活动方案或目录。");
+        lock(_gate)
+        {
+            var flow=Document.Workflows.FirstOrDefault(item=>ReferenceEquals(item,fragment.Flow) && item.Name==fragment.FlowName);
+            return Array.AsReadOnly(flow is null ? Array.Empty<NodeDefinition>() : fragment.Sources
+                .Where(source=>flow.Nodes.Any(node=>ReferenceEquals(node,source.Actual) && node.Id==source.Id && node.Name==source.Name))
+                .Select(source=>source.Actual).ToArray());
+        }
+    }
+    public sealed record NodePasteReceipt(IReadOnlyList<NodeDefinition> Nodes, IReadOnlyList<ConnectionDefinition> Connections, DocumentChangeSet? Change);
 
-    public NodePasteReceipt PasteNodeClipboard(string targetWorkflowId, NodeClipboardFragment fragment, CanvasPoint anchor)
+    public NodePasteReceipt PasteNodeClipboard(string targetWorkflowId, NodeClipboardFragment fragment, CanvasPoint anchor, IReadOnlyDictionary<NodeDefinition,CanvasPoint>? positions = null)
     {
         ArgumentNullException.ThrowIfNull(fragment); EnsureOwnerCanEdit();
         if (!ReferenceEquals(fragment.Owner,this) || !ReferenceEquals(fragment.Directory,_directory))
             throw new InvalidOperationException("复制片段不属于当前活动方案或目录。");
-        if(fragment.Variables.Any(variable=>!Document.GlobalVariables.Any(actual=>ReferenceEquals(actual,variable))))
+        var available=ResolveNodeClipboardSources(fragment).ToArray();
+        var sourceFlow=fragment.Flow;
+        if(available.Length==0) return new(Array.Empty<NodeDefinition>(),Array.Empty<ConnectionDefinition>(),null);
+        var frozen=FreezeNodeClipboard(sourceFlow!.Id,available);
+        if(frozen.Variables.Any(variable=>!Document.GlobalVariables.Any(actual=>ReferenceEquals(actual,variable))))
             throw new InvalidOperationException("复制片段的变量来源已退出当前方案。");
         var target=OpenScope(targetWorkflowId); ValidateScopeCore(target);
         if (target.Flow.IsSubroutine) throw new InvalidOperationException("控制流程复制尚未接入。");
-        foreach(var dependency in fragment.Dependencies)
+        foreach(var dependency in frozen.Dependencies)
         {
-            if(dependency.EdgeOnly && targetWorkflowId!=fragment.WorkflowId) continue;
+            if(dependency.EdgeOnly && targetWorkflowId!=frozen.WorkflowId) continue;
             var scope=OpenScope(dependency.WorkflowId);ValidateScopeCore(scope);
             if(dependency.Retirement.IsCancellationRequested || !scope.Flow.Nodes.Any(node=>ReferenceEquals(node,dependency.Actual)))
                 throw new InvalidOperationException("复制片段的外部来源已退役。");
@@ -110,7 +155,7 @@ public sealed partial class DocumentSession
             if(lifetime.Generation!=dependency.Generation)throw new InvalidOperationException("复制片段的外部来源代次已变化。");
         }
         var draft=PrepareGraphEdit(targetWorkflowId);
-        var dx=anchor.X-fragment.Anchor.X;var dy=anchor.Y-fragment.Anchor.Y;
+        var dx=anchor.X-frozen.Anchor.X;var dy=anchor.Y-frozen.Anchor.Y;
         static int FirstFree(ISet<int> occupied)
         {
             var value=1;while(occupied.Contains(value))value=checked(value+1);return value;
@@ -120,7 +165,7 @@ public sealed partial class DocumentSession
             .ToDictionary(group=>group.Key,group=>group.Select(node=>node.LocalIndex).ToHashSet(),StringComparer.Ordinal);
         var usedNames=target.Flow.Nodes.Select(node=>node.DispName).ToHashSet(StringComparer.Ordinal);
         var issued=new Dictionary<string,FragmentIssuedNode>(StringComparer.Ordinal);
-        foreach(var snapshot in fragment.Nodes)
+        foreach(var snapshot in frozen.Nodes)
         {
             var globalIndex=FirstFree(global);global.Add(globalIndex);
             if(!local.TryGetValue(snapshot.ToolId,out var allocated)){allocated=new HashSet<int>();local.Add(snapshot.ToolId,allocated);}
@@ -130,15 +175,18 @@ public sealed partial class DocumentSession
             var suffix=localIndex;var display=stem+suffix;while(usedNames.Contains(display))display=stem+(++suffix);
             usedNames.Add(display);issued.Add(snapshot.Id,new(Guid.NewGuid().ToString("N"),globalIndex,localIndex,$"{globalIndex} {display}",display));
         }
-        var selected=fragment.Nodes.Select(node=>node.Id).ToHashSet(StringComparer.Ordinal);
-        var edgeIds=fragment.Edges.Where(edge=>selected.Contains(edge.TargetId) &&
-            (selected.Contains(edge.SourceId)||targetWorkflowId==fragment.WorkflowId))
+        var selected=frozen.Nodes.Select(node=>node.Id).ToHashSet(StringComparer.Ordinal);
+        var edgeIds=frozen.Edges.Where(edge=>selected.Contains(edge.TargetId) &&
+            (selected.Contains(edge.SourceId)||targetWorkflowId==frozen.WorkflowId))
             .ToDictionary(edge=>edge.Id,_=>Guid.NewGuid().ToString("N"),StringComparer.Ordinal);
-        var fragmentResult=FragmentBuilder.Build(fragment.WorkflowId,targetWorkflowId,fragment.Nodes,fragment.Edges,issued,edgeIds,
-            new CanvasPoint(dx,dy),targetWorkflowId==fragment.WorkflowId);
+        if(positions is not null && (positions.Count!=available.Length || available.Any(node=>!positions.ContainsKey(node))))
+            throw new InvalidOperationException("复制定位与当前有效来源不一致。");
+        var fragmentResult=FragmentBuilder.Build(frozen.WorkflowId,targetWorkflowId,frozen.Nodes,frozen.Edges,issued,edgeIds,
+            new CanvasPoint(dx,dy),targetWorkflowId==frozen.WorkflowId);
         var mapped=fragmentResult.NodeMap;var edges=fragmentResult.EdgeMap;
         foreach(var node in fragmentResult.Nodes){_=AdmitConfiguration(node,node.Configuration);draft.AddNode(node);}
         foreach(var edge in fragmentResult.Edges)draft.AddConnection(edge);
+        if(positions is not null) foreach(var source in available) draft.MoveNode(mapped[source.Id],positions[source]);
         var candidate=GraphState.FromDraft(draft,PrepareConnectionBindings(draft));
         var participants=mapped.Values.Select(node=>node.Id).ToHashSet(StringComparer.Ordinal);
         CandidateInputValidation.Validate(_documentId,targetWorkflowId,_owner.Id,ChangeRevision,candidate,Document.GlobalVariables,participants,false,AdmitConfiguration,false);

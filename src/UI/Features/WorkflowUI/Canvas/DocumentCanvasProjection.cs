@@ -32,6 +32,7 @@ public sealed class DocumentCanvasProjection : IDisposable
     public ReadOnlyObservableCollection<CanvasNodeProjection> Nodes { get; }
     public ReadOnlyObservableCollection<CanvasConnectionProjection> Connections { get; }
     public event EventHandler? Changed;
+    public event Action<IReadOnlyList<NodeDefinition>>? NodesDeleted;
 
     public NodeDefinition CreateNode(string toolId, CanvasPoint position, CanvasConnectionProjection? insertion = null,
         CanvasNodeProjection? predecessor = null)
@@ -76,6 +77,7 @@ public sealed class DocumentCanvasProjection : IDisposable
             throw new InvalidOperationException("删除的节点或连线不属于当前画布。");
         Edit("删除节点和连线", draft => draft.DeleteNodesAndConnections(nodes.Select(node => node.Definition).ToArray(),
             connections.Select(edge => edge.Definition).ToArray()));
+        if(nodes.Count>0) NodesDeleted?.Invoke(nodes.Select(node=>node.Definition).ToArray());
     }
 
     public void Rename(CanvasNodeProjection node, string name)

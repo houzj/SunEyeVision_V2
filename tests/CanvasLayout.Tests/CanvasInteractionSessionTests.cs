@@ -80,9 +80,9 @@ public sealed class CanvasInteractionSessionTests
   using var f=new DocumentUiFixture();var node=f.Add();f.Projection(node).IsSelected=true;
   Assert.True(f.Main.CopyCanvasSelection());Assert.True(f.Main.CanPasteCanvasSelection);
   Assert.True(f.Main.PasteCanvasSelection());UiRuntime.Pump();var first=Assert.Single(f.Canvas.Nodes.Where(item=>item.IsSelected));
-  Assert.Equal(node.PositionX+20,first.PositionX);Assert.Equal(node.PositionY+20,first.PositionY);
+  Assert.Equal(node.PositionX+100,first.PositionX);Assert.Equal(node.PositionY+100,first.PositionY);
   Assert.True(f.Main.PasteCanvasSelection());UiRuntime.Pump();var second=Assert.Single(f.Canvas.Nodes.Where(item=>item.IsSelected));
-  Assert.Equal(node.PositionX+40,second.PositionX);Assert.Equal(node.PositionY+40,second.PositionY);
+  Assert.Equal(first.PositionX,second.PositionX);Assert.Equal(first.PositionY,second.PositionY);
   Assert.True(f.Session.Undo());UiRuntime.Pump();Assert.Equal(2,f.Canvas.Nodes.Count);
   f.Save();var source=f.Session.LastWrittenSnapshot!.TargetPath;var path=System.IO.Path.Combine(f.DirectoryPath,"other.solution");System.IO.File.Copy(source,path);
   var opened=(Task<bool>)UiRuntime.Call(f.Main,"OpenExternalSolutionAsync",path,false)!;UiRuntime.Await(opened);
@@ -128,13 +128,21 @@ public sealed class CanvasInteractionSessionTests
   }
   finally{f.Canvas.Changed-=Attach;foreach(var node in f.Canvas.Nodes)node.PropertyChanged-=Fault;}
  });
- [Fact] public void Paste_after_deleting_source_uses_frozen_visual_anchor()=>UiRuntime.Run(()=>
+ [Fact] public void Deleting_a_copied_source_clears_clipboard_and_undo_does_not_restore_it()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var source=f.Add();var selected=f.Projection(source);selected.IsSelected=true;
   f.Fields(source,("sequence.initial",new SunEyeVision.Plugin.Contracts.ConstantSetting(17L)));Assert.True(f.Main.CopyCanvasSelection());
   f.Canvas.Delete(new[]{selected},Array.Empty<CanvasConnectionProjection>());UiRuntime.Pump();Assert.Empty(f.Canvas.Nodes);
-  Assert.True(f.Main.PasteCanvasSelection(new Point(500,300)));var pasted=Assert.Single(f.Canvas.Nodes);
-  Assert.Equal(new Point(500,300),pasted.NodeRect.TopLeft);
-  Assert.Equal(17L,Assert.IsType<SunEyeVision.Plugin.Contracts.ConstantSetting>(pasted.Definition.Configuration.Fields.Read("sequence.initial")).Value);
+  Assert.False(f.Main.CanPasteCanvasSelection);Assert.False(f.Main.PasteCanvasSelection(new Point(500,300)));
+  Assert.True(f.Session.Undo());UiRuntime.Pump();Assert.Single(f.Canvas.Nodes);Assert.False(f.Main.CanPasteCanvasSelection);
  });
-}
+ [Fact] public void Paste_snaps_and_clamps_each_actual_node_in_one_history_entry()=>UiRuntime.Run(()=>
+ {
+  using var f=new DocumentUiFixture();var first=f.Add();var second=f.Add("ImageLoad",300,20);
+  f.Projection(first).IsSelected=true;f.Projection(second).IsSelected=true;
+  Assert.True(f.Main.CopyCanvasSelection());var before=f.Session.HistoryEntries.Count;
+  Assert.True(f.Main.PasteCanvasSelection(new Point(4841,100)));UiRuntime.Pump();
+  var copies=f.Canvas.Nodes.Where(node=>node.IsSelected).OrderBy(node=>node.NodeRect.Left).ToArray();
+  Assert.Equal(2,copies.Length);Assert.Equal(4840,copies[0].NodeRect.Left);Assert.Equal(4850,copies[1].NodeRect.Left);
+  Assert.Equal(before+1,f.Session.HistoryEntries.Count);Assert.True(f.Session.Undo());Assert.Equal(2,f.Canvas.Nodes.Count);
+ });}

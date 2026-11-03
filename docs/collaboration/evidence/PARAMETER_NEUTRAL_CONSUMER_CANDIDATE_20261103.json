@@ -1,0 +1,23 @@
+{
+  "scope": "Blob参数职责命名消费者候选，非主仓正式或Blob全功能闭口",
+  "workspace": "D:/MyWork/line-aiproject/blob-display-neutral-20261103",
+  "sourceCommit": "4e735338ba80f2c130687ab203f8e2a8eaa4dad2",
+  "consumerCommit": "e8028cdc0",
+  "baseline": "8962f6bdb",
+  "publicCommits": ["a4300d81e", "e567eed25"],
+  "consumerReverseMapping": {"files": 17, "nonMappingDifferences": 0},
+  "logsRoot": "Release/_validation/parameter-neutral-consumer-20261103",
+  "builds": {
+    "ui001": {"exit": 1, "errors": 5, "reason": "NativeRoiSession五处旧相对命名", "log": "ui-001-failed.log", "sha256": "918A6CFB7431A2126F727773FB2D5C0515E67538BDAE307898D57C85D3B4C2A2"},
+    "ui002": {"exit": 0, "warnings": 6553, "errors": 0, "elapsedSeconds": 138.23, "log": "ui-002.log", "sha256": "0F1461D5292DA795A482A929DDC5D19A3443495AE9D2A2D8F330E0ABC9A77557"},
+    "full002": {"exit": 0, "warnings": 6515, "errors": 0, "elapsedSeconds": 102.95, "log": "full-002.log", "sha256": "0A09658528A0392E2970EB3101FCA33E3BE96EAEF2085EFE28AD5AC17C3FB0AA"}
+  },
+  "tracksRoot": "Release/_validation/S4-20261025",
+  "tracks": [
+    {"name": "B08NumericComposition", "attempt": "attempt-011", "exit": 0, "passed": 12, "receiptSha256": "1C3456265C8B570C6F316AEB1F99924918C7205BBA50464C78B6E39CBD5DD7E8", "loadedFileSha256": "6426F38E9BB26D48889C8FCB5356F02B3DA47C7E8217A70BB98C8A0728C93AD5", "loadedCount": 15, "loadedMismatch": 0},
+    {"name": "BlobRoiPreview", "attempt": "attempt-005", "exit": 0, "passed": 24, "receiptSha256": "11CE11DCBAF6346BFE18C83E336834C617C0B05B11AD22784E44CE289F40BA65", "loadedFileSha256": "C9C58A15C8E32B8727D6A5AD9D229BAB638485C85C46EDF7EBE2DD5ACFBE811B", "loadedCount": 15, "loadedMismatch": 0},
+    {"name": "BlobResultDisplay", "scope": "All", "attempt": "attempt-005", "exit": 0, "passed": 44, "receiptSha256": "66A631023D5CEED78366AFEE5AD1DC94FC5F7124133F56A62274E8050CE12895", "loadedFileSha256": "0C35F7E198A803D62F98AE59873167163675CBFB33AF7C669AEA7EA56A489253", "loadedCount": 15, "loadedMismatch": 0}
+  ],
+  "payload": {"entries": 201, "filesIncludingManifest": 202, "entryHashMismatches": 0, "manifestSha256": "842397D993B7F1847D2C5F020D14873CCB18E1C978834B47B97006A26E6E8120", "unchangedAfterTests": true},
+  "limitations": ["候选不代主仓正式", "VS设计时、自然键鼠及人工另记", "缺producer或执行基础的保护不代表功能实现"]
+}

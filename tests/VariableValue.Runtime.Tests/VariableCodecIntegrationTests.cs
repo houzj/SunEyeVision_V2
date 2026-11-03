@@ -70,7 +70,9 @@ public sealed class VariableCodecIntegrationTests
     }
     [Fact] public void Roi_shape_preserves_real_sdk_type()
     {
-        var json=JsonSerializer.Serialize((object)new RoiShape { Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Point2d(12.5,34.25) },Options());
+        var shape=new RoiShape { Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Point2d(12.5,34.25) };
+        var json=JsonSerializer.Serialize((object)shape,Options());
+        Assert.Equal(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"roi-v3.golden.txt")),json);
         var loaded=Assert.IsType<RoiShape[]>(JsonSerializer.Deserialize<object>(json,Options()));
         var point=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Geometry.Point2d>(Assert.Single(loaded).Geometry);
         Assert.Equal(12.5,point.X); Assert.Equal(34.25,point.Y);
@@ -83,6 +85,8 @@ public sealed class VariableCodecIntegrationTests
         Assert.NotSame(image,loaded);Assert.Equal(2,loaded.Rows);Assert.Equal(3,loaded.Cols);Assert.Equal((byte)23,loaded.At<byte>(0,0));
     }
 }
+
+
 
 
 

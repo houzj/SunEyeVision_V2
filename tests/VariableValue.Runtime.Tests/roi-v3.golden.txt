@@ -1,0 +1,1 @@
+{"Type":"ROI","Value":[{"Geometry":{"$geom":"Point2d","IsEmpty":false,"X":12.5,"Y":34.25},"FillColorArgb":0,"StrokeColorArgb":4278190335,"StrokeThickness":2,"Opacity":1}]}

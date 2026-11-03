@@ -112,7 +112,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             return number.Value switch{long integer=>integer.ToString(CultureInfo.InvariantCulture),double real when NumericStorageRules.Effective(_state.Port.Type,_state.Port.Storage)==NumericStorage.Float32=>((float)real).ToString("R",CultureInfo.InvariantCulture),double real=>real.ToString("R",CultureInfo.InvariantCulture),_=>""};
         if(DisplaySetting is not {} source)return "";
         var label=Label(source);var selection=ReferenceSettingParts.Selection(source);
-        return ProjectedType(source)?.Shape!=ValueShape.Sequence&&selection is BindingSelection.AllItems?label:label+" ["+(selection switch
+        return label+"["+(selection switch
         {
             BindingSelection.AtConstant index=>index.Index.ToString(CultureInfo.InvariantCulture),
             BindingSelection.AtField index=>_format?.Invoke(index.Reference)??index.Reference.NodeId+" · "+index.Reference.PortId,
@@ -132,8 +132,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public void Refresh()
     {
         if(_disposed||_state.IsDisposed||_refreshing)return;
-        InvalidateVariableSelection();var generation=++_candidateGeneration;var uiGeneration=_uiGeneration;
-        bool Current()=>!_disposed&&!_state.IsDisposed&&generation==_candidateGeneration&&uiGeneration==_uiGeneration;
+        InvalidateVariableSelection();var generation=++_candidateGeneration;var uiGeneration=_uiGeneration;var acceptance=_state.AcceptanceVersion;
+        bool Current()=>!_disposed&&!_state.IsDisposed&&generation==_candidateGeneration&&uiGeneration==_uiGeneration&&acceptance==_state.AcceptanceVersion;
         _candidatesValid=false;_refreshing=true;
         try
         {
@@ -147,11 +147,11 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 snapshot=_options.ReadCandidates(_state.Port)??throw new ArgumentException("来源目录返回了空快照。");
                 if(!Current())return;
                 sources=DeclaredReferenceTree.Build(snapshot.Sources.Where(candidate=>DeclaredReferenceTree.Matches(candidate,
-                    _state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex,_state.ReferenceBehavior)),true);
+                    _state.Port,ReferenceSettingParts.Conversion(_state.Accepted),true,_state.ReferenceBehavior)),true);
                 var eligibleIndices=Array.AsReadOnly(snapshot.Indices.Where(candidate=>ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType,_state.ReferenceBehavior)).ToArray());
                 indices=DeclaredReferenceTree.Build(eligibleIndices,true);
                 indexVariables=Array.AsReadOnly(snapshot.Variables.Where(item=>ParameterReferenceRules.CanUseIndexSource(item.Reference.Type,_state.ReferenceBehavior)&&item.Reference.Selection is BindingSelection.AllItems).ToArray());
-                variables=Array.AsReadOnly(snapshot.Variables.Where(item=>DeclaredReferenceTree.Matches(item.Reference,_state.Port,ReferenceSettingParts.Conversion(_state.Accepted),_options.EditableIndex,_state.ReferenceBehavior)).ToArray());
+                variables=Array.AsReadOnly(snapshot.Variables.Where(item=>DeclaredReferenceTree.Matches(item.Reference,_state.Port,ReferenceSettingParts.Conversion(_state.Accepted),true,_state.ReferenceBehavior)).ToArray());
                 if(_selectVariable is not null&&variables.Count!=0)sources=Array.AsReadOnly(sources.Append(new ReferenceTreeNode(AppLocalizationService.GetLang("Lang_VariableManager","变量管理"),Array.Empty<ReferenceTreeNode>(),VariableManager:true)).ToArray());
                 if(_selectVariable is not null&&indexVariables.Count!=0)indices=Array.AsReadOnly(indices.Append(new ReferenceTreeNode(AppLocalizationService.GetLang("Lang_VariableManager","变量管理"),Array.Empty<ReferenceTreeNode>(),VariableManager:true)).ToArray());
             }
@@ -190,9 +190,35 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(node.Clear){ClearSource();return;}
         if(node.VariableManager){OpenVariableSelector();return;}
         if(node.Candidate is not {} candidate)return;
-        var selection=DisplaySetting is {} old&&candidate.SelectedType.Shape==ValueShape.Sequence
-            ?ReferenceSettingParts.Selection(old):BindingSelection.All;
-        Submit(new ReferenceSetting(candidate.Reference(selection),ReferenceSettingParts.Conversion(_state.Accepted)));
+        SelectSourceSetting(selection=>new ReferenceSetting(candidate.Reference(selection),ReferenceSettingParts.Conversion(_state.Accepted)));
+    }
+    private bool SelectSourceSetting(Func<BindingSelection,ParameterSetting> create)
+    {
+        var old=DisplaySetting;var selection=old is null?BindingSelection.All:ReferenceSettingParts.Selection(old);
+        try
+        {
+            var proposal=create(selection);
+            if(_pendingText is not {} raw)return Submit(proposal);
+            // Source identity comes only from the selected declaration. Preserve the
+            // original bracket suffix, including invalid pending text, across a source change.
+            if(ReadOnlyA)throw new ArgumentException("来源文字只读；请取消原文或重新选择来源。");
+            var bracket=raw.IndexOf('[');
+            if(bracket<0)throw new ArgumentException("待编辑原文没有完整索引后缀，请取消或修正原文后再选择来源。");
+            if(!_candidatesValid||!SourceAvailable(proposal))throw new ArgumentException("来源或索引已失效，请刷新后重新选择。");
+            _pendingReference=new(proposal,_state.AcceptanceVersion);_pendingVersion++;
+            SetPending(Label(proposal)+raw[bracket..]);RestoreSelection();Notify(nameof(CurValueA));
+            return TryCommitPendingFromUi();
+        }
+        catch(Exception error)when(error is ArgumentException or FormatException or OverflowException or InvalidOperationException)
+        {
+            if(!_disposed&&!_state.IsDisposed){_state.SetEditError(error.Message);RestoreSelection();Notify(nameof(CurValueA));}
+            return false;
+        }
+    }
+    internal static void ValidateSelectionShape(ParameterSetting reference)
+    {
+        if(ReferenceSettingParts.Selection(reference) is not BindingSelection.AllItems&&ProjectedType(reference) is not {Shape:ValueShape.Sequence})
+            throw new ArgumentException("当前标量声明不支持索引；已保留原来源和索引，不会自动改为ALL。");
     }
     private bool TryStageReference(ParameterSetting reference)
     {
@@ -219,7 +245,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void OpenVariableSelector(bool index=false)
     {
         var items=index?_indexVariables:_variables;
-        if(_selectVariable is null||_suspended||!CanBrowse||!_candidatesValid||items.Count==0||index&&!HasSequenceReference)return;
+        if(_selectVariable is null||_suspended||!CanBrowse||!_candidatesValid||items.Count==0||index&&(ReadOnlyA||!HasSequenceReference))return;
         InvalidateVariableSelection();var generation=_variableGeneration;var acceptance=_state.AcceptanceVersion;
         var uiGeneration=_uiGeneration;var candidates=_candidateGeneration;
         RequestClose();
@@ -234,7 +260,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     internal bool IsVariableRequestCurrent(VariableSelectionRequest request,long generation,long acceptance,long uiGeneration,long candidates)
         =>!_suspended&&CanBrowse&&_candidatesValid&&ReferenceEquals(_variableRequest,request)&&generation==_variableGeneration
-            &&acceptance==_state.AcceptanceVersion&&uiGeneration==_uiGeneration&&candidates==_candidateGeneration&&(!request.IsIndex||HasSequenceReference);
+            &&acceptance==_state.AcceptanceVersion&&uiGeneration==_uiGeneration&&candidates==_candidateGeneration&&(!request.IsIndex||!ReadOnlyA&&HasSequenceReference);
     internal bool SelectVariable(VariableSelectionRequest request,VariableSelectionItem item)
     {
         if(!request.IsValid||!(request.IsIndex?_indexVariables:_variables).Any(candidate=>ReferenceEquals(candidate,item)))return false;
@@ -243,10 +269,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             if(DisplaySetting is not {} source)return false;
             return SubmitAndRetire(request,()=>Submit(ReferenceSettingParts.WithSelection(source,new BindingSelection.AtVariable(item.Reference,_state.ReferenceBehavior))));
         }
-        var selection=DisplaySetting is {} old&&item.Reference.Type.Shape==ValueShape.Sequence?ReferenceSettingParts.Selection(old):BindingSelection.All;
-        var proposal=new VariableSetting(new VariableReference(item.Reference.SolutionId,item.Reference.VariableId,item.Reference.Type,selection,item.Reference.Storage),
-            ReferenceSettingParts.Conversion(_state.Accepted));
-        return SubmitAndRetire(request,()=>Submit(proposal));
+        return SubmitAndRetire(request,()=>SelectSourceSetting(selection=>new VariableSetting(
+            new VariableReference(item.Reference.SolutionId,item.Reference.VariableId,item.Reference.Type,selection,item.Reference.Storage),
+            ReferenceSettingParts.Conversion(_state.Accepted))));
     }
     private static bool SubmitAndRetire(VariableSelectionRequest request,Func<bool> submit)
     {
@@ -265,7 +290,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     {_variableGeneration++;var prior=_variableRequest;_variableRequest=null;prior?.Invalidate();}
     private void SelectIndex(ReferenceTreeNode? node)
     {
-        if(_suspended||!CanBrowse||!ContainsIndexNode(node)||DisplaySetting is not {} source
+        if(ReadOnlyA||_suspended||!CanBrowse||!ContainsIndexNode(node)||DisplaySetting is not {} source
             ||!HasSequenceReference||node is null||node.EnumEntrysA.Count!=0)return;
         if(node.VariableManager){OpenVariableSelector(true);return;}
         var selection=node.Clear?BindingSelection.All:node.Candidate is {} candidate
@@ -275,6 +300,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private bool Submit(ParameterSetting reference,bool explicitCommit=false)
     {
+        try{ValidateSelectionShape(reference);}
+        catch(ArgumentException error){_state.SetEditError(error.Message);RestoreSelection();Notify(nameof(CurValueA));return false;}
         if(!_candidatesValid||!SourceAvailable(reference))
         {_state.SetSourceError("来源或索引已失效，请刷新后重新选择。");RestoreSelection();return false;}
         if(!explicitCommit&&TryStageReference(reference))return false;
@@ -350,20 +377,23 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             if(DisplaySetting is not {} source)throw new ArgumentException("请先选择来源，再编辑索引。");
             var referenceSetting=source;
             proposal=referenceSetting;
-            if(_pendingText is null||ReadOnlyA)
+            if(_pendingText is not null&&ReadOnlyA)throw new ArgumentException("来源文字只读；待编辑原文已保留，请取消或重新选择。");
+            if(_pendingText is null)
             {
+                ValidateSelectionShape(source);
                 if(NeedsSelectionRepair(source))throw new ArgumentException("请选择有效的序列索引后再确认。");
                 return true;
             }
             if(!_options.EditableIndex)throw new ArgumentException("请输入有效数值，或选择来源。");
-            var prefix=Label(source)+" [";
+            var prefix=Label(source)+"[";
             var projected=ProjectedType(source);
-            if(projected is not {Shape:ValueShape.Sequence}||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
+            if(projected is null||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
                 ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");
             var content=_pendingText[prefix.Length..^1];
             BindingSelection selection=content.Length==0?BindingSelection.All
                 :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
-            if(selection is BindingSelection.AtConstant index&&projected.Count.Maximum is int maximum&&index.Index>=maximum)
+            if(selection is not BindingSelection.AllItems&&projected.Shape!=ValueShape.Sequence)throw new ArgumentException("当前标量声明不支持索引，请明确清空括号内容；不会自动改为ALL。");
+            if(selection is BindingSelection.AtConstant index&&projected.Shape==ValueShape.Sequence&&projected.Count.Maximum is int maximum&&index.Index>=maximum)
                 throw new ArgumentException("序号超出来源声明的最大数量。");
             var selected=ReferenceSettingParts.WithSelection(source,selection);
             if(NeedsSelectionRepair(selected))throw new ArgumentException("请选择有效的序列索引后再确认。");
@@ -387,7 +417,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 return AcceptSetting(constant);
             return !_state.HasInvalidInput;
         }
-        if(ReadOnlyA){SetPending(null);Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
+        if(ReadOnlyA&&_pendingText is not null){_state.SetEditError("来源文字只读；待编辑原文已保留，请取消或重新选择。");return false;}
         _committing=true;
         try
         {
@@ -424,7 +454,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private static bool Contains(IReadOnlyList<ReferenceTreeNode> roots,object? node)
         =>node is not null&&roots.Any(item=>ReferenceEquals(item,node)||Contains(item.EnumEntrysA,node));
     internal bool IsExpansionCurrent(ReferenceExpansionRequest request,long generation)=>!_suspended&&CanBrowse
-        &&(!request.IsIndex||HasSequenceReference)
+        &&(!request.IsIndex||!ReadOnlyA&&HasSequenceReference)
         &&generation==_expansionGeneration&&ReferenceEquals(_expansion,request);
     internal void ReleaseExpansion(ReferenceExpansionRequest request,long generation)
     {
@@ -444,7 +474,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(generation!=_expansionGeneration)return;
         Refresh();
         if(_suspended||!CanBrowse||generation!=_expansionGeneration)return;
-        if(index&&!HasSequenceReference)return;
+        if(index&&(ReadOnlyA||!HasSequenceReference))return;
         RequestClose();
         if(_suspended||!CanBrowse||generation!=_expansionGeneration)return;
         var preference=_preference();

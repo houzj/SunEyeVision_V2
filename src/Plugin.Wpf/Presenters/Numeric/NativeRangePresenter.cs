@@ -247,6 +247,15 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         }
         finally{_syncing=false;if(_acceptedProjectionPending&&!_committing){_acceptedProjectionPending=false;Project(false);}}
     }
+    internal bool ContainsField(string fieldId)=>_states.Any(state=>state.Port.Id==fieldId);
+    internal bool TrySetReferenceFromCommand(string fieldId,ParameterSetting proposal)
+    {
+        var endpoint=Array.FindIndex(_states,state=>state.Port.Id==fieldId);
+        if(_disposed||_committing||endpoint<0||proposal is not (ReferenceSetting or VariableSetting))return false;
+        try{ReferenceFieldSession.ValidateSelectionShape(proposal);}
+        catch(ArgumentException error){_states[endpoint].SetEditError(error.Message);return false;}
+        return TryAcceptEndpoint(endpoint,proposal);
+    }
     public bool TrySetConstant(int endpoint,object value)
     {
         if(_disposed||_committing)return false;

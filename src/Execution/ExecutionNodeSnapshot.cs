@@ -25,6 +25,13 @@ public sealed class ExecutionNodeSnapshot
         var capabilities = definition.Capabilities() ?? throw new InvalidOperationException("工具缺少运行资源声明。");
         Capabilities = new ToolCapabilities(Array.AsReadOnly((capabilities.ResourceKeys
             ?? throw new InvalidOperationException("工具运行资源键缺失。")).ToArray()));
+        var projection = (definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)?.ResultProjection;
+        HasResultDisplay = definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider;
+        var shown = projection?.Kind == SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
+            ? projection.Columns.Where(column => column.Value is not null).Select(column => column.Value!.PortId).ToHashSet(StringComparer.Ordinal) : null;
+        ResultFields = new ReadOnlyDictionary<string, DeclaredOutputField>(schema.Outputs.ToDictionary(port => port.Id,
+            port => new DeclaredOutputField(port.Id, schema.FindOutputDisplay(port.Id)?.DisplayName ?? port.Id,
+                "", null, null, null, shown is null || shown.Contains(port.Id)), StringComparer.Ordinal));
         ReferenceBehaviors = new ReadOnlyDictionary<string, ParameterReferenceBehavior>(
             new Dictionary<string, ParameterReferenceBehavior>(referenceBehaviors, StringComparer.Ordinal));
         BindingNames = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(bindingNames, StringComparer.Ordinal));
@@ -52,6 +59,8 @@ public sealed class ExecutionNodeSnapshot
     public ToolSchema SettingsSchema { get; }
     public ToolSchema DisplaySchema { get; }
     public ToolCapabilities Capabilities { get; }
+    public IReadOnlyDictionary<string, DeclaredOutputField> ResultFields { get; }
+    public bool HasResultDisplay { get; }
     public IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public IReadOnlyDictionary<string, string> BindingNames { get; }
     public IReadOnlySet<string> ActiveInputs { get; }

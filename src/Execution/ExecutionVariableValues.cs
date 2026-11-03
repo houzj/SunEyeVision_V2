@@ -8,14 +8,16 @@ internal sealed class ExecutionVariableValues : IDisposable
 {
     private readonly object _gate = new();
     private readonly IReadOnlyDictionary<string, BindingVariableSource> _sources;
+    private readonly IReadOnlyDictionary<string, string> _names;
     private readonly Dictionary<string, object?> _values = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Diagnostic> _issues = new(StringComparer.Ordinal);
     private bool _disposed;
     internal ExecutionVariableValues(string solutionId, IEnumerable<BindingVariableSource> sources,
+        IReadOnlyDictionary<string, string> names,
         IEnumerable<KeyValuePair<string, object?>> initialValues)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(solutionId);
-        ArgumentNullException.ThrowIfNull(sources); ArgumentNullException.ThrowIfNull(initialValues);
+        ArgumentNullException.ThrowIfNull(sources); ArgumentNullException.ThrowIfNull(names); ArgumentNullException.ThrowIfNull(initialValues);
         SolutionId = solutionId;
         var captured = sources.ToArray();
         if (captured.Any(source => source.Reference.SolutionId != solutionId ||
@@ -23,6 +25,10 @@ internal sealed class ExecutionVariableValues : IDisposable
             throw new ArgumentException("变量声明不属于本方案或包含选择表达式。", nameof(sources));
         _sources = new ReadOnlyDictionary<string, BindingVariableSource>(captured.ToDictionary(
             source => source.Reference.VariableId, StringComparer.Ordinal));
+        if (names.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value)) ||
+            names.Values.Distinct(StringComparer.Ordinal).Count() != names.Count || _sources.Keys.Any(id => !names.ContainsKey(id)))
+            throw new ArgumentException("变量 ID 或名称无效、不唯一，或缺少声明。", nameof(names));
+        _names = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(names, StringComparer.Ordinal));
         foreach (var (id, value) in initialValues)
         {
             if (!_sources.ContainsKey(id)) throw new ArgumentException("初始变量不属于本次冻结声明：" + id, nameof(initialValues));
@@ -31,6 +37,24 @@ internal sealed class ExecutionVariableValues : IDisposable
     }
     internal string SolutionId { get; }
     internal IReadOnlyList<BindingVariableSource> Sources => Array.AsReadOnly(_sources.Values.ToArray());
+    internal bool Matches(string id, string name) => _names.TryGetValue(id, out var actual) && actual == name;
+    internal IReadOnlyDictionary<string, object?> CaptureValues()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return new ReadOnlyDictionary<string, object?>(_values.ToDictionary(pair => _names[pair.Key],
+                pair => Copy(pair.Value), StringComparer.Ordinal));
+        }
+    }
+    internal IReadOnlyDictionary<string, Diagnostic> CaptureDiagnostics()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return new ReadOnlyDictionary<string, Diagnostic>(new Dictionary<string, Diagnostic>(_issues, StringComparer.Ordinal));
+        }
+    }
 
     internal IReadOnlyList<BindingVariableValue> Capture(RunIdentity consumer)
     {

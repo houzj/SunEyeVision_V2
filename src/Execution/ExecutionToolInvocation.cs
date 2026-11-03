@@ -7,18 +7,20 @@ namespace SunEyeVision.Execution;
 /// <summary>The resource-owning invocation shared by the formal and debug execution paths.</summary>
 internal static class ExecutionToolInvocation
 {
-    // On entry, sourceReaders transfer to this call and must survive until the invocation drains.
-    internal static async ValueTask<DeclaredOutputSnapshot> ExecuteAsync(ExecutionNodeSnapshot node,
-        ToolExecutionIdentity identity, IReadOnlyDictionary<string, object?> inputValues,
-        IReadOnlyDictionary<string, object?> settingValues, IEnumerable<OutputValueRequest> requests,
-        IHostInputPreparer? hostInput, IReadOnlyList<IDisposable> sourceReaders, Action<string> log,
+    internal static async ValueTask<DeclaredOutputSnapshot> ExecuteAsync(ExecutionWorkflowSnapshot workflow,
+        ExecutionNodeSnapshot node, ExecutionBindingPlan.NodePlan plan, ToolExecutionIdentity identity,
+        IReadOnlyDictionary<BindingNodeId, RunIdentity> expected,
+        IReadOnlyDictionary<string, DeclaredOutputSnapshot> results, ExecutionVariableValues? variables,
+        RuntimeParameterValueAcceptance? parameterValues, IHostInputPreparer? hostInput,
+        IReadOnlyImage? workflowImage, Action<string> log,
         IReadOnlyDictionary<string, DeclaredOutputField>? resultFields)
     {
         ArgumentNullException.ThrowIfNull(node); ArgumentNullException.ThrowIfNull(identity);
-        ArgumentNullException.ThrowIfNull(sourceReaders); ArgumentNullException.ThrowIfNull(log);
+        ArgumentNullException.ThrowIfNull(log);
         var invocationIdentity = identity.ToInvocationIdentity(node.NodeId);
         var resources = new FrozenOutputResources();
         IDisposable? admission = null;
+        IReadOnlyList<IDisposable> sourceReaders = Array.Empty<IDisposable>();
         RuntimeGenerationLease? generation = null;
         PreparedHostInvocation? preparedHost = null;
         ToolOutcome? outcome = null;
@@ -34,8 +36,10 @@ internal static class ExecutionToolInvocation
             admission = node.Owner.EnterRun(identity);
             identity.CancellationToken.ThrowIfCancellationRequested();
             generation = node.Directory.AcquireInvocation();
-            var settings = node.MaterializeSettings(settingValues);
-            var values = new Dictionary<string, object?>(inputValues, StringComparer.Ordinal);
+            var resolved = ExecutionBindingInputResolver.Resolve(workflow, node, plan, identity, expected, results, variables, parameterValues);
+            sourceReaders = resolved.Readers;
+            var settings = node.MaterializeSettings(resolved.Settings);
+            var values = new Dictionary<string, object?>(resolved.Inputs, StringComparer.Ordinal);
             var context = new InvocationContext(invocationIdentity, identity.CancellationToken, resources, log);
             IToolExecutionContext bound = context;
             if (node.Directory.GetHostInputs(node.Configuration.ToolId) is not null)
@@ -48,8 +52,10 @@ internal static class ExecutionToolInvocation
                 bound = preparedHost.Context;
             }
             else if (hostInput is not null) throw new InvalidOperationException("工具没有声明本轮提供的宿主输入。 ");
+            if (node.Schema.WorkflowImageInputId is { } imagePort && !values.ContainsKey(imagePort) && workflowImage is not null)
+                values.Add(imagePort, workflowImage);
             var inputs = new InputValues(node.Schema.Inputs, values);
-            outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, requests).ConfigureAwait(false);
+            outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, plan.Requests).ConfigureAwait(false);
             var owned = new GenerationResourceOwner(resources, generation);
             generation = null;
             // Capture consumes both output and owned resources even if it throws.

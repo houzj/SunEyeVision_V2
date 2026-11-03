@@ -9,7 +9,9 @@ public sealed class ExecutionRunRequest : IDisposable
     private int _state;
     internal ExecutionRunRequest(ExecutionWorkflowSnapshot workflow,
         IReadOnlyDictionary<string, IHostInputPreparer> hostInputs,
-        RuntimeParameterValueAcceptance? parameterValues, ExecutionVariableValues? variableValues)
+        RuntimeParameterValueAcceptance? parameterValues, ExecutionVariableValues? variableValues,
+        IReadOnlyList<ExecutionGlobalProducerOperation> globalProducers,
+        IReadOnlyImage? workflowImage, IDisposable? workflowImageLease)
     {
         Workflow = workflow ?? throw new ArgumentNullException(nameof(workflow));
         ArgumentNullException.ThrowIfNull(hostInputs);
@@ -24,12 +26,28 @@ public sealed class ExecutionRunRequest : IDisposable
         HostInputs = new ReadOnlyDictionary<string, IHostInputPreparer>(inputs);
         ParameterValues = parameterValues;
         VariableValues = variableValues;
+        ArgumentNullException.ThrowIfNull(globalProducers);
+        var producers = globalProducers.ToArray();
+        if (producers.Any(item => item is null) ||
+            producers.Select(item => item.VariableId).Distinct(StringComparer.Ordinal).Count() != producers.Length ||
+            producers.Select(item => item.VariableName).Distinct(StringComparer.Ordinal).Count() != producers.Length ||
+            (producers.Length > 0 && variableValues is null) ||
+            (variableValues is not null && producers.Any(item => !variableValues.Matches(item.VariableId, item.VariableName))))
+            throw new ArgumentException("全局生产操作必须有唯一变量身份及本批变量槽。", nameof(globalProducers));
+        GlobalProducers = Array.AsReadOnly(producers);
+        if ((workflowImage is null) != (workflowImageLease is null))
+            throw new ArgumentException("流程输入图像必须与其本轮持有租约一起提供。", nameof(workflowImage));
+        WorkflowImage = workflowImage;
+        WorkflowImageLease = workflowImageLease;
     }
     public ExecutionWorkflowSnapshot Workflow { get; }
     internal IReadOnlyDictionary<string, IHostInputPreparer> HostInputs { get; }
     internal RuntimeParameterValueAcceptance? ParameterValues { get; }
     // The root run owns this batch across its workflows; the request borrows it.
     internal ExecutionVariableValues? VariableValues { get; }
+    internal IReadOnlyList<ExecutionGlobalProducerOperation> GlobalProducers { get; }
+    internal IReadOnlyImage? WorkflowImage { get; }
+    private IDisposable? WorkflowImageLease { get; }
 
     internal void Claim()
     {
@@ -57,6 +75,8 @@ public sealed class ExecutionRunRequest : IDisposable
         var failures = new List<Exception>();
         foreach (var preparer in new HashSet<IHostInputPreparer>(HostInputs.Values, ReferenceEqualityComparer.Instance))
             try { preparer.Dispose(); } catch (Exception error) { failures.Add(error); }
+        if (WorkflowImageLease is not null && !HostInputs.Values.Any(input => ReferenceEquals(input, WorkflowImageLease)))
+            try { WorkflowImageLease.Dispose(); } catch (Exception error) { failures.Add(error); }
         if (failures.Count != 0) throw new AggregateException("宿主输入释放失败。", failures);
     }
 }

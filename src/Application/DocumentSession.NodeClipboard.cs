@@ -1,4 +1,3 @@
-using System.Text.Json;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
@@ -9,20 +8,15 @@ namespace SunEyeVision.Application;
 /// <summary>Session-issued private definition snapshot. It never holds invocation results or mutable graph collections.</summary>
 public sealed class NodeClipboardFragment
 {
-    internal sealed record Node(string Id, string ToolId, string DisplayName, bool Enabled, CanvasPoint Position,
-        double Width, double Height, string? SelectedDisplayReference, IReadOnlyDictionary<string,JsonElement>? AdditionalData,
-        ToolConfiguration Configuration);
-    internal sealed record Edge(string Id, string SourceId, string TargetId, string SourcePort, string TargetPort,
-        IReadOnlyList<CanvasPoint>? ManualPath);
     internal sealed record Dependency(string WorkflowId, NodeDefinition Actual, Guid Generation, CancellationToken Retirement, bool EdgeOnly);
     internal NodeClipboardFragment(DocumentSession owner, RuntimeDirectorySnapshot directory, string flowId,
-        Node[] nodes, Edge[] edges, Dependency[] dependencies, GlobalVariable[] variables)
+        FragmentNodeSnapshot[] nodes, FragmentEdgeSnapshot[] edges, Dependency[] dependencies, GlobalVariable[] variables)
     { Owner=owner; Directory=directory; WorkflowId=flowId; Nodes=nodes; Edges=edges; Dependencies=dependencies; Variables=variables; }
     internal DocumentSession Owner { get; }
     internal RuntimeDirectorySnapshot Directory { get; }
     internal string WorkflowId { get; }
-    internal Node[] Nodes { get; }
-    internal Edge[] Edges { get; }
+    internal FragmentNodeSnapshot[] Nodes { get; }
+    internal FragmentEdgeSnapshot[] Edges { get; }
     internal Dependency[] Dependencies { get; }
     internal GlobalVariable[] Variables { get; }
     public CanvasPoint Anchor => Nodes[0].Position;
@@ -77,7 +71,7 @@ public sealed partial class DocumentSession
                 var fields=node.Configuration.Fields;
                 _=fields.MapReferences(reference=>{CaptureReference(reference);return reference;});
                 if (node.SelectedDisplayReference is {} selected) CaptureReference(ParameterSettingCanonical.Deserialize(selected));
-                return new NodeClipboardFragment.Node(node.Id,node.ToolType,node.DispName,node.IsEnabled,node.Position,node.Width,node.Height,
+                return new FragmentNodeSnapshot(node.Id,node.ToolType,node.DispName,node.IsEnabled,node.Position,node.Width,node.Height,
                     node.SelectedDisplayReference,node.AdditionalData?.ToDictionary(pair=>pair.Key,pair=>pair.Value.Clone(),StringComparer.Ordinal),node.Configuration.Copy());
             }).ToArray();
             var edges=scope.Flow.Connections.Where(edge=>ids.Contains(edge.TargetNodeId)).Select(edge=>
@@ -88,7 +82,7 @@ public sealed partial class DocumentSession
                     var lifetime=CaptureNodeLifetime(scope,actual);
                     dependencies.TryAdd((workflowId,actual.Id),new(workflowId,actual,lifetime.Generation,lifetime.Retirement,true));
                 }
-                return new NodeClipboardFragment.Edge(edge.Id,edge.SourceNodeId,edge.TargetNodeId,edge.SourcePort,edge.TargetPort,
+                return new FragmentEdgeSnapshot(edge.Id,edge.SourceNodeId,edge.TargetNodeId,edge.SourcePort,edge.TargetPort,
                     edge.ManualPathPoints is null?null:Array.AsReadOnly(edge.ManualPathPoints.ToArray()));
             }).ToArray();
             return new NodeClipboardFragment(this,_directory,workflowId,nodes,edges,dependencies.Values.ToArray(),variables.Values.ToArray());
@@ -117,65 +111,34 @@ public sealed partial class DocumentSession
         }
         var draft=PrepareGraphEdit(targetWorkflowId);
         var dx=anchor.X-fragment.Anchor.X;var dy=anchor.Y-fragment.Anchor.Y;
-        var mapped=new Dictionary<string,NodeDefinition>(StringComparer.Ordinal);
+        static int FirstFree(ISet<int> occupied)
+        {
+            var value=1;while(occupied.Contains(value))value=checked(value+1);return value;
+        }
+        var global=Document.Workflows.SelectMany(flow=>flow.Nodes).Select(node=>node.GlobalIndex).Where(index=>index>0).ToHashSet();
+        var local=target.Flow.Nodes.Where(node=>node.LocalIndex>0).GroupBy(node=>node.ToolType,StringComparer.Ordinal)
+            .ToDictionary(group=>group.Key,group=>group.Select(node=>node.LocalIndex).ToHashSet(),StringComparer.Ordinal);
+        var usedNames=target.Flow.Nodes.Select(node=>node.DispName).ToHashSet(StringComparer.Ordinal);
+        var issued=new Dictionary<string,FragmentIssuedNode>(StringComparer.Ordinal);
         foreach(var snapshot in fragment.Nodes)
         {
-            var node=CreateNode(draft,snapshot.ToolId,new CanvasPoint(snapshot.Position.X+dx,snapshot.Position.Y+dy));
-            node.IsEnabled=snapshot.Enabled;node.Width=snapshot.Width;node.Height=snapshot.Height;
-            node.AdditionalData=snapshot.AdditionalData;
+            var globalIndex=FirstFree(global);global.Add(globalIndex);
+            if(!local.TryGetValue(snapshot.ToolId,out var allocated)){allocated=new HashSet<int>();local.Add(snapshot.ToolId,allocated);}
+            var localIndex=FirstFree(allocated);allocated.Add(localIndex);
             var stem=snapshot.DisplayName.TrimEnd('0','1','2','3','4','5','6','7','8','9');
-            if(!string.IsNullOrWhiteSpace(stem))
-            {
-                var suffix=node.LocalIndex;var name=stem+suffix;
-                while(draft.Nodes.Any(other=>!ReferenceEquals(other,node)&&other.DispName==name))name=stem+(++suffix);
-                node.DispName=name;node.Name=$"{node.GlobalIndex} {name}";
-            }
-            mapped.Add(snapshot.Id,node);
+            if(string.IsNullOrWhiteSpace(stem))stem=_directory.GetCatalog(snapshot.ToolId)?.DisplayName??snapshot.ToolId;
+            var suffix=localIndex;var display=stem+suffix;while(usedNames.Contains(display))display=stem+(++suffix);
+            usedNames.Add(display);issued.Add(snapshot.Id,new(Guid.NewGuid().ToString("N"),globalIndex,localIndex,$"{globalIndex} {display}",display));
         }
-        var edges=new Dictionary<string,ConnectionDefinition>(StringComparer.Ordinal);
-        foreach(var edge in fragment.Edges)
-        {
-            var internalSource=mapped.TryGetValue(edge.SourceId,out var source);
-            if(!internalSource && targetWorkflowId!=fragment.WorkflowId)continue;
-            var copy=new ConnectionDefinition(Guid.NewGuid().ToString("N"),internalSource?source!.Id:edge.SourceId,
-                mapped[edge.TargetId].Id,edge.SourcePort,edge.TargetPort);
-            if(internalSource && edge.ManualPath is not null)
-                copy.ManualPathPoints=edge.ManualPath.Select(p=>new CanvasPoint(p.X+dx,p.Y+dy)).ToArray();
-            draft.AddConnection(copy);edges.Add(edge.Id,copy);
-        }
-        OutputReference Remap(OutputReference reference)
-        {
-            var scopeId=reference.ScopeId ?? fragment.WorkflowId;
-            var id=reference.NodeId;
-            if(scopeId==fragment.WorkflowId && mapped.TryGetValue(id,out var copy)){id=copy.Id;scopeId=targetWorkflowId;}
-            var selection=reference.Selection is BindingSelection.AtField field
-                ?new BindingSelection.AtField(Remap(field.Reference),field.ConstructionBehavior):reference.Selection;
-            return new OutputReference(id,reference.PortId,reference.Type,reference.MemberFieldPath,selection,scopeId,reference.Storage);
-        }
-        static string Identity(string id,ParameterSetting setting)
-        {
-            using var stream=new MemoryStream();using(var writer=new Utf8JsonWriter(stream))
-                ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,setting}});
-            return Convert.ToBase64String(stream.ToArray());
-        }
-        foreach(var snapshot in fragment.Nodes)
-        {
-            var node=mapped[snapshot.Id];var mappedFields=snapshot.Configuration.Fields.MapReferences(Remap);
-            var changes=mappedFields.Capture().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
-            foreach(var id in changes.Keys.ToArray())
-                if(changes[id] is ReferenceSetting reference && reference.OriginId is {} origin && origin.StartsWith("connection:",StringComparison.Ordinal))
-                {
-                    if(!edges.TryGetValue(origin[11..],out var edge))throw new InvalidOperationException("复制的自动来源缺少有效连线。");
-                    changes[id]=reference with {OriginId="connection:"+edge.Id};
-                }
-            var fields=new FieldSettings(snapshot.Configuration.Fields.Declarations.Values,changes);
-            var values=snapshot.Configuration.CaptureCurrentValues().Where(pair=>Identity(pair.Key,snapshot.Configuration.Fields.Read(pair.Key))==Identity(pair.Key,fields.Read(pair.Key)))
-                .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
-            node.Configuration=new ToolConfiguration(node.ToolType,fields,values,parameterBindingOrder:snapshot.Configuration.ParameterBindingOrder);
-            _=AdmitConfiguration(node,node.Configuration);
-            node.SelectedDisplayReference=snapshot.SelectedDisplayReference is {} selected
-                ?ParameterSettingCanonical.Serialize(Remap(ParameterSettingCanonical.Deserialize(selected))):null;
-        }
+        var selected=fragment.Nodes.Select(node=>node.Id).ToHashSet(StringComparer.Ordinal);
+        var edgeIds=fragment.Edges.Where(edge=>selected.Contains(edge.TargetId) &&
+            (selected.Contains(edge.SourceId)||targetWorkflowId==fragment.WorkflowId))
+            .ToDictionary(edge=>edge.Id,_=>Guid.NewGuid().ToString("N"),StringComparer.Ordinal);
+        var fragmentResult=FragmentBuilder.Build(fragment.WorkflowId,targetWorkflowId,fragment.Nodes,fragment.Edges,issued,edgeIds,
+            new CanvasPoint(dx,dy),targetWorkflowId==fragment.WorkflowId);
+        var mapped=fragmentResult.NodeMap;var edges=fragmentResult.EdgeMap;
+        foreach(var node in fragmentResult.Nodes){_=AdmitConfiguration(node,node.Configuration);draft.AddNode(node);}
+        foreach(var edge in fragmentResult.Edges)draft.AddConnection(edge);
         var candidate=GraphState.FromDraft(draft,PrepareConnectionBindings(draft));
         var participants=mapped.Values.Select(node=>node.Id).ToHashSet(StringComparer.Ordinal);
         CandidateInputValidation.Validate(_documentId,targetWorkflowId,_owner.Id,ChangeRevision,candidate,Document.GlobalVariables,participants,false,AdmitConfiguration,false);

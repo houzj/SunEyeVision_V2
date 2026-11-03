@@ -1,4 +1,4 @@
-using SunEyeVision.Domain.Solutions;
+﻿using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
@@ -150,6 +150,8 @@ public sealed partial class DocumentSession : IDisposable
     private AdmittedToolConfiguration AdmitConfiguration(NodeDefinition node, ToolConfiguration configuration)
     {
         EnsureOpen();
+        if (!string.IsNullOrEmpty(node.SubroutineId))
+            throw new InvalidOperationException("子流程拥有关系迁移暂停，不能作为普通工具静默执行。");
         if (_admitting) throw new InvalidOperationException("工具声明准入期间不能重入。");
         if (configuration.ToolId != node.ToolType) throw new InvalidOperationException("节点与配置工具身份不一致。");
         _admitting = true;

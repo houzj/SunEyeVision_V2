@@ -26,4 +26,17 @@ public sealed class DecodedResourcesScopeTests
             owner?.Dispose();scope.Dispose();Assert.Equal(1,resource.Count);
         }
     }
+    [Fact] public void Failed_owner_construction_keeps_resource_with_scope()
+    {
+        var scope=new DecodedResourcesScope(false,true);var resource=new Resource();scope.RegisterNew(resource);
+        Assert.Throws<InvalidOperationException>(()=>scope.Transfer());Assert.Equal(0,resource.Count);
+        scope.Dispose();Assert.Equal(1,resource.Count);
+    }
+    [Fact] public void Failed_registration_cleans_only_the_new_resource()
+    {
+        var scope=new DecodedResourcesScope(true,false);var resource=new Resource();
+        Assert.Throws<InvalidOperationException>(()=>scope.RegisterNew(resource));Assert.Equal(1,resource.Count);
+        scope.Dispose();Assert.Equal(1,resource.Count);
+    }
 }
+

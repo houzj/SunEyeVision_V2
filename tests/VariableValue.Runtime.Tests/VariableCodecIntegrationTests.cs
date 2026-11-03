@@ -4,6 +4,7 @@ using SunEyeVision.Infrastructure.Persistence;
 using SunEyeVision.Persistence.Variables;
 using SunEyeVision.Persistence;
 using SunEyeVision.Domain.Solutions;
+using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Communication;
@@ -104,7 +105,33 @@ public sealed class VariableCodecIntegrationTests
         Assert.Throws<InvalidOperationException>(()=>scope.Transfer());
         owner.Dispose(); Assert.True(published.IsDisposed); owner.Dispose();
     }
+    private sealed class ObservingCodec(SdkVariableValueExtensionCodec inner) : IVariableValueExtensionCodec
+    {
+        public DecodedResourcesScope Scope => inner.Scope;
+        public Mat? LastImage { get; private set; }
+        public bool SupportsType(string name)=>inner.SupportsType(name);
+        public object? Read(string name,JsonElement value,JsonSerializerOptions options)
+        { var decoded=inner.Read(name,value,options);LastImage=decoded as Mat ?? LastImage;return decoded; }
+        public bool TryWrite(object value,JsonSerializerOptions options,out string typeName,out object? serializedValue)=>inner.TryWrite(value,options,out typeName,out serializedValue);
+    }
+    [Fact] public void Failed_solution_parse_releases_image_created_earlier()
+    {
+        using var input=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23)); using var writeScope=new DecodedResourcesScope();
+        var wrapper=JsonSerializer.Serialize((object)input,Options(writeScope));
+        var json="{\"Id\":\"s\",\"Name\":\"s\",\"SchemaVersion\":4,\"GlobalVariables\":[{\"Id\":\"v\",\"Name\":\"image\",\"Type\":\"Image\",\"Value\":"+wrapper+"}],\"CommunicationResponses\":123}";
+        var bytes=System.Text.Encoding.UTF8.GetBytes(json);var scope=new DecodedResourcesScope();var codec=new ObservingCodec(new SdkVariableValueExtensionCodec(scope));
+        var vocabulary=SdkVariableVocabularyCapture.FromCandidate(bytes);
+        Assert.ThrowsAny<Exception>(()=>SolutionDocumentReader.Read(bytes,new Dictionary<string,FrozenToolDeclarations>(),vocabulary,new JsonSerializerOptions(),scope,codec));
+        Assert.NotNull(codec.LastImage);Assert.True(codec.LastImage!.IsDisposed);
+    }
+    [Fact] public void Reader_rejects_a_codec_owned_by_another_scope()
+    {
+        var bytes=System.Text.Encoding.UTF8.GetBytes("{\"Id\":\"s\",\"Name\":\"s\",\"SchemaVersion\":4}");
+        using var first=new DecodedResourcesScope();using var second=new DecodedResourcesScope();
+        Assert.Throws<InvalidOperationException>(()=>SolutionDocumentReader.Read(bytes,new Dictionary<string,FrozenToolDeclarations>(),new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new JsonSerializerOptions(),first,new SdkVariableValueExtensionCodec(second)));
+    }
 }
+
 
 
 

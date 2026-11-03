@@ -5,7 +5,7 @@ namespace SunEyeVision.Persistence;
 
 public sealed record PersistenceDiagnostic(string Code, string Stage, string Severity, string JsonPath,
     string Message, string? WorkflowId = null, string? NodeId = null, string? VariableId = null);
-public sealed record FrozenResourceReference(string JsonPath, string Reference, ResourcePurpose Purpose, string? AbsolutePath);
+public sealed record FrozenResourceReference(string JsonPath, string Reference, ResourcePurpose Purpose, string? AbsolutePath, bool Deferred=false);
 public sealed record FrozenSaveReceipt(FrozenSolutionDocument WrittenSnapshot, string? Warning);
 public enum TargetExpectationKind { Unchecked, Missing, MatchSha256 }
 public sealed class TargetExpectation
@@ -26,7 +26,7 @@ public sealed class TargetExpectation
 public sealed class FrozenSolutionDocument
 {
     private readonly byte[] _bytes;
-    public FrozenSolutionDocument(string targetPath, ReadOnlySpan<byte> bytes,
+    internal FrozenSolutionDocument(string targetPath, ReadOnlySpan<byte> bytes,
         IEnumerable<PersistenceDiagnostic> diagnostics, IEnumerable<FrozenResourceReference> resourcePlan,
         TargetExpectation? targetExpectation = null)
     {

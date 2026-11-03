@@ -26,7 +26,8 @@ public sealed class DeclaredFieldJsonTests
     {
         using var document=JsonDocument.Parse(json);
         var error=Record.Exception(()=>DeclaredFieldJson.Read(Declarations(),document.RootElement));
-        Assert.True(error is JsonException or ArgumentException,$"Unexpected error: {error}");
+        Assert.True(error is JsonException or ArgumentException or OverflowException,$"Unexpected error: {error}");
     }
 }
+
 

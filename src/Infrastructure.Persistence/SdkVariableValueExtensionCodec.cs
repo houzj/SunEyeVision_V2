@@ -14,6 +14,7 @@ namespace SunEyeVision.Infrastructure.Persistence;
 public sealed class SdkVariableValueExtensionCodec : IVariableValueExtensionCodec
 {
     private readonly DecodedResourcesScope _scope;
+    public DecodedResourcesScope Scope => _scope;
     public SdkVariableValueExtensionCodec(DecodedResourcesScope scope) => _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     public bool SupportsType(string typeName)
     {

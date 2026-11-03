@@ -4,16 +4,14 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Domain.Persistence;
 
-namespace SunEyeVision.Workflow.Persistence;
+namespace SunEyeVision.Persistence;
 
 public sealed class SolutionResourceResolver : IResourcePathResolver
 {
     public string? BaseDirectory { get; }
     public SolutionResourceResolver(string? directory) => BaseDirectory = directory == null ? null : Path.GetFullPath(directory);
-    public static SolutionResourceResolver For(Solution? solution) => new(solution?.ResourceBaseDirectory ?? (solution?.FilePath is { Length: > 0 } path
-        ? Path.GetDirectoryName(Path.GetFullPath(path)) : null));
     public string ResolveAddress(string fieldName, string reference)
     {
         if (string.IsNullOrWhiteSpace(reference)) throw new InvalidDataException(fieldName + ": resource reference is empty.");
@@ -28,19 +26,21 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
         return new(reference, address, purpose == ResourcePurpose.DirectoryRead ? Directory.Exists(address) : File.Exists(address));
     }
 
-    internal void Inspect(JsonNode root, List<PersistenceDiagnostic> diagnostics, RuntimeDirectorySnapshot directory)
+    internal IReadOnlyList<FrozenResourceReference> Inspect(JsonNode root, List<PersistenceDiagnostic> diagnostics, IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
     {
-        foreach (var (setting, declaration, path) in DeclaredSettings(root, directory))
+        var plan=new List<FrozenResourceReference>();
+        foreach (var (setting, declaration, path) in DeclaredSettings(root, declarations))
         {
             if (setting["Kind"]?.GetValue<string>() != "Constant")
-            { diagnostics.Add(new("RESOURCE_DEFERRED", "Resource", "Warning", path, "Reference retained for runtime binding.")); continue; }
+            { plan.Add(new(path,string.Empty,declaration.Purpose,null,true)); diagnostics.Add(new("RESOURCE_DEFERRED", "Resource", "Warning", path, "Reference retained for runtime binding.")); continue; }
             void Check(JsonNode? value, string itemPath)
             {
                 var reference=Text(value,itemPath);
                 if (string.IsNullOrWhiteSpace(reference)) return;
                 if (reference.Contains('{'))
-                { diagnostics.Add(new("RESOURCE_DEFERRED", "Resource", "Warning", itemPath, "Expression retained for runtime binding.")); return; }
+                { plan.Add(new(itemPath,reference,declaration.Purpose,null,true)); diagnostics.Add(new("RESOURCE_DEFERRED", "Resource", "Warning", itemPath, "Expression retained for runtime binding.")); return; }
                 var address=ResolveAddress(itemPath,reference);
+                plan.Add(new(itemPath,reference,declaration.Purpose,address));
                 var exists=declaration.Purpose == ResourcePurpose.DirectoryRead ? Directory.Exists(address) : File.Exists(address);
                 if (declaration.Purpose != ResourcePurpose.FileWrite && !exists)
                     diagnostics.Add(new("RESOURCE_UNAVAILABLE", "Resource", "Warning", itemPath, "Reference retained; resource unavailable: " + reference));
@@ -52,14 +52,15 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
                 for (var i=0;i<values.Count;i++) Check(values[i],path+"["+i+"]");
             }
         }
+        return plan.AsReadOnly();
     }
 
-    internal static string RebaseCopy(string json, string sourceDirectory, string targetDirectory, RuntimeDirectorySnapshot directory)
+    internal static string RebaseCopy(string json, string sourceDirectory, string targetDirectory, IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
     {
         var root=JsonNode.Parse(json) ?? throw new JsonException("Empty document.");
         string Rebase(string reference) => string.IsNullOrWhiteSpace(reference) || Path.IsPathRooted(reference) || reference.Contains('{')
             ? reference : Path.GetRelativePath(targetDirectory,Path.GetFullPath(reference,sourceDirectory));
-        foreach (var (setting, declaration, path) in DeclaredSettings(root,directory))
+        foreach (var (setting, declaration, path) in DeclaredSettings(root,declarations))
         {
             if (setting["Kind"]?.GetValue<string>() != "Constant") continue;
             if (declaration.Cardinality == ResourceReferenceCardinality.Scalar)
@@ -80,7 +81,7 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
         return reference;
     }
 
-    private static IEnumerable<(JsonObject Setting,ResourceFieldDeclaration Declaration,string Path)> DeclaredSettings(JsonNode root,RuntimeDirectorySnapshot directory)
+    private static IEnumerable<(JsonObject Setting,ResourceFieldDeclaration Declaration,string Path)> DeclaredSettings(JsonNode root,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
     {
         if (root["Workflows"] is not JsonArray workflows) yield break;
         for (var w=0;w<workflows.Count;w++)
@@ -90,14 +91,15 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
             var node=nodes[n] ?? throw new JsonException("Node is missing.");
             var path="$.Workflows["+w+"].Nodes["+n+"]";
             var tool=node["ToolType"]?.GetValue<string>() ?? throw new JsonException("Tool identity is missing.",path,null,null);
-            var declarations=directory.GetResourceFields(tool);
-            if (declarations.Count==0) continue;
-            if (node["RuntimeConfiguration"] is not JsonObject runtime || runtime["ToolId"]?.GetValue<string>() != tool || runtime["Fields"] is not JsonObject settings)
-                throw new JsonException("Resource owner requires its admitted Runtime settings.",path+".RuntimeConfiguration",null,null);
-            foreach (var declaration in declarations)
+            if(!declarations.TryGetValue(tool,out var admitted) || admitted.ToolId!=tool) throw new JsonException("Resource tool declaration missing.",path,null,null);
+            var resources=admitted.HostDeclarations.ResourceFields;
+            if (resources.Count==0) continue;
+            if (node["Configuration"] is not JsonObject runtime || runtime["ToolId"]?.GetValue<string>() != tool || runtime["Fields"] is not JsonObject settings)
+                throw new JsonException("Resource owner requires its admitted Runtime settings.",path+".Configuration",null,null);
+            foreach (var declaration in resources)
             {
                 if (!settings.TryGetPropertyValue(declaration.FieldId,out var value)) continue;
-                var fieldPath=path+".RuntimeConfiguration.Fields."+declaration.FieldId;
+                var fieldPath=path+".Configuration.Fields."+declaration.FieldId;
                 if (value is not JsonObject setting || setting["Kind"] is not JsonValue)
                     throw new JsonException("Invalid declared resource setting.",fieldPath,null,null);
                 yield return (setting,declaration,fieldPath);

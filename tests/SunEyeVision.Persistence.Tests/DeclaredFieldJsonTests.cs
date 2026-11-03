@@ -18,6 +18,16 @@ public sealed class DeclaredFieldJsonTests
         var decoded=DeclaredFieldJson.Read(Declarations(),document.RootElement);
         Assert.Equal(7L,Assert.IsType<ConstantSetting>(decoded["threshold"]).Value);
     }
+    [Fact] public void Frozen_manual_reference_sources_are_detached_from_the_caller()
+    {
+        var empty=new ToolSchema(Array.Empty<Port>(),Array.Empty<Port>());
+        var path=new List<string>{"member"}; var sources=new List<ManualReferenceSource>{new("image",path)};
+        var declaration=new FrozenToolDeclarations("tool",empty,empty,empty,new Dictionary<string,ParameterReferenceBehavior>(),
+            new(null,Array.Empty<ResourceFieldDeclaration>(),"admitted"),sources);
+        path[0]="changed"; sources.Clear();
+        var source=Assert.Single(declaration.ManualReferenceSources);
+        Assert.Equal("image",source.PortId); Assert.Equal("member",Assert.Single(source.MemberPath));
+    }
     [Theory]
     [InlineData("{\"unknown\":{\"Kind\":\"Constant\",\"Value\":1}}")]
     [InlineData("{\"threshold\":{\"Kind\":\"Constant\",\"Value\":1,\"Value\":2}}")]

@@ -14,6 +14,21 @@ using Xunit;
 
 public sealed class VariableCodecIntegrationTests
 {
+    [Fact] public void Writer_captures_real_image_bytes_without_taking_borrowed_original()
+    {
+        using var image=new Mat(2,3,MatType.CV_8UC1,Scalar.All(23));
+        var variable=new GlobalVariable("图片",image,"Image");
+        var document=new SolutionDefinition("s","s");
+        typeof(SolutionDefinition).GetProperty(nameof(SolutionDefinition.GlobalVariables))!.SetValue(document,new[]{variable});
+        var types=new FrozenVariableTypeCatalog(new Dictionary<string,string>{{"Image","OpenCvSharp.Mat"}});
+        using var writingScope=new DecodedResourcesScope();
+        var encoded=SolutionDocumentWriter.Capture(document,new Dictionary<string,FrozenToolDeclarations>(),types,new JsonSerializerOptions(),new SdkVariableValueExtensionCodec(writingScope));
+        Assert.False(image.IsDisposed);
+        using var readingScope=new DecodedResourcesScope();
+        using var candidate=SolutionDocumentReader.Read(encoded.CopyBytes(),new Dictionary<string,FrozenToolDeclarations>(),types,new JsonSerializerOptions(),readingScope,new SdkVariableValueExtensionCodec(readingScope));
+        var restored=Assert.IsType<Mat>(Assert.Single(candidate.GlobalVariables).Value);
+        Assert.Equal(23,restored.At<byte>(0,0)); candidate.Dispose(); Assert.True(restored.IsDisposed); Assert.False(image.IsDisposed);
+    }
     private static JsonSerializerOptions Options(DecodedResourcesScope scope) { var options=new JsonSerializerOptions();options.Converters.Add(new GlobalVariableValueConverter(new SdkVariableValueExtensionCodec(scope)));return options; }
     [Fact] public void Current_v3_wrapper_bytes_match_original_converter_for_actual_values()
     {

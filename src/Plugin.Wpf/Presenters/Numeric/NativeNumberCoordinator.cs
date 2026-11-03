@@ -109,7 +109,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(!Current())return;_arrange?.PrepareBorrowedInteractions(true);_active=true;
+        if(!Current())return;_active=true;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);
         _loadGeneration++;
         AttachInput();
         if(_disposed||_state.IsDisposed)return;
@@ -336,7 +336,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
         }
         else
         {
-            _arrange?.PrepareBorrowedInteractions(true);_presentationHidden=false;_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
+            _presentationHidden=false;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
             QueueResume();
         }

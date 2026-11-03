@@ -22,13 +22,13 @@ internal static class C06NumericRangeCases
  sealed class Fixture:IDisposable
  {
   internal readonly DeclaredSettingsView View;internal readonly DeclaredFieldAccess Low,High;internal readonly object Range;internal readonly object[] States;internal readonly Numbers.SliderArrangeBase Native;
-  internal Fixture(bool integer,ParameterSetting low,ParameterSetting high,ReferenceFieldOptions? refs=null,Func<FieldGroupCandidate,string?>? validate=null,double min=0,double max=100,double increment=1,int digits=2,bool reverse=false)
+  internal Fixture(bool integer,ParameterSetting low,ParameterSetting high,ReferenceFieldOptions? refs=null,Func<FieldGroupCandidate,string?>? validate=null,double min=0,double max=100,double increment=1,int digits=2,bool reverse=false,bool disabledBeforeLoad=false)
   {
    var type=integer?(TypeRef)DataType.Integer:DataType.Number;var l=new Port("lo",type,Storage:integer?NumericStorage.Int32:null,EditModes:FieldEditModes.Constant|FieldEditModes.Reference);var h=l with{Id="hi"};
    var lp=new FieldPresentation("lo","下限","G",0,FieldEditorKind.Scalar){Layout=new("A","G",Minimum:min,Maximum:max,Increment:increment,DecimalPlaces:digits,PairWith:"hi")};var hp=new FieldPresentation("hi","上限","G",1,FieldEditorKind.Scalar){Layout=lp.Layout! with{PairWith=null}};
    var ports=reverse?new[]{h,l}:new[]{l,h};var fields=reverse?new[]{hp,lp}:new[]{lp,hp};var schema=new ToolSchema(ports,Array.Empty<Port>(),new ToolPresentation(fields));
    var draft=new FieldSettingsDraft(schema,new FieldSettings(ports,new Dictionary<string,ParameterSetting>{{"lo",low},{"hi",high}}));
-   View=new(draft,new(ReferenceOptions:refs??ReferenceFieldOptions.Empty,ValidateComposition:validate));Show(View);
+   View=new(draft,new(ReferenceOptions:refs??ReferenceFieldOptions.Empty,ValidateComposition:validate));if(disabledBeforeLoad)View.IsEnabled=false;Show(View);
    var root=(DeclaredFieldsView)View.Content;Low=root.Fields.Single(f=>f.FieldId=="lo");High=root.Fields.Single(f=>f.FieldId=="hi");Range=Low.View;States=(object[])F(Range,"_states");Native=P<Numbers.SliderArrangeBase>(Range,"NativeView");
   }
   internal object Model(int i)=>P<object>(States[i],"NumericModel");internal TextBox Text(int i)=>(TextBox)(i==0?Low:High).InputElement!;
@@ -48,12 +48,16 @@ internal static class C06NumericRangeCases
   {
    Case("原typed0初始化位与浮点同舍入通知",()=>{
     using(var f=new Fixture(true,new ConstantSetting(0L),Ref(true))){Check(P<bool>(f.Model(0),"HasValue")&&!P<bool>(f.Model(0),"IsInitValue"),"已知0被当原已初始化");Check(!P<bool>(f.Model(1),"HasValue")&&!P<bool>(f.Model(1),"IsInitValue")&&P<object>(f.Model(1),"CurValue") is 0L,"未知typed0被当已读");}
+    using(var direct=new Fixture(false,new ConstantSetting(0d),new ConstantSetting(10d))){Check(!P<bool>(direct.Model(0),"IsInitValue"),"初0标志错误");Check(direct.Low.TrySetConstant(.004)&&P<bool>(direct.Model(0),"IsInitValue")&&P<double>(direct.Model(0),"CurValue")==0,"程序原raw在舍入前被丢弃");}
     var armed=false;var reads=0;using var g=new Fixture(false,Ref(),Ref(),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>{reads++;return armed?new(p.Id=="lo"?.004:1d):null;}});armed=true;reads=0;var before=P<long>(g.Model(0),"Version");Check(Read(g,"lo").Status==NumericModelReadStatus.Updated&&P<double>(g.Model(0),"CurValue")==0&&P<bool>(g.Model(0),"IsInitValue")&&P<long>(g.Model(0),"Version")>before,"舍入同0丢原setter初始化/通知");Check(reads==2&&!P<bool>(g.Model(1),"HasValue"),"临时右读安装模型");
    });
    Case("真实TwoWay先改本地setter再单端正式接纳",()=>{
     using var f=new Fixture(true,new ConstantSetting(1L),new ConstantSetting(29L),min:1,max:30,increment:4);
     f.Native.StartValue=8;f.Native.GetBindingExpression(Numbers.SliderArrangeBase.StartValueProperty)!.UpdateSource();
     Check(P<long>(f.Model(0),"CurValue")==5&&f.Low.Setting==new ConstantSetting(1L),"未按原setter先改本地或提前写正式值");Call(f.Native,"DoStartValueChange");Pump();Check(f.Low.Setting==new ConstantSetting(5L)&&f.High.Setting==new ConstantSetting(29L),"原端点事件未提交单端格点");
+   });
+   Case("无编辑原事件保持普通模型与正式值分离",()=>{
+    var armed=false;using var f=new Fixture(false,new ConstantSetting(1d),new ConstantSetting(10d),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>armed?new(p.Id=="lo"?2d:10d):null});armed=true;Read(f,"lo");var revision=f.View.Draft!.Revision;Call(f.Native,"DoStartValueChange");Pump();Check(f.Low.Setting==new ConstantSetting(1d)&&P<double>(f.Model(0),"CurValue")==2&&f.View.Draft.Revision==revision,"无编辑原事件把正式值投回模型或写回读值");
    });
    Case("原左右Check非对称与临时parse和异常分支",()=>{
     foreach(var peer in new object?[]{10d,"bad",null,new InvalidOperationException("read-failed")})
@@ -76,10 +80,16 @@ internal static class C06NumericRangeCases
     f.Native.IsSubscribeLeft=false;Call(f.Native,"DoLeftTypeChange");Pump();Check(f.Low.Setting is ReferenceSetting&&f.Text(0).Text==string.Empty&&f.Low.HasPendingEdits&&f.Low.HasInvalidText&&reads==1,"无值解绑未保护正式引用");f.Text(0).Text="bad-raw";Call(f.Range,"ReplayAccepted");Pump();Check(f.Text(0).Text=="bad-raw"&&f.Low.HasInvalidText,"重投影清实际坏raw");
    });
    Case("原Dispatcher当前对端时序与owner退役",()=>{
+    using(var disabled=new Fixture(false,new ConstantSetting(3d),new ConstantSetting(8d),disabledBeforeLoad:true))
+    {
+     Call(disabled.Native,"SL_Bat1_ValueChanged",disabled.Native,new RoutedPropertyChangedEventArgs<double>(3,12));Pump();Check(disabled.Native.StartValue==3,"disabled-before-load激活了旧队列");
+     disabled.View.Visibility=Visibility.Collapsed;Pump();disabled.View.Visibility=Visibility.Visible;Pump();Call(disabled.Native,"SL_Bat1_ValueChanged",disabled.Native,new RoutedPropertyChangedEventArgs<double>(3,12));Pump();Check(disabled.Native.StartValue==3,"disabled-hide-show激活了队列");
+     disabled.View.IsEnabled=true;Pump();Call(disabled.Native,"SL_Bat1_ValueChanged",disabled.Native,new RoutedPropertyChangedEventArgs<double>(3,12));Pump();Check(disabled.Native.StartValue==8,"重新enable后丢原有效事件");
+    }
     using var f=new Fixture(false,new ConstantSetting(3d),new ConstantSetting(8d));
     Call(f.Native,"SL_Bat1_ValueChanged",f.Native,new RoutedPropertyChangedEventArgs<double>(3,12));Pump();Check(f.Native.StartValue==8,"非原proposed相等门禁丢原回调");
     Call(f.Native,"SL_Bat1_ValueChanged",f.Native,new RoutedPropertyChangedEventArgs<double>(8,20));((FrameworkElement)f.Range).IsEnabled=false;Pump();Check(f.Native.StartValue==8,"禁用后旧排队回调仍改本地模型");((FrameworkElement)f.Range).IsEnabled=true;Pump();
-    Call(f.Native,"SL_Bat1_ValueChanged",f.Native,new RoutedPropertyChangedEventArgs<double>(8,20));Call(f.Native,"RetireBorrowedInteractions");Pump();Check(f.Native.StartValue==8,"退役回调仍写DP");var old=f.Native;f.View.Dispose();Call(old,"SL_Bat1_ValueChanged",old,new RoutedPropertyChangedEventArgs<double>(8,30));Pump();Check(old.StartValue==8,"Dispose复活原排队事件");
+    Call(f.Native,"SL_Bat1_ValueChanged",f.Native,new RoutedPropertyChangedEventArgs<double>(8,20));Call(f.Native,"RetireBorrowedInteractions");Pump();Check(f.Native.StartValue==8,"退役回调仍写DP");var old=f.Native;f.View.Dispose();var retiredValue=old.StartValue;Call(old,"SL_Bat1_ValueChanged",old,new RoutedPropertyChangedEventArgs<double>(8,30));Pump();Check(old.StartValue==retiredValue,"Dispose复活原排队事件");
    });
    Case("临时普通读重入换根与显式回读退役",()=>{
     Fixture? target=null;var armed=false;using var f=target=new Fixture(false,Ref(),Ref(),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>{if(armed&&p.Id=="hi"){target!.View.Dispose();return new(10d);}return armed?new(5d):null;}});armed=true;Check(Read(f,"lo").Status==NumericModelReadStatus.Retired,"临时右读Dispose后继续fallback或安装旧模型");

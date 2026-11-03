@@ -1,32 +1,31 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Domain.Solutions;
+using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Domain.Persistence;
 
-namespace SunEyeVision.Workflow.Persistence;
+namespace SunEyeVision.Persistence;
 
 /// <summary>Strict validation of the current document format; never changes source bytes.</summary>
-internal static class SolutionDocumentValidator
+public static class SolutionDocumentValidator
 {
-    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics)
+    public static void Prepare(JsonNode root, List<PersistenceDiagnostic> diagnostics, FrozenVariableTypeCatalog types, JsonSerializerOptions options)
     {
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
         _ = SolutionFormatPolicy.ReadVersion(root);
-        RejectUnknownMembers(root, "$", SerializableFields(typeof(Solution)));
+        RejectUnknownMembers(root, "$", SerializableFields(typeof(SolutionDefinition)));
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
         {
             var variable = variables[i] ?? throw new JsonException("Null variable.");
             var path = "$.GlobalVariables[" + i + "]";
-            RequireId(variable, path);
-            RejectUnknownMembers(variable, path, SerializableFields(typeof(GlobalVariable)));
-            SolutionVariableValuePolicy.Prepare(variable, path, CanonicalType,
-                (code, diagnosticPath, message) => diagnostics.Add(new(code, "Validation", "Warning", diagnosticPath, message)));
+            ValidateVariable(variable,path,types,diagnostics);
         }
         if (root["Devices"] is JsonArray devices)
         for (int i = 0; i < devices.Count; i++)
@@ -84,7 +83,7 @@ internal static class SolutionDocumentValidator
             var workflow = workflows[w]!;
             var path = "$.Workflows[" + w + "]";
             // WorkflowJsonConverter writes exactly these structural fields; extension data is not an approved schema.
-            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections" });
+            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections", "AdditionalData" });
             if(workflow is JsonObject flowObject && flowObject.ContainsKey("WorkspaceSettings"))
             {
                 var settingsPath=path+".WorkspaceSettings";
@@ -93,7 +92,7 @@ internal static class SolutionDocumentValidator
                 RejectUnknownMembers(workspace,settingsPath,SerializableFields(typeof(RootWorkspaceSettings)));
                 try
                 {
-                    var value=JsonSerializer.Deserialize<RootWorkspaceSettings>(workspace.ToJsonString(),WorkflowSerializationOptions.Default)??throw new JsonException("根工作区设置缺失。");
+                    var value=JsonSerializer.Deserialize<RootWorkspaceSettings>(workspace.ToJsonString(),options)??throw new JsonException("根工作区设置缺失。");
                     value.Validate();
                 }
                 catch(Exception error){throw new JsonException("根工作区设置无效："+error.Message,settingsPath,null,null);}
@@ -104,7 +103,7 @@ internal static class SolutionDocumentValidator
                 if(workflow["IsSubroutine"]?.GetValue<bool>()==true||workflow["RootConfiguration"] is not JsonObject rootConfiguration)throw new JsonException("仅根流程可声明根配置对象。",configurationPath,null,null);
                 RejectUnknownMembers(rootConfiguration,configurationPath,SerializableFields(typeof(RootWorkflowConfiguration)));
                 if(rootConfiguration["RunParameters"] is JsonArray proxies)for(int i=0;i<proxies.Count;i++)RejectUnknownMembers(proxies[i]??throw new JsonException("参数代理不能为null。"),configurationPath+".RunParameters["+i+"]",SerializableFields(typeof(RootParameterProxy)));
-                try{(JsonSerializer.Deserialize<RootWorkflowConfiguration>(rootConfiguration.ToJsonString(),WorkflowSerializationOptions.Default)??throw new JsonException("根配置缺失。")).Validate();}
+                try{(JsonSerializer.Deserialize<RootWorkflowConfiguration>(rootConfiguration.ToJsonString(),options)??throw new JsonException("根配置缺失。")).Validate();}
                 catch(Exception error){throw new JsonException("根配置无效："+error.Message,configurationPath,null,null);}
             }
             var ids = new HashSet<string>(StringComparer.Ordinal);
@@ -113,7 +112,7 @@ internal static class SolutionDocumentValidator
             {
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
-                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", SerializableFields(typeof(WorkflowNodeBase)));
+                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", new[] { "Id", "Name", "DispName", "ToolType", "GlobalIndex", "LocalIndex", "IsEnabled", "SubroutineId", "SelectedDisplayReference", "PositionX", "PositionY", "Width", "Height", "Configuration", "AdditionalData" });
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
                 if (node is JsonObject nodeObject && (nodeObject.ContainsKey("Parameters") || nodeObject.ContainsKey("ParamSettings")))
                     throw new JsonException("Current Runtime nodes cannot contain SDK parameter models.", path + ".Nodes[" + n + "]", null, null);
@@ -127,7 +126,7 @@ internal static class SolutionDocumentValidator
                     var edge = edges[e] ?? throw new JsonException("Null connection.");
                     var edgePath = path + ".Connections[" + e + "]";
                     RequireId(edge, edgePath);
-                    RejectUnknownMembers(edge, edgePath, SerializableFields(typeof(WorkflowConnection)));
+                    RejectUnknownMembers(edge, edgePath, SerializableFields(typeof(ConnectionDefinition)));
                     if (!edgeIds.Add(edge["Id"]!.GetValue<string>())) throw new JsonException("Duplicate connection.", edgePath + ".Id", null, null);
                     foreach (var endpoint in new[] { "SourceNodeId", "TargetNodeId" })
                         if (edge[endpoint] is not JsonValue value || !value.TryGetValue<string>(out var id) || !ids.Contains(id))
@@ -138,15 +137,17 @@ internal static class SolutionDocumentValidator
         }
     }
 
-    private static string CanonicalType(string name)
+    internal static void ValidateVariable(JsonNode variable,string path,FrozenVariableTypeCatalog types,List<PersistenceDiagnostic> diagnostics)
     {
-        var type = SdkTypeVocabulary.ToSystemType(name);
-        if (type?.IsArray == true) type = type.GetElementType();
-        if (type == typeof(int)) type = typeof(long);
-        if (type == typeof(float)) type = typeof(double);
-        return type?.FullName ?? throw new JsonException("Unknown variable type: " + name);
+        RequireId(variable,path);
+        RejectUnknownMembers(variable,path,SerializableFields(typeof(GlobalVariable)));
+        if (variable["Type"] is JsonValue type && type.TryGetValue<string>(out var name) && !string.IsNullOrWhiteSpace(name))
+            _ = types.CanonicalType(name);
+        else
+            throw new JsonException("Variable Type is required.", path + ".Type", null, null);
+        SolutionVariableValuePolicy.Prepare(variable,path,types.CanonicalType,
+            (code,diagnosticPath,message)=>diagnostics.Add(new(code,"Validation","Warning",diagnosticPath,message)));
     }
-
     private static IEnumerable<string> SerializableFields(Type type) => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
         .Where(property => property.GetIndexParameters().Length == 0
             && property.GetCustomAttribute<JsonExtensionDataAttribute>() is null
@@ -168,7 +169,7 @@ internal static class SolutionDocumentValidator
             throw new JsonException("Identity is required.", path + ".Id", null, null);
     }
 
-    internal static void CheckDuplicateKeys(string json)
+    public static void CheckDuplicateKeys(string json)
     {
         using var doc = JsonDocument.Parse(json);
         void Visit(JsonElement item, string path)

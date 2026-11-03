@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Nodes;
 
-namespace SunEyeVision.Workflow.Persistence;
+namespace SunEyeVision.Persistence;
 
 /// <summary>Persistent content comparison: object order is irrelevant; array order is significant.</summary>
 public static class SolutionSemanticComparer
@@ -10,10 +10,6 @@ public static class SolutionSemanticComparer
     public static string Canonicalize(string json)
     {
         var root = JsonNode.Parse(json) ?? throw new System.Text.Json.JsonException("Empty solution snapshot.");
-        // This retired setting has no runtime meaning. Apply the same projection to disk and dirty state.
-        if (root["Communications"] is JsonArray communications)
-            foreach (var item in communications)
-                if (item?["Settings"] is JsonObject settings) settings.Remove("autoConnect");
         return Sort(root)!.ToJsonString();
     }
 

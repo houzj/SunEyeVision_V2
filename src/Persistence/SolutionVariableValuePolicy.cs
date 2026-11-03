@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace SunEyeVision.Workflow.Persistence;
+namespace SunEyeVision.Persistence;
 
 /// <summary>Candidate-only variable conversion. The caller supplies the existing SDK's canonical type authority.</summary>
 internal static class SolutionVariableValuePolicy

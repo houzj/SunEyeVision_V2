@@ -145,9 +145,9 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         var number=Convert.ToDouble(value,CultureInfo.InvariantCulture);
         if(!double.IsFinite(number)||min-number>1e-8||number-max>1e-8)throw new ArgumentException("数值超出原双端模型比较范围。");
     }
-    private bool StageModel(int endpoint,ConstantSetting value,long[] versions)
+    private bool StageModel(int endpoint,ConstantSetting value,long[] versions,object? originalValue=null)
     {
-        var model=_states[endpoint].NumericModel!;var raw=NativeNumericSequenceProjection.Single(_states[endpoint].Port,value.Value!);
+        var model=_states[endpoint].NumericModel!;var raw=NativeNumericSequenceProjection.Single(_states[endpoint].Port,originalValue??value.Value!);
         var changed=!Equals(model.CurValue,raw);versions[endpoint]=model.Version+(changed?1:0);
         return _commits[endpoint]!.ProjectCandidate(value,()=>model.NativeValue=Convert.ToDouble(raw,CultureInfo.InvariantCulture))&&model.Version==versions[endpoint];
     }
@@ -253,7 +253,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         ConstantSetting proposal;
         try{proposal=_commits[endpoint]!.PrepareValue(value);}
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_states[endpoint].SetEditError(error.Message);return false;}
-        return TryAccept(endpoint,proposal);
+        return TryAcceptEndpoint(endpoint,proposal,value);
     }
     private bool Prepare(int i,out ParameterSetting proposal)
     {
@@ -382,10 +382,12 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private bool TryCommitEndpoint(int endpoint)
     {
         if(_disposed||_committing)return false;
+        if(!_states[endpoint].IsReferenceMode&&_commits[endpoint]?.IsDirty!=true
+            &&Equals(_states[endpoint].NumericModel!.CurValue,_states[endpoint].NumericModel!.OldValue))return !_states[endpoint].HasInvalidInput;
         if(!Prepare(endpoint,out var proposal))return false;
         return TryAcceptEndpoint(endpoint,proposal);
     }
-    private bool TryAcceptEndpoint(int endpoint,ParameterSetting proposal)
+    private bool TryAcceptEndpoint(int endpoint,ParameterSetting proposal,object? originalValue=null)
     {
         if(_disposed||_committing||endpoint is <0 or >1||_states.Any(state=>state.IsDisposed))return false;
         var state=_states[endpoint];
@@ -401,7 +403,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             var other=new ConstantSetting(_states[1-endpoint].NumericModel!.CurValue);
             if(proposal is ConstantSetting staged)
             {
-                candidateInstalled=true;_syncing=true;try{if(!StageModel(endpoint,staged,modelVersions))return false;}finally{_syncing=false;}
+                candidateInstalled=true;_syncing=true;try{if(!StageModel(endpoint,staged,modelVersions,originalValue))return false;}finally{_syncing=false;}
                 if(!Unchanged())return false;
                 try{CheckModel(endpoint,staged.Value!);}catch(Exception error)when(error is ArgumentException){state.SetEditError(error.Message);return false;}
             }
@@ -497,7 +499,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(_disposed)return;_active=true;NativeView.PrepareBorrowedInteractions(true);AttachInputs();
+        if(_disposed)return;_active=true;NativeView.PrepareBorrowedInteractions(_active&&IsVisible&&IsEnabled&&!_presentationHidden);AttachInputs();
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=Window.GetWindow(this);if(_owner is not null)_owner.Deactivated+=OnDeactivated;
         Project(false);foreach(var scope in _scopes)scope?.PrepareForVisibility(!_presentationHidden&&IsVisible&&IsEnabled);
         QueueResume();
@@ -576,7 +578,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         }
         else
         {
-            NativeView.PrepareBorrowedInteractions(true);_presentationHidden=false;
+            _presentationHidden=false;NativeView.PrepareBorrowedInteractions(_active&&IsVisible&&IsEnabled&&!_presentationHidden);
             foreach(var scope in _scopes)scope?.PrepareForVisibility(IsEnabled);
             if(!_active||!IsVisible||!_commits.Any(commit=>commit?.IsSuspended==true))return;
             QueueResume();

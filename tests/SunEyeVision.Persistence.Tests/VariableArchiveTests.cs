@@ -29,11 +29,39 @@ public sealed class VariableArchiveTests
         var scope = new DecodedResourcesScope(); var resource = new Resource(); scope.RegisterNew(resource);
         Assert.ThrowsAny<Exception>(() => VariableArchive.Read(Bytes(json), Types, Options, scope)); Assert.True(resource.Released);
     }
+    [Fact] public void Null_value_does_not_allow_unknown_or_missing_type()
+    {
+        foreach (var variable in new[] { "{\"Id\":\"v\",\"Type\":\"Unknown\",\"Value\":null}", "{\"Id\":\"v\",\"Value\":null}" })
+        {
+            var json = "{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":1,\"Variables\":[" + variable + "]}";
+            var scope = new DecodedResourcesScope(); var resource = new Resource(); scope.RegisterNew(resource);
+            Assert.Throws<JsonException>(() => VariableArchive.Read(Bytes(json), Types, Options, scope)); Assert.True(resource.Released);
+        }
+    }
     [Fact] public void Editable_value_validator_preserves_finite_and_array_rules()
     {
         VariableValueDeclarations.ValidateEditableValue("Integer", new long[]{1,2});
         VariableValueDeclarations.ValidateEditableValue("Double", new double[]{1,2});
         Assert.Throws<InvalidOperationException>(() => VariableValueDeclarations.ValidateEditableValue("Double", new double[]{double.NaN}));
         Assert.Throws<InvalidOperationException>(() => VariableValueDeclarations.ValidateEditableValue("Integer[]", 1L));
+    }
+    [Fact] public void Export_is_validated_as_one_candidate_and_refuses_changed_destination()
+    {
+        var dir = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "variables.json");
+        var backup = Path.Combine(dir, "recovery.json");
+        File.WriteAllText(path, "unchanged");
+        using var inputScope = new DecodedResourcesScope();
+        using var input = VariableArchive.Read(Bytes(Valid), Types, Options, inputScope);
+        var bytes = VariableArchive.Encode(input.Variables, Options);
+        using var scope = new DecodedResourcesScope();
+        using var validated = VariableArchive.Read(bytes, Types, Options, scope);
+        Assert.Throws<IOException>(() => validated.WriteValidated(path, backup, TargetExpectation.Missing));
+        Assert.Equal("unchanged", File.ReadAllText(path));
+        validated.WriteValidated(path, backup, TargetExpectation.Unchecked);
+        using var finalScope = new DecodedResourcesScope();
+        using var final = VariableArchive.Read(File.ReadAllBytes(path), Types, Options, finalScope);
+        Assert.Equal(new long[] {1, 2}, Assert.IsType<long[]>(Assert.Single(final.Variables).Value));
     }
 }

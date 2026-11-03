@@ -141,6 +141,10 @@ public static class SolutionDocumentValidator
     {
         RequireId(variable,path);
         RejectUnknownMembers(variable,path,SerializableFields(typeof(GlobalVariable)));
+        if (variable["Type"] is JsonValue type && type.TryGetValue<string>(out var name) && !string.IsNullOrWhiteSpace(name))
+            _ = types.CanonicalType(name);
+        else
+            throw new JsonException("Variable Type is required.", path + ".Type", null, null);
         SolutionVariableValuePolicy.Prepare(variable,path,types.CanonicalType,
             (code,diagnosticPath,message)=>diagnostics.Add(new(code,"Validation","Warning",diagnosticPath,message)));
     }

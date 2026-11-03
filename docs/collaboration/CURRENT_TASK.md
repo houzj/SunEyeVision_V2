@@ -1,3 +1,8 @@
+## 2026-11-03 实体会话关键路径增设方案数据独立线
+
+经已授权并行策略，实际创建platform-solution-data-20261103独立worktree/分支，从13024cf8a起，由规范编码线接手GlobalVariable/Communication整族；实体会话线已停止写该族并保全未完成草稿至自身Release/_validation，双方不并写。共享ProducerBinding/ConsumerBinding源7d019a3a9仅供接线，尚非完整可交付模型。A继续SolutionDefinition/DocumentSession/原子图事务/历史/执行/持久化组装及Domain.csproj；C独占两族Domain/运行状态/值converter/纯值策略和非UI消费者，B独占全部UI可视接线。变量raw/CAS保持内部原协议且仅Application友元，Value converter由Persistence对单Value属性注册；通信状态与配置分离。词汇以Contracts TypeRef/纯值声明唯一权威、CLR视觉映射留宿主适配，不复制两表。不把定位编译/临时草稿测试计生产完成。
+
+技术总监已核收f8c05a6c1/619212e56、ED669...A5B71载荷和Text6实际回执；后续统一改Contracts.ParameterSettingCanonical，明确不恢复旧codec或兼容桥。本次消息不代表主仓已合入，不覆盖其C05/Blob花括号来源专项，双方成绩不互借。新ABI固定后再集中交接，无需互相停工/rebase。完整平台目标继续，当前87f4工作树仅文档新记录，产品仍为f8正式自测载荷。
 ## 2026-11-03 规范编码87f4集成自测闭口，实体会话继续
 
 产品合入f8c05a6c19f13833cef1e50047461601c6ee2128，自身完整Release0错/3357警告，封包ED669DEB11F72BD318553BAE8343F78C6EEB805C24B88995B446456DC37A5B71。规范3/Graph39(含当前值正式保存重开1)/SDK302/输入24/图像源31/Blob11/查询7/Root38同载no-build全部通过；隐藏Text6，attempt036 PID49388退出0，Contracts/Runtime/Workflow/UI四实际加载路径及SHA逐项核对。原编码主文档、全平台计划和剩余矩阵统一更新。证据Release/_validation/canonical-integrated-20261103/final-evidence.json。首次full缺新测试assets失败，锁定restore后通过，原日志保留；旧S4当前值/数值脚本编译失败不计通过。人工/设计器/主仓合并未做，Group暂停。

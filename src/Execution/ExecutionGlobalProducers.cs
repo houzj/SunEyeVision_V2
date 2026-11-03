@@ -57,7 +57,7 @@ internal static class ExecutionGlobalProducers
         values.Publish(produced, cancellation);
     }
 
-    private static object? Materialize(Port target, Type targetType, object? value)
+    internal static object? Materialize(Port target, Type targetType, object? value)
     {
         var canonical = ValueRules.Freeze(target, value);
         if (canonical is null) return null;

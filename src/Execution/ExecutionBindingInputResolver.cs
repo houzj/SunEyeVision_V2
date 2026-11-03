@@ -9,6 +9,47 @@ internal static class ExecutionBindingInputResolver
     internal sealed record Resolved(IReadOnlyDictionary<string, object?> Inputs,
         IReadOnlyDictionary<string, object?> Settings, IReadOnlyList<IDisposable> Readers);
 
+    internal static Resolved ResolvePublished(ExecutionNodeSnapshot node, ExecutionBindingPlan.NodePlan plan,
+        PublishedBindingSnapshot snapshot, ExecutionVariableValues? variables, Action<string, object?> accept,
+        IReadOnlySet<string>? selectedInputs = null)
+    {
+        IReadOnlyList<Diagnostic> relevant = selectedInputs is null ? plan.Issues : plan.Issues.Where(issue => issue.FieldId is { } id && selectedInputs.Contains(id)).ToArray();
+        if (relevant.Count != 0) throw new InvalidOperationException(string.Join("；", relevant.Select(issue => issue.Message)));
+        var settingsIds = node.SettingsSchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
+        var targets = node.BindingTargets.ToDictionary(port => port.Id, StringComparer.Ordinal);
+        var inputs = new Dictionary<string, object?>(StringComparer.Ordinal);
+        var settings = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var (fieldId, setting) in node.CaptureExecutionFields())
+        {
+            if (selectedInputs is not null && !selectedInputs.Contains(fieldId)) continue;
+            var port = targets[fieldId]; var isSetting = settingsIds.Contains(fieldId);
+            if (setting is ConstantSetting constant)
+            {
+                if (port.EditModes != FieldEditModes.None && (port.EditModes & FieldEditModes.Constant) == 0)
+                    throw new InvalidOperationException("运行输入不能使用持久常量。");
+                if (!isSetting) inputs.Add(fieldId, ValueRules.Freeze(port, constant.Value));
+                continue;
+            }
+            BindingResolution resolved;
+            if (setting is VariableSetting)
+            {
+                if (variables is null || !plan.Variables.TryGetValue(fieldId, out var variable))
+                    throw new InvalidOperationException("预览变量没有冻结绑定计划。");
+                resolved = VariableBindingCompiler.ResolvePublished(variable, variables.SolutionId, snapshot);
+            }
+            else
+            {
+                if (!plan.References.TryGetValue(fieldId, out var reference))
+                    throw new InvalidOperationException("预览输入没有已准入绑定计划：" + fieldId);
+                resolved = new ParameterBindingService().ResolvePublishedBinding(reference, snapshot);
+            }
+            if (!resolved.Success) throw new InvalidOperationException(resolved.Diagnostic?.Message ?? "预览绑定解析失败。");
+            (isSetting ? settings : inputs).Add(fieldId, resolved.Value);
+            if (isSetting) accept(fieldId, resolved.Value);
+        }
+        return new Resolved(inputs, settings, Array.Empty<IDisposable>());
+    }
+
     internal static Resolved Resolve(ExecutionWorkflowSnapshot workflow, ExecutionNodeSnapshot node,
         ExecutionBindingPlan.NodePlan plan, ToolExecutionIdentity identity,
         IReadOnlyDictionary<BindingNodeId, RunIdentity> expected,

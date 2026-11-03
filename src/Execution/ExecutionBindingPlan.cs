@@ -12,13 +12,15 @@ internal sealed class ExecutionBindingPlan
         IReadOnlyList<Diagnostic> Issues);
     private readonly IReadOnlyDictionary<string, NodePlan> _nodes;
     internal ExecutionBindingPlan(ExecutionWorkflowSnapshot workflow, Guid executionScope,
-        ExecutionVariableValues? variables, IEnumerable<OutputReference> globalProducerSources)
+        ExecutionVariableValues? variables, IEnumerable<OutputReference> globalProducerSources, Guid? bindingOwnerId = null,
+        IReadOnlyDictionary<BindingNodeId, BindingSource>? publishedSources = null)
     {
         ArgumentNullException.ThrowIfNull(workflow); ArgumentNullException.ThrowIfNull(globalProducerSources);
         if (executionScope == Guid.Empty) throw new ArgumentException("运行作用域身份为空。", nameof(executionScope));
         var byId = workflow.Nodes.ToDictionary(item => item.Node.NodeId, item => item.Node, StringComparer.Ordinal);
-        var sources = byId.Values.Select(node => new BindingSource(new(workflow.WorkflowId, node.NodeId), executionScope,
-            new ToolSchema(Array.Empty<Port>(), node.Schema.Outputs, outputDisplay: node.Schema.OutputDisplay), 0)).ToArray();
+        var sources = publishedSources is null ? byId.Values.Select(node => new BindingSource(new(workflow.WorkflowId, node.NodeId), executionScope,
+            new ToolSchema(Array.Empty<Port>(), node.Schema.Outputs, outputDisplay: node.Schema.OutputDisplay), 0)).ToArray()
+            : publishedSources.Values.Where(source => source.Node.ScopeId == workflow.WorkflowId).ToArray();
         var visible = sources.Select(source => source.Node).ToArray();
         var predecessors = workflow.Predecessors.Select(pair => new KeyValuePair<BindingNodeId, IReadOnlyList<BindingNodeId>>(
             new(workflow.WorkflowId, pair.Key), pair.Value.Select(id => new BindingNodeId(workflow.WorkflowId, id)).ToArray())).ToArray();
@@ -35,7 +37,7 @@ internal sealed class ExecutionBindingPlan
             var compiled = new Dictionary<string, BindingPlan>(StringComparer.Ordinal);
             var variable = new Dictionary<string, VariableBindingPlan>(StringComparer.Ordinal);
             var errors = new List<Diagnostic>();
-            var scope = new BindingScopeSnapshot(new(workflow.WorkflowId, node.NodeId), workflow.Owner.Id,
+            var scope = new BindingScopeSnapshot(new(workflow.WorkflowId, node.NodeId), bindingOwnerId ?? workflow.Owner.Id,
                 workflow.DocumentRevision, sources, visible, predecessors, variables?.Sources);
             var manual = scope.WithReferenceQualification(reference => ValidateManual(workflow, byId, node.NodeId, reference));
             var numeric = node.SettingsSchema.Inputs.Where(port => port.Type.Shape == ValueShape.Scalar &&

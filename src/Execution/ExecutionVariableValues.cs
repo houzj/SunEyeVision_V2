@@ -11,10 +11,11 @@ internal sealed class ExecutionVariableValues : IDisposable
     private readonly IReadOnlyDictionary<string, string> _names;
     private readonly Dictionary<string, object?> _values = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Diagnostic> _issues = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _blocked = new(StringComparer.Ordinal);
     private bool _disposed;
     internal ExecutionVariableValues(string solutionId, IEnumerable<BindingVariableSource> sources,
         IReadOnlyDictionary<string, string> names,
-        IEnumerable<KeyValuePair<string, object?>> initialValues)
+        IEnumerable<KeyValuePair<string, object?>> initialValues, IReadOnlyDictionary<string, Diagnostic>? initialIssues = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(solutionId);
         ArgumentNullException.ThrowIfNull(sources); ArgumentNullException.ThrowIfNull(names); ArgumentNullException.ThrowIfNull(initialValues);
@@ -34,10 +35,28 @@ internal sealed class ExecutionVariableValues : IDisposable
             if (!_sources.ContainsKey(id)) throw new ArgumentException("初始变量不属于本次冻结声明：" + id, nameof(initialValues));
             _values.Add(id, Copy(value));
         }
+        foreach (var (id, issue) in initialIssues ?? new Dictionary<string, Diagnostic>())
+        {
+            if (!_sources.ContainsKey(id) || issue is null) throw new ArgumentException("变量诊断不属于冻结声明。", nameof(initialIssues));
+            _values.Remove(id); _issues.Add(id, issue); _blocked.Add(id);
+        }
     }
     internal string SolutionId { get; }
     internal IReadOnlyList<BindingVariableSource> Sources => Array.AsReadOnly(_sources.Values.ToArray());
     internal bool Matches(string id, string name) => _names.TryGetValue(id, out var actual) && actual == name;
+    internal bool IsBlocked(string id) { lock (_gate) { ObjectDisposedException.ThrowIf(_disposed, this); return _blocked.Contains(id); } }
+    internal ExecutionVariableValues Copy()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            var copy = new ExecutionVariableValues(SolutionId, _sources.Values, _names,
+                _values.Select(pair => new KeyValuePair<string, object?>(pair.Key, Copy(pair.Value))).ToArray());
+            foreach (var (id, issue) in _issues) copy._issues.Add(id, issue);
+            copy._blocked.UnionWith(_blocked);
+            return copy;
+        }
+    }
     internal IReadOnlyDictionary<string, object?> CaptureValues()
     {
         lock (_gate)
@@ -87,6 +106,7 @@ internal sealed class ExecutionVariableValues : IDisposable
             ObjectDisposedException.ThrowIf(_disposed, this); cancellation.ThrowIfCancellationRequested();
             foreach (var (id, entry) in prepared)
             {
+                if (_blocked.Contains(id)) continue;
                 _values.Remove(id); _issues.Remove(id);
                 if (entry.Issue is { } issue) _issues.Add(id, issue); else _values.Add(id, entry.Value);
             }
@@ -135,5 +155,5 @@ internal sealed class ExecutionVariableValues : IDisposable
         }
         return ValueRules.Freeze(port, value);
     }
-    public void Dispose() { lock (_gate) { if (_disposed) return; _disposed = true; _values.Clear(); _issues.Clear(); } }
+    public void Dispose() { lock (_gate) { if (_disposed) return; _disposed = true; _values.Clear(); _issues.Clear(); _blocked.Clear(); } }
 }

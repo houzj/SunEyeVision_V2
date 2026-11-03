@@ -67,11 +67,7 @@ public sealed partial class DocumentSession
                             var hostKey = new ScopedNodeIdentity(flow.Id, item.Node.Id);
                             if (hostFactory is not null && view.Configuration.HostDeclarations.HostInputs is { } declaration && !hosts.Any(pair => pair.Key == hostKey))
                             {
-                                var configuration = view.Configuration.Configuration;
-                                var fields = new FieldSettings(configuration.Fields.Declarations.Values, configuration.Fields.Capture());
-                                var context = new HostInputFactoryContext(hostKey, configuration.ToolId, view.Configuration.Schema,
-                                    view.Configuration.SettingsSchema, fields, configuration.CaptureCurrentValues(), declaration,
-                                    new SunEyeVision.Persistence.SolutionResourceResolver(_resourceBaseDirectory));
+                                var context = CaptureHostInputContextCore(scope, view) ?? throw new InvalidOperationException("宿主声明已变化。");
                                 var prepared = hostFactory.Create(context);
                                 if (prepared is not null)
                                 {

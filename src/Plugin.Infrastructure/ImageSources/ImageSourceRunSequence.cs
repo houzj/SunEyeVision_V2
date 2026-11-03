@@ -14,10 +14,13 @@ public sealed class ImageSourceRunSequence : IDisposable
 {
     private readonly LocalImageSequenceService _sequences = new();
     private readonly string _workflowId;
-    private readonly long _generation;
+    private long _generation;
+    private LocalImageSourcePlan[] _plans;
     private readonly IReadOnlyDictionary<string, ImageSourcePolicy> _policies;
-    private readonly Dictionary<string, LocalImageRunInput> _tickets;
-    private int _state;
+    private readonly object _gate = new();
+    private long _iteration;
+    private bool _active, _disposed, _pendingSelection;
+    private (string NodeId, int Index)? _queuedSelection;
 
     public ImageSourceRunSequence(string workflowId, IEnumerable<ImageSourcePolicy> policies, IResourcePathResolver paths)
     {
@@ -34,35 +37,86 @@ public sealed class ImageSourceRunSequence : IDisposable
             OutputFormat = p.OutputFormat, SNInitialValue = p.SNInitialValue
         }).ToArray();
         _policies = captured.ToDictionary(p => p.NodeId, StringComparer.Ordinal);
-        var plans = captured.Where(p => p.SourceKind == ImageSourceKind.Local)
+        _plans = captured.Where(p => p.SourceKind == ImageSourceKind.Local)
             .Select(p => ImageSourcePolicy.CreateLocalPlan(p.NodeId, p, paths)).ToArray();
-        _generation = _sequences.Begin(workflowId, plans);
-        _tickets = _sequences.GetInputs(workflowId, _generation).ToDictionary(t => t.SourceNodeId, StringComparer.Ordinal);
+        _generation = _sequences.Begin(workflowId, _plans);
+
     }
 
     public IHostInputPreparer CreatePreparer(string nodeId, ICameraCaptureService? cameraService = null, CameraFrame? borrowedFrame = null, bool advance = true)
     {
-        if (Volatile.Read(ref _state) != 0) throw new ObjectDisposedException(nameof(ImageSourceRunSequence));
-        if (!_policies.TryGetValue(nodeId, out var policy)) throw new InvalidOperationException("图像源不属于本轮冻结的运行序列。");
-        if (policy.SourceKind == ImageSourceKind.Camera)
-            return new ImageSourceHostInputPreparer(null, policy.SNInitialValue, cameraService, borrowedFrame);
-        var ticket = _tickets[nodeId];
-        return new ImageSourceHostInputPreparer(ticket.Entry?.Address ?? string.Empty, policy.SNInitialValue)
+        lock (_gate)
         {
-            LocalReadAdmission = (identity, cancellation) => _sequences.AcceptRead(ticket, identity.RequestId, advance, cancellation).Entry.Address
-        };
+            if (_disposed) throw new ObjectDisposedException(nameof(ImageSourceRunSequence));
+            if (_active) throw new InvalidOperationException("上一图像读取轮次尚未排空。");
+            if (!_policies.TryGetValue(nodeId, out var policy)) throw new InvalidOperationException("图像源不属于本轮冻结的运行序列。");
+            IHostInputPreparer result;
+            if (policy.SourceKind == ImageSourceKind.Camera)
+                result = new ImageSourceHostInputPreparer(null, policy.SNInitialValue, cameraService, borrowedFrame);
+            else
+            {
+                var ticket = _sequences.GetInputs(_workflowId, _generation).Single(t => t.SourceNodeId == nodeId);
+                result = new ImageSourceHostInputPreparer(ticket.Entry?.Address ?? string.Empty, policy.SNInitialValue)
+                {
+                    LocalReadAdmission = (identity, cancellation) =>
+                    {
+                        lock (_gate)
+                        {
+                            var receipt = _sequences.AcceptRead(ticket, identity.RequestId, advance && !_pendingSelection, cancellation);
+                            _pendingSelection = false;
+                            return receipt.Entry.Address;
+                        }
+                    }
+                };
+            }
+            _active = true;
+            return result;
+        }
     }
 
+    /// <summary>Changes the next local read without editing the document configuration.</summary>
+    public void SelectIndex(string nodeId, int index)
+    {
+        lock (_gate)
+        {
+            if (_disposed) throw new ObjectDisposedException(nameof(ImageSourceRunSequence));
+            var plan = _plans.SingleOrDefault(item => item.SourceNodeId == nodeId)
+                ?? throw new InvalidOperationException("节点不是本地图像来源。");
+            var entry = plan.Entries.SingleOrDefault(item => item.OriginalIndex == index)
+                ?? throw new InvalidOperationException("所选图像不属于本次可运行列表。");
+            if (_active) { _queuedSelection = (nodeId, index); return; }
+            var replacement = _plans.Select(item => ReferenceEquals(item, plan) ? item with { SelectedEntryId = entry.EntryId } : item).ToArray();
+            _generation = _sequences.Begin(_workflowId, replacement);
+            _plans = replacement; _iteration = 0; _pendingSelection = true;
+        }
+    }
     public LocalImageReadRound FinishRound()
     {
-        if (Interlocked.CompareExchange(ref _state, 1, 0) != 0) throw new InvalidOperationException("本轮已结算或释放。");
-        try { return _sequences.FinishReadRound(_workflowId, _generation, 0); }
-        finally { _sequences.End(_workflowId, _generation); }
+        lock (_gate)
+        {
+            if (!_active) throw new InvalidOperationException("本轮未开始或已结算。");
+            try { return _sequences.FinishReadRound(_workflowId, _generation, _iteration++); }
+            finally
+            {
+                _active = false;
+                if (_disposed) _sequences.End(_workflowId, _generation);
+                else if (_queuedSelection is { } selection)
+                {
+                    _queuedSelection = null;
+                    SelectIndex(selection.NodeId, selection.Index);
+                }
+            }
+        }
     }
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _state, 1) == 0) _sequences.End(_workflowId, _generation);
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            if (!_active) _sequences.End(_workflowId, _generation);
+        }
     }
 }
 

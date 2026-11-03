@@ -38,6 +38,7 @@ public sealed partial class DocumentSession
         {
             EnsureOwnerCanEdit();
             var scope=OpenScope(workflowId); ValidateScopeCore(scope);
+            if(scope.Flow.IsSubroutine)throw new InvalidOperationException("控制流程复制尚未接入。");
             if (actualNodes.Count == 0 || actualNodes.Distinct(ReferenceEqualityComparer.Instance).Count()!=actualNodes.Count ||
                 actualNodes.Any(node=>!scope.Flow.Nodes.Any(actual=>ReferenceEquals(actual,node))))
                 throw new InvalidOperationException("复制范围必须是当前流程实际且不重复的节点。");
@@ -196,7 +197,10 @@ public sealed partial class DocumentSession
                 if(!string.IsNullOrEmpty(reference.RebindingReason))throw new InvalidOperationException($"字段 {fieldId}：{reference.RebindingReason}");
                 if(reference.OriginId is {} origin)
                 {
-                    if(!origin.StartsWith("connection:",StringComparison.Ordinal) || !candidate.Edges.Any(edge=>edge.Edge.Id==origin[11..] &&
+                    if(!origin.StartsWith("connection:",StringComparison.Ordinal) || admitted.Schema.WorkflowImageInputId!=fieldId ||
+                        ParameterReferenceRules.SelectedType(reference.Reference)!=TypeRef.ResourceOf(ResourceKind.Image) ||
+                        reference.Reference.Selection is not BindingSelection.AllItems || reference.Conversion!=BindingConversion.Automatic ||
+                        (reference.Reference.ScopeId ?? targetWorkflowId)!=targetWorkflowId || !candidate.Edges.Any(edge=>edge.Edge.Id==origin[11..] &&
                         edge.TargetNodeId==item.Node.Id && edge.SourceNodeId==reference.Reference.NodeId))
                         throw new InvalidOperationException($"字段 {fieldId}：复制的自动来源归属无效。");
                 }

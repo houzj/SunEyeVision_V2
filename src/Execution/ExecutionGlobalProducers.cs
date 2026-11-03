@@ -15,7 +15,7 @@ internal static class ExecutionGlobalProducers
         if (operations.Length == 0) return;
         var values = request.VariableValues ?? throw new InvalidOperationException("全局生产缺少本批变量槽。");
         var workflow = request.Workflow;
-        if (workflow.DocumentRevision <= 0) throw new InvalidOperationException("全局生产要求已发布的方案版本。 ");
+        if (workflow.DocumentRevision < 0) throw new InvalidOperationException("全局生产要求有效的方案版本。 ");
         var sources = workflow.Nodes.Select(item => new BindingSource(new(workflow.WorkflowId, item.Node.NodeId), scopeId,
             new ToolSchema(Array.Empty<Port>(), item.Node.Schema.Outputs, outputDisplay: item.Node.Schema.OutputDisplay), 0)).ToArray();
         var produced = new Dictionary<string, (object? Value, Diagnostic? Issue)>(StringComparer.Ordinal);

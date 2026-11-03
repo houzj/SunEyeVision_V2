@@ -6,6 +6,7 @@ namespace SunEyeVision.Execution;
 /// <summary>One invocation batch's pure variable slots; no document or image ownership is retained.</summary>
 internal sealed class ExecutionVariableValues : IDisposable
 {
+    internal sealed record State(IReadOnlyDictionary<string, object?> Values, IReadOnlyDictionary<string, Diagnostic> Issues);
     private readonly object _gate = new();
     private readonly IReadOnlyDictionary<string, BindingVariableSource> _sources;
     private readonly IReadOnlyDictionary<string, string> _names;
@@ -72,6 +73,27 @@ internal sealed class ExecutionVariableValues : IDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             return new ReadOnlyDictionary<string, Diagnostic>(new Dictionary<string, Diagnostic>(_issues, StringComparer.Ordinal));
+        }
+    }
+    internal State CaptureState()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return new State(new ReadOnlyDictionary<string, object?>(_values.ToDictionary(pair => pair.Key,
+                pair => Copy(pair.Value), StringComparer.Ordinal)),
+                new ReadOnlyDictionary<string, Diagnostic>(new Dictionary<string, Diagnostic>(_issues, StringComparer.Ordinal)));
+        }
+    }
+    internal void RestoreState(State state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            _values.Clear(); _issues.Clear();
+            foreach (var pair in state.Values) _values.Add(pair.Key, Copy(pair.Value));
+            foreach (var pair in state.Issues) _issues.Add(pair.Key, pair.Value);
         }
     }
 

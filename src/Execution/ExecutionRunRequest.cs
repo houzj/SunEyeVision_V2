@@ -11,7 +11,8 @@ public sealed class ExecutionRunRequest : IDisposable
         IReadOnlyDictionary<string, IHostInputPreparer> hostInputs,
         RuntimeParameterValueAcceptance? parameterValues, ExecutionVariableValues? variableValues,
         IReadOnlyList<ExecutionGlobalProducerOperation> globalProducers,
-        IReadOnlyImage? workflowImage, IDisposable? workflowImageLease)
+        IReadOnlyImage? workflowImage, IDisposable? workflowImageLease,
+        Action<ExecutionNodeSnapshot, SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot> acceptResult)
     {
         Workflow = workflow ?? throw new ArgumentNullException(nameof(workflow));
         ArgumentNullException.ThrowIfNull(hostInputs);
@@ -39,6 +40,7 @@ public sealed class ExecutionRunRequest : IDisposable
             throw new ArgumentException("流程输入图像必须与其本轮持有租约一起提供。", nameof(workflowImage));
         WorkflowImage = workflowImage;
         WorkflowImageLease = workflowImageLease;
+        AcceptResult = acceptResult ?? throw new ArgumentNullException(nameof(acceptResult));
     }
     public ExecutionWorkflowSnapshot Workflow { get; }
     internal IReadOnlyDictionary<string, IHostInputPreparer> HostInputs { get; }
@@ -47,6 +49,7 @@ public sealed class ExecutionRunRequest : IDisposable
     internal ExecutionVariableValues? VariableValues { get; }
     internal IReadOnlyList<ExecutionGlobalProducerOperation> GlobalProducers { get; }
     internal IReadOnlyImage? WorkflowImage { get; }
+    internal Action<ExecutionNodeSnapshot, SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot> AcceptResult { get; }
     private IDisposable? WorkflowImageLease { get; }
 
     internal void Claim()

@@ -64,12 +64,54 @@ internal static class Program
         var receipts = factory.TakeCompletedReads(context);
         if (receipts.Count != 1 || receipts[0].Read.Entry.OriginalIndex != 1 || !factory.IsReceiptCurrent(context, receipts[0]))
             throw new Exception("选图后的读取收据或实际来源不一致");
+        var privateDraft = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
+        using (var previewDebug = session.CaptureDebug(privateDraft, null, _ => { }, previewInputs: new[] { "input.image" }))
+        {
+            using (var preview = previewDebug.CaptureInputs())
+            {
+                if (!preview.IsCurrent || preview.Inputs.Get<IReadOnlyImage>("input.image") is null) throw new Exception("真实来源预览缺失图像");
+                try { session.Dispose(); throw new Exception("预览未排空时方案意外关闭"); } catch (InvalidOperationException) { }
+                try { previewDebug.Dispose(); throw new Exception("预览未排空时调试意外释放"); } catch (InvalidOperationException) { }
+            }
+        }
+        using (var debug = session.CaptureDebug(privateDraft, null, _ => { }))
+        using (var debugResult = debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+        {
+            if (!debugResult.IsSuccess) throw new Exception("真实私有 Blob 调试失败");
+            debug.AcceptParameters();
+        }
+        using (var stale = session.CaptureDebug(privateDraft, null, _ => { }))
+        {
+            var field = privateDraft.Configuration.Fields.Capture().First(pair => pair.Value is ConstantSetting);
+            privateDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [field.Key] = field.Value });
+            try { using var ignored = stale.ExecuteAsync().GetAwaiter().GetResult(); throw new Exception("旧草稿调试意外成功"); }
+            catch (InvalidOperationException) { }
+        }
+        using (var cancelledDebug = session.CaptureDebug(privateDraft, null, _ => { }))
+        {
+            cancelledDebug.Cancel();
+            try { using var ignored = cancelledDebug.ExecuteAsync().GetAwaiter().GetResult(); throw new Exception("取消的调试意外成功"); }
+            catch (OperationCanceledException) { }
+        }
+        if (session.ActiveActivities.Count != 0) throw new Exception("取消调试后方案活动未释放");
+        var debugSourceDraft = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
+        using (var staleSource = session.CaptureDebug(debugSourceDraft, null, _ => { }))
+        {
+            using (var replacing = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
+            using (var replaced = replacing.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+                if (!replaced.Workflows[flow.Id].Success) throw new Exception("来源重新执行失败");
+            try { using var ignored = staleSource.ExecuteAsync().GetAwaiter().GetResult(); throw new Exception("来源已替换的调试意外成功"); }
+            catch (InvalidOperationException) { }
+        }
+        _ = factory.TakeCompletedReads(context);
+        factory.SelectIndex(context, 1);
+        Console.WriteLine("PASS: 私有 Blob 调试读取真实来源并拒绝旧草稿和旧结果");
         using (var nextBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var nextRun = nextBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
             if (!nextRun.Workflows[flow.Id].Success) throw new Exception("连续执行失败");
         if (factory.IsReceiptCurrent(context, receipts[0])) throw new Exception("旧收据在下一次读取后仍有效");
         var latest = factory.TakeCompletedReads(context);
-        if (latest.Count != 1 || latest[0].Read.Entry.OriginalIndex != 0) throw new Exception("连续运行未自动切换图像");
+        if (latest.Count != 1 || latest[0].Read.Entry.OriginalIndex != 1) throw new Exception("连续运行未自动切换图像");
         factory.SelectIndex(context, 0);
         if (factory.IsReceiptCurrent(context, latest[0])) throw new Exception("旧收据在新选择后仍有效");
         Console.WriteLine("PASS: 连续轮次、选图及旧收据失效");

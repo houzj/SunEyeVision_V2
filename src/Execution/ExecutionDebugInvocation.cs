@@ -130,7 +130,9 @@ public sealed class ExecutionDebugInvocation : IDisposable
         try
         {
             generation = Interlocked.Exchange(ref _generation, null) ?? throw new InvalidOperationException("调试目录租约缺失。 ");
-            admission = Identity.Owner.EnterRun(Identity);
+            Identity.CancellationToken.ThrowIfCancellationRequested();
+            try { admission = Identity.Owner.EnterRun(Identity); }
+            catch (InvalidOperationException) when (Identity.CancellationToken.IsCancellationRequested) { Identity.CancellationToken.ThrowIfCancellationRequested(); throw; }
             if (!_isCurrent()) throw new InvalidOperationException("调试草稿已失效。 ");
             RecomputeProducers();
             var snapshot = CapturePublishedSnapshot();

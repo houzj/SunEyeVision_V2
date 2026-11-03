@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Domain.Solutions;
+using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
@@ -47,7 +47,7 @@ public sealed partial class DocumentSession : IDisposable
             EnsureOpen();
             var matches = Document.Workflows.Where(flow => flow.Id == workflowId).ToArray();
             if (matches.Length != 1) throw new InvalidOperationException("流程不属于当前方案或身份不唯一。");
-            return new WorkflowScope(this, matches[0], workflowId);
+            return new WorkflowScope(this, matches[0], workflowId, GetFlowGeneration(matches[0]));
         }
     }
 
@@ -249,7 +249,8 @@ public sealed partial class DocumentSession : IDisposable
         EnsureOpen();
         if (!ReferenceEquals(scope.Session, this) || Document.Id != _documentId || scope.Flow.Id != scope.WorkflowId ||
             Document.Workflows.Count(flow => ReferenceEquals(flow, scope.Flow)) != 1 ||
-            Document.Workflows.Count(flow => flow.Id == scope.WorkflowId) != 1)
+            Document.Workflows.Count(flow => flow.Id == scope.WorkflowId) != 1 ||
+            !_flowGenerations.TryGetValue(scope.Flow, out var generation) || generation != scope.Generation)
             throw new InvalidOperationException("方案或流程身份已变化，或流程已退出方案。");
     }
 
@@ -300,7 +301,7 @@ public sealed partial class DocumentSession : IDisposable
     }
 }
 
-internal sealed record WorkflowScope(DocumentSession Session, WorkflowDefinition Flow, string WorkflowId);
+internal sealed record WorkflowScope(DocumentSession Session, WorkflowDefinition Flow, string WorkflowId, Guid Generation);
 internal sealed record AdmittedNodeView(WorkflowScope Scope, NodeDefinition Node, AdmittedToolConfiguration Configuration);
 
 

@@ -41,7 +41,8 @@ public sealed partial class DocumentSession
                 var effects = ProjectGraphChange(prepared.Before.Graphs, prepared.After.Graphs);
                 var variableChanges = ProjectVariableChanges(prepared.Before, prepared.After, prepared.ValueWrites.Keys);
                 var workflowChanges = ProjectWorkflowConfigurationChanges(prepared.Before, prepared.After);
-                var rootChanged = workflowChanges.Length != 0;
+                var rootChanges = ProjectRootCollectionChanges(prepared.Before, prepared.After);
+                var rootChanged = workflowChanges.Length != 0 || rootChanges.Length != 0;
                 var configurationChanged = effects.Nodes.Count != 0 || effects.Removed.Count != 0 || effects.Connections.Count != 0 ||
                     rootChanged || prepared.Before.Variables.Length != prepared.After.Variables.Length ||
                     prepared.Before.Variables.Where((variable, index) => !ReferenceEquals(variable, prepared.After.Variables[index])).Any() ||
@@ -62,7 +63,7 @@ public sealed partial class DocumentSession
                 var change = changed ? new DocumentChangeSet(EditSessionId, revision, DocumentChangeOrigin.Edit,
                     nodeChanges.ToImmutableArray(), effects.Removed.ToImmutableArray(), effects.Connections.ToImmutableArray(),
                     variableChanges.ToImmutableArray(), prepared.Invalidated.ToImmutableArray(),
-                    workflowChanges) : null;
+                    workflowChanges, rootChanges) : null;
                 DocumentHistoryEntry? history = null;
                 var explicitValueEdit = currentValuesChanged || prepared.ValueWrites.Count != 0
                     ? checked(_explicitValueEdit + 1) : _explicitValueEdit;
@@ -91,7 +92,10 @@ public sealed partial class DocumentSession
                     RetireChangedDomains(change!);
                 }
                 proposal.MarkConsumed();
-                receipt = new DocumentEditReceipt(this, change, history, prepared.AcceptedVariables);
+                receipt = new DocumentEditReceipt(this, change, history, prepared.AcceptedVariables,
+                    proposal.Collection?.Issued ?? new Dictionary<WorkflowDefinition, WorkflowDefinition>(ReferenceEqualityComparer.Instance))
+                    { AcceptedProposalIds = new HashSet<object>(proposal.AcceptanceIds(), ReferenceEqualityComparer.Instance), AcceptedRootSnapshot = Array.AsReadOnly(prepared.After.Flows
+                        .Select(flow => (flow, prepared.After.Names[flow])).ToArray()) };
             }
             finally { _preparing = false; }
         }
@@ -100,6 +104,27 @@ public sealed partial class DocumentSession
         return receipt;
     }
 
+    private static ImmutableArray<RootCollectionChange> ProjectRootCollectionChanges(EditState before, EditState after)
+    {
+        var oldRoots = before.Flows.Where(flow => !flow.IsSubroutine).ToArray();
+        var newRoots = after.Flows.Where(flow => !flow.IsSubroutine).ToArray();
+        var result = ImmutableArray.CreateBuilder<RootCollectionChange>();
+        for (var index = 0; index < oldRoots.Length; index++)
+        {
+            var flow = oldRoots[index];
+            if (!newRoots.Any(item => ReferenceEquals(item, flow)))
+                result.Add(new(flow, RootCollectionChangeKind.Removed, before.Names[flow], index, null));
+        }
+        for (var index = 0; index < newRoots.Length; index++)
+        {
+            var flow = newRoots[index];
+            var oldIndex = Array.FindIndex(oldRoots, item => ReferenceEquals(item, flow));
+            if (oldIndex < 0) result.Add(new(flow, RootCollectionChangeKind.Added, null, null, index));
+            else if (before.Names[flow] != after.Names[flow])
+                result.Add(new(flow, RootCollectionChangeKind.Renamed, before.Names[flow], oldIndex, index));
+        }
+        return result.ToImmutable();
+    }
     private static bool SameNodeCurrentValues(ToolConfiguration first, ToolConfiguration second) =>
         first.CaptureCurrentValues().Keys.Union(second.CaptureCurrentValues().Keys, StringComparer.Ordinal)
             .All(id => !first.CurrentValueChangedFrom(id, second));

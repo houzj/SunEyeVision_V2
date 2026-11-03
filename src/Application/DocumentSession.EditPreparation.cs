@@ -9,7 +9,8 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSession
 {
-    private sealed record EditState(IReadOnlyDictionary<WorkflowDefinition, GraphState> Graphs,
+    private sealed record EditState(WorkflowDefinition[] Flows, IReadOnlyDictionary<WorkflowDefinition, string> Names,
+        IReadOnlyDictionary<WorkflowDefinition, GraphState> Graphs,
         IReadOnlyDictionary<WorkflowDefinition, RootWorkflowConfiguration> Roots,
         IReadOnlyDictionary<WorkflowDefinition, RootWorkspaceSettings> Workspaces,
         GlobalVariable[] Variables, IReadOnlyList<GlobalVariable> Definitions);
@@ -19,6 +20,8 @@ public sealed partial class DocumentSession
         IReadOnlyList<ScopedNodeIdentity> Invalidated);
 
     private EditState CaptureEditState() => new(
+        Document.Workflows.ToArray(), Document.Workflows.ToDictionary(flow => flow, flow => flow.Name,
+            (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
         Document.Workflows.ToDictionary(flow => flow, GraphState.Capture,
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
         Document.Workflows.ToDictionary(flow => flow, flow => flow.RootConfiguration,
@@ -27,7 +30,8 @@ public sealed partial class DocumentSession
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
         Document.GlobalVariables.ToArray(), GlobalVariable.CaptureDefinitions(Document.GlobalVariables.ToArray()));
 
-    private bool MatchesEditState(EditState state) => Document.Workflows.Count == state.Graphs.Count &&
+    private bool MatchesEditState(EditState state) => Document.Workflows.Count == state.Flows.Length &&
+        state.Flows.Where((flow, index) => !ReferenceEquals(flow, Document.Workflows[index]) || flow.Name != state.Names[flow]).Any() == false &&
         state.Graphs.All(pair => Document.Workflows.Count(flow => ReferenceEquals(flow, pair.Key)) == 1 &&
             pair.Value.MatchesCurrent(pair.Key) && ReferenceEquals(pair.Key.RootConfiguration, state.Roots[pair.Key]) &&
             SameWorkspaceRunSettings(pair.Key.WorkspaceSettings, state.Workspaces[pair.Key])) &&
@@ -69,6 +73,29 @@ public sealed partial class DocumentSession
             workspaces[item.Scope.Flow] = MergeWorkspaceRunSettings(item.Workspace, item.Scope.Flow.WorkspaceSettings);
         }
 
+        var flows = before.Flows;
+        IReadOnlyDictionary<WorkflowDefinition, string> flowNames = before.Names;
+        if (proposal.Collection is { } rootCollection)
+        {
+            ValidateRootCollectionOpening(rootCollection.Draft);
+            flows = rootCollection.Entries.Select(item => item.Flow).ToArray();
+            if (flows.Length == 0 || !flows.Any(flow => !flow.IsSubroutine))
+                throw new InvalidOperationException("方案必须保留至少一个根流程。");
+            flowNames = new ReadOnlyDictionary<WorkflowDefinition, string>(rootCollection.Entries.ToDictionary(item => item.Flow,
+                item => item.Name, (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance));
+            if (rootCollection.Entries.Where(item => !item.Flow.IsSubroutine).Select(item => item.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase).Count() != rootCollection.Entries.Count(item => !item.Flow.IsSubroutine))
+                throw new InvalidOperationException("根流程名称重复。");
+            foreach (var item in rootCollection.Entries.Where(item => !item.Flow.IsSubroutine)) RootWorkflowNameRules.ValidateStored(item.Name);
+            graphs = flows.ToDictionary(flow => flow, flow => graphs.GetValueOrDefault(flow) ?? GraphState.Capture(flow),
+                (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
+            roots = flows.ToDictionary(flow => flow, flow => roots.GetValueOrDefault(flow) ?? flow.RootConfiguration,
+                (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
+            workspaces = flows.ToDictionary(flow => flow, flow => workspaces.GetValueOrDefault(flow) ?? flow.WorkspaceSettings,
+                (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
+            foreach (var flow in flows.Where(flow => !flow.IsSubroutine))
+                RootConfigurationValidation.Validate(roots[flow], graphs[flow], AdmitConfiguration);
+        }
         var accepted = new Dictionary<GlobalVariable, GlobalVariable>(ReferenceEqualityComparer.Instance);
         var writes = new Dictionary<GlobalVariable, object?>(ReferenceEqualityComparer.Instance);
         var variables = before.Variables;
@@ -131,6 +158,19 @@ public sealed partial class DocumentSession
             variables = next.ToArray();
         }
 
+        if (proposal.Collection is { } removedCollection)
+        {
+            definitions = GlobalVariable.CaptureDefinitions(definitions.ToArray());
+            foreach (var variable in definitions.Where(item => item.ProducerBinding is not null))
+            {
+                var producer = variable.ProducerBinding!;
+                var source = flows.SingleOrDefault(flow => flow.Id == producer.SourceReference.ScopeId);
+                if (source is not null && before.Names.TryGetValue(source, out var oldName) && oldName != flowNames[source])
+                    producer.WorkflowName = flowNames[source];
+            }
+            PrepareRemovedRootBindings(removedCollection, graphs, definitions);
+        }
+
         foreach (var variable in definitions.Where(variable => variable.ProducerBinding is not null))
         {
             var previous = before.Definitions.SingleOrDefault(item => item.Id == variable.Id);
@@ -143,8 +183,12 @@ public sealed partial class DocumentSession
                 throw new InvalidOperationException(validation.Reason);
         }
         var beforeDependencies = GraphDependencySnapshot.Create(Document, before.Graphs, before.Definitions, AdmitConfiguration);
-        var reconciled = GraphBindingReconciliation.Prepare(Document, graphs, definitions, AdmitConfiguration, Current);
-        var afterDependencies = GraphDependencySnapshot.Create(Document, reconciled.Graphs, reconciled.Variables, AdmitConfiguration);
+        var documentCandidate = new DocumentCandidateView(flows.Select(flow => new DocumentCandidateView.Flow(
+            flow, flowNames[flow], graphs[flow], roots[flow], workspaces[flow])), definitions);
+        var reconciled = GraphBindingReconciliation.Prepare(_documentId, documentCandidate, AdmitConfiguration, Current);
+        var reconciledCandidate = new DocumentCandidateView(flows.Select(flow => new DocumentCandidateView.Flow(
+            flow, flowNames[flow], reconciled.Graphs[flow], roots[flow], workspaces[flow])), reconciled.Variables);
+        var afterDependencies = GraphDependencySnapshot.Create(_documentId, reconciledCandidate, AdmitConfiguration);
         foreach (var (flow, graph) in reconciled.Graphs)
         {
             var participants = proposal.Nodes.Where(item => item.Opening.Scope.WorkflowId == flow.Id)
@@ -157,7 +201,7 @@ public sealed partial class DocumentSession
         var changedVariables = before.Definitions.Select(variable => variable.Id).Union(reconciled.Variables.Select(variable => variable.Id))
             .Where(id => { var old = before.Definitions.SingleOrDefault(variable => variable.Id == id);
                 var next = reconciled.Variables.SingleOrDefault(variable => variable.Id == id);
-                return old is null || next is null || VariableConfigurationSignature(old) != VariableConfigurationSignature(next); })
+                return old is null || next is null || VariableInvalidationSignature(old) != VariableInvalidationSignature(next); })
             .Concat(writes.Keys.Select(variable => variable.Id)).ToHashSet(StringComparer.Ordinal);
         var seeds = new HashSet<ScopedNodeIdentity>(reconciled.Invalidated);
         foreach (var collection in new[] { before.Graphs, reconciled.Graphs })
@@ -171,7 +215,7 @@ public sealed partial class DocumentSession
             seeds, (node, config) => AdmitConfiguration(node, config).ExecutionConfigurationIdentity);
         if (!Current()) throw new InvalidOperationException("编辑准备回调期间正式方案已变化。");
         proposal.EnsureCanConsume();
-        return new PreparedEdit(before, new EditState(reconciled.Graphs, roots, workspaces, variables, reconciled.Variables),
+        return new PreparedEdit(before, new EditState(flows, flowNames, reconciled.Graphs, roots, workspaces, variables, reconciled.Variables),
             new ReadOnlyDictionary<GlobalVariable, object?>(writes),
             new ReadOnlyDictionary<GlobalVariable, GlobalVariable>(accepted), invalidated);
     }

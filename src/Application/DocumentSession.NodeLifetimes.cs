@@ -4,6 +4,16 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSession
 {
+    // A removed flow never revives old scopes, even when history restores the same object.
+    // The collection transaction removes this entry under the session gate before publishing.
+    private readonly Dictionary<WorkflowDefinition, Guid> _flowGenerations = new(ReferenceEqualityComparer.Instance);
+    private Guid GetFlowGeneration(WorkflowDefinition flow)
+    {
+        if (!_flowGenerations.TryGetValue(flow, out var generation))
+            _flowGenerations.Add(flow, generation = Guid.NewGuid());
+        return generation;
+    }
+    private void RetireFlowGeneration(WorkflowDefinition flow) => _flowGenerations.Remove(flow);
     private sealed record NodeLifetime(Guid Generation, CancellationTokenSource Cancellation);
     private readonly CancellationTokenSource _documentRetirement = new();
     private readonly Dictionary<NodeDefinition, NodeLifetime> _nodeLifetimes = new(ReferenceEqualityComparer.Instance);
@@ -43,7 +53,7 @@ public sealed partial class DocumentSession
         lock (_gate)
         {
             sources = _nodeLifetimes.Values.Select(lifetime => lifetime.Cancellation).Concat(_retiredNodeLifetimes).ToArray();
-            _nodeLifetimes.Clear(); _retiredNodeLifetimes.Clear();
+            _nodeLifetimes.Clear(); _retiredNodeLifetimes.Clear(); _flowGenerations.Clear();
         }
         try { _documentRetirement.Cancel(throwOnFirstException: false); }
         finally

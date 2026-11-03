@@ -17,11 +17,14 @@ public sealed record VariableChange(GlobalVariable Variable, VariableChangeKind 
 [Flags]
 public enum WorkflowChangedAspect { RootConfiguration = 1, RunSettings = 2 }
 public sealed record WorkflowChange(WorkflowDefinition Workflow, WorkflowChangedAspect Aspects);
+public enum RootCollectionChangeKind { Added, Renamed, Removed }
+public sealed record RootCollectionChange(WorkflowDefinition Workflow, RootCollectionChangeKind Kind, string? OldName, int? OldIndex, int? NewIndex);
 public sealed record DocumentChangeSet(Guid EditSessionId, long Revision, DocumentChangeOrigin Origin,
     ImmutableArray<NodeChange> ChangedNodes, ImmutableArray<RemovedNode> RemovedNodes,
     ImmutableArray<ConnectionChange> ChangedConnections, ImmutableArray<VariableChange> ChangedVariables,
     ImmutableArray<ScopedNodeIdentity> ExecutionInvalidatedNodes,
-    ImmutableArray<WorkflowChange> ChangedWorkflows = default);
+    ImmutableArray<WorkflowChange> ChangedWorkflows = default,
+    ImmutableArray<RootCollectionChange> ChangedRoots = default);
 
 public sealed partial class DocumentSession
 {

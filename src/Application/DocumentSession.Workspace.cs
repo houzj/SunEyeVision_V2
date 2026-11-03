@@ -21,6 +21,7 @@ public sealed partial class DocumentSession
         var changes = ImmutableArray.CreateBuilder<WorkflowChange>();
         foreach (var (flow, root) in after.Roots)
         {
+            if (!before.Roots.ContainsKey(flow)) continue;
             var aspects = (WorkflowChangedAspect)0;
             if (before.Roots[flow] != root) aspects |= WorkflowChangedAspect.RootConfiguration;
             if (!SameWorkspaceRunSettings(before.Workspaces[flow], after.Workspaces[flow])) aspects |= WorkflowChangedAspect.RunSettings;

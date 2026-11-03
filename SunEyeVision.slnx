@@ -1,4 +1,5 @@
 <Solution>
+  <Folder Name="/Tools/" />
   <Folder Name="/Tools/BlobComponents/">
     <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
     <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
@@ -13,6 +14,7 @@
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
+  <Folder Name="/Src/" />
   <Folder Name="/Src/Application/">
     <Project Path="Src/Application/SunEyeVision.Application.csproj" />
   </Folder>
@@ -40,6 +42,7 @@
   <Folder Name="/Src/Plugin.Runtime/">
     <Project Path="Src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </Folder>
+  <Folder Name="/Src/SunEyeVision.HalAdapter/Runtime/" />
   <Folder Name="/Src/Tool.Kernels/">
     <Project Path="Src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj" />
   </Folder>
@@ -95,6 +98,9 @@
   <Folder Name="/Tests/CanvasLayout.Tests/">
     <Project Path="tests/CanvasLayout.Tests/CanvasLayout.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/RootCollectionProbe/RootCollectionProbe.csproj" />
+  </Folder>
   <Folder Name="/Tests/CanonicalCodec.Tests/">
     <Project Path="tests/CanonicalCodec.Tests/CanonicalCodec.Tests.csproj" />
   </Folder>
@@ -149,5 +155,11 @@
   <Folder Name="/Tests/ContinuousRunProbe/">
     <Project Path="tests/ContinuousRunProbe/ContinuousRunProbe.csproj" />
   </Folder>
+  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/" />
+  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/Runtime/" />
+  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/Wpf/" />
+  <Folder Name="/Tools/SunEyeVision.ImageSource/" />
+  <Folder Name="/Tools/SunEyeVision.ImageSource/Runtime/" />
+  <Folder Name="/Tools/SunEyeVision.ImageSource/Wpf/" />
 </Solution>
 

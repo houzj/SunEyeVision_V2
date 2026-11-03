@@ -91,6 +91,14 @@ public sealed partial class DocumentSession
         });
     }
 
+    // A root rename refreshes producer display metadata without changing execution identity.
+    private static string VariableInvalidationSignature(GlobalVariable variable) => JsonSerializer.Serialize(new
+    {
+        variable.Id, variable.Name, variable.Group, variable.Index, variable.Type, variable.Description,
+        Producer = variable.ProducerBinding is { } producer ? new
+        { producer.ReferenceExpression, producer.NodeName, producer.ResultDisplayName } : null,
+        variable.RebindingReason, variable.BindingValidationPending, variable.AdditionalData
+    });
     private static IReadOnlyList<GlobalVariable> StripRuntimeValues(IReadOnlyList<GlobalVariable> source)
     {
         var copies = GlobalVariable.CaptureDefinitions(source.ToArray()).ToArray();

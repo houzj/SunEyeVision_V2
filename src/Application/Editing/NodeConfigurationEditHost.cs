@@ -20,7 +20,8 @@ public sealed partial class NodeConfigurationEditHost
         return ReferenceEquals(draft.Session, _session) && !draft.Workflow.IsSubroutine &&
             _session.GetWorkflows().Any(item => ReferenceEquals(item, draft.Workflow));
     }
-    public bool HasPendingChanges(NodeConfigurationEditDraft draft)
+    public bool HasPendingChanges(RootWorkflowCollectionEditDraft draft)
+    { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }    public bool HasPendingChanges(NodeConfigurationEditDraft draft)
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
     public bool HasPendingChanges(RootWorkflowConfigurationEditDraft draft)
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
@@ -49,6 +50,24 @@ public sealed partial class NodeConfigurationEditHost
         return new NodeConfigurationEditDraft(_session, _session.RequireNode(scope, nodeId));
     }
 
+    /// <summary>Begin a private collection edit. Its issued handles are not live workflows.</summary>
+    public RootWorkflowCollectionEditDraft BeginRootCollectionEdit()
+    {
+        EnsureAvailable();
+        return _session.CreateRootCollectionDraft();
+    }
+
+    public RootWorkflowCollectionEditDraft RebaseAcceptedDraft(RootWorkflowCollectionEditDraft draft,
+        DocumentEditProposal prepared, DocumentEditReceipt receipt)
+    {
+        EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); ArgumentNullException.ThrowIfNull(prepared);
+        ArgumentNullException.ThrowIfNull(receipt);
+        if (!ReferenceEquals(prepared.Session, _session) || !prepared.IsConsumed || !prepared.Owns(draft) ||
+            prepared.Collection is not { } frozen || !ReferenceEquals(receipt.Session, _session) ||
+            receipt.AcceptedProposalIds is null || !receipt.AcceptedProposalIds.Contains(prepared.AcceptanceId))
+            throw new InvalidOperationException("根流程回执不属于已接受的草稿。");
+        return draft.Rebase(frozen, receipt);
+    }
     public RootWorkflowConfigurationEditDraft BeginRootEdit(string workflowId)
     {
         EnsureAvailable();

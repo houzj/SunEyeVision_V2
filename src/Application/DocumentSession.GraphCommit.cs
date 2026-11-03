@@ -96,7 +96,7 @@ public sealed partial class DocumentSession
                     effects.Nodes.ToImmutableArray(), effects.Removed.ToImmutableArray(),
                     effects.Connections.ToImmutableArray(), variableChanges.ToImmutableArray(),
                     History.LastInvalidatedNodes.ToImmutableArray(),
-                    ProjectWorkflowConfigurationChanges(before, after));
+                    ProjectWorkflowConfigurationChanges(before, after), ProjectRootCollectionChanges(before, after));
                 ChangeRevision = revision;
                 RetireChangedDomains(change);
             }
@@ -111,7 +111,10 @@ public sealed partial class DocumentSession
         IReadOnlyDictionary<WorkflowDefinition, GraphState> before,
         IReadOnlyDictionary<WorkflowDefinition, GraphState> after)
     {
-        var parts = before.Select(pair => GraphChangeProjection.Compare(pair.Key.Id, pair.Value, after[pair.Key])).ToArray();
+        var flows = before.Keys.Concat(after.Keys).Distinct<WorkflowDefinition>(ReferenceEqualityComparer.Instance);
+        var parts = flows.Select(flow => GraphChangeProjection.Compare(flow.Id,
+            before.GetValueOrDefault(flow) ?? GraphState.Empty,
+            after.GetValueOrDefault(flow) ?? GraphState.Empty)).ToArray();
         return new(parts.SelectMany(part => part.Nodes).ToArray(), parts.SelectMany(part => part.Removed).ToArray(),
             parts.SelectMany(part => part.Connections).ToArray());
     }
@@ -121,6 +124,9 @@ public sealed partial class DocumentSession
     private void RetireChangedDomains(DocumentChangeSet change)
     {
         QueueRemovedNodeLifetimes(change);
+        if (!change.ChangedRoots.IsDefaultOrEmpty)
+            foreach (var root in change.ChangedRoots.Where(item => item.Kind == RootCollectionChangeKind.Removed))
+                RetireFlowGeneration(root.Workflow);
         _invalidatedRuntimePublications.AddRange(TakeInvalidatedRuntimePublications(change.ExecutionInvalidatedNodes));
         var failures = new List<Exception>();
         foreach (var identity in change.ExecutionInvalidatedNodes)

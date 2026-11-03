@@ -15,10 +15,20 @@ internal static class GraphBindingReconciliation
         IReadOnlyList<GlobalVariable> candidateVariables,
         Func<NodeDefinition, ToolConfiguration, AdmittedToolConfiguration> admit, Func<bool> isCurrent)
     {
-        var graphs = document.Workflows.ToDictionary(flow => flow,
-            flow => candidates.TryGetValue(flow, out var graph) ? graph : GraphState.Capture(flow),
+        var view = new DocumentCandidateView(document.Workflows.Select(flow => new DocumentCandidateView.Flow(
+            flow, flow.Name, candidates.TryGetValue(flow, out var graph) ? graph : GraphState.Capture(flow),
+            flow.RootConfiguration, flow.WorkspaceSettings)), candidateVariables);
+        return Prepare(document.Id, view, admit, isCurrent);
+    }
+
+    internal static Prepared Prepare(string documentId, DocumentCandidateView candidate,
+        Func<NodeDefinition, ToolConfiguration, AdmittedToolConfiguration> admit, Func<bool> isCurrent)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentId);
+        ArgumentNullException.ThrowIfNull(candidate);
+        var graphs = candidate.Flows.ToDictionary(item => item.Identity, item => item.Graph,
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
-        var variables = GlobalVariable.CaptureDefinitions(candidateVariables.ToArray()).ToArray();
+        var variables = GlobalVariable.CaptureDefinitions(candidate.Variables.ToArray()).ToArray();
         var invalidated = new HashSet<ScopedNodeIdentity>();
 
         IReadOnlyList<NodeDefinition>? FindScope(string workflowId)
@@ -51,7 +61,7 @@ internal static class GraphBindingReconciliation
             variable.ProducerBinding = null;
             variable.RebindingReason = validation.Reason;
             variable.BindingValidationPending = string.Empty;
-            foreach (var flow in document.Workflows)
+            foreach (var flow in candidate.Flows.Select(item => item.Identity))
             {
                 var graph = graphs[flow];
                 var replacements = new Dictionary<NodeDefinition, ToolConfiguration>(ReferenceEqualityComparer.Instance);
@@ -60,7 +70,7 @@ internal static class GraphBindingReconciliation
                     var configuration = admit(item.Node, item.Configuration);
                     var changes = new Dictionary<string, ParameterSetting>(StringComparer.Ordinal);
                     var affectedFields = BindingRelationCatalog.VariableReferences(configuration)
-                        .Where(item => item.Reference.SolutionId == document.Id && item.Reference.VariableId == variable.Id)
+                        .Where(item => item.Reference.SolutionId == documentId && item.Reference.VariableId == variable.Id)
                         .Select(item => item.FieldId).Distinct(StringComparer.Ordinal);
                     foreach (var fieldId in affectedFields)
                     {

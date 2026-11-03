@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -77,11 +77,21 @@ public static class SolutionDocumentValidator
                 if (!ids.Add(item["Id"]!.GetValue<string>())) throw new JsonException("Duplicate identity.", "$." + name + "[" + i + "].Id", null, null);
             }
         }
+        var rootNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (root["Workflows"] is JsonArray workflows)
         for (int w = 0; w < workflows.Count; w++)
         {
             var workflow = workflows[w]!;
             var path = "$.Workflows[" + w + "]";
+            if (workflow["IsSubroutine"]?.GetValue<bool>() != true)
+            {
+                var namePath = path + ".Name";
+                if (workflow["Name"] is not JsonValue nameValue || !nameValue.TryGetValue<string>(out var name) || name is null)
+                    throw new JsonException("根流程名称缺失。", namePath, null, null);
+                try { RootWorkflowNameRules.ValidateStored(name); }
+                catch (ArgumentException error) { throw new JsonException("根流程名称无效。", namePath, null, null, error); }
+                if (!rootNames.Add(name)) throw new JsonException("根流程名称重复。", namePath, null, null);
+            }
             // WorkflowJsonConverter writes exactly these structural fields; extension data is not an approved schema.
             RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections", "AdditionalData" });
             if(workflow is JsonObject flowObject && flowObject.ContainsKey("WorkspaceSettings"))

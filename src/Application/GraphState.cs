@@ -17,6 +17,7 @@ internal sealed class GraphState
         Nodes = Array.AsReadOnly(nodes.ToArray());
         Edges = Array.AsReadOnly(edges.ToArray());
     }
+    internal static GraphState Empty { get; } = new(Array.Empty<NodeState>(), Array.Empty<EdgeState>());
     internal static GraphState Capture(WorkflowDefinition workflow) => new(
         workflow.Nodes.Select(node => new NodeState(node, node.Name, node.DispName, node.IsEnabled, node.Position, node.Configuration)),
         workflow.Connections.Select(edge => new EdgeState(edge, edge.SourceNodeId, edge.TargetNodeId, edge.SourcePort, edge.TargetPort,

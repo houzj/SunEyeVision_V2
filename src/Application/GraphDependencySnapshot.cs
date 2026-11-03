@@ -24,8 +24,23 @@ internal sealed class GraphDependencySnapshot
             throw new InvalidOperationException("全局变量身份为空或不唯一。");
         if (candidates.Keys.Any(flow => document.Workflows.Count(actual => ReferenceEquals(actual, flow)) != 1))
             throw new InvalidOperationException("候选流程不属于当前方案。");
-        var flows = document.Workflows.Select(flow => (Flow: flow,
-            State: candidates.TryGetValue(flow, out var candidate) ? candidate : GraphState.Capture(flow))).ToArray();
+        var view = new DocumentCandidateView(document.Workflows.Select(flow => new DocumentCandidateView.Flow(
+            flow, flow.Name, candidates.TryGetValue(flow, out var candidate) ? candidate : GraphState.Capture(flow),
+            flow.RootConfiguration, flow.WorkspaceSettings)), candidateVariables);
+        return Create(document.Id, view, admit);
+    }
+
+    internal static GraphDependencySnapshot Create(string documentId, DocumentCandidateView candidate,
+        Func<NodeDefinition, ToolConfiguration, AdmittedToolConfiguration> admit)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentId);
+        ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(admit);
+        var candidateVariables = candidate.Variables;
+        if (candidateVariables.Any(variable => string.IsNullOrWhiteSpace(variable.Id)) ||
+            candidateVariables.Select(variable => variable.Id).Distinct(StringComparer.Ordinal).Count() != candidateVariables.Count)
+            throw new InvalidOperationException("全局变量身份为空或不唯一。");
+        var flows = candidate.Flows.Select(item => (Flow: item.Identity, State: item.Graph)).ToArray();
         if (flows.Select(item => item.Flow.Id).Distinct(StringComparer.Ordinal).Count() != flows.Length)
             throw new InvalidOperationException("方案流程身份不唯一。");
         var nodes = new Dictionary<ScopedNodeIdentity, GraphState.NodeState>();
@@ -79,7 +94,7 @@ internal sealed class GraphDependencySnapshot
             if (!nodes.ContainsKey(producer)) continue;
             foreach (var (identity, config) in admitted)
                 if (BindingRelationCatalog.VariableReferences(config, executionOnly: true)
-                    .Any(pair => pair.Reference.SolutionId == document.Id && pair.Reference.VariableId == variable.Id))
+                    .Any(pair => pair.Reference.SolutionId == documentId && pair.Reference.VariableId == variable.Id))
                     Add(producer, identity, missingAllowed: false);
         }
         var remaining = nodes.Keys.ToDictionary(id => id, _ => 0);

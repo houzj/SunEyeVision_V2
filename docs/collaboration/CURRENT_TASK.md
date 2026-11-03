@@ -1,3 +1,11 @@
+## 2026-11-03 当前树界面核心实际集成回归
+
+基线a7412863a；新增固定c8的中立PresentationProbe组件完整测试前置（原根不存在该目录，Git曾错误推断目录重命名已纠正）。本树CanvasProjection 5/5、0跳过；RuntimeEditorProductionProbe真实ImageLoad/Blob参数控件+Window+Session+Prepare/回执/关闭通过，保留未解析SN文本。日志ui-canvas-integrated-tests-20261103.log/ui-real-editor-integrated-20261103.log；均真实本树项目重建，不签完整MainWindow/封包/主题/VS。
+
+B当前主窗全生命周期与旧Commands退出批即将固定，根接其完整候选后移除旧Workflow产品引用；暂停Group源/依赖以不参与产品的证据保留，不恢复兼容层。C全局变量291e38b41/49b469286待合，C下一批完整Plugin.Wpf产品中立命名已授权按族/资源闭包实施，跨域UI由根/B接引用。A调试scope4fb/1b及禁用工厂8e待整体核收；任何独立分支探针不转签当前树。
+
+下一步：整合B新AppData/主窗/关闭批，退出旧Workflow目录产品图，然后全量Release及实际主窗与正式图像源→Blob重封验证；目标保持在途。
+
 ## 2026-11-03 界面候选核收与应用数据职责交接
 
 - 基线：fc15e6c64，分支codex/workflow-toolbox-dataflow；根负责Application/构建图/旧Workflow退休，B独立树负责完整UI，A独立树执行调试，C全局变量UI候选已交。

@@ -111,7 +111,7 @@ namespace SunEyeVision.UI.Services.Editing
             try
             {
                 if(node.RuntimeConfiguration is not null)
-                {context.DebugControl=new RuntimeNodeConfigurationControl(node);return;}
+                {context.DebugControl=new RuntimeNodeConfigurationControl();return;}
                 var toolInstance = node.CreateInstance();
                 context.ToolInstance = toolInstance;
 

@@ -308,7 +308,7 @@ internal static class S2DocumentEditingCases
             var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
             var flow=new SunEyeVision.Workflow.Workflow("flow","字段草稿");flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);
             var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
-            using var control=new SunEyeVision.UI.Services.Editing.RuntimeNodeConfigurationControl(node);
+            using var control=new SunEyeVision.UI.Services.Editing.RuntimeNodeConfigurationControl();
             using var context=new SunEyeVision.UI.Services.Editing.ProductionEditorContext(edits.Host,flow.Id,node,()=>true,control.BindDraft,documentEdits:edits);
             typeof(SunEyeVision.UI.Services.Editing.ProductionEditorContext).GetProperty("PrepareView",BindingFlags.Instance|BindingFlags.NonPublic)!
                 .SetValue(context,(Func<string?>)(()=>control.TryCapture(out var error)?null:error));

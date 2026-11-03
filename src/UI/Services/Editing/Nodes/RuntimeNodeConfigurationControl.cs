@@ -71,7 +71,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     internal void RefreshRoiFrame(){if(!_disposed)_roiFrames?.Refresh();}
     public bool HasPendingEdits=>_view is {} view&&(view.HasPendingEdits||view.AcceptedRevision!=_syncedRevision||_captureError.Length!=0)
         ||_inputs.Any(editor=>editor.HasPendingEdits);
-    public RuntimeNodeConfigurationControl(WorkflowNodeBase node)
+    public RuntimeNodeConfigurationControl()
     {
         CommandBindings.Add(new CommandBinding(Plugin.SDK.Commands.ToolCommands.Execute,async (_,e)=>
         {
@@ -79,7 +79,6 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             try{await RunDebugAsync();}
             catch(Exception error){Plugin.SDK.Logging.PluginLogger.Error(error.Message,nameof(RuntimeNodeConfigurationControl),error);}
         },(_,e)=>{e.CanExecute=!_disposed&&!_running&&_captureDebug is not null;e.Handled=true;}));
-        BindDraft(node.Clone());
         Loaded+=(_,_)=>
         {
             if(Window.GetWindow(this) is Plugin.SDK.UI.Windows.DefaultDebugWindow window)

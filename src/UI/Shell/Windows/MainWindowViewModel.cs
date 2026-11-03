@@ -2636,6 +2636,7 @@ SplitterPosition = position;
         {
             if (node == null) return;
 
+            var openStopwatch=System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 LogNodeStorageIdentity(node, "打开调试窗口");
@@ -2644,6 +2645,7 @@ SplitterPosition = position;
                 // overrides are not lost in an incomplete execution-node conversion.
                 var decisionChain = new NodeOpenDecisionChain();
                 var success = decisionChain.Execute(node, context);
+                _logger?.LogInfo($"[Perf] 双击节点窗 NodeOpenDecisionChain: {openStopwatch.ElapsedMilliseconds}ms","MainWindowViewModel");
                 if (!success)
                 {
                     AddLog($"❌ 节点打开失败: {node.Name}");
@@ -2708,6 +2710,7 @@ SplitterPosition = position;
                 };
 
                 await InitializeToolControlAsync(_openDebugWindow, node);
+                _logger?.LogInfo($"[Perf] 双击节点窗至Show完成: {openStopwatch.ElapsedMilliseconds}ms","MainWindowViewModel");
                 AddLog($"✅ 调试窗口已打开: {node.Name}");
             }
             catch (Exception ex)

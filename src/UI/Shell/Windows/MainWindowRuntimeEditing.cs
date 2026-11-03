@@ -54,6 +54,8 @@ public partial class MainWindowViewModel
     }
     private bool InitializeRuntimeEditor(object target,Shared.WorkflowNode node)
     {
+        var totalOpenStopwatch=System.Diagnostics.Stopwatch.StartNew();var phaseStopwatch=System.Diagnostics.Stopwatch.StartNew();
+        void LogOpenPhase(string phase)=>_logger?.LogInfo($"[Perf] Runtime参数窗 {phase}: {phaseStopwatch.ElapsedMilliseconds}ms / 累计 {totalOpenStopwatch.ElapsedMilliseconds}ms","MainWindowRuntimeEditing");
         if(node.RuntimeConfiguration is null)return false;
         if(target is not Window window)throw new InvalidOperationException("Runtime参数窗口缺少宿主。");
         var control=target switch
@@ -66,6 +68,7 @@ public partial class MainWindowViewModel
         var flow=session.Document.Workflows.Single(w=>w.Nodes.Any(n=>ReferenceEquals(n,node)));
         var host=GetProductionEditorHost(session);var query=CreateDataSourceQueryService(flow.Id);
         control.SetDataProvider(query);
+        LogOpenPhase("查询服务与宿主准备");
         var context=new ProductionEditorContext(host,flow.Id,node,
             ()=>ReferenceEquals(_openDebugWindow,window)&&ReferenceEquals(DocumentManager.Session,session)
                 &&session.Document.Workflows.Any(w=>ReferenceEquals(w,flow)&&w.Nodes.Any(n=>ReferenceEquals(n,node))),
@@ -107,8 +110,12 @@ public partial class MainWindowViewModel
                     solutionId:session.Document.Id,variables:session.Document.GlobalVariables,sourceWorkflows:session.Document.Workflows,
                     readScopedPublished:source=>CreateDataSourceQueryService(source.ScopeId).GetNodeContext(source.NodeId)?.Result,inputFieldIds:fields,observeVariables:ids=>WatchVariables(ids));
             });
+            phaseStopwatch.Restart();
             control.BindDraft(context.DraftNode);
+            LogOpenPhase("BindDraft完整参数页组装");
+            phaseStopwatch.Restart();
             var displayPreview=InstallResultDisplayPreview(session,node,context,control);
+            LogOpenPhase("结果预览绑定");
             context.Deactivated+=displayPreview.Dispose;
             control.SetDebugCapture(draft=>
             {
@@ -125,7 +132,8 @@ public partial class MainWindowViewModel
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
             _nodeDebugWindows[node.Id]=window;
             window.Closed+=(_,_)=>_nodeDebugWindows.Remove(node.Id);
-            window.Show();return true;
+            phaseStopwatch.Restart();
+            window.Show();LogOpenPhase("窗口Show同步耗时");return true;
         }
         catch{context.Discard();throw;}
     }

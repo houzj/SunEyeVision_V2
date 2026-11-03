@@ -8,7 +8,7 @@ $root=Split-Path -Parent $PSScriptRoot
 $appRoot=[IO.Path]::TrimEndingDirectorySeparator((Resolve-Path -LiteralPath $AppPath).Path)
 $components=@(Get-ProductToolComponents)
 if($NeutralHost){$components=@($components|Where-Object role -eq 'Runtime')}
-if(!$NeutralHost){Remove-RetiredProductToolOutputs -AppPath $appRoot}
+if(!$NeutralHost){Remove-RetiredProductToolOutputs -AppPath $appRoot -EntryAssemblyName ($RuntimeConfigName -replace '\.runtimeconfig\.json$','')}
 $head=$SourceCommit
 if([string]::IsNullOrWhiteSpace($head)) {
     $head=(& git -C $root rev-parse HEAD).Trim()

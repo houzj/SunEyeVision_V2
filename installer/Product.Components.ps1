@@ -35,13 +35,42 @@ function Get-ProductToolComponents {
 }
 
 function Remove-RetiredProductToolOutputs {
-    param([Parameter(Mandatory)][string]$AppPath)
+    param([Parameter(Mandatory)][string]$AppPath, [string]$EntryAssemblyName = "SunEyeVision.UI")
     $root=Split-Path -Parent $PSScriptRoot
     $appRoot=[IO.Path]::TrimEndingDirectorySeparator((Resolve-Path -LiteralPath $AppPath).Path)
     # 只处理明确的构建输出根；绝不按输入拼接路径删除源码或任意目录。
     $allowed=@((Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'),(Join-Path $root 'dev/Debug'))
     $packRoot=[IO.Path]::GetFullPath((Join-Path $root 'artifacts/staging'))+[IO.Path]::DirectorySeparatorChar
     if(-not @($allowed|Where-Object {[IO.Path]::GetFullPath($_) -ieq $appRoot}).Count -and -not ($appRoot.StartsWith($packRoot,[StringComparison]::OrdinalIgnoreCase) -and [IO.Path]::GetFileName($appRoot) -eq 'app')){throw '旧工具清理仅限正式构建输出根'}
+    # 源码已退出的框架及 tests 验证宿主不能被旧输出残留重新装入新封包。
+    # 只删除精确、可审核的程序集文件；不处理数据目录或任意通配目标。
+    if((Get-Item -LiteralPath $appRoot -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw '产品输出根为重解析点'}
+    $retired=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    [void]$retired.Add('SunEyeVision.Workflow')
+    foreach($directory in Get-ChildItem -LiteralPath (Join-Path $root 'tests') -Directory) {
+        foreach($project in Get-ChildItem -LiteralPath $directory.FullName -Filter '*.csproj' -File) {
+            if($project.BaseName.EndsWith('.Tests') -or $project.BaseName -like '*_wpftmp'){continue}
+            [xml]$definition=Get-Content -LiteralPath $project.FullName -Raw
+            # A declared fixture runtime component is not a disposable test entry host.
+            if(@($definition.SelectNodes('/Project/PropertyGroup/ToolComponentRole')).Count){continue}
+            $assembly=@($definition.SelectNodes('/Project/PropertyGroup/AssemblyName'))
+            $name=if($assembly.Count){$assembly[-1].InnerText}else{$project.BaseName}
+            if($name -match '^[A-Za-z0-9_.-]+$'){[void]$retired.Add($name)}
+        }
+    }
+    if($EntryAssemblyName -notmatch '^[A-Za-z0-9_.-]+$'){throw '入口程序集名称无效'}
+    [void]$retired.Remove($EntryAssemblyName)
+    foreach($name in $retired) {
+        foreach($suffix in '.dll','.exe','.pdb','.xml','.deps.json','.runtimeconfig.json') {
+            $file=[IO.Path]::GetFullPath((Join-Path $appRoot ($name+$suffix)))
+            if(-not $file.StartsWith($appRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw '退役产物路径越界'}
+            if(Test-Path -LiteralPath $file -PathType Leaf) {
+                if((Get-Item -LiteralPath $file -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw '退役产物为重解析点'}
+                Remove-Item -LiteralPath $file -Force
+                Write-Output ('已清理退役框架/验证宿主：'+[IO.Path]::GetFileName($file))
+            }
+        }
+    }
     $pluginRoot=[IO.Path]::GetFullPath((Join-Path $appRoot 'plugins'))
     if(-not $pluginRoot.StartsWith($appRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw '旧工具输出目录越界'}
     if(Test-Path -LiteralPath $pluginRoot) {

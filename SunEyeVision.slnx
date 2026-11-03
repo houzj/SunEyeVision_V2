@@ -101,5 +101,50 @@
   <Folder Name="/Tests/SunEyeVision.WorkflowGraph.Tests/">
     <Project Path="tests/SunEyeVision.WorkflowGraph.Tests/SunEyeVision.WorkflowGraph.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/SunEyeVision.Application.Editing.Tests/">
+    <Project Path="tests/SunEyeVision.Application.Editing.Tests/SunEyeVision.Application.Editing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Application.Transactions.Tests/">
+    <Project Path="tests/SunEyeVision.Application.Transactions.Tests/SunEyeVision.Application.Transactions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Execution.Tests/">
+    <Project Path="tests/SunEyeVision.Execution.Tests/SunEyeVision.Execution.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Persistence.Tests/">
+    <Project Path="tests/SunEyeVision.Persistence.Tests/SunEyeVision.Persistence.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Plugin.Infrastructure.Tests/">
+    <Project Path="tests/SunEyeVision.Plugin.Infrastructure.Tests/SunEyeVision.Plugin.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.CanvasProjection.Tests/">
+    <Project Path="tests/SunEyeVision.CanvasProjection.Tests/SunEyeVision.CanvasProjection.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.UI.Tests/">
+    <Project Path="tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.ImageInput.Runtime.Tests/">
+    <Project Path="tests/SunEyeVision.ImageInput.Runtime.Tests/SunEyeVision.ImageInput.Runtime.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Variables.Wpf.Tests/">
+    <Project Path="tests/SunEyeVision.Variables.Wpf.Tests/SunEyeVision.Variables.Wpf.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/RuntimeQuery.Tests/">
+    <Project Path="tests/RuntimeQuery.Tests/RuntimeQuery.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/VariableValue.Runtime.Tests/">
+    <Project Path="tests/VariableValue.Runtime.Tests/VariableValue.Runtime.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.GlobalProduction.Runtime.Tests/">
+    <Project Path="tests/SunEyeVision.GlobalProduction.Runtime.Tests/SunEyeVision.GlobalProduction.Runtime.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.OutcomeOwnership.Tests/">
+    <Project Path="tests/SunEyeVision.OutcomeOwnership.Tests/SunEyeVision.OutcomeOwnership.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.ShellLayout.Tests/">
+    <Project Path="tests/SunEyeVision.ShellLayout.Tests/SunEyeVision.ShellLayout.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.ShellFooter.Tests/">
+    <Project Path="tests/SunEyeVision.ShellFooter.Tests/SunEyeVision.ShellFooter.Tests.csproj" />
+  </Folder>
 </Solution>
 

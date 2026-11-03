@@ -52,6 +52,13 @@
     <OutputPath Condition="'$(Configuration)'=='Release' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Release\</OutputPath>
     <OutDir Condition="'$(Configuration)'=='Debug' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Debug\</OutDir>
     <OutDir Condition="'$(Configuration)'=='Release' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Release\</OutDir>
+    <!-- 所有 tests 下的非 xUnit 验证宿主也必须隔离；不能写入正式 App 目录。
+         各 ProjectReference 子项目独立评估此属性，产品工程仍按自身输出构建。 -->
+    <_ValidationProjectRelativePath>$([System.IO.Path]::GetRelativePath('$(WorktreeBasePath)', '$(MSBuildProjectDirectory)'))</_ValidationProjectRelativePath>
+    <_IsValidationSupportProject Condition="$(_ValidationProjectRelativePath.StartsWith('tests\')) Or $(_ValidationProjectRelativePath.StartsWith('tests/'))">true</_IsValidationSupportProject>
+    <OutputPath Condition="'$(_IsValidationSupportProject)'=='true' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)Release\_validation\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+    <OutDir Condition="'$(_IsValidationSupportProject)'=='true' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(OutputPath)</OutDir>
+    <AppendTargetFrameworkToOutputPath Condition="'$(_IsValidationSupportProject)'=='true'">false</AppendTargetFrameworkToOutputPath>
     <!-- 共享输出目录要求所有文件(含 deps.json/runtimeconfig)落在同一层, 关闭 SDK 自动追加 TFM 子目录 -->
     <AppendTargetFrameworkToOutputPath Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</AppendTargetFrameworkToOutputPath>
 

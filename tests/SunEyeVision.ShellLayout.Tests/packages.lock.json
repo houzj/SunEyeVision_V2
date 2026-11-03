@@ -1744,6 +1744,13 @@
           "System.IO.Ports": "[9.0.0, )"
         }
       },
+      "suneyevision.devicedriver.camera": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.domain": {
         "type": "Project",
         "dependencies": {
@@ -1773,6 +1780,13 @@
         "dependencies": {
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.infrastructure.imagesources": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Application": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.infrastructure.persistence": {
@@ -1858,8 +1872,10 @@
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
           "SunEyeVision.CvAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.DeviceDriver": "[2.0.0-alpha.8, )",
+          "SunEyeVision.DeviceDriver.Camera": "[2.0.0-alpha.8, )",
           "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Infrastructure.ImageSources": "[2.0.0-alpha.8, )",
           "SunEyeVision.Infrastructure.Persistence": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",

@@ -1,3 +1,13 @@
+## 2026-11-04 根集合核心与采集/连续主窗集中集成通过；域适配修复待复验
+
+当前产品79f4ae856，前置b927（C完整82→a142与B cd60整批）、根集合676/669。根集合53工程最终Release0错6110warn，同版9372748341F19903AA766BC38B7B87770EC803EF1D5DDE7FD38C8D2D32B8BB6F：Editing39/Graph39、真实复制运行/删除Undo/V4重开通过，日志root-collection-integrated-final-*20261104。首次RootCollectionProbe私有工具副本失败保留，669将四工具只作构建引用，未绕门禁。
+
+b927完整59工程Release0错6124warn；载荷AD5ABC601EB5C949C8EEB74D55332B5189E0A9A579B9B60041F4A8DE8D52867C：真实隐藏Main工具栏/暂停恢复/取消关闭/同意Stop-await/Dispatcher-OLE释放通过、CameraHost实帧参数/模拟生命周期probe通过、UI13/13、RunChain12、Core连续15通过。image-continuous-integrated-*20261104+TRX。locked restore因新项目图变更，重新求解后既有包版本/内容hash变化0（package-audit JSON），只锁图更新。工业未知域硬件前拒绝，未测试真实相机，不签硬件/VS/人工/主仓。
+
+关键新缺陷：A全新物理线程证明HalconResourceBridge.CopyImage先CopyRegion导致GenRegionRuns按上一幅128格式把256全域裁成128；这解释FixedSoft/Relative按worker顺序不同，LUT不改。79f4（Blob树b5fc0d9ed）统一区域创建/仿射的tsp_clip_region保存-false-恢复，聚合恢复错误并释放未交付region。源码已合，尚未根构建/自测；修复前AD5不能签修复后79。A从be3建Blob新回归树，已同版导入b5，补线程域/六模式/8选择/资源/三页真实窗口，产品唯一由根修改。
+
+根仍另写D:/MyWork/line-aiproject/platform-blob-integration-20261104（当前b5；此前be3完整构建/10合同/RunChain10/Core15/隐藏两窗口通过，未合根）；新fef父状态与7cdf四成员双图声明待集中核收，不追未固定版本。B从b927另树platform-root-collection-ui-20261104接根集合UI完整四操作/统一事务/回执/Tab；C独立可信目录e7/d643候选待根核收，并补命名与退役失败测试。根不并改其文件。全平台原HTML/完整矩阵统一本阶段效果、真实失败和剩余；完整18工具/SDK退出/最终目录树不缩，Group/新循环暂停。当前根没有活跃构建/测试句柄，不含子线自有句柄。
+
 ## 2026-11-04 Blob完整共享组合隔离整合在途
 
 根84ba7902e产品不变；根另写D:/MyWork/line-aiproject/platform-blob-integration-20261104，codex/platform-blob-integration-20261104，唯一写。03588/6cbaa/6f8/a9a/764/bd6为f48/78/a0/83/fee/a53前置未交付。已按总监a5bcc固定7ee35文件核SHA（仅LF/CRLF归一），集中接C05数字模型、范围比较、按页组合及新Session批回读/执行快照资源需求；不恢复旧Workflow/旧宿主。来源锁仍旧依赖图使首次还原失败，恢复本树正确锁后locked restore通过；首轮全量显示接口中立映射错误及随后共享职责缺口正在整体核闭包，尚无整批通过。87689八特征新单元待核，不套用来源成绩。

@@ -1,4 +1,4 @@
-﻿using Flow = SunEyeVision.Workflow.Workflow;
+﻿using Flow = SunEyeVision.Domain.Workflows.WorkflowDefinition;
 namespace SunEyeVision.UI.Services.Workflow;
 internal sealed record WorkflowLocationEntry(Flow Root, Flow Container,
     IReadOnlyList<WorkflowSearchHop> Hops, string Name,

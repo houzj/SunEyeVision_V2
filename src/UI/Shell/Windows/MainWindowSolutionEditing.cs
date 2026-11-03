@@ -1,33 +1,22 @@
-using SunEyeVision.Plugin.Editing.Wpf;
+using SunEyeVision.Application;
 using System;
-using System.Linq;
-using SunEyeVision.Workflow;
-
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
-    private bool TryValidateSolutionEditors(out string error) => TryUseDocumentEditors(accept: false, out error);
-    private bool TryCommitSolutionEditors(out string error) => TryUseDocumentEditors(accept: true, out error);
-
-    private bool TryUseDocumentEditors(bool accept, out string error)
+    private bool TryValidateSolutionEditors(out string error)=>TryUseDocumentEditors(false,out error);
+    private bool TryCommitSolutionEditors(out string error)=>TryUseDocumentEditors(true,out error);
+    private bool TryUseDocumentEditors(bool accept,out string error)
     {
         try
         {
-            var session = DocumentManager.Session ?? throw new InvalidOperationException("当前没有方案编辑会话。");
-            // The document owns every admitted draft, including unloaded views.
-            if (accept)
+            var session=DocumentManager.CurrentSession??throw new InvalidOperationException("当前没有方案编辑会话。");
+            if(session.Editing.RegisteredScopeCount!=0)
             {
-                var publication = session.Editing.AcceptAll();
-                if (publication is not null)
-                    try { RefreshProductionPublication(session, publication); }
-                    catch (Exception ex) { LogWarning("配置已接受，界面刷新未完成：" + ex.Message); }
-                if (session.Editing.LastRefreshError is { } refreshError)
-                    LogWarning("配置已接受，部分编辑器刷新未完成：" + refreshError);
+                if(accept)RefreshProductionPublication(session,session.Editing.Apply());
+                else session.Editing.Validate();
             }
-            else session.Editing.ValidateAll();
-            error = "";
-            return true;
+            error="";return true;
         }
-        catch (Exception ex) { error = ex.Message; return false; }
+        catch(Exception failure){error=failure.Message;return false;}
     }
 }

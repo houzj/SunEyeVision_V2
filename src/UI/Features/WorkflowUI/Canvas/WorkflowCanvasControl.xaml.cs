@@ -1289,13 +1289,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 // 使用 ForceSelectNode 强制更新显示（即使引用相同）
 
-                _viewModel.ForceSelectNode(node);
+                _viewModel.ForceSelectNode(node.Definition);
 
 
 
                 // 打开调试窗口
 
-                _viewModel.OpenDebugWindowCommand.Execute(node);
+                _viewModel.OpenDebugWindowCommand.Execute(node.Definition);
 
                 // 不设置 e.Handled，让事件冒泡到 Port_MouseLeftButtonUp
 
@@ -1318,7 +1318,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             if (!CanEditVmCanvas) { e.Handled = true; return; }
             if (!node.IsSelected) { ClearAllSelections(); node.IsSelected = true; }
-            _viewModel.SelectedNode = node;
+            _viewModel.SelectedNode = node.Definition;
             WorkflowCanvas.Focus();
             ArmVmNodeMove(node, e.GetPosition(WorkflowCanvas));
             e.Handled = true;
@@ -1668,11 +1668,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 if (_viewModel != null)
 
             {
-_viewModel.SelectedNode = targetNode;
+_viewModel.SelectedNode = targetNode.Definition;
 
                 // ★ 强制刷新图像预览器，确保即使 SelectedNode 值相同也会重新计算
 
-                _viewModel.ForceRefreshImagePreview();
+                _viewModel.RefreshFormalImageSourceSelection();
 }
 
             else
@@ -1734,7 +1734,7 @@ _viewModel.SelectedNode = targetNode;
 
                     }
 
-                    _viewModel.SelectedNode = targetNode;
+                    _viewModel.SelectedNode = targetNode.Definition;
 
                 }
 
@@ -2870,7 +2870,7 @@ _viewModel.SelectedNode = targetNode;
                 if(canEdit)
                 {
                     node.IsSelected = true;
-                    if (_viewModel != null) _viewModel.SelectedNode = node;
+                    if (_viewModel != null) _viewModel.SelectedNode = node.Definition;
                 }
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)

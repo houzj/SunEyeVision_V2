@@ -1,154 +1,66 @@
-using SunEyeVision.Plugin.Editing.Wpf;
-using SunEyeVision.Workflow;
-using SunEyeVision.UI.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
+using SunEyeVision.Application;
+using SunEyeVision.UI.Core;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
-    private DocumentHistoryCoordinator? _observedDocumentHistory;
-    private SolutionManager? _documentEventOwner;
+    private DocumentSession? _observedDocumentSession;
+    private DocumentSessionManager? _documentEventOwner;
     private bool _documentHostReleased;
     public void ReleaseDocumentHost()
     {
+        if(_documentHostReleased)return;_documentHostReleased=true;
+        WorkflowTabViewModel.UnbindDocumentManager();
+        if(_documentEventOwner is {} manager)manager.SessionChanged-=FormalDocumentSessionChanged;
+        _documentEventOwner=null;UnbindFormalSession();
+        ReleaseProductionEditors();ClearFormalImageSourceSelection();ReleaseActiveResultView();RetireResultPublication();
+    }
+    private void UnbindFormalSession()
+    {
+        if(_observedDocumentSession is {} session){session.Changed-=FormalDocumentChanged;session.RuntimeResultAvailable-=FormalResultAvailable;}
+        _observedDocumentSession=null;
+    }
+    private void FormalDocumentSessionChanged(object? sender,DocumentSessionReplacement change)
+    {
         if(_documentHostReleased)return;
-        _documentHostReleased=true;
-        if(_documentEventOwner is {} manager)
-        {
-            manager.CurrentSolutionChanged-=OnCurrentSolutionChanged;
-            manager.SolutionSaved-=OnDocumentHostSolutionSaved;
-        }
-        _documentEventOwner=null;
-        var history=_observedDocumentHistory;_observedDocumentHistory=null;
-        if(history is not null)
-        {
-            history.Changed-=DocumentHistoryChanged;
-            history.ReleaseMutationLeaseProvider(_executionManager.BeginHistoryMutation);
-        }
-    }
-    private void OnDocumentHostSolutionSaved(object? sender, Solution document)
-    {
-        if (_documentHostReleased) return;
-        foreach (var cached in _workflowDsqsCache.Values)
-            cached.ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document);
-        if (ReferenceEquals(DocumentManager.CurrentSolution, document))
-        {
-            RefreshAcceptedImageSourceViews();
-            ForceRefreshImagePreview();
-        }
-        UpdateCurrentSolutionInfo();
-    }
-    private ICommand? _navigateEditHistoryCommand;
-    public ICommand NavigateEditHistoryCommand => _navigateEditHistoryCommand ??= new RelayCommand(
-        request => {
-            if (request is not EditHistoryLocation location || !CanNavigateEditHistory(location)) return;
-            try {
-                DocumentManager.Session!.History.NavigateTo(location.SessionId, location.EntryId);
-                var rootId = DocumentManager.Session.History.LastAppliedEntry?.Scopes.FirstOrDefault()?.RootId;
-                var tab = WorkflowTabViewModel.Tabs.FirstOrDefault(t => t.RootWorkflowId == rootId);
-                if (tab != null) SetSelectedTab(tab);
-                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-                SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.RefreshCommittedBindings();
-            } catch (Exception error) { StatusText = "历史跳转已停止：" + error.Message; }
-        }, request => request is EditHistoryLocation location && CanNavigateEditHistory(location));
-    private bool CanNavigateEditHistory(EditHistoryLocation location) => CanEditRootWorkspace
-        && WorkflowTabViewModel.SelectedTab?.IsInSubroutine != true
-        && DocumentManager.Session?.History is {} history && history.SessionId == location.SessionId
-        && !history.IsClosed && history.Fault == null;
-    public IReadOnlyList<EditHistoryLocation> EditHistoryLocations
-    {
-        get {
-            if (DocumentManager.Session?.History is not {} history) return Array.Empty<EditHistoryLocation>();
-            return new[] { new EditHistoryLocation(history.SessionId, null, "保留历史起点", history.Position == 0) }
-                .Concat(history.Entries.Select((entry,index) => new EditHistoryLocation(history.SessionId, entry.Id,
-                    entry.Description, history.Position == index + 1))).ToArray();
-        }
+        UnbindFormalSession();ReleaseProductionEditors();ClearFormalImageSourceSelection();SelectedNode=null;
+        BindDocumentHistory();RefreshFormalImageSourceSelection();UpdateCurrentSolutionInfo();
     }
     private void BindDocumentHistory()
     {
         if(_documentHostReleased)return;
-        var session = DocumentManager.Session;
-        var history = session?.History;
-        if (!ReferenceEquals(history, _observedDocumentHistory))
+        if(!ReferenceEquals(_documentEventOwner,DocumentManager))
         {
-            if (_observedDocumentHistory != null)
-            {
-                _observedDocumentHistory.Changed -= DocumentHistoryChanged;
-                _observedDocumentHistory.ReleaseMutationLeaseProvider(_executionManager.BeginHistoryMutation);
-            }
-            _observedDocumentHistory = null;
-            if (history != null)
-            {
-                history.SetMutationLeaseProvider(_executionManager.BeginHistoryMutation);
-                _observedDocumentHistory=history;
-                history.Changed += DocumentHistoryChanged;
-            }
+            if(_documentEventOwner is {} previous)previous.SessionChanged-=FormalDocumentSessionChanged;
+            _documentEventOwner=DocumentManager;DocumentManager.SessionChanged+=FormalDocumentSessionChanged;
         }
-        if (session != null)
-            foreach (var tab in WorkflowTabViewModel.Tabs)
-                tab.BindRootDocumentHistory(session.History, () => session.Editing.Host.AcceptDocumentGraphHistory(),
-                    () => NodeConfigurationEditHost.DocumentHistorySignature(session.Document));
+        var session=DocumentManager.CurrentSession;
+        if(ReferenceEquals(session,_observedDocumentSession))return;
+        UnbindFormalSession();_observedDocumentSession=session;
+        if(session is not null){session.Changed+=FormalDocumentChanged;session.RuntimeResultAvailable+=FormalResultAvailable;}
     }
-    private void DocumentHistoryChanged(object? sender, EventArgs args)
+    private void FormalDocumentChanged(object? sender,DocumentChangeSet change)
     {
-        var displaySession=DocumentManager.Session;
-        var displayHistory=sender as DocumentHistoryCoordinator;
-        var displayRevision=displayHistory?.Revision;
-        var failures = new List<Exception>();
-        void Refresh(Action action) { try { action(); } catch (Exception error) { failures.Add(error); } }
-        if (sender is DocumentHistoryCoordinator history && !history.IsClosed
-            && DocumentManager.Session is {} session && ReferenceEquals(session.History, history)
-            && !IsRunning && !_executionManager.IsAnyRunning() && history.LastInvalidatedNodes.Count != 0)
-            Refresh(() => RefreshReplayedResults(session, history));
-        Refresh(RefreshAcceptedImageSourceViews);
-        Refresh(RefreshCurrentResultBindings);
-        Refresh(() =>
-        {
-            if(_documentHostReleased||displaySession is null||displayHistory is null||displayHistory.IsClosed
-                ||!ReferenceEquals(DocumentManager.Session,displaySession)||!ReferenceEquals(displaySession.History,displayHistory)
-                ||displayHistory.Revision!=displayRevision)return;
-            NotifyResultDisplayChanged();
-        });
-        Refresh(RefreshRootTabReadiness); Refresh(UpdateCurrentSolutionInfo); Refresh(UpdateUndoRedoCommands);
-        Refresh(() => OnPropertyChanged(nameof(CanUndoRootWorkspace)));
-        Refresh(() => OnPropertyChanged(nameof(CanRedoRootWorkspace)));
-        if (failures.Count != 0) throw new AggregateException("历史已更新，部分界面刷新失败。", failures);
+        if(_documentHostReleased||!ReferenceEquals(sender,_observedDocumentSession)||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+        if(SelectedNode is {} selected&&!OwnsSelectedDocumentNode(selected))SelectedNode=null;
+        else RefreshFormalPublishedResult();
+        RefreshFormalImageSourceSelection();NotifyResultDisplayChanged();RefreshRootTabReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
+        OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }
-
-    private void RefreshReplayedResults(SolutionSession session, DocumentHistoryCoordinator history)
+    private void FormalResultAvailable(object? sender,PublishedNodeResult result)
     {
-        var revision = history.Revision;
-        bool Current() => ReferenceEquals(DocumentManager.Session, session)
-            && ReferenceEquals(session.History, history) && !history.IsClosed && history.Revision == revision
-            && !IsRunning && !_executionManager.IsAnyRunning();
-        InvalidatePublishedResults(session, history.LastInvalidatedNodes, Current);
+        if(_documentHostReleased||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        if(SelectedNode?.Id==result.Node.NodeId&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==result.Node.WorkflowId)
+            RefreshFormalPublishedResult();
+        ResultWorkspaceChanged?.Invoke();
     }
-
-    private void InvalidatePublishedResults(SolutionSession session, IReadOnlyList<ScopedNodeIdentity> nodes, Func<bool> current)
-    {
-        var affected = nodes.ToArray();
-        var failures = new List<Exception>();
-        foreach (var node in affected)
-        {
-            if (!current()) break;
-            var context = _workflowContextService.Get(node.WorkflowId);
-            var oldResult = context?.GetNodeResult(node.NodeId);
-            // Invalidate queued completions before dropping the cached reader. A retirement
-            // observer may reenter and install a newer result; never remove that new result.
-            try { session.Document.ExecutionOwner.RetireNode(node.WorkflowId + "/" + node.NodeId); }
-            catch (Exception error) { failures.Add(error); }
-            if (!current()) break;
-            try { if (oldResult is not null && ReferenceEquals(context?.GetNodeResult(node.NodeId), oldResult)) context!.RemoveNodeResult(node.NodeId); }
-            catch (Exception error) { failures.Add(error); }
-        }
-        if (current() && SelectedNode is {} selected && WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId is {} workflowId
-            && affected.Any(node => node.WorkflowId == workflowId && node.NodeId == selected.Id)
-            && session.Document.Workflows.Any(flow => flow.Id == workflowId && flow.Nodes.Any(node => ReferenceEquals(node, selected))))
-        {
-            // If retirement reentered and published a new generation, its presentation wins.
-            var currentResult = _workflowContextService.Get(workflowId)?.GetNodeResult(selected.Id)?.Result;
-            try { if (currentResult?.ExecutionIdentity?.IsCurrent != true) UpdateModuleResults(null, selected.Name, selected.ToolType, selected.Id); }
-            catch (Exception error) { failures.Add(error); }
-        }
-        if (failures.Count != 0) throw new AggregateException("配置已接纳，部分结果清理或刷新失败。", failures);
-    }
+    // Full history navigation has no public session contract yet; Undo/Redo use the actual session.
+    private ICommand? _navigateEditHistoryCommand;
+    public ICommand NavigateEditHistoryCommand=>_navigateEditHistoryCommand??=new RelayCommand(()=>{StatusText="历史定位尚未接入正式会话，暂不可用。";},()=>false);
+    public IReadOnlyList<EditHistoryLocation> EditHistoryLocations=>DocumentManager.CurrentSession is {} session
+        ?session.HistoryEntries.Select(entry=>new EditHistoryLocation(session.EditSessionId,entry.Id,entry.Description,false)).ToArray():Array.Empty<EditHistoryLocation>();
 }

@@ -1,112 +1,55 @@
+using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
 using SunEyeVision.Plugin.Editing.Wpf;
+using SunEyeVision.UI.Services.Editing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.UI.Services.Editing;
-using SunEyeVision.Workflow;
-
 namespace SunEyeVision.UI.Shell.Windows;
-
 public partial class MainWindowViewModel
 {
-    private SolutionSession? _productionEditorSession;
+    private DocumentSession? _productionEditorSession;
     private NodeConfigurationEditHost? _productionEditorHost;
-    private readonly HashSet<ProductionEditorContext> _productionEditors = new();
-    private readonly HashSet<SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel> _variableEditors = new();
-
-    private NodeConfigurationEditHost GetProductionEditorHost(SolutionSession session)
+    private readonly HashSet<ProductionEditorContext> _productionEditors=new();
+    private readonly HashSet<SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel> _variableEditors=new();
+    private NodeConfigurationEditHost GetProductionEditorHost(DocumentSession session)
     {
-        if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();
-        if (_productionEditorHost is null)
-        {
-            _productionEditorHost = session.Editing.Host;
-            _productionEditorSession = session;
-        }
-        return _productionEditorHost;
+        if(!ReferenceEquals(_productionEditorSession,session))ReleaseProductionEditors();
+        _productionEditorSession=session;return _productionEditorHost=session.Editing.Host;
     }
-
-    private void ClearProductionEditorHost()
-    {
-        if (_productionEditors.Count != 0 || _variableEditors.Count != 0) return;
-        // The document, not the last window, owns publication history and registered scopes.
-    }
+    private void ClearProductionEditorHost() { }
     private void ReleaseProductionEditors()
     {
-        _productionEditorSession?.Editing.Close();
         ReleaseProductionEditorContexts(_productionEditors);
-        foreach (var model in _variableEditors) model.Discard();
-        _variableEditors.Clear();
-        _productionEditorHost = null;
-        _productionEditorSession = null;
+        foreach(var model in _variableEditors.ToArray())model.Discard();
+        _variableEditors.Clear();_productionEditorHost=null;_productionEditorSession=null;
     }
-    private void RefreshProductionPublication(SolutionSession session, BindingConfigurationPublication publication,
-        DataSourceQueryService? query = null, bool resultsAlreadyRefreshed = false)
+    private void RefreshProductionPublication(DocumentSession session,DocumentEditReceipt receipt)
     {
-        if (!ReferenceEquals(DocumentManager.Session, session)) return;
-        SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.Reset(session.Document);
-        var globals = CaptureGlobalVariables(session.Document);
-        query?.SetGlobalVariables(globals);
-        foreach (var cached in _workflowDsqsCache.Values) cached.SetGlobalVariables(globals);
-        ToolEditorCommit.RefreshCommittedBindings();
-        if (!resultsAlreadyRefreshed && !IsRunning)
-            foreach (var affected in publication.InvalidatedNodes.Where(n => n.WorkflowId == _workflowEngine.CurrentWorkflow?.Id))
-                CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
-        if (!resultsAlreadyRefreshed && !IsRunning && ReferenceEquals(DocumentManager.Session, session)
-            && SelectedNode is { RuntimeConfiguration: not null } runtimeNode
-            && publication.InvalidatedNodes.Any(affected => affected.NodeId == runtimeNode.Id
-                && affected.WorkflowId == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId)
-            && session.Document.Workflows.Any(flow => flow.Id == WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId
-                && flow.Nodes.Any(node => ReferenceEquals(node, runtimeNode))))
-        {
-            var current=CurrentWorkflowContext?.GetNodeResult(runtimeNode.Id)?.Result;
-            if(current?.ExecutionIdentity?.IsCurrent!=true)
-                UpdateModuleResults(null, runtimeNode.Name, runtimeNode.ToolType, runtimeNode.Id);
-        }
-        RefreshCurrentResultBindings();
-        NotifyResultDisplayChanged();
-        RefreshRootTabReadiness();
+        if(!ReferenceEquals(DocumentManager.CurrentSession,session)||!ReferenceEquals(receipt.Session,session))return;
+        RefreshFormalPublishedResult();NotifyResultDisplayChanged();RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
     }
-    private static System.Collections.Generic.Dictionary<string, object?> CaptureGlobalVariables(Solution document)
-    {
-        var definitions = GlobalVariable.CaptureDefinitions(document.GlobalVariables);
-        return definitions.Where(v => string.IsNullOrEmpty(v.RebindingReason) && string.IsNullOrEmpty(v.BindingValidationPending))
-            .ToDictionary(v => v.Name, v => v.Value);
-    }
     internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)
-    { foreach (var context in active.ToArray()) context.Discard(); }
-
-    // The same ownership hook is used for Window and embedded-control initialization.
-    // Unloaded can be temporary (reparenting/template changes), so only Closed/Discard releases.
-    internal static void TrackProductionEditor(ISet<ProductionEditorContext> active, ProductionEditorContext context,
-        object target, Action whenEmpty)
+    {foreach(var context in active.ToArray())context.Discard();}
+    internal static void TrackProductionEditor(ISet<ProductionEditorContext> active,ProductionEditorContext context,object target,Action whenEmpty)
     {
-        if (!context.IsActive) return;
-        if (!active.Add(context)) return;
-        var control = target as FrameworkElement;
-        Window? owner = null;
-        void Closed(object? sender, EventArgs e) => context.Discard();
+        if(!context.IsActive||!active.Add(context))return;
+        var control=target as FrameworkElement;Window? owner=null;
+        void Closed(object? sender,EventArgs args)=>context.Discard();
         void BindOwner()
         {
-            var next = target as Window ?? (control is null ? null : Window.GetWindow(control));
-            if (ReferenceEquals(next, owner)) return;
-            if (owner is not null) owner.Closed -= Closed;
-            owner = next;
-            if (owner is not null) owner.Closed += Closed;
+            var next=target as Window??(control is null?null:Window.GetWindow(control));
+            if(ReferenceEquals(next,owner))return;
+            if(owner is not null)owner.Closed-=Closed;owner=next;if(owner is not null)owner.Closed+=Closed;
         }
-        void Loaded(object sender, RoutedEventArgs e) => BindOwner();
+        void Loaded(object sender,RoutedEventArgs args)=>BindOwner();
         void Released()
         {
-            context.Deactivated -= Released;
-            if (control is not null) control.Loaded -= Loaded;
-            if (owner is not null) owner.Closed -= Closed;
-            active.Remove(context);
-            if (active.Count == 0) whenEmpty();
+            context.Deactivated-=Released;if(control is not null)control.Loaded-=Loaded;if(owner is not null)owner.Closed-=Closed;
+            active.Remove(context);if(active.Count==0)whenEmpty();
         }
-        context.Deactivated += Released;
-        if (control is not null) control.Loaded += Loaded;
-        BindOwner();
+        context.Deactivated+=Released;if(control is not null)control.Loaded+=Loaded;BindOwner();
     }
 }

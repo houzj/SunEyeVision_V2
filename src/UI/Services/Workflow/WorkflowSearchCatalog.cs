@@ -1,29 +1,29 @@
-﻿using SunEyeVision.Workflow;
+﻿using SunEyeVision.Domain.Workflows;
 namespace SunEyeVision.UI.Services.Workflow;
-internal sealed record WorkflowSearchHop(SunEyeVision.Workflow.Workflow Parent,WorkflowNodeBase Owner,SunEyeVision.Workflow.Workflow Child);
-internal sealed record WorkflowSearchEntry(SunEyeVision.Workflow.Workflow Root,SunEyeVision.Workflow.Workflow Container,WorkflowNodeBase Node,IReadOnlyList<WorkflowSearchHop> Hops,string Name,string FullPath)
+internal sealed record WorkflowSearchHop(SunEyeVision.Domain.Workflows.WorkflowDefinition Parent,NodeDefinition Owner,SunEyeVision.Domain.Workflows.WorkflowDefinition Child);
+internal sealed record WorkflowSearchEntry(SunEyeVision.Domain.Workflows.WorkflowDefinition Root,SunEyeVision.Domain.Workflows.WorkflowDefinition Container,NodeDefinition Node,IReadOnlyList<WorkflowSearchHop> Hops,string Name,string FullPath)
 {
  public string Caption=>(Node.GlobalIndex>=0?Node.GlobalIndex+" ":"")+Name;
  public override string ToString()=>Caption+"    "+FullPath;
 }
 internal static class WorkflowSearchCatalog
 {
- public static IReadOnlyList<WorkflowSearchEntry> Search(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string? rootId,string query)
+ public static IReadOnlyList<WorkflowSearchEntry> Search(IEnumerable<SunEyeVision.Domain.Workflows.WorkflowDefinition> definitions,string? rootId,string query)
  {
   if(string.IsNullOrEmpty(query))return Array.Empty<WorkflowSearchEntry>();
   return SearchCore(definitions,rootId,(node,name)=>name.Contains(query,StringComparison.Ordinal));
  }
- public static IReadOnlyList<WorkflowSearchEntry> FindById(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string query)
+ public static IReadOnlyList<WorkflowSearchEntry> FindById(IEnumerable<SunEyeVision.Domain.Workflows.WorkflowDefinition> definitions,string query)
  {
   query=query.Trim();
   if(query.Length==0)return Array.Empty<WorkflowSearchEntry>();
   return SearchCore(definitions,null,(node,_)=>string.Equals(node.Id,query,StringComparison.Ordinal)
    ||node.GlobalIndex>=0&&node.GlobalIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)==query);
  }
- private static IReadOnlyList<WorkflowSearchEntry> SearchCore(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string? rootId,Func<WorkflowNodeBase,string,bool> matches)
+ private static IReadOnlyList<WorkflowSearchEntry> SearchCore(IEnumerable<SunEyeVision.Domain.Workflows.WorkflowDefinition> definitions,string? rootId,Func<NodeDefinition,string,bool> matches)
  {
   var flows=definitions.ToArray();var byId=flows.ToDictionary(f=>f.Id,StringComparer.Ordinal);var result=new List<WorkflowSearchEntry>();
-  void Walk(SunEyeVision.Workflow.Workflow root,SunEyeVision.Workflow.Workflow flow,List<WorkflowSearchHop> hops,string prefix,HashSet<string> path)
+  void Walk(SunEyeVision.Domain.Workflows.WorkflowDefinition root,SunEyeVision.Domain.Workflows.WorkflowDefinition flow,List<WorkflowSearchHop> hops,string prefix,HashSet<string> path)
   {
    if(!path.Add(flow.Id))return;
    try{foreach(var node in flow.Nodes)
@@ -37,7 +37,7 @@ internal static class WorkflowSearchCatalog
   foreach(var root in flows.Where(f=>!f.IsSubroutine&&(rootId==null||f.Id==rootId)))Walk(root,root,new(),root.Name,new(StringComparer.Ordinal));
   return result;
  }
- public static bool IsCurrent(WorkflowSearchEntry entry,IEnumerable<SunEyeVision.Workflow.Workflow> definitions)
+ public static bool IsCurrent(WorkflowSearchEntry entry,IEnumerable<SunEyeVision.Domain.Workflows.WorkflowDefinition> definitions)
  {
   var flows=definitions.ToArray();if(!flows.Any(f=>ReferenceEquals(f,entry.Root))||entry.Root.IsSubroutine)return false;
   var current=entry.Root;var path=new HashSet<string>(StringComparer.Ordinal){current.Id};

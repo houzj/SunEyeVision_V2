@@ -16,12 +16,11 @@ public partial class MainWindowViewModel
 
     private Func<bool> CaptureResultViewOwner(long epoch)
     {
-        var session=DocumentManager.Session;var node=SelectedNode;
-        var tab=WorkflowTabViewModel?.SelectedTab;var context=CurrentWorkflowContext;
+        var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
         var selection=_outputContractSelectionGeneration;
-        return ()=>epoch==_resultPublicationEpoch&&selection==_outputContractSelectionGeneration
-            &&ReferenceEquals(DocumentManager.Session,session)&&ReferenceEquals(SelectedNode,node)
-            &&ReferenceEquals(WorkflowTabViewModel?.SelectedTab,tab)&&ReferenceEquals(CurrentWorkflowContext,context);
+        return ()=>epoch==_resultPublicationEpoch && selection==_outputContractSelectionGeneration && ReferenceEquals(DocumentManager.CurrentSession,session)
+            &&ReferenceEquals(SelectedNode,node)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
+            &&(node is null||OwnsSelectedDocumentNode(node));
     }
     private long RetireResultPublication()
     {
@@ -67,74 +66,32 @@ public partial class MainWindowViewModel
     }
     private void PresentSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName,Func<bool>? sourceIsCurrent=null)
     {
-        var session=DocumentManager.Session;
-        var node=SelectedNode;
-        var workflowId=WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
-        bool ExecutionOwnerMatches()
+        var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+        if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
+        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId)return;
+        var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
+        bool Current()
         {
-            if(session is null)return false;
-            if(snapshot.Identity.DocumentSessionId==session.Document.ExecutionOwner.Id)return true;
-            if(_productionEditors is null)return false;
-            foreach(var editor in _productionEditors)
-                if(editor.DebugOwner.Id==snapshot.Identity.DocumentSessionId&&editor.IsValid
-                    &&editor.Identity.WorkflowId==workflowId&&editor.Identity.NodeId==snapshot.Identity.NodeId)return true;
-            return false;
+            if(!owner()||sourceIsCurrent?.Invoke()==false)return false;
+            using var latest=session.AcquirePublishedResult(workflowId,node.Id);
+            return latest is not null&&ReferenceEquals(latest.Snapshot,snapshot)&&owner();
         }
-        bool SourceMatches()
-        {
-            if(session is null||!ReferenceEquals(DocumentManager.Session,session)
-                ||!ReferenceEquals(SelectedNode,node)||node?.Id!=snapshot.Identity.NodeId||!ExecutionOwnerMatches()
-                ||string.IsNullOrEmpty(workflowId)||snapshot.SourceWorkflowId!=workflowId
-                ||WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId!=workflowId)return false;
-            // This proof runs for each lazy page entry. Re-check membership without
-            // allocating nested captured predicates or caching an earlier authorization.
-            var flows=session.Document.Workflows;var scopeCount=0;var ownsNode=false;
-            for(var i=0;i<flows.Count;i++)
-            {
-                var flow=flows[i];if(flow.Id!=workflowId)continue;
-                scopeCount++;var localCount=0;
-                for(var j=0;j<flow.Nodes.Count;j++)
-                    if(flow.Nodes[j].Id==snapshot.Identity.NodeId)
-                    {localCount++;ownsNode=ReferenceEquals(flow.Nodes[j],node);}
-                if(localCount!=1)ownsNode=false;
-            }
-            return scopeCount==1&&ownsNode;
-        }
-        if(!SourceMatches())
-        {
-            var current=_resultPublication;
-            if(current is not null&&!current.IsCurrent()&&ReferenceEquals(_resultPublication,current))
-            {
-                var retired=RetireResultPublication();
-                if(retired==_resultPublicationEpoch&&_resultPublication is null)RefreshNativeResultImages();
-            }
-            return;
-        }
-        if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)
-        {
-            PresentResultPublication(_resultPublication,snapshot,nodeName,_resultPublicationBindings);
-            return;
-        }
-        var epoch=RetireResultPublication();
-        var viewOwner=CaptureResultViewOwner(epoch);
-        var historical=_declaredHistoricalResult;
-        bool SameLiveResult()=>historical||snapshot.Identity.DocumentSessionId!=session!.Document.ExecutionOwner.Id
-            ||ReferenceEquals(CurrentWorkflowContext?.GetNodeResult(snapshot.Identity.NodeId)?.Result,snapshot);
-        bool Owner()=>viewOwner()&&SourceMatches()&&_declaredHistoricalResult==historical&&SameLiveResult()
-            &&(sourceIsCurrent?.Invoke()!=false)&&viewOwner()&&SourceMatches()&&SameLiveResult();
-        if(!Owner())return;
-        var config=node?.RuntimeConfiguration;
-        var publication=ToolResultViews.FromSnapshot(snapshot,Owner,config?.Schema,config?.ResultProjection);
-        var handedToPresenter=false;
-        try
-        {
-            var bindings=DeclaredBindings(publication.Schema,snapshot.Identity.NodeId,snapshot.SourceWorkflowId);
-            if(!Owner())return;
-            // From this point the presenter owns every acceptance/rejection/exception path.
-            handedToPresenter=true;
-            PresentResultPublication(publication,snapshot,nodeName,bindings);
-        }
-        finally{if(!handedToPresenter)publication.Dispose();}
+        if(!Current())return;
+        var publication=ToolResultViews.FromSnapshot(snapshot,Current);
+        var transferred=false;
+        try{var bindings=DeclaredBindings(publication.Schema,node.Id,workflowId);if(!Current())return;transferred=true;PresentResultPublication(publication,snapshot,nodeName,bindings);}
+        finally{if(!transferred)publication.Dispose();}
+    }
+    private void RefreshFormalPublishedResult()
+    {
+        var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+        if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
+        if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
+        using var reader=session.AcquirePublishedResult(workflowId,node.Id);
+        if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
+        var schema=session.GetNodeSchema(workflowId,node.Id);
+        if(schema is null){ClearResultDisplay();return;}
+        PresentDeclaration(schema,node.Name,schema.Outputs.ToDictionary(port=>port.Id,port=>schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,StringComparer.Ordinal),DeclaredBindings(schema,node.Id,workflowId));
     }
     private void RefreshCurrentResultBindings()
     {

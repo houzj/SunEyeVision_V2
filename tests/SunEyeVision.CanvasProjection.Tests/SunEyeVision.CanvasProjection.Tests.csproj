@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><IsPackable>false</IsPackable><IsTestProject>true</IsTestProject></PropertyGroup>
+  <ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/><PackageReference Include="xunit" Version="2.9.3"/><PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all"/></ItemGroup>
+  <ItemGroup><ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj"/><ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj"/><ProjectReference Include="../SunEyeVision.PresentationProbe/SunEyeVision.PresentationProbe.csproj"/></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SunEyeVision.Application.Transactions.Tests/SunEyeVision.Application.Transactions.Tests.csproj"/></ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../src/UI/Features/WorkflowUI/Canvas/DocumentCanvasProjection.cs" Link="DocumentCanvasProjection.cs" />
+    <Compile Include="../../src/UI/Shared/NodeStyleConfig.cs" Link="NodeStyleConfig.cs" />
+  </ItemGroup>
+<ItemGroup><ProjectReference Include="../../src/Plugin.Editing.Wpf/SunEyeVision.Plugin.Editing.Wpf.csproj"/><ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"/><Compile Include="../../src/UI/Services/Editing/ProductionEditorContext.cs" Link="ProductionEditorContext.cs"/></ItemGroup></Project>
+

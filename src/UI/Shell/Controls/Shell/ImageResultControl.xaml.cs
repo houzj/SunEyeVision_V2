@@ -11,7 +11,7 @@ using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Features.GlobalVariableManager;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 
 using SunEyeVision.UI.Shell.Windows;
 
@@ -31,8 +31,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         internal Action<string> WriteClipboardText { get; set; } = Clipboard.SetText;
         private SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox? _copyNotice;
         private System.Windows.Threading.DispatcherTimer? _copyNoticeTimer;
-        private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
-        private WorkflowTabViewModel? _sourceWorkflow;
+        private SunEyeVision.UI.Services.Images.ImageSourceProjectionBinding? _sourceBinding;
+
         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _shellTheme;
@@ -55,28 +55,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
         private void ReleaseSourceSession()
         {
-            var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
-            Cleanup(new Action[]{
-                ()=>System.Windows.Data.BindingOperations.ClearBinding(ImagePreviewContent,
-                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty),
-                ()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
+            var binding=_sourceBinding;_sourceBinding=null;
+            ImagePreviewContent.Session=null;
+            binding?.SetDialogOwner(null);
         }
         private void RefreshSourceSession()
         {
             if(_shutdown||!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
-            var main=_viewModel;var source=main.ActiveInputSource;var workflow=main.WorkflowTabViewModel.SelectedTab;
-            if(ReferenceEquals(_sourceSession?.Source,source)&&ReferenceEquals(_sourceWorkflow,workflow))return;
-            ReleaseSourceSession();
-            if(source is null||workflow is null)return;
-            _sourceWorkflow=workflow;
-            _sourceSession=new(source,()=>IsLoaded&&ReferenceEquals(_viewModel,main)
-                &&ReferenceEquals(main.ActiveInputSource,source)&&ReferenceEquals(main.WorkflowTabViewModel.SelectedTab,workflow),
-                (image,index,version)=>RunWorkflowWithImage(workflow,source,version,image,index),Dispatcher,()=>Window.GetWindow(this));
-            ImagePreviewContent.Session=_sourceSession;
-            ImagePreviewContent.SetBinding(
-                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip.IsRunningProperty,
-                new System.Windows.Data.Binding(nameof(WorkflowTabViewModel.IsRunning))
-                {Source=workflow,Mode=System.Windows.Data.BindingMode.OneWay});
+            var binding=_viewModel.ActiveImageSourceBinding;
+            if(ReferenceEquals(_sourceBinding,binding))return;
+            ReleaseSourceSession();_sourceBinding=binding;
+            if(binding is null)return;
+            binding.SetDialogOwner(()=>Window.GetWindow(this));
+            ImagePreviewContent.Session=binding.Strip;
         }
 
         public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
@@ -241,10 +232,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var main=_viewModel;
             if(!EditingAllowed||main?.IsCurrentResultRow(row)!=true||row.BindingInfo is not {} endpoint||!row.IsBindable)return;
             var solutionManager=ServiceInitializer.SolutionManager;
-            var expected=solutionManager.Session;var publication=main.CurrentResultPublication;
+            var expected=solutionManager.CurrentSession;var publication=main.CurrentResultPublication;
             if(expected is null||publication is null||!publication.IsCurrent())return;
-            var directory=expected.Document.RuntimeDirectory;
-            if(directory is null){ThemeMessageDialog.Show("方案缺少已准入运行目录。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);return;}
             var reference=endpoint.Reference;
             var root=expected.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Id==reference.ScopeId);
             var node=root?.Nodes.SingleOrDefault(item=>item.Id==reference.NodeId);
@@ -253,8 +242,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 WorkflowName=root.Name,NodeName=node.DispName,ResultDisplayName=endpoint.ResultPath};
             var choices=expected.Document.GlobalVariables.Where(variable=>
                 (!remove||variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression)
-                &&GlobalProducerBindingRules.Validate(expected.Document,binding,variable,directory).State is
-                    SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional).ToList();
+                ).ToList();
             if(choices.Count==0)
             {
                 ThemeMessageDialog.Show(remove?"该结果没有可解除的变量绑定。":"没有可承载该正式声明及存储的全局变量。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
@@ -263,7 +251,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var variable=remove&&choices.Count==1?choices[0]:GlobalVariableSelectionService.Choose(solutionManager,choices);
             if(variable is null)return;
             // The modal window may run arbitrary editing/navigation before it returns.
-            if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.Session,expected)
+            if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.CurrentSession,expected)
                 ||!ReferenceEquals(main.CurrentResultPublication,publication)||!publication.IsCurrent()
                 ||!main.IsCurrentResultRow(row)||!ReferenceEquals(row.BindingInfo,endpoint))return;
             var accepted=remove?main.TryUnbindResultVariable(expected,binding,variable.Id,out var error)
@@ -272,29 +260,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>先正式接纳明确选择，再由本轮配置快照执行。</summary>
-        private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
-        {
-            var main=_viewModel;
-            if(_shutdown||main is null||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
-            try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
-            catch(Exception error)
-            {
-                if(!_shutdown&&ReferenceEquals(_viewModel,main))main.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
-                return;
-            }
-            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
-            if(main.IsRunning||workflow.IsRunning)
-            {main.StatusText="图像已选中；当前运行仍使用已冻结的输入。";return;}
-            var acceptedVersion=source.EditVersion;
-            var workflowName = workflow.Name ?? "未知工作流";
-            main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
-            main.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
-            // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
-            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
-            main.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
-            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
-            await main.RunPreviewImageAsync(workflow,source,image,index,acceptedVersion);
-        }
+
 
 
         #region 结果树交互

@@ -105,6 +105,20 @@ internal sealed class GraphDependencySnapshot
         return result;
     }
 
+    /// <summary>Frozen direct predecessors only. Missing stale sources never become graph nodes.</summary>
+    internal IReadOnlyList<ScopedNodeIdentity> GetPredecessors(ScopedNodeIdentity node)
+    {
+        if (!_next.ContainsKey(node)) throw new InvalidOperationException("依赖查询节点不属于本次正式候选图。");
+        return Array.AsReadOnly(_next.Where(pair => pair.Value.Contains(node)).Select(pair => pair.Key)
+            .OrderBy(item => item.WorkflowId, StringComparer.Ordinal).ThenBy(item => item.NodeId, StringComparer.Ordinal).ToArray());
+    }
+
+    /// <summary>Actual direct edges for workflow ordering, not the transitive descendant closure.</summary>
+    internal IReadOnlyList<(ScopedNodeIdentity Source, ScopedNodeIdentity Target)> GetEdges() => Array.AsReadOnly(
+        _next.SelectMany(pair => pair.Value.Select(target => (Source: pair.Key, Target: target)))
+            .OrderBy(edge => edge.Source.WorkflowId, StringComparer.Ordinal).ThenBy(edge => edge.Source.NodeId, StringComparer.Ordinal)
+            .ThenBy(edge => edge.Target.WorkflowId, StringComparer.Ordinal).ThenBy(edge => edge.Target.NodeId, StringComparer.Ordinal).ToArray());
+
     internal static IReadOnlySet<ScopedNodeIdentity> ExpandUnion(GraphDependencySnapshot before,
         GraphDependencySnapshot after, IEnumerable<ScopedNodeIdentity> sources)
     {

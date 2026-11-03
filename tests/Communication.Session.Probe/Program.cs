@@ -1,11 +1,13 @@
 using System.Reflection;
+using System.IO;
 using SunEyeVision.Application;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Tool.ImageSource.Runtime;
+
 using SunEyeVision.UI.Services.Communication;
 using SunEyeVision.Application.Communications;
+NativeErrors.SetErrorMode(0x0001 | 0x0002 | 0x8000);
 try
 {
  var eventId=Guid.NewGuid();var fieldId=Guid.NewGuid();
@@ -20,13 +22,13 @@ try
  if(serialized.Contains("ParameterComparisonEnabled")||serialized.Contains("\"FieldId\""))throw new Exception("写入仍包含旧触发字段");
  foreach(var field in new[]{"FieldId","fieldid","ParameterComparisonEnabled","parametercomparisonenabled"})
  {
-    using var json=System.Text.Json.JsonDocument.Parse("{\"SchemaVersion\":4,\"CommunicationTriggers\":[{\""+field+"\":null}]}");
+    using var json=System.Text.Json.JsonDocument.Parse("{\"SchemaVersion\":5,\"CommunicationTriggers\":[{\""+field+"\":null}]}");
     var rejected=false;try{SunEyeVision.Persistence.SolutionFormatPolicy.ValidateReadable(json.RootElement);}catch(System.Text.Json.JsonException){rejected=true;}
-    if(!rejected)throw new Exception("V4 未拒绝旧触发字段："+field);
+    if(!rejected)throw new Exception("V5 未拒绝旧触发字段："+field);
  }
- Console.WriteLine("PASS V4 旧触发字段大小写拒绝、写出不含旧字段及当前比较语义");
- var component=new ToolComponentRegistration(new ToolComponentMetadata("SunEyeVision.Tool.ImageSource.Runtime","ImageLoad",ToolComponentRole.Runtime,FoundationContract.Major,FoundationContract.Minor),typeof(ImageSourceTool));
- var directory=(RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{new[]{component}})!;
+ Console.WriteLine("PASS V5 旧触发字段大小写拒绝、写出不含旧字段及当前比较语义");
+ var root=Path.GetFullPath(Environment.GetEnvironmentVariable("SUNEYE_PRODUCT_ROOT") ?? throw new InvalidOperationException("SUNEYE_PRODUCT_ROOT is required."));
+ var directory=new ReleasePayloadAuthority(root).PrepareRuntimeDirectory();
  using var manager=new DocumentSessionManager(directory); var session=manager.CreateNew(); using var activity=session.AcquireActivityLease("通信测试");
  var listener=new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback,0); listener.Start();
  var port=((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
@@ -46,7 +48,7 @@ try
  if(send.SubmitAsync().WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult()<=0 || read.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult()!=4 || System.Text.Encoding.ASCII.GetString(buffer)!="PING")throw new Exception("真实 TCP 发送失败");
  peer.GetStream().Write(new byte[]{1,2,3});
  var received=service.Receives.ReadAsync(device.Id,"").WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
- if(received.Value is not SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload || !payload.ToArray().SequenceEqual(new byte[]{1,2,3}))throw new Exception("真实 TCP 接收失败");
+ if(received.Value is not SunEyeVision.Plugin.Contracts.BinaryValue payload || !payload.ToArray().SequenceEqual(new byte[]{1,2,3}))throw new Exception("真实 TCP 接收失败");
  var delayedSend=service.Sends.PrepareAsync(request).WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
  var missingDevice=new SunEyeVision.Domain.Solutions.Communication { Id="missing",Name="不存在" };
  var rejectedMissing=false;try { service.ConnectDeviceAsync(SunEyeVision.UI.Features.CommunicationManager.CommunicationDeviceSnapshotFactory.Create(missingDevice)).GetAwaiter().GetResult(); } catch(InvalidOperationException) { rejectedMissing=true; }
@@ -63,5 +65,10 @@ try
  if(!rejectDelayed)throw new Exception("服务释放后旧发送计划仍可提交");
  runtime.DisposeAsync().AsTask().GetAwaiter().GetResult(); activity.Dispose();
  var replacement=manager.CreateNew("替换成功");if(ReferenceEquals(replacement,session))throw new Exception("排空后未切换会话"); listener.Stop();
- Console.WriteLine("PASS ImageSource 类型测试准入会话：真实 TCP 回环连接、发送与接收、在途操作阻止释放、并发关闭共享排空、退役拒新调用、活动租约保护");return 0;
+ Console.WriteLine("PASS 真实目录准入会话（设备定义由测试装配）：真实 TCP 回环连接、发送与接收、在途操作阻止释放、并发关闭共享排空、退役拒新调用、活动租约保护");return 0;
 } catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
+
+
+static class NativeErrors { [System.Runtime.InteropServices.DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode); }
+
+

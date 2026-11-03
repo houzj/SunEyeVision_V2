@@ -1714,22 +1714,6 @@
           "System.Text.Json": "[10.0.3, )"
         }
       },
-      "suneyevision.cvadapter": {
-        "type": "Project",
-        "dependencies": {
-          "OpenCvSharp4": "[4.13.0.20260222, )",
-          "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.CvEngine": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
-        }
-      },
-      "suneyevision.cvengine": {
-        "type": "Project",
-        "dependencies": {
-          "OpenCvSharp4": "[4.13.0.20260222, )",
-          "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )"
-        }
-      },
       "suneyevision.devicedriver": {
         "type": "Project",
         "dependencies": {
@@ -1768,20 +1752,6 @@
       "suneyevision.foundation": {
         "type": "Project"
       },
-      "suneyevision.haladapter": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
-        }
-      },
-      "suneyevision.haladapter.runtime": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
-        }
-      },
       "suneyevision.infrastructure.imagesources": {
         "type": "Project",
         "dependencies": {
@@ -1794,8 +1764,7 @@
         "dependencies": {
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.persistence": {
@@ -1870,11 +1839,9 @@
           "SharpDX.Direct3D11": "[4.2.0, )",
           "SunEyeVision.Application": "[2.0.0-alpha.8, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
-          "SunEyeVision.CvAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.DeviceDriver": "[2.0.0-alpha.8, )",
           "SunEyeVision.DeviceDriver.Camera": "[2.0.0-alpha.8, )",
           "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
-          "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.Infrastructure.ImageSources": "[2.0.0-alpha.8, )",
           "SunEyeVision.Infrastructure.Persistence": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",

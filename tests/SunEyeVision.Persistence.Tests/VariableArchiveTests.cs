@@ -9,10 +9,10 @@ public sealed class VariableArchiveTests
 {
     private sealed class Resource : IDisposable { public bool Released; public void Dispose() => Released = true; }
     private sealed class FailingResource : IDisposable { public bool Released; public void Dispose() { Released = true; throw new IOException("cleanup failure"); } }
-    private static readonly FrozenVariableTypeCatalog Types = new(new Dictionary<string,string>{{"Integer","System.Int64"},{"Double","System.Double"}});
+    private static readonly FrozenVariableTypeCatalog Types = new(new Dictionary<string,string>{{"Integer","Integer"},{"Double","Double"}});
     private static readonly JsonSerializerOptions Options = new();
     private static byte[] Bytes(string s) => Encoding.UTF8.GetBytes(s);
-    private const string Valid = "{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":1,\"Variables\":[{\"Id\":\"v\",\"Name\":\"v\",\"Type\":\"Integer\",\"Value\":{\"Type\":\"Integer\",\"Value\":[1,2]}}]}";
+    private const string Valid = "{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":2,\"Variables\":[{\"Id\":\"v\",\"Name\":\"v\",\"Type\":\"Integer\",\"Value\":{\"Type\":\"Integer\",\"Value\":[1,2]}}]}";
     [Fact] public void Scalar_declaration_accepts_array_and_transfer_once()
     {
         var scope = new DecodedResourcesScope(); var resource = new Resource(); scope.RegisterNew(resource);
@@ -40,8 +40,8 @@ public sealed class VariableArchiveTests
     }
     [Theory]
     [InlineData("[]")]
-    [InlineData("{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":2,\"Variables\":[]}")]
-    [InlineData("{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":1,\"Variables\":[],\"extra\":1}")]
+    [InlineData("{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":1,\"Variables\":[]}")]
+    [InlineData("{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":2,\"Variables\":[],\"extra\":1}")]
     public void Old_or_unknown_format_releases_candidate(string json)
     {
         var scope = new DecodedResourcesScope(); var resource = new Resource(); scope.RegisterNew(resource);
@@ -51,7 +51,7 @@ public sealed class VariableArchiveTests
     {
         foreach (var variable in new[] { "{\"Id\":\"v\",\"Type\":\"Unknown\",\"Value\":null}", "{\"Id\":\"v\",\"Value\":null}" })
         {
-            var json = "{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":1,\"Variables\":[" + variable + "]}";
+            var json = "{\"Format\":\"SunEyeVision.GlobalVariables\",\"FormatVersion\":2,\"Variables\":[" + variable + "]}";
             var scope = new DecodedResourcesScope(); var resource = new Resource(); scope.RegisterNew(resource);
             Assert.Throws<JsonException>(() => VariableArchive.Read(Bytes(json), Types, Options, scope)); Assert.True(resource.Released);
         }
@@ -95,3 +95,4 @@ public sealed class VariableArchiveTests
         Assert.Equal(new long[] {1, 2}, Assert.IsType<long[]>(Assert.Single(final.Variables).Value));
     }
 }
+

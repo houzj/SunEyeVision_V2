@@ -8,7 +8,7 @@ using Xunit;
 public sealed class SolutionDocumentReaderTests
 {
     private sealed class Resource : IDisposable { public bool Released; public void Dispose()=>Released=true; }
-    private static readonly string Valid="{\"Id\":\"s\",\"Name\":\"s\",\"SchemaVersion\":4,\"Workflows\":[{\"Id\":\"f\",\"Name\":\"f\",\"Nodes\":[{\"Id\":\"n\",\"Name\":\"node\",\"ToolType\":\"tool\",\"Configuration\":{\"ToolId\":\"tool\",\"Fields\":{\"threshold\":{\"Kind\":\"Constant\",\"Value\":7}},\"CurrentValues\":{},\"ParameterBindingOrder\":[]}}],\"Connections\":[]}]}";
+    private static readonly string Valid="{\"Id\":\"s\",\"Name\":\"s\",\"SchemaVersion\":5,\"Workflows\":[{\"Id\":\"f\",\"Name\":\"f\",\"Nodes\":[{\"Id\":\"n\",\"Name\":\"node\",\"ToolType\":\"tool\",\"Configuration\":{\"ToolId\":\"tool\",\"Fields\":{\"threshold\":{\"Kind\":\"Constant\",\"Value\":7}},\"CurrentValues\":{},\"ParameterBindingOrder\":[]}}],\"Connections\":[]}]}";
     private static IReadOnlyDictionary<string,FrozenToolDeclarations> Declarations()
     {
         var empty=new ToolSchema(Array.Empty<Port>(),Array.Empty<Port>());
@@ -26,8 +26,9 @@ public sealed class SolutionDocumentReaderTests
     }
     [Theory]
     [InlineData("\"SchemaVersion\":3")]
-    [InlineData("\"SchemaVersion\":4,\"schemaversion\":4")]
-    [InlineData("\"SchemaVersion\":4,\"GlobalVariables\":[{\"Id\":\"v\",\"ConsumerBindings\":[]}]")]
+    [InlineData("\"SchemaVersion\":4")]
+    [InlineData("\"SchemaVersion\":5,\"schemaversion\":5")]
+    [InlineData("\"SchemaVersion\":5,\"GlobalVariables\":[{\"Id\":\"v\",\"ConsumerBindings\":[]}]")]
     public void Rejected_version_or_obsolete_field_releases_candidate_resources(string version)
     {
         var scope=new DecodedResourcesScope();var resource=new Resource();scope.RegisterNew(resource);
@@ -53,7 +54,7 @@ public sealed class SolutionDocumentReaderTests
     {
         var device=System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(new SunEyeVision.Domain.Solutions.Device { Id="d" }))!;
         device["AdditionalData"]=System.Text.Json.Nodes.JsonNode.Parse("{\"detail\":{\"n\":4}}");
-        var json=Valid.Replace("\"SchemaVersion\":4", "\"Devices\":["+device.ToJsonString()+"],\"SchemaVersion\":4");
+        var json=Valid.Replace("\"SchemaVersion\":5", "\"Devices\":["+device.ToJsonString()+"],\"SchemaVersion\":5");
         using var scope=new DecodedResourcesScope(); using var result=Read(json,scope);
         Assert.Equal(4,Assert.Single(result.Devices).AdditionalData!["detail"].GetProperty("n").GetInt32());
     }
@@ -70,6 +71,7 @@ public sealed class SolutionDocumentReaderTests
         Assert.Contains(result.Diagnostics,d=>d.Code=="RESOURCE_UNAVAILABLE");
     }
 }
+
 
 
 

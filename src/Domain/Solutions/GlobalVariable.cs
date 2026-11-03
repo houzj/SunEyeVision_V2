@@ -351,7 +351,7 @@ public class GlobalVariable : SolutionObservableObject
             Name = Name,
             Group = Group,
             Index = Index,
-            Value = Value,  // 注意：值类型会被复制，引用类型只复制引用
+            Value = CopyEditableValue(Value),
             Type = Type,
             Description = Description,
             ProducerBinding = ProducerBinding == null ? null : new ProducerBinding

@@ -12,7 +12,7 @@ public sealed class SolutionDocumentWriterTests
     {
         var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,Guid.NewGuid().ToString("N"));
         var source=Path.Combine(root,"source"); var destination=Path.Combine(root,"destination");
-        var bytes=System.Text.Encoding.UTF8.GetBytes("{\"Id\":\"s\",\"SchemaVersion\":4}");
+        var bytes=System.Text.Encoding.UTF8.GetBytes("{\"Id\":\"s\",\"SchemaVersion\":5}");
         var encoded=new EncodedSolutionDocument(bytes,Array.Empty<PersistenceDiagnostic>(),new[]{new FrozenResourceReference("$.path","image.png",ResourcePurpose.FileRead,Path.Combine(source,"image.png"))},source);
         Assert.Throws<InvalidOperationException>(()=>encoded.BindTarget(Path.Combine(destination,"solution.json")));
         Assert.Equal(Path.Combine(source,"solution.json"),encoded.BindTarget(Path.Combine(source,"solution.json")).TargetPath);
@@ -63,4 +63,5 @@ public sealed class SolutionDocumentWriterTests
         Assert.Equal("changed",restored.Name); Assert.Equal(8L,Assert.IsType<ConstantSetting>(restored.Configuration.Fields.Read("threshold")).Value);
     }
 }
+
 

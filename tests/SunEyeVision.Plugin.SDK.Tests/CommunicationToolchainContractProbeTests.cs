@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +66,7 @@ public sealed class CommunicationToolchainContractProbeTests
     [Fact]
     public void Raw_byte_arrays_do_not_restore_Byte_scalar_or_silently_register_unknown_types()
     {
-        // Whole payloads use BinaryPayload; raw numeric Byte is intentionally not restored.
+        // Whole payloads use BinaryValue; raw numeric Byte is intentionally not restored.
         Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(byte[])));
         Assert.Null(SdkTypeVocabulary.ToSystemType("Byte"));
         Assert.Throws<ArgumentException>(() => SdkTypeVocabulary.RegisterType(typeof(byte[]), "CommunicationBytes"));
@@ -99,3 +100,4 @@ public sealed class CommunicationToolchainContractProbeTests
         }).ToArray();
     }
 }
+

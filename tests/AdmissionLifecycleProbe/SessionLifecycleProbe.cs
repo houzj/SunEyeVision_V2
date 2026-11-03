@@ -58,7 +58,7 @@ internal static class SessionLifecycleProbe
    {
     var raw=JsonNode.Parse(original)!;raw["Workflows"]![0]!["Nodes"]![0]!["ToolType"]=id;raw["Workflows"]![0]!["Nodes"]![0]!["Configuration"]!["ToolId"]=id;
     var path=Path.Combine(data,id+".solution");File.WriteAllText(path,raw.ToJsonString());var candidateBytes=File.ReadAllBytes(path);
-    Reject(()=>manager.Open(path,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options),"缺组件V4 Open "+id);
+    Reject(()=>manager.Open(path,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options),"缺组件V5 Open "+id);
     Check(ReferenceEquals(session,manager.CurrentSession)&&candidateBytes.SequenceEqual(File.ReadAllBytes(path)),"失败Open改源/换会话");
    }
    foreach(var malformed in new[]{"missing-configuration","mismatch-configuration","legacy-sdk-model","paused-subroutine-link","paused-subroutine-space"})
@@ -137,4 +137,5 @@ internal static class SessionLifecycleProbe
   {public string CapabilityId=>inner.CapabilityId;public int CapabilityVersion=>inner.CapabilityVersion;public IReadOnlyList<string> Services=>inner.Services;public async ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context){owner.Entered.Set();if(!owner.Release.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("未释放实际宿主输入");return await inner.PrepareAsync(context);}public void Dispose()=>inner.Dispose();}
  }
 }
+
 

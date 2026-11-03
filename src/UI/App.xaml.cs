@@ -22,11 +22,6 @@ using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.Vision.Hosting;
-using SunEyeVision.CvAdapter;
-using SunEyeVision.HalAdapter;
-using SunEyeVision.UI.Converters;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Interaction;
@@ -247,10 +242,6 @@ public partial class App : System.Windows.Application
         _splashScreen?.UpdateProgress(35);
 
 
-        // 2.5 初始化视觉图像加载入口
-        // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中
-        // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像
-
         // Select/restore the user data root before creating any persistent service.
         try
         {
@@ -291,13 +282,6 @@ public partial class App : System.Windows.Application
         // 日志系统已完成初始化，此处记录实际运行文件身份，避免启动早期埋点丢失。
         LogRuntimeIdentity();
 
-        // 3.1 注册 IVisionImage → BitmapSource 显示桥（SDK 层通过 VisionImageConverterLocator 调用）
-        VisionImageConverterLocator.Current = new UiVisionImageToBitmapSourceConverter();
-
-        // 3.1.5 S5 对称架构装配：注册图像加载工厂（默认 Halcon 引擎）与 Cv 词汇（Mat→Image）
-        ComposeVisionAdapters();
-
-
         // 4. 使用默认路径
         var defaultPath = _dataPaths!.SolutionsDirectory;
 
@@ -306,6 +290,7 @@ public partial class App : System.Windows.Application
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
         var desktopAdmission=pluginManager.DesktopAdmission??throw new InvalidOperationException("缺少已准入运行目录。");
         _desktopDirectoryPin=pluginManager.PinDesktopHost();
+        LogStartupStage("SolutionManager directory pinned");
         ServiceInitializer.InitializeSolutionManager(_dataPaths!,desktopAdmission.Runtime);
         _servicesReady = true;
         _splashScreen?.UpdateStage("正在初始化解决方案", 70, "解决方案管理器准备完成");
@@ -734,21 +719,6 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// S5 对称架构装配：注册视觉适配层到 SDK 注册点。
-    /// ① 图像加载工厂：默认注册 Halcon 引擎（HalAdapter.HalImageFactory）到 VisionImageFactoryLocator，
-    ///    使 SDK 门面 VisionImage.FromFile 与工具经统一入口加载；
-    /// ② Cv 词汇：CvAdapter 把 OpenCvSharp.Mat 注册为契约词目 "Image"（GlobalVariableValueConverter
-    ///    序列化裸 Mat 图像时依赖，恢复 S1 删除静态 Mat 映射后的运行期供给，D2）。
-    /// 跨引擎 Cv↔Hal 提取（VisionBackendExtractorLocator）仅在使用双引擎的工作流装配时按需注册，
-    /// 当前工具层统一 Halcon，不预注册以保持装配最小（D4）。
-    /// </summary>
-    private void ComposeVisionAdapters()
-    {
-        VisionImageFactoryLocator.Current = new HalImageFactory();
-        CvAdapterStartup.RegisterSdkVocabulary();
-    }
-
-    /// <summary>
     /// Thread-pool warmup retained for explicit isolated on/deferred comparisons.
     /// This adjusts thread minima and waits for empty tasks; it does not predecode images.
     /// </summary>
@@ -958,3 +928,4 @@ public partial class App : System.Windows.Application
     }
 
 }
+

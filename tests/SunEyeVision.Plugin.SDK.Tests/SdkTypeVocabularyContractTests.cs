@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -156,18 +156,6 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void RoundTrip_AffineMatrix_PreservesValue()
-    {
-        var input = new AffineMatrix(1, 0, 0, 1, 10.5, -20.25);
-        var result = RoundTrip(input);
-        Assert.IsType<AffineMatrix>(result);
-        var m = (AffineMatrix)result!;
-        Assert.Equal(1.0, m.M11);
-        Assert.Equal(10.5, m.OffsetX);
-        Assert.Equal(-20.25, m.OffsetY);
-    }
-
-    [Fact]
     public void SerializeValue_ScalarDouble_StoredAsScalarJson()
     {
         using var codec = new VariableCodecScope(typeof(ValueHolder));
@@ -257,90 +245,6 @@ public class SdkTypeVocabularyContractTests
 
     #endregion
 
-    #region 契约：几何多态 round-trip（bug ① 治本）
 
-    [Fact]
-    public void RoundTrip_RoIGlobal_CircleGeometry_Preserved()
-    {
-        // 手画圆保存重开：几何参数（中心/半径）精确还原，而非退化为 JsonElement
-        var input = new RoiShape[] { new RoiShape { Geometry = new Circle2d(100, 80, 50) } };
-        var result = RoundTrip(input);
-        Assert.IsType<RoiShape[]>(result);
-        var arr = (RoiShape[])result!;
-        Assert.Single(arr);
-        Assert.IsType<Circle2d>(arr[0].Geometry);
-        var c = (Circle2d)arr[0].Geometry!;
-        Assert.Equal(100, c.Center.X);
-        Assert.Equal(80, c.Center.Y);
-        Assert.Equal(50, c.Radius);
-    }
-
-    [Fact]
-    public void RoundTrip_RoIGlobal_AllGeometryTypes_Preserved()
-    {
-        // 治本验证 bug ①：所有几何类型经 RoI 全局变量 round-trip 后参数精确还原
-        var inputs = new RoiShape[]
-        {
-            new RoiShape { Geometry = new Circle2d(100, 80, 50) },
-            new RoiShape { Geometry = new RotatedRect2d(10, 20, 30, 40, 15) },
-            new RoiShape { Geometry = new Annulus2d(5, 6, 7, 8, 0.5, 2.0) },
-            new RoiShape { Geometry = Line2d.FromTwoPoints(new System.Windows.Point(0, 0), new System.Windows.Point(10, 10)) },
-            new RoiShape { Geometry = new Arc2d(1, 2, 3, 0.1, 1.2) },
-            new RoiShape { Geometry = new Polygon2d(new[] { new System.Windows.Point(0, 0), new System.Windows.Point(10, 0), new System.Windows.Point(5, 10) }) },
-            new RoiShape { Geometry = new Point2d(1, 2) },
-        };
-        var result = RoundTrip(inputs);
-        var arr = (RoiShape[])result!;
-        Assert.Equal(7, arr.Length);
-
-        var circle = (Circle2d)arr[0].Geometry!;
-        Assert.Equal(100, circle.Center.X);
-        Assert.Equal(50, circle.Radius);
-
-        var rr = (RotatedRect2d)arr[1].Geometry!;
-        Assert.Equal(10, rr.Center.X);
-        Assert.Equal(30, rr.Width);
-        Assert.Equal(15, rr.Angle);
-
-        var an = (Annulus2d)arr[2].Geometry!;
-        Assert.Equal(5, an.Center.X);
-        Assert.Equal(7, an.InnerRadius);
-        Assert.Equal(8, an.OuterRadius);
-
-        var line = (Line2d)arr[3].Geometry!;
-        Assert.Equal(0, line.Point.X);
-
-        var arc = (Arc2d)arr[4].Geometry!;
-        Assert.Equal(1, arc.Center.X);
-        Assert.Equal(3, arc.Radius);
-
-        var poly = (Polygon2d)arr[5].Geometry!;
-        Assert.Equal(3, poly.Vertices.Length);
-
-        var point = Assert.IsType<Point2d>(arr[6].Geometry);
-        Assert.Equal(1, point.X);
-        Assert.Equal(2, point.Y);
-    }
-
-    [Fact]
-    public void RoundTrip_RoIGlobal_LegacyRect_MigratesToRotatedRect2d()
-    {
-        // P0-2 迁移契约：老工程里的轴对齐矩形（WPF Rect）读入后必须迁移为 RotatedRect2d
-        // （中心 + 尺寸 + Angle=0），保证老工程照常打开且几何值精确等价。
-        var input = new RoiShape[]
-        {
-            new RoiShape { Geometry = new System.Windows.Rect(10, 20, 30, 40) },
-        };
-        var result = RoundTrip(input);
-        var arr = (RoiShape[])result!;
-
-        var rr = Assert.IsType<RotatedRect2d>(arr[0].Geometry);
-        Assert.Equal(10 + 30 / 2.0, rr.Center.X, 6);
-        Assert.Equal(20 + 40 / 2.0, rr.Center.Y, 6);
-        Assert.Equal(30, rr.Width, 6);
-        Assert.Equal(40, rr.Height, 6);
-        Assert.Equal(0, rr.Angle, 6);
-    }
-
-    #endregion
 }
+

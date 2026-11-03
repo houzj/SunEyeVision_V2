@@ -54,7 +54,7 @@ internal static class ContinuousMainProbe
   var session=ServiceInitializer.SolutionManager.CreateNew("实际连续主窗");var flow=session.GetWorkflows().Single();var graph=session.PrepareGraphEdit(flow.Id);var node=session.CreateNode(graph,"ImageLoad",new(150,120));session.CommitGraphEdit(graph,"建立真实图像源");
   var image=Path.Combine(root,"source.pgm");File.WriteAllBytes(image,System.Text.Encoding.ASCII.GetBytes("P5\n2 1\n255\n").Concat(new byte[]{21,45}).ToArray());var draft=session.Editing.Host.BeginEdit(flow.Id,node.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"local.paths",new ConstantSetting(new[]{image})},{"local.start",new ConstantSetting(0L)},{"local.auto-switch",new ConstantSetting(false)}});
   var settings=session.Editing.Host.BeginRootEdit(flow.Id);settings.WorkspaceSettings=settings.WorkspaceSettings with{RunIntervalMs=600};session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host,nodes:new[]{draft},roots:new[]{settings}));
-  session.SaveAs(Path.Combine(root,"main.solution"),Path.Combine(root,"recovery"),root,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SdkVariableValueExtensionCodec(scope));
+  session.SaveAs(Path.Combine(root,"main.solution"),Path.Combine(root,"recovery"),root,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new ComplexVariableValueCodec(scope));
   MainWindow main;try { main=new MainWindow(plugins.DesktopAdmission!){Left=-32000,Top=-32000,Width=1100,Height=700,ShowActivated=false,ShowInTaskbar=false,WindowState=WindowState.Normal}; } catch(Exception error) { Console.Error.WriteLine("continuous main construct: "+error);throw; }app.MainWindow=main;var vm=(MainWindowViewModel)main.DataContext;main.Show();Pump();
   var top=(ShellTopBarControl)main.FindName("TopBarHost");var button=(Button)top.FindName("ContinuousRunToggle");Check(button.IsEnabled&&button.Command!.CanExecute(null),"真实连续工具栏被错误禁用");button.Command.Execute(null);
   var handle=Field<DocumentContinuousRun>(vm,"_formalContinuousRun");var task=Field<Task>(vm,"_formalRunTask");var rounds=new List<ContinuousRoundSummary>();handle.RoundCompleted+=rounds.Add;
@@ -82,3 +82,4 @@ internal static class ContinuousMainProbe
   Console.WriteLine("continuous main: actual Close awaits Stop/drain and releases consumers");
  }
 }
+

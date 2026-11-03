@@ -87,7 +87,7 @@ internal static class Program
         var theme=new ThemeManager(() => app.StartPreferences.Theme, value => app.StartPreferences.Theme=value);theme.Initialize();ServiceLocator.Instance.Register(theme);
         var session=scenario=="empty"?null:ServiceInitializer.SolutionManager.CreateNew("主窗生命周期定位");
         var file=Path.Combine(root,"main.solution");
-        if(session is not null)session.SaveAs(file,Path.Combine(root,"main.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope));
+        if(session is not null)session.SaveAs(file,Path.Combine(root,"main.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(scope));
         var main=new MainWindow(admission){WindowState=WindowState.Normal,ShowActivated=false,ShowInTaskbar=false,Left=-20000,Top=-20000,Width=800,Height=600};
         Console.WriteLine("probe: main window constructed");
         if(scenario=="empty"&&(((MainWindowViewModel)main.DataContext).WorkflowTabViewModel.Tabs.Count!=0||((MainWindowViewModel)main.DataContext).RunWorkflowCommand.CanExecute(null)))throw new Exception("无方案主窗产生了可运行的空模型。");
@@ -224,7 +224,7 @@ internal static class Program
         if(!session.HasUnsavedChanges)throw new Exception("主窗编辑和显示导航未进入实际保存状态。");
         var saved=(bool)typeof(MainWindowViewModel).GetMethod("SaveCurrentDocumentWithPrompt",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object?[]{main,false})!;
         if(!saved||session.HasUnsavedChanges)throw new Exception("主窗正式保存未完成。");
-        var copy=Path.Combine(root,"copy.solution");session.SaveCopy(copy,Path.Combine(root,"copy.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope));
+        var copy=Path.Combine(root,"copy.solution");session.SaveCopy(copy,Path.Combine(root,"copy.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(scope));
         var cap=session.AdmitPresentation(flow.Id,node.Id);
         var opened=(Task<bool>)typeof(MainWindowViewModel).GetMethod("OpenExternalSolutionAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{copy,false})!;
         if(!await opened)throw new Exception("主窗打开新文件未成功："+vm.StatusText);
@@ -241,3 +241,4 @@ internal sealed class ProbeApp:App
     // The probe explicitly assembles the same services; do not start a second product bootstrap.
     protected override void OnStartup(StartupEventArgs e) { }
 }
+

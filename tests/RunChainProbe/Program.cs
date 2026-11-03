@@ -283,7 +283,7 @@ internal static class Program
             if (crossDraft.Configuration.ReadCurrentParameter(threshold)?.Value is not long number || number != 8L)
                 throw new Exception("跨流程生产变量不是实际图像宽度");
         }
-        Console.WriteLine("PASS: V4 保存重开、跨流程 producer 与私有参数接纳");
+        Console.WriteLine("PASS: V5 保存重开、跨流程 producer 与私有参数接纳");
         var cameraOptions=new SimulatedCameraOptions {Width=8,Height=8,FrameDelay=TimeSpan.Zero};
         var cameraRuntime=new CameraRuntimeManager(new[]{new SimulatedCameraFactory(cameraOptions)});
         try
@@ -367,3 +367,4 @@ internal static class Program
         }
         public void Dispose() => inner.Dispose();
     }}
+

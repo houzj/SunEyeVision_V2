@@ -41,7 +41,7 @@ internal static class RootCollectionMainProbe
   element.UpdateLayout();var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap(Math.Max(1,(int)Math.Ceiling(element.ActualWidth)),Math.Max(1,(int)Math.Ceiling(element.ActualHeight)),96,96,PixelFormats.Pbgra32);bitmap.Render(element);var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));using var stream=File.Create(path);encoder.Save(stream);Console.WriteLine("root main visual: "+path);
  }
  private static Task Run(MainWindowViewModel vm){vm.RunWorkflowCommand.Execute(null);return(Task)vm.GetType().GetField("_formalRunTask",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;}
- private static void Save(DocumentSession session,string file,string root)=>session.SaveAs(file,Path.Combine(root,Guid.NewGuid()+".recovery"),root,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SdkVariableValueExtensionCodec(scope),File.Exists(file)?SunEyeVision.Persistence.TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)))):SunEyeVision.Persistence.TargetExpectation.Missing);
+ private static void Save(DocumentSession session,string file,string root)=>session.SaveAs(file,Path.Combine(root,Guid.NewGuid()+".recovery"),root,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new ComplexVariableValueCodec(scope),File.Exists(file)?SunEyeVision.Persistence.TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)))):SunEyeVision.Persistence.TargetExpectation.Missing);
  internal static void RunWindow()
  {
   var app=(App)System.Windows.Application.Current;var root=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","RootCollectionMain",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(root);
@@ -62,3 +62,4 @@ internal static class RootCollectionMainProbe
   var closed=false;main.Closed+=(_,_)=>closed=true;main.Close();Until(()=>closed);ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask().GetAwaiter().GetResult();ServiceInitializer.DisposeCameraRuntimeAsync().AsTask().GetAwaiter().GetResult();ServiceInitializer.SolutionManager.CloseCurrent(true);pin.Dispose();plugins.UnloadPluginsAsync().GetAwaiter().GetResult();Console.WriteLine("root main: real window/consumers/session/plugins drained");
  }
 }
+

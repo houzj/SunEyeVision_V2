@@ -8,13 +8,13 @@ public sealed class SolutionFileCommitTests
     private static byte[] Bytes(string text)=>Encoding.UTF8.GetBytes(text);
     private static string Root(){var p=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,Guid.NewGuid().ToString("N"));Directory.CreateDirectory(p);return p;}
     private static string Hash(string path)=>Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
-    private static FrozenSolutionDocument Document(string path,TargetExpectation? expected=null)=>new(path,Bytes("{\"SchemaVersion\":4}"),Array.Empty<PersistenceDiagnostic>(),Array.Empty<FrozenResourceReference>(),expected);
+    private static FrozenSolutionDocument Document(string path,TargetExpectation? expected=null)=>new(path,Bytes("{\"SchemaVersion\":5}"),Array.Empty<PersistenceDiagnostic>(),Array.Empty<FrozenResourceReference>(),expected);
     [Fact] public void Save_uses_owned_bytes_and_expected_hash_and_preserves_previous()
     {
         var root=Root();var path=Path.Combine(root,"main.solution");var backup=Path.Combine(root,"backup.solution");File.WriteAllText(path,"original");
         var document=Document(path,TargetExpectation.Match(Hash(path)));var bytes=document.CopyBytes();bytes[0]=0;
         SolutionFileCommit.Write(document,backup);
-        Assert.Equal("{\"SchemaVersion\":4}",File.ReadAllText(path));Assert.Equal("original",File.ReadAllText(backup));
+        Assert.Equal("{\"SchemaVersion\":5}",File.ReadAllText(path));Assert.Equal("original",File.ReadAllText(backup));
     }
     [Fact] public void Missing_and_wrong_hash_refuse_to_overwrite()
     {
@@ -46,13 +46,14 @@ public sealed class SolutionFileCommitTests
     [Fact] public void Restore_requires_same_validated_backup_bytes_and_keeps_source()
     {
         var root=Root();var path=Path.Combine(root,"main.solution");var backup=Path.Combine(root,"backup.solution");
-        File.WriteAllText(path,"current");File.WriteAllText(backup,"{\"SchemaVersion\":4}");
+        File.WriteAllText(path,"current");File.WriteAllText(backup,"{\"SchemaVersion\":5}");
         var targetHash=Hash(path);var backupHash=Hash(backup);
-        var wrong=new FrozenSolutionDocument(path,Bytes("{\"SchemaVersion\":4,\"Name\":\"other\"}"),Array.Empty<PersistenceDiagnostic>(),Array.Empty<FrozenResourceReference>());
+        var wrong=new FrozenSolutionDocument(path,Bytes("{\"SchemaVersion\":5,\"Name\":\"other\"}"),Array.Empty<PersistenceDiagnostic>(),Array.Empty<FrozenResourceReference>());
         Assert.Throws<IOException>(()=>SolutionFileCommit.Restore(wrong,backup,targetHash,backupHash));
         Assert.Equal("current",File.ReadAllText(path));Assert.Equal(backupHash,Hash(backup));
         var document=Document(path);var receipt=SolutionFileCommit.Restore(document,backup,targetHash,backupHash);
-        Assert.Same(document,receipt.WrittenSnapshot);Assert.Equal("{\"SchemaVersion\":4}",File.ReadAllText(path));Assert.Equal(backupHash,Hash(backup));
+        Assert.Same(document,receipt.WrittenSnapshot);Assert.Equal("{\"SchemaVersion\":5}",File.ReadAllText(path));Assert.Equal(backupHash,Hash(backup));
     }
 }
+
 

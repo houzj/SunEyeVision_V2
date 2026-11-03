@@ -60,8 +60,12 @@ public sealed class VariableArchiveCandidate : IDisposable
     private readonly byte[] _bytes;
     internal VariableArchiveCandidate(DecodedResourcesScope scope, ReadOnlySpan<byte> bytes, IReadOnlyList<GlobalVariable> variables, IReadOnlyList<PersistenceDiagnostic> diagnostics)
         { _scope = scope; _bytes = bytes.ToArray(); Variables = variables; Diagnostics = diagnostics; }
-    internal string? WriteValidated(string path, string recoveryPath, TargetExpectation? expected = null, CancellationToken cancellationToken = default)
-        => SolutionFileCommit.Write(path, recoveryPath, _bytes.ToArray(), true, targetExpectation: expected, cancellationToken: cancellationToken);
+    /// <summary>Atomically writes these previously validated, detached archive bytes.</summary>
+    public string? WriteValidated(string path, string recoveryPath, TargetExpectation expected, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        return SolutionFileCommit.Write(path, recoveryPath, _bytes.ToArray(), true, targetExpectation: expected, cancellationToken: cancellationToken);
+    }
     public IReadOnlyList<GlobalVariable> Variables { get; }
     public IReadOnlyList<PersistenceDiagnostic> Diagnostics { get; }
     public IDisposable TransferResources() => _scope.Transfer();

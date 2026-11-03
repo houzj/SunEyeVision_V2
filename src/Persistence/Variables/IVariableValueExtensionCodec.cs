@@ -8,7 +8,8 @@ public interface IVariableValueExtensionCodec
     SunEyeVision.Persistence.DecodedResourcesScope Scope { get; }
     bool SupportsType(string typeName);
     object? Read(string typeName, JsonElement value, JsonSerializerOptions options);
-    bool TryWrite(object value, JsonSerializerOptions options, out string typeName, out object? serializedValue);
+    bool TryGetToken(object value, out string typeName);
+    void WriteValue(Utf8JsonWriter writer, string typeName, object value, JsonSerializerOptions options);
 }
 
 

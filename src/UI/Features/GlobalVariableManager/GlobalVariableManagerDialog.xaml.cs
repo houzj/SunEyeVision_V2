@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Editing.Wpf;
 using System;
 using System.Collections.Specialized;
@@ -462,11 +463,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
         private static string FormatComplex(object value) => value switch
         {
-            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload => payload.ToString(),
-            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload[] payloads =>
+            SunEyeVision.Plugin.Contracts.BinaryValue payload => payload.ToString(),
+            SunEyeVision.Plugin.Contracts.BinaryValue[] payloads =>
                 string.Join(" | ", payloads.Select(p => p.ToString())),
             Mat => "[图像]",
-            IVisionImage => "[图像]",
+            SunEyeVision.Plugin.Contracts.IReadOnlyStoredRaster => "[图像]",
             AffineMatrix => "[变换矩阵]",
             RoiShape[] => "[图形定义]",
             Circle2d[] => "[圆]",
@@ -508,7 +509,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     public sealed class GlobalVariableTypeTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is string type && SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ChineseNames.TryGetValue(type, out var name)
+            => value is string type && SunEyeVision.Plugin.Contracts.VariableValueDeclarations.DisplayNames.TryGetValue(type, out var name)
                 ? name
                 : value?.ToString() ?? string.Empty;
 
@@ -516,3 +517,5 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             => Binding.DoNothing;
     }
 }
+
+

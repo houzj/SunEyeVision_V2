@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 
 namespace SunEyeVision.Persistence;
 
-/// <summary>Candidate-only variable conversion. The caller supplies the existing SDK's canonical type authority.</summary>
+/// <summary>Candidate-only variable conversion. The caller supplies the frozen canonical type authority.</summary>
 internal static class SolutionVariableValuePolicy
 {
     public static void Prepare(JsonNode variable, string path, Func<string, string> canonicalType,
@@ -35,8 +35,8 @@ internal static class SolutionVariableValuePolicy
             throw new JsonException("Variable Type disagrees with value Type.", path + ".Value.Type", null, null);
         var normalized = canonical switch
         {
-            "System.Int64" => "Integer", "System.Double" => "Double",
-            "System.String" => "String", "System.Boolean" => "Boolean", _ => type
+            "Integer" => "Integer", "Double" => "Double",
+            "String" => "String", "Boolean" => "Boolean", _ => type
         };
         if (normalized != type || normalized != declared)
             throw new JsonException("Variable type is not in the current canonical format.", path + ".Type", null, null);
@@ -46,3 +46,4 @@ internal static class SolutionVariableValuePolicy
         // one-dimensional array contents; loading never promotes a scalar to a tuple.
     }
 }
+

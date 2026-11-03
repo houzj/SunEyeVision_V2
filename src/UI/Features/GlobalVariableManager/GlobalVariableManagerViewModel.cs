@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Contracts;
 
 
 using SunEyeVision.UI.Features.Dialogs;
@@ -155,7 +155,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <summary>
         /// 类型选项列表（中文显示名 + 英文值，用于 ComboBox 绑定）
         /// </summary>
-        public List<TypeOption> TypeOptions { get; } = SdkTypeVocabulary.GetAllTypeOptions();
+        public sealed record VariableTypeOption(string DisplayName, string Value);
+        public List<VariableTypeOption> TypeOptions { get; } = VariableValueDeclarations.DisplayNames.Select(pair => new VariableTypeOption(pair.Value, pair.Key)).ToList();
 
         public DocumentSession EditingSession => _session;
         internal NodeConfigurationEditHost Host { get; }
@@ -673,3 +674,4 @@ private void OpenTargetParameter(object? parameter) => LogWarning("变量目标�
         #endregion
     }
 }
+

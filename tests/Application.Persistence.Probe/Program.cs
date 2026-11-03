@@ -47,52 +47,55 @@ try {
  if(!ReferenceEquals(manager.CurrentSession,reopened))throw new Exception("失败改变活动方案");
  using var cancel=new CancellationTokenSource();cancel.Cancel();
  try { reopened.SaveAs(Path.Combine(root,"cancel"),Path.Combine(root,"backup"),root,catalog,new JsonSerializerOptions(),_=>null,cancellationToken:cancel.Token);throw new Exception("未取消"); } catch(OperationCanceledException) { }
- using var original=new OpenCvSharp.Mat(2,3,OpenCvSharp.MatType.CV_8UC1,OpenCvSharp.Scalar.All(23));
+ using var originalScope=new DecodedResourcesScope();
+ var original=new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(originalScope).CreateRaster(new StoredRasterLayout(3,2,3,StoredRasterFormat.Gray8),new byte[]{23,23,23,23,23,23});
  var variable=new SunEyeVision.Domain.Solutions.GlobalVariable("图像",original,"Image");
  using var writeScope=new DecodedResourcesScope();
- var archive=VariableArchive.Encode(new[]{variable},new JsonSerializerOptions(),new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(writeScope));
+ var archive=VariableArchive.Encode(new[]{variable},new JsonSerializerOptions(),new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(writeScope));
  var variableJson=System.Text.Json.Nodes.JsonNode.Parse(archive)!["Variables"]![0]!.DeepClone();
  var solutionJson=System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!; solutionJson["GlobalVariables"]=new System.Text.Json.Nodes.JsonArray(variableJson);
  var imagePath=Path.Combine(root,"image.solution");File.WriteAllText(imagePath,solutionJson.ToJsonString());
  using var cancelOpen=new CancellationTokenSource(); TrackingCodec? tracking=null;
- try { manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(bytes.Span),
+ try { manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.VariableVocabularyCapture.FromCandidate(bytes.Span),
      scope=>{tracking=new TrackingCodec(scope);cancelOpen.Cancel();return tracking;},new JsonSerializerOptions(),cancellationToken:cancelOpen.Token);throw new Exception("打开未取消"); } catch(OperationCanceledException) { }
- if(!ReferenceEquals(manager.CurrentSession,reopened)||tracking?.Image is null||!tracking.Image.IsDisposed)throw new Exception("取消打开未保留原会话或未释放候选 Mat");
+ if(!ReferenceEquals(manager.CurrentSession,reopened)||tracking?.Image is null||!IsDisposed(tracking.Image))throw new Exception("取消打开未保留原会话或未释放候选 Mat");
  Console.WriteLine("PASS 解码后取消打开：旧会话保留、候选 Mat 已释放");
  var pending=new PendingParticipant(); reopened.Editing.Register(pending); TrackingCodec? rejected=null; bool failedReplacement=false;
- try { manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(bytes.Span),
+ try { manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.VariableVocabularyCapture.FromCandidate(bytes.Span),
     scope=>rejected=new TrackingCodec(scope),new JsonSerializerOptions()); } catch(InvalidOperationException) { failedReplacement=true; }
- if(!failedReplacement||!ReferenceEquals(manager.CurrentSession,reopened)||rejected?.Image is null||!rejected.Image.IsDisposed)
+ if(!failedReplacement||!ReferenceEquals(manager.CurrentSession,reopened)||rejected?.Image is null||!IsDisposed(rejected.Image))
     throw new Exception("拒绝替换时原会话或新 Mat 所有权错误");
  reopened.Editing.Unregister(pending.ScopeId);
  Console.WriteLine("PASS 未提交编辑拒绝替换：旧会话保留、已转移的候选 Mat 已释放");
- var imageSession=manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(bytes.Span),
-    scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope),new JsonSerializerOptions());
- var loaded=(OpenCvSharp.Mat)imageSession.Document.GlobalVariables.Single().Value!;
- if(loaded.IsDisposed || original.IsDisposed)throw new Exception("图像未正确接纳");
+ var imageSession=manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.VariableVocabularyCapture.FromCandidate(bytes.Span),
+    scope=>new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(scope),new JsonSerializerOptions());
+ var loaded=(IReadOnlyStoredRaster)imageSession.Document.GlobalVariables.Single().Value!;
+ if(IsDisposed(loaded) || IsDisposed(original))throw new Exception("图像未正确接纳");
  var nativeMoved=Path.Combine(root,"native-moved"); Directory.CreateDirectory(nativeMoved);
  var nativeMovedPath=Path.Combine(nativeMoved,"image.solution");
- var nativeTypes=SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(File.ReadAllBytes(imagePath));
+ var nativeTypes=SunEyeVision.Infrastructure.Persistence.VariableVocabularyCapture.FromCandidate(File.ReadAllBytes(imagePath));
  var codecs=new List<TrackingCodec>();
  SunEyeVision.Persistence.Variables.IVariableValueExtensionCodec NewCodec(DecodedResourcesScope scope)
  { var value=new TrackingCodec(scope);codecs.Add(value);return value; }
  imageSession.SaveAs(nativeMovedPath,Path.Combine(root,"native-backup"),root,nativeTypes,new JsonSerializerOptions(),NewCodec);
  imageSession.Save(nativeMovedPath,Path.Combine(root,"native-backup"),nativeTypes,new JsonSerializerOptions(),NewCodec);
- if(codecs.Count!=4 || codecs.Any(codec=>codec.Image is null || !codec.Image.IsDisposed) || loaded.IsDisposed || original.IsDisposed)
+ if(codecs.Count!=4 || codecs.Any(codec=>codec.Image is null || !IsDisposed(codec.Image)) || IsDisposed(loaded) || IsDisposed(original))
     throw new Exception("保存与重定位必须各用独立解码范围并释放候选，保留正式借用图像");
- manager.CloseCurrent(); if(!loaded.IsDisposed || original.IsDisposed)throw new Exception("关闭未释放本次解码图像或错误释放原图");
+ manager.CloseCurrent(); if(!IsDisposed(loaded) || IsDisposed(original))throw new Exception("关闭未释放本次解码图像或错误释放原图");
  Console.WriteLine("PASS 复杂图像值跨目录另存和再次保存：四次解码范围独立释放、正式图像关闭前保留");
  Console.WriteLine("PASS 测试声明：真实会话编辑、另存、打开、外部并发拒绝、打开失败保留与取消");return 0;
 } catch(Exception ex) { Console.Error.WriteLine(ex); return 1; }
+static bool IsDisposed(IReadOnlyStoredRaster image) { try { using var reader=image.AcquireReader(); return false; } catch(ObjectDisposedException) { return true; } }
 
 sealed class TrackingCodec(DecodedResourcesScope scope) : SunEyeVision.Persistence.Variables.IVariableValueExtensionCodec
 {
- private readonly SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec _inner=new(scope);
+ private readonly SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec _inner=new(scope);
  public DecodedResourcesScope Scope=>scope;
- public OpenCvSharp.Mat? Image { get; private set; }
+ public IReadOnlyStoredRaster? Image { get; private set; }
  public bool SupportsType(string typeName)=>_inner.SupportsType(typeName);
- public object? Read(string typeName,JsonElement value,JsonSerializerOptions options) { var result=_inner.Read(typeName,value,options); Image=result as OpenCvSharp.Mat ?? Image;return result; }
- public bool TryWrite(object value,JsonSerializerOptions options,out string typeName,out object? serializedValue)=>_inner.TryWrite(value,options,out typeName,out serializedValue);
+ public object? Read(string typeName,JsonElement value,JsonSerializerOptions options) { var result=_inner.Read(typeName,value,options); Image=result as IReadOnlyStoredRaster ?? Image;return result; }
+ public bool TryGetToken(object value,out string typeName)=>_inner.TryGetToken(value,out typeName);
+ public void WriteValue(Utf8JsonWriter writer,string typeName,object value,JsonSerializerOptions options)=>_inner.WriteValue(writer,typeName,value,options);
 }
 sealed class PendingParticipant : SunEyeVision.Application.Editing.IDocumentEditParticipant
 {
@@ -101,3 +104,4 @@ sealed class PendingParticipant : SunEyeVision.Application.Editing.IDocumentEdit
  public void Acknowledge(SunEyeVision.Application.Editing.DocumentEditProposal proposal, SunEyeVision.Application.DocumentEditReceipt receipt) => throw new NotSupportedException();
  public void Cancel() { }
 }
+

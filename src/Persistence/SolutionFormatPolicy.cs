@@ -6,7 +6,7 @@ namespace SunEyeVision.Persistence;
 /// <summary>Solution document format, separate from plugin contract and parameter-codec versions.</summary>
 public static class SolutionFormatPolicy
 {
-    public const int Current = 4;
+    public const int Current = 5;
 
     public static int ReadVersion(JsonNode root)
     {
@@ -23,7 +23,7 @@ public static class SolutionFormatPolicy
             root.EnumerateObject().Count(property => string.Equals(property.Name, "SchemaVersion", StringComparison.OrdinalIgnoreCase)) != 1 ||
             !root.TryGetProperty("SchemaVersion", out var version) ||
             version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var number) || number != Current)
-            throw new JsonException("不支持该方案格式；需要 SchemaVersion 4。", "$.SchemaVersion", null, null);
+            throw new JsonException("不支持该方案格式；需要 SchemaVersion 5。", "$.SchemaVersion", null, null);
         var triggerProperties=root.EnumerateObject().Where(property => string.Equals(property.Name,"CommunicationTriggers",StringComparison.OrdinalIgnoreCase)).ToArray();
         if(triggerProperties.Length>1)throw new JsonException("通讯触发规则字段不唯一。","$.CommunicationTriggers",null,null);
         if(triggerProperties.Length==1 && triggerProperties[0].Value.ValueKind!=JsonValueKind.Null)
@@ -35,7 +35,7 @@ public static class SolutionFormatPolicy
                 if(trigger.ValueKind!=JsonValueKind.Object)throw new JsonException("通讯触发规则必须是对象。",$"$.CommunicationTriggers[{triggerIndex}]",null,null);
                 foreach(var property in trigger.EnumerateObject())
                     if(string.Equals(property.Name,"FieldId",StringComparison.OrdinalIgnoreCase) || string.Equals(property.Name,"ParameterComparisonEnabled",StringComparison.OrdinalIgnoreCase))
-                        throw new JsonException("旧通信触发字段不属于方案格式 4。",$"$.CommunicationTriggers[{triggerIndex}].{property.Name}",null,null);
+                        throw new JsonException("旧通信触发字段不属于方案格式 5。",$"$.CommunicationTriggers[{triggerIndex}].{property.Name}",null,null);
                 triggerIndex++;
             }
         }
@@ -54,7 +54,7 @@ public static class SolutionFormatPolicy
             if (variable.ValueKind != JsonValueKind.Object)
                 throw new JsonException("全局变量必须是对象。", $"$.GlobalVariables[{index}]", null, null);
             if (variable.EnumerateObject().Any(property => string.Equals(property.Name, "ConsumerBindings", StringComparison.OrdinalIgnoreCase)))
-                throw new JsonException("旧消费者索引不属于方案格式 4。", $"$.GlobalVariables[{index}].ConsumerBindings", null, null);
+                throw new JsonException("旧消费者索引不属于方案格式 5。", $"$.GlobalVariables[{index}].ConsumerBindings", null, null);
             index++;
         }
     }

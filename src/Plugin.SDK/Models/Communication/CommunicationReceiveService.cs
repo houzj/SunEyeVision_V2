@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,8 +155,8 @@ public sealed partial class CommunicationReceiveService : ICommunicationReceiveS
         if (value is Array a && value is not byte[]) { if (a.Length != 1) throw new InvalidOperationException("只支持单项值。"); value = a.GetValue(0) ?? throw new InvalidOperationException("值为空。"); }
         return value switch
         {
-            BinaryPayload or string or bool => value,
-            byte[] b => new BinaryPayload(b),
+            BinaryValue or string or bool => value,
+            byte[] b => new BinaryValue(b),
             byte or sbyte or short or ushort or int or uint or long => Convert.ToInt64(value),
             ulong n when n <= long.MaxValue => (long)n,
             float n when float.IsFinite(n) => (double)n,
@@ -164,5 +165,6 @@ public sealed partial class CommunicationReceiveService : ICommunicationReceiveS
         };
     }
     public static string ValueType(object value) => Normalize(value) switch
-    { BinaryPayload => "Binary", string => "String", long => "Integer", double => "Double", bool => "Boolean", _ => throw new InvalidOperationException("类型不支持。") };
+    { BinaryValue => "Binary", string => "String", long => "Integer", double => "Double", bool => "Boolean", _ => throw new InvalidOperationException("类型不支持。") };
 }
+

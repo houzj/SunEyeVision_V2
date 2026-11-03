@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -134,7 +135,7 @@ internal static class CommunicationReceiveProcessor
             {
                 var f = definition.CompareInputs[i];
                 var value = ProtocolValueCodec.Decode(data, f.ByteStart, f.ByteEnd, f.DataType, f.ByteOrder);
-                parsed[i] = (value, value is BinaryPayload b ? b.ToString() : Convert.ToString(value, CultureInfo.InvariantCulture) ?? "");
+                parsed[i] = (value, value is BinaryValue b ? b.ToString() : Convert.ToString(value, CultureInfo.InvariantCulture) ?? "");
             }
         }
         catch (Exception ex) when (ex is FormatException or DecoderFallbackException or OverflowException)
@@ -158,7 +159,7 @@ internal static class CommunicationReceiveProcessor
     private static bool IsByteRuleMatch(CommunicationCompareInputViewModel field, (object Value, string Display) actual, object? previous)
     {
         if (actual.Value is int n) return IsModbusIntMatch(field, n, previous is int old ? old : null);
-        if (actual.Value is BinaryPayload b)
+        if (actual.Value is BinaryValue b)
         {
             if (field.CompareRule == "不比较") return true;
             if (field.CompareRule is not ("等于" or "不等于")) return false;
@@ -514,3 +515,4 @@ internal static class CommunicationReceiveProcessor
         }
     }
 }
+

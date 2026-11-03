@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -58,7 +59,7 @@ public static class ProtocolValueCodec
     {
         var bytes = Slice(source, start, end);
         type = type.ToLowerInvariant();
-        if (type == "binary") return new BinaryPayload(bytes);
+        if (type == "binary") return new BinaryValue(bytes);
         if (ascii) return ConvertText(EncodingFor("ASCII").GetString(bytes), type);
         if (type == "string") return EncodingFor(encoding).GetString(bytes);
         if (type is not ("int" or "float")) throw new FormatException("字节字段类型必须为int、float、string或Binary。");
@@ -92,3 +93,4 @@ public static class ProtocolValueCodec
         return (int)number;
     }
 }
+

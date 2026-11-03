@@ -10,7 +10,7 @@ namespace SunEyeVision.Persistence;
 public static class VariableArchive
 {
     public const string Format = "SunEyeVision.GlobalVariables";
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
 
     public static VariableArchiveCandidate Read(ReadOnlySpan<byte> bytes, FrozenVariableTypeCatalog types,
         JsonSerializerOptions sourceOptions, DecodedResourcesScope scope, IVariableValueExtensionCodec? extension = null)

@@ -1,7 +1,7 @@
 namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Single semantic declaration for variable values supported by the formal scalar binding chain.</summary>
-public static class VariableValueDeclarations
+public static partial class VariableValueDeclarations
 {
     /// <summary>Validates the actual CLR value accepted by the text editor, including its established array forms.</summary>
     public static void ValidateEditableValue(string type, object? value)

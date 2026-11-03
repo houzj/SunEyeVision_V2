@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,7 +22,7 @@ public static class CommunicationSendTypes
         "bool" or "boolean" => "Boolean", "binary" => "Binary", _ => throw new FormatException($"不支持发送类型 {type}。")
     };
     public static Type BindingType(string type) => Canonical(type) switch
-    { "String" => typeof(string), "Boolean" => typeof(bool), "Binary" => typeof(BinaryPayload), "Float" or "Double" => typeof(double), _ => typeof(long) };
+    { "String" => typeof(string), "Boolean" => typeof(bool), "Binary" => typeof(BinaryValue), "Float" or "Double" => typeof(double), _ => typeof(long) };
     public static string WorkflowType(string type) => BindingType(type) == typeof(long) ? "Integer"
         : BindingType(type) == typeof(double) ? "Double" : Canonical(type);
     public static object ParseLiteral(string text, string type)
@@ -33,7 +34,7 @@ public static class CommunicationSendTypes
             "Integer" or "Int16" or "Int32" or "Int64" or "UInt16" or "UInt32" when long.TryParse(text, System.Globalization.NumberStyles.Integer, culture, out var n) => n,
             "Float" or "Double" when double.TryParse(text, System.Globalization.NumberStyles.Float, culture, out var n) && double.IsFinite(n) => n,
             "Boolean" when bool.TryParse(text, out var b) => b,
-            "Binary" => new BinaryPayload(ProtocolValueCodec.ParseHex(text)),
+            "Binary" => new BinaryValue(ProtocolValueCodec.ParseHex(text)),
             _ => throw new FormatException("常量与发送声明类型不兼容。")
         };
         return Validate(value, type);
@@ -92,3 +93,4 @@ public interface ICommunicationBindingInputProvider
 {
     IReadOnlyList<string> GetInputExpressions();
 }
+

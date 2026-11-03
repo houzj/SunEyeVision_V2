@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Application.Communications;
 using System;
 using System.Collections.Concurrent;
@@ -259,7 +260,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             var bytes = new byte[words.Length * 2];
             for (var i = 0; i < words.Length; i++) { bytes[i * 2] = (byte)(words[i] >> 8); bytes[i * 2 + 1] = (byte)words[i]; }
             ValidateCurrentConfiguration();
-            return (new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(bytes), null);
+            return (new SunEyeVision.Plugin.Contracts.BinaryValue(bytes), null);
         }
         var value = await Composition.Runtime.ReadOpcUaValueAsync(device.Id, nodeId, token).ConfigureAwait(false);
         if (!Opc.Ua.StatusCode.IsGood(value.StatusCode) || value.Value == null) throw new InvalidOperationException("数据点质量无效或值为空。");
@@ -307,7 +308,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     {
         lock (_gate) if (!_disposed)
         {
-            var sample = Receives.Publish(e.CommunicationId, "", e.Timestamp, new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(e.Data));
+            var sample = Receives.Publish(e.CommunicationId, "", e.Timestamp, new SunEyeVision.Plugin.Contracts.BinaryValue(e.Data));
             if (_heartbeatReady) Automation.ProcessRaw(e.CommunicationId, e.Data, e.Timestamp, sample);
         }
     }
@@ -343,7 +344,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                     var bytes = new byte[sample.Values.Length * 2];
                     for (var i = 0; i < sample.Values.Length; i++) { bytes[i * 2] = (byte)(sample.Values[i] >> 8); bytes[i * 2 + 1] = (byte)sample.Values[i]; }
                     var received = Receives.Publish(sample.CommunicationId, sample.AddressId, sample.Timestamp,
-                        new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(bytes), sample.Values.Length == sample.Count);
+                        new SunEyeVision.Plugin.Contracts.BinaryValue(bytes), sample.Values.Length == sample.Count);
                     if (_heartbeatReady) Automation.ProcessModbus(sample, received);
                 }
     }
@@ -1119,3 +1120,4 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         _switchCancellation?.Dispose();
     }
 }
+

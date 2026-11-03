@@ -2407,7 +2407,7 @@ SplitterPosition = position;
                 foreach(var member in Reference.MemberFieldPath)type=Project(type,member);
                 var element=type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?type.Element!:type;
                 if(element.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Scalar)return false;
-                return SdkTypeVocabulary.ChineseNames.Keys.SelectMany(name=>new[]{name,name+"[]"}).Any(vocabulary=>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(vocabulary,out var target)
+                return SunEyeVision.Plugin.Contracts.VariableValueDeclarations.DisplayNames.Keys.SelectMany(name=>new[]{name,name+"[]"}).Any(vocabulary=>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(vocabulary,out var target)
                     &&target.Type.Shape==type.Shape&&(target.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?target.Type.Element:target.Type)==element);
             }
         }
@@ -2419,3 +2419,4 @@ SplitterPosition = position;
     }
 
 }
+

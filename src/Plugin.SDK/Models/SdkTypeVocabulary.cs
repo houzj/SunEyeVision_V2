@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Contracts;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(double[])]          = "Double",
             [typeof(string[])]          = "String",
             [typeof(bool[])]            = "Boolean",
-            [typeof(Communication.BinaryPayload[])] = "Binary",
+            [typeof(SunEyeVision.Plugin.Contracts.BinaryValue[])] = "Binary",
             [typeof(AffineMatrix[])]    = "Transform",
             [typeof(IVisionImage)]      = "Image",
             [typeof(RoiShape[])]        = "ROI",
@@ -92,7 +93,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Integer"]   = typeof(long),
             ["String"]    = typeof(string),
             ["Boolean"]   = typeof(bool),
-            ["Binary"]    = typeof(Communication.BinaryPayload),
+            ["Binary"]    = typeof(SunEyeVision.Plugin.Contracts.BinaryValue),
             ["Double"]    = typeof(double),
             ["Transform"] = typeof(AffineMatrix),
             ["Image"]     = typeof(IVisionImage),
@@ -112,24 +113,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Float"]     = typeof(float),
         };
 
-        public static readonly Dictionary<string, string> ChineseNames = new()
-        {
-            ["Integer"]   = "整型",
-            ["String"]    = "字符串",
-            ["Boolean"]   = "布尔",
-            ["Binary"]    = "字节序列",
-            ["Double"]    = "双精度",
-            ["Image"]     = "图像",
-            ["ROI"]       = "图形",
-            ["Transform"] = "变换矩阵",
-            ["Circle"]        = "圆",
-            ["RotatedRect"]   = "旋转矩形",
-            ["Point"]         = "点",
-            ["Polygon"]       = "多边形",
-            ["Line"]          = "直线",
-            ["Annulus"]       = "圆环",
-            ["Arc"]           = "圆弧",
-        };
+        public static IReadOnlyDictionary<string, string> ChineseNames => VariableValueDeclarations.DisplayNames;
 
         /// <summary>
         /// 数值类型规范归并：int→long、int[]→long[]、float→double、float[]→double[]，否则原样。
@@ -206,3 +190,5 @@ namespace SunEyeVision.Plugin.SDK.Models
         }
     }
 }
+
+

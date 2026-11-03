@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ public sealed partial class CommunicationReceiveService
         var key = (sample.DeviceId, sample.TargetId);
         if (!_buffers.TryGetValue(key, out var buffer)) _buffers[key] = buffer = new();
         sample = sample with { Sequence = ++buffer.Sequence };
-        var size = sample.Value is BinaryPayload bytes ? bytes.Length :
+        var size = sample.Value is BinaryValue bytes ? bytes.Length :
             sample.Value is string text ? checked(text.Length * 2) : 16;
         buffer.Items.Enqueue((sample, size)); buffer.Bytes += size;
         while (buffer.Items.Count > MaximumBufferedMessages || buffer.Bytes > MaximumBufferedBytes)
@@ -92,3 +93,4 @@ public sealed partial class CommunicationReceiveService
         finally { lock (_gate) consumer.Busy = false; }
     }
 }
+

@@ -19,7 +19,7 @@ public partial class MainWindowViewModel
  {
   // Freeze only type declarations after the one editor acceptance, without encoding or borrowing values.
   var declarations=JsonSerializer.SerializeToUtf8Bytes(new{GlobalVariables=session.Document.GlobalVariables.Select(variable=>new{variable.Type}).ToArray()});
-  return SdkVariableVocabularyCapture.FromCandidate(declarations);
+  return VariableVocabularyCapture.FromCandidate(declarations);
  }
  private bool SaveCurrentDocumentWithPrompt(Window? owner=null,bool saveAs=false)
  {
@@ -44,11 +44,11 @@ public partial class MainWindowViewModel
    var baseline=session.LastWrittenSnapshot;
    FrozenSaveReceipt receipt;
    if(!saveAs&&baseline is not null&&string.Equals(baseline.TargetPath,target,StringComparison.OrdinalIgnoreCase))
-    receipt=session.Save(target,recovery,catalog,DocumentJsonOptions,scope=>new SdkVariableValueExtensionCodec(scope));
+    receipt=session.Save(target,recovery,catalog,DocumentJsonOptions,scope=>new ComplexVariableValueCodec(scope));
    else
    {
     var expected=File.Exists(target)?TargetExpectation.Match(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(target)))):TargetExpectation.Missing;
-    receipt=session.SaveAs(target,recovery,session.ResourceBaseDirectory??directory,catalog,DocumentJsonOptions,scope=>new SdkVariableValueExtensionCodec(scope),expected);
+    receipt=session.SaveAs(target,recovery,session.ResourceBaseDirectory??directory,catalog,DocumentJsonOptions,scope=>new ComplexVariableValueCodec(scope),expected);
    }
    UpdateCurrentSolutionInfo();(System.Windows.Application.Current as App)?.RecordRecentSolution(session);
    LogSuccess("方案文件已保存："+receipt.WrittenSnapshot.TargetPath);
@@ -74,12 +74,12 @@ public partial class MainWindowViewModel
   if(!reload&&string.Equals(DocumentManager.CurrentSession?.LastWrittenSnapshot?.TargetPath,path,StringComparison.OrdinalIgnoreCase))return true;
   // Basic file/format checks precede stop/save prompts. The manager alone fully admits and installs the candidate.
   var bytes=File.ReadAllBytes(path);ValidateDocumentCandidateBytes(bytes);
-  _=SdkVariableVocabularyCapture.FromCandidate(bytes);
+  _=VariableVocabularyCapture.FromCandidate(bytes);
   if(!await PrepareSolutionTransitionAsync(reload))return false;
   try
   {
    await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCommunicationRuntimeAsync();
-   var current=DocumentManager.Open(path,data=>{ValidateDocumentCandidateBytes(data.Span);return SdkVariableVocabularyCapture.FromCandidate(data.Span);},scope=>new SdkVariableValueExtensionCodec(scope),DocumentJsonOptions,discardPendingEdits:true);
+   var current=DocumentManager.Open(path,data=>{ValidateDocumentCandidateBytes(data.Span);return VariableVocabularyCapture.FromCandidate(data.Span);},scope=>new ComplexVariableValueCodec(scope),DocumentJsonOptions,discardPendingEdits:true);
 
    UpdateCurrentSolutionInfo();
    if(DocumentManager.LastObserverError is {} observerError)throw new InvalidOperationException("方案已切换，但部分界面观察者未完成更新。",observerError);
@@ -90,3 +90,4 @@ public partial class MainWindowViewModel
   finally{EndSolutionTransition();}
  }
 }
+

@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Plugin.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Models.Communication;
@@ -12,16 +13,16 @@ public sealed class ToolSideEffectReceipt
     public long Skipped { get; }
     public long Failed { get; }
     public IReadOnlyList<string> SentData { get; }
-    public IReadOnlyList<BinaryPayload> Payloads { get; }
+    public IReadOnlyList<BinaryValue> Payloads { get; }
     public ToolSideEffectReceipt(long submitted, long skipped, long failed,
-        IEnumerable<string> sentData, IEnumerable<BinaryPayload> payloads)
+        IEnumerable<string> sentData, IEnumerable<BinaryValue> payloads)
     {
         if (submitted < 0 || skipped < 0 || failed < 0) throw new ArgumentOutOfRangeException(nameof(submitted));
         ArgumentNullException.ThrowIfNull(sentData);
         ArgumentNullException.ThrowIfNull(payloads);
         Submitted = submitted; Skipped = skipped; Failed = failed;
         SentData = Array.AsReadOnly(sentData.Select(value => value ?? throw new ArgumentException("发送事实不能为空。", nameof(sentData))).ToArray());
-        Payloads = Array.AsReadOnly(payloads.Select(value => new BinaryPayload(value.ToArray())).ToArray());
+        Payloads = Array.AsReadOnly(payloads.Select(value => new BinaryValue(value.ToArray())).ToArray());
     }
 }
 
@@ -30,3 +31,4 @@ public interface IToolSideEffectReceiptSource
 {
     ToolSideEffectReceipt CaptureSideEffectReceipt();
 }
+

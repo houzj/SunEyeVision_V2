@@ -54,9 +54,10 @@ public sealed class GlobalVariableValueConverter : JsonConverter<object?>
             case bool x: name="Boolean"; serialized=x; break;
             case bool[] x: name="Boolean"; serialized=x; break;
             default:
-                if (_extension is null || !_extension.TryWrite(value,options,out name,out serialized))
+                if (_extension is null || !_extension.TryGetToken(value,out name))
                     throw new NotSupportedException("Variable value has no available persistence codec: " + value.GetType().FullName);
-                break;
+                writer.WriteStartObject(); writer.WriteString("Type",name); writer.WritePropertyName("Value");
+                _extension.WriteValue(writer,name,value,options); writer.WriteEndObject(); return;
         }
         writer.WriteStartObject(); writer.WriteString("Type",name); writer.WritePropertyName("Value");
         if (serialized is null) writer.WriteNullValue(); else JsonSerializer.Serialize(writer,serialized,serialized.GetType(),options);

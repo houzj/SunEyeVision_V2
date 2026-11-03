@@ -217,6 +217,7 @@ public class GlobalVariable : SolutionObservableObject
         int[] a => (int[])a.Clone(), long[] a => (long[])a.Clone(),
         float[] a => (float[])a.Clone(), double[] a => (double[])a.Clone(),
         string[] a => (string[])a.Clone(), bool[] a => (bool[])a.Clone(),
+        SunEyeVision.Plugin.Contracts.BinaryValue[] a => (SunEyeVision.Plugin.Contracts.BinaryValue[])a.Clone(),
         _ => value
     };
 
@@ -429,4 +430,5 @@ public class GlobalVariable : SolutionObservableObject
         OnPropertyChanged(nameof(InputSourceDisplayText));
     }
 }
+
 

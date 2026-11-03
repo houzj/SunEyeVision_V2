@@ -130,9 +130,9 @@ public sealed class WorkflowCommunicationSendService(Func<SolutionDefinition?> s
             var options = request.Options;
             if (options.Terminator is not ("" or "\r" or "\n" or "\r\n")) throw new FormatException("结束符配置无效。");
             byte[] bytes;
-            if (request.Inputs.Any(i => i.Value is BinaryPayload))
+            if (request.Inputs.Any(i => i.Value is BinaryValue))
             {
-                if (request.Inputs.Count != 1 || request.Inputs[0].Value is not BinaryPayload payload || options.Separator != "" || options.Terminator != "")
+                if (request.Inputs.Count != 1 || request.Inputs[0].Value is not BinaryValue payload || options.Separator != "" || options.Terminator != "")
                     throw new FormatException("完整字节报文只能单项发送，不追加分隔符或结束符。");
                 bytes = payload.ToArray();
             }
@@ -186,7 +186,7 @@ public sealed class WorkflowCommunicationSendService(Func<SolutionDefinition?> s
             plan = _events.Prepare(definition, device, snapshot);
         }
         token.ThrowIfCancellationRequested();
-        return new(device.Name, plan.Protocol == "OpcUa" ? CommunicationReceiveService.Normalize(plan.Scalar!) : new BinaryPayload(plan.PayloadBytes), async ct =>
+        return new(device.Name, plan.Protocol == "OpcUa" ? CommunicationReceiveService.Normalize(plan.Scalar!) : new BinaryValue(plan.PayloadBytes), async ct =>
         {
             using var submission=enterOperation();
             ct.ThrowIfCancellationRequested();
@@ -228,3 +228,4 @@ public sealed class WorkflowCommunicationSendService(Func<SolutionDefinition?> s
         };
     }
 }
+

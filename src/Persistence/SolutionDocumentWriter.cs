@@ -16,7 +16,7 @@ public static class SolutionDocumentWriter
     {
         ArgumentNullException.ThrowIfNull(document); ArgumentNullException.ThrowIfNull(declarations);
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
-        if (document.SchemaVersion != 4) throw new JsonException("Only V4 documents can be encoded.");
+        if (document.SchemaVersion != 5) throw new JsonException("Only V5 documents can be encoded.");
         var jsonOptions=SolutionSerializationOptions.Configure(options,extension);
         jsonOptions.PropertyNamingPolicy=null; jsonOptions.DictionaryKeyPolicy=null;
         using var stream=new MemoryStream();
@@ -24,7 +24,7 @@ public static class SolutionDocumentWriter
         {
             writer.WriteStartObject();
             writer.WriteString("Id",document.Id); writer.WriteString("Name",document.Name); writer.WriteString("Description",document.Description);
-            writer.WriteNumber("SchemaVersion",4); writer.WriteString("Version",document.Version);
+            writer.WriteNumber("SchemaVersion",5); writer.WriteString("Version",document.Version);
             WriteValue(writer,"AdditionalData",document.AdditionalData,jsonOptions);
             writer.WriteStartArray("Workflows");
             foreach(var workflow in document.Workflows)
@@ -106,3 +106,4 @@ public sealed class EncodedSolutionDocument
         return new(targetPath,_bytes,_diagnostics,_resources,expected);
     }
 }
+

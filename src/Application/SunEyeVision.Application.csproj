@@ -5,6 +5,7 @@
     <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </ItemGroup>
+  <ItemGroup><InternalsVisibleTo Include="SunEyeVision.Application.Editing.Tests" /></ItemGroup>
 
 </Project>
 

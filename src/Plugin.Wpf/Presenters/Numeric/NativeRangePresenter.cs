@@ -72,7 +72,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         NativeView.Minimum=Math.Min(bounds[0].Min,bounds[1].Min);NativeView.Maximum=Math.Max(bounds[0].Max,bounds[1].Max);
         NativeView.MinimumLeft=bounds[0].Min;NativeView.MaximumLeft=bounds[0].Max;
         NativeView.MinimumRight=bounds[1].Min;NativeView.MaximumRight=bounds[1].Max;
-        NativeView.IsNeedCheckExtremumByXML=true;
+        NativeView.IsNeedCheckExtremumByXML=left.Port.Type.Scalar==ScalarKind.Int64;
         NativeView.SliderType=Numbers.SliderArrangeType.between;NativeView.SliderTickFrequency=lower.Layout!.Increment;
         NativeView.Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));NativeView.FontSize=14;
         NativeView.PrepareBorrowedInteractions(false);

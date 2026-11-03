@@ -47,9 +47,9 @@ internal static class C06NumericRangeCases
   try
   {
    Case("原typed0初始化位与浮点同舍入通知",()=>{
-    using(var f=new Fixture(true,new ConstantSetting(0L),Ref(true))){Check(P<bool>(f.Model(0),"HasValue")&&!P<bool>(f.Model(0),"IsInitValue"),"已知0被当原已初始化");Check(!P<bool>(f.Model(1),"HasValue")&&!P<bool>(f.Model(1),"IsInitValue")&&P<object>(f.Model(1),"CurValue") is 0L,"未知typed0被当已读");}
+    using(var f=new Fixture(true,new ConstantSetting(0L),Ref(true))){Check(f.Native.IsNeedCheckExtremumByXML&&f.Native.SliderType==Numbers.SliderArrangeType.between,"整数原模板属性错误");Check(P<bool>(f.Model(0),"HasValue")&&!P<bool>(f.Model(0),"IsInitValue"),"已知0被当原已初始化");Check(!P<bool>(f.Model(1),"HasValue")&&!P<bool>(f.Model(1),"IsInitValue")&&P<object>(f.Model(1),"CurValue") is 0L,"未知typed0被当已读");}
     using(var direct=new Fixture(false,new ConstantSetting(0d),new ConstantSetting(10d))){Check(!P<bool>(direct.Model(0),"IsInitValue"),"初0标志错误");Check(direct.Low.TrySetConstant(.004)&&P<bool>(direct.Model(0),"IsInitValue")&&P<double>(direct.Model(0),"CurValue")==0,"程序原raw在舍入前被丢弃");}
-    var armed=false;var reads=0;using var g=new Fixture(false,Ref(),Ref(),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>{reads++;return armed?new(p.Id=="lo"?.004:1d):null;}});armed=true;reads=0;var before=P<long>(g.Model(0),"Version");Check(Read(g,"lo").Status==NumericModelReadStatus.Updated&&P<double>(g.Model(0),"CurValue")==0&&P<bool>(g.Model(0),"IsInitValue")&&P<long>(g.Model(0),"Version")>before,"舍入同0丢原setter初始化/通知");Check(reads==2&&!P<bool>(g.Model(1),"HasValue"),"临时右读安装模型");
+    var armed=false;var reads=0;using var g=new Fixture(false,Ref(),Ref(),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>{reads++;return armed?new(p.Id=="lo"?.004:1d):null;}});Check(!g.Native.IsNeedCheckExtremumByXML&&g.Native.SliderType==Numbers.SliderArrangeType.between&&((Numbers.SliderArrangeFloat)g.Native).NeedSlider,"浮点原模板默认属性错误");armed=true;reads=0;var before=P<long>(g.Model(0),"Version");Check(Read(g,"lo").Status==NumericModelReadStatus.Updated&&P<double>(g.Model(0),"CurValue")==0&&P<bool>(g.Model(0),"IsInitValue")&&P<long>(g.Model(0),"Version")>before,"舍入同0丢原setter初始化/通知");Check(reads==2&&!P<bool>(g.Model(1),"HasValue"),"临时右读安装模型");
    });
    Case("真实TwoWay先改本地setter再单端正式接纳",()=>{
     using var f=new Fixture(true,new ConstantSetting(1L),new ConstantSetting(29L),min:1,max:30,increment:4);
@@ -57,7 +57,8 @@ internal static class C06NumericRangeCases
     Check(P<long>(f.Model(0),"CurValue")==5&&f.Low.Setting==new ConstantSetting(1L),"未按原setter先改本地或提前写正式值");Call(f.Native,"DoStartValueChange");Pump();Check(f.Low.Setting==new ConstantSetting(5L)&&f.High.Setting==new ConstantSetting(29L),"原端点事件未提交单端格点");
    });
    Case("无编辑原事件保持普通模型与正式值分离",()=>{
-    var armed=false;using var f=new Fixture(false,new ConstantSetting(1d),new ConstantSetting(10d),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>armed?new(p.Id=="lo"?2d:10d):null});armed=true;Read(f,"lo");var revision=f.View.Draft!.Revision;Call(f.Native,"DoStartValueChange");Pump();Check(f.Low.Setting==new ConstantSetting(1d)&&P<double>(f.Model(0),"CurValue")==2&&f.View.Draft.Revision==revision,"无编辑原事件把正式值投回模型或写回读值");
+    var armed=false;double current=2;using var f=new Fixture(false,new ConstantSetting(1d),new ConstantSetting(10d),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>armed?new(p.Id=="lo"?current:10d):null});armed=true;Check(Read(f,"lo").Status==NumericModelReadStatus.Updated&&!f.Low.HasPendingEdits,"普通模型投影误作用户raw");var revision=f.View.Draft!.Revision;Call(f.Native,"DoStartValueChange");Pump();Check(f.Low.Setting==new ConstantSetting(1d)&&P<double>(f.Model(0),"CurValue")==2&&f.View.Draft.Revision==revision,"无编辑原事件把正式值投回模型或写回读值");
+    f.Text(0).Text="keep-bad-raw";Pump();current=3;Check(Read(f,"lo").Status==NumericModelReadStatus.Updated&&f.Text(0).Text=="keep-bad-raw"&&f.Low.HasPendingEdits&&f.Low.HasInvalidText&&P<double>(f.Model(0),"CurValue")==3,"TwoWay普通投影覆盖已有坏raw");
    });
    Case("原左右Check非对称与临时parse和异常分支",()=>{
     foreach(var peer in new object?[]{10d,"bad",null,new InvalidOperationException("read-failed")})

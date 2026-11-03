@@ -21,13 +21,13 @@ internal sealed class NativeNumericModel : System.ComponentModel.INotifyProperty
         get=>Convert.ToDouble(_curValue,System.Globalization.CultureInfo.InvariantCulture);
         set=>SetOriginal(_port.Type.Scalar==ScalarKind.Int64?(object)checked((long)value):value);
     }
-    private bool SetOriginal(object raw)
+    private bool SetOriginal(object raw,bool notifyNative=true)
     {
         var different=!Equals(_curValue,raw);
         if(!different)return false;
         _curValue=NativeNumericSequenceProjection.Single(_port,Prepare(raw,false,freezeStorage:false).Value!);
         IsInitValue=true;Version++;
-        PropertyChanged?.Invoke(this,new(nameof(NativeValue)));return true;
+        if(notifyNative)PropertyChanged?.Invoke(this,new(nameof(NativeValue)));return true;
     }
     internal object OldValue=>_oldValue;
     internal (object Value,bool Known) CaptureOldValue()=> (_oldValue,_oldHasValue);
@@ -82,7 +82,10 @@ internal sealed class NativeNumericModel : System.ComponentModel.INotifyProperty
     }
     internal NumericModelReadStatus Install(object value,bool publish=true,bool force=false)
     {
-        var changed=SetOriginal(value);
+        // Host reads and accepted-state installation project through the existing
+        // Changed/state owner, whose commit preserves pending raw. Native TwoWay
+        // input still raises the original setter notification synchronously.
+        var changed=SetOriginal(value,notifyNative:false);
         if(!HasValue){HasValue=true;if(!changed)Version++;changed=true;}
         if(force&&!changed){Version++;changed=true;}
         _oldValue=_curValue;_oldHasValue=HasValue;

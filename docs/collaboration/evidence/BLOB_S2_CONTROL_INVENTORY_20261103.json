@@ -1,9 +1,9 @@
 {
   "schema": "blob-s2-full-control-inventory/v1",
-  "sourceBaseline": "c6e0e5e3a24a819bb5b6d4ad16948b5131a9ad7e",
+  "sourceBaseline": "cdbc03b0c25768bdd7b5886a11bd96b3d29b74e8",
   "formalProduct": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
   "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
-  "latestFormal": "docs/collaboration/evidence/C07_REFERENCE_FORMAL_20261103.json",
+  "latestFormal": "docs/collaboration/evidence/PARAMETER_NEUTRAL_FORMAL_20261103.json",
   "catalogCount": 28,
   "entries": [
     {
@@ -442,7 +442,7 @@
     "A23"
   ],
   "b08Authority": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
-  "nextWholeUnit": "Blob实际参数闭包职责命名整批归一：同步目录/namespace/资源URI/消费者/Catalog，保原件家族；之后复用正确空间/图文/结果链核收S2完整集成，再S3；缺producer不扩其他基础",
+  "nextWholeUnit": "剩余产品职责完整收尾与未实现原件证据归档；实际依赖保行为，无消费者不扩迁为新控件；继而同版核收Blob已支持完整链与明确保护依赖，再S3完整算法",
   "evidenceRequest": "已向既有逆向负责人集中提交；本次仅静态，不扩大原机授权",
   "workflowBaseline": {
     "directNumericOverlap": [
@@ -455,10 +455,10 @@
     "candidate": "6ec1ead54"
   },
   "estimates": "缺现证据的部分不报可靠工期；明确缺口与阶段出口，不能无限笼统待确认",
-  "status": "S1实施自测闭口；C05/C06/C07完整控件正式自测闭口；产品职责命名整批实施中，待同版Blob集成核收；S3未实施，完整范围保留",
+  "status": "S1及C05/C06/C07完整控件正式自测闭口；参数依赖职责结构整批正式91组闭口；剩余产品结构及S2支持链最终核收继续，S3未实施",
   "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
   "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json",
-  "previousLatestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
+  "previousLatestFormal": "docs/collaboration/evidence/C07_REFERENCE_FORMAL_20261103.json",
   "unitClosures": {
     "C05": {
       "source": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
@@ -495,11 +495,24 @@
         "S3完整算法及VM像素数值同态验证",
         "实际VS/自然键鼠与统一人工验收另记"
       ]
+    },
+    "ParameterStructure": {
+      "status": "IMPLEMENTATION_SELF_TEST_CLOSED",
+      "source": "cdbc03b0c25768bdd7b5886a11bd96b3d29b74e8",
+      "receipt": "docs/collaboration/evidence/PARAMETER_NEUTRAL_FORMAL_20261103.json",
+      "passedCaseGroups": 91,
+      "scope": "Blob参数/数值/范围/引用/ROI实际依赖闭包产品职责命名及完整消费者；不代表全部产品命名/S2/S3完成",
+      "notClaimed": [
+        "本批外默认编译91cs/7原件目录XAML和pending结构仍需职责收尾，不称全部中立",
+        "14预存资源URI和3缺pending元数据按原路径记录，不因本批变成已实现",
+        "缺producer/位置修正/连续会话与S3、原机像素数值等价仍分别保护或未做",
+        "VS/自然键鼠及统一人工另记"
+      ]
     }
   },
-  "previousSourceBaseline": "787e842e69426f555f115afda8cc84f170515a8b",
+  "previousSourceBaseline": "c6e0e5e3a24a819bb5b6d4ad16948b5131a9ad7e",
   "remainingProductStructure": {
-    "status": "两既有工作树成片实施中：目录/namespace/资源URI/当前Catalog及消费者同步，未构建验收，不称全部中立",
+    "status": "参数实际依赖闭包已正式91组核收；剩余默认产品和快照职责整理未实施，不称全部中立",
     "baseline": "4c3a34a1b",
     "evidence": "只读核查主仓实际默认编译项、Plugin.Wpf.csproj:17/NativeResources.props及原pack URI；不来自历史命名专项的泛化",
     "trackedPaths": 1630,
@@ -513,7 +526,18 @@
       "Themes/Native/Numeric/VisionUi仍使用Apps.XmlUI图片URI及HikTextBoxFg资源键"
     ],
     "action": "C07完成后按实际Blob参数/引用/ROI依赖闭包一批同步职责目录/namespace/XAML类及资源URI/消费者与Catalog当前SHA；不合并不同原件家族，不删未知pending，不扩控件功能",
-    "originalIdentity": "Catalog原assembly/type/path/SHA/MVID及来源注释保留，不与最终产品命名混淆"
+    "originalIdentity": "Catalog原assembly/type/path/SHA/MVID及来源注释保留，不与最终产品命名混淆",
+    "currentRemaining": {
+      "source": "e567eed25",
+      "defaultCs": 91,
+      "originalNamespaces": 14,
+      "defaultXaml": 7,
+      "packedAssets": 553,
+      "pendingAllPluginWpf": 521,
+      "previousKeywordSubset": 491,
+      "actualDependencies": "ColorResourceBinding/Utility/Interface/ExternalCall保持行为，非全可退出",
+      "nextDecision": "实际依赖职责迁名；无消费者原件和pending按原字节/来源/SHA保全至Catalog证据，不扩功能"
+    }
   },
   "supportedIntegrationExit": {
     "review": "主线与消费者只读沿当前源码核对：除本命名闭包外，未定位必须重造才能贯通已支持Blob链的独立基础控件",

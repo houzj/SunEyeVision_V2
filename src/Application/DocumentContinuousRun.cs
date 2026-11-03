@@ -10,7 +10,9 @@ namespace SunEyeVision.Application;
 public enum ContinuousPhase { Created, Running, Waiting, Paused, Stopping, Completed }
 public enum ContinuousStopReason { Requested, Cancelled, LastImage, BusinessNg, Failed }
 public sealed record ContinuousRunState(Guid EditSessionId, Guid RootRunId, ContinuousPhase Phase, long Round, string? ActiveWorkflowId);
-public sealed record WorkflowRoundSummary(string WorkflowId, ExecutionStatus Status, bool HasBusinessNg);
+public sealed record ContinuousNodeStatus(Guid RootRunId, long Round, string WorkflowId, string NodeId, ExecutionStatus Status);
+public sealed record WorkflowRoundSummary(string WorkflowId, ExecutionStatus Status, bool HasBusinessNg)
+{ public IReadOnlyList<string> Errors { get; init; } = Array.Empty<string>(); }
 public sealed record ContinuousRoundSummary(Guid RootRunId, long Round, IReadOnlyList<WorkflowRoundSummary> Workflows, ContinuousStopReason? StopReason);
 public sealed record ContinuousRunCompletion(ContinuousStopReason Reason, long CompletedRounds, Exception? Error);
 
@@ -46,7 +48,7 @@ public sealed class DocumentContinuousRun : IDisposable
     public Exception? LastObserverError { get; private set; }
     public event Action<ContinuousRunState>? StateChanged;
     public event Action<ContinuousRoundSummary>? RoundCompleted;
-    public event Action<string,string,ExecutionStatus>? NodeStatusChanged;
+    public event Action<ContinuousNodeStatus>? NodeStatusChanged;
     private static TaskCompletionSource NewSignal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
     private void EnsureOwner() { if (Environment.CurrentManagedThreadId!=_ownerThread) throw new InvalidOperationException("连续运行必须由方案所属线程启动或释放。"); }
     private void SignalLocked() { var old=_pulse; _pulse=NewSignal(); old.TrySetResult(); }
@@ -87,13 +89,13 @@ public sealed class DocumentContinuousRun : IDisposable
     }
     public bool Resume()
     {
-        lock(_gate) { if(_disposed || !_paused || _stop.IsCancellationRequested)return false; _pausedTicks+=Stopwatch.GetTimestamp()-_pauseStarted; _paused=false; _current?.Resume(); SignalLocked(); }
+        lock(_gate) { if(_disposed || Volatile.Read(ref _running)==0 || !_paused || _stop.IsCancellationRequested)return false; _pausedTicks+=Stopwatch.GetTimestamp()-_pauseStarted; _paused=false; _current?.Resume(); SignalLocked(); }
         SetState(ContinuousPhase.Running,State.Round,State.ActiveWorkflowId); return true;
     }
     public void Stop()
     {
         DocumentRunBatch? current;
-        lock(_gate) { if(_disposed || _requestedStop)return; _requestedStop=true; current=_current; SignalLocked(); }
+        lock(_gate) { if(_disposed || _requestedStop || _state.Phase==ContinuousPhase.Completed)return; _requestedStop=true; current=_current; SignalLocked(); }
         var errors=new List<Exception>();
         try { _stop.Cancel(); } catch(Exception error) { errors.Add(error); }
         try { current?.Stop(); } catch(Exception error) { errors.Add(error); }
@@ -136,7 +138,8 @@ public sealed class DocumentContinuousRun : IDisposable
                 {
                     var handlers=NodeStatusChanged;
                     if(handlers is null)return;
-                    PostObserver(() => { foreach(Action<string,string,ExecutionStatus> h in handlers.GetInvocationList()) try { h(flow,node,status); } catch(Exception e) { AddObserverError(e); } });
+                    var receipt=new ContinuousNodeStatus(_reservation.RootId,rounds+1,flow,node,status);
+                    Notify(handlers,receipt);
                 }
                 batch.NodeStatusChanged+=Status;
                 Exception? roundFailure=null;
@@ -147,7 +150,7 @@ public sealed class DocumentContinuousRun : IDisposable
                     (flow,result,request) =>
                     {
                         var ng=result.NodeResults.Values.Any(n=>n.Result is {IsSuccess:true,Judgment:BusinessJudgment.Fail});
-                        summaries.Add(new(flow,result.Status,ng));
+                        summaries.Add(new(flow,result.Status,ng) { Errors=Array.AsReadOnly(result.Errors.ToArray()) });
                         lock(_gate) _due[flow]=checked(NowLocked()+(long)(_settings[flow].RunIntervalMs*(double)Stopwatch.Frequency/1000));
                         var last=false;
                         foreach(var (nodeId,preparer) in request.HostInputs)
@@ -163,8 +166,8 @@ public sealed class DocumentContinuousRun : IDisposable
                                 last |= receipt.StopAfterCurrent;
                             }
                         }
-                        if(result.Status==ExecutionStatus.Cancelled)reason=_requestedStop?ContinuousStopReason.Requested:ContinuousStopReason.Cancelled;
-                        else if(!result.Success)reason=ContinuousStopReason.Failed;
+                        if(result.Status==ExecutionStatus.Cancelled)reason=Volatile.Read(ref _requestedStop)?ContinuousStopReason.Requested:ContinuousStopReason.Cancelled;
+                        else if(!result.Success) { reason=ContinuousStopReason.Failed; failure=new InvalidOperationException("流程执行失败："+string.Join("；",result.Errors)); }
                         else if(ng && _settings[flow].StopOnNg)reason=ContinuousStopReason.BusinessNg;
                         else if(last)reason=ContinuousStopReason.LastImage;
                         return reason is null;
@@ -191,13 +194,14 @@ public sealed class DocumentContinuousRun : IDisposable
                 finally
                 {
                     batch.NodeStatusChanged-=Status;
-                    try { await OnOwner(() => { batch.Dispose(); return true; }).ConfigureAwait(false); }
+                    var drained=false;
+                    try { await OnOwner(() => { batch.Dispose(); return true; }).ConfigureAwait(false); drained=true; }
                     catch(Exception cleanup)
                     {
                         if(roundFailure is not null)throw new AggregateException("连续轮次运行及释放均失败。",roundFailure,cleanup);
                         throw;
                     }
-                    finally { lock(_gate) if(ReferenceEquals(_current,batch))_current=null; }
+                    finally { if(drained) lock(_gate) if(ReferenceEquals(_current,batch))_current=null; }
                 }
                 if(reason is not null)break;
                 linked.Token.ThrowIfCancellationRequested();

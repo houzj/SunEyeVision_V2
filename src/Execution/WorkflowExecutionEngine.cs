@@ -195,7 +195,14 @@ public sealed class WorkflowExecutionEngine
             try { control.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             if (cleanup.Count != 0)
             {
-                if (final is not null) try { final.Dispose(); } catch (Exception error) { cleanup.Add(error); }
+                if (final is not null)
+                {
+                    if (!final.Success && final.Status != ExecutionStatus.Cancelled)
+                        cleanup.Insert(0, new InvalidOperationException("流程执行失败：" + string.Join("；", final.Errors)));
+                    else if (final.Status == ExecutionStatus.Cancelled)
+                        cleanup.Insert(0, new OperationCanceledException("流程执行已取消。", cancellation));
+                    try { final.Dispose(); } catch (Exception error) { cleanup.Add(error); }
+                }
                 if (failure is not null) cleanup.Insert(0, failure);
                 throw new AggregateException("运行及资源清理失败。", cleanup);
             }

@@ -41,8 +41,12 @@ public sealed record GlobalVariableValueSnapshot(object? Value, long Revision);
 /// </remarks>
 public class GlobalVariable : SolutionObservableObject
 {
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+    private Dictionary<string, System.Text.Json.JsonElement>? _additionalData;
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalData
+    {
+        get => _additionalData?.ToDictionary(pair => pair.Key, pair => pair.Value.Clone());
+        set => _additionalData = value?.ToDictionary(pair => pair.Key, pair => pair.Value.Clone());
+    }
 
     public static object ValueGate { get; } = new();
     private string _name = "";

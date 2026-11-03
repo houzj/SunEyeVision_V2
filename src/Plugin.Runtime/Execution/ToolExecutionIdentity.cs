@@ -10,7 +10,7 @@ public sealed class ToolExecutionOwner
     private bool _hasEverStarted;
     public bool HasEverStarted { get { lock(_gate)return _hasEverStarted; } }
     /// <summary>Read-only document lifetime state; querying does not create execution admission.</summary>
-    public bool IsRetired { get { lock(_gate)return _retired; } }
+    public bool IsRetired => Volatile.Read(ref _retired);
     private readonly object _gate = new();
     private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
     private sealed class ScopeAdmissions(Guid root)
@@ -22,6 +22,8 @@ public sealed class ToolExecutionOwner
     private Guid _activeRoot;
     private bool _retired;
     private int _activeRuns;
+    private bool _documentMutation;
+    private int _documentMutationThread, _documentMutationDepth;
     public int ActiveRuns { get { lock (_gate) return _activeRuns; } }
     public Guid Id { get; } = Guid.NewGuid();
     public event Action<string>? DomainRetired;
@@ -33,6 +35,7 @@ public sealed class ToolExecutionOwner
         lock(_gate)
         {
             if(_retired)throw new InvalidOperationException("运行Owner已退役。");
+            if (_documentMutation) throw new InvalidOperationException("方案正在提交编辑，不能开始根运行。");
             if(_activeRoot!=Guid.Empty)throw new InvalidOperationException("A root session is already active.");
             if(_activeRuns!=0)throw new InvalidOperationException("Existing executions must drain before activating a root session.");
             _activeRoot=rootRunId;
@@ -55,6 +58,7 @@ public sealed class ToolExecutionOwner
         lock (_gate)
         {
             if (_retired) throw new InvalidOperationException("运行Owner已退役。");
+            if (_documentMutation) throw new InvalidOperationException("方案正在提交编辑，不能开始运行。");
             var root=rootRunId==Guid.Empty?runId:rootRunId;
             if((rootRunId!=Guid.Empty && _activeRoot!=root) || (rootRunId==Guid.Empty && _activeRoot!=Guid.Empty))
                 throw new InvalidOperationException("Node admission does not belong to the host's active root session.");
@@ -72,7 +76,7 @@ public sealed class ToolExecutionOwner
     {
         lock (_gate)
         {
-            bool Current() => !_retired && (!callback || identity.CallbacksOpen) && !identity.CancellationToken.IsCancellationRequested &&
+            bool Current() => !_retired && !_documentMutation && (!callback || identity.CallbacksOpen) && !identity.CancellationToken.IsCancellationRequested &&
                 _domains.TryGetValue(identity.NodeId, out var generation) && generation == identity.NodeGeneration &&
                 _latest.TryGetValue(identity.NodeId, out var admitted) && admitted.Root == identity.RootRunId &&
                 admitted.Requests.TryGetValue(identity.RunId, out var request) && request == identity.RequestId;
@@ -106,7 +110,7 @@ public sealed class ToolExecutionOwner
     {
         lock (_gate)
         {
-            if (!identity.CallbacksOpen || !Publish(identity, null) || !identity.TryStartExecution())
+            if (_documentMutation || !identity.CallbacksOpen || !Publish(identity, null) || _documentMutation || !identity.TryStartExecution())
                 throw new InvalidOperationException("运行身份已失效、已执行或回调已关闭。");
             _activeRuns++;
             return new RunLease(this);
@@ -119,6 +123,34 @@ public sealed class ToolExecutionOwner
         {
             var current = Interlocked.Exchange(ref _owner, null);
             if (current != null) lock (current._gate) current._activeRuns--;
+        }
+    }
+
+    /// <summary>Excludes real root/node admission for one application-owned edit transaction.</summary>
+    internal IDisposable BeginDocumentMutation()
+    {
+        lock (_gate)
+        {
+            var thread = Environment.CurrentManagedThreadId;
+            if (_retired || (_documentMutation && _documentMutationThread != thread) || _activeRoot != Guid.Empty || _activeRuns != 0)
+                throw new InvalidOperationException("方案运行、退役或其他编辑尚未结束，不能修改方案。");
+            _documentMutation = true;
+            _documentMutationThread = thread;
+            _documentMutationDepth++;
+            return new DocumentMutationLease(this, thread);
+        }
+    }
+    private sealed class DocumentMutationLease(ToolExecutionOwner owner, int thread) : IDisposable
+    {
+        private ToolExecutionOwner? _owner = owner;
+        public void Dispose()
+        {
+            if (Environment.CurrentManagedThreadId != thread)
+                throw new InvalidOperationException("方案编辑租约必须由取得它的线程释放。");
+            var current = Interlocked.Exchange(ref _owner, null);
+            if (current is not null) lock (current._gate)
+                if (--current._documentMutationDepth == 0)
+                { current._documentMutation = false; current._documentMutationThread = 0; }
         }
     }
 
@@ -141,7 +173,8 @@ public sealed class ToolExecutionOwner
         lock (_gate)
         {
             if (_retired) return;
-            if (_activeRuns != 0) throw new InvalidOperationException("脚本仍在运行或清理，方案保持打开；请停止并等待排空。");
+            if (_documentMutation) throw new InvalidOperationException("方案正在提交编辑，不能退役。");
+            if (_activeRuns != 0 || _activeRoot != Guid.Empty) throw new InvalidOperationException("流程或脚本仍在运行或清理，方案保持打开；请停止并等待排空。");
             _retired = true;
             foreach (var domain in _domains) domains.Add(Domain(domain.Key, domain.Value));
             _domains.Clear(); _latest.Clear();

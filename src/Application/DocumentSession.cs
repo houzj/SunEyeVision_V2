@@ -34,6 +34,7 @@ public sealed partial class DocumentSession : IDisposable
             throw new InvalidOperationException("活动方案必须至少包含一个根流程。");
         _documentId = document.Id;
         History = new DocumentHistoryCoordinator(EditSessionId);
+        History.SetMutationLeaseProvider(_owner.BeginDocumentMutation);
         Editing = new DocumentEditSession(this);
         _directoryRetirement = directory.RetirementToken.Register(() => { lock (_gate) _definitions.Clear(); });
     }
@@ -263,6 +264,7 @@ public sealed partial class DocumentSession : IDisposable
         {
             if (_closed) return;
             if (_closing || _notifying || _admitting || _preparing) throw new InvalidOperationException("方案正在关闭、通知、准入或准备事务，不能重入关闭。");
+            if (_activities.Count != 0) throw new InvalidOperationException("方案后台活动尚未排空，请先停止并释放：" + string.Join("、", _activities.Values));
             _closing = true;
         }
         Exception? retireFailure = null;
@@ -284,7 +286,9 @@ public sealed partial class DocumentSession : IDisposable
         try { Editing.Dispose(); editingFailure = Editing.LastReleaseError; } catch (Exception error) { editingFailure = error; }
         Exception? historyFailure = null;
         try { History.Dispose(); } catch (Exception error) { historyFailure = error; }
-        var failures = new[] { retireFailure, editingFailure, historyFailure }.OfType<Exception>().ToArray();
+        Exception? decodedResourceFailure = null;
+        try { ReleaseDecodedResources(); } catch (Exception error) { decodedResourceFailure = error; }
+        var failures = new[] { retireFailure, editingFailure, historyFailure, decodedResourceFailure }.OfType<Exception>().ToArray();
         if (failures.Length == 1) throw failures[0];
         if (failures.Length > 1) throw new AggregateException("方案关闭时部分清理失败。", failures);
     }

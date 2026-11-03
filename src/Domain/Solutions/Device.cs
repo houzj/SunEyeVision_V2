@@ -81,6 +81,7 @@ public enum DeviceStatus
 public class Device
 {
     private System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>? _additionalData;
+    [System.Text.Json.Serialization.JsonInclude]
     public System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>? AdditionalData
     {
         get => _additionalData;

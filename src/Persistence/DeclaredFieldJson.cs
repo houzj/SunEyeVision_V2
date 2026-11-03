@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Domain.Persistence;
 
-namespace SunEyeVision.Workflow;
 
-internal static class RuntimeFieldJson
+namespace SunEyeVision.Persistence;
+
+public static class DeclaredFieldJson
 {
-    internal static IReadOnlyDictionary<string,ParameterSetting> Read(IToolDefinition definition,JsonElement fields,bool currentValues=false)
+    public static IReadOnlyDictionary<string,ParameterSetting> Read(FrozenToolDeclarations definition,JsonElement fields,bool currentValues=false)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        var declared=definition as IToolSettingsFields??throw new JsonException("Runtime settings are not declared.");
-        var ports=(currentValues?declared.SettingsSchema.Inputs:definition.Describe().Inputs.Concat(declared.SettingsSchema.Inputs).Concat(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.Schema(definition).Inputs))
+        if(fields.ValueKind != JsonValueKind.Object) throw new JsonException("Runtime fields must be an object.");
+        CheckUniqueMembers(fields);
+        var ports=(currentValues?definition.SettingsSchema.Inputs:definition.Schema.Inputs.Concat(definition.SettingsSchema.Inputs).Concat(definition.DisplaySchema.Inputs))
             .ToDictionary(port=>port.Id,StringComparer.Ordinal);
-        // Tool identity and declaration are available before the first binding is decoded.
-        var behaviors=ParameterReferenceRules.Freeze(definition);
+        var behaviors=definition.ReferenceBehaviors;
         var result=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
         foreach(var property in fields.EnumerateObject())
         {
@@ -62,6 +62,20 @@ internal static class RuntimeFieldJson
             result.Add(property.Name,currentValues?setting:FieldSettings.Freeze(port,setting));
         }
         return result;
+    }
+    private static void CheckUniqueMembers(JsonElement value)
+    {
+        if(value.ValueKind==JsonValueKind.Object)
+        {
+            var names=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var property in value.EnumerateObject())
+            {
+                if(!names.Add(property.Name))throw new JsonException("Duplicate Runtime setting: "+property.Name);
+                CheckUniqueMembers(property.Value);
+            }
+        }
+        else if(value.ValueKind==JsonValueKind.Array)
+            foreach(var child in value.EnumerateArray())CheckUniqueMembers(child);
     }
     private static void Exact(JsonElement value,params string[] names)
     {

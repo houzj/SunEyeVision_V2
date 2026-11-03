@@ -1,0 +1,10 @@
+{"Type":"Integer","Value":7}
+{"Type":"Double","Value":2.5}
+{"Type":"String","Value":"\u6C49\u5B57\u003C\u0026"}
+{"Type":"Boolean","Value":true}
+{"Type":"Integer","Value":[1,2]}
+{"Type":"Double","Value":[1.25,2.5]}
+{"Type":"Binary","Value":"AQID"}
+{"Type":"Transform","Value":{"M11":1,"M12":2,"M21":3,"M22":4,"OffsetX":5,"OffsetY":6}}
+{"Type":"ROI","Value":[{"Geometry":null,"FillColorArgb":0,"StrokeColorArgb":4278190335,"StrokeThickness":2,"Opacity":1}]}
+{"Type":"Image","Value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAAAAAC4HznGAAAAEElEQVQIHWMUZ2BgFGdgAAAA\u002BgAx0YwpGQAAAABJRU5ErkJggg=="}

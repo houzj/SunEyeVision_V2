@@ -8,8 +8,7 @@ internal static class GraphChangeProjection
     internal sealed record Changes(IReadOnlyList<NodeChange> Nodes, IReadOnlyList<RemovedNode> Removed,
         IReadOnlyList<ConnectionChange> Connections);
 
-    internal static Changes Compare(string workflowId, GraphState before, GraphState after,
-        Func<NodeDefinition, ToolConfiguration, string> configurationIdentity)
+    internal static Changes Compare(string workflowId, GraphState before, GraphState after)
     {
         var oldNodes = before.Nodes.ToDictionary(item => item.Node, ReferenceEqualityComparer.Instance);
         var newNodes = after.Nodes.ToDictionary(item => item.Node, ReferenceEqualityComparer.Instance);
@@ -35,7 +34,7 @@ internal static class GraphChangeProjection
             if (old.Name != item.Name || old.DisplayName != item.DisplayName || old.Enabled != item.Enabled)
                 aspects |= NodeChangedAspect.Presentation;
             if (!ReferenceEquals(old.Configuration, item.Configuration) &&
-                configurationIdentity(item.Node, old.Configuration) != configurationIdentity(item.Node, item.Configuration))
+                !GraphState.SameConfiguration(old.Configuration, item.Configuration))
                 aspects |= NodeChangedAspect.Configuration;
             if (aspects != 0) changed.Add(new(identity, item.Node, aspects));
         }

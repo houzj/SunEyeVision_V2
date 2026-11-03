@@ -1,9 +1,9 @@
 {
   "schema": "blob-s2-full-control-inventory/v1",
-  "sourceBaseline": "787e842e69426f555f115afda8cc84f170515a8b",
+  "sourceBaseline": "c6e0e5e3a24a819bb5b6d4ad16948b5131a9ad7e",
   "formalProduct": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
   "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
-  "latestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
+  "latestFormal": "docs/collaboration/evidence/C07_REFERENCE_FORMAL_20261103.json",
   "catalogCount": 28,
   "entries": [
     {
@@ -268,7 +268,7 @@
         "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs"
       ],
       "existingImplementation": "原Integer/Float双端模型、初始化/原始比较/TwoWay、左右非对称Check与原OldValue恢复；现有组草稿和引用/执行/确认历史保存/退役链复用；全部实际已验",
-      "remaining": "其他缺producer范围仍UI-only保护；宿主普通读及极端Int32溢出不宣称原SDK等价；实际VS/自然输入/统一人工另记；C07和S3仍待本阶段推进",
+      "remaining": "其他缺producer范围仍UI-only保护；宿主普通读及极端Int32溢出不宣称原SDK等价；实际VS/自然输入/统一人工另记；C07已正式闭口；S3仍待推进",
       "owner": "主线，补证集中经逆向负责人",
       "acceptanceExit": "左右对称/单端双端引用、0/1/多值、箭头失焦Dispatcher及关闭，保引用身份与执行快照",
       "formalReceipt": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json"
@@ -276,15 +276,16 @@
     "reference": {
       "name": "C07/B08订阅、来源树、展开与变量",
       "priority": 3,
-      "state": "复用已验链；保A00至A23全范围",
+      "state": "C07完整实施自测闭口：正式同版140场景组，源码/加载/570项载荷核符；B08原24项保留",
       "sources": [
         "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
         "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs"
       ],
-      "existingImplementation": "当前声明资格、固定/动态索引、展开/变量模态、确认/历史/重开与真实消费者已有限验",
-      "remaining": "未知/Group/动态输出和缺producer保护；偏好仅会话、不称磁盘Dirty/Undo；原解绑和全域时序未全证；新增已证来源名称/标量All索引显示差异，见B08_SOURCE_CAPTION_ORIGINAL_20261103.md，产品未修",
+      "existingImplementation": "原叶caption/普通[]/IMAGE父显示、原只读与组合编辑、资格及保后缀/显式拒绝、重入/清源/退役；真实范围/展开变量/历史重开执行及ROI/图文同版通过",
+      "remaining": "typed scalar索引保护非已实现；更名全域未证，稳定身份/raw为宿主适配；未知/Group/动态producer、偏好持久化、连续会话另列；VS/自然键鼠/人工另记",
       "owner": "主线公共引用；工作流目录/owner；逆向补具体缺口",
-      "acceptanceExit": "同一完整引用控件及真实混合窗；原24项完成或明确依赖保护，人工统一另记"
+      "acceptanceExit": "同一完整引用控件及真实混合窗；原24项完成或明确依赖保护，人工统一另记",
+      "formalReceipt": "docs/collaboration/evidence/C07_REFERENCE_FORMAL_20261103.json"
     },
     "advanced": {
       "name": "高级折叠与真实分组",
@@ -441,7 +442,7 @@
     "A23"
   ],
   "b08Authority": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
-  "nextWholeUnit": "C07/B08完整来源显示与引用编辑：依据原VmIO/ButtonSelecter/EnumerationG迁移caption、[]及编辑/刷新，复用既有完整身份/树/事务/生命周期，保原24项及缺基础保护",
+  "nextWholeUnit": "Blob实际参数闭包职责命名整批归一：同步目录/namespace/资源URI/消费者/Catalog，保原件家族；之后复用正确空间/图文/结果链核收S2完整集成，再S3；缺producer不扩其他基础",
   "evidenceRequest": "已向既有逆向负责人集中提交；本次仅静态，不扩大原机授权",
   "workflowBaseline": {
     "directNumericOverlap": [
@@ -457,7 +458,7 @@
   "status": "S1实施自测闭口；C05完整单数值正式自测闭口；下一C06，S2/S3全范围未完成",
   "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
   "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json",
-  "previousLatestFormal": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
+  "previousLatestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
   "unitClosures": {
     "C05": {
       "source": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
@@ -482,7 +483,36 @@
         "S3完整算法及VM像素数值同态验证",
         "实际VS/自然键鼠与统一人工验收另记"
       ]
+    },
+    "C07": {
+      "status": "IMPLEMENTATION_SELF_TEST_CLOSED",
+      "source": "c6e0e5e3a24a819bb5b6d4ad16948b5131a9ad7e",
+      "receipt": "docs/collaboration/evidence/C07_REFERENCE_FORMAL_20261103.json",
+      "passedCaseGroups": 140,
+      "notClaimed": [
+        "缺原厂更名全域证据及当前typed scalar索引等保护适配未宣称VM等价",
+        "缺producer及依赖基础的保护占位非已实现",
+        "S3完整算法及VM像素数值同态验证",
+        "实际VS/自然键鼠与统一人工验收另记"
+      ]
     }
   },
-  "previousSourceBaseline": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a"
+  "previousSourceBaseline": "787e842e69426f555f115afda8cc84f170515a8b",
+  "remainingProductStructure": {
+    "status": "待S2成片归一；不能宣称全部命名已中立",
+    "baseline": "4c3a34a1b",
+    "evidence": "只读核查主仓实际默认编译项、Plugin.Wpf.csproj:17/NativeResources.props及原pack URI；不来自历史命名专项的泛化",
+    "trackedPaths": 1630,
+    "compiledCs": 243,
+    "wpfXaml": 36,
+    "imagePng": 859,
+    "pendingNotImplemented": 491,
+    "confirmed": [
+      "Controls/Native/Numeric/VMControls及Composition/Apps.XmlUI目录/namespace仍为实际产品",
+      "Numeric.Arranged.NumericControl直接依赖Input.HikPcUI.ListView",
+      "Themes/Native/Numeric/VisionUi仍使用Apps.XmlUI图片URI及HikTextBoxFg资源键"
+    ],
+    "action": "C07完成后按实际Blob参数/引用/ROI依赖闭包一批同步职责目录/namespace/XAML类及资源URI/消费者与Catalog当前SHA；不合并不同原件家族，不删未知pending，不扩控件功能",
+    "originalIdentity": "Catalog原assembly/type/path/SHA/MVID及来源注释保留，不与最终产品命名混淆"
+  }
 }

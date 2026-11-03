@@ -31,6 +31,10 @@ internal sealed class AdmittedToolConfiguration
     {
         var inputs = (_definition as IToolExecutionInputs)?.ValidateExecutionInputs(Configuration.Fields) ?? Array.Empty<Diagnostic>();
         if (inputs.Count != 0) return inputs;
+        return ValidateForEditing();
+    }
+    internal IReadOnlyList<Diagnostic> ValidateForEditing()
+    {
         _ = ResultDisplayFields.Capture(_definition, Configuration.Fields);
         var fields = Configuration.Fields.Select(SettingsSchema.Inputs);
         var known = (_definition as IToolKnownSettingsValidation)?.ValidateKnownSettings(fields) ?? Array.Empty<Diagnostic>();
@@ -132,7 +136,7 @@ internal sealed class AdmittedToolConfiguration
             throw new ArgumentException("当前值必须属于已准入的参数字段。", nameof(fieldId));
         return WithConfiguration(Configuration.WithAcceptedParameterValue(fieldId, value));
     }
-    internal AdmittedToolConfiguration WithFieldSettings(IReadOnlyDictionary<string, ParameterSetting> changes)
+    internal AdmittedToolConfiguration WithFieldSettings(IReadOnlyDictionary<string, ParameterSetting> changes, IReadOnlyList<string>? acceptedFieldOrder = null)
     {
         ArgumentNullException.ThrowIfNull(changes);
         var fields = Configuration.Fields.Apply(changes);
@@ -149,6 +153,14 @@ internal sealed class AdmittedToolConfiguration
             Identity(id, Configuration.Fields.Read(id)) == Identity(id, fields.Read(id))).ToList();
         foreach (var id in changes.Keys.Concat(fields.Capture().Keys).Distinct(StringComparer.Ordinal))
             if (Referenced(id) && !order.Contains(id, StringComparer.Ordinal)) order.Add(id);
+        if (acceptedFieldOrder is not null)
+        {
+            var requested = acceptedFieldOrder.ToArray();
+            if (requested.Length != order.Count || requested.Distinct(StringComparer.Ordinal).Count() != requested.Length ||
+                requested.Any(id => id is null || !order.Contains(id, StringComparer.Ordinal)))
+                throw new ArgumentException("引用接受顺序必须完整且唯一地列出已绑定的参数字段。", nameof(acceptedFieldOrder));
+            order = requested.ToList();
+        }
         var values = new Dictionary<string, ConstantSetting>(StringComparer.Ordinal);
         var revisions = new Dictionary<string, long>(StringComparer.Ordinal);
         foreach (var port in SettingsSchema.Inputs)

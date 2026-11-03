@@ -150,7 +150,7 @@ public sealed partial class DocumentSession
             var participants = proposal.Nodes.Where(item => item.Opening.Scope.WorkflowId == flow.Id)
                 .Select(item => item.Opening.Node.Id).ToHashSet(StringComparer.Ordinal);
             CandidateInputValidation.Validate(_documentId, flow.Id, ResultOwnerId, ChangeRevision, graph, reconciled.Variables,
-                participants, proposal.Variables is not null, AdmitConfiguration);
+                participants, proposal.Variables is not null, AdmitConfiguration, requireExecutionInputs: false);
             CandidateDisplayValidation.Validate(flow.Id, ResultOwnerId, ChangeRevision, graph,
                 participants, proposal.Variables is not null, AdmitConfiguration);
         }

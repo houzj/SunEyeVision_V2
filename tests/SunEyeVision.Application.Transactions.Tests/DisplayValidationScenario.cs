@@ -23,6 +23,11 @@ internal static class DisplayValidationScenario
         var first = session.CreateNode(graph, "DisplayProbe", new CanvasPoint(0, 0));
         var second = session.CreateNode(graph, "DisplayProbe", new CanvasPoint(0, 100));
         session.CommitGraphEdit(graph, "显示测试节点");
+        var privateDisplay = session.Editing.Host.BeginEdit(flow.Id, second.Id);
+        privateDisplay.ApplyFields(new Dictionary<string, ParameterSetting> { ["text"] = new ConstantSetting("private preview") });
+        Check(session.GetNodeResultPresentation(flow.Id, second, privateDisplay).Appearance!.Text.Content == "private preview" &&
+            session.GetNodeResultPresentation(flow.Id, second).Appearance!.Text.Content == "",
+            "Private presentation must not overwrite the formal appearance.");
         var selfOptions = session.CaptureReferenceSelections(flow.Id, second, "text");
         Check(selfOptions.FieldKind == ReferenceSelectionFieldKind.Display && selfOptions.Outputs.Count == 1 &&
             ReferenceEquals(selfOptions.Outputs.Single().Actual, second) && selfOptions.Variables.Count == 0,

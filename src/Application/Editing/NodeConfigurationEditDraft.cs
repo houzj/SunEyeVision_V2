@@ -38,13 +38,28 @@ public sealed class NodeConfigurationEditDraft
         _candidate.SettingsSchema.Inputs.Any(port => _candidate.Configuration.CurrentValueChangedFrom(port.Id, _opening.Configuration.Configuration));
 
     /// <summary>Apply a complete group through the admitted declaration before replacing the candidate.</summary>
-    public void ApplyFields(IReadOnlyDictionary<string, ParameterSetting> changes)
+    public void ApplyFields(IReadOnlyDictionary<string, ParameterSetting> changes, IReadOnlyList<string>? acceptedFieldOrder = null)
     {
         EnsureCurrent();
-        Interlocked.Exchange(ref _revision, checked(_revision + 1));
-        var next = _candidate.WithFieldSettings(changes);
+        var next = _candidate.WithFieldSettings(changes, acceptedFieldOrder);
         EnsureCurrent();
+        Interlocked.Exchange(ref _revision, checked(_revision + 1));
         _candidate = next;
+    }
+
+    internal AdmittedToolConfiguration CapturePresentationCandidate()
+    {
+        EnsureCurrent();
+        return _candidate;
+    }
+
+    internal NodeConfigurationEditDraft PreviewFields(IReadOnlyDictionary<string, ParameterSetting> changes,
+        IReadOnlyList<string>? acceptedFieldOrder)
+    {
+        EnsureCurrent();
+        var next = _candidate.WithFieldSettings(changes, acceptedFieldOrder);
+        EnsureCurrent();
+        return new NodeConfigurationEditDraft(_session, _opening, next);
     }
 
     /// <summary>Private debug value; merged with the live value using the opening revision at commit.</summary>

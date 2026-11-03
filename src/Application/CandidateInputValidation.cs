@@ -11,7 +11,7 @@ internal static class CandidateInputValidation
 {
     internal static void Validate(string solutionId, string workflowId, Guid ownerId, long revision,
         GraphState graph, IReadOnlyList<GlobalVariable> variables, IReadOnlySet<string> participants,
-        bool validateAll, Func<NodeDefinition, ToolConfiguration, AdmittedToolConfiguration> admit)
+        bool validateAll, Func<NodeDefinition, ToolConfiguration, AdmittedToolConfiguration> admit, bool requireExecutionInputs = true)
     {
         var configs = graph.Nodes.ToDictionary(item => item.Node.Id, item => admit(item.Node, item.Configuration), StringComparer.Ordinal);
         var sources = configs.Select(pair => new BindingSource(new(workflowId, pair.Key), Guid.Empty, pair.Value.Schema, 0)).ToArray();
@@ -30,7 +30,7 @@ internal static class CandidateInputValidation
         {
             if (!validateAll && !participants.Contains(item.Node.Id)) continue;
             var configuration = configs[item.Node.Id];
-            var diagnostic = configuration.ValidateForExecution().FirstOrDefault();
+            var diagnostic = (requireExecutionInputs ? configuration.ValidateForExecution() : configuration.ValidateForEditing()).FirstOrDefault();
             if (diagnostic is not null) throw new InvalidOperationException(diagnostic.Message);
             var scope = new BindingScopeSnapshot(new(workflowId, item.Node.Id), ownerId, revision,
                 sources, sources.Select(source => source.Node),

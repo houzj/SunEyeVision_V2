@@ -28,6 +28,17 @@ public sealed partial class NodeConfigurationEditHost
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
     public SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(NodeConfigurationEditDraft draft, string fieldId)
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); if (!ReferenceEquals(draft.Session, _session)) throw new InvalidOperationException("草稿属于另一个方案。"); return draft.ReadCurrentParameter(fieldId); }
+    /// <summary>Validate a whole group without mutating the caller draft, document or history.</summary>
+    public void ValidateFieldProposals(NodeConfigurationEditDraft draft,
+        IReadOnlyDictionary<string, SunEyeVision.Plugin.Contracts.ParameterSetting> changes,
+        IReadOnlyList<string>? acceptedFieldOrder = null)
+    {
+        EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft);
+        if (!ReferenceEquals(draft.Session, _session)) throw new InvalidOperationException("草稿属于另一个方案。");
+        var preview = draft.PreviewFields(changes, acceptedFieldOrder);
+        _session.ValidateEdit(DocumentEditProposal.Prepare(this, nodes: new[] { preview }));
+    }
+
     internal NodeConfigurationEditHost(DocumentSession session)
         => _session = session ?? throw new ArgumentNullException(nameof(session));
 

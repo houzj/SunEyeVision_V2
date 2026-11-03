@@ -94,7 +94,12 @@ internal static partial class S2DocumentEditingCases
         vm.SelectedNode=node;node.IsSelected=true;Pump();
         var workspace=(ResultWorkspaceShell)resultView.FindName("Workspace");workspace.IsDoubleImage=false;Pump();
         NativeRuntimeEditorWindow Open()
-        {vm.OpenDebugWindowCommand.Execute(node);Pump();var window=app.Windows.OfType<NativeRuntimeEditorWindow>().Single(w=>w.IsVisible);window.UpdateLayout();Pump();return window;}
+        {
+            Diagnostic("Open.Execute",()=>vm.OpenDebugWindowCommand.Execute(node));
+            Diagnostic("Open.PumpAfterExecute",Pump);
+            var window=Diagnostic("Open.FindWindow",()=>app.Windows.OfType<NativeRuntimeEditorWindow>().Single(w=>w.IsVisible));
+            Diagnostic("Open.UpdateLayout",window.UpdateLayout);Diagnostic("Open.PumpAfterLayout",Pump);return window;
+        }
         RuntimeNodeConfigurationControl Control(NativeRuntimeEditorWindow window)=>window.EditorControl;
         object Owner(RuntimeNodeConfigurationControl control)=>Get(Get(control.Content,"_composition"),"_roiOwner");
         NativeRoiSession Session(object owner,string group)=>(NativeRoiSession)((System.Collections.IDictionary)Get(owner,"_sessions"))[group]!;
@@ -882,20 +887,20 @@ internal static partial class S2DocumentEditingCases
             }
             Case("原文本花括号来源事件链与旧容器退出（WPF事件注入）",()=>{
                 var contentId=Display(BlobResultDisplay.Text,"content");var baseline=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!);
-                var window=Open();var control=Control(window);var editor=(DeclaredSettingsView)Get(control.Content,"Editor");SelectResultPage(editor);
+                var window=Diagnostic("TextSource.Open",Open);var control=Diagnostic("TextSource.Control",()=>Control(window));var editor=Diagnostic("TextSource.Editor",()=>(DeclaredSettingsView)Get(control.Content,"Editor"));Diagnostic("TextSource.SelectResultPage",()=>SelectResultPage(editor));
                 var field=((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==contentId);var textPresenter=Get(field.View,"_textPresenter");var session=Get(textPresenter,"_session");
-                var raw=Visual(field.View).OfType<TextBox>().Single();raw.SetCurrentValue(TextBox.TextProperty,"值:{}");raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();raw.SelectionStart=3;raw.SelectionLength=0;
-                var focus=Keyboard.Focus(raw);Pump();raw.SelectionStart=2;raw.SelectionStart=3;Pump();
-                File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-focus.json"),System.Text.Json.JsonSerializer.Serialize(new{raw.IsKeyboardFocused,raw.IsFocused,raw.Text,raw.SelectionStart,focusType=focus?.GetType().FullName,sourceCount=((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Count()}));
+                var raw=Diagnostic("TextSource.FindRaw",()=>Visual(field.View).OfType<TextBox>().Single());Diagnostic("TextSource.SetText",()=>raw.SetCurrentValue(TextBox.TextProperty,"值:{}"));Diagnostic("TextSource.UpdateSource",()=>raw.GetBindingExpression(TextBox.TextProperty)!.UpdateSource());Diagnostic("TextSource.SelectionBeforeFocus",()=>{raw.SelectionStart=3;raw.SelectionLength=0;});
+                var focus=Diagnostic("TextSource.Keyboard.Focus",()=>Keyboard.Focus(raw));Diagnostic("TextSource.PumpAfterFocus",Pump);Diagnostic("TextSource.SelectionAfterFocus",()=>{raw.SelectionStart=2;raw.SelectionStart=3;});Diagnostic("TextSource.PumpAfterSelection",Pump);
+                Diagnostic("TextSource.WriteFocus",()=>File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-focus.json"),System.Text.Json.JsonSerializer.Serialize(new{raw.IsKeyboardFocused,raw.IsFocused,raw.Text,raw.SelectionStart,focusType=focus?.GetType().FullName,sourceCount=((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Count()})));
                 Require(raw.IsKeyboardFocused,"隔离桌面未取得原文本框WPF键盘焦点；不手工RaiseEvent伪造焦点、不回退用户桌面");
-                PumpUntil(()=>((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Any());
+                Diagnostic("TextSource.WaitSourceNodes",()=>PumpUntil(()=>((System.Collections.IEnumerable)Get(session,"SourceNodes")).Cast<object>().Any()));
                 IEnumerable<object> Nodes(System.Collections.IEnumerable nodes){foreach(var item in nodes){yield return item;foreach(var child in Nodes((System.Collections.IEnumerable)Get(item,"EnumEntrysA")))yield return child;}}
                 var selected=Nodes((System.Collections.IEnumerable)Get(session,"SourceNodes")).Single(item=>Maybe(item,"Candidate") is SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate candidate&&candidate.NodeId==source.Id&&candidate.Output.Id=="output.image"&&candidate.MemberPath.SequenceEqual(new[]{"width"}));
                 var popup=Visual(field.View).OfType<AppsPopup>().Single();popup.ApplyTemplate();var part=(Popup)popup.Template.FindName("PART_Popup",popup)!;Require(part.IsOpen&&part.Child is not null,"原文本来源Popup未实际打开");
-                var tree=Visual(part.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();var native=(TreeView)tree.FindName("treeView");tree.UpdateLayout();Pump();
+                var tree=Visual(part.Child).OfType<SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView>().Single();var native=(TreeView)tree.FindName("treeView");Diagnostic("TextSource.TreeUpdateLayout",tree.UpdateLayout);Diagnostic("TextSource.TreePump",Pump);
                 var container=(TreeViewItem?)tree.GetType().GetMethod("FindTreeViewItem",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{native,selected})??throw new Exception("原文本来源目标容器未生成");
                 var previousScene=Maybe(outputPane,"Display");
-                container.IsSelected=true;Pump();container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();
+                Diagnostic("TextSource.SelectContainer",()=>container.IsSelected=true);Diagnostic("TextSource.PumpSelected",Pump);Diagnostic("TextSource.DoubleClick",()=>container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent}));Diagnostic("TextSource.PumpDoubleClick",Pump);
                 Require(field.Setting is DisplayExpressionSetting expression&&expression.Slots.Single().Reference is {} reference&&reference.NodeId==source.Id&&reference.PortId=="output.image"&&reference.MemberFieldPath.SequenceEqual(new[]{"width"})&&reference.ScopeId==flowId,"原文本树事件未保选择来源身份");
                 void TraceScene(string stage)
                 {
@@ -905,11 +910,11 @@ internal static partial class S2DocumentEditingCases
                     File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-source-trace.jsonl"),System.Text.Json.JsonSerializer.Serialize(data)+Environment.NewLine);
                 }
                 TraceScene("after-selection");
-                try{PumpUntil(()=>Maybe(outputPane,"Display") is {} current&&Words(current).Count()==2&&Words(current).All(word=>Equals(Get(word,"Content"),"值:64")));}
+                try{Diagnostic("TextSource.WaitRenderedText",()=>PumpUntil(()=>Maybe(outputPane,"Display") is {} current&&Words(current).Count()==2&&Words(current).All(word=>Equals(Get(word,"Content"),"值:64"))));}
                 catch{TraceScene("timeout");throw;}
                 TraceScene("accepted");
-                window.Close();Pump();Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==baseline,"来源选择取消写正式配置");
-                window=Open();control=Control(window);var context=ToolEditorCommit.GetDraftContext(control)!;var draft=(WorkflowNodeBase)context.GetType().GetProperty("DraftNode")!.GetValue(context)!;var draftBefore=System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration!);
+                Diagnostic("TextSource.Close",window.Close);Diagnostic("TextSource.PumpClose",Pump);Require(System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration!)==baseline,"来源选择取消写正式配置");
+                window=Diagnostic("TextSource.Reopen",Open);control=Control(window);var context=ToolEditorCommit.GetDraftContext(control)!;var draft=(WorkflowNodeBase)context.GetType().GetProperty("DraftNode")!.GetValue(context)!;var draftBefore=System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration!);
                 container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();Require(window.IsVisible&&System.Text.Json.JsonSerializer.Serialize(draft.RuntimeConfiguration!)==draftBefore,"旧文本容器写新草稿或关闭新窗");window.Close();Pump();
             });
             if(scope=="TextSource")Case("真实文本树连续选择两来源、编辑确认并重开消费",()=>{
@@ -1030,6 +1035,13 @@ internal static partial class S2DocumentEditingCases
     }
     private static IEnumerable<DependencyObject> Visual(DependencyObject root)
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
+    private static T Diagnostic<T>(string phase,Func<T> action)
+    {
+        var timer=System.Diagnostics.Stopwatch.StartNew();
+        void Log(string state,string? error=null)=>File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"text-source-stages.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{utc=DateTime.UtcNow.ToString("O"),phase,state,elapsedMs=timer.Elapsed.TotalMilliseconds,thread=Environment.CurrentManagedThreadId,error})+Environment.NewLine);
+        Log("BEGIN");try{var value=action();Log("END");return value;}catch(Exception error){Log("FAIL",error.ToString());throw;}
+    }
+    private static void Diagnostic(string phase,Action action)=>Diagnostic(phase,()=>{action();return true;});
     private static void Case(string name,Action action){var filter=Environment.GetEnvironmentVariable("S4_BLOB_DISPLAY_CASE");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;var log=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"display-progress.log");File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}catch(Exception error){File.AppendAllText(log,DateTime.UtcNow.ToString("O")+" FAIL "+name+Environment.NewLine+error+Environment.NewLine);throw;}}
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
 }

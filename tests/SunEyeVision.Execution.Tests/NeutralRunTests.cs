@@ -1,5 +1,7 @@
 using System.Reflection;
 using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
@@ -11,6 +13,34 @@ namespace SunEyeVision.Execution.Tests;
 // It is not evidence that a packaged ImageLoad or Blob tool has passed.
 public sealed class NeutralRunTests
 {
+    [Fact]
+    public void Producer_value_is_accepted_through_actual_session_without_creating_history()
+    {
+        var registration = new ToolComponentRegistration(new ToolComponentMetadata("neutral-run", "NeutralRun",
+            ToolComponentRole.Runtime, FoundationContract.Major, FoundationContract.Minor), typeof(NeutralDefinition));
+        var directory = (RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare", BindingFlags.Static | BindingFlags.NonPublic)!
+            .Invoke(null, new object[] { new[] { registration } })!;
+        using var session = DocumentSession.CreateNew(directory);
+        var flow = session.GetWorkflows().Single();
+        var graph = session.PrepareGraphEdit(flow.Id);
+        var node = session.CreateNode(graph, "NeutralRun", new CanvasPoint(0, 0));
+        session.CommitGraphEdit(graph, "添加测试节点");
+        var reference = new OutputReference(node.Id, "number", TypeRef.ScalarOf(ScalarKind.Int64), scopeId: flow.Id);
+        using var variables = session.Editing.Host.BeginVariableEdit();
+        variables.Variables.Add(new GlobalVariable("计数", 1L, "Integer")
+        { ProducerBinding = new ProducerBinding { ReferenceExpression = ParameterSettingCanonical.Serialize(reference) } });
+        session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, variables: variables));
+        var actual = Assert.Single(session.Document.GlobalVariables);
+        var historyCount = session.HistoryEntries.Count;
+        using (var batch = session.CaptureRunBatch(new[] { flow.Id }))
+        using (var result = batch.RunAsync(_ => { }).GetAwaiter().GetResult())
+        {
+            Assert.True(result.Workflows[flow.Id].Success);
+            Assert.Equal(42L, actual.Value);
+            Assert.Equal(historyCount, session.HistoryEntries.Count);
+        }
+    }
+
     [Fact]
     public void Run_publishes_real_identity_and_retains_output_until_session_close()
     {

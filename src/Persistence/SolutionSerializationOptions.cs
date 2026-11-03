@@ -14,7 +14,7 @@ public static class SolutionSerializationOptions
         var resolver = (source.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>
         {
             if (info.Type != typeof(GlobalVariable)) return;
-            var value = info.Properties.Single(property => property.Name == nameof(GlobalVariable.Value));
+            var value = info.Properties.Single(property => property.AttributeProvider is System.Reflection.PropertyInfo member ? member.Name == nameof(GlobalVariable.Value) : property.Name == nameof(GlobalVariable.Value));
             value.CustomConverter = new GlobalVariableValueConverter(extension);
         });
         return new JsonSerializerOptions(source) { TypeInfoResolver = resolver };

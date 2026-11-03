@@ -30,9 +30,10 @@ internal sealed class NativeNumericModel : System.ComponentModel.INotifyProperty
         PropertyChanged?.Invoke(this,new(nameof(NativeValue)));return true;
     }
     internal object OldValue=>_oldValue;
-    internal void RestoreOldValue()
+    internal (object Value,bool Known) CaptureOldValue()=> (_oldValue,_oldHasValue);
+    internal void RestoreOldValue(object value,bool known)
     {
-        SetOriginal(_oldValue);HasValue=_oldHasValue;
+        HasValue=known;SetOriginal(value);
     }
     internal long Version {get;private set;}
     internal event Action? Changed;

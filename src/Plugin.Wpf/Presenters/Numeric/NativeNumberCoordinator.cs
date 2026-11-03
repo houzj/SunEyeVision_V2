@@ -353,12 +353,13 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!Current())return;
         if(!_eventRoot.IsEnabled)
         {
-            _loadGeneration++;_resume?.Abort();_resume=null;
+            _arrange?.PrepareBorrowedInteractions(false);_loadGeneration++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
                 ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
+            _arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&!_presentationHidden);
             _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible);
             QueueResume();
         }

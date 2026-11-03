@@ -1,4 +1,5 @@
 using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Domain.Solutions;
 
 namespace SunEyeVision.Application;
 
@@ -8,14 +9,16 @@ public sealed record VariableConsumer(string WorkflowId, string WorkflowName, No
 public sealed partial class DocumentSession
 {
     /// <summary>Derive consumers from currently admitted typed field references, including dynamic indexes.</summary>
-    public IReadOnlyList<VariableConsumer> GetVariableConsumers(string variableId)
+    public IReadOnlyList<VariableConsumer> GetVariableConsumers(GlobalVariable variable)
     {
+        ArgumentNullException.ThrowIfNull(variable);
+        var variableId = variable.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(variableId);
         lock (_gate)
         {
             EnsureOpen();
             var variables = Document.GlobalVariables.Where(variable => variable.Id == variableId).ToArray();
-            if (Document.Id != _documentId || variables.Length != 1)
+            if (Document.Id != _documentId || variables.Length != 1 || !ReferenceEquals(variables[0], variable))
                 throw new InvalidOperationException("变量不属于当前方案或身份不唯一。");
             var result = new List<VariableConsumer>();
             foreach (var flow in GetWorkflows())

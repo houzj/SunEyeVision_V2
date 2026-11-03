@@ -1,4 +1,4 @@
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
@@ -8,8 +8,8 @@ public partial class WorkflowCanvasControl
 {
     private WorkflowTabViewModel? _vmGeometryTab;
     private INotifyCollectionChanged? _vmGeometryNodes, _vmGeometryConnections;
-    private readonly HashSet<WorkflowConnection> _vmGeometryConnectionSubscriptions = new();
-    private readonly HashSet<WorkflowNode> _vmGeometrySubscriptions = new();
+    private readonly HashSet<CanvasConnectionProjection> _vmGeometryConnectionSubscriptions = new();
+    private readonly HashSet<CanvasNodeProjection> _vmGeometrySubscriptions = new();
     private int _vmGeometryGeneration;
     private bool _vmGeometryQueued;
     private void InitializeVmGeometryTracking()
@@ -36,23 +36,26 @@ public partial class WorkflowCanvasControl
         _vmGeometryTab = CurrentWorkflowTab;
         if (_vmGeometryTab == null) return;
         _vmGeometryTab.WorkflowContentChanged += VmGeometryContentChanged;
-        _vmGeometryNodes = _vmGeometryTab.WorkflowNodes;
-        _vmGeometryNodes.CollectionChanged += VmGeometryCollectionChanged;
-        _vmGeometryConnections = _vmGeometryTab.WorkflowConnections;
-        _vmGeometryConnections.CollectionChanged += VmGeometryCollectionChanged;
+        _vmGeometryNodes = _vmGeometryTab.DocumentCanvas?.Nodes;
+        if (_vmGeometryNodes != null) _vmGeometryNodes.CollectionChanged += VmGeometryCollectionChanged;
+        _vmGeometryConnections = _vmGeometryTab.DocumentCanvas?.Connections;
+        if (_vmGeometryConnections != null) _vmGeometryConnections.CollectionChanged += VmGeometryCollectionChanged;
         SubscribeVmGeometryNodes();
     }
     private void VmGeometryContentChanged(object? sender, EventArgs e) { BindVmGeometry(); QueueVmGeometryRefresh(); }
     private void VmGeometryCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    { SubscribeVmGeometryNodes(); QueueVmGeometryRefresh(); }
+    {
+        if (Resources["SmartPathMultiConverter"] is SunEyeVision.UI.Converters.Path.SmartPathMultiConverter converter) converter.ClearCache();
+        SubscribeVmGeometryNodes(); QueueVmGeometryRefresh();
+    }
     private void SubscribeVmGeometryNodes()
     {
-        var current = _vmGeometryTab?.WorkflowNodes.OfType<WorkflowNode>().ToHashSet() ?? new();
+        var current = _vmGeometryTab?.DocumentCanvas?.Nodes.ToHashSet() ?? new();
         foreach (var node in _vmGeometrySubscriptions.Except(current).ToArray())
         { node.PropertyChanged -= VmNodeGeometryChanged; _vmGeometrySubscriptions.Remove(node); }
         foreach (var node in current.Except(_vmGeometrySubscriptions))
         { node.PropertyChanged += VmNodeGeometryChanged; _vmGeometrySubscriptions.Add(node); }
-        var edges = _vmGeometryTab?.WorkflowConnections.ToHashSet() ?? new();
+        var edges = _vmGeometryTab?.DocumentCanvas?.Connections.ToHashSet() ?? new();
         foreach (var edge in _vmGeometryConnectionSubscriptions.Except(edges).ToArray())
         { edge.PropertyChanged -= VmConnectionGeometryChanged; _vmGeometryConnectionSubscriptions.Remove(edge); }
         foreach (var edge in edges.Except(_vmGeometryConnectionSubscriptions))
@@ -60,12 +63,12 @@ public partial class WorkflowCanvasControl
     }
     private void VmConnectionGeometryChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(WorkflowConnection.SourcePort) or nameof(WorkflowConnection.TargetPort) or
-            nameof(WorkflowConnection.SourceNodeId) or nameof(WorkflowConnection.TargetNodeId)) QueueVmGeometryRefresh();
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName is nameof(CanvasConnectionProjection.SourcePort) or nameof(CanvasConnectionProjection.TargetPort) or
+            nameof(CanvasConnectionProjection.SourceNodeId) or nameof(CanvasConnectionProjection.TargetNodeId)) QueueVmGeometryRefresh();
     }
     private void VmNodeGeometryChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(WorkflowNode.IsSelected))
+        if (e.PropertyName == nameof(CanvasNodeProjection.IsSelected))
         {
             var generation = _vmGeometryGeneration;
             Dispatcher.BeginInvoke(DispatcherPriority.DataBind, new Action(() =>
@@ -74,7 +77,7 @@ public partial class WorkflowCanvasControl
             }));
             return;
         }
-        if (e.PropertyName is nameof(WorkflowNode.Position) or nameof(WorkflowNode.Width) or nameof(WorkflowNode.Height) or nameof(WorkflowNode.VisualHeight) or nameof(WorkflowNode.VisualWidth))
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName is nameof(CanvasNodeProjection.Position) or nameof(CanvasNodeProjection.Width) or nameof(CanvasNodeProjection.Height) or nameof(CanvasNodeProjection.VisualHeight) or nameof(CanvasNodeProjection.VisualWidth))
             QueueVmGeometryRefresh();
     }
     private void QueueVmGeometryRefresh()
@@ -89,7 +92,8 @@ public partial class WorkflowCanvasControl
             _vmGeometryQueued = false;
             _connectionPathCache?.MarkAllDirty();
             if (_vmGeometryTab == null) return;
-            foreach (var connection in _vmGeometryTab.WorkflowConnections) connection.InvalidatePath();
+            if (_vmGeometryTab.DocumentCanvas is { } canvas)
+                foreach (var connection in canvas.Connections) connection.InvalidatePath();
             if (_vmSelectedWire != null) DrawVmWireHandles();
             UpdateBoundingRectangle(); DrawVmSelectionFrame();
         }));

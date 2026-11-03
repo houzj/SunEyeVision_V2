@@ -10,7 +10,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
     private readonly List<Rectangle> _vmWireHandles=new();
-    private WorkflowConnection? _vmSelectedWire,_vmEditingWire;
+    private CanvasConnectionProjection? _vmSelectedWire,_vmEditingWire;
     private System.Windows.Shapes.Path? _vmSelectedWirePath;
     private RecoveredConnectionDrag? _vmWireDrag;
     private Point[]? _vmBeforePath,_vmOriginalRendered;
@@ -38,14 +38,13 @@ public partial class WorkflowCanvasControl
         {
             _vmSelectedWire.PropertyChanged-=VmWireSelectionChanged;
             _vmSelectedWire.IsSelected=false;
-            if(_viewModel!=null&&ReferenceEquals(_viewModel.SelectedConnection,_vmSelectedWire))_viewModel.SelectedConnection=null;
         }
         if(_vmSelectedWirePath!=null)_vmSelectedWirePath.LostKeyboardFocus-=VmWireLostFocus;
         _vmSelectedWirePath=null;_vmSelectedWire=null;ClearVmWireHandles();
     }
     private void VmWireSelectionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if(e.PropertyName==nameof(WorkflowConnection.IsSelected)&&_vmSelectedWire?.IsSelected!=true)
+        if(e.PropertyName==nameof(CanvasConnectionProjection.IsSelected)&&_vmSelectedWire?.IsSelected!=true)
         {FinishVmWireDrag(false);ClearVmWireSelection();}
     }
     private void ClearVmWireHandles()
@@ -53,27 +52,28 @@ public partial class WorkflowCanvasControl
         foreach(var handle in _vmWireHandles)WorkflowCanvas.Children.Remove(handle);
         _vmWireHandles.Clear();
     }
-    private void SelectVmWire(WorkflowConnection connection,System.Windows.Shapes.Path hit)
+    private void SelectVmWire(CanvasConnectionProjection connection,System.Windows.Shapes.Path hit)
     {
         hit.Focus();ClearVmWireSelection();connection.IsSelected=true;
-        if(_viewModel!=null)_viewModel.SelectedConnection=connection;
         _vmSelectedWirePath=hit;_vmSelectedWire=connection;connection.PropertyChanged+=VmWireSelectionChanged;DrawVmWireHandles();
-        var delete=new SunEyeVision.UI.Core.RelayCommand(()=>DeleteVmWire(connection),()=>CanEditVmWire&&_viewModel?.CanDeleteCanvasConnection(connection)==true);
+        var delete=new SunEyeVision.UI.Core.RelayCommand(()=>DeleteVmWire(connection),()=>CanEditVmWire&&CurrentWorkflowTab?.DocumentCanvas?.Connections.Contains(connection)==true);
         hit.InputBindings.Clear();hit.InputBindings.Add(new KeyBinding(delete,Key.Delete,ModifierKeys.None));
         var menu=new ContextMenu();menu.Items.Add(new MenuItem{Header="删除",Command=delete});hit.ContextMenu=menu;
         hit.LostKeyboardFocus-=VmWireLostFocus;hit.LostKeyboardFocus+=VmWireLostFocus;
     }
-    private void DeleteVmWire(WorkflowConnection connection)
+    private void DeleteVmWire(CanvasConnectionProjection connection)
     {
-        if(!CanEditVmWire||_viewModel?.DeleteCanvasConnection(connection)!=true)return;
+        var canvas=CurrentWorkflowTab?.DocumentCanvas;
+        if(!CanEditVmWire||canvas?.Connections.Contains(connection)!=true)return;
+        try { canvas.Delete(Array.Empty<CanvasNodeProjection>(),new[]{connection}); }
+        catch(Exception error) { if(_viewModel!=null)_viewModel.StatusText="删除连线已取消："+error.Message; return; }
         FinishVmWireDrag(false);ClearVmWireSelection();
     }
     private void ConnectionHitArea_MouseRightButtonDown(object sender,MouseButtonEventArgs e)
     {
-        if(sender is not System.Windows.Shapes.Path path||path.DataContext is not WorkflowConnection connection||!CanEditVmWire)return;
-        var tab=CurrentWorkflowTab;if(tab==null||!tab.WorkflowConnections.Contains(connection))return;
-        foreach(var edge in tab.WorkflowConnections)edge.IsSelected=ReferenceEquals(edge,connection);
-        if(_viewModel!=null)_viewModel.SelectedConnection=connection;
+        if(sender is not System.Windows.Shapes.Path path||path.DataContext is not CanvasConnectionProjection connection||!CanEditVmWire)return;
+        var tab=CurrentWorkflowTab;if(tab?.DocumentCanvas==null||!tab.DocumentCanvas.Connections.Contains(connection))return;
+        foreach(var edge in tab.DocumentCanvas.Connections)edge.IsSelected=ReferenceEquals(edge,connection);
         SelectVmWire(connection,path);e.Handled=true;
     }
     private void VmWireLostFocus(object sender,KeyboardFocusChangedEventArgs e)
@@ -99,26 +99,26 @@ public partial class WorkflowCanvasControl
             _vmWireHandles.Add(handle);WorkflowCanvas.Children.Add(handle);
         }
     }
-    private void BeginVmWireDrag(WorkflowConnection connection,int segment)
+    private void BeginVmWireDrag(CanvasConnectionProjection connection,int segment)
     {
         var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
-        if(!CanEditVmWire||!connection.IsSelected||tab==null||!tab.WorkflowConnections.Contains(connection))return;
-        var source=tab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n=>n.Id==connection.SourceNodeId);
-        var target=tab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n=>n.Id==connection.TargetNodeId);
+        if(!CanEditVmWire||!connection.IsSelected||tab?.DocumentCanvas==null||!tab.DocumentCanvas.Connections.Contains(connection))return;
+        var source=tab.DocumentCanvas.Nodes.OfType<CanvasNodeProjection>().FirstOrDefault(n=>n.Id==connection.SourceNodeId);
+        var target=tab.DocumentCanvas.Nodes.OfType<CanvasNodeProjection>().FirstOrDefault(n=>n.Id==connection.TargetNodeId);
         if(source==null||target==null||segment<0||segment+1>=connection.PathPoints.Count)return;
         _vmWireTab=tab;_vmWireStamp=VmGraphStamp(tab);_vmWireConfigurationStamp=VmConfigurationStamp(tab);
         _vmWireOwner=DataContext;_vmEditingWire=connection;_vmBeforePath=connection.ManualPathPoints?.Select(point=>point.ToWpf()).ToArray();_vmOriginalRendered=connection.PathPoints.Select(point=>point.ToWpf()).ToArray();
         _vmWireDrag=new RecoveredConnectionDrag(_vmOriginalRendered,segment,source.NodeRect,target.NodeRect);
         WorkflowCanvas.CaptureMouse();
     }
-    private void RefreshVmWire(WorkflowConnection connection)
+    private void RefreshVmWire(CanvasConnectionProjection connection)
     {
         _connectionPathCache?.MarkDirty(connection);connection.InvalidatePath();
     }
     private void VmWireMove(object sender,MouseEventArgs e)
     {
         if(_vmWireDrag==null||_vmEditingWire==null)return;
-        if(!CanEditVmWire||_vmWireTab==null||!ReferenceEquals(CurrentWorkflowTab,_vmWireTab)||VmGraphStamp(_vmWireTab)!=_vmWireStamp||!ReferenceEquals(_vmWireOwner,DataContext)||_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(_vmEditingWire)!=true||e.LeftButton!=MouseButtonState.Pressed)
+        if(!CanEditVmWire||_vmWireTab==null||!ReferenceEquals(CurrentWorkflowTab,_vmWireTab)||VmGraphStamp(_vmWireTab)!=_vmWireStamp||!ReferenceEquals(_vmWireOwner,DataContext)||_viewModel?.WorkflowTabViewModel?.SelectedTab?.DocumentCanvas?.Connections.Contains(_vmEditingWire)!=true||e.LeftButton!=MouseButtonState.Pressed)
         {FinishVmWireDrag(false);return;}
         _vmWireDrag.Move(e.GetPosition(WorkflowCanvas));
         _vmEditingWire.PreviewPathPoints=_vmWireDrag.PathPoints.Select(point=>point.ToCanvas()).ToArray();
@@ -135,10 +135,10 @@ public partial class WorkflowCanvasControl
         _vmWireTab=null;_vmWireStamp=null;_vmWireConfigurationStamp=null;
         var after=drag?.PathPoints.ToArray();connection.PreviewPathPoints=null;
         if(WorkflowCanvas.IsMouseCaptured)WorkflowCanvas.ReleaseMouseCapture();
-        if(commit&&valid&&CanEditVmWire&&ReferenceEquals(owner,DataContext)&&after!=null&&original!=null&&!after.SequenceEqual(original)&&_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(connection)==true)
+        if(commit&&valid&&CanEditVmWire&&ReferenceEquals(owner,DataContext)&&after!=null&&original!=null&&!after.SequenceEqual(original)&&_viewModel?.WorkflowTabViewModel?.SelectedTab?.DocumentCanvas?.Connections.Contains(connection)==true)
         {
-            var history=_viewModel?.CurrentCommandManager;
-            if(history!=null)history.Execute(new EditConnectionPathCommand(connection,before,after,()=>{RefreshVmWire(connection);DrawVmWireHandles();}));
+            try { _viewModel?.WorkflowTabViewModel?.SelectedTab?.DocumentCanvas?.EditPath(connection,after.Select(point=>point.ToCanvas()).ToArray()); }
+            catch(Exception error) { if(_viewModel!=null)_viewModel.StatusText="连线路径未保存："+error.Message; }
         }
         RefreshVmWire(connection);DrawVmWireHandles();
     }

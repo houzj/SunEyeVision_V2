@@ -36,7 +36,7 @@ namespace SunEyeVision.UI.Services.Interaction
         // 直接引用注入（优先使用，O(1) 访问）
         private WorkflowTabControlViewModel? _tabViewModel;
 
-        // 缓存 ViewModel 引用，避免每次通过 Application.Current 获取（回退方案）
+        // 缓存 ViewModel 引用，避免每次通过 System.Windows.Application.Current 获取（回退方案）
 
 
         // 临时拖拽节点（拖拽工具箱工具时跟随鼠标的视觉元素，完全复刻真实节点外观）
@@ -87,11 +87,30 @@ namespace SunEyeVision.UI.Services.Interaction
             if(_tempDragNode?.Tag is string id&&id==item.ToolId&&ReferenceEquals(_tempDragNode.Parent,canvas))
             {_tempDragNode.Visibility=Visibility.Visible;UpdateTempNodePosition(position);return;}
             if(_tempDragNode?.Parent is ControlsCanvas previous)previous.Children.Remove(_tempDragNode);
-            var preview = new WorkflowNode("", item.Name, item.Name, item.ToolId) { IsToolboxPreview = true };
+            var preview = new ToolboxNodePreview(item.ToolId, item.Name);
             var presenter = new ContentPresenter { Content = preview, ContentTemplate = _canvasControl.GetVmNodeTemplate() };
             _tempDragNode=new Border{Width=preview.HitAreaWidth,Height=preview.HitAreaHeight,Opacity=.7,
                 Child=presenter,Tag=item.ToolId,IsHitTestVisible=false};
             ControlsCanvas.SetZIndex(_tempDragNode,10000);canvas.Children.Add(_tempDragNode);UpdateTempNodePosition(position);
+        }
+        // 拖放预览仅包含模板需要的展示值，不创建或模拟正式节点身份。
+        private sealed class ToolboxNodePreview(string toolType, string displayName)
+        {
+            public string ToolType => toolType;
+            public string DispName => displayName;
+            public string RenameBuffer => displayName;
+            public bool IsToolboxPreview => true;
+            public int GlobalIndex => -1;
+            public bool IsEnabled => true;
+            public bool IsSelected => false;
+            public bool IsEditingName => false;
+            public bool IsGroupLoopEnabled => false;
+            public bool IsSubroutineNode => string.Equals(toolType, "Subroutine", StringComparison.OrdinalIgnoreCase);
+            private SunEyeVision.UI.Shared.NodeStyleConfig Style => IsSubroutineNode ? SunEyeVision.UI.Shared.NodeStyles.Group : SunEyeVision.UI.Shared.NodeStyles.Standard;
+            public double VisualWidth => Style.NodeWidth;
+            public double VisualHeight => Style.NodeHeight;
+            public double HitAreaWidth => VisualWidth + 20;
+            public double HitAreaHeight => VisualHeight + 20;
         }
         /// <summary>
         /// 更新临时节点位置（跟随鼠标）
@@ -253,57 +272,20 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                     return;
                 }
 #if DEBUG
-                LogTimestamp("Drop", $"✓ 工作流 Tab 获取成功: {workflowTab.Name}, 节点数={workflowTab.WorkflowNodes.Count}");
+                LogTimestamp("Drop", $"✓ 工作流 Tab 获取成功: {workflowTab.Name}, 节点数={workflowTab.DocumentCanvas?.Nodes.Count}");
 #endif
 
-                // 注意：Drop 创建节点不计为选中节点，用户再次点击才算点击节点
-                // 因此不自动选中、不设置 IsSelected、不设置 SelectedNode
-
-                // 使用 ViewModel 的 CreateNode 方法创建节点
-#if DEBUG
-                LogTimestamp("Drop", "▶ 调用 WorkflowTabViewModel.CreateNode...");
-#endif
                 var viewModel = GetOwningViewModel();
-                if (!viewModel.CanEditWorkflowCanvas) return;
-                using var transaction = workflowTab.CommandManager.BeginTransaction();
-                var newNode = workflowTab.CreateNode(item.ToolId, item.Name);
-#if DEBUG
-                LogTimestamp("Drop", $"✓ 节点创建完成: Id={newNode.Id}, Name={newNode.Name}");
-#endif
-
-                // 应用边界限制（使用新的统一方法，默认策略为 Both - 画布和视口都限制）
+                if (!viewModel.CanEditWorkflowCanvas || workflowTab.DocumentCanvas is not { } canvas) return;
                 _canvasControl.UpdateVmPlacementFeedback(SnapVmPoint(dropPosition), _tempNodeHeight);
                 var insertion = _canvasControl.FindVmInsertionWire(dropPosition, Array.Empty<string>());
-                var predecessor = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
+                var predecessorId = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
+                var predecessor = predecessorId == null ? null : canvas.Nodes.SingleOrDefault(node => node.Id == predecessorId);
+                if (predecessorId != null && predecessor == null) throw new InvalidOperationException("自动连接的前驱节点已失效。");
                 var placement = _canvasControl.ResolveVmPlacement(SnapVmPoint(dropPosition), _tempNodeHeight);
-                newNode.Position = new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985));
+                canvas.CreateNode(item.ToolId, new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985)), insertion, predecessor);
 #if DEBUG
-                LogTimestamp("Drop", "✓ 节点属性设置完成");
-#endif
-
-                // 添加新节点（通过 MainWindowViewModel.AddNodeToWorkflow 以记录日志）
-#if DEBUG
-                LogTimestamp("Drop", "▶ 添加节点到集合...");
-#endif
-                // 统一管道：节点添加必须经 AddNodeToWorkflow（日志/命令/绑定/预编译）。
-                // viewModel 由 GetCachedViewModel 保证非 null（失败即抛异常，无回退分支）。
-                {
-                    viewModel.AddNodeToWorkflow(newNode);
-                    if (insertion != null)
-                    {
-                        if (!viewModel.InsertNodeIntoConnection(newNode, insertion, newNode.Position.ToWpf()))
-                            throw new InvalidOperationException(viewModel.StatusText);
-                    }
-                    else if (predecessor != null)
-                    {
-                        var link = new SunEyeVision.Workflow.WorkflowConnection(Guid.NewGuid().ToString("N"), predecessor, newNode.Id)
-                        { SourcePort = "BottomPort", TargetPort = "TopPort" };
-                        if (!viewModel.AddConnectionToWorkflow(link)) throw new InvalidOperationException(viewModel.StatusText);
-                    }
-                    transaction.Complete();
-                }
-#if DEBUG
-                LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.WorkflowNodes.Count}");
+                LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.DocumentCanvas?.Nodes.Count}");
                 LogTimestamp("Drop", "═══ 节点添加完成 ═══");
 #endif
             }

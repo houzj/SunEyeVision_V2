@@ -5,7 +5,7 @@ using SunEyeVision.UI.Shared;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
-    private WorkflowConnection? _vmInsertionWire;
+    private CanvasConnectionProjection? _vmInsertionWire;
     private System.Windows.Shapes.Path? _vmInsertionView;
     private static IEnumerable<System.Windows.Shapes.Path> VmVisualPaths(DependencyObject parent)
     {
@@ -16,12 +16,12 @@ public partial class WorkflowCanvasControl
             foreach (var nested in VmVisualPaths(child)) yield return nested;
         }
     }
-    internal WorkflowConnection? FindVmInsertionWire(Point pointer, IEnumerable<string> excluded)
+    internal CanvasConnectionProjection? FindVmInsertionWire(Point pointer, IEnumerable<string> excluded)
     {
-        var tab = CurrentWorkflowTab; if (tab == null) return null;
+        var tab = CurrentWorkflowTab; if (tab?.DocumentCanvas == null) return null;
         var ids = excluded.ToHashSet();
-        if (tab.WorkflowNodes.OfType<WorkflowNode>().Any(n => !ids.Contains(n.Id) && n.NodeRect.Contains(pointer))) return null;
-        foreach (var edge in tab.WorkflowConnections.Reverse())
+        if (tab.DocumentCanvas.Nodes.Any(n => !ids.Contains(n.Id) && n.NodeRect.Contains(pointer))) return null;
+        foreach (var edge in tab.DocumentCanvas.Connections.Reverse())
             if (!ids.Contains(edge.SourceNodeId) && !ids.Contains(edge.TargetNodeId) &&
                 _connectionPathCache?.GetPath(edge).StrokeContains(new Pen(Brushes.Black, 10), pointer) == true) return edge;
         return null;

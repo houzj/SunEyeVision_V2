@@ -15,11 +15,11 @@ public partial class WorkflowCanvasControl
         public required object Owner { get; init; }
         public required WorkflowTabViewModel Tab { get; init; }
         public required Point Pointer { get; init; }
-        public required Dictionary<WorkflowNode, Point> Before { get; init; }
+        public required Dictionary<CanvasNodeProjection, Point> Before { get; init; }
         public required string Token { get; init; }
         public required string Stamp { get; init; }
         public string? ConfigurationStamp { get; init; }
-        public Dictionary<WorkflowNode, Point> After { get; } = new();
+        public Dictionary<CanvasNodeProjection, Point> After { get; } = new();
         public List<FrameworkElement> Ghosts { get; } = new();
         public bool Copy { get; set; }
     }
@@ -28,9 +28,9 @@ public partial class WorkflowCanvasControl
     private Window? _vmGestureWindow;
 
     private static int VmIdentity(object? value) => value == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
-    private string VmGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{VmIdentity(tab.WorkflowNodes)}:{VmIdentity(tab.WorkflowConnections)}|"+string.Join(";",
-        tab.WorkflowNodes.Select(n => $"{n.Id}:{VmIdentity(n)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}")) + "|" +
-        string.Join(";", tab.WorkflowConnections.Select(c => $"{c.Id}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}"));
+    private string VmGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{VmIdentity(tab.DocumentCanvas)}|"+string.Join(";",
+        tab.DocumentCanvas?.Nodes.Select(n => $"{n.Id}:{VmIdentity(n.Definition)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}") ?? Array.Empty<string>()) + "|" +
+        string.Join(";", tab.DocumentCanvas?.Connections.Select(c => $"{c.Id}:{VmIdentity(c.Definition)}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}") ?? Array.Empty<string>());
     private bool ValidVmNodeMove(VmNodeMoveSession session) => CanEditVmCanvas &&
         ReferenceEquals(DataContext, session.Owner) && ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, session.Tab) &&
         VmGraphStamp(session.Tab) == session.Stamp;
@@ -93,7 +93,7 @@ public partial class WorkflowCanvasControl
         if (Mouse.Captured is DependencyObject captured && (captured == WorkflowCanvas || WorkflowCanvas.IsAncestorOf(captured)))
             Mouse.Capture(null);
     }
-    private void ArmVmNodeMove(WorkflowNode node, Point pointer)
+    private void ArmVmNodeMove(CanvasNodeProjection node, Point pointer)
     {
         CancelVmNodeMove();
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
@@ -101,7 +101,8 @@ public partial class WorkflowCanvasControl
         _vmNodeMove = new VmNodeMoveSession
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
-            Before = tab.WorkflowNodes.OfType<WorkflowNode>().Where(n => n.IsSelected).ToDictionary(n => n, n => n.Position.ToWpf()),
+            Before = (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。"))
+                .Where(n => n.IsSelected).ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY)),
             Stamp = VmGraphStamp(tab), ConfigurationStamp = VmConfigurationStamp(tab)
         };
     }
@@ -163,16 +164,21 @@ public partial class WorkflowCanvasControl
         }
         var positions = session.After.Select(p => (Node: p.Key, Before: session.Before[p.Key], After: p.Value)).ToArray();
         var insertion = session.After.Count == 1 ? _vmInsertionWire : null;
+        if (session.Copy)
+        {
+            if (_viewModel != null) _viewModel.StatusText = "节点复制尚未接入正式会话事务，暂不可用。";
+            return;
+        }
         if (insertion != null && positions.Length == 1)
         {
-            if (_viewModel?.InsertNodeIntoConnection(positions[0].Node, insertion, positions[0].After) != true) return;
-        }
-        else if (session.Copy)
-        {
-            if (_viewModel?.DuplicateCanvasNodes(session.After) != true) return;
+            var canvas = session.Tab.DocumentCanvas;
+            if (canvas == null) return;
+            try { canvas.InsertNode(positions[0].Node, insertion, new SunEyeVision.Domain.Workflows.CanvasPoint(positions[0].After.X, positions[0].After.Y)); }
+            catch (Exception error) { if (_viewModel != null) _viewModel.StatusText = "插线已取消：" + error.Message; return; }
         }
         else if (positions.Any(p => p.Before != p.After))
-            _viewModel?.CurrentCommandManager?.Execute(new MoveNodesSnapshotCommand(positions, session.Tab.WorkflowConnections));
+            session.Tab.DocumentCanvas?.MoveNodes(session.After.ToDictionary(item => item.Key,
+                item => new SunEyeVision.Domain.Workflows.CanvasPoint(item.Value.X, item.Value.Y)));
         e.Effects = session.Copy && insertion == null ? DragDropEffects.Copy : DragDropEffects.Move;
     }
     private static bool VmNodeDropEffectAllowed(bool copy, DragDropKeyStates keys, DragDropEffects allowed, bool dropping)
@@ -217,7 +223,7 @@ public partial class WorkflowCanvasControl
         else ClearVmPlacementFeedback();
         UpdateVmInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
     }
-    private static Border? FindVmNodeVisual(DependencyObject parent, WorkflowNode node)
+    private static Border? FindVmNodeVisual(DependencyObject parent, CanvasNodeProjection node)
     {
         if (parent is Border border && border.Name == "HitAreaBorder" && ReferenceEquals(border.Tag, node)) return border;
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)

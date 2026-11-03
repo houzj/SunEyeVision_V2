@@ -45,6 +45,79 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public Func<WorkflowTabViewModel, bool>? StopContinuousExecution { get; set; }
 
         private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
+        private SunEyeVision.Application.DocumentSessionManager? _sessionManager;
+
+        internal void BindDocumentManager(SunEyeVision.Application.DocumentSessionManager manager)
+        {
+            ArgumentNullException.ThrowIfNull(manager);
+            if (ReferenceEquals(_sessionManager, manager)) return;
+            var next = PrepareDocumentTabs(manager.CurrentSession);
+            UnbindDocumentManager();
+            _sessionManager = manager;
+            manager.SessionChanged += DocumentSessionChanged;
+            try { InstallDocumentTabs(next); }
+            catch
+            {
+                manager.SessionChanged -= DocumentSessionChanged;
+                _sessionManager = null;
+                foreach (var tab in next) tab.UnbindDocumentCanvas();
+                throw;
+            }
+        }
+
+        internal void UnbindDocumentManager()
+        {
+            if (_sessionManager is null) return;
+            _sessionManager.SessionChanged -= DocumentSessionChanged;
+            _sessionManager = null;
+            foreach (var tab in Tabs) tab.UnbindDocumentCanvas();
+        }
+
+        private void DocumentSessionChanged(object? sender, SunEyeVision.Application.DocumentSessionReplacement change)
+        {
+            if (!ReferenceEquals(sender, _sessionManager)) return;
+            try { ReplaceDocumentTabs(change.Current); }
+            catch
+            {
+                // 管理器已完成切换，旧 session 不可复活；失败时不能留下可编辑的旧画布。
+                foreach (var tab in Tabs) tab.UnbindDocumentCanvas();
+                Tabs.Clear();
+                SetSelectedTab(null);
+                throw;
+            }
+        }
+
+        private void ReplaceDocumentTabs(SunEyeVision.Application.DocumentSession? session)
+            => InstallDocumentTabs(PrepareDocumentTabs(session));
+
+        private List<WorkflowTabViewModel> PrepareDocumentTabs(SunEyeVision.Application.DocumentSession? session)
+        {
+            var next = new List<WorkflowTabViewModel>();
+            try
+            {
+                if (session is not null)
+                    foreach (var flow in session.GetWorkflows().Where(flow => !flow.IsSubroutine))
+                    {
+                        var tab = new WorkflowTabViewModel(_directory) { Id = flow.Id, Name = flow.Name };
+                        next.Add(tab);
+                        tab.BindDocumentCanvas(session, flow.Id);
+                    }
+            }
+            catch
+            {
+                foreach (var tab in next) tab.UnbindDocumentCanvas();
+                throw;
+            }
+            return next;
+        }
+
+        private void InstallDocumentTabs(List<WorkflowTabViewModel> next)
+        {
+            foreach (var tab in Tabs) tab.UnbindDocumentCanvas();
+            Tabs.Clear();
+            foreach (var tab in next) Tabs.Add(tab);
+            SetSelectedTab(next.FirstOrDefault());
+        }
         public WorkflowTabControlViewModel(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
         {
             _directory=directory??throw new ArgumentNullException(nameof(directory));
@@ -129,6 +202,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             // 重置所有工作流的节点序号管理器（防止全局索引污染）
             foreach (var tab in Tabs)
             {
+                tab.UnbindDocumentCanvas();
                 if (tab.SequenceManager != null)
                 {
                     tab.SequenceManager.Reset();

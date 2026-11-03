@@ -88,9 +88,9 @@ namespace SunEyeVision.UI.Core
         /// </remarks>
         protected void UpdateCollection<T>(ObservableCollection<T> collection, Action<ObservableCollection<T>> updateAction)
         {
-            if (Application.Current != null && Application.Current.Dispatcher != null)
+            if (System.Windows.Application.Current != null && System.Windows.Application.Current.Dispatcher != null)
             {
-                Application.Current.Dispatcher.Invoke(() => updateAction(collection));
+                System.Windows.Application.Current.Dispatcher.Invoke(() => updateAction(collection));
             }
             else
             {

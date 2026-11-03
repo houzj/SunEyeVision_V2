@@ -20,9 +20,9 @@ public partial class WorkflowCanvasControl
     internal void UpdateVmPlacementFeedback(Point center, double height, IEnumerable<string>? excluded = null)
     {
         var tab = CurrentWorkflowTab;
-        if (tab == null) { ClearVmPlacementFeedback(); return; }
+        if (tab?.DocumentCanvas == null) { ClearVmPlacementFeedback(); return; }
         var ids = excluded?.ToHashSet() ?? new HashSet<string>();
-        var others = tab.WorkflowNodes.OfType<SunEyeVision.UI.Shared.WorkflowNode>().Where(n => !ids.Contains(n.Id))
+        var others = tab.DocumentCanvas.Nodes.Where(n => !ids.Contains(n.Id))
             .Select(n => new VmPlacementNode(n.Id, n.NodeRect)).ToArray();
         var scale = Math.Max(.001, tab.CurrentScale);
         var result = VmPlacementCalculator.Calculate(new Rect(center.X - 55, center.Y - height / 2, 110, height), others, scale, _vmHotPlacement);
@@ -47,8 +47,8 @@ public partial class WorkflowCanvasControl
     internal string? VmAvailableHotPredecessor()
     {
         var tab = CurrentWorkflowTab; var predecessor = _vmHotPlacement?.PredecessorId;
-        if (tab == null || predecessor == null || !tab.WorkflowNodes.Any(n => n.Id == predecessor)) return null;
-        return tab.WorkflowConnections.Any(c => c.SourceNodeId == predecessor && c.SourcePort == "BottomPort" ||
+        if (tab?.DocumentCanvas == null || predecessor == null || !tab.DocumentCanvas.Nodes.Any(n => n.Id == predecessor)) return null;
+        return tab.DocumentCanvas.Connections.Any(c => c.SourceNodeId == predecessor && c.SourcePort == "BottomPort" ||
             c.TargetNodeId == predecessor && c.TargetPort == "BottomPort") ? null : predecessor;
     }
 }

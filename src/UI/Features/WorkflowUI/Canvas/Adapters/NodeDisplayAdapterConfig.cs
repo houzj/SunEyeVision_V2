@@ -69,7 +69,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     public static class ServiceInitializer
     {
         private static UILogWriter? _uiLogWriter;
-        private static SolutionManager? _solutionManager;
+        private static SunEyeVision.Application.DocumentSessionManager? _solutionManager;
         private static ApplicationDataPaths? _dataPaths;
         private static FileLogWriter? _fileLogWriter;
         public static void ConfigureDataPaths(ApplicationDataPaths paths) => _dataPaths = paths;
@@ -78,12 +78,14 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         {
             if (_solutionManager != null) return;
             _dataPaths = paths;
-            _solutionManager = new SolutionManager(paths,directory);
-            _ = CommunicationService;
+            _solutionManager = new SunEyeVision.Application.DocumentSessionManager(directory);
         }
         private static CameraRuntimeComposition? _cameraRuntime;
         private static CommunicationRuntimeComposition? _communicationRuntime;
         private static CommunicationApplicationService? _communicationService;
+        private static IDisposable? _communicationActivity;
+        private static bool _communicationClosing;
+        private static readonly SemaphoreSlim CommunicationDisposeGate = new(1, 1);
         private static readonly object CommunicationInitializationGate = new();
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 获取解决方案管理器
         /// </summary>
-        public static SolutionManager SolutionManager => _solutionManager ?? throw new InvalidOperationException("SolutionManager 未初始化，请先调用 InitializeSolutionManager()");
+        public static SunEyeVision.Application.DocumentSessionManager SolutionManager => _solutionManager ?? throw new InvalidOperationException("方案会话管理器未初始化，请先调用 InitializeSolutionManager()");
 
         public static CameraRuntimeComposition CameraRuntime
             => _cameraRuntime ??= new CameraRuntimeComposition();
@@ -118,7 +120,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             get
             {
                 lock (CommunicationInitializationGate)
+                {
+                    if (_communicationClosing) throw new InvalidOperationException("通讯运行时正在关闭或上次关闭未完成。");
+                    var session = SolutionManager.CurrentSession ?? throw new InvalidOperationException("当前没有方案会话，不能启动通讯运行时。");
+                    // 即使构造失败也保留租约，直到统一异步关闭链完成排空。
+                    _communicationActivity ??= session.AcquireActivityLease("通讯服务及驱动");
                     return _communicationRuntime ??= new CommunicationRuntimeComposition();
+                }
             }
         }
 
@@ -128,9 +136,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             {
                 lock (CommunicationInitializationGate)
                 {
+                    if (_communicationClosing) throw new InvalidOperationException("通讯服务正在关闭或上次关闭未完成。");
                     if (_communicationService == null)
                     {
-                        _communicationService = new CommunicationApplicationService(SolutionManager, CommunicationRuntime);
+                        var session = SolutionManager.CurrentSession ?? throw new InvalidOperationException("当前没有方案会话，不能启动通讯服务。");
+                        _communicationService = new CommunicationApplicationService(session, CommunicationRuntime);
                         _communicationService.Automation.CameraConnectionObserver = id =>
                             _cameraRuntime != null && _cameraRuntime.Runtime.TryGetSession(
                                 new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id), out var session)
@@ -144,14 +154,25 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
         public static async ValueTask DisposeCommunicationRuntimeAsync()
         {
-            if (_communicationService is not null)
+            await CommunicationDisposeGate.WaitAsync().ConfigureAwait(false);
+            try
             {
-                await _communicationService.DisposeAsync().ConfigureAwait(false);
-                _communicationService = null;
+                lock (CommunicationInitializationGate) _communicationClosing = true;
+                if (_communicationService is not null)
+                {
+                    await _communicationService.DisposeAsync().ConfigureAwait(false);
+                    _communicationService = null;
+                }
+                if (_communicationRuntime is not null)
+                {
+                    await _communicationRuntime.DisposeAsync().ConfigureAwait(false);
+                    _communicationRuntime = null;
+                }
+                _communicationActivity?.Dispose();
+                _communicationActivity = null;
+                lock (CommunicationInitializationGate) _communicationClosing = false;
             }
-            if (_communicationRuntime is null) return;
-            await _communicationRuntime.DisposeAsync().ConfigureAwait(false);
-            _communicationRuntime = null;
+            finally { CommunicationDisposeGate.Release(); }
         }
 
         public static async ValueTask DisposeCameraRuntimeAsync()
@@ -201,10 +222,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             }
 
             // 创建解决方案管理器
-            _solutionManager = new SolutionManager(solutionsDirectory,directory);
-            // Subscribe before any solution is opened, even when the manager window is never shown.
-            _ = CommunicationService;
-            logger.Info($"解决方案管理器初始化完成，目录: {_solutionManager.SolutionsDirectory}", "ServiceInitializer");
+            _solutionManager = new SunEyeVision.Application.DocumentSessionManager(directory);
+            logger.Info($"方案会话管理器初始化完成，目录: {solutionsDirectory}", "ServiceInitializer");
         }
 
         /// <summary>

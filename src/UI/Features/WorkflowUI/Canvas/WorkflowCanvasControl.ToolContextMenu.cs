@@ -13,13 +13,13 @@ public partial class WorkflowCanvasControl
     {
         while(menu.Items.Count>1)menu.Items.RemoveAt(1);
         var tab=CurrentWorkflowTab;
-        var session=Adapters.ServiceInitializer.SolutionManager?.Session;
-        if(tab==null||session==null||_viewModel==null)return;
-        var nodes=tab.WorkflowNodes;var edges=tab.WorkflowConnections;
+        var session=Adapters.ServiceInitializer.SolutionManager.CurrentSession;
+        if(tab?.DocumentCanvas==null||session==null||_viewModel==null)return;
+        var canvas=tab.DocumentCanvas;
         var catalog=_viewModel.Toolbox;
         bool Current()=>CanEditVmCanvas&&ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab,tab)
-            &&ReferenceEquals(CurrentWorkflowTab,tab)&&ReferenceEquals(tab.WorkflowNodes,nodes)&&ReferenceEquals(tab.WorkflowConnections,edges)
-            &&ReferenceEquals(Adapters.ServiceInitializer.SolutionManager.Session,session);
+            &&ReferenceEquals(CurrentWorkflowTab,tab)&&ReferenceEquals(tab.DocumentCanvas,canvas)
+            &&ReferenceEquals(Adapters.ServiceInitializer.SolutionManager.CurrentSession,session);
         menu.Items.Add(new Separator());
         foreach(var group in catalog.Categories)
         {
@@ -48,27 +48,14 @@ public partial class WorkflowCanvasControl
         Opacity=available?1:.35,Source=new BitmapImage(new Uri(source,UriKind.Absolute))};
     private void AddVmContextTool(WorkflowTabViewModel tab,ToolItem tool,Point location)
     {
-        SunEyeVision.UI.Shared.WorkflowNode? node=null;
         try
         {
-            if(!CanEditVmCanvas||ToolRegistry.GetToolMetadata(tool.ToolId)==null)return;
-            using(var transaction=tab.CommandManager.BeginTransaction())
-            {
-                node=tab.CreateNode(tool.ToolId,tool.Name);
-                node.Position=new CanvasPoint(Math.Clamp(Math.Round(location.X/5)*5,55,4945),Math.Clamp(Math.Round(location.Y/5)*5,node.Height/2,5000-node.Height/2));
-                // 沿正式添加链处理索引、图像自动绑定及预编译，并在全部接受后登记单个历史条目。
-                _viewModel!.AddNodeToWorkflow(node);
-                transaction.Complete();
-            }
+            if(!CanEditVmCanvas||!tool.CanActivate()||tab.DocumentCanvas is not { } canvas)return;
+            canvas.CreateNode(tool.ToolId,new CanvasPoint(Math.Clamp(Math.Round(location.X/5)*5,55,4945),Math.Clamp(Math.Round(location.Y/5)*5,15,4985)));
             WorkflowCanvas.Focus();
         }
         catch(Exception error)
         {
-            if(node!=null&&!tab.WorkflowNodes.Contains(node))
-            {
-                tab.SequenceManager.ReleaseGlobalIndex(node.GlobalIndex);
-                tab.SequenceManager.ReleaseLocalIndex(tab.CurrentWorkflowId,node.ToolType,node.LocalIndex);
-            }
             if(_viewModel!=null)_viewModel.StatusText="添加工具失败："+error.Message;
         }
     }

@@ -9,12 +9,12 @@ public partial class WorkflowTabViewModel
  private IReadOnlyList<string> _rootConfigurationErrors=Array.Empty<string>();
  private readonly HashSet<WorkflowNodeBase> _readinessNodes=new();
  public IReadOnlyList<string> RootConfigurationErrors=>_rootConfigurationErrors;
- public bool IsRootConfigurationReady=>_rootDefinition!=null&&_rootConfigurationErrors.Count==0;
+ public bool IsRootConfigurationReady=>false;
  public string RootConfigurationSummary=>IsRootConfigurationReady?"配置检查通过；运行时仍由正式执行入口校验。":string.Join("\n",_rootConfigurationErrors);
  internal void RefreshRootReadiness()
  {
   if(_rootDefinition==null)return;
-  var errors=RootWorkflowReadiness.Evaluate(_directory,_rootDefinition,_readinessResolver);
+  var errors=new[]{"正式会话的无副作用运行准备检查尚未接入。"};
   if(_rootConfigurationErrors.SequenceEqual(errors))return;
   _rootConfigurationErrors=errors;
   OnPropertyChanged(nameof(RootConfigurationErrors));OnPropertyChanged(nameof(IsRootConfigurationReady));OnPropertyChanged(nameof(RootConfigurationSummary));

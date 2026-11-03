@@ -4,34 +4,23 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Connection;
 
 namespace SunEyeVision.UI.Converters.Path
 {
     /// <summary>
-    /// 智能路径转换器 - 将 WorkflowConnection 转换为 Path Data
+    /// 智能路径转换器 - 将 CanvasConnectionProjection 转换为 Path Data
     /// 使用 ConnectionPathCache 统一计算路径
     /// </summary>
     public class SmartPathConverter : IValueConverter
     {
-        /// <summary>
-        /// 节点集合（静态）— 引擎 Workflow.Nodes 的直绑引用（单一数据源）
-        /// </summary>
-        public static ObservableCollection<WorkflowNodeBase>? Nodes { get; set; }
-
-        /// <summary>
-        /// 连接集合（静态）
-        /// </summary>
-        public static ObservableCollection<WorkflowConnection>? Connections { get; set; }
-
-        /// <summary>
-        /// 连接线路径缓存（静态）
-        /// </summary>
-        public static ConnectionPathCache? PathCache { get; set; }
+        /// <summary>Owned by the canvas resource instance, never shared across workspaces.</summary>
+        public ConnectionPathCache? PathCache { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not WorkflowConnection connection)
+            if (value is not CanvasConnectionProjection connection)
             {
                 return string.Empty;
             }

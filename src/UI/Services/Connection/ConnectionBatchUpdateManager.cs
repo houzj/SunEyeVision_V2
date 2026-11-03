@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Connection;
 
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -14,13 +15,14 @@ namespace SunEyeVision.UI.Services.Connection
     /// 连接批量延迟更新管理器
     /// 用于优化节点拖拽时连接线的更新性能
     /// </summary>
-    public class ConnectionBatchUpdateManager
+    public class ConnectionBatchUpdateManager : IDisposable
     {
         private readonly ConnectionPathCache _pathCache;
         private readonly DispatcherTimer _updateTimer;
         private readonly HashSet<string> _pendingConnectionUpdates = new();
         private readonly HashSet<string> _pendingNodeUpdates = new();
         private bool _isUpdateScheduled = false;
+        private bool _disposed;
 
         /// <summary>
         /// 批量更新延迟(毫秒)
@@ -48,14 +50,16 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public void SetCurrentTab(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? tab)
         {
+            if (_disposed) return;
             _currentTab = tab;
         }
 
         /// <summary>
         /// 调度单个连接的更新
         /// </summary>
-        public void ScheduleUpdate(WorkflowConnection connection)
+        public void ScheduleUpdate(CanvasConnectionProjection connection)
         {
+            if (_disposed) return;
             if (connection == null) return;
 
             lock (_pendingConnectionUpdates)
@@ -74,6 +78,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public void ScheduleUpdateForNode(string nodeId)
         {
+            if (_disposed) return;
             if (string.IsNullOrEmpty(nodeId)) return;
 
             lock (_pendingNodeUpdates)
@@ -92,6 +97,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public void ScheduleUpdateForNodes(IEnumerable<string> nodeIds)
         {
+            if (_disposed) return;
             if (nodeIds == null) return;
 
             lock (_pendingNodeUpdates)
@@ -117,6 +123,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public void ForceUpdateAll()
         {
+            if (_disposed) return;
             if (_isUpdateScheduled)
             {
                 OnUpdateTimerTick(null, null);
@@ -216,37 +223,37 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 根据节点ID获取相关连接
         /// </summary>
-        private IEnumerable<WorkflowConnection> GetConnectionsForNode(string nodeId)
+        private IEnumerable<CanvasConnectionProjection> GetConnectionsForNode(string nodeId)
         {
-            if (_currentTab?.WorkflowConnections == null)
+            if (_currentTab?.DocumentCanvas?.Connections == null)
             {
-                return Enumerable.Empty<WorkflowConnection>();
+                return Enumerable.Empty<CanvasConnectionProjection>();
             }
 
             try
             {
-                return _currentTab.WorkflowConnections
+                return _currentTab.DocumentCanvas.Connections
                     .Where(c => c.SourceNodeId == nodeId || c.TargetNodeId == nodeId);
             }
             catch (Exception ex)
             {
-                return Enumerable.Empty<WorkflowConnection>();
+                return Enumerable.Empty<CanvasConnectionProjection>();
             }
         }
 
         /// <summary>
         /// 根据连接ID查找连接
         /// </summary>
-        private WorkflowConnection? FindConnection(string connectionId)
+        private CanvasConnectionProjection? FindConnection(string connectionId)
         {
-            if (_currentTab?.WorkflowConnections == null)
+            if (_currentTab?.DocumentCanvas?.Connections == null)
             {
                 return null;
             }
 
             try
             {
-                return _currentTab.WorkflowConnections.FirstOrDefault(c => c.Id == connectionId);
+                return _currentTab.DocumentCanvas.Connections.FirstOrDefault(c => c.Id == connectionId);
             }
             catch (Exception ex)
             {
@@ -259,6 +266,10 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            _currentTab = null;
+            _isUpdateScheduled = false;
             _updateTimer.Stop();
             _updateTimer.Tick -= OnUpdateTimerTick;
 

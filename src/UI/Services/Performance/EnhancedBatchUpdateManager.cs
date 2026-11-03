@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Performance;
 
@@ -59,7 +60,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// <summary>
         /// 调度单个连接的更新
         /// </summary>
-        public void ScheduleUpdate(WorkflowConnection connection)
+        public void ScheduleUpdate(CanvasConnectionProjection connection)
         {
             if (connection == null) return;
 
@@ -224,7 +225,7 @@ namespace SunEyeVision.UI.Services.Performance
 
             // === 优化点1: 批量标记缓存为脏 ===
             // 一次性标记所有连接的缓存为脏，避免重复检查
-            var connectionsToRecalculate = new List<WorkflowConnection>();
+            var connectionsToRecalculate = new List<CanvasConnectionProjection>();
             foreach (var connectionId in allConnectionIds)
             {
                 var connection = FindConnection(connectionId);
@@ -271,37 +272,37 @@ namespace SunEyeVision.UI.Services.Performance
         /// <summary>
         /// 根据节点ID获取相关连接
         /// </summary>
-        private IEnumerable<WorkflowConnection> GetConnectionsForNode(string nodeId)
+        private IEnumerable<CanvasConnectionProjection> GetConnectionsForNode(string nodeId)
         {
-            if (_currentTab?.WorkflowConnections == null)
+            if (_currentTab?.DocumentCanvas?.Connections == null)
             {
-                return Enumerable.Empty<WorkflowConnection>();
+                return Enumerable.Empty<CanvasConnectionProjection>();
             }
 
             try
             {
-                return _currentTab.WorkflowConnections
+                return _currentTab.DocumentCanvas.Connections
                     .Where(c => c.SourceNodeId == nodeId || c.TargetNodeId == nodeId);
             }
             catch (Exception ex)
             {
-                return Enumerable.Empty<WorkflowConnection>();
+                return Enumerable.Empty<CanvasConnectionProjection>();
             }
         }
 
         /// <summary>
         /// 根据连接ID查找连接
         /// </summary>
-        private WorkflowConnection? FindConnection(string connectionId)
+        private CanvasConnectionProjection? FindConnection(string connectionId)
         {
-            if (_currentTab?.WorkflowConnections == null)
+            if (_currentTab?.DocumentCanvas?.Connections == null)
             {
                 return null;
             }
 
             try
             {
-                return _currentTab.WorkflowConnections.FirstOrDefault(c => c.Id == connectionId);
+                return _currentTab.DocumentCanvas.Connections.FirstOrDefault(c => c.Id == connectionId);
             }
             catch (Exception ex)
             {

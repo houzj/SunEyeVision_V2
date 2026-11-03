@@ -73,7 +73,7 @@
         </Canvas.Background>
 
         <!-- 连接线 - 使用智能直角折线 -->
-        <ItemsControl ItemsSource="{Binding WorkflowConnections}">
+        <ItemsControl ItemsSource="{Binding DocumentCanvas.Connections}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -193,7 +193,7 @@
         </ItemsControl>
 
         <!-- 节点 -->
-        <ItemsControl x:Name="VmNodeItems" ItemsSource="{Binding WorkflowNodes}">
+        <ItemsControl x:Name="VmNodeItems" ItemsSource="{Binding DocumentCanvas.Nodes}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -221,7 +221,7 @@
                             <ContextMenu Background="#FFFFFFFF"
                                          BorderBrush="#FFCCCCCC"
                                          BorderThickness="1" Padding="4">
-                                <MenuItem Header="复制" Click="NodeContextMenu_Copy_Click"/>
+                                <MenuItem Header="复制" IsEnabled="False" ToolTip="节点复制尚未接入正式会话事务" Click="NodeContextMenu_Copy_Click"/>
                                 <MenuItem Header="重命名" Click="NodeContextMenu_Rename_Click"/>
                             </ContextMenu>
                         </Border.ContextMenu>

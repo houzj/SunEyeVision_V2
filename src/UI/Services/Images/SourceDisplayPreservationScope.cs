@@ -1,4 +1,4 @@
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Workflows;
 
 namespace SunEyeVision.UI.Services.Images;
 

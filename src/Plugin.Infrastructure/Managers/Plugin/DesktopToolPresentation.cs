@@ -14,80 +14,108 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 /// <summary>Desktop-only projections of an explicitly admitted runtime generation.</summary>
 public static class DesktopToolPresentation
 {
-    public static IToolSettingsView CreateSettingsView(RuntimeDirectorySnapshot directory,string toolId,FieldSettings fields,ToolSettingsViewOptions? options=null)
+    public static IToolSettingsView CreateSettingsView(ToolPresentationAdmission admission,FieldSettings fields,ToolSettingsViewOptions? options=null)
     {
-        var generation=directory.AcquireInvocation();
+        ArgumentNullException.ThrowIfNull(admission);
+        var generation=admission.AcquireInvocation();
         IToolSettingsView? inner=null;
+        SettingsLease? lease=null;
         try
         {
-            var draft=new ToolSettingsEditSession(directory.CreateDefinition(toolId),fields);
-            var editor=directory.Components.SingleOrDefault(c=>c.Metadata.Role==ToolComponentRole.Editor&&c.Metadata.ToolId==toolId);
+            admission.EnsureCurrent();
+            var draft=new ToolSettingsEditSession(admission.Definition,fields);
+            var editor=admission.EditorEntryType;
             options??=new();
             inner=editor is null ? new DeclaredSettingsView(draft,options) :
-                (Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory??throw new InvalidOperationException("Runtime settings require a presentation factory.")).CreateSettingsView(draft,options)
+                (Activator.CreateInstance(editor) as IToolPresentationFactory??throw new InvalidOperationException("Runtime settings require a presentation factory.")).CreateSettingsView(draft,options)
                 ??throw new InvalidOperationException("Settings view factory returned null.");
-            return new SettingsLease(inner,generation);
+            admission.EnsureCurrent();
+            lease=new SettingsLease(inner,generation,admission);
+            admission.EnsureCurrent();
+            return lease;
         }
-        catch(Exception failure){var errors=new List<Exception>{failure};try{inner?.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}try{generation.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}if(errors.Count>1)throw new AggregateException(errors);throw;}
+        catch(Exception failure){var errors=new List<Exception>{failure};if(lease is not null){try{lease.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}else{try{inner?.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}try{generation.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}if(errors.Count>1)throw new AggregateException(errors);throw;}
     }
-    public static IToolResultView? CreateCurrentResultView(RuntimeDirectorySnapshot directory,string toolId)
+    public static IToolResultView? CreateCurrentResultView(ToolPresentationAdmission admission)
     {
-        var generation=directory.AcquireInvocation();
+        ArgumentNullException.ThrowIfNull(admission);
+        var generation=admission.AcquireInvocation();
         IToolResultView? inner=null;
+        ResultLease? lease=null;
         try
         {
-            if(directory.CreateDefinition(toolId) is not IToolResultPresentationProvider provider){generation.Dispose();return null;}
+            admission.EnsureCurrent();
+            if(admission.Definition is not IToolResultPresentationProvider provider){admission.EnsureCurrent();generation.Dispose();return null;}
             var schema=provider.ResultSchema;var projection=provider.ResultProjection;
             var errors=projection.Validate(schema);
             if(errors.Count!=0)throw new InvalidOperationException("Invalid runtime result presentation: "+string.Join("; ",errors.Select(e=>e.Message)));
-            if(projection.Kind is ResultProjectionKind.None or ResultProjectionKind.PropertyList){generation.Dispose();return null;}
-            var editor=directory.Components.SingleOrDefault(c=>c.Metadata.Role==ToolComponentRole.Editor&&c.Metadata.ToolId==toolId);
+            if(projection.Kind is ResultProjectionKind.None or ResultProjectionKind.PropertyList){admission.EnsureCurrent();generation.Dispose();return null;}
+            var editor=admission.EditorEntryType;
             inner=editor is not null ?
-                (Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory??throw new InvalidOperationException("Result declaration requires a presentation factory.")).CreateResultView(schema,projection)
+                (Activator.CreateInstance(editor) as IToolPresentationFactory??throw new InvalidOperationException("Result declaration requires a presentation factory.")).CreateResultView(schema,projection)
                     ??throw new InvalidOperationException("Result view factory returned null.") :
                 projection.Kind switch {ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),_=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)};
-            return new ResultLease(inner,generation);
+            admission.EnsureCurrent();
+            lease=new ResultLease(inner,generation,admission);
+            admission.EnsureCurrent();
+            return lease;
         }
-        catch(Exception failure){var errors=new List<Exception>{failure};try{inner?.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}try{generation.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}if(errors.Count>1)throw new AggregateException(errors);throw;}
+        catch(Exception failure){var errors=new List<Exception>{failure};if(lease is not null){try{lease.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}else{try{inner?.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}try{generation.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}if(errors.Count>1)throw new AggregateException(errors);throw;}
     }
     private sealed class SettingsLease:IToolSettingsView
     {
         private readonly IToolSettingsView _view;
         private readonly RuntimeGenerationLease _generation;
+        private readonly ToolPresentationAdmission _admission;
         private CancellationTokenRegistration _retirement;
+        private CancellationTokenRegistration _nodeRetirement;
+        private readonly List<(Action Original,Action Guarded)> _changed = new();
         private int _disposed;
-        internal SettingsLease(IToolSettingsView view,RuntimeGenerationLease generation)
+        internal SettingsLease(IToolSettingsView view,RuntimeGenerationLease generation,ToolPresentationAdmission admission)
         {
-            _view=view;_generation=generation;
+            _view=view;_generation=generation;_admission=admission;
             _retirement=generation.RetirementToken.Register(()=>RetireOnDispatcher(view.View,Dispose));
+            _nodeRetirement=admission.RetirementToken.Register(()=>RetireOnDispatcher(view.View,Dispose));
         }
         public FrameworkElement View=>_view.View;
         public bool HasInvalidInput=>_view.HasInvalidInput;
         public bool HasPendingEdits=>_view.HasPendingEdits;
         public long AcceptedRevision=>_view.AcceptedRevision;
         public IReadOnlyList<string> AcceptedFieldOrder=>_view.AcceptedFieldOrder;
-        public FieldSettings CaptureAcceptedFields()=>_view.CaptureAcceptedFields();
-        public event Action? Changed {add=>_view.Changed+=value;remove=>_view.Changed-=value;}
-        public bool TryCapture(out FieldSettings fields,out string error)=>_view.TryCapture(out fields,out error);
-        public void Dispose(){if(Interlocked.Exchange(ref _disposed,1)!=0)return;var errors=new List<Exception>();try{_retirement.Dispose();}catch(Exception e){errors.Add(e);}try{_view.Dispose();}catch(Exception e){errors.Add(e);}try{_generation.Dispose();}catch(Exception e){errors.Add(e);}if(errors.Count!=0)throw new AggregateException(errors);}
+        public FieldSettings CaptureAcceptedFields(){_admission.EnsureCurrent();var fields=_view.CaptureAcceptedFields();_admission.EnsureCurrent();return fields;}
+        public event Action? Changed
+        {
+            add { if(value is null)return;_admission.EnsureCurrent();Action guarded=()=>{if(Volatile.Read(ref _disposed)==0&&_admission.IsCurrent)value();};_changed.Add((value,guarded));_view.Changed+=guarded; }
+            remove { if(value is null)return;var index=_changed.FindLastIndex(item=>item.Original==value);if(index<0)return;var handler=_changed[index].Guarded;_changed.RemoveAt(index);_view.Changed-=handler; }
+        }
+        public bool TryCapture(out FieldSettings fields,out string error){_admission.EnsureCurrent();var result=_view.TryCapture(out fields,out error);_admission.EnsureCurrent();return result;}
+        public void Dispose(){if(Interlocked.Exchange(ref _disposed,1)!=0)return;var errors=new List<Exception>();foreach(var item in _changed.ToArray())try{_view.Changed-=item.Guarded;}catch(Exception e){errors.Add(e);}_changed.Clear();try{_nodeRetirement.Dispose();}catch(Exception e){errors.Add(e);}try{_retirement.Dispose();}catch(Exception e){errors.Add(e);}try{_view.Dispose();}catch(Exception e){errors.Add(e);}try{_generation.Dispose();}catch(Exception e){errors.Add(e);}if(errors.Count!=0)throw new AggregateException(errors);}
     }
     private sealed class ResultLease:IToolResultView
     {
         private readonly IToolResultView _view;
         private readonly RuntimeGenerationLease _generation;
+        private readonly ToolPresentationAdmission _admission;
         private CancellationTokenRegistration _retirement;
+        private CancellationTokenRegistration _nodeRetirement;
+        private readonly List<(EventHandler<ResultSelection> Original,EventHandler<ResultSelection> Guarded)> _selectionChanged = new();
         private int _disposed;
-        internal ResultLease(IToolResultView view,RuntimeGenerationLease generation)
+        internal ResultLease(IToolResultView view,RuntimeGenerationLease generation,ToolPresentationAdmission admission)
         {
-            _view=view;_generation=generation;
+            _view=view;_generation=generation;_admission=admission;
             _retirement=generation.RetirementToken.Register(()=>RetireOnDispatcher(view.View,Dispose));
+            _nodeRetirement=admission.RetirementToken.Register(()=>RetireOnDispatcher(view.View,Dispose));
         }
         public FrameworkElement View=>_view.View;
         public IReadOnlyList<Port> Sources=>_view.Sources;
-        public void Present(IResultPublication publication)=>_view.Present(publication);
+        public void Present(IResultPublication publication){_admission.EnsureCurrent();_view.Present(publication);}
         public void Clear()=>_view.Clear();
-        public event EventHandler<ResultSelection>? SelectionHighlightChanged {add=>_view.SelectionHighlightChanged+=value;remove=>_view.SelectionHighlightChanged-=value;}
-        public void Dispose(){if(Interlocked.Exchange(ref _disposed,1)!=0)return;var errors=new List<Exception>();try{_retirement.Dispose();}catch(Exception e){errors.Add(e);}try{_view.Dispose();}catch(Exception e){errors.Add(e);}try{_generation.Dispose();}catch(Exception e){errors.Add(e);}if(errors.Count!=0)throw new AggregateException(errors);}
+        public event EventHandler<ResultSelection>? SelectionHighlightChanged
+        {
+            add { if(value is null)return;_admission.EnsureCurrent();EventHandler<ResultSelection> guarded=(sender,selection)=>{if(Volatile.Read(ref _disposed)==0&&_admission.IsCurrent)value(sender,selection);};_selectionChanged.Add((value,guarded));_view.SelectionHighlightChanged+=guarded; }
+            remove { if(value is null)return;var index=_selectionChanged.FindLastIndex(item=>item.Original==value);if(index<0)return;var handler=_selectionChanged[index].Guarded;_selectionChanged.RemoveAt(index);_view.SelectionHighlightChanged-=handler; }
+        }
+        public void Dispose(){if(Interlocked.Exchange(ref _disposed,1)!=0)return;var errors=new List<Exception>();foreach(var item in _selectionChanged.ToArray())try{_view.SelectionHighlightChanged-=item.Guarded;}catch(Exception e){errors.Add(e);}_selectionChanged.Clear();try{_nodeRetirement.Dispose();}catch(Exception e){errors.Add(e);}try{_retirement.Dispose();}catch(Exception e){errors.Add(e);}try{_view.Dispose();}catch(Exception e){errors.Add(e);}try{_generation.Dispose();}catch(Exception e){errors.Add(e);}if(errors.Count!=0)throw new AggregateException(errors);}
     }
     private static void RetireOnDispatcher(FrameworkElement element,Action dispose)
     {

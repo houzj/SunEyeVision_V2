@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.PathCalculators;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Path;
@@ -14,12 +15,13 @@ namespace SunEyeVision.UI.Services.Connection
     /// <summary>
     /// 连接线路径缓存 - 避免重复计算连接线路径
     /// </summary>
-    public class ConnectionPathCache
+    public class ConnectionPathCache : IDisposable
     {
         private readonly Dictionary<string, CachedPath> _pathCache;
         private readonly Dictionary<string, bool> _dirtyFlags;
-        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
+        private readonly ReadOnlyObservableCollection<CanvasNodeProjection> _nodes;
         private readonly object _lockObj;
+        private bool _disposed;
         private readonly IPathCalculator _pathCalculator;
 
         // 5C: 节点位置跟踪（用于统计和调试，不再用于距离阈值判断）
@@ -54,7 +56,7 @@ namespace SunEyeVision.UI.Services.Connection
             ? (double)CacheHits / (CacheHits + CacheMisses)
             : 0;
 
-        public ConnectionPathCache(ObservableCollection<WorkflowNodeBase> nodes, IPathCalculator? pathCalculator = null)
+        public ConnectionPathCache(ReadOnlyObservableCollection<CanvasNodeProjection> nodes, IPathCalculator? pathCalculator = null)
         {
             _pathCache = [];
             _dirtyFlags = [];
@@ -68,10 +70,11 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 获取连接线路径
         /// </summary>
-        public PathGeometry? GetPath(WorkflowConnection connection)
+        public PathGeometry? GetPath(CanvasConnectionProjection connection)
         {
             lock (_lockObj)
             {
+                ObjectDisposedException.ThrowIf(_disposed, this);
                 // 4C: 增加连接使用计数
                 if (_connectionUsageCount.ContainsKey(connection.Id))
                 {
@@ -82,7 +85,7 @@ namespace SunEyeVision.UI.Services.Connection
                     _connectionUsageCount[connection.Id] = 1;
                 }
 
-                if (_pathCache.TryGetValue(connection.Id, out var cachedPath))
+                if (_pathCache.TryGetValue(connection.Id, out var cachedPath) && ReferenceEquals(cachedPath.Connection, connection))
                 {
                     if (_dirtyFlags.TryGetValue(connection.Id, out bool isDirty) && isDirty)
                     {
@@ -124,7 +127,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 获取连接线路径数据（字符串）
         /// </summary>
-        public string? GetPathData(WorkflowConnection connection)
+        public string? GetPathData(CanvasConnectionProjection connection)
         {
             var geometry = GetPath(connection);
             return geometry?.ToString();
@@ -133,7 +136,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 标记连接为脏（需要重新计算）
         /// </summary>
-        public void MarkDirty(WorkflowConnection connection)
+        public void MarkDirty(CanvasConnectionProjection connection)
         {
             lock (_lockObj)
             {
@@ -176,7 +179,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// 拖动组平移会话：登记组内线集合（拖动中 GetPath 对它们返回缓存几何的平移克隆）。
         /// 刚体平移下组内线形状不变，平移即精确解——不重算贝塞尔/避障，且以新实例触发 Path.Data 重绘。
         /// </summary>
-        public void BeginGroupTranslation(IEnumerable<WorkflowConnection> inner)
+        public void BeginGroupTranslation(IEnumerable<CanvasConnectionProjection> inner)
         {
             lock (_lockObj)
             {
@@ -285,7 +288,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 预热缓存（预先计算所有连接）
         /// </summary>
-        public void WarmUp(IEnumerable<WorkflowConnection> connections)
+        public void WarmUp(IEnumerable<CanvasConnectionProjection> connections)
         {
             lock (_lockObj)
             {
@@ -359,11 +362,11 @@ namespace SunEyeVision.UI.Services.Connection
             return clone;
         }
 
-        private PathGeometry CalculatePath(WorkflowConnection connection)
+        private PathGeometry CalculatePath(CanvasConnectionProjection connection)
         {
-            // 路径计算需要 WorkflowNode 特有成员（StyleConfigTyped/端口），运行时元素均为 WorkflowNode，安全转型。
-            var sourceNode = _nodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == connection.SourceNodeId);
-            var targetNode = _nodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == connection.TargetNodeId);
+            // 路径计算需要 CanvasNodeProjection 特有成员（StyleConfigTyped/端口），运行时元素均为 CanvasNodeProjection，安全转型。
+            var sourceNode = _nodes.OfType<CanvasNodeProjection>().FirstOrDefault(n => n.Id == connection.SourceNodeId);
+            var targetNode = _nodes.OfType<CanvasNodeProjection>().FirstOrDefault(n => n.Id == connection.TargetNodeId);
 
             if (sourceNode == null || targetNode == null)
                 return new PathGeometry();
@@ -388,18 +391,18 @@ namespace SunEyeVision.UI.Services.Connection
                 targetNode.StyleConfigTyped.NodeWidth,
                 targetNode.StyleConfigTyped.NodeHeight);
 
-            // 计算所有节点边界（用于碰撞检测）— 需要 WorkflowNode 特有成员，安全转型
-            var allNodeRects = _nodes.OfType<WorkflowNode>().Select(n => new Rect(
+            // 计算所有节点边界（用于碰撞检测）— 需要 CanvasNodeProjection 特有成员，安全转型
+            var allNodeRects = _nodes.OfType<CanvasNodeProjection>().Select(n => new Rect(
                 n.Position.X - n.StyleConfigTyped.NodeWidth / 2,
                 n.Position.Y - n.StyleConfigTyped.NodeHeight / 2,
                 n.StyleConfigTyped.NodeWidth,
                 n.StyleConfigTyped.NodeHeight)).ToArray();
 
-            var manual=connection.PreviewPathPoints??connection.ManualPathPoints;
-            var pathPoints=manual is {Length:>1}
+            IReadOnlyList<SunEyeVision.Domain.Workflows.CanvasPoint>? manual=connection.PreviewPathPoints ?? connection.ManualPathPoints;
+            var pathPoints=manual is {Count:>1}
                 ? AttachManualEndpoints(manual.Select(point=>point.ToWpf()).ToArray(),sourcePos,targetPos,sourceDirection,targetDirection)
                 : _pathCalculator.CalculateOrthogonalPath(sourcePos,targetPos,sourceDirection,targetDirection,sourceNodeRect,targetNodeRect,allNodeRects);
-            var displayPoints=manual is {Length:>1}
+            var displayPoints=manual is {Count:>1}
                 ? SunEyeVision.UI.Services.PathCalculators.VmRouting.VmOrthogonalRouter.Passivate(pathPoints.Select(p=>new SunEyeVision.UI.Services.PathCalculators.VmRouting.RoutePoint(p.X,p.Y)).ToArray()).Select(p=>new Point(p.X,p.Y)).ToArray()
                 : pathPoints;
             var pathGeometry=_pathCalculator.CreatePathGeometry(displayPoints);
@@ -422,7 +425,7 @@ namespace SunEyeVision.UI.Services.Connection
             points[^2]=to is PortDirection.Top or PortDirection.Bottom?new Point(target.X,points[^2].Y):new Point(points[^2].X,target.Y);
             return points;
         }
-        private static Point GetPortPosition(WorkflowNode node, string portName)
+        private static Point GetPortPosition(CanvasNodeProjection node, string portName)
         {
             return portName?.ToLower() switch
             {
@@ -437,7 +440,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 更新连线的路径点集合
         /// </summary>
-        private static void UpdateConnectionPathPoints(WorkflowConnection connection, Point[] pathPoints)
+        private static void UpdateConnectionPathPoints(CanvasConnectionProjection connection, Point[] pathPoints)
         {
             connection.PathPoints.Clear();
             foreach (var point in pathPoints)
@@ -446,10 +449,11 @@ namespace SunEyeVision.UI.Services.Connection
             }
         }
 
-        private void UpdateCache(WorkflowConnection connection, PathGeometry path)
+        private void UpdateCache(CanvasConnectionProjection connection, PathGeometry path)
         {
             _pathCache[connection.Id] = new CachedPath
             {
+                Connection = connection,
                 Geometry = path,
                 Timestamp = DateTime.Now,
                 SourceNodeId = connection.SourceNodeId,
@@ -458,27 +462,27 @@ namespace SunEyeVision.UI.Services.Connection
             _dirtyFlags[connection.Id] = false;
         }
 
-        private void SubscribeToNodes()
+        private void SubscribeToNodes() => ((System.Collections.Specialized.INotifyCollectionChanged)_nodes).CollectionChanged += NodesChanged;
+        private void NodesChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            _nodes.CollectionChanged += (s, e) =>
-            {
-                if (e.OldItems != null)
-                {
-                    foreach (WorkflowNode node in e.OldItems)
-                    {
-                        MarkNodeDirty(node.Id);
-                    }
-                }
-
-                if (e.NewItems != null)
-                {
-                    foreach (WorkflowNode node in e.NewItems)
-                    {
-                        MarkNodeDirty(node.Id);
-                    }
-                }
-            };
+            if (_disposed) return;
+            // Every node is an obstacle. Reset and object replacement must never reuse an old route.
+            Clear();
         }
+        public void Dispose()
+        {
+            lock (_lockObj)
+            {
+                if (_disposed) return;
+                _disposed = true;
+                ((System.Collections.Specialized.INotifyCollectionChanged)_nodes).CollectionChanged -= NodesChanged;
+                _groupTranslatedIds = null;
+                _groupInitialArrows = null;
+                _groupOffset = default;
+                Clear();
+            }
+        }
+
     }
 
     /// <summary>
@@ -486,6 +490,7 @@ namespace SunEyeVision.UI.Services.Connection
     /// </summary>
     internal class CachedPath
     {
+        public required CanvasConnectionProjection Connection { get; init; }
         public PathGeometry Geometry { get; set; } = new PathGeometry();
         public DateTime Timestamp { get; set; }
         public string SourceNodeId { get; set; } = string.Empty;

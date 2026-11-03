@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Services.Connection
 {
@@ -20,9 +21,9 @@ namespace SunEyeVision.UI.Services.Connection
         private readonly ConnectionPathCache? _pathCache;
         private readonly ConnectionBatchUpdateManager? _batchManager;
 
-        private List<WorkflowConnection>? _inner;      // 组内线（两端都在组内）
-        private List<WorkflowConnection>? _boundary;   // 跨组线（恰一端在组内）
-        private Dictionary<string, WorkflowNode>? _groupById; // 组内节点索引（跨组线锚点定位用）
+        private List<CanvasConnectionProjection>? _inner;      // 组内线（两端都在组内）
+        private List<CanvasConnectionProjection>? _boundary;   // 跨组线（恰一端在组内）
+        private Dictionary<string, CanvasNodeProjection>? _groupById; // 组内节点索引（跨组线锚点定位用）
         private readonly Dictionary<string, Point> _lastPositions = new();
         private bool _active;
 
@@ -35,7 +36,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 开始拖动：按组分类连接（组内/跨组一次完成），并为组内线登记平移会话。
         /// </summary>
-        public void BeginDrag(IReadOnlyList<WorkflowNode> group, IReadOnlyList<WorkflowConnection> connections)
+        public void BeginDrag(IReadOnlyList<CanvasNodeProjection> group, IReadOnlyList<CanvasConnectionProjection> connections)
         {
             Reset();
 
@@ -43,8 +44,8 @@ namespace SunEyeVision.UI.Services.Connection
                 return;
 
             _groupById = group.ToDictionary(n => n.Id);
-            _inner = new List<WorkflowConnection>();
-            _boundary = new List<WorkflowConnection>();
+            _inner = new List<CanvasConnectionProjection>();
+            _boundary = new List<CanvasConnectionProjection>();
 
             if (connections != null)
             {
@@ -138,7 +139,7 @@ namespace SunEyeVision.UI.Services.Connection
         }
 
         /// <summary>返回连接在组内端节点的当前 Position（节流判断与锚点语义同节点移动量）</summary>
-        private Point AnchorOf(WorkflowConnection conn)
+        private Point AnchorOf(CanvasConnectionProjection conn)
         {
             if (_groupById != null)
             {

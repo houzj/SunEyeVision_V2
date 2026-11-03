@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Converters.Path
 {
@@ -15,6 +16,13 @@ namespace SunEyeVision.UI.Converters.Path
     public class SmartPathMultiConverter : IMultiValueConverter
     {
         private readonly SmartPathConverter _converter = new SmartPathConverter();
+        private readonly Dictionary<string, CanvasConnectionProjection> _connectionInstances = new();
+        public SunEyeVision.UI.Services.Connection.ConnectionPathCache? PathCache
+        {
+            get => _converter.PathCache;
+            set { if (ReferenceEquals(_converter.PathCache,value)) return; _converter.PathCache=value; ClearCache(); }
+        }
+
 
         // 4B: 绑定优先级控制 - 缓存和批处理
         private readonly Dictionary<string, Geometry> _geometryCache = new Dictionary<string, Geometry>();
@@ -38,14 +46,16 @@ namespace SunEyeVision.UI.Converters.Path
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            // values[0] = WorkflowConnection 对象
+            // values[0] = CanvasConnectionProjection 对象
             // values[1] = PathUpdateCounter（用于触发更新）
-            if (values.Length >= 2 && values[0] is WorkflowConnection connection)
+            if (values.Length >= 2 && values[0] is CanvasConnectionProjection connection)
             {
                 int counter = values[1] is int ? (int)values[1] : 0;
 
                 // 4B: 检查缓存
                 string cacheKey = connection.Id;
+                if (_connectionInstances.TryGetValue(cacheKey,out var old) && !ReferenceEquals(old,connection)) ClearCache();
+                _connectionInstances[cacheKey]=connection;
 
                 // 如果计数器没有变化且缓存存在，直接返回缓存
                 if (_lastKnownCounters.TryGetValue(cacheKey, out int lastCounter) &&
@@ -206,6 +216,7 @@ namespace SunEyeVision.UI.Converters.Path
         /// </summary>
         public void ClearCache()
         {
+            _connectionInstances.Clear();
             _geometryCache.Clear();
             _lastKnownCounters.Clear();
             _lastPathStrings.Clear();

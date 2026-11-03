@@ -49,7 +49,7 @@ namespace SunEyeVision.UI.Services.Rendering
 
         public NodeRenderScheduler()
         {
-            _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+            _dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
             _renderTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(BatchIntervalMs)

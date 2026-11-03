@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Windows;
@@ -43,7 +43,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   get=>_tabs!.SelectedIndex;
   set
   {
-   if(value<0||value>=_tabs!.Items.Count)throw new ArgumentOutOfRangeException(nameof(value));
+   if(_tabs!.Items.Count==0 && value==0)return; // 空声明没有页面，保留默认索引即可。
+   if(value<0||value>=_tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(value));
    _tabs.SelectedIndex=value;
   }
  }

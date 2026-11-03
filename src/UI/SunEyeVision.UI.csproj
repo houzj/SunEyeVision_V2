@@ -47,6 +47,8 @@
   <Import Project="../../product/ToolComponents.props" />
   <ItemGroup>
     <ProjectReference Include="@(ProductToolComponent->'../../%(Identity)')" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Application\SunEyeVision.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence\SunEyeVision.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\Core\SunEyeVision.Core.csproj" />
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="..\Domain\SunEyeVision.Domain.csproj" />

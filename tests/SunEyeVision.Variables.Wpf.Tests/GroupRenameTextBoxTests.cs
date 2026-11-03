@@ -7,6 +7,7 @@ using Xunit;
 
 namespace SunEyeVision.Variables.Wpf.Tests;
 
+[Collection("正式WPF owner")]
 public sealed class GroupRenameTextBoxTests
 {
     private sealed class Group { public string Name { get; set; } = "原名称"; }
@@ -14,12 +15,9 @@ public sealed class GroupRenameTextBoxTests
     [Fact]
     public void Original_manager_styles_load_in_a_real_window()
     {
-        Exception? failure = null;
-        var thread = new Thread(() =>
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
         {
-            try
-            {
-                var window = new Window { Width = 400, Height = 200 };
+                var window = new Window { Left=-32000,Top=-32000,ShowInTaskbar=false,ShowActivated=false,WindowStartupLocation=WindowStartupLocation.Manual, Width = 400, Height = 200 };
                 var resources = new ResourceDictionary
                 {
                     Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/References/VariableManagerStyles.xaml", UriKind.Relative)
@@ -32,22 +30,14 @@ public sealed class GroupRenameTextBoxTests
                 window.Content = panel;
                 try { window.Show(); window.UpdateLayout(); }
                 finally { window.Content = null; window.Close(); }
-            }
-            catch (Exception error) { failure = error; }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "全局变量原件样式加载超时。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
+        }, loadShellResources:false);
     }
 
     [Fact]
     public void Leaving_rename_mode_updates_the_explicit_binding()
     {
-        Exception? failure = null;
-        var thread = new Thread(() =>
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
         {
-            try
-            {
                 var group = new Group();
                 var box = new GroupRenameTextBox();
                 box.Resources.MergedDictionaries.Add(new ResourceDictionary
@@ -59,7 +49,7 @@ public sealed class GroupRenameTextBoxTests
                 {
                     Source = group, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit
                 });
-                var owner = new Window { Content = box, Width = 200, Height = 100 };
+                var owner = new Window { Left=-32000,Top=-32000,ShowInTaskbar=false,ShowActivated=false,WindowStartupLocation=WindowStartupLocation.Manual, Content = box, Width = 200, Height = 100 };
                 try
                 {
                     owner.Show(); owner.UpdateLayout();
@@ -70,11 +60,6 @@ public sealed class GroupRenameTextBoxTests
                     Assert.Equal("新名称", group.Name);
                 }
                 finally { owner.Content = null; owner.Close(); }
-            }
-            catch (Exception error) { failure = error; }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "分组重命名控件加载超时。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
+        }, loadShellResources:false);
     }
 }

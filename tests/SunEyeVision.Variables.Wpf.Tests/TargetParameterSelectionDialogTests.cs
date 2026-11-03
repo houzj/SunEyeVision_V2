@@ -7,6 +7,7 @@ using Xunit;
 
 namespace SunEyeVision.Variables.Wpf.Tests;
 
+[Collection("正式WPF owner")]
 public sealed class TargetParameterSelectionDialogTests
 {
     private sealed class Row
@@ -24,13 +25,10 @@ public sealed class TargetParameterSelectionDialogTests
     [Fact]
     public void Original_target_window_loads_its_tree_and_closes_without_owning_host_data()
     {
-        Exception? failure = null;
-        var thread = new Thread(() =>
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(() =>
         {
-            try
-            {
                 var model = new Model();
-                var dialog = new TargetParameterSelectionDialog { DataContext = model };
+                var dialog = new TargetParameterSelectionDialog { DataContext = model, Left=-32000,Top=-32000,ShowInTaskbar=false,ShowActivated=false,WindowStartupLocation=WindowStartupLocation.Manual };
                 try
                 {
                     dialog.Show(); dialog.UpdateLayout();
@@ -39,15 +37,16 @@ public sealed class TargetParameterSelectionDialogTests
                     var filter = Assert.IsType<ComboBox>(dialog.FindName("SearchComboBox"));
                     Assert.False(filter.IsEnabled);
                     Assert.Contains("尚未接入", Assert.IsType<string>(filter.ToolTip));
+                    object? removed=null;bool confirmed=false;dialog.RemoveRequested+=item=>removed=item;dialog.ConfirmRequested+=(_,_)=>confirmed=true;
+                    var actual=model.TreeNodes.Single();
+                    typeof(TargetParameterSelectionDialog).GetMethod("Delete_OnHandler",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(dialog,new object[]{new Button{DataContext=actual},new RoutedEventArgs()});
+                    Assert.Same(actual,removed);Assert.Single(model.TreeNodes);
+                    typeof(TargetParameterSelectionDialog).GetMethod("Close_OnClick",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(dialog,new object[]{dialog,new RoutedEventArgs()});
+                    Assert.True(confirmed);Assert.True(dialog.IsVisible);
                 }
                 finally { dialog.Close(); }
                 Assert.Null(dialog.DataContext);
                 Assert.Single(model.TreeNodes);
-            }
-            catch (Exception error) { failure = error; }
-        });
-        thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "目标参数窗口加载超时。");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
+        }, loadShellResources:false);
     }
 }

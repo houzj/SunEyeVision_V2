@@ -8,6 +8,7 @@ using Xunit;
 
 namespace SunEyeVision.ShellFooter.Tests;
 
+[Collection("正式WPF owner")]
 public sealed class FooterHostTests
 {
  [Fact]
@@ -20,7 +21,7 @@ public sealed class FooterHostTests
    writer.Clear();
    footer=new StatusBarControl();
    footer.Unloaded+=(_,_)=>unloaded.TrySetResult();
-   window=new Window{Content=footer,Width=700,Height=120,Left=-10000,ShowActivated=false};
+   window=new Window{Content=footer,Width=700,Height=120,Left=-32000,Top=-32000,ShowActivated=false,ShowInTaskbar=false,WindowStartupLocation=WindowStartupLocation.Manual};
    window.Show();
    writer.Write(LogEntry.Create(1,LogLevel.Warning,"真实测试日志"));
   });

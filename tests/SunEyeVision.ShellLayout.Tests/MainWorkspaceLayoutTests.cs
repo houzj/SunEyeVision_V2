@@ -9,6 +9,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
+[Collection("正式WPF owner")]
 public sealed class MainWorkspaceLayoutTests
 {
     [Fact]
@@ -86,7 +87,9 @@ public sealed class MainWorkspaceLayoutTests
     {
         RunSta(() =>
         {
-            var app = new SunEyeVision.UI.App(); app.InitializeComponent(); app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            var app = System.Windows.Application.Current!;
+            foreach(var resource in new[]{"Resources/Styles/NodeStyleResources.xaml","Resources/Styles/ConnectionStyleResources.xaml","Resources/Styles/CanvasStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml"})
+                app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
             var state = new TopBarState();
             var top = new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl { DataContext = state, Height = 81 };
             var firstWindow = new Window { Content = top, Width = 1600, Height = 160, Left = -32000, Top = -32000, ShowInTaskbar = false, ShowActivated = false };
@@ -174,6 +177,7 @@ public sealed class MainWorkspaceLayoutTests
             var maximize = Assert.IsType<Button>(top.FindName("MaximizeButton"));
             Assert.Equal("最大化", maximize.ToolTip);
             var dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+            var frame = new System.Windows.Threading.DispatcherFrame();
             Exception? asynchronousFailure = null;
             Window? secondWindow = null;
             using var done = new ManualResetEventSlim();
@@ -181,7 +185,7 @@ public sealed class MainWorkspaceLayoutTests
             {
                 asynchronousFailure = error;
                 ((MenuItem)menu.Items[0]).IsSubmenuOpen = false;
-                firstWindow.Close(); secondWindow?.Close(); done.Set(); app.Shutdown();
+                firstWindow.Close(); secondWindow?.Close(); done.Set(); frame.Continue=false;
             }
             void Step(Action work) => dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
@@ -240,14 +244,20 @@ public sealed class MainWorkspaceLayoutTests
                     });
                 });
             });
-            watchdog.Start(); app.Run();
+            watchdog.Start(); System.Windows.Threading.Dispatcher.PushFrame(frame);
             if (asynchronousFailure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(asynchronousFailure).Throw();
         });
     }
 
     private static void VerifyToolboxCatalog()
     {
-        var empty = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(null);
+        static SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel EmptyCatalog()
+        {
+            var type=typeof(SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel);
+            var constructor=type.GetConstructors(System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Single();
+            return (SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel)constructor.Invoke(new object?[]{null,(Func<string,SunEyeVision.Plugin.SDK.Metadata.ToolMetadata?>)(_=>null),(Func<string,bool>)(_=>false),(Func<bool>)(()=>true)});
+        }
+        var empty = EmptyCatalog();
         Assert.Equal(15, empty.Categories.Count);
         Assert.Equal(143, empty.AllTools.Count);
         Assert.All(empty.AllTools, item => { Assert.False(item.IsAvailable); Assert.False(item.CanActivate()); });
@@ -267,7 +277,7 @@ public sealed class MainWorkspaceLayoutTests
         empty.IsCompactMode = true;
         empty.SelectedCategory = "采集";
         Assert.True(empty.IsCompactModePopupOpen);
-        var replacement = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(null);
+        var replacement = EmptyCatalog();
         toolbox.DataContext = replacement;
         Assert.False(empty.IsCompactModePopupOpen);
         Assert.Null(empty.SelectedCategory);
@@ -314,9 +324,10 @@ public sealed class MainWorkspaceLayoutTests
             var preview = Assert.IsType<Border>(Assert.Single(canvasA.Children.Cast<UIElement>()));
             var previewPresenter = Assert.IsType<ContentPresenter>(preview.Child);
             Assert.Same(Assert.IsType<ItemsControl>(canvasHost.FindName("VmNodeItems")).ItemTemplate, previewPresenter.ContentTemplate);
-            var previewNode = Assert.IsType<SunEyeVision.UI.Shared.WorkflowNode>(previewPresenter.Content);
-            Assert.True(previewNode.IsToolboxPreview); Assert.Equal("图像源", previewNode.DispName);
-            Assert.Equal("ImageLoad", previewNode.ToolType); Assert.False(preview.IsHitTestVisible);
+            var previewNode = Assert.IsAssignableFrom<object>(previewPresenter.Content);
+            object? Read(string name)=>previewNode.GetType().GetProperty(name)!.GetValue(previewNode);
+            Assert.Equal(true,Read("IsToolboxPreview")); Assert.Equal("图像源", Read("DispName"));
+            Assert.Equal("ImageLoad", Read("ToolType")); Assert.False(preview.IsHitTestVisible);
             hidePreview.Invoke(previewHandler, null);
             Assert.Equal(Visibility.Collapsed, preview.Visibility);
             showPreview.Invoke(previewHandler, new object[] { image, new Point(150, 100), canvasA });
@@ -464,12 +475,5 @@ public sealed class MainWorkspaceLayoutTests
         var type = typeof(MainWindow).Assembly.GetType("SunEyeVision.UI.Shell.Controls.Shell.MainWorkspaceLayout", throwOnError: true)!;
         type.GetMethod(method, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { config, right, splitter });
     }
-    private static void RunSta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() => { try { action(); } catch (Exception ex) { failure = ex; } }) { IsBackground = true };
-        thread.SetApartmentState(ApartmentState.STA); thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(20)));
-        if (failure is not null) throw new AggregateException(failure);
-    }
+    private static void RunSta(Action action) => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
 }

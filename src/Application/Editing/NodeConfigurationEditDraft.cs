@@ -38,21 +38,33 @@ public sealed class NodeConfigurationEditDraft
     public void ApplyFields(IReadOnlyDictionary<string, ParameterSetting> changes)
     {
         EnsureCurrent();
+        Interlocked.Exchange(ref _revision, checked(_revision + 1));
         var next = _candidate.WithFieldSettings(changes);
         EnsureCurrent();
         _candidate = next;
-        _revision = checked(_revision + 1);
     }
 
     /// <summary>Private debug value; merged with the live value using the opening revision at commit.</summary>
     public void AcceptPrivateParameterValue(string fieldId, object? value)
     {
         EnsureCurrent();
+        Interlocked.Exchange(ref _revision, checked(_revision + 1));
         var next = _candidate.WithAcceptedParameterValue(fieldId, value);
         EnsureCurrent();
         _candidate = next;
-        _revision = checked(_revision + 1);
     }
+
+    // Debug workers may only inspect this immutable stamp; they never access the
+    // owner-thread draft or document members. The Session separately validates scope.
+    internal NodeDraftDebugToken CaptureDebugToken()
+    {
+        EnsureCurrent();
+        return new NodeDraftDebugToken(this, Interlocked.Read(ref _revision));
+    }
+
+    internal bool IsCapturedCurrent(NodeDraftDebugToken token) => token is not null &&
+        ReferenceEquals(token.Draft, this) && !Volatile.Read(ref _consumed) &&
+        Interlocked.Read(ref _revision) == token.Revision;
 
     internal NodeConfigurationEditProposal Freeze()
     {
@@ -66,7 +78,7 @@ public sealed class NodeConfigurationEditDraft
     internal void MarkConsumed()
     {
         EnsureOwner();
-        _consumed = true;
+        Volatile.Write(ref _consumed, true);
     }
     internal void EnsureCanConsume() => EnsureOwner();
 
@@ -74,7 +86,7 @@ public sealed class NodeConfigurationEditDraft
     {
         if (Environment.CurrentManagedThreadId != _ownerThread)
             throw new InvalidOperationException("参数草稿只能在所属方案线程使用。");
-        if (_consumed) throw new InvalidOperationException("参数草稿已接受，不能再次提交。");
+        if (Volatile.Read(ref _consumed)) throw new InvalidOperationException("参数草稿已接受，不能再次提交。");
     }
 
     private void EnsureCurrent()
@@ -85,5 +97,7 @@ public sealed class NodeConfigurationEditDraft
 }
 
 /// <summary>Frozen candidate and opening identity for the session's one atomic edit operation.</summary>
+internal sealed record NodeDraftDebugToken(NodeConfigurationEditDraft Draft, long Revision);
+
 internal sealed record NodeConfigurationEditProposal(DocumentSession Session, AdmittedNodeView Opening,
     AdmittedToolConfiguration Candidate, long DraftRevision);

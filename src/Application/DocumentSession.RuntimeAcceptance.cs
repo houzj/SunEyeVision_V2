@@ -22,7 +22,7 @@ public sealed partial class DocumentSession
             lock (_gate)
             {
                 EnsureOpen();
-                if (_notifying || _admitting || _preparing || !RunNodeIsCurrent(key, opening))
+                if (_admitting || _preparing || !RunNodeIsCurrent(key, opening))
                     throw new InvalidOperationException("参数值接纳期间方案或节点已改变。 ");
                 prior = opening.Node.Configuration;
                 _preparing = true;
@@ -43,7 +43,7 @@ public sealed partial class DocumentSession
                 lock (_gate)
                 {
                     EnsureOpen();
-                    if (_notifying || _admitting || _preparing || !RunNodeIsCurrent(key, opening) ||
+                    if (_admitting || _preparing || !RunNodeIsCurrent(key, opening) ||
                         !ReferenceEquals(opening.Node.Configuration, prior))
                         throw new InvalidOperationException("参数值安装前正式节点或配置版本已改变。 ");
                     opening.Node.Configuration = prepared;

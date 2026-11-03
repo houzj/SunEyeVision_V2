@@ -28,7 +28,7 @@ internal static class DeclaredReferenceCandidateBuilder
         void Add(TypeRef type,IReadOnlyList<string> path)
         {
             var names=MemberNames(output,path);
-            candidates.Add(new(nodeName+" · "+caption+(names.Count==0?"":" / "+string.Join(" / ",names)),nodeId,scope,port,path)
+            candidates.Add(new(nodeName+"."+(names.Count==0?caption:names[^1]),nodeId,scope,port,path)
                 {NodeDisplayName=nodeName,OutputDisplayName=caption,MemberDisplayNames=names});
             while(type.Shape==ValueShape.Sequence)type=type.Element!;
             if(type.Shape==ValueShape.Record)foreach(var member in type.Fields)Add(member.Type,path.Append(member.Id).ToArray());

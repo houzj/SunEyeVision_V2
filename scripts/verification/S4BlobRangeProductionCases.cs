@@ -218,11 +218,11 @@ internal static class S2DocumentEditingCases
             });
             Case("C06"+scope+"坏raw显式读取保留与完整双端原子提案拒绝恢复",()=>{
                 SeedPair();var w=Open();Enable(w,true);var lo=Field(w,0);var hi=Field(w,1);var before=Accepted(w);var formal=Stamp(node.RuntimeConfiguration!);var position=history.Position;var low=(TextBox)lo.InputElement!;low.SetCurrentValue(TextBox.TextProperty,"C06-invalid-pair");
-                ReadOnly(w,()=>Read(w,0));Require(low.Text=="C06-invalid-pair"&&lo.HasPendingEdits&&!lo.TryCommitPending()&&Accepted(w)==before,"显式回读吞坏raw或半写另一端");
-                low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));Require(lo.TryCommitPending(),"坏raw恢复失败");
-                var high=(TextBox)hi.InputElement!;low.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                ReadOnly(w,()=>Read(w,0));Require(((TextBox)lo.InputElement!).Text=="C06-invalid-pair"&&lo.HasPendingEdits&&!lo.TryCommitPending()&&Accepted(w)==before,"显式回读吞坏raw或半写另一端");
+                low=(TextBox)lo.InputElement!;low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));Require(lo.TryCommitPending(),"坏raw恢复失败");
+                low=(TextBox)lo.InputElement!;var high=(TextBox)hi.InputElement!;low.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 Require(!(bool)lo.View.GetType().GetMethod("TryCommitPending")!.Invoke(lo.View,new object[]{true})!&&Accepted(w)==before&&Cur(w,0)==baseLow&&Cur(w,1)==baseHigh,"倒序成对提案被接纳、半写或未恢复原本地OldValue");
-                low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));Require((bool)lo.View.GetType().GetMethod("TryCommitPending")!.Invoke(lo.View,new object[]{true})!,"双端raw恢复后整组提案失败");
+                low=(TextBox)lo.InputElement!;high=(TextBox)hi.InputElement!;low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));Require((bool)lo.View.GetType().GetMethod("TryCommitPending")!.Invoke(lo.View,new object[]{true})!,"双端raw恢复后整组提案失败");
                 Debug(w,baseLow,baseHigh);w.Close();Pump();Require(formal==Stamp(node.RuntimeConfiguration!)&&position==history.Position,"组提案取消写正式或历史");
             });
             Case("C06"+scope+"未知双引用原生弹窗关闭及Dispatcher旧根退役",()=>{

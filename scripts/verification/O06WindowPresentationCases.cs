@@ -1487,7 +1487,7 @@ internal static class S2DocumentEditingCases
    var candidates=(IReadOnlyList<DeclaredReferenceCandidate>)builder.GetMethod("Build",BindingFlags.Static|BindingFlags.NonPublic)!
     .Invoke(null,new object?[]{blobs,node.Id,"display-scope",node.DispName})!;
    var selected=candidates.Single(item=>item.MemberPath.SequenceEqual(new[]{"bounds","x"}));
-   Require(selected.MemberDisplayNames.SequenceEqual(new[]{"Blob矩形框","左上点X"})
+   Require(selected.Label==node.DispName+".左上点X"&&selected.MemberDisplayNames.SequenceEqual(new[]{"Blob矩形框","左上点X"})
     &&selected.Reference(new BindingSelection.AtConstant(0)).MemberFieldPath.SequenceEqual(new[]{"bounds","x"}),"候选名称缺失或标签污染正式引用身份");
    var record=TypeRef.RecordOf("display.tree",new[]{new Port("x",DataType.Number)});
    var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("bounds",record)},outputDisplay:new[]{new OutputDisplayNode("bounds","Blob矩形框",new[]{new OutputDisplayNode("x","左上点X")})});

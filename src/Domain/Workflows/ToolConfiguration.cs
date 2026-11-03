@@ -63,6 +63,8 @@ public sealed class ToolConfiguration
 
     public ToolConfiguration Copy() => new(ToolId, Fields, CaptureCurrentValues(), CaptureRevisions(), _bindingOrder);
 
+    internal ToolConfiguration WithoutCurrentValues() => new(ToolId, Fields, parameterBindingOrder: _bindingOrder);
+
     /// <summary>Undo/redo retains live runtime values for remaining referenced fields.</summary>
     internal ToolConfiguration PreserveCurrentValuesFrom(ToolConfiguration live, IReadOnlySet<string> parameterIds)
     {

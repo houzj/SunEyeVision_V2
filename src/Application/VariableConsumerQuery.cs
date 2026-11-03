@@ -5,9 +5,25 @@ namespace SunEyeVision.Application;
 
 /// <summary>A live document reference, not a separately persisted consumer registration.</summary>
 public sealed record VariableConsumer(string WorkflowId, string WorkflowName, NodeDefinition Node, string FieldId);
+public sealed record VariableSelection(GlobalVariable Actual, string Id, string Name, string Type);
 
 public sealed partial class DocumentSession
 {
+    /// <summary>Capture names and declaration vocabulary without reading or borrowing variable values.</summary>
+    public IReadOnlyList<VariableSelection> CaptureVariableSelections()
+    {
+        lock (_gate)
+        {
+            EnsureOpen();
+            if (Document.Id != _documentId) throw new InvalidOperationException("方案身份已变化。");
+            var variables = Document.GlobalVariables.ToArray();
+            if (variables.Any(variable => string.IsNullOrWhiteSpace(variable.Id)) ||
+                variables.Select(variable => variable.Id).Distinct(StringComparer.Ordinal).Count() != variables.Length)
+                throw new InvalidOperationException("方案变量身份为空或不唯一。");
+            return Array.AsReadOnly(variables.Select(variable =>
+                new VariableSelection(variable, variable.Id, variable.Name, variable.Type)).ToArray());
+        }
+    }
     /// <summary>Derive consumers from currently admitted typed field references, including dynamic indexes.</summary>
     public IReadOnlyList<VariableConsumer> GetVariableConsumers(GlobalVariable variable)
     {

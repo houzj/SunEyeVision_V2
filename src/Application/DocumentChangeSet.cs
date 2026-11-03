@@ -21,7 +21,7 @@ public sealed record DocumentChangeSet(Guid EditSessionId, long Revision, Docume
 
 public sealed partial class DocumentSession
 {
-    private bool _notifying;
+    private bool _notifying, _preparing;
     public long ChangeRevision { get; private set; }
     public Exception? LastObserverError { get; private set; }
     public event EventHandler<DocumentChangeSet>? Changed;
@@ -30,7 +30,7 @@ public sealed partial class DocumentSession
     {
         if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("方案编辑必须在所属线程执行。");
         EnsureOpen();
-        if (_notifying || _admitting) throw new InvalidOperationException("方案通知或准入期间不能重入编辑。");
+        if (_notifying || _admitting || _preparing) throw new InvalidOperationException("方案通知、准入或事务准备期间不能重入编辑。");
     }
 
     // The caller holds the session gate and invokes this only after installing the committed state.

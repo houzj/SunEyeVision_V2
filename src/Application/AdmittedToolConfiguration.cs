@@ -11,19 +11,34 @@ namespace SunEyeVision.Application;
 internal sealed class AdmittedToolConfiguration
 {
     private readonly IToolDefinition _definition;
+    internal IToolDefinition Definition => _definition;
     private readonly Func<ToolConfiguration, AdmittedToolConfiguration> _factory;
     internal RuntimeDirectorySnapshot Directory { get; }
     internal ToolConfiguration Configuration { get; }
     internal ToolSchema Schema { get; }
     internal ToolSchema SettingsSchema { get; }
     internal ToolSchema DisplaySchema { get; }
+    internal ToolHostDeclarationSnapshot HostDeclarations { get; }
     internal IReadOnlySet<string> ActiveInputs { get; }
     internal IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     internal IReadOnlyDictionary<string, string> BindingNames { get; }
+    internal IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }
 
     internal bool IsDisplayField(string id) => DisplaySchema.Inputs.Any(port => port.Id == id);
     internal bool IsExecutionFieldActive(string id) => !IsDisplayField(id) && Configuration.Fields.Declarations.ContainsKey(id) &&
         (!Schema.Inputs.Any(port => port.Id == id) || ActiveInputs.Contains(id));
+    internal IReadOnlyList<Diagnostic> ValidateForExecution()
+    {
+        var inputs = (_definition as IToolExecutionInputs)?.ValidateExecutionInputs(Configuration.Fields) ?? Array.Empty<Diagnostic>();
+        if (inputs.Count != 0) return inputs;
+        _ = ResultDisplayFields.Capture(_definition, Configuration.Fields);
+        var fields = Configuration.Fields.Select(SettingsSchema.Inputs);
+        var known = (_definition as IToolKnownSettingsValidation)?.ValidateKnownSettings(fields) ?? Array.Empty<Diagnostic>();
+        if (known.Count != 0) return known;
+        if (fields.Capture().Values.Any(value => value is ReferenceSetting or VariableSetting)) return Array.Empty<Diagnostic>();
+        var settings = (IToolSettingsFields)_definition;
+        return _definition.Validate(_definition.FreezeSettings(settings.MaterializeSettings(fields.Materialize(new Dictionary<string, object?>()))));
+    }
     internal string ConfigurationIdentity => CaptureConfigurationIdentity(false);
     internal string ExecutionConfigurationIdentity => CaptureConfigurationIdentity(true);
 
@@ -69,6 +84,7 @@ internal sealed class AdmittedToolConfiguration
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
         var bindingNames = ((definition as IToolParameterBindingNames)?.ParameterBindingNames ?? new Dictionary<string, string>())
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var manualSources = CaptureManualSources(definition);
         var settingsType = definition.SettingsType;
         var outputType = definition.OutputType;
         void EnsureDeclaration()
@@ -79,7 +95,8 @@ internal sealed class AdmittedToolConfiguration
                 ResultDisplayFields.Schema(definition).Fingerprint != display ||
                 ToolHostDeclarationRules.ValidateAndFingerprint(definition) != host ||
                 !SameDeclaration(referenceBehaviors, ParameterReferenceRules.Freeze(definition)) ||
-                !SameDeclaration(bindingNames, (definition as IToolParameterBindingNames)?.ParameterBindingNames ?? new Dictionary<string, string>()))
+                !SameDeclaration(bindingNames, (definition as IToolParameterBindingNames)?.ParameterBindingNames ?? new Dictionary<string, string>()) ||
+                !SameManualSources(manualSources, CaptureManualSources(definition)))
                 throw new InvalidOperationException("缓存的工具声明或目录代次已变化。");
         }
         Func<ToolConfiguration, AdmittedToolConfiguration>? factory = null;
@@ -96,6 +113,16 @@ internal sealed class AdmittedToolConfiguration
 
     private static bool SameDeclaration<T>(IReadOnlyDictionary<string, T> left, IReadOnlyDictionary<string, T> right) =>
         left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out var value) && EqualityComparer<T>.Default.Equals(pair.Value, value));
+    private static IReadOnlyList<ManualReferenceSource> CaptureManualSources(IToolDefinition definition)
+    {
+        if (definition is not IToolManualReferenceSources declared) return Array.Empty<ManualReferenceSource>();
+        return Array.AsReadOnly((declared.ManualReferenceSources ?? throw new InvalidOperationException("手动引用来源声明缺失。"))
+            .Select(source => source is null ? throw new InvalidOperationException("手动引用来源声明为空。") :
+                new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray());
+    }
+    private static bool SameManualSources(IReadOnlyList<ManualReferenceSource> first, IReadOnlyList<ManualReferenceSource> second) =>
+        first.Count == second.Count && first.Zip(second).All(pair => pair.First.PortId == pair.Second.PortId &&
+            pair.First.MemberPath.SequenceEqual(pair.Second.MemberPath, StringComparer.Ordinal));
     internal AdmittedToolConfiguration WithConfiguration(ToolConfiguration configuration)
         => _factory(configuration);
 
@@ -159,6 +186,8 @@ internal sealed class AdmittedToolConfiguration
         Schema = definition.Describe();
         var settings = definition as IToolSettingsFields ?? throw new ArgumentException("工具缺少参数声明。");
         SettingsSchema = settings.SettingsSchema; DisplaySchema = ResultDisplayFields.Schema(definition);
+        HostDeclarations = ToolHostDeclarationRules.Capture(definition);
+        ManualReferenceSources = CaptureManualSources(definition);
         var targets = Schema.Inputs.Concat(SettingsSchema.Inputs).Concat(DisplaySchema.Inputs).ToArray();
         if (targets.Select(port => port.Id).Distinct(StringComparer.Ordinal).Count() != targets.Length)
             throw new ArgumentException("输入、参数及显示字段身份必须互不重复。");

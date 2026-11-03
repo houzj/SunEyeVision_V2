@@ -2,6 +2,7 @@ using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Application.Editing;
 
 namespace SunEyeVision.Application;
 
@@ -19,6 +20,7 @@ public sealed partial class DocumentSession : IDisposable
     public Guid EditSessionId { get; } = Guid.NewGuid();
     public Guid ResultOwnerId => _owner.Id;
     public SolutionDefinition Document { get; }
+    public DocumentEditSession Editing { get; }
     internal DocumentHistoryCoordinator History { get; }
     internal RuntimeDirectorySnapshot Directory => _directory;
     internal ToolExecutionOwner ExecutionOwner => _owner;
@@ -28,8 +30,11 @@ public sealed partial class DocumentSession : IDisposable
         Document = document ?? throw new ArgumentNullException(nameof(document));
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
         if (!directory.IsActive) throw new InvalidOperationException("方案运行目录已退役。");
+        if (!document.Workflows.Any(flow => !flow.IsSubroutine))
+            throw new InvalidOperationException("活动方案必须至少包含一个根流程。");
         _documentId = document.Id;
         History = new DocumentHistoryCoordinator(EditSessionId);
+        Editing = new DocumentEditSession(this);
         _directoryRetirement = directory.RetirementToken.Register(() => { lock (_gate) _definitions.Clear(); });
     }
 
@@ -102,7 +107,7 @@ public sealed partial class DocumentSession : IDisposable
         {
             EnsureOwnerCanEdit();
             ValidateScopeCore(scope);
-            return new GraphEditDraft(scope.Flow);
+            return new GraphEditDraft(scope.Flow, History.Revision);
         }
     }
     internal (string[] Nodes, (string Source, string Target)[] Edges) CaptureGraphQuery(WorkflowScope scope)
@@ -183,6 +188,36 @@ public sealed partial class DocumentSession : IDisposable
         }
         return new System.Collections.ObjectModel.ReadOnlyDictionary<NodeDefinition, ToolConfiguration>(replacements);
     }
+
+    // Work only on a private candidate. A new connection may supply an automatic image
+    // reference; a present setting (including a broken one) must never be overwritten.
+    private IReadOnlyDictionary<NodeDefinition, ToolConfiguration> PrepareConnectionBindings(GraphEditDraft draft)
+    {
+        var replacements = new Dictionary<NodeDefinition, ToolConfiguration>(
+            PrepareRemovedConnectionBindings(draft), ReferenceEqualityComparer.Instance);
+        foreach (var item in draft.Edges)
+        {
+            var edge = item.Edge;
+            if (draft.Workflow.Connections.Any(existing => existing.Id == edge.Id)) continue;
+            var source = draft.Nodes.Single(node => node.Id == edge.SourceNodeId);
+            var target = draft.Nodes.Single(node => node.Id == edge.TargetNodeId);
+            var sourceConfiguration = replacements.GetValueOrDefault(source) ?? source.Configuration;
+            var targetConfiguration = replacements.GetValueOrDefault(target) ?? target.Configuration;
+            var admittedSource = AdmitConfiguration(source, sourceConfiguration);
+            var admittedTarget = AdmitConfiguration(target, targetConfiguration);
+            if (_admitting) throw new InvalidOperationException("工具声明准入期间不能重入。");
+            ToolConfiguration? bound;
+            _admitting = true;
+            try
+            {
+                bound = ConnectionBindingPolicy.AddAutomaticImageBinding(admittedTarget, admittedSource,
+                    draft.Workflow.Id, source.Id, edge.Id);
+            }
+            finally { _admitting = false; }
+            if (bound is not null) replacements[target] = bound;
+        }
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<NodeDefinition, ToolConfiguration>(replacements);
+    }
     internal AdmittedNodeView RequireNode(WorkflowScope scope, string nodeId) =>
         FindNode(scope, nodeId) ?? throw new InvalidOperationException("节点不存在于当前流程。");
 
@@ -227,7 +262,7 @@ public sealed partial class DocumentSession : IDisposable
         lock (_gate)
         {
             if (_closed) return;
-            if (_closing || _notifying || _admitting) throw new InvalidOperationException("方案正在关闭、通知或准入，不能重入关闭。");
+            if (_closing || _notifying || _admitting || _preparing) throw new InvalidOperationException("方案正在关闭、通知、准入或准备事务，不能重入关闭。");
             _closing = true;
         }
         Exception? retireFailure = null;
@@ -245,11 +280,13 @@ public sealed partial class DocumentSession : IDisposable
             _definitions.Clear();
         }
         _directoryRetirement.Dispose();
+        Exception? editingFailure = null;
+        try { Editing.Dispose(); editingFailure = Editing.LastReleaseError; } catch (Exception error) { editingFailure = error; }
         Exception? historyFailure = null;
         try { History.Dispose(); } catch (Exception error) { historyFailure = error; }
-        if (retireFailure is not null && historyFailure is not null) throw new AggregateException(retireFailure, historyFailure);
-        if (retireFailure is not null) throw retireFailure;
-        if (historyFailure is not null) throw historyFailure;
+        var failures = new[] { retireFailure, editingFailure, historyFailure }.OfType<Exception>().ToArray();
+        if (failures.Length == 1) throw failures[0];
+        if (failures.Length > 1) throw new AggregateException("方案关闭时部分清理失败。", failures);
     }
 }
 

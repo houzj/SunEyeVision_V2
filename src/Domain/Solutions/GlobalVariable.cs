@@ -167,12 +167,7 @@ public class GlobalVariable : SolutionObservableObject
             WorkflowName = _producerBinding.WorkflowName, NodeName = _producerBinding.NodeName,
             ResultDisplayName = _producerBinding.ResultDisplayName
         };
-        var consumers = _consumerBindings.Select(c => new ConsumerBinding
-        {
-            WorkflowId = c.WorkflowId, WorkflowName = c.WorkflowName, NodeId = c.NodeId, NodeName = c.NodeName,
-            ParameterName = c.ParameterName, InputKey = c.InputKey, ParameterDisplayName = c.ParameterDisplayName
-        }).ToList();
-        copy.ApplyConfigurationRaw(new(_name, _group, _index, _type, _description, producer, consumers,
+        copy.ApplyConfigurationRaw(new(_name, _group, _index, _type, _description, producer,
             RebindingReason, BindingValidationPending, AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()), ModifiedTime));
         copy.ApplyValueRaw(new(CopyEditableValue(_value), _valueRevision));
         copy._isInitialized = _isInitialized;
@@ -181,20 +176,20 @@ public class GlobalVariable : SolutionObservableObject
     // These raw operations are the existing configuration host's projection adapter. They
     // never run setters, logging or observers while the shared runtime value lock is held.
     internal sealed record ConfigurationState(string Name, string Group, int Index, string Type,
-        string Description, ProducerBinding? Producer, List<ConsumerBinding> Consumers,
+        string Description, ProducerBinding? Producer,
         string Required, string Pending, Dictionary<string, System.Text.Json.JsonElement>? AdditionalData,
         DateTime ModifiedTime);
     internal readonly record struct ValueState(object? Value, long Revision);
 
     internal ConfigurationState CaptureConfiguration() => new(_name, _group, _index, _type,
-        _description, _producerBinding, _consumerBindings, RebindingReason, BindingValidationPending,
+        _description, _producerBinding, RebindingReason, BindingValidationPending,
         AdditionalData, ModifiedTime);
 
     internal void ApplyConfigurationRaw(ConfigurationState state)
     {
         RequireValueGate();
         _name = state.Name; _group = state.Group; _index = state.Index; _type = state.Type;
-        _description = state.Description; _producerBinding = state.Producer; _consumerBindings = state.Consumers;
+        _description = state.Description; _producerBinding = state.Producer;
         RebindingReason = state.Required; BindingValidationPending = state.Pending;
         AdditionalData = state.AdditionalData; ModifiedTime = state.ModifiedTime;
     }
@@ -224,8 +219,8 @@ public class GlobalVariable : SolutionObservableObject
     internal void EmitConfigurationNotifications(bool valueChanged, List<Exception> errors)
     {
         var names = new[] { nameof(Name), nameof(Group), nameof(Index), nameof(Type), nameof(Description),
-            nameof(ProducerBinding), nameof(ConsumerBindings), nameof(InputSourceDisplayText),
-            nameof(OutputTargetDisplayText), nameof(IsComplexValue), nameof(RebindingReason),
+            nameof(ProducerBinding), nameof(InputSourceDisplayText),
+            nameof(IsComplexValue), nameof(RebindingReason),
             nameof(BindingValidationPending), nameof(AdditionalData), nameof(ModifiedTime) };
         foreach (var name in names)
             try { OnPropertyChanged(name); } catch (Exception error) { errors.Add(error); }
@@ -278,19 +273,6 @@ public class GlobalVariable : SolutionObservableObject
     }
 
     /// <summary>
-    /// 消费者绑定列表：哪些参数绑定到此变量
-    /// </summary>
-    /// <remarks>
-    /// 参数绑定至此变量时自动追加记录，解绑时移除。
-    /// </remarks>
-    private List<ConsumerBinding> _consumerBindings = new();
-    public List<ConsumerBinding> ConsumerBindings
-    {
-        get => _consumerBindings;
-        set => SetProperty(ref _consumerBindings, value, "消费者绑定");
-    }
-
-    /// <summary>
     /// 输入来源（可选）。为空表示变量使用方案保存的初值或宿主在运行请求中提供的值。
     /// 非空时表示该变量由一个节点结果产生，并在解决方案级依赖图中连接到所有消费者。
     /// </summary>
@@ -314,21 +296,6 @@ public class GlobalVariable : SolutionObservableObject
     /// <summary>输入来源显示文本；为空时变量使用方案初值或运行请求中提供的值。</summary>
     [JsonIgnore]
     public string InputSourceDisplayText => ProducerBinding?.DisplayPath ?? (string.IsNullOrEmpty(RebindingReason) ? "未绑定（使用初值）" : "请选择（需重新绑定）");
-
-    /// <summary>
-    /// 目标输出显示文本（用于UI）
-    /// </summary>
-    [JsonIgnore]
-    public string OutputTargetDisplayText
-    {
-        get
-        {
-            if (ConsumerBindings.Count == 0)
-                return "无";
-            // 只显示第一个消费者的路径
-            return ConsumerBindings[0].DisplayPath;
-        }
-    }
 
     /// <summary>
     /// 是否已初始化
@@ -382,16 +349,6 @@ public class GlobalVariable : SolutionObservableObject
             Value = Value,  // 注意：值类型会被复制，引用类型只复制引用
             Type = Type,
             Description = Description,
-            ConsumerBindings = ConsumerBindings.Select(c => new ConsumerBinding
-            {
-                WorkflowId = c.WorkflowId,
-                NodeId = c.NodeId,
-                NodeName = c.NodeName,
-                WorkflowName = c.WorkflowName,
-                ParameterName = c.ParameterName,
-                InputKey = c.InputKey,
-                ParameterDisplayName = c.ParameterDisplayName
-            }).ToList(),
             ProducerBinding = ProducerBinding == null ? null : new ProducerBinding
             {
                 ReferenceExpression = ProducerBinding.ReferenceExpression,
@@ -459,15 +416,6 @@ public class GlobalVariable : SolutionObservableObject
     private static bool IsValidType(string type)
     {
         return !string.IsNullOrWhiteSpace(type);
-    }
-
-    /// <summary>
-    /// 通知输出显示文本已变化（供外部类调用）
-    /// </summary>
-    public void NotifyOutputDisplayChanged()
-    {
-        OnPropertyChanged(nameof(OutputTargetDisplayText));
-        OnPropertyChanged(nameof(ConsumerBindings));
     }
 
     /// <summary>外部修改生产者绑定字段后刷新显示列。</summary>

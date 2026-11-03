@@ -7,6 +7,8 @@ public sealed class GraphEditDraft
 {
     internal sealed record EdgeState(ConnectionDefinition Edge, string SourcePort, string TargetPort);
     private readonly WorkflowDefinition _workflow;
+    private readonly GraphState _opening;
+    private readonly long _openingHistoryRevision;
     private readonly List<NodeDefinition> _nodes;
     private readonly List<EdgeState> _edges;
     private readonly Dictionary<NodeDefinition, CanvasPoint> _positions = new(ReferenceEqualityComparer.Instance);
@@ -18,13 +20,17 @@ public sealed class GraphEditDraft
     private long _operationOrder;
     private readonly int _ownerThread = Environment.CurrentManagedThreadId;
     private bool _sealed;
-    internal GraphEditDraft(WorkflowDefinition workflow)
+    internal GraphEditDraft(WorkflowDefinition workflow, long openingHistoryRevision)
     {
         _workflow = workflow;
+        _opening = GraphState.Capture(workflow);
+        _openingHistoryRevision = openingHistoryRevision;
         _nodes = workflow.Nodes.ToList();
         _edges = workflow.Connections.Select(edge => new EdgeState(edge, edge.SourcePort, edge.TargetPort)).ToList();
     }
     internal WorkflowDefinition Workflow => _workflow;
+    internal GraphState Opening => _opening;
+    internal long OpeningHistoryRevision => _openingHistoryRevision;
     internal IReadOnlyList<NodeDefinition> Nodes => _nodes;
     internal IReadOnlyList<EdgeState> Edges => _edges;
     internal IReadOnlyDictionary<NodeDefinition, CanvasPoint> Positions => _positions;

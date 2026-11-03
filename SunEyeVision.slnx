@@ -16,8 +16,14 @@
   <Folder Name="/Src/Application/">
     <Project Path="Src/Application/SunEyeVision.Application.csproj" />
   </Folder>
+  <Folder Name="/Src/Execution/">
+    <Project Path="Src/Execution/SunEyeVision.Execution.csproj" />
+  </Folder>
   <Folder Name="/Src/Persistence/">
     <Project Path="Src/Persistence/SunEyeVision.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/Src/Infrastructure.Persistence/">
+    <Project Path="Src/Infrastructure.Persistence/SunEyeVision.Infrastructure.Persistence.csproj" />
   </Folder>
   <Folder Name="/Src/Domain/">
     <Project Path="Src/Domain/SunEyeVision.Domain.csproj" />

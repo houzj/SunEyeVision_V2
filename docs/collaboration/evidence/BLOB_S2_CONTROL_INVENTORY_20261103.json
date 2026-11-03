@@ -1,6 +1,6 @@
 {
   "schema": "blob-s2-full-control-inventory/v1",
-  "sourceBaseline": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
+  "sourceBaseline": "787e842e69426f555f115afda8cc84f170515a8b",
   "formalProduct": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
   "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
   "latestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
@@ -483,5 +483,6 @@
         "实际VS/自然键鼠与统一人工验收另记"
       ]
     }
-  }
+  },
+  "previousSourceBaseline": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a"
 }

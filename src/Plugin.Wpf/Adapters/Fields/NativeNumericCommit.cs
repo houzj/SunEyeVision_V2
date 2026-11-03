@@ -272,6 +272,9 @@ internal sealed class NativeNumericCommit : IDisposable
             // A restored raw SetCurrentValue can remain the effective target override even
             // after UpdateTarget. Install this accepted text without replacing either binding.
             if(!WriteText(expected,()=>_text.SetCurrentValue(TextBox.TextProperty,expected),stamp))return;
+            // A programmatic accepted/reference projection must finish as a target
+            // refresh. It is not a new user transfer through the opposite-end rule.
+            if(inner is not null&&!WriteText(expected,inner.UpdateTarget,stamp))return;
             IsDirty=false;_rawError="";_pendingRaw=null;
         }
         finally{_syncing=syncing;if(!_syncing&&_validateRaw)ValidateRaw();}
@@ -306,7 +309,7 @@ internal sealed class NativeNumericCommit : IDisposable
     private void OnOwnerValue(object sender,RoutedPropertyChangedEventArgs<double> args)
     {
         // The original popup forces both input sources before raising this event.
-        // Only its unedited, unknown subscribed slot may discard that hidden validation.
+        // Only its unedited, owned subscribed slot may discard that hidden validation.
         if(Current()&&_state.IsReferenceMode&&_state.NumericModel is not null&&!IsDirty)
             ProjectAccepted();
     }

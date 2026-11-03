@@ -17,8 +17,7 @@ public sealed partial class NodeConfigurationEditHost
     public bool OwnsRoot(RootWorkflowConfigurationEditDraft draft)
     {
         EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft);
-        return ReferenceEquals(draft.Session, _session) && !draft.Workflow.IsSubroutine &&
-            _session.GetWorkflows().Any(item => ReferenceEquals(item, draft.Workflow));
+        return draft.IsOwnedBy(_session);
     }
     public bool HasPendingChanges(RootWorkflowCollectionEditDraft draft)
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }    public bool HasPendingChanges(NodeConfigurationEditDraft draft)

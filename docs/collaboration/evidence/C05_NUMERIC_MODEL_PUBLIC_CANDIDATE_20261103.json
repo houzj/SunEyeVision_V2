@@ -227,5 +227,80 @@
     "Catalog/O06/CURRENT未写；原脏内容及旧untracked证据保留",
     "无Runtime/SDK/Workflow执行接口修改；三消费者源来自固定cherry-pick",
     "未复制Release或厂商库"
-  ]
+  ],
+  "latestProductSourceCommit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+  "unknownReferenceRepair": {
+    "productSourceCommit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+    "productFiles": [
+      "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+    ],
+    "sourceSha256": "8F6CDC2038ED6DD7A7D769F9E5FB5DB0D2F1A1427ACF728A7843FB10183AB7C6",
+    "builds": {
+      "ui": {
+        "log": "Release/_validation/C05NumericModel-20261103/ui-build-015.log",
+        "exit": 0,
+        "warnings": 6553,
+        "errors": 0,
+        "elapsed": "00:01:41.24"
+      },
+      "full": {
+        "log": "Release/_validation/C05NumericModel-20261103/full-build-016.log",
+        "exit": 0,
+        "warnings": 6516,
+        "errors": 0,
+        "elapsed": "00:00:45.02"
+      }
+    },
+    "publicAttempt": "Release/_validation/C05NumericModel-20261103/attempt-015",
+    "receipt": {
+      "scope": "C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS",
+      "exit": 0,
+      "buildSourceCommit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+      "testHEAD": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+      "payloadDiffPaths": [],
+      "payloadDiffRejected": [],
+      "payloadSourceCommit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+      "payloadSha256": "1DD566B0BDBB63F3EECF927C5C2553CC46B07C66B89A6F595FBD8C335F23889C",
+      "payloadPassed": true,
+      "productSourcesDirty": [],
+      "worktreeDirty": [
+        " M docs/collaboration/CURRENT_TASK.md",
+        "?? docs/collaboration/evidence/BLOB_RENDER_CHAIN_CANDIDATE_20261102/source-freeze-002.json",
+        "?? docs/collaboration/evidence/BLOB_TEXT_DISPLAY_CANDIDATE_20261102/"
+      ],
+      "identityPassed": true,
+      "passedCases": 10,
+      "productSourceCommit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+      "commit": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+      "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\C05NumericModelCases.cs",
+      "sourceSha256": "20AB4E4414FED3492B3E7D7CCC1CEB583C8DD367F4F90ED437C689E538E67E6D",
+      "runnerSha256": "7A68B541FD50B87F5CC98DC26B719073A418F7E6F9898D9435A2DB63CAEC648A",
+      "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "loaded": [
+        {
+          "name": "SunEyeVision.Plugin.Wpf",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "C0FB15FD0F1E2DFC9DF770765BC788AF3DFE3DF6506D67405D97C8A99C7B0887",
+          "matchesCandidate": true
+        },
+        {
+          "name": "SunEyeVision.Plugin.Contracts",
+          "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "4A190950C3D91EF0E0023B6B72B9F672B10D17744EFABDC186576B42D0CEECB6",
+          "matchesCandidate": true
+        }
+      ]
+    },
+    "preservedFailures": [
+      "attempt-012",
+      "attempt-013",
+      "attempt-014"
+    ],
+    "scope": "仅C05未知引用owned隐藏绑定与原生popup生命周期；模型未知/正式引用/普通读取/用户坏raw保护不变；不扩C06/SDK/业务",
+    "unverified": [
+      "最终31d消费者及主仓正式由主线分别记录",
+      "VS实际设计器",
+      "自然键鼠及用户人工"
+    ]
+  }
 }

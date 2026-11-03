@@ -1,7 +1,9 @@
 # C05公共单数值完整单元候选交接（2026-11-03）
 
+当前公共产品为31d434cc068333efdcf1ff42b56df85cfd090fba；后续未知引用确认与原生下拉修正、10组候选回执见文末。前批66c25及其9组/Range42成绩按原版本保留，不挪签。
+
 - 基线：a3b3390f894191482a84bd969cb533aecdbfcc5c；分支codex/c05-number-model-public-20261103，既有blob-reference-chain-20261101工作区。
-- 最终公共产品：66c25c70a76c3a897aed646f694c92d7b2617564。接续093c6f76c接口、b179b18c7整链、bf5bac40d原值/投影权限修正；精确13项公共源及专轨SHA/Git blob见同名JSON。
+- 前批公共产品：66c25c70a76c3a897aed646f694c92d7b2617564。接续093c6f76c接口、b179b18c7整链、bf5bac40d原值/投影权限修正；精确13项公共源及专轨SHA/Git blob见同名JSON。
 - 消费线三真实视图及宿主固定源616fdb3d/81f2fe21/4d2204b1已按主线授权单cherry用于完整候选编译，分别为本线7e50f146c/d406e9a8c/865c26d0f；没有由公共线另写消费实现。
 
 ## 完整实现、复用与保护
@@ -16,7 +18,7 @@
 
 整数Int32按原Min相对Inc格点；Int64中间算术避免原Int32中间差溢出，最终Int32收窄和边界继续严格验证，非法Inc拒绝。极端中间溢出域为本方安全适配，不称VM逐值等价；其他宽度沿原本方合同。浮点使用double/ToEven，UI投影与正式存储资格分开：例如原Float32合法1.25可投影1.2，UI1.2不被反写；新候选仍按存储精确性Freeze，不静默窄化。原值与格点/显示精度不同不构成C05初始错误；原类型、有限性、范围、metadata和leaf/XML附加极值仍检查。C06没有启用本模型或新格点分支。
 
-## 最终同版候选验证
+## 前批66c25同版候选验证
 
 本机既有NuGet缓存只读离线restore005自然成功；HALCON仅指定D:/MyWork/SunEyeVision_V2/libs/halcon，没有复制Release或算法库。
 
@@ -32,3 +34,15 @@
 api-build和各次中间构建、attempt001–010均保留于Release/_validation/C05NumericModel-20261103。早期失败包括测试非record误用with、反射Render重载、图形夹具原EditorKind/步长不符，以及Float32夹具误假设静默窄化；attempt009虽实际9组通过但WIP/payload门禁拒签。bf5的同版9组是中间基线，不移签到最终66c25。
 
 原两份静态数值证据不证明每次Blob运行自动回读，也不证明普通GetParamValue等于订阅本轮执行值；本方ReadCurrentValue为明确宿主适配。未启动原VM/SDK，不扩C06比较夹值、算法、Workflow或SDK执行接口；没有新按钮或兼容入口。主仓正式集成、消费线完整生产链、真实VS和自然键鼠/人工分别记录；本候选不代签。原28目录/17组、B08 A00–A23完整范围保留。Catalog/O06/CURRENT未写，原任务账本脏内容与旧证据未覆盖；主线负责统一回原主方案和阶段导航。
+
+## 未知引用确认与原生下拉修正交接
+
+- 基线：前批66c25及回执1341d00；产品修正06b0bacf9、31d434cc0，最终公共产品31d434cc068333efdcf1ff42b56df85cfd090fba。中间bce775fcf/cf7f50a73/dbd76045b/df62048ac仅公共测试/runner；没有改SDK、原控件、Blob、Workflow或业务值。
+- 原因与调整：正式六叶All多圆环执行成功后，确认先执行ToolEditorCommit.TryFlush。原unknown模型写空TextBox，五个隐藏NumericControl的outer转换产生ConversionValidationRule，字段pending/业务Validate仍健康。仅NativeNumericCommit恢复owned隐藏绑定的原物理target，沿原转换器/文化格式，模型仍Unknown、正式引用不变、零普通读取；原件物理DP不代表本轮订阅值或候选常量。
+- 生命周期：原popup关闭会ForceUpdateSource后发OnStartValueChange；非paired C05借该事件在unknown/ref/非dirty/Current及owned身份仍有效时恢复target。构造异常和Dispose先退役，再全部尝试解绑并保留异常；不另排Dispatcher。不清用户真实坏raw，常量无值仍BeginConstantEntry空raw/pending/invalid，只有有效新提案才接纳。
+- 实际边界：整数min10/max100的原physical StartValue为0，未夹值、未补模型；普通dirty-flush无错，原生popup关闭曾产生RangeRule10–100。最终事件闭包后，真实CBox opened/closed均true，关闭后dirty0/errors0。F64 sequence按旧确切TextBox.SetCurrentValue空串重现，恢复及真实CBox关闭后均dirty0/errors0；零read/Unknown/Accepted引用、无值解绑/坏raw、Dispose后旧owner事件不清错均有断言。
+- 构建：本工作区ui-build-015.log自然exit0，6553警告/0错误/1:41.24；full-build-016.log自然exit0，6516警告/0错误/45.02秒，均按真实HALCON源构建，无复制Release/算法库。
+- 公共attempt015自然exit0，实际10组，payloadPassed/identityPassed全true，产品源dirty为空。buildSourceCommit/testHEAD/payloadSourceCommit均31d434cc0；实际2程序集来自本候选Release且SHA一致。封包SHA256 1DD566B0BDBB63F3EECF927C5C2553CC46B07C66B89A6F595FBD8C335F23889C；Wpf C0FB15FD0F1E2DFC9DF770765BC788AF3DFE3DF6506D67405D97C8A99C7B0887；Contracts 4A190950C3D91EF0E0023B6B72B9F672B10D17744EFABDC186576B42D0CEECB6。
+- 载荷门禁：BuildSourceCommit与TestHEAD分列；二者Git diff仅允许docs/*、scripts/verification/*，其他路径或src/tools产品dirty拒绝。loaded路径/SHA、封包SHA及10组计数继续核验。独立隐藏桌面+STA运行原生popup，创建失败不回退用户桌面。
+- 失败保留：attempt012是physical0<min10先行断言，不代表实际flush错误；attempt013/014证明真实原生popup后RangeRule错误，014另已证明sequence准确来源与保护。一次runner语法失败亦保留终端记录，后Parser校验修正。所有旧日志留原处，不挪签。候选日志根Release/_validation/C05NumericModel-20261103。
+- 真实消费者：06b0版本真实Window11/C056已自然通过，按该版本单列；31d最终消费者必要Window/C05由消费线同版验证，主仓正式、VS/自然键鼠及用户人工另记。本线未继续C06、未新增模型或全局门禁，未写Catalog/O06/CURRENT，原dirty及旧证据保留。主线负责整合正式方案、集成和最终验收。

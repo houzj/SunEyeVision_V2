@@ -56,7 +56,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void ReleaseSourceSession()
         {
             var binding=_sourceBinding;_sourceBinding=null;
-            ImagePreviewContent.Session=null;
+            ImagePreviewContent.Session=null;ImagePreviewContent.IsRunning=false;
             binding?.SetDialogOwner(null);
         }
         private void RefreshSourceSession()
@@ -78,6 +78,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_viewModel is null)return;
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
+            ImagePreviewContent.IsRunning=_viewModel.WorkflowTabViewModel.SelectedTab is {} tab&&_viewModel.IsFormalRootRunning(tab.RootWorkflowId);
             CommandManager.InvalidateRequerySuggested();
             // Keep original list focus through execution; formal source edits are guarded by the execution lease.
             ModuleResultTreeView.IsReadOnly=!allowed;

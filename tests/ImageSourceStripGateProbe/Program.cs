@@ -29,7 +29,7 @@ internal static class Program
    session.CanEdit=true;session.Raise();Pump();Check(list.IsEnabled&&add.IsEnabled,"只有编辑权限仍可配置图像条目");
    key=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(list),0,Key.Left){RoutedEvent=Keyboard.PreviewKeyDownEvent};list.RaiseEvent(key);
    Check(key.Handled,"无导航权限的方向键不改变选择");
-   window.Close();strip.Session=null;Console.WriteLine("PASS 6: 实际WPF图像条门禁与运行遮罩；非自然OS输入或完整主窗验收");return 0;
+   window.Close();strip.Session=null;Console.WriteLine("PASS 7: 实际WPF图像条门禁与运行遮罩；非自然OS输入或完整主窗验收");return 0;
   }
   catch(Exception error){Console.Error.WriteLine(error);return 1;}
  }

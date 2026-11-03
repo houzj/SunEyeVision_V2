@@ -1,4 +1,5 @@
 using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.UI.Features.WorkflowUI;
 using System;
@@ -30,6 +31,13 @@ public partial class MainWindowViewModel
     internal bool ChangeRootSettings(WorkflowTabViewModel tab,WorkflowDefinition expected,RootWorkspaceSettings opening,RootWorkspaceSettings settings)
     {
         if(!ReferenceEquals(ResolveEditableRoot(tab),expected)||expected.WorkspaceSettings!=opening)return false;
-        StatusText="流程运行设置正在接入正式会话事务，当前不可提交。";return false;
+        try
+        {
+            var session=DocumentManager.CurrentSession!;var draft=session.Editing.Host.BeginRootEdit(expected.Id);
+            draft.WorkspaceSettings=draft.WorkspaceSettings with {RunIntervalMs=settings.RunIntervalMs,StopOnNg=settings.StopOnNg};
+            var proposal=DocumentEditProposal.Prepare(session.Editing.Host,roots:new[]{draft});
+            session.ValidateEdit(proposal);RefreshProductionPublication(session,session.CommitEdit(proposal));return true;
+        }
+        catch(Exception error){StatusText="流程运行设置未接纳："+error.Message;return false;}
     }
 }

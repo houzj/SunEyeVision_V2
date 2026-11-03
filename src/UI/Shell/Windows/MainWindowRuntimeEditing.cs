@@ -17,7 +17,8 @@ public partial class MainWindowViewModel
     {
         var session = DocumentManager.CurrentSession;
         var workflowId = WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
-        return session is not null && workflowId is not null && session.GetNodes(workflowId).Any(actual => ReferenceEquals(actual,node));
+        try{return session is not null && workflowId is not null && session.GetNodes(workflowId).Any(actual => ReferenceEquals(actual,node));}
+        catch(InvalidOperationException){return false;}
     }
     private void RefreshFormalNodeSelection()
     {
@@ -71,10 +72,12 @@ public partial class MainWindowViewModel
             ToolEditorCommit.AttachDraftContext(control,context);
             context.PrepareView=()=>control.TryCapture(out var error)?null:error;
             context.HasPendingViewEdits=()=>control.HasPendingEdits;
+            context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
             context.Deactivated+=control.Dispose;
             context.Deactivated+=()=>{if(window.IsLoaded)window.Close();};
             window.SetRunAvailability(()=>false);
             control.BindDraft(context.PreparedDraft);
+            var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
             window.Show();return true;
         }

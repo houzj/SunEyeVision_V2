@@ -2,7 +2,7 @@
 using SunEyeVision.UI.Shell.Controls.Shell;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Features.WorkflowUI.Commands;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Workflows;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
@@ -10,18 +10,18 @@ public partial class MainWindowViewModel
  private string _rootOverviewStamp="";
  internal (string Identity,long Revision,RootWorkflowOverviewEntry[] Entries) CaptureRootOverview()
  {
-  var session=DocumentManager.Session;var document=DocumentManager.CurrentSolution;
+  var session=DocumentManager.CurrentSession;var document=session?.Document;
   var identity=session?.Editing.SessionId.ToString()??"no-document";
-  var roots=document?.Workflows.Where(w=>!w.IsSubroutine).ToArray()??Array.Empty<SunEyeVision.Workflow.Workflow>();
-  var stamp=identity+"|"+(session?.Editing.Host.Capture().Version.ToString()??"")+"|"+string.Join("|",roots.Select(r=>r.Id+":"+r.Name+":"+r.WorkspaceSettings+":"+string.Join(",",r.Nodes.Select(n=>n.Id))));
+  var roots=document?.Workflows.Where(w=>!w.IsSubroutine).ToArray()??Array.Empty<WorkflowDefinition>();
+  var stamp=identity+"|"+(session?.ChangeRevision.ToString()??"")+"/"+(session?.NavigationRevision.ToString()??"")+"|"+string.Join("|",roots.Select(r=>r.Id+":"+r.Name+":"+r.WorkspaceSettings+":"+string.Join(",",r.Nodes.Select(n=>n.Id))));
   if(stamp!=_rootOverviewStamp){_rootOverviewStamp=stamp;_rootOverviewRevision++;}
   var entries=roots.Select(root=>
   {
    var tab=WorkflowTabViewModel.Tabs.SingleOrDefault(t=>t.RootWorkflowId==root.Id);
-   var snapshot=_executionManager.GetExecutionSnapshot(root.Id);bool running=_executionManager.IsRunning(root.Id);
+   var snapshot=GetFormalExecutionSnapshot(root.Id);bool running=_formalRunningRootIds.Contains(root.Id);
    bool continuous=tab?.IsRunning==true&&tab.RunMode==RunMode.Continuous;
    return new RootWorkflowOverviewEntry(root.Id,root.Name,tab?.IsRootConfigurationReady==true,running,continuous,
-    tab!=null&&!tab.IsInSubroutine&&!IsRunning&&!_executionManager.IsAnyRunning()&&!IsDebugWindowOpen&&DocumentManager.Session?.Editing.HasPendingChanges!=true&&root.Nodes.Count>0,
+    tab!=null&&!tab.IsInSubroutine&&!IsRunning&&!_executionManager.IsAnyRunning()&&!IsDebugWindowOpen&&DocumentManager.CurrentSession?.Editing.HasPendingChanges!=true&&root.Nodes.Count>0,
     tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,
     snapshot is {CompletedRunCount:>0}?snapshot.CompletedRunCount:null,snapshot?.EndedAt!=null?snapshot.Elapsed.TotalMilliseconds:null,root.WorkspaceSettings.OverviewX,root.WorkspaceSettings.OverviewY);
   }).ToArray();
@@ -31,7 +31,7 @@ public partial class MainWindowViewModel
  {
   var current=CaptureRootOverview();if(current.Identity!=identity||current.Revision!=revision||edit&&!CanEditRootWorkspace)return null;
   var tab=WorkflowTabViewModel.Tabs.SingleOrDefault(t=>t.RootWorkflowId==rootId);
-  return tab!=null&&DocumentManager.CurrentSolution?.Workflows.Any(w=>w.Id==rootId&&!w.IsSubroutine&&ReferenceEquals(_workflowEngine.GetWorkflowById(rootId),w))==true?tab:null;
+  return tab!=null&&DocumentManager.CurrentSession?.GetWorkflows().Any(w=>w.Id==rootId&&!w.IsSubroutine)==true?tab:null;
  }
  internal bool OpenOverviewRoot(RootOverviewRequestEventArgs request)
  {
@@ -47,15 +47,16 @@ public partial class MainWindowViewModel
   if(request.RunKind==RootOverviewRunKind.ToggleContinuous&&_executionManager.IsRunning(tab.RootWorkflowId)){_executionManager.StopContinuousRun(tab);return;}
   if(!CanEditRootWorkspace||tab.IsInSubroutine||tab.RootWorkflowNodes.Count==0)return;
   SetSelectedTab(tab);
-  if(request.RunKind==RootOverviewRunKind.Single)await ExecuteRunWorkflow();else WorkflowTabViewModel.ToggleContinuous(tab);
+  if(request.RunKind==RootOverviewRunKind.Single)await ExecuteRunWorkflow();else StatusText="连续运行尚未接入正式调度，暂不可用。";
  }
  internal bool CommitOverviewPosition(RootOverviewPositionEventArgs request,bool copy)
  {
-  var tab=ResolveOverviewRequest(request.RootId,request.DocumentIdentity,request.Revision,true);if(tab==null)return false;
+  var tab=ResolveOverviewRequest(request.RootId,request.DocumentIdentity,request.Revision,copy);if(tab==null)return false;
   var point=RootOverviewGeometry.Position(request.X,request.Y);
   if(copy)return CopyRootWorkspace(tab,point);
-  var root=ResolveEditableRoot(tab);if(root==null)return false;
-  var settings=root.WorkspaceSettings with{OverviewX=point.X,OverviewY=point.Y};if(settings==root.WorkspaceSettings)return true;
-  RootHistory.Execute(new RootOverviewPositionCommand(DocumentManager.CurrentSolution!,root,settings,()=>UpdateCurrentSolutionInfo()));return true;
+  var session=DocumentManager.CurrentSession;
+  var root=session?.GetWorkflows().SingleOrDefault(flow=>flow.Id==tab.RootWorkflowId&&!flow.IsSubroutine);
+  if(session is null||root is null||!CanAcceptExternalActivation)return false;
+  session.SetOverviewPosition(root,new CanvasPoint(point.X,point.Y));UpdateCurrentSolutionInfo();return true;
  }
 }

@@ -16,6 +16,31 @@ public partial class MainWindowViewModel
     internal event Action? ResultWorkspaceGraphicsCleared;
     internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
     internal event Action<string>? ResultWorkspaceRootSettled;
+    private void ConfigureFormalImageSourcePresentation()
+    {
+        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&DocumentManager.CurrentSession is not null;
+        ImageSourceActivate=ActivateFormalImageSourceAsync;
+        ImageSourceEditAccepted=receipt=>
+        {
+            if(!ReferenceEquals(DocumentManager.CurrentSession,receipt.Session))return;
+            RefreshProductionPublication(receipt.Session,receipt);
+            ResultWorkspaceChanged?.Invoke();OnPropertyChanged(nameof(ActiveInputSource));
+        };
+        ImageSourcePresentationError=(stage,error)=>AddLog(stage+"："+error.Message);
+        ImageSourcePrepareDisplay=_=>
+        {
+            var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
+            var binding=ActiveImageSourceBinding;var clearEpoch=_nativeExplicitClearEpoch;
+            if(session is null||node is null||tab is null||binding is null)return null;
+            var source=binding.Source;var version=source.EditVersion;
+            bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session)&&ReferenceEquals(SelectedNode,node)
+                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&ReferenceEquals(ActiveImageSourceBinding,binding)
+                &&source.EditVersion==version&&clearEpoch==_nativeExplicitClearEpoch&&OwnsSelectedDocumentNode(node);
+            var scope=new SourceDisplayPreservationScope(Current);
+            try{SourceDisplayPreservationPreparing?.Invoke(source,scope);return scope;}
+            catch{scope.Dispose();throw;}
+        };
+    }
     private long _nativeExplicitClearEpoch;
     private void NotifyResultWorkspaceRootSettled(string workflowId)
     {

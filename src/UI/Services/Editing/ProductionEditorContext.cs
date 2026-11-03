@@ -18,6 +18,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     private bool _active = true;
     private bool _preparing;
     internal Func<string?>? PrepareView { get; set; }
+    internal Action<NodeConfigurationEditDraft>? PreserveViewAfterRebase { get; set; }
     internal Func<bool>? HasPendingViewEdits { get; set; }
     internal event Action? Deactivated;
     internal NodeConfigurationEditHost Host => _session.Editing.Host;
@@ -76,7 +77,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         // The draft is rebased in either case; rebuilding WPF would lose that raw text.
         var rebind = prepared.Matches(_draft) && HasPendingViewEdits?.Invoke() != true;
         _draft = Host.RebaseAcceptedDraft(_draft, prepared);
-        if (rebind) _bindDraft(_draft);
+        if (rebind) _bindDraft(_draft); else PreserveViewAfterRebase?.Invoke(_draft);
         try { _published?.Invoke(receipt); } catch (Exception error) { LastRefreshError = error.Message; }
     }
     public bool TryPrepareEditor(out string error)

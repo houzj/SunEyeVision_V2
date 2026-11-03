@@ -26,7 +26,7 @@ public partial class MainWindowViewModel
     private void FormalDocumentSessionChanged(object? sender,DocumentSessionReplacement change)
     {
         if(_documentHostReleased)return;
-        UnbindFormalSession();ReleaseProductionEditors();ClearFormalImageSourceSelection();SelectedNode=null;
+        UnbindFormalSession();ReleaseProductionEditors();ClearFormalImageSourceSelection();ReleaseFormalExecution();SelectedNode=null;
         BindDocumentHistory();RefreshFormalImageSourceSelection();UpdateCurrentSolutionInfo();
     }
     private void BindDocumentHistory()
@@ -54,6 +54,7 @@ public partial class MainWindowViewModel
     private void FormalResultAvailable(object? sender,PublishedNodeResult result)
     {
         if(_documentHostReleased||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        if(_formalImageInputs is not null&&sender is DocumentSession session)RefreshFormalImageReadReceipts(session);
         if(SelectedNode?.Id==result.Node.NodeId&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==result.Node.WorkflowId)
             RefreshFormalPublishedResult();
         ResultWorkspaceChanged?.Invoke();

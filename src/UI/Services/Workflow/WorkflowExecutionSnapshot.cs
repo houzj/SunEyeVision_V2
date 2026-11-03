@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI.Core;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Workflows;
 
 namespace SunEyeVision.UI.Services.Workflow;
 
@@ -65,7 +65,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
     /// 同步设计期节点清单。快照本身长期存在，未运行时也必须能呈现该清单；
     /// 运行中已有的状态和耗时不被此方法重置。
     /// </summary>
-    internal void SynchronizeDefinition(string workflowName, IEnumerable<WorkflowNodeBase> nodes)
+    internal void SynchronizeDefinition(string workflowName, IEnumerable<NodeDefinition> nodes)
     {
         WorkflowName = workflowName;
         foreach (var workflowNode in nodes)
@@ -142,6 +142,11 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         Notify();
     }
 
+    internal void FinishWithoutResult(ExecutionStatus status)
+    {
+        if(status is not (ExecutionStatus.Cancelled or ExecutionStatus.Failed))throw new ArgumentException("没有结果的运行只能明确记录取消或失败。",nameof(status));
+        Status=status;EndedAt=DateTime.Now;Elapsed=StartedAt is {} started?EndedAt.Value-started:TimeSpan.Zero;Notify();
+    }
     internal void Tick()
     {
         if (Status == ExecutionStatus.Running && StartedAt.HasValue)

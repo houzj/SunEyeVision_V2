@@ -32,6 +32,7 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     }
     private readonly ImageInputSource _source;
     private readonly Func<bool> _isCurrent;
+    private readonly Func<bool> _canNavigate;
     private readonly Func<ImageInfo, int, long, Task>? _activate;
     private readonly Dispatcher _dispatcher;
     private readonly Func<Window?>? _dialogOwner;
@@ -45,23 +46,35 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     private int _lastNotifiedDisplayIndex=int.MinValue;
     private long _refreshGeneration;
     private string? _status;
-    public ImageSourceStripSession(ImageInputSource source, Func<bool> isCurrent,
+    public ImageSourceStripSession(ImageInputSource source, Func<bool> isCurrent, Func<bool> canNavigate,
         Func<ImageInfo, int, long, Task>? activate = null, Dispatcher? dispatcher = null, Func<Window?>? dialogOwner = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _isCurrent = isCurrent ?? throw new ArgumentNullException(nameof(isCurrent));
-        _activate = activate; _dispatcher = dispatcher ?? Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        _canNavigate = canNavigate ?? throw new ArgumentNullException(nameof(canNavigate));
+        _activate = activate; _dispatcher = dispatcher ?? System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _dialogOwner = dialogOwner; _dispatcher.VerifyAccess();
-        _source.PropertyChanged += SourcePropertyChanged;
-        _source.CollectionChanged += SourceCollectionChanged;
-        Refresh();
+        try
+        {
+            _source.PropertyChanged += SourcePropertyChanged;
+            _source.CollectionChanged += SourceCollectionChanged;
+            Refresh();
+        }
+        catch(Exception failure)
+        {
+            try { Dispose(); }
+            catch(Exception cleanup) { throw new AggregateException("图像源条初始化和清理均失败。",failure,cleanup); }
+            throw;
+        }
     }
     public ImageInputSource Source => _source;
     public IReadOnlyList<ImageSourceStripItem> Items => _items;
     public long Version => _source.EditVersion;
     public int DisplayIndex => _source.CurrentIndex;
     public int ConfiguredStartIndex => _configuredStartIndex;
-    public bool IsReadOnly => _disposed || _source.IsReadOnly || !OwnerIsCurrent();
+    public bool CanEdit => !_disposed && !_source.IsReadOnly && OwnerIsCurrent();
+    public bool CanNavigate => !_disposed && !IsImporting && _activate is not null && OwnerIsCurrent() && _canNavigate() && OwnerIsCurrent();
+    public bool IsReadOnly => !CanEdit;
     public bool IsSelectMode => _source.RunMode == ImageRunMode.运行选择;
     public bool AutoSwitchEnabled => _source.AutoSwitchEnabled;
     public bool IsImporting { get; private set; }
@@ -191,11 +204,17 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         var notifyDisplay=_cursorNoticePending||_lastNotifiedDisplayIndex!=DisplayIndex;
         _cursorNoticePending=false;_lastNotifiedDisplayIndex=DisplayIndex;
         foreach (var name in new[] { nameof(Items), nameof(Version), nameof(DisplayIndex), nameof(ConfiguredStartIndex),
-            nameof(IsReadOnly), nameof(IsSelectMode), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(Status) })
+            nameof(IsReadOnly), nameof(CanEdit), nameof(CanNavigate), nameof(IsSelectMode), nameof(AutoSwitchEnabled), nameof(IsImporting), nameof(Status) })
         { if (!current()) return; if(name==nameof(DisplayIndex)&&!notifyDisplay)continue; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)); }
     }
     private void SetStatus(string? status)
     { _status = status; if (!_disposed) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status))); }
+    internal void NotifyAvailabilityChanged()
+    {
+        _dispatcher.VerifyAccess(); if (_disposed) return;
+        foreach (var name in new[] { nameof(CanEdit), nameof(CanNavigate), nameof(IsReadOnly) })
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
     public async Task RequestAsync(ImageSourceStripRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -204,8 +223,10 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
             await _dispatcher.InvokeAsync(() => RequestAsync(request, cancellationToken)).Task.Unwrap(); return;
         }
         cancellationToken.ThrowIfCancellationRequested();
-        bool edit = request.Kind is not (ImageSourceStripRequestKind.CancelImport or ImageSourceStripRequestKind.OpenDirectory);
+        bool edit = request.Kind is not (ImageSourceStripRequestKind.CancelImport or ImageSourceStripRequestKind.OpenDirectory or ImageSourceStripRequestKind.Activate);
         RequireCurrent(request.ExpectedVersion, edit);
+        if (request.Kind == ImageSourceStripRequestKind.Activate && !CanNavigate)
+            throw new InvalidOperationException("图像源运行导航尚未接入或当前不可用。");
         if (request.Kind == ImageSourceStripRequestKind.CancelImport) { CancelFileImport(); return; }
         if (IsImporting && request.Kind is not (ImageSourceStripRequestKind.ImportFiles or ImageSourceStripRequestKind.ImportDirectory or ImageSourceStripRequestKind.OpenDirectory))
             throw new InvalidOperationException("图像导入尚未结束。");
@@ -222,8 +243,7 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         switch (request.Kind)
         {
             case ImageSourceStripRequestKind.Activate:
-                if (_activate is not null) await _activate(rows[index], index, request.ExpectedVersion);
-                else _source.SelectImage(index);
+                await (_activate ?? throw new InvalidOperationException("图像源运行导航尚未接入。"))(rows[index], index, request.ExpectedVersion);
                 break;
             case ImageSourceStripRequestKind.SelectStart: _source.SelectImage(index); break;
             case ImageSourceStripRequestKind.SetRunSelection:

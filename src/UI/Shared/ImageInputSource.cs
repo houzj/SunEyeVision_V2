@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.Infrastructure.ImageSources;
 
 namespace SunEyeVision.UI.Shared;
 
@@ -20,7 +20,7 @@ public sealed class ImageSourceSelectionEventArgs(long version,ImageInfo image,i
 }
 
 /// <summary>One source's display projection. Formal edits are accepted before any live view mutation.</summary>
-public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged
+public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged, IDisposable
 {
     private sealed class Entries : ObservableCollection<ImageInfo>
     {
@@ -32,7 +32,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     private int _currentIndex = -1, _configuredIndex = -1;
     private long _displayGeneration;
     private ImageRunMode _runMode;
-    private bool _autoSwitch = true, _readOnly, _committing, _requiresWriter;
+    private bool _autoSwitch = true, _readOnly, _committing, _requiresWriter, _disposed, _disposeRequested;
     private string? _acceptedRuntimeError;
     private List<string> _runReferences = new();
     public string NodeId { get; }
@@ -41,7 +41,6 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     public ReadOnlyObservableCollection<ImageInfo> Images { get; }
     /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
     public Action<ImageSourceEditProposal>? ConfigurationWriter { get; set; }
-    internal Func<IDisposable>? ConfigurationLeaseProvider { get; set; }
     internal void RecordAcceptedRuntimeFailure(string message)
     {
         if(!_committing)throw new InvalidOperationException("只能在正式接纳期间记录运行准备失败。");
@@ -56,8 +55,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nodeId); NodeId = nodeId; Images = new(_entries);
     }
-    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
-    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; ConfigurationLeaseProvider = null; }
+    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
+    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
     public int Count => _entries.Count;
     public bool HasImages => Count != 0;
     public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
@@ -100,13 +99,12 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     }
     private ImageSourceEditReceipt Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected,bool selectStart=false,int? displayOverride=null)
     {
+        ObjectDisposedException.ThrowIf(_disposed,this);
         if (_committing) throw new InvalidOperationException("图像源编辑不能重入。");
         if (_readOnly) throw new InvalidOperationException("图像输入源已锁定。");
         if (_requiresWriter && ConfigurationWriter is null) throw new InvalidOperationException("图像源尚未连接当前方案的正式编辑会话。");
-        if (_requiresWriter && ConfigurationLeaseProvider is null) throw new InvalidOperationException("图像源尚未连接正式执行门禁。");
         if (index < -1 || index >= rows.Length || !Enum.IsDefined(mode) || rows.Any(row=>row is null||string.IsNullOrWhiteSpace(row.Id)) || rows.Select(row=>row.Id).Distinct(StringComparer.Ordinal).Count()!=rows.Length)
             throw new InvalidOperationException("图像源条目身份、选择或模式无效。");
-        using var configurationLease = ConfigurationLeaseProvider?.Invoke();
         var configuration=Configuration(rows,index,mode,auto,selected);
         var displayIndex=displayOverride??(selectStart?index:RemapDisplay(rows,index));
         var version=EditVersion;
@@ -122,12 +120,19 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
             // The writer may reject. Nothing visible or owned has changed yet.
             writer?.Invoke(new(Configuration(rows,index,mode,auto,configuration.ForRunPaths),selectStart));
             // An accepted publication may synchronously replace this projection. Do not revive it.
-            if (version!=EditVersion) return new(formalAccepted,null,_acceptedRuntimeError);
+            if (_disposeRequested || version!=EditVersion) return new(formalAccepted,null,_acceptedRuntimeError);
             Install(rows,configuration,true,displayIndex);
             if(selectStart&&EditVersion==version+1&&index>=0&&index<Count&&ReferenceEquals(CurrentImage,rows[index]))
                 acceptedSelection=new(EditVersion,rows[index],index);
         }
-        finally { _committing=false; }
+        finally
+        {
+            _committing=false;
+            if(_disposeRequested)
+            {
+                try{Dispose();}catch(Exception error){LastNotificationError ??= error.Message;}
+            }
+        }
         var runtimeError=_acceptedRuntimeError;
         if(acceptedSelection is not null)
             foreach(var callback in ExplicitSelectionAccepted?.GetInvocationList()??Array.Empty<Delegate>())
@@ -162,13 +167,17 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         EditVersion=nextVersion; LastNotificationError=null;
         // All state is installed before any fallible consumer sees it.
         if(structureChanged)Notify(_entries.Publish);
-        foreach(var row in rows) Notify(row.NotifyRunSelection);
+        bool Current()=>!_disposed&&!_disposeRequested&&EditVersion==nextVersion;
+        foreach(var row in rows) { if(!Current())break; Notify(row.NotifyRunSelection); }
         foreach(var name in new[]{nameof(Count),nameof(HasImages),nameof(CurrentIndex),nameof(CurrentImage),nameof(RunMode),nameof(AutoSwitchEnabled),nameof(GetSelectedImages)})
-            Notify(()=>OnPropertyChanged(name));
-        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>()) Notify(()=>((EventHandler<int>)callback)(this,_currentIndex));
-        if(edited) foreach(var callback in ConfigurationEdited?.GetInvocationList()??Array.Empty<Delegate>()) Notify(()=>((EventHandler)callback)(this,EventArgs.Empty));
+        { if(!Current())break; Notify(()=>OnPropertyChanged(name)); }
+        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>())
+        { if(!Current())break; Notify(()=>((EventHandler<int>)callback)(this,_currentIndex)); }
+        if(edited) foreach(var callback in ConfigurationEdited?.GetInvocationList()??Array.Empty<Delegate>())
+        { if(!Current())break; Notify(()=>((EventHandler)callback)(this,EventArgs.Empty)); }
         foreach(var image in removed)
         {
+            if(_entries.Contains(image))continue;
             Notify(image.CancelThumbnail); Notify(image.ReleaseFullImage);
             Notify(()=>LocalImageAssetCache.InvalidateImageCache(image.FilePath));
         }
@@ -214,7 +223,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     public int PrepareForDisplay()=>Count;
     public bool TryPresentRuntimeCursor(long expectedEditVersion,string entryId,string reference,string address)
     {
-        if(_committing||EditVersion!=expectedEditVersion||!_indices.TryGetValue(entryId,out var index))return false;
+        if(_disposed||_committing||EditVersion!=expectedEditVersion||!_indices.TryGetValue(entryId,out var index))return false;
         var image=_entries[index];if(Reference(image)!=reference||image.FilePath!=address)return false;
         var generation=++_displayGeneration;
         bool Current()=>_displayGeneration==generation&&EditVersion==expectedEditVersion&&CurrentIndex==index&&ReferenceEquals(CurrentImage,image);
@@ -225,11 +234,12 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         {Notify(()=>((EventHandler<int>)callback)(this,index));if(!Current())return false;}
         return Current();
     }
-    public void LoadFromPolicy(ImageSourcePolicy config,IResourcePathResolver? resourcePaths=null)
+    public void LoadFromPolicy(ImageSourcePolicy config,IResourcePathResolver resourcePaths)
     {
+        ObjectDisposedException.ThrowIf(_disposed,this);
         ArgumentNullException.ThrowIfNull(config);
         if(_committing)throw new InvalidOperationException("图像源投影不能在编辑接纳中重入加载。");
-        var resolver=resourcePaths;
+        var resolver=resourcePaths ?? throw new ArgumentNullException(nameof(resourcePaths));
         var rows=new List<ImageInfo>();
         // Matching by occurrence preserves identities within the projection without confusing duplicate references.
         var previous=_entries.GroupBy(Reference).ToDictionary(group=>group.Key,group=>new Queue<ImageInfo>(group));
@@ -238,9 +248,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
             string address;string? error=null;
             try
             {
-                resolver??=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(
-                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
-                address=resolver.Resolve("ImageSourceSettings.FileReferences",reference,ResourcePurpose.FileRead).Address;
+                address=resolver.Resolve("local.paths",reference,ResourcePurpose.FileRead).Address;
             }
             catch(Exception ex){address=string.Empty;error=ex.Message;}
             var image=previous.TryGetValue(reference,out var candidates)&&candidates.Count>0?candidates.Dequeue():null;
@@ -256,6 +264,24 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         if(rows.Length==Count)return;
         var current=_configuredIndex>=0?_entries[_configuredIndex]:null;var index=current is null?-1:Array.IndexOf(rows,current);
         Commit(rows,index,_runMode,_autoSwitch,_runReferences.Where(reference=>rows.Any(row=>Reference(row)==reference)));
+    }
+    /// <summary>Release only this projection; it never changes the document configuration.</summary>
+    public void Dispose()
+    {
+        if(_disposed)return;
+        if(_committing){_disposeRequested=true;_requiresWriter=true;ConfigurationWriter=null;return;}
+        _disposed=true; ++_displayGeneration; _requiresWriter=true; ConfigurationWriter=null;
+        var rows=_entries.ToArray(); _entries.Install(Array.Empty<ImageInfo>()); _indices.Clear(); _runReferences.Clear();
+        _currentIndex=_configuredIndex=-1; _readOnly=true;
+        var errors=new List<Exception>();
+        foreach(var image in rows)
+        {
+            image.RequestRunSelection=null;
+            try{image.CancelThumbnail();}catch(Exception error){errors.Add(error);}
+            try{image.ReleaseFullImage();}catch(Exception error){errors.Add(error);}
+        }
+        CurrentImageChanged=null; ConfigurationEdited=null; ExplicitSelectionAccepted=null;
+        if(errors.Count!=0)throw new AggregateException("图像源投影释放失败。",errors);
     }
     public void ReplaceImage(ImageInfo image,string path)
     {

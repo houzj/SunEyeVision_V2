@@ -22,6 +22,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
 {
     private ProductionEditorContext? _context;
     private IToolSettingsView? _view;
+    private FieldSettings? _acceptedFields;
+    private ImageSourceDraftContent? _imageSourceContent;
     private ReferenceWindowOwner? _referenceOwner;
     private readonly List<DeclaredFieldEditor> _inputs = new();
     private long _generation, _syncedRevision;
@@ -35,7 +37,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         ? context : throw new InvalidOperationException("参数页所属方案、流程或节点已失效。");
     internal bool IsResultDisplayBinding(NodeDefinition node, long generation) => !_disposed && generation == _generation && _view is not null && ReferenceEquals(_context?.FormalNode, node) && ReferenceEquals(Content, _view.View);
     internal bool TryGetResultDisplayBinding(out NodeDefinition node, out long generation)
-    { node = (NodeDefinition)_context!.FormalNode; generation = _generation; return _context is not null && IsResultDisplayBinding(node, generation); }
+    { node = _context?.FormalNode as NodeDefinition ?? null!; generation = _generation; return node is not null && IsResultDisplayBinding(node, generation); }
 
     public void BindDraft(NodeConfigurationEditDraft draft)
     {
@@ -54,39 +56,65 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             var result = new List<DeclaredReferenceCandidate>();
             foreach (var source in selection.Outputs)
                 foreach (var output in source.Schema.Outputs)
-                    result.AddRange(DeclaredReferenceCandidateBuilder.Build(source.Schema, output, source.Actual.Id, draft.WorkflowId, source.Actual.Name));
+                {
+                    var candidates=DeclaredReferenceCandidateBuilder.Build(source.Schema,output,source.Actual.Id,draft.WorkflowId,source.Actual.Name);
+                    var manual=selection.FieldKind==ReferenceSelectionFieldKind.Settings&&selection.TargetPort.Type.Shape==ValueShape.Scalar
+                        &&selection.TargetPort.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+                    result.AddRange(manual?candidates.Where(candidate=>
+                    {
+                        var reference=candidate.Reference(BindingSelection.All);
+                        return source.ManualSources.Any(eligible=>eligible.PortId==reference.PortId&&eligible.MemberPath.SequenceEqual(reference.MemberFieldPath,StringComparer.Ordinal));
+                    }):candidates);
+                }
             return result.AsReadOnly();
         }
         var references = new ReferenceFieldOptions(port =>
         {
+            if((port.EditModes&(FieldEditModes.Reference|FieldEditModes.DisplayExpression))==0)return ReferenceCandidates.Empty;
             var selection = Selection(port); var sources = Candidates(selection);
             return new ReferenceCandidates(sources, sources.Where(candidate => ParameterReferenceRules.CanUseIndexSource(candidate.SelectedType, selection.ReferenceBehavior)),
                 selection.Variables.Select(variable => new VariableSelectionItem(variable.Name, variable.Group, variable.Index, variable.Description, "", variable.Reference)), selection.ReferenceBehavior);
-        }, EditableIndex: true, WindowOwner: _referenceOwner,
+        }, ValidateProposal:(port,setting)=>ValidateChanges(new Dictionary<string,ParameterSetting>{{port.Id,setting}}), EditableIndex: true, WindowOwner: _referenceOwner,
             ReadCurrentValue: port => CurrentContext().ReadCurrentParameter(port.Id),
-            ReadBehavior: port => Selection(port).ReferenceBehavior);
+            ReadBehavior: port => (port.EditModes&(FieldEditModes.Reference|FieldEditModes.DisplayExpression))==0
+                ?ParameterReferenceBehavior.StrictExactlyOne:Selection(port).ReferenceBehavior);
         var inputSchema = draft.InputSchema;
-        var panel = new DeclaredInputFieldsView(inputSchema,
-            port => CurrentContext().PreparedDraft.Configuration.Fields.Read(port.Id),
-            (port, value) => { if (!Current()) throw new InvalidOperationException("输入编辑已失效。"); CurrentContext().PreparedDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [port.Id] = value }); },
-            references, FormatReference, _ => inputSchema.Inputs.Where(port => (port.EditModes & FieldEditModes.Reference) != 0).SelectMany(port => Candidates(Selection(port))).ToArray());
-        FrameworkElement inputContent = panel;
-        // The host capability is read from the actual admitted node; tool-name strings carry no authority.
-        var declaration = context.Session.GetNodeHostInputDeclaration(draft.WorkflowId, draft.Node);
-        if (declaration is not null)
+        // Resolve actual capability before constructing input content. Only one input view is built.
+        var declaration = context.Session.GetNodeHostInputDeclaration(draft.WorkflowId,draft.Node);
+        FrameworkElement inputContent;
+        if(declaration is { CapabilityId:"image-source",Version:1 })
+            inputContent=_imageSourceContent=new ImageSourceDraftContent(context.Session,
+                context.Session.GetWorkflows().Single(flow=>flow.Id==draft.WorkflowId&&!flow.IsSubroutine),draft.Node,
+                ()=>Current()?context.PreparedDraft:null,Current);
+        else
         {
-            panel.Dispose();
-            inputContent = new ImageSourceDraftContent(context.Session, context.Session.GetWorkflows().Single(flow => flow.Id == draft.WorkflowId && !flow.IsSubroutine), draft.Node, () => Current() ? context.PreparedDraft : null, Current);
+            var panel=new DeclaredInputFieldsView(inputSchema,
+                port=>CurrentContext().PreparedDraft.Configuration.Fields.Read(port.Id),
+                (port,value)=>{if(!Current())throw new InvalidOperationException("输入编辑已失效。");var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);CurrentContext().PreparedDraft.ApplyFields(edits);},
+                references,FormatReference,port=>Candidates(Selection(port)));
+            _inputs.AddRange(panel.Fields);inputContent=panel;
         }
-        else _inputs.AddRange(panel.Fields);
+        var textExpressions=draft.DisplaySchema.Inputs.Where(port=>(port.EditModes & FieldEditModes.DisplayExpression)!=0).ToDictionary(port=>port.Id,port=>
+            new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions(()=>
+            {
+                var selection=Selection(port);var revision=context.Session.ChangeRevision;
+                var candidates=Candidates(selection).Where(candidate=>
+                {
+                    var type=candidate.SelectedType;while(type.Shape==ValueShape.Sequence)type=type.Element!;
+                    return type.Shape==ValueShape.Scalar&&type.Scalar is ScalarKind.Int64 or ScalarKind.Float64 or ScalarKind.Text;
+                }).ToArray();
+                return new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionSnapshot(candidates,
+                    candidate=>candidate.NodeDisplayName+"."+candidate.OutputDisplayName+(candidate.MemberDisplayNames.Count==0?"":"."+string.Join(".",candidate.MemberDisplayNames)),
+                    ()=>Current()&&context.Session.ChangeRevision==revision);
+            }),StringComparer.Ordinal);
         var editorPorts = draft.SettingsSchema.Inputs.Concat(draft.DisplaySchema.Inputs).ToArray();
         IToolSettingsView? candidate = null;
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent));
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
-            _view = candidate; _syncedRevision = candidate.AcceptedRevision; _captureError = "";
+            _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
             ResultDisplayBound?.Invoke(draft.Node, generation);
         }
@@ -112,7 +140,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             if (view.AcceptedRevision != _syncedRevision)
             {
                 var fields = view.CaptureAcceptedFields();
-                CurrentContext().PreparedDraft.ApplyFields(fields.Declarations.Keys.ToDictionary(id => id, fields.Read, StringComparer.Ordinal));
+                ApplyAcceptedFields(fields);
                 _syncedRevision = view.AcceptedRevision; _captureError = "";
             }
         }
@@ -131,11 +159,59 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             if (_view is not { } view) throw new InvalidOperationException("参数视图尚未就绪。");
             if (!view.TryCapture(out var fields, out error)) return false;
             if (generation != _generation || !ReferenceEquals(context, CurrentContext())) throw new InvalidOperationException("捕获期间参数页已重新绑定。");
-            context.PreparedDraft.ApplyFields(fields.Declarations.Keys.ToDictionary(id => id, fields.Read, StringComparer.Ordinal));
+            ApplyAcceptedFields(fields);
             _syncedRevision = view.AcceptedRevision; _captureError = ""; error = ""; return true;
         }
         catch (Exception failure) { error = _captureError = failure.Message; return false; }
         finally { _capturing = false; }
+    }
+    internal void AdoptRebasedDraft(NodeConfigurationEditDraft draft)
+    {
+        if(!ReferenceEquals(CurrentContext().PreparedDraft,draft))throw new InvalidOperationException("回执草稿不属于当前视图。");
+        _imageSourceContent?.RebaseDraft(draft);
+    }
+    private void ApplyAcceptedFields(FieldSettings fields)
+    {
+        static string Identity(string id,ParameterSetting value)
+        {
+            using var stream=new System.IO.MemoryStream();
+            using(var writer=new System.Text.Json.Utf8JsonWriter(stream))ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,value}});
+            return Convert.ToBase64String(stream.ToArray());
+        }
+        var previous=_acceptedFields;
+        var changes=(_view?.AcceptedFieldOrder??Array.Empty<string>()).Concat(fields.Declarations.Keys).Distinct(StringComparer.Ordinal).Where(id=>previous is null||!previous.Declarations.ContainsKey(id)
+            ||Identity(id,previous.Read(id))!=Identity(id,fields.Read(id))).ToDictionary(id=>id,fields.Read,StringComparer.Ordinal);
+        // Accepted controls do not get to overwrite unrelated newer fields after a receipt.
+        if(changes.Count!=0)
+        {
+            var context=CurrentContext();var order=BindingOrder(context.PreparedDraft,changes);
+            context.Host.ValidateFieldProposals(context.PreparedDraft,changes,order);
+            context.PreparedDraft.ApplyFields(changes,order);
+        }
+        _acceptedFields=fields;
+    }
+    private string? ValidateChanges(IReadOnlyDictionary<string,ParameterSetting> changes)
+    {
+        try
+        {
+            var context=CurrentContext();context.Host.ValidateFieldProposals(context.PreparedDraft,changes,BindingOrder(context.PreparedDraft,changes));return null;
+        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
+    }
+    private static IReadOnlyList<string> BindingOrder(NodeConfigurationEditDraft draft,IReadOnlyDictionary<string,ParameterSetting> changes)
+    {
+        static string Identity(string id,ParameterSetting value)
+        {
+            using var stream=new System.IO.MemoryStream();using(var writer=new System.Text.Json.Utf8JsonWriter(stream))
+                ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,value}});
+            return Convert.ToBase64String(stream.ToArray());
+        }
+        var current=draft.Configuration;var fields=current.Fields.Apply(changes);
+        var parameters=draft.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
+        bool Bound(string id)=>parameters.Contains(id)&&fields.Read(id) is ReferenceSetting or VariableSetting;
+        var retained=current.ParameterBindingOrder.Where(id=>Bound(id)&&Identity(id,current.Fields.Read(id))==Identity(id,fields.Read(id))).ToList();
+        foreach(var id in changes.Keys.Concat(fields.Capture().Keys).Distinct(StringComparer.Ordinal))if(Bound(id)&&!retained.Contains(id,StringComparer.Ordinal))retained.Add(id);
+        return retained;
     }
     public bool TryValidateEditor(out string error) => CurrentContext().TryValidateEditor(out error);
     public bool TryCommitEditor(out string error) => CurrentContext().TryCommitEditor(out error);
@@ -148,7 +224,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal void RefreshRoiFrame() { }
     private void ReleaseView()
     {
-        var view = _view; _view = null; Content = null; _inputs.Clear();
+        var view = _view; _view = null; _acceptedFields=null; _imageSourceContent=null; Content = null; _inputs.Clear();
         try { if (view is not null) { view.Changed -= Changed; view.Dispose(); } }
         finally { _referenceOwner?.Dispose(); _referenceOwner = null; }
     }

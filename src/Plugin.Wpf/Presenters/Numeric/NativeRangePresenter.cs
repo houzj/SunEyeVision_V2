@@ -57,6 +57,11 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
         for(var i=0;i<2;i++){_observedAcceptance[i]=_states[i].AcceptanceVersion;_observedReference[i]=_states[i].IsReferenceMode;}
         _acceptPrepared=acceptPrepared;_beginGroup=beginGroup;
+        for(var i=0;i<2;i++)
+        {
+            var endpoint=i;_states[i].EnableNumericModel(_presentations[i].Layout);
+            _states[i].NumericEndpoint=i;_states[i].NumericPeer=_states[1-i];_states[i].NumericCheck=value=>CheckModel(endpoint,value);
+        }
         _allow=_presentations.Select(p=>references is not null&&p.Layout?.AllowReference!=false).ToArray();
         Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0);MinHeight=32;
         Label=lower.DisplayName.Replace("下限","范围");
@@ -70,7 +75,9 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         NativeView.IsNeedCheckExtremumByXML=true;
         NativeView.SliderType=Numbers.SliderArrangeType.between;NativeView.SliderTickFrequency=lower.Layout!.Increment;
         NativeView.Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));NativeView.FontSize=14;
-        NativeView.EndValue=NativeView.Maximum;
+        NativeView.PrepareBorrowedInteractions(false);
+        for(var i=0;i<2;i++)NativeView.SetBinding(ValueProperty(i),new Binding(nameof(NativeNumericModel.NativeValue))
+            {Source=_states[i].NumericModel,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});
         Resources.MergedDictionaries.Add(EditorResources.Create());_error.Style=EditorResources.ErrorStyle();
         Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
         NativeView.SubscribeTemplate=(DataTemplate)FindResource("ButtonSelecter_sub");
@@ -82,7 +89,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitEndpoint(endpoint),_expansion.Open,_expansion.Preference,selectVariable:_expansion.OpenVariable,isExpanded:_expansion.IsExpanded);
                 _scopes[i]=new(this,_references[i]!,()=>!_disposed&&_states[endpoint].IsReferenceMode);
             }
-            _states[i].Changed+=OnStateChanged;
+            _states[i].Changed+=OnStateChanged;_states[i].NumericModel!.Changed+=OnNumericModelChanged;
         }
         NativeView.SubscribeDataLeft=_references[0];NativeView.SubscribeDataRight=_references[1];
         var row=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl();
@@ -96,7 +103,61 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         if(left.Accepted is ConstantSetting l&&right.Accepted is ConstantSetting r&&Convert.ToDouble(l.Value,CultureInfo.InvariantCulture)>Convert.ToDouble(r.Value,CultureInfo.InvariantCulture))
             foreach(var state in _states)state.SetEditError("范围下限不能大于上限。");
         }
-        catch{Dispose();throw;}
+        catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
+    }
+    private void OnNumericModelChanged()
+    {
+        if(_disposed||_syncing||_committing)return;
+        NativeView.RetireBorrowedInteractions();Project(false);
+    }
+    private void CheckModel(int endpoint,object value)
+    {
+        var bounds=Bounds(_states[endpoint].Port,_presentations[endpoint].Layout!);var min=bounds.Min;var max=bounds.Max;
+        var peer=_states[1-endpoint].NumericModel!;
+        var versions=_states.Select(state=>state.AcceptanceVersion).ToArray();var models=_states.Select(state=>state.NumericModel!.Version).ToArray();
+        bool Current()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion&&models[i]==_states[i].NumericModel!.Version);
+        if(!Current())throw new OperationCanceledException("范围owner已退役。");
+        if(endpoint==1)
+        {
+            var left=Convert.ToDouble(peer.CurValue,CultureInfo.InvariantCulture);if(left<=max)min=left;
+        }
+        else
+        {
+            double comparison;
+            if(peer.IsInitValue)comparison=Convert.ToDouble(peer.CurValue,CultureInfo.InvariantCulture);
+            else
+            {
+                try
+                {
+                    var text=_states[1].ReadNumericComparisonString();
+                    if(!Current())throw new OperationCanceledException("临时比较读取后owner已退役。");
+                    if(_states[0].Port.Type.Scalar==ScalarKind.Int64){int.TryParse(text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var parsed);comparison=parsed;}
+                    else{double.TryParse(text,NumberStyles.Float|NumberStyles.AllowThousands,CultureInfo.InvariantCulture,out var parsed);comparison=parsed;}
+                }
+                catch
+                {
+                    if(!Current())throw new OperationCanceledException("临时比较读取后owner已退役。");
+                    comparison=bounds.Max;
+                }
+            }
+            if(comparison>=min)max=comparison;
+        }
+        var number=Convert.ToDouble(value,CultureInfo.InvariantCulture);
+        if(!double.IsFinite(number)||min-number>1e-8||number-max>1e-8)throw new ArgumentException("数值超出原双端模型比较范围。");
+    }
+    private bool StageModel(int endpoint,ConstantSetting value,long[] versions)
+    {
+        var model=_states[endpoint].NumericModel!;var raw=NativeNumericSequenceProjection.Single(_states[endpoint].Port,value.Value!);
+        var changed=!Equals(model.CurValue,raw);versions[endpoint]=model.Version+(changed?1:0);
+        return _commits[endpoint]!.ProjectCandidate(value,()=>model.NativeValue=Convert.ToDouble(raw,CultureInfo.InvariantCulture))&&model.Version==versions[endpoint];
+    }
+    private void RestoreModels(IEnumerable<int> endpoints,long[] versions)
+    {
+        foreach(var i in endpoints)
+        {
+            var model=_states[i].NumericModel!;var old=new ConstantSetting(model.OldValue);
+            _commits[i]!.ProjectCandidate(old,model.RestoreOldValue);versions[i]=model.Version;
+        }
     }
     private static (double Min,double Max) Bounds(Port port,FieldLayout layout)
     {
@@ -157,7 +218,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void Project(bool accepted,Func<int,bool>? mayReplace=null)
     {
-        if(_disposed||_syncing)return;_syncing=true;
+        if(_disposed||_syncing)return;if(accepted)NativeView.RetireBorrowedInteractions();_syncing=true;
         try
         {
             for(var i=0;i<2;i++)NativeView.SetCurrentValue(ModeProperty(i),_states[i].IsReferenceMode);
@@ -208,8 +269,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         _committing=true;
         IDisposable? group=null;
         var raw=_commits.Select(commit=>commit?.Pending).ToArray();var candidateInstalled=false;var accepted=false;var projected=false;
-        var versions=_states.Select(state=>state.AcceptanceVersion).ToArray();var modes=_states.Select(state=>state.IsReferenceMode).ToArray();var commits=_commits.ToArray();var edits=commits.Select(commit=>commit?.EditVersion).ToArray();
-        bool Unchanged()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion&&modes[i]==_states[i].IsReferenceMode&&ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);
+        var versions=_states.Select(state=>state.AcceptanceVersion).ToArray();var modelVersions=_states.Select(state=>state.NumericModel!.Version).ToArray();var modes=_states.Select(state=>state.IsReferenceMode).ToArray();var commits=_commits.ToArray();var edits=commits.Select(commit=>commit?.EditVersion).ToArray();
+        bool Unchanged()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion&&modelVersions[i]==_states[i].NumericModel!.Version&&modes[i]==_states[i].IsReferenceMode&&ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);
         try
         {
             if(_beginGroup is not null){group=_beginGroup();if(group is null)return false;}
@@ -219,6 +280,10 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 if(endpoint==i)proposals[i]=explicitProposal!;
                 else if(!Prepare(i,out proposals[i]))return false;
             }
+            candidateInstalled=true;_syncing=true;try{for(var i=0;i<2;i++)if(proposals[i] is ConstantSetting number&&!StageModel(i,number,modelVersions))return false;}finally{_syncing=false;}
+            if(!Unchanged())return false;
+            for(var i=0;i<2;i++)if(proposals[i] is ConstantSetting number)
+                try{CheckModel(i,number.Value!);}catch(ArgumentException error){_states[i].SetEditError(error.Message);return false;}
             for(var i=0;i<2;i++)
             {
                 var error=_validate?.Invoke(_states[i].Port,proposals[i]);
@@ -246,6 +311,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             if(_disposed||_states.Any(state=>state.IsDisposed))return false;
             if(accepted){Project(true,i=>ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);projected=true;}return accepted&&!Invalid;
         }
+        catch(OperationCanceledException){return false;}
         finally
         {
             try
@@ -256,12 +322,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 _syncing=true;
                 try
                 {
-                    ProjectValues(_states.Select(state=>state.Accepted as ConstantSetting??state.ConstantBackup??state.Accepted).ToArray(),()=>
-                    {
-                        for(var i=0;i<2;i++)if((_states[i].Accepted as ConstantSetting??_states[i].ConstantBackup) is {} number)
-                        {NativeView.SetCurrentValue(ValueProperty(i),Convert.ToDouble(number.Value,CultureInfo.InvariantCulture));if(!Unchanged())return;}
-                        for(var i=0;i<2;i++){_commits[i]!.RestoreRejected(raw[i]);if(!Unchanged())return;}
-                    });
+                    RestoreModels(new[]{0,1},modelVersions);
+                    for(var i=0;i<2;i++)_commits[i]!.RestoreRejected(raw[i]);
                 }
                 finally{_syncing=false;}
             }
@@ -279,12 +341,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         var oldMin=leaf.Minimum;var oldMax=leaf.Maximum;var acceptance=_states[endpoint].AcceptanceVersion;
         var mode=_states[endpoint].IsReferenceMode;var edit=commit.EditVersion;
         var bounds=Bounds(_states[endpoint].Port,_presentations[endpoint].Layout!);
-        var minimum=bounds.Min;var maximum=bounds.Max;
-        if(other is ConstantSetting constant)
-        {
-            var opposite=Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture);
-            if(endpoint==0)maximum=Math.Min(maximum,opposite);else minimum=Math.Max(minimum,opposite);
-        }
+        var minimum=oldMin;var maximum=oldMax;
         bool OwnsLeaf()=>!_disposed&&ReferenceEquals(_leaves[endpoint],leaf)&&ReferenceEquals(_box?.Template.FindName(endpoint==0?"T1":"T2",_box),leaf);
         bool Current()=>OwnsLeaf()&&!_states[endpoint].IsDisposed&&acceptance==_states[endpoint].AcceptanceVersion
             &&mode==_states[endpoint].IsReferenceMode&&edit==commit.EditVersion&&ReferenceEquals(commits[endpoint],_commits[endpoint])
@@ -330,24 +387,24 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         var state=_states[endpoint];
         _committing=true;IDisposable? group=null;
         var commits=_commits.ToArray();var versions=_states.Select(item=>item.AcceptanceVersion).ToArray();
-        var modes=_states.Select(item=>item.IsReferenceMode).ToArray();var edits=commits.Select(item=>item?.EditVersion).ToArray();
+        var modelVersions=_states.Select(item=>item.NumericModel!.Version).ToArray();var modes=_states.Select(item=>item.IsReferenceMode).ToArray();var edits=commits.Select(item=>item?.EditVersion).ToArray();
         var raw=commits[endpoint]?.Pending;var candidateInstalled=false;var accepted=false;var projected=false;
-        bool Unchanged()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion
+        bool Unchanged()=>!_disposed&&Enumerable.Range(0,2).All(i=>!_states[i].IsDisposed&&versions[i]==_states[i].AcceptanceVersion&&modelVersions[i]==_states[i].NumericModel!.Version
             &&modes[i]==_states[i].IsReferenceMode&&ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);
         try
         {
             if(_beginGroup is not null){group=_beginGroup();if(group is null)return false;}
-            var other=_states[1-endpoint].IsReferenceMode?null:_states[1-endpoint].Accepted;
+            var other=new ConstantSetting(_states[1-endpoint].NumericModel!.CurValue);
+            if(proposal is ConstantSetting staged)
+            {
+                candidateInstalled=true;_syncing=true;try{if(!StageModel(endpoint,staged,modelVersions))return false;}finally{_syncing=false;}
+                if(!Unchanged())return false;
+                try{CheckModel(endpoint,staged.Value!);}catch(Exception error)when(error is ArgumentException){state.SetEditError(error.Message);return false;}
+            }
             if(proposal is ConstantSetting number)
             {
                 try{commits[endpoint]!.ValidateStored(number);}
                 catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){state.SetEditError(error.Message);return false;}
-                if(other is ConstantSetting opposite)
-                {
-                    var current=Convert.ToDouble(number.Value,CultureInfo.InvariantCulture);
-                    var comparison=Convert.ToDouble(opposite.Value,CultureInfo.InvariantCulture);
-                    if(endpoint==0?current>comparison:current<comparison){state.SetEditError("范围下限不能大于上限。");return false;}
-                }
             }
             var validation=_validate?.Invoke(state.Port,proposal);
             if(!Unchanged())return false;
@@ -369,6 +426,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             if(accepted){Project(true,i=>i==endpoint&&ReferenceEquals(commits[i],_commits[i])&&edits[i]==commits[i]?.EditVersion);projected=true;}
             return accepted;
         }
+        catch(OperationCanceledException){return false;}
         finally
         {
             try
@@ -380,9 +438,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                     _syncing=true;
                     try
                     {
-                        if(state.Accepted is ConstantSetting saved)
-                            commits[endpoint]!.ProjectCandidate(saved,()=>NativeView.SetCurrentValue(ValueProperty(endpoint),Convert.ToDouble(saved.Value,CultureInfo.InvariantCulture)));
-                        if(Unchanged())commits[endpoint]!.RestoreRejected(raw);
+                        RestoreModels(new[]{endpoint},modelVersions);commits[endpoint]!.RestoreRejected(raw);
                     }
                     finally{_syncing=false;}
                 }
@@ -401,7 +457,11 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private void OnLeftValue(object sender,RoutedPropertyChangedEventArgs<double> args)=>OnNativeValue(0);
     private void OnRightValue(object sender,RoutedPropertyChangedEventArgs<double> args)=>OnNativeValue(1);
     private void OnNativeValue(int endpoint)
-    {if(_active&&!_disposed&&IsEnabled&&!_syncing&&!_closing&&!_presentationHidden)TryCommitEndpoint(endpoint);}
+    {
+        if(!_active||_disposed||!IsEnabled||_syncing)return;
+        if(_states[endpoint].IsReferenceMode){_commits[endpoint]?.ProjectAccepted();return;}
+        if(!_closing&&!_presentationHidden)TryCommitEndpoint(endpoint);
+    }
     private void OnLeftMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(0);
     private void OnRightMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(1);
     private void ChangeMode(int i)
@@ -414,6 +474,10 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             {
                 if(!_allow[i]){_states[i].SetEditError("此字段不允许新增订阅。");return;}
                 if(TryCommitEndpoint(i))_states[i].EnterReferenceMode();
+            }
+            else if(_states[i].NumericModel is not null)
+            {
+                if(!_states[i].TryUseConstant(value=>TryAcceptEndpoint(i,value))&&!_states[i].IsReferenceMode)_commits[i]?.BeginConstantEntry();
             }
             else if(_states[i].ConstantBackup is {} backup)TrySetConstant(i,backup.Value!);
             else
@@ -429,7 +493,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(_disposed)return;_active=true;AttachInputs();
+        if(_disposed)return;_active=true;NativeView.PrepareBorrowedInteractions(true);AttachInputs();
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=Window.GetWindow(this);if(_owner is not null)_owner.Deactivated+=OnDeactivated;
         Project(false);foreach(var scope in _scopes)scope?.PrepareForVisibility(!_presentationHidden&&IsVisible&&IsEnabled);
         QueueResume();
@@ -489,7 +553,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
-        _active=false;_generation++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
+        NativeView.PrepareBorrowedInteractions(false);_active=false;_generation++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
         ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;}}
             .Concat(_commits.Where(commit=>commit is not null).Select(commit=>(Action)commit!.Suspend))
             .Concat(new Action[]{ClosePopups}));
@@ -500,14 +564,14 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         if(_disposed)return;
         if(!visible)
         {
-            _presentationHidden=true;_generation++;_resume?.Abort();_resume=null;
+            NativeView.PrepareBorrowedInteractions(false);_presentationHidden=true;_generation++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(_scopes.Where(scope=>scope is not null).Select(scope=>(Action)(()=>scope!.PrepareForVisibility(false)))
                 .Concat(_commits.Where(commit=>commit is not null).Select(commit=>(Action)commit!.Suspend))
                 .Concat(new Action[]{ClosePopups}));
         }
         else
         {
-            _presentationHidden=false;
+            NativeView.PrepareBorrowedInteractions(true);_presentationHidden=false;
             foreach(var scope in _scopes)scope?.PrepareForVisibility(IsEnabled);
             if(!_active||!IsVisible||!_commits.Any(commit=>commit?.IsSuspended==true))return;
             QueueResume();
@@ -522,10 +586,11 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_active=false;_generation++;_resume?.Abort();_resume=null;
+        if(_disposed)return;_disposed=true;NativeView.PrepareBorrowedInteractions(false);_active=false;_generation++;_resume?.Abort();_resume=null;
         NativeView.OnStartValueChange-=OnLeftValue;NativeView.OnEndValueChange-=OnRightValue;
         NativeView.OnLeftTypeChange-=OnLeftMode;NativeView.OnRightTypeChange-=OnRightMode;
-        foreach(var state in _states)state.Changed-=OnStateChanged;
+        foreach(var state in _states){state.Changed-=OnStateChanged;state.NumericModel!.Changed-=OnNumericModelChanged;state.NumericPeer=null;state.NumericCheck=null;}
+        BindingOperations.ClearBinding(NativeView,ValueProperty(0));BindingOperations.ClearBinding(NativeView,ValueProperty(1));
         var owner=_owner;_owner=null;
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibility;IsEnabledChanged-=OnEnabled;PreviewKeyDown-=OnKey;PreviewMouseWheel-=OnWheel;LostKeyboardFocus-=OnLostFocus;
         ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},ClosePopups,

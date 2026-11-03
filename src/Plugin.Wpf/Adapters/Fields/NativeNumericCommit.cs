@@ -130,7 +130,7 @@ internal sealed class NativeNumericCommit : IDisposable
     {
         if(NativeNumericSequenceProjection.Applies(_state.Port)&&value is not double)value=NativeNumericSequenceProjection.Single(_state.Port,value);
         EnsureRepresentable(new ConstantSetting(value));
-        if(!_paired&&_state.NumericModel is {} model)
+        if(_state.NumericModel is {} model)
         {var prepared=model.Prepare(value);ValidateBounds(prepared.Value!);return prepared;}
         if(value is double number)
         {
@@ -322,7 +322,9 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public void RestoreRejected(NumericPendingEdit? raw)
     {
-        var suspended=_suspended;var stamp=Stamp();ProjectAccepted();
+        var suspended=_suspended;var stamp=Stamp();
+        if(raw is {} saved&&saved.Acceptance==_state.AcceptanceVersion){IsDirty=false;_pendingRaw=null;}
+        ProjectAccepted();
         if(raw is null||!Matches(stamp))return;
         RestorePending(raw);if(!suspended)Resume();
     }

@@ -200,7 +200,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         {
             return node.RuntimeConfiguration!.Fields.Read(port.Id);
         },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
-            _=>ReadReferenceCandidates(generation));
+            _=>ReadImageReferenceCandidates(generation));
         var sourceContext=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
         var sourceContent=node.ToolType=="ImageLoad"?new ImageSourceDraftContent(node.Id,
             ()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
@@ -362,8 +362,18 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     {
         var sourceName=_query?.GetBindingCandidateNodeNames(_node.Id).GetValueOrDefault(reference.NodeId);
         var output=_query?.FormalOutputContractReader?.Invoke(reference.NodeId)?.FirstOrDefault(p=>BindingClrAdapter.OutputPortId(p)==reference.PortId);
-        return (sourceName??"已选择来源")+" · "+(output?.DisplayName??output?.Name??"已声明字段")
-            +(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
+        var names=DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath);
+        return (sourceName??"已选择来源")+"."+(names.Count==0?output?.DisplayName??output?.Name??"已声明字段":names[^1]);
+    }
+    private IReadOnlyList<DeclaredReferenceCandidate> ReadImageReferenceCandidates(long generation)
+    {
+        return ReadReferenceCandidates(generation).Select(candidate=>
+        {
+            if(candidate.SelectedType!=TypeRef.ResourceOf(ResourceKind.Image))return candidate;
+            var names=candidate.MemberDisplayNames;
+            var parent=names.Count>1?names[^2]:candidate.OutputDisplayName;
+            return candidate with {Label=candidate.NodeDisplayName+"."+parent};
+        }).ToArray();
     }
     private SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionSnapshot ReadTextExpressionSnapshot(long generation)
     {

@@ -29,8 +29,7 @@ public partial class MainWindowViewModel
   var tab=WorkflowTabViewModel.Tabs.SingleOrDefault(t=>t.RootWorkflowId==root.Id);
   if(tab==null||tab.IsRunning||!DocumentManager.CurrentSession!.GetWorkflows().Any(flow=>ReferenceEquals(flow,root))
      ||hops.Any())return false;
-  SetSelectedTab(tab);tab.ResetNavigation();NavigateToWorkflowCanvas(root.Id);
-  foreach(var hop in hops){tab.NavigateToSubroutine(hop.Child.Id,hop.Owner.DispName,null,hop.Owner.Id);NavigateToWorkflowCanvas(hop.Child.Id);}
+  SetSelectedTab(tab);NavigateToWorkflowCanvas(root.Id);
   return true;
  }
 }

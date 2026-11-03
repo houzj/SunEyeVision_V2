@@ -36,7 +36,7 @@ public partial class MainWindowViewModel
  internal event Action? ResultDisplayChanged;
  internal void NotifyResultDisplayChanged()
  {
-  ++_resultDisplayRevision;
+  ++_resultDisplayRevision;UpdateCurrentSolutionInfo();
   foreach(Action callback in ResultDisplayChanged?.GetInvocationList()??Array.Empty<Delegate>())
    try{callback();}catch(Exception error){AddLog("结果显示刷新失败："+error.Message);}
  }

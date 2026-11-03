@@ -9,22 +9,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     /// </summary>
     public class VideoSourceNodeDisplayAdapter : INodeDisplayAdapter
     {
-        public string GetDisplayText(WorkflowNode node)
+        public string GetDisplayText(CanvasNodeProjection node)
         {
-            return $"{node.DisplayName}_{node.LocalIndex}";
+            return node.DispName;
         }
 
-        public string GetIcon(WorkflowNode node)
+        public string GetIcon(CanvasNodeProjection node)
         {
             return "📹";
         }
 
-        public Color GetBackgroundColor(WorkflowNode node)
+        public Color GetBackgroundColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(255, 240, 240); // 淡红色背景
         }
 
-        public Color GetBorderColor(WorkflowNode node)
+        public Color GetBorderColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(220, 20, 60); // 猩红
         }

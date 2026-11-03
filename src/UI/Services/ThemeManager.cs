@@ -5,7 +5,7 @@ using System.Windows;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Themes.Base;
 
-using SunEyeVision.Workflow;
+
 
 namespace SunEyeVision.UI.Services
 {
@@ -36,7 +36,8 @@ namespace SunEyeVision.UI.Services
         private static readonly Uri DarkThemeUri =
             new Uri("pack://application:,,,/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml", UriKind.Absolute);
 
-        private readonly SolutionSettings _settings;
+        private readonly Func<string?> _readTheme;
+        private readonly Action<string> _writeTheme;
         private readonly VisionLogger _logger;
         private AppTheme _currentTheme;
 
@@ -49,10 +50,12 @@ namespace SunEyeVision.UI.Services
         /// <summary>
         /// 创建主题管理器。
         /// </summary>
-        /// <param name="settings">用户偏好设置（用于持久化主题选择）</param>
-        public ThemeManager(SolutionSettings settings)
+        /// <param name="readTheme">读取宿主主题偏好。</param>
+        /// <param name="writeTheme">保存宿主主题偏好。</param>
+        public ThemeManager(Func<string?> readTheme, Action<string> writeTheme)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _readTheme = readTheme ?? throw new ArgumentNullException(nameof(readTheme));
+            _writeTheme = writeTheme ?? throw new ArgumentNullException(nameof(writeTheme));
             _logger = VisionLogger.Instance;
             _currentTheme = DefaultTheme;
         }
@@ -62,7 +65,7 @@ namespace SunEyeVision.UI.Services
         /// </summary>
         public void Initialize()
         {
-            var saved = _settings.GetPreference<string>(PreferenceKey, null);
+            var saved = _readTheme();
             if (Enum.TryParse(saved, ignoreCase: true, out AppTheme theme) && Enum.IsDefined(typeof(AppTheme), theme))
             {
                 _currentTheme = theme;
@@ -103,7 +106,7 @@ namespace SunEyeVision.UI.Services
             // 持久化用户选择
             try
             {
-                _settings.SetPreference(PreferenceKey, theme.ToString());
+                _writeTheme(theme.ToString());
             }
             catch (Exception ex)
             {
@@ -141,10 +144,10 @@ namespace SunEyeVision.UI.Services
         /// </summary>
         private void ApplyThemeDictionary(AppTheme theme)
         {
-            var resources = Application.Current?.Resources;
+            var resources = System.Windows.Application.Current?.Resources;
             if (resources == null)
             {
-                _logger.Log(LogLevel.Warning, "Application.Current.Resources 为空，主题字典未加载", "ThemeManager");
+                _logger.Log(LogLevel.Warning, "System.Windows.Application.Current.Resources 为空，主题字典未加载", "ThemeManager");
                 return;
             }
 

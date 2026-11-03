@@ -20,11 +20,11 @@ namespace SunEyeVision.UI.Shell.Controls
     {
         private readonly IRootCoordinator _coordinator;
 
-        private int _selectedDisplayImageSourceIndex = -1;
+
         private bool _hasModuleResults;
         private bool _showImagePreview;
         private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
-        private ObservableCollection<AvailableDataSource> _displayImageSources = new();
+
         private ObservableCollection<FlatResultRow> _flatResultRows = new();
 
         public ImageResultViewModel(IRootCoordinator coordinator)
@@ -36,33 +36,14 @@ namespace SunEyeVision.UI.Shell.Controls
         /// 附加共享集合实例（与根 VM 共用同一份数据源/结果行集合，避免状态分裂）
         /// </summary>
         public void AttachCollections(
-            ObservableCollection<AvailableDataSource> displayImageSources,
             ObservableCollection<FlatResultRow> flatResultRows)
         {
-            _displayImageSources = displayImageSources;
             _flatResultRows = flatResultRows;
         }
 
         /// <summary>
         /// 图像显示控件的数据源（当前节点 + 所有父节点）
         /// </summary>
-        public ObservableCollection<AvailableDataSource> DisplayImageSources => _displayImageSources;
-
-        /// <summary>
-        /// 当前选中的图像显示源索引
-        /// </summary>
-        public int SelectedDisplayImageSourceIndex
-        {
-            get => _selectedDisplayImageSourceIndex;
-            set
-            {
-                if (SetProperty(ref _selectedDisplayImageSourceIndex, value))
-                {
-                    _coordinator.OnSelectedImageSourceIndexChanged(value);
-                }
-            }
-        }
-
         /// <summary>
         /// 扁平化结果行列表（用于 DataGrid 绑定）
         /// </summary>

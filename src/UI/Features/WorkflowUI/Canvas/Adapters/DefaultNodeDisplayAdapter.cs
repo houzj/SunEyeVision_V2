@@ -9,22 +9,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     /// </summary>
     public class DefaultNodeDisplayAdapter : INodeDisplayAdapter
     {
-        public string GetDisplayText(WorkflowNode node)
+        public string GetDisplayText(CanvasNodeProjection node)
         {
-            return $"{node.DisplayName}_{node.LocalIndex}";
+            return node.DispName;
         }
 
-        public string GetIcon(WorkflowNode node)
+        public string GetIcon(CanvasNodeProjection node)
         {
-            return node.Icon ?? "?";
+            return SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.Find(node.ToolType)?.Icon ?? string.Empty;
         }
 
-        public Color GetBackgroundColor(WorkflowNode node)
+        public Color GetBackgroundColor(CanvasNodeProjection node)
         {
             return Colors.White;
         }
 
-        public Color GetBorderColor(WorkflowNode node)
+        public Color GetBorderColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(255, 149, 0); // #ff9500
         }

@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 
 using SunEyeVision.UI.Core;
 

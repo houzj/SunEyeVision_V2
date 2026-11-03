@@ -38,7 +38,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private CancellationTokenSource? _previewCancellation;
     private ResultViewportFullscreenScope? _fullscreen;
     private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
-    private int _navigationIndex=int.MinValue;
     private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
     private string? _inputKey,_outputKey;
     private ResultWorkspaceImageSource? _inputSource,_outputSource;
@@ -138,15 +137,10 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         if(_refreshing)return;
         if(sender is not null&&_main.SelectedNode is {} selected)
-            selected.SelectedDisplayReference=source?.Key;
+            _main.SetFormalDisplaySelection(selected,source?.Key);
+        if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
-        if(source is {NavigationIndex:>=0})
-        {
-            _main.AcceptWorkspaceImageSourceIndex(source.NavigationIndex,persist:sender is not null);
-            if(_disposed||epoch!=_epoch||!ReferenceEquals(plan,_plan)||choiceRevision!=_outputChoiceRevision)return;
-        }
-        _navigationIndex=_main.SelectedDisplayImageSourceIndex;
         Present(_output,source);ReportDisplayDefinitionGap();
 
         }
@@ -222,25 +216,21 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;_navigationIndex=int.MinValue;}
+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;}
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
                 var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
                 var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault():null;
-                var navigation=_main.SelectedDisplayImageSourceIndex;
                 var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
-                var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
                 // A persisted explicit identity must match exactly, including scope and members.
                 // Missing or stale declarations never silently select a different image.
                 var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
                 var output=explicitChoice is not null
                     ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
-                    :(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
-                        :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                    :byKey??plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??plan.Sources.FirstOrDefault();
                 if(explicitChoice is not null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
-                _navigationIndex=navigation;
                 _inputSource=input;_outputSource=output;
                 var outputChoiceRevision=_outputChoiceRevision;
                 _shell.SelectedInputItem=input;
@@ -321,8 +311,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     }
     private void ReportDisplayDefinitionGap()
     {
-        if(_main.SelectedNode?.RuntimeConfiguration?.ResultDisplay is not null)return;
         var publication=_main.CurrentResultPublication;
+        if(publication is not null&&_main.CaptureCurrentResultDisplay(publication) is not null)return;
         if(publication is null||!publication.IsCurrent()||ReferenceEquals(publication,_displayDefinitionNotice))return;
         _displayDefinitionNotice=publication;
         // Resource values are not display declarations. Do not invent visible regions,

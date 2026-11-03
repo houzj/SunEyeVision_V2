@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 
 namespace SunEyeVision.UI.Services.Startup;
 
@@ -57,7 +57,7 @@ public sealed class StartupLaunchContext
         if (!full.StartsWith(IsolatedRoot!.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("隔离验收只能打开专属目录内的方案。");
     }
-    public void ValidateCandidate(Solution solution)
+    public void ValidateCandidate(SolutionDefinition solution)
     {
         if (IsIsolated && (solution.Devices.Count != 0 || solution.Communications.Count != 0))
             throw new InvalidDataException("隔离启动验收拒绝包含设备或通信配置的方案。");

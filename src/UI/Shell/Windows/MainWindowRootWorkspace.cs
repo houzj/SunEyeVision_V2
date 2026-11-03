@@ -9,7 +9,7 @@ public partial class MainWindowViewModel
 {
     private void RefreshRootTabReadiness(){foreach(var tab in WorkflowTabViewModel.Tabs)tab.RefreshRootReadiness();}
     public bool CanEditRootWorkspace=>CanEditRootWorkspaceState&&!IsDebugWindowOpen;
-    private bool CanEditRootWorkspaceState=>DocumentManager.CurrentSession is not null&&!IsRunning&&_solutionTransitionLease is null&&!_transitionPreparationInProgress&&!_executionManager.IsAnyRunning()&&DocumentManager.CurrentSession.Editing.HasPendingChanges!=true;
+    private bool CanEditRootWorkspaceState=>DocumentManager.CurrentSession is not null&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress&&DocumentManager.CurrentSession.Editing.HasPendingChanges!=true;
     public bool CanUndoRootWorkspace=>CanEditRootWorkspace&&DocumentManager.CurrentSession?.CanUndo==true;
     public bool CanRedoRootWorkspace=>CanEditRootWorkspace&&DocumentManager.CurrentSession?.CanRedo==true;
     internal void UndoRootWorkspace(){try{if(CanUndoRootWorkspace)DocumentManager.CurrentSession!.Undo();}catch(Exception error){StatusText="撤销已停止："+error.Message;}}

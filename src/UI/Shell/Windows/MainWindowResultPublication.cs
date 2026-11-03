@@ -33,7 +33,7 @@ public partial class MainWindowViewModel
         if(epoch==_resultPublicationEpoch)Cleanup(()=>_declaredResultPresenter?.Clear());
         if(epoch==_resultPublicationEpoch)Cleanup(()=>_activeResultView?.Clear());
         if(epoch==_resultPublicationEpoch)Cleanup(()=>ModuleResultTree.Clear());
-        if(epoch==_resultPublicationEpoch)Cleanup(()=>_nodeResultManager?.ClearHighlight());
+        if(epoch==_resultPublicationEpoch)Cleanup(ClearResultHighlight);
         if(epoch==_resultPublicationEpoch)Cleanup(ClearNativeImagePresentation);
         if(failures.Count>0)throw new AggregateException("结果视图清理失败，所有可执行清理均已尝试。",failures);
         return epoch;

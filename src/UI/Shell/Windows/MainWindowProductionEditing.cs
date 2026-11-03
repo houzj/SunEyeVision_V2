@@ -9,21 +9,13 @@ using System.Windows;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
-    private DocumentSession? _productionEditorSession;
-    private NodeConfigurationEditHost? _productionEditorHost;
     private readonly HashSet<ProductionEditorContext> _productionEditors=new();
     private readonly HashSet<SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel> _variableEditors=new();
-    private NodeConfigurationEditHost GetProductionEditorHost(DocumentSession session)
-    {
-        if(!ReferenceEquals(_productionEditorSession,session))ReleaseProductionEditors();
-        _productionEditorSession=session;return _productionEditorHost=session.Editing.Host;
-    }
-    private void ClearProductionEditorHost() { }
     private void ReleaseProductionEditors()
     {
         ReleaseProductionEditorContexts(_productionEditors);
         foreach(var model in _variableEditors.ToArray())model.Discard();
-        _variableEditors.Clear();_productionEditorHost=null;_productionEditorSession=null;
+        _variableEditors.Clear();
     }
     private void RefreshProductionPublication(DocumentSession session,DocumentEditReceipt receipt)
     {
@@ -33,7 +25,7 @@ public partial class MainWindowViewModel
     }
     internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)
     {foreach(var context in active.ToArray())context.Discard();}
-    internal static void TrackProductionEditor(ISet<ProductionEditorContext> active,ProductionEditorContext context,object target,Action whenEmpty)
+    internal static void TrackProductionEditor(ISet<ProductionEditorContext> active,ProductionEditorContext context,object target)
     {
         if(!context.IsActive||!active.Add(context))return;
         var control=target as FrameworkElement;Window? owner=null;
@@ -48,7 +40,7 @@ public partial class MainWindowViewModel
         void Released()
         {
             context.Deactivated-=Released;if(control is not null)control.Loaded-=Loaded;if(owner is not null)owner.Closed-=Closed;
-            active.Remove(context);if(active.Count==0)whenEmpty();
+            active.Remove(context);
         }
         context.Deactivated+=Released;if(control is not null)control.Loaded+=Loaded;BindOwner();
     }

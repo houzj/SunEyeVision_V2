@@ -50,10 +50,8 @@ namespace SunEyeVision.UI.Shared
         {
             try
             {
-                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                manager.Settings.SetPreference("WindowLayout", this);
-                manager.MarkSettingsDirty();
-                manager.SaveUserSettings();
+                var app=System.Windows.Application.Current as App??throw new InvalidOperationException("应用偏好尚未就绪。");
+                app.SaveWindowLayout(this);
                 return true;
             }
             catch (Exception)
@@ -71,25 +69,8 @@ namespace SunEyeVision.UI.Shared
         {
             try
             {
-                var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                var saved = manager.Settings.GetPreference<LayoutConfig>("WindowLayout");
-                if (saved != null) { saved.ValidateAndCorrect(); return saved; }
-                // Read-only compatibility import; subsequent saves use the selected data root.
-                var configPath = GetConfigFilePath();
-
-                if (!File.Exists(configPath))
-                {
-                    return new LayoutConfig();
-                }
-
-                var json = File.ReadAllText(configPath);
-                var config = JsonSerializer.Deserialize<LayoutConfig>(json, JsonSerializationOptions.Default);
-
-                if (config == null)
-                {
-                    return new LayoutConfig();
-                }
-
+                var saved=(System.Windows.Application.Current as App)?.StartPreferences.WindowLayout;
+                var config=saved is null?new LayoutConfig():new LayoutConfig{LeftColumnWidth=saved.LeftColumnWidth,RightColumnWidth=saved.RightColumnWidth,IsLeftPanelCollapsed=saved.IsLeftPanelCollapsed,IsRightPanelCollapsed=saved.IsRightPanelCollapsed};
                 // 验证并修正超出范围的值
                 config.ValidateAndCorrect();
 
@@ -156,12 +137,6 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 获取配置文件路径
         /// </summary>
-        private static string GetConfigFilePath()
-        {
-            if (SunEyeVision.UI.Services.Startup.StartupLaunchContext.Current.IsolatedRoot is string isolatedRoot)
-                return Path.Combine(isolatedRoot, "layout.config");
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return Path.Combine(localAppData, "SunEyeVision", "layout.config");
-        }
+
     }
 }

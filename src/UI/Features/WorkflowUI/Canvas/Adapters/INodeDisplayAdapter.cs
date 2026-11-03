@@ -12,21 +12,21 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 获取节点显示文本
         /// </summary>
-        string GetDisplayText(WorkflowNode node);
+        string GetDisplayText(CanvasNodeProjection node);
 
         /// <summary>
         /// 获取节点图标
         /// </summary>
-        string GetIcon(WorkflowNode node);
+        string GetIcon(CanvasNodeProjection node);
 
         /// <summary>
         /// 获取节点背景颜色
         /// </summary>
-        Color GetBackgroundColor(WorkflowNode node);
+        Color GetBackgroundColor(CanvasNodeProjection node);
 
         /// <summary>
         /// 获取节点边框颜色
         /// </summary>
-        Color GetBorderColor(WorkflowNode node);
+        Color GetBorderColor(CanvasNodeProjection node);
     }
 }

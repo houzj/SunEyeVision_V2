@@ -39,7 +39,7 @@ namespace SunEyeVision.UI.Services.Rendering
         /// <summary>
         /// 获取或创建连接线StreamGeometry
         /// </summary>
-        public StreamGeometry GetConnectionGeometry(WorkflowConnection connection, WorkflowNode sourceNode, WorkflowNode targetNode)
+        public StreamGeometry GetConnectionGeometry(CanvasConnectionProjection connection, CanvasNodeProjection sourceNode, CanvasNodeProjection targetNode)
         {
             lock (_lockObj)
             {
@@ -59,7 +59,7 @@ namespace SunEyeVision.UI.Services.Rendering
         /// <summary>
         /// 获取箭头位置
         /// </summary>
-        public Point GetArrowPosition(WorkflowConnection connection, WorkflowNode targetNode)
+        public Point GetArrowPosition(CanvasConnectionProjection connection, CanvasNodeProjection targetNode)
         {
             lock (_lockObj)
             {
@@ -79,8 +79,8 @@ namespace SunEyeVision.UI.Services.Rendering
         /// 批量创建连接线几何体
         /// </summary>
         public Dictionary<string, StreamGeometry> CreateConnectionGeometries(
-            IEnumerable<WorkflowConnection> connections,
-            Dictionary<string, WorkflowNode> nodeMap)
+            IEnumerable<CanvasConnectionProjection> connections,
+            Dictionary<string, CanvasNodeProjection> nodeMap)
         {
             lock (_lockObj)
             {
@@ -167,9 +167,9 @@ namespace SunEyeVision.UI.Services.Rendering
         }
 
         private StreamGeometry CreateStreamGeometry(
-            WorkflowConnection connection,
-            WorkflowNode sourceNode,
-            WorkflowNode targetNode)
+            CanvasConnectionProjection connection,
+            CanvasNodeProjection sourceNode,
+            CanvasNodeProjection targetNode)
         {
             var sourcePos = new Point(
                 sourceNode.Position.X + CanvasConfig.NodeWidth / 2,
@@ -237,7 +237,7 @@ namespace SunEyeVision.UI.Services.Rendering
             return geometry;
         }
 
-        private Point CalculateArrowPosition(WorkflowConnection connection, WorkflowNode targetNode)
+        private Point CalculateArrowPosition(CanvasConnectionProjection connection, CanvasNodeProjection targetNode)
         {
             return new Point(
                 targetNode.Position.X + CanvasConfig.NodeWidth / 2,

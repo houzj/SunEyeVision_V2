@@ -78,7 +78,7 @@ public partial class MainWindowViewModel
             window.SetRunAvailability(()=>false);
             control.BindDraft(context.PreparedDraft);
             var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
-            TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
+            TrackProductionEditor(_productionEditors,context,window);
             window.Show();return true;
         }
         catch { context.Discard(); throw; }

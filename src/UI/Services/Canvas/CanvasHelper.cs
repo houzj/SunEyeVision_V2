@@ -60,9 +60,9 @@ namespace SunEyeVision.UI.Services.Canvas
         /// 验证连接是否有效
         /// </summary>
         public static (bool isValid, string message) ValidateConnection(
-            WorkflowNode sourceNode,
-            WorkflowNode targetNode,
-            IList<WorkflowConnection> existingConnections)
+            CanvasNodeProjection sourceNode,
+            CanvasNodeProjection targetNode,
+            IList<CanvasConnectionProjection> existingConnections)
         {
             if (sourceNode == null)
             {
@@ -115,7 +115,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 计算节点矩形（Position为HitArea中心点）
         /// </summary>
-        public static Rect GetNodeRect(WorkflowNode node)
+        public static Rect GetNodeRect(CanvasNodeProjection node)
         {
             var halfWidth = node.StyleConfigTyped.NodeWidth / 2;
             var halfHeight = node.StyleConfigTyped.NodeHeight / 2;
@@ -130,10 +130,10 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 查找指定区域内的节点（Position为HitArea中心点）
         /// </summary>
-        public static List<WorkflowNode> FindNodesInRegion(
+        public static List<CanvasNodeProjection> FindNodesInRegion(
             Point startPoint,
             Point endPoint,
-            IList<WorkflowNode> nodes)
+            IList<CanvasNodeProjection> nodes)
         {
             var rect = new Rect(
                 Math.Min(startPoint.X, endPoint.X),
@@ -149,7 +149,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// </summary>
         public static Point FindSnapPoint(
             Point point,
-            IList<WorkflowNode> nodes,
+            IList<CanvasNodeProjection> nodes,
             double snapDistance = 10)
         {
             Point result = point;
@@ -184,7 +184,7 @@ namespace SunEyeVision.UI.Services.Canvas
 
         /// <summary>
         /// 清除所有节点的选中状?        /// </summary>
-        public static void ClearSelection(IEnumerable<WorkflowNode> nodes)
+        public static void ClearSelection(IEnumerable<CanvasNodeProjection> nodes)
         {
             if (nodes == null) return;
             foreach (var node in nodes)
@@ -196,7 +196,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 获取节点边界矩形（Position为HitArea中心点）
         /// </summary>
-        public static Rect GetNodeBounds(WorkflowNode node)
+        public static Rect GetNodeBounds(CanvasNodeProjection node)
         {
             if (node == null) return Rect.Empty;
             var halfWidth = node.StyleConfigTyped.NodeWidth / 2;
@@ -212,7 +212,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 获取端口位置（Position为HitArea中心点）
         /// </summary>
-        public static Point GetPortPosition(WorkflowNode node, string portName)
+        public static Point GetPortPosition(CanvasNodeProjection node, string portName)
         {
             if (node == null || string.IsNullOrEmpty(portName)) return new Point(0, 0);
 
@@ -233,7 +233,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 获取节点所有端口位置（Position为HitArea中心点）
         /// </summary>
-        public static Dictionary<string, Point> GetAllPortPositions(WorkflowNode node)
+        public static Dictionary<string, Point> GetAllPortPositions(CanvasNodeProjection node)
         {
             if (node == null) return new Dictionary<string, Point>();
 
@@ -261,7 +261,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <summary>
         /// 获取节点中心点（Position本身就是中心点）
         /// </summary>
-        public static Point GetNodeCenter(WorkflowNode node)
+        public static Point GetNodeCenter(CanvasNodeProjection node)
         {
             if (node == null) return new Point(0, 0);
             return node.Position.ToWpf();
@@ -274,7 +274,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <param name="targetPosition">目标位置</param>
         /// <param name="canvas">画布控件</param>
         /// <returns>限制后的位置</returns>
-        public static Point ClampNodeToCanvasBounds(WorkflowNode node, Point targetPosition, System.Windows.Controls.Canvas canvas)
+        public static Point ClampNodeToCanvasBounds(CanvasNodeProjection node, Point targetPosition, System.Windows.Controls.Canvas canvas)
         {
             if (canvas == null)
                 return targetPosition;
@@ -308,7 +308,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <param name="scrollViewer">ScrollViewer 控件</param>
         /// <param name="canvas">Canvas 控件（用于坐标转换）</param>
         /// <returns>限制后的位置</returns>
-        public static Point ClampNodeToViewportBounds(WorkflowNode node, Point targetPosition, ScrollViewer scrollViewer, System.Windows.Controls.Canvas canvas)
+        public static Point ClampNodeToViewportBounds(CanvasNodeProjection node, Point targetPosition, ScrollViewer scrollViewer, System.Windows.Controls.Canvas canvas)
         {
             if (scrollViewer == null || canvas == null)
                 return targetPosition;
@@ -369,7 +369,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <param name="scrollViewer">ScrollViewer 控件（可选）</param>
         /// <returns>全局允许的最大偏移量</returns>
         public static Point CalculateGlobalAllowedOffset(
-            List<WorkflowNode> nodes,
+            List<CanvasNodeProjection> nodes,
             Point[] initialPositions,
             Point requestedOffset,
             System.Windows.Controls.Canvas canvas,
@@ -431,7 +431,7 @@ namespace SunEyeVision.UI.Services.Canvas
         /// <param name="canvas">画布控件</param>
         /// <param name="scrollViewer">ScrollViewer 控件（可选）</param>
         /// <returns>限制后的位置</returns>
-        public static Point ClampNodeToBounds(WorkflowNode node, Point targetPosition, System.Windows.Controls.Canvas canvas, ScrollViewer scrollViewer = null)
+        public static Point ClampNodeToBounds(CanvasNodeProjection node, Point targetPosition, System.Windows.Controls.Canvas canvas, ScrollViewer scrollViewer = null)
         {
             // 根据策略执行限制
             switch (BoundaryLimitStrategy)

@@ -89,8 +89,8 @@ namespace SunEyeVision.UI.Services.Rendering
         /// 渲染节点和连接线
         /// </summary>
         public ImageSource Render(
-            IEnumerable<WorkflowNode> nodes,
-            IEnumerable<WorkflowConnection> connections)
+            IEnumerable<CanvasNodeProjection> nodes,
+            IEnumerable<CanvasConnectionProjection> connections)
         {
             if (!_isDirty)
                 return _renderTarget;
@@ -154,7 +154,7 @@ namespace SunEyeVision.UI.Services.Rendering
             }
         }
 
-        private void RenderConnections(DrawingContext dc, IEnumerable<WorkflowConnection> connections)
+        private void RenderConnections(DrawingContext dc, IEnumerable<CanvasConnectionProjection> connections)
         {
             var connectionBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(CanvasConfig.Connection.DefaultColor));
             var pen = new Pen(connectionBrush, CanvasConfig.Connection.DefaultThickness);
@@ -168,7 +168,7 @@ namespace SunEyeVision.UI.Services.Rendering
             }
         }
 
-        private void RenderNodes(DrawingContext dc, IEnumerable<WorkflowNode> nodes)
+        private void RenderNodes(DrawingContext dc, IEnumerable<CanvasNodeProjection> nodes)
         {
             foreach (var node in nodes)
             {
@@ -176,7 +176,7 @@ namespace SunEyeVision.UI.Services.Rendering
             }
         }
 
-        private void RenderNode(DrawingContext dc, WorkflowNode node)
+        private void RenderNode(DrawingContext dc, CanvasNodeProjection node)
         {
             var bounds = new Rect(
                 node.Position.X,
@@ -199,7 +199,7 @@ namespace SunEyeVision.UI.Services.Rendering
             RenderNodeFooter(dc, node);
         }
 
-        private void RenderNodeHeader(DrawingContext dc, WorkflowNode node)
+        private void RenderNodeHeader(DrawingContext dc, CanvasNodeProjection node)
         {
             var headerBounds = new Rect(
                 node.Position.X,
@@ -228,7 +228,7 @@ namespace SunEyeVision.UI.Services.Rendering
             dc.DrawText(text, new Point(node.Position.X + 30, node.Position.Y + 8));
         }
 
-        private void RenderNodeBody(DrawingContext dc, WorkflowNode node)
+        private void RenderNodeBody(DrawingContext dc, CanvasNodeProjection node)
         {
             var bodyBounds = new Rect(
                 node.Position.X,
@@ -257,7 +257,7 @@ namespace SunEyeVision.UI.Services.Rendering
             dc.DrawText(text, textPosition);
         }
 
-        private void RenderNodeFooter(DrawingContext dc, WorkflowNode node)
+        private void RenderNodeFooter(DrawingContext dc, CanvasNodeProjection node)
         {
             var footerBounds = new Rect(
                 node.Position.X,
@@ -292,7 +292,7 @@ namespace SunEyeVision.UI.Services.Rendering
             dc.DrawText(text, textPosition);
         }
 
-        private void RenderArrow(DrawingContext dc, WorkflowConnection connection)
+        private void RenderArrow(DrawingContext dc, CanvasConnectionProjection connection)
         {
             var targetNode = GetTargetNode(connection);
             if (targetNode == null)
@@ -303,7 +303,7 @@ namespace SunEyeVision.UI.Services.Rendering
             dc.DrawGeometry(arrowBrush, null, arrowGeometry);
         }
 
-        private PathGeometry CreateConnectionPath(WorkflowConnection connection)
+        private PathGeometry CreateConnectionPath(CanvasConnectionProjection connection)
         {
             var sourceNode = GetSourceNode(connection);
             var targetNode = GetTargetNode(connection);
@@ -336,7 +336,7 @@ namespace SunEyeVision.UI.Services.Rendering
             return pathGeometry;
         }
 
-        private PathGeometry CreateArrowGeometry(WorkflowConnection connection, WorkflowNode targetNode)
+        private PathGeometry CreateArrowGeometry(CanvasConnectionProjection connection, CanvasNodeProjection targetNode)
         {
             var targetPos = new Point(
                 targetNode.Position.X + CanvasConfig.Node.DefaultWidth / 2,
@@ -360,12 +360,12 @@ namespace SunEyeVision.UI.Services.Rendering
             return pathGeometry;
         }
 
-        private WorkflowNode? GetSourceNode(WorkflowConnection connection)
+        private CanvasNodeProjection? GetSourceNode(CanvasConnectionProjection connection)
         {
             return null;
         }
 
-        private WorkflowNode? GetTargetNode(WorkflowConnection connection)
+        private CanvasNodeProjection? GetTargetNode(CanvasConnectionProjection connection)
         {
             return null;
         }

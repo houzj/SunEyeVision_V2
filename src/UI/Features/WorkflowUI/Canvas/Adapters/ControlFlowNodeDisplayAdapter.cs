@@ -9,23 +9,23 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     /// </summary>
     public class ControlFlowNodeDisplayAdapter : INodeDisplayAdapter
     {
-        public string GetDisplayText(WorkflowNode node)
+        public string GetDisplayText(CanvasNodeProjection node)
         {
-            return $"{node.DisplayName}_{node.LocalIndex}";
+            return node.DispName;
         }
 
-        public string GetIcon(WorkflowNode node)
+        public string GetIcon(CanvasNodeProjection node)
         {
-            return node.Icon ?? "?";
+            return SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.Find(node.ToolType)?.Icon ?? string.Empty;
         }
 
-        public Color GetBackgroundColor(WorkflowNode node)
+        public Color GetBackgroundColor(CanvasNodeProjection node)
         {
             // 所有流程控制节点统一使用淡靛蓝背景色
             return Color.FromRgb(232, 234, 246); // #E8EAF6
         }
 
-        public Color GetBorderColor(WorkflowNode node)
+        public Color GetBorderColor(CanvasNodeProjection node)
         {
             // 所有流程控制节点统一使用靛蓝边框色
             return Color.FromRgb(92, 107, 192); // #5C6BC0

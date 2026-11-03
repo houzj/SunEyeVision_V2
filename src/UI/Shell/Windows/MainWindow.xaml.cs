@@ -265,8 +265,8 @@ namespace SunEyeVision.UI.Shell.Windows
                   if (await _viewModel.PrepareSolutionTransitionAsync(owner: this))
                   {
                       SaveLayoutConfig();
-                      SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.SaveUserSettings();
-                      (Application.Current as SunEyeVision.UI.App)?.MarkInstanceClosing();
+                      (System.Windows.Application.Current as App)?.SaveShellPreferences();
+                      (System.Windows.Application.Current as SunEyeVision.UI.App)?.MarkInstanceClosing();
                       _shutdownPreparationStarted = true;
                       if (Content is UIElement content) content.IsEnabled = false;
                       Title = "正在关闭：等待资源释放";
@@ -295,7 +295,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private async Task CompletePreparedCloseAsync()
         {
             PreparePluginConsumersForShutdown();
-            if(Application.Current is SunEyeVision.UI.App app)
+            if(System.Windows.Application.Current is SunEyeVision.UI.App app)
             {
                 var drain=app.DrainPluginDirectoryAsync();
                 if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
@@ -310,7 +310,7 @@ namespace SunEyeVision.UI.Shell.Windows
             var failures=new List<Exception>();
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
             // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。
-            var childWindows = Application.Current?.Windows
+            var childWindows = System.Windows.Application.Current?.Windows
                 .OfType<Window>()
                 .Where(window => !ReferenceEquals(window, this))
                 .ToArray();
@@ -325,7 +325,7 @@ namespace SunEyeVision.UI.Shell.Windows
                     {
                         childWindow.Close();
                         if(dispatcherFailure is not null)failures.Add(dispatcherFailure);
-                        if(Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
+                        if(System.Windows.Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
                             failures.Add(new InvalidOperationException("子窗口未关闭："+childWindow.GetType().Name));
                     }
                     catch (Exception ex)
@@ -353,7 +353,7 @@ namespace SunEyeVision.UI.Shell.Windows
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            Application.Current?.Shutdown();
+            System.Windows.Application.Current?.Shutdown();
         }
 
         public void ShowSolutionLoadingOverlay(string stage, string detail)
@@ -401,8 +401,6 @@ namespace SunEyeVision.UI.Shell.Windows
                 // 初始化智能路径转换器的节点集合（使用当前选中的 Tab 的节点集合）
                 if (_viewModel.WorkflowTabViewModel?.SelectedTab != null)
                 {
-                    SmartPathConverter.Nodes = _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes;
-                    SmartPathConverter.Connections = _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowConnections;
                 }
                 // 缩放显示由中间工作区 ZoomScaleChanged 事件驱动，无需在此初始化
                 // 注释：以下代码已废弃，工具箱分隔器已删除（2026-02-10）
@@ -427,13 +425,6 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 获取 MainWindowViewModel 中的 NodeResultManager
         /// </summary>
-        private Services.Workflow.NodeResultManager? GetNodeResultManager(SunEyeVision.UI.Shell.Windows.MainWindowViewModel viewModel)
-        {
-            // 通过反射获取私有字段
-            var field = typeof(SunEyeVision.UI.Shell.Windows.MainWindowViewModel).GetField("_nodeResultManager",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return field?.GetValue(viewModel) as Services.Workflow.NodeResultManager;
-        }
         #endregion
         #region 初始化
         /// <summary>
@@ -459,7 +450,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             return WorkspaceHost.GetCurrentWorkflowCanvas();
         }
-        internal void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
+        internal void OpenSubroutineNodeParameterDialog(CanvasNodeProjection node)
         {
             WorkspaceHost.OpenSubroutineNodeParameterDialog(node);
         }
@@ -571,7 +562,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 var focus = Keyboard.FocusedElement as DependencyObject;
                 while (focus != null)
                 {
-                    if (_deferToWire && focus is System.Windows.Shapes.Path { DataContext: SunEyeVision.Workflow.WorkflowConnection }) return false;
+                    if (_deferToWire && focus is System.Windows.Shapes.Path { DataContext: SunEyeVision.UI.Features.WorkflowUI.Canvas.CanvasConnectionProjection }) return false;
                     if (focus is System.Windows.Controls.Primitives.TextBoxBase || focus is ComboBox || focus is PasswordBox) return false;
                     if (focus is SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl canvas)
                     {

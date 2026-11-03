@@ -109,12 +109,12 @@ namespace SunEyeVision.UI.Converters.UI
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            // 支持两种模式：比较 WorkflowInfo 对象或比较 Id 字符串
+            // 支持两种模式：比较 WorkflowTabViewModel 对象或比较 Id 字符串
             if (values.Length >= 2)
             {
-                if (values[0] is WorkflowInfo workflow && values[1] is WorkflowInfo currentWorkflow)
+                if (values[0] is WorkflowTabViewModel workflow && values[1] is WorkflowTabViewModel currentWorkflow)
                 {
-                    // 模式1: 比较两个 WorkflowInfo 对象
+                    // 模式1: 比较两个 WorkflowTabViewModel 对象
                     return workflow?.Id == currentWorkflow?.Id;
                 }
                 else if (values[0] is string workflowId && values[1] is string currentWorkflowId)
@@ -141,7 +141,7 @@ namespace SunEyeVision.UI.Converters.UI
         {
             if (parameter is WorkflowCanvasControl control && value is string workflowId)
             {
-                var currentWorkflow = control.CurrentWorkflow;
+                var currentWorkflow = control.CurrentWorkflowTab;
                 return currentWorkflow?.Id == workflowId;
             }
             return false;

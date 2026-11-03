@@ -13,22 +13,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 创建原生节点
         /// </summary>
-        object CreateNode(WorkflowNode workflowNode);
+        object CreateNode(CanvasNodeProjection workflowNode);
 
         /// <summary>
         /// 创建原生连接
         /// </summary>
-        object CreateConnection(WorkflowConnection workflowConnection);
+        object CreateConnection(CanvasConnectionProjection workflowConnection);
 
         /// <summary>
         /// 同步节点到原生图表。
         /// </summary>
-        void SyncNodes(IEnumerable<WorkflowNode> nodes, object nativeDiagram);
+        void SyncNodes(IEnumerable<CanvasNodeProjection> nodes, object nativeDiagram);
 
         /// <summary>
         /// 同步连接到原生图表。
         /// </summary>
-        void SyncConnections(IEnumerable<WorkflowConnection> connections, object nativeDiagram);
+        void SyncConnections(IEnumerable<CanvasConnectionProjection> connections, object nativeDiagram);
 
         /// <summary>
         /// 设置贝塞尔曲线样式。

@@ -16,10 +16,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     /// </summary>
     public class DiagramAdapter : IDiagramAdapter
     {
-        // 缓存映射：WorkflowNode -> native Node
+        // 缓存映射：CanvasNodeProjection -> native Node
         private readonly Dictionary<string, DesignerItemViewModelBase> _nodeMap = new Dictionary<string, DesignerItemViewModelBase>();
 
-        // 缓存映射：WorkflowConnection -> native Connection
+        // 缓存映射：CanvasConnectionProjection -> native Connection
         private readonly Dictionary<string, ConnectionViewModel> _connectionMap = new Dictionary<string, ConnectionViewModel>();
 
         private static DateTime _lastLogTime = DateTime.Now;
@@ -41,18 +41,18 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 创建原生节点（DefaultDesignerItemViewModel）
         /// </summary>
-        public object CreateNode(WorkflowNode workflowNode)
+        public object CreateNode(CanvasNodeProjection workflowNode)
         {
-            // 缓存 WorkflowNode，稍后在 SyncNodes 中创建实际的 ViewModel
+            // 缓存 CanvasNodeProjection，稍后在 SyncNodes 中创建实际的 ViewModel
             _nodeMap[workflowNode.Id] = null!;
 
-            return workflowNode; // 返回 WorkflowNode，稍后处理
+            return workflowNode; // 返回 CanvasNodeProjection，稍后处理
         }
 
         /// <summary>
         /// 创建原生节点（内部方法）
         /// </summary>
-        private DesignerItemViewModelBase CreateNodeInternal(WorkflowNode workflowNode, DiagramViewModel diagramViewModel)
+        private DesignerItemViewModelBase CreateNodeInternal(CanvasNodeProjection workflowNode, DiagramViewModel diagramViewModel)
         {
             LogTimestamp("Adapter", $"CreateNodeInternal: {workflowNode.Name}");
 
@@ -75,7 +75,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 创建原生节点（公共方法，供拖放使用）
         /// </summary>
-        public DesignerItemViewModelBase CreateNativeNode(WorkflowNode workflowNode, DiagramViewModel diagramViewModel)
+        public DesignerItemViewModelBase CreateNativeNode(CanvasNodeProjection workflowNode, DiagramViewModel diagramViewModel)
         {
             _lastLogTime = DateTime.Now; // 重置计时器
             return CreateNodeInternal(workflowNode, diagramViewModel);
@@ -85,7 +85,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 创建原生连接（ConnectionViewModel）
         /// 使用贝塞尔曲线连接
         /// </summary>
-        public object CreateConnection(WorkflowConnection workflowConnection)
+        public object CreateConnection(CanvasConnectionProjection workflowConnection)
         {
             // 暂时返回 null，实际创建在 SyncConnections 中完成
             return null!;
@@ -95,7 +95,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 创建原生连接（内部方法）
         /// 使用贝塞尔曲线连接
         /// </summary>
-        private ConnectionViewModel CreateConnectionInternal(WorkflowConnection workflowConnection, DiagramViewModel diagramViewModel)
+        private ConnectionViewModel CreateConnectionInternal(CanvasConnectionProjection workflowConnection, DiagramViewModel diagramViewModel)
         {
             // 查找源节点和目标节点
             if (!_nodeMap.TryGetValue(workflowConnection.SourceNodeId, out var sourceNode) || sourceNode == null)
@@ -139,7 +139,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 同步节点到原生图表
         /// 使用 DiagramViewModel.Add() 方法
         /// </summary>
-        public void SyncNodes(IEnumerable<WorkflowNode> nodes, object nativeDiagram)
+        public void SyncNodes(IEnumerable<CanvasNodeProjection> nodes, object nativeDiagram)
         {
             _lastLogTime = DateTime.Now; // 重置计时器
             LogTimestamp("Adapter", "SyncNodes 开始");
@@ -183,7 +183,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 同步连接到原生图表
         /// 使用 DiagramViewModel.Add() 方法
         /// </summary>
-        public void SyncConnections(IEnumerable<WorkflowConnection> connections, object nativeDiagram)
+        public void SyncConnections(IEnumerable<CanvasConnectionProjection> connections, object nativeDiagram)
         {
             try
             {

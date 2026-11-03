@@ -1,27 +1,29 @@
 using System;
-using System.Collections;
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+
 using System.Linq;
-using System.Text.Json;
+
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.Win32;
+
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+
 
 using SunEyeVision.UI.Features.Dialogs;
-using SunEyeVision.UI.Shared.Events;
-using SunEyeVision.UI.Services.Interaction;
-using SunEyeVision.UI.Shell;
-using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Shared;
-using SunEyeVision.Workflow;
+
+
 
 using SunEyeVision.UI.Core;
 
-using SunEyeVision.UI.Shell.Windows;
+using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Solutions;
+
+using SunEyeVision.UI.Core;
+
+
 
 namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
@@ -43,7 +45,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     /// </remarks>
     public class GlobalVariableManagerViewModel : ViewModelBase, IDocumentEditParticipant
     {
-        private readonly SolutionManager _solutionManager;
+        private readonly DocumentSession _session;
         private string _searchText = "";
         private VariableGroupViewModel? _selectedGroup;
 
@@ -155,16 +157,19 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         public List<TypeOption> TypeOptions { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
-        public Solution? EditingDocument { get; }
+        public DocumentSession EditingSession => _session;
         internal NodeConfigurationEditHost Host { get; }
         internal GlobalVariableConfigurationEditDraft Draft { get; private set; }
-        internal Solution DraftDocument => Draft.Configuration;
+        internal ObservableCollection<GlobalVariable> DraftVariables => Draft.Variables;
         private readonly Func<bool> _isCurrent;
+        private readonly Func<bool> _canEdit;
         private bool _active = true;
         private readonly DocumentEditSession? _documentEdits;
         public Guid ScopeId { get; } = Guid.NewGuid();
         public string ScopeKey => "variables";
         public bool IsValid => _active && _isCurrent();
+        public bool CanEdit => IsValid && _canEdit() && IsValid;
+        public void RefreshAvailability() { OnPropertyChanged(nameof(CanEdit)); CommandManager.InvalidateRequerySuggested(); }
         public bool HasPendingChanges => _active && (Host.HasPendingChanges(Draft) || HasPendingViewEdits?.Invoke() == true);
         internal Func<string?>? PrepareView { get; set; }
         internal Func<bool>? HasPendingViewEdits { get; set; }
@@ -174,47 +179,42 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         private sealed record PreparationToken(GlobalVariableConfigurationEditDraft Draft, string? ViewStamp);
 
         public string? LastRefreshError { get; private set; }
-        public GlobalVariableManagerViewModel(SolutionManager solutionManager,
-            NodeConfigurationEditHost? host = null, Func<bool>? isCurrent = null, DocumentEditSession? documentEdits = null)
+        public GlobalVariableManagerViewModel(DocumentSession session, Func<bool> isCurrent, Func<bool> canEdit)
         {
-            _documentEdits = documentEdits;
-            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-            EditingDocument = solutionManager.CurrentSolution;
-            Host = host ?? new NodeConfigurationEditHost(EditingDocument ?? throw new InvalidOperationException("当前没有方案。"));
-            _isCurrent = isCurrent ?? (() => ReferenceEquals(EditingDocument, solutionManager.CurrentSolution));
+            _session = session ?? throw new ArgumentNullException(nameof(session));
+            _isCurrent = isCurrent ?? throw new ArgumentNullException(nameof(isCurrent));
+            _canEdit = canEdit ?? throw new ArgumentNullException(nameof(canEdit));
+            _documentEdits = session.Editing;
+            Host = _documentEdits.Host;
             Draft = Host.BeginVariableEdit();
-
             Groups = new ObservableCollection<VariableGroupViewModel>();
             CurrentVariables = new ObservableCollection<GlobalVariable>();
-
             InitializeCommands();
             LoadGroups();
-            documentEdits?.Register(this);
+            try { _documentEdits.Register(this); }
+            catch { Draft.Dispose(); throw; }
         }
 
         public DocumentEditProposal Prepare(NodeConfigurationEditHost host)
         {
             if (!ReferenceEquals(host, Host)) throw new InvalidOperationException("变量编辑属于另一个文档。");
             if (!TryPrepare(out var error)) throw new InvalidOperationException(error);
-            // An unchanged scope may follow another node's Apply without publishing anything itself.
-            if (Draft.BaseVersion != Host.Capture().Version && !HasPendingChanges) AcceptPublication();
             var viewError = PrepareView?.Invoke();
             if (!string.IsNullOrEmpty(viewError)) throw new InvalidOperationException(viewError);
-            return DocumentEditProposal.ForVariables(host, Draft, new PreparationToken(Draft, PendingViewStamp?.Invoke()));
+            return DocumentEditProposal.Prepare(host, variables: Draft, token: new PreparationToken(Draft, PendingViewStamp?.Invoke()));
         }
-        public void Acknowledge(DocumentEditProposal prepared, BindingConfigurationPublication publication)
+        public void Acknowledge(DocumentEditProposal prepared, DocumentEditReceipt receipt)
         {
-            if (prepared.Token is not PreparationToken token || !ReferenceEquals(token.Draft, Draft)) return;
-            if (!prepared.Matches(Draft) || token.ViewStamp != PendingViewStamp?.Invoke())
-            {
-                Draft = prepared.PreserveNewerVariableEdits(Host, Draft);
-                if (token.ViewStamp is not null) AcknowledgeViewEdits?.Invoke(token.ViewStamp);
-                return;
-            }
-            if (AcceptView is { } accept) accept(); else AcceptPublication();
+            if (prepared.Token is not PreparationToken token || !ReferenceEquals(token.Draft, Draft))
+                throw new InvalidOperationException("变量编辑回执与草稿不匹配。");
+            var sameView = token.ViewStamp == PendingViewStamp?.Invoke();
+            var sameDraft = prepared.Matches(Draft);
+            Draft = Host.RebaseAcceptedDraft(Draft, prepared, receipt.AcceptedVariables);
+            LoadGroups();
+            if (sameView && sameDraft) AcceptView?.Invoke();
+            else if (token.ViewStamp is not null) AcknowledgeViewEdits?.Invoke(token.ViewStamp);
         }
         public void Cancel() => Discard();
-
         internal bool TryPrepare(out string error)
         {
             if (!_active || !_isCurrent())
@@ -223,34 +223,26 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
         internal void SetDraftValue(GlobalVariable variable, object? value)
         {
-            if (!DraftDocument.GlobalVariables.Any(v => ReferenceEquals(v, variable)))
+            if (!CanEdit) throw new InvalidOperationException("当前方案不可编辑。");
+            if (!DraftVariables.Any(v => ReferenceEquals(v, variable)))
                 throw new InvalidOperationException("变量不属于当前私有草稿。");
             Draft.SetValue(variable.Id, value);
         }
         internal void Discard()
         {
+            if (!_active) return;
             _active = false;
             _documentEdits?.Unregister(ScopeId);
+            Draft.Dispose();
         }
-        internal void AcceptPublication()
-        {
-            try
-            {
-                if (!TryPrepare(out var error)) throw new InvalidOperationException(error);
-                Draft = Host.BeginVariableEdit();
-                LoadGroups();
-            }
-            catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
-        }
-
         private void InitializeCommands()
         {
             AddVariableCommand = new RelayCommand(AddVariable, CanAddVariable);
             DeleteVariableCommand = new RelayCommand(DeleteVariable, CanDeleteVariable);
-            AddGroupCommand = new RelayCommand(AddGroup, () => true);
+            AddGroupCommand = new RelayCommand(AddGroup, () => CanEdit);
             DeleteGroupCommand = new RelayCommand(DeleteGroup, CanDeleteGroup);
-            ImportCommand = new RelayCommand(Import, () => true);
-            ExportCommand = new RelayCommand(Export, CanExport);
+            ImportCommand = new RelayCommand(() => LogWarning("变量导入暂未接入会话原子事务。"), () => false);
+            ExportCommand = new RelayCommand(() => LogWarning("变量导出暂未接入受控资源与原子写入。"), () => false);
             SaveCommand = new RelayCommand(Save, CanSave);
             CloseCommand = new RelayCommand(Close, () => true);
             // The legacy handler writes name-based __GlobalVars__ settings rather than the
@@ -264,15 +256,15 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private void LoadGroups()
         {
-            var currentSolution = DraftDocument;
+            var variables = DraftVariables;
 
             // 清空现有分组
             Groups.Clear();
 
             // 从现有变量中按 Group 字段归类
-            if (currentSolution?.GlobalVariables != null && currentSolution.GlobalVariables.Count > 0)
+            if (variables.Count > 0)
             {
-                var groupedVariables = currentSolution.GlobalVariables
+                var groupedVariables = variables
                     .GroupBy(v => v.Group)
                     .OrderBy(g => g.Key);
 
@@ -396,7 +388,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private bool CanDeleteGroup()
         {
-            return SelectedGroup != null;
+            return CanEdit && SelectedGroup != null;
         }
 
         /// <summary>
@@ -404,6 +396,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         public void ConfirmGroupRename(VariableGroupViewModel? groupVM)
         {
+            if (!CanEdit) return;
             if (groupVM == null || !groupVM.IsEditing) return;
 
             string newName = groupVM.EditingText?.Trim();
@@ -445,18 +438,19 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         public void DeleteGroupWithVariables()
         {
+            if (!CanEdit) return;
             if (SelectedGroup == null) return;
 
             var groupName = SelectedGroup.Name;
             var variablesToRemove = SelectedGroup.Variables.ToList();
 
             // 1. 从 Solution 中移除变量
-            var solution = DraftDocument;
+            var solution = DraftVariables;
             if (solution != null)
             {
                 foreach (var variable in variablesToRemove)
                 {
-                    solution.GlobalVariables.Remove(variable);
+                    solution.Remove(variable);
                 }
             }
 
@@ -504,12 +498,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 Value = "",
                 Description = "",
                 Group = SelectedGroup.Name,
-                Index = variableIndex,
-                ConsumerBindings = new List<ConsumerBinding>()
+                Index = variableIndex
             };
 
             SelectedGroup.AddVariable(variable);
-            DraftDocument.GlobalVariables.Add(variable);
+            DraftVariables.Add(variable);
             CurrentVariables.Add(variable);
             SelectedVariable = variable;
 
@@ -521,7 +514,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private bool CanAddVariable()
         {
-            return SelectedGroup != null;
+            return CanEdit && SelectedGroup != null;
         }
 
         /// <summary>
@@ -540,7 +533,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             _releasedIndices.Add(variable.Index);
 
             SelectedGroup?.RemoveVariable(variable);
-            DraftDocument.GlobalVariables.Remove(variable);
+            DraftVariables.Remove(variable);
             CurrentVariables.Remove(variable);
 
             if (SelectedVariable == variable)
@@ -554,7 +547,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private bool CanDeleteVariable(object? parameter)
         {
-            return parameter is GlobalVariable || SelectedVariable != null;
+            return CanEdit && (parameter is GlobalVariable || SelectedVariable != null);
         }
 
         #endregion
@@ -573,7 +566,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 return index;
             }
 
-            var allVariables = DraftDocument.GlobalVariables;
+            var allVariables = DraftVariables;
             return allVariables != null && allVariables.Count > 0
                 ? allVariables.Max(v => v.Index) + 1
                 : 1;
@@ -584,7 +577,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         private string GenerateUniqueName(string baseName)
         {
-            var allNames = DraftDocument.GlobalVariables
+            var allNames = DraftVariables
                 .Select(v => v.Name)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase)
                 ?? new HashSet<string>();
@@ -609,6 +602,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <returns>true=通过，false=弹窗提示且调用方需还原旧值</returns>
         public bool ConfirmVariableRename(GlobalVariable variable, string newName, string oldName)
         {
+            if (!CanEdit || !DraftVariables.Any(item => ReferenceEquals(item, variable))) return false;
             if (string.IsNullOrWhiteSpace(newName))
             {
                 ThemeMessageDialog.Show("变量名称不能为空", "提示",
@@ -616,7 +610,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 return false;
             }
 
-            var allVariables = DraftDocument.GlobalVariables;
+            var allVariables = DraftVariables;
             if (allVariables == null)
                 return true;
 
@@ -641,108 +635,6 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
         #endregion
 
-        #region 导入导出
-
-        /// <summary>
-        /// 导入变量
-        /// </summary>
-        private void Import()
-        {
-            var dialog = new OpenFileDialog
-            {
-                Title = "导入全局变量",
-                Filter = "JSON文件 (*.json)|*.json|所有文件 (*.*)|*.*",
-                FilterIndex = 1
-            };
-
-            if (dialog.ShowDialog() != true)
-                return;
-
-            try
-            {
-                var json = File.ReadAllText(dialog.FileName);
-                var variables = JsonSerializer.Deserialize<List<GlobalVariable>>(json, WorkflowSerializationOptions.Default);
-
-                if (variables == null || variables.Count == 0)
-                {
-                    LogWarning("导入文件中没有变量");
-                    return;
-                }
-
-                // 添加到对应分组
-                foreach (var variable in variables)
-                {
-                    variable.Id = Guid.NewGuid().ToString();
-                    DraftDocument.GlobalVariables.Add(variable);
-
-                    // 查找或创建分组
-                    var group = Groups.FirstOrDefault(g => g.Name == variable.Group);
-                    if (group == null)
-                    {
-                        group = new VariableGroupViewModel(variable.Group);
-                        Groups.Add(group);
-                    }
-
-                    // 重新分配序号（全局空洞填充）
-                    variable.Index = GetNextAvailableIndex();
-                    group.AddVariable(variable);
-                }
-
-                UpdateFilteredVariables();
-                LogSuccess($"导入全局变量成功，共 {variables.Count} 个变量");
-            }
-            catch (Exception ex)
-            {
-                LogError($"导入全局变量失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 导出变量
-        /// </summary>
-        private void Export()
-        {
-            if (SelectedGroup == null || SelectedGroup.Variables.Count == 0)
-            {
-                LogWarning("当前分组没有变量可导出");
-                return;
-            }
-
-            var dialog = new SaveFileDialog
-            {
-                Title = "导出全局变量",
-                Filter = "JSON文件 (*.json)|*.json",
-                FilterIndex = 1,
-                FileName = $"{SelectedGroup.Name}_variables.json"
-            };
-
-            if (dialog.ShowDialog() != true)
-                return;
-
-            try
-            {
-                var variables = SelectedGroup.Variables.ToList();
-                var json = JsonSerializer.Serialize(variables, WorkflowSerializationOptions.Default);
-                File.WriteAllText(dialog.FileName, json);
-
-                LogSuccess($"导出全局变量成功，共 {variables.Count} 个变量");
-            }
-            catch (Exception ex)
-            {
-                LogError($"导出全局变量失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 是否可以导出
-        /// </summary>
-        private bool CanExport()
-        {
-            return SelectedGroup != null && SelectedGroup.Variables.Count > 0;
-        }
-
-        #endregion
-
         #region 保存和关闭
 
         /// <summary>
@@ -763,7 +655,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             }
             catch (Exception ex) { LogError("保存未完成，当前编辑保留：" + ex.Message); }
         }
-        private bool CanSave() => _active && _isCurrent() && SaveRequested != null;
+        private bool CanSave() => CanEdit && SaveRequested != null;
 
         /// <summary>
         /// 关闭

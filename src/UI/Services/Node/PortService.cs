@@ -47,7 +47,7 @@ namespace SunEyeVision.UI.Services.Node
         /// <summary>
         /// 从端口元素获取对应的节点
         /// </summary>
-        WorkflowNode? GetNodeFromPort(VmExecutionPort port);
+        CanvasNodeProjection? GetNodeFromPort(VmExecutionPort port);
 
         /// <summary>
         /// 在指定位置查找端口?
@@ -67,12 +67,12 @@ namespace SunEyeVision.UI.Services.Node
         /// <summary>
         /// 确定最佳端口方法?
         /// </summary>
-        PortDirection DetermineBestPort(WorkflowNode source, WorkflowNode target);
+        PortDirection DetermineBestPort(CanvasNodeProjection source, CanvasNodeProjection target);
 
         /// <summary>
         /// 获取端口位置
         /// </summary>
-        Point GetPortPosition(WorkflowNode node, PortDirection direction);
+        Point GetPortPosition(CanvasNodeProjection node, PortDirection direction);
 
         /// <summary>
         /// 获取端口信息
@@ -143,7 +143,7 @@ namespace SunEyeVision.UI.Services.Node
             }
         }
 
-        public WorkflowNode? GetNodeFromPort(VmExecutionPort port)
+        public CanvasNodeProjection? GetNodeFromPort(VmExecutionPort port)
         {
             if (port == null)
             {
@@ -152,7 +152,7 @@ namespace SunEyeVision.UI.Services.Node
 
             // 从端口元素获取节点信息?
             var nodeElement = FindVisualParent<Border>(port);
-            if (nodeElement?.DataContext is WorkflowNode node)
+            if (nodeElement?.DataContext is CanvasNodeProjection node)
             {
                 return node;
             }
@@ -191,7 +191,7 @@ namespace SunEyeVision.UI.Services.Node
             }
         }
 
-        public PortDirection DetermineBestPort(WorkflowNode source, WorkflowNode target)
+        public PortDirection DetermineBestPort(CanvasNodeProjection source, CanvasNodeProjection target)
         {
             if (source == null || target == null)
             {
@@ -212,7 +212,7 @@ namespace SunEyeVision.UI.Services.Node
             }
         }
 
-        public Point GetPortPosition(WorkflowNode node, PortDirection direction)
+        public Point GetPortPosition(CanvasNodeProjection node, PortDirection direction)
         {
             if (node == null)
             {
@@ -226,7 +226,7 @@ namespace SunEyeVision.UI.Services.Node
                 PortDirection.Bottom => node.BottomPortPosition,
                 PortDirection.Left => node.LeftPortPosition,
                 PortDirection.Right => node.RightPortPosition,
-                _ => node.NodeCenter
+                _ => new Point(node.X,node.Y)
             };
         }
 
@@ -358,7 +358,7 @@ namespace SunEyeVision.UI.Services.Node
         private string? GetNodeIdFromElement(DependencyObject element)
         {
             var nodeElement = FindVisualParent<Border>(element);
-            if (nodeElement?.DataContext is WorkflowNode node)
+            if (nodeElement?.DataContext is CanvasNodeProjection node)
             {
                 return node.Id;
             }

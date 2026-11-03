@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
@@ -317,33 +316,41 @@ namespace SunEyeVision.UI.Features.Camera
         public ICommand BatchEnableCommand { get; }
         public ICommand BatchDisableCommand { get; }
 
-        private SolutionManager _solutionManager;
+        private readonly SunEyeVision.Application.DocumentSessionManager _solutionManager;
+        private readonly SunEyeVision.Application.DocumentSession? _ownerSession;
+        private readonly Device[] _ownerDevices;
 
-        public CameraManagerViewModel(SolutionManager solutionManager)
+        public CameraManagerViewModel(SunEyeVision.Application.DocumentSessionManager solutionManager)
         {
             _solutionManager = solutionManager;
+            _ownerSession = solutionManager.CurrentSession;
+            _ownerDevices = _ownerSession?.Document.Devices.ToArray() ?? Array.Empty<Device>();
             Cameras = new ObservableCollection<CameraDevice>();
             Cameras.CollectionChanged += Cameras_CollectionChanged;
             _runtime = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime;
-            CameraDetailViewModel = new CameraDetailViewModel(_runtime.Runtime);
+            CameraDetailViewModel = new CameraDetailViewModel(_runtime.Runtime, () =>
+            {
+                if (!IsCurrentDocument()) throw new InvalidOperationException("方案或设备已变化。");
+                return _ownerSession!.AcquireActivityLease("相机预览");
+            });
             
             LoadCameraList();
             
             // 初始化 Commands
-            AddCameraCommand = new RelayCommand(AddCamera);
-            DeleteCameraCommand = new RelayCommand<CameraDevice>(DeleteCamera, CanDeleteCamera);
-            RenameCameraCommand = new RelayCommand<CameraDevice>(BeginRename, camera => camera != null);
+            AddCameraCommand = new RelayCommand(AddCamera, () => false);
+            DeleteCameraCommand = new RelayCommand<CameraDevice>(DeleteCamera, _ => false);
+            RenameCameraCommand = new RelayCommand<CameraDevice>(BeginRename, _ => false);
             RefreshCommand = new RelayCommand(Refresh);
             ExportCommand = new RelayCommand(Export);
-            SaveCommand = new RelayCommand(Save);
+            SaveCommand = new RelayCommand(Save, () => false);
             GlobalSettingsCommand = new RelayCommand(GlobalSettings);
             
             BatchConnectCommand = new RelayCommand(BatchConnect);
             BatchDisconnectCommand = new RelayCommand(BatchDisconnect);
-            BatchEnableCommand = new RelayCommand(BatchEnable);
-            BatchDisableCommand = new RelayCommand(BatchDisable);
+            BatchEnableCommand = new RelayCommand(BatchEnable, () => false);
+            BatchDisableCommand = new RelayCommand(BatchDisable, () => false);
             
-            StatusMessage = "就绪";
+            StatusMessage = "设备配置编辑暂不可用；预览与连接仍可使用";
             RefreshRuntimeConnectionStates();
         }
 
@@ -351,7 +358,7 @@ namespace SunEyeVision.UI.Features.Camera
         /// 方案加载完成后恢复设备连接。相机管理器本身只负责展示和手动操作，
         /// 不再在窗口构造时触发发现或自动连接。
         /// </summary>
-        public static async Task RestoreConnectionsForCurrentSolutionAsync(SolutionManager solutionManager)
+        public static async Task RestoreConnectionsForCurrentSolutionAsync(SunEyeVision.Application.DocumentSessionManager solutionManager)
         {
             var manager = new CameraManagerViewModel(solutionManager);
             try
@@ -370,7 +377,7 @@ namespace SunEyeVision.UI.Features.Camera
                 camera.PropertyChanged -= Camera_PropertyChanged;
             Cameras.Clear();
 
-            var savedDevices = _solutionManager.CurrentSolution?.Devices
+            var savedDevices = _solutionManager.CurrentSession?.Document.Devices
                 ?.Where(device => device.Type == DeviceType.Camera)
                 .ToList() ?? new List<Device>();
             foreach (var device in savedDevices)
@@ -396,48 +403,19 @@ namespace SunEyeVision.UI.Features.Camera
 
         public void PersistCameraList()
         {
-            var solution = _solutionManager.CurrentSolution;
-            if (solution == null)
-            {
-                StatusMessage = "当前没有打开的方案，设备配置暂不能保存";
-                return;
-            }
-
-            solution.Devices.RemoveAll(device => device.Type == DeviceType.Camera);
-            foreach (var camera in Cameras)
-            {
-                var device = new Device(camera.Name, DeviceType.Camera)
-                {
-                    Manufacturer = camera.Manufacturer,
-                    Model = camera.Model,
-                    SerialNumber = camera.SerialNumber,
-                    IpAddress = camera.IpAddress,
-                    IsEnabled = camera.IsEnabled,
-                    Description = camera.Description,
-                    Status = DeviceStatus.Disconnected,
-                    ModifiedTime = DateTime.Now
-                };
-                device.Id = string.IsNullOrWhiteSpace(camera.DeviceId) ? device.Id : camera.DeviceId;
-                device.Settings["DeviceId"] = camera.DeviceId ?? string.Empty;
-                device.Settings["MacAddress"] = camera.MacAddress ?? string.Empty;
-                device.Settings["Transport"] = camera.Transport ?? string.Empty;
-                device.Settings["AutoConnect"] = camera.AutoConnect;
-                solution.Devices.Add(device);
-            }
-
-            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.RefreshAutomationConfiguration(solution);
-            if (string.IsNullOrWhiteSpace(solution.FilePath))
-            {
-                StatusMessage = "设备配置已更新，保存方案后将写入本地文件";
-            }
-            else if (_solutionManager.SaveSolution(solution.FilePath))
-                StatusMessage = "设备配置已保存到当前方案";
+            StatusMessage = "设备配置编辑尚未接入正式事务，暂不能保存";
         }
 
         private async Task RestoreAutoConnectionsAsync()
         {
-            var owner = _solutionManager.CurrentSolution;
-            void CheckOwner() { if (!ReferenceEquals(owner, _solutionManager.CurrentSolution)) throw new OperationCanceledException("相机恢复所属方案已切换。"); }
+            var owner = _solutionManager.CurrentSession;
+            var devices = owner?.Document.Devices.ToArray() ?? Array.Empty<Device>();
+            void CheckOwner()
+            {
+                if (!ReferenceEquals(owner, _solutionManager.CurrentSession) ||
+                    owner is not null && !owner.Document.Devices.SequenceEqual(devices, ReferenceEqualityComparer.Instance))
+                    throw new OperationCanceledException("相机恢复所属方案或设备实例已切换。");
+            }
             if (Cameras.Count == 0)
             {
                 VisionLogger.Instance.Log(LogLevel.Info, "当前方案没有相机，跳过相机发现和自动连接", "CameraManagerViewModel");
@@ -729,12 +707,15 @@ namespace SunEyeVision.UI.Features.Camera
         {
             if (camera == null || !Cameras.Contains(camera) || CameraDetailViewModel == null)
                 return;
+            if (!IsCurrentDocument()) { StatusMessage = "方案或设备已变化，请重新打开相机管理器。"; return; }
+            using var activity = _ownerSession!.AcquireActivityLease("相机连接操作");
 
             SelectedCamera = camera;
             if (camera.IsConnected == shouldConnect)
                 return;
 
             await CameraDetailViewModel.SetConnectionAsync(camera, shouldConnect);
+            if (!IsCurrentDocument()) return;
             StatusMessage = shouldConnect
                 ? (camera.IsConnected ? $"已连接相机: {camera.Name}" : $"相机连接失败: {camera.Name}")
                 : $"相机已断开: {camera.Name}";
@@ -749,12 +730,16 @@ namespace SunEyeVision.UI.Features.Camera
         {
             if (camera == null || !Cameras.Contains(camera) || CameraDetailViewModel == null)
                 return;
+            if (!IsCurrentDocument()) { StatusMessage = "方案或设备已变化，请重新打开相机管理器。"; return; }
 
             SelectedCamera = camera;
             CameraDetailViewModel.SelectedCamera = camera;
             if (CameraDetailViewModel.PreviewCommand.CanExecute(null))
                 CameraDetailViewModel.PreviewCommand.Execute(null);
         }
+
+        private bool IsCurrentDocument() => _ownerSession is not null && ReferenceEquals(_ownerSession, _solutionManager.CurrentSession) &&
+            _ownerSession.Document.Devices.SequenceEqual(_ownerDevices, ReferenceEqualityComparer.Instance);
 
         private void BatchEnable()
         {

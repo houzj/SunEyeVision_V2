@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using SunEyeVision.UI.Shell.Controls.Shell;
 using SunEyeVision.UI.Features.WorkflowUI;
-using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.Domain.Workflows;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
@@ -21,7 +20,7 @@ public partial class MainWindowViewModel
    var snapshot=GetFormalExecutionSnapshot(root.Id);bool running=_formalRunningRootIds.Contains(root.Id);
    bool continuous=tab?.IsRunning==true&&tab.RunMode==RunMode.Continuous;
    return new RootWorkflowOverviewEntry(root.Id,root.Name,tab?.IsRootConfigurationReady==true,running,continuous,
-    tab!=null&&!tab.IsInSubroutine&&!IsRunning&&!_executionManager.IsAnyRunning()&&!IsDebugWindowOpen&&DocumentManager.CurrentSession?.Editing.HasPendingChanges!=true&&root.Nodes.Count>0,
+    tab!=null&&!tab.IsInSubroutine&&!IsRunning&&!IsDebugWindowOpen&&DocumentManager.CurrentSession?.Editing.HasPendingChanges!=true&&root.Nodes.Count>0,
     tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,
     snapshot is {CompletedRunCount:>0}?snapshot.CompletedRunCount:null,snapshot?.EndedAt!=null?snapshot.Elapsed.TotalMilliseconds:null,root.WorkspaceSettings.OverviewX,root.WorkspaceSettings.OverviewY);
   }).ToArray();
@@ -36,7 +35,6 @@ public partial class MainWindowViewModel
  internal bool OpenOverviewRoot(RootOverviewRequestEventArgs request)
  {
   var tab=ResolveOverviewRequest(request.RootId,request.DocumentIdentity,request.Revision,false);if(tab==null)return false;
-  tab.ResetNavigation();
   SetSelectedTab(tab);NavigateToWorkflowCanvas(tab.RootWorkflowId);return true;
  }
  internal void ConfigureOverviewRoot(RootOverviewRequestEventArgs request,Window? owner)
@@ -44,7 +42,7 @@ public partial class MainWindowViewModel
  internal async Task RunOverviewRoot(RootOverviewRequestEventArgs request)
  {
   var tab=ResolveOverviewRequest(request.RootId,request.DocumentIdentity,request.Revision,false);if(tab==null)return;
-  if(request.RunKind==RootOverviewRunKind.ToggleContinuous&&_executionManager.IsRunning(tab.RootWorkflowId)){_executionManager.StopContinuousRun(tab);return;}
+  if(request.RunKind==RootOverviewRunKind.ToggleContinuous&&IsFormalRootRunning(tab.RootWorkflowId)){_formalActiveBatch?.Stop();return;}
   if(!CanEditRootWorkspace||tab.IsInSubroutine||tab.RootWorkflowNodes.Count==0)return;
   SetSelectedTab(tab);
   if(request.RunKind==RootOverviewRunKind.Single)await ExecuteRunWorkflow();else StatusText="连续运行尚未接入正式调度，暂不可用。";

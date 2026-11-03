@@ -34,7 +34,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
                 // 2. 找到对应节点的Border（通过Tag匹配）
                 var nodeBorder = borders.FirstOrDefault(b => 
-                    b.Tag is WorkflowNode node && node.Id == nodeId);
+                    b.Tag is CanvasNodeProjection node && node.Id == nodeId);
 
                 if (nodeBorder == null)
                 {
@@ -53,7 +53,7 @@ namespace SunEyeVision.UI.Services.Interaction
                     return null;
                 }
 
-                if(portEllipse.Visibility==Visibility.Collapsed&&nodeBorder.Tag is WorkflowNode owner)
+                if(portEllipse.Visibility==Visibility.Collapsed&&nodeBorder.Tag is CanvasNodeProjection owner)
                     return GetDefaultPortPosition(owner,portName);
 
                 // 4. 使用热区边缘的实际执行锚点。
@@ -79,7 +79,7 @@ namespace SunEyeVision.UI.Services.Interaction
         {
             var positions = new PortPositionMap();
 
-            if (nodeBorder?.Tag is not WorkflowNode node)
+            if (nodeBorder?.Tag is not CanvasNodeProjection node)
                 return positions;
 
             var portNames = new[] { "TopPort", "BottomPort", "LeftPort", "RightPort" };
@@ -97,7 +97,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 降级方案：使用配置对象计算默认端口位置
         /// </summary>
-        public Point GetDefaultPortPosition(WorkflowNode node, string portName)
+        public Point GetDefaultPortPosition(CanvasNodeProjection node, string portName)
         {
             return portName switch
             {
@@ -112,7 +112,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 验证端口位置是否正确（用于调试）
         /// </summary>
-        public bool ValidatePortPosition(WorkflowNode node, string portName)
+        public bool ValidatePortPosition(CanvasNodeProjection node, string portName)
         {
             // 1. 查询视觉树中的实际位置
             var actualPosition = QueryPortPosition(node.Id, portName);

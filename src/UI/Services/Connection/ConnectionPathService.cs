@@ -16,17 +16,17 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 更新连接路径
         /// </summary>
-        void UpdateConnectionPath(WorkflowConnection connection);
+        void UpdateConnectionPath(CanvasConnectionProjection connection);
 
         /// <summary>
         /// 更新所有连接路径
         /// </summary>
-        void UpdateAllConnections(IEnumerable<WorkflowConnection> connections);
+        void UpdateAllConnections(IEnumerable<CanvasConnectionProjection> connections);
 
         /// <summary>
         /// 标记连接为脏（需要重新计算）
         /// </summary>
-        void MarkConnectionDirty(WorkflowConnection connection);
+        void MarkConnectionDirty(CanvasConnectionProjection connection);
 
         /// <summary>
         /// 标记节点相关的所有连接为脏
@@ -56,7 +56,7 @@ namespace SunEyeVision.UI.Services.Connection
         {
             _pathCache=pathCache;
         }
-        public void UpdateConnectionPath(WorkflowConnection connection)
+        public void UpdateConnectionPath(CanvasConnectionProjection connection)
         {
             if (connection == null)
             {
@@ -70,12 +70,11 @@ namespace SunEyeVision.UI.Services.Connection
             var pathData = _pathCache.GetPathData(connection);
             if (pathData != null)
             {
-                connection.PathData = pathData;
                 connection.InvalidatePath();
             }
         }
 
-        public void UpdateAllConnections(IEnumerable<WorkflowConnection> connections)
+        public void UpdateAllConnections(IEnumerable<CanvasConnectionProjection> connections)
         {
             if (connections == null)
             {
@@ -88,7 +87,7 @@ namespace SunEyeVision.UI.Services.Connection
             }
         }
 
-        public void MarkConnectionDirty(WorkflowConnection connection)
+        public void MarkConnectionDirty(CanvasConnectionProjection connection)
         {
             if (connection == null)
             {

@@ -4,7 +4,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.UI.Services.PathCalculators;
-using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Shared;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl

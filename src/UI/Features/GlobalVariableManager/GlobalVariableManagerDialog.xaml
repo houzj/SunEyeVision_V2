@@ -255,11 +255,11 @@
                 <Separator Grid.Column="1" Margin="8,0"/>
 
                 <!-- 导入 -->
-                <Button Grid.Column="2" Content="📥 导入" Command="{Binding ImportCommand}"
+                <Button Grid.Column="2" Content="📥 导入" Command="{Binding ImportCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="变量文件导入尚未接入会话事务和资源管理。"
                         Style="{StaticResource ToolbarButtonStyle}" Margin="0,0,4,0"/>
 
                 <!-- 导出 -->
-                <Button Grid.Column="3" Content="📤 导出" Command="{Binding ExportCommand}"
+                <Button Grid.Column="3" Content="📤 导出" Command="{Binding ExportCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="变量文件导出尚未接入受控资源与原子保存。"
                         Style="{StaticResource ToolbarButtonStyle}" Margin="0,0,8,0"/>
 
                 <!-- 搜索框（带水印） -->
@@ -295,7 +295,7 @@
         </Border>
 
         <!-- 分组标签栏 (VisionMaster风格 - 水平标签) -->
-        <Border Grid.Row="1" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1">
+        <Border Grid.Row="1" IsEnabled="{Binding CanEdit}" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -409,7 +409,7 @@
         </Border>
 
         <!-- DataGrid -->
-        <DataGrid Grid.Row="2"
+        <DataGrid Grid.Row="2" IsEnabled="{Binding CanEdit}"
                   Margin="16,0"
                   AutoGenerateColumns="False"
                   ItemsSource="{Binding CurrentVariables}"
@@ -524,43 +524,9 @@
                 <DataGridTemplateColumn Header="目标输出" Width="140" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Background="Transparent"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    Padding="8,0"
-                                    HorizontalContentAlignment="Left"
-                                    VerticalContentAlignment="Center"
-                                    Command="{Binding DataContext.OpenTargetParameterCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    ToolTip="正式目标参数绑定尚未接入，暂不可用">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <ContentPresenter HorizontalAlignment="Left"
-                                                          VerticalAlignment="Center"
-                                                          Content="{TemplateBinding Content}"/>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <TextBlock Text="{Binding OutputTargetDisplayText}"
-                                           FontSize="12"
-                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
-                                           TextTrimming="CharacterEllipsis"
-                                           TextDecorations="Underline">
-                                    <TextBlock.ToolTip>
-                                        <ToolTip>
-                                            <ItemsControl ItemsSource="{Binding ConsumerBindings}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding DisplayPath}"
-                                                                   Margin="0,2"
-                                                                   FontSize="11"
-                                                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ToolTip>
-                                    </TextBlock.ToolTip>
-                                </TextBlock>
-                            </Button>
+                            <TextBlock Text="消费者查询待接入" Padding="8,0" FontSize="12"
+                                       VerticalAlignment="Center" IsEnabled="False"
+                                       ToolTip="需要接入当前方案会话的变量消费者查询。"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

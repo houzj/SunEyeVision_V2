@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
-using SunEyeVision.Workflow;
+using SunEyeVision.Infrastructure.Persistence.ApplicationData;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.UI.Services.Communication;
@@ -71,6 +71,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         private static UILogWriter? _uiLogWriter;
         private static SunEyeVision.Application.DocumentSessionManager? _solutionManager;
         private static ApplicationDataPaths? _dataPaths;
+        public static string DocumentFilesDirectory=>_dataPaths?.SolutionsDirectory??throw new InvalidOperationException("应用数据目录尚未初始化。");
         private static FileLogWriter? _fileLogWriter;
         public static void ConfigureDataPaths(ApplicationDataPaths paths) => _dataPaths = paths;
 
@@ -205,26 +206,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// 初始化解决方案管理器
         /// </summary>
         /// <param name="solutionsDirectory">解决方案目录，默认为solutions/</param>
-        public static void InitializeSolutionManager(SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory,string? solutionsDirectory = null)
-        {
-            if (_solutionManager != null)
-            {
-                return;
-            }
 
-            var logger = VisionLogger.Instance;
-            logger.Info("正在初始化解决方案管理器...", "ServiceInitializer");
-
-            // 如果未指定解决方案目录，使用默认目录
-            if (string.IsNullOrWhiteSpace(solutionsDirectory))
-            {
-                solutionsDirectory = _dataPaths?.SolutionsDirectory ?? throw new InvalidOperationException("请先选择数据目录。");
-            }
-
-            // 创建解决方案管理器
-            _solutionManager = new SunEyeVision.Application.DocumentSessionManager(directory);
-            logger.Info($"方案会话管理器初始化完成，目录: {solutionsDirectory}", "ServiceInitializer");
-        }
 
         /// <summary>
         /// 初始化 UILogWriter（延迟自动创建入口）

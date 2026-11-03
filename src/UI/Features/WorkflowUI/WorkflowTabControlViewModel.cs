@@ -98,7 +98,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
                 if (session is not null)
                     foreach (var flow in session.GetWorkflows().Where(flow => !flow.IsSubroutine))
                     {
-                        var tab = new WorkflowTabViewModel(_directory) { Id = flow.Id, Name = flow.Name };
+                        var tab = new WorkflowTabViewModel() { Id = flow.Id, Name = flow.Name };
                         next.Add(tab);
                         tab.BindDocumentCanvas(session, flow.Id);
                     }
@@ -122,7 +122,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         {
             _directory=directory??throw new ArgumentNullException(nameof(directory));
             // 创建默认工作流。
-            CreateDefaultWorkflow();
+
         }
 
         /// <summary>
@@ -174,56 +174,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// <summary>
         /// 创建默认工作流。
         /// </summary>
-        private void CreateDefaultWorkflow()
-        {
-            if (Tabs.Count > 0)
-                return;
-
-            var defaultWorkflow = new WorkflowTabViewModel(_directory)
-            {
-                Name = "流程1"
-            };
-            // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
-            defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
-            Tabs.Add(defaultWorkflow);
-            // 静默设置 SelectedTab，不触发 SelectionChanged 事件
-            SetSelectedTab(defaultWorkflow, suppressEvent: true);
-        }
-
-        /// <summary>
-        /// 重置为默认状态（清空所有标签页并创建新的默认工作流）
-        /// </summary>
-        /// <remarks>
-        /// 用于删除解决方案后恢复到启动时的初始状态。
-        /// 与启动时保持一致，彻底清空节点和连接。
-        /// </remarks>
-        public void ResetToDefault()
-        {
-            // 重置所有工作流的节点序号管理器（防止全局索引污染）
-            foreach (var tab in Tabs)
-            {
-                tab.UnbindDocumentCanvas();
-                if (tab.SequenceManager != null)
-                {
-                    tab.SequenceManager.Reset();
-                }
-            }
-
-            // 清空现有标签页
-            Tabs.Clear();
-
-            // 创建新的默认工作流（新对象，彻底清空节点和连接）
-            var defaultWorkflow = new WorkflowTabViewModel(_directory)
-            {
-                Name = "流程1"
-            };
-            // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
-            defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
-            Tabs.Add(defaultWorkflow);
-            // 静默设置 SelectedTab，不触发 SelectionChanged 事件
-            SetSelectedTab(defaultWorkflow, suppressEvent: true);
-        }
-
         #endregion
 
         #region 工作流运行控制。

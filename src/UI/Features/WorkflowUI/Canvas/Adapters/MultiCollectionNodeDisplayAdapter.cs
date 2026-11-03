@@ -9,22 +9,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
     /// </summary>
     public class MultiCollectionNodeDisplayAdapter : INodeDisplayAdapter
     {
-        public string GetDisplayText(WorkflowNode node)
+        public string GetDisplayText(CanvasNodeProjection node)
         {
-            return $"{node.DisplayName}_{node.LocalIndex}";
+            return node.DispName;
         }
 
-        public string GetIcon(WorkflowNode node)
+        public string GetIcon(CanvasNodeProjection node)
         {
             return "🔄";
         }
 
-        public Color GetBackgroundColor(WorkflowNode node)
+        public Color GetBackgroundColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(245, 245, 245); // 淡灰色背景。
         }
 
-        public Color GetBorderColor(WorkflowNode node)
+        public Color GetBorderColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(128, 128, 128); // 灰色
         }

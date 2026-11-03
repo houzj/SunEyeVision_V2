@@ -23,7 +23,7 @@ internal static class ShellMenuCatalog
             new ShellMenuEntry("recent","打开最近方案",DisabledReason:"最近方案菜单尚未接入；可通过帮助中的欢迎页打开最近方案"),
             new ShellMenuEntry("sample","打开示例方案",DisabledReason:"示例方案入口尚未接入"),
             new ShellMenuEntry("save","保存方案(_S)","SaveCurrentSolutionCommand","Ctrl+S",ToolGroup:"group0",Priority:0,ToolTip:"保存 (Ctrl+S)",Icon:Native+"toolbarsave_normal.png",DisabledIcon:Native+"toolbarsave_disable.png",SeparatorBefore:true),
-            new ShellMenuEntry("save-as","另存方案",DisabledReason:"方案另存入口尚未接入"),
+            new ShellMenuEntry("save-as","另存方案","SaveCurrentSolutionAsCommand"),
             new ShellMenuEntry("export","导出算子代码",DisabledReason:"导出功能尚未接入",SeparatorBefore:true),
             new ShellMenuEntry("import","导入流程",DisabledReason:"流程导入尚未接入"),
             new ShellMenuEntry("exit","退出(_X)",Gesture:"Alt+F4",Action:"exit",SeparatorBefore:true) }),

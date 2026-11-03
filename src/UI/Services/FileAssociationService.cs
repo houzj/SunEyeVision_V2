@@ -16,7 +16,7 @@ public class FileAssociationService
         using var machine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
         using var installation = machine.OpenSubKey(SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel == "local" ? @"Software\SunEyeVision\Local" : @"Software\SunEyeVision");
         var root = installation?.GetValue("InstallLocation") as string;
-        return !string.IsNullOrEmpty(root) && SunEyeVision.Workflow.Persistence.AtomicJsonFile.SamePath(root, AppContext.BaseDirectory);
+        return !string.IsNullOrEmpty(root) && SunEyeVision.Persistence.AtomicJsonFile.SamePath(root, AppContext.BaseDirectory);
     }
     public void RegisterFileAssociation()
     {

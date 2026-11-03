@@ -15,7 +15,6 @@
    <Button Grid.Column="1" Content="浏览…" Margin="8,0,0,0" Padding="12,6" Style="{DynamicResource SecondaryButtonStyle}" Click="Browse_Click"/>
   </Grid>
   <StackPanel Grid.Row="3" Margin="0,14,0,0">
-   <CheckBox x:Name="ImportBox" Content="导入旧桌面管理配置，保留最近记录和偏好（原文件不删除）" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
    <TextBlock x:Name="ErrorText" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
   </StackPanel>
   <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">

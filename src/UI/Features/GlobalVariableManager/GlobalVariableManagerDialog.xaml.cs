@@ -15,7 +15,7 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shell.Windows;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 
 namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
@@ -32,6 +32,18 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         {
             InitializeComponent();
             DataContext = viewModel ?? throw new System.ArgumentNullException(nameof(viewModel));
+            viewModel.PrepareView = () => TryCommitPendingEdits(out var error) ? null : error;
+            viewModel.HasPendingViewEdits = () => HasRetainedPendingEdits;
+            viewModel.AcceptView = AcceptPublication;
+            viewModel.PendingViewStamp = () => PendingEditStamp;
+            viewModel.AcknowledgeViewEdits = AcknowledgeRetainedEdits;
+            Closed += (_, _) =>
+            {
+                viewModel.Groups.CollectionChanged -= OnGroupsCollectionChanged;
+                viewModel.PrepareView = null; viewModel.HasPendingViewEdits = null;
+                viewModel.AcceptView = null; viewModel.PendingViewStamp = null; viewModel.AcknowledgeViewEdits = null;
+                viewModel.Discard();
+            };
 
             // Tab 新增时自动滚动到最右端
             viewModel.Groups.CollectionChanged += OnGroupsCollectionChanged;
@@ -242,7 +254,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             error = "";
             if (box.DataContext is not GlobalVariable variable || DataContext is not GlobalVariableManagerViewModel vm) return true;
             var name = box.Text.Trim();
-            var variables = vm.DraftDocument.GlobalVariables;
+            var variables = vm.DraftVariables;
             if (name.Length == 0) error = "变量名称不能为空，请修改当前输入后再保存。";
             else if (variables != null && GlobalVariable.IsNameDuplicate(variables, name, variable.Id)) error = $"变量名称“{name}”已存在。";
             var binding = box.GetBindingExpression(TextBox.TextProperty);
@@ -322,7 +334,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 _valueEdits.Clear();
                 _pendingNames.Clear();
                 _pendingValues.Clear();
-                if (DataContext is GlobalVariableManagerViewModel vm) vm.AcceptPublication();
+
             }
             finally { _refreshing = false; }
         }
@@ -366,7 +378,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         {
             error = "";
             if (DataContext is not GlobalVariableManagerViewModel vm) return true;
-            var variables = vm.DraftDocument.GlobalVariables;
+            var variables = vm.DraftVariables;
             foreach (var variable in variables)
             {
                 var name = _pendingNames.TryGetValue(variable.Id, out var rawName) ? rawName.Trim() : variable.Name;
@@ -410,7 +422,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             if (DataContext is GlobalVariableManagerViewModel model)
             {
                 foreach (var item in parsed) model.SetDraftValue(item.Variable, item.Value);
-                foreach (var variable in model.DraftDocument.GlobalVariables)
+                foreach (var variable in model.DraftVariables)
                 {
                     if (_pendingNames.TryGetValue(variable.Id, out var rawName)) variable.Name = rawName.Trim();
                     if (_pendingValues.TryGetValue(variable.Id, out var rawValue))

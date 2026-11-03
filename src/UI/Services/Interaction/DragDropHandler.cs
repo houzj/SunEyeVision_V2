@@ -276,14 +276,14 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #endif
 
                 var viewModel = GetOwningViewModel();
-                if (!viewModel.CanEditWorkflowCanvas || workflowTab.DocumentCanvas is not { } canvas) return;
+                if (!viewModel.CanEditWorkflowCanvas || workflowTab.DocumentCanvas is not { } graph) return;
                 _canvasControl.UpdateVmPlacementFeedback(SnapVmPoint(dropPosition), _tempNodeHeight);
                 var insertion = _canvasControl.FindVmInsertionWire(dropPosition, Array.Empty<string>());
                 var predecessorId = insertion == null ? _canvasControl.VmAvailableHotPredecessor() : null;
-                var predecessor = predecessorId == null ? null : canvas.Nodes.SingleOrDefault(node => node.Id == predecessorId);
+                var predecessor = predecessorId == null ? null : graph.Nodes.SingleOrDefault(node => node.Id == predecessorId);
                 if (predecessorId != null && predecessor == null) throw new InvalidOperationException("自动连接的前驱节点已失效。");
                 var placement = _canvasControl.ResolveVmPlacement(SnapVmPoint(dropPosition), _tempNodeHeight);
-                canvas.CreateNode(item.ToolId, new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985)), insertion, predecessor);
+                graph.CreateNode(item.ToolId, new CanvasPoint(Math.Clamp(placement.X, 55, 4945), Math.Clamp(placement.Y, 15, 4985)), insertion, predecessor);
 #if DEBUG
                 LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.DocumentCanvas?.Nodes.Count}");
                 LogTimestamp("Drop", "═══ 节点添加完成 ═══");

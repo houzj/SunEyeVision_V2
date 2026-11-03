@@ -32,7 +32,7 @@ namespace SunEyeVision.UI.Core
         /// <summary>
         /// 是否正在运行（跨域共享运行状态）
         /// </summary>
-        bool IsRunning { get; set; }
+        bool IsRunning { get; }
 
         /// <summary>
         /// 相机状态文字（跨域共享）
@@ -67,7 +67,7 @@ namespace SunEyeVision.UI.Core
         /// <summary>
         /// 图像显示源索引变化回调（由图像结果子 VM 触发，根 VM 据此刷新显示图像）
         /// </summary>
-        void OnSelectedImageSourceIndexChanged(int index);
+
 
         /// <summary>
         /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）
@@ -83,6 +83,7 @@ namespace SunEyeVision.UI.Core
         /// 保存当前解决方案命令
         /// </summary>
         ICommand SaveCurrentSolutionCommand { get; }
+        ICommand SaveCurrentSolutionAsCommand { get; }
         ICommand NewSolutionCommand { get; }
         ICommand OpenSolutionCommand { get; }
         ICommand ReloadSolutionCommand { get; }

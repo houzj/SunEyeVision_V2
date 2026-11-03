@@ -91,6 +91,7 @@ namespace SunEyeVision.UI.Shell.Controls
 
         /// <summary>保存当前解决方案命令</summary>
         public ICommand SaveCurrentSolutionCommand => _coordinator.SaveCurrentSolutionCommand;
+        public ICommand SaveCurrentSolutionAsCommand => _coordinator.SaveCurrentSolutionAsCommand;
         public ICommand NavigateEditHistoryCommand => _coordinator.NavigateEditHistoryCommand;
         public System.Collections.Generic.IReadOnlyList<EditHistoryLocation> EditHistoryLocations => _coordinator.EditHistoryLocations;
         public ICommand UndoCommand => _coordinator.UndoCommand;

@@ -1,0 +1,20 @@
+[
+  {
+    "source": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+    "baseline": "a53e0b554",
+    "file": "MainWindowViewModel.cs.Group.cs.txt",
+    "sha256": "bf2be148b205ea3c0295086ec65a937ef2502543c4a4bd8e446ab73d8c5db366"
+  },
+  {
+    "source": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs",
+    "baseline": "a53e0b554",
+    "file": "ShellWorkspaceControl.xaml.cs.Group.cs.txt",
+    "sha256": "7a8f26543fb3b5b88b48ebd71cd55d57ffc2e5fed9f558c72824417835cc746b"
+  },
+  {
+    "source": "src/UI/Shared/WorkflowNodeModel.Presentation.cs",
+    "baseline": "a53e0b554",
+    "file": "WorkflowNodeModel.Presentation.cs.txt",
+    "sha256": "2c31ae5415cb15a71241e2edea8d2b2a5040ca46b2829deb47a01e43913a611a"
+  }
+]

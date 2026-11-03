@@ -20,7 +20,7 @@ public partial class ShellWorkspaceControl
   var tab=_viewModel.WorkflowTabViewModel.SelectedTab;
   Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle,new Action(()=>
   {
-   if(!IsLoaded||!ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab,tab)||tab?.CurrentWorkflowId!=entry.Container.Id||!ReferenceEquals(_viewModel.SelectedNode,entry.Node)||!tab.WorkflowNodes.Contains(entry.Node))return;
+   if(!IsLoaded||!ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab,tab)||tab?.CurrentWorkflowId!=entry.Container.Id||!ReferenceEquals(_viewModel.SelectedNode,entry.Node)||!tab.WorkflowNodes.Any(projected=>ReferenceEquals(projected.Definition,entry.Node)))return;
    var viewer=GetCurrentScrollViewer();if(viewer==null)return;
    viewer.UpdateLayout();var node=entry.Node;
    if(double.IsFinite(node.Position.X)&&double.IsFinite(node.Position.Y)&&double.IsFinite(node.Width)&&double.IsFinite(node.Height))

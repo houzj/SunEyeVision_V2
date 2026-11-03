@@ -10,7 +10,7 @@ using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Shell.Windows;
-using SunEyeVision.Workflow;
+using SunEyeVision.Infrastructure.Persistence.ApplicationData;
 
 internal static class Program
 {
@@ -76,15 +76,21 @@ internal static class Program
         var pin=manager.PinDesktopHost();
         typeof(App).GetField("_pluginManager",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,manager);
         typeof(App).GetField("_desktopDirectoryPin",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,pin);
-        var paths=new ApplicationDataLocationService(Path.Combine(root,"locator.json")).Prepare(root);
+        var locations=new ApplicationDataLocationService(Path.Combine(root,"locator.json"));
+        var paths=locations.Prepare(root);locations.Remember(paths);
+        typeof(App).GetField("_dataLocations",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,locations);
         typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
         Console.WriteLine("probe: services initialized");
-        var theme=new ThemeManager(ServiceInitializer.SolutionManager.Settings);theme.Initialize();ServiceLocator.Instance.Register(theme);
+        var theme=new ThemeManager(() => app.StartPreferences.Theme, value => app.StartPreferences.Theme=value);theme.Initialize();ServiceLocator.Instance.Register(theme);
+        var session=scenario=="empty"?null:ServiceInitializer.SolutionManager.CreateNew("主窗生命周期定位");
+        var file=Path.Combine(root,"main.solution");
+        if(session is not null)session.SaveAs(file,Path.Combine(root,"main.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope));
         var main=new MainWindow(admission){WindowState=WindowState.Normal,ShowActivated=false,ShowInTaskbar=false,Left=-20000,Top=-20000,Width=800,Height=600};
         Console.WriteLine("probe: main window constructed");
+        if(scenario=="empty"&&(((MainWindowViewModel)main.DataContext).WorkflowTabViewModel.Tabs.Count!=0||((MainWindowViewModel)main.DataContext).RunWorkflowCommand.CanExecute(null)))throw new Exception("无方案主窗产生了可运行的空模型。");
         app.MainWindow=main;
-        if(scenario=="cancel")ServiceInitializer.SolutionManager.CurrentSolution!.Description="dirty-"+Guid.NewGuid();
+        if(scenario=="cancel"){var graph=session!.PrepareGraphEdit(session.GetWorkflows().Single().Id);session.CreateNode(graph,"ImageLoad",new(100,100));session.CommitGraphEdit(graph,"触发未保存修改");}
         Window? failing=null;
         System.ComponentModel.CancelEventHandler fail=(_,e)=>
         {
@@ -136,12 +142,12 @@ internal static class Program
             }
             if((DateTime.UtcNow-start)>TimeSpan.FromSeconds(30))throw new TimeoutException("Shutdown probe timed out.");
         };
-        timer.Start();Console.WriteLine("probe: showing window");main.Show();if(failing is not null){failing.Owner=main;failing.Show();}Console.WriteLine("probe: window shown");main.Dispatcher.BeginInvoke(new Action(()=>{Console.WriteLine("probe: calling Close");main.Close();Console.WriteLine("probe: Close returned");}));
+        timer.Start();Console.WriteLine("probe: showing window");main.Show();if(failing is not null){failing.Owner=main;failing.Show();}Console.WriteLine("probe: window shown");main.Dispatcher.BeginInvoke(new Action(async ()=>{try{if(scenario=="formal")await VerifyFormalMain(main,session!,root);if(scenario=="preferences")VerifyPreferenceRegistration(app,session!,paths,root);Console.WriteLine("probe: calling Close");main.Close();Console.WriteLine("probe: Close returned");}catch(Exception error){dispatchFailure=error;timer.Stop();Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);}}));
         Console.WriteLine("probe: starting dispatcher");
         Dispatcher.Run();
         if(dispatchFailure is not null&&scenario!="throw")throw new Exception("Dispatcher failure.",dispatchFailure);
         if(scenario=="throw"&&(dispatchFailure is null||!sawFailure||!closed))throw new Exception("Child exception did not recover through a guarded retry.");
-        if(scenario=="normal"&&!closed)throw new Exception("Normal window did not close.");
+        if(scenario is "normal" or "formal" or "empty" or "preferences"&&!closed)throw new Exception("Normal window did not close.");
         if(scenario=="wait"&&(!sawTimeout||!closed))throw new Exception("Reader timeout/release path did not close.");
         if(scenario=="cancel"&&!sawCancel)throw new Exception("Cancel prompt was not reached.");
         if(scenario=="failure"&&(!sawFailure||!closed))throw new Exception("Cleanup refusal did not recover through a guarded retry.");
@@ -150,6 +156,71 @@ internal static class Program
         Console.WriteLine("Actual MainWindow shutdown scenario passed: "+scenario);
         return 0;
     }
+    private static void VerifyPreferenceRegistration(App app,SunEyeVision.Application.DocumentSession session,ApplicationDataPaths paths,string root)
+    {
+        var locator=Path.Combine(root,"locator.json");var backup=Path.Combine(root,"locator.saved.json");
+        using var opening=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.MarkerFile));var id=opening.RootElement.GetProperty("dataId").GetString();
+        File.Move(locator,backup);Directory.CreateDirectory(locator);
+        try
+        {
+            var failed=false;try{app.SetStartPageHidden(true);}catch(IOException error){failed=error.Message.Contains("已写入");}
+            using var written=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.ConfigFile));
+            using var marker=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.MarkerFile));
+            if(!failed||!app.StartPreferences.HideStartPage||!written.RootElement.GetProperty("HideStartPage").GetBoolean()||marker.RootElement.GetProperty("dataId").GetString()!=id||session.HasUnsavedChanges)throw new Exception("偏好已写、目录登记失败的状态被错误回退或污染方案。");
+        }
+        finally{Directory.Delete(locator);File.Move(backup,locator);}
+        app.SetStartPageHidden(false);
+        if(new ApplicationDataLocationService(locator).Locate()?.Root!=paths.Root||session.HasUnsavedChanges)throw new Exception("同一隔离locator重试未成功，或污染方案保存状态。");
+        Console.WriteLine("preferences: actual locator retained; written preferences survive registration failure; dataId and document clean state unchanged; retry accepted");
+    }
+    private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T:DependencyObject
+    {
+        if(parent is T match)yield return match;
+        for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
+            foreach(var nested in Descendants<T>(System.Windows.Media.VisualTreeHelper.GetChild(parent,i)))yield return nested;
+    }
+    private static async Task VerifyFormalMain(MainWindow main,SunEyeVision.Application.DocumentSession session,string root)
+    {
+        var vm=(MainWindowViewModel)main.DataContext;
+        var flow=session.GetWorkflows().Single();
+        var graph=session.PrepareGraphEdit(flow.Id);var node=session.CreateNode(graph,"ImageLoad",new(150,120));session.CommitGraphEdit(graph,"创建真实图像节点");
+        var source=Path.Combine(root,"source.pgm");File.WriteAllBytes(source,System.Text.Encoding.ASCII.GetBytes("P5\n2 2\n255\n").Concat(new byte[]{0,64,128,255}).ToArray());
+        {
+            var draft=session.Editing.Host.BeginEdit(flow.Id,node.Id);
+            draft.ApplyFields(new Dictionary<string,SunEyeVision.Plugin.Contracts.ParameterSetting>{["local.paths"]=new SunEyeVision.Plugin.Contracts.ConstantSetting(new[]{source}),["local.start"]=new SunEyeVision.Plugin.Contracts.ConstantSetting(0L)});
+            session.CommitEdit(SunEyeVision.Application.Editing.DocumentEditProposal.Prepare(session.Editing.Host,nodes:new[]{draft}));
+        }
+        vm.SelectedNode=node;
+        if(!ReferenceEquals(vm.WorkflowTabViewModel.SelectedTab!.DocumentCanvas!.Nodes.Single().Definition,node))throw new Exception("画布没有持有实际节点。");
+        vm.OpenDebugWindowCommand.Execute(node);
+        await main.Dispatcher.InvokeAsync(()=>{},DispatcherPriority.ApplicationIdle);
+        var editor=System.Windows.Application.Current.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().Single();
+        if(!editor.Editor.IsLoaded||editor.Editor.Content is null)throw new Exception("真实主窗参数页未加载。");
+        var settings=Descendants<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView>(editor.Editor).Single();
+        if(!settings.TrySetFields(new Dictionary<string,SunEyeVision.Plugin.Contracts.ParameterSetting>{{"sequence.initial",new SunEyeVision.Plugin.Contracts.ConstantSetting(9L)}}))throw new Exception("真实主窗SN字段未接受私有输入。");
+        session.Editing.Apply();editor.Close();
+        Console.WriteLine("formal: actual session -> canvas selection -> actual parameter window -> receipt -> close");
+        var run=(Task)typeof(MainWindowViewModel).GetMethod("ExecuteRunWorkflow",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,null)!;await run;
+        using(var reader=session.AcquirePublishedResult(flow.Id,node.Id))
+        {
+            if(reader is null||!reader.Snapshot.IsSuccess)throw new Exception("正式主窗运行没有实际成功发布："+vm.StatusText);
+            var output=reader.Snapshot.Schema.Outputs.Single(port=>port.Id=="output.image");
+            var reference=new SunEyeVision.Plugin.Contracts.OutputReference(node.Id,output.Id,output.Type,new[]{"data"},scopeId:flow.Id,storage:output.Storage);
+            typeof(MainWindowViewModel).GetMethod("SetFormalDisplaySelection",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object?[]{node,SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)});
+        }
+        if(!session.HasUnsavedChanges)throw new Exception("主窗编辑和显示导航未进入实际保存状态。");
+        var saved=(bool)typeof(MainWindowViewModel).GetMethod("SaveCurrentDocumentWithPrompt",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object?[]{main,false})!;
+        if(!saved||session.HasUnsavedChanges)throw new Exception("主窗正式保存未完成。");
+        var copy=Path.Combine(root,"copy.solution");session.SaveCopy(copy,Path.Combine(root,"copy.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope));
+        var cap=session.AdmitPresentation(flow.Id,node.Id);
+        var opened=(Task<bool>)typeof(MainWindowViewModel).GetMethod("OpenExternalSolutionAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{copy,false})!;
+        if(!await opened)throw new Exception("主窗打开新文件未成功："+vm.StatusText);
+        var current=ServiceInitializer.SolutionManager.CurrentSession!;
+        if(ReferenceEquals(current,session)||cap.IsCurrent||vm.SelectedNode is not null||ReferenceEquals(current.FindNode(flow.Id,node.Id),node))throw new Exception("切换没有退役旧会话/节点/呈现准入。");
+        if(current.HasUnsavedChanges)throw new Exception("重新打开的正式文件错误标脏。");
+        Console.WriteLine("formal: actual host run -> leased published result -> display navigation -> save -> reopen -> old admission retired");
+    }
+
 }
 
 internal sealed class ProbeApp:App

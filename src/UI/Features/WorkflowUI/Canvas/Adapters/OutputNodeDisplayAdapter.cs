@@ -14,22 +14,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// </summary>
         public string[] SupportedCategories => new[] { "输出" };
 
-        public string GetDisplayText(WorkflowNode node)
+        public string GetDisplayText(CanvasNodeProjection node)
         {
-            return $"{node.DisplayName}_{node.LocalIndex}";
+            return node.DispName;
         }
 
-        public string GetIcon(WorkflowNode node)
+        public string GetIcon(CanvasNodeProjection node)
         {
             return "📤";
         }
 
-        public Color GetBackgroundColor(WorkflowNode node)
+        public Color GetBackgroundColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(255, 235, 238); // #FFEBEE
         }
 
-        public Color GetBorderColor(WorkflowNode node)
+        public Color GetBorderColor(CanvasNodeProjection node)
         {
             return Color.FromRgb(211, 47, 47); // #D32F2F
         }

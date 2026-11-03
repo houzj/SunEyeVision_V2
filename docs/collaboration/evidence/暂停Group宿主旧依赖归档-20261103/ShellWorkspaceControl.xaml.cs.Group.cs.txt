@@ -1,0 +1,109 @@
+#if SUNEYE_GROUP_LEGACY
+        /// <summary>
+        /// 统一的子程序调试窗口打开逻辑（消除两个入口点的重复代码）
+        /// </summary>
+        private void OpenSubroutineDebugWindowCore(
+            string parentWorkflowId,
+            string subroutineId,
+            string nodeId,
+            string nodeDispName)
+        {
+            var identity=(parentWorkflowId,subroutineId,nodeId);
+            if (_openSubroutineDebugWindow is not null)
+            {
+                if (_openSubroutineDebugIdentity == identity)
+                { _openSubroutineDebugWindow.Activate(); _openSubroutineDebugWindow.Focus(); return; }
+                var previous=_openSubroutineDebugWindow;
+                previous.Close();
+                if (ReferenceEquals(_openSubroutineDebugWindow,previous)) { previous.Activate();return; }
+            }
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
+            ISubroutineParameterEditor? editor=null;
+            DataSourceQueryService? draftQuery=null;
+            var context=_viewModel.CreateGroupEditorContext(parentWorkflowId,nodeId,subroutineId,
+                draft=>editor?.BindParameters(draft,draftQuery),out var queryService);
+            draftQuery=queryService;
+            SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow? debugWindow=null;
+            IDisposable? registration=null;
+            try
+            {
+                var internalQuery=_viewModel.CreateDataSourceQueryService(subroutineId);
+                var internalSources=internalQuery.GetWorkflowNodeDataSources();
+                debugWindow=SubroutineDebugServiceProvider.GetService().CreateDebugWindow(
+                    Window.GetWindow(this)!,subroutineId,nodeDispName,nodeId,queryService,
+                    (SubroutineParameters)context.DraftNode.Parameters,internalSources,onOutputsChanged:null);
+                editor=debugWindow.ParameterControl as ISubroutineParameterEditor
+                    ??throw new InvalidOperationException("Group编辑器没有候选参数接缝。");
+                _viewModel.AttachGroupEditor(debugWindow,context);
+                debugWindow.Title=nodeDispName;
+                var created=debugWindow;
+                created.Closed+=(_,_)=>
+                {
+                    if(ReferenceEquals(_openSubroutineDebugWindow,created))
+                    { _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null; }
+                };
+                _openSubroutineDebugWindow=created;_openSubroutineDebugIdentity=identity;
+                registration=_viewModel.TrackParameterWindow(created);
+                created.Show();
+            }
+            catch
+            {
+                context.Discard();registration?.Dispose();debugWindow?.Close();
+                _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 打开子程序参数设置对话框（从子程序 Tab 导航栏按钮进入）
+        /// </summary>
+        private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
+        {
+            try
+            {
+                var parentId=tab.NavigationAncestorIds.FirstOrDefault();
+                var ownerId=tab.CurrentOwnerNodeId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                var node=parent?.Nodes.SingleOrDefault(n=>n.Id==ownerId&&n.SubroutineId==tab.CurrentWorkflowId);
+                if(node?.Parameters is not SubroutineParameters)
+                    throw new InvalidOperationException("当前Group导航拥有者已经失效。");
+                OpenSubroutineDebugWindowCore(parentId!,tab.CurrentWorkflowId,node.Id,node.DispName);
+            }
+            catch (Exception ex)
+            {
+                ThemeMessageDialog.Show(
+                    $"打开子程序参数设置失败: {ex.Message}",
+                    "错误",
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
+                _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
+            }
+        }
+
+        /// <summary>
+        /// 从画布节点双击打开子程序参数设置对话框
+        /// </summary>
+        public void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
+        {
+            try
+            {
+                var parentId=_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                if(parent==null||!parent.Nodes.Contains(node))throw new InvalidOperationException("Group节点不属于当前父流程。");
+                if(string.IsNullOrEmpty(node.SubroutineId)||_viewModel?.WorkflowEngine.GetWorkflowById(node.SubroutineId)==null)
+                    throw new InvalidOperationException("Group独占定义缺失。");
+                if(node.Parameters is not SubroutineParameters)throw new InvalidOperationException("Group参数未加载。");
+                OpenSubroutineDebugWindowCore(parentId!,node.SubroutineId,node.Id,node.DispName);
+            }
+            catch (Exception ex)
+            {
+                ThemeMessageDialog.Show(
+                    $"打开子程序参数设置失败: {ex.Message}",
+                    "错误",
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
+                _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
+            }
+        }
+
+#endif

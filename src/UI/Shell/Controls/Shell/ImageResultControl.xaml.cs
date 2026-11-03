@@ -249,14 +249,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ThemeMessageDialog.Show(remove?"该结果没有可解除的变量绑定。":"没有可承载该正式声明及存储的全局变量。","结果绑定",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
                 return;
             }
-            var variable=remove&&choices.Count==1?choices[0]:GlobalVariableSelectionService.Choose(solutionManager,choices);
+            var variable=remove&&choices.Count==1?choices[0]:GlobalVariableSelectionService.Choose(expected,choices,()=>ReferenceEquals(solutionManager.CurrentSession,expected)&&ReferenceEquals(_viewModel,main)&&EditingAllowed);
             if(variable is null)return;
             // The modal window may run arbitrary editing/navigation before it returns.
             if(!ReferenceEquals(_viewModel,main)||!EditingAllowed||!ReferenceEquals(solutionManager.CurrentSession,expected)
                 ||!ReferenceEquals(main.CurrentResultPublication,publication)||!publication.IsCurrent()
                 ||!main.IsCurrentResultRow(row)||!ReferenceEquals(row.BindingInfo,endpoint))return;
-            var accepted=remove?main.TryUnbindResultVariable(expected,binding,variable.Id,out var error)
-                :main.TryBindResultVariable(expected,binding,variable.Id,out error);
+            var accepted=remove?main.TryUnbindResultVariable(expected,binding,variable,out var error)
+                :main.TryBindResultVariable(expected,binding,variable,out error);
             if(!accepted)ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
         }
 

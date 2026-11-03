@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,8 +45,6 @@ public partial class MainWindowViewModel
   using var batch=DocumentManager.CaptureCurrentRunBatch(workflowIds,hostFactory:FormalImageInputs);
   if(!ReferenceEquals(DocumentManager.CurrentSession,session))throw new InvalidOperationException("运行捕获期间方案已变化。");
   _formalActiveBatch=batch;
-  foreach(var id in workflowIds)EnsureFormalExecutionSnapshot(id)?.Begin(session.GetWorkflows().Single(flow=>flow.Id==id).Name);
-  _formalRunningRootIds.UnionWith(workflowIds);IsRunning=true;
   void Status(string workflowId,string nodeId,ExecutionStatus status)=>dispatcher.BeginInvoke(new Action(()=>
   {
    if(!ReferenceEquals(_formalActiveBatch,batch)||!ReferenceEquals(DocumentManager.CurrentSession,session))return;
@@ -59,6 +58,10 @@ public partial class MainWindowViewModel
   batch.NodeStatusChanged+=Status;
   try
   {
+  foreach(var id in workflowIds)EnsureFormalExecutionSnapshot(id)?.Begin(session.GetWorkflows().Single(flow=>flow.Id==id).Name);
+  _formalRunningRootIds.UnionWith(workflowIds);
+  foreach(var tab in WorkflowTabViewModel.Tabs.Where(tab=>_formalRunningRootIds.Contains(tab.RootWorkflowId))){tab.RunMode=SunEyeVision.UI.Features.WorkflowUI.RunMode.Single;tab.IsRunning=true;}
+  NotifyFormalRunState();
    using var result=await Task.Run(()=>batch.RunAsync(message=>dispatcher.BeginInvoke(new Action(()=>AddLog(message)))));
    session.DrainRuntimeChanges();
    if(!ReferenceEquals(DocumentManager.CurrentSession,session))return;
@@ -66,6 +69,7 @@ public partial class MainWindowViewModel
    {
     GetFormalExecutionSnapshot(item.Key)?.Complete(item.Value,id=>session.FindNode(item.Key,id)?.Name??id);
     _formalRunningRootIds.Remove(item.Key);
+    var tab=WorkflowTabViewModel.Tabs.SingleOrDefault(tab=>tab.RootWorkflowId==item.Key);if(tab is not null)tab.IsRunning=false;
     AddLog("流程 "+session.GetWorkflows().Single(flow=>flow.Id==item.Key).Name+"："+item.Value.Status);
     NotifyResultWorkspaceRootSettled(item.Key);
    }
@@ -78,7 +82,8 @@ public partial class MainWindowViewModel
    finally
    {
     foreach(var id in _formalRunningRootIds)GetFormalExecutionSnapshot(id)?.FinishWithoutResult(ExecutionStatus.Cancelled);
-    _formalRunningRootIds.Clear();_formalActiveBatch=null;IsRunning=false;ActiveImageSourceBinding?.RefreshAvailability();
+    foreach(var tab in WorkflowTabViewModel.Tabs.Where(tab=>_formalRunningRootIds.Contains(tab.RootWorkflowId)))tab.IsRunning=false;
+    _formalRunningRootIds.Clear();_formalActiveBatch=null;NotifyFormalRunState();
    }
   }
  }

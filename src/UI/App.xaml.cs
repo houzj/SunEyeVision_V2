@@ -1,3 +1,4 @@
+using SunEyeVision.Infrastructure.Persistence.ApplicationData;
 using SunEyeVision.UI.Services.Startup;
 using System;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Features.Dialogs;
 using System.Runtime.InteropServices;
-using SunEyeVision.Workflow;
+
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
@@ -44,7 +45,7 @@ namespace SunEyeVision.UI;
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private static readonly TimeSpan CameraRestoreTimeout = TimeSpan.FromSeconds(10);
     private readonly Stopwatch _startupStopwatch = Stopwatch.StartNew();
@@ -54,9 +55,10 @@ public partial class App : Application
     private PluginManager? _pluginManager;
     private IDisposable? _desktopDirectoryPin;
     private ApplicationDataPaths? _dataPaths;
+    private ApplicationDataLocationService? _dataLocations;
     private string? _requestedSolutionPath;
     public StartPageSettings StartPreferences { get; private set; } = new();
-    private string StartPreferencesFile => Path.Combine(_dataPaths!.Root, "Config", "start-page.json");
+    private string StartPreferencesFile => _dataPaths!.ConfigFile;
     // Keep the named marker rooted through shutdown cleanup; the OS closes it at process exit.
     private static IDisposable? _runningApplicationRegistration;
     private static SingleInstanceCoordinator? _singleInstance;
@@ -220,12 +222,7 @@ public partial class App : Application
         // 注册文件关联（仅当前用户，无需管理员权限）
         if (!StartupLaunchContext.Current.IsIsolated) RegisterFileAssociation();
 
-        // ===== P0优化：调整启动顺序，先加载插件 =====
-        // 原因：SolutionSettings.Save() 使用 WorkflowSerializationOptions.Default
-        // 会触发 ParameterTypeRegistry.EnsureInitialized()，需要插件已加载
-        // 解决：在任何可能触发序列化操作之前加载插件
-
-        // 1. 初始化插件管理器（在任何其他初始化之前）
+        // 工具目录必须先于实际文档准入就绪。
         _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
         _pluginManager = pluginManager;
@@ -258,6 +255,7 @@ public partial class App : Application
         {
             var context = StartupLaunchContext.Current;
             var locations = new ApplicationDataLocationService(context.IsIsolated ? Path.Combine(context.IsolatedRoot!, "data-location.json") : null);
+            _dataLocations=locations;
             if (context.IsIsolated) _dataPaths = locations.Prepare(Path.Combine(context.IsolatedRoot!, "Data"));
             string? reason = null;
             if (_dataPaths == null) { try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; } }
@@ -269,8 +267,6 @@ public partial class App : Application
                 try
                 {
                     var selected = directoryDialog.SelectedPaths!;
-                    if (directoryDialog.ImportLegacy)
-                        locations.ImportLegacy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "solution_settings.json"), selected);
                     locations.Remember(selected); _dataPaths = selected;
                 }
                 catch (Exception ex) { reason = ex.Message; }
@@ -300,10 +296,6 @@ public partial class App : Application
         // 3.1.5 S5 对称架构装配：注册图像加载工厂（默认 Halcon 引擎）与 Cv 词汇（Mat→Image）
         ComposeVisionAdapters();
 
-        // 3.5 Phase 2: 注册工作流节点类型转换器
-        // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
-        WorkflowNodeFactory.TypeConverter = baseNode =>
-            baseNode is SunEyeVision.UI.Shared.WorkflowNode ? baseNode : SunEyeVision.UI.Shared.WorkflowNode.FromBase(baseNode);
 
         // 4. 使用默认路径
         var defaultPath = _dataPaths!.SolutionsDirectory;
@@ -341,7 +333,7 @@ public partial class App : Application
     {
         var mainWindow = new MainWindow(desktopAdmission);
         AttachMainWindowDiagnostics(mainWindow);
-        Application.Current.MainWindow = mainWindow;
+        System.Windows.Application.Current.MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         _splashScreen?.UpdateStage("正在准备工作区", 85, "启动服务已准备完成");
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
@@ -358,17 +350,6 @@ public partial class App : Application
             // A failed file request remains recoverable via the start page, even when hidden by preference.
             await ShowStartPageAsync(mainWindow);
         }
-        else if (!StartPreferences.HideStartPage && ServiceInitializer.SolutionManager.Settings.UserPreferences.ContainsKey("StartupMode") &&
-                 ServiceInitializer.SolutionManager.Settings.StartupMode is "Last" or "Default")
-        {
-            // Preserve an explicitly configured legacy restore policy; an explicit file request always takes precedence.
-            var manager = ServiceInitializer.SolutionManager;
-            var selected = manager.Settings.StartupMode == "Last" ? manager.GetMetadata(manager.Settings.CurrentSolutionId) : manager.GetDefaultSolutionMetadata();
-            var restorePath = manager.Settings.StartupMode == "Last" ? StartPreferences.RecentFiles.FirstOrDefault()?.Path ?? selected?.FilePath : selected?.FilePath;
-            if (restorePath != null && mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(restorePath))
-                ShowMainWindow(mainWindow, "explicit restore policy");
-            else await ShowStartPageAsync(mainWindow);
-        }
         else if (StartPreferences.HideStartPage)
             ShowMainWindow(mainWindow, "start page hidden");
         else
@@ -379,16 +360,32 @@ public partial class App : Application
     {
         bool previous = StartPreferences.HideStartPage;
         StartPreferences.HideStartPage = hidden;
-        try { StartPreferences.Save(StartPreferencesFile); }
+        try { SaveShellPreferences(); }
+        catch (PreferencesRegistrationException) { throw; }
         catch { StartPreferences.HideStartPage = previous; throw; }
     }
 
-    public void RecordRecentSolution(Solution solution)
+    public void RecordRecentSolution(SunEyeVision.Application.DocumentSession session)
     {
-        if (string.IsNullOrEmpty(solution.FilePath)) return;
-        StartPreferences.RecordOpened(solution.FilePath, solution.Name);
-        try { StartPreferences.Save(StartPreferencesFile); }
-        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "方案已打开，但最近记录未保存：" + ex.Message, "App"); }
+        var path = session.LastWrittenSnapshot?.TargetPath;
+        if (string.IsNullOrEmpty(path)) return;
+        StartPreferences.RecordOpened(path, session.Document.Name);
+        try { SaveShellPreferences(); }
+        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "方案已打开；最近记录写入或目录登记未完整完成：" + ex.Message, "App"); }
+    }
+
+    private sealed class PreferencesRegistrationException(Exception failure):IOException("应用偏好已写入，但数据目录定位登记失败。请保留当前目录并重试："+failure.Message,failure) { }
+    internal void SaveShellPreferences()
+    {
+        var paths=_dataPaths??throw new InvalidOperationException("应用数据目录尚未初始化。");
+        var locations=_dataLocations??throw new InvalidOperationException("应用数据目录定位服务尚未初始化。");
+        StartPreferences.Save(paths.ConfigFile);
+        try{locations.Remember(paths);}catch(Exception error){throw new PreferencesRegistrationException(error);}
+    }
+    internal void SaveWindowLayout(SunEyeVision.UI.Shared.LayoutConfig layout)
+    {
+        var previous=StartPreferences.WindowLayout;StartPreferences.WindowLayout=layout;
+        try{SaveShellPreferences();}catch(PreferencesRegistrationException){throw;}catch{StartPreferences.WindowLayout=previous;throw;}
     }
 
     private void RemoveRecentSolution(string path)
@@ -398,7 +395,8 @@ public partial class App : Application
         StartPreferences.RecentFiles.RemoveAll(x => string.Equals(x.Path, path, StringComparison.OrdinalIgnoreCase));
         if (!StartPreferences.DismissedPaths.Contains(path, StringComparer.OrdinalIgnoreCase))
             StartPreferences.DismissedPaths.Add(path);
-        try { StartPreferences.Save(StartPreferencesFile); }
+        try { SaveShellPreferences(); }
+        catch(PreferencesRegistrationException){throw;}
         catch { StartPreferences.RecentFiles = files; StartPreferences.DismissedPaths = dismissed; throw; }
     }
 
@@ -409,7 +407,7 @@ public partial class App : Application
         while (true)
         {
             // Existing catalog entries are optional suggestions, not prerequisites for file opening.
-            var recent = StartPreferences.BuildRecentFiles(ServiceInitializer.SolutionManager.GetAllMetadata());
+            var recent = StartPreferences.BuildRecentFiles();
             var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
             if (wasVisible) page.Owner = mainWindow;
             page.ShowDialog();
@@ -432,13 +430,17 @@ public partial class App : Application
     internal bool HasPendingWorkspaceDeviceRestore => _pendingWorkspaceDeviceRestore is { IsCompleted: false };
     internal async Task CompleteOpenedWorkspaceAsync()
     {
-        if (Application.Current.MainWindow is not MainWindow main) return;
+        if (System.Windows.Application.Current.MainWindow is not MainWindow main) return;
         if (!main.IsVisible) ShowMainWindow(main, "solution committed");
         main.ShowSolutionLoadingOverlay("正在恢复设备", "方案已打开，正在恢复已配置相机连接");
         try
         {
-            var expected = ServiceInitializer.SolutionManager.CurrentSolution;
-            if (expected != null) await ServiceInitializer.CommunicationService.VerifyWorkspaceReadyAsync(expected);
+            var expected = ServiceInitializer.SolutionManager.CurrentSession;
+            if (expected != null)
+            {
+                if (main.DataContext is MainWindowViewModel viewModel) viewModel.BindCommunicationToCurrentSession();
+                await ServiceInitializer.CommunicationService.VerifyWorkspaceReadyAsync(expected.Document);
+            }
             await RestoreCameraConnectionsAsync(ServiceInitializer.SolutionManager, main.UpdateSolutionLoadingOverlay, reportFailure: true);
         }
         finally { main.HideSolutionLoadingOverlay(); }
@@ -678,7 +680,7 @@ public partial class App : Application
         }
     }
 
-    private async Task RestoreCameraConnectionsAsync(SolutionManager solutionManager, Action<string, string>? statusReporter = null, bool reportFailure = false)
+    private async Task RestoreCameraConnectionsAsync(SunEyeVision.Application.DocumentSessionManager solutionManager, Action<string, string>? statusReporter = null, bool reportFailure = false)
     {
         try
         {
@@ -857,8 +859,14 @@ public partial class App : Application
     /// </summary>
     private void InitializeThemeManager()
     {
-        var settings = ServiceInitializer.SolutionManager.Settings;
-        var themeManager = new Services.ThemeManager(settings);
+        var themeManager = new Services.ThemeManager(() => StartPreferences.Theme, value =>
+        {
+            var previous = StartPreferences.Theme;
+            StartPreferences.Theme = value;
+            try { SaveShellPreferences(); }
+            catch(PreferencesRegistrationException){throw;}
+            catch { StartPreferences.Theme = previous; throw; }
+        });
         themeManager.Initialize();
         ServiceLocator.Instance.Register(themeManager);
     }
@@ -921,11 +929,6 @@ public partial class App : Application
             base.OnExit(e);
             return;
         }
-        // 保存用户设置
-        var solutionManager = ServiceInitializer.SolutionManager;
-        try { solutionManager?.SaveUserSettings(); }
-        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Error, "退出时配置保存失败，原配置保留：" + ex.Message, "App", ex); }
-
         // 停止监控定时器
         _monitorTimer?.Stop();
 
@@ -946,6 +949,9 @@ public partial class App : Application
         {
             VisionLogger.Instance.Log(LogLevel.Warning, $"退出时释放相机运行时失败: {ex.Message}", "App", ex);
         }
+
+        try { ServiceInitializer.SolutionManager.Dispose(); }
+        catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, $"退出时关闭方案会话失败: {ex.Message}", "App", ex); }
 
         base.OnExit(e);
     }

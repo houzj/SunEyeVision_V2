@@ -186,7 +186,7 @@ internal sealed class ResultImagePane : IDisposable
         var valid=active.DisplayCurrent?.Invoke()==true;
         return valid&&!_disposed&&active.Generation==_generation&&ReferenceEquals(_presentation,active);
     }
-    internal Action<IReadOnlyList<SunEyeVision.Workflow.ScopedNodeIdentity>?>? PrepareDisplayRetention(Func<bool> current)
+    internal Action<IReadOnlyList<SunEyeVision.Domain.Workflows.ScopedNodeIdentity>?>? PrepareDisplayRetention(Func<bool> current)
     {
         Viewport.View.Dispatcher.VerifyAccess();
         var active=_presentation;

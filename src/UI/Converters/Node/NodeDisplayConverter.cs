@@ -15,7 +15,7 @@ namespace SunEyeVision.UI.Converters.Node
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is WorkflowNode node)
+            if (value is CanvasNodeProjection node)
             {
                 var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
                 return adapter.GetDisplayText(node);
@@ -38,7 +38,7 @@ namespace SunEyeVision.UI.Converters.Node
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is WorkflowNode node)
+            if (value is CanvasNodeProjection node)
             {
                 var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
                 var color = adapter.GetBackgroundColor(node);
@@ -70,7 +70,7 @@ namespace SunEyeVision.UI.Converters.Node
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is WorkflowNode node)
+            if (value is CanvasNodeProjection node)
             {
                 var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
                 return new SolidColorBrush(adapter.GetBorderColor(node));

@@ -105,8 +105,7 @@ public partial class MainWindowViewModel
                         {
                             var reference=new OutputReference(node.Id,port.Id,port.Type,path,
                                 selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
-                            var available=DisplayImageSources.FirstOrDefault(source=>source.Binding is ReferenceSetting setting && setting.Reference.NodeId==node.Id && setting.Reference.PortId==port.Id && setting.Reference.ScopeId==scope && setting.Reference.MemberFieldPath.SequenceEqual(path) && Equals(setting.Reference.Selection,reference.Selection));
-                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id)
+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id)
                                 {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
                             return;
                         }

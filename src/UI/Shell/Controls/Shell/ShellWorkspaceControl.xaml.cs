@@ -629,10 +629,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void NavigateBack_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel?.NavigateBackFromSubroutine() == true)
-            {
-                _viewModel.StatusText = $"已返回: {_viewModel.WorkflowTabViewModel?.SelectedTab?.EffectiveDisplayName}";
-            }
+            if(_viewModel is not null)_viewModel.StatusText="Group 导航尚未接入正式会话，暂不可用。";
         }
 
         /// <summary>
@@ -760,7 +757,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 #endif
         private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
             => _viewModel?.LogWarning("Group 参数编辑尚未迁移，当前不可用。", "Navigation");
-        public void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
+        public void OpenSubroutineNodeParameterDialog(CanvasNodeProjection node)
             => _viewModel?.LogWarning("Group 参数编辑尚未迁移，当前不可用。", "Navigation");
         #endregion
 
@@ -962,8 +959,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private static readonly Color MiniMapConditionColor = Color.FromRgb(0xFF, 0x88, 0x00);   // 条件-橙
         private static readonly Color MiniMapDefaultColor = Color.FromRgb(0x66, 0x66, 0x66);     // 其他-灰
 
-        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）— 基类引用，元素为 WorkflowNodeBase
-        private readonly Dictionary<string, WorkflowNodeBase> _miniMapSubscribedNodes = new();
+        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）— 基类引用，元素为 CanvasNodeProjection
+        private readonly Dictionary<string, CanvasNodeProjection> _miniMapSubscribedNodes = new();
 
         /// <summary>
         /// 刷新小地图：数据驱动双视图（与主画布共享同一数据源，此处绘制全局视角）
@@ -1023,7 +1020,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 增量订阅节点位置变化：仅订阅小地图可见的所有节点，节点移除时退订，避免泄漏
         /// </summary>
-        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNodeBase> nodes)
+        private void SubscribeMiniMapNodes(IEnumerable<CanvasNodeProjection> nodes)
         {
             var currentIds = new HashSet<string>();
             foreach (var node in nodes)
@@ -1053,7 +1050,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void MiniMapNode_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(WorkflowNode.Position))
+            if (e.PropertyName != nameof(CanvasNodeProjection.Position))
                 return;
             ScheduleMiniMapRedraw();
         }
@@ -1365,7 +1362,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 根据节点类型返回缩略图着色（禁用节点灰色、子程序绿色、条件橙色、算法蓝色）
         /// </summary>
-        private static Color GetMiniMapNodeColor(WorkflowNode node)
+        private static Color GetMiniMapNodeColor(CanvasNodeProjection node)
         {
             if (node.IsEnabled == false)
                 return Color.FromRgb(0xCC, 0xCC, 0xCC);

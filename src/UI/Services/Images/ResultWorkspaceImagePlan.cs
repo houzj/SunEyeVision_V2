@@ -7,15 +7,14 @@ namespace SunEyeVision.UI.Services.Images;
 internal sealed class ResultWorkspaceImageSource : System.ComponentModel.INotifyPropertyChanged
 {
     internal ResultWorkspaceImageSource(string displayName,OutputReference reference,IResultPublication? publication,
-        Func<bool> current,int navigationIndex,bool isUpstream)
+        Func<bool> current,bool isUpstream)
     {
-        DisplayName=displayName;Reference=reference;Publication=publication;Current=current;NavigationIndex=navigationIndex;IsUpstream=isUpstream;
+        DisplayName=displayName;Reference=reference;Publication=publication;Current=current;IsUpstream=isUpstream;
     }
     public string DisplayName {get;}
     public OutputReference Reference {get;}
     public IResultPublication? Publication {get;}
     public Func<bool> Current {get;}
-    public int NavigationIndex {get;}
     public bool IsUpstream {get;}
     public string? FileName { get; init; }
     public string Key=>SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(Reference);
@@ -32,7 +31,7 @@ internal sealed class ResultWorkspaceImageSource : System.ComponentModel.INotify
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     public override string ToString()=>DisplayName;
     internal ResultWorkspaceImageSource CreateInputItem()
-        =>new(DisplayName,Reference,Publication,Current,NavigationIndex,IsUpstream){FileName=FileName};
+        =>new(DisplayName,Reference,Publication,Current,IsUpstream){FileName=FileName};
 }
 internal sealed class ResultWorkspaceImagePlan:IDisposable
 {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -66,7 +66,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private WorkflowDragDropHandler? _dragDropHandler;
 
-        private WorkflowConnectionCreator? _connectionCreator;
 
         private PortPositionService? _portPositionService; // 端口位置查询服务
 
@@ -74,7 +73,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private bool _isDragging;
 
-        private WorkflowNode? _draggedNode;
+        private CanvasNodeProjection? _draggedNode;
 
         private System.Windows.Point _startDragPosition;
 
@@ -92,7 +91,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         // 刚体平移优化：拖动组快照（Down 锁定一次）+ 连接刷新服务（连线逻辑内聚，Move 不再碰 Cache/Batch）
         private ConnectivityRefreshService? _connectivityRefresh;
-        private List<WorkflowNode>? _dragGroup;                       // 拖动组快照（仅用于实时写 Position）
+        private List<CanvasNodeProjection>? _dragGroup;                       // 拖动组快照（仅用于实时写 Position）
 
         private System.Windows.Point _mouseDownPosition; // 记录鼠标按下时的初始位置（用于拖动阈值判断）
 
@@ -100,7 +99,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         // 连接模式相关
 
-        private WorkflowNode? _connectionSourceNode = null;
+        private CanvasNodeProjection? _connectionSourceNode = null;
 
 
 
@@ -108,7 +107,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private bool _isDraggingConnection = false;
 
-        private WorkflowNode? _dragConnectionSourceNode = null;
+        private CanvasNodeProjection? _dragConnectionSourceNode = null;
 
         private Border? _dragConnectionSourceBorder = null; // 拖拽连接时的源节点Border
 
@@ -161,7 +160,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private Dictionary<string, Point> _lastReportedNodePositions = new Dictionary<string, Point>();
 
         // 性能优化组件
-        private NodeUIPool? _nodeUIPool;
 
 
 
@@ -170,7 +168,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private bool _lastIsDraggingConnection = false; // 上次的拖拽连接状态
 
         private bool _lastIsBoxSelecting = false; // 上次的框选状态
-        private NodeRenderScheduler? _renderScheduler;
 
 
 
@@ -367,147 +364,49 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        public SunEyeVision.UI.Features.WorkflowUI.WorkflowInfo? CurrentWorkflow
-
-        {
-
-            get
-
-            {
-
-                var tab = CurrentWorkflowTab;
-
-                if (tab == null) return null;
-
-                return new SunEyeVision.UI.Features.WorkflowUI.WorkflowInfo { Id = tab.Id, Name = tab.Name };
-
-            }
-
-        }
-
-
-
-        /// <summary>
-
-        /// DataContext变化时绑定ScaleTransform并初始化ConnectionPathCache
-
-        /// </summary>
-
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-
         {
-
-            // 退订旧 Tab 的画布内容变更订阅（Tab 切换时清理，防内存泄漏）
-            if (e.OldValue is WorkflowTabViewModel oldWorkflowTab)
+            BindConnectionProjectionTab(null);
+            ReleaseConnectionProjection();
+            if (DataContext is not WorkflowTabViewModel tab) return;
+            BindConnectionProjectionTab(tab);
+            WorkflowCanvas.SetBinding(System.Windows.Controls.Canvas.RenderTransformProperty,
+                new System.Windows.Data.Binding("ScaleTransform") { Source=tab, Mode=System.Windows.Data.BindingMode.OneWay });
+            ForceRefreshItemsControls();
+            RebindConnectionSystem(tab);
+        }
+        private WorkflowTabViewModel? _connectionProjectionTab;
+        private void BindConnectionProjectionTab(WorkflowTabViewModel? tab)
+        {
+            if (ReferenceEquals(_connectionProjectionTab,tab)) return;
+            if (_connectionProjectionTab is {} previous)
             {
-                oldWorkflowTab.WorkflowContentChanged -= WorkflowTab_WorkflowContentChanged;
+                previous.WorkflowContentChanged -= WorkflowTab_WorkflowContentChanged;
+                previous.WorkflowContentChanging -= WorkflowTab_WorkflowContentChanging;
             }
-
-            if (DataContext is WorkflowTabViewModel workflowTab)
-
+            _connectionProjectionTab=tab;
+            if (tab is not null)
             {
-                // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
-                // （子程序导航/返回路径），重建连接线系统并重算路径。
-                workflowTab.WorkflowContentChanged += WorkflowTab_WorkflowContentChanged;
-
-                // 将WorkflowCanvas的RenderTransform绑定到ViewModel的ScaleTransform
-
-                var binding = new System.Windows.Data.Binding("ScaleTransform")
-
-                {
-
-                    Source = workflowTab,
-
-                    Mode = System.Windows.Data.BindingMode.OneWay
-
-                };
-
-                WorkflowCanvas.SetBinding(System.Windows.Controls.Canvas.RenderTransformProperty, binding);
-                // 初始化渲染调度器（用于异步节点渲染）
-
-                InitializeRenderScheduler(workflowTab);
-
-
-
-                // 设置SmartPathConverter的节点集合和连接集合
-
-                SmartPathConverter.Nodes = workflowTab.WorkflowNodes;
-
-                SmartPathConverter.Connections = workflowTab.WorkflowConnections;
-                // ?? 关键修复：强制刷新所有 ItemsControl 的 ItemsSource 绑定
-                ForceRefreshItemsControls();
-
-
-
-                // 每次 DataContext 变化时都重新创建 ConnectionPathCache（确保每个工作流独立）
-                try
-
-                {
-
-                    var calculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
-                    // 每次都创建新的 ConnectionPathCache，确保每个工作流独立
-
-                    _connectionPathCache = new ConnectionPathCache(
-
-                        workflowTab.WorkflowNodes,
-
-                        calculator
-
-                    );
-                    // 设置SmartPathConverter的PathCache引用
-
-                    SmartPathConverter.PathCache = _connectionPathCache;
-                    // 初始化批量延迟更新管理器
-
-                    if (_connectionPathCache != null)
-
-                    {
-
-                        _batchUpdateManager = new ConnectionBatchUpdateManager(_connectionPathCache);
-
-                        _batchUpdateManager.SetCurrentTab(workflowTab);
-                    }
-
-
-
-                        // 预热缓存
-
-                        _connectionPathCache.WarmUp(workflowTab.WorkflowConnections);
-
-                        // 集合/节点/连线变化统一由GeometryTracking配对订阅与generation检查处理。
-
-                    }
-
-                    catch (Exception ex)
-
-                    {
-                        // 备用方案：使用 PathCalculatorFactory 创建（默认贝塞尔曲线）
-
-                        _connectionPathCache = new ConnectionPathCache(
-
-                            workflowTab.WorkflowNodes,
-
-                            Services.PathCalculators.PathCalculatorFactory.CreateCalculator()
-
-                        );
-
-                        SmartPathConverter.PathCache = _connectionPathCache;
-
-                    }
-
-                }
-
-            else
-
-            {
+                tab.WorkflowContentChanged += WorkflowTab_WorkflowContentChanged;
+                tab.WorkflowContentChanging += WorkflowTab_WorkflowContentChanging;
             }
-
+        }
+        private void WorkflowTab_WorkflowContentChanging(object? sender, EventArgs e) => ReleaseConnectionProjection();
+        private void ReleaseConnectionProjection()
+        {
+            _batchUpdateManager?.Dispose();
+            _batchUpdateManager=null;
+            if (Resources["SmartPathConverter"] is SmartPathConverter single) single.PathCache=null;
+            if (Resources["SmartPathMultiConverter"] is SmartPathMultiConverter multiple) multiple.PathCache=null;
+            _connectionPathCache?.Dispose();
+            _connectionPathCache=null;
+        }
+        private void BindPathCacheResources()
+        {
+            if (Resources["SmartPathConverter"] is SmartPathConverter single) single.PathCache=_connectionPathCache;
+            if (Resources["SmartPathMultiConverter"] is SmartPathMultiConverter multiple) multiple.PathCache=_connectionPathCache;
         }
 
-        /// <summary>
-        /// 画布内容变更 - SetNodes/SetConnections 整体替换集合引用（子程序导航/返回路径）
-        /// 时重建连接线系统并重算全部路径。数据驱动：连接线始终跟随当前集合，不依赖 Tab 切换事件。
-        /// </summary>
         private void WorkflowTab_WorkflowContentChanged(object? sender, EventArgs e)
         {
             if (sender is WorkflowTabViewModel workflowTab)
@@ -526,15 +425,16 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             try
             {
                 var calculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
-                _connectionPathCache = new ConnectionPathCache(workflowTab.WorkflowNodes, calculator);
-                SmartPathConverter.PathCache = _connectionPathCache;
-                SmartPathConverter.Nodes = workflowTab.WorkflowNodes;
-                SmartPathConverter.Connections = workflowTab.WorkflowConnections;
+                ReleaseConnectionProjection();
+                var canvas = workflowTab.DocumentCanvas;
+                if (canvas is null) return;
+                _connectionPathCache = new ConnectionPathCache(canvas.Nodes, calculator);
+                BindPathCacheResources();
 
                 _batchUpdateManager = new ConnectionBatchUpdateManager(_connectionPathCache);
                 _batchUpdateManager.SetCurrentTab(workflowTab);
 
-                _connectionPathCache.WarmUp(workflowTab.WorkflowConnections);
+                _connectionPathCache.WarmUp(canvas.Connections);
                 RefreshAllConnectionPaths();
             }
             catch (Exception ex)
@@ -550,41 +450,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private void InitializeRenderScheduler(WorkflowTabViewModel workflowTab)
 
-        {
-
-            if (_renderScheduler == null)
-
-                return;
-
-
-
-            // 设置节点渲染回调
-
-            _renderScheduler.OnNodeRendered = (node, element) =>
-
-            {
-
-                // 节点渲染完成回调 - 可以在这里添加额外的处理
-
-                // 当前版本使用XAML绑定，这个回调预留给未来扩展
-
-            };
-
-
-
-            _renderScheduler.OnNodeRemoved = (nodeId) =>
-
-            {
-
-                // 节点移除回调 - 清理资源
-
-                _nodeUIPool?.ReturnNodeUI(nodeId);
-
-            };
-
-        }
 
 
 
@@ -739,6 +605,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
             Loaded += WorkflowCanvasControl_Loaded;
+            Loaded += (_,_) => { BindConnectionProjectionTab(CurrentWorkflowTab); if (_connectionPathCache is null && CurrentWorkflowTab is {} tab) RebindConnectionSystem(tab); };
+            Unloaded += (_,_) => { BindConnectionProjectionTab(null); ReleaseConnectionProjection(); };
 
             // 初始化临时连接线
 
@@ -764,7 +632,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 初始化性能优化组件
 
-            InitializeOptimizedRendering();
 
         }
 
@@ -776,25 +643,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private void InitializeOptimizedRendering()
 
-        {
-
-            // 初始化节点UI池
-
-            _nodeUIPool = new NodeUIPool();
-
-            _nodeUIPool.Prewarm(10); // 预创建10个节点UI
-
-
-
-            // 初始化渲染调度器
-
-            _renderScheduler = new NodeRenderScheduler();
-
-            _renderScheduler.SetNodeUIPool(_nodeUIPool);
-
-        }
 
 
 
@@ -847,12 +696,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                     // 初始化辅助类（需要ViewModel）
 
-                    if (_connectionCreator == null)
 
-                    {
-
-                        _connectionCreator = new WorkflowConnectionCreator(_viewModel);
-                    }
 
 
 
@@ -914,7 +758,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 使用 WorkflowPathCalculator 刷新所有连接路径
 
-            foreach(var connection in CurrentWorkflowTab.WorkflowConnections)connection.InvalidatePath();
+            if (CurrentWorkflowTab.DocumentCanvas is { } canvas)
+                foreach(var connection in canvas.Connections)connection.InvalidatePath();
 
         }
 
@@ -927,57 +772,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         /// </summary>
 
         public void SetPathCalculator(string pathCalculatorType)
-
         {
-
-            try
-
-            {
-
-                // 创建新的路径计算器实例
-
-                var newCalculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
-
-
-
-                // 替换ConnectionPathCache
-
-                if (CurrentWorkflowTab != null)
-
-                {
-
-                    _connectionPathCache = new ConnectionPathCache(
-
-                        CurrentWorkflowTab.WorkflowNodes,
-
-                        newCalculator
-
-                    );
-
-
-
-                    // 更新SmartPathConverter的缓存引用
-
-                    SmartPathConverter.PathCache = _connectionPathCache;
-
-
-
-                    // 刷新所有连接路径
-
-                    RefreshAllConnectionPaths();
-
-                }
-
-            }
-
-            catch (System.Exception ex)
-
-            {
-
-                // 忽略异常
-
-            }
-
+            if (CurrentWorkflowTab is {} tab) RebindConnectionSystem(tab);
         }
 
 
@@ -998,7 +794,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             var hitBorder = FindNodeBorderByHitTest(mousePosition);
 
             // 处理命中结果
-            if (hitBorder != null && hitBorder.Tag is WorkflowNode node)
+            if (hitBorder != null && hitBorder.Tag is CanvasNodeProjection node)
             {
                 // 鼠标在节点上
                 if (hitBorder != _highlightedTargetNodeBorder)
@@ -1182,7 +978,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             {
 
-                if (border.Tag is WorkflowNode node && selectedTab.WorkflowNodes.Contains(node))
+                if (border.Tag is CanvasNodeProjection node && selectedTab.WorkflowNodes.Contains(node))
 
                 {
 
@@ -1206,7 +1002,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            if (border.Tag is WorkflowNode node)
+            if (border.Tag is CanvasNodeProjection node)
 
             {
 
@@ -1260,7 +1056,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            if (sender is not Border border || border.Tag is not WorkflowNode node)
+            if (sender is not Border border || border.Tag is not CanvasNodeProjection node)
 
                 return;
 
@@ -1277,7 +1073,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 {
 
-                    foreach (var n in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes)
+                    foreach (var n in _viewModel.WorkflowTabViewModel.SelectedTab.DocumentCanvas?.Nodes ?? Enumerable.Empty<CanvasNodeProjection>())
 
                     {
 
@@ -1430,7 +1226,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             var tab = _viewModel.WorkflowTabViewModel.SelectedTab;
 
             _dragGroup = tab.WorkflowNodes
-                .OfType<WorkflowNode>()
+                .OfType<CanvasNodeProjection>()
                 .Where(n => n.IsSelected)
                 .ToList();
 
@@ -1465,7 +1261,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Port_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is VmExecutionPort port && port.DataContext is WorkflowNode node && port.Tag is string side)
+            if (sender is VmExecutionPort port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
                 BeginVmConnection(node, side);
             e.Handled = true;
         }
@@ -1524,7 +1320,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private Point GetPortPositionByName(WorkflowNode node, string portName)
+        private Point GetPortPositionByName(CanvasNodeProjection node, string portName)
 
         {
 
@@ -1614,77 +1410,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// <returns>是否成功创建连接</returns>
 
-        private bool CreateConnectionBetweenPorts(WorkflowNode sourceNode, string sourcePort, 
 
-            WorkflowNode targetNode, string targetPort)
-
-        {
-
-            var selectedTab = _viewModel?.WorkflowTabViewModel.SelectedTab;
-
-            if (selectedTab == null)
-            {
-                return false;
-            }
-
-
-
-            // 创建新连接
-
-            var connectionId = $"conn_{Guid.NewGuid().ToString("N")[..8]}";
-
-            var newConnection = new WorkflowConnection(connectionId, sourceNode.Id, targetNode.Id);
-
-            newConnection.SourcePort = sourcePort;
-
-            newConnection.TargetPort = targetPort;
-
-
-
-            // 添加连接到集合（通过 ViewModel 统一入口：日志 + 命令 + ImageSource绑定）
-            if (_viewModel?.AddConnectionToWorkflow(newConnection) != true) return false;
-
-
-
-            // 标记相关节点为脏，触发连接线更新
-
-            if (_connectionPathCache != null)
-
-            {
-
-                _connectionPathCache.MarkNodeDirty(sourceNode.Id);
-
-                _connectionPathCache.MarkNodeDirty(targetNode.Id);
-
-            }
-
-
-
-
-
-            // 连接创建后，选中目标节点，让图像预览器自动显示上游图像采集节点的图像
-
-            // UpdateImagePreviewVisibility 会自动通过 BFS 追溯上游来决定是否显示图像预览器
-if (_viewModel != null)
-
-            {
-_viewModel.SelectedNode = targetNode.Definition;
-
-                // ★ 强制刷新图像预览器，确保即使 SelectedNode 值相同也会重新计算
-
-                _viewModel.RefreshFormalImageSourceSelection();
-}
-
-            else
-
-            {
-}
-
-
-
-            return true;
-
-        }
 
 
 
@@ -1700,11 +1426,11 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             // 获取节点对象（支持 Border 或 VmExecutionPort 作为 sender）
 
-            WorkflowNode? targetNode = null;
+            CanvasNodeProjection? targetNode = null;
 
 
 
-            if (sender is Border border && border.Tag is WorkflowNode clickedNodeFromBorder)
+            if (sender is Border border && border.Tag is CanvasNodeProjection clickedNodeFromBorder)
 
             {
 
@@ -1712,7 +1438,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             }
 
-            else if (sender is VmExecutionPort ellipse && ellipse.Tag is WorkflowNode clickedNodeFromEllipse)
+            else if (sender is VmExecutionPort ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
 
             {
 
@@ -1846,7 +1572,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
                 // 创建新连接
 
-                _connectionCreator?.CreateConnection(_connectionSourceNode, targetNode, "RightPort", CurrentWorkflowTab);
+                CurrentWorkflowTab?.DocumentCanvas?.Connect(new ConnectionDefinition(Guid.NewGuid().ToString("N"),_connectionSourceNode.Id,targetNode.Id,"RightPort","LeftPort"));
 
 
 
@@ -1917,9 +1643,9 @@ _viewModel.SelectedNode = targetNode.Definition;
             while (current != null && current != WorkflowCanvas)
             {
                 if (ReferenceEquals(current, _vmSelectionFrame) || current is VmExecutionPort ||
-                    current is Border { Tag: WorkflowNode } ||
+                    current is Border { Tag: CanvasNodeProjection } ||
                     current is Rectangle handle && _vmWireHandles.Contains(handle) ||
-                    current is FrameworkElement { DataContext: WorkflowConnection }) return;
+                    current is FrameworkElement { DataContext: CanvasConnectionProjection }) return;
                 current = VisualTreeHelper.GetParent(current);
             }
             if (!CanEditVmCanvas) { e.Handled = true; return; }
@@ -1970,7 +1696,7 @@ _viewModel.SelectedNode = targetNode.Definition;
             var area = SelectionBox?.GetSelectionRect() ?? Rect.Empty;
             var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
             if (tab == null) return;
-            foreach (var node in tab.WorkflowNodes.OfType<WorkflowNode>()) node.IsSelected = area.Contains(node.NodeRect);
+            foreach (var node in tab.WorkflowNodes.OfType<CanvasNodeProjection>()) node.IsSelected = area.Contains(node.NodeRect);
             foreach (var connection in tab.WorkflowConnections) connection.IsSelected = false;
             SelectionBox?.SetItemCount(tab.WorkflowNodes.Count(n => n.IsSelected));
             e.Handled = true;
@@ -2016,7 +1742,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             {
 
-                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes)
+                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.DocumentCanvas?.Nodes ?? Enumerable.Empty<CanvasNodeProjection>())
 
                 {
 
@@ -2025,7 +1751,7 @@ _viewModel.SelectedNode = targetNode.Definition;
                 }
 
                 // 清除连接线选中
-                foreach (var conn in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowConnections)
+                foreach (var conn in _viewModel.WorkflowTabViewModel.SelectedTab.DocumentCanvas?.Connections ?? Enumerable.Empty<CanvasConnectionProjection>())
                 {
                     conn.IsSelected = false;
                 }
@@ -2169,7 +1895,7 @@ _viewModel.SelectedNode = targetNode.Definition;
         /// <summary>
         /// 判断连接线是否与矩形区域相交（粗筛 + 精筛两阶段优化）
         /// </summary>
-        private bool IsConnectionInRect(WorkflowConnection connection, Rect selectionRect)
+        private bool IsConnectionInRect(CanvasConnectionProjection connection, Rect selectionRect)
         {
             if (selectionRect.IsEmpty) return false;
 
@@ -2399,7 +2125,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
         /// </summary>
 
-        private string? DetermineClickedPort(WorkflowNode node, Point clickPoint)
+        private string? DetermineClickedPort(CanvasNodeProjection node, Point clickPoint)
 
         {
 
@@ -2545,7 +2271,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
         {
 
-            if (sender is Path path && path.DataContext is WorkflowConnection connection)
+            if (sender is Path path && path.DataContext is CanvasConnectionProjection connection)
 
             {
 
@@ -2583,7 +2309,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             {
 
-                if (e.NewValue is WorkflowConnection newConn)
+                if (e.NewValue is CanvasConnectionProjection newConn)
 
                 {
 
@@ -2603,7 +2329,7 @@ _viewModel.SelectedNode = targetNode.Definition;
             if (sender is Path hitPath)
             {
                 var parentCanvas = hitPath.Parent as System.Windows.Controls.Canvas;
-                if (parentCanvas?.DataContext is WorkflowConnection connection)
+                if (parentCanvas?.DataContext is CanvasConnectionProjection connection)
                 {
                     connection.IsHovered = true;
                 }
@@ -2618,7 +2344,7 @@ _viewModel.SelectedNode = targetNode.Definition;
             if (sender is Path hitPath)
             {
                 var parentCanvas = hitPath.Parent as System.Windows.Controls.Canvas;
-                if (parentCanvas?.DataContext is WorkflowConnection connection)
+                if (parentCanvas?.DataContext is CanvasConnectionProjection connection)
                 {
                     connection.IsHovered = false;
                 }
@@ -2634,14 +2360,13 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             // DataContext 绑定在父 Canvas 上，需要向上查找
             var parentCanvas = hitPath.Parent as System.Windows.Controls.Canvas;
-            if (parentCanvas?.DataContext is not WorkflowConnection connection) return;
+            if (parentCanvas?.DataContext is not CanvasConnectionProjection connection) return;
 
             var tab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (tab == null) return;
+            if (tab?.DocumentCanvas == null) return;
 
             // 原件连接由焦点决定，不按Ctrl/Shift切换成多条连接选择；节点组选可保留。
-            foreach (var edge in tab.WorkflowConnections) edge.IsSelected = ReferenceEquals(edge, connection);
-            _viewModel.SelectedConnection = connection;
+            foreach (var edge in tab.DocumentCanvas.Connections) edge.IsSelected = ReferenceEquals(edge, connection);
 
             SelectVmWire(connection,hitPath);
 
@@ -2677,9 +2402,9 @@ _viewModel.SelectedNode = targetNode.Definition;
 
             // 查找源节点和目标节点
 
-            WorkflowNode? sourceNode = null;
+            CanvasNodeProjection? sourceNode = null;
 
-            WorkflowNode? targetNode = null;
+            CanvasNodeProjection? targetNode = null;
 
 
 
@@ -2691,7 +2416,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
                 {
 
-                    sourceNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingSourceNodeId);
+                    sourceNode = CurrentWorkflowTab.WorkflowNodes.OfType<CanvasNodeProjection>().FirstOrDefault(n => n.Id == BoundingSourceNodeId);
 
                 }
 
@@ -2701,7 +2426,7 @@ _viewModel.SelectedNode = targetNode.Definition;
 
                 {
 
-                    targetNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingTargetNodeId);
+                    targetNode = CurrentWorkflowTab.WorkflowNodes.OfType<CanvasNodeProjection>().FirstOrDefault(n => n.Id == BoundingTargetNodeId);
 
                 }
 
@@ -2836,7 +2561,7 @@ _viewModel.SelectedNode = targetNode.Definition;
         private void NodeContextMenu_Rename_Click(object sender, RoutedEventArgs e)
         {
             e.Handled=true;
-            if(sender is not MenuItem {Parent:ContextMenu {PlacementTarget:FrameworkElement placementTarget}} || placementTarget.DataContext is not WorkflowNodeBase node || !BeginVmNodeRename(node))return;
+            if(sender is not MenuItem {Parent:ContextMenu {PlacementTarget:FrameworkElement placementTarget}} || placementTarget.DataContext is not CanvasNodeProjection node || !BeginVmNodeRename(node))return;
             Dispatcher.BeginInvoke(new Action(()=>
             {
                 if(!ValidVmNodeRename(node)){CancelVmNodeRename();return;}
@@ -2847,13 +2572,13 @@ _viewModel.SelectedNode = targetNode.Definition;
 
         private void NodeRenameTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if(sender is not TextBox {DataContext:WorkflowNodeBase node})return;
+            if(sender is not TextBox {DataContext:CanvasNodeProjection node})return;
             if(e.Key==Key.Enter){CommitVmNodeRename(node,false);e.Handled=true;}
             else if(e.Key==Key.Escape){CancelVmNodeRename();e.Handled=true;}
         }
         private void NodeRenameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if(sender is TextBox {DataContext:WorkflowNodeBase node}&&node.IsEditingName)CommitVmNodeRename(node,true);
+            if(sender is TextBox {DataContext:CanvasNodeProjection node}&&node.IsEditingName)CommitVmNodeRename(node,true);
         }
 
         /// <summary>
@@ -2865,7 +2590,7 @@ _viewModel.SelectedNode = targetNode.Definition;
             var canEdit=CanEditVmCanvas;
             if (!canEdit && _viewModel?.IsDebugWindowOpen != true) return;
 
-            if (sender is FrameworkElement element && element.DataContext is WorkflowNode node)
+            if (sender is FrameworkElement element && element.DataContext is CanvasNodeProjection node)
             {
                 if(canEdit)
                 {
